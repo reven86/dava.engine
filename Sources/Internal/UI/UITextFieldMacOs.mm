@@ -39,6 +39,7 @@
 #include <AppKit/NSSecureTextField.h>
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 
 // objective C declaration may appeared only in global scope
 @interface CustomTextField : NSTextField
@@ -66,7 +67,8 @@
 @interface RSVerticallyCenteredTextFieldCell : NSTextFieldCell
 {
 @public
-    BOOL mIsEditingOrSelecting;
+    BOOL isEditingOrSelecting;
+    BOOL isMultilineControl;
 }
 @end
 
@@ -112,11 +114,17 @@ public:
         nsTextField.drawsBackground = NO;
         nsTextField.bezeled = NO;
 
-        [nsTextField.cell setUsesSingleLineMode:YES];
+        //[nsTextField.cell setUsesSingleLineMode:YES];
+
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &ObjCWrapper::OnAppMinimazedResored);
     }
 
     ~ObjCWrapper()
     {
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
+
         davaText = nullptr;
         [nsTextField removeFromSuperview];
         [nsTextField release];
@@ -125,6 +133,11 @@ public:
         formatter = nullptr;
         [objcDelegate release];
         objcDelegate = nullptr;
+    }
+
+    void OnAppMinimazedResored(bool value)
+    {
+        SetVisible(!value);
     }
 
     void OpenKeyboard()
@@ -199,11 +212,13 @@ public:
     {
         currentFontSize = virtualFontSize;
 
-        // like in win10
         float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
-        size /= Core::Instance()->GetScreenScaleFactor();
 
-        [nsTextField setFont:[NSFont systemFontOfSize:size]];
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+        NSSize origSz = NSMakeSize(size, 0);
+        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
+
+        [nsTextField setFont:[NSFont systemFontOfSize:convSz.width]];
     }
 
     void SetTextAlign(DAVA::int32 align)
@@ -328,7 +343,7 @@ public:
     void SetMultiline(bool value)
     {
         multiline = value;
-        [nsTextField.cell setUsesSingleLineMode:!multiline];
+        //[nsTextField.cell setUsesSingleLineMode:!multiline];
     }
     bool IsMultiline() const
     {
@@ -407,6 +422,8 @@ public:
     {
         return false;
     }
+
+    SigConnectionID signalMinimizeRestored;
 
     UITextField* davaText = nullptr;
     CustomTextField* nsTextField = nullptr;
@@ -704,25 +721,27 @@ doCommandBySelector:(SEL)commandSelector
     // Get the parent's idea of where we should draw
     NSRect newRect = [super drawingRectForBounds:theRect];
 
-    // When the text field is being
-    // edited or selected, we have to turn off the magic because it screws up
-    // the configuration of the field editor.  We sneak around this by
-    // intercepting selectWithFrame and editWithFrame and sneaking a
-    // reduced, centered rect in at the last minute.
-    if (mIsEditingOrSelecting == NO)
+    if (!isMultilineControl)
     {
-        // Get our ideal size for current text
-        NSSize textSize = [self cellSizeForBounds:theRect];
-
-        // Center that in the proposed rect
-        float heightDelta = newRect.size.height - textSize.height;
-        if (heightDelta > 0)
+        // When the text field is being
+        // edited or selected, we have to turn off the magic because it screws up
+        // the configuration of the field editor.  We sneak around this by
+        // intercepting selectWithFrame and editWithFrame and sneaking a
+        // reduced, centered rect in at the last minute.
+        if (isEditingOrSelecting == NO)
         {
-            newRect.size.height -= heightDelta;
-            newRect.origin.y += (heightDelta / 2);
+            // Get our ideal size for current text
+            NSSize textSize = [self cellSizeForBounds:theRect];
+
+            // Center that in the proposed rect
+            float heightDelta = newRect.size.height - textSize.height;
+            if (heightDelta > 0)
+            {
+                newRect.size.height -= heightDelta;
+                newRect.origin.y += (heightDelta / 2);
+            }
         }
     }
-
     return newRect;
 }
 
@@ -730,25 +749,36 @@ doCommandBySelector:(SEL)commandSelector
 {
     CustomTextField* textField = (CustomTextField*)controlView;
     CustomTextFieldFormatter* formatter = (CustomTextFieldFormatter*)textField.formatter;
-    if (formatter->text->IsMultiline())
+    isMultilineControl = formatter->text->IsMultiline();
+    if (isMultilineControl)
     {
         [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
     }
     else
     {
         aRect = [self drawingRectForBounds:aRect];
-        mIsEditingOrSelecting = YES;
+        isEditingOrSelecting = YES;
         [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
-        mIsEditingOrSelecting = NO;
+        isEditingOrSelecting = NO;
     }
 }
 
 - (void)editWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject event:(NSEvent*)theEvent
 {
-    aRect = [self drawingRectForBounds:aRect];
-    mIsEditingOrSelecting = YES;
-    [super editWithFrame:aRect inView:controlView editor:textObj delegate:anObject event:theEvent];
-    mIsEditingOrSelecting = NO;
+    CustomTextField* textField = (CustomTextField*)controlView;
+    CustomTextFieldFormatter* formatter = (CustomTextFieldFormatter*)textField.formatter;
+    isMultilineControl = formatter->text->IsMultiline();
+    if (isMultilineControl)
+    {
+        [super editWithFrame:aRect inView:controlView editor:textObj delegate:anObject event:theEvent];
+    }
+    else
+    {
+        aRect = [self drawingRectForBounds:aRect];
+        isEditingOrSelecting = YES;
+        [super editWithFrame:aRect inView:controlView editor:textObj delegate:anObject event:theEvent];
+        isEditingOrSelecting = NO;
+    }
 }
 
 @end
