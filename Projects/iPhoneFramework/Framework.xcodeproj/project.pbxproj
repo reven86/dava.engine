@@ -345,10 +345,6 @@
 		02E7C7281BD624A7002F026D /* SharedPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C01BD624A5002F026D /* SharedPreferences.h */; };
 		02E7C7291BD624A7002F026D /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C11BD624A5002F026D /* DataStorage.h */; };
 		02E7C72A1BD624A7002F026D /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C11BD624A5002F026D /* DataStorage.h */; };
-		02E7C7311BD624A7002F026D /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */; };
-		02E7C7321BD624A7002F026D /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */; };
-		02E7C7331BD624A7002F026D /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */; };
-		02E7C7341BD624A7002F026D /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */; };
 		02E7C7351BD624A7002F026D /* DataStorageWindows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1CA1BD624A5002F026D /* DataStorageWindows.cpp */; };
 		02E7C7361BD624A7002F026D /* DataStorageWindows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1CA1BD624A5002F026D /* DataStorageWindows.cpp */; };
 		02E7C7371BD624A7002F026D /* DataStorageWindows.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1CB1BD624A5002F026D /* DataStorageWindows.h */; };
@@ -2290,8 +2286,6 @@
 		02E7C1BF1BD624A5002F026D /* SharedPreferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SharedPreferences.cpp; sourceTree = "<group>"; };
 		02E7C1C01BD624A5002F026D /* SharedPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedPreferences.h; sourceTree = "<group>"; };
 		02E7C1C11BD624A5002F026D /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
-		02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
-		02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorageMacOS.h; sourceTree = "<group>"; };
 		02E7C1CA1BD624A5002F026D /* DataStorageWindows.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageWindows.cpp; sourceTree = "<group>"; };
 		02E7C1CB1BD624A5002F026D /* DataStorageWindows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorageWindows.h; sourceTree = "<group>"; };
 		02E7C1CD1BD624A5002F026D /* BaseFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseFamily.cpp; sourceTree = "<group>"; };
@@ -3171,7 +3165,7 @@
 		CC677BA4197D46390089547A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
-		D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
+		D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D211C4D071E00E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
@@ -3480,7 +3474,6 @@
 				D7660D1E1C4D071100E81868 /* Apple */,
 				02E7C1BD1BD624A5002F026D /* Android */,
 				02E7C1C11BD624A5002F026D /* DataStorage.h */,
-				02E7C1C61BD624A5002F026D /* MacOS */,
 				02E7C1C91BD624A5002F026D /* Windows */,
 			);
 			path = DataStorage;
@@ -3493,15 +3486,6 @@
 				02E7C1C01BD624A5002F026D /* SharedPreferences.h */,
 			);
 			path = Android;
-			sourceTree = "<group>";
-		};
-		02E7C1C61BD624A5002F026D /* MacOS */ = {
-			isa = PBXGroup;
-			children = (
-				02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */,
-				02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */,
-			);
-			path = MacOS;
 			sourceTree = "<group>";
 		};
 		02E7C1C91BD624A5002F026D /* Windows */ = {
@@ -5176,7 +5160,6 @@
 				02E7CC421BD624A7002F026D /* rhi_ShaderSource.h in Headers */,
 				02E7CB2E1BD624A7002F026D /* ImageSystem.h in Headers */,
 				02E7C7721BD624A7002F026D /* LocalizationIPhone.h in Headers */,
-				02E7C7341BD624A7002F026D /* DataStorageMacOS.h in Headers */,
 				02E7CEEC1BD624A7002F026D /* UIWebView.h in Headers */,
 				02E7CC0A1BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD901BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
@@ -5727,7 +5710,6 @@
 				02E7CC411BD624A7002F026D /* rhi_ShaderSource.h in Headers */,
 				02E7CB2D1BD624A7002F026D /* ImageSystem.h in Headers */,
 				02E7C7711BD624A7002F026D /* LocalizationIPhone.h in Headers */,
-				02E7C7331BD624A7002F026D /* DataStorageMacOS.h in Headers */,
 				02E7CEEB1BD624A7002F026D /* UIWebView.h in Headers */,
 				02E7CC091BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD8F1BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
@@ -6205,7 +6187,6 @@
 				02E7CC3A1BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE081BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
 				02E7C8841BD624A7002F026D /* Announcer.cpp in Sources */,
-				02E7C7321BD624A7002F026D /* DataStorageMacOS.cpp in Sources */,
 				02E7CE7C1BD624A7002F026D /* UIListCell.cpp in Sources */,
 				02E7CBC41BD624A7002F026D /* rhi_ShaderCache.cpp in Sources */,
 				02E7CF2F1BD639A4002F026D /* DVAssertMessage.cpp in Sources */,
@@ -6698,7 +6679,6 @@
 				02E7CC391BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE071BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
 				02E7C8831BD624A7002F026D /* Announcer.cpp in Sources */,
-				02E7C7311BD624A7002F026D /* DataStorageMacOS.cpp in Sources */,
 				02E7CE7B1BD624A7002F026D /* UIListCell.cpp in Sources */,
 				02E7CBC31BD624A7002F026D /* rhi_ShaderCache.cpp in Sources */,
 				02E7CF2E1BD639A4002F026D /* DVAssertMessage.cpp in Sources */,
