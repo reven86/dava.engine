@@ -114,8 +114,6 @@ public:
         nsTextField.drawsBackground = NO;
         nsTextField.bezeled = NO;
 
-        //[nsTextField.cell setUsesSingleLineMode:YES];
-
         CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
         signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &ObjCWrapper::OnAppMinimazedResored);
     }
@@ -343,7 +341,6 @@ public:
     void SetMultiline(bool value)
     {
         multiline = value;
-        //[nsTextField.cell setUsesSingleLineMode:!multiline];
     }
     bool IsMultiline() const
     {
@@ -595,20 +592,9 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
     [super dealloc];
 }
 
-- (BOOL)control:(NSControl*)control
-textShouldBeginEditing:(NSText*)fieldEditor
-{
-    return YES;
-}
-
-- (BOOL)control:(NSControl*)control
-textShouldEndEditing:(NSText*)fieldEditor
-{
-    return YES;
-}
-
 - (void)controlTextDidChange:(NSNotification*)aNotification
 {
+    DAVA::Logger::Info("text change:");
 }
 
 // https://developer.apple.com/library/mac/qa/qa1454/_index.html
@@ -833,8 +819,6 @@ doCommandBySelector:(SEL)commandSelector
 @implementation CustomTextField
 - (void)mouseDown:(NSEvent*)theEvent
 {
-    //[super mouseDown:theEvent];
-
     // pass event to DAVA input for selection and focus work
     NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
     [openGLView mouseDown:theEvent];

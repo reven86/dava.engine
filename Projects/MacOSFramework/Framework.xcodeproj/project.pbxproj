@@ -2933,6 +2933,8 @@
 		028C1B731BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
 		028C1B741BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
 		028C1B751BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
+		03E895C91C4E670300E25B29 /* UITextFieldMacOs.h in Headers */ = {isa = PBXBuildFile; fileRef = 03E895C71C4E670300E25B29 /* UITextFieldMacOs.h */; };
+		03E895CA1C4E670300E25B29 /* UITextFieldMacOs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03E895C81C4E670300E25B29 /* UITextFieldMacOs.mm */; };
 		176DE930174B5561007A983B /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1D16BD24E400732C04 /* DAVAConfig.h */; };
 		176DE931174B5561007A983B /* DAVAEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1F16BD24E400732C04 /* DAVAEngine.h */; };
 		176DE93C174B5561007A983B /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B3516BD24E400732C04 /* DoxygenDocumenation.h */; };
@@ -4008,6 +4010,8 @@
 		028C0D2D1BD66A6000B2266F /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		028C0D2E1BD66A6000B2266F /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		028C0D311BD66A6000B2266F /* UtilsMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UtilsMacOS.mm; sourceTree = "<group>"; };
+		03E895C71C4E670300E25B29 /* UITextFieldMacOs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldMacOs.h; sourceTree = "<group>"; };
+		03E895C81C4E670300E25B29 /* UITextFieldMacOs.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldMacOs.mm; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -5364,6 +5368,8 @@
 		028C0C7B1BD66A5F00B2266F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				03E895C71C4E670300E25B29 /* UITextFieldMacOs.h */,
+				03E895C81C4E670300E25B29 /* UITextFieldMacOs.mm */,
 				028C0C7C1BD66A5F00B2266F /* AbstractUIPackageBuilder.cpp */,
 				028C0C7D1BD66A5F00B2266F /* AbstractUIPackageBuilder.h */,
 				028C0C7F1BD66A5F00B2266F /* Components */,
@@ -6385,6 +6391,7 @@
 				028C16211BD66A6000B2266F /* internal.h in Headers */,
 				028C10D51BD66A6000B2266F /* Quaternion.h in Headers */,
 				E8989DF316BD24E500732C04 /* DAVAConfig.h in Headers */,
+				03E895C91C4E670300E25B29 /* UITextFieldMacOs.h in Headers */,
 				028C118F1BD66A6000B2266F /* Discoverer.h in Headers */,
 				028C17BF1BD66A6000B2266F /* QualitySettingsComponent.h in Headers */,
 				028C10BA1BD66A6000B2266F /* Matrix4.h in Headers */,
@@ -8173,6 +8180,7 @@
 				028C19961BD66A6000B2266F /* LayoutHelpers.cpp in Sources */,
 				028C109F1BD66A6000B2266F /* Math2D.cpp in Sources */,
 				028C0F8B1BD66A6000B2266F /* PatchFile.cpp in Sources */,
+				03E895CA1C4E670300E25B29 /* UITextFieldMacOs.mm in Sources */,
 				028C125E1BD66A6000B2266F /* Process.cpp in Sources */,
 				028C0FCA1BD66A6000B2266F /* FileSystem.cpp in Sources */,
 				028C192D1BD66A6000B2266F /* WaveSystem.cpp in Sources */,
