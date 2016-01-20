@@ -81,7 +81,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
     connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
 
-
     verticalRuler->SetRulerOrientation(Qt::Vertical);
     davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
@@ -260,7 +259,7 @@ void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
     ApplyPosChanges();
 }
 
-void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 {
     canvasPos = pos;
     ApplyPosChanges();

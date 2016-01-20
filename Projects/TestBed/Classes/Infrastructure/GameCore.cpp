@@ -47,6 +47,8 @@
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
 #include "Tests/InputTest.h"
+#include "Tests/DlcTest.h"
+#include "Tests/FormatsTest.h"
 //$UNITTEST_INCLUDE
 
 #include "MemoryManager/MemoryProfiler.h"
@@ -63,6 +65,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new DlcTest();
     new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();
@@ -78,6 +81,7 @@ void GameCore::RegisterTests()
     new UIBackgroundTest();
     new ClipTest();
     new InputTest();
+    new FormatsTest();
     //$UNITTEST_CTOR
 }
 
