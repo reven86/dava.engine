@@ -19,11 +19,13 @@ g_supported_platforms = ["macos", "ios", "android", "windows"]
 g_supported_additional_parameters = ["console", "uap"]
 g_is_console = False
 g_is_uap = False
+g_is_unity_build = False
+
+def is_exe(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
 def search_program(program):
     import os
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
     fpath, fname = os.path.split(program)
     if fpath:
@@ -43,6 +45,7 @@ def search_program(program):
 def parse_additional_params(additional):
     global g_is_console
     global g_is_uap
+    global g_is_unity_build
 
     if not additional:
         return True;
@@ -51,12 +54,14 @@ def parse_additional_params(additional):
         param = param.lower()
         if "console" == param:
             g_is_console = True
+        elif "uap" == param:
+            g_is_uap = True
+        elif "ub" == param:
+            g_is_unity_build = True                
         else:
-            if "uap" == param:
-                g_is_uap = True
-            else:
-                print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
-                return False
+            print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
+            return False
+
     return True
 
 
@@ -106,7 +111,7 @@ def get_project_type(dst_platform, is_console):
 
         if "MinGW" == current_platform:
             project_string += "Mingw Makefiles"
-        if "Windows" == current_platform:
+        elif "Windows" == current_platform:
             project_string += "NMake Makefiles"
         else:
             project_string += "Unix Makefiles"
@@ -137,8 +142,7 @@ def main():
     parser.add_argument('additional_params', nargs='*', help= 'One of ' + str(g_supported_additional_parameters))
     parser.add_argument('cmake_path', help='relative path to cmake list')
     parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
-    parser.add_argument('--add_definitions', default="", help="add definitions" )
-    parser.add_argument('--unity_build', '-ub', action='store_true', help="enable unity build" )
+    parser.add_argument('--add_definitions', '-defs', default="", help="add definitions" )
 
     options = parser.parse_args()
 
@@ -186,7 +190,7 @@ def main():
     if len(g_add_definitions) :
         call_string +=  g_add_definitions.split(' ') 
     
-    if(options.unity_build):
+    if g_is_unity_build:
         call_string.append("-DUNITY_BUILD=true")
     print call_string
 
