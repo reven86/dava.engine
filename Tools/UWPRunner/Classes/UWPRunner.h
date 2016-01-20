@@ -46,6 +46,7 @@ struct PackageOptions
     DAVA::String dependencies;
     DAVA::Vector<DAVA::String> resources;
     bool useTeamCityTestOutput = false;
+    bool installOnly = false;
     bool runOnly = false;
 };
 PackageOptions ParseCommandLine();

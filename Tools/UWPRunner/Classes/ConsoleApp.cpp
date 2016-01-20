@@ -115,6 +115,11 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
         out.useTeamCityTestOutput = true;
     }
 
+    if (parser.IsFlagSet("--install_only"))
+    {
+        out.installOnly = true;
+    }
+
     if (parser.IsFlagSet("--run_only"))
     {
         out.runOnly = true;
@@ -134,7 +139,9 @@ void ShowUsage()
         "    --dependencies [path to package dependencies dir]\n"
         "    --profile (local/phone) [target device for package]\n"
         "    --arch [architecture of launching package, only for bundle]\n"
-        "    --tc_test [use teamcity test output]\n";
+        "    --tc_test [use teamcity test output]\n"
+        "    --install_only [only install package]\n"
+        "    --run_only [don't install, just run]\n";
 
     std::cout << message;
 }
@@ -175,15 +182,30 @@ bool CheckDependenciesOption(const String& dependencies)
     return true;
 }
 
+bool CheckWorkFlags(const PackageOptions& options)
+{
+    bool workFlagsIsOk = !((options.runOnly == options.installOnly) && (options.runOnly == true));
+
+    if (!workFlagsIsOk)
+    {
+        std::cout << "'Run only' and 'Install only' flags are both set" << std::endl;
+    }
+
+    return workFlagsIsOk;
+}
+
 bool CheckOptions(const PackageOptions& options)
 {
     bool packageIsOk = CheckPackageOption(options.mainPackage);
     bool dependenciesIsOk = CheckDependenciesOption(options.dependencies);
+    bool workFlagsIsOk = CheckWorkFlags(options);
 
-    bool allIsOk = packageIsOk && dependenciesIsOk;
+    bool allIsOk = packageIsOk && dependenciesIsOk && workFlagsIsOk;
 
     if (!allIsOk)
+    {
         ShowUsage();
+    }
 
     return allIsOk;
 }

@@ -87,15 +87,22 @@ UWPRunner::UWPRunner(const PackageOptions& opt)
     FileSystem::Instance()->DeleteFile(manifest);
 
     //Init network
-    Logger::Info("Initializing network...");
-    InitializeNetwork(qtProfile == "appxphone");
+    if (!options.installOnly)
+    {
+        Logger::Info("Initializing network...");
+        InitializeNetwork(qtProfile == "appxphone");
+    }
 }
 
 UWPRunner::~UWPRunner()
 {
     cleanNeeded.Emit();
     logConsumer->newMessageNotifier.Disconnect(logConsumerConnectionID);
-    UnInitializeNetwork();
+
+    if (!options.installOnly)
+    {
+        UnInitializeNetwork();
+    }
 }
 
 void UWPRunner::Run()
@@ -137,6 +144,11 @@ void UWPRunner::Run(Runner& runner)
             DVASSERT_MSG(false, "Can't install application package");
             return;
         }
+    }
+
+    if (options.installOnly)
+    {
+        return;
     }
 
     Logger::Info("Starting application...");
