@@ -242,8 +242,7 @@ void Logger::SetLogFilename(const String & filename)
     }
     else
     {
-        logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory()
-                + filename;
+        logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory() + filename;
     }
 }
 

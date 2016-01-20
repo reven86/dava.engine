@@ -211,14 +211,15 @@ set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
                                                    IGNORE_LIST_APPLE  
+                                                        "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                                        "iOS/ICloudKeyValue.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
                                                     IGNORE_LIST_IOS
+                                                        "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
                                                         "TemplateiOS/HelperAppDelegate.mm"
                                                         "TemplateiOS/DPIHelperiOS.mm"
