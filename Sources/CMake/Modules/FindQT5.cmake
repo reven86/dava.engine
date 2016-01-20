@@ -35,11 +35,15 @@ macro ( qt_deploy )
             set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
         endif()
 
+        set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
+        set(DEPLOY_CURRENT_FOLDER ${DEPLOY_DIR})
+        set(DEPLOT_COMMAND "${QT5_PATH_MAC}/bin/macdeployqt ${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
+
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
-                    ${DEPLOY_DIR}/${PROJECT_NAME}.app
-                    -always-overwrite
-                    "${QML_SCAN_FLAG}"
+            COMMAND "python"
+                    ${DEPLOY_SCRIPT_PATH}
+                    ${DEPLOY_CURRENT_FOLDER}
+                    ${DEPLOT_COMMAND}
         )
 
     endif()

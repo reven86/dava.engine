@@ -16,9 +16,10 @@ find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
 
 if (DEPLOY)
-    set (DEPLOY_ROOT ${DEPLOY_DIR}/ResourceEditor)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
 
     if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/ResourceEditor)
         set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/ResourceEditor)
     endif()
 endif()

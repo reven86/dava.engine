@@ -9,8 +9,8 @@ if len(sys.argv) < 2:
 
 deployRoot = sys.argv[1]
 
-proc = Popen("git log --since=3.days --branches=\"development\" --pretty=format:\"%s (%an, %ar)\"", stdout=PIPE)
-changesFile = open(os.path.join(deployRoot, "changes.txt"), 'w')
+proc = Popen("git log --since=3.days --branches=\"development\" --pretty=format:\"%s (%an, %ar)\"", shell=True, stdout=PIPE)
+changesFile = open(os.path.join(deployRoot, "changes.txt"), 'w+')
 for line in proc.stdout:
     changesFile.write(line)
 
