@@ -129,11 +129,14 @@ void UWPRunner::Run()
 void UWPRunner::Run(Runner& runner)
 {
     //installing and starting application
-    Logger::Info("Installing package...");
-    if (!runner.install(true))
+    if (!options.runOnly)
     {
-        DVASSERT_MSG(false, "Can't install application package");
-        return;
+        Logger::Info("Installing package...");
+        if (!runner.install(true))
+        {
+            DVASSERT_MSG(false, "Can't install application package");
+            return;
+        }
     }
 
     Logger::Info("Starting application...");

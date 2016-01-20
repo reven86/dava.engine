@@ -115,6 +115,11 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
         out.useTeamCityTestOutput = true;
     }
 
+    if (parser.IsFlagSet("--run_only"))
+    {
+        out.runOnly = true;
+    }
+
     return out;
 }
 

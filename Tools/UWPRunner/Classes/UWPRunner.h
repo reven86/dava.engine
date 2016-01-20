@@ -46,6 +46,7 @@ struct PackageOptions
     DAVA::String dependencies;
     DAVA::Vector<DAVA::String> resources;
     bool useTeamCityTestOutput = false;
+    bool runOnly = false;
 };
 PackageOptions ParseCommandLine();
 bool CheckOptions(const PackageOptions& options);
