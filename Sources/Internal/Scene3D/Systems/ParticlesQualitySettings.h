@@ -54,14 +54,6 @@ public:
 
             String folderToReplace;
             String replaceWithFolder;
-            bool operator==(const Folder& rhs) const
-            {
-                return (folderToReplace == rhs.folderToReplace && replaceWithFolder == rhs.replaceWithFolder);
-            }
-            bool operator<(const Folder& rhs) const
-            {
-                return (folderToReplace >= rhs.folderToReplace && replaceWithFolder >= rhs.replaceWithFolder);
-            }
         };
 
         QualitySheet();

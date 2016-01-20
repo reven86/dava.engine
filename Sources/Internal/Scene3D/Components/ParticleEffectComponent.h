@@ -33,7 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Base/BaseObject.h"
 #include "Base/Message.h"
 #include "Scene3D/SceneFile/SerializationContext.h"

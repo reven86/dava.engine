@@ -85,7 +85,7 @@ int32 ParticlesQualitySettings::QualitySheet::GetScore() const
 void ParticlesQualitySettings::QualitySheet::RecalculateScore()
 {
     int32 qualitiesScore = selector.qualities.empty() ? 0 : (qualitiesCount - (int32)selector.qualities.size());
-    int32 tagsScore = selector.tags.size() * 100;
+    int32 tagsScore = (int32)selector.tags.size() * 100;
     score = qualitiesScore + tagsScore;
 }
 
@@ -193,7 +193,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
                     folder.replaceWithFolder = replaceFolderNode->Get(1)->AsString();
                 }
 
-                qualitySheets.push_back(QualitySheet(selector, folder, qualities.size()));
+                qualitySheets.push_back(QualitySheet(selector, folder, (uint32)qualities.size()));
             }
         }
         DVASSERT(qualitySheets.size() == qualitySheetsNode->GetCount());
