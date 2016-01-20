@@ -234,7 +234,9 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
     NetConfig config(role);
     config.AddTransport(TRANSPORT_TCP, endPoint);
     config.AddService(NetCore::SERVICE_LOG);
-    controllerId = NetCore::Instance()->CreateController(config, nullptr);
+
+    const uint32 timeout = 5 * 60 * 1000; //5 min
+    controllerId = NetCore::Instance()->CreateController(config, nullptr, timeout);
 }
 
 void UWPRunner::UnInitializeNetwork()

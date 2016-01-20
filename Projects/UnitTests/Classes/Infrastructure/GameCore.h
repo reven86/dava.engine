@@ -35,7 +35,6 @@
 
 #if defined (__DAVAENGINE_WIN_UAP__)
 #include "Network/NetCore.h"
-#include "Network/PeerDesription.h"
 #include "Network/Services/NetLogger.h"
 #endif
 
@@ -69,6 +68,7 @@ public:
 #if defined (__DAVAENGINE_WIN_UAP__)
     void InitNetwork();
     void UnInitNetwork();
+    void FlushLogs();
 #endif
 
     void Update(DAVA::float32 update) override;

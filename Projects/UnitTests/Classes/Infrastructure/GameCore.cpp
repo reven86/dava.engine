@@ -35,6 +35,7 @@
 #include "Infrastructure/GameCore.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#include "Network/NetConfig.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #endif
 
@@ -144,6 +145,10 @@ void GameCore::Update(float32 timeElapsed)
 {
     ProcessTests(timeElapsed);
     ApplicationCore::Update(timeElapsed);
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+    FlushLogs();
+#endif
 }
 
 void GameCore::OnError()
@@ -251,11 +256,17 @@ void GameCore::InitNetwork()
 void GameCore::UnInitNetwork()
 {
     netLogger.Uninstall();
+    FlushLogs();
+
+    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
+}
+
+void GameCore::FlushLogs()
+{
     while (netLogger.HasDataForSend())
     {
         Net::NetCore::Instance()->Poll();
     }
-
-    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
 }
+
 #endif
