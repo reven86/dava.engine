@@ -4699,6 +4699,8 @@
 		028C09CA1BD66A5E00B2266F /* Notification */ = {
 			isa = PBXGroup;
 			children = (
+				D7660D681C4E5E2100E81868 /* LocalNotificationMac.cpp */,
+				D7660D691C4E5E2100E81868 /* LocalNotificationMac.h */,
 				028C09CB1BD66A5E00B2266F /* LocalNotification.cpp */,
 				028C09CC1BD66A5E00B2266F /* LocalNotification.h */,
 				028C09CF1BD66A5E00B2266F /* LocalNotificationController.cpp */,
@@ -6528,6 +6530,7 @@
 				028C11C51BD66A6000B2266F /* MMBigDataTransferService.h in Headers */,
 				028C199F1BD66A6000B2266F /* LinearLayoutAlgorithm.h in Headers */,
 				028C1A951BD66A6100B2266F /* UIPackageLoader.h in Headers */,
+				D7660D6B1C4E5E2100E81868 /* LocalNotificationMac.h in Headers */,
 				028C18F41BD66A6000B2266F /* QualitySettingsSystem.h in Headers */,
 				028C18581BD66A6000B2266F /* PathManip.h in Headers */,
 				028C0DF91BD66A6000B2266F /* Exception.h in Headers */,
@@ -7990,6 +7993,7 @@
 				028C1B461BD66A6100B2266F /* MD5.cpp in Sources */,
 				028C199C1BD66A6000B2266F /* LinearLayoutAlgorithm.cpp in Sources */,
 				028C0DFC1BD66A6000B2266F /* FastName.cpp in Sources */,
+				D7660D6A1C4E5E2100E81868 /* LocalNotificationMac.cpp in Sources */,
 				028C0DB41BD66A6000B2266F /* UIControl_wrap.cxx in Sources */,
 				028C12371BD66A6000B2266F /* ParticleRenderObject.cpp in Sources */,
 				028C13D81BD66A6000B2266F /* OpenUDIDMacOS.mm in Sources */,

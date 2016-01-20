@@ -733,8 +733,6 @@
 		02E7C8C81BD624A7002F026D /* LocalNotificationController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A31BD624A5002F026D /* LocalNotificationController.cpp */; };
 		02E7C8C91BD624A7002F026D /* LocalNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C2A41BD624A5002F026D /* LocalNotificationController.h */; };
 		02E7C8CA1BD624A7002F026D /* LocalNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C2A41BD624A5002F026D /* LocalNotificationController.h */; };
-		02E7C8CD1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */; };
-		02E7C8CE1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */; };
 		02E7C8CF1BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */; };
 		02E7C8D01BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */; };
 		02E7C8D11BD624A7002F026D /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C2A81BD624A5002F026D /* LocalNotificationDelayed.h */; };
@@ -2476,7 +2474,6 @@
 		02E7C2A01BD624A5002F026D /* LocalNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotification.h; sourceTree = "<group>"; };
 		02E7C2A31BD624A5002F026D /* LocalNotificationController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationController.cpp; sourceTree = "<group>"; };
 		02E7C2A41BD624A5002F026D /* LocalNotificationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationController.h; sourceTree = "<group>"; };
-		02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalNotificationControllerIOS.mm; sourceTree = "<group>"; };
 		02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationDelayed.cpp; sourceTree = "<group>"; };
 		02E7C2A81BD624A5002F026D /* LocalNotificationDelayed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationDelayed.h; sourceTree = "<group>"; };
 		02E7C2A91BD624A5002F026D /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
@@ -3784,7 +3781,6 @@
 				02E7C2A01BD624A5002F026D /* LocalNotification.h */,
 				02E7C2A31BD624A5002F026D /* LocalNotificationController.cpp */,
 				02E7C2A41BD624A5002F026D /* LocalNotificationController.h */,
-				02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */,
 				02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */,
 				02E7C2A81BD624A5002F026D /* LocalNotificationDelayed.h */,
 				02E7C2A91BD624A5002F026D /* LocalNotificationImpl.h */,
@@ -6057,7 +6053,6 @@
 				02E7CC881BD624A7002F026D /* ComponentHelpers.cpp in Sources */,
 				02E7CF471BD639A4002F026D /* Stats.cpp in Sources */,
 				02E7CD4E1BD624A7002F026D /* BaseProcessSystem.cpp in Sources */,
-				02E7C8CE1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */,
 				02E7CB941BD624A7002F026D /* directive.cpp in Sources */,
 				02E7CC1E1BD624A7002F026D /* rhi_QueryBufferGLES2.cpp in Sources */,
 				02E7CAB61BD624A7002F026D /* Frustum.cpp in Sources */,
@@ -6548,7 +6543,6 @@
 				02E7CC871BD624A7002F026D /* ComponentHelpers.cpp in Sources */,
 				02E7CF461BD639A4002F026D /* Stats.cpp in Sources */,
 				02E7CD4D1BD624A7002F026D /* BaseProcessSystem.cpp in Sources */,
-				02E7C8CD1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */,
 				02E7CB931BD624A7002F026D /* directive.cpp in Sources */,
 				02E7CC1D1BD624A7002F026D /* rhi_QueryBufferGLES2.cpp in Sources */,
 				02E7CAB51BD624A7002F026D /* Frustum.cpp in Sources */,
