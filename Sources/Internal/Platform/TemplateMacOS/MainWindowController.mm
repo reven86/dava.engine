@@ -421,10 +421,66 @@ namespace DAVA
 #endif
 }
 
+static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
+{
+    static bool restorePinning = false;
+    
+    int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
+    int64_t myPid = static_cast<int64_t>(getpid());
+    if (targetPid != myPid)
+    {
+        // Turn off mouse cature if event target is not our application and
+        // current capture mode is pinning
+        InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
+        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
+        {
+            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
+            restorePinning = true;
+        }
+    }
+    else
+    {
+        if (restorePinning)
+        {
+            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
+            restorePinning = false;
+        }
+    }
+    return event;
+}
+
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
+    
+    {
+        // OS X application has no way to detect when she is no longer in control,
+        // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
+        // And application has no chance to release mouse capture.
+        
+        // Install mouse hook which determines whether Mission Control, Launchpad is active
+        // and temporary turns off mouse pinning
+        // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
+        CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
+                                                 kCGTailAppendEventTap,
+                                                 kCGEventTapOptionListenOnly,
+                                                 NSAnyEventMask,
+                                                 &EventTapCallback,
+                                                 nullptr);
+        
+        if (portRef != nullptr)
+        {
+            CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
+            CFRelease(portRef);
+            CFRelease(loopSourceRef);
+        }
+        else
+        {
+            Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
+        }
+    }
 
     float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
 
@@ -446,31 +502,31 @@ namespace DAVA
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application will become active");
+    Logger::Debug("[CoreMacOSPlatform] Application will become active");
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did become active");
+    Logger::Debug("[CoreMacOSPlatform] Application did become active");
 
     [self OnResume];
 }
 
 - (void)applicationDidResignActive:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did resign active");
+    Logger::Debug("[CoreMacOSPlatform] Application did resign active");
 
     [self OnSuspend];
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did change screen params");
+    Logger::Debug("[CoreMacOSPlatform] Application did change screen params");
 }
 
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did hide");
+    Logger::Debug("[CoreMacOSPlatform] Application did hide");
     
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
@@ -478,7 +534,7 @@ namespace DAVA
 
 - (void)applicationDidUnhide:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did unhide");
+    Logger::Debug("[CoreMacOSPlatform] Application did unhide");
     
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
