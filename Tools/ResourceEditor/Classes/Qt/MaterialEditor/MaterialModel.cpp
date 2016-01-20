@@ -297,16 +297,14 @@ void MaterialModel::Sync()
         {
             if (!it.second)
             {
-                bool dragEnabled = true;
                 bool dropEnabled = true;
 
                 if (it.first == globalMaterial)
                 {
-                    dragEnabled = false;
                     dropEnabled = false;
                 }
 
-                MaterialItem* newItem = new MaterialItem(it.first, dragEnabled, dropEnabled);
+                MaterialItem* newItem = new MaterialItem(it.first, false, dropEnabled);
                 root->appendRow(newItem);
 
                 if (it.first != globalMaterial)
@@ -358,6 +356,7 @@ void MaterialModel::Sync(MaterialItem* item)
         bool shouldAddMaterial = !it.second && curScene->materialSystem->HasMaterial(it.first);
         if (shouldAddMaterial)
         {
+            DVASSERT(it.first->GetParent() != nullptr && it.first->GetParent() != GetGlobalMaterial());
             MaterialItem* newItem = new MaterialItem(it.first, true, true);
             item->appendRow(newItem);
             Sync(newItem);
@@ -462,10 +461,11 @@ bool MaterialModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         return false;
 
 	QVector<DAVA::NMaterial *> materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
-	if ( materials.size() <= 0 )
+    
+    if (materials.empty())
         return false;
 
-    if ( dropCanBeAccepted(data, action, targetIndex.row(), targetIndex.column(), targetIndex.parent()) )
+    if (dropCanBeAccepted(data, action, targetIndex.row(), targetIndex.column(), targetIndex.parent()))
     {
 		MaterialItem *targetMaterialItem = itemFromIndex(targetIndex);
 		DAVA::NMaterial *targetMaterial = targetMaterialItem->GetMaterial();
@@ -513,8 +513,20 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
     if ( targetMaterial == NULL )
         return false;
 
-    if (targetMaterial == curScene->GetGlobalMaterial())
+    NMaterial* globalMaterial = curScene->GetGlobalMaterial();
+    if (targetMaterial == globalMaterial)
         return false;
+
+    // in some Qt builds QAbstractItemView have bug and drop action can be called like "drop on itself"
+    // we need check this situation and ban it
+    for (int i = 0; i < materials.size(); ++i)
+    {
+        NMaterial* material = materials[i];
+        NMaterial* materialParent = material->GetParent();
+        DVASSERT(materialParent != nullptr && materialParent != globalMaterial);
+        if (material == targetMaterial)
+            return false;
+    }
 
     return true;
 }
