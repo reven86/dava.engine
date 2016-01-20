@@ -511,7 +511,7 @@ UIGeometricData UIControl::GetLocalGeometricData() const
     return drawData;
 }
 
-Vector2 UIControl::GetAbsolutePosition()
+Vector2 UIControl::GetAbsolutePosition() const
 {
     return GetGeometricData().position;
 }
@@ -572,7 +572,7 @@ void UIControl::SetAngleInDegrees(float32 angleInDeg)
     SetAngle(DegToRad(angleInDeg));
 }
 
-Rect UIControl::GetAbsoluteRect()
+Rect UIControl::GetAbsoluteRect() const
 {
     return Rect(GetAbsolutePosition() - GetPivotPoint(), size);
 }
