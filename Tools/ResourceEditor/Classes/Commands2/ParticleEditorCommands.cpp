@@ -385,7 +385,9 @@ void CommandAddParticleEmitter::Redo()
     ParticleEffectComponent* effectComponent = cast_if_equal<ParticleEffectComponent*>(effectEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     DVASSERT(effectComponent);
 
-    effectComponent->AddEmitter(new ParticleEmitter());
+    ParticleEmitterData emitterData;
+    emitterData.emitter.Set(new ParticleEmitter());
+    effectComponent->AddEmitterData(emitterData);
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart)
@@ -557,14 +559,65 @@ void CommandRemoveParticleEmitterForce::Redo()
     selectedLayer->RemoveForce(selectedForce);
 }
 
-CommandLoadParticleEmitterFromYaml::CommandLoadParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path)
+CommandLoadParticleEmitterFromYaml::CommandLoadParticleEmitterFromYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path)
     : CommandAction(CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML)
+{
+    selectedEffect = effect;
+    selectedEmitter = emitter;
+    filePath = path;
+}
+
+void CommandLoadParticleEmitterFromYaml::Redo()
+{
+    if (!selectedEmitter || !selectedEffect)
+    {
+        return;
+    }
+
+    int32 emitterIndex = selectedEffect->GetEmitterId(selectedEmitter.Get());
+    if (emitterIndex == -1)
+    {
+        return;
+    }
+
+    //TODO: restart effect
+    selectedEmitter->LoadFromYaml(filePath);
+    selectedEffect->SetOriginalConfigPath(emitterIndex, filePath);
+}
+
+CommandSaveParticleEmitterToYaml::CommandSaveParticleEmitterToYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path)
+    : CommandAction(CMDID_PARTICLE_EMITTER_SAVE_TO_YAML)
+{
+    selectedEffect = effect;
+    selectedEmitter = emitter;
+    filePath = path;
+}
+
+void CommandSaveParticleEmitterToYaml::Redo()
+{
+    if (!selectedEmitter || !selectedEffect)
+    {
+        return;
+    }
+
+    int32 emitterIndex = selectedEffect->GetEmitterId(selectedEmitter.Get());
+    if (emitterIndex == -1)
+    {
+        return;
+    }
+
+    selectedEmitter->SaveToYaml(filePath);
+    //selectedEffect->SetOriginalConfigPath(emitterIndex, filePath);
+}
+
+CommandLoadInnerParticleEmitterFromYaml::CommandLoadInnerParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path)
+    : CommandAction(CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML)
 {
     this->selectedEmitter = emitter;
     this->filePath = path;
 }
 
-void CommandLoadParticleEmitterFromYaml::Redo()
+void CommandLoadInnerParticleEmitterFromYaml::Redo()
 {
     if (!selectedEmitter)
     {
@@ -575,14 +628,14 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     selectedEmitter->LoadFromYaml(filePath);
 }
 
-CommandSaveParticleEmitterToYaml::CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path)
-    : CommandAction(CMDID_PARTICLE_EMITTER_SAVE_TO_YAML)
+CommandSaveInnerParticleEmitterToYaml::CommandSaveInnerParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path)
+    : CommandAction(CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML)
 {
     this->selectedEmitter = emitter;
     this->filePath = path;
 }
 
-void CommandSaveParticleEmitterToYaml::Redo()
+void CommandSaveInnerParticleEmitterToYaml::Redo()
 {
     if (!selectedEmitter)
     {

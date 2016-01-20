@@ -2947,6 +2947,12 @@
 		028C1B861BD66D3300B2266F /* NPAPIOpenGLLayerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C1B7E1BD66D3300B2266F /* NPAPIOpenGLLayerMacOS.mm */; };
 		028C1B871BD66D3300B2266F /* NPAPIPluginMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C1B7F1BD66D3300B2266F /* NPAPIPluginMacOS.h */; };
 		028C1B881BD66D3300B2266F /* NPAPIPluginMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C1B801BD66D3300B2266F /* NPAPIPluginMacOS.mm */; };
+		15373F221C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F231C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F241C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F251C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */; };
+		15373F261C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */; };
+		15373F271C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */; };
 		176DE930174B5561007A983B /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1D16BD24E400732C04 /* DAVAConfig.h */; };
 		176DE931174B5561007A983B /* DAVAEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1F16BD24E400732C04 /* DAVAEngine.h */; };
 		176DE93C174B5561007A983B /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B3516BD24E400732C04 /* DoxygenDocumenation.h */; };
@@ -4035,6 +4041,8 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
+		15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
@@ -5308,6 +5316,8 @@
 		028C0C341BD66A5F00B2266F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */,
+				15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */,
 				028C0C351BD66A5F00B2266F /* ActionUpdateSystem.cpp */,
 				028C0C361BD66A5F00B2266F /* ActionUpdateSystem.h */,
 				028C0C371BD66A5F00B2266F /* AnimationSystem.cpp */,
@@ -5865,6 +5875,7 @@
 				028C16DA1BD66A6000B2266F /* rhi_GLES2.h in Headers */,
 				028C17491BD66A6000B2266F /* GameObject.h in Headers */,
 				028C19F51BD66A6000B2266F /* UIStyleSheetSelectorChain.h in Headers */,
+				15373F271C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */,
 				028C12211BD66A6000B2266F /* ParticleEmitter.h in Headers */,
 				028C15CF1BD66A6000B2266F /* MipmapReplacer.h in Headers */,
 				028C19831BD66A6000B2266F /* IWebViewControl.h in Headers */,
@@ -6558,6 +6569,7 @@
 				028C1A951BD66A6100B2266F /* UIPackageLoader.h in Headers */,
 				028C18F41BD66A6000B2266F /* QualitySettingsSystem.h in Headers */,
 				028C18581BD66A6000B2266F /* PathManip.h in Headers */,
+				15373F251C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */,
 				028C0DF91BD66A6000B2266F /* Exception.h in Headers */,
 				028C17591BD66A6000B2266F /* TextGameObject.h in Headers */,
 				028C180D1BD66A6000B2266F /* WaypointComponent.h in Headers */,
@@ -6979,6 +6991,7 @@
 				028C10CD1BD66A6000B2266F /* Polygon2.h in Headers */,
 				028C10AF1BD66A6000B2266F /* MathHelpers.h in Headers */,
 				028C0F141BD66A6000B2266F /* DataStorageMacOS.h in Headers */,
+				15373F261C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */,
 				028C100D1BD66A6000B2266F /* ResourceArchive.h in Headers */,
 				028C11031BD66A6000B2266F /* MallocHook.h in Headers */,
 				028C14931BD66A6000B2266F /* MeshUtils.h in Headers */,
@@ -7799,6 +7812,7 @@
 				028C18C91BD66A6000B2266F /* DebugRenderSystem.cpp in Sources */,
 				028C1A4C1BD66A6100B2266F /* UIFileSystemDialog.cpp in Sources */,
 				028C1B631BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
+				15373F241C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C18241BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				028C1A9A1BD66A6100B2266F /* UIPackagesCache.cpp in Sources */,
 				028C154B1BD66A6000B2266F /* VegetationGeometry.cpp in Sources */,
@@ -8133,6 +8147,7 @@
 				028C11111BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A81BD66A6000B2266F /* MainWindowController.mm in Sources */,
+				15373F221C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C17621BD66A6000B2266F /* BillboardNode.cpp in Sources */,
 				028C14CB1BD66A6000B2266F /* Frustum.cpp in Sources */,
 				028C0F311BD66A6000B2266F /* DVAssertMessageApple.mm in Sources */,
@@ -8597,6 +8612,7 @@
 				028C11121BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A91BD66A6000B2266F /* MainWindowController.mm in Sources */,
+				15373F231C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C17631BD66A6000B2266F /* BillboardNode.cpp in Sources */,
 				028C14CC1BD66A6000B2266F /* Frustum.cpp in Sources */,
 				028C0F321BD66A6000B2266F /* DVAssertMessageApple.mm in Sources */,

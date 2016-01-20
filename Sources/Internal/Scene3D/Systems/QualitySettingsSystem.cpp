@@ -29,6 +29,7 @@
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
 #include "FileSystem/FileSystem.h"
@@ -217,6 +218,8 @@ void QualitySettingsSystem::Load(const FilePath &path)
 
                 }
             }
+
+            particlesQualitySettings.LoadFromYaml(rootNode);
         }
 
         parser->Release();
@@ -441,7 +444,15 @@ const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName 
     return ret;
 }
 
+const ParticlesQualitySettings& QualitySettingsSystem::GetParticlesQualitySettings() const
+{
+    return particlesQualitySettings;
+}
 
+ParticlesQualitySettings& QualitySettingsSystem::GetParticlesQualitySettings()
+{
+    return particlesQualitySettings;
+}
 
 void QualitySettingsSystem::EnableOption( const FastName & option, bool enabled )
 {

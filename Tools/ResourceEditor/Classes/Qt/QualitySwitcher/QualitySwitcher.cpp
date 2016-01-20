@@ -42,8 +42,8 @@
 
 QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 
-QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
-    : QDialog(parent, Qt::Tool)
+QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
+    : QDialog(parent, Qt::Dialog)
 {
     int mainRow = 0;
     int height = 10;
@@ -54,6 +54,8 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
     QGroupBox *texturesGroup = new QGroupBox(this);
     QGroupBox *materialsGroup = new QGroupBox(this);
     QGroupBox *optionsGroup = new QGroupBox(this);
+    QGroupBox* particlesGroup = new QGroupBox(this);
+    QWidget* buttonsGroup = new QWidget(this);
 
     // textures quality
     {
@@ -66,6 +68,7 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
 
         QLabel *labTx = new QLabel("Textures:", texturesGroup);
         QComboBox *comboTx = new QComboBox(texturesGroup);
+        comboTx->setObjectName("TexturesCombo");
 
         QObject::connect(comboTx, SIGNAL(activated(int)), this, SLOT(OnTxQualitySelect(int)));
 
@@ -103,6 +106,7 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
             
             QLabel *labMa = new QLabel(QString(groupName.c_str()) + ":", materialsGroup);
             QComboBox *comboMa = new QComboBox(materialsGroup);
+            comboMa->setObjectName(QString(groupName.c_str()) + "Combo");
 
             QObject::connect(comboMa, SIGNAL(activated(int)), this, SLOT(OnMaQualitySelect(int)));
 
@@ -122,6 +126,61 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
         }
     }
 
+    // particles quality
+    {
+        QGridLayout* particlesLayout = new QGridLayout(particlesGroup);
+        particlesLayout->setColumnMinimumWidth(0, minColumnW);
+        particlesLayout->setColumnMinimumWidth(1, minColumnW);
+
+        particlesGroup->setTitle("Particles");
+        particlesGroup->setLayout(particlesLayout);
+
+        QLabel* labQuality = new QLabel("Quality:", particlesGroup);
+        QComboBox* comboQuality = new QComboBox(particlesGroup);
+        comboQuality->setObjectName("ParticlesQualityCombo");
+
+        const ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+        bool qualityAvailable = particlesSettings.GetQualitiesCount() > 0;
+
+        FastName currentQualityName = particlesSettings.GetCurrentQuality();
+        for (size_t i = 0, size = particlesSettings.GetQualitiesCount(); i < size; ++i)
+        {
+            FastName qualityName = particlesSettings.GetQualityName(i);
+            comboQuality->addItem(qualityName.c_str());
+
+            if (qualityName == currentQualityName)
+            {
+                comboQuality->setCurrentIndex(comboQuality->count() - 1);
+            }
+        }
+        comboQuality->setEnabled(qualityAvailable);
+
+        particlesLayout->addWidget(labQuality, 0, 0);
+        particlesLayout->addWidget(comboQuality, 0, 1);
+        connect(comboQuality, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &QualitySwitcher::OnParticlesQualityChanged);
+
+        QLabel* labTagsCloud = new QLabel("Tags cloud:", particlesGroup);
+        QLineEdit* editTagsCloud = new QLineEdit(particlesGroup);
+        editTagsCloud->setObjectName("ParticlesTagsCloudEdit");
+
+        QString tagsCloudText;
+        for (const FastName& tag : particlesSettings.GetTagsCloud())
+        {
+            if (!tagsCloudText.isEmpty())
+            {
+                tagsCloudText += QString(" ");
+            }
+            tagsCloudText += QString(tag.c_str());
+        }
+
+        editTagsCloud->setText(tagsCloudText);
+        editTagsCloud->setEnabled(qualityAvailable);
+
+        particlesLayout->addWidget(labTagsCloud, 1, 0);
+        particlesLayout->addWidget(editTagsCloud, 1, 1);
+        connect(editTagsCloud, &QLineEdit::textChanged, this, &QualitySwitcher::OnParticlesTagsCloudChanged);
+    }
+
     // quality options
     {
         QGridLayout *optionsLayout = new QGridLayout(optionsGroup);
@@ -138,6 +197,7 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
 
             QLabel *labOp = new QLabel(QString(optionName.c_str()) + ":", materialsGroup);
             QCheckBox *checkOp = new QCheckBox(materialsGroup);
+            checkOp->setObjectName(QString(optionName.c_str()) + "CheckBox");
             checkOp->setChecked(QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
             checkOp->setProperty("qualityOptionName", QVariant(optionName.c_str()));
 
@@ -148,14 +208,43 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
         }
     }
 
+    // buttons
+    {
+        QHBoxLayout* buttonsLayout = new QHBoxLayout(buttonsGroup);
+        buttonsGroup->setLayout(buttonsLayout);
+
+        QPushButton* buttonOk = new QPushButton("OK", particlesGroup);
+
+        QPushButton* buttonCancel = new QPushButton("Cancel", particlesGroup);
+
+        QPushButton* buttonApply = new QPushButton("Apply", particlesGroup);
+        buttonApply->setObjectName("ApplyButton");
+
+        connect(buttonOk, &QPushButton::released, this, &QualitySwitcher::OnOkPressed);
+        connect(buttonCancel, &QPushButton::released, this, &QualitySwitcher::OnCancelPressed);
+        connect(buttonApply, &QPushButton::released, this, &QualitySwitcher::OnApplyPressed);
+
+        buttonsLayout->addStretch();
+        buttonsLayout->addWidget(buttonOk);
+        buttonsLayout->addWidget(buttonCancel);
+        buttonsLayout->addWidget(buttonApply);
+        buttonsLayout->setMargin(5);
+        buttonsLayout->setSpacing(spacing);
+    }
+
     mainLayout->addWidget(texturesGroup);
     mainLayout->addWidget(materialsGroup);
+    mainLayout->addWidget(particlesGroup);
     mainLayout->addWidget(optionsGroup);
     mainLayout->addStretch();
+    mainLayout->addWidget(buttonsGroup);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(spacing);
 
     setLayout(mainLayout);
+
+    SetSettingsDirty(false);
+
     adjustSize();
 }
 
@@ -196,6 +285,148 @@ void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)
     }
 }
 
+void QualitySwitcher::UpdateParticlesToQuality()
+{
+    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+    SceneSignals* sceneSignals = SceneSignals::Instance();
+    for (int32 tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+    {
+        SceneEditor2* scene = tabWidget->GetTabScene(tab);
+        ReloadEntityEmitters(scene);
+        sceneSignals->EmitStructureChanged(scene, nullptr);
+    }
+}
+
+void QualitySwitcher::ReloadEntityEmitters(DAVA::Entity* e)
+{
+    ParticleEffectComponent* comp = GetEffectComponent(e);
+    if (comp)
+    {
+        comp->ReloadEmitters();
+    }
+
+    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+    {
+        ReloadEntityEmitters(e->GetChild(i));
+    }
+}
+
+void QualitySwitcher::SetSettingsDirty(bool dirty)
+{
+    settingsDirty = dirty;
+    QPushButton* applyButton = findChild<QPushButton*>("ApplyButton");
+    applyButton->setEnabled(settingsDirty);
+}
+
+void QualitySwitcher::ApplySettings()
+{
+    // textures
+    {
+        QComboBox* combo = findChild<QComboBox*>("TexturesCombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newTxQuality(combo->currentText().toLatin1());
+            if (newTxQuality != DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality())
+            {
+                DAVA::QualitySettingsSystem::Instance()->SetCurTextureQuality(newTxQuality);
+                ApplyTx();
+            }
+        }
+    }
+
+    // materials
+    {
+        for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
+        {
+            DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
+            QComboBox* combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
+            if (nullptr != combo)
+            {
+                DAVA::FastName newMaQuality(combo->currentText().toLatin1());
+                DAVA::FastName group(combo->currentData().toString().toLatin1());
+
+                if (newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(group))
+                {
+                    DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
+                    ApplyMa();
+
+                    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+                    for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+                    {
+                        Scene* scene = tabWidget->GetTabScene(tab);
+                        UpdateEntitiesToQuality(scene);
+                    }
+
+                    emit QualityChanged();
+                }
+            }
+        }
+    }
+
+    //particles
+    {
+        ParticlesQualitySettings& particlesSettings = QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+        bool settingsChanged = false;
+        QComboBox* combo = findChild<QComboBox*>("ParticlesQualityCombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newParticlesQuality(combo->currentText().toLatin1());
+            if (particlesSettings.GetCurrentQuality() != newParticlesQuality)
+            {
+                particlesSettings.SetCurrentQuality(newParticlesQuality);
+                settingsChanged = true;
+            }
+        }
+
+        QLineEdit* edit = findChild<QLineEdit*>("ParticlesTagsCloudEdit");
+        if (nullptr != edit)
+        {
+            Vector<String> tags;
+            Split(edit->text().toStdString(), " ", tags);
+
+            Set<FastName> newTagsCloud;
+            for (const String& tag : tags)
+            {
+                newTagsCloud.insert(FastName(tag));
+            }
+
+            if (particlesSettings.GetTagsCloud() != newTagsCloud)
+            {
+                particlesSettings.SetTagsCloud(newTagsCloud);
+                settingsChanged = true;
+            }
+        }
+
+        if (settingsChanged)
+        {
+            UpdateParticlesToQuality();
+            emit ParticlesQualityChanged();
+        }
+    }
+
+    // options
+    {
+        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
+        for (int32 i = 0; i < optionsCount; ++i)
+        {
+            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+            QCheckBox* checkBox = findChild<QCheckBox*>(QString(optionName.c_str()) + "CheckBox");
+            if (nullptr != checkBox)
+            {
+                FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
+                QualitySettingsSystem::Instance()->EnableOption(optionName, checkBox->isChecked());
+
+                SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+                for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+                {
+                    Scene* scene = tabWidget->GetTabScene(tab);
+                    UpdateEntitiesToQuality(scene);
+                }
+            }
+        }
+    }
+}
+
 QDialog* QualitySwitcher::GetDialog()
 {
     if (switcherDialog == nullptr)
@@ -205,6 +436,8 @@ QDialog* QualitySwitcher::GetDialog()
         switcherDialog->setAttribute(Qt::WA_DeleteOnClose, true);
         connect(switcherDialog, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
         connect(switcherDialog, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
+        connect(switcherDialog, &QualitySwitcher::ParticlesQualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
+
         switcherDialog->show();
     }
     return switcherDialog;
@@ -212,56 +445,47 @@ QDialog* QualitySwitcher::GetDialog()
 
 void QualitySwitcher::OnTxQualitySelect(int index)
 {
-    QComboBox *combo = dynamic_cast<QComboBox *>(QObject::sender());
-    if(nullptr != combo)
-    {
-        DAVA::FastName newTxQuality(combo->itemText(index).toLatin1());
-        if(newTxQuality != DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality())
-        {
-            DAVA::QualitySettingsSystem::Instance()->SetCurTextureQuality(newTxQuality);
-            ApplyTx();
-        }
-    }
+    SetSettingsDirty(true);
 }
 
 void QualitySwitcher::OnMaQualitySelect(int index)
 {
-    QComboBox *combo = dynamic_cast<QComboBox *>(QObject::sender());
-    if(nullptr != combo)
-    {
-        DAVA::FastName newMaQuality(combo->itemText(index).toLatin1());
-        DAVA::FastName group(combo->itemData(index).toString().toLatin1());
+    SetSettingsDirty(true);
+}
 
-        if(newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(group))
-        {
-            DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
-            ApplyMa();
+void QualitySwitcher::OnParticlesQualityChanged(int index)
+{
+    SetSettingsDirty(true);
+}
 
-            SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-            for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
-            {
-                Scene* scene = tabWidget->GetTabScene(tab);
-                UpdateEntitiesToQuality(scene);
-            }
-
-            emit QualityChanged();
-        }
-    }
+void QualitySwitcher::OnParticlesTagsCloudChanged(const QString& text)
+{
+    SetSettingsDirty(true);
 }
 
 void QualitySwitcher::OnOptionClick(bool checked)
 {
-    QCheckBox *checkBox = dynamic_cast<QCheckBox *>(QObject::sender());
-    if(nullptr != checkBox)
+    SetSettingsDirty(true);
+}
+
+void QualitySwitcher::OnOkPressed()
+{
+    if (settingsDirty)
     {
-        FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
-        QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
-        
-        SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-        for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
-        {
-            Scene* scene = tabWidget->GetTabScene(tab);
-            UpdateEntitiesToQuality(scene);
-        }
+        ApplySettings();
     }
+
+    accept();
+}
+
+void QualitySwitcher::OnCancelPressed()
+{
+    reject();
+}
+
+void QualitySwitcher::OnApplyPressed()
+{
+    SetSettingsDirty(false);
+
+    ApplySettings();
 }
