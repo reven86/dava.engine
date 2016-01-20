@@ -772,7 +772,7 @@ void CommandBufferGLES2_t::Execute()
         {
             sync = Handle(arg[0]);
             #if defined(__DAVAENGINE_IPHONE__)
-            if (isLastInPass)
+            /*if ((isLastInPass)&&(_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)) //defualt framebuffer is discard once after frame
             {
                 GLenum discards[3];
                 int32 discardsCount = 0;
@@ -784,8 +784,9 @@ void CommandBufferGLES2_t::Execute()
                     discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
                 }
                 
-                glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
-            }
+                if (discardsCount!=0)
+                    glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
+            }*/
             #endif
             c += 1;
         }
