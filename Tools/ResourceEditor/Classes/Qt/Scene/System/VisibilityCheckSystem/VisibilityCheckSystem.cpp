@@ -205,7 +205,8 @@ void VisibilityCheckSystem::Draw()
 
     for (const auto& point : controlPoints)
     {
-        dbg->DrawIcosahedron(point.point, 0.1f, DAVA::Color(1.0f, 1.0f, 0.5f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+        dbg->DrawIcosahedron(point.point, VisibilityCheckRenderer::cameraNearClipPlane,
+                             DAVA::Color(1.0f, 1.0f, 0.5f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
         dbg->DrawLine(point.point, point.point + 2.0f * point.normal, DAVA::Color(0.25f, 1.0f, 0.25f, 1.0f));
     }
 
@@ -269,18 +270,15 @@ void VisibilityCheckSystem::UpdatePointSet()
 
             for (const auto& pt : mapItem.second)
             {
+                DAVA::Vector3 placedPoint;
                 DAVA::Vector3 transformedPoint = position + MultiplyVectorMat3x3(pt, worldTransform);
-                if (shouldSnap && (landscape->PlacePoint(transformedPoint, transformedPoint)))
+                if (landscape->PlacePoint(transformedPoint, placedPoint, &normal))
                 {
-                    DAVA::Vector3 dxPoint = transformedPoint + DAVA::Vector3(1.0f, 0.0f, 0.0f);
-                    DAVA::Vector3 dyPoint = transformedPoint + DAVA::Vector3(0.0f, 1.0f, 0.0f);
-                    landscape->PlacePoint(dxPoint, dxPoint);
-                    landscape->PlacePoint(dyPoint, dyPoint);
-
-                    normal = (dxPoint - transformedPoint).CrossProduct(dyPoint - transformedPoint);
-                    normal.Normalize();
-
-                    transformedPoint.z += snapHeight;
+                    if (shouldSnap)
+                    {
+                        transformedPoint.z = placedPoint.z + snapHeight;
+                    }
+                    transformedPoint.z = DAVA::Max(transformedPoint.z, placedPoint.z + 2.0f * VisibilityCheckRenderer::cameraNearClipPlane);
                 }
 
                 controlPoints.emplace_back(transformedPoint, normal, GetNormalizedColorForEntity(mapItem), upAngle, dnAngle, maxDist);

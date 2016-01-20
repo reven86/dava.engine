@@ -63,6 +63,8 @@ struct RenderPassScope
     }
 };
 
+const DAVA::float32 VisibilityCheckRenderer::cameraNearClipPlane = 0.1f;
+
 VisibilityCheckRenderer::VisibilityCheckRenderer()
     : cubemapCamera(new DAVA::Camera())
     , distanceMaterial(new DAVA::NMaterial())
@@ -70,7 +72,7 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     , prerenderMaterial(new DAVA::NMaterial())
     , reprojectionMaterial(new DAVA::NMaterial())
 {
-    cubemapCamera->SetupPerspective(90.0f, 1.0f, 1.0f, 5000.0f);
+    cubemapCamera->SetupPerspective(90.0f, 1.0f, cameraNearClipPlane, 5000.0f);
 
     prerenderConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     prerenderConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
@@ -292,6 +294,7 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     DAVA::Vector3 propValue(vp.downAngleCosine, vp.upAngleCosine, vp.maxDistance);
     visibilityMaterial->SetPropertyValue(MaterialParamPointProperties, propValue.data);
     visibilityMaterial->SetPropertyValue(MaterialParamOrigin, vp.point.data);
+    visibilityMaterial->SetPropertyValue(MaterialParamTransformedNormal, vp.normal.data);
     visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color);
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }

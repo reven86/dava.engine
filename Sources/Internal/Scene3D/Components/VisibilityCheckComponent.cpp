@@ -202,7 +202,7 @@ float32 VisibilityCheckComponent::GetHeightAboveLandscape() const
 
 void VisibilityCheckComponent::SetHeightAboveLandscape(float32 value)
 {
-    heightAboveLandscape = value;
+    heightAboveLandscape = DAVA::Max(0.0f, value);
     Invalidate();
 }
 

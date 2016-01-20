@@ -65,6 +65,8 @@ public:
         }
     };
 
+    static const DAVA::float32 cameraNearClipPlane;
+
 public:
     VisibilityCheckRenderer();
     ~VisibilityCheckRenderer();
