@@ -68,9 +68,7 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     
-    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL) ||
-        keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
-    
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
     
     if (addSelection)
@@ -159,9 +157,7 @@ void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector&
 
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     
-    bool addSelection =  keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL) ||
-        keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
-    
+    bool addSelection =  keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
     
     if (addSelection)
@@ -520,26 +516,30 @@ void SceneSelectionSystem::Clear()
 
 const EntityGroup& SceneSelectionSystem::GetSelection() const
 {
-    return curSelections;
+    static const EntityGroup emptyGroup = EntityGroup();
+    return IsLocked() == false ? curSelections : emptyGroup;
 }
 
 size_t SceneSelectionSystem::GetSelectionCount() const
 {
-    return curSelections.GetContent().size();
+    return IsLocked() == false ? curSelections.Size() : 0;
 }
 
 DAVA::Entity* SceneSelectionSystem::GetFirstSelectionEntity() const
 {
-    return curSelections.GetFirstEntity();
+    return IsLocked() == false ? curSelections.GetFirstEntity() : nullptr;
 }
 
 bool SceneSelectionSystem::IsEntitySelected(Entity *entity)
 {
-    return curSelections.ContainsEntity(entity);
+    return IsLocked() == false ? curSelections.ContainsEntity(entity) : false;
 }
 
 bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity *entity)
 {
+    if (IsLocked())
+        return false;
+
     while (entity)
     {
         if (curSelections.ContainsEntity(entity))
@@ -569,7 +569,8 @@ ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
 
 void SceneSelectionSystem::SetLocked(bool lock)
 {
-	SceneSystem::SetLocked(lock);
+    bool lockChanged = IsLocked() != lock;
+    SceneSystem::SetLocked(lock);
 
 	hoodSystem->LockAxis(lock);
 	hoodSystem->SetVisible(!lock);
@@ -578,6 +579,25 @@ void SceneSelectionSystem::SetLocked(bool lock)
 	{
 		UpdateHoodPos();
 	}
+
+    if (lockChanged)
+    {
+        EntityGroup emptyGroup;
+        EntityGroup* selected = nullptr;
+        EntityGroup* deselected = nullptr;
+        if (lock == true)
+        {
+            selected = &emptyGroup;
+            deselected = &curSelections;
+        }
+        else
+        {
+            selected = &curSelections;
+            deselected = &emptyGroup;
+        }
+
+        SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), selected, deselected);
+    }
 }
 
 void SceneSelectionSystem::UpdateHoodPos() const
