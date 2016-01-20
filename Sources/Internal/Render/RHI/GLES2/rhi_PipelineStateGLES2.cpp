@@ -290,8 +290,10 @@ VertexDeclGLES2
 
                 if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
                 {
-                    #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+                    #if defined(__DAVAENGINE_IPHONE__)
                     glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
+                    #elif defined(__DAVAENGINE_ANDROID__)
+                    glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor);
                     #elif defined(__DAVAENGINE_MACOS__)
                     glVertexAttribDivisorARB(idx, elem[i].attrDivisor);
                     #else
