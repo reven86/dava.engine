@@ -223,17 +223,27 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
-        
-        event.tapCount = curEvent.clickCount;
     }
     else
     {
         event.physPoint.x = p.x;
         event.physPoint.y = [glview frame].size.height - p.y;
-        
-        event.tapCount = curEvent.clickCount;
     }
-    event.timestamp = curEvent.timestamp;
+
+    if (DAVA::UIEvent::Phase::WHEEL != phase)
+    {
+        @try
+        {
+            event.tapCount = [curEvent clickCount];
+        }
+        @catch (NSException* exception)
+        {
+            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
+            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
+        }
+    }
+
+    event.timestamp = [curEvent timestamp];
     event.phase = phase;
 }
 
@@ -342,7 +352,8 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
 {
     DAVA::UIEvent ev;
 
-    ev.phase = DAVA::UIEvent::Phase::WHEEL;
+    ConvertNSEventToUIEvent(self, theEvent, ev, DAVA::UIEvent::Phase::WHEEL);
+
     ev.device = DAVA::UIEvent::Device::MOUSE;
 
     const uint32 rawScrollCoefficient = 10;
@@ -359,11 +370,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
         // simple mouse - sends float values from 0.1 for one wheel tick
         ev.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
     }
-
-    NSPoint posInWindow = [theEvent locationInWindow];
-    
-    ev.physPoint.x = posInWindow.x;
-    ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;
 
     UIControlSystem::Instance()->OnInput(&ev);
 }
