@@ -733,8 +733,6 @@
 		02E7C8C81BD624A7002F026D /* LocalNotificationController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A31BD624A5002F026D /* LocalNotificationController.cpp */; };
 		02E7C8C91BD624A7002F026D /* LocalNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C2A41BD624A5002F026D /* LocalNotificationController.h */; };
 		02E7C8CA1BD624A7002F026D /* LocalNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C2A41BD624A5002F026D /* LocalNotificationController.h */; };
-		02E7C8CD1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */; };
-		02E7C8CE1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */; };
 		02E7C8CF1BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */; };
 		02E7C8D01BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */; };
 		02E7C8D11BD624A7002F026D /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C2A81BD624A5002F026D /* LocalNotificationDelayed.h */; };
@@ -833,10 +831,6 @@
 		02E7C9CA1BD624A7002F026D /* OpenUDIDios.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3321BD624A5002F026D /* OpenUDIDios.h */; };
 		02E7C9CB1BD624A7002F026D /* OpenUDIDios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3331BD624A5002F026D /* OpenUDIDios.mm */; };
 		02E7C9CC1BD624A7002F026D /* OpenUDIDios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3331BD624A5002F026D /* OpenUDIDios.mm */; };
-		02E7C9CD1BD624A7002F026D /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3341BD624A5002F026D /* Reachability.h */; };
-		02E7C9CE1BD624A7002F026D /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3341BD624A5002F026D /* Reachability.h */; };
-		02E7C9CF1BD624A7002F026D /* Reachability.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3351BD624A5002F026D /* Reachability.mm */; };
-		02E7C9D01BD624A7002F026D /* Reachability.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3351BD624A5002F026D /* Reachability.mm */; };
 		02E7C9D11BD624A7002F026D /* RenderView.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3361BD624A5002F026D /* RenderView.h */; };
 		02E7C9D21BD624A7002F026D /* RenderView.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C3361BD624A5002F026D /* RenderView.h */; };
 		02E7C9D31BD624A7002F026D /* RenderView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C3371BD624A5002F026D /* RenderView.mm */; };
@@ -2480,7 +2474,6 @@
 		02E7C2A01BD624A5002F026D /* LocalNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotification.h; sourceTree = "<group>"; };
 		02E7C2A31BD624A5002F026D /* LocalNotificationController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationController.cpp; sourceTree = "<group>"; };
 		02E7C2A41BD624A5002F026D /* LocalNotificationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationController.h; sourceTree = "<group>"; };
-		02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalNotificationControllerIOS.mm; sourceTree = "<group>"; };
 		02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationDelayed.cpp; sourceTree = "<group>"; };
 		02E7C2A81BD624A5002F026D /* LocalNotificationDelayed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationDelayed.h; sourceTree = "<group>"; };
 		02E7C2A91BD624A5002F026D /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
@@ -2530,8 +2523,6 @@
 		02E7C3311BD624A5002F026D /* NativeViewPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeViewPool.h; sourceTree = "<group>"; };
 		02E7C3321BD624A5002F026D /* OpenUDIDios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDios.h; sourceTree = "<group>"; };
 		02E7C3331BD624A5002F026D /* OpenUDIDios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenUDIDios.mm; sourceTree = "<group>"; };
-		02E7C3341BD624A5002F026D /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
-		02E7C3351BD624A5002F026D /* Reachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Reachability.mm; sourceTree = "<group>"; };
 		02E7C3361BD624A5002F026D /* RenderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderView.h; sourceTree = "<group>"; };
 		02E7C3371BD624A5002F026D /* RenderView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RenderView.mm; sourceTree = "<group>"; };
 		02E7C3381BD624A5002F026D /* RenderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderViewController.h; sourceTree = "<group>"; };
@@ -3790,7 +3781,6 @@
 				02E7C2A01BD624A5002F026D /* LocalNotification.h */,
 				02E7C2A31BD624A5002F026D /* LocalNotificationController.cpp */,
 				02E7C2A41BD624A5002F026D /* LocalNotificationController.h */,
-				02E7C2A61BD624A5002F026D /* LocalNotificationControllerIOS.mm */,
 				02E7C2A71BD624A5002F026D /* LocalNotificationDelayed.cpp */,
 				02E7C2A81BD624A5002F026D /* LocalNotificationDelayed.h */,
 				02E7C2A91BD624A5002F026D /* LocalNotificationImpl.h */,
@@ -3828,6 +3818,8 @@
 		02E7C2BF1BD624A5002F026D /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				D7660D191C4D067700E81868 /* Reachability.h */,
+				D7660D1A1C4D067700E81868 /* Reachability.mm */,
 				02E7CF0E1BD63943002F026D /* DateTime.cpp */,
 				02E7C2C21BD624A5002F026D /* DateTime.h */,
 				02E7C2C31BD624A5002F026D /* DateTimeApple.mm */,
@@ -3863,8 +3855,6 @@
 				02E7C3311BD624A5002F026D /* NativeViewPool.h */,
 				02E7C3321BD624A5002F026D /* OpenUDIDios.h */,
 				02E7C3331BD624A5002F026D /* OpenUDIDios.mm */,
-				02E7C3341BD624A5002F026D /* Reachability.h */,
-				02E7C3351BD624A5002F026D /* Reachability.mm */,
 				02E7C3361BD624A5002F026D /* RenderView.h */,
 				02E7C3371BD624A5002F026D /* RenderView.mm */,
 				02E7C3381BD624A5002F026D /* RenderViewController.h */,
@@ -5171,7 +5161,6 @@
 				02E7CEC81BD624A7002F026D /* UIScrollViewContainer.h in Headers */,
 				02E7C7AE1BD624A7002F026D /* Functional.h in Headers */,
 				02E7CB4E1BD624A7002F026D /* NMaterial.h in Headers */,
-				02E7C9CE1BD624A7002F026D /* Reachability.h in Headers */,
 				02E7C8501BD624A7002F026D /* IOLoop.h in Headers */,
 				02E7C7E21BD624A7002F026D /* BezierSpline.h in Headers */,
 				02E7CB6C1BD624A7002F026D /* PVRDefines.h in Headers */,
@@ -5721,7 +5710,6 @@
 				02E7CEC71BD624A7002F026D /* UIScrollViewContainer.h in Headers */,
 				02E7C7AD1BD624A7002F026D /* Functional.h in Headers */,
 				02E7CB4D1BD624A7002F026D /* NMaterial.h in Headers */,
-				02E7C9CD1BD624A7002F026D /* Reachability.h in Headers */,
 				02E7C84F1BD624A7002F026D /* IOLoop.h in Headers */,
 				02E7C7E11BD624A7002F026D /* BezierSpline.h in Headers */,
 				02E7CB6B1BD624A7002F026D /* PVRDefines.h in Headers */,
@@ -5831,6 +5819,7 @@
 				02E7C74F1BD624A7002F026D /* File.h in Headers */,
 				02E7CDB91BD624A7002F026D /* musicios.h in Headers */,
 				02E7CE5D1BD624A7002F026D /* UIFadeTransition.h in Headers */,
+				D7660D1B1C4D067700E81868 /* Reachability.h in Headers */,
 				02E7C7131BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */,
 				02E7CECF1BD624A7002F026D /* UISpinner.h in Headers */,
 				02E7C7D11BD624A7002F026D /* JobQueue.h in Headers */,
@@ -6064,7 +6053,6 @@
 				02E7CC881BD624A7002F026D /* ComponentHelpers.cpp in Sources */,
 				02E7CF471BD639A4002F026D /* Stats.cpp in Sources */,
 				02E7CD4E1BD624A7002F026D /* BaseProcessSystem.cpp in Sources */,
-				02E7C8CE1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */,
 				02E7CB941BD624A7002F026D /* directive.cpp in Sources */,
 				02E7CC1E1BD624A7002F026D /* rhi_QueryBufferGLES2.cpp in Sources */,
 				02E7CAB61BD624A7002F026D /* Frustum.cpp in Sources */,
@@ -6340,7 +6328,6 @@
 				02E7CADC1BD624A7002F026D /* RenderObject.cpp in Sources */,
 				02E7CBC61BD624A7002F026D /* rhi_ShaderSource.cpp in Sources */,
 				02E7CB861BD624A7002F026D /* dbg_Draw.cpp in Sources */,
-				02E7C9D01BD624A7002F026D /* Reachability.mm in Sources */,
 				02E7C9021BD624A7002F026D /* DateTimeApple.mm in Sources */,
 				02E7C80A1BD624A7002F026D /* Polygon3.cpp in Sources */,
 				02E7CDE41BD624A7002F026D /* FlowLayoutAlgorithm.cpp in Sources */,
@@ -6556,7 +6543,6 @@
 				02E7CC871BD624A7002F026D /* ComponentHelpers.cpp in Sources */,
 				02E7CF461BD639A4002F026D /* Stats.cpp in Sources */,
 				02E7CD4D1BD624A7002F026D /* BaseProcessSystem.cpp in Sources */,
-				02E7C8CD1BD624A7002F026D /* LocalNotificationControllerIOS.mm in Sources */,
 				02E7CB931BD624A7002F026D /* directive.cpp in Sources */,
 				02E7CC1D1BD624A7002F026D /* rhi_QueryBufferGLES2.cpp in Sources */,
 				02E7CAB51BD624A7002F026D /* Frustum.cpp in Sources */,
@@ -6750,6 +6736,7 @@
 				D7660D221C4D071E00E81868 /* DataStorageApple.cpp in Sources */,
 				02E7CE9F1BD624A7002F026D /* UIScreen.cpp in Sources */,
 				02E7CE7F1BD624A7002F026D /* UILoadingTransition.cpp in Sources */,
+				D7660D1C1C4D067700E81868 /* Reachability.mm in Sources */,
 				02E7CAC71BD624A7002F026D /* Mesh.cpp in Sources */,
 				02E7CED91BD624A7002F026D /* UITextField.cpp in Sources */,
 				02E7CAAD1BD624A7002F026D /* Camera.cpp in Sources */,
@@ -6833,7 +6820,6 @@
 				02E7CADB1BD624A7002F026D /* RenderObject.cpp in Sources */,
 				02E7CBC51BD624A7002F026D /* rhi_ShaderSource.cpp in Sources */,
 				02E7CB851BD624A7002F026D /* dbg_Draw.cpp in Sources */,
-				02E7C9CF1BD624A7002F026D /* Reachability.mm in Sources */,
 				02E7C9011BD624A7002F026D /* DateTimeApple.mm in Sources */,
 				02E7C8091BD624A7002F026D /* Polygon3.cpp in Sources */,
 				02E7CDE31BD624A7002F026D /* FlowLayoutAlgorithm.cpp in Sources */,
