@@ -49,6 +49,11 @@ HUDAreaInfo::eArea ControlContainer::GetArea() const
     return area;
 }
 
+void ControlContainer::SetSystemVisible(bool visible)
+{
+    systemVisible = visible;
+}
+
 HUDContainer::HUDContainer(UIControl* container)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , control(container)
@@ -68,8 +73,19 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    bool valid_ = control->GetSystemVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    SetValid(valid_);
+
+    bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool valid = contolIsInValidState && control->GetVisibleForUIEditor();
+    if (valid)
+    {
+        auto parent = control->GetParent();
+        while (valid && nullptr != parent)
+        {
+            valid &= parent->GetVisibleForUIEditor();
+            parent = parent->GetParent();
+        }
+    }
+    SetVisible(valid);
     if (valid)
     {
         for (auto child : childs)
@@ -83,18 +99,6 @@ void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
 {
     InitFromGD(control->GetGeometricData());
     UIControl::SystemDraw(geometricData);
-}
-
-void HUDContainer::SetValid(bool arg)
-{
-    valid = arg;
-    SetVisible(valid && visibleInSystems);
-}
-
-void HUDContainer::SetVisibleInSystems(bool arg)
-{
-    visibleInSystems = arg;
-    SetVisible(valid && visibleInSystems);
 }
 
 void FrameControl::Init()
@@ -215,6 +219,8 @@ void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
 {
     Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
     const Rect& controlRect = geometricData.GetUnrotatedRect();
+    bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
+    SetVisible(systemVisible && visible);
     rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
 
     UIControl* parent = GetParent();
@@ -237,6 +243,9 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 {
     Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
     Rect controlRect = geometricData.GetUnrotatedRect();
+    bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
+    SetVisible(systemVisible && visible);
+
     rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
 
     UIControl* parent = GetParent();
@@ -266,10 +275,12 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
     UIControl::Draw(geometricData);
 }
 
-MagnetLine::MagnetLine()
+MagnetLineControl::MagnetLineControl(const DAVA::Rect& rect)
+    : UIControl(rect)
 {
     SetName("Magnet Line");
     SetDebugDraw(true);
+    //this code saved to replace debugDraw
     //background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
     //background->SetDrawType(UIControlBackground::DRAW_TILED);
 }

@@ -49,12 +49,10 @@ class AbstractProperty;
 class ControlsContainerNode;
 class ComponentPropertiesSection;
 
-class QtModelPackageCommandExecutor : public DAVA::BaseObject
+class QtModelPackageCommandExecutor
 {
 public:
     QtModelPackageCommandExecutor(Document *_document);
-    
-private:
     virtual ~QtModelPackageCommandExecutor();
     
 public:
@@ -96,9 +94,9 @@ private:
     void AddComponentImpl(ControlNode *node, DAVA::int32 type, DAVA::int32 index, ComponentPropertiesSection *prototypeSection);
     void RemoveComponentImpl(ControlNode *node, ComponentPropertiesSection *section);
     bool IsNodeInHierarchy(const PackageBaseNode *node) const;
-    
-private:
-    QUndoStack *GetUndoStack();
+
+    QUndoStack* GetUndoStack() const;
+    PackageNode* GetPackageNode() const;
     void PushCommand(QUndoCommand *cmd);
     void BeginMacro(const QString &name);
     void EndMacro();

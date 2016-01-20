@@ -39,9 +39,6 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
-    void OnActivated() override;
-    void OnDeactivated() override;
-
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
@@ -64,6 +61,7 @@ private:
 
     void SetCanDrawRect(bool canDrawRect_);
     void UpdateAreasVisibility();
+    void InvalidatePressedPoint();
     HUDAreaInfo activeAreaInfo;
 
     DAVA::RefPtr<DAVA::UIControl> hudControl;
@@ -72,12 +70,14 @@ private:
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
+    DAVA::UIControl* selectionRectControl = nullptr;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
+    DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     bool hudVisible = false;
     SelectionContainer selectionContainer;
+    bool inEmulationMode = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

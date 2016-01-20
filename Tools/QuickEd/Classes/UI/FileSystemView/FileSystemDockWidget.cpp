@@ -53,17 +53,24 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     , model(new FileSystemModel(this))
 {
     ui->setupUi(this);
-    ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
-
+    ui->treeView->installEventFilter(this);
+    ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->treeView, &QWidget::customContextMenuRequested, this, &FileSystemDockWidget::OnCustomContextMenuRequested);
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
-    QStringList filters;
-    filters << "*" + FileSystemModel::GetYamlExtensionString();
-    model->setNameFilters(filters);
+    setFilterFixedString("");
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
+
+    ui->treeView->setModel(model);
+    ui->treeView->hideColumn(0);
+    ui->treeView->hideColumn(1);
+    ui->treeView->hideColumn(2);
+    ui->treeView->hideColumn(3);
+
+    connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileSystemDockWidget::OnSelectionChanged);
 
     connect(ui->treeView, &QTreeView::doubleClicked, this, &FileSystemDockWidget::onDoubleClicked);
     connect(ui->filterLine, &QLineEdit::textChanged, this, &FileSystemDockWidget::setFilterFixedString);
@@ -81,7 +88,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     
 #if defined Q_OS_WIN
     QString actionName = tr("Show in explorer");
-#else if defined Q_OS_MAC
+#elif defined Q_OS_MAC
     QString actionName = tr("Show in finder");
 #endif //Q_OS_WIN //Q_OS_MAC
     showInSystemExplorerAction = new QAction(actionName, this);
@@ -101,49 +108,42 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     ui->treeView->addAction(showInSystemExplorerAction);
     ui->treeView->addAction(renameAction);
     ui->treeView->addAction(openFileAction);
-
-    RefreshActions(QModelIndexList());
+    installEventFilter(this);
+    RefreshActions();
 }
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
 void FileSystemDockWidget::SetProjectDir(const QString &path)
 {
-    if (ui->treeView->selectionModel())
-    {
-        disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
-    }
     QDir dir(path);
     dir.cdUp();
-    QString p = dir.path() + "/Data/UI";
-    QModelIndex rootIndex = model->setRootPath(p);
-    ui->treeView->setModel(model);
-    ui->treeView->setRootIndex(rootIndex);
-    ui->treeView->hideColumn(1);
-    ui->treeView->hideColumn(2);
-    ui->treeView->hideColumn(3);
-    
-    connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
+    auto index = model->setRootPath(dir.path() + "/Data/UI");
+    ui->treeView->setRootIndex(index);
     ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    ui->treeView->showColumn(0);
 }
 
-void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
+void FileSystemDockWidget::RefreshActions()
 {
-    bool canCreateDir = true;
-    bool canRemove = !indexList.empty();
+    bool canCreateFile = !ui->treeView->isColumnHidden(0);
+    bool canCreateDir = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
+    bool canRemove = false;
     bool canOpen = false;
     bool canShow = false;
     bool canRename = false;
-    if (indexList.size() == 1)
+    auto index = ui->treeView->indexAt(menuInvokePos);
+
+    if (index.isValid())
     {
-        QModelIndex selectedIndex = indexList.front();
-        bool isDir = model->isDir(selectedIndex);
+        bool isDir = model->isDir(index);
         canCreateDir = isDir;
-        canRemove = CanRemove(selectedIndex);
+        canRemove = CanRemove(index);
         canOpen = !isDir;
         canShow = true;
         canRename = true;
     }
+    newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
     deleteAction->setEnabled(canRemove);
     openFileAction->setEnabled(canOpen);
@@ -172,9 +172,19 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
     return true;
 }
 
-void FileSystemDockWidget::OnSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected )
+QString FileSystemDockWidget::GetPathByCurrentPos()
 {
-    RefreshActions(selected.indexes());
+    QModelIndex index = ui->treeView->indexAt(menuInvokePos);
+    QString path;
+    if (!index.isValid())
+    {
+        path = model->rootPath();
+    }
+    else
+    {
+        path = model->filePath(index);
+    }
+    return path + "/";
 }
 
 void FileSystemDockWidget::onDoubleClicked(const QModelIndex &index)
@@ -201,19 +211,7 @@ void FileSystemDockWidget::onNewFolder()
     dialog.setLabelText("Enter new folder name:");
     dialog.SetWarningMessage("This folder already exists");
 
-    const auto& selected = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(selected.size() <= 1);
-    QString path;
-    if (selected.isEmpty())
-    {
-        path = model->rootPath();
-    }
-    else if (selected.size() == 1)
-    {
-        path = model->filePath(selected.front());
-    }
-    path += "/";
-
+    auto path = GetPathByCurrentPos();
     auto validateFunction = [path](const QString& text) {
         return !QFileInfo::exists(path + text);
     };
@@ -241,18 +239,13 @@ void FileSystemDockWidget::onNewFolder()
         QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
         model->mkdir(currIndex, folderName);
     }
-    auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    RefreshActions(selectedIndexes);
+    RefreshActions();
 }
 
 void FileSystemDockWidget::onNewFile()
 {
-    auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
-    QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
-
-    QString folderPath = model->filePath(currIndex);
-    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*" + FileSystemModel::GetYamlExtensionString());
+    auto path = GetPathByCurrentPos();
+    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, "*" + FileSystemModel::GetYamlExtensionString());
     if (strFile.isEmpty())
     {
         return;
@@ -270,14 +263,22 @@ void FileSystemDockWidget::onNewFile()
         DAVA::Logger::Error("%s", QString(title + ": %1").arg(strFile).toUtf8().data());
     }
     file.close();
-    RefreshActions(selectedIndexes);
+    RefreshActions();
 }
 
 void FileSystemDockWidget::onDeleteFile()
 {
-    const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(indexes.size() == 1);
-    auto index = indexes.front();
+    QModelIndex index;
+    if (menuInvokePos.x() != -1 && menuInvokePos.y() != -1)
+    {
+        index = ui->treeView->indexAt(menuInvokePos);
+    }
+    else
+    {
+        const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
+        DVASSERT(indexes.size() == 1);
+        index = indexes.first();
+    }
     bool isDir = model->isDir(index);
     QString title = tr("Delete ") + (isDir ? "folder" : "file") + "?";
     QString text = tr("Delete ") + (isDir ? "folder" : "file") + " \"" + model->fileName(index) + "\"" + (isDir ? " and its content" : "") + "?";
@@ -288,17 +289,12 @@ void FileSystemDockWidget::onDeleteFile()
             DAVA::Logger::Error("can not remove file %s", model->isDir(index) ? "folder" : "file", model->fileName(index).toUtf8().data());
         }
     }
-    RefreshActions(indexes);
+    RefreshActions();
 }
 
 void FileSystemDockWidget::OnShowInExplorer()
 {
-    const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
-    if (indexes.size() != 1)
-    {
-        return;
-    }
-    QString pathIn = model->fileInfo(indexes.first()).absoluteFilePath();
+    auto pathIn = GetPathByCurrentPos();
 #ifdef Q_OS_MAC
     QStringList args;
     args << "-e";
@@ -322,14 +318,31 @@ void FileSystemDockWidget::OnShowInExplorer()
 
 void FileSystemDockWidget::OnRename()
 {
-    const auto& selected = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(selected.size() == 1);
-    ui->treeView->edit(selected.first());
+    auto index = ui->treeView->indexAt(menuInvokePos);
+    ui->treeView->edit(index);
 }
 
 void FileSystemDockWidget::OnOpenFile()
 {
-    const auto& selected = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(selected.size() == 1);
-    onDoubleClicked(selected.first());
+    auto index = ui->treeView->indexAt(menuInvokePos);
+    onDoubleClicked(index);
+}
+
+void FileSystemDockWidget::OnCustomContextMenuRequested(const QPoint& pos)
+{
+    menuInvokePos = pos;
+    RefreshActions();
+    QMenu::exec(ui->treeView->actions(), ui->treeView->viewport()->mapToGlobal(pos));
+    menuInvokePos = QPoint(-1, -1);
+}
+
+void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItemSelection&)
+{
+    const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
+    bool canRemove = !indexes.isEmpty();
+    for (auto index : indexes)
+    {
+        canRemove &= CanRemove(index);
+    }
+    deleteAction->setEnabled(canRemove);
 }

@@ -108,7 +108,6 @@ MainWindow::MainWindow(QWidget* parent)
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
-    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
     OnDocumentChanged(nullptr);
 }
 
@@ -125,11 +124,6 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 
     mainToolbar->addAction(undoAction);
     mainToolbar->addAction(redoAction);
-}
-
-void MainWindow::OnProjectIsOpenChanged(bool arg)
-{
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
 void MainWindow::OnCountChanged(int count)
@@ -226,11 +220,6 @@ bool MainWindow::IsInEmulationMode() const
     return emulationBox->isChecked();
 }
 
-bool MainWindow::isPixelized() const
-{
-    return actionPixelized->isChecked();
-}
-
 void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
     DVASSERT(nullptr != packer);
@@ -307,17 +296,10 @@ void MainWindow::InitGlobalClasses()
 
 void MainWindow::InitEmulationMode()
 {
-    emulationBox = new QCheckBox();
+    emulationBox = new QCheckBox("Emulation", this);
     emulationBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("Emulation"));
-    label->setBuddy(emulationBox);
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(emulationBox);
-    QWidget *wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
+    toolBarPlugins->addWidget(emulationBox);
 }
 
 void MainWindow::InitMenu()
@@ -344,8 +326,8 @@ void MainWindow::InitMenu()
     connect(actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
 
     // Pixelization.
-    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
+    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     DisableActions();
 }
 
@@ -489,6 +471,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
         FillComboboxLanguages(project);
+        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -498,6 +481,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
             errors << QString::fromStdString(result.message);
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+        this->setWindowTitle("QuickEd");
     }
 }
 
@@ -527,17 +511,16 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
 
 	// Update window title
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
-    
+
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
 
-void MainWindow::OnPixelizationStateChanged()
+void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
-    bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    emit PixelizationChanged(isPixelized);
+    Texture::SetPixelization(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)

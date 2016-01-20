@@ -28,7 +28,6 @@
 
 #include "Document.h"
 #include "DocumentGroup.h"
-#include <QObject>
 #include <QUndoGroup>
 #include "Debug/DVAssert.h"
 
@@ -81,15 +80,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
-    if (nullptr != active) 
-    {
-        active->Deactivate();
-        disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
-        disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
-        disconnect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::CanvasSizeChanged);
         disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
-        DocumentDeactivated(active);
-    }
     
     active = document;
 
@@ -99,82 +90,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     else
     {
-        connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
-        connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
-        connect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::RootControlPositionChanged);
         connect(active, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
-
         undoGroup->setActiveStack(active->GetUndoStack());
-
-        active->SetScale(scale);
-        active->SetEmulationMode(emulationMode);
-        active->SetPixelization(hasPixalization);
     }
     emit ActiveDocumentChanged(document);
-    if (nullptr != active)
-    {
-        active->Activate();
-        DocumentActivated(active);
-    }
 }
 
-void DocumentGroup::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    if (nullptr != active)
-    {
-        active->OnSelectionChanged(selected, deselected);
-    }
-}
-
-void DocumentGroup::SetEmulationMode(bool arg)
-{
-    emulationMode = arg;
-    if (nullptr != active)
-    {
-        active->SetEmulationMode(arg);
-    }
-}
-
-void DocumentGroup::SetPixelization(bool arg)
-{
-    hasPixalization = arg;
-    if (nullptr != active)
-    {
-        active->SetPixelization(arg);
-    }
-}
-
-void DocumentGroup::SetScale(float arg)
-{
-    scale = arg;
-    if (nullptr != active)
-    {
-        active->SetScale(arg);
-    }
-}
-
-void DocumentGroup::OnSelectAllRequested()
-{
-    if (active != nullptr)
-    {
-        active->GetSystemManager()->SelectAllControls.Emit();
-    }
-}
-
-void DocumentGroup::FocusNextChild()
-{
-    if (active != nullptr)
-    {
-        active->GetSystemManager()->FocusNextChild.Emit();
-    }
-}
-
-void DocumentGroup::FocusPreviousChild()
-{
-    if (active != nullptr)
-    {
-        active->GetSystemManager()->FocusPreviousChild.Emit();
-    }
 }
 
 void DocumentGroup::OnCanSaveChanged(bool canSave)
@@ -184,7 +105,6 @@ void DocumentGroup::OnCanSaveChanged(bool canSave)
     int index = documentList.indexOf(senderDocument);
     DVASSERT(index != -1);
     emit CanSaveChanged(index, canSave);
-}
 
 Document *DocumentGroup::GetActiveDocument() const
 {

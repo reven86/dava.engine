@@ -197,8 +197,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                 {
                     if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
                     {
-						// go to modification state
-						inModifState = true;
+                        // go to modification state
+                        inModifState = true;
 
 						// select current hood axis as active
 						if(curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
@@ -285,8 +285,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
             {
                 if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
                 {
-					if(modified)
-					{
+                    if (modified)
+                    {
 						if(cloneState == CLONE_DONE)
 						{
 							CloneEnd();

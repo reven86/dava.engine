@@ -32,7 +32,7 @@
 
 #include "TextureProperties.h"
 #include "Tools/QtPropertyEditor/QtPropertyItem.h"
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
 namespace PropertyItemName
 {

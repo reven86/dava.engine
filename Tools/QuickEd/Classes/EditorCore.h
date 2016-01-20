@@ -85,7 +85,7 @@ private:
     Document* GetDocument(const QString& path) const;
     void OpenProject(const QString &path);
     bool CloseProject();
-    int CreateDocument(int index, PackageNode* package);
+    int CreateDocument(int index, DAVA::RefPtr<PackageNode> package);
     void SaveDocument(Document *document);
 
     void CloseDocument(int index);

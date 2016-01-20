@@ -27,43 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_DEFINITION_FILE_H__
-#define __DAVAENGINE_DEFINITION_FILE_H__
+#include "LazyUpdater.h"
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Math/Math2D.h"
+#include <QTimer>
 
-namespace DAVA
+LazyUpdater::LazyUpdater(Updater _updater, QObject* parent /* = nullptr */)
+    : QObject(parent)
+    , updater(_updater)
 {
- 
-class DefinitionFile 
+}
+
+void LazyUpdater::Update()
 {
-public:
-    bool Load(const FilePath& filename);
-    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
+    ++counter;
+    QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
+}
 
-    DefinitionFile();
-    ~DefinitionFile();
+void LazyUpdater::OnTimer()
+{
+    if (counter > 1)
+    {
+        --counter;
+        return;
+    }
 
-    void ClearPackedFrames();
-    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
+    counter = 0;
 
-    Size2i GetFrameSize(int frame) const;
-    int GetFrameWidth(int frame) const;
-    int GetFrameHeight(int frame) const;
-
-    FilePath filename;
-    int frameCount;
-    int spriteWidth;
-    int spriteHeight;
-    Rect2i		* frameRects;
-
-	Vector<String> pathsInfo;
-    Vector<String> frameNames;
-};
-
-};
-
-
-#endif // __DAVAENGINE_DEFINITION_FILE_H__
+    updater();
+}

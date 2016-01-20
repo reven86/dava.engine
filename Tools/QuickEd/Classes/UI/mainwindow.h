@@ -65,7 +65,6 @@ public:
     int AddTab(Document* document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
-    bool isPixelized() const;
     QComboBox* GetComboBoxLanguage();
 
 protected:
@@ -85,11 +84,9 @@ signals:
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
-    void EmulationModeChanbed(bool emulationMode);
-    void PixelizationChanged(bool pixelization);
+    void EmulationModeChanged(bool emulationMode);
 
 public slots:
-    void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
     void OnDocumentChanged(Document* document);
     void OnDocumentCanSaveChanged(int documentIndex, bool canSave);
@@ -104,9 +101,8 @@ private slots:
 
     void SetBackgroundColorMenuTriggered(QAction* action);
 
-    // Pixelization.
-    void OnPixelizationStateChanged();
-    
+    void OnPixelizationStateChanged(bool isPixelized);
+
     void OnRtlChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);

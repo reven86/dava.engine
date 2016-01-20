@@ -171,9 +171,9 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
-		Vector3 point;
-		
-		switch(event->phase)
+        Vector3 point;
+
+        switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)

@@ -73,7 +73,7 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)

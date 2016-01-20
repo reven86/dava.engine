@@ -240,9 +240,9 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
-		Vector3 point;
+        Vector3 point;
 
-		switch(event->phase)
+        switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape && !needCreateUndo)
