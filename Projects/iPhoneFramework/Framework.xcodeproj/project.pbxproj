@@ -345,16 +345,6 @@
 		02E7C7281BD624A7002F026D /* SharedPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C01BD624A5002F026D /* SharedPreferences.h */; };
 		02E7C7291BD624A7002F026D /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C11BD624A5002F026D /* DataStorage.h */; };
 		02E7C72A1BD624A7002F026D /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C11BD624A5002F026D /* DataStorage.h */; };
-		02E7C72B1BD624A7002F026D /* DataStorageIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C31BD624A5002F026D /* DataStorageIOS.cpp */; };
-		02E7C72C1BD624A7002F026D /* DataStorageIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C31BD624A5002F026D /* DataStorageIOS.cpp */; };
-		02E7C72D1BD624A7002F026D /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C41BD624A5002F026D /* ICloudKeyValue.cpp */; };
-		02E7C72E1BD624A7002F026D /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C41BD624A5002F026D /* ICloudKeyValue.cpp */; };
-		02E7C72F1BD624A7002F026D /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C51BD624A5002F026D /* ICloudKeyValue.h */; };
-		02E7C7301BD624A7002F026D /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C51BD624A5002F026D /* ICloudKeyValue.h */; };
-		02E7C7311BD624A7002F026D /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */; };
-		02E7C7321BD624A7002F026D /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */; };
-		02E7C7331BD624A7002F026D /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */; };
-		02E7C7341BD624A7002F026D /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */; };
 		02E7C7351BD624A7002F026D /* DataStorageWindows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1CA1BD624A5002F026D /* DataStorageWindows.cpp */; };
 		02E7C7361BD624A7002F026D /* DataStorageWindows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1CA1BD624A5002F026D /* DataStorageWindows.cpp */; };
 		02E7C7371BD624A7002F026D /* DataStorageWindows.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1CB1BD624A5002F026D /* DataStorageWindows.h */; };
@@ -2115,6 +2105,9 @@
 		C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
 		CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC677BA4197D46390089547A /* SystemConfiguration.framework */; };
 		CC677BA6197D46420089547A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC677BA4197D46390089547A /* SystemConfiguration.framework */; };
+		D7660D221C4D071E00E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */; };
+		D7660D231C4D071E00E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */; };
+		D7660D241C4D071E00E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D211C4D071E00E81868 /* ICloudKeyValue.h */; };
 		E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
 		E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80116B9326D002BD35F /* DAVAConfig.h */; };
 		E8B3CAD816B9326E002BD35F /* DAVAEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80216B9326D002BD35F /* DAVAEngine.cpp */; };
@@ -2297,11 +2290,6 @@
 		02E7C1BF1BD624A5002F026D /* SharedPreferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SharedPreferences.cpp; sourceTree = "<group>"; };
 		02E7C1C01BD624A5002F026D /* SharedPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedPreferences.h; sourceTree = "<group>"; };
 		02E7C1C11BD624A5002F026D /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
-		02E7C1C31BD624A5002F026D /* DataStorageIOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageIOS.cpp; sourceTree = "<group>"; };
-		02E7C1C41BD624A5002F026D /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ICloudKeyValue.cpp; sourceTree = "<group>"; };
-		02E7C1C51BD624A5002F026D /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICloudKeyValue.h; sourceTree = "<group>"; };
-		02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
-		02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorageMacOS.h; sourceTree = "<group>"; };
 		02E7C1CA1BD624A5002F026D /* DataStorageWindows.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageWindows.cpp; sourceTree = "<group>"; };
 		02E7C1CB1BD624A5002F026D /* DataStorageWindows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorageWindows.h; sourceTree = "<group>"; };
 		02E7C1CD1BD624A5002F026D /* BaseFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseFamily.cpp; sourceTree = "<group>"; };
@@ -3182,6 +3170,9 @@
 		C7E76D4216DF6CC70041ED9A /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
 		CC677BA4197D46390089547A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
+		D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
+		D7660D211C4D071E00E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
 		E8B3C80116B9326D002BD35F /* DAVAConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAConfig.h; sourceTree = "<group>"; };
@@ -3486,10 +3477,9 @@
 		02E7C1BC1BD624A5002F026D /* DataStorage */ = {
 			isa = PBXGroup;
 			children = (
+				D7660D1E1C4D071100E81868 /* Apple */,
 				02E7C1BD1BD624A5002F026D /* Android */,
 				02E7C1C11BD624A5002F026D /* DataStorage.h */,
-				02E7C1C21BD624A5002F026D /* iOS */,
-				02E7C1C61BD624A5002F026D /* MacOS */,
 				02E7C1C91BD624A5002F026D /* Windows */,
 			);
 			path = DataStorage;
@@ -3502,25 +3492,6 @@
 				02E7C1C01BD624A5002F026D /* SharedPreferences.h */,
 			);
 			path = Android;
-			sourceTree = "<group>";
-		};
-		02E7C1C21BD624A5002F026D /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-				02E7C1C31BD624A5002F026D /* DataStorageIOS.cpp */,
-				02E7C1C41BD624A5002F026D /* ICloudKeyValue.cpp */,
-				02E7C1C51BD624A5002F026D /* ICloudKeyValue.h */,
-			);
-			path = iOS;
-			sourceTree = "<group>";
-		};
-		02E7C1C61BD624A5002F026D /* MacOS */ = {
-			isa = PBXGroup;
-			children = (
-				02E7C1C71BD624A5002F026D /* DataStorageMacOS.cpp */,
-				02E7C1C81BD624A5002F026D /* DataStorageMacOS.h */,
-			);
-			path = MacOS;
 			sourceTree = "<group>";
 		};
 		02E7C1C91BD624A5002F026D /* Windows */ = {
@@ -4846,6 +4817,16 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
+		D7660D1E1C4D071100E81868 /* Apple */ = {
+			isa = PBXGroup;
+			children = (
+				D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */,
+				D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */,
+				D7660D211C4D071E00E81868 /* ICloudKeyValue.h */,
+			);
+			name = Apple;
+			sourceTree = "<group>";
+		};
 		FECFB1D912E5904400C71562 /* External */ = {
 			isa = PBXGroup;
 			children = (
@@ -5104,7 +5085,6 @@
 				02E7CE0E1BD624A7002F026D /* UISizePolicyComponent.h in Headers */,
 				02E7CB781BD624A7002F026D /* Renderer.h in Headers */,
 				02E7C7EE1BD624A7002F026D /* Math2DTemplateClasses.h in Headers */,
-				02E7C7301BD624A7002F026D /* ICloudKeyValue.h in Headers */,
 				02E7C8481BD624A7002F026D /* Endpoint.h in Headers */,
 				02E7C90C1BD624A7002F026D /* DPIHelper.h in Headers */,
 				02E7C90E1BD624A7002F026D /* MovieViewControlStub.h in Headers */,
@@ -5189,7 +5169,6 @@
 				02E7CC421BD624A7002F026D /* rhi_ShaderSource.h in Headers */,
 				02E7CB2E1BD624A7002F026D /* ImageSystem.h in Headers */,
 				02E7C7721BD624A7002F026D /* LocalizationIPhone.h in Headers */,
-				02E7C7341BD624A7002F026D /* DataStorageMacOS.h in Headers */,
 				02E7CEEC1BD624A7002F026D /* UIWebView.h in Headers */,
 				02E7CC0A1BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD901BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
@@ -5597,6 +5576,7 @@
 				02E7CE251BD624A7002F026D /* UIStyleSheetSelectorChain.h in Headers */,
 				02E7CD7F1BD624A7002F026D /* RenderUpdateSystem.h in Headers */,
 				02E7C7BD1BD624A7002F026D /* GamepadDevice.h in Headers */,
+				D7660D241C4D071E00E81868 /* ICloudKeyValue.h in Headers */,
 				02E7C7091BD624A7002F026D /* Core.h in Headers */,
 				02E7CB271BD624A7002F026D /* ImageConvert.h in Headers */,
 				02E7C7A91BD624A7002F026D /* ZipFile.h in Headers */,
@@ -5656,7 +5636,6 @@
 				02E7CE0D1BD624A7002F026D /* UISizePolicyComponent.h in Headers */,
 				02E7CB771BD624A7002F026D /* Renderer.h in Headers */,
 				02E7C7ED1BD624A7002F026D /* Math2DTemplateClasses.h in Headers */,
-				02E7C72F1BD624A7002F026D /* ICloudKeyValue.h in Headers */,
 				02E7C8471BD624A7002F026D /* Endpoint.h in Headers */,
 				02E7C90B1BD624A7002F026D /* DPIHelper.h in Headers */,
 				02E7C90D1BD624A7002F026D /* MovieViewControlStub.h in Headers */,
@@ -5741,7 +5720,6 @@
 				02E7CC411BD624A7002F026D /* rhi_ShaderSource.h in Headers */,
 				02E7CB2D1BD624A7002F026D /* ImageSystem.h in Headers */,
 				02E7C7711BD624A7002F026D /* LocalizationIPhone.h in Headers */,
-				02E7C7331BD624A7002F026D /* DataStorageMacOS.h in Headers */,
 				02E7CEEB1BD624A7002F026D /* UIWebView.h in Headers */,
 				02E7CC091BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD8F1BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
@@ -6220,7 +6198,6 @@
 				02E7CC3A1BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE081BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
 				02E7C8841BD624A7002F026D /* Announcer.cpp in Sources */,
-				02E7C7321BD624A7002F026D /* DataStorageMacOS.cpp in Sources */,
 				02E7CE7C1BD624A7002F026D /* UIListCell.cpp in Sources */,
 				02E7CBC41BD624A7002F026D /* rhi_ShaderCache.cpp in Sources */,
 				02E7CF2F1BD639A4002F026D /* DVAssertMessage.cpp in Sources */,
@@ -6279,7 +6256,6 @@
 				02E7CE8C1BD624A7002F026D /* UIPackage.cpp in Sources */,
 				02E7C8E81BD624A7002F026D /* ParticleEmitter.cpp in Sources */,
 				02E7CE501BD624A7002F026D /* UIControlPackageContext.cpp in Sources */,
-				02E7C72C1BD624A7002F026D /* DataStorageIOS.cpp in Sources */,
 				02E7C7461BD624A7002F026D /* Bitstream.cpp in Sources */,
 				02E7CCA81BD624A7002F026D /* ParticleEffectComponent.cpp in Sources */,
 				02E7CD421BD624A7002F026D /* SwitchNode.cpp in Sources */,
@@ -6417,7 +6393,6 @@
 				02E7CEE61BD624A7002F026D /* UITextFieldWinUAP.cpp in Sources */,
 				02E7CDA21BD624A7002F026D /* WaveSystem.cpp in Sources */,
 				02E7CF4D1BD639A4002F026D /* UIAlertView_Modal.m in Sources */,
-				02E7C72E1BD624A7002F026D /* ICloudKeyValue.cpp in Sources */,
 				02E7CB0E1BD624A7002F026D /* VegetationGeometryData.cpp in Sources */,
 				02E7C75C1BD624A7002F026D /* FileSystem.cpp in Sources */,
 				02E7CC981BD624A7002F026D /* CustomPropertiesComponent.cpp in Sources */,
@@ -6716,7 +6691,6 @@
 				02E7CC391BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE071BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
 				02E7C8831BD624A7002F026D /* Announcer.cpp in Sources */,
-				02E7C7311BD624A7002F026D /* DataStorageMacOS.cpp in Sources */,
 				02E7CE7B1BD624A7002F026D /* UIListCell.cpp in Sources */,
 				02E7CBC31BD624A7002F026D /* rhi_ShaderCache.cpp in Sources */,
 				02E7CF2E1BD639A4002F026D /* DVAssertMessage.cpp in Sources */,
@@ -6775,7 +6749,6 @@
 				02E7CE8B1BD624A7002F026D /* UIPackage.cpp in Sources */,
 				02E7C8E71BD624A7002F026D /* ParticleEmitter.cpp in Sources */,
 				02E7CE4F1BD624A7002F026D /* UIControlPackageContext.cpp in Sources */,
-				02E7C72B1BD624A7002F026D /* DataStorageIOS.cpp in Sources */,
 				02E7C7451BD624A7002F026D /* Bitstream.cpp in Sources */,
 				02E7CCA71BD624A7002F026D /* ParticleEffectComponent.cpp in Sources */,
 				02E7CD411BD624A7002F026D /* SwitchNode.cpp in Sources */,
@@ -6786,6 +6759,7 @@
 				02E7C8AF1BD624A7002F026D /* MMNetClient.cpp in Sources */,
 				02E7CA691BD624A7002F026D /* RenderSystem2D.cpp in Sources */,
 				02E7C6F71BD624A7002F026D /* Thread.cpp in Sources */,
+				D7660D221C4D071E00E81868 /* DataStorageApple.cpp in Sources */,
 				02E7CE9F1BD624A7002F026D /* UIScreen.cpp in Sources */,
 				02E7CE7F1BD624A7002F026D /* UILoadingTransition.cpp in Sources */,
 				02E7CAC71BD624A7002F026D /* Mesh.cpp in Sources */,
@@ -6913,7 +6887,6 @@
 				02E7CEE51BD624A7002F026D /* UITextFieldWinUAP.cpp in Sources */,
 				02E7CDA11BD624A7002F026D /* WaveSystem.cpp in Sources */,
 				02E7CF4C1BD639A4002F026D /* UIAlertView_Modal.m in Sources */,
-				02E7C72D1BD624A7002F026D /* ICloudKeyValue.cpp in Sources */,
 				02E7CB0D1BD624A7002F026D /* VegetationGeometryData.cpp in Sources */,
 				02E7C75B1BD624A7002F026D /* FileSystem.cpp in Sources */,
 				02E7CC971BD624A7002F026D /* CustomPropertiesComponent.cpp in Sources */,
@@ -7046,6 +7019,7 @@
 				02E7CE031BD624A7002F026D /* UILayoutSystem.cpp in Sources */,
 				02E7CE6F1BD624A7002F026D /* UIHoleTransition.cpp in Sources */,
 				02E7C6511BD624A6002F026D /* VectorSwig.cpp in Sources */,
+				D7660D231C4D071E00E81868 /* ICloudKeyValue.cpp in Sources */,
 				02E7CAD71BD624A7002F026D /* RenderLayer.cpp in Sources */,
 				02E7C8D51BD624A7002F026D /* LocalNotificationIOS.cpp in Sources */,
 				02E7CB571BD624A7002F026D /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,

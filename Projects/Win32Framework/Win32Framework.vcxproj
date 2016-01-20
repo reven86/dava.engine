@@ -260,7 +260,6 @@
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h" />
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h" />
@@ -751,7 +750,6 @@
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAClassRegistrator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp" />
