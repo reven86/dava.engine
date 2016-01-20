@@ -65,7 +65,6 @@ public:
     int AddTab(Document* document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
-    bool isPixelized() const;
     QComboBox* GetComboBoxLanguage();
 
 protected:
@@ -102,7 +101,6 @@ private slots:
 
     void SetBackgroundColorMenuTriggered(QAction* action);
 
-    // Pixelization.
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);

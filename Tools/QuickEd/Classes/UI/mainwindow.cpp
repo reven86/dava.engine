@@ -232,11 +232,6 @@ bool MainWindow::IsInEmulationMode() const
     return emulationBox->isChecked();
 }
 
-bool MainWindow::isPixelized() const
-{
-    return actionPixelized->isChecked();
-}
-
 void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
     DVASSERT(nullptr != packer);
@@ -343,8 +338,8 @@ void MainWindow::InitMenu()
     connect(actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
 
     // Pixelization.
-    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
+    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     DisableActions();
 }
 
@@ -530,7 +525,7 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
 
 	// Update window title
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
-    
+
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
