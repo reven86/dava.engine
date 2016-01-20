@@ -311,14 +311,7 @@ void Landscape::AllocateGeometryData()
 
     for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
-        ScopedPtr<RenderBatch> batch(new RenderBatch());
-        AddRenderBatch(batch);
-
-        batch->SetMaterial(landscapeMaterial);
-        batch->SetSortingKey(10);
-
-        batch->vertexLayoutId = vertexLayoutUID;
-        batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+        AllocateRenderBatch();
     }
 }
 
@@ -619,7 +612,12 @@ void Landscape::FlushQueue()
     if (queueIndexCount == 0)
         return;
 
-    DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
+    DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
+    if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
+    {
+        AllocateRenderBatch();
+    }
+
     DVASSERT(queueRdoQuad != -1);
 
     DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
@@ -1269,6 +1267,18 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
         indices.resize(2 * newSize);
     }
 };
+
+void Landscape::AllocateRenderBatch()
+{
+    ScopedPtr<RenderBatch> batch(new RenderBatch());
+    AddRenderBatch(batch);
+
+    batch->SetMaterial(landscapeMaterial);
+    batch->SetSortingKey(10);
+
+    batch->vertexLayoutId = vertexLayoutUID;
+    batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+}
 
 void Landscape::SetForceFirstLod(bool force)
 {
