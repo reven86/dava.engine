@@ -32,6 +32,27 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#import <AppKit/NSApplication.h>
+
+@interface DavaApp : NSApplication
+@end
+
+@implementation DavaApp
+// http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
+- (void)sendEvent:(NSEvent*)theEvent
+{
+    [super sendEvent:theEvent];
+    if (theEvent.modifierFlags & NSCommandKeyMask)
+    {
+        if (theEvent.type == NSKeyUp)
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKeyUp" object:theEvent];
+        }
+    }
+}
+
+@end
+
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -45,7 +66,7 @@ namespace DAVA
 		core->SetCommandLine(argc, argv);
 		core->CreateSingletons();
 
-		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
+        [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
         //detecting physical screen size and initing core system with this size
         float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
@@ -93,6 +114,7 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
 @end
 
 @implementation MainWindowController
@@ -126,14 +148,18 @@ namespace DAVA
 		mainWindow = nil;
 		animationTimer = nil;
 		core = 0;
-
-	}
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(OnKeyUpDuringCMDHold:)
+                                                     name:@"DavaKeyUp"
+                                                   object:nil];
+    }
 	return self;
 }
 
 - (void)dealloc
 {
-	[super dealloc];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 -(void)createWindows
@@ -223,6 +249,11 @@ namespace DAVA
 {
     fullScreen = false;
     Core::Instance()->GetApplicationCore()->OnExitFullscreen();
+}
+
+- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
+{
+    [self keyUp:(NSEvent*)[notification object]];
 }
 
 -(bool) isFullScreen
