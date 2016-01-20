@@ -41,44 +41,51 @@ namespace CanvasSystem_namespace
 {
 class GridControl : public UIControl
 {
+    enum eBackgroundType
+    {
+        BackgroundTexture,
+        BackgroundColor
+    };
+
 public:
     GridControl();
     ~GridControl() override = default;
 
 private:
-    void OnBackgroundTypeChanged(const bool& type);
+    void OnBackgroundTypeChanged(bool type);
     void Draw(const UIGeometricData& geometricData) override;
-    bool coloredBackground = false;
+    eBackgroundType coloredBackground = BackgroundTexture;
 };
 
 GridControl::GridControl()
 {
     auto settings = EditorSettings::Instance();
-    OnBackgroundTypeChanged(settings->IsGridColored());
+    OnBackgroundTypeChanged(settings->GetGridType());
 
-    settings->GridColoredChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
+    settings->GridTypeChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
     settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
 }
 
-void GridControl::OnBackgroundTypeChanged(const bool& colored)
+void GridControl::OnBackgroundTypeChanged(bool type)
 {
-    coloredBackground = colored;
-    if (coloredBackground)
+    coloredBackground = static_cast<eBackgroundType>(type);
+    switch (coloredBackground)
     {
+    case BackgroundColor:
         background->SetDrawType(UIControlBackground::DRAW_FILL);
         background->SetColor(EditorSettings::Instance()->GetGrigColor());
-    }
-    else
-    {
+        break;
+    case BackgroundTexture:
         background->SetDrawType(UIControlBackground::DRAW_TILED);
         background->SetSprite("~res:/Gfx/GreyGrid", 0);
         background->SetColor(Color());
+        break;
     }
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
 {
-    if (coloredBackground)
+    if (coloredBackground == BackgroundColor)
     {
         UIControl::Draw(geometricData);
     }

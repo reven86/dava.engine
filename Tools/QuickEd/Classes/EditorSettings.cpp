@@ -46,6 +46,7 @@ EditorSettings::EditorSettings()
 
 EditorSettings::~EditorSettings()
 {
+    Save();
     SafeRelease(settings);
 }
 
@@ -154,15 +155,15 @@ void EditorSettings::SetGrigColor(const Color& color)
     GridColorChanged.Emit(color);
 }
 
-bool EditorSettings::IsGridColored() const
+bool EditorSettings::GetGridType() const
 {
-    return settings->GetUInt64("editor.gridType");
+    return settings->GetBool("editor.gridType");
 }
 
-void EditorSettings::SetGridColored(const bool& type)
+void EditorSettings::SetGridType(bool type)
 {
-    settings->SetUInt64("editor.gridType", type);
-    GridColoredChanged.Emit(type);
+    settings->SetBool("editor.gridType", type);
+    GridTypeChanged.Emit(type);
 }
 
 Color EditorSettings::GetColor(const String& colorName, const Color& defaultColor) const

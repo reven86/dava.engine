@@ -403,7 +403,7 @@ void MainWindow::SetupBackgroundMenu()
     QAction* defaultBackgroundColorAction = new QAction(tr("Default"), backgroundColorMenu);
 
     actionGroup->addAction(defaultBackgroundColorAction);
-    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) { EditorSettings::Instance()->SetGridColored(!toggled); });
+    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) { EditorSettings::Instance()->SetGridType(!toggled); });
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
     backgroundColorMenu->addSeparator();
@@ -414,7 +414,7 @@ void MainWindow::SetupBackgroundMenu()
     } colorsMap[] =
     {
       { Qt::black, "Black" },
-      { QColor(0x33, 0x33, 0x33, 0xFF), "Grey" },
+      { QColor(0x33, 0x33, 0x33, 0xFF), "Gray" },
       { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
       { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
       { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
@@ -445,7 +445,7 @@ void MainWindow::SetupBackgroundMenu()
     }
 
     auto editorSettings = EditorSettings::Instance();
-    if (!editorSettings->IsGridColored())
+    if (!editorSettings->GetGridType())
     {
         defaultBackgroundColorAction->setChecked(true);
     }

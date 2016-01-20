@@ -66,9 +66,9 @@ public:
     void SetGrigColor(const DAVA::Color& color);
     DAVA::Signal<const DAVA::Color&> GridColorChanged;
 
-    bool IsGridColored() const;
-    void SetGridColored(const bool& type);
-    DAVA::Signal<const bool&> GridColoredChanged;
+    bool GetGridType() const;
+    void SetGridType(bool type);
+    DAVA::Signal<bool> GridTypeChanged;
 
     bool IsUsingAssetCache() const;
     DAVA::String GetAssetCacheIp() const;
