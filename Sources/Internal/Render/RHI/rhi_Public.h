@@ -67,6 +67,8 @@ InitParam
     uint32 maxPacketListCount; //+gl
 
     uint32 shaderConstRingBufferSize;
+    
+    uint32 vsyncEnabled : 1;
 
     void (*acquireContextFunc)();
     void (*releaseContextFunc)();
@@ -91,6 +93,7 @@ InitParam
         , maxCommandBuffer(0)
         , maxPacketListCount(0)
         , shaderConstRingBufferSize(0)
+        , vsyncEnabled(true)
         , acquireContextFunc(nullptr)
         , releaseContextFunc(nullptr)
     {
@@ -104,11 +107,13 @@ ResetParam
     uint32 height;
     void* window;
     uint32 fullScreen : 1;
+    uint32 vsyncEnabled : 1;
 
     ResetParam()
         : width(0)
         , height(0)
         , fullScreen(false)
+        , vsyncEnabled(true)
         , window(nullptr)
     {
     }

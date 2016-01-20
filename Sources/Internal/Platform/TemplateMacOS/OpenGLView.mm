@@ -80,10 +80,6 @@ extern void FrameworkMain(int argc, char *argv[]);
 	[self enableTrackingArea];
 	isFirstDraw = true;
     
-	// enable vsync
-	GLint swapInt = 1;
-    [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-    
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
     
@@ -149,6 +145,7 @@ extern void FrameworkMain(int argc, char *argv[]);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
         
         rhi::ResetParam params;
+        params.window = self;
         params.width = backingSize[0];
         params.height = backingSize[1];
         Renderer::Reset(params);

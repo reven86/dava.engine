@@ -488,12 +488,15 @@ void CoreMacOSPlatform::Quit()
 
 void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 {
-    Core::SetScreenScaleMultiplier(multiplier);
-    
-    //This magick needed to correctly 'reshape' GLView and resize back-buffer.
-    //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
-    [mainWindowController->mainWindow setContentView:nil];
-    [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+    if(!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
+    {
+        Core::SetScreenScaleMultiplier(multiplier);
+        
+        //This magick needed to correctly 'reshape' GLView and resize back-buffer.
+        //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
+        [mainWindowController->mainWindow setContentView:nil];
+        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+    }
 }
     
 };

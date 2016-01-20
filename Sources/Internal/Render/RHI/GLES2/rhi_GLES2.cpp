@@ -294,6 +294,8 @@ gles2_Reset(const ResetParam& param)
     android_gl_reset(param.window);
 #elif defined(__DAVAENGINE_IPHONE__)
     ios_gl_resize_from_layer(param.window);
+#elif defined(__DAVAENGINE_MACOS__)
+    macos_gl_reset(param);
 #endif
 }
 
@@ -528,7 +530,7 @@ void gles2_Initialize(const InitParam& param)
 
 void gles2_Initialize(const InitParam& param)
 {
-    macos_gl_init(param.window);
+    macos_gl_init(param);
     
     _GLES2_DefaultFrameBuffer_Width = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
