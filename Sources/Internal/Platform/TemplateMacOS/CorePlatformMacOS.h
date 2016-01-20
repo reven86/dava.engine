@@ -42,6 +42,8 @@ public:
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void Quit() override;
+    
+    void SetScreenScaleMultiplier(float32 multiplier) override;
 };	
 
 };
