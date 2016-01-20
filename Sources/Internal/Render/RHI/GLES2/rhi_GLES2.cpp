@@ -293,7 +293,7 @@ gles2_Reset(const ResetParam& param)
 #if defined(__DAVAENGINE_ANDROID__)
     android_gl_reset(param.window);
 #elif defined(__DAVAENGINE_IPHONE__)
-    ios_gl_resize_from_layer(param.window);
+    ios_gl_reset(param.window);
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_reset(param);
 #endif
