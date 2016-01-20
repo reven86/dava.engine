@@ -61,6 +61,27 @@
 #include "Tools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
+namespace SceneTreeDetails
+{
+class SyncGuard
+{
+public:
+    SyncGuard(bool& isSync_)
+        : isSync(isSync_)
+    {
+        isSync = true;
+    }
+
+    ~SyncGuard()
+    {
+        isSync = false;
+    }
+
+private:
+    bool& isSync;
+};
+} // namespace SceneTreeDetails
+
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
 	, isInSync(false)
@@ -235,9 +256,7 @@ void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 {
     if (scene == treeModel->GetScene())
     {
-        bool blocked = selectionModel()->blockSignals(true);
         SyncSelectionToTree();
-        selectionModel()->blockSignals(blocked);
     }
 }
 
@@ -298,9 +317,12 @@ void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
 
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
-	SyncSelectionFromTree();
-    
-	// emit some signal about particles
+    if (isInSync)
+        return;
+
+    SyncSelectionFromTree();
+
+    // emit some signal about particles
 	EmitParticleSignals(selected);
 }
 
@@ -771,22 +793,26 @@ void SceneTree::SaveEntityAs()
 void SceneTree::CollapseAll()
 {
 	QTreeView::collapseAll();
-	bool needSync = false;
-	QModelIndexList indexList = selectionModel()->selection().indexes();
-	for (int i = 0; i < indexList.size(); ++i)
-	{
-		QModelIndex childIndex = indexList[i];
-		if(childIndex.parent().isValid())
-		{
-			selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
-			needSync = true;
-		}
-	}
+    bool needSync = false;
+    {
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-	if(needSync)
-	{
-		SyncSelectionFromTree();
-	}
+        QModelIndexList indexList = selectionModel()->selection().indexes();
+        for (int i = 0; i < indexList.size(); ++i)
+        {
+            QModelIndex childIndex = indexList[i];
+            if (childIndex.parent().isValid())
+            {
+                selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+                needSync = true;
+            }
+        }
+    }
+
+    if (needSync)
+    {
+        TreeSelectionChanged(selectionModel()->selection(), QItemSelection());
+    }
 
     PropagateSolidFlag();
 }
@@ -795,30 +821,29 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 {
 	treeModel->SetSolid(filteringProxyModel->mapToSource(index), true);
 
-	bool needSync = false;
-
-    bool blocked = selectionModel()->blockSignals(true);
-
-    // if selected items were inside collapsed item, remove them from selection
-    QModelIndexList indexList = selectionModel()->selection().indexes();
-    for (int i = 0; i < indexList.size(); ++i)
+    bool needSync = false;
     {
-        QModelIndex childIndex = indexList[i];
-        QModelIndex childParent = childIndex.parent();
-        while(childParent.isValid())
-		{
-			if(childParent == index)
-			{
-				selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
-				needSync = true;
-				break;
-			}
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-			childParent = childParent.parent();
-		}
-	}
+        // if selected items were inside collapsed item, remove them from selection
+        QModelIndexList indexList = selectionModel()->selection().indexes();
+        for (int i = 0; i < indexList.size(); ++i)
+        {
+            QModelIndex childIndex = indexList[i];
+            QModelIndex childParent = childIndex.parent();
+            while (childParent.isValid())
+            {
+                if (childParent == index)
+                {
+                    selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+                    needSync = true;
+                    break;
+                }
 
-    selectionModel()->blockSignals(blocked);
+                childParent = childParent.parent();
+            }
+        }
+    }
 
     if (needSync)
     {
@@ -849,7 +874,7 @@ void SceneTree::SyncSelectionToTree()
     };
 
     const auto& selection = curScene->selectionSystem->GetSelection();
-
+    SceneTreeDetails::SyncGuard guard(isInSync);
     QModelIndex lastValidIndex;
     using TSelectionMap = DAVA::Map < QModelIndex, DAVA::Vector<QModelIndex> > ;
     TSelectionMap toSelect;
@@ -910,10 +935,10 @@ void SceneTree::SyncSelectionFromTree()
 {
 	if(!isInSync)
 	{
-		isInSync = true;
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-		SceneEditor2* curScene = treeModel->GetScene();
-		if(NULL != curScene)
+        SceneEditor2* curScene = treeModel->GetScene();
+        if(NULL != curScene)
 		{
 			// select items in scene
 			EntityGroup group;
@@ -937,8 +962,6 @@ void SceneTree::SyncSelectionFromTree()
 			// when signals from selection system will be emitted on next frame
 			curScene->selectionSystem->ForceEmitSignals();
 		}
-
-		isInSync = false;
 	}
 }
 
