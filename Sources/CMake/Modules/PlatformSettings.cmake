@@ -1,9 +1,5 @@
 
 #compiller flags
-if( NOT DISABLE_DEBUG )
-    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
-
-endif  ()
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
@@ -96,6 +92,10 @@ elseif ( WIN32 )
     add_definitions ( -DNOMINMAX )
 endif  ()
 
+if( NOT DISABLE_DEBUG )
+    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
+
+endif  ()
 
 ##
 if( WARNING_DISABLE)

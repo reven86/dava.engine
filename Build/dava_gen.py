@@ -188,13 +188,12 @@ def main():
     
     if(options.unity_build):
         call_string.append("-DUNITY_BUILD=true")
+    print call_string
 
     subprocess.check_output(call_string)
     
     if "android" == destination_platform:
-        subprocess.check_output(call_string)
-
-    print call_string
+        subprocess.check_output(call_string)    
 
 if __name__ == '__main__':
     main()
