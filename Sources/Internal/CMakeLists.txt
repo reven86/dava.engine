@@ -88,6 +88,7 @@ elseif( MACOS )
                     QuartzCore
                     CoreMedia
                     WebKit
+                    SystemConfiguration
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )

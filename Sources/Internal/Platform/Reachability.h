@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
      File: Reachability.h
  Abstract: Basic demonstration of how to use the SystemConfiguration Reachablity APIs.
@@ -79,34 +78,31 @@
 
 #include "Base/BaseTypes.h"
 
-#ifdef __DAVAENGINE_IPHONE__
+#ifdef __DAVAENGINE_APPLE__
 
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <netinet/in.h>
 
-
 typedef enum : NSInteger {
-	NotReachable = 0,
-	ReachableViaWiFi,
-	ReachableViaWWAN
+    NotReachable = 0,
+    ReachableViaWiFi,
+    ReachableViaWWAN
 } NetworkStatus;
 
-
-extern NSString *kReachabilityChangedNotification;
-
+extern NSString* kReachabilityChangedNotification;
 
 @interface Reachability : NSObject
 
 /*!
  * Use to check the reachability of a given host name.
  */
-+ (instancetype)reachabilityWithHostName:(NSString *)hostName;
++ (instancetype)reachabilityWithHostName:(NSString*)hostName;
 
 /*!
  * Use to check the reachability of a given IP address.
  */
-+ (instancetype)reachabilityWithAddress:(const struct sockaddr_in *)hostAddress;
++ (instancetype)reachabilityWithAddress:(const struct sockaddr_in*)hostAddress;
 
 /*!
  * Checks whether the default route is available. Should be used by applications that do not connect to a particular host.
