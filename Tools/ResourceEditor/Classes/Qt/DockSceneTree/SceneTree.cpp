@@ -867,17 +867,13 @@ void SceneTree::SyncSelectionToTree()
         return;
     }
 
-    isInSync = true;
-    SCOPE_EXIT
-    {
-        isInSync = false;
-    };
-
-    const auto& selection = curScene->selectionSystem->GetSelection();
     SceneTreeDetails::SyncGuard guard(isInSync);
-    QModelIndex lastValidIndex;
-    using TSelectionMap = DAVA::Map < QModelIndex, DAVA::Vector<QModelIndex> > ;
+
+    using TSelectionMap = DAVA::Map<QModelIndex, DAVA::Vector<QModelIndex>>;
     TSelectionMap toSelect;
+
+    QModelIndex lastValidIndex;
+    const auto& selection = curScene->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
         QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.first));
