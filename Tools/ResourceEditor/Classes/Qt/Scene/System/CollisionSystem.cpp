@@ -256,11 +256,18 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity *entity)
 {
 	DAVA::AABBox3 aabox;
 
-	if(NULL != entity)
-	{
+    if (entity != nullptr)
+    {
         CollisionBaseObject* collObj = entityToCollision[entity];
-        if(NULL != collObj)
-		{
+        if (collObj == nullptr)
+        {
+            for (int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
+            {
+                aabox.AddAABBox(GetBoundingBox(entity->GetChild(i)));
+            }
+        }
+        else
+        {
 			aabox = collObj->boundingBox;
 		}
 	}
