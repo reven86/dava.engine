@@ -28,24 +28,17 @@
 
 
 #include "DataStorage/DataStorage.h"
+#include "ICloudKeyValue.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_APPLE__)
 
-class DataStorageEmptyMac : public IDataStorage
+IDataStorage* DataStorage::Create()
 {
-public:
-    String GetStringValue(const String &key) override {return String();}
-    int64 GetLongValue(const String &key) override {return 0;}
-    void SetStringValue(const String &key, const String &value) override {}
-    void SetLongValue(const String &key, int64 value) override {}
-    void RemoveEntry(const String &key) override {}
-    void Clear() override {}
-    void Push() override {}
-};
+    return new ICloudKeyValue();
+}
 
 #endif
-
 }
