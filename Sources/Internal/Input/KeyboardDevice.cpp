@@ -350,8 +350,8 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x26] = Key::KEY_J;
     keyTranslator[0x28] = Key::KEY_K;
     keyTranslator[0x25] = Key::KEY_L;
-    keyTranslator[0x2D] = Key::KEY_M;
-    keyTranslator[0x2E] = Key::KEY_N;
+    keyTranslator[0x2D] = Key::KEY_N;
+    keyTranslator[0x2E] = Key::KEY_M;
     keyTranslator[0x1F] = Key::KEY_O;
     keyTranslator[0x23] = Key::KEY_P;
     keyTranslator[0x0C] = Key::KEY_Q;
