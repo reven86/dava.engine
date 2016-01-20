@@ -220,13 +220,24 @@ void MaterialModel::SetSelection(const EntityGroup *group)
     for (int i = 0; i < root->rowCount(); ++i)
     {
         MaterialItem* topItem = static_cast<MaterialItem*>(root->child(i));
-        bool shouldSelectTop = SetItemSelection(topItem, group);
+
+        bool shouldSelectTop = false;
         for (int j = 0; j < topItem->rowCount(); ++j)
         {
             MaterialItem* childItem = static_cast<MaterialItem*>(topItem->child(j));
             shouldSelectTop |= SetItemSelection(childItem, group);
         }
-        topItem->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelectTop);
+
+        if (shouldSelectTop)
+        {
+            topItem->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelectTop);
+        }
+        else
+        {
+            // attempt to select top item
+            // if it was not selected before via its' children
+            SetItemSelection(topItem, group);
+        }
     }
 }
 
