@@ -6,6 +6,8 @@ macro ( qt_deploy )
         return ()
     endif ()
 
+    set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
+
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
@@ -20,14 +22,14 @@ macro ( qt_deploy )
             set(QML_SCAN_DIR " ")
         endif()
 
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
-            "${QT5_PATH_WIN}/bin/"
-            $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
-            --dir  "${DEPLOY_DIR}/"
-            --qmldir ${QML_SCAN_DIR} "$<TARGET_FILE:${PROJECT_NAME}>"
-            ${QT_ITEMS_LIST}
-        )
+        set(DEPLOY_CURRENT_FOLDER ${QT5_PATH_WIN}/bin/)
+        set(DEPLOT_COMMAND "windeployqt.exe")
+        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
+        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} --dir ${DEPLOY_DIR}")
+        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} --qmldir ${QML_SCAN_DIR} $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} ${QT_ITEMS_LIST}")
+
+        
 
     elseif( MACOS )
 
@@ -35,18 +37,17 @@ macro ( qt_deploy )
             set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
         endif()
 
-        set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
         set(DEPLOY_CURRENT_FOLDER ${DEPLOY_DIR})
         set(DEPLOT_COMMAND "${QT5_PATH_MAC}/bin/macdeployqt ${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+    endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
                     ${DEPLOY_CURRENT_FOLDER}
                     ${DEPLOT_COMMAND}
         )
-
-    endif()
 
 endmacro ()
 
