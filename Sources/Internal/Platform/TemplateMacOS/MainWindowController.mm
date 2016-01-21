@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#import "MainWindowController.h"
-#include "CorePlatformMacOS.h"
+#import "Platform/TemplateMacOS/MainWindowController.h"
+#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
@@ -41,7 +41,7 @@ namespace DAVA
 	{
 		NSAutoreleasePool * globalPool = 0;
 		globalPool = [[NSAutoreleasePool alloc] init];
-		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
+		CoreMacOSPlatform * core = new CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->CreateSingletons();
 
@@ -61,7 +61,7 @@ namespace DAVA
     {
         NSAutoreleasePool* globalPool = 0;
         globalPool = [[NSAutoreleasePool alloc] init];
-        DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
+        CoreMacOSPlatform* core = new CoreMacOSPlatform();
         core->SetCommandLine(argc, argv);
         core->EnableConsoleMode();
         core->CreateSingletons();
@@ -87,11 +87,43 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+
+- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
 
 @implementation MainWindowController
 
 static MainWindowController * mainWindowController = nil;
+
+/* This code disabled for now and left for the future
+ */
+namespace DAVA 
+{
+	Vector2 CoreMacOSPlatform::GetMousePosition()
+	{
+		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
+		p = [mainWindowController->openGLView convertPointFromBacking: p];
+
+        Vector2 mouseLocation;
+		mouseLocation.x = p.x;
+		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
+		return mouseLocation;
+	}
+    
+    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+    {
+        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+        minWindowWidth = width;
+        minWindowHeight = height;
+
+        [mainWindowController setMinimumWindowSize: minWindowWidth height: minWindowHeight];
+    }
+    
+    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+    {
+        return Vector2(minWindowWidth, minWindowHeight);
+    }
+}
 
 - (id)init
 {
@@ -124,7 +156,9 @@ static MainWindowController * mainWindowController = nil;
     int32 height = 600;
     bool isFull = false;
 
-    KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
+    float32 minWidth = 0.0f;
+    float32 minHeight = 0.0f;
+    KeyedArchive* options = Core::Instance()->GetOptions();
     if(nullptr != options)
     {
         title = options->GetString("title", "[set application title using core options property 'title']");
@@ -135,6 +169,8 @@ static MainWindowController * mainWindowController = nil;
         }
         
         isFull = (0 != options->GetInt32("fullscreen", 0));
+        minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
+        minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
@@ -146,9 +182,18 @@ static MainWindowController * mainWindowController = nil;
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
     [mainWindow setContentSize: NSMakeSize(width, height)];
-    
+    mainWindow.contentMinSize = NSMakeSize(width, height);
+    [mainWindowController setMinimumWindowSize: 0.0f height: 0.0f];
+
     willQuit = false;
     
+    if (minWidth > 0 && minHeight > 0)
+    {
+        // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
+        // Such a strange way due to my little knowledge of Objective-C
+        Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
+    }
+
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
 
@@ -167,17 +212,36 @@ static MainWindowController * mainWindowController = nil;
     }
 }
 
+-(void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+{
+    const float32 MIN_WIDTH = 64.0f;
+    const float32 MIN_HEIGHT = 64.0f;
+ 
+    // Always limit minimum window size to 64x64, as application crashes
+    // when resizing window to zero height (stack overflow occures)
+    // It seems that NSOpenGLView is responsible for that
+    if (width < MIN_WIDTH) width = MIN_WIDTH;
+    if (height < MIN_HEIGHT) height = MIN_HEIGHT;
+    mainWindow.contentMinSize = NSMakeSize(width, height);
+}
+
 - (void)windowWillMiniaturize:(NSNotification *)notification
 {
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification
 {
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(true);
+    
     [self OnSuspend];
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification
 {
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(false);
+    
     [self OnResume];
 }
 
@@ -274,12 +338,12 @@ static MainWindowController * mainWindowController = nil;
 
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-	NSLog(@"mouse ENTERED");
 }
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
-	NSLog(@"mouse EXITED");
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
 	[openGLView rightMouseDown:theEvent];
@@ -405,11 +469,17 @@ static MainWindowController * mainWindowController = nil;
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
 	NSLog(@"[CoreMacOSPlatform] Application did hide");
+    
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(true);
 }
 
 - (void)applicationDidUnhide:(NSNotification *)aNotification
 {
 	NSLog(@"[CoreMacOSPlatform] Application did unhide");
+    
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(false);
 }
 
 - (void)windowWillClose:(NSNotification *)notification

@@ -32,6 +32,7 @@
 
 #include "DAVAEngine.h"
 #include "UI/IMovieViewControl.h"
+#include "Functional/SignalBase.h"
 
 namespace DAVA {
 
@@ -64,6 +65,9 @@ public:
 	virtual bool IsPlaying();
 
 private:
+    void OnAppMinimizedRestored(bool minimized);
+    SigConnectionID appMinimizedRestoredConnectionId;
+    
 	// Pointer to MacOS video player helper.
 	void* moviePlayerHelper;
 };

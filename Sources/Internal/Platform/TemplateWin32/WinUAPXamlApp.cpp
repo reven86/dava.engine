@@ -305,7 +305,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
-        TrackWindowMinimumSize();
+        LoadWindowMinimumSizeSettings();
 
         float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
         float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
@@ -959,7 +959,7 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
-void WinUAPXamlApp::TrackWindowMinimumSize()
+void WinUAPXamlApp::LoadWindowMinimumSizeSettings()
 {
     if (!isPhoneApiDetected)
     {
@@ -968,12 +968,7 @@ void WinUAPXamlApp::TrackWindowMinimumSize()
         int32 minHeight = options->GetInt32("min-height", 0);
         if (minWidth > 0 && minHeight > 0)
         {
-            // Note: the largest allowed minimum size is 500 x 500 effective pixels
-            // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
-            Size size(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
-            ApplicationView::GetForCurrentView()->SetPreferredMinSize(size);
-
-            deferredSizeScaleEvents->TrackWindowMinimumSize(minWidth, minHeight);
+            SetWindowMinimumSize(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
         }
     }
 }
@@ -1123,6 +1118,25 @@ void WinUAPXamlApp::SendBackKeyEvents()
         UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(Key::BACK);
     });
+}
+
+void WinUAPXamlApp::SetWindowMinimumSize(float32 width, float32 height)
+{
+    DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+    if (!isPhoneApiDetected)
+    {
+        core->RunOnUIThread([this, width, height]() {
+            // Note: the largest allowed minimum size is 500 x 500 effective pixels
+            // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
+            ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(width, height));
+            deferredSizeScaleEvents->SetWindowMinimumSize(width, height);
+        });
+    }
+}
+
+Vector2 WinUAPXamlApp::GetWindowMinimumSize() const
+{
+    return deferredSizeScaleEvents->GetWindowMinimumSize();
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
