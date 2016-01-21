@@ -263,7 +263,7 @@ void GameCore::UnInitNetwork()
 
 void GameCore::FlushLogs()
 {
-    while (netLogger.HasDataForSend())
+    while (netLogger.ReadyForFlush())
     {
         Net::NetCore::Instance()->Poll();
     }

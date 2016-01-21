@@ -195,10 +195,6 @@ private:
 
     InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
-    bool isRightButtonPressed = false;
-    bool isLeftButtonPressed = false;
-    bool isMiddleButtonPressed = false;
-    bool isActivated = true;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
 

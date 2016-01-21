@@ -131,7 +131,7 @@ Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 {
     // should be started on UI thread
-    if (isPhoneApiDetected || !isActivated)
+    if (isPhoneApiDetected)
     {
         return false;
     }
@@ -297,7 +297,6 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
     Core::Instance()->CreateSingletons();
-
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
 
@@ -365,7 +364,6 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
-
     Core::Instance()->ReleaseSingletons();
 
     Application::Current->Exit();
@@ -394,27 +392,10 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
         {
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
-            if (isPhoneApiDetected)
-            {
-                Core::Instance()->SetIsActive(true);
-            }
-            else
-            {
-                Core::Instance()->FocusReceived();
-            }
-            isActivated = true;
-            break;
+            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
         case CoreWindowActivationState::Deactivated:
-            if (isPhoneApiDetected)
-            {
-                Core::Instance()->SetIsActive(false);
-            }
-            else
-            {
-                Core::Instance()->FocusLost();
-            }
+            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            isActivated = false;
             break;
         default:
             break;

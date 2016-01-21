@@ -60,20 +60,10 @@ IPAddress IPAddress::FromString(const char8* addr)
 {
     DVASSERT(addr != NULL);
 
-#ifdef __DAVAENGINE_WIN_UAP__
-
-    IN_ADDR address = {};
-    inet_pton(AF_INET, addr, &address);
-    return IPAddress(htonl(address.S_un.S_addr));
-
-#else
-
     Endpoint endp;
     if(0 == uv_ip4_addr(addr, 0, endp.CastToSockaddrIn()))
         return endp.Address();
     return IPAddress();
-
-#endif
 }
 
 IPAddress IPAddress::FromString(const String& addr)

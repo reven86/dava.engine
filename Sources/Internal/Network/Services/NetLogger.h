@@ -65,12 +65,12 @@ private:
     };
 
 public:
-    NetLogger(bool selfInstallFlag = true, size_t queueSize = 100, bool keepLineEndingsFlag = false);
+    NetLogger(bool selfInstallFlag = true, size_t queueSize = 100);
     virtual ~NetLogger();
 
     void Install();
     void Uninstall();
-    bool HasDataForSend();
+    bool ReadyForFlush();
 
     // IChannelListener
     void OnPacketSent(IChannel* channel, const void* buffer, size_t length) override;
@@ -94,7 +94,6 @@ private:
 private:
     bool selfInstall;
     bool isInstalled;
-    bool keepLineEndings;
     size_t maxQueueSize;
     Mutex mutex;
     Deque<LogRecord> recordQueue;
