@@ -407,7 +407,7 @@ namespace DAVA
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did finish launching");	
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did finish launching");
     
     [self OnResume];
     
@@ -452,7 +452,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
 	[self createWindows];
-	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application will finish launching: %s", [[[NSBundle mainBundle] bundlePath] UTF8String]);
     
     {
         // OS X application has no way to detect when she is no longer in control,
@@ -502,31 +502,31 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification
 {
-    Logger::Debug("[CoreMacOSPlatform] Application will become active");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application will become active");
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)aNotification
 {
-    Logger::Debug("[CoreMacOSPlatform] Application did become active");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did become active");
 
     [self OnResume];
 }
 
 - (void)applicationDidResignActive:(NSNotification *)aNotification
 {
-    Logger::Debug("[CoreMacOSPlatform] Application did resign active");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did resign active");
 
     [self OnSuspend];
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
 {
-    Logger::Debug("[CoreMacOSPlatform] Application did change screen params");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did change screen params");
 }
 
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
-    Logger::Debug("[CoreMacOSPlatform] Application did hide");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did hide");
     
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
@@ -534,7 +534,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)applicationDidUnhide:(NSNotification *)aNotification
 {
-    Logger::Debug("[CoreMacOSPlatform] Application did unhide");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did unhide");
     
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
@@ -547,13 +547,15 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
+    
     mainWindowController->openGLView.willQuit = true;
     
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
 
-	NSLog(@"[CoreMacOSPlatform] Application terminate");
+	NSLog(@"[CoreMacOSPlatform] Application has terminated");
 	return NSTerminateNow;
 }
 
