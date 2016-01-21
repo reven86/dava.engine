@@ -35,40 +35,23 @@
 
 #include "UWPRunner.h"
 
-DAVA::Signal<> onAppStarted;
-DAVA::Signal<> onAppFinished;
-UWPRunner* runner = nullptr;
-
 int main(int argc, char* argv[])
 {   
-    onAppStarted.Connect([&] 
-    { 
-        PackageOptions options = ParseCommandLine();
-        if (!CheckOptions(options))
-        {
-            return;
-        }
-
-        runner = new UWPRunner(options);
-        runner->Run();
-    });
-    onAppFinished.Connect([&]
-    {
-        delete runner;
-        runner = nullptr;
-    });
-
     return DAVA::Core::RunCmdTool(0, 0, 0);
 }
 
 void FrameworkDidLaunched()
 {
-    onAppStarted.Emit();
+    PackageOptions options = ParseCommandLine();
+    if (!CheckOptions(options))
+    {
+        return;
+    }
+
+    UWPRunner runner(options);
+    runner.Run();
 }
 
-void FrameworkWillTerminate()
-{
-    onAppFinished.Emit();
-}
+void FrameworkWillTerminate() {}
 
 #endif // defined(__DAVAENGINE_WIN32__)
