@@ -56,6 +56,7 @@ GLenum _GLES2_LastSetTex0Target = GL_TEXTURE_2D;
 int _GLES2_LastActiveTexture = -1;
 bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
+bool _GLES2_UseUserProvidedIndices = false;
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC _GLES2_WindowDC = 0;
@@ -221,6 +222,17 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
+        }
+    }
+
+    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    if (!IsEmptyString(renderer))
+    {
+        if (strstr(renderer, "Mali"))
+        {
+        	// drawing from memory is worst case scenario,
+        	// unless running on some buggy piece of shit
+        	_GLES2_UseUserProvidedIndices = true;
         }
     }
 }
