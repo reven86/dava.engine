@@ -217,7 +217,8 @@ static Vector<DAVA::UIEvent> activeTouches;
 
 void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
-    NSPoint p = [curEvent locationInWindow];
+    event.timestamp = [curEvent timestamp];
+    event.phase = phase;
 
     if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
@@ -226,21 +227,10 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
     }
     else
     {
+        NSPoint p = [curEvent locationInWindow];
+
         event.physPoint.x = p.x;
         event.physPoint.y = [glview frame].size.height - p.y;
-    }
-
-    if (DAVA::UIEvent::Phase::WHEEL != phase)
-    {
-        @try
-        {
-            event.tapCount = [curEvent clickCount];
-        }
-        @catch (NSException* exception)
-        {
-            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
-            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
-        }
     }
 
     if (DAVA::UIEvent::Phase::WHEEL == phase)
@@ -248,8 +238,8 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
         event.device = DAVA::UIEvent::Device::MOUSE;
 
         const uint32 rawScrollCoefficient = 10;
-
         DAVA::float32 rawScrollDelta([curEvent scrollingDeltaY]);
+
         if (YES == [curEvent hasPreciseScrollingDeltas])
         {
             // touchpad or other precise device
@@ -262,9 +252,18 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
             event.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
         }
     }
-
-    event.timestamp = [curEvent timestamp];
-    event.phase = phase;
+    else
+    {
+        @try
+        {
+            event.tapCount = [curEvent clickCount];
+        }
+        @catch (NSException* exception)
+        {
+            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
+            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
+        }
+    }
 }
 
 - (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
