@@ -153,6 +153,14 @@ static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames 
   "RSHIFT",
   "RCTRL",
   "RALT",
+
+  "F13", // on mac - printscreen
+  "F14", // on mac - scrlock
+  "F15", // on mac - pause/break
+  "F16",
+  "F17",
+  "F18",
+  "F19"
 };
 
 KeyboardDevice::KeyboardDevice()
@@ -390,6 +398,12 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x6D] = Key::F10;
     keyTranslator[0x67] = Key::F11;
     keyTranslator[0x6F] = Key::F12;
+
+    keyTranslator[113] = Key::F15;
+    keyTranslator[0x6A] = Key::F16;
+    keyTranslator[0x40] = Key::F17;
+    keyTranslator[0x4F] = Key::F18;
+    keyTranslator[0x50] = Key::F19;
 
     // numeric keys at numpad
     for (unsigned i = 0; i < 8; ++i)
