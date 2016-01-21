@@ -127,7 +127,7 @@ private:
 
     bool foreground = false;
 
-    AndroidSystemDelegate* androidDelegate;
+    AndroidSystemDelegate* androidDelegate = nullptr;
 
     String externalStorage;
     String internalStorage;
