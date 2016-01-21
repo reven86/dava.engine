@@ -27,23 +27,28 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LOCALIZATION_IPHONE_H__
-#define __DAVAENGINE_LOCALIZATION_IPHONE_H__
+#include "FileSystem/LocalizationApple.h"
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+#if defined(__DAVAENGINE_APPLE__)
 
-namespace DAVA 
+#import <Foundation/Foundation.h>
+
+#include "FileSystem/LocalizationSystem.h"
+#include "FileSystem/File.h"
+#include "FileSystem/Logger.h"
+
+namespace DAVA
 {
-
-class LocalizationIPhone 
+void LocalizationApple::SelectPreferedLocalizationForPath(const FilePath& directoryPath)
 {
-public:
-	static void SelectPreferedLocalizationForPath(const FilePath &directoryPath);
-    
-    static const char * GetDeviceLang(void);
-};
-	
-};
+    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
+}
 
+const char* LocalizationApple::GetDeviceLang(void)
+{
+    NSArray* ar = [NSLocale preferredLanguages];
+
+    return [[ar objectAtIndex:0] UTF8String];
+}
+}
 #endif

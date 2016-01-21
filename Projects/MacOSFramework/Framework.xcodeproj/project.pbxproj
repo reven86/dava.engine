@@ -620,12 +620,6 @@
 		028C0FE21BD66A6000B2266F /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */; };
 		028C0FE31BD66A6000B2266F /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */; };
 		028C0FE41BD66A6000B2266F /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */; };
-		028C0FEB1BD66A6000B2266F /* LocalizationIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09171BD66A5E00B2266F /* LocalizationIPhone.h */; };
-		028C0FEC1BD66A6000B2266F /* LocalizationIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09171BD66A5E00B2266F /* LocalizationIPhone.h */; };
-		028C0FED1BD66A6000B2266F /* LocalizationIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09171BD66A5E00B2266F /* LocalizationIPhone.h */; };
-		028C0FEE1BD66A6000B2266F /* LocalizationIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09181BD66A5E00B2266F /* LocalizationIPhone.mm */; };
-		028C0FEF1BD66A6000B2266F /* LocalizationIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09181BD66A5E00B2266F /* LocalizationIPhone.mm */; };
-		028C0FF01BD66A6000B2266F /* LocalizationIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C09181BD66A5E00B2266F /* LocalizationIPhone.mm */; };
 		028C0FF11BD66A6000B2266F /* LocalizationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */; };
 		028C0FF21BD66A6000B2266F /* LocalizationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */; };
 		028C0FF31BD66A6000B2266F /* LocalizationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */; };
@@ -2994,6 +2988,8 @@
 		D7660D3E1C4E483300E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */; };
 		D7660D3F1C4E483300E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */; };
 		D7660D401C4E483300E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */; };
+		D7E452CF1C50BABD00E5A97D /* LocalizationApple.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E452CD1C50BABD00E5A97D /* LocalizationApple.h */; };
+		D7E452D01C50BABD00E5A97D /* LocalizationApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = D7E452CE1C50BABD00E5A97D /* LocalizationApple.mm */; };
 		E82366CE16148EF9007B40D0 /* libPVRTexLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E82366CD16148EF9007B40D0 /* libPVRTexLib.a */; };
 		E8989DF316BD24E500732C04 /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1D16BD24E400732C04 /* DAVAConfig.h */; };
 		E8989DF416BD24E500732C04 /* DAVAEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989B1E16BD24E400732C04 /* DAVAEngine.cpp */; };
@@ -3253,8 +3249,6 @@
 		028C09121BD66A5E00B2266F /* KeyedArchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedArchiver.h; sourceTree = "<group>"; };
 		028C09131BD66A5E00B2266F /* KeyedUnarchiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedUnarchiver.cpp; sourceTree = "<group>"; };
 		028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedUnarchiver.h; sourceTree = "<group>"; };
-		028C09171BD66A5E00B2266F /* LocalizationIPhone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationIPhone.h; sourceTree = "<group>"; };
-		028C09181BD66A5E00B2266F /* LocalizationIPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationIPhone.mm; sourceTree = "<group>"; };
 		028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationSystem.cpp; sourceTree = "<group>"; };
 		028C091A1BD66A5E00B2266F /* LocalizationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationSystem.h; sourceTree = "<group>"; };
 		028C091B1BD66A5E00B2266F /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -4057,6 +4051,8 @@
 		D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
 		D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
+		D7E452CD1C50BABD00E5A97D /* LocalizationApple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationApple.h; sourceTree = "<group>"; };
+		D7E452CE1C50BABD00E5A97D /* LocalizationApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationApple.mm; sourceTree = "<group>"; };
 		E82366CD16148EF9007B40D0 /* libPVRTexLib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPVRTexLib.a; path = ../../Libs/libs/libPVRTexLib.a; sourceTree = "<group>"; };
 		E8989B1D16BD24E400732C04 /* DAVAConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAConfig.h; sourceTree = "<group>"; };
 		E8989B1E16BD24E400732C04 /* DAVAEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DAVAEngine.cpp; sourceTree = "<group>"; };
@@ -4450,6 +4446,8 @@
 		028C08FF1BD66A5E00B2266F /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				D7E452CD1C50BABD00E5A97D /* LocalizationApple.h */,
+				D7E452CE1C50BABD00E5A97D /* LocalizationApple.mm */,
 				028C09001BD66A5E00B2266F /* Bitstream.cpp */,
 				028C09011BD66A5E00B2266F /* Bitstream.h */,
 				028C09031BD66A5E00B2266F /* DynamicMemoryFile.cpp */,
@@ -4470,8 +4468,6 @@
 				028C09121BD66A5E00B2266F /* KeyedArchiver.h */,
 				028C09131BD66A5E00B2266F /* KeyedUnarchiver.cpp */,
 				028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */,
-				028C09171BD66A5E00B2266F /* LocalizationIPhone.h */,
-				028C09181BD66A5E00B2266F /* LocalizationIPhone.mm */,
 				028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */,
 				028C091A1BD66A5E00B2266F /* LocalizationSystem.h */,
 				028C091B1BD66A5E00B2266F /* Logger.cpp */,
@@ -5942,7 +5938,6 @@
 				028C0D621BD66A6000B2266F /* LinearPropertyAnimation.h in Headers */,
 				028C18D21BD66A6000B2266F /* EventSystem.h in Headers */,
 				028C13DD1BD66A6000B2266F /* WebViewControlMacOS.h in Headers */,
-				028C0FED1BD66A6000B2266F /* LocalizationIPhone.h in Headers */,
 				028C194A1BD66A6000B2266F /* FMODSoundEvent.h in Headers */,
 				028C18FC1BD66A6000B2266F /* RenderUpdateSystem.h in Headers */,
 				028C12541BD66A6000B2266F /* DPIHelper.h in Headers */,
@@ -6434,6 +6429,7 @@
 				028C18761BD66A6000B2266F /* SceneFile.h in Headers */,
 				028C0E1D1BD66A6000B2266F /* Introspection.h in Headers */,
 				028C0D6F1BD66A6000B2266F /* AutotestingSystem.h in Headers */,
+				D7E452CF1C50BABD00E5A97D /* LocalizationApple.h in Headers */,
 				028C16541BD66A6000B2266F /* rhi_Pool.h in Headers */,
 				028C179B1BD66A6000B2266F /* WASDControllerComponent.h in Headers */,
 				028C155E1BD66A6000B2266F /* VegetationRenderData.h in Headers */,
@@ -6642,7 +6638,6 @@
 				028C1AEC1BD66A6100B2266F /* UISlider.h in Headers */,
 				028C0E8F1BD66A6000B2266F /* Atomic.h in Headers */,
 				028C103F1BD66A6000B2266F /* ZipFile.h in Headers */,
-				028C0FEB1BD66A6000B2266F /* LocalizationIPhone.h in Headers */,
 				028C0E1A1BD66A6000B2266F /* IndexBitVector.h in Headers */,
 				028C12551BD66A6000B2266F /* MovieViewControlStub.h in Headers */,
 				028C15A91BD66A6000B2266F /* FXCache.h in Headers */,
@@ -7013,7 +7008,6 @@
 				028C0D611BD66A6000B2266F /* LinearPropertyAnimation.h in Headers */,
 				028C18D11BD66A6000B2266F /* EventSystem.h in Headers */,
 				028C13DC1BD66A6000B2266F /* WebViewControlMacOS.h in Headers */,
-				028C0FEC1BD66A6000B2266F /* LocalizationIPhone.h in Headers */,
 				028C19491BD66A6000B2266F /* FMODSoundEvent.h in Headers */,
 				028C18FB1BD66A6000B2266F /* RenderUpdateSystem.h in Headers */,
 				028C12531BD66A6000B2266F /* DPIHelper.h in Headers */,
@@ -7858,7 +7852,6 @@
 				028C15901BD66A6000B2266F /* LibPngHelper.cpp in Sources */,
 				028C0F871BD66A6000B2266F /* BSDiff.cpp in Sources */,
 				028C153F1BD66A6000B2266F /* StaticOcclusion.cpp in Sources */,
-				028C0FF01BD66A6000B2266F /* LocalizationIPhone.mm in Sources */,
 				028C18511BD66A6000B2266F /* ParticleEmitterNode.cpp in Sources */,
 				028C115B1BD66A6000B2266F /* UDPSocket.cpp in Sources */,
 				028C15451BD66A6000B2266F /* StaticOcclusionRenderPass.cpp in Sources */,
@@ -7946,6 +7939,7 @@
 				028C0DA51BD66A6000B2266F /* Polygon2Swig.cpp in Sources */,
 				028C14F21BD66A6000B2266F /* RenderBatchArray.cpp in Sources */,
 				028C1AF51BD66A6100B2266F /* UIStaticText.cpp in Sources */,
+				D7E452D01C50BABD00E5A97D /* LocalizationApple.mm in Sources */,
 				028C16E71BD66A6000B2266F /* rhi_QueryBufferGLES2.cpp in Sources */,
 				028C15251BD66A6000B2266F /* SkinnedMesh.cpp in Sources */,
 				028C1A0E1BD66A6000B2266F /* UI3DView.cpp in Sources */,
@@ -8325,7 +8319,6 @@
 				028C158E1BD66A6000B2266F /* LibPngHelper.cpp in Sources */,
 				028C0F851BD66A6000B2266F /* BSDiff.cpp in Sources */,
 				028C153D1BD66A6000B2266F /* StaticOcclusion.cpp in Sources */,
-				028C0FEE1BD66A6000B2266F /* LocalizationIPhone.mm in Sources */,
 				028C184F1BD66A6000B2266F /* ParticleEmitterNode.cpp in Sources */,
 				028C11591BD66A6000B2266F /* UDPSocket.cpp in Sources */,
 				028C15431BD66A6000B2266F /* StaticOcclusionRenderPass.cpp in Sources */,
@@ -8790,7 +8783,6 @@
 				028C158F1BD66A6000B2266F /* LibPngHelper.cpp in Sources */,
 				028C0F861BD66A6000B2266F /* BSDiff.cpp in Sources */,
 				028C153E1BD66A6000B2266F /* StaticOcclusion.cpp in Sources */,
-				028C0FEF1BD66A6000B2266F /* LocalizationIPhone.mm in Sources */,
 				028C18501BD66A6000B2266F /* ParticleEmitterNode.cpp in Sources */,
 				028C115A1BD66A6000B2266F /* UDPSocket.cpp in Sources */,
 				028C15441BD66A6000B2266F /* StaticOcclusionRenderPass.cpp in Sources */,
