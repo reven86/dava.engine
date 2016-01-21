@@ -345,10 +345,13 @@ Set<FilePath> SceneSaver::EnumAlternativeEmittersFilepaths(const FilePath& origi
 
     for (const ParticlesQualitySettings::QualitySheet& qualitySheet : particlesSettings.GetQualitySheets())
     {
-        FilePath alternativeFilepath = qualitySheet.GetFolder().MakeFilepath(originalFilepath);
-        if (FileSystem::Instance()->Exists(alternativeFilepath))
+        FilePath alternativeFilepath;
+        if (qualitySheet.Apply(originalFilepath, alternativeFilepath))
         {
-            qualityFilepaths.insert(alternativeFilepath);
+            if (FileSystem::Instance()->Exists(alternativeFilepath))
+            {
+                qualityFilepaths.insert(alternativeFilepath);
+            }
         }
     }
 

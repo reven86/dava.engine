@@ -47,12 +47,36 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	mainLayout->addWidget(emitterNameLineEdit);
 	connect(emitterNameLineEdit, SIGNAL(editingFinished()),this, SLOT(OnValueChanged()));
 
-	emitterYamlPath = new QLineEdit(this);
-	emitterYamlPath->setReadOnly(true);
-	mainLayout->addWidget(emitterYamlPath);
-	connect(emitterYamlPath, SIGNAL(textChanged(const QString&)), this, SLOT(OnEmitterYamlPathChanged(const QString&)));
+    {
+        QWidget* group = new QWidget(this);
+        QHBoxLayout* layout = new QHBoxLayout(group);
+        group->setLayout(layout);
+        QLabel* label = new QLabel("Original path: ", this);
 
-	shortEffectCheckBox = new QCheckBox("Short effect");
+        originalEmitterYamlPath = new QLineEdit(this);
+        originalEmitterYamlPath->setReadOnly(true);
+        layout->addWidget(label);
+        layout->addWidget(originalEmitterYamlPath);
+        layout->setMargin(0);
+        mainLayout->addWidget(group);
+    }
+
+    {
+        QWidget* group = new QWidget(this);
+        QHBoxLayout* layout = new QHBoxLayout(group);
+        group->setLayout(layout);
+        QLabel* label = new QLabel("Current path: ", this);
+
+        emitterYamlPath = new QLineEdit(this);
+        emitterYamlPath->setReadOnly(true);
+        layout->addWidget(label);
+        layout->addWidget(emitterYamlPath);
+        layout->setMargin(0);
+        mainLayout->addWidget(group);
+        connect(emitterYamlPath, SIGNAL(textChanged(const QString&)), this, SLOT(OnEmitterYamlPathChanged(const QString&)));
+    }
+
+    shortEffectCheckBox = new QCheckBox("Short effect");
 	mainLayout->addWidget(shortEffectCheckBox);
 	connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
@@ -246,7 +270,9 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 	DVASSERT(emitter != 0);
 	this->emitter = emitter;
     this->effect = effect;
-	SetActiveScene(scene);
+    int32 id = effect->GetEmitterId(emitter);
+    const ParticleEmitterData& emitterData = effect->GetEmitterData(id);
+    SetActiveScene(scene);
 
 	blockSignals = true;
 
@@ -261,7 +287,9 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     
 	float maxTime		= emitterLifeTime;
 	float maxTimeLimit	= emitterLifeTime;
-	emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
+    originalEmitterYamlPath->setText(QString::fromStdString(emitterData.originalFilepath.GetAbsolutePathname()));
+
+    emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
 	emitterType->setCurrentIndex(emitter->emitterType);
 
     int32 emitterId = effect->GetEmitterId(emitter);    

@@ -44,31 +44,33 @@ public:
     public:
         struct Selector
         {
-            Set<FastName> qualities;
-            Set<FastName> tags;
+            UnorderedSet<FastName> qualities;
+            UnorderedSet<FastName> tags;
         };
 
-        struct Folder
+        struct Action
         {
-            FilePath MakeFilepath(const FilePath& originalDirectory) const;
+            bool Apply(const FilePath& originalPath, FilePath& alternativePath) const;
 
-            String folderToReplace;
-            String replaceWithFolder;
+            FastName name;
+            Vector<String> params;
         };
 
         QualitySheet();
         QualitySheet(const QualitySheet& src);
-        QualitySheet(const Selector& selector, const Folder& folder, uint32 qualitiesCount);
+        QualitySheet(const Selector& selector, const Vector<Action>& actions, uint32 qualitiesCount);
 
         const Selector& GetSelector() const
         {
             return selector;
         }
-        const Folder& GetFolder() const
+        const Vector<Action>& GetActions() const
         {
-            return folder;
+            return actions;
         }
+
         bool IsMatched(const FastName& quality, const Set<FastName>& tagsCloud) const;
+        bool Apply(const FilePath& originalPath, FilePath& alternativePath) const;
 
         int32 GetScore() const;
 
@@ -76,7 +78,7 @@ public:
         void RecalculateScore();
 
         Selector selector;
-        Folder folder;
+        Vector<Action> actions;
         uint32 qualitiesCount = 0;
         uint32 score = 0;
     };

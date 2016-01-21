@@ -581,7 +581,13 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     }
 
     //TODO: restart effect
-    selectedEmitter->LoadFromYaml(filePath);
+    const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
+    FilePath qualityFilepath = filePath;
+    if (filepathSelector)
+    {
+        qualityFilepath = filepathSelector->SelectFilepath(filePath);
+    }
+    selectedEmitter->LoadFromYaml(qualityFilepath);
     selectedEffect->SetOriginalConfigPath(emitterIndex, filePath);
 }
 

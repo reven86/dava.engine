@@ -40,15 +40,15 @@ ParticlesQualitySettings::QualitySheet::QualitySheet()
 
 ParticlesQualitySettings::QualitySheet::QualitySheet(const QualitySheet& src)
     : selector(src.selector)
-    , folder(src.folder)
+    , actions(src.actions)
     , qualitiesCount(src.qualitiesCount)
     , score(src.score)
 {
 }
 
-ParticlesQualitySettings::QualitySheet::QualitySheet(const Selector& selector_, const Folder& folder_, uint32 qualitiesCount_)
+ParticlesQualitySettings::QualitySheet::QualitySheet(const Selector& selector_, const Vector<Action>& actions_, uint32 qualitiesCount_)
     : selector(selector_)
-    , folder(folder_)
+    , actions(actions_)
     , qualitiesCount(qualitiesCount_)
 {
     RecalculateScore();
@@ -77,6 +77,19 @@ bool ParticlesQualitySettings::QualitySheet::IsMatched(const FastName& quality, 
     return true;
 }
 
+bool ParticlesQualitySettings::QualitySheet::Apply(const FilePath& originalPath, FilePath& alternativePath) const
+{
+    for (const Action& action : actions)
+    {
+        if (action.Apply(originalPath, alternativePath))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 int32 ParticlesQualitySettings::QualitySheet::GetScore() const
 {
     return score;
@@ -89,12 +102,24 @@ void ParticlesQualitySettings::QualitySheet::RecalculateScore()
     score = qualitiesScore + tagsScore;
 }
 
-DAVA::FilePath ParticlesQualitySettings::QualitySheet::Folder::MakeFilepath(const FilePath& originalFilepath) const
+bool ParticlesQualitySettings::QualitySheet::Action::Apply(const FilePath& originalPath, FilePath& alternativePath) const
 {
-    String pathString = originalFilepath.GetStringValue();
-    StringReplace(pathString, folderToReplace, replaceWithFolder);
-    FilePath newFilepath = pathString;
-    return newFilepath;
+    if (name == FastName("replace"))
+    {
+        DVASSERT_MSG(params.size() == 2, "Wrong params count");
+        String str = originalPath.GetStringValue();
+        String::size_type findpos = str.find(params[0], 0);
+        if (findpos == String::npos)
+        {
+            return false;
+        }
+
+        str.replace(findpos, params[0].length(), params[1]);
+        alternativePath = str;
+        return true;
+    }
+
+    return false;
 }
 
 ParticlesQualitySettings::ParticlesQualitySettings()
@@ -107,13 +132,13 @@ ParticlesQualitySettings::~ParticlesQualitySettings()
 
 void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
 {
-    const YamlNode* particlesNode = rootNode->Get("particles");
-    if (nullptr == particlesNode)
+    const YamlNode* settingsNode = rootNode->Get("settings");
+    if (nullptr == settingsNode)
     {
         return;
     }
     qualities.clear();
-    const YamlNode* qualitiesNode = particlesNode->Get("qualities");
+    const YamlNode* qualitiesNode = settingsNode->Get("qualities");
     if (qualitiesNode != nullptr && qualitiesNode->GetType() == YamlNode::TYPE_ARRAY)
     {
         for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
@@ -128,7 +153,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
     }
 
     defaultQualityIndex = -1;
-    const YamlNode* defaultNode = particlesNode->Get("default");
+    const YamlNode* defaultNode = settingsNode->Get("default");
     if (defaultNode != nullptr && defaultNode->GetType() == YamlNode::TYPE_STRING)
     {
         defaultQualityIndex = GetQualityIndex(defaultNode->AsFastName());
@@ -136,7 +161,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
     }
 
     currentQualityIndex = -1;
-    const YamlNode* currentNode = particlesNode->Get("current");
+    const YamlNode* currentNode = settingsNode->Get("current");
     if (currentNode != nullptr && currentNode->GetType() == YamlNode::TYPE_STRING)
     {
         currentQualityIndex = GetQualityIndex(currentNode->AsFastName());
@@ -144,9 +169,10 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
     }
 
     qualitySheets.clear();
-    const YamlNode* qualitySheetsNode = particlesNode->Get("qualitySheets");
+    const YamlNode* qualitySheetsNode = settingsNode->Get("qualitySheets");
     if (qualitySheetsNode != nullptr && qualitySheetsNode->GetType() == YamlNode::TYPE_ARRAY)
     {
+        qualitySheets.reserve(qualitySheetsNode->GetCount());
         for (uint32 i = 0; i < qualitySheetsNode->GetCount(); ++i)
         {
             const YamlNode* qualitySheetNode = qualitySheetsNode->Get(i);
@@ -159,6 +185,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
                     const YamlNode* selectorQualitiesNode = selectorNode->Get("qualities");
                     if (selectorQualitiesNode != nullptr && selectorQualitiesNode->GetType() == YamlNode::TYPE_ARRAY)
                     {
+                        selector.tags.reserve(selectorQualitiesNode->GetCount());
                         for (uint32 i = 0; i < selectorQualitiesNode->GetCount(); ++i)
                         {
                             const YamlNode* selectorQualityNode = selectorQualitiesNode->Get(i);
@@ -173,6 +200,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
                     const YamlNode* selectorTagsNode = selectorNode->Get("tags");
                     if (selectorTagsNode != nullptr && selectorTagsNode->GetType() == YamlNode::TYPE_ARRAY)
                     {
+                        selector.tags.reserve(selectorTagsNode->GetCount());
                         for (uint32 i = 0; i < selectorTagsNode->GetCount(); ++i)
                         {
                             const YamlNode* selectorTagNode = selectorTagsNode->Get(i);
@@ -185,15 +213,40 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
                     }
                 }
 
-                QualitySheet::Folder folder;
-                const YamlNode* replaceFolderNode = qualitySheetNode->Get("replaceFolder");
-                if (replaceFolderNode != nullptr && replaceFolderNode->GetType() == YamlNode::TYPE_ARRAY && replaceFolderNode->GetCount() == 2)
+                Vector<QualitySheet::Action> actions;
+                const YamlNode* actionsNode = qualitySheetNode->Get("actions");
+                if (actionsNode != nullptr && actionsNode->GetType() == YamlNode::TYPE_ARRAY)
                 {
-                    folder.folderToReplace = replaceFolderNode->Get(0)->AsString();
-                    folder.replaceWithFolder = replaceFolderNode->Get(1)->AsString();
+                    actions.reserve(actionsNode->GetCount());
+                    for (uint32 i = 0; i < actionsNode->GetCount(); ++i)
+                    {
+                        QualitySheet::Action action;
+                        const YamlNode* actionNode = actionsNode->Get(i);
+                        if (actionNode != nullptr && actionNode->GetType() == YamlNode::TYPE_MAP)
+                        {
+                            for (uint32 i = 0; i < actionNode->GetCount(); ++i)
+                            {
+                                FastName actionName = FastName(actionNode->GetItemKeyName(i).c_str());
+                                action.name = actionName;
+                                const YamlNode* paramsNode = actionNode->Get(i);
+                                if (paramsNode != nullptr && paramsNode->GetType() == YamlNode::TYPE_ARRAY)
+                                {
+                                    for (uint32 i = 0; i < paramsNode->GetCount(); ++i)
+                                    {
+                                        const YamlNode* paramNode = paramsNode->Get(i);
+                                        if (paramNode != nullptr && paramNode->GetType() == YamlNode::TYPE_STRING)
+                                        {
+                                            action.params.emplace_back(paramNode->AsString());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        actions.emplace_back(action);
+                    }
+                    DVASSERT(actions.size() == actionsNode->GetCount());
                 }
-
-                qualitySheets.push_back(QualitySheet(selector, folder, (uint32)qualities.size()));
+                qualitySheets.emplace_back(selector, actions, (uint32)qualities.size());
             }
         }
         DVASSERT(qualitySheets.size() == qualitySheetsNode->GetCount());
@@ -205,7 +258,7 @@ void ParticlesQualitySettings::LoadFromYaml(const YamlNode* rootNode)
     std::sort(qualitySheets.begin(), qualitySheets.end(), sortPred);
 
     tagsCloud.clear();
-    const YamlNode* tagsCloudNode = particlesNode->Get("tagsCloud");
+    const YamlNode* tagsCloudNode = settingsNode->Get("tagsCloud");
     if (tagsCloudNode != nullptr && tagsCloudNode->GetType() == YamlNode::TYPE_ARRAY)
     {
         for (uint32 i = 0; i < tagsCloudNode->GetCount(); ++i)
@@ -362,16 +415,18 @@ FilePath ParticlesQualitySettings::FilepathSelector::SelectFilepath(const FilePa
 {
     for (const QualitySheet& qualitySheet : actualSheets)
     {
-        FilePath alternativeFilepath = qualitySheet.GetFolder().MakeFilepath(originalFilepath);
-
-        if (alternativeFilepath == originalFilepath)
+        FilePath alternativeFilepath;
+        if (qualitySheet.Apply(originalFilepath, alternativeFilepath))
         {
-            return originalFilepath;
-        }
+            if (alternativeFilepath == originalFilepath)
+            {
+                return originalFilepath;
+            }
 
-        if (FileSystem::Instance()->Exists(alternativeFilepath))
-        {
-            return alternativeFilepath;
+            if (FileSystem::Instance()->Exists(alternativeFilepath))
+            {
+                return alternativeFilepath;
+            }
         }
     }
 

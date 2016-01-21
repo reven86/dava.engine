@@ -218,8 +218,12 @@ void QualitySettingsSystem::Load(const FilePath &path)
 
                 }
             }
-
-            particlesQualitySettings.LoadFromYaml(rootNode);
+            // particles
+            const YamlNode* particlesNode = rootNode->Get("particles");
+            if (nullptr != particlesNode)
+            {
+                particlesQualitySettings.LoadFromYaml(particlesNode);
+            }
         }
 
         parser->Release();
