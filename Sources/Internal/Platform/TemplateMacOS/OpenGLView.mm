@@ -217,24 +217,53 @@ static Vector<DAVA::UIEvent> activeTouches;
 
 void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
-    NSPoint p = [curEvent locationInWindow];
+    event.timestamp = [curEvent timestamp];
+    event.phase = phase;
 
     if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
-        
-        event.tapCount = curEvent.clickCount;
     }
     else
     {
+        NSPoint p = [curEvent locationInWindow];
+
         event.physPoint.x = p.x;
         event.physPoint.y = [glview frame].size.height - p.y;
-        
-        event.tapCount = curEvent.clickCount;
     }
-    event.timestamp = curEvent.timestamp;
-    event.phase = phase;
+
+    if (DAVA::UIEvent::Phase::WHEEL == phase)
+    {
+        event.device = DAVA::UIEvent::Device::MOUSE;
+
+        const uint32 rawScrollCoefficient = 10;
+        DAVA::float32 rawScrollDelta([curEvent scrollingDeltaY]);
+
+        if (YES == [curEvent hasPreciseScrollingDeltas])
+        {
+            // touchpad or other precise device
+            // sends integer values (-3, -1, 0, 1, 40 etc)
+            event.wheelDelta.y = rawScrollDelta / rawScrollCoefficient;
+        }
+        else
+        {
+            // simple mouse - sends float values from 0.1 for one wheel tick
+            event.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
+        }
+    }
+    else
+    {
+        @try
+        {
+            event.tapCount = [curEvent clickCount];
+        }
+        @catch (NSException* exception)
+        {
+            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
+            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
+        }
+    }
 }
 
 - (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
@@ -342,28 +371,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
 {
     DAVA::UIEvent ev;
 
-    ev.phase = DAVA::UIEvent::Phase::WHEEL;
-    ev.device = DAVA::UIEvent::Device::MOUSE;
-
-    const uint32 rawScrollCoefficient = 10;
-
-    DAVA::float32 rawScrollDelta([theEvent scrollingDeltaY]);
-    if (YES == [theEvent hasPreciseScrollingDeltas])
-    {
-        // touchpad or other precise device
-        // sends integer values (-3, -1, 0, 1, 40 etc)
-        ev.wheelDelta.y = rawScrollDelta / rawScrollCoefficient;
-    }
-    else
-    {
-        // simple mouse - sends float values from 0.1 for one wheel tick
-        ev.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
-    }
-
-    NSPoint posInWindow = [theEvent locationInWindow];
-    
-    ev.physPoint.x = posInWindow.x;
-    ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;
+    ConvertNSEventToUIEvent(self, theEvent, ev, DAVA::UIEvent::Phase::WHEEL);
 
     UIControlSystem::Instance()->OnInput(&ev);
 }
