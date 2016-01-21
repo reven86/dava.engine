@@ -50,6 +50,7 @@ InitParam
     void* window;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
+    uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
     DAVA::Mutex* FrameCommandExecutionSync;
 
@@ -67,8 +68,6 @@ InitParam
     uint32 maxPacketListCount; //+gl
 
     uint32 shaderConstRingBufferSize;
-    
-    uint32 vsyncEnabled : 1;
 
     void (*acquireContextFunc)();
     void (*releaseContextFunc)();
@@ -79,6 +78,7 @@ InitParam
         , window(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
+        , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
         , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
@@ -93,7 +93,6 @@ InitParam
         , maxCommandBuffer(0)
         , maxPacketListCount(0)
         , shaderConstRingBufferSize(0)
-        , vsyncEnabled(true)
         , acquireContextFunc(nullptr)
         , releaseContextFunc(nullptr)
     {

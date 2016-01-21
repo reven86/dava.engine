@@ -440,7 +440,7 @@ void CreateWindowSizeDependentResources()
 
         // Associate swap chain with SwapChainPanel
         // UI changes will need to be dispatched back to the UI thread
-        m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([=]() {
+        m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
                                                    // Get backing native interface for SwapChainPanel
                                                    ComPtr<ISwapChainPanelNative> panelNative;
                                                    ThrowIfFailed(

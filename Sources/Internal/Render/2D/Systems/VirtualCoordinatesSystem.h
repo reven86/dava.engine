@@ -70,20 +70,20 @@ public:
     inline const Size2i & GetPhysicalScreenSize() const;
     inline const Rect & GetFullScreenVirtualRect() const;
 
-    inline float32 AlignVirtualToPhysicalX(const float32 & value) const;
-    inline float32 AlignVirtualToPhysicalY(const float32 & value) const;
+    inline float32 AlignVirtualToPhysicalX(float32) const;
+    inline float32 AlignVirtualToPhysicalY(float32) const;
 
-    inline float32 ConvertPhysicalToVirtualX(const float32 & value) const;
-    inline float32 ConvertPhysicalToVirtualY(const float32 & value) const;
-    inline float32 ConvertVirtualToPhysicalX(const float32 & value) const;
-    inline float32 ConvertVirtualToPhysicalY(const float32 & value) const;
-    inline float32 ConvertVirtualToInputX(const float32 & value) const;
-    inline float32 ConvertVirtualToInputY(const float32 & value) const;
+    inline float32 ConvertPhysicalToVirtualX(float32) const;
+    inline float32 ConvertPhysicalToVirtualY(float32 value) const;
+    inline float32 ConvertVirtualToPhysicalX(float32 value) const;
+    inline float32 ConvertVirtualToPhysicalY(float32 value) const;
+    inline float32 ConvertVirtualToInputX(float32 value) const;
+    inline float32 ConvertVirtualToInputY(float32 value) const;
 
-    inline float32 ConvertResourceToVirtualX(const float32 & value, int32 resourceIndex) const;
-    inline float32 ConvertResourceToVirtualY(const float32 & value, int32 resourceIndex) const;
-    inline float32 ConvertVirtualToResourceX(const float32 & value, int32 resourceIndex) const;
-    inline float32 ConvertVirtualToResourceY(const float32 & value, int32 resourceIndex) const;
+    inline float32 ConvertResourceToVirtualX(float32 value, int32 resourceIndex) const;
+    inline float32 ConvertResourceToVirtualY(float32 value, int32 resourceIndex) const;
+    inline float32 ConvertVirtualToResourceX(float32 value, int32 resourceIndex) const;
+    inline float32 ConvertVirtualToResourceY(float32 value, int32 resourceIndex) const;
 
     inline Vector2 ConvertPhysicalToVirtual(const Vector2 & vector) const;
     inline Vector2 ConvertVirtualToPhysical(const Vector2 & vector) const;
@@ -164,65 +164,65 @@ inline const Rect & VirtualCoordinatesSystem::GetFullScreenVirtualRect() const
     return fullVirtualScreenRect;
 }
 
-inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalX(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalX(float32 value) const
 {
     return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
-inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(float32 value) const
 {
     return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(float32 value) const
 {
     return physicalToVirtual * value;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualY(float32 value) const
 {
     return physicalToVirtual * value;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalX(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalX(float32 value) const
 {
     return virtualToPhysical * value;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(float32 value) const
 {
     return virtualToPhysical * value;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputX(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputX(float32 value) const
 {
 	return value / inputScaleFactor;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputY(float32 value) const
 {
 	return value / inputScaleFactor;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualX(const float32 & value, DAVA::int32 resourceIndex) const
+inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualX(float32 value, DAVA::int32 resourceIndex) const
 {
     DVASSERT(resourceIndex < (int32)allowedSizes.size());
     return value * allowedSizes[resourceIndex].toVirtual;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualY(const float32 & value, DAVA::int32 resourceIndex) const
+inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualY(float32 value, DAVA::int32 resourceIndex) const
 {
     DVASSERT(resourceIndex < (int32)allowedSizes.size());
     return value * allowedSizes[resourceIndex].toVirtual;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceX(const float32 & value, DAVA::int32 resourceIndex) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceX(float32 value, DAVA::int32 resourceIndex) const
 {
     DVASSERT(resourceIndex < (int32)allowedSizes.size());
     return value / allowedSizes[resourceIndex].toVirtual;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceY(const float32 & value, DAVA::int32 resourceIndex) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceY(float32 value, DAVA::int32 resourceIndex) const
 {
     DVASSERT(resourceIndex < (int32)allowedSizes.size());
     return value / allowedSizes[resourceIndex].toVirtual;

@@ -112,7 +112,7 @@ void ios_gl_reset(void* nativeLayer)
 {
     resize_pending = (_GLES2_DefaultFrameBuffer_Width != backingWidth) || (_GLES2_DefaultFrameBuffer_Height != backingHeight) || (_GLES2_Native_Window != nativeLayer);
     
-    _GLES2_Native_Window == nativeLayer;
+    _GLES2_Native_Window = nativeLayer;
 }
 
 void ios_gl_end_frame()

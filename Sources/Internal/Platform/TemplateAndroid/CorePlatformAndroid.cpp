@@ -73,17 +73,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 }
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
-    : Core()
 {
-    wasCreated = false;
-    renderIsActive = false;
-    viewSizeChanged = false;
-    backbufferWidth = width = 0;
-    backbufferHeight = height = 0;
-    screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
-
-    foreground = false;
-
     SetCommandLine(cmdLine);
 }
 
@@ -144,14 +134,14 @@ void CorePlatformAndroid::ProcessResizeView()
 
 void CorePlatformAndroid::UpdateScreenMode()
 {
-    Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
+    Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] start");
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backbufferWidth, backbufferHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
-    Logger::Debug("[CorePlatformAndroid::] input w = %d, h = %d", width, height);
-    Logger::Debug("[CorePlatformAndroid::] back buffer w = %d, h = %d", backbufferWidth, backbufferHeight);
-    Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
+    Logger::FrameworkDebug("[CorePlatformAndroid::] input w = %d, h = %d", width, height);
+    Logger::FrameworkDebug("[CorePlatformAndroid::] back buffer w = %d, h = %d", backbufferWidth, backbufferHeight);
+    Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] done");
 }
 
 void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char8* docPathIn, const char8* assets, const char8* logTag, AndroidSystemDelegate* sysDelegate)

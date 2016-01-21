@@ -114,18 +114,18 @@ private:
 	void UpdateScreenMode();
 
     void ProcessResizeView();
-
+    
 private:
-	int32 width;
-	int32 height;
-	int32 backbufferWidth;
-	int32 backbufferHeight;
+	int32 width = 0;
+	int32 height = 0;
+	int32 backbufferWidth = 0;
+	int32 backbufferHeight = 0;
 
-	bool wasCreated;
-	bool renderIsActive;
-    bool viewSizeChanged;
+	bool wasCreated = false;
+	bool renderIsActive = false;
+    bool viewSizeChanged = false;
 
-    bool foreground;
+    bool foreground = false;
 
     AndroidSystemDelegate* androidDelegate;
 
