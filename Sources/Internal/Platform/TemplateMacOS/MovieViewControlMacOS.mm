@@ -141,7 +141,7 @@ enum MoviePlayerHelperPlaybackState
     scalingMode = desiredScalingMode;
     playerState = eStateInitializing;
     
-    AVURLAsset* asset = [AVAsset assetWithURL:movieURL];
+    AVAsset* asset = [AVAsset assetWithURL:movieURL];
     NSArray *assetKeysToLoadAndTest = [NSArray arrayWithObjects:@"playable", @"tracks", @"duration", nil];
     [asset loadValuesAsynchronouslyForKeys:assetKeysToLoadAndTest completionHandler:^(void)
     {
@@ -297,10 +297,6 @@ enum MoviePlayerHelperPlaybackState
         break;
     case eStopped:
         [videoPlayer pause];
-        if (!videoAtEnd)
-        { // Do not rewind to beginning if video has played completely
-            [videoPlayer seekToTime:CMTimeMakeWithSeconds(0.0, 1)];
-        }
         break;
     case ePaused:
         [videoPlayer pause];
