@@ -485,22 +485,18 @@ void* WebViewControl::GetImageCache() const
 
 void WebViewControl::SetNativeVisible(bool visible)
 {
-    if (visible)
-    {
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-        [openGLView addSubview:(WebView*)webViewPtr];
-    }
-    else
-    {
-        [(WebView*)webViewPtr removeFromSuperview];
-    }
+    WebView* view = static_cast<WebView*>(webViewPtr);
+    [view setHidden: !visible];
 }
 
 void WebViewControl::OnAppMinimizedRestored(bool minimized)
 {
-    if (isVisible)
+    if (!minimized && isVisible)
     {
-        SetNativeVisible(!minimized);
+        // Force WebView repaint after restoring application window
+        // Repaint is done by hiding and showing control as people in internet say
+        SetNativeVisible(false);
+        SetNativeVisible(true);
     }
 }
 
