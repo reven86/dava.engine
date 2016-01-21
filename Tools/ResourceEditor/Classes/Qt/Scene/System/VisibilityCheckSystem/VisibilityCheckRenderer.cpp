@@ -230,7 +230,8 @@ void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSys
                     if ((material != nullptr) && material->PreBuildMaterial(DAVA::PASS_FORWARD))
                     {
                         if ((material->GetRenderLayerID() == DAVA::RenderLayer::RENDER_LAYER_OPAQUE_ID) ||
-                            (material->GetRenderLayerID() == DAVA::RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID))
+                            (material->GetRenderLayerID() == DAVA::RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID) ||
+                            (material->GetRenderLayerID() == DAVA::RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID))
                         {
                             batches.push_back(batch);
                         }
@@ -403,7 +404,7 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
     reprojectionConfig.colorBuffer[0].texture = reprojectionTexture->handle;
     reprojectionConfig.depthStencilBuffer.texture = reprojectionTexture->handleDepthStencil;
 
-    distanceRenderTarget = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
+    distanceRenderTarget = DAVA::Texture::CreateFBO(w, h, TEXTURE_FORMAT, true, rhi::TEXTURE_TYPE_2D, false);
     distanceRenderTarget->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
     distanceMapConfig.colorBuffer[0].texture = distanceRenderTarget->handle;
     distanceMapConfig.depthStencilBuffer.texture = distanceRenderTarget->handleDepthStencil;

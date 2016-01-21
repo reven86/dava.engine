@@ -82,17 +82,12 @@ private:
         DAVA::Camera* camera = nullptr;
     };
 
-    static const DAVA::uint32 CUBEMAPS_COUNT = 4;
-    static const DAVA::uint32 CUBEMAP_SIZE = 1024;
-
 private:
     EntityMap entitiesWithVisibilityComponent;
     DAVA::Landscape* landscape = nullptr;
-    // DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
     DAVA::Vector<DAVA::uint32> controlPointIndices;
     DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;
-    DAVA::Array<DAVA::Texture*, CUBEMAPS_COUNT> cubemapTarget;
     VisibilityCheckRenderer renderer;
     StateCache stateCache;
     size_t currentPointIndex = 0;

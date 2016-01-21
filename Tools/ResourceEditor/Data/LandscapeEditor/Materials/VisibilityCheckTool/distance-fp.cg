@@ -4,13 +4,18 @@
 FPROG_IN_BEGIN
 
 #if defined(ENCODE_DISTANCE)
-    FPROG_IN_TEXCOORD0(distanceToCamera,1)
+
+    FPROG_IN_TEXCOORD0(directionFromPoint,3)
+
 #elif defined(DECODE_DISTANCE)
-    FPROG_IN_TEXCOORD1(directionFromPoint,3)
+
+    FPROG_IN_TEXCOORD0(directionFromPoint,3)
+
 #elif defined(REPROJECTION)
-	FPROG_IN_TEXCOORD1(reprojectedCoords,4)
-    FPROG_IN_TEXCOORD2(distanceToOrigin,1)
-    FPROG_IN_TEXCOORD3(viewportCoords,4)
+
+	FPROG_IN_TEXCOORD0(reprojectedCoords,4)
+    FPROG_IN_TEXCOORD1(distanceToOrigin,1)
+    FPROG_IN_TEXCOORD2(viewportCoords,4)
 #endif
 
 FPROG_IN_END
@@ -20,24 +25,27 @@ FPROG_OUT_BEGIN
 FPROG_OUT_END
 
 const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
-const float encodeDecodeScale = 255.0;
-const float MAGIC_TRESHOLD_2 = 1.0 / encodeDecodeScale;
+const float MAGIC_TRESHOLD_2 = 1.0 / 255.0;
 const float MAGIC_TRESHOLD_1 = 1.0 + MAGIC_TRESHOLD_2;
 
-float4 EncodeFloatRGBA(float v)
+float4 EncodeFloat(float v)
 {
-    v *= encodeDecodeScale;
-	float4 result;
-    result.x = fract(v); v = (v - result.x) / 255.0;
-    result.y = fract(v); v = (v - result.y) / 255.0;
-    result.z = fract(v); v = (v - result.z) / 255.0;
-    result.w = fract(v);
-	return result;
+	return float4(v, v * v, 0.0, 0.0);
 }
 
-float DecodeFloatRGBA(float4 encoded)
+float DecodeFloat(float4 encoded)
 {
-	return dot(encoded, decodeVector) / encodeDecodeScale;
+	return encoded.x;
+}
+
+float ComputeOcclusion(float4 sampledDistance, float actualDistance)
+{
+	float Ex_2 = sampledDistance.x * sampledDistance.x;
+	float E_x2 = sampledDistance.y;
+	float variance = E_x2 - Ex_2;
+	float mD = sampledDistance.x - actualDistance;
+	float p = variance / (variance + mD * mD);
+	return max(p, float(actualDistance <= sampledDistance.x)); 
 }
 
 #if defined(DECODE_DISTANCE)
@@ -67,14 +75,13 @@ FPROG_BEGIN
 
 #elif defined(ENCODE_DISTANCE)
 
-	FP_OUT_COLOR = EncodeFloatRGBA(FP_IN(distanceToCamera));
+	FP_OUT_COLOR = EncodeFloat(length(FP_IN(directionFromPoint)));
 
 #elif defined(DECODE_DISTANCE)
 
 	float4 sampledDistance = FP_TEXTURECUBE(cubemap, FP_IN(directionFromPoint));
-	float decodedDistance = DecodeFloatRGBA(sampledDistance);
 	float actualDistance = length(FP_IN(directionFromPoint));
-	float occluded = float(actualDistance / decodedDistance <= MAGIC_TRESHOLD_1);
+	float occluded = ComputeOcclusion(sampledDistance, actualDistance);
 	
 	float3 nDir = normalize(FP_IN(directionFromPoint));
 	float DdotN = dot(nDir, transformedNormal);
@@ -95,8 +102,8 @@ FPROG_BEGIN
 	float4 sampledColor = FP_TEXTURE2D(fixedFrame, reprojectedUVW.xy);
 	float4 currentColor = mix(checkboard, FP_TEXTURE2D(currentFrame, vpCoords), currentFrameCompleteness);
 
-	float sampledDistance = DecodeFloatRGBA(FP_TEXTURE2D(fixedFrameDistances, reprojectedUVW.xy));
 	float actualDistance = FP_IN(distanceToOrigin);
+	float sampledDistance = DecodeFloat(FP_TEXTURE2D(fixedFrameDistances, reprojectedUVW.xy));
 	float visibleInProjection = 1.0 - float(abs(actualDistance / sampledDistance - 1.0) > MAGIC_TRESHOLD_2);
 	float insideProjection = float(all(equal(reprojectedUVW, clamp(reprojectedUVW, float3(0.0), float3(1.0)))));
 

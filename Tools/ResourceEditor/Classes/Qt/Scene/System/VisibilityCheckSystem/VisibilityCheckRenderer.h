@@ -66,6 +66,7 @@ public:
     };
 
     static const DAVA::float32 cameraNearClipPlane;
+    static const DAVA::PixelFormat TEXTURE_FORMAT = DAVA::PixelFormat::FORMAT_RG32F;
 
 public:
     VisibilityCheckRenderer();

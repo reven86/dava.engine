@@ -110,6 +110,15 @@ enum PixelFormat : uint8
     FORMAT_BGR888, // windows BMP format
     FORMAT_BGRA8888, // android web view format only for ImageConvert
 
+    FORMAT_R16F,
+    FORMAT_RG16F,
+    FORMAT_RGB16F,
+    FORMAT_RGBA16F,
+    FORMAT_R32F,
+    FORMAT_RG32F,
+    FORMAT_RGB32F,
+    FORMAT_RGBA32F,
+
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
