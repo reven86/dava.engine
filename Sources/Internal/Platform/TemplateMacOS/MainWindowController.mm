@@ -424,9 +424,9 @@ namespace DAVA
 static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
 {
     static bool restorePinning = false;
+    static int64_t myPid = static_cast<int64_t>(getpid());
     
     int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
-    int64_t myPid = static_cast<int64_t>(getpid());
     if (targetPid != myPid)
     {
         // Turn off mouse cature if event target is not our application and
