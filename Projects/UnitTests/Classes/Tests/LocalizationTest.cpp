@@ -66,6 +66,10 @@ DAVA_TESTCLASS(LocalizationTest)
 
     DAVA_TEST(LocaleTest)
     {
+        String locale = LocalizationSystem::Instance()->GetDeviceLocale();
+
+        Logger::FrameworkDebug("Current locale is %s", locale.c_str());
+
         for (size_t i = 0;i < files.size();++i)
         {
             FilePath srcFile = srcDir + (files[i] + ".yaml");
