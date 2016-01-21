@@ -19,15 +19,15 @@ macro ( qt_deploy )
             endif()
         endforeach()
 
-        if (NOT QML_SCAN_DIR)
-            set(QML_SCAN_DIR " ")
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "--qmldir ${QML_SCAN_DIR}")
         endif()
 
         set(DEPLOY_PLATFORM "WIN")
         set(DEPLOY_QT_FOLDER ${QT5_PATH_WIN})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
-        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --qmldir ${QML_SCAN_DIR} $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QT_ITEMS_LIST}")
 
     elseif( MACOS )
