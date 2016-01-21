@@ -1372,7 +1372,7 @@ _GLES2_ExecuteQueuedCommands()
         uint8* rgba = new uint8[stride * _GLES2_DefaultFrameBuffer_Height];
         GLCommand cmd[] =
         {
-          { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } },
+          { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer } },
           { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, (uint64)rgba } },
           { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
         };
@@ -1625,8 +1625,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     #define EXEC_GL(expr) \
     expr; \
     err = glGetError(); \
-    if (err != GL_NO_ERROR) \
-        _LogGLError(#expr, err); \
 
 #else
 
