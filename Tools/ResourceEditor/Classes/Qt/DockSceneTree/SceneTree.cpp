@@ -61,6 +61,26 @@
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
 
+namespace SceneTreeDetails
+{
+class SyncGuard
+{
+public:
+    SyncGuard(bool& isSync_)
+        : isSync(isSync_)
+    {
+        isSync = true;
+    }
+
+    ~SyncGuard()
+    {
+        isSync = false;
+    }
+
+private:
+    bool& isSync;
+};
+} // namespace SceneTreeDetails
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
@@ -219,6 +239,8 @@ void SceneTree::SceneActivated(SceneEditor2 *scene)
     selectionModel()->clear();
     SyncSelectionToTree();
     filteringProxyModel->invalidate();
+
+    PropagateSolidFlag();
 }
 
 void SceneTree::SceneDeactivated(SceneEditor2 *scene)
@@ -234,9 +256,7 @@ void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 {
     if (scene == treeModel->GetScene())
     {
-        bool blocked = selectionModel()->blockSignals(true);
         SyncSelectionToTree();
-        selectionModel()->blockSignals(blocked);
     }
 }
 
@@ -244,11 +264,8 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-		auto selectionWasBlocked = selectionModel()->blockSignals(true);
-        filteringProxyModel->setSourceModel(nullptr);
+        bool selectionWasBlocked = selectionModel()->blockSignals(true);
         treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        filteringProxyModel->setSourceModel(treeModel);
-
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
 
@@ -300,9 +317,12 @@ void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
 
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
-	SyncSelectionFromTree();
-    
-	// emit some signal about particles
+    if (isInSync)
+        return;
+
+    SyncSelectionFromTree();
+
+    // emit some signal about particles
 	EmitParticleSignals(selected);
 }
 
@@ -667,27 +687,27 @@ void SceneTree::ReloadModel()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		QDialog *dlg = new QDialog(this);
+        QDialog dlg(this);
 
-		QVBoxLayout *dlgLayout = new QVBoxLayout();
-		dlgLayout->setMargin(10);
+        QVBoxLayout* dlgLayout = new QVBoxLayout();
+        dlgLayout->setMargin(10);
 
-		dlg->setWindowTitle("Reload Model options");
-		dlg->setLayout(dlgLayout);
-	
-		QCheckBox *lightmapsChBox = new QCheckBox("Leave lightmap settings", dlg);
-		dlgLayout->addWidget(lightmapsChBox);
-		lightmapsChBox->setCheckState(Qt::Checked);
+        dlg.setWindowTitle("Reload Model options");
+        dlg.setLayout(dlgLayout);
 
-		QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
-		dlgLayout->addWidget(buttons);
+        QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
+        dlgLayout->addWidget(lightmapsChBox);
+        lightmapsChBox->setCheckState(Qt::Checked);
 
-		QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+        QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
+        dlgLayout->addWidget(buttons);
 
-		if(QDialog::Accepted == dlg->exec())
-		{
-			EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+        QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+        QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
+
+        if (QDialog::Accepted == dlg.exec())
+        {
+            EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
 			String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
@@ -707,11 +727,10 @@ void SceneTree::ReloadModel()
 			{
 				ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
 			}
-			sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
-		}
-
-		delete dlg;
-	}
+            EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+            sceneEditor->selectionSystem->SetSelection(newSelection);
+        }
+    }
 }
 
 void SceneTree::ReloadModelAs()
@@ -740,7 +759,8 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                sceneEditor->selectionSystem->SetSelection(newSelection);
             }
         }
     }
@@ -772,52 +792,57 @@ void SceneTree::SaveEntityAs()
 void SceneTree::CollapseAll()
 {
 	QTreeView::collapseAll();
-	bool needSync = false;
-	QModelIndexList indexList = selectionModel()->selection().indexes();
-	for (int i = 0; i < indexList.size(); ++i)
-	{
-		QModelIndex childIndex = indexList[i];
-		if(childIndex.parent().isValid())
-		{
-			selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
-			needSync = true;
-		}
-	}
+    bool needSync = false;
+    {
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-	if(needSync)
-	{
-		SyncSelectionFromTree();
-	}
+        QModelIndexList indexList = selectionModel()->selection().indexes();
+        for (int i = 0; i < indexList.size(); ++i)
+        {
+            QModelIndex childIndex = indexList[i];
+            if (childIndex.parent().isValid())
+            {
+                selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+                needSync = true;
+            }
+        }
+    }
+
+    if (needSync)
+    {
+        TreeSelectionChanged(selectionModel()->selection(), QItemSelection());
+    }
+
+    PropagateSolidFlag();
 }
 
 void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 {
 	treeModel->SetSolid(filteringProxyModel->mapToSource(index), true);
 
-	bool needSync = false;
-
-    bool blocked = selectionModel()->blockSignals(true);
-
-    // if selected items were inside collapsed item, remove them from selection
-    QModelIndexList indexList = selectionModel()->selection().indexes();
-    for (int i = 0; i < indexList.size(); ++i)
+    bool needSync = false;
     {
-        QModelIndex childIndex = indexList[i];
-        QModelIndex childParent = childIndex.parent();
-        while(childParent.isValid())
-		{
-			if(childParent == index)
-			{
-				selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
-				needSync = true;
-				break;
-			}
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-			childParent = childParent.parent();
-		}
-	}
+        // if selected items were inside collapsed item, remove them from selection
+        QModelIndexList indexList = selectionModel()->selection().indexes();
+        for (int i = 0; i < indexList.size(); ++i)
+        {
+            QModelIndex childIndex = indexList[i];
+            QModelIndex childParent = childIndex.parent();
+            while (childParent.isValid())
+            {
+                if (childParent == index)
+                {
+                    selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+                    needSync = true;
+                    break;
+                }
 
-    selectionModel()->blockSignals(blocked);
+                childParent = childParent.parent();
+            }
+        }
+    }
 
     if (needSync)
     {
@@ -827,17 +852,20 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
 void SceneTree::TreeItemExpanded(const QModelIndex &index)
 {
-	treeModel->SetSolid(filteringProxyModel->mapToSource(index), false);
+    QModelIndex mappedIndex = filteringProxyModel->mapToSource(index);
+    treeModel->SetSolid(mappedIndex, false);
+    QStandardItem* item = treeModel->itemFromIndex(mappedIndex);
+    PropagateSolidFlagRecursive(item);
 }
 
 void SceneTree::SyncSelectionToTree()
 {
 	if(!isInSync)
 	{
-		isInSync = true;
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-		SceneEditor2* curScene = treeModel->GetScene();
-		if(NULL != curScene)
+        SceneEditor2* curScene = treeModel->GetScene();
+        if(NULL != curScene)
 		{
 			QModelIndex lastValidIndex;
 
@@ -861,8 +889,6 @@ void SceneTree::SyncSelectionToTree()
 				scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
 			}
 		}
-
-		isInSync = false;
 	}
 }
 
@@ -870,10 +896,10 @@ void SceneTree::SyncSelectionFromTree()
 {
 	if(!isInSync)
 	{
-		isInSync = true;
+        SceneTreeDetails::SyncGuard guard(isInSync);
 
-		SceneEditor2* curScene = treeModel->GetScene();
-		if(NULL != curScene)
+        SceneEditor2* curScene = treeModel->GetScene();
+        if(NULL != curScene)
 		{
 			// select items in scene
 			EntityGroup group;
@@ -892,8 +918,6 @@ void SceneTree::SyncSelectionFromTree()
 			// when signals from selection system will be emitted on next frame
 			curScene->selectionSystem->ForceEmitSignals();
 		}
-
-		isInSync = false;
 	}
 }
 
@@ -1431,4 +1455,33 @@ void SceneTree::SetCustomDrawCamera()
 void SceneTree::UpdateTree()
 {
 	dataChanged(QModelIndex(), QModelIndex());
+}
+
+void SceneTree::PropagateSolidFlag()
+{
+    QStandardItem* root = treeModel->invisibleRootItem();
+    for (int i = 0; i < root->rowCount(); ++i)
+    {
+        PropagateSolidFlagRecursive(root->child(i));
+    }
+}
+
+void SceneTree::PropagateSolidFlagRecursive(QStandardItem* root)
+{
+    DVASSERT(root != nullptr);
+    QModelIndex rootIndex = root->index();
+    DVASSERT(rootIndex.isValid());
+    QModelIndex filteredIndex = filteringProxyModel->mapFromSource(rootIndex);
+    if (isExpanded(filteredIndex))
+    {
+        treeModel->SetSolid(rootIndex, false);
+        for (int i = 0; i < root->rowCount(); ++i)
+        {
+            PropagateSolidFlagRecursive(root->child(i));
+        }
+    }
+    else
+    {
+        treeModel->SetSolid(rootIndex, true);
+    }
 }
