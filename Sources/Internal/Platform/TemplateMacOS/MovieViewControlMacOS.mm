@@ -141,7 +141,7 @@ enum MoviePlayerHelperPlaybackState
     scalingMode = desiredScalingMode;
     playerState = eStateInitializing;
     
-    AVURLAsset* asset = [AVAsset assetWithURL:movieURL];
+    AVAsset* asset = [AVAsset assetWithURL:movieURL];
     NSArray *assetKeysToLoadAndTest = [NSArray arrayWithObjects:@"playable", @"tracks", @"duration", nil];
     [asset loadValuesAsynchronouslyForKeys:assetKeysToLoadAndTest completionHandler:^(void)
     {
