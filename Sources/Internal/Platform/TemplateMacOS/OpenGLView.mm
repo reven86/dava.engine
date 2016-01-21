@@ -356,6 +356,51 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     UIControlSystem::Instance()->OnInput(&ev);
 }
 
+- (void)magnifyWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = [event magnification];
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)rotateWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = [event rotation];
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)swipeWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = [event deltaX] * (-1.f);
+    ev.gesture.dy = [event deltaY] * (-1.f);
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     [self process:DAVA::UIEvent::Phase::MOVE touch:theEvent];
