@@ -282,6 +282,11 @@ gles2_IndexBuffer_Unmap(Handle ib)
     	self->isMapped = false;
         self->MarkRestored();
     }
+    else if(self->usage == GL_DYNAMIC_DRAW)
+    {
+        self->isMapped = false;
+        self->updatePending = true;
+    }
     else
     {
         GLCommand cmd[] =
