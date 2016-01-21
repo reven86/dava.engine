@@ -236,13 +236,13 @@ gles_check_GL_extensions()
 #if defined(GL_R16F) && defined(GL_RG16F)
             RG16F_Supported = majorVersion >= 3;
 #endif
-#if defined(GL_RGBA16F) && defined(GL_RGB16F)
+#if defined(GL_RGBA16F)
             RGBA16F_Supported = majorVersion >= 3;
 #endif
 #if defined(GL_R32F) && defined(GL_RG32F)
             RG32F_Supported = majorVersion >= 3;
 #endif
-#if defined(GL_RGBA32F) && defined(GL_RGB32F)
+#if defined(GL_RGBA32F)
             RGBA32F_Supported = majorVersion >= 3;
 #endif
         }
@@ -1079,16 +1079,6 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         break;
 #endif
 
-#if defined(GL_RGB16F)
-    case TEXTURE_FORMAT_RGB16F:
-        *internalFormat = GL_RGB16F;
-        *format = GL_RGB;
-        *type = GL_HALF_FLOAT;
-        *compressed = false;
-        success = true;
-        break;
-#endif
-
 #if defined(GL_RGBA16F)
     case TEXTURE_FORMAT_RGBA16F:
         *internalFormat = GL_RGBA16F;
@@ -1113,16 +1103,6 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
     case TEXTURE_FORMAT_RG32F:
         *internalFormat = GL_RG32F;
         *format = GL_RG;
-        *type = GL_FLOAT;
-        *compressed = false;
-        success = true;
-        break;
-#endif
-
-#if defined(GL_RGB32F)
-    case TEXTURE_FORMAT_RGB32F:
-        *internalFormat = GL_RGB32F;
-        *format = GL_RGB;
         *type = GL_FLOAT;
         *compressed = false;
         success = true;

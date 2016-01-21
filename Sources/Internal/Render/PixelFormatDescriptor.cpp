@@ -87,12 +87,10 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     ,
     { FORMAT_R16F, { FORMAT_R16F, FastName("R16F"), 16, rhi::TextureFormat::TEXTURE_FORMAT_R16F, false } },
     { FORMAT_RG16F, { FORMAT_RG16F, FastName("RG16F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_RG16F, false } },
-    { FORMAT_RGB16F, { FORMAT_RGB16F, FastName("RGB16F"), 48, rhi::TextureFormat::TEXTURE_FORMAT_RGB16F, false } },
     { FORMAT_RGBA16F, { FORMAT_RGBA16F, FastName("RGBA16F"), 64, rhi::TextureFormat::TEXTURE_FORMAT_RGBA16F, false } },
 
     { FORMAT_R32F, { FORMAT_R32F, FastName("R32F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_R32F, false } },
     { FORMAT_RG32F, { FORMAT_RG32F, FastName("RG32F"), 64, rhi::TextureFormat::TEXTURE_FORMAT_RG32F, false } },
-    { FORMAT_RGB32F, { FORMAT_RGB32F, FastName("RGB32F"), 96, rhi::TextureFormat::TEXTURE_FORMAT_RGB32F, false } },
     { FORMAT_RGBA32F, { FORMAT_RGBA32F, FastName("RGBA32F"), 128, rhi::TextureFormat::TEXTURE_FORMAT_RGBA32F, false } },
 #endif
 
