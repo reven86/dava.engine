@@ -72,6 +72,7 @@ class HoodSystem;
 
 //class EditorLODSystem;
 class EditorLODSystemV2;
+class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 
 class SceneEditor2 : public DAVA::Scene
@@ -114,8 +115,8 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
-    EditorLODSystemV2 *editorLODSystemV2;
-
+    EditorLODSystemV2 *editorLODSystemV2 = nullptr;
+    EditorStatisticsSystem *editorStatisticsSystem = nullptr;
 
 
 	DAVA::WASDControllerSystem *wasdSystem;

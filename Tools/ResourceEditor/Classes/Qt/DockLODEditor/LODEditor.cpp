@@ -26,25 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Utils/StringFormat.h"
 
 #include "DockLODEditor/LODEditor.h"
 #include "DockLODEditor/DistanceSlider.h"
-
-#include "ui_LODEditor.h"
-
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
-
 #include "Main/mainwindow.h"
 #include "PlaneLODDialog/PlaneLODDialog.h"
-
 #include "Scene/System/EditorLODSystemV2.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/SceneSignals.h"
-
 #include "Tools/LazyUpdater/LazyUpdater.h"
-
-#include "Utils/StringFormat.h"
-
+#include "ui_LODEditor.h"
 
 #include <QLabel>
 #include <QWidget>
@@ -58,27 +52,28 @@ using namespace DAVA;
 
 namespace LODEditorInternal
 {
-    class BlockSignalGuard
+class BlockSignalGuard final
+{
+public:
+
+    BlockSignalGuard(QObject *object_)
+        : object(object_)
     {
-    public:
+        DVASSERT(object);
+        wasBlockedBefore = object->blockSignals(true);
+    }
 
-        BlockSignalGuard(QObject *object_)
-            : object(object_)
-        {
-            DVASSERT(object);
-            wasBlockedBefore = object->blockSignals(true);
-        }
+    ~BlockSignalGuard()
+    {
+        object->blockSignals(wasBlockedBefore);
+    }
 
-        ~BlockSignalGuard()
-        {
-            object->blockSignals(wasBlockedBefore);
-        }
+private:
 
-    private:
+    QObject *object = nullptr;
+    bool wasBlockedBefore = false;
+};
 
-        QObject *object = nullptr;
-        bool wasBlockedBefore = false;
-    };
 }
 
 LODEditor::LODEditor(QWidget* parent)
@@ -126,7 +121,7 @@ void LODEditor::EditorModeChanged(int newMode)
     SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
 
     EditorLODSystemV2 *system = GetCurrentEditorLODSystem();
-    system->SetMode(allSceneModeEnabled ? EditorLODSystemV2::MODE_ALL_SCENE : EditorLODSystemV2::MODE_SELECTION);
+    system->SetMode(allSceneModeEnabled ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION);
 }
 
 //MODE
@@ -385,7 +380,7 @@ void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 {
     DVASSERT(scene != nullptr);
 
-    EditorLODSystemV2 *system = scene->editorLODSystemV2;//GetCurrentEditorLODSystem();
+    EditorLODSystemV2 *system = scene->editorLODSystemV2;
     system->SelectionChanged(selected, deselected);
 }
 
@@ -393,7 +388,7 @@ void LODEditor::SolidChanged(SceneEditor2 *scene, const Entity *entity, bool val
 {
     DVASSERT(scene != nullptr);
 
-    EditorLODSystemV2 *system = scene->editorLODSystemV2;//GetCurrentEditorLODSystem();
+    EditorLODSystemV2 *system = scene->editorLODSystemV2;
     system->SolidChanged(entity, value);
 }
 
@@ -418,27 +413,16 @@ void LODEditor::CopyLODToLod0Clicked()
 void LODEditor::CreatePlaneLODClicked()
 {
     EditorLODSystemV2 *system = GetCurrentEditorLODSystem();
+    const LODComponentHolder *lodData = system->GetActiveLODData();
 
-
-//    system->CreatePlaneLOD();
-
-
-    //     if (!GetCurrentEditorLODSystem()->CanCreatePlaneLOD())
-    //     {
-    //         return;
-    //     }
-    // 
-    //     FilePath defaultTexturePath = GetCurrentEditorLODSystem()->GetDefaultTexturePathForPlaneEntity();
-    // 
-    //     PlaneLODDialog dialog(GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount(), defaultTexturePath, this);
-    //     if(dialog.exec() == QDialog::Accepted)
-    //     {
-    //         QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");
-    // 
-    //         GetCurrentEditorLODSystem()->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
-    // 
-    //         QtMainWindow::Instance()->WaitStop();
-    //     }
+    FilePath defaultTexturePath = system->GetPathForPlaneEntity();
+    PlaneLODDialog dialog(lodData->GetLODLayersCount(), defaultTexturePath, this);
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");
+        system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
+        QtMainWindow::Instance()->WaitStop();
+    }
 }
 
 void LODEditor::DeleteFirstLOD()
@@ -457,10 +441,10 @@ void LODEditor::DeleteLastLOD()
 //ACTIONS
 
 //DELEGATE
-void LODEditor::UpdateModeUI(EditorLODSystemV2 *forSystem, const EditorLODSystemV2::eMode mode)
+void LODEditor::UpdateModeUI(EditorLODSystemV2 *forSystem, const eEditorMode mode)
 {
     LODEditorInternal::BlockSignalGuard guard(ui->checkBoxLodEditorMode);
-    ui->checkBoxLodEditorMode->setChecked(mode == EditorLODSystemV2::MODE_ALL_SCENE);
+    ui->checkBoxLodEditorMode->setChecked(mode == eEditorMode::MODE_ALL_SCENE);
 
     panelsUpdater->Update();
 }
@@ -478,8 +462,8 @@ void LODEditor::UpdateForceUI(EditorLODSystemV2 *forSystem, const ForceValues & 
 
     ui->forceSlider->setValue(forceValues.distance);
 
-    const LODComponentHolder *activeLodData = forSystem->GetActiveLODData();
-    const uint32 layerItemsCount = activeLodData->GetLODLayersCount();
+    const LODComponentHolder *lodData = forSystem->GetActiveLODData();
+    const uint32 layerItemsCount = lodData->GetLODLayersCount();
     if (ui->forceLayer->count() != layerItemsCount + 1)
     {
         CreateForceLayerValues(layerItemsCount);
@@ -496,7 +480,7 @@ void LODEditor::UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponen
     LODEditorInternal::BlockSignalGuard guard(ui->distanceSlider); 
 
     const LodComponent &lc = lodData->GetLODComponent();
-    const auto & triangles = lodData->GetTriangles();
+    const auto & triangles = GetCurrentEditorStatisticsSystem()->GetTriangles(forSystem->GetMode());
     int32 count = static_cast<int32>(lodData->GetLODLayersCount());
     ui->distanceSlider->SetLayersCount(count);
 
@@ -554,5 +538,20 @@ EditorLODSystemV2 *LODEditor::GetCurrentEditorLODSystem() const
 
     return nullptr;
 }
+
+
+EditorStatisticsSystem *LODEditor::GetCurrentEditorStatisticsSystem() const
+{
+    DVASSERT(QtMainWindow::Instance());
+
+    SceneEditor2 *scene = QtMainWindow::Instance()->GetCurrentScene();
+    if (scene != nullptr)
+    {
+        return scene->editorStatisticsSystem;
+    }
+
+    return nullptr;
+}
+
 
 

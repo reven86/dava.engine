@@ -32,6 +32,8 @@
 
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Components/LodComponent.h"
+#include "Commands2/CreatePlaneLODCommandHelper.h"
+#include "Scene/SceneTypes.h"
 
 namespace DAVA
 {
@@ -71,13 +73,10 @@ class LODComponentHolder
     friend class EditorLODSystemV2;
 public:
 
-    bool IsMultyComponent() const;
-
     DAVA::int32 GetMaxLODLayer() const;
     DAVA::uint32 GetLODLayersCount() const;
 
     const DAVA::LodComponent & GetLODComponent() const;
-    const DAVA::Array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &GetTriangles() const;
 
 protected:
 
@@ -88,19 +87,13 @@ protected:
 
     void ApplyForce(const ForceValues &force);
     bool DeleteLOD(DAVA::int32 layer);
-
-private:
-    
-    void InsertObjectWithTriangles(DAVA::Entity *entity, DAVA::UnorderedSet<DAVA::RenderObject*> &renderObjects);
-    void CalculateTriangles(const DAVA::UnorderedSet<DAVA::RenderObject *> &renderObjects);
+    bool CopyLod(DAVA::int32 from, DAVA::int32 to);
 
 protected:
 
     DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
     DAVA::LodComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent *> lodComponents;
-
-    DAVA::Array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> trianglesCount;
 
     EditorLODSystemV2 *system = nullptr;
     SceneEditor2 * scene = nullptr;
@@ -111,16 +104,19 @@ class EditorLODSystemV2UIDelegate;
 class EditorLODSystemV2 : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
+
+    enum eLODSystemFlag: DAVA::int32
+    {
+        FLAG_MODE = 1,
+        FLAG_FORCE,
+        FLAG_DISTANCE,
+        FLAG_ACTION,
+
+        FLAGS_COUNT
+    };
+
 public:
 
-    enum eMode: DAVA::uint32 
-    {
-        MODE_ALL_SCENE = 0,
-        MODE_SELECTION,
-
-        MODE_COUNT,
-        MODE_DEFAULT = MODE_SELECTION
-    };
 
     EditorLODSystemV2(DAVA::Scene * scene);
     ~EditorLODSystemV2() override;
@@ -131,15 +127,17 @@ public:
     void RemoveComponent(DAVA::Entity * entity, DAVA::Component * component);
 
     void Process(DAVA::float32 timeElapsed) override;
+    void SceneDidLoaded() override;
 
-    eMode GetMode() const;
-    void SetMode(eMode mode);
+
+    eEditorMode GetMode() const;
+    void SetMode(eEditorMode mode);
 
     //actions
     bool CanDeleteLOD() const;
     bool CanCreateLOD() const;
 
-    void CreatePlaneLOD();
+    void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
     void DeleteFirstLOD();
     void DeleteLastLOD();
     void CopyLastLODToFirst();
@@ -158,39 +156,37 @@ public:
 
     void SetDelegate(EditorLODSystemV2UIDelegate *uiDelegate);
 
+    DAVA::FilePath GetPathForPlaneEntity() const;
+
 protected:
     void ProcessCommand(const Command2 *command, bool redo);
 
 private:
 
+    void RecalculateData();
     //actions
     void CopyLOD(DAVA::int32 fromLayer, DAVA::int32 toLayer);
     void DeleteLOD(DAVA::int32 layer); 
 
     //signals
-    void EmitUpdateModeUI() { updateModeUI = true; };
-    void EmitUpdateForceUI() { updateForceUI = true; };
-    void EmitUpdateDistanceUI() { updateDistanceUI = true; };
-    void EmitUpdateActionsUI() { updateActionUI = true; };
+    void EmitInvalidateUI(const DAVA::Vector<eLODSystemFlag> &flags);
     void DispatchSignals();
     //signals
 
+    void ProcessPlaneLODs();
+
 private:
 
-    LODComponentHolder lodData[MODE_COUNT];
+    LODComponentHolder lodData[eEditorMode::MODE_COUNT];
     LODComponentHolder *activeLodData = nullptr;
-
     ForceValues forceValues;
-    eMode mode = MODE_DEFAULT;
+    eEditorMode mode = eEditorMode::MODE_DEFAULT;
 
-    bool updateModeUI = false;
-    bool updateForceUI = false;
-    bool updateDistanceUI = false;
-    bool updateActionUI = false;
-
-    bool generateCommands = false;
-
+    DAVA::Vector<CreatePlaneLODCommandHelper::RequestPointer> planeLODRequests;
     EditorLODSystemV2UIDelegate *uiDelegate = nullptr;
+
+    std::bitset<FLAGS_COUNT> invalidateUI;
+    bool generateCommands = false;
 };
 
 class EditorLODSystemV2UIDelegate
@@ -199,7 +195,7 @@ public:
 
     virtual ~EditorLODSystemV2UIDelegate() = default;
 
-    virtual void UpdateModeUI(EditorLODSystemV2 *forSystem, const EditorLODSystemV2::eMode mode){};
+    virtual void UpdateModeUI(EditorLODSystemV2 *forSystem, const eEditorMode mode){};
     virtual void UpdateForceUI(EditorLODSystemV2 *forSystem, const ForceValues & forceValues){};
     virtual void UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponentHolder *lodData){};
     virtual void UpdateActionUI(EditorLODSystemV2 *forSystem){};

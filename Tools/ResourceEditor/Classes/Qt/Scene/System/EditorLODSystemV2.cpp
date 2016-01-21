@@ -40,12 +40,30 @@
 #include "Commands2/Command2.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
+#include "Commands2/CopyLastLODCommand.h"
+#include "Commands2/CreatePlaneLODCommand.h"
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorLODSystemV2.h"
 
 using namespace DAVA;
+
+namespace EditorLODSystemV2Internal
+{
+    class BoolGuard final
+    {
+    public:
+        BoolGuard(bool &value) : guardedValue(value) { guardedValue = true; };
+        ~BoolGuard() { guardedValue = false; };
+
+    private:
+
+        bool &guardedValue;
+    };
+}
+
+
 
 void LODComponentHolder::BindToSystem(EditorLODSystemV2 *system_, SceneEditor2 *scene_)
 {
@@ -61,16 +79,12 @@ void LODComponentHolder::SummarizeValues()
 {
     Array<float32, LodComponent::MAX_LOD_LAYERS> lodDistances;
     lodDistances.fill(0.f);
-    trianglesCount.fill(0u);
 
     maxLodLayerIndex = LodComponent::INVALID_LOD_LAYER;
 
     uint32 count = static_cast<uint32> (lodComponents.size());
     if (count > 0)
     {
-        UnorderedSet<RenderObject*> renderObjects;
-        renderObjects.reserve(count);
-
         for (auto & lc : lodComponents)
         {
             maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(GetLodLayersCount(lc)) - 1);
@@ -79,8 +93,6 @@ void LODComponentHolder::SummarizeValues()
             {
                 lodDistances[i] += lc->GetLodLayerDistance(i);
             }
-
-            InsertObjectWithTriangles(lc->GetEntity(), renderObjects);
         }
 
         for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
@@ -89,8 +101,6 @@ void LODComponentHolder::SummarizeValues()
         }
 
         std::sort(lodDistances.begin(), lodDistances.end());
-
-        CalculateTriangles(renderObjects);
     }
 
     for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
@@ -99,73 +109,6 @@ void LODComponentHolder::SummarizeValues()
     }
 }
 
-void LODComponentHolder::InsertObjectWithTriangles(Entity *entity, UnorderedSet<RenderObject *> &renderObjects)
-{
-    RenderObject * ro = GetRenderObject(entity);
-    if (ro && (ro->GetType() == RenderObject::TYPE_MESH || ro->GetType() == RenderObject::TYPE_SPEED_TREE || ro->GetType() == RenderObject::TYPE_SKINNED_MESH))
-    {
-        renderObjects.insert(ro);
-    }
-
-    int32 count = entity->GetChildrenCount();
-    for (int32 i = 0; i < count; ++i)
-    {
-        InsertObjectWithTriangles(entity->GetChild(i), renderObjects);
-    }
-}
-
-void LODComponentHolder::CalculateTriangles(const UnorderedSet<RenderObject*> &renderObjects)
-{
-    bool onlyVisibleBatches = false; // to save leagcy code
-
-    for (auto & ro : renderObjects)
-    {
-        DAVA::uint32 batchCount = ro->GetRenderBatchCount();
-        for (DAVA::uint32 b = 0; b < batchCount; ++b)
-        {
-            DAVA::int32 lodIndex = 0;
-            DAVA::int32 switchIndex = 0;
-
-            RenderBatch *rb = ro->GetRenderBatch(b, lodIndex, switchIndex);
-            if (lodIndex < 0)
-            {
-                continue;
-            }
-
-            if (IsPointerToExactClass<RenderBatch>(rb))
-            {
-                if (onlyVisibleBatches)
-                { //check batch visibility
-
-                    bool batchIsVisible = false;
-                    DAVA::uint32 activeBatchCount = ro->GetActiveRenderBatchCount();
-                    for (DAVA::uint32 a = 0; a < activeBatchCount; ++a)
-                    {
-                        RenderBatch *visibleBatch = ro->GetActiveRenderBatch(a);
-                        if (visibleBatch == rb)
-                        {
-                            batchIsVisible = true;
-                            break;
-                        }
-                    }
-
-                    if (batchIsVisible == false) // need to skip this render batch
-                    {
-                        continue;
-                    }
-                }
-
-                PolygonGroup *pg = rb->GetPolygonGroup();
-                if (nullptr != pg)
-                {
-                    DVASSERT(lodIndex < DAVA::LodComponent::MAX_LOD_LAYERS);
-                    DVASSERT(lodIndex >= 0);
-                    trianglesCount[lodIndex] += pg->GetIndexCount() / 3;
-                }
-            }
-        }
-    }
-}
 
 void LODComponentHolder::PropagateValues()
 {
@@ -188,7 +131,7 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
     scene->BeginBatch(Format("Delete lod layer %", layer));
     for (auto & lc : lodComponents)
     {
-        if (GetLodLayersCount(lc) > 1 && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
+        if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
             scene->Exec(new DeleteLODCommand(lc, layer, -1));
             wasLayerRemoved = true;
@@ -197,6 +140,29 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
     scene->EndBatch();
 
     return wasLayerRemoved;
+}
+
+bool LODComponentHolder::CopyLod(int32 from, int32 to)
+{
+    bool wasCopiedRemoved = false;
+
+    scene->BeginBatch(Format("Copy lod layer %d to %d", from, to));
+    for (auto & lc : lodComponents)
+    {
+        Entity *entity = lc->GetEntity();
+        if (HasComponent(entity, Component::PARTICLE_EFFECT_COMPONENT))
+        {
+            continue;
+        }
+
+        if (GetLodLayersCount(entity) < LodComponent::MAX_LOD_LAYERS)
+        {
+            scene->Exec(new CopyLastLODToLod0Command(lc));
+            wasCopiedRemoved = true;
+        }
+    }
+    scene->EndBatch();
+    return wasCopiedRemoved;
 }
 
 void LODComponentHolder::ApplyForce(const ForceValues &force)
@@ -210,14 +176,10 @@ void LODComponentHolder::ApplyForce(const ForceValues &force)
 
         if (force.flag & ForceValues::APPLY_DISTANCE)
         {
+            lc->currentLod = LodComponent::INVALID_LOD_LAYER;
             lc->SetForceDistance(force.distance);
         }
     }
-}
-
-bool LODComponentHolder::IsMultyComponent() const
-{
-    return (lodComponents.size() > 1);
 }
 
 int32 LODComponentHolder::GetMaxLODLayer() const
@@ -235,23 +197,19 @@ const LodComponent & LODComponentHolder::GetLODComponent() const
     return mergedComponent;
 }
 
-const Array<uint32, LodComponent::MAX_LOD_LAYERS> &LODComponentHolder::GetTriangles() const
-{
-    return trianglesCount;
-}
-
 //SYSTEM
 
 EditorLODSystemV2::EditorLODSystemV2(Scene* scene)
     : SceneSystem(scene)
 {
-    for (uint32 m = 0; m < MODE_COUNT; ++m)
+
+    for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
     {
         lodData[m].BindToSystem(this, static_cast<SceneEditor2 *>(GetScene()));
     }
 
     const bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
-    mode = (allSceneModeEnabled) ? MODE_ALL_SCENE : MODE_SELECTION;
+    mode = (allSceneModeEnabled) ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION;
 
     activeLodData = &lodData[mode];
 }
@@ -265,6 +223,7 @@ EditorLODSystemV2::~EditorLODSystemV2()
 void EditorLODSystemV2::Process(float32 timeElapsed)
 {
     DispatchSignals();
+    ProcessPlaneLODs();
 }
 
 void EditorLODSystemV2::AddEntity(Entity * entity)
@@ -288,15 +247,12 @@ void EditorLODSystemV2::AddComponent(Entity * entity, Component * component)
 {
     DVASSERT(component->GetType() == Component::LOD_COMPONENT);
 
-    lodData[MODE_ALL_SCENE].lodComponents.push_back(static_cast<LodComponent *>(component));
-    lodData[MODE_ALL_SCENE].SummarizeValues();
+    lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(static_cast<LodComponent *>(component));
+    lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
 
-    if (mode == MODE_ALL_SCENE)
+    if (mode == eEditorMode::MODE_ALL_SCENE)
     {
-        EmitUpdateModeUI();
-        EmitUpdateForceUI();
-        EmitUpdateDistanceUI();
-        EmitUpdateActionsUI();
+        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
     }
 }
 
@@ -305,31 +261,36 @@ void EditorLODSystemV2::RemoveComponent(Entity * entity, Component * component)
     DVASSERT(component->GetType() == Component::LOD_COMPONENT);
 
     LodComponent * removedComponent = static_cast<LodComponent *>(component);
-    for (uint32 m = 0; m < MODE_COUNT; ++m)
+    for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
     {
         bool removed = FindAndRemoveExchangingWithLast(lodData[m].lodComponents, removedComponent);
         if (removed)
         {
             lodData[m].SummarizeValues();
-
             if (m == mode)
             {
-                EmitUpdateModeUI();
-                EmitUpdateForceUI();
-                EmitUpdateDistanceUI();
-                EmitUpdateActionsUI();
+                EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
             }
         }
     }
 }
 
+void EditorLODSystemV2::SceneDidLoaded()
+{
+    lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
+    if (mode == eEditorMode::MODE_ALL_SCENE)
+    {
+        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+    }
+}
 
-EditorLODSystemV2::eMode EditorLODSystemV2::GetMode() const
+
+eEditorMode EditorLODSystemV2::GetMode() const
 {
     return mode;
 }
 
-void EditorLODSystemV2::SetMode(EditorLODSystemV2::eMode mode_)
+void EditorLODSystemV2::SetMode(eEditorMode mode_)
 {
     DVASSERT(activeLodData != nullptr);
 
@@ -338,10 +299,7 @@ void EditorLODSystemV2::SetMode(EditorLODSystemV2::eMode mode_)
     activeLodData = &lodData[mode];
     activeLodData->ApplyForce(forceValues);
 
-    EmitUpdateModeUI();
-    EmitUpdateForceUI();
-    EmitUpdateDistanceUI();
-    EmitUpdateActionsUI();
+    EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
 }
 
 const ForceValues & EditorLODSystemV2::GetForceValues() const
@@ -383,7 +341,7 @@ void EditorLODSystemV2::SetForceValues(const ForceValues & values)
     activeLodData->ApplyForce(distanceDiffValues);
     forceValues = values;
 
-    EmitUpdateForceUI();
+    EmitInvalidateUI({ FLAG_FORCE });
 }
 
 
@@ -391,10 +349,10 @@ bool EditorLODSystemV2::CanDeleteLOD() const
 {
     DVASSERT(activeLodData != nullptr);
 
-    bool canDeleteLod = !activeLodData->lodComponents.empty();
+    bool canDeleteLod = (!activeLodData->lodComponents.empty()) && (activeLodData->GetLODLayersCount() > 0);
     for (auto &lc : activeLodData->lodComponents)
     {
-        if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT))
+        if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) )
         {
             canDeleteLod = false;
             break;
@@ -418,59 +376,59 @@ bool EditorLODSystemV2::CanCreateLOD() const
         }
     }
 
-    return canCreateLod && !activeLodData->IsMultyComponent();
+    return canCreateLod && (activeLodData->lodComponents.size() == 1);
 }
 
-void EditorLODSystemV2::CreatePlaneLOD()
+void EditorLODSystemV2::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const FilePath & texturePath)
 {
     DVASSERT(activeLodData != nullptr);
 
+    planeLODRequests.reserve(activeLodData->lodComponents.size());
+    for (auto& lc : activeLodData->lodComponents)
+    {
+        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lc, fromLayer, textureSize, texturePath);
+        planeLODRequests.push_back(request);
+    }
 }
 
 void EditorLODSystemV2::DeleteFirstLOD()
 {
     DVASSERT(activeLodData != nullptr);
-
-    if (activeLodData->GetLODLayersCount() > 0)
-    {
-        generateCommands = true;
-        bool deleted = activeLodData->DeleteLOD(0);
-        generateCommands = false;
-        if (deleted)
-        {
-            activeLodData->SummarizeValues();
-
-            EmitUpdateForceUI();
-            EmitUpdateDistanceUI();
-            EmitUpdateActionsUI();
-        }
-    }
+    DeleteLOD(0);
 }
 
 void EditorLODSystemV2::DeleteLastLOD()
 {
     DVASSERT(activeLodData != nullptr);
+    DeleteLOD(activeLodData->GetMaxLODLayer());
+}
 
-    int32 lastLayer = activeLodData->GetMaxLODLayer();
-    if (lastLayer >= 0)
+void EditorLODSystemV2::DeleteLOD(DAVA::int32 layer)
+{
+    if (activeLodData->GetLODLayersCount() > 0)
     {
-        generateCommands = true;
-        bool deleted = activeLodData->DeleteLOD(lastLayer);
-        generateCommands = false;
+        EditorLODSystemV2Internal::BoolGuard guard(generateCommands);
+        bool deleted = activeLodData->DeleteLOD(layer);
         if (deleted)
         {
-            activeLodData->SummarizeValues();
-
-            EmitUpdateForceUI();
-            EmitUpdateDistanceUI();
-            EmitUpdateActionsUI();
+            RecalculateData();
+            EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
         }
     }
 }
 
+
 void EditorLODSystemV2::CopyLastLODToFirst()
 {
-
+    DVASSERT(activeLodData != nullptr);
+    
+    EditorLODSystemV2Internal::BoolGuard guard(generateCommands);
+    bool copied = activeLodData->CopyLod(activeLodData->GetMaxLODLayer(), 0);
+    if (copied)
+    {
+        RecalculateData();
+        EmitInvalidateUI({ FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+    }
 }
 
 const LODComponentHolder * EditorLODSystemV2::GetActiveLODData() const
@@ -487,11 +445,11 @@ void EditorLODSystemV2::SetLODDistances(const Array<float32, LodComponent::MAX_L
         activeLodData->mergedComponent.SetLodLayerDistance(i, distances[i]);
     }
 
-    generateCommands = true;
+    EditorLODSystemV2Internal::BoolGuard guard(generateCommands);
     activeLodData->PropagateValues();
-    generateCommands = false;
 
-    EmitUpdateDistanceUI();
+    RecalculateData();
+    EmitInvalidateUI({ FLAG_DISTANCE });
 }
 
 void EditorLODSystemV2::SolidChanged(const Entity *entity, bool value)
@@ -509,7 +467,7 @@ void EditorLODSystemV2::SolidChanged(const Entity *entity, bool value)
 
 void EditorLODSystemV2::SelectionChanged(const EntityGroup *selected, const EntityGroup *deselected)
 {
-    lodData[MODE_SELECTION].lodComponents.clear();
+    lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
 
     bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
 
@@ -535,19 +493,16 @@ void EditorLODSystemV2::SelectionChanged(const EntityGroup *selected, const Enti
         uint32 count = entity->GetComponentCount(Component::LOD_COMPONENT);
         for (uint32 i = 0; i < count; ++i)
         {
-            lodData[MODE_SELECTION].lodComponents.push_back(static_cast<LodComponent *> (entity->GetComponent(Component::LOD_COMPONENT, i)));
+            lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(static_cast<LodComponent *> (entity->GetComponent(Component::LOD_COMPONENT, i)));
         }
     }
 
-    lodData[MODE_SELECTION].SummarizeValues();
-    if (mode == MODE_SELECTION)
+    lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
+    if (mode == eEditorMode::MODE_SELECTION)
     {
-        lodData[MODE_SELECTION].ApplyForce(forceValues);
+        lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
 
-        EmitUpdateModeUI();
-        EmitUpdateForceUI();
-        EmitUpdateDistanceUI();
-        EmitUpdateActionsUI();
+        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
     }
 }
 
@@ -556,12 +511,18 @@ void EditorLODSystemV2::SetDelegate(EditorLODSystemV2UIDelegate *uiDelegate_)
     uiDelegate = uiDelegate_;
     if (uiDelegate != nullptr)
     {
-        EmitUpdateModeUI();
-        EmitUpdateForceUI();
-        EmitUpdateDistanceUI();
-        EmitUpdateActionsUI();
+        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
     }
 }
+
+void EditorLODSystemV2::EmitInvalidateUI(const Vector<eLODSystemFlag> &flags)
+{
+    for (auto & flag : flags)
+    {
+        invalidateUI[flag] = true;
+    }
+}
+
 
 void EditorLODSystemV2::DispatchSignals()
 {
@@ -570,27 +531,27 @@ void EditorLODSystemV2::DispatchSignals()
         return;
     }
 
-    if (updateModeUI)
+    if (invalidateUI.test(FLAG_MODE))
     {
-        updateModeUI = false;
+        invalidateUI[FLAG_MODE] = false;
         uiDelegate->UpdateModeUI(this, mode);
     }
 
-    if (updateForceUI)
+    if (invalidateUI.test(FLAG_FORCE))
     {
-        updateForceUI = false;
+        invalidateUI[FLAG_FORCE] = false;
         uiDelegate->UpdateForceUI(this, forceValues);
     }
 
-    if (updateDistanceUI)
+    if (invalidateUI.test(FLAG_DISTANCE))
     {
-        updateDistanceUI = false;
+        invalidateUI[FLAG_DISTANCE] = false;
         uiDelegate->UpdateDistanceUI(this, activeLodData);
     }
 
-    if (updateActionUI)
+    if (invalidateUI.test(FLAG_ACTION))
     {
-        updateActionUI = false;
+        invalidateUI[FLAG_ACTION] = false;
         uiDelegate->UpdateActionUI(this);
     }
 }
@@ -609,12 +570,8 @@ void EditorLODSystemV2::ProcessCommand(const Command2 *command, bool redo)
     {
     case CMDID_LOD_DISTANCE_CHANGE:
     {
-        for (uint32 m = 0; m < MODE_COUNT; ++m)
-        {
-            lodData[m].SummarizeValues();
-        }
-
-        EmitUpdateDistanceUI();
+        RecalculateData();
+        EmitInvalidateUI({ FLAG_DISTANCE });
         break;
     }
 
@@ -624,16 +581,10 @@ void EditorLODSystemV2::ProcessCommand(const Command2 *command, bool redo)
     case CMDID_LOD_COPY_LAST_LOD:
     case CMDID_LOD_DELETE:
     {
-        for (uint32 m = 0; m < MODE_COUNT; ++m)
-        {
-            lodData[m].SummarizeValues();
-        }
+        RecalculateData();
         activeLodData->ApplyForce(forceValues);
 
-        EmitUpdateModeUI();
-        EmitUpdateForceUI();
-        EmitUpdateDistanceUI();
-        EmitUpdateActionsUI();
+        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION});
         break;
     }
 
@@ -642,3 +593,70 @@ void EditorLODSystemV2::ProcessCommand(const Command2 *command, bool redo)
     }
 }
 
+FilePath EditorLODSystemV2::GetPathForPlaneEntity() const
+{
+    DVASSERT(activeLodData != nullptr);
+    DVASSERT(!activeLodData->lodComponents.empty());
+    
+    SceneEditor2 *editorScene = static_cast<SceneEditor2 *>(GetScene());
+    Entity *entity = activeLodData->lodComponents.front()->GetEntity();
+
+    FilePath entityPath = editorScene->GetScenePath();
+    KeyedArchive * properties = GetCustomPropertiesArchieve(entity);
+    if (nullptr != properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
+    {
+        entityPath = FilePath(properties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, entityPath.GetAbsolutePathname()));
+    }
+    String entityName = entity->GetName().c_str();
+    FilePath textureFolder = entityPath.GetDirectory() + "images/";
+
+    String texturePostfix = "_planes.png";
+    FilePath texturePath = textureFolder + entityName + texturePostfix;
+    int32 i = 0;
+    while (FileSystem::Instance()->Exists(texturePath))
+    {
+        i++;
+        texturePath = textureFolder + Format("%s_%d%s", entityName.c_str(), i, texturePostfix.c_str());
+    }
+
+    return texturePath;
+}
+
+void EditorLODSystemV2::ProcessPlaneLODs()
+{
+    if (planeLODRequests.empty())
+    {
+        return;
+    }
+
+    bool allRequestsProcessed = true;
+    for (const auto& req : planeLODRequests)
+    {
+        allRequestsProcessed = allRequestsProcessed && req->completed;
+    }
+
+    if (allRequestsProcessed)
+    {
+        EditorLODSystemV2Internal::BoolGuard guard(generateCommands);
+
+        SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+        sceneEditor2->BeginBatch("Create plane lods");
+        for (const auto& req : planeLODRequests)
+        {
+            sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+        }
+        sceneEditor2->EndBatch();
+        planeLODRequests.clear();
+
+        RecalculateData();
+        EmitInvalidateUI({ FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+    }
+}
+
+void EditorLODSystemV2::RecalculateData()
+{
+    for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
+    {
+        lodData[m].SummarizeValues();
+    }
+}

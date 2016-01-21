@@ -55,6 +55,7 @@
 
 //#include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorLODSystemV2.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 
 
 #include <QShortcut>
@@ -159,12 +160,11 @@ SceneEditor2::SceneEditor2()
     modifSystem->AddDelegate(pathSystem);
     modifSystem->AddDelegate(wayEditSystem);
 
-//     editorLODSystem = new EditorLODSystem(this);
-//     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-
     editorLODSystemV2 = new EditorLODSystemV2(this);
     AddSystem(editorLODSystemV2, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
+    editorStatisticsSystem = new EditorStatisticsSystem(this);
+    AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
 
     float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;

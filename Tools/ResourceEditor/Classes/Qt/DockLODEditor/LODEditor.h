@@ -52,6 +52,7 @@ class QPushButton;
 class QFrame;
 
 class LazyUpdater;
+class EditorStatisticsSystem;
 class LODEditor: public QWidget, private EditorLODSystemV2UIDelegate
 {
     Q_OBJECT
@@ -109,14 +110,14 @@ private:
     void SetupActionsUI();
 
     //EditorLODSystemV2UIDelegate
-    void UpdateModeUI(EditorLODSystemV2 *forSystem, const EditorLODSystemV2::eMode mode) override;
+    void UpdateModeUI(EditorLODSystemV2 *forSystem, const eEditorMode mode) override;
     void UpdateForceUI(EditorLODSystemV2 *forSystem, const ForceValues & forceValues) override;
     void UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponentHolder *lodData) override;
     void UpdateActionUI(EditorLODSystemV2 *forSystem) override;
     //end of EditorLODSystemV2UIDelegate
 
     EditorLODSystemV2 *GetCurrentEditorLODSystem() const;
-
+    EditorStatisticsSystem *GetCurrentEditorStatisticsSystem() const; 
 private:
     
     std::unique_ptr<Ui::LODEditor> ui;
