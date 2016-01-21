@@ -490,7 +490,7 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    Windows::Foundation::IAsyncAction^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([=]()
+    Windows::Foundation::IAsyncAction^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]()
     {
         m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
     }));
