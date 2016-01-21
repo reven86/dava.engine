@@ -99,17 +99,6 @@ static MainWindowController * mainWindowController = nil;
  */
 namespace DAVA 
 {
-	Vector2 CoreMacOSPlatform::GetMousePosition()
-	{
-		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBacking: p];
-
-        Vector2 mouseLocation;
-		mouseLocation.x = p.x;
-		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
-		return mouseLocation;
-	}
-    
     void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
     {
         DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
