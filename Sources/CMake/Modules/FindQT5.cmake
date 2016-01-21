@@ -7,6 +7,7 @@ macro ( qt_deploy )
     endif ()
 
     set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
+    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
 
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
@@ -22,14 +23,12 @@ macro ( qt_deploy )
             set(QML_SCAN_DIR " ")
         endif()
 
-        set(DEPLOY_CURRENT_FOLDER ${QT5_PATH_WIN}/bin/)
-        set(DEPLOT_COMMAND "windeployqt.exe")
-        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
-        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} --dir ${DEPLOY_DIR}")
-        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} --qmldir ${QML_SCAN_DIR} $<TARGET_FILE:${PROJECT_NAME}>")
-        set(DEPLOT_COMMAND "${DEPLOT_COMMAND} ${QT_ITEMS_LIST}")
-
-        
+        set(DEPLOY_PLATFORM "WIN")
+        set(DEPLOY_QT_FOLDER ${QT5_PATH_WIN})
+        set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --qmldir ${QML_SCAN_DIR} $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QT_ITEMS_LIST}")
 
     elseif( MACOS )
 
@@ -37,16 +36,19 @@ macro ( qt_deploy )
             set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
         endif()
 
-        set(DEPLOY_CURRENT_FOLDER ${DEPLOY_DIR})
-        set(DEPLOT_COMMAND "${QT5_PATH_MAC}/bin/macdeployqt ${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
+        set(DEPLOY_PLATFORM "MAC")
+        set(DEPLOY_QT_FOLDER ${QT5_PATH_MAC})
+        set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
-                    ${DEPLOY_CURRENT_FOLDER}
-                    ${DEPLOT_COMMAND}
+                    "-p" "${DEPLOY_PLATFORM}"
+                    "-q" "${DEPLOY_QT_FOLDER}"
+                    "-d" "${DEPLOY_ROOT_FOLDER}"
+                    "-a" "${DEPLOY_ARGUMENTS}"
         )
 
 endmacro ()
