@@ -552,8 +552,7 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
 void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
 {
     DVASSERT(!document.isNull());
-    auto commandExecutor = document->GetCommandExecutor().lock();
-    DVASSERT(nullptr != commandExecutor);
+    auto commandExecutor = document->GetCommandExecutor();
     commandExecutor->ChangeProperty(properties, hash);
 }
 

@@ -68,8 +68,8 @@ public:
     const DAVA::FilePath &GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack() const;
-    std::weak_ptr<PackageNode> GetPackage() const;
-    std::weak_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
+    std::shared_ptr<PackageNode> GetPackage() const;
+    std::shared_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
     WidgetContext* GetContext(void* requester) const;
 
     void SetContext(void* requester, WidgetContext* widgetContext);

@@ -96,13 +96,13 @@ private:
     bool IsNodeInHierarchy(const PackageBaseNode *node) const;
 
     QUndoStack* GetUndoStack() const;
-    PackageNode* GetPackageNode() const;
     void PushCommand(QUndoCommand *cmd);
     void BeginMacro(const QString &name);
     void EndMacro();
     
 private:
-    Document *document;
+    Document *document = nullptr;
+    PackageNode* packageNode = nullptr;
 };
 
 #endif // __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__

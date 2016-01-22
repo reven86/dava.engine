@@ -72,12 +72,12 @@ QUndoStack* Document::GetUndoStack() const
     return undoStack;
 }
 
-std::weak_ptr<PackageNode> Document::GetPackage() const
+std::shared_ptr<PackageNode> Document::GetPackage() const
 {
     return package;
 }
 
-std::weak_ptr<QtModelPackageCommandExecutor> Document::GetCommandExecutor() const
+std::shared_ptr<QtModelPackageCommandExecutor> Document::GetCommandExecutor() const
 {
     return commandExecutor;
 }
