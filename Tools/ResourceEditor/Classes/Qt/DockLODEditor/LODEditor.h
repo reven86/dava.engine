@@ -32,7 +32,8 @@
 
 #include "Base/BaseTypes.h"
 
-#include "Scene/System/EditorLODSystemV2.h"
+#include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
 #include <QWidget>
@@ -52,8 +53,7 @@ class QPushButton;
 class QFrame;
 
 class LazyUpdater;
-class EditorStatisticsSystem;
-class LODEditor: public QWidget, private EditorLODSystemV2UIDelegate
+class LODEditor : public QWidget, private EditorLODSystemV2UIDelegate, EditorStatisticsSystemUIDelegate
 {
     Q_OBJECT
 
@@ -110,13 +110,17 @@ private:
     void SetupActionsUI();
 
     //EditorLODSystemV2UIDelegate
-    void UpdateModeUI(EditorLODSystemV2 *forSystem, const eEditorMode mode) override;
-    void UpdateForceUI(EditorLODSystemV2 *forSystem, const ForceValues & forceValues) override;
-    void UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponentHolder *lodData) override;
-    void UpdateActionUI(EditorLODSystemV2 *forSystem) override;
+    void UpdateModeUI(EditorLODSystem *forSystem, const eEditorMode mode) override;
+    void UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & forceValues) override;
+    void UpdateDistanceUI(EditorLODSystem *forSystem, const LODComponentHolder *lodData) override;
+    void UpdateActionUI(EditorLODSystem *forSystem) override;
     //end of EditorLODSystemV2UIDelegate
 
-    EditorLODSystemV2 *GetCurrentEditorLODSystem() const;
+    //EditorStatisticsSystemUIDelegate
+    void UpdateTrianglesUI(EditorStatisticsSystem *forSystem) override;
+    //end of EditorStatisticsSystemUIDelegate
+
+    EditorLODSystem *GetCurrentEditorLODSystem() const;
     EditorStatisticsSystem *GetCurrentEditorStatisticsSystem() const; 
 private:
     

@@ -71,7 +71,7 @@ class SceneCollisionSystem;
 class HoodSystem;
 
 //class EditorLODSystem;
-class EditorLODSystemV2;
+class EditorLODSystem;
 class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 
@@ -115,7 +115,7 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
-    EditorLODSystemV2 *editorLODSystemV2 = nullptr;
+    EditorLODSystem *editorLODSystem = nullptr;
     EditorStatisticsSystem *editorStatisticsSystem = nullptr;
 
 

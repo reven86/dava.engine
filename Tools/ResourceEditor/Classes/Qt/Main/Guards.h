@@ -27,75 +27,45 @@
 =====================================================================================*/
 
 
-#ifndef __EDITOR_STATISTICS_SYSTEM_V2_H__
-#define __EDITOR_STATISTICS_SYSTEM_V2_H__
+#ifndef __GUARDS_H__
+#define __GUARDS_H__
 
-#include "Entity/SceneSystem.h"
-#include "Scene/SceneTypes.h"
+#include "Debug/DVAssert.h"
+#include <QObject>
 
-namespace DAVA
+namespace Guard
 {
-    class Entity;
-    class RenderComponent;
+
+class BoolGuard final
+{
+public:
+    BoolGuard(bool &value) : guardedValue(value) { guardedValue = true; };
+    ~BoolGuard() { guardedValue = false; };
+private:
+    bool &guardedValue;
+};
+
+
+class SignalsGuard final
+{
+public:
+    SignalsGuard(QObject *object_) : object(object_)
+    {
+        DVASSERT(object);
+        wasBlockedBefore = object->blockSignals(true);
+    }
+    ~SignalsGuard() 
+    {
+        object->blockSignals(wasBlockedBefore);
+    }
+
+private:
+    QObject *object = nullptr;
+    bool wasBlockedBefore = false;
+};
+
+
 }
 
-class EditorStatisticsSystemUIDelegate;
-struct TrianglesData;
 
-class EditorStatisticsSystem : public DAVA::SceneSystem
-{
-    enum eStatisticsSystemFlag : DAVA::int32
-    {
-        FLAG_TRIANGLES = 1,
-        FLAGS_COUNT
-    };
-
-public:
-
-    static const DAVA::int32 INDEX_OF_ALL_LODS_TRIANGLES = 0;
-    static const DAVA::int32 INDEX_OF_FIRST_LOD_TRIANGLES = 1;
-
-    EditorStatisticsSystem(DAVA::Scene * scene);
-
-    void AddEntity(DAVA::Entity * entity) override;
-    void RemoveEntity(DAVA::Entity * entity) override;
-    void AddComponent(DAVA::Entity * entity, DAVA::Component * component);
-    void RemoveComponent(DAVA::Entity * entity, DAVA::Component * component);
-
-    void Process(DAVA::float32 timeElapsed) override;
-
-    const DAVA::Vector<DAVA::uint32> &GetTriangles(eEditorMode mode, bool allTriangles) const;
-
-    void AddDelegate(EditorStatisticsSystemUIDelegate *uiDelegate);
-    void RemoveDelegate(EditorStatisticsSystemUIDelegate *uiDelegate);
-
-private:
-
-    void CalculateTriangles();
-
-
-    //signals
-    void EmitInvalidateUI(const DAVA::Vector<eStatisticsSystemFlag> &flags);
-    void DispatchSignals();
-    //signals
-
-private:
-
-    DAVA::Vector<TrianglesData> triangles;
-    DAVA::Vector<EditorStatisticsSystemUIDelegate *> uiDelegates;
-    std::bitset<FLAGS_COUNT> invalidateUI;
-};
-
-class EditorStatisticsSystemUIDelegate
-{
-public:
-
-    virtual ~EditorStatisticsSystemUIDelegate() = default;
-
-    virtual void UpdateTrianglesUI(EditorStatisticsSystem *forSystem){};
-};
-
-
-
-#endif // __SCENE_LOD_SYSTEM_V2_H__
-
+#endif // __GUARDS_H__

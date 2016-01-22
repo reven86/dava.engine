@@ -53,8 +53,7 @@
 #include "Scene3D/Entity.h"
 
 
-//#include "Scene/System/EditorLODSystem.h"
-#include "Scene/System/EditorLODSystemV2.h"
+#include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
 
 
@@ -160,8 +159,8 @@ SceneEditor2::SceneEditor2()
     modifSystem->AddDelegate(pathSystem);
     modifSystem->AddDelegate(wayEditSystem);
 
-    editorLODSystemV2 = new EditorLODSystemV2(this);
-    AddSystem(editorLODSystemV2, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    editorLODSystem = new EditorLODSystem(this);
+    AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorStatisticsSystem = new EditorStatisticsSystem(this);
     AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
@@ -475,7 +474,7 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
 
-    editorLODSystemV2->ProcessCommand(command, redo);
+    editorLODSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )
