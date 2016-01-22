@@ -133,9 +133,9 @@ public class JNITextField {
 
         @Override
         public void run() {
-            JNIActivity activity = JNIActivity.GetActivity();
-            if(!activity.GetIsPausing())
+            if(!JNIActivity.GetActivity().GetIsPausing())
             {
+                Log.d(JNIConst.LOG_TAG, "[JNITextField::UpdateTexture::run::TextFieldUpdateTexture()");
                 TextFieldUpdateTexture(id, pixels, width, height);
 
                 SafeRunnable action = new SafeRunnable(){

@@ -315,6 +315,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         if(!isPaused && isSurfaceReady)
         {
+            // set paused flag. this will forbid
+            // main c++ thread to process frames
+            isPaused = true;
+
             synchronized(mainThreadSync) {
 
                 // set flag to suspend main thread
@@ -331,10 +335,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 }
             }
 
-            // set paused flag. this will forbid
-            // main c++ thread to process frames
-            isPaused = true;
-
             Log.d(JNIConst.LOG_TAG, "[Activity::handleSuspend] suspended");
         }
 
@@ -347,6 +347,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         if(isPaused && isSurfaceReady && isFocused)
         {
+            // remove paused flag. this will allow
+            // main c++ thread to process frames
+            isPaused = false;
+
             synchronized(mainThreadSync) {
                 // set flag to resume main thread
                 mainThreadNeedResume = true;
@@ -361,10 +365,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                     }
                 }
             }
-
-            // remove paused flag. this will allow
-            // main c++ thread to process frames
-            isPaused = false;
 
             Log.d(JNIConst.LOG_TAG, "[Activity::handleResume] resumed");
         }
@@ -418,11 +418,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         UpdateGamepadAxises();
         JNIUtils.keepScreenOnOnResume();
         
-        handleResume();
-        HideSplashScreenView();
-
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+
+        handleResume();
 
         /*
          Start of workaround
@@ -450,7 +449,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     protected void onStop()
     {
         Log.d(JNIConst.LOG_TAG, "[Activity::onStop] in");
-        
+
+        ShowSplashScreenView();
+                
         //call native method
         RunOnMainLoopThread(new Runnable() {
             public void run()
@@ -460,8 +461,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         });
         
         fmodDevice.stop();
-
-        ShowSplashScreenView();
         super.onStop();
         
     	// The activity is no longer visible (it is now "stopped")
@@ -513,8 +512,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         isFocused = hasFocus;
         handleResume();
-        
-    	if(hasFocus) {
+            
+        if(hasFocus) {
+            HideSplashScreenView();
     		HideNavigationBar(getWindow().getDecorView());
     	}
     	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
