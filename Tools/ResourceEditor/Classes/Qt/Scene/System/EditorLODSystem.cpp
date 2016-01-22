@@ -42,6 +42,7 @@
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
 
 #include "Main/Guards.h"
 
@@ -353,18 +354,22 @@ bool EditorLODSystem::CanDeleteLOD() const
 bool EditorLODSystem::CanCreateLOD() const
 {
     DVASSERT(activeLodData != nullptr);
-    
-    bool canCreateLod = (activeLodData->GetLODLayersCount() < LodComponent::MAX_LOD_LAYERS);
-    for (auto &lc : activeLodData->lodComponents)
+    if (activeLodData->lodComponents.size() == 1) // we can create lod only for one entity
     {
-        if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT))
+        bool canCreateLod = (activeLodData->GetLODLayersCount() < LodComponent::MAX_LOD_LAYERS);
+        if (canCreateLod)
         {
-            canCreateLod = false;
-            break;
+            Entity* entity = activeLodData->lodComponents[0]->GetEntity();
+            if (HasComponent(entity, Component::PARTICLE_EFFECT_COMPONENT))
+            {
+                return false;
+            }
+
+            return HasComponent(entity, Component::RENDER_COMPONENT);
         }
     }
 
-    return canCreateLod && (activeLodData->lodComponents.size() == 1);
+    return false;
 }
 
 void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const FilePath & texturePath)
@@ -560,6 +565,20 @@ void EditorLODSystem::ProcessCommand(const Command2 *command, bool redo)
     {
         RecalculateData();
         EmitInvalidateUI({ FLAG_DISTANCE });
+        break;
+    }
+
+    case CMDID_COMPONENT_REMOVE:
+    {
+        const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
+        if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
+        {
+            RecalculateData();
+            activeLodData->ApplyForce(forceValues);
+
+            EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        }
+
         break;
     }
 
