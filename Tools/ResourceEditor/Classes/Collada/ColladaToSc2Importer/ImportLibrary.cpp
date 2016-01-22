@@ -242,7 +242,7 @@ NMaterial* ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial* colladaMate
         FastName textureType;
         FilePath texturePath;
         bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
-        if (!isShadow && hasTexture)
+        if (!isShadow && hasTexture && !texturePath.IsEmpty())
         {
             ScopedPtr<Texture> texture(GetTextureForPath(texturePath));
             davaMaterialParent->AddTexture(textureType, texture);

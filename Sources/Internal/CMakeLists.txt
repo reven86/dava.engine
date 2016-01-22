@@ -88,6 +88,7 @@ elseif( MACOS )
                     QuartzCore
                     CoreMedia
                     WebKit
+                    SystemConfiguration
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
@@ -147,6 +148,7 @@ elseif ( WINDOWS_UAP )
             "dxgi.lib"
             "dxguid.lib"
             "dwrite.lib"
+            "iphlpapi.lib"
     )
     set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
@@ -209,14 +211,16 @@ set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
                                                    IGNORE_LIST_APPLE  
+                                                        "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                                        "iOS/ICloudKeyValue.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
+                                                        "Notification/LocalNotificationMac.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
                                                     IGNORE_LIST_IOS
+                                                        "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
                                                         "TemplateiOS/HelperAppDelegate.mm"
                                                         "TemplateiOS/DPIHelperiOS.mm"

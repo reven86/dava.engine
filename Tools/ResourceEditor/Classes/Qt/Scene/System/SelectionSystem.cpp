@@ -139,9 +139,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 			ST_MODIF_OFF == hoodSystem->GetModifMode() ||
 			ST_AXIS_NONE == hoodSystem->GetPassingAxis())
 		{
-			if(event->tid == DAVA::UIEvent::BUTTON_1)
-			{
-				const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+            if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+            {
+                const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 				EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
 
 				DAVA::Entity *firstEntity = selectableItems.GetEntity(0);
@@ -197,9 +197,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 	}
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if(event->tid == DAVA::UIEvent::BUTTON_1)
-		{
-			if(applyOnPhaseEnd)
+        if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+        {
+            if(applyOnPhaseEnd)
 			{
 				applyOnPhaseEnd = false;
 				SetSelection(lastSelection);
@@ -413,26 +413,29 @@ void SceneSelectionSystem::Clear()
 
 EntityGroup SceneSelectionSystem::GetSelection() const
 {
-	return curSelections;
+    return IsLocked() == false ? curSelections : EntityGroup();
 }
 
 size_t SceneSelectionSystem::GetSelectionCount() const
 {
-	return curSelections.Size();
+    return IsLocked() == false ? curSelections.Size() : 0;
 }
 
 DAVA::Entity* SceneSelectionSystem::GetSelectionEntity(int index) const
 {
-	return curSelections.GetEntity(index);
+    return IsLocked() == false ? curSelections.GetEntity(index) : nullptr;
 }
 
 bool SceneSelectionSystem::IsEntitySelected(Entity *entity)
 {
-    return curSelections.ContainsEntity(entity);
+    return IsLocked() == false ? curSelections.ContainsEntity(entity) : false;
 }
 
 bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity *entity)
 {
+    if (IsLocked())
+        return false;
+
     while (entity)
     {
         if (curSelections.ContainsEntity(entity))
@@ -462,15 +465,35 @@ ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
 
 void SceneSelectionSystem::SetLocked(bool lock)
 {
-	SceneSystem::SetLocked(lock);
+    bool lockChanged = IsLocked() != lock;
+    SceneSystem::SetLocked(lock);
 
-	hoodSystem->LockAxis(lock);
+    hoodSystem->LockAxis(lock);
 	hoodSystem->SetVisible(!lock);
 
 	if(!lock)
 	{
 		UpdateHoodPos();
 	}
+
+    if (lockChanged)
+    {
+        EntityGroup emptyGroup;
+        EntityGroup* selected = nullptr;
+        EntityGroup* deselected = nullptr;
+        if (lock == true)
+        {
+            selected = &emptyGroup;
+            deselected = &curSelections;
+        }
+        else
+        {
+            selected = &curSelections;
+            deselected = &emptyGroup;
+        }
+
+        SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), selected, deselected);
+    }
 }
 
 void SceneSelectionSystem::UpdateHoodPos() const
@@ -571,7 +594,7 @@ DAVA::Entity* SceneSelectionSystem::GetSelectableEntity(DAVA::Entity* entity)
 
 DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(int index) const
 {
-	return curSelections.GetBbox(index);
+    return IsLocked() == false ? curSelections.GetBbox(index) : DAVA::AABBox3();
 }
 
 DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity) const

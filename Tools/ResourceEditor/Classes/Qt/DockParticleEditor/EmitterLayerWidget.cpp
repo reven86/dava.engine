@@ -193,8 +193,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterPathLabel = new QLineEdit(this);
     innerEmitterPathLabel->setReadOnly(true);
     innerEmitterLayout->addWidget(innerEmitterLabel);
-	innerEmitterLayout->addWidget(innerEmitterPathLabel);
-	mainBox->addLayout(innerEmitterLayout);
+    innerEmitterLayout->addWidget(innerEmitterPathLabel);
+    mainBox->addLayout(innerEmitterLayout);
 	
 	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
 	pivotPointLabel = new QLabel("Pivot Point", this);
@@ -1081,9 +1081,9 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     // The same is for "Additive" flag, Color, Alpha and Frame.
     colorRandomGradient->setVisible(!isSuperemitter);
     colorOverLifeGradient->setVisible(!isSuperemitter);
-	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
+    alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
-	frameOverlifeCheckBox->setVisible(!isSuperemitter);
+    frameOverlifeCheckBox->setVisible(!isSuperemitter);
 	frameOverlifeFPSSpin->setVisible(!isSuperemitter);
 	frameOverlifeFPSLabel->setVisible(!isSuperemitter);
 	randomFrameOnStartCheckBox->setVisible(!isSuperemitter);

@@ -293,11 +293,11 @@ void CorePlatformAndroid::KeyUp(int32 keyCode)
     UIEvent keyEvent;
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
-    keyEvent.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnSystemKeyUnpressed(keyCode);
+    keyboard.OnKeyUnpressed(static_cast<DAVA::Key>(keyCode));
 }
 
 void CorePlatformAndroid::KeyDown(int32 keyCode)
@@ -308,11 +308,11 @@ void CorePlatformAndroid::KeyDown(int32 keyCode)
     UIEvent keyEvent;
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
-    keyEvent.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnSystemKeyPressed(keyCode);
+    keyboard.OnKeyPressed(static_cast<DAVA::Key>(keyCode));
 }
 
 void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
@@ -336,7 +336,7 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
     }
 
     UIEvent newEvent;
-    newEvent.tid = davaKey;
+    newEvent.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;

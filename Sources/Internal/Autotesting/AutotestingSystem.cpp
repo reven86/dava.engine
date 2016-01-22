@@ -83,14 +83,14 @@ AutotestingSystem::AutotestingSystem()
     , waitCheckTimeLeft(0.0f)
     , luaSystem(nullptr)
 {
-        new AutotestingDB();
-	}
+    new AutotestingDB();
+}
 
-	AutotestingSystem::~AutotestingSystem()
-	{
-		SafeRelease(luaSystem);
-		if (AutotestingDB::Instance())
-			AutotestingDB::Instance()->Release();
+AutotestingSystem::~AutotestingSystem()
+{
+    SafeRelease(luaSystem);
+    if (AutotestingDB::Instance())
+            AutotestingDB::Instance()->Release();
 	}
 
 	void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -177,12 +177,12 @@ AutotestingSystem::AutotestingSystem()
 
     // Get test parameters from id.yaml
     void AutotestingSystem::FetchParametersFromIdYaml()
-	{
-		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
-		RefPtr<KeyedArchive> option = GetIdYamlOptions();
+    {
+        Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
+        RefPtr<KeyedArchive> option = GetIdYamlOptions();
 
-		buildId = option->GetString("BuildId");
-		buildDate = option->GetString("Date");
+        buildId = option->GetString("BuildId");
+        buildDate = option->GetString("Date");
 		branch = option->GetString("Branch");
 		framework = option->GetString("Framework");
 		branchRev = option->GetString("BranchRev");
@@ -275,13 +275,13 @@ AutotestingSystem::AutotestingSystem()
     }
 
     String AutotestingSystem::GetCurrentTimeString()
-	{
-		DateTime time = DateTime::Now();
-		return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
-	}
+    {
+        DateTime time = DateTime::Now();
+        return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
+    }
 
-	void AutotestingSystem::OnTestStart(const String &testDescription)
-	{
+    void AutotestingSystem::OnTestStart(const String& testDescription)
+    {
 		Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
 		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
 		if (isDB)
@@ -373,13 +373,13 @@ AutotestingSystem::AutotestingSystem()
         }
 
         ExitApp();
-	}
+    }
 
-	void AutotestingSystem::ForceQuit(const String &errorMessage)
-	{
-		DVASSERT_MSG(false, errorMessage.c_str())
-		Core::Instance()->Quit();
-	}
+    void AutotestingSystem::ForceQuit(const String& errorMessage)
+    {
+        DVASSERT_MSG(false, errorMessage.c_str())
+        Core::Instance()->Quit();
+    }
 
 	void AutotestingSystem::MakeScreenShot()
 	{
@@ -428,22 +428,22 @@ AutotestingSystem::AutotestingSystem()
         }
 
         // Mark test as SUCCESS
-		AutotestingDB::Instance()->Log("INFO", "Test finished.");
+        AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
-		ExitApp();
-	}
+        ExitApp();
+    }
 
-	void AutotestingSystem::OnInput(const UIEvent &input)
-	{
-		if (UIScreenManager::Instance())
+    void AutotestingSystem::OnInput(const UIEvent& input)
+    {
+        if (UIScreenManager::Instance())
 		{
 			String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
 			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
 		}
 
-		int32 id = input.tid;
-		switch (input.phase)
-		{
+        int32 id = input.touchId;
+        switch (input.phase)
+        {
         case UIEvent::Phase::BEGAN:
         {
             mouseMove = input;
@@ -516,12 +516,12 @@ AutotestingSystem::AutotestingSystem()
 
     bool AutotestingSystem::IsTouchDown(int32 id)
     {
-		return (touches.find(id) != touches.end());
-	}
+        return (touches.find(id) != touches.end());
+    }
 
-	void AutotestingSystem::ExitApp()
-	{
-		if (needExitApp)
+    void AutotestingSystem::ExitApp()
+    {
+        if (needExitApp)
 		{
 			return;
 		}

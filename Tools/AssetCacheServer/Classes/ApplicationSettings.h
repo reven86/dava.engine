@@ -72,6 +72,7 @@ private:
     static const uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
     static const uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
     static const bool DEFAULT_AUTO_START = true;
+    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
 
 public:
     void Save() const;
@@ -97,6 +98,9 @@ public:
     const bool IsAutoStart() const;
     void SetAutoStart(bool);
 
+    const bool IsLaunchOnSystemStartup() const;
+    void SetLaunchOnSystemStartup(bool);
+
     const List<ServerData>& GetServers() const;
     void ResetServers();
     void AddServer(const ServerData& server);
@@ -112,12 +116,13 @@ private:
     void Deserialize(DAVA::KeyedArchive* archieve);
 
 public:
-    FilePath folder;
+    FilePath folder = DEFAULT_FOLDER;
     float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
     uint32 filesCount = DEFAULT_FILES_COUNT;
     uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
     uint16 listenPort = DEFAULT_PORT;
     bool autoStart = DEFAULT_AUTO_START;
+    bool launchOnSystemStartup = DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
     List<ServerData> remoteServers;
 
     bool isFirstLaunch = true;
