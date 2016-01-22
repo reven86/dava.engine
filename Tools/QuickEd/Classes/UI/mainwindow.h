@@ -46,6 +46,7 @@ class PreviewWidget;
 
 class LocalizationEditorDialog;
 class Document;
+class DocumentGroup;
 class SpritesPacker;
 class LoggerOutputObject;
 class Project;
@@ -55,14 +56,11 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
     Q_OBJECT
     
 public:
-    struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
 
-    void CreateUndoRedoActions(const QUndoGroup *undoGroup);
-    int CloseTab(int index);
-    void SetCurrentTab(int index);
+    void AttachDocumentGroup(DocumentGroup* documentGroup);
+
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
-    int AddTab(Document* document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     QComboBox* GetComboBoxLanguage();
@@ -71,15 +69,11 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 signals:
-    void TabClosed(int tab);
     void CloseProject();
     void ActionExitTriggered();
     void RecentMenuTriggered(QAction *);
     void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
-    void SaveAllDocuments();
-    void SaveDocument(int index);
-    void CurrentTabChanged(int index);
     void CloseRequested();
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
@@ -87,12 +81,9 @@ signals:
     void EmulationModeChanged(bool emulationMode);
 
 public slots:
-    void OnCountChanged(int count);
     void OnDocumentChanged(Document* document);
-    void OnDocumentCanSaveChanged(int documentIndex, bool canSave);
 
 private slots:
-    void OnSaveDocument();
     void OnShowHelp();
     
     void OnOpenProject();
@@ -115,7 +106,6 @@ private:
     void InitEmulationMode();
     void InitMenu();
     void SetupViewMenu();
-    void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
     // Save/restore positions of DockWidgets and main window geometry

@@ -65,6 +65,14 @@ bool Project::Open(const QString &path)
     return result;
 }
 
+void Project::Close()
+{
+    SetProjectName("");
+    SetProjectPath("");
+    SetIsOpen(false);
+    return;
+}
+
 bool Project::OpenInternal(const QString &path)
 {
     // Attempt to create a project

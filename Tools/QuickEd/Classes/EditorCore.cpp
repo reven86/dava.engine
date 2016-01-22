@@ -38,7 +38,6 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FileDialog/FileDialog.h"
 #include "EditorSettings.h"
 
 #include <QSettings>
@@ -59,29 +58,26 @@ EditorCore::EditorCore(QObject* parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
     , project(new Project(this))
-    , documentGroup(new DocumentGroup(this))
+    , documentGroup(new DocumentGroup(project, this))
     , mainWindow(std::make_unique<MainWindow>())
 {
-    connect(qApp, &QApplication::applicationStateChanged, this, &EditorCore::OnApplicationStateChanged);
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
-    mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
+    mainWindow->AttachDocumentGroup(documentGroup);
 
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
-    connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
+    connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setDisabled);
+    connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
     connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::Exit);
     connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
     connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
-    connect(mainWindow.get(), &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
-    connect(mainWindow.get(), &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
-    connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
+    connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-    connect(documentGroup, &DocumentGroup::CanSaveChanged, mainWindow.get(), &MainWindow::OnDocumentCanSaveChanged);
+
     QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
@@ -134,77 +130,14 @@ void EditorCore::Start()
 
 void EditorCore::OnReloadSprites()
 {
-    if (CloseAllDocuments())
+    for (auto& document : documentGroup->GetDocuments())
     {
-        mainWindow->ExecDialogReloadSprites(spritesPacker.get());
-    }
-}
-
-void EditorCore::OnFilesChanged(const QList<Document*>& changedFiles)
-{
-    bool yesToAll = false;
-    bool noToAll = false;
-    int changedCount = std::count_if(changedFiles.begin(), changedFiles.end(), [changedFiles](Document* document) {
-        return document->CanSave();
-    });
-    for (Document* document : changedFiles)
-    {
-        documentGroup->SetActiveDocument(document);
-
-        QMessageBox::StandardButton button = QMessageBox::No;
-        if (!document->CanSave())
+        if (!documentGroup->RemoveDocument(document))
         {
-            button = QMessageBox::Yes;
-        }
-        else
-        {
-            if (!yesToAll && !noToAll)
-            {
-                QFileInfo fileInfo(document->GetPackageAbsolutePath());
-                button = QMessageBox::warning(
-                qApp->activeWindow(), tr("File %1 changed").arg(fileInfo.fileName()), tr("%1\n\nThis file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath()), changedCount > 1 ?
-                QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll :
-                QMessageBox::Yes | QMessageBox::No,
-                QMessageBox::Yes);
-                yesToAll = button == QMessageBox::YesToAll;
-                noToAll = button == QMessageBox::NoToAll;
-            }
-            if (yesToAll || noToAll)
-            {
-                button = yesToAll ? QMessageBox::Yes : QMessageBox::No;
-            }
-        }
-        int index = documents.indexOf(document);
-        if (button == QMessageBox::Yes)
-        {
-            DAVA::FilePath davaPath = document->GetPackageFilePath();
-            CloseDocument(index);
-            RefPtr<PackageNode> package = project->OpenPackage(davaPath);
-            DVASSERT(package.Get() != nullptr);
-            CreateDocument(index, package);
+            return;
         }
     }
-}
-
-void EditorCore::OnFilesRemoved(const QList<Document*>& removedFiles)
-{
-    for (Document* document : removedFiles)
-    {
-        documentGroup->SetActiveDocument(document);
-
-        QMessageBox::StandardButton button = QMessageBox::No;
-        QFileInfo fileInfo(document->GetPackageAbsolutePath());
-        button = QMessageBox::warning(
-        qApp->activeWindow(),
-        tr("File %1 is renamed or removed").arg(fileInfo.fileName()),
-        tr("%1\n\nThis file has been renamed or removed. Do you want to close it?")
-        .arg(fileInfo.absoluteFilePath()),
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        if (button == QMessageBox::Yes)
-        {
-            CloseDocument(documents.indexOf(document));
-        }
-    }
+    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -213,23 +146,6 @@ void EditorCore::OnGLWidgedInitialized()
     if (projectCount > 0)
     {
         OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
-    }
-}
-
-void EditorCore::OnOpenPackageFile(const QString &path)
-{
-    if (!path.isEmpty())
-    {
-        QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
-        FilePath davaPath(canonicalFilePath.toStdString());
-        int index = GetIndexByPackagePath(davaPath);
-        if (index == -1)
-        {
-            RefPtr<PackageNode> package = project->OpenPackage(davaPath);
-            DVASSERT(package.Get() != nullptr);
-            index = CreateDocument(documents.size(), package);
-        }
-        mainWindow->SetCurrentTab(index);
     }
 }
 
@@ -268,60 +184,6 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     }
 }
 
-bool EditorCore::CloseAllDocuments()
-{
-    for (auto index = documents.size() - 1; index >= 0; --index)
-    {
-        if (!CloseOneDocument(index))
-            return false;
-    }
-    return true;
-}
-
-bool EditorCore::CloseOneDocument(int index)
-{
-    DVASSERT(index >= 0);
-    DVASSERT(index < documents.size());
-    Document* document = documents.at(index);
-    if (document->CanSave())
-    {
-        QString status = document->IsDocumentExists() ? "modified" : "renamed or removed";
-        QMessageBox::StandardButton ret = QMessageBox::question(
-        qApp->activeWindow(),
-        tr("Save changes"),
-        tr("The file %1 has been %2.\n"
-           "Do you want to save it?")
-        .arg(document->GetPackageFilePath().GetBasename().c_str())
-        .arg(status),
-        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-        QMessageBox::Save);
-        if (ret == QMessageBox::Save)
-        {
-            SaveDocument(index);
-        }
-        else if (ret == QMessageBox::Cancel)
-        {
-            return false;
-        }
-    }
-    CloseDocument(index);
-    return true;
-}
-
-void EditorCore::SaveDocument(int index)
-{
-    DVASSERT(index >= 0);
-    DVASSERT(index < documents.size());
-    SaveDocument(documents[index]);
-}
-
-void EditorCore::SaveAllDocuments()
-{
-    for (int i = 0, size = documents.size(); i < size; ++i)
-    {
-        SaveDocument(i);
-    }
-}
 
 void EditorCore::Exit()
 {
@@ -342,15 +204,10 @@ void EditorCore::RecentMenu(QAction *recentProjectAction)
     OpenProject(projectPath);
 }
 
-void EditorCore::OnCurrentTabChanged(int index)
-{
-    documentGroup->SetActiveDocument(index == -1 ? nullptr : documents.at(index));
-}
-
 void EditorCore::UpdateLanguage()
 {
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
-    for(auto &document : documents)
+    for (auto& document : documentGroup->GetDocuments())
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -360,7 +217,7 @@ void EditorCore::UpdateLanguage()
 void EditorCore::OnRtlChanged(bool isRtl)
 {
     UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
-    for(auto &document : documents)
+    for (auto& document : documentGroup->GetDocuments())
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -376,69 +233,11 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
     for (String &token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 
-    for(auto &document : documents)
+    for (auto& document : documentGroup->GetDocuments())
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
     }
-}
-
-void EditorCore::OnApplicationStateChanged(Qt::ApplicationState state)
-{
-    if (state == Qt::ApplicationActive)
-    {
-        ApplyFileChanges();
-    }
-}
-
-void EditorCore::OnFileChanged()
-{
-    Document* changedDocument = qobject_cast<Document*>(sender());
-    DVASSERT(nullptr != changedDocument);
-    changedFiles.insert(changedDocument);
-    if (changedDocument->CanSave() || qApp->applicationState() == Qt::ApplicationActive)
-    {
-        ApplyFileChanges();
-    }
-}
-
-void EditorCore::ApplyFileChanges()
-{
-    QList<Document*> changed;
-    QList<Document*> removed;
-    for (const auto& document : changedFiles)
-    {
-        if (document->IsDocumentExists())
-        {
-            changed << document;
-        }
-        else
-        {
-            removed << document;
-        }
-    }
-    changedFiles.clear();
-    if (!changed.empty())
-    {
-        OnFilesChanged(changed);
-    }
-    if (!removed.empty())
-    {
-        OnFilesRemoved(removed);
-    }
-}
-
-Document* EditorCore::GetDocument(const QString& path) const
-{
-    FilePath davaPath(path.toStdString().c_str());
-    for (Document* document : documents)
-    {
-        if (document->GetPackageFilePath() == davaPath)
-        {
-            return document;
-        }
-    }
-    return nullptr;
 }
 
 void EditorCore::OpenProject(const QString &path)
@@ -462,113 +261,39 @@ void EditorCore::OpenProject(const QString &path)
 
 bool EditorCore::CloseProject()
 {
+    if (!project->IsOpen())
+    {
+        return true;
+    }
+    auto documents = documentGroup->GetDocuments();
     bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](Document* document) { return document->CanSave(); }) != documents.end();
 
     if (hasUnsaved)
     {
         int ret = QMessageBox::question(
-            qApp->activeWindow(),
-            tr("Save changes"),
-            tr("Some files has been modified.\n"
-                "Do you want to save your changes?"),
-            QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
-            );
+        qApp->activeWindow(),
+        tr("Save changes"),
+        tr("Some files has been modified.\n"
+           "Do you want to save your changes?"),
+        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
         if (ret == QMessageBox::Cancel)
         {
             return false;
         }
         else if (ret == QMessageBox::SaveAll)
         {
-            SaveAllDocuments();
+            documentGroup->SaveAllDocuments();
         }
     }
 
-    while(!documents.isEmpty())
+    for (auto& document : documentGroup->GetDocuments())
     {
-        CloseDocument(0);
+        if (!documentGroup->RemoveDocument(document))
+        {
+            DVASSERT(false && "can not close saved documents");
+            return false;
+        }
     }
+    project->Close();
     return true;
 }
-
-void EditorCore::CloseDocument(int index)
-{
-    DVASSERT(index >= 0);
-    DVASSERT(index < documents.size());
-    Document *activeDocument = documentGroup->GetActiveDocument();
-    //we will set active document after check current document
-    disconnect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
-    int newIndex = mainWindow->CloseTab(index);
-    connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
-
-    DVASSERT(activeDocument != nullptr);
-    Document *detached = documents.takeAt(index);
-    Document *nextDocument = nullptr;
-    if(detached != activeDocument)
-    {
-        nextDocument = activeDocument;
-    }
-    else if(newIndex != -1)
-    {
-        nextDocument = documents.at(newIndex);
-    }
-    //sync document list with tab list
-
-    documentGroup->SetActiveDocument(nextDocument);
-    documentGroup->RemoveDocument(detached);
-    delete detached; //some widgets hold this document inside :(
-}
-
-int EditorCore::CreateDocument(int index, RefPtr<PackageNode> packageRef)
-{
-    PackageNode* packagePtr = SafeRetain(packageRef.Get());
-    std::shared_ptr<PackageNode> package = std::shared_ptr<PackageNode>(packagePtr, [](BaseObject* obj) { obj->Release(); });
-
-    Document *document = new Document(package, this);
-    documents.insert(index, document);
-    documentGroup->InsertDocument(index, document);
-    int insertedIndex = mainWindow->AddTab(document, index);
-    OnCurrentTabChanged(insertedIndex);
-    connect(document, &Document::FileChanged, this, &EditorCore::OnFileChanged);
-    return index;
-}
-
-void EditorCore::SaveDocument(Document *document)
-{
-    DVASSERT(document);
-    QFileInfo fileInfo(document->GetPackageAbsolutePath());
-    if (!fileInfo.exists())
-    {
-        QString saveFileName = FileDialog::getSaveFileName(mainWindow.get(), tr("Save document as"), document->GetPackageAbsolutePath(), "*" + FileSystemModel::GetYamlExtensionString());
-        if (!saveFileName.isEmpty())
-        {
-            FilePath projectPath(saveFileName.toStdString().c_str());
-
-            document->GetPackage()->SetPath(projectPath);
-        }
-        else
-        {
-            return;
-        }
-    }
-    else if (document->GetUndoStack()->isClean())
-    {
-        return;
-    }
-    QString path = document->GetPackageAbsolutePath();
-    auto packagePtr = document->GetPackage().lock();
-    DVVERIFY(project->SavePackage(packagePtr.get())); //TODO:log here
-    document->GetUndoStack()->setClean();
-}
-
-int EditorCore::GetIndexByPackagePath(const FilePath& davaPath) const
-{
-    for (int index = 0; index < documents.size(); ++index)
-    {
-        if (documents.at(index)->GetPackageFilePath() == davaPath)
-        {
-            return index;
-        }
-    }
-    return -1;
-}
-

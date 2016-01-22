@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -80,12 +80,10 @@
     </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actionOpen_project"/>
+    <addaction name="actionClose_project"/>
     <addaction name="menuRecent"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveDocument"/>
-    <addaction name="actionSaveAllDocuments"/>
     <addaction name="separator"/>
-    <addaction name="actionClose_project"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -151,9 +149,6 @@
    </attribute>
    <addaction name="actionNew_project"/>
    <addaction name="actionOpen_project"/>
-   <addaction name="actionSaveDocument"/>
-   <addaction name="actionSaveAllDocuments"/>
-   <addaction name="actionClose_project"/>
    <addaction name="separator"/>
    <addaction name="actionPixelized"/>
   </widget>
@@ -224,7 +219,7 @@
    <widget class="QWidget" name="logWidgetContainer">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="LogWidget" name="logWidget"/>
+      <widget class="LogWidget" name="logWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -303,42 +298,6 @@
     <string>Properties</string>
    </property>
   </action>
-  <action name="actionClose_project">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/101.png</normaloff>:/Icons/101.png</iconset>
-   </property>
-   <property name="text">
-    <string>Close project</string>
-   </property>
-   <property name="toolTip">
-    <string>Close project</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+W</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionSaveDocument">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/savescene.png</normaloff>:/Icons/savescene.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save document</string>
-   </property>
-   <property name="toolTip">
-    <string>Save document</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
   <action name="actionHelp">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
@@ -412,18 +371,6 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionSaveAllDocuments">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/savesceneall.png</normaloff>:/Icons/savesceneall.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save all documents</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
-   </property>
-  </action>
   <action name="actionRepack_And_Reload">
    <property name="icon">
     <iconset>
@@ -481,6 +428,18 @@
    </property>
    <property name="toolTip">
     <string>reload sprites</string>
+   </property>
+  </action>
+  <action name="actionClose_project">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../DataQt/icons.qrc">
+     <normaloff>:/Icons/close.png</normaloff>:/Icons/close.png</iconset>
+   </property>
+   <property name="text">
+    <string>Close project</string>
    </property>
   </action>
  </widget>

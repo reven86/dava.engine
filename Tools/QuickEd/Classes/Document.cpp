@@ -131,7 +131,6 @@ void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
-}
 
 void Document::SetCanSave(bool arg)
 {
@@ -146,10 +145,11 @@ void Document::OnFileChanged(const QString& path)
 {
     DVASSERT(path == GetPackageAbsolutePath());
     fileExists = QFile::exists(GetPackageAbsolutePath());
-    emit FileChanged();
+    emit FileChanged(this);
     SetCanSave(!fileExists || !undoStack->isClean());
 }
 
 void Document::OnCleanChanged(bool clean)
 {
     SetCanSave(fileExists && clean);
+}

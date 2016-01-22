@@ -62,7 +62,7 @@ class QFileSystemWatcher;
 class Document final : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool canSave READ CanSave WRITE SetCanSave NOTIFY CanSaveChanged);
+    Q_PROPERTY(bool canSave READ CanSave NOTIFY CanSaveChanged);
 
 public:
     explicit Document(std::shared_ptr<PackageNode> package, QObject* parent = nullptr);
@@ -81,18 +81,18 @@ public:
     bool IsDocumentExists() const;
 
 signals:
-    void FileChanged();
+    void FileChanged(Document* document);
     void CanSaveChanged(bool canSave);
 
 public slots:
     void RefreshAllControlProperties();
-    void SetCanSave(bool canSave);
 
 private slots:
     void OnFileChanged(const QString& path);
     void OnCleanChanged(bool clean);
 
 private:
+    void SetCanSave(bool canSave);
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
     std::shared_ptr<PackageNode> package;

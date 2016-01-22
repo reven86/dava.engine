@@ -51,53 +51,30 @@ public:
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project *GetProject() const;
-    SpritesPacker* GetSpritesPacker() const;
     void Start();
 
 private slots:
     void OnReloadSprites();
-    void OnFilesChanged(const QList<Document*>& changedFiles);
-    void OnFilesRemoved(const QList<Document*>& removedFiles);
 
-    void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
     void OnGLWidgedInitialized();
 
-    bool CloseAllDocuments();
-    bool CloseOneDocument(int index);
-    void SaveDocument(int index);
-    void SaveAllDocuments();
-
     void Exit();
     void RecentMenu(QAction *);
-    void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
    
     void OnRtlChanged(bool isRtl);
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
-    void OnApplicationStateChanged(Qt::ApplicationState state);
-    void OnFileChanged();
-
 private:
-    void ApplyFileChanges();
-    Document* GetDocument(const QString& path) const;
     void OpenProject(const QString &path);
     bool CloseProject();
-    int CreateDocument(int index, DAVA::RefPtr<PackageNode> package);
-    void SaveDocument(Document *document);
-
-    void CloseDocument(int index);
-    int GetIndexByPackagePath(const DAVA::FilePath& davaPath) const;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
-    QList<Document*> documents;
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
-    DAVA::UIControl* rootControl = nullptr;
-    QSet<Document*> changedFiles;
 };
 
 inline EditorFontSystem *GetEditorFontSystem()

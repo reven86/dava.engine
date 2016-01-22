@@ -31,38 +31,81 @@
 #define QUICKED_DOCUMENTGROUP_H
 
 #include <QObject>
+#include <QSet>
+#include <QList>
+#include <QPointer>
 
 class Document;
 class QUndoGroup;
 class PackageBaseNode;
+class QAction;
+class QTabBar;
+class Project;
 
 class DocumentGroup : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool canSave READ CanSave NOTIFY CanSaveChanged)
+    Q_PROPERTY(bool canClose READ CanClose NOTIFY CanCloseChanged)
 public:
-    explicit DocumentGroup(QObject *parent = nullptr);
+    explicit DocumentGroup(Project* project, QObject* parent = nullptr);
     ~DocumentGroup();
 
-    void InsertDocument(int index, Document*);
-    void RemoveDocument(Document*);
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
-    const QUndoGroup* GetUndoGroup() const;
+
+    bool CanSave() const;
+    bool CanClose() const;
+
+    QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const;
+    QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const;
+
+    QAction* CreateSaveAction(QObject* parent) const;
+    QAction* CreateSaveAllAction(QObject* parent) const;
+    QAction* CreateCloseDocumentAction(QObject* parent) const;
+
+    void ConnectToTabBar(QTabBar* tabBar);
 
 signals:
+    void ActiveIndexChanged(int index);
     void ActiveDocumentChanged(Document*);
-    void CanSaveChanged(int index, bool canSave);
+    void CanSaveChanged(bool canSave);
+    void CanCloseChanged(bool canClose);
 
 public slots:
-    void SetActiveDocument(Document* document);
+    void AddDocument(const QString& path);
+    bool RemoveCurrentDocument();
+    bool RemoveDocument(int index);
+    bool RemoveDocument(Document* document);
+    void ReloadDocument(int index);
+    void ReloadDocument(Document* document);
 
-private slots:
+    void SetActiveDocument(int index);
+    void SetActiveDocument(Document* document);
+    void SaveAllDocuments();
+    void SaveCurrentDocument();
     void OnCanSaveChanged(bool canSave);
 
+private slots:
+    void OnApplicationStateChanged(Qt::ApplicationState state);
+    void OnFileChanged(Document* document);
+
 private:
+    void OnFilesChanged(const QList<Document*>& changedFiles);
+    void OnFilesRemoved(const QList<Document*>& removedFiles);
+    void ApplyFileChanges();
+    int GetIndexByPackagePath(const QString& davaPath) const;
+    void InsertTab(QTabBar* tabBar, Document* document, int index);
+    void SaveDocument(Document* document);
+    Document* CreateDocument(const QString& path);
+    void InsertDocument(Document* document, int pos);
+
     Document *active;
-    QList<Document*> documentList;
+    QList<Document*> documents;
     QUndoGroup *undoGroup;
+    QSet<Document*> changedFiles;
+    QList<QPointer<QTabBar>> attachedTabBars;
+    QPointer<Project> project;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

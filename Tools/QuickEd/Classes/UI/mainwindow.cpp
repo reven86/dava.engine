@@ -30,6 +30,7 @@
 #include "mainwindow.h"
 #include "Project/Project.h"
 #include "Document.h"
+#include "DocumentGroup.h"
 
 #include "Helpers/ResourcesManageHelper.h"
 
@@ -51,20 +52,6 @@ namespace
 }
 
 using namespace DAVA;
-
-struct MainWindow::TabState
-{
-    TabState(Document* document_, const QString& tabText_)
-        : document(document_)
-        , tabText(tabText_)
-    {
-        DVASSERT(document != nullptr);
-    }
-    Document* document = nullptr;
-    QString tabText;
-};
-
-Q_DECLARE_METATYPE(MainWindow::TabState*);
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -96,8 +83,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &MainWindow::TabClosed);
-    connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
@@ -111,24 +96,39 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 }
 
-void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
+void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 {
-    Q_ASSERT(undoGroup);
-    QAction *undoAction = undoGroup->createUndoAction(this);
-    undoAction->setShortcuts(QKeySequence::Undo);
+    Q_ASSERT(documentGroup != nullptr);
+
+    documentGroup->ConnectToTabBar(tabBar);
+
+    QAction* undoAction = documentGroup->CreateUndoAction(this);
+    undoAction->setShortcut(QKeySequence::Undo);
     undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
 
-    QAction *redoAction = undoGroup->createRedoAction(this);
-    redoAction->setShortcuts(QKeySequence::Redo);
+    QAction* redoAction = documentGroup->CreateRedoAction(this);
+    redoAction->setShortcut(QKeySequence::Redo);
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
     mainToolbar->addAction(undoAction);
     mainToolbar->addAction(redoAction);
-}
 
-void MainWindow::OnCountChanged(int count)
-{
-    actionSaveAllDocuments->setEnabled(count > 0);
+    Q_ASSERT(documentGroup != nullptr);
+    QAction* saveDocumentAction = documentGroup->CreateSaveAction(this);
+    saveDocumentAction->setShortcut(QKeySequence::Save);
+    saveDocumentAction->setIcon(QIcon(":/Icons/savescene.png"));
+
+    QAction* saveAllDocumentsAction = documentGroup->CreateRedoAction(this);
+    saveAllDocumentsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+    saveAllDocumentsAction->setIcon(QIcon(":/Icons/savesceneall.png"));
+
+    QAction* closeDocumentAction = documentGroup->CreateCloseDocumentAction(this);
+    closeDocumentAction->setShortcut(QKeySequence::Close);
+    closeDocumentAction->setIcon(QIcon(":/Icons/close.png"));
+
+    mainToolbar->addAction(saveDocumentAction);
+    mainToolbar->addAction(saveAllDocumentsAction);
+    mainToolbar->addAction(closeDocumentAction);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)
@@ -138,33 +138,6 @@ void MainWindow::OnDocumentChanged(Document* document)
     propertiesWidget->setEnabled(enabled);
     previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
-
-    actionSaveDocument->setEnabled(nullptr != document && document->CanSave());
-
-    for (int index = 0, count = tabBar->count(); index < count; ++index)
-    {
-        QVariant var = tabBar->tabData(index);
-        DVASSERT(var.canConvert<TabState*>());
-        TabState* tabState = var.value<TabState*>();
-        if (tabState->document == document)
-        {
-            tabBar->setCurrentIndex(index);
-            return;
-        }
-    }
-}
-
-int MainWindow::CloseTab(int index)
-{
-    delete tabBar->tabData(index).value<TabState*>();
-    tabBar->removeTab(index);
-    OnCountChanged(tabBar->count());
-    return tabBar->currentIndex();
-}
-
-void MainWindow::SetCurrentTab(int index)
-{
-    tabBar->setCurrentIndex(index);
 }
 
 void MainWindow::SaveMainWindowState()
@@ -198,21 +171,6 @@ void MainWindow::RestoreMainWindowState()
 QComboBox* MainWindow::GetComboBoxLanguage()
 {
     return comboboxLanguage;
-}
-
-void MainWindow::OnDocumentCanSaveChanged(int documentIndex, bool canSave)
-{
-    QVariant var = tabBar->tabData(documentIndex);
-    DVASSERT(var.canConvert<TabState*>());
-    TabState* tabState = var.value<TabState*>();
-
-    QString tabText = tabState->tabText;
-    if (canSave)
-    {
-        tabText += "*";
-    }
-    tabBar->setTabText(documentIndex, tabText);
-    actionSaveDocument->setEnabled(canSave);
 }
 
 bool MainWindow::IsInEmulationMode() const
@@ -306,8 +264,6 @@ void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-    connect(actionSaveDocument, &QAction::triggered, this, &MainWindow::OnSaveDocument);
-    connect(actionSaveAllDocuments, &QAction::triggered, this, &MainWindow::SaveAllDocuments);
     connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProject);
     connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
 
@@ -328,14 +284,6 @@ void MainWindow::InitMenu()
     // Pixelization.
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
     actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
-    DisableActions();
-}
-
-void MainWindow::OnSaveDocument()
-{
-    int index = tabBar->currentIndex();
-    DVASSERT(index >= 0);
-    emit SaveDocument(index);
 }
 
 void MainWindow::SetupViewMenu()
@@ -409,14 +357,6 @@ void MainWindow::SetupViewMenu()
     menuView->addAction(actionZoomOut);
 }
 
-void MainWindow::DisableActions()
-{
-    actionSaveAllDocuments->setEnabled(false);
-    actionSaveDocument->setEnabled(false);
-
-    actionClose_project->setEnabled(false);
-}
-
 void MainWindow::RebuildRecentMenu()
 {
     menuRecent->clear();
@@ -438,20 +378,6 @@ void MainWindow::RebuildRecentMenu()
     menuRecent->setEnabled(projectCount > 0);
 }
 
-int MainWindow::AddTab(Document* document, int index)
-{
-    QFileInfo fileInfo(document->GetPackageAbsolutePath());
-    QString tabText(fileInfo.fileName());
-    bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged
-    int insertedIndex = tabBar->insertTab(index, tabText);
-    tabBar->blockSignals(blockSignals);
-    tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
-    TabState* tabState = new TabState(document, tabText);
-    tabBar->setTabData(insertedIndex, QVariant::fromValue<TabState*>(tabState));
-    OnCountChanged(tabBar->count());
-    return insertedIndex;
-}
-
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
     SaveMainWindowState();
@@ -469,7 +395,6 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
-        fileSystemDockWidget->SetProjectDir(projectPath);
         FillComboboxLanguages(project);
         this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
