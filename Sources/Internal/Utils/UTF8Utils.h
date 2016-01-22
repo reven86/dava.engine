@@ -47,7 +47,7 @@ namespace UTF8Utils
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-void EncodeToWideString(const uint8* string, size_t size, WideString& resultString);
+void EncodeToWideString(const uint8* string, size_type size, WideString& resultString);
 
     /**
         \brief convert UTF8 string to WideString
@@ -72,18 +72,18 @@ inline String MakeUTF8String(const CHARTYPE* value);
 inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
 {
     WideString str;
-    EncodeToWideString((const uint8 *)utf8String.c_str(), utf8String.length(), str);
+    EncodeToWideString(reinterpret_cast<const uint8*>(utf8String.c_str()), utf8String.length(), str);
     return str;
 }
 
 template <>
-inline String UTF8Utils::MakeUTF8String<char>(const char* value)
+inline String UTF8Utils::MakeUTF8String<char8>(const char8* value)
 {
     return String(value);
 }
 
 template <>
-inline String UTF8Utils::MakeUTF8String<wchar_t>(const wchar_t* value)
+inline String UTF8Utils::MakeUTF8String<char16>(const char16* value)
 {
     return EncodeToUTF8(WideString(value));
 }

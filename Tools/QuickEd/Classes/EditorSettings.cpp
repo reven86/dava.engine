@@ -116,7 +116,7 @@ void EditorSettings::AddLastOpenedFile(const String & pathToFile)
         settings->SetString(Format("LastOpenedFile_%d", i), filesList[i]);
     }
 
-    settings->SetInt32("LastOpenedFilesCount", filesList.size());
+    settings->SetInt32("LastOpenedFilesCount", static_cast<int32>(filesList.size()));
 
     Save();
 }

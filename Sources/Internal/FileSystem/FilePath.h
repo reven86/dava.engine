@@ -35,9 +35,8 @@
 
 namespace DAVA
 {
+static const char8* localResourcesPath = "/mnt/sdcard/DavaProject/";
 
-static const char* localResourcesPath = "/mnt/sdcard/DavaProject/";
-    
 /**
 	\ingroup filesystem
 	\brief class to work with file pathname
@@ -65,16 +64,17 @@ public:
     FilePath(const String & sourcePath);
     FilePath(const WideString& sourcePath);
 
-    FilePath(const char * sourcePath);
-    FilePath(const wchar_t* sourcePath);
+    FilePath(const char8* sourcePath);
+    FilePath(const char16* sourcePath);
 
     FilePath(const FilePath & directory, const String & filename);
+    FilePath(const FilePath& directory, const WideString& filename);
 
     FilePath(const String & directory, const String & filename);
     FilePath(const WideString& directory, const WideString& filename);
 
-    FilePath(const char *directory, const String & filename);
-    FilePath(const wchar_t* directory, const WideString& filename);
+    FilePath(const char8* directory, const String& filename);
+    FilePath(const char16* directory, const WideString& filename);
 
     ~FilePath();
 
@@ -169,8 +169,8 @@ public:
 	 */
     String GetRelativePathname(const FilePath &forDirectory) const;
 	String GetRelativePathname(const String &forDirectory) const;
-    String GetRelativePathname(const char * forDirectory) const;
-    
+    String GetRelativePathname(const char8* forDirectory) const;
+
     /**
         \brief Function to retrieve string path value, passed in constructor
         \returns relative string path value
@@ -267,8 +267,8 @@ public:
         \brief Function to retrieve full path relative current documents folder
         \returns path relative corrent documents folder
      */
-    static FilePath FilepathInDocuments(const char * relativePathname);
-    
+    static FilePath FilepathInDocuments(const char8* relativePathname);
+
     /**
         \brief Function to retrieve full path relative current documents folder
         \returns path relative corrent documents folder
@@ -284,9 +284,9 @@ public:
     
 	static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
 	static bool ContainPath(const FilePath& basePath, const String & partPath);
-	static bool ContainPath(const FilePath& basePath, const char * partPath);
+    static bool ContainPath(const FilePath& basePath, const char8* partPath);
 
-	static void AddResourcesFolder(const FilePath & folder);
+    static void AddResourcesFolder(const FilePath & folder);
 	static void AddTopResourcesFolder(const FilePath & folder);
     static void RemoveResourcesFolder(const FilePath & folder);
     static const List<FilePath>& GetResourcesFolders();

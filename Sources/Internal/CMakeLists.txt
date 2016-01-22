@@ -185,7 +185,7 @@ elseif( WIN32 )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
 
-    if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    if( X64_MODE )
 	    list ( APPEND LIST_SHARED_LIBRARIES
             "$ENV{DXSDK_DIR}/lib/x64/d3dx9.lib"
             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x64/d3d9.lib"
