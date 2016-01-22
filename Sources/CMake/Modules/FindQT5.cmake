@@ -2,7 +2,7 @@ include ( GlobalVariables )
 include ( CMake-common )
 
 if( WIN32 )
-	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	if( X64_MODE )
 		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
 	else ()
 		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})

@@ -1,11 +1,8 @@
-#define _SCL_SECURE_NO_WARNINGS 1
-
 #include "IMagickHelper.h"
 #include <FileTools.h>
+#include <Magick++.h>
 #include <cstdlib>
 #include <cstring>
-#include <vector>
-#include <Magick++.h>
 
 using namespace std;
 
@@ -13,70 +10,69 @@ namespace IMagickHelper
 {
 Layer::Layer()
 {
-    memset(name, sizeof(name), 0);
+    memset(name, 0, sizeof(name));
 }
 
-Layer::Layer(int _x, int _y, int _dx, int _dy)
+Layer::Layer(int _x, int _y, int _dx, int _dy, const char* _name)
     : x(_x)
     , y(_y)
     , dx(_dx)
     , dy(_dy)
 {
-    memset(name, sizeof(name), 0);
-}
-
-CroppedData::CroppedData() = default;
-
-CroppedData::~CroppedData()
-{
-    delete[] layers_array;
+    memset(name, 0, sizeof(name));
+    if (_name != nullptr)
+    {
+        size_t nameLength = strlen(_name);
+        memcpy(name, _name, std::min(Layer::maxNameSize, nameLength));
+    }
 }
 
 void CroppedData::Reset()
 {
     layer_width = 0;
     layer_height = 0;
-    layers_array_size = 0;
+    layers_count = 0;
+    delete[] layers;
 }
 
 namespace
 {
-inline bool ReadImage(std::vector<Magick::Image>& layers, const std::string inName)
+inline bool ReadImage(std::vector<Magick::Image>& layers, const char* inName)
 {
     try
     {
-        Magick::readImages(&layers, inName.c_str());
+        Magick::readImages(&layers, inName);
     }
     catch (Magick::Warning& warning_)
     {
-        printf("\n[IMAGE-MAGICK WARNING] Reading file %s\n: %s\n", inName.c_str(), warning_.what());
+        printf("\n[IMAGE-MAGICK WARNING] Reading file %s\n: %s\n", inName, warning_.what());
     }
     catch (Magick::Error& error_)
     {
-        printf("\n[IMAGE-MAGICK ERROR] Reading file %s\n: %s\n", inName.c_str(), error_.what());
+        printf("\n[IMAGE-MAGICK ERROR] Reading file %s\n: %s\n", inName, error_.what());
         return false;
     }
     catch (Magick::Exception& other_)
     {
-        printf("\n[IMAGE-MAGICK EXCEPTION] Reading file %s\n: %s\n", inName.c_str(), other_.what());
+        printf("\n[IMAGE-MAGICK EXCEPTION] Reading file %s\n: %s\n", inName, other_.what());
         return false;
     }
 
     if (layers.empty())
     {
-        printf("[IMAGE-MAGICK ERROR]: Image being read does not contain any layers:\n%s", inName.c_str());
+        printf("[IMAGE-MAGICK ERROR]: Image being read does not contain any layers:\n%s", inName);
         return false;
     }
 
     return true;
 }
 
-inline bool WritePNGImage(Magick::Image& image, const std::string& outName, const std::string inName)
+inline bool WritePNGImage(Magick::Image& image, const std::string& outName, const char* inName)
 {
     try
     {
         image.magick("PNG");
-        image.write(outName.c_str());
+        image.write(outName);
     }
     catch (Magick::Warning&)
     {
@@ -86,12 +82,12 @@ inline bool WritePNGImage(Magick::Image& image, const std::string& outName, cons
     }
     catch (Magick::Error& error_)
     {
-        printf("\n[IMAGE-MAGICK ERROR] %s\nWriting file %s\n:from source: %s", error_.what(), outName.c_str(), inName.c_str());
+        printf("\n[IMAGE-MAGICK ERROR] %s\nWriting file %s\n:from source: %s", error_.what(), outName.c_str(), inName);
         return false;
     }
     catch (Magick::Exception& other_)
     {
-        printf("\n[IMAGE-MAGICK EXCEPTION] %s\nWriting file %s\n:from source: %s", other_.what(), outName.c_str(), inName.c_str());
+        printf("\n[IMAGE-MAGICK EXCEPTION] %s\nWriting file %s\n:from source: %s", other_.what(), outName.c_str(), inName);
         return false;
     }
 
@@ -138,7 +134,7 @@ bool ConvertToPNG(const char* in_image_path, const char* out_path)
     return WritePNGImage(image, out_image_path, in_image_path);
 }
 
-bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path, CroppedData* out_cropped_data, bool skipCompositeLayer)
+bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path, CroppedData& out_cropped_data, bool skipCompositeLayer)
 {
     size_t out_path_len = 0;
     if (CreateOutputDirectoryForOutputPath(out_path, out_path_len) == false)
@@ -181,24 +177,19 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
         ++layerIndex;
     }
 
-    if (out_cropped_data != nullptr)
-    {
-        out_cropped_data->Reset();
-        out_cropped_data->layer_width = static_cast<int>(width);
-        out_cropped_data->layer_height = static_cast<int>(height);
-        out_cropped_data->layers_array_size = static_cast<unsigned int>(layers.size());
-        out_cropped_data->layers_array = reinterpret_cast<Layer*>(malloc(sizeof(Layer) * layers.size()));
+    out_cropped_data.Reset();
+    out_cropped_data.layer_width = static_cast<int>(width);
+    out_cropped_data.layer_height = static_cast<int>(height);
+    out_cropped_data.layers_count = layers.size();
+    out_cropped_data.layers = new Layer[layers.size()]();
 
-        int layer = 0;
-        for (const auto& currentLayer : layers)
-        {
-            Magick::Geometry bbox = currentLayer.page();
-            int xOff = static_cast<int>(bbox.xOff()) * (bbox.xNegative() ? -1 : 1);
-            int yOff = static_cast<int>(bbox.yOff()) * (bbox.yNegative() ? -1 : 1);
-            out_cropped_data->layers_array[layer] = Layer(xOff, yOff, (int)bbox.width(), (int)bbox.height());
-            strncpy(out_cropped_data->layers_array[layer].name, currentLayer.label().c_str(), Layer::NAME_SIZE - 1);
-            ++layer;
-        }
+    Layer* layer = out_cropped_data.layers;
+    for (const auto& currentLayer : layers)
+    {
+        Magick::Geometry bbox = currentLayer.page();
+        int xOff = static_cast<int>(bbox.xOff()) * (bbox.xNegative() ? -1 : 1);
+        int yOff = static_cast<int>(bbox.yOff()) * (bbox.yNegative() ? -1 : 1);
+        *layer++ = Layer(xOff, yOff, (int)bbox.width(), (int)bbox.height(), currentLayer.label().c_str());
     }
 
     return true;

@@ -47,8 +47,14 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	set ( X64_MODE true )
+else ()
+	set ( X64_MODE false )
+endif ()
+
 if (WIN32)
-	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	if( X64_MODE )
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
 	else ()
 		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )

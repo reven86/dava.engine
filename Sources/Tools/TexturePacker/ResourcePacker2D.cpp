@@ -273,9 +273,9 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     psdNameWithoutExtension.TruncateExtension();
     
     IMagickHelper::CroppedData cropped_data;
-    IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );
-    	
-    if ( cropped_data.layers_array_size == 0 )
+    IMagickHelper::ConvertToPNGCroppedGeometry(psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str(), cropped_data, true);
+
+    if (cropped_data.layers_count == 0)
     {
     	AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
     	return nullptr;
@@ -291,26 +291,26 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
 
     defFile->spriteWidth = width;
     defFile->spriteHeight = height;
-    defFile->frameCount = cropped_data.layers_array_size;
+    defFile->frameCount = cropped_data.layers_count;
     defFile->frameRects = new Rect2i[defFile->frameCount];
 
-    for (unsigned k = 0; k < cropped_data.layers_array_size; ++k)
+    for (unsigned k = 0; k < cropped_data.layers_count; ++k)
     {
     	//save layer names
         String layerName;
         
         if (useLayerNames)
         {
-            layerName.assign(cropped_data.layers_array[k].name);
+            layerName.assign(cropped_data.layers[k].name);
             if (layerName.empty())
             {
-                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
+                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k);
             }
             // Check if layer name is unique
             Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
             if (it != defFile->frameNames.end())
             {
-                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
+                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k, layerName.c_str());
             }
         }
         else
@@ -325,7 +325,7 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     	//save layer rects
     	if ( !withAlpha )
     	{
-            defFile->frameRects[k] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy);
+            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, cropped_data.layers[k].dx, cropped_data.layers[k].dy);
 
             //printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 
@@ -353,7 +353,7 @@ DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPat
     	}
         else
         {
-            defFile->frameRects[k] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
+            defFile->frameRects[k] = Rect2i(cropped_data.layers[k].x, cropped_data.layers[k].y, width, height);
         }
     }
 

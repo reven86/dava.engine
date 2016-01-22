@@ -16,10 +16,10 @@ generate_source_groups_project( SRC_ROOT "Classes" )
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 
-set( APP_DATA                    )
-set( LIBRARIES                   )
+set( APP_DATA )
+set( LIBRARIES )
 
-set( MAC_DISABLE_BUNDLE     true )
+set( MAC_DISABLE_BUNDLE true)
 
 set( MACOS_DYLIB      ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 

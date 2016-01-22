@@ -473,7 +473,7 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
     }
 
     size_t len = strlen(text);
-    char* txt = (char*)cb->text->Alloc(len / sizeof(float) + 2);
+    char* txt = (char*)cb->text->Alloc(static_cast<unsigned>(len / sizeof(float) + 2));
 
     memcpy(txt, text, len);
     txt[len] = '\n';
@@ -1389,7 +1389,7 @@ gles2_Present(Handle sync)
         }
         _GLES2_FrameSync.Unlock();
 
-        unsigned frame_cnt = 0;
+        size_t frame_cnt = 0;
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do

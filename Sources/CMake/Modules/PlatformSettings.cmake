@@ -224,7 +224,7 @@ elseif ( MACOS )
 
 elseif ( WIN32 )
 
-	if ( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	if ( X64_MODE )
 		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
 	else ()
 		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 

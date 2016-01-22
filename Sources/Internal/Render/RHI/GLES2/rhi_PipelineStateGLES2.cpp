@@ -422,8 +422,8 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
-    vprogSrcHash = DAVA::HashValue_N((const char*)(&vprog_bin[0]), strlen((const char*)(&vprog_bin[0])));
-    fprogSrcHash = DAVA::HashValue_N((const char*)(&fprog_bin[0]), strlen((const char*)(&fprog_bin[0])));
+    vprogSrcHash = DAVA::HashValue_N((const char*)(&vprog_bin[0]), static_cast<uint32>(strlen((const char*)(&vprog_bin[0]))));
+    fprogSrcHash = DAVA::HashValue_N((const char*)(&fprog_bin[0]), static_cast<uint32>(strlen((const char*)(&fprog_bin[0]))));
 
     for (std::vector<PipelineStateGLES2_t::ProgramEntry>::iterator p = _ProgramEntry.begin(), p_end = _ProgramEntry.end(); p != p_end; ++p)
     {
