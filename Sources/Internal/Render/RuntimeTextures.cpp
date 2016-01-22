@@ -79,7 +79,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
+        descriptor.format = rhi::TEXTURE_FORMAT_RGBA16F;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION:
@@ -89,7 +89,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
+        descriptor.format = rhi::TEXTURE_FORMAT_RGBA32F;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
 

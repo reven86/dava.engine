@@ -40,6 +40,20 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_ARB)
+#   define GL_RGBA32F GL_RGBA32F_ARB
+#endif
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_EXT)
+#   define GL_RGBA32F GL_RGBA32F_EXT
+#endif
+
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_ARB)
+#   define GL_RGBA16F GL_RGBA16F_ARB
+#endif
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_EXT)
+#   define GL_RGBA16F GL_RGBA16F_EXT
+#endif
+
 GLuint _GLES2_Binded_FrameBuffer = 0;
 GLuint _GLES2_Default_FrameBuffer = 0;
 void* _GLES2_Native_Window = nullptr;
@@ -191,10 +205,12 @@ gles_check_GL_extensions()
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
 
         RGBA16F_Supported = strstr(ext, "OES_texture_half_float") != nullptr;
-        RGBA32F_Supported = strstr(ext, "OES_texture_float") != nullptr;
-
-        RG16F_Supported = (strstr(ext, "EXT_texture_rg") != nullptr) && RGBA16F_Supported;
-        RG32F_Supported = (strstr(ext, "EXT_texture_rg") != nullptr) && RGBA32F_Supported;
+        RGBA32F_Supported = (strstr(ext, "OES_texture_float") != nullptr) || (strstr(ext, "ARB_texture_float") != nullptr);
+        
+        bool hasARBTextureRG = (strstr(ext, "GL_ARB_texture_rg") != nullptr);
+        bool hasEXTTextureRG = (strstr(ext, "EXT_texture_rg") != nullptr);
+        RG16F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA16F_Supported;
+        RG32F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA32F_Supported;
 
         _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
