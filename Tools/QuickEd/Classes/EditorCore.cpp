@@ -556,8 +556,8 @@ void EditorCore::SaveDocument(Document *document)
     }
     QString path = document->GetPackageAbsolutePath();
     fileSystemWatcher->removePath(path);
-    auto packagePtr = document->GetPackage().lock();
-    DVVERIFY(project->SavePackage(packagePtr.get())); //TODO:log here
+    auto package = document->GetPackage().get();
+    DVVERIFY(project->SavePackage(package)); //TODO:log here
     document->GetUndoStack()->setClean();
     if (!fileSystemWatcher->addPath(path))
     {

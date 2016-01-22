@@ -106,9 +106,6 @@ private:
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
 
-    std::shared_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
-    std::shared_ptr<PackageNode> GetPackageNode() const;
-
     QPointer<Document> document;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;

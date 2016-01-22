@@ -410,7 +410,9 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
     if (!controls.empty() || !styles.empty())
     {
         YamlPackageSerializer serializer;
-        serializer.SerializePackageNodes(GetPackageNode().get(), controls, styles);
+        DVASSERT(!document.isNull());
+        PackageNode *package = document->GetPackage().get();
+        serializer.SerializePackageNodes(package, controls, styles);
         String str = serializer.WriteToString();
         QMimeData *data = new QMimeData();
         data->setText(QString(str.c_str()));
@@ -467,7 +469,10 @@ void PackageWidget::OnImport()
         packages.push_back(FilePath(fileName.toStdString()));
     }
     DVASSERT(!packages.empty());
-    GetCommandExecutor()->AddImportedPackagesIntoPackage(packages, GetPackageNode().get());
+    DVASSERT(!document.isNull());
+    PackageNode *package = document->GetPackage().get();
+    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor().get();
+    commandExecutor->AddImportedPackagesIntoPackage(packages, package);
 }
 
 void PackageWidget::OnCopy()
@@ -496,7 +501,9 @@ void PackageWidget::OnPaste()
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
-            GetCommandExecutor()->Paste(GetPackageNode().get(), baseNode, baseNode->GetCount(), string);
+            DVASSERT(!document.isNull());
+            PackageNode *package = document->GetPackage().get();
+            document->GetCommandExecutor()->Paste(package, baseNode, baseNode->GetCount(), string);
         }
     }
 }
@@ -511,12 +518,13 @@ void PackageWidget::OnCut()
 
     CopyNodesToClipboard(controls, styles);
 
-    GetCommandExecutor()->Remove(controls, styles);
+    document->GetCommandExecutor()->Remove(controls, styles);
 }
 
 void PackageWidget::OnDelete()
 {
-    auto commandExecutor = GetCommandExecutor();
+    DVASSERT(!document.isNull());
+    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor().get();
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
@@ -532,8 +540,8 @@ void PackageWidget::OnDelete()
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
-
-        commandExecutor->RemoveImportedPackagesFromPackage(packages, GetPackageNode().get());
+        PackageNode *package = document->GetPackage().get();
+        commandExecutor->RemoveImportedPackagesFromPackage(packages, package);
     }
 }
 
@@ -551,8 +559,11 @@ void PackageWidget::OnAddStyle()
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
     
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
-    StyleSheetsNode* styleSheets = GetPackageNode()->GetStyleSheets();
-    GetCommandExecutor()->InsertStyle(style, styleSheets, styleSheets->GetCount());
+    DVASSERT(!document.isNull());
+    PackageNode *package = document->GetPackage().get();
+    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor().get();
+    StyleSheetsNode* styleSheets = package->GetStyleSheets();
+    commandExecutor->InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
 
 void PackageWidget::OnMoveUp()
@@ -621,7 +632,8 @@ void PackageWidget::OnMoveRight()
 
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
 {
-    auto commandExecutor = GetCommandExecutor();
+    DVASSERT(!document.isNull());
+    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor().get();
 
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
@@ -803,20 +815,4 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     {
         SelectNodeImpl(node);
     }
-}
-
-std::shared_ptr<QtModelPackageCommandExecutor> PackageWidget::GetCommandExecutor() const
-{
-    DVASSERT(!document.isNull());
-    auto commandExecutorPtr = document->GetCommandExecutor().lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    return commandExecutorPtr;
-}
-
-std::shared_ptr<PackageNode> PackageWidget::GetPackageNode() const
-{
-    DVASSERT(!document.isNull());
-    auto packageNodePtr = document->GetPackage().lock();
-    DVASSERT(nullptr != packageNodePtr);
-    return packageNodePtr;
 }
