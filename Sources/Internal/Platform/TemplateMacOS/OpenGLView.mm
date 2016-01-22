@@ -235,21 +235,33 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
 
     if (DAVA::UIEvent::Phase::WHEEL == phase)
     {
-        event.device = DAVA::UIEvent::Device::MOUSE;
-
         const uint32 rawScrollCoefficient = 10;
-        DAVA::float32 rawScrollDelta([curEvent scrollingDeltaY]);
+        DAVA::float32 rawScrollDeltaX([curEvent scrollingDeltaX]);
+        DAVA::float32 rawScrollDeltaY([curEvent scrollingDeltaY]);
+
+        // detect the wheel event device
+        // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
+        if (NSEventPhaseNone != [curEvent momentumPhase] || NSEventPhaseNone != [curEvent phase])
+        {
+            event.device = DAVA::UIEvent::Device::TOUCH_PAD;
+        }
+        else
+        {
+            event.device = DAVA::UIEvent::Device::MOUSE;
+        }
 
         if (YES == [curEvent hasPreciseScrollingDeltas])
         {
             // touchpad or other precise device
             // sends integer values (-3, -1, 0, 1, 40 etc)
-            event.wheelDelta.y = rawScrollDelta / rawScrollCoefficient;
+            event.wheelDelta.x = rawScrollDeltaX / rawScrollCoefficient;
+            event.wheelDelta.y = rawScrollDeltaY / rawScrollCoefficient;
         }
         else
         {
             // simple mouse - sends float values from 0.1 for one wheel tick
-            event.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
+            event.wheelDelta.x = rawScrollDeltaX * rawScrollCoefficient;
+            event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
         }
     }
     else

@@ -104,7 +104,8 @@ public:
         MOUSE,
         KEYBOARD,
         GAMEPAD,
-        PEN
+        PEN,
+        TOUCH_PAD,
     };
 
     UIEvent() = default;
