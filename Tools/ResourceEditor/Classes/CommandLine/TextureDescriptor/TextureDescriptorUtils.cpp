@@ -212,13 +212,13 @@ void SetCompressionParams(const FilePath& descriptorPath, const DAVA::Map<DAVA::
     DVASSERT(descriptor->compression);
 
     auto endIt = compressionParams.end();
-    for (auto it = compressionParams.begin(); it != endIt; ++it)
+    for (const auto& compressionParam : compressionParams)
     {
-        eGPUFamily gpu = it->first;
+        eGPUFamily gpu = compressionParam.first;
 
         if (force || (descriptor->compression[gpu].format == FORMAT_INVALID))
         {
-            descriptor->compression[gpu] = it->second;
+            descriptor->compression[gpu] = compressionParam.second;
 
             if (convertionEnabled)
             {

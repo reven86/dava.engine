@@ -1152,15 +1152,15 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
 
     for (uint32 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
-        const String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
+        String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
         const KeyedArchive* compressionArchieve = presetArchive->GetArchive(gpuName);
 
         TextureDescriptor::Compression& compressionGPU = compression[gpu];
         if (compressionArchieve != nullptr)
         {
             auto format = compressionArchieve->GetInt32("format", FORMAT_INVALID);
-            auto compressToWidth = static_cast<uint32>(compressionArchieve->GetInt32("width"));
-            auto compressToHeight = static_cast<uint32>(compressionArchieve->GetInt32("height"));
+            int32 compressToWidth = compressionArchieve->GetInt32("width");
+            int32 compressToHeight = compressionArchieve->GetInt32("height");
 
             if (format != FORMAT_INVALID &&
                 (format != compressionGPU.format ||
@@ -1201,7 +1201,7 @@ void TextureDescriptor::SerializeToPreset(KeyedArchive* presetArchive) const
         compressionArchive->SetInt32("width", compression[gpu].compressToWidth);
         compressionArchive->SetInt32("height", compression[gpu].compressToHeight);
 
-        const String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
+        String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
         presetArchive->SetArchive(gpuName, compressionArchive);
     }
 }

@@ -49,6 +49,6 @@ bool DialogSavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
 bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
 
 bool DialogSavePresetForMaterial(DAVA::NMaterial* material);
-bool DialgoLoadPresetForMaterial(DAVA::NMaterial* material);
+bool DialogLoadPresetForMaterial(DAVA::NMaterial* material);
 }
 #endif // __PRESET_MANAGER_H__

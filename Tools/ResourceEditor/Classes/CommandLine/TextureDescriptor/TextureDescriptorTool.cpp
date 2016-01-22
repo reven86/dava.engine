@@ -103,7 +103,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
             TextureDescriptor::Compression compression;
             compression.format = pixelFormat;
             compression.compressToWidth = compression.compressToHeight = 0;
-            if (options.GetOptionVaulesCount(optionName) > 2)
+            if (options.GetOptionValuesCount(optionName) > 2)
             {
                 const String widthStr = options.GetOption(optionName, 1).AsString();
                 const String heightStr = options.GetOption(optionName, 2).AsString();
@@ -175,49 +175,50 @@ void TextureDescriptorTool::ProcessInternal()
     {
     case ACTION_RESAVE_DESCRIPTORS:
     {
-        if (!folderPathname.IsEmpty())
-        {
-            TextureDescriptorUtils::ResaveDescriptorsForFolder(folderPathname);
-        }
-        else
+        if (folderPathname.IsEmpty())
         {
             TextureDescriptorUtils::ResaveDescriptor(filePathname);
         }
+        else
+        {
+            TextureDescriptorUtils::ResaveDescriptorsForFolder(folderPathname);
+        }
+
         break;
     }
     case ACTION_CREATE_DESCRIPTORS:
     {
-        if (!folderPathname.IsEmpty())
+        if (folderPathname.IsEmpty())
         {
-            TextureDescriptorUtils::CreateDescriptorsForFolder(folderPathname, presetPath);
+            TextureDescriptorUtils::CreateOrUpdateDescriptor(filePathname, presetPath);
         }
         else
         {
-            TextureDescriptorUtils::CreateOrUpdateDescriptor(filePathname, presetPath);
+            TextureDescriptorUtils::CreateDescriptorsForFolder(folderPathname, presetPath);
         }
         break;
     }
     case ACTION_SET_COMPRESSION:
     {
-        if (!folderPathname.IsEmpty())
+        if (folderPathname.IsEmpty())
         {
-            TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
+            TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
         }
         else
         {
-            TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
+            TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
         }
         break;
     }
     case ACTION_SET_PRESET:
     {
-        if (!folderPathname.IsEmpty())
+        if (folderPathname.IsEmpty())
         {
-            TextureDescriptorUtils::SetPresetForFolder(folderPathname, presetPath, convertEnabled, quality);
+            TextureDescriptorUtils::SetPreset(filePathname, presetPath, convertEnabled, quality);
         }
         else
         {
-            TextureDescriptorUtils::SetPreset(filePathname, presetPath, convertEnabled, quality);
+            TextureDescriptorUtils::SetPresetForFolder(folderPathname, presetPath, convertEnabled, quality);
         }
         break;
     }

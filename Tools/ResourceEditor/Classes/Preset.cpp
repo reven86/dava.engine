@@ -66,17 +66,20 @@ bool ValidateTexturePreset(const TextureDescriptor* descriptor, const KeyedArchi
 
     for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
-        const String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
+        String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
         const KeyedArchive* compressionArchive = preset->GetArchive(gpuName);
-        auto compressToWidth = static_cast<uint32>(compressionArchive->GetInt32("width"));
-        auto compressToHeight = static_cast<uint32>(compressionArchive->GetInt32("height"));
-        bool compressIsSquare = (compressToHeight == compressToWidth);
-
-        if (compressToHeight != 0 && compressToWidth != 0)
+        if (compressionArchive != nullptr)
         {
-            if (imageIsSquare != compressIsSquare || (compressToWidth >= imageInfo.width) || (compressToHeight >= imageInfo.height))
+            auto compressToWidth = static_cast<uint32>(compressionArchive->GetInt32("width"));
+            auto compressToHeight = static_cast<uint32>(compressionArchive->GetInt32("height"));
+            bool compressIsSquare = (compressToHeight == compressToWidth);
+
+            if (compressToHeight != 0 && compressToWidth != 0)
             {
-                return false;
+                if (imageIsSquare != compressIsSquare || (compressToWidth >= imageInfo.width) || (compressToHeight >= imageInfo.height))
+                {
+                    return false;
+                }
             }
         }
     }
@@ -84,7 +87,7 @@ bool ValidateTexturePreset(const TextureDescriptor* descriptor, const KeyedArchi
     return true;
 }
 
-const FilePath CreatePresetFolderPathname(const String& folder)
+FilePath CreatePresetFolderPathname(const String& folder)
 {
     const FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
     FilePath folderPath = projectPath + folder;
@@ -92,7 +95,7 @@ const FilePath CreatePresetFolderPathname(const String& folder)
     return folderPath;
 }
 
-const QString GetSavePathname(const QString& caption, const String& folder)
+QString GetSavePathname(const QString& caption, const String& folder)
 {
     const FilePath folderPath = CreatePresetFolderPathname(folder);
     FileSystem::Instance()->CreateDirectory(folderPath, true);
@@ -100,7 +103,7 @@ const QString GetSavePathname(const QString& caption, const String& folder)
     return FileDialog::getSaveFileName(nullptr, caption, folderPath.GetAbsolutePathname().c_str(), presetFilter);
 }
 
-const QString GetOpenPathname(const QString& caption, const String& folder)
+QString GetOpenPathname(const QString& caption, const String& folder)
 {
     const FilePath folderPath = CreatePresetFolderPathname(folder);
     return FileDialog::getOpenFileName(nullptr, caption, folderPath.GetAbsolutePathname().c_str(), presetFilter);
@@ -173,7 +176,7 @@ bool DialogLoadPresetForTexture(TextureDescriptor* descriptor)
     return true;
 }
 
-bool DialgoLoadPresetForMaterial(NMaterial* material)
+bool DialogLoadPresetForMaterial(NMaterial* material)
 {
     return false;
 }
