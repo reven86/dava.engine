@@ -227,15 +227,15 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     DVASSERT(nullptr != systemsManager);
     SaveContext();
     document = arg;
-    if (!document.isNull())
+    if (document.isNull())
+    {
+        systemsManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
+    }
+    else
     {
         std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
         systemsManager->PackageNodeChanged.Emit(packagePtr);
         LoadContext();
-    }
-    else
-    {
-        systemsManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
     }
 }
 
