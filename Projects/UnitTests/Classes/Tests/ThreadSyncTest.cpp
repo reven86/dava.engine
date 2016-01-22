@@ -28,6 +28,9 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Concurrency/AutoResetEvent.h"
+#include "Concurrency/ManualResetEvent.h"
+#include <random>
 
 using namespace DAVA;
 
@@ -38,6 +41,17 @@ DAVA_TESTCLASS(ThreadSyncTest)
     Mutex cvMutex;
     ConditionVariable cv;
     int someValue;
+
+    volatile int autoResetValue;
+    volatile int manualResetValue;
+    std::atomic<int> autoResetWakeCounter;
+    Mutex autoResetMutex;
+
+    static const int autoResetLoopCount = 10000;
+    static const int autoResetThreadCount = 4;
+
+    AutoResetEvent are;
+    ManualResetEvent mre;
 
     DAVA_TEST(ThreadSyncTestFunction)
     {
@@ -138,6 +152,138 @@ DAVA_TESTCLASS(ThreadSyncTest)
 
         Logger::Debug("[ThreadSyncTest] Done.");
         */
+    }
+
+    DAVA_TEST(TestAutoResetEvent)
+    {
+        Thread* threads[autoResetThreadCount];
+
+        autoResetValue = 0;
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::AutoResetEventThreadFunc));
+            threads[i]->Start();
+        }
+
+        // test that only one thread will wake if we signaling once
+        {
+            autoResetWakeCounter.store(0);
+            are.Signal();
+
+            // unlock threads and test
+            Thread::Sleep(500);
+            TEST_VERIFY(autoResetWakeCounter.load() == 1);
+        }
+
+        // test that only one thread will wake if we signaling multiple times
+        {
+            // make sure all thread are not waiting on autoResetMutex
+            {
+                autoResetMutex.Lock();
+                for (int i = 0; i < autoResetThreadCount; ++i)
+                {
+                    are.Signal();
+                    Thread::Sleep(500);
+                }
+            }
+
+            // signal multiple times
+            autoResetWakeCounter.store(0);
+            for (int i = 0; i < autoResetThreadCount; ++i) are.Signal();
+
+            autoResetMutex.Unlock();
+            Thread::Sleep(500);
+            TEST_VERIFY(autoResetWakeCounter.load() == 1);
+        }
+
+        // continue signaling until all thread finish their work
+        while (autoResetValue < autoResetThreadCount)
+        {
+            are.Signal();
+        }
+
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i]->Join();
+            threads[i]->Release();
+        }
+    }
+
+    void AutoResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double res = 0;
+
+        for (int i = 0; i < autoResetLoopCount; ++i)
+        {
+            res += dis(gen);
+
+            are.Wait();
+            autoResetWakeCounter++;
+
+            autoResetMutex.Lock();
+            autoResetMutex.Unlock();
+        }
+
+        autoResetValue++;
+    }
+
+    DAVA_TEST(TestManualResetEvent)
+    {
+        Thread* threads[autoResetThreadCount];
+
+        manualResetValue = 0;
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::ManualResetEventThreadFunc));
+            threads[i]->Start();
+        }
+
+        // check that wait don't hang if manualResetEvent is signaled
+        autoResetMutex.Lock();
+        Thread::Sleep(500);
+        int check = autoResetWakeCounter;
+        mre.Wait();
+        mre.Wait();
+        mre.Wait();
+        Thread::Sleep(500);
+        TEST_VERIFY(check == autoResetWakeCounter);
+        autoResetMutex.Unlock();
+
+        while (manualResetValue < autoResetThreadCount)
+        {
+            mre.Wait();
+        }
+
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i]->Join();
+            threads[i]->Release();
+        }
+    }
+
+    void ManualResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double res = 0;
+
+        for (int i = 0; i < autoResetLoopCount; ++i)
+        {
+            mre.Reset();
+            res += dis(gen);
+            mre.Signal();
+            autoResetWakeCounter++;
+
+            autoResetMutex.Lock();
+            autoResetMutex.Unlock();
+        }
+
+        manualResetValue++;
+        Logger::Info("%f", res);
     }
 
     void SomeThreadFunc(BaseObject * caller, void * callerData, void * userData)
