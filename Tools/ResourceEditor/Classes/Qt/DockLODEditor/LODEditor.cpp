@@ -67,6 +67,8 @@ LODEditor::LODEditor(QWidget* parent)
     new QtPosSaver( this );
 }
 
+LODEditor::~LODEditor() = default;
+
 void LODEditor::SetupSceneSignals()
 {
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &LODEditor::SceneActivated);

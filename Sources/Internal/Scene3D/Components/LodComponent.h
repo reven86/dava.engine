@@ -92,7 +92,8 @@ public:
 		int32 layer;
 		bool isDummy;
 	};
-//protected:
+
+protected:
     ~LodComponent(){};
 public:
 	LodComponent();

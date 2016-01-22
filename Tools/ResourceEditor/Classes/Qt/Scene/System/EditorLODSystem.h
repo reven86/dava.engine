@@ -68,9 +68,17 @@ struct ForceValues
 
 class SceneEditor2;
 class Command2;
+class EditorLODSystem;
 class LODComponentHolder
 {
     friend class EditorLODSystem;
+
+    class EditorLODComponent : public DAVA::LodComponent
+    {
+    public:
+        ~EditorLODComponent() = default;
+    };
+
 public:
 
     DAVA::int32 GetMaxLODLayer() const;
@@ -92,7 +100,7 @@ protected:
 protected:
 
     DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
-    DAVA::LodComponent mergedComponent;
+    EditorLODComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent *> lodComponents;
 
     EditorLODSystem *system = nullptr;

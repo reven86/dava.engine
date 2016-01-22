@@ -59,6 +59,7 @@ class LODEditor : public QWidget, private EditorLODSystemV2UIDelegate, EditorSta
 
 public:
     explicit LODEditor(QWidget* parent = nullptr);
+    ~LODEditor() override;
 
 private slots:
     
