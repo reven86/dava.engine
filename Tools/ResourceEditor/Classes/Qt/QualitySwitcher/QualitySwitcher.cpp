@@ -366,41 +366,44 @@ void QualitySwitcher::ApplySettings()
     //particles
     {
         ParticlesQualitySettings& particlesSettings = QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
-        bool settingsChanged = false;
-        QComboBox* combo = findChild<QComboBox*>("ParticlesQualityCombo");
-        if (nullptr != combo)
+        if (particlesSettings.GetQualitiesCount() > 0)
         {
-            DAVA::FastName newParticlesQuality(combo->currentText().toLatin1());
-            if (particlesSettings.GetCurrentQuality() != newParticlesQuality)
+            bool settingsChanged = false;
+            QComboBox* combo = findChild<QComboBox*>("ParticlesQualityCombo");
+            if (nullptr != combo)
             {
-                particlesSettings.SetCurrentQuality(newParticlesQuality);
-                settingsChanged = true;
-            }
-        }
-
-        QLineEdit* edit = findChild<QLineEdit*>("ParticlesTagsCloudEdit");
-        if (nullptr != edit)
-        {
-            Vector<String> tags;
-            Split(edit->text().toStdString(), " ", tags);
-
-            Set<FastName> newTagsCloud;
-            for (const String& tag : tags)
-            {
-                newTagsCloud.insert(FastName(tag));
+                DAVA::FastName newParticlesQuality(combo->currentText().toLatin1());
+                if (particlesSettings.GetCurrentQuality() != newParticlesQuality)
+                {
+                    particlesSettings.SetCurrentQuality(newParticlesQuality);
+                    settingsChanged = true;
+                }
             }
 
-            if (particlesSettings.GetTagsCloud() != newTagsCloud)
+            QLineEdit* edit = findChild<QLineEdit*>("ParticlesTagsCloudEdit");
+            if (nullptr != edit)
             {
-                particlesSettings.SetTagsCloud(newTagsCloud);
-                settingsChanged = true;
-            }
-        }
+                Vector<String> tags;
+                Split(edit->text().toStdString(), " ", tags);
 
-        if (settingsChanged)
-        {
-            UpdateParticlesToQuality();
-            emit ParticlesQualityChanged();
+                Set<FastName> newTagsCloud;
+                for (const String& tag : tags)
+                {
+                    newTagsCloud.insert(FastName(tag));
+                }
+
+                if (particlesSettings.GetTagsCloud() != newTagsCloud)
+                {
+                    particlesSettings.SetTagsCloud(newTagsCloud);
+                    settingsChanged = true;
+                }
+            }
+
+            if (settingsChanged)
+            {
+                UpdateParticlesToQuality();
+                emit ParticlesQualityChanged();
+            }
         }
     }
 
