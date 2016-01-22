@@ -33,6 +33,7 @@
 #include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Impl.h"
+#include "_dx11.h"
 
 struct ID3D11DeviceContext;
 struct ID3D11Buffer;
