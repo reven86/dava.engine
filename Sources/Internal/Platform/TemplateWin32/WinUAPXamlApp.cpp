@@ -408,7 +408,7 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
 {
     bool visible = args->Visible;
     AllowDisplaySleep(!visible);
-    core->RunOnMainThread([this, visible]() {
+    core->RunOnMainThreadBlocked([this, visible]() {
         if (visible)
         {
             if (!isPhoneApiDetected)
