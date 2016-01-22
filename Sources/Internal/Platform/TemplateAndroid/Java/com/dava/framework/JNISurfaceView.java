@@ -120,14 +120,16 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	{
     	synchronized(mEventQueue)
     	{
-    		mEventQueueReady = false;
-    		while(!mEventQueueReady) {
-                try {
-	    			mEventQueue.wait();
-                } catch(InterruptedException e) {
-                    e.printStackTrace();
-                }
-    		}
+            if(!mEventQueue.isEmpty()) {
+    		    mEventQueueReady = false;
+    		    while(!mEventQueueReady) {
+                    try {
+	    			    mEventQueue.wait();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+    		    }
+            }
 		}		
 	}
 

@@ -54,6 +54,8 @@
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include <dirent.h>
 
+#include "Render/Renderer.h"
+
 extern "C"
 {
 	jint JNI_OnLoad(JavaVM *vm, void *reserved);
@@ -498,7 +500,12 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
         if (core)
         {
             core->SetNativeWindow(nullptr);
-            core->RenderReset(0, 0);
+
+            rhi::ResetParam params;
+            params.width = 0;
+            params.height = 0;
+            params.window = nullptr;
+            DAVA::Renderer::Reset(params);
         }
     }
 }
