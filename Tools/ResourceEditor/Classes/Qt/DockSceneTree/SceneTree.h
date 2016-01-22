@@ -147,9 +147,11 @@ private:
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 	
 	void UpdateTree();
+    void PropagateSolidFlag();
+    void PropagateSolidFlagRecursive(QStandardItem* root);
 
-	ParticleEffectComponent *selectedEffect;
-	ParticleEmitter *selectedEmitter;
+    ParticleEffectComponent* selectedEffect;
+    ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
 	ParticleForce* selectedForce;
 

@@ -46,11 +46,11 @@ namespace DAVA
 class Semaphore
 {
 public:
-	Semaphore(uint32 value);
-	~Semaphore();
+    Semaphore(uint32 count = 0);
+    ~Semaphore();
 
-	void Post();
-	void Wait();
+    void Post(uint32 count = 1);
+    void Wait();
 
 protected:
 
@@ -70,12 +70,12 @@ protected:
 // Windows implementation
 // ##########################################################################################################
 
-inline Semaphore::Semaphore(uint32 value)
+inline Semaphore::Semaphore(uint32 count)
 {
 #ifdef __DAVAENGINE_WIN32__
-    semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+    semaphore = CreateSemaphore(NULL, count, 0x0FFFFFFF, NULL);
 #else
-	semaphore = CreateSemaphoreEx(NULL, value, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+    semaphore = CreateSemaphoreEx(NULL, count, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #endif
 	DVASSERT(NULL != semaphore);
 }
@@ -85,9 +85,10 @@ inline Semaphore::~Semaphore()
 	CloseHandle(semaphore);
 }
 
-inline void Semaphore::Post()
+inline void Semaphore::Post(uint32 count)
 {
-	ReleaseSemaphore(semaphore, 1, NULL);
+    DVASSERT(count > 0);
+    ReleaseSemaphore(semaphore, count, NULL);
 }
 
 inline void Semaphore::Wait()
@@ -101,9 +102,9 @@ inline void Semaphore::Wait()
 // MacOS/IOS implementation
 // ##########################################################################################################
 
-inline Semaphore::Semaphore(uint32 value)
+inline Semaphore::Semaphore(uint32 count)
 {
-	semaphore = dispatch_semaphore_create(value);
+    semaphore = dispatch_semaphore_create(count);
 }
 
 inline Semaphore::~Semaphore()
@@ -111,9 +112,12 @@ inline Semaphore::~Semaphore()
 	dispatch_release(semaphore);
 }
 
-inline void Semaphore::Post()
+inline void Semaphore::Post(uint32 count)
 {
-	dispatch_semaphore_signal(semaphore);
+    while (count-- > 0)
+    {
+        dispatch_semaphore_signal(semaphore);
+    }
 }
 
 inline void Semaphore::Wait()
@@ -126,9 +130,9 @@ inline void Semaphore::Wait()
 // ##########################################################################################################
 // Android implementation
 // ##########################################################################################################
-inline Semaphore::Semaphore(uint32 value)
+inline Semaphore::Semaphore(uint32 count)
 {
-	sem_init(&semaphore, 0, value);
+    sem_init(&semaphore, 0, count);
 }
 
 inline Semaphore::~Semaphore()
@@ -136,9 +140,12 @@ inline Semaphore::~Semaphore()
 	sem_destroy(&semaphore);
 }
 
-inline void Semaphore::Post()
+inline void Semaphore::Post(uint32 count)
 {
-	sem_post(&semaphore);
+    while (count-- > 0)
+    {
+        sem_post(&semaphore);
+    }
 }
 
 inline void Semaphore::Wait()

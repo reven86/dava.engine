@@ -219,7 +219,8 @@ public:
 	
 	Camera * GetCamera(int32 n);
 	void AddCamera(Camera * c);
-	inline int32	GetCameraCount();
+    bool RemoveCamera(Camera* c);
+    inline int32	GetCameraCount();
     
     void SetCurrentCamera(Camera * camera);
     Camera * GetCurrentCamera() const;
