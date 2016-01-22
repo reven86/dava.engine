@@ -1279,9 +1279,6 @@
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
       <Filter>Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
-      <Filter>Internal</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
       <Filter>Internal\DataStorage</Filter>
     </ClInclude>
@@ -2651,9 +2648,6 @@
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
-      <Filter>Internal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
       <Filter>Internal</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
