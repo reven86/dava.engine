@@ -76,7 +76,7 @@ public:
 
 typedef ResourcePool<PerfQuerySetDX11_t, RESOURCE_PERFQUERY_SET, PerfQuerySetDX11_t::Desc, false> PerfQuerySetDX11Pool;
 RHI_IMPL_POOL(PerfQuerySetDX11_t, RESOURCE_PERFQUERY_SET, PerfQuerySetDX11_t::Desc, false);
-static Handle CurFramePerfQuerySet = InvalidHandle;
+static Handle DX11_CurFramePerfQuerySet = InvalidHandle;
 
 //==============================================================================
 
@@ -192,7 +192,7 @@ dx11_PerfQuerySet_Reset(Handle handle)
 static void
 dx11_PerfQuerySet_SetCurrent(Handle handle)
 {
-    CurFramePerfQuerySet = handle;
+    DX11_CurFramePerfQuerySet = handle;
 }
 
 static void
@@ -323,7 +323,7 @@ void IssueFrameEndQuery(Handle handle, ID3D11DeviceContext* context)
 
 Handle Current()
 {
-    return CurFramePerfQuerySet;
+    return DX11_CurFramePerfQuerySet;
 }
 
 void ObtainResults(Handle handle)
