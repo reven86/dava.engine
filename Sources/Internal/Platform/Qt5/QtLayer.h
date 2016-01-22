@@ -60,7 +60,7 @@ public:
     void AppStarted();
     void AppFinished();
 
-    void Resize(int32 width, int32 height, int32 currentScreen);
+    void Resize(int32 width, int32 height, float64 dpr);
     void ProcessFrame();
 
     void * CreateAutoreleasePool();
