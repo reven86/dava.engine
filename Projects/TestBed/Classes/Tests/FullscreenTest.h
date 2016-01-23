@@ -44,6 +44,8 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
+    
+    bool SystemInput(UIEvent* currentInput) override;
 
 private:
     void UpdateMode();
@@ -51,12 +53,15 @@ private:
     void OnMulUp(BaseObject* sender, void* data, void* callerData);
     void OnMulDown(BaseObject* sender, void* data, void* callerData);
     void On3DViewControllClick(BaseObject* sender, void* data, void* callerData);
+    void OnPinningClick(BaseObject* sender, void* data, void* callerData);
 
     UIStaticText* currentModeText;
     UIStaticText* currentScaleText;
     UI3DView* ui3dview = nullptr;
     RotationControllerSystem* rotationControllerSystem = nullptr;
     UIStaticText* currect3dScaleText = nullptr;
+    UIStaticText* pinningText = nullptr;
+    UIStaticText* pinningMousePosText = nullptr;
 };
 
 #endif //__FULLSCREENTEST_TEST_H__
