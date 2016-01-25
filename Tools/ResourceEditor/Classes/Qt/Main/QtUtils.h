@@ -59,7 +59,6 @@ bool IsKeyModificatorsPressed();
 
 QColor ColorToQColor(const DAVA::Color& color);
 DAVA::Color QColorToColor(const QColor& qcolor);
-DAVA::Color ClampColorToVisbleRange(DAVA::Color color);
 
 enum eMessageBoxFlags
 {

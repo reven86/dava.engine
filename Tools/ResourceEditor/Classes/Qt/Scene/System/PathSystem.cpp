@@ -45,7 +45,6 @@
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/WayEditCommands.h"
 
-#include "Main/QtUtils.h"
 
 namespace PathSystemInternal
 {
@@ -257,7 +256,7 @@ void PathSystem::DrawInViewOnlyMode()
 
 void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const Color& color)
 {
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), ClampColorToVisbleRange(color), RenderHelper::DRAW_SOLID_DEPTH);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), ClampToUnityRange(color), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
