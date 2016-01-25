@@ -197,12 +197,12 @@ public:
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
+    void ClearAllKeys();
 
 #ifdef __DAVAENGINE_MACOS__
 private:
 #endif
     void OnFinishFrame();
-    void ClearAllKeys();
 
     void PrepareKeyTranslator();
 
