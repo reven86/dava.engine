@@ -1392,7 +1392,7 @@ void ShaderSource::Dump() const
 //==============================================================================
 
 std::vector<ShaderSourceCache::entry_t> ShaderSourceCache::Entry;
-const uint32 ShaderSourceCache::FormatVersion = 2;
+const uint32 ShaderSourceCache::FormatVersion = 3;
 
 const ShaderSource*
 ShaderSourceCache::Get(FastName uid, uint32 srcHash)
