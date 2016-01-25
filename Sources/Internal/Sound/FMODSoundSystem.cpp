@@ -469,6 +469,8 @@ int32 SoundSystem::GetChannelsMax() const
 void SoundSystem::Suspend()
 {
 #ifdef __DAVAENGINE_ANDROID__
+    //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
+    //It's called, but unfortunately it's doesn't work
     Mute(true);
 #endif
 }
@@ -485,8 +487,6 @@ void SoundSystem::Resume()
 
 void SoundSystem::Mute(bool value)
 {
-    //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
-    //It's called, but unfortunately it's doesn't work
     FMOD_VERIFY(masterChannelGroup->setMute(value));
     FMOD_VERIFY(masterEventChannelGroup->setMute(value));
 }
