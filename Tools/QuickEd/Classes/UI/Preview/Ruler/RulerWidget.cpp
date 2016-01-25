@@ -35,6 +35,7 @@
 #include <QMimeData>
 #include <cmath>
 #include <sstream>
+#include "QtTools/Utils/Themes/Themes.h"
 
 RulerWidget::RulerWidget(QWidget* parent)
     : QWidget(parent)
@@ -69,6 +70,7 @@ void RulerWidget::OnMarkerPositionChanged(int position)
 
 void RulerWidget::paintEvent(QPaintEvent* /*event*/)
 {
+    UpdateDoubleBufferImage();
     QPainter painter(this);
     painter.drawPixmap(0, 0, doubleBuffer);
     if (markerPosition == 0)
@@ -77,7 +79,8 @@ void RulerWidget::paintEvent(QPaintEvent* /*event*/)
     }
 
     // Draw the marker.
-    QPen pen(Qt::black, 1);
+    QColor penColor(palette().color(QPalette::Text));
+    QPen pen(penColor, 1);
     pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
 
@@ -179,9 +182,17 @@ void RulerWidget::UpdateDoubleBufferImage()
     doubleBuffer = QPixmap(size());
     doubleBuffer.fill();
 
-    static const QColor rulerBackgroundColor = QColor(0xFF, 0xFF, 0xFF);
-    static const QColor rulerTicksColor = QColor(0x00, 0x00, 0x00);
-
+    QColor rulerBackgroundColor;
+    switch(Themes::GetCurrentTheme())
+    {
+        case Themes::Classic:
+            rulerBackgroundColor = Qt::white;
+            break;
+        case Themes::Dark:
+            rulerBackgroundColor = palette().color(QPalette::Window);
+            break;
+    }
+    const QColor rulerTicksColor = palette().color(QPalette::Text);
     static const int rulerFontSize = 10;
 
     static const int borderWidth = 2;

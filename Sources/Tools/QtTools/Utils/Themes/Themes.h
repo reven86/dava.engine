@@ -34,19 +34,21 @@
 #include <QStringList>
 #include <QPalette>
 
-class ThemesFactory
+namespace Themes
 {
-public:
-    static void InitFromQApplication();
-    static QStringList Themes();
-    static void SetCurrentTheme(const QString& theme);
-    static const QString& GetCurrentTheme();
-
-private:
-    static QPalette defaultPalette;
-    static QString defaultStyleSheet;
-    static QString currentTheme;
-    static bool themesInitialized;
+    enum eTheme : int
+    {
+        Classic,
+        Dark
+    };
+    void InitFromQApplication();
+    QStringList ThemesNames();
+    void SetCurrentTheme(const QString& theme);
+    void SetCurrentTheme(eTheme theme);
+    const QString& GetCurrentThemeStr();
+    eTheme GetCurrentTheme();
 };
+
+Q_DECLARE_METATYPE(Themes::eTheme);
 
 #endif // __QT_TOOLS_THEMES_H__

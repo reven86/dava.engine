@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     a.setOrganizationName("DAVA");
     a.setApplicationName("QuickEd");
 
-    ThemesFactory::InitFromQApplication();
+    Themes::InitFromQApplication();
     Q_INIT_RESOURCE(QtToolsResources);
 
     QApplication::setQuitOnLastWindowClosed(false);

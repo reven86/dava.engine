@@ -35,6 +35,11 @@
 #include <QPixmap>
 #include <QMouseEvent>
 
+namespace Themes
+{
+    enum eTheme : int;
+}
+
 class RulerWidget : public QWidget
 {
     Q_OBJECT
@@ -70,7 +75,7 @@ protected:
     void DrawScale(QPainter& painter, int tickStep, int tickStartPos, int tickEndPos,
                    bool drawValues, bool isHorizontal);
 
-private:
+private:    
     // Ruler orientation.
     Qt::Orientation orientation = Qt::Horizontal;
 

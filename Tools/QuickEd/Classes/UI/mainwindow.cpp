@@ -41,6 +41,7 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "DebugTools/DebugTools.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 namespace
 {
@@ -380,6 +381,27 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
     
+    menuView->addSeparator();
+    QMenu *appStyleMenu = new QMenu(tr("Application style"), menuView);
+    menuView->addMenu(appStyleMenu);
+    QActionGroup *actionGroup = new QActionGroup(this);
+    for(const QString &theme : Themes::ThemesNames())
+    {
+        QAction *action = new QAction(theme, menuView);
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+        if (theme == Themes::GetCurrentThemeStr())
+        {
+            action->setChecked(true);
+        }
+        appStyleMenu->addAction(action);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [](QAction *action){
+        if(action->isChecked())
+        {
+            Themes::SetCurrentTheme(action->text());
+        }
+    });
     // Setup the Background Color menu.
     QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
     menuView->addSeparator();
