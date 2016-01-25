@@ -500,22 +500,28 @@ void TextBlock::CalculateCacheParams()
         WideString pointsStr;
         if ((fittingType & FITTING_POINTS) && (drawSize.x < textMetrics.width))
         {
+            static float32 FT_WIDTH_EPSILON = 0.3f;
+
             uint32 length = static_cast<uint32>(charSizes.size());
             Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
-            float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width);
-            for (uint32 i = length - 1; i > 0U; --i)
+            float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width) - FT_WIDTH_EPSILON;
+            pointsStr.clear();
+            for (uint32 i = length; i > 0U; --i)
             {
                 if(fullWidth <= drawSize.x)
                 {
 #if defined(LOCALIZATION_DEBUG)
                     fittingTypeUsed = FITTING_POINTS;
 #endif
-                    pointsStr.clear();
-                    pointsStr.append(visualText, 0, i + 1);
+                    pointsStr.append(visualText, 0, i);
                     pointsStr += L"...";
                     break;
                 }
-                fullWidth -= charSizes[i];
+                fullWidth -= charSizes[i - 1];
+            }
+            if (pointsStr.empty())
+            {
+                pointsStr = L"...";
             }
         }
         else if (!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textMetrics.width) && (requestedSize.x >= 0))

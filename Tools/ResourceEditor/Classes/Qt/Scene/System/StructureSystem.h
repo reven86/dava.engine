@@ -42,6 +42,7 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Functional/Function.h"
 
 class StructureSystemDelegate
 {
@@ -69,10 +70,11 @@ public:
 	void RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer *> &layers, const DAVA::Vector<DAVA::ParticleEmitter *>& oldEmitters);
 	void MoveForce(const DAVA::Vector<DAVA::ParticleForce *> &forces, const DAVA::Vector<DAVA::ParticleLayer *> &oldLayers, DAVA::ParticleLayer *newLayer);
 	void RemoveForce(const DAVA::Vector<DAVA::ParticleForce *> &forces, const DAVA::Vector<DAVA::ParticleLayer *> &layers);
-	void ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings = false);
-	void ReloadRefs(const DAVA::FilePath &modelPath, bool saveLightmapSettings = false);
-	void ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath &newModelPath, bool saveLightmapSettings = false);
-	void Add(const DAVA::FilePath &newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
+    EntityGroup ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings = false);
+    // Mapping is link between old entity and new entity
+    void ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, bool saveLightmapSettings = false);
+    EntityGroup ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
+    void Add(const DAVA::FilePath &newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
 
 	void EmitChanged();
 
@@ -92,8 +94,8 @@ protected:
 	void AddEntity(DAVA::Entity * entity) override;
 	void RemoveEntity(DAVA::Entity * entity) override;
 
-	void ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload, const DAVA::FilePath &newModelPath, bool saveLightmapSettings);
-	DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool clearCached);
+    void ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings);
+    DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool clearCached);
 
     bool CopyLightmapSettings(DAVA::Entity *fromState, DAVA::Entity *toState) const;
 	void CopyLightmapSettings(DAVA::NMaterial *fromEntity, DAVA::NMaterial *toEntity) const;
@@ -101,8 +103,8 @@ protected:
 
 	void CheckAndMarkSolid(DAVA::Entity *entity);
 
-	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
-    
+    void SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback);
+
     void ProcessAutoSelection(const Command2 *command, bool redo) const;
 
 private:
