@@ -163,6 +163,8 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_RHI_INDEX_MAP, "rhi index map");
     RegisterAllocPoolName(ALLOC_POOL_RHI_TEXTURE_MAP, "rhi texture map");
     RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
+
+    RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
 }
 
 MemoryManager* MemoryManager::Instance()
