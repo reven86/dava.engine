@@ -351,21 +351,12 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)mouseEntered:(NSEvent *)theEvent
-{
-    if(Cursor::GetSystemCursorVisibility())
-    {
-        [NSCursor unhide];
-    }
-    else
-    {
-        [NSCursor hide];
-    }
-}
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
     [NSCursor unhide];
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
