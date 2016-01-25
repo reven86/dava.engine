@@ -320,7 +320,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />

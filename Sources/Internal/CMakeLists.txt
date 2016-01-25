@@ -103,7 +103,10 @@ elseif( MACOS )
     set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( IOS )  
-    find_package( ZLIB )
+
+    if ( NOT NOT_TARGET_EXECUTABLE )
+        find_package( ZLIB )
+    endif()
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
