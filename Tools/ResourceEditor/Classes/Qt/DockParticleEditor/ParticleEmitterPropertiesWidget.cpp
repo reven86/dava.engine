@@ -36,6 +36,32 @@
 #define EMISSION_RANGE_MIN_LIMIT_DEGREES 0.0f
 #define EMISSION_RANGE_MAX_LIMIT_DEGREES 180.0f
 
+namespace ParticleEmitterPropertiesWidget_namespace
+{
+bool IsInnerEmitter(const DAVA::ParticleEffectComponent* effectComponent, const DAVA::ParticleEmitter* emitterToCheck)
+{
+    if (effectComponent->GetEmitterId(emitterToCheck) != -1)
+        return false;
+
+    for (int32 index = 0, size = effectComponent->GetEmittersCount(); index < size; ++index)
+    {
+        ParticleEmitter* emitter = effectComponent->GetEmitter(index);
+        if (emitter)
+        {
+            for (const ParticleLayer* layer : emitter->layers)
+            {
+                if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES && layer->innerEmitter == emitterToCheck)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+}
+
 ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent) :
 	QWidget(parent),
 	BaseParticleEditorContentWidget()
@@ -270,8 +296,6 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 	DVASSERT(emitter != 0);
 	this->emitter = emitter;
     this->effect = effect;
-    int32 emitterId = effect->GetEmitterId(emitter);
-    bool isInnerEmitter = (emitterId == -1); //TODO: find right way to detect inner emitter
     SetActiveScene(scene);
 
 	blockSignals = true;
@@ -288,13 +312,15 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 	float maxTime		= emitterLifeTime;
 	float maxTimeLimit	= emitterLifeTime;
     QString originalYamlPath;
-    if (!isInnerEmitter)
+    bool isInnerEmitter = ParticleEmitterPropertiesWidget_namespace::IsInnerEmitter(effect, emitter);
+    if (isInnerEmitter)
     {
-        originalYamlPath = QString::fromStdString(effect->GetEmitterData(emitterId).originalFilepath.GetAbsolutePathname());
+        originalYamlPath = QString::fromStdString(emitter->configPath.GetAbsolutePathname());
     }
     else
     {
-        originalYamlPath = QString::fromStdString(emitter->configPath.GetAbsolutePathname());
+        int32 emitterId = effect->GetEmitterId(emitter);
+        originalYamlPath = QString::fromStdString(effect->GetEmitterData(emitterId).originalFilepath.GetAbsolutePathname());
     }
 
     originalEmitterYamlPath->setText(originalYamlPath);
@@ -302,6 +328,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
 	emitterType->setCurrentIndex(emitter->emitterType);
 
+    int32 emitterId = effect->GetEmitterId(emitter);
     Vector3 position = (emitterId==-1)?Vector3(0,0,0):effect->GetSpawnPosition(emitterId);
 	positionXSpinBox->setValue((double)position.x);
 	positionYSpinBox->setValue((double)position.y);
