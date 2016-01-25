@@ -39,6 +39,7 @@ public:
     UWPLogConsumer();
 
     bool IsSessionEnded();
+    bool HasReceivedData();
     DAVA::Signal<const DAVA::String&> newMessageNotifier;
 
 private:
@@ -48,7 +49,7 @@ private:
 
     void OnNewData(const DAVA::String& str);
 
-    bool channelOpened = false;
+    bool channelOpened;
     bool dataReceived = false;
 };
 

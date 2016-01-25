@@ -28,7 +28,6 @@
 
 
 #include "Concurrency/Thread.h"
-#include "Debug/DVAssert.h"
 #include "SvcHelper.h"
 
 using namespace DAVA;
@@ -39,15 +38,10 @@ SvcHelper::SvcHelper(const String &name)
     serviceControlManager = ::OpenSCManager(0, 0, 0);
     if (!serviceControlManager)
     {
-        DVASSERT_MSG(false, "Can't open Service Control Manager");
         return;
     }
 
     service = ::OpenService(serviceControlManager, name.c_str(), SC_MANAGER_ALL_ACCESS);
-    if (!service)
-    {
-        DVASSERT_MSG(false, "Can't open service " + name);
-    }
 }
 
 SvcHelper::~SvcHelper()
@@ -74,7 +68,6 @@ String SvcHelper::ServiceDescription() const
 
     if (!res)
     {
-        DVASSERT_MSG(false, "Can't query service description");
         return "";
     }
 
@@ -91,7 +84,6 @@ bool SvcHelper::IsRunning() const
     SERVICE_STATUS info;
     if (!::QueryServiceStatus(service, &info))
     {
-        DVASSERT_MSG(false, "Can't query service status");
         return false;
     }
     
@@ -100,7 +92,28 @@ bool SvcHelper::IsRunning() const
 
 bool SvcHelper::Start()
 {
-    return ::StartService(service, 0, nullptr) == TRUE;
+    if (::StartService(service, 0, nullptr) != TRUE)
+    {
+        return false;
+    }
+
+    SERVICE_STATUS status;
+    bool running = false;
+    int i = 0;
+
+    while (!running && i < 10)
+    {
+        Thread::Sleep(500);
+        if (!::QueryServiceStatus(service, &status))
+        {
+            break;
+        }
+
+        running = status.dwCurrentState == SERVICE_RUNNING;
+        ++i;
+    }
+
+    return running;
 }
 
 bool SvcHelper::Stop()

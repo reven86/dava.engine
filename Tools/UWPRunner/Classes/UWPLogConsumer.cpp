@@ -31,12 +31,18 @@
 
 UWPLogConsumer::UWPLogConsumer()
 {
+    channelOpened = IsChannelOpen();
     newDataNotifier.Connect(DAVA::MakeFunction(this, &UWPLogConsumer::OnNewData));
 }
 
 bool UWPLogConsumer::IsSessionEnded()
 {
-    return !channelOpened && dataReceived;
+    return !channelOpened && HasReceivedData();
+}
+
+bool UWPLogConsumer::HasReceivedData()
+{
+    return dataReceived;
 }
 
 void UWPLogConsumer::ChannelOpen()

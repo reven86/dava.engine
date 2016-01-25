@@ -66,7 +66,9 @@ private:
     void Run(Runner& runner);
     void WaitApp();
 
+    void ProcessPackageOptions();
     void ProcessBundlePackage();
+    void ProcessProfileInfo();
     void InitializeNetwork(bool isMobileDevice);
     void UnInitializeNetwork();
 
@@ -79,7 +81,7 @@ private:
     PackageOptions options;
     DAVA::Signal<> cleanNeeded;
     std::unique_ptr<AppxBundleHelper> bundleHelper;
-    std::shared_ptr<UWPLogConsumer> logConsumer;
+    UWPLogConsumer logConsumer;
     DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
     DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
     DAVA::String qtProfile;

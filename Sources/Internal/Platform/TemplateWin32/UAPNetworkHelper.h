@@ -40,7 +40,7 @@ namespace DAVA
 class UAPNetworkHelper
 {
 public:
-    static const uint16 UAP_DESKTOP_TCP_PORT = 777;
+    static const uint16 UAP_DESKTOP_TCP_PORT = 7777;
     static const uint16 UAP_MOBILE_TCP_PORT = 1911;
     static const char* UAP_IP_ADDRESS;
 

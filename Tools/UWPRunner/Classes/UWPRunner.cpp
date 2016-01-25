@@ -31,7 +31,6 @@
 #include <QXmlStreamReader>
 
 #include "Concurrency/Thread.h"
-#include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
 #include "Network/NetConfig.h"
@@ -53,51 +52,29 @@ String GetCurrentArchitecture();
 QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest);
 FilePath ExtractManifest(const FilePath& package);
 
+void ThrowException(int line, const char* func, const char* file, const char* msg)
+{
+    StringStream ss;
+    ss << "Exception in " << func << " in " << file << "::" << line << ": " << msg;
+    throw std::runtime_error(ss.str());
+}
+
+#define RUNNER_EXCEPTION(msg) ThrowException(__LINE__, __FUNCTION__, __FILE__, msg);
+
 UWPRunner::UWPRunner(const PackageOptions& opt)
     : options(opt)
-    , logConsumer(new UWPLogConsumer)
 {
     //install slot to log consumer
-    logConsumerConnectionID = logConsumer->newMessageNotifier.Connect([this](const String& logStr)
+    logConsumerConnectionID = logConsumer.newMessageNotifier.Connect([this](const String& logStr)
     {
         NetLogOutput(logStr);
     });
-
-    //if package is bundle, extract concrete package from it
-    if (AppxBundleHelper::IsBundle(options.mainPackage))
-    {
-        ProcessBundlePackage();
-    }
-    else
-    {
-        options.packageToInstall = options.mainPackage;
-    }
-
-    //Extract manifest from package
-    Logger::Info("Extracting manifest...");
-    FilePath manifest = ExtractManifest(options.packageToInstall);
-    if (manifest.IsEmpty())
-    {
-        DVASSERT_MSG(false, "Can't extract manifest file from package");
-        return;
-    }
-
-    //figure out if app should be started on mobile device
-    qtProfile = GetQtWinRTRunnerProfile(options.profile, manifest).toStdString();
-    FileSystem::Instance()->DeleteFile(manifest);
-
-    //Init network
-    if (!options.installOnly)
-    {
-        Logger::Info("Initializing network...");
-        InitializeNetwork(qtProfile == "appxphone");
-    }
 }
 
 UWPRunner::~UWPRunner()
 {
     cleanNeeded.Emit();
-    logConsumer->newMessageNotifier.Disconnect(logConsumerConnectionID);
+    logConsumer.newMessageNotifier.Disconnect(logConsumerConnectionID);
 
     if (!options.installOnly)
     {
@@ -109,6 +86,15 @@ void UWPRunner::Run()
 {
     //Create Qt runner
     Logger::Info("Preparing to launch...");
+    ProcessPackageOptions();
+    ProcessProfileInfo();
+
+    //Init network
+    if (!options.installOnly)
+    {
+        Logger::Info("Initializing network...");
+        InitializeNetwork(qtProfile == "appxphone");
+    }
 
     QStringList resources;
     for (const auto& x : options.resources)
@@ -126,8 +112,7 @@ void UWPRunner::Run()
     //Check runner state
     if (!runner.isValid())
     {
-        DVASSERT_MSG(false, "Runner core is not valid");
-        return;
+        RUNNER_EXCEPTION("Runner core is not valid");
     }
 
     Run(runner);
@@ -141,7 +126,7 @@ void UWPRunner::Run(Runner& runner)
         Logger::Info("Installing package...");
         if (!runner.install(true))
         {
-            DVASSERT_MSG(false, "Can't install application package");
+            RUNNER_EXCEPTION("Can't install application package");
             return;
         }
     }
@@ -154,7 +139,7 @@ void UWPRunner::Run(Runner& runner)
     Logger::Info("Starting application...");
     if (!runner.start())
     {
-        DVASSERT_MSG(false, "Can't install application package");
+        RUNNER_EXCEPTION("Can't install application package");
         return;
     }
 
@@ -167,12 +152,45 @@ void UWPRunner::Run(Runner& runner)
 
 void UWPRunner::WaitApp()
 {
-    Logger::Info("Waiting app exit...");
+    const size_t connectionTimeout = 5 * 60 * 1000;
+    const uint32 sleepTimeMS = 10;
+    size_t watchDogTimer = 0;
 
-    while (!logConsumer->IsSessionEnded())
+    Logger::Info("Waiting application exit...");
+
+    do
     {
         Net::NetCore::Instance()->Poll();
-        Thread::Sleep(10);
+
+        if (logConsumer.IsChannelOpen())
+        {
+            watchDogTimer = 0;
+        }
+        else
+        {
+            watchDogTimer += sleepTimeMS;
+            if (watchDogTimer >= connectionTimeout)
+            {
+                Logger::Error("Cannot connect to application");
+                break;
+            }
+        }
+
+        Thread::Sleep(sleepTimeMS);
+    } 
+    while (!logConsumer.IsSessionEnded());
+}
+
+void UWPRunner::ProcessPackageOptions()
+{
+    //if package is bundle, extract concrete package from it
+    if (AppxBundleHelper::IsBundle(options.mainPackage))
+    {
+        ProcessBundlePackage();
+    }
+    else
+    {
+        options.packageToInstall = options.mainPackage;
     }
 }
 
@@ -200,7 +218,6 @@ void UWPRunner::ProcessBundlePackage()
         }
     }
 
-    DVASSERT_MSG(!package.IsEmpty(), "Can't extract app package from bundle");
     if (!package.IsEmpty())
     {
         Vector<AppxBundleHelper::PackageInfo> resources = bundleHelper->GetResources();
@@ -211,6 +228,25 @@ void UWPRunner::ProcessBundlePackage()
 
         options.packageToInstall = package.GetAbsolutePathname();
     }
+    else
+    {
+        RUNNER_EXCEPTION("Can't extract app package from bundle");
+    }
+}
+
+void UWPRunner::ProcessProfileInfo()
+{
+    //Extract manifest from package
+    Logger::Info("Extracting manifest...");
+    FilePath manifest = ExtractManifest(options.packageToInstall);
+    if (manifest.IsEmpty())
+    {
+        RUNNER_EXCEPTION("Can't extract manifest file from package");
+    }
+
+    //figure out if app should be started on mobile device
+    qtProfile = GetQtWinRTRunnerProfile(options.profile, manifest).toStdString();
+    FileSystem::Instance()->DeleteFile(manifest);
 }
 
 void UWPRunner::InitializeNetwork(bool isMobileDevice)
@@ -222,15 +258,13 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
         bool ipOverUsbConfigured = ConfigureIpOverUsb();
         if (!ipOverUsbConfigured)
         {
-            DVASSERT_MSG(false, "Cannot configure IpOverUSB service");
-            return;
+            RUNNER_EXCEPTION("Cannot configure IpOverUSB service");
         }
     }
 
-    std::shared_ptr<UWPLogConsumer> consumer = logConsumer;
     NetCore::Instance()->RegisterService(
         NetCore::SERVICE_LOG,
-        [consumer](uint32 serviceId, void*) -> IChannelListener* { return consumer.get(); },
+        [this] (uint32 serviceId, void*) -> IChannelListener* { return &logConsumer; },
         [] (IChannelListener* obj, void*) -> void {});
 
     eNetworkRole role;
@@ -256,10 +290,12 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
 
 void UWPRunner::UnInitializeNetwork()
 {
-    if (controllerId != DAVA::Net::NetCore::INVALID_TRACK_ID)
+    if (controllerId != Net::NetCore::INVALID_TRACK_ID)
     {
-        Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
-        controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
+        Net::NetCore* netCore = Net::NetCore::Instance();
+        netCore->DestroyControllerBlocked(controllerId);
+        netCore->UnregisterService(Net::NetCore::SERVICE_LOG);
+        controllerId = Net::NetCore::INVALID_TRACK_ID;
     }
 }
 
@@ -274,8 +310,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue("DestinationAddress", desiredAddr))
         {
-            DVASSERT_MSG(false, "Unable to set DestinationAddress");
-            return false;
+            RUNNER_EXCEPTION("Unable to set DestinationAddress");
         }
         changed = true;
     }
@@ -285,8 +320,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue("DestinationPort", desiredPort))
         {
-            DVASSERT_MSG(false, "Unable to set DestinationPort");
-            return false;
+            RUNNER_EXCEPTION("Unable to set DestinationPort");
         }
         changed = true;
     }
@@ -296,8 +330,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue("LocalAddress", desiredAddr))
         {
-            DVASSERT_MSG(false, "Unable to set LocalAddress");
-            return false;
+            RUNNER_EXCEPTION("Unable to set LocalAddress");
         }
         changed = true;
     }
@@ -307,8 +340,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
     {
         if (!key.SetValue("LocalPort", desiredPort))
         {
-            DVASSERT_MSG(false, "Unable to set LocalPort");
-            return false;
+            RUNNER_EXCEPTION("Unable to set LocalPort");
         }
         changed = true;
     }
@@ -322,26 +354,20 @@ bool UWPRunner::RestartIpOverUsb()
     SvcHelper service("IpOverUsbSvc");
     if (!service.IsInstalled())
     {
-        DVASSERT_MSG(false, "Can't open IpOverUsb service");
-        return false;
+        RUNNER_EXCEPTION("Can't open IpOverUsb service");
     }
 
     //stop it
     if (!service.Stop())
     {
-        DVASSERT_MSG(false, "Can't stop IpOverUsb service");
-        return false;
+        RUNNER_EXCEPTION("Can't stop IpOverUsb service");
     }
 
     //start it
     if (!service.Start())
     {
-        DVASSERT_MSG(false, "Can't start IpOverUsb service");
-        return false;
+        RUNNER_EXCEPTION("Can't start IpOverUsb service");
     }
-
-    //waiting for service starting
-    Thread::Sleep(1000);
 
     return true;
 }
@@ -354,18 +380,12 @@ bool UWPRunner::ConfigureIpOverUsb()
     RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
     if (!key.IsExist())
     {
-        DVASSERT_MSG(false, "Can't open or create key");
-        return false;
+        RUNNER_EXCEPTION("Can't open or create key");
     }
     needRestart |= key.IsCreated();
 
     //update config values
     bool result = UpdateIpOverUsbConfig(key);
-    /*if (!result.IsSet())
-    {
-    DVASSERT_MSG(false, "Unable to update IpOverUsb service config");
-    return false;
-    }*/
     needRestart |= result;
 
     //restart service to applying new config

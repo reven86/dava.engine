@@ -48,8 +48,15 @@ void FrameworkDidLaunched()
         return;
     }
 
-    UWPRunner runner(options);
-    runner.Run();
+    try
+    {
+        UWPRunner runner(options);
+        runner.Run();
+    }
+    catch (std::exception& e)
+    {
+        DAVA::Logger::Error("%s", e.what());
+    }
 }
 
 void FrameworkWillTerminate() {}
