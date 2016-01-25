@@ -143,6 +143,8 @@ public:
     void OpenKeyboard()
     {
         [nsTextField becomeFirstResponder];
+        NSRange range = [[nsTextField currentEditor] selectedRange];
+        [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
 
         UITextFieldDelegate* delegate = davaText->GetDelegate();
 
