@@ -51,6 +51,7 @@
 #include "Model/ControlProperties/ClassProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/PrototypeNameProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 #include "Model/YamlPackageSerializer.h"
 
 #include "PackageMimeData.h"
@@ -153,8 +154,11 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 }
                 
             case Qt::CheckStateRole:
-                return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
-                
+            {
+                auto prop = controlNode->GetRootProperty()->GetVisibleProperty();
+                return prop->GetVisibleInEditor() ? Qt::Checked : Qt::Unchecked;
+            }
+
             case Qt::ToolTipRole:
             {
                 const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
@@ -259,15 +263,17 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
     {
         return false;
     }
+    ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+    DVASSERT(controlNode);
+
     if (role == Qt::CheckStateRole)
     {
-        control->SetVisibleForUIEditor(value.toBool());
+        auto prop = controlNode->GetRootProperty()->GetVisibleProperty();
+        prop->SetVisibleInEditor(value.toBool());
         return true;
     }
     if(role == Qt::EditRole)
     {
-        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-        DVASSERT(controlNode);
         auto prop = controlNode->GetRootProperty()->GetNameProperty();
         const auto &newName = value.toString().toStdString();
         if (newName != node->GetName())

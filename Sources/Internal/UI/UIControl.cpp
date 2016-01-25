@@ -86,7 +86,6 @@ UIControl::UIControl(const Rect& rect)
     parent = NULL;
     prevControlState = controlState = STATE_NORMAL;
     visible = true;
-    visibleForUIEditor = true;
     /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -651,31 +650,9 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             return;
         }
 
-        bool oldSystemVisible = GetSystemVisible();
         visible = isVisible;
-        if (GetSystemVisible() == oldSystemVisible)
-        {
-            return;
-        }
 
         SetLayoutDirty();
-
-        SystemNotifyVisibilityChanged();
-    }
-
-    void UIControl::SetVisibleForUIEditor(bool value)
-    {
-        if (visibleForUIEditor == value)
-        {
-            return;
-        }
-
-        bool oldSystemVisible = GetSystemVisible();
-        visibleForUIEditor = value;
-        if (GetSystemVisible() == oldSystemVisible)
-        {
-            return;
-        }
 
         SystemNotifyVisibilityChanged();
     }
@@ -684,7 +661,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     {
         if (parent && parent->IsOnScreen())
         {
-            if (GetSystemVisible())
+            if (GetVisible())
             {
                 SystemWillBecomeVisible();
             }
@@ -807,7 +784,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             control->SystemDidAppear();
         }
 
-        if (IsOnScreen() && control->GetSystemVisible())
+        if (IsOnScreen() && control->GetVisible())
             control->SystemWillBecomeVisible();
 
         isIteratorCorrupted = true;
@@ -826,7 +803,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if ((*it) == control)
             {
-                if (IsOnScreen() && control->GetSystemVisible())
+                if (IsOnScreen() && control->GetVisible())
                     control->SystemWillBecomeInvisible();
 
                 bool inHierarchy = InViewHierarchy();
@@ -917,7 +894,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetSystemVisible())
+                if (IsOnScreen() && control->GetVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -951,7 +928,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetSystemVisible())
+                if (IsOnScreen() && control->GetVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1047,7 +1024,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         controlState = srcControl->controlState;
         visible = srcControl->visible;
-        visibleForUIEditor = srcControl->visibleForUIEditor;
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
@@ -1119,10 +1095,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         if (UIControlSystem::Instance()->GetScreen() == this ||
             UIControlSystem::Instance()->GetPopupContainer() == this)
         {
-            return GetSystemVisible();
+            return GetVisible();
         }
 
-        if (!GetSystemVisible() || !parent)
+        if (!GetVisible() || !parent)
             return false;
 
         return parent->IsOnScreen();
@@ -1307,7 +1283,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::SystemDraw(const UIGeometricData& geometricData)
     {
-        if (!GetSystemVisible())
+        if (!GetVisible())
             return;
 
         UIControlSystem::Instance()->drawCounter++;
@@ -1454,7 +1430,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
-        if (!inputEnabled || !GetSystemVisible() || controlState & STATE_DISABLED)
+        if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
         {
             return false;
         }
@@ -1667,7 +1643,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         UIControlSystem::Instance()->inputCounter++;
         isUpdated = true;
 
-        if( !GetSystemVisible() )
+        if (!GetVisible())
             return false;
 
         //if(currentInput->touchLocker != this)
@@ -1800,7 +1776,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetSystemVisible())
+            if ((*it)->GetVisible())
                 (*it)->SystemWillBecomeVisible();
         }
     }
@@ -1824,7 +1800,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetSystemVisible())
+            if ((*it)->GetVisible())
                 (*it)->SystemWillBecomeInvisible();
         }
 
