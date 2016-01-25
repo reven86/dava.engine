@@ -35,8 +35,6 @@
 #include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
-#include <QPalette>
-#include <QPalette>
 #include "Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -199,6 +197,9 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                 return var;
             }
             break;
+
+        case Qt::BackgroundRole:
+            return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
             {
@@ -224,10 +225,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                         return QColor(Qt::darkGreen);
                 }
             }
-            if((flags & AbstractProperty::EF_INHERITED) != 0)
-                return QColor(Qt::yellow);
-            else
-                return QVariant();
+            return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
         }
 
     }

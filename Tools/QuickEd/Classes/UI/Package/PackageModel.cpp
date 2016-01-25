@@ -129,6 +129,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
+
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
 
@@ -172,6 +173,12 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 return toolTip;
             }
                 
+            case Qt::TextColorRole:
+                return controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
+                
+            case Qt::BackgroundRole:
+                return QColor(Qt::white);
+                
             case Qt::FontRole:
             {
                 QFont myFont;
@@ -194,7 +201,13 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             {
                 case Qt::DisplayRole:
                     return StringToQString(node->GetName());
-                
+                    
+                case Qt::TextColorRole:
+                    return QColor(Qt::darkGreen);
+                    
+                case Qt::BackgroundRole:
+                    return QColor(Qt::white);
+                    
                 case Qt::FontRole:
                 {
                     QFont myFont;
@@ -211,6 +224,12 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             {
                 case Qt::DisplayRole:
                     return StringToQString(node->GetName());
+                    
+                case Qt::TextColorRole:
+                    return QColor(Qt::black);
+                    
+                case Qt::BackgroundRole:
+                    return QColor(Qt::lightGray);
                     
                 case Qt::FontRole:
                 {

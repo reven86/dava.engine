@@ -39,7 +39,6 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/Utils/Themes/Themes.h"
 
 #include "DebugTools/DebugTools.h"
 
@@ -146,7 +145,7 @@ void MainWindow::OnDocumentChanged(Document* document)
     previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
 
-    actionSaveDocument->setEnabled(nullptr != document && document->GetUndoStack()->isClean());
+    actionSaveDocument->setEnabled(nullptr != document && !document->GetUndoStack()->isClean());
 
     for (int index = 0, count = tabBar->count(); index < count; ++index)
     {
@@ -381,31 +380,8 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
     
-    menuView->addSeparator();
-    QMenu *appStyleMenu = new QMenu(tr("Application style"), menuView);
-    menuView->addMenu(appStyleMenu);
-    QSignalMapper *signalMapper = new QSignalMapper(this);
-    QActionGroup *actionGroup = new QActionGroup(this);
-    for(const QString &theme : ThemesFactory::Themes())
-    {
-        QAction *action = new QAction(theme, menuView);
-        actionGroup->addAction(action);
-        action->setCheckable(true);
-        if (theme == ThemesFactory::GetCurrentTheme())
-        {
-            action->setChecked(true);
-        }
-        appStyleMenu->addAction(action);
-        connect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(action, theme);
-    }
-
-    connect(signalMapper, static_cast<void (QSignalMapper::*)(const QString&)>(&QSignalMapper::mapped), [](const QString& theme) {
-        ThemesFactory::SetCurrentTheme(theme);
-    });
-
     // Setup the Background Color menu.
-    QMenu* setBackgroundColorMenu = new QMenu(tr("Background Color"), menuView);
+    QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
     menuView->addSeparator();
     menuView->addMenu(setBackgroundColorMenu);
 
