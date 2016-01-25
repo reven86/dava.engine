@@ -1259,12 +1259,6 @@
 		028C13AE1BD66A6000B2266F /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0A741BD66A5E00B2266F /* MovieViewControlMacOS.mm */; };
 		028C13AF1BD66A6000B2266F /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0A741BD66A5E00B2266F /* MovieViewControlMacOS.mm */; };
 		028C13B01BD66A6000B2266F /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0A741BD66A5E00B2266F /* MovieViewControlMacOS.mm */; };
-		028C13C91BD66A6000B2266F /* NSFullScreenWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0A7D1BD66A5E00B2266F /* NSFullScreenWindow.h */; };
-		028C13CA1BD66A6000B2266F /* NSFullScreenWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0A7D1BD66A5E00B2266F /* NSFullScreenWindow.h */; };
-		028C13CB1BD66A6000B2266F /* NSFullScreenWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0A7D1BD66A5E00B2266F /* NSFullScreenWindow.h */; };
-		028C13CC1BD66A6000B2266F /* NSFullScreenWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 028C0A7E1BD66A5E00B2266F /* NSFullScreenWindow.m */; };
-		028C13CD1BD66A6000B2266F /* NSFullScreenWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 028C0A7E1BD66A5E00B2266F /* NSFullScreenWindow.m */; };
-		028C13CE1BD66A6000B2266F /* NSFullScreenWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 028C0A7E1BD66A5E00B2266F /* NSFullScreenWindow.m */; };
 		028C13CF1BD66A6000B2266F /* OpenGLView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0A7F1BD66A5E00B2266F /* OpenGLView.h */; };
 		028C13D01BD66A6000B2266F /* OpenGLView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0A7F1BD66A5E00B2266F /* OpenGLView.h */; };
 		028C13D11BD66A6000B2266F /* OpenGLView.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0A7F1BD66A5E00B2266F /* OpenGLView.h */; };
@@ -3468,8 +3462,6 @@
 		028C0A721BD66A5E00B2266F /* MainWindowController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindowController.mm; sourceTree = "<group>"; };
 		028C0A731BD66A5E00B2266F /* MovieViewControlMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovieViewControlMacOS.h; sourceTree = "<group>"; };
 		028C0A741BD66A5E00B2266F /* MovieViewControlMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MovieViewControlMacOS.mm; sourceTree = "<group>"; };
-		028C0A7D1BD66A5E00B2266F /* NSFullScreenWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFullScreenWindow.h; sourceTree = "<group>"; };
-		028C0A7E1BD66A5E00B2266F /* NSFullScreenWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFullScreenWindow.m; sourceTree = "<group>"; };
 		028C0A7F1BD66A5E00B2266F /* OpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLView.h; sourceTree = "<group>"; };
 		028C0A801BD66A5E00B2266F /* OpenGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenGLView.mm; sourceTree = "<group>"; };
 		028C0A811BD66A5E00B2266F /* OpenUDIDMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDMacOS.h; sourceTree = "<group>"; };
@@ -4804,8 +4796,6 @@
 				028C0A721BD66A5E00B2266F /* MainWindowController.mm */,
 				028C0A731BD66A5E00B2266F /* MovieViewControlMacOS.h */,
 				028C0A741BD66A5E00B2266F /* MovieViewControlMacOS.mm */,
-				028C0A7D1BD66A5E00B2266F /* NSFullScreenWindow.h */,
-				028C0A7E1BD66A5E00B2266F /* NSFullScreenWindow.m */,
 				028C0A7F1BD66A5E00B2266F /* OpenGLView.h */,
 				028C0A801BD66A5E00B2266F /* OpenGLView.mm */,
 				028C0A811BD66A5E00B2266F /* OpenUDIDMacOS.h */,
@@ -5815,7 +5805,6 @@
 				028C10DD1BD66A6000B2266F /* Rect.h in Headers */,
 				028C18CC1BD66A6000B2266F /* DebugRenderSystem.h in Headers */,
 				028C14BE1BD66A6000B2266F /* GPUFamilyDescriptor.h in Headers */,
-				028C13CB1BD66A6000B2266F /* NSFullScreenWindow.h in Headers */,
 				028C18BA1BD66A6000B2266F /* RotationControllerSystem.h in Headers */,
 				028C15D51BD66A6000B2266F /* OcclusionQuery.h in Headers */,
 				028C10981BD66A6000B2266F /* Circle.h in Headers */,
@@ -6672,7 +6661,6 @@
 				028C1A351BD66A6100B2266F /* UIControlPackageContext.h in Headers */,
 				028C18B81BD66A6000B2266F /* RotationControllerSystem.h in Headers */,
 				028C18191BD66A6000B2266F /* LodToLod2Converter.h in Headers */,
-				028C13C91BD66A6000B2266F /* NSFullScreenWindow.h in Headers */,
 				028C10811BD66A6000B2266F /* JobThread.h in Headers */,
 				028C16C91BD66A6000B2266F /* macos_gl.h in Headers */,
 				028C0E6B1BD66A6000B2266F /* Serializable.h in Headers */,
@@ -6887,7 +6875,6 @@
 				028C10DC1BD66A6000B2266F /* Rect.h in Headers */,
 				028C18CB1BD66A6000B2266F /* DebugRenderSystem.h in Headers */,
 				028C14BD1BD66A6000B2266F /* GPUFamilyDescriptor.h in Headers */,
-				028C13CA1BD66A6000B2266F /* NSFullScreenWindow.h in Headers */,
 				028C18B91BD66A6000B2266F /* RotationControllerSystem.h in Headers */,
 				028C15D41BD66A6000B2266F /* OcclusionQuery.h in Headers */,
 				028C10971BD66A6000B2266F /* Circle.h in Headers */,
@@ -7606,7 +7593,6 @@
 				028C11491BD66A6000B2266F /* TCPAcceptor.cpp in Sources */,
 				028C0D471BD66A6000B2266F /* BezierSplineAnimation.cpp in Sources */,
 				028C16381BD66A6000B2266F /* support.cpp in Sources */,
-				028C13CE1BD66A6000B2266F /* NSFullScreenWindow.m in Sources */,
 				028C11971BD66A6000B2266F /* NetController.cpp in Sources */,
 				028C0F9F1BD66A6000B2266F /* Component.cpp in Sources */,
 				028C0FD51BD66A6000B2266F /* KeyedArchive.cpp in Sources */,
@@ -8071,7 +8057,6 @@
 				028C11471BD66A6000B2266F /* TCPAcceptor.cpp in Sources */,
 				028C0D451BD66A6000B2266F /* BezierSplineAnimation.cpp in Sources */,
 				028C16361BD66A6000B2266F /* support.cpp in Sources */,
-				028C13CC1BD66A6000B2266F /* NSFullScreenWindow.m in Sources */,
 				028C11951BD66A6000B2266F /* NetController.cpp in Sources */,
 				028C0F9D1BD66A6000B2266F /* Component.cpp in Sources */,
 				028C0FD31BD66A6000B2266F /* KeyedArchive.cpp in Sources */,
@@ -8538,7 +8523,6 @@
 				028C11481BD66A6000B2266F /* TCPAcceptor.cpp in Sources */,
 				028C0D461BD66A6000B2266F /* BezierSplineAnimation.cpp in Sources */,
 				028C16371BD66A6000B2266F /* support.cpp in Sources */,
-				028C13CD1BD66A6000B2266F /* NSFullScreenWindow.m in Sources */,
 				028C11961BD66A6000B2266F /* NetController.cpp in Sources */,
 				028C0F9E1BD66A6000B2266F /* Component.cpp in Sources */,
 				028C0FD41BD66A6000B2266F /* KeyedArchive.cpp in Sources */,
