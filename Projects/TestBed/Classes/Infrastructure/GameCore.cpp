@@ -55,10 +55,6 @@
 #include "MemoryManager/MemoryProfiler.h"
 #endif
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-#include "Platform/TemplateWin32/UAPNetworkHelper.h"
-#endif
-
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "NotificationScreen";
@@ -229,13 +225,8 @@ void GameCore::InitNetwork()
                                          [this](IChannelListener* obj, void*) -> void { memprofInUse = false; });
 #endif
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-    eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
-    Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
-#else
     eNetworkRole role = SERVER_ROLE;
     Net::Endpoint endpoint = Net::Endpoint(NetCore::DEFAULT_TCP_PORT);
-#endif
 
     NetConfig config(role);
     config.AddTransport(TRANSPORT_TCP, endpoint);
