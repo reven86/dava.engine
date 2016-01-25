@@ -32,6 +32,68 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#import <AppKit/NSApplication.h>
+
+@interface DavaApp : NSApplication
+@end
+
+@implementation DavaApp
+- (void)sendEvent:(NSEvent*)theEvent
+{
+    // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
+    if ([theEvent type] == NSKeyDown)
+    {
+        if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+        {
+            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"x"])
+            {
+                if ([self sendAction:@selector(cut:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
+            {
+                if ([self sendAction:@selector(copy:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
+            {
+                if ([self sendAction:@selector(paste:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
+            {
+                if ([self sendAction:@selector(undo:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"a"])
+            {
+                if ([self sendAction:@selector(selectAll:) to:nil from:self])
+                    return;
+            }
+        }
+        else if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
+        {
+            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"Z"])
+            {
+                if ([self sendAction:@selector(redo:) to:nil from:self])
+                    return;
+            }
+        }
+    }
+
+    // http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
+    [super sendEvent:theEvent];
+    if (theEvent.modifierFlags & NSCommandKeyMask)
+    {
+        if (theEvent.type == NSKeyUp)
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKeyUp" object:theEvent];
+        }
+    }
+}
+
+@end
+
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -45,7 +107,7 @@ namespace DAVA
         core->SetCommandLine(argc, argv);
 		core->CreateSingletons();
 
-		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
+        [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
@@ -87,6 +149,9 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
+
+- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
 
 @implementation MainWindowController
@@ -107,6 +172,20 @@ namespace DAVA
 		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
 		return mouseLocation;
 	}
+
+    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+    {
+        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+        minWindowWidth = width;
+        minWindowHeight = height;
+
+        [mainWindowController setMinimumWindowSize:minWindowWidth height:minWindowHeight];
+    }
+
+    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+    {
+        return Vector2(minWindowWidth, minWindowHeight);
+    }
 }
 
 - (id)init
@@ -119,14 +198,18 @@ namespace DAVA
 		mainWindow = nil;
 		animationTimer = nil;
 		core = 0;
-
-	}
-	return self;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(OnKeyUpDuringCMDHold:)
+                                                     name:@"DavaKeyUp"
+                                                   object:nil];
+    }
+    return self;
 }
 
 - (void)dealloc
 {
-	[super dealloc];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 -(void)createWindows
@@ -140,6 +223,8 @@ namespace DAVA
     int32 height = 600;
     bool isFull = false;
 
+    float32 minWidth = 0.0f;
+    float32 minHeight = 0.0f;
     KeyedArchive* options = Core::Instance()->GetOptions();
     if(nullptr != options)
     {
@@ -151,6 +236,8 @@ namespace DAVA
         }
 
         isFull = (0 != options->GetInt32("fullscreen", 0));
+        minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
+        minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
@@ -161,7 +248,15 @@ namespace DAVA
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
-    [mainWindow setContentSize:NSMakeSize(width, height)];
+    mainWindow.contentMinSize = NSMakeSize(width, height);
+    [mainWindowController setMinimumWindowSize:0.0f height:0.0f];
+
+    if (minWidth > 0 && minHeight > 0)
+    {
+        // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
+        // Such a strange way due to my little knowledge of Objective-C
+        Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
+    }
 
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
@@ -183,6 +278,21 @@ namespace DAVA
     {
         [self setFullScreen:true];
     }
+}
+
+- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+{
+    const float32 MIN_WIDTH = 64.0f;
+    const float32 MIN_HEIGHT = 64.0f;
+
+    // Always limit minimum window size to 64x64, as application crashes
+    // when resizing window to zero height (stack overflow occures)
+    // It seems that NSOpenGLView is responsible for that
+    if (width < MIN_WIDTH)
+        width = MIN_WIDTH;
+    if (height < MIN_HEIGHT)
+        height = MIN_HEIGHT;
+    mainWindow.contentMinSize = NSMakeSize(width, height);
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -226,6 +336,11 @@ namespace DAVA
 {
     fullScreen = false;
     Core::Instance()->GetApplicationCore()->OnExitFullscreen();
+}
+
+- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
+{
+    [self keyUp:(NSEvent*)[notification object]];
 }
 
 -(bool) isFullScreen
@@ -365,8 +480,8 @@ namespace DAVA
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did finish launching");	
-    
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did finish launching");
+
     [self OnResume];
     
 #if RHI_COMPLETE
@@ -379,10 +494,66 @@ namespace DAVA
 #endif
 }
 
+static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
+{
+    static bool restorePinning = false;
+    static int64_t myPid = static_cast<int64_t>(getpid());
+
+    int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
+    if (targetPid != myPid)
+    {
+        // Turn off mouse cature if event target is not our application and
+        // current capture mode is pinning
+        InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
+        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
+        {
+            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
+            restorePinning = true;
+        }
+    }
+    else
+    {
+        if (restorePinning)
+        {
+            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
+            restorePinning = false;
+        }
+    }
+    return event;
+}
+
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
 	[self createWindows];
-	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application will finish launching: %s", [[[NSBundle mainBundle] bundlePath] UTF8String]);
+
+    {
+        // OS X application has no way to detect when she is no longer in control,
+        // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
+        // And application has no chance to release mouse capture.
+
+        // Install mouse hook which determines whether Mission Control, Launchpad is active
+        // and temporary turns off mouse pinning
+        // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
+        CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
+                                                 kCGTailAppendEventTap,
+                                                 kCGEventTapOptionListenOnly,
+                                                 NSAnyEventMask,
+                                                 &EventTapCallback,
+                                                 nullptr);
+
+        if (portRef != nullptr)
+        {
+            CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
+            CFRelease(portRef);
+            CFRelease(loopSourceRef);
+        }
+        else
+        {
+            Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
+        }
+    }
 
     float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
 
@@ -404,26 +575,26 @@ namespace DAVA
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application will become active");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application will become active");
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did become active");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did become active");
 
     [self OnResume];
 }
 
 - (void)applicationDidResignActive:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did resign active");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did resign active");
 
     [self OnSuspend];
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
 {
-	NSLog(@"[CoreMacOSPlatform] Application did change screen params");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did change screen params");
 }
 
 - (void)applicationDidHide:(NSNotification *)aNotification
@@ -449,14 +620,16 @@ namespace DAVA
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
+
     mainWindowController->openGLView.willQuit = true;
     
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
 
-	NSLog(@"[CoreMacOSPlatform] Application terminate");
-	return NSTerminateNow;
+    NSLog(@"[CoreMacOSPlatform] Application has terminated");
+    return NSTerminateNow;
 }
 
 - (void)OnSuspend

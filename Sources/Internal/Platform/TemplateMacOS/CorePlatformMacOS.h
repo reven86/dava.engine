@@ -52,8 +52,14 @@ public:
     //  - when true - application/window has been hidden/minimized
     //  - when false - application/window has been unhidden/restored
     Signal<bool> signalAppMinimizedRestored;
-};	
 
+    void SetWindowMinimumSize(float32 width, float32 height) override;
+    Vector2 GetWindowMinimumSize() const override;
+
+private:
+    float32 minWindowWidth = 0.0f;
+    float32 minWindowHeight = 0.0f;
+};
 };
 
 #endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__

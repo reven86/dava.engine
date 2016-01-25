@@ -308,45 +308,24 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
     [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
 }
 
-void WebViewControl::SetRect(const Rect& rect)
+void WebViewControl::SetRect(const Rect& srcRect)
 {
-	NSRect webViewRect = [(WebView*)webViewPtr frame];
-    
-    VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    Rect convertedRect = VCS.ConvertVirtualToPhysical(rect);
+    // 1. map virtual to physical
+    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
+    rect += coordSystem->GetPhysicalDrawOffset();
+    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
 
-    webViewRect.size.width = convertedRect.dx;
-    webViewRect.size.height = convertedRect.dy;
+    // 2. map physical to window
+    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+    [(WebView*)webViewPtr setFrame:controlRect];
 
-    NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-    DVASSERT(openGLView);
-    webViewRect.origin.x = convertedRect.x;
-    webViewRect.origin.y = [openGLView isFlipped] ? convertedRect.y : VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
-
-    webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
-    webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
-
-    [(WebView*)webViewPtr setFrame:webViewRect];
-
-    // release previous image if any
-    NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
-    [imageRep release];
-
-    imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
-    if (nullptr == imageRep)
+    if (isRenderToTexture)
     {
-        webImageCachePtr = nullptr;
-        DVASSERT(rect.dx == 0 && rect.dy == 0);
-        return;
+        RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebViewControl);
     }
-    
-    webImageCachePtr = imageRep;
-
-    [imageRep retain];
-
-    DVASSERT(FLOAT_EQUAL((float)[imageRep size].width, ceilf(webViewRect.size.width)) &&
-             FLOAT_EQUAL((float)[imageRep size].height, ceilf(webViewRect.size.height)));
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
@@ -368,24 +347,18 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 void WebViewControl::SetRenderToTexture(bool value)
 {
     isRenderToTexture = value;
-    
     if (isRenderToTexture)
     {
-        if (webViewPtr)
-        {
-            RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebViewControl);
-            
-            [(WebView*)webViewPtr removeFromSuperview];
-        }
-    } else
+        RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebViewControl);
+        SetNativeVisible(false);
+    }
+    else
     {
+        // remove sprite from UIControl and show native window
+        uiWebViewControl.SetSprite(0, 0);
         if (isVisible)
         {
-            // remove sprite from UIControl and show native window
-            uiWebViewControl.SetSprite(0, 0);
-
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [openGLView addSubview:(WebView*)webViewPtr];
+            SetNativeVisible(true);
         }
     }
 }
@@ -393,23 +366,43 @@ void WebViewControl::SetRenderToTexture(bool value)
 void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
 UIWebView& uiWebViewControl)
 {
-    NSBitmapImageRep* imageRep = (NSBitmapImageRep*)GetImageCache();
-    DVASSERT(imageRep);
-    
-    WebView* nativeWebView = (WebView*)webViewPtr;
-    DVASSERT(nativeWebView);
-    NSRect webFrameRect = [nativeWebView frame];
-    
+    bool recreateImageRep = true;
+    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
+    NSBitmapImageRep* imageRep = static_cast<NSBitmapImageRep*>(webImageCachePtr);
+    if (imageRep != nullptr)
+    {
+        NSSize imageRepSize = [imageRep size];
+        NSSize webViewSize = [nativeWebView frame].size;
+        recreateImageRep = imageRepSize.width != webViewSize.width || imageRepSize.height != webViewSize.height;
+    }
+    if (recreateImageRep)
+    {
+        [imageRep release];
+        imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:[nativeWebView frame]];
+        if (imageRep != nullptr)
+        {
+            webImageCachePtr = imageRep;
+            [imageRep retain];
+        }
+        else
+        {
+            webImageCachePtr = nullptr;
+        }
+    }
+
+    if (nullptr == imageRep)
+    {
+        uiWebViewControl.SetSprite(nullptr, 0);
+        return;
+    }
+
     NSSize imageRepSize = [imageRep size];
-    
-    DVASSERT(webFrameRect.size.width == imageRepSize.width);
-    DVASSERT(webFrameRect.size.height == imageRepSize.height);
-    
-    NSRect rect = NSMakeRect(0, 0, imageRepSize.width, imageRepSize.height);
-    
+    NSRect imageRect = NSMakeRect(0.f, 0.f, imageRepSize.width, imageRepSize.height);
+
     // render web view into bitmap image
-    [nativeWebView cacheDisplayInRect:rect toBitmapImageRep:imageRep];
-    
+    [nativeWebView cacheDisplayInRect:imageRect toBitmapImageRep:imageRep];
+
     const uint8* rawData = [imageRep bitmapData];
     const int w = [imageRep pixelsWide];
     const int h = [imageRep pixelsHigh];
@@ -420,19 +413,21 @@ UIWebView& uiWebViewControl)
     if (24 == BPP)
     {
         format = FORMAT_RGB888;
-    } else if (32 == BPP)
+    }
+    else if (32 == BPP)
     {
         DVASSERT(!([imageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
         format = FORMAT_RGBA8888;
     }
     else
     {
-        DVASSERT(false);
-        abort();
+        DVASSERT(false && "[WebView] Unexpected bits per pixel value");
+        uiWebViewControl.SetSprite(nullptr, 0);
+        return;
     }
     
     {
-        Image* imageRGB = 0;
+        RefPtr<Image> imageRGB;
         int bytesPerLine = w * (BPP / 8);
         
         if (pitch == bytesPerLine)
@@ -454,19 +449,14 @@ UIWebView& uiWebViewControl)
         }
         
         DVASSERT(imageRGB);
-        
         {
-            Texture* tex = Texture::CreateFromData(imageRGB, false);
+            RefPtr<Texture> tex(Texture::CreateFromData(imageRGB.Get(), false));
             const Rect& rect = uiWebViewControl.GetRect();
             {
-                Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, w, h, rect.dx, rect.dy);
-                
-                uiWebViewControl.SetSprite(spr, 0);
-                SafeRelease(spr);
+                RefPtr<Sprite> sprite(Sprite::CreateFromTexture(tex.Get(), 0, 0, w, h, rect.dx, rect.dy));
+                uiWebViewControl.SetSprite(sprite.Get(), 0);
             }
-            SafeRelease(tex);
         }
-        imageRGB->Release();
     }
 }
 
@@ -495,22 +485,18 @@ void* WebViewControl::GetImageCache() const
 
 void WebViewControl::SetNativeVisible(bool visible)
 {
-    if (visible)
-    {
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-        [openGLView addSubview:(WebView*)webViewPtr];
-    }
-    else
-    {
-        [(WebView*)webViewPtr removeFromSuperview];
-    }
+    WebView* view = static_cast<WebView*>(webViewPtr);
+    [view setHidden:!visible];
 }
 
 void WebViewControl::OnAppMinimizedRestored(bool minimized)
 {
-    if (isVisible)
+    if (!minimized && isVisible)
     {
-        SetNativeVisible(!minimized);
+        // Force WebView repaint after restoring application window
+        // Repaint is done by hiding and showing control as people in internet say
+        SetNativeVisible(false);
+        SetNativeVisible(true);
     }
 }
 
