@@ -35,6 +35,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
+#elif defined(__DAVAENGINE_WIN_UAP__)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
 #include <dlfcn.h>
