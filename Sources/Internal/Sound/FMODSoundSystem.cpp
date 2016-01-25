@@ -469,10 +469,7 @@ int32 SoundSystem::GetChannelsMax() const
 void SoundSystem::Suspend()
 {
 #ifdef __DAVAENGINE_ANDROID__
-    //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
-    //It's called, but unfortunately it's doesn't work
-    FMOD_VERIFY(masterChannelGroup->setMute(true));
-    FMOD_VERIFY(masterEventChannelGroup->setMute(true));
+    Mute(true);
 #endif
 }
     
@@ -482,9 +479,16 @@ void SoundSystem::Resume()
     FMOD_IPhone_RestoreAudioSession();
 #endif
 #ifdef __DAVAENGINE_ANDROID__
-    FMOD_VERIFY(masterChannelGroup->setMute(false));
-    FMOD_VERIFY(masterEventChannelGroup->setMute(false));
+    Mute(false);
 #endif
+}
+
+void SoundSystem::Mute(bool value)
+{
+    //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
+    //It's called, but unfortunately it's doesn't work
+    FMOD_VERIFY(masterChannelGroup->setMute(value));
+    FMOD_VERIFY(masterEventChannelGroup->setMute(value));
 }
 
 void SoundSystem::SetCurrentLocale(const String & langID)
