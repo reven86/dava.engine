@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef _QUICKED_VISIBLE_VALUE_PROPERTY__
-#define _QUICKED_VISIBLE_VALUE_PROPERTY__
+#ifndef __QUICKED_VISIBLE_VALUE_PROPERTY__
+#define __QUICKED_VISIBLE_VALUE_PROPERTY__
 
 #include "IntrospectionProperty.h"
 
@@ -51,4 +51,4 @@ protected:
     bool visibleInGame = true;
 };
 
-#endif // _QUICKED_VISIBLE_VALUE_PROPERTY__
+#endif // __QUICKED_VISIBLE_VALUE_PROPERTY__
