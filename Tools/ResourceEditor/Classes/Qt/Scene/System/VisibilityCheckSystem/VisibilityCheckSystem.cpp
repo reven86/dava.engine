@@ -43,17 +43,11 @@
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/Landscape.h"
 
+namespace VCSInternal
+{
 static const DAVA::uint32 CUBEMAPS_POOL_SIZE = 1;
 static const DAVA::uint32 CUBEMAP_SIZE = 2048;
 static DAVA::Array<DAVA::Texture*, CUBEMAPS_POOL_SIZE> cubemapPool;
-
-void releaseCubemaps()
-{
-    for (auto& cb : cubemapPool)
-    {
-        DAVA::SafeRelease(cb);
-    }
-}
 
 DAVA::Texture* CubemapRenderTargetAtIndex(DAVA::uint32 index)
 {
@@ -64,11 +58,11 @@ DAVA::Texture* CubemapRenderTargetAtIndex(DAVA::uint32 index)
     }
     return cubemapPool[index];
 }
+}
 
 VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
-    atexit(releaseCubemaps);
     renderer.SetDelegate(this);
 }
 
@@ -76,7 +70,15 @@ VisibilityCheckSystem::~VisibilityCheckSystem()
 {
 }
 
-void VisibilityCheckSystem::ProcessCommand(const Command2*, bool)
+void VisibilityCheckSystem::ReleaseCubemapRenderTargets()
+{
+    for (auto& cb : VCSInternal::cubemapPool)
+    {
+        DAVA::SafeRelease(cb);
+    }
+}
+
+void VisibilityCheckSystem::Recalculate()
 {
     shouldPrerender = true;
     if (renderer.FrameFixed())
@@ -227,12 +229,13 @@ void VisibilityCheckSystem::Draw()
     auto fromCamera = GetScene()->GetCurrentCamera();
 
     DAVA::uint32 previousPointIndex = currentPointIndex;
-    for (DAVA::uint32 cm = 0; (cm < CUBEMAPS_POOL_SIZE) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
+    for (DAVA::uint32 cm = 0; (cm < VCSInternal::CUBEMAPS_POOL_SIZE) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
         const auto& point = controlPoints[pointIndex];
-        renderer.RenderToCubemapFromPoint(rs, fromCamera, point.point, CubemapRenderTargetAtIndex(cm));
-        renderer.RenderVisibilityToTexture(rs, fromCamera, CubemapRenderTargetAtIndex(cm), point);
+        auto cubemap = VCSInternal::CubemapRenderTargetAtIndex(cm);
+        renderer.RenderToCubemapFromPoint(rs, fromCamera, point.point, cubemap);
+        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemap, point);
     }
 
     if (shouldFixFrame && (currentPointIndex == controlPoints.size()) && (previousPointIndex < controlPoints.size()))

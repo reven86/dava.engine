@@ -41,6 +41,9 @@ class Command2;
 class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate
 {
 public:
+    static void ReleaseCubemapRenderTargets();
+
+public:
     VisibilityCheckSystem(DAVA::Scene* scene);
     ~VisibilityCheckSystem();
 
@@ -49,12 +52,11 @@ public:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
+    void Recalculate();
     void Process(DAVA::float32 timeElapsed);
     void Draw();
 
     void InvalidateMaterials();
-
-    void ProcessCommand(const Command2* command, bool redo);
 
     void FixCurrentFrame();
     void ReleaseFixedFrame();

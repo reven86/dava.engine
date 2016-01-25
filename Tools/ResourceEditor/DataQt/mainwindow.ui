@@ -416,6 +416,7 @@
       <string>Visibility Check System</string>
      </property>
      <addaction name="actionEnableVisibilitySystem"/>
+     <addaction name="actionRefreshVisibilitySystem"/>
      <addaction name="separator"/>
      <addaction name="actionFixCurrentFrame"/>
      <addaction name="actionReleaseCurrentFrame"/>
@@ -2233,6 +2234,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+V</string>
+   </property>
+  </action>
+  <action name="actionRefreshVisibilitySystem">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Visibility System</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+R</string>
    </property>
   </action>
  </widget>

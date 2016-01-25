@@ -251,7 +251,10 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                         _ABGR1555toRGBA5551(texDesc.initialData[m], sz);
                     
                     if ((texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA) || (texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA))
+                    {
+                        stride = 0;
                         sz = 0;
+                    }
 
                     [uid replaceRegion:rgn mipmapLevel:m slice:0 withBytes:data bytesPerRow:stride bytesPerImage:sz];
                 }

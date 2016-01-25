@@ -87,7 +87,6 @@
 #include "Classes/Commands2/TilemaskEditorCommands.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/UpdateViewCommand.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 
@@ -780,6 +779,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
     QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(toggled(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
+    QObject::connect(ui->actionRefreshVisibilitySystem, SIGNAL(triggered()), this, SLOT(OnRefreshVisibilitySystem()));
     QObject::connect(ui->actionFixCurrentFrame, SIGNAL(triggered()), this, SLOT(OnFixVisibilityFrame()));
     QObject::connect(ui->actionReleaseCurrentFrame, SIGNAL(triggered()), this, SLOT(OnReleaseVisibilityFrame()));
 
@@ -1455,6 +1455,11 @@ void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
         ui->actionForceFirstLODonLandscape->setChecked(true);
         OnForceFirstLod(true);
     }
+}
+
+void QtMainWindow::OnRefreshVisibilitySystem()
+{
+    GetCurrentScene()->visibilityCheckSystem->Recalculate();
 }
 
 void QtMainWindow::OnFixVisibilityFrame()
@@ -2522,7 +2527,7 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
     }
 
     landscape->SetForceFirstLod(enabled);
-    scene->Exec(new UpdateViewCommand());
+    scene->visibilityCheckSystem->Recalculate();
 }
 
 void QtMainWindow::OnNotPassableTerrain()
