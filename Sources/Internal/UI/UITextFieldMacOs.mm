@@ -116,6 +116,8 @@ public:
 
         CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
         signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &ObjCWrapper::OnAppMinimazedResored);
+
+        SetMultiline(false);
     }
 
     ~ObjCWrapper()
@@ -341,6 +343,9 @@ public:
     void SetMultiline(bool value)
     {
         multiline = value;
+        [nsTextField setUsesSingleLineMode:(!multiline)];
+        [nsTextField.cell setWraps:(!multiline)];
+        [nsTextField.cell setScrollable:(!multiline)];
     }
     bool IsMultiline() const
     {
@@ -388,6 +393,7 @@ public:
             SetText(oldText);
             SetTextUseRtlAlign(useRtlAlign);
             SetTextAlign(alignment);
+            SetMultiline(multiline);
 
             [oldCtrl removeFromSuperview];
             [oldCtrl release];
