@@ -8,19 +8,18 @@
 // Container for font type metrics
 //
 
-#if !defined (Magick_TypeMetric_header)
+#if !defined(Magick_TypeMetric_header)
 #define Magick_TypeMetric_header
 
 #include "Magick++/Include.h"
 
 namespace Magick
 {
-  class MagickPPExport TypeMetric
-  {
+class MagickPPExport TypeMetric
+{
     friend class Image;
 
-  public:
-
+public:
     // Default constructor
     TypeMetric(void);
 
@@ -51,9 +50,9 @@ namespace Magick
     // Underline thickness.
     double underlineThickness(void) const;
 
-  private:
+private:
     MagickCore::TypeMetric _typeMetric;
-  };
+};
 } // namespace Magick
 
 #endif // Magick_TypeMetric_header

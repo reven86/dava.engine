@@ -5,7 +5,7 @@
 // Definition of channel moments.
 //
 
-#if !defined (Magick_ChannelMoments_header)
+#if !defined(Magick_ChannelMoments_header)
 #define Magick_ChannelMoments_header
 
 #include "Magick++/Include.h"
@@ -13,17 +13,16 @@
 
 namespace Magick
 {
-  class Image;
+class Image;
 
-  class MagickPPExport ChannelMoments
-  {
-  public:
-
+class MagickPPExport ChannelMoments
+{
+public:
     // Default constructor
     ChannelMoments(void);
 
     // Copy constructor
-    ChannelMoments(const ChannelMoments &channelMoments_);
+    ChannelMoments(const ChannelMoments& channelMoments_);
 
     // Destroy channel moments
     ~ChannelMoments(void);
@@ -33,7 +32,7 @@ namespace Magick
     //
 
     ChannelMoments(const ChannelType channel_,
-      const MagickCore::ChannelMoments *channelMoments_);
+                   const MagickCore::ChannelMoments* channelMoments_);
 
     // X position of centroid
     double centroidX(void) const;
@@ -62,7 +61,7 @@ namespace Magick
     // Hu invariants (valid range for index is 0-7)
     double huInvariants(const size_t index_) const;
 
-  private:
+private:
     std::vector<double> _huInvariants;
     ChannelType _channel;
     double _centroidX;
@@ -72,32 +71,31 @@ namespace Magick
     double _ellipseAngle;
     double _ellipseEccentricity;
     double _ellipseIntensity;
-  };
+};
 
-  class MagickPPExport ImageMoments
-  {
-  public:
-
+class MagickPPExport ImageMoments
+{
+public:
     // Default constructor
     ImageMoments(void);
 
     // Copy constructor
-    ImageMoments(const ImageMoments &imageMoments_);
+    ImageMoments(const ImageMoments& imageMoments_);
 
     // Destroy image moments
     ~ImageMoments(void);
 
     // Returns the moments for the specified channel
-    ChannelMoments channel(const ChannelType channel_=CompositeChannels) const;
+    ChannelMoments channel(const ChannelType channel_ = CompositeChannels) const;
 
     //
     // Implemementation methods
     //
-    ImageMoments(const Image &image_);
+    ImageMoments(const Image& image_);
 
-  private:
+private:
     std::vector<ChannelMoments> _channels;
-  };
+};
 }
 
 #endif // Magick_ChannelMoments_header

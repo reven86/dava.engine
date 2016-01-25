@@ -25,49 +25,49 @@
 extern "C" {
 #endif
 
-#define MagickMaxBufferExtent  81920
+#define MagickMaxBufferExtent 81920
 
-typedef enum
-{
-  ReadMode,
-  WriteMode,
-  IOMode
+typedef enum {
+    ReadMode,
+    WriteMode,
+    IOMode
 } MapMode;
 
-extern MagickExport FILE
-  *GetBlobFileHandle(const Image *);
+extern MagickExport FILE* GetBlobFileHandle(const Image*);
 
 extern MagickExport Image
-  *BlobToImage(const ImageInfo *,const void *,const size_t,ExceptionInfo *),
-  *PingBlob(const ImageInfo *,const void *,const size_t,ExceptionInfo *);
+*
+BlobToImage(const ImageInfo *, const void *, const size_t, ExceptionInfo *),
+*PingBlob(const ImageInfo *, const void *, const size_t, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  BlobToFile(char *,const void *,const size_t,ExceptionInfo *),
-  FileToImage(Image *,const char *),
-  GetBlobError(const Image *),
-  ImageToFile(Image *,char *,ExceptionInfo *),
-  InjectImageBlob(const ImageInfo *,Image *,Image *,const char *,
-    ExceptionInfo *),
-  IsBlobExempt(const Image *),
-  IsBlobSeekable(const Image *),
-  IsBlobTemporary(const Image *);
+BlobToFile(char *, const void *, const size_t, ExceptionInfo *),
+FileToImage(Image *, const char *),
+GetBlobError(const Image *),
+ImageToFile(Image *, char *, ExceptionInfo *),
+InjectImageBlob(const ImageInfo *, Image *, Image *, const char *,
+                ExceptionInfo *),
+IsBlobExempt(const Image *),
+IsBlobSeekable(const Image *),
+IsBlobTemporary(const Image *);
 
 extern MagickExport MagickSizeType
-  GetBlobSize(const Image *);
+GetBlobSize(const Image*);
 
 extern MagickExport StreamHandler
-  GetBlobStreamHandler(const Image *);
+GetBlobStreamHandler(const Image*);
 
 extern MagickExport unsigned char
-  *FileToBlob(const char *,const size_t,size_t *,ExceptionInfo *),
-  *GetBlobStreamData(const Image *),
-  *ImageToBlob(const ImageInfo *,Image *,size_t *,ExceptionInfo *),
-  *ImagesToBlob(const ImageInfo *,Image *,size_t *,ExceptionInfo *);
+*
+FileToBlob(const char *, const size_t, size_t *, ExceptionInfo *),
+*GetBlobStreamData(const Image *),
+*ImageToBlob(const ImageInfo *, Image *, size_t *, ExceptionInfo *),
+*ImagesToBlob(const ImageInfo *, Image *, size_t *, ExceptionInfo *);
 
 extern MagickExport void
-  DestroyBlob(Image *),
-  DuplicateBlob(Image *,const Image *),
-  SetBlobExempt(Image *,const MagickBooleanType);
+DestroyBlob(Image *),
+DuplicateBlob(Image *, const Image *),
+SetBlobExempt(Image *, const MagickBooleanType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

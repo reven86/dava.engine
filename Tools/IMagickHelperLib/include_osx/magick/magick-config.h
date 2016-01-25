@@ -26,48 +26,48 @@ extern "C" {
 
 /* Compatibility block */
 #if !defined(MAGICKCORE_QUANTUM_DEPTH) && defined(MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H)
-# warning "you should set MAGICKCORE_QUANTUM_DEPTH to sensible default set it to configure time default"
-# warning "this is an obsolete behavior please fix your makefile"
-# define MAGICKCORE_QUANTUM_DEPTH MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H
+#warning "you should set MAGICKCORE_QUANTUM_DEPTH to sensible default set it to configure time default"
+#warning "this is an obsolete behavior please fix your makefile"
+#define MAGICKCORE_QUANTUM_DEPTH MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H
 #endif
 
 /* Number of bits in a pixel Quantum (8/16/32/64) */
 #ifndef MAGICKCORE_QUANTUM_DEPTH
-# error "you should set MAGICKCORE_QUANTUM_DEPTH"
+#error "you should set MAGICKCORE_QUANTUM_DEPTH"
 #endif
 
 /* check values */
 #if MAGICKCORE_QUANTUM_DEPTH != 8
-# if MAGICKCORE_QUANTUM_DEPTH != 16
-#  if MAGICKCORE_QUANTUM_DEPTH != 32
-#   if MAGICKCORE_QUANTUM_DEPTH != 64
-#    error "MAGICKCORE_QUANTUM_DEPTH is not 8/16/32/64 bits"
-#   endif
-#  endif
-# endif
+#if MAGICKCORE_QUANTUM_DEPTH != 16
+#if MAGICKCORE_QUANTUM_DEPTH != 32
+#if MAGICKCORE_QUANTUM_DEPTH != 64
+#error "MAGICKCORE_QUANTUM_DEPTH is not 8/16/32/64 bits"
+#endif
+#endif
+#endif
 #endif
 
 #define MAGICKCORE_HDRI_ENABLE 0
 #if !defined(MAGICKCORE_HDRI_ENABLE) && defined(MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H)
-# warning "you should set MAGICKCORE_HDRI_ENABLE to sensible default set it to configure time default"
-# warning "this is an obsolete behavior please fix yours makefile"
-# define MAGICKCORE_HDRI_ENABLE MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H
+#warning "you should set MAGICKCORE_HDRI_ENABLE to sensible default set it to configure time default"
+#warning "this is an obsolete behavior please fix yours makefile"
+#define MAGICKCORE_HDRI_ENABLE MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H
 #endif
 
 /* whether HDRI is enable */
 #if !defined(MAGICKCORE_HDRI_ENABLE)
-# error "you should set MAGICKCORE_HDRI_ENABLE"
+#error "you should set MAGICKCORE_HDRI_ENABLE"
 #endif
 
 #if MAGICKCORE_HDRI_ENABLE
-# define MAGICKCORE_HDRI_SUPPORT 1
+#define MAGICKCORE_HDRI_SUPPORT 1
 #endif
 
 #if defined __CYGWIN32__ && !defined __CYGWIN__
-   /* For backwards compatibility with Cygwin b19 and
+/* For backwards compatibility with Cygwin b19 and
       earlier, we define __CYGWIN__ here, so that
       we can rely on checking just for that macro. */
-#  define __CYGWIN__  __CYGWIN32__
+#define __CYGWIN__ __CYGWIN32__
 #endif
 
 /*! stringify */
@@ -76,81 +76,81 @@ extern "C" {
 
 /*  ABI SUFFIX */
 #ifndef MAGICKCORE_HDRI_SUPPORT
-#define MAGICKCORE_ABI_SUFFIX  "Q" MAGICKCORE_STRING_XQUOTE(MAGICKCORE_QUANTUM_DEPTH)
+#define MAGICKCORE_ABI_SUFFIX "Q" MAGICKCORE_STRING_XQUOTE(MAGICKCORE_QUANTUM_DEPTH)
 #else 
 #define MAGICKCORE_ABI_SUFFIX "Q" MAGICKCORE_STRING_XQUOTE(MAGICKCORE_QUANTUM_DEPTH) "HDRI"
-#endif 
+#endif
 
 /* some path game */
 #if !defined __CYGWIN__
-# if defined (_WIN32) || defined (_WIN64) || defined (__MSDOS__) || defined (__DJGPP__) || defined (__OS2__)
-   /* Use Windows separators on all _WIN32 defining
+#if defined(_WIN32) || defined(_WIN64) || defined(__MSDOS__) || defined(__DJGPP__) || defined(__OS2__)
+/* Use Windows separators on all _WIN32 defining
       environments, except Cygwin. */
-#  define MAGICKCORE_DIR_SEPARATOR_CHAR		'\\'
-#  define MAGICKCORE_DIR_SEPARATOR		"\\"
-#  define MAGICKCORE_PATH_SEPARATOR_CHAR	';'
-#  define MAGICKCORE_PATH_SEPARATOR		";"
-# endif
+#define MAGICKCORE_DIR_SEPARATOR_CHAR '\\'
+#define MAGICKCORE_DIR_SEPARATOR "\\"
+#define MAGICKCORE_PATH_SEPARATOR_CHAR ';'
+#define MAGICKCORE_PATH_SEPARATOR ";"
 #endif
- 
+#endif
+
 /* posix */
 #ifndef MAGICKCORE_DIR_SEPARATOR_CHAR
-   /* Assume that not having this is an indicator that all
+/* Assume that not having this is an indicator that all
       are missing. */
-#  define MAGICKCORE_DIR_SEPARATOR_CHAR		'/'
-#  define MAGICKCORE_DIR_SEPARATOR		"/"
-#  define MAGICKCORE_PATH_SEPARATOR_CHAR	':'
-#  define MAGICKCORE_PATH_SEPARATOR		":"
+#define MAGICKCORE_DIR_SEPARATOR_CHAR '/'
+#define MAGICKCORE_DIR_SEPARATOR "/"
+#define MAGICKCORE_PATH_SEPARATOR_CHAR ':'
+#define MAGICKCORE_PATH_SEPARATOR ":"
 #endif /* !DIR_SEPARATOR_CHAR */
 
-# if defined(MAGICKCORE_POSIX_SUPPORT)
- 
+#if defined(MAGICKCORE_POSIX_SUPPORT)
+
 /* module dir */
 #ifndef MAGICKCORE_MODULES_DIRNAME
-# define MAGICKCORE_MODULES_DIRNAME MAGICKCORE_MODULES_BASEDIRNAME "-" MAGICKCORE_ABI_SUFFIX
+#define MAGICKCORE_MODULES_DIRNAME MAGICKCORE_MODULES_BASEDIRNAME "-" MAGICKCORE_ABI_SUFFIX
 #endif
  
 #ifndef MAGICKCORE_MODULES_PATH
-#  define MAGICKCORE_MODULES_PATH MAGICKCORE_LIBRARY_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_MODULES_DIRNAME
+#define MAGICKCORE_MODULES_PATH MAGICKCORE_LIBRARY_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_MODULES_DIRNAME
 #endif
  
 #ifndef MAGICKCORE_MODULES_RELATIVE_PATH
 #define MAGICKCORE_MODULES_RELATIVE_PATH MAGICKCORE_LIBRARY_RELATIVE_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_MODULES_DIRNAME
 #endif
- 
+
 /* Subdirectory under lib to place ImageMagick coder module files */
 #ifndef MAGICKCORE_CODER_PATH
-# if defined(vms)
-#  define MAGICKCORE_CODER_PATH "sys$login:"
-# else
-#  define MAGICKCORE_CODER_PATH MAGICKCORE_MODULES_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_CODER_DIRNAME
-# endif
+#if defined(vms)
+#define MAGICKCORE_CODER_PATH "sys$login:"
+#else
+#define MAGICKCORE_CODER_PATH MAGICKCORE_MODULES_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_CODER_DIRNAME
+#endif
 #endif
  
 #ifndef MAGICKCORE_CODER_RELATIVE_PATH
-# define MAGICKCORE_CODER_RELATIVE_PATH MAGICKCORE_MODULES_RELATIVE_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_CODER_DIRNAME
+#define MAGICKCORE_CODER_RELATIVE_PATH MAGICKCORE_MODULES_RELATIVE_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_CODER_DIRNAME
 #endif
- 
+
 /* subdirectory under lib to place ImageMagick filter module files */
 #ifndef MAGICKCORE_FILTER_PATH
-# if defined(vms)
-#  define MAGICKCORE_FILTER_PATH  "sys$login:"
-# else
-#  define MAGICKCORE_FILTER_PATH MAGICKCORE_MODULES_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_FILTER_DIRNAME
-# endif
+#if defined(vms)
+#define MAGICKCORE_FILTER_PATH "sys$login:"
+#else
+#define MAGICKCORE_FILTER_PATH MAGICKCORE_MODULES_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_FILTER_DIRNAME
+#endif
 #endif
  
 #ifndef MAGICKCORE_FILTER_RELATIVE_PATH
-# define MAGICKCORE_FILTER_RELATIVE_PATH MAGICKCORE_MODULES_RELATIVE_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_FILTER_DIRNAME
+#define MAGICKCORE_FILTER_RELATIVE_PATH MAGICKCORE_MODULES_RELATIVE_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_FILTER_DIRNAME
 #endif
 
 /* sharearch dir */
 #ifndef MAGICKCORE_SHAREARCH_DIRNAME
-# define MAGICKCORE_SHAREARCH_DIRNAME MAGICKCORE_SHAREARCH_BASEDIRNAME "-" MAGICKCORE_ABI_SUFFIX
+#define MAGICKCORE_SHAREARCH_DIRNAME MAGICKCORE_SHAREARCH_BASEDIRNAME "-" MAGICKCORE_ABI_SUFFIX
 #endif
  
 #ifndef MAGICKCORE_SHAREARCH_PATH
-#  define MAGICKCORE_SHAREARCH_PATH MAGICKCORE_LIBRARY_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_SHAREARCH_DIRNAME MAGICKCORE_DIR_SEPARATOR
+#define MAGICKCORE_SHAREARCH_PATH MAGICKCORE_LIBRARY_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_SHAREARCH_DIRNAME MAGICKCORE_DIR_SEPARATOR
 #endif
  
 #ifndef MAGICKCORE_SHAREARCH_RELATIVE_PATH

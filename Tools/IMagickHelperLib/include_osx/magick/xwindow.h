@@ -24,7 +24,7 @@ extern "C" {
 
 typedef struct _XImportInfo
 {
-  MagickBooleanType
+    MagickBooleanType
     frame,
     borders,
     screen,
@@ -32,11 +32,10 @@ typedef struct _XImportInfo
     silent;
 } XImportInfo;
 
-extern MagickExport Image
-  *XImportImage(const ImageInfo *,XImportInfo *);
+extern MagickExport Image* XImportImage(const ImageInfo*, XImportInfo*);
 
 extern MagickExport void
-  XGetImportInfo(XImportInfo *);
+XGetImportInfo(XImportInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

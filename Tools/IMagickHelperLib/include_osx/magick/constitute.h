@@ -22,30 +22,30 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedPixel,
-  CharPixel,
-  DoublePixel,
-  FloatPixel,
-  IntegerPixel,
-  LongPixel,
-  QuantumPixel,
-  ShortPixel
+typedef enum {
+    UndefinedPixel,
+    CharPixel,
+    DoublePixel,
+    FloatPixel,
+    IntegerPixel,
+    LongPixel,
+    QuantumPixel,
+    ShortPixel
 } StorageType;
 
 extern MagickExport Image
-  *ConstituteImage(const size_t,const size_t,const char *,const StorageType,
-    const void *,ExceptionInfo *),
-  *PingImage(const ImageInfo *,ExceptionInfo *),
-  *PingImages(const ImageInfo *,ExceptionInfo *),
-  *ReadImage(const ImageInfo *,ExceptionInfo *),
-  *ReadImages(const ImageInfo *,ExceptionInfo *),
-  *ReadInlineImage(const ImageInfo *,const char *,ExceptionInfo *);
+*
+ConstituteImage(const size_t, const size_t, const char *, const StorageType,
+                const void *, ExceptionInfo *),
+*PingImage(const ImageInfo *, ExceptionInfo *),
+*PingImages(const ImageInfo *, ExceptionInfo *),
+*ReadImage(const ImageInfo *, ExceptionInfo *),
+*ReadImages(const ImageInfo *, ExceptionInfo *),
+*ReadInlineImage(const ImageInfo *, const char *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  WriteImage(const ImageInfo *,Image *),
-  WriteImages(const ImageInfo *,Image *,const char *,ExceptionInfo *);
+WriteImage(const ImageInfo *, Image *),
+WriteImages(const ImageInfo *, Image *, const char *, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

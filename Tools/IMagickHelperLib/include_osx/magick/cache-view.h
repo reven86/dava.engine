@@ -24,84 +24,83 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedVirtualPixelMethod,
-  BackgroundVirtualPixelMethod,
-  ConstantVirtualPixelMethod,  /* deprecated */
-  DitherVirtualPixelMethod,
-  EdgeVirtualPixelMethod,
-  MirrorVirtualPixelMethod,
-  RandomVirtualPixelMethod,
-  TileVirtualPixelMethod,
-  TransparentVirtualPixelMethod,
-  MaskVirtualPixelMethod,
-  BlackVirtualPixelMethod,
-  GrayVirtualPixelMethod,
-  WhiteVirtualPixelMethod,
-  HorizontalTileVirtualPixelMethod,
-  VerticalTileVirtualPixelMethod,
-  HorizontalTileEdgeVirtualPixelMethod,
-  VerticalTileEdgeVirtualPixelMethod,
-  CheckerTileVirtualPixelMethod
+typedef enum {
+    UndefinedVirtualPixelMethod,
+    BackgroundVirtualPixelMethod,
+    ConstantVirtualPixelMethod, /* deprecated */
+    DitherVirtualPixelMethod,
+    EdgeVirtualPixelMethod,
+    MirrorVirtualPixelMethod,
+    RandomVirtualPixelMethod,
+    TileVirtualPixelMethod,
+    TransparentVirtualPixelMethod,
+    MaskVirtualPixelMethod,
+    BlackVirtualPixelMethod,
+    GrayVirtualPixelMethod,
+    WhiteVirtualPixelMethod,
+    HorizontalTileVirtualPixelMethod,
+    VerticalTileVirtualPixelMethod,
+    HorizontalTileEdgeVirtualPixelMethod,
+    VerticalTileEdgeVirtualPixelMethod,
+    CheckerTileVirtualPixelMethod
 } VirtualPixelMethod;
 
 typedef struct _CacheView
-  CacheView;
+CacheView;
 
 extern MagickExport CacheView
-  *AcquireAuthenticCacheView(const Image *,ExceptionInfo *),
-  *AcquireCacheView(const Image *),
-  *AcquireVirtualCacheView(const Image *,ExceptionInfo *),
-  *CloneCacheView(const CacheView *),
-  *DestroyCacheView(CacheView *);
+*
+AcquireAuthenticCacheView(const Image *, ExceptionInfo *),
+*AcquireCacheView(const Image *),
+*AcquireVirtualCacheView(const Image *, ExceptionInfo *),
+*CloneCacheView(const CacheView *),
+*DestroyCacheView(CacheView *);
 
 extern MagickExport ClassType
-  GetCacheViewStorageClass(const CacheView *);
+GetCacheViewStorageClass(const CacheView*);
 
 extern MagickExport ColorspaceType
-  GetCacheViewColorspace(const CacheView *);
+GetCacheViewColorspace(const CacheView*);
 
-extern MagickExport const IndexPacket
-  *GetCacheViewVirtualIndexQueue(const CacheView *);
+extern MagickExport const IndexPacket* GetCacheViewVirtualIndexQueue(const CacheView*);
 
 extern MagickExport const PixelPacket
-  *GetCacheViewVirtualPixels(const CacheView *,const ssize_t,const ssize_t,
-    const size_t,const size_t,ExceptionInfo *) magick_hot_spot,
-  *GetCacheViewVirtualPixelQueue(const CacheView *) magick_hot_spot;
+*
+GetCacheViewVirtualPixels(const CacheView *, const ssize_t, const ssize_t,
+                          const size_t, const size_t, ExceptionInfo *) magick_hot_spot,
+*GetCacheViewVirtualPixelQueue(const CacheView *) magick_hot_spot;
 
-extern MagickExport ExceptionInfo
-  *GetCacheViewException(const CacheView *);
+extern MagickExport ExceptionInfo* GetCacheViewException(const CacheView*);
 
-extern MagickExport IndexPacket
-  *GetCacheViewAuthenticIndexQueue(CacheView *);
+extern MagickExport IndexPacket* GetCacheViewAuthenticIndexQueue(CacheView*);
 
 extern MagickExport MagickBooleanType
-  GetOneCacheViewAuthenticPixel(const CacheView *magick_restrict,const ssize_t,
-    const ssize_t,PixelPacket *magick_restrict,ExceptionInfo *),
-  GetOneCacheViewVirtualMethodPixel(const CacheView *,
-    const VirtualPixelMethod,const ssize_t,const ssize_t,PixelPacket *,
-    ExceptionInfo *),
-  GetOneCacheViewVirtualPixel(const CacheView *magick_restrict,const ssize_t,
-    const ssize_t,PixelPacket *magick_restrict,ExceptionInfo *),
-  SetCacheViewStorageClass(CacheView *,const ClassType),
-  SetCacheViewVirtualPixelMethod(CacheView *magick_restrict,
-    const VirtualPixelMethod),
-  SyncCacheViewAuthenticPixels(CacheView *magick_restrict,ExceptionInfo *)
-    magick_hot_spot;
+GetOneCacheViewAuthenticPixel(const CacheView *magick_restrict, const ssize_t,
+                              const ssize_t, PixelPacket *magick_restrict, ExceptionInfo *),
+GetOneCacheViewVirtualMethodPixel(const CacheView *,
+                                  const VirtualPixelMethod, const ssize_t, const ssize_t, PixelPacket *,
+                                  ExceptionInfo *),
+GetOneCacheViewVirtualPixel(const CacheView *magick_restrict, const ssize_t,
+                            const ssize_t, PixelPacket *magick_restrict, ExceptionInfo *),
+SetCacheViewStorageClass(CacheView *, const ClassType),
+SetCacheViewVirtualPixelMethod(CacheView *magick_restrict,
+                               const VirtualPixelMethod),
+SyncCacheViewAuthenticPixels(CacheView *magick_restrict, ExceptionInfo *)
+magick_hot_spot;
 
 extern MagickExport MagickSizeType
-  GetCacheViewExtent(const CacheView *);
+GetCacheViewExtent(const CacheView*);
 
 extern MagickExport size_t
-  GetCacheViewChannels(const CacheView *);
+GetCacheViewChannels(const CacheView*);
 
 extern MagickExport PixelPacket
-  *GetCacheViewAuthenticPixelQueue(CacheView *) magick_hot_spot,
-  *GetCacheViewAuthenticPixels(CacheView *,const ssize_t,const ssize_t,
-    const size_t,const size_t,ExceptionInfo *) magick_hot_spot,
-  *QueueCacheViewAuthenticPixels(CacheView *,const ssize_t,const ssize_t,
-    const size_t,const size_t,ExceptionInfo *) magick_hot_spot;
+*
+GetCacheViewAuthenticPixelQueue(CacheView *) magick_hot_spot,
+*GetCacheViewAuthenticPixels(CacheView *, const ssize_t, const ssize_t,
+                             const size_t, const size_t, ExceptionInfo *) magick_hot_spot,
+*QueueCacheViewAuthenticPixels(CacheView *, const ssize_t, const ssize_t,
+                               const size_t, const size_t, ExceptionInfo *) magick_hot_spot;
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

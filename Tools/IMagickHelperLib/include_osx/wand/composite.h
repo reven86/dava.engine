@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 extern WandExport MagickBooleanType
-  CompositeImageCommand(ImageInfo *,int,char **,char **,ExceptionInfo *);
+CompositeImageCommand(ImageInfo*, int, char**, char**, ExceptionInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

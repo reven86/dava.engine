@@ -24,36 +24,36 @@ extern "C" {
 
 typedef struct _CoderInfo
 {
-  char
+    char
     *path,
     *magick,
     *name;
-                                                                                
-  MagickBooleanType
+
+    MagickBooleanType
     exempt,
     stealth;
-                                                                                
-  struct _CoderInfo
-    *previous,
-    *next;  /* deprecated, use GetCoderInfoList() */
 
-  size_t
+    struct _CoderInfo
+    *previous,
+    *next; /* deprecated, use GetCoderInfoList() */
+
+    size_t
     signature;
 } CoderInfo;
 
-extern MagickExport char
-  **GetCoderList(const char *,size_t *,ExceptionInfo *);
+extern MagickExport char** GetCoderList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport const CoderInfo
-  *GetCoderInfo(const char *,ExceptionInfo *),
-  **GetCoderInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetCoderInfo(const char *, ExceptionInfo *),
+**GetCoderInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  CoderComponentGenesis(void),
-  ListCoderInfo(FILE *,ExceptionInfo *);
+CoderComponentGenesis(void),
+ListCoderInfo(FILE *, ExceptionInfo *);
 
 MagickExport void
-  CoderComponentTerminus(void);
+CoderComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

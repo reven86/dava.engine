@@ -22,29 +22,28 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedRegistryType,
-  ImageRegistryType,
-  ImageInfoRegistryType,
-  StringRegistryType
+typedef enum {
+    UndefinedRegistryType,
+    ImageRegistryType,
+    ImageInfoRegistryType,
+    StringRegistryType
 } RegistryType;
 
-extern MagickExport char
-  *GetNextImageRegistry(void);
+extern MagickExport char* GetNextImageRegistry(void);
 
 extern MagickExport MagickBooleanType
-  DefineImageRegistry(const RegistryType,const char *,ExceptionInfo *),
-  DeleteImageRegistry(const char *),
-  RegistryComponentGenesis(void),
-  SetImageRegistry(const RegistryType,const char *,const void *,
-    ExceptionInfo *);
+DefineImageRegistry(const RegistryType, const char *, ExceptionInfo *),
+DeleteImageRegistry(const char *),
+RegistryComponentGenesis(void),
+SetImageRegistry(const RegistryType, const char *, const void *,
+                 ExceptionInfo *);
 
 extern MagickExport void
-  *GetImageRegistry(const RegistryType,const char *,ExceptionInfo *),
-  RegistryComponentTerminus(void),
-  *RemoveImageRegistry(const char *),
-  ResetImageRegistryIterator(void);
+*
+GetImageRegistry(const RegistryType, const char *, ExceptionInfo *),
+RegistryComponentTerminus(void),
+*RemoveImageRegistry(const char *),
+ResetImageRegistryIterator(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

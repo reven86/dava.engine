@@ -24,42 +24,41 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedMetric,
-  AbsoluteErrorMetric,
-  MeanAbsoluteErrorMetric,
-  MeanErrorPerPixelMetric,
-  MeanSquaredErrorMetric,
-  PeakAbsoluteErrorMetric,
-  PeakSignalToNoiseRatioMetric,
-  RootMeanSquaredErrorMetric,
-  NormalizedCrossCorrelationErrorMetric,
-  FuzzErrorMetric,
-  UndefinedErrorMetric = 0,
-  PerceptualHashErrorMetric = 0xff
+typedef enum {
+    UndefinedMetric,
+    AbsoluteErrorMetric,
+    MeanAbsoluteErrorMetric,
+    MeanErrorPerPixelMetric,
+    MeanSquaredErrorMetric,
+    PeakAbsoluteErrorMetric,
+    PeakSignalToNoiseRatioMetric,
+    RootMeanSquaredErrorMetric,
+    NormalizedCrossCorrelationErrorMetric,
+    FuzzErrorMetric,
+    UndefinedErrorMetric = 0,
+    PerceptualHashErrorMetric = 0xff
 } MetricType;
 
-extern MagickExport double
-  *GetImageChannelDistortions(Image *,const Image *,const MetricType,
-    ExceptionInfo *);
+extern MagickExport double* GetImageChannelDistortions(Image*, const Image*, const MetricType,
+                                                       ExceptionInfo*);
 
 extern MagickExport Image
-  *CompareImageChannels(Image *,const Image *,const ChannelType,
-    const MetricType,double *,ExceptionInfo *),
-  *CompareImages(Image *,const Image *,const MetricType,double *,
-    ExceptionInfo *),
-  *SimilarityImage(Image *,const Image *,RectangleInfo *,double *,
-    ExceptionInfo *),
-  *SimilarityMetricImage(Image *,const Image *,const MetricType,
-    RectangleInfo *,double *,ExceptionInfo *);
+*
+CompareImageChannels(Image *, const Image *, const ChannelType,
+                     const MetricType, double *, ExceptionInfo *),
+*CompareImages(Image *, const Image *, const MetricType, double *,
+               ExceptionInfo *),
+*SimilarityImage(Image *, const Image *, RectangleInfo *, double *,
+                 ExceptionInfo *),
+*SimilarityMetricImage(Image *, const Image *, const MetricType,
+                       RectangleInfo *, double *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  GetImageChannelDistortion(Image *,const Image *,const ChannelType,
-    const MetricType,double *,ExceptionInfo *),
-  GetImageDistortion(Image *,const Image *,const MetricType,double *,
-    ExceptionInfo *),
-  IsImagesEqual(Image *,const Image *);
+GetImageChannelDistortion(Image *, const Image *, const ChannelType,
+                          const MetricType, double *, ExceptionInfo *),
+GetImageDistortion(Image *, const Image *, const MetricType, double *,
+                   ExceptionInfo *),
+IsImagesEqual(Image *, const Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

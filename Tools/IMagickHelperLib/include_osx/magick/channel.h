@@ -25,14 +25,15 @@ extern "C" {
 #endif
 
 extern MagickExport Image
-  *CombineImages(const Image *,const ChannelType,ExceptionInfo *),
-  *SeparateImage(const Image *,const ChannelType,ExceptionInfo *),
-  *SeparateImages(const Image *,const ChannelType,ExceptionInfo *);
+*
+CombineImages(const Image *, const ChannelType, ExceptionInfo *),
+*SeparateImage(const Image *, const ChannelType, ExceptionInfo *),
+*SeparateImages(const Image *, const ChannelType, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  GetImageAlphaChannel(const Image *),
-  SeparateImageChannel(Image *,const ChannelType),
-  SetImageAlphaChannel(Image *,const AlphaChannelType);
+GetImageAlphaChannel(const Image *),
+SeparateImageChannel(Image *, const ChannelType),
+SetImageAlphaChannel(Image *, const AlphaChannelType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

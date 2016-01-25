@@ -22,42 +22,41 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedResource,
-  AreaResource,
-  DiskResource,
-  FileResource,
-  MapResource,
-  MemoryResource,
-  ThreadResource,
-  TimeResource,
-  ThrottleResource,
-  WidthResource,
-  HeightResource
+typedef enum {
+    UndefinedResource,
+    AreaResource,
+    DiskResource,
+    FileResource,
+    MapResource,
+    MemoryResource,
+    ThreadResource,
+    TimeResource,
+    ThrottleResource,
+    WidthResource,
+    HeightResource
 } ResourceType;
 
-#define MagickResourceInfinity  MagickULLConstant(~0)
+#define MagickResourceInfinity MagickULLConstant(~0)
 
 extern MagickExport int
-  AcquireUniqueFileResource(char *);
+AcquireUniqueFileResource(char*);
 
 extern MagickExport MagickBooleanType
-  AcquireMagickResource(const ResourceType,const MagickSizeType),
-  GetPathTemplate(char *),
-  ListMagickResourceInfo(FILE *,ExceptionInfo *),
-  RelinquishUniqueFileResource(const char *),
-  ResourceComponentGenesis(void),
-  SetMagickResourceLimit(const ResourceType,const MagickSizeType);
+AcquireMagickResource(const ResourceType, const MagickSizeType),
+GetPathTemplate(char *),
+ListMagickResourceInfo(FILE *, ExceptionInfo *),
+RelinquishUniqueFileResource(const char *),
+ResourceComponentGenesis(void),
+SetMagickResourceLimit(const ResourceType, const MagickSizeType);
 
 extern MagickExport MagickSizeType
-  GetMagickResource(const ResourceType),
-  GetMagickResourceLimit(const ResourceType);
+GetMagickResource(const ResourceType),
+GetMagickResourceLimit(const ResourceType);
 
 extern MagickExport void
-  AsynchronousResourceComponentTerminus(void),
-  RelinquishMagickResource(const ResourceType,const MagickSizeType),
-  ResourceComponentTerminus(void);
+AsynchronousResourceComponentTerminus(void),
+RelinquishMagickResource(const ResourceType, const MagickSizeType),
+ResourceComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

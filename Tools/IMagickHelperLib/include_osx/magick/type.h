@@ -22,83 +22,81 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedStretch,
-  NormalStretch,
-  UltraCondensedStretch,
-  ExtraCondensedStretch,
-  CondensedStretch,
-  SemiCondensedStretch,
-  SemiExpandedStretch,
-  ExpandedStretch,
-  ExtraExpandedStretch,
-  UltraExpandedStretch,
-  AnyStretch
+typedef enum {
+    UndefinedStretch,
+    NormalStretch,
+    UltraCondensedStretch,
+    ExtraCondensedStretch,
+    CondensedStretch,
+    SemiCondensedStretch,
+    SemiExpandedStretch,
+    ExpandedStretch,
+    ExtraExpandedStretch,
+    UltraExpandedStretch,
+    AnyStretch
 } StretchType;
 
-typedef enum
-{
-  UndefinedStyle,
-  NormalStyle,
-  ItalicStyle,
-  ObliqueStyle,
-  AnyStyle
+typedef enum {
+    UndefinedStyle,
+    NormalStyle,
+    ItalicStyle,
+    ObliqueStyle,
+    AnyStyle
 } StyleType;
 
 typedef struct _TypeInfo
 {
-  size_t
+    size_t
     face;
 
-  char
+    char
     *path,
     *name,
     *description,
     *family;
 
-  StyleType
+    StyleType
     style;
 
-  StretchType
+    StretchType
     stretch;
 
-  size_t
+    size_t
     weight;
 
-  char
+    char
     *encoding,
     *foundry,
     *format,
     *metrics,
     *glyphs;
 
-  MagickBooleanType
+    MagickBooleanType
     stealth;
 
-  struct _TypeInfo
+    struct _TypeInfo
     *previous,
-    *next;  /* deprecated, use GetTypeInfoList() */
+    *next; /* deprecated, use GetTypeInfoList() */
 
-  size_t
+    size_t
     signature;
 } TypeInfo;
 
-extern MagickExport char
-  **GetTypeList(const char *,size_t *,ExceptionInfo *);
+extern MagickExport char** GetTypeList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  ListTypeInfo(FILE *,ExceptionInfo *),
-  TypeComponentGenesis(void);
+ListTypeInfo(FILE *, ExceptionInfo *),
+TypeComponentGenesis(void);
 
 extern MagickExport const TypeInfo
-  *GetTypeInfo(const char *,ExceptionInfo *),
-  *GetTypeInfoByFamily(const char *,const StyleType,const StretchType,
-    const size_t,ExceptionInfo *),
-  **GetTypeInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetTypeInfo(const char *, ExceptionInfo *),
+*GetTypeInfoByFamily(const char *, const StyleType, const StretchType,
+                     const size_t, ExceptionInfo *),
+**GetTypeInfoList(const char *, size_t *, ExceptionInfo *);
 
 MagickExport void
-  TypeComponentTerminus(void);
+TypeComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

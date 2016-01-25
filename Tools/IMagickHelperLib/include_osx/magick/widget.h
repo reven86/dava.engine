@@ -28,27 +28,27 @@ extern "C" {
 
 #if defined(MAGICKCORE_X11_DELEGATE)
 extern MagickExport int
-  XCommandWidget(Display *,XWindows *,const char **,XEvent *),
-  XConfirmWidget(Display *,XWindows *,const char *,const char *),
-  XDialogWidget(Display *,XWindows *,const char *,const char *,char *),
-  XMenuWidget(Display *,XWindows *,const char *,const char **,char *);
+XCommandWidget(Display *, XWindows *, const char **, XEvent *),
+XConfirmWidget(Display *, XWindows *, const char *, const char *),
+XDialogWidget(Display *, XWindows *, const char *, const char *, char *),
+XMenuWidget(Display *, XWindows *, const char *, const char **, char *);
 
 extern MagickExport MagickBooleanType
-  XPreferencesWidget(Display *,XResourceInfo *,XWindows *);
+XPreferencesWidget(Display*, XResourceInfo*, XWindows*);
 
 extern MagickExport void
-  DestroyXWidget(void),
-  XColorBrowserWidget(Display *,XWindows *,const char *,char *),
-  XFileBrowserWidget(Display *,XWindows *,const char *,char *),
-  XFontBrowserWidget(Display *,XWindows *,const char *,char *),
-  XInfoWidget(Display *,XWindows *,const char *),
-  XListBrowserWidget(Display *,XWindows *,XWindowInfo *,const char **,
-    const char *,const char *,char *),
-  XNoticeWidget(Display *,XWindows *,const char *,const char *),
-  XProgressMonitorWidget(Display *,XWindows *,const char *,
-    const MagickOffsetType,const MagickSizeType),
-  XTextViewWidget(Display *,const XResourceInfo *,XWindows *,
-    const MagickBooleanType,const char *,const char **);
+DestroyXWidget(void),
+XColorBrowserWidget(Display *, XWindows *, const char *, char *),
+XFileBrowserWidget(Display *, XWindows *, const char *, char *),
+XFontBrowserWidget(Display *, XWindows *, const char *, char *),
+XInfoWidget(Display *, XWindows *, const char *),
+XListBrowserWidget(Display *, XWindows *, XWindowInfo *, const char **,
+                   const char *, const char *, char *),
+XNoticeWidget(Display *, XWindows *, const char *, const char *),
+XProgressMonitorWidget(Display *, XWindows *, const char *,
+                       const MagickOffsetType, const MagickSizeType),
+XTextViewWidget(Display *, const XResourceInfo *, XWindows *,
+                const MagickBooleanType, const char *, const char **);
 
 #endif
 

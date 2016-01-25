@@ -12,10 +12,9 @@
 
 namespace Magick
 {
-  class MagickPPExport ResourceLimits
-  {
-  public:
-
+class MagickPPExport ResourceLimits
+{
+public:
     // Pixel cache limit in bytes. Requests for memory above this limit
     // are automagically allocated on disk.
     static void area(const MagickSizeType limit_);
@@ -41,10 +40,10 @@ namespace Magick
     static void thread(const MagickSizeType limit_);
     static MagickSizeType thread(void);
 
-  private:
+private:
     ResourceLimits(void);
 
-  }; // class ResourceLimits
+}; // class ResourceLimits
 
 } // Magick namespace
 

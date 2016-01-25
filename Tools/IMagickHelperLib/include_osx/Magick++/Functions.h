@@ -15,20 +15,20 @@
 
 namespace Magick
 {
-  // Clone C++ string as allocated C string, de-allocating any existing string
-  MagickPPExport void CloneString(char **destination_,
-    const std::string &source_);
+// Clone C++ string as allocated C string, de-allocating any existing string
+MagickPPExport void CloneString(char** destination_,
+                                const std::string& source_);
 
-  // Disable OpenCL acceleration (only works when build with OpenCL support)
-  MagickPPExport void DisableOpenCL(void);
+// Disable OpenCL acceleration (only works when build with OpenCL support)
+MagickPPExport void DisableOpenCL(void);
 
-  // Enable OpenCL acceleration (only works when build with OpenCL support)
-  MagickPPExport bool EnableOpenCL(const bool useCache_=true);
+// Enable OpenCL acceleration (only works when build with OpenCL support)
+MagickPPExport bool EnableOpenCL(const bool useCache_ = true);
 
-  // C library initialization routine
-  MagickPPExport void InitializeMagick(const char *path_);
+// C library initialization routine
+MagickPPExport void InitializeMagick(const char* path_);
 
-  // Seed a new sequence of pseudo-random numbers
-  MagickPPExport void SetRandomSeed(const unsigned long seed);
+// Seed a new sequence of pseudo-random numbers
+MagickPPExport void SetRandomSeed(const unsigned long seed);
 }
 #endif // Magick_Functions_header

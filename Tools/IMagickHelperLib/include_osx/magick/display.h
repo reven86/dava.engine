@@ -23,9 +23,9 @@ extern "C" {
 #endif
 
 extern MagickExport MagickBooleanType
-  DisplayImages(const ImageInfo *,Image *),
-  RemoteDisplayCommand(const ImageInfo *,const char *,const char *,
-    ExceptionInfo *);
+DisplayImages(const ImageInfo *, Image *),
+RemoteDisplayCommand(const ImageInfo *, const char *, const char *,
+                     ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -27,58 +27,58 @@ extern "C" {
 
 typedef struct _DelegateInfo
 {
-  char
+    char
     *path,
     *decode,
     *encode,
     *commands;
 
-  ssize_t
+    ssize_t
     mode;
 
-  MagickBooleanType
+    MagickBooleanType
     thread_support,
     spawn,
     stealth;
 
-  struct _DelegateInfo
+    struct _DelegateInfo
     *previous,
-    *next;  /* deprecated, use GetDelegateInfoList() */
+    *next; /* deprecated, use GetDelegateInfoList() */
 
-  size_t
+    size_t
     signature;
 
-  SemaphoreInfo
-    *semaphore;
+    SemaphoreInfo* semaphore;
 } DelegateInfo;
 
 extern MagickExport char
-  *GetDelegateCommand(const ImageInfo *,Image *,const char *,const char *,
-    ExceptionInfo *),
-  **GetDelegateList(const char *,size_t *,ExceptionInfo *);
+*
+GetDelegateCommand(const ImageInfo *, Image *, const char *, const char *,
+                   ExceptionInfo *),
+**GetDelegateList(const char *, size_t *, ExceptionInfo *);
 
-extern MagickExport const char
-  *GetDelegateCommands(const DelegateInfo *);
+extern MagickExport const char* GetDelegateCommands(const DelegateInfo*);
 
 extern MagickExport const DelegateInfo
-  *GetDelegateInfo(const char *,const char *,ExceptionInfo *exception),
-  **GetDelegateInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetDelegateInfo(const char *, const char *, ExceptionInfo *exception),
+**GetDelegateInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport int
-  ExternalDelegateCommand(const MagickBooleanType,const MagickBooleanType,
-    const char *,char *,ExceptionInfo *);
+ExternalDelegateCommand(const MagickBooleanType, const MagickBooleanType,
+                        const char*, char*, ExceptionInfo*);
 
 extern MagickExport ssize_t
-  GetDelegateMode(const DelegateInfo *);
+GetDelegateMode(const DelegateInfo*);
 
 extern MagickExport MagickBooleanType
-  DelegateComponentGenesis(void),
-  GetDelegateThreadSupport(const DelegateInfo *),
-  InvokeDelegate(ImageInfo *,Image *,const char *,const char *,ExceptionInfo *),
-  ListDelegateInfo(FILE *,ExceptionInfo *);
+DelegateComponentGenesis(void),
+GetDelegateThreadSupport(const DelegateInfo *),
+InvokeDelegate(ImageInfo *, Image *, const char *, const char *, ExceptionInfo *),
+ListDelegateInfo(FILE *, ExceptionInfo *);
 
 extern MagickExport void
-  DelegateComponentTerminus(void);
+DelegateComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

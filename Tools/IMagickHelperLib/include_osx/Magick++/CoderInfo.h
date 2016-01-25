@@ -8,38 +8,38 @@
 // Container for image format support information.
 //
 
-#if !defined (Magick_CoderInfo_header)
-#define Magick_CoderInfo_header  1
+#if !defined(Magick_CoderInfo_header)
+#define Magick_CoderInfo_header 1
 
 #include "Magick++/Include.h"
 #include <string>
 
 namespace Magick
 {
-  class MagickPPExport CoderInfo
-  {
-  public:
-
-    enum MatchType {
-      AnyMatch,   // match any coder
-      TrueMatch,  // match coder if true
-      FalseMatch  // match coder if false
+class MagickPPExport CoderInfo
+{
+public:
+    enum MatchType
+    {
+        AnyMatch, // match any coder
+        TrueMatch, // match coder if true
+        FalseMatch // match coder if false
     };
 
     // Default constructor
     CoderInfo(void);
 
     // Copy constructor
-    CoderInfo(const CoderInfo &coder_);
+    CoderInfo(const CoderInfo& coder_);
 
     // Construct with coder name
-    CoderInfo(const std::string &name_);
+    CoderInfo(const std::string& name_);
 
     // Destructor
     ~CoderInfo(void);
 
     // Assignment operator
-    CoderInfo& operator=(const CoderInfo &coder_);
+    CoderInfo& operator=(const CoderInfo& coder_);
 
     // Format description
     std::string description(void) const;
@@ -65,16 +65,16 @@ namespace Magick
     //
     // Implemementation methods
     //
-    CoderInfo(const MagickCore::MagickInfo *magickInfo_);
+    CoderInfo(const MagickCore::MagickInfo* magickInfo_);
 
-  private:
+private:
     std::string _name;
     std::string _description;
     std::string _mimeType;
-    bool        _isReadable;
-    bool        _isWritable;
-    bool        _isMultiFrame;
-  };
+    bool _isReadable;
+    bool _isWritable;
+    bool _isMultiFrame;
+};
 
 } // namespace Magick
 

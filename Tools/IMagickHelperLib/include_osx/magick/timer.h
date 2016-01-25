@@ -22,49 +22,49 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedTimerState,
-  StoppedTimerState,
-  RunningTimerState
+typedef enum {
+    UndefinedTimerState,
+    StoppedTimerState,
+    RunningTimerState
 } TimerState;
 
 typedef struct _Timer
 {
-  double
+    double
     start,
     stop,
     total;
 } Timer;
 
 typedef struct _TimerInfo
-{ 
-  Timer
+{
+    Timer
     user,
     elapsed;
-  
-  TimerState
+
+    TimerState
     state;
-  
-  size_t
+
+    size_t
     signature;
 } TimerInfo;
 
 extern MagickExport double
-  GetElapsedTime(TimerInfo *),
-  GetUserTime(TimerInfo *);
+GetElapsedTime(TimerInfo *),
+GetUserTime(TimerInfo *);
 
 extern MagickExport MagickBooleanType
-  ContinueTimer(TimerInfo *);
+ContinueTimer(TimerInfo*);
 
 extern MagickExport TimerInfo
-  *AcquireTimerInfo(void),
-  *DestroyTimerInfo(TimerInfo *);
+*
+AcquireTimerInfo(void),
+*DestroyTimerInfo(TimerInfo *);
 
 extern MagickExport void
-  GetTimerInfo(TimerInfo *),
-  ResetTimer(TimerInfo *),
-  StartTimer(TimerInfo *,const MagickBooleanType);
+GetTimerInfo(TimerInfo *),
+ResetTimer(TimerInfo *),
+StartTimer(TimerInfo *, const MagickBooleanType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

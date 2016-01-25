@@ -25,43 +25,47 @@ extern "C" {
 
 /* OpenCL program modules */
 typedef enum {
-  MAGICK_OPENCL_ACCELERATE = 0,
-  MAGICK_OPENCL_NUM_PROGRAMS   /* !!! This has to be the last entry !!! */
+    MAGICK_OPENCL_ACCELERATE = 0,
+    MAGICK_OPENCL_NUM_PROGRAMS /* !!! This has to be the last entry !!! */
 } MagickOpenCLProgram;
 
 typedef enum {
-  MAGICK_OPENCL_OFF = 0
-  , MAGICK_OPENCL_DEVICE_SELECT_AUTO = 1
-  , MAGICK_OPENCL_DEVICE_SELECT_USER = 2
-  , MAGICK_OPENCL_DEVICE_SELECT_AUTO_CLEAR_CACHE = 3
+    MAGICK_OPENCL_OFF = 0,
+    MAGICK_OPENCL_DEVICE_SELECT_AUTO = 1,
+    MAGICK_OPENCL_DEVICE_SELECT_USER = 2,
+    MAGICK_OPENCL_DEVICE_SELECT_AUTO_CLEAR_CACHE = 3
 } ImageMagickOpenCLMode;
 
 /* Parameter type accepted by SetMagickOpenCLEnvParm and GetMagickOpenCLEnvParm */
 typedef enum {
-    MAGICK_OPENCL_ENV_PARAM_DEVICE                 /* cl_device_id (from OpenCL) */
-  , MAGICK_OPENCL_ENV_PARAM_OPENCL_DISABLED        /* MagickBooleanType */
-  , MAGICK_OPENCL_ENV_PARAM_OPENCL_INITIALIZED     /* MagickBooleanType */
-  , MAGICK_OPENCL_ENV_PARAM_PROGRAM_CACHE_DISABLED /* MagickBooleanType */
-                                                   /* if true, disable the kernel binary cache */
-  , MAGICK_OPENCL_ENV_PARAM_REGENERATE_PROFILE     /* MagickBooleanType */
-                                                   /* if true, rerun microbenchmark in auto device selection */
+    MAGICK_OPENCL_ENV_PARAM_DEVICE /* cl_device_id (from OpenCL) */
+    ,
+    MAGICK_OPENCL_ENV_PARAM_OPENCL_DISABLED /* MagickBooleanType */
+    ,
+    MAGICK_OPENCL_ENV_PARAM_OPENCL_INITIALIZED /* MagickBooleanType */
+    ,
+    MAGICK_OPENCL_ENV_PARAM_PROGRAM_CACHE_DISABLED /* MagickBooleanType */
+    /* if true, disable the kernel binary cache */
+    ,
+    MAGICK_OPENCL_ENV_PARAM_REGENERATE_PROFILE /* MagickBooleanType */
+    /* if true, rerun microbenchmark in auto device selection */
 } MagickOpenCLEnvParam;
 
 typedef struct _MagickCLEnv* MagickCLEnv;
 
 extern MagickExport MagickBooleanType
-  GetMagickOpenCLEnvParam(MagickCLEnv,MagickOpenCLEnvParam,size_t,void*,
-    ExceptionInfo*),
-  InitImageMagickOpenCL(ImageMagickOpenCLMode,void*,void*,ExceptionInfo*),
-  InitOpenCLEnv(MagickCLEnv,ExceptionInfo*),
-  RelinquishMagickOpenCLEnv(MagickCLEnv),
-  SetMagickOpenCLEnvParam(MagickCLEnv,MagickOpenCLEnvParam,size_t,void*,
-    ExceptionInfo*);
+GetMagickOpenCLEnvParam(MagickCLEnv, MagickOpenCLEnvParam, size_t, void *,
+                        ExceptionInfo *),
+InitImageMagickOpenCL(ImageMagickOpenCLMode, void *, void *, ExceptionInfo *),
+InitOpenCLEnv(MagickCLEnv, ExceptionInfo *),
+RelinquishMagickOpenCLEnv(MagickCLEnv),
+SetMagickOpenCLEnvParam(MagickCLEnv, MagickOpenCLEnvParam, size_t, void *,
+                        ExceptionInfo *);
 
 extern MagickExport MagickCLEnv
-  AcquireMagickOpenCLEnv(),
-  GetDefaultOpenCLEnv(),
-  SetDefaultOpenCLEnv(MagickCLEnv);
+AcquireMagickOpenCLEnv(),
+GetDefaultOpenCLEnv(),
+SetDefaultOpenCLEnv(MagickCLEnv);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

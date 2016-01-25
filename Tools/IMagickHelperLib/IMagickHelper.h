@@ -43,7 +43,7 @@ struct IMAGICKHELPER_EXPORT Layer
     int dx = 0;
     int dy = 0;
     char name[MAX_NAME_SIZE];
-    
+
     Layer();
     Layer(int _x, int _y, int _dx, int _dy, const char* _name);
 };

@@ -27,7 +27,7 @@ extern "C" {
 */
 typedef struct _ChannelFeatures
 {
-  double
+    double
     angular_second_moment[4],
     contrast[4],
     correlation[4],
@@ -44,16 +44,16 @@ typedef struct _ChannelFeatures
     maximum_correlation_coefficient[4];
 } ChannelFeatures;
 
-extern MagickExport ChannelFeatures
-  *GetImageChannelFeatures(const Image *,const size_t,ExceptionInfo *);
+extern MagickExport ChannelFeatures* GetImageChannelFeatures(const Image*, const size_t, ExceptionInfo*);
 
 extern MagickExport Image
-  *CannyEdgeImage(const Image *,const double,const double,const double,
-    const double,ExceptionInfo *),
-  *HoughLineImage(const Image *,const size_t,const size_t,const size_t,
-    ExceptionInfo *),
-  *MeanShiftImage(const Image *,const size_t,const size_t,const double,
-    ExceptionInfo *);
+*
+CannyEdgeImage(const Image *, const double, const double, const double,
+               const double, ExceptionInfo *),
+*HoughLineImage(const Image *, const size_t, const size_t, const size_t,
+                ExceptionInfo *),
+*MeanShiftImage(const Image *, const size_t, const size_t, const double,
+                ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

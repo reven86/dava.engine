@@ -26,26 +26,26 @@ extern "C" {
 #endif
 
 extern MagickExport ImageType
-  GetImageType(const Image *,ExceptionInfo *),
-  IdentifyImageGray(const Image *,ExceptionInfo *),
-  IdentifyImageType(const Image *,ExceptionInfo *);
+GetImageType(const Image *, ExceptionInfo *),
+IdentifyImageGray(const Image *, ExceptionInfo *),
+IdentifyImageType(const Image *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  IdentifyImageMonochrome(const Image *,ExceptionInfo *),
-  IsGrayImage(const Image *,ExceptionInfo *),
-  IsMonochromeImage(const Image *,ExceptionInfo *),
-  IsOpaqueImage(const Image *,ExceptionInfo *),
-  SetImageChannelDepth(Image *,const ChannelType,const size_t),
-  SetImageDepth(Image *,const size_t),
-  SetImageType(Image *,const ImageType);
+IdentifyImageMonochrome(const Image *, ExceptionInfo *),
+IsGrayImage(const Image *, ExceptionInfo *),
+IsMonochromeImage(const Image *, ExceptionInfo *),
+IsOpaqueImage(const Image *, ExceptionInfo *),
+SetImageChannelDepth(Image *, const ChannelType, const size_t),
+SetImageDepth(Image *, const size_t),
+SetImageType(Image *, const ImageType);
 
 extern MagickExport RectangleInfo
-  GetImageBoundingBox(const Image *,ExceptionInfo *exception);
+GetImageBoundingBox(const Image*, ExceptionInfo* exception);
 
 extern MagickExport size_t
-  GetImageChannelDepth(const Image *,const ChannelType,ExceptionInfo *),
-  GetImageDepth(const Image *,ExceptionInfo *),
-  GetImageQuantumDepth(const Image *,const MagickBooleanType);
+GetImageChannelDepth(const Image *, const ChannelType, ExceptionInfo *),
+GetImageDepth(const Image *, ExceptionInfo *),
+GetImageQuantumDepth(const Image *, const MagickBooleanType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

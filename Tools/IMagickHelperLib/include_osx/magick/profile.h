@@ -26,48 +26,42 @@ extern "C" {
 
 typedef struct _ProfileInfo
 {
-  char
-    *name;
+    char* name;
 
-  size_t
+    size_t
     length;
 
-  unsigned char
-    *info;
+    unsigned char* info;
 
-  size_t
+    size_t
     signature;
 } ProfileInfo;
 
-typedef enum
-{
-  UndefinedIntent,
-  SaturationIntent,
-  PerceptualIntent,
-  AbsoluteIntent,
-  RelativeIntent
+typedef enum {
+    UndefinedIntent,
+    SaturationIntent,
+    PerceptualIntent,
+    AbsoluteIntent,
+    RelativeIntent
 } RenderingIntent;
 
-extern MagickExport char
-  *GetNextImageProfile(const Image *);
+extern MagickExport char* GetNextImageProfile(const Image*);
 
-extern MagickExport const StringInfo
-  *GetImageProfile(const Image *,const char *);
+extern MagickExport const StringInfo* GetImageProfile(const Image*, const char*);
 
 extern MagickExport MagickBooleanType
-  CloneImageProfiles(Image *,const Image *),
-  DeleteImageProfile(Image *,const char *),
-  ProfileImage(Image *,const char *,const void *,const size_t,
-    const MagickBooleanType),
-  SetImageProfile(Image *,const char *,const StringInfo *),
-  SyncImageProfiles(Image *);
+CloneImageProfiles(Image *, const Image *),
+DeleteImageProfile(Image *, const char *),
+ProfileImage(Image *, const char *, const void *, const size_t,
+             const MagickBooleanType),
+SetImageProfile(Image *, const char *, const StringInfo *),
+SyncImageProfiles(Image *);
 
-extern MagickExport StringInfo
-  *RemoveImageProfile(Image *,const char *);
+extern MagickExport StringInfo* RemoveImageProfile(Image*, const char*);
 
 extern MagickExport void
-  DestroyImageProfiles(Image *),
-  ResetImageProfileIterator(const Image *);
+DestroyImageProfiles(Image *),
+ResetImageProfileIterator(const Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

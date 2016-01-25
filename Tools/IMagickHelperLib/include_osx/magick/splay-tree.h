@@ -23,36 +23,39 @@ extern "C" {
 #endif
 
 typedef struct _SplayTreeInfo
-  SplayTreeInfo;
+SplayTreeInfo;
 
 extern MagickExport MagickBooleanType
-  AddValueToSplayTree(SplayTreeInfo *,const void *,const void *),
-  DeleteNodeByValueFromSplayTree(SplayTreeInfo *,const void *),
-  DeleteNodeFromSplayTree(SplayTreeInfo *,const void *);
+AddValueToSplayTree(SplayTreeInfo *, const void *, const void *),
+DeleteNodeByValueFromSplayTree(SplayTreeInfo *, const void *),
+DeleteNodeFromSplayTree(SplayTreeInfo *, const void *);
 
 extern MagickExport const void
-  *GetNextKeyInSplayTree(SplayTreeInfo *),
-  *GetNextValueInSplayTree(SplayTreeInfo *),
-  *GetValueFromSplayTree(SplayTreeInfo *,const void *);
+*
+GetNextKeyInSplayTree(SplayTreeInfo *),
+*GetNextValueInSplayTree(SplayTreeInfo *),
+*GetValueFromSplayTree(SplayTreeInfo *, const void *);
 
 extern MagickExport int
-  CompareSplayTreeString(const void *,const void *),
-  CompareSplayTreeStringInfo(const void *,const void *);
+CompareSplayTreeString(const void *, const void *),
+CompareSplayTreeStringInfo(const void *, const void *);
 
 extern MagickExport SplayTreeInfo
-  *CloneSplayTree(SplayTreeInfo *,void *(*)(void *),void *(*)(void *)),
-  *DestroySplayTree(SplayTreeInfo *),
-  *NewSplayTree(int (*)(const void *,const void *),void *(*)(void *),
-    void *(*)(void *));
+*
+CloneSplayTree(SplayTreeInfo *, void *(*)(void *), void *(*)(void *)),
+*DestroySplayTree(SplayTreeInfo *),
+*NewSplayTree(int (*)(const void *, const void *), void *(*)(void *),
+              void *(*)(void *));
 
 extern MagickExport size_t
-  GetNumberOfNodesInSplayTree(const SplayTreeInfo *);
+GetNumberOfNodesInSplayTree(const SplayTreeInfo*);
 
 extern MagickExport void
-  *RemoveNodeByValueFromSplayTree(SplayTreeInfo *,const void *),
-  *RemoveNodeFromSplayTree(SplayTreeInfo *,const void *),
-  ResetSplayTree(SplayTreeInfo *),
-  ResetSplayTreeIterator(SplayTreeInfo *);
+*
+RemoveNodeByValueFromSplayTree(SplayTreeInfo *, const void *),
+*RemoveNodeFromSplayTree(SplayTreeInfo *, const void *),
+ResetSplayTree(SplayTreeInfo *),
+ResetSplayTreeIterator(SplayTreeInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

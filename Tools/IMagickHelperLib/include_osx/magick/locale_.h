@@ -26,63 +26,63 @@ extern "C" {
 
 typedef struct _LocaleInfo
 {
-  char
+    char
     *path,
     *tag,
     *message;
 
-  MagickBooleanType
+    MagickBooleanType
     stealth;
 
-  struct _LocaleInfo
+    struct _LocaleInfo
     *previous,
-    *next;  /* deprecated, use GetLocaleInfoList() */
+    *next; /* deprecated, use GetLocaleInfoList() */
 
-  size_t
+    size_t
     signature;
 } LocaleInfo;
 
-extern MagickExport char
-  **GetLocaleList(const char *,size_t *,ExceptionInfo *);
+extern MagickExport char** GetLocaleList(const char*, size_t*, ExceptionInfo*);
 
-extern MagickExport const char
-  *GetLocaleMessage(const char *);
+extern MagickExport const char* GetLocaleMessage(const char*);
 
 extern MagickExport const LocaleInfo
-  *GetLocaleInfo_(const char *,ExceptionInfo *),
-  **GetLocaleInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetLocaleInfo_(const char *, ExceptionInfo *),
+**GetLocaleInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport double
-  InterpretLocaleValue(const char *magick_restrict,char **magick_restrict);
+InterpretLocaleValue(const char* magick_restrict, char** magick_restrict);
 
 extern MagickExport int
-  LocaleCompare(const char *,const char *),
-  LocaleNCompare(const char *,const char *,const size_t);
+LocaleCompare(const char *, const char *),
+LocaleNCompare(const char *, const char *, const size_t);
 
 extern MagickExport LinkedListInfo
-  *DestroyLocaleOptions(LinkedListInfo *),
-  *GetLocaleOptions(const char *,ExceptionInfo *);
+*
+DestroyLocaleOptions(LinkedListInfo *),
+*GetLocaleOptions(const char *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  ListLocaleInfo(FILE *,ExceptionInfo *),
-  LocaleComponentGenesis(void);
+ListLocaleInfo(FILE *, ExceptionInfo *),
+LocaleComponentGenesis(void);
 
 extern MagickExport ssize_t
-  FormatLocaleFile(FILE *,const char *magick_restrict,...)
-    magick_attribute((__format__ (__printf__,2,3))),
-  FormatLocaleFileList(FILE *,const char *magick_restrict,va_list)
-    magick_attribute((__format__ (__printf__,2,0))),
-  FormatLocaleString(char *magick_restrict,const size_t,
-    const char *magick_restrict,...)
-    magick_attribute((__format__ (__printf__,3,4))),
-  FormatLocaleStringList(char *magick_restrict,const size_t,
-    const char *magick_restrict,
-    va_list) magick_attribute((__format__ (__printf__,3,0)));
+FormatLocaleFile(FILE *, const char *magick_restrict, ...)
+magick_attribute((__format__(__printf__, 2, 3))),
+FormatLocaleFileList(FILE *, const char *magick_restrict, va_list)
+magick_attribute((__format__(__printf__, 2, 0))),
+FormatLocaleString(char *magick_restrict, const size_t,
+                   const char *magick_restrict, ...)
+magick_attribute((__format__(__printf__, 3, 4))),
+FormatLocaleStringList(char *magick_restrict, const size_t,
+                       const char *magick_restrict,
+                       va_list) magick_attribute((__format__(__printf__, 3, 0)));
 
 extern MagickExport void
-  LocaleComponentTerminus(void),
-  LocaleLower(char *),
-  LocaleUpper(char *);
+LocaleComponentTerminus(void),
+LocaleLower(char *),
+LocaleUpper(char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

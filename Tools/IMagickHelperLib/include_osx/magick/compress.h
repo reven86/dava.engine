@@ -22,46 +22,45 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedCompression,
-  NoCompression,
-  BZipCompression,
-  DXT1Compression,
-  DXT3Compression,
-  DXT5Compression,
-  FaxCompression,
-  Group4Compression,
-  JPEGCompression,
-  JPEG2000Compression,      /* ISO/IEC std 15444-1 */
-  LosslessJPEGCompression,
-  LZWCompression,
-  RLECompression,
-  ZipCompression,
-  ZipSCompression,
-  PizCompression,
-  Pxr24Compression,
-  B44Compression,
-  B44ACompression,
-  LZMACompression,            /* Lempel-Ziv-Markov chain algorithm */
-  JBIG1Compression,           /* ISO/IEC std 11544 / ITU-T rec T.82 */
-  JBIG2Compression            /* ISO/IEC std 14492 / ITU-T rec T.88 */
+typedef enum {
+    UndefinedCompression,
+    NoCompression,
+    BZipCompression,
+    DXT1Compression,
+    DXT3Compression,
+    DXT5Compression,
+    FaxCompression,
+    Group4Compression,
+    JPEGCompression,
+    JPEG2000Compression, /* ISO/IEC std 15444-1 */
+    LosslessJPEGCompression,
+    LZWCompression,
+    RLECompression,
+    ZipCompression,
+    ZipSCompression,
+    PizCompression,
+    Pxr24Compression,
+    B44Compression,
+    B44ACompression,
+    LZMACompression, /* Lempel-Ziv-Markov chain algorithm */
+    JBIG1Compression, /* ISO/IEC std 11544 / ITU-T rec T.82 */
+    JBIG2Compression /* ISO/IEC std 14492 / ITU-T rec T.88 */
 } CompressionType;
 
 typedef struct _Ascii85Info
-  Ascii85Info;
+Ascii85Info;
 
 extern MagickExport MagickBooleanType
-  HuffmanDecodeImage(Image *),
-  HuffmanEncodeImage(const ImageInfo *,Image *,Image *),
-  LZWEncodeImage(Image *,const size_t,unsigned char *magick_restrict),
-  PackbitsEncodeImage(Image *,const size_t,unsigned char *magick_restrict),
-  ZLIBEncodeImage(Image *,const size_t,unsigned char *magick_restrict);
+HuffmanDecodeImage(Image *),
+HuffmanEncodeImage(const ImageInfo *, Image *, Image *),
+LZWEncodeImage(Image *, const size_t, unsigned char *magick_restrict),
+PackbitsEncodeImage(Image *, const size_t, unsigned char *magick_restrict),
+ZLIBEncodeImage(Image *, const size_t, unsigned char *magick_restrict);
 
 extern MagickExport void
-  Ascii85Encode(Image *,const unsigned char),
-  Ascii85Flush(Image *),
-  Ascii85Initialize(Image *);
+Ascii85Encode(Image *, const unsigned char),
+Ascii85Flush(Image *),
+Ascii85Initialize(Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

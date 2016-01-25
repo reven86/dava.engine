@@ -22,14 +22,12 @@
 extern "C" {
 #endif
 
-typedef size_t
-  (*StreamHandler)(const Image *,const void *,const size_t);
+typedef size_t (*StreamHandler)(const Image*, const void*, const size_t);
 
-extern MagickExport Image
-  *ReadStream(const ImageInfo *,StreamHandler,ExceptionInfo *);
+extern MagickExport Image* ReadStream(const ImageInfo*, StreamHandler, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  WriteStream(const ImageInfo *,Image *,StreamHandler);
+WriteStream(const ImageInfo*, Image*, StreamHandler);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

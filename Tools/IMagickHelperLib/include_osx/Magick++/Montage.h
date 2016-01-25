@@ -18,15 +18,14 @@
 //
 namespace Magick
 {
-  class MagickPPExport Montage
-  {
-  public:
-
+class MagickPPExport Montage
+{
+public:
     Montage(void);
     virtual ~Montage(void);
 
     // Color that thumbnails are composed on
-    void backgroundColor(const Color &backgroundColor_);
+    void backgroundColor(const Color& backgroundColor_);
     Color backgroundColor(void) const;
 
     // Composition algorithm to use (e.g. ReplaceCompositeOp)
@@ -34,19 +33,19 @@ namespace Magick
     CompositeOperator compose(void) const;
 
     // Filename to save montages to
-    void fileName(const std::string &fileName_);
+    void fileName(const std::string& fileName_);
     std::string fileName(void) const;
 
     // Fill color
-    void fillColor(const Color &fill_);
+    void fillColor(const Color& fill_);
     Color fillColor(void) const;
 
     // Label font
-    void font(const std::string &font_);
+    void font(const std::string& font_);
     std::string font(void) const;
 
     // Thumbnail width & height plus border width & height
-    void geometry(const Geometry &geometry_);
+    void geometry(const Geometry& geometry_);
     Geometry geometry(void) const;
 
     // Thumbnail position (e.g. SouthWestGravity)
@@ -54,11 +53,11 @@ namespace Magick
     GravityType gravity(void) const;
 
     // Thumbnail label (applied to image prior to montage)
-    void label(const std::string &label_);
+    void label(const std::string& label_);
     std::string label(void) const;
 
     // Same as fill color
-    void penColor(const Color &pen_);
+    void penColor(const Color& pen_);
     Color penColor(void) const;
 
     // Font point size
@@ -70,23 +69,23 @@ namespace Magick
     bool shadow(void) const;
 
     // Outline color
-    void strokeColor(const Color &stroke_);
+    void strokeColor(const Color& stroke_);
     Color strokeColor(void) const;
 
     // Background texture image
-    void texture(const std::string &texture_);
+    void texture(const std::string& texture_);
     std::string texture(void) const;
 
     // Thumbnail rows and colmns
-    void tile(const Geometry &tile_);
+    void tile(const Geometry& tile_);
     Geometry tile(void) const;
 
     // Montage title
-    void title(const std::string &title_);
+    void title(const std::string& title_);
     std::string title(void) const;
 
     // Transparent color
-    void transparentColor(const Color &transparentColor_);
+    void transparentColor(const Color& transparentColor_);
     Color transparentColor(void) const;
 
     //
@@ -94,10 +93,9 @@ namespace Magick
     //
 
     // Update elements in existing MontageInfo structure
-    virtual void updateMontageInfo(MagickCore::MontageInfo &montageInfo_) const;
+    virtual void updateMontageInfo(MagickCore::MontageInfo& montageInfo_) const;
 
-  private:
-
+private:
     Color _backgroundColor;
     CompositeOperator _compose;
     std::string _fileName;
@@ -113,20 +111,19 @@ namespace Magick
     Geometry _tile;
     std::string _title;
     Color _transparentColor;
-  };
+};
 
-  //
-  // Montage With Frames (Extends Basic Montage)
-  //
-  class MagickPPExport MontageFramed : public Montage
-  {
-  public:
-
+//
+// Montage With Frames (Extends Basic Montage)
+//
+class MagickPPExport MontageFramed : public Montage
+{
+public:
     MontageFramed(void);
     ~MontageFramed(void);
 
     // Frame border color
-    void borderColor(const Color &borderColor_);
+    void borderColor(const Color& borderColor_);
     Color borderColor(void) const;
 
     // Pixels between thumbnail and surrounding frame
@@ -134,11 +131,11 @@ namespace Magick
     size_t borderWidth(void) const;
 
     // Frame geometry (width & height frame thickness)
-    void frameGeometry(const Geometry &frame_);
+    void frameGeometry(const Geometry& frame_);
     Geometry frameGeometry(void) const;
 
     // Frame foreground color
-    void matteColor(const Color &matteColor_);
+    void matteColor(const Color& matteColor_);
     Color matteColor(void) const;
 
     //
@@ -146,15 +143,14 @@ namespace Magick
     //
 
     // Update elements in existing MontageInfo structure
-    void updateMontageInfo(MagickCore::MontageInfo &montageInfo_) const;
+    void updateMontageInfo(MagickCore::MontageInfo& montageInfo_) const;
 
-  private:
-
+private:
     Color _borderColor;
     size_t _borderWidth;
     Geometry _frame;
     Color _matteColor;
-  };
+};
 } // namespace Magick
 
 //
@@ -165,209 +161,209 @@ namespace Magick
 // Implementation of Montage
 //
 
-inline void Magick::Montage::backgroundColor(const Magick::Color &backgroundColor_)
+inline void Magick::Montage::backgroundColor(const Magick::Color& backgroundColor_)
 {
-  _backgroundColor=backgroundColor_;
+    _backgroundColor = backgroundColor_;
 }
 
 inline Magick::Color Magick::Montage::backgroundColor(void) const
 {
-  return(_backgroundColor);
+    return (_backgroundColor);
 }
 
 inline void Magick::Montage::compose(Magick::CompositeOperator compose_)
 {
-  _compose=compose_;
+    _compose = compose_;
 }
 
 inline Magick::CompositeOperator Magick::Montage::compose(void) const
 {
-  return(_compose);
+    return (_compose);
 }
 
-inline void Magick::Montage::fileName(const std::string &fileName_)
+inline void Magick::Montage::fileName(const std::string& fileName_)
 {
-  _fileName=fileName_;
+    _fileName = fileName_;
 }
 
 inline std::string Magick::Montage::fileName(void) const
 {
-  return(_fileName);
+    return (_fileName);
 }
 
-inline void Magick::Montage::fillColor(const Color &fill_)
+inline void Magick::Montage::fillColor(const Color& fill_)
 {
-  _fill=fill_;
+    _fill = fill_;
 }
 
 inline Magick::Color Magick::Montage::fillColor(void) const
 {
-  return(_fill);
+    return (_fill);
 }
 
-inline void Magick::Montage::font(const std::string &font_)
+inline void Magick::Montage::font(const std::string& font_)
 {
-  _font=font_;
+    _font = font_;
 }
 
 inline std::string Magick::Montage::font(void) const
 {
-  return(_font);
+    return (_font);
 }
 
-inline void Magick::Montage::geometry(const Magick::Geometry &geometry_)
+inline void Magick::Montage::geometry(const Magick::Geometry& geometry_)
 {
-  _geometry=geometry_;
+    _geometry = geometry_;
 }
 
 inline Magick::Geometry Magick::Montage::geometry(void) const
 {
-  return(_geometry);
+    return (_geometry);
 }
 
 inline void Magick::Montage::gravity(Magick::GravityType gravity_)
 {
-  _gravity=gravity_;
+    _gravity = gravity_;
 }
 
 inline Magick::GravityType Magick::Montage::gravity(void) const
 {
-  return(_gravity);
+    return (_gravity);
 }
 
-inline void Magick::Montage::label(const std::string &label_)
+inline void Magick::Montage::label(const std::string& label_)
 {
-  _label=label_;
+    _label = label_;
 }
 
 inline std::string Magick::Montage::label(void) const
 {
-  return(_label);
+    return (_label);
 }
 
-inline void Magick::Montage::penColor(const Color &pen_)
+inline void Magick::Montage::penColor(const Color& pen_)
 {
-  _fill=pen_;
-  _stroke=Color("none");
+    _fill = pen_;
+    _stroke = Color("none");
 }
 
 inline Magick::Color Magick::Montage::penColor(void) const
 {
-  return _fill;
+    return _fill;
 }
 
 inline void Magick::Montage::pointSize(size_t pointSize_)
 {
-  _pointSize=pointSize_;
+    _pointSize = pointSize_;
 }
 
 inline size_t Magick::Montage::pointSize(void) const
 {
-  return(_pointSize);
+    return (_pointSize);
 }
 
 inline void Magick::Montage::shadow(bool shadow_)
 {
-  _shadow=shadow_;
+    _shadow = shadow_;
 }
 
 inline bool Magick::Montage::shadow(void) const
 {
-  return(_shadow);
+    return (_shadow);
 }
 
-inline void Magick::Montage::strokeColor(const Color &stroke_)
+inline void Magick::Montage::strokeColor(const Color& stroke_)
 {
-  _stroke=stroke_;
+    _stroke = stroke_;
 }
 
 inline Magick::Color Magick::Montage::strokeColor(void) const
 {
-  return(_stroke);
+    return (_stroke);
 }
 
-inline void Magick::Montage::texture(const std::string &texture_)
+inline void Magick::Montage::texture(const std::string& texture_)
 {
-  _texture=texture_;
+    _texture = texture_;
 }
 
 inline std::string Magick::Montage::texture(void) const
 {
-  return(_texture);
+    return (_texture);
 }
 
-inline void Magick::Montage::tile(const Geometry &tile_)
+inline void Magick::Montage::tile(const Geometry& tile_)
 {
-  _tile=tile_;
+    _tile = tile_;
 }
 
 inline Magick::Geometry Magick::Montage::tile(void) const
 {
-  return(_tile);
+    return (_tile);
 }
 
-inline void Magick::Montage::title(const std::string &title_)
+inline void Magick::Montage::title(const std::string& title_)
 {
-  _title=title_;
+    _title = title_;
 }
 
 inline std::string Magick::Montage::title(void) const
 {
-  return(_title);
+    return (_title);
 }
 
-inline void Magick::Montage::transparentColor(const Magick::Color &transparentColor_)
+inline void Magick::Montage::transparentColor(const Magick::Color& transparentColor_)
 {
-  _transparentColor=transparentColor_;
+    _transparentColor = transparentColor_;
 }
 
 inline Magick::Color Magick::Montage::transparentColor(void) const
 {
-  return(_transparentColor);
+    return (_transparentColor);
 }
 
 //
 // Implementation of MontageFramed
 //
 
-inline void Magick::MontageFramed::borderColor(const Magick::Color &borderColor_)
+inline void Magick::MontageFramed::borderColor(const Magick::Color& borderColor_)
 {
-  _borderColor=borderColor_;
+    _borderColor = borderColor_;
 }
 
 inline Magick::Color Magick::MontageFramed::borderColor(void) const
 {
-  return(_borderColor);
+    return (_borderColor);
 }
 
 inline void Magick::MontageFramed::borderWidth(size_t borderWidth_)
 {
-  _borderWidth=borderWidth_;
+    _borderWidth = borderWidth_;
 }
 
 inline size_t Magick::MontageFramed::borderWidth(void) const
 {
-  return(_borderWidth);
+    return (_borderWidth);
 }
 
-inline void Magick::MontageFramed::frameGeometry(const Magick::Geometry &frame_)
+inline void Magick::MontageFramed::frameGeometry(const Magick::Geometry& frame_)
 {
-  _frame=frame_;
+    _frame = frame_;
 }
 
 inline Magick::Geometry Magick::MontageFramed::frameGeometry(void) const
 {
-  return(_frame);
+    return (_frame);
 }
 
-inline void Magick::MontageFramed::matteColor(const Magick::Color &matteColor_)
+inline void Magick::MontageFramed::matteColor(const Magick::Color& matteColor_)
 {
-  _matteColor=matteColor_;
+    _matteColor = matteColor_;
 }
 
 inline Magick::Color Magick::MontageFramed::matteColor(void) const
 {
-  return(_matteColor);
+    return (_matteColor);
 }
 
 #endif // Magick_Montage_header

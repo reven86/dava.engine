@@ -24,37 +24,37 @@ extern "C" {
 #endif
 
 #if !defined(_MAGICKCORE_CONFIG_H)
-# define _MAGICKCORE_CONFIG_H
-# if !defined(vms) && !defined(macintosh)
-#  include "magick/magick-config.h"
-# else
-#  include "magick-config.h"
-# endif
+#define _MAGICKCORE_CONFIG_H
+#if !defined(vms) && !defined(macintosh)
+#include "magick/magick-config.h"
+#else
+#include "magick-config.h"
+#endif
 #if defined(_magickcore_const) && !defined(const)
-# define const _magickcore_const
+#define const _magickcore_const
 #endif
 #if defined(_magickcore_inline) && !defined(inline)
-# define inline _magickcore_inline
+#define inline _magickcore_inline
 #endif
 #if !defined(magick_restrict)
-# if !defined(_magickcore_restrict)
-#  define magick_restrict restrict
-# else
-#  define magick_restrict _magickcore_restrict
-# endif
+#if !defined(_magickcore_restrict)
+#define magick_restrict restrict
+#else
+#define magick_restrict _magickcore_restrict
 #endif
-# if defined(__cplusplus) || defined(c_plusplus)
-#  undef inline
-# endif
+#endif
+#if defined(__cplusplus) || defined(c_plusplus)
+#undef inline
+#endif
 #endif
 
-#define MAGICKCORE_CHECK_VERSION(major,minor,micro) \
-  ((MAGICKCORE_MAJOR_VERSION > (major)) || \
-    ((MAGICKCORE_MAJOR_VERSION == (major)) && \
-     (MAGICKCORE_MINOR_VERSION > (minor))) || \
-    ((MAGICKCORE_MAJOR_VERSION == (major)) && \
-     (MAGICKCORE_MINOR_VERSION == (minor)) && \
-     (MAGICKCORE_MICRO_VERSION >= (micro))))
+#define MAGICKCORE_CHECK_VERSION(major, minor, micro) \
+  ((MAGICKCORE_MAJOR_VERSION > (major)) ||   \
+     ((MAGICKCORE_MAJOR_VERSION == (major)) && \
+      (MAGICKCORE_MINOR_VERSION > (minor))) || \
+     ((MAGICKCORE_MAJOR_VERSION == (major)) && \
+      (MAGICKCORE_MINOR_VERSION == (minor)) && \
+      (MAGICKCORE_MICRO_VERSION >= (micro))))
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -63,15 +63,15 @@ extern "C" {
 #include <time.h>
 
 #if defined(WIN32) || defined(WIN64)
-#  define MAGICKCORE_WINDOWS_SUPPORT
+#define MAGICKCORE_WINDOWS_SUPPORT
 #else
-#  define MAGICKCORE_POSIX_SUPPORT
+#define MAGICKCORE_POSIX_SUPPORT
 #endif 
 
 #include "magick/method-attribute.h"
 
 #if defined(MAGICKCORE_NAMESPACE_PREFIX)
-# include "magick/methods.h"
+#include "magick/methods.h"
 #endif
 #include "magick/magick-type.h"
 #include "magick/accelerate.h"

@@ -23,58 +23,52 @@ extern "C" {
 #endif
 
 typedef struct _ImageView
-  ImageView;
+ImageView;
 
-typedef MagickBooleanType
-  (*DuplexTransferImageViewMethod)(const ImageView *,const ImageView *,
-    ImageView *,const ssize_t,const int,void *),
-  (*GetImageViewMethod)(const ImageView *,const ssize_t,const int,void *),
-  (*SetImageViewMethod)(ImageView *,const ssize_t,const int,void *),
-  (*TransferImageViewMethod)(const ImageView *,ImageView *,const ssize_t,
-    const int,void *),
-  (*UpdateImageViewMethod)(ImageView *,const ssize_t,const int,void *);
+typedef MagickBooleanType (*DuplexTransferImageViewMethod)(const ImageView*, const ImageView*,
+                                                           ImageView*, const ssize_t, const int, void*),
+(*GetImageViewMethod)(const ImageView*, const ssize_t, const int, void*),
+(*SetImageViewMethod)(ImageView*, const ssize_t, const int, void*),
+(*TransferImageViewMethod)(const ImageView*, ImageView*, const ssize_t,
+                           const int, void*),
+(*UpdateImageViewMethod)(ImageView*, const ssize_t, const int, void*);
 
-extern MagickExport char
-  *GetImageViewException(const ImageView *,ExceptionType *);
+extern MagickExport char* GetImageViewException(const ImageView*, ExceptionType*);
 
-extern MagickExport const IndexPacket
-  *GetImageViewVirtualIndexes(const ImageView *);
+extern MagickExport const IndexPacket* GetImageViewVirtualIndexes(const ImageView*);
 
-extern MagickExport const PixelPacket
-  *GetImageViewVirtualPixels(const ImageView *);
+extern MagickExport const PixelPacket* GetImageViewVirtualPixels(const ImageView*);
 
-extern MagickExport Image
-  *GetImageViewImage(const ImageView *);
+extern MagickExport Image* GetImageViewImage(const ImageView*);
 
 extern MagickExport ImageView
-  *CloneImageView(const ImageView *),
-  *DestroyImageView(ImageView *),
-  *NewImageView(Image *),
-  *NewImageViewRegion(Image *,const ssize_t,const ssize_t,const size_t,
-    const size_t);
+*
+CloneImageView(const ImageView *),
+*DestroyImageView(ImageView *),
+*NewImageView(Image *),
+*NewImageViewRegion(Image *, const ssize_t, const ssize_t, const size_t,
+                    const size_t);
 
-extern MagickExport IndexPacket
-  *GetImageViewAuthenticIndexes(const ImageView *);
+extern MagickExport IndexPacket* GetImageViewAuthenticIndexes(const ImageView*);
 
 extern MagickExport MagickBooleanType
-  DuplexTransferImageViewIterator(ImageView *,ImageView *,ImageView *,
-    DuplexTransferImageViewMethod,void *),
-  GetImageViewIterator(ImageView *,GetImageViewMethod,void *),
-  IsImageView(const ImageView *),
-  SetImageViewIterator(ImageView *,SetImageViewMethod,void *),
-  TransferImageViewIterator(ImageView *,ImageView *,TransferImageViewMethod,
-    void *),
-  UpdateImageViewIterator(ImageView *,UpdateImageViewMethod,void *);
+DuplexTransferImageViewIterator(ImageView *, ImageView *, ImageView *,
+                                DuplexTransferImageViewMethod, void *),
+GetImageViewIterator(ImageView *, GetImageViewMethod, void *),
+IsImageView(const ImageView *),
+SetImageViewIterator(ImageView *, SetImageViewMethod, void *),
+TransferImageViewIterator(ImageView *, ImageView *, TransferImageViewMethod,
+                          void *),
+UpdateImageViewIterator(ImageView *, UpdateImageViewMethod, void *);
 
-extern MagickExport PixelPacket
-  *GetImageViewAuthenticPixels(const ImageView *);
+extern MagickExport PixelPacket* GetImageViewAuthenticPixels(const ImageView*);
 
 extern MagickExport RectangleInfo
-  GetImageViewExtent(const ImageView *);
+GetImageViewExtent(const ImageView*);
 
 extern MagickExport void
-  SetImageViewDescription(ImageView *,const char *),
-  SetImageViewThreads(ImageView *,const size_t);
+SetImageViewDescription(ImageView *, const char *),
+SetImageViewThreads(ImageView *, const size_t);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

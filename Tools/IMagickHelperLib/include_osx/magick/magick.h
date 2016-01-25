@@ -25,126 +25,116 @@ extern "C" {
 #include <stdarg.h>
 #include "magick/semaphore.h"
 
-typedef enum
-{
-  UndefinedFormatType,
-  ImplicitFormatType,
-  ExplicitFormatType
+typedef enum {
+    UndefinedFormatType,
+    ImplicitFormatType,
+    ExplicitFormatType
 } MagickFormatType;
 
-typedef enum
-{
-  NoThreadSupport = 0x0000,
-  DecoderThreadSupport = 0x0001,
-  EncoderThreadSupport = 0x0002
+typedef enum {
+    NoThreadSupport = 0x0000,
+    DecoderThreadSupport = 0x0001,
+    EncoderThreadSupport = 0x0002
 } MagickThreadSupport;
 
-typedef Image
-  *DecodeImageHandler(const ImageInfo *,ExceptionInfo *);
+typedef Image* DecodeImageHandler(const ImageInfo*, ExceptionInfo*);
 
 typedef MagickBooleanType
-  EncodeImageHandler(const ImageInfo *,Image *);
+EncodeImageHandler(const ImageInfo*, Image*);
 
 typedef MagickBooleanType
-  IsImageFormatHandler(const unsigned char *,const size_t);
+IsImageFormatHandler(const unsigned char*, const size_t);
 
 typedef struct _MagickInfo
 {
-  char
+    char
     *name,
     *description,
     *version,
     *note,
     *module;
 
-  ImageInfo
-    *image_info;
+    ImageInfo* image_info;
 
-  DecodeImageHandler
-    *decoder;
+    DecodeImageHandler* decoder;
 
-  EncodeImageHandler
-    *encoder;
+    EncodeImageHandler* encoder;
 
-  IsImageFormatHandler
-    *magick;
+    IsImageFormatHandler* magick;
 
-  void
-    *client_data;
+    void* client_data;
 
-  MagickBooleanType
+    MagickBooleanType
     adjoin,
     raw,
     endian_support,
     blob_support,
     seekable_stream;
 
-  MagickFormatType
+    MagickFormatType
     format_type;
 
-  MagickStatusType
+    MagickStatusType
     thread_support;
 
-  MagickBooleanType
+    MagickBooleanType
     stealth;
 
-  struct _MagickInfo
+    struct _MagickInfo
     *previous,
-    *next;  /* deprecated, use GetMagickInfoList() */
+    *next; /* deprecated, use GetMagickInfoList() */
 
-  size_t
+    size_t
     signature;
 
-  char
-    *mime_type;
+    char* mime_type;
 
-  SemaphoreInfo
-    *semaphore;
+    SemaphoreInfo* semaphore;
 } MagickInfo;
 
-extern MagickExport char
-  **GetMagickList(const char *,size_t *,ExceptionInfo *);
+extern MagickExport char** GetMagickList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport const char
-  *GetMagickDescription(const MagickInfo *),
-  *GetMagickMimeType(const MagickInfo *);
+*
+GetMagickDescription(const MagickInfo *),
+*GetMagickMimeType(const MagickInfo *);
 
-extern MagickExport DecodeImageHandler
-  *GetImageDecoder(const MagickInfo *);
+extern MagickExport DecodeImageHandler* GetImageDecoder(const MagickInfo*);
 
-extern MagickExport EncodeImageHandler
-  *GetImageEncoder(const MagickInfo *);
+extern MagickExport EncodeImageHandler* GetImageEncoder(const MagickInfo*);
 
 extern MagickExport int
-  GetMagickPrecision(void),
-  SetMagickPrecision(const int);
+GetMagickPrecision(void),
+SetMagickPrecision(const int);
 
 extern MagickExport MagickBooleanType
-  GetImageMagick(const unsigned char *,const size_t,char *),
-  GetMagickAdjoin(const MagickInfo *),
-  GetMagickBlobSupport(const MagickInfo *),
-  GetMagickEndianSupport(const MagickInfo *),
-  GetMagickRawSupport(const MagickInfo *),
-  GetMagickSeekableStream(const MagickInfo *),
-  IsMagickCoreInstantiated(void),
-  MagickComponentGenesis(void),
-  UnregisterMagickInfo(const char *);
+GetImageMagick(const unsigned char *, const size_t, char *),
+GetMagickAdjoin(const MagickInfo *),
+GetMagickBlobSupport(const MagickInfo *),
+GetMagickEndianSupport(const MagickInfo *),
+GetMagickRawSupport(const MagickInfo *),
+GetMagickSeekableStream(const MagickInfo *),
+IsMagickCoreInstantiated(void),
+MagickComponentGenesis(void),
+UnregisterMagickInfo(const char *);
 
 extern const MagickExport MagickInfo
-  *GetMagickInfo(const char *,ExceptionInfo *),
-  **GetMagickInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetMagickInfo(const char *, ExceptionInfo *),
+**GetMagickInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport MagickInfo
-  *RegisterMagickInfo(MagickInfo *),
-  *SetMagickInfo(const char *);
+*
+RegisterMagickInfo(MagickInfo *),
+*SetMagickInfo(const char *);
 
 extern MagickExport MagickStatusType
-  GetMagickThreadSupport(const MagickInfo *);
+GetMagickThreadSupport(const MagickInfo*);
 
 extern MagickExport void
-  MagickComponentTerminus(void),
-  MagickCoreGenesis(const char *,const MagickBooleanType),
-  MagickCoreTerminus(void);
+MagickComponentTerminus(void),
+MagickCoreGenesis(const char *, const MagickBooleanType),
+MagickCoreTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

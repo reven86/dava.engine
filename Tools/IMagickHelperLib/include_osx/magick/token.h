@@ -26,23 +26,24 @@ extern "C" {
   Typedef declarations.
 */
 typedef struct _TokenInfo
-  TokenInfo;
+TokenInfo;
 
 extern MagickExport int
-  Tokenizer(TokenInfo *,const unsigned int,char *,const size_t,const char *,
-    const char *,const char *,const char *,const char,char *,int *,char *);
+Tokenizer(TokenInfo*, const unsigned int, char*, const size_t, const char*,
+          const char*, const char*, const char*, const char, char*, int*, char*);
 
 extern MagickExport MagickBooleanType
-  GlobExpression(const char *,const char *,const MagickBooleanType),
-  IsGlob(const char *),
-  IsMagickTrue(const char *);
+GlobExpression(const char *, const char *, const MagickBooleanType),
+IsGlob(const char *),
+IsMagickTrue(const char *);
 
 extern MagickExport TokenInfo
-  *AcquireTokenInfo(void),
-  *DestroyTokenInfo(TokenInfo *);
+*
+AcquireTokenInfo(void),
+*DestroyTokenInfo(TokenInfo *);
 
 extern MagickExport void
-  GetMagickToken(const char *,const char **,char *);
+GetMagickToken(const char*, const char**, char*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

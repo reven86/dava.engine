@@ -29,40 +29,39 @@ extern "C" {
   located in AcquireResizeFilter() in "resize.c" otherwise the users filter
   will not match the actual filter that is setup.
 */
-typedef enum
-{
-  UndefinedFilter,
-  PointFilter,
-  BoxFilter,
-  TriangleFilter,
-  HermiteFilter,
-  HanningFilter,
-  HammingFilter,
-  BlackmanFilter,
-  GaussianFilter,
-  QuadraticFilter,
-  CubicFilter,
-  CatromFilter,
-  MitchellFilter,
-  JincFilter,
-  SincFilter,
-  SincFastFilter,
-  KaiserFilter,
-  WelshFilter,
-  ParzenFilter,
-  BohmanFilter,
-  BartlettFilter,
-  LagrangeFilter,
-  LanczosFilter,
-  LanczosSharpFilter,
-  Lanczos2Filter,
-  Lanczos2SharpFilter,
-  RobidouxFilter,
-  RobidouxSharpFilter,
-  CosineFilter,
-  SplineFilter,
-  LanczosRadiusFilter,
-  SentinelFilter  /* a count of all the filters, not a real filter */
+typedef enum {
+    UndefinedFilter,
+    PointFilter,
+    BoxFilter,
+    TriangleFilter,
+    HermiteFilter,
+    HanningFilter,
+    HammingFilter,
+    BlackmanFilter,
+    GaussianFilter,
+    QuadraticFilter,
+    CubicFilter,
+    CatromFilter,
+    MitchellFilter,
+    JincFilter,
+    SincFilter,
+    SincFastFilter,
+    KaiserFilter,
+    WelshFilter,
+    ParzenFilter,
+    BohmanFilter,
+    BartlettFilter,
+    LagrangeFilter,
+    LanczosFilter,
+    LanczosSharpFilter,
+    Lanczos2Filter,
+    Lanczos2SharpFilter,
+    RobidouxFilter,
+    RobidouxSharpFilter,
+    CosineFilter,
+    SplineFilter,
+    LanczosRadiusFilter,
+    SentinelFilter /* a count of all the filters, not a real filter */
 } FilterTypes;
 
 /*
@@ -73,24 +72,25 @@ typedef enum
 #define BesselFilter JincFilter
 
 typedef struct _ResampleFilter
-  ResampleFilter;
+ResampleFilter;
 
 extern MagickExport MagickBooleanType
-  ResamplePixelColor(ResampleFilter *,const double,const double,
-    MagickPixelPacket *),
-  SetResampleFilterInterpolateMethod(ResampleFilter *,
-    const InterpolatePixelMethod),
-  SetResampleFilterVirtualPixelMethod(ResampleFilter *,
-    const VirtualPixelMethod);
+ResamplePixelColor(ResampleFilter *, const double, const double,
+                   MagickPixelPacket *),
+SetResampleFilterInterpolateMethod(ResampleFilter *,
+                                   const InterpolatePixelMethod),
+SetResampleFilterVirtualPixelMethod(ResampleFilter *,
+                                    const VirtualPixelMethod);
 
 extern MagickExport ResampleFilter
-  *AcquireResampleFilter(const Image *,ExceptionInfo *),
-  *DestroyResampleFilter(ResampleFilter *);
+*
+AcquireResampleFilter(const Image *, ExceptionInfo *),
+*DestroyResampleFilter(ResampleFilter *);
 
 extern MagickExport void
-  ScaleResampleFilter(ResampleFilter *,const double,const double,const double,
-    const double),
-  SetResampleFilter(ResampleFilter *,const FilterTypes,const double);
+ScaleResampleFilter(ResampleFilter *, const double, const double, const double,
+                    const double),
+SetResampleFilter(ResampleFilter *, const FilterTypes, const double);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

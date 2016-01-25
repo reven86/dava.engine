@@ -29,45 +29,46 @@ extern "C" {
 #endif
 
 extern MagickExport Image
-  *AccelerateAddNoiseImage(const Image*,const ChannelType,const NoiseType,
-    ExceptionInfo *),
-  *AccelerateBlurImage(const Image *,const ChannelType,const double,
-    const double,ExceptionInfo *),
-  *AccelerateConvolveImageChannel(const Image *,const ChannelType,
-    const KernelInfo *,ExceptionInfo *),
-  *AccelerateDespeckleImage(const Image *,ExceptionInfo *),
-  *AccelerateLocalContrastImage(const Image *,const double,const double,
-    ExceptionInfo *),
-  *AccelerateMotionBlurImage(const Image*, const ChannelType,
-    const double*,const size_t,const OffsetInfo*,ExceptionInfo*),
-  *AccelerateRadialBlurImage(const Image *,const ChannelType,const double,
-    ExceptionInfo *),
-  *AccelerateResizeImage(const Image *,const size_t,const size_t,
-    const ResizeFilter *,ExceptionInfo *),
-  *AccelerateUnsharpMaskImage(const Image *,const ChannelType,const double,
-    const double,const double,const double,ExceptionInfo *);
+*
+AccelerateAddNoiseImage(const Image *, const ChannelType, const NoiseType,
+                        ExceptionInfo *),
+*AccelerateBlurImage(const Image *, const ChannelType, const double,
+                     const double, ExceptionInfo *),
+*AccelerateConvolveImageChannel(const Image *, const ChannelType,
+                                const KernelInfo *, ExceptionInfo *),
+*AccelerateDespeckleImage(const Image *, ExceptionInfo *),
+*AccelerateLocalContrastImage(const Image *, const double, const double,
+                              ExceptionInfo *),
+*AccelerateMotionBlurImage(const Image *, const ChannelType,
+                           const double *, const size_t, const OffsetInfo *, ExceptionInfo *),
+*AccelerateRadialBlurImage(const Image *, const ChannelType, const double,
+                           ExceptionInfo *),
+*AccelerateResizeImage(const Image *, const size_t, const size_t,
+                       const ResizeFilter *, ExceptionInfo *),
+*AccelerateUnsharpMaskImage(const Image *, const ChannelType, const double,
+                            const double, const double, const double, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  AccelerateCompositeImage(Image *,const ChannelType,const CompositeOperator,
-    const Image *,const ssize_t,const ssize_t,const float,const float,ExceptionInfo *),
-  AccelerateContrastImage(Image *,const MagickBooleanType,ExceptionInfo *),
-  AccelerateContrastStretchImageChannel(Image *, const ChannelType, const double, const double, 
-    ExceptionInfo*),
-  AccelerateEqualizeImage(Image *,const ChannelType,ExceptionInfo *),
-  AccelerateFunctionImage(Image *,const ChannelType,const MagickFunction,
-    const size_t,const double *,ExceptionInfo *),
-  AccelerateGrayscaleImage(Image*, const PixelIntensityMethod,
-    ExceptionInfo *),
-  AccelerateModulateImage(Image*, double, double, double, 
-    ColorspaceType, ExceptionInfo*),
-  AccelerateRandomImage(Image*, ExceptionInfo*);
+AccelerateCompositeImage(Image *, const ChannelType, const CompositeOperator,
+                         const Image *, const ssize_t, const ssize_t, const float, const float, ExceptionInfo *),
+AccelerateContrastImage(Image *, const MagickBooleanType, ExceptionInfo *),
+AccelerateContrastStretchImageChannel(Image *, const ChannelType, const double, const double,
+                                      ExceptionInfo *),
+AccelerateEqualizeImage(Image *, const ChannelType, ExceptionInfo *),
+AccelerateFunctionImage(Image *, const ChannelType, const MagickFunction,
+                        const size_t, const double *, ExceptionInfo *),
+AccelerateGrayscaleImage(Image *, const PixelIntensityMethod,
+                         ExceptionInfo *),
+AccelerateModulateImage(Image *, double, double, double,
+                        ColorspaceType, ExceptionInfo *),
+AccelerateRandomImage(Image *, ExceptionInfo *);
 
 /* legacy, do not use */
 extern MagickExport MagickBooleanType
-  AccelerateConvolveImage(const Image *,const KernelInfo *,Image *,
-    ExceptionInfo *),
-  AccelerateNegateImageChannel(Image*, const ChannelType, const MagickBooleanType,
-    ExceptionInfo *);
+AccelerateConvolveImage(const Image *, const KernelInfo *, Image *,
+                        ExceptionInfo *),
+AccelerateNegateImageChannel(Image *, const ChannelType, const MagickBooleanType,
+                             ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

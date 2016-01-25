@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 extern WandExport MagickBooleanType
-  StreamImageCommand(ImageInfo *,int,char **,char **,ExceptionInfo *);
+StreamImageCommand(ImageInfo*, int, char**, char**, ExceptionInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -22,52 +22,51 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedColorspace,
-  RGBColorspace,            /* Linear RGB colorspace */
-  GRAYColorspace,           /* greyscale (linear) image (faked 1 channel) */
-  TransparentColorspace,
-  OHTAColorspace,
-  LabColorspace,
-  XYZColorspace,
-  YCbCrColorspace,
-  YCCColorspace,
-  YIQColorspace,
-  YPbPrColorspace,
-  YUVColorspace,
-  CMYKColorspace,           /* negated linear RGB with black separated */
-  sRGBColorspace,           /* Default: non-linear sRGB colorspace */
-  HSBColorspace,
-  HSLColorspace,
-  HWBColorspace,
-  Rec601LumaColorspace,
-  Rec601YCbCrColorspace,
-  Rec709LumaColorspace,
-  Rec709YCbCrColorspace,
-  LogColorspace,
-  CMYColorspace,            /* negated linear RGB colorspace */
-  LuvColorspace,
-  HCLColorspace,
-  LCHColorspace,            /* alias for LCHuv */
-  LMSColorspace,
-  LCHabColorspace,          /* Cylindrical (Polar) Lab */
-  LCHuvColorspace,          /* Cylindrical (Polar) Luv */
-  scRGBColorspace,
-  HSIColorspace,
-  HSVColorspace,            /* alias for HSB */
-  HCLpColorspace,
-  YDbDrColorspace,
-  xyYColorspace
+typedef enum {
+    UndefinedColorspace,
+    RGBColorspace, /* Linear RGB colorspace */
+    GRAYColorspace, /* greyscale (linear) image (faked 1 channel) */
+    TransparentColorspace,
+    OHTAColorspace,
+    LabColorspace,
+    XYZColorspace,
+    YCbCrColorspace,
+    YCCColorspace,
+    YIQColorspace,
+    YPbPrColorspace,
+    YUVColorspace,
+    CMYKColorspace, /* negated linear RGB with black separated */
+    sRGBColorspace, /* Default: non-linear sRGB colorspace */
+    HSBColorspace,
+    HSLColorspace,
+    HWBColorspace,
+    Rec601LumaColorspace,
+    Rec601YCbCrColorspace,
+    Rec709LumaColorspace,
+    Rec709YCbCrColorspace,
+    LogColorspace,
+    CMYColorspace, /* negated linear RGB colorspace */
+    LuvColorspace,
+    HCLColorspace,
+    LCHColorspace, /* alias for LCHuv */
+    LMSColorspace,
+    LCHabColorspace, /* Cylindrical (Polar) Lab */
+    LCHuvColorspace, /* Cylindrical (Polar) Luv */
+    scRGBColorspace,
+    HSIColorspace,
+    HSVColorspace, /* alias for HSB */
+    HCLpColorspace,
+    YDbDrColorspace,
+    xyYColorspace
 } ColorspaceType;
 
 extern MagickExport MagickBooleanType
-  RGBTransformImage(Image *,const ColorspaceType),
-  SetImageColorspace(Image *,const ColorspaceType),
-  SetImageGray(Image *,ExceptionInfo *),
-  SetImageMonochrome(Image *,ExceptionInfo *),
-  TransformImageColorspace(Image *,const ColorspaceType),
-  TransformRGBImage(Image *,const ColorspaceType);
+RGBTransformImage(Image *, const ColorspaceType),
+SetImageColorspace(Image *, const ColorspaceType),
+SetImageGray(Image *, ExceptionInfo *),
+SetImageMonochrome(Image *, ExceptionInfo *),
+TransformImageColorspace(Image *, const ColorspaceType),
+TransformRGBImage(Image *, const ColorspaceType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -24,30 +24,28 @@ extern "C" {
 
 typedef struct _ColorPacket
 {
-  PixelPacket
+    PixelPacket
     pixel;
 
-  IndexPacket
+    IndexPacket
     index;
 
-  MagickSizeType
+    MagickSizeType
     count;
 } ColorPacket;
 
-extern MagickExport ColorPacket
-  *GetImageHistogram(const Image *,size_t *,ExceptionInfo *);
+extern MagickExport ColorPacket* GetImageHistogram(const Image*, size_t*, ExceptionInfo*);
 
-extern MagickExport Image
-  *UniqueImageColors(const Image *,ExceptionInfo *);
+extern MagickExport Image* UniqueImageColors(const Image*, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  IdentifyPaletteImage(const Image *,ExceptionInfo *),
-  IsHistogramImage(const Image *,ExceptionInfo *),
-  IsPaletteImage(const Image *,ExceptionInfo *),
-  MinMaxStretchImage(Image *,const ChannelType,const double,const double);
+IdentifyPaletteImage(const Image *, ExceptionInfo *),
+IsHistogramImage(const Image *, ExceptionInfo *),
+IsPaletteImage(const Image *, ExceptionInfo *),
+MinMaxStretchImage(Image *, const ChannelType, const double, const double);
 
 extern MagickExport size_t
-  GetNumberColors(const Image *,FILE *,ExceptionInfo *);
+GetNumberColors(const Image*, FILE*, ExceptionInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
