@@ -81,7 +81,7 @@ private:
     std::unique_ptr<AppxBundleHelper> bundleHelper;
     std::shared_ptr<UWPLogConsumer> logConsumer;
     DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
-    DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::TrackId();
+    DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
     DAVA::String qtProfile;
 };
 

@@ -256,10 +256,10 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
 
 void UWPRunner::UnInitializeNetwork()
 {
-    if (controllerId != DAVA::Net::NetCore::TrackId())
+    if (controllerId != DAVA::Net::NetCore::INVALID_TRACK_ID)
     {
         Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
-        controllerId = DAVA::Net::NetCore::TrackId();
+        controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
     }
 }
 

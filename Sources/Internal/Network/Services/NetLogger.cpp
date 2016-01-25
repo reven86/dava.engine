@@ -71,10 +71,10 @@ void NetLogger::Uninstall()
     }
 }
 
-bool NetLogger::ReadyForFlush()
+size_t NetLogger::GetMessageQueueSize() const
 {
     LockGuard<Mutex> lock(mutex);
-    return IsChannelOpen() && !recordQueue.empty();
+    return recordQueue.size();
 }
 
 void NetLogger::ChannelOpen()

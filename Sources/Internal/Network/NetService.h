@@ -57,8 +57,9 @@ public:
     virtual void PacketSent() {}
     virtual void PacketDelivered() {}
 
-protected:
     bool IsChannelOpen() const;
+
+protected:
     bool Send(const void* data, size_t length, uint32* packetId = NULL);
     template<typename T>
     bool Send(const T* value, uint32* packetId = NULL);

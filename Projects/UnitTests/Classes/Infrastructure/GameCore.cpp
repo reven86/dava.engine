@@ -263,7 +263,7 @@ void GameCore::UnInitNetwork()
 
 void GameCore::FlushLogs()
 {
-    while (netLogger.ReadyForFlush())
+    while (netLogger.IsChannelOpen() && netLogger.GetMessageQueueSize() != 0)
     {
         Net::NetCore::Instance()->Poll();
     }

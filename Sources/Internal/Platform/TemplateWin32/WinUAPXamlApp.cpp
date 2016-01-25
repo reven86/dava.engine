@@ -393,6 +393,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
+            break;
         case CoreWindowActivationState::Deactivated:
             isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
