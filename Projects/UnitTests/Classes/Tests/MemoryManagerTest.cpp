@@ -113,14 +113,27 @@ DAVA_TESTCLASS(MemoryManagerTest)
             DAVA_MEMORY_PROFILER_ALLOC_SCOPE(ALLOC_POOL_BULLET);
 
             // Use volatile keyword to prevent optimizer to throw allocations out
+            uint32 allocDelta = 0;
+            uint32 blockDelta = 0;
+
+#if !defined(__DAVAENGINE_WIN_UAP__)
+            // For now memory profiler intercepts only operators new/delete but not functions malloc/free
+            // TODO: remove define after full memory profiler implementation on win10
             void* volatile ptr1 = malloc(222);
+            allocDelta += 222;
+            blockDelta += 1;
+#endif
             char* volatile ptr2 = new char[111];
+            allocDelta += 111;
+            blockDelta += 1;
 
             MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
-            TEST_VERIFY(oldAllocByApp + 222 + 111 == poolStat[ALLOC_POOL_BULLET].allocByApp);
-            TEST_VERIFY(oldBlockCount + 1 + 1 == poolStat[ALLOC_POOL_BULLET].blockCount);
+            TEST_VERIFY(oldAllocByApp + allocDelta == poolStat[ALLOC_POOL_BULLET].allocByApp);
+            TEST_VERIFY(oldBlockCount + blockDelta == poolStat[ALLOC_POOL_BULLET].blockCount);
 
+#if !defined(__DAVAENGINE_WIN_UAP__)
             free(ptr1);
+#endif
             delete[] ptr2;
 
             MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
