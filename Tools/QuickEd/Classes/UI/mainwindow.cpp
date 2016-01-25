@@ -403,7 +403,10 @@ void MainWindow::SetupBackgroundMenu()
     QAction* defaultBackgroundColorAction = new QAction(tr("Default"), backgroundColorMenu);
 
     actionGroup->addAction(defaultBackgroundColorAction);
-    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) { EditorSettings::Instance()->SetGridType(!toggled); });
+    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
+        eBackgroundType type = static_cast<eBackgroundType>(!toggled);
+        EditorSettings::Instance()->SetGridType(type);
+    });
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
     backgroundColorMenu->addSeparator();
