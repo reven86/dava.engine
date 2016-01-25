@@ -192,8 +192,12 @@ public:
     virtual Core::eScreenOrientation GetScreenOrientation();
 
     virtual uint32 GetScreenDPI();
-	
-	/*
+
+    // Set application's window minimum size, to remove minimume size limit pass zeros as arguments
+    virtual void SetWindowMinimumSize(float32 width, float32 height);
+    virtual Vector2 GetWindowMinimumSize() const;
+
+    /*
 		\brief Mouse cursor for the platforms where it make sense (Win32, MacOS X) 
 	 */
 
