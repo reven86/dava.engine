@@ -143,6 +143,7 @@ void UIStaticText::SetFont(Font * _font)
     {
         textBlock->SetRectSize(size);
         textBlock->SetFont(_font);
+        textBg->SetAlign(textBlock->GetVisualAlign());
         PrepareSprite();
         SetLayoutDirty();
     }
