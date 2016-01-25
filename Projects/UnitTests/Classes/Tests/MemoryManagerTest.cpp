@@ -78,19 +78,19 @@ DAVA_TESTCLASS(MemoryManagerTest)
         MMCurStat* stat = static_cast<MMCurStat*>(buffer);
         AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
 
-        MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+        MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
         uint32 oldAllocByApp = poolStat[ALLOC_GPU_TEXTURE].allocByApp;
         uint32 oldBlockCount = poolStat[ALLOC_GPU_TEXTURE].blockCount;
 
         DAVA_MEMORY_PROFILER_GPU_ALLOC(101, 100, ALLOC_GPU_TEXTURE);
         DAVA_MEMORY_PROFILER_GPU_ALLOC(101, 200, ALLOC_GPU_TEXTURE);
 
-        MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+        MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
         TEST_VERIFY(oldAllocByApp + 300 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
         TEST_VERIFY(oldBlockCount + 2 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
 
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(101, ALLOC_GPU_TEXTURE);
-        MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+        MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
 
         TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
         TEST_VERIFY(oldBlockCount == poolStat[ALLOC_GPU_TEXTURE].blockCount);
@@ -106,7 +106,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
 
         {
-            MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+            MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
             uint32 oldAllocByApp = poolStat[ALLOC_POOL_BULLET].allocByApp;
             uint32 oldBlockCount = poolStat[ALLOC_POOL_BULLET].blockCount;
 
@@ -127,7 +127,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
             allocDelta += 111;
             blockDelta += 1;
 
-            MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+            MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
             TEST_VERIFY(oldAllocByApp + allocDelta == poolStat[ALLOC_POOL_BULLET].allocByApp);
             TEST_VERIFY(oldBlockCount + blockDelta == poolStat[ALLOC_POOL_BULLET].blockCount);
 
@@ -136,7 +136,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
 #endif
             delete[] ptr2;
 
-            MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+            MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
             TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_POOL_BULLET].allocByApp);
             TEST_VERIFY(oldBlockCount == poolStat[ALLOC_POOL_BULLET].blockCount);
         }
