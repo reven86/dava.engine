@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __UI_EDITOR_VISIBLE_VALUE_PROPERTY__
-#define __UI_EDITOR_VISIBLE_VALUE_PROPERTY__
+#ifndef _QUICKED_VISIBLE_VALUE_PROPERTY__
+#define _QUICKED_VISIBLE_VALUE_PROPERTY__
 
 #include "IntrospectionProperty.h"
 
@@ -41,8 +41,6 @@ public:
     void SetVisibleInEditor(bool visible);
     bool GetVisibleInEditor() const;
 
-    void Refresh(DAVA::int32 refreshFlags) override;
-
     DAVA::VariantType GetValue() const override;
 
 protected:
@@ -53,4 +51,4 @@ protected:
     bool visibleInGame = true;
 };
 
-#endif // __UI_EDITOR_VISIBLE_VALUE_PROPERTY__
+#endif // _QUICKED_VISIBLE_VALUE_PROPERTY__

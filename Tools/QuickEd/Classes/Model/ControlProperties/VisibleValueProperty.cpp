@@ -52,11 +52,6 @@ bool VisibleValueProperty::GetVisibleInEditor() const
     return visibleInEditor;
 }
 
-void VisibleValueProperty::Refresh(DAVA::int32 refreshFlags)
-{
-    IntrospectionProperty::Refresh(refreshFlags);
-}
-
 VariantType VisibleValueProperty::GetValue() const
 {
     return VariantType(visibleInGame);
