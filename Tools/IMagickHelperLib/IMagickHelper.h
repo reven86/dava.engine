@@ -37,12 +37,13 @@ namespace IMagickHelper
 {
 struct IMAGICKHELPER_EXPORT Layer
 {
-    static const size_t maxNameSize = 256;
+    static const unsigned int MAX_NAME_SIZE = 256;
     int x = 0;
     int y = 0;
     int dx = 0;
     int dy = 0;
-    char name[maxNameSize];
+    char name[MAX_NAME_SIZE];
+
     Layer();
     Layer(int _x, int _y, int _dx, int _dy, const char* _name);
 };
@@ -53,8 +54,8 @@ struct IMAGICKHELPER_EXPORT CroppedData
 
     int layer_width = 0;
     int layer_height = 0;
+    unsigned layers_count = 0;
     Layer* layers = nullptr;
-    size_t layers_count = 0;
 };
 
 IMAGICKHELPER_EXPORT bool ConvertToPNG(const char* in_image_path, const char* out_path);

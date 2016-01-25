@@ -23,7 +23,9 @@ Layer::Layer(int _x, int _y, int _dx, int _dy, const char* _name)
     if (_name != nullptr)
     {
         size_t nameLength = strlen(_name);
-        memcpy(name, _name, std::min(Layer::maxNameSize, nameLength));
+        if (nameLength + 1 > MAX_NAME_SIZE)
+            nameLength = MAX_NAME_SIZE - 1;
+        memcpy(name, _name, nameLength);
     }
 }
 
