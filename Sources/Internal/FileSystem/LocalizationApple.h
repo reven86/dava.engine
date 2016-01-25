@@ -27,14 +27,26 @@
 =====================================================================================*/
 
 
-#import <Foundation/Foundation.h>
-#import <AppKit/NSWindow.h>
+#ifndef __DAVAENGINE_LOCALIZATION_APPLE_H__
+#define __DAVAENGINE_LOCALIZATION_APPLE_H__
 
-@interface NSFullScreenWindow : NSWindow {
-@private
-    
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_APPLE__)
+
+#include "FileSystem/FilePath.h"
+
+namespace DAVA
+{
+class LocalizationApple
+{
+public:
+    static void SelectPreferedLocalizationForPath(const FilePath& directoryPath);
+
+    static const char* GetDeviceLang(void);
+};
 }
 
-- (BOOL)canBecomeKeyWindow;
+#endif
 
-@end
+#endif

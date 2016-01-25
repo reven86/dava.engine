@@ -30,8 +30,6 @@
 #import <Cocoa/Cocoa.h>
 #import "OpenGLView.h"
 #import "AppDelegate.h"
-#import "NSFullScreenWindow.h"
-
 
 @interface MainWindowController : NSWindowController <NSWindowDelegate, NSFileManagerDelegate>
 {
@@ -53,6 +51,9 @@
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification;
 - (void)windowDidExitFullScreen:(NSNotification *)notification;
+
+- (void)windowDidBecomeKey:(NSNotification *)notification;
+- (void)windowDidResignKey:(NSNotification *)notification;
 
 - (void)OnSuspend;
 - (void)OnResume;

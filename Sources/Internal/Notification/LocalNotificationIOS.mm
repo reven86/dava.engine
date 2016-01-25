@@ -39,18 +39,17 @@
 
 namespace DAVA
 {
-    
 struct UILocalNotificationWrapper
 {
-    UILocalNotification *impl = NULL;
+    UILocalNotification* impl = NULL;
 };
 
-LocalNotificationIOS::LocalNotificationIOS(const String &_id)
+LocalNotificationIOS::LocalNotificationIOS(const String& _id)
     : notification(NULL)
 {
     notificationId = _id;
 }
-    
+
 LocalNotificationIOS::~LocalNotificationIOS()
 {
     if (notification)
@@ -61,10 +60,9 @@ LocalNotificationIOS::~LocalNotificationIOS()
         }
         delete notification;
     }
-    
 }
 
-void LocalNotificationIOS::SetAction(const WideString &_action)
+void LocalNotificationIOS::SetAction(const WideString& _action)
 {
 }
 
@@ -72,12 +70,12 @@ void LocalNotificationIOS::Hide()
 {
     if (NULL != notification)
     {
-        NSString *uid = NSStringFromString(notificationId);
+        NSString* uid = NSStringFromString(notificationId);
         bool scheduledNotificationFoundAndRemoved = false;
-        for(UILocalNotification *n in [[UIApplication sharedApplication] scheduledLocalNotifications])
+        for (UILocalNotification* n in [[UIApplication sharedApplication] scheduledLocalNotifications])
         {
-            NSDictionary *userInfo = n.userInfo;
-            if(userInfo && [userInfo[@"uid"] isEqual:uid])
+            NSDictionary* userInfo = n.userInfo;
+            if (userInfo && [userInfo[@"uid"] isEqual:uid])
             {
                 //[UIApplication sharedApplication] cancel
                 scheduledNotificationFoundAndRemoved = true;
@@ -87,29 +85,30 @@ void LocalNotificationIOS::Hide()
     }
 }
 
-void LocalNotificationIOS::ShowText(const WideString &title, const WideString &text, bool useSound)
+void LocalNotificationIOS::ShowText(const WideString& title, const WideString& text, bool useSound)
 {
     if (NULL == notification)
     {
         notification = new UILocalNotificationWrapper();
         notification->impl = [[UILocalNotification alloc] init];
     }
-    
+
     notification->impl.alertBody = NSStringFromWideString(text);
-    
-    notification->impl.userInfo = @{ @"uid" : NSStringFromString(notificationId), @"action" : @"test action"};
+
+    notification->impl.userInfo = @{ @"uid" : NSStringFromString(notificationId),
+                                     @"action" : @"test action" };
 
     [[UIApplication sharedApplication] cancelLocalNotification:notification->impl];
-    
+
     if (useSound)
     {
         notification->impl.soundName = UILocalNotificationDefaultSoundName;
     }
-    
+
     [[UIApplication sharedApplication] scheduleLocalNotification:notification->impl];
 }
 
-void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
+void LocalNotificationIOS::ShowProgress(const WideString& title, const WideString& text, uint32 total, uint32 progress, bool useSound)
 {
     double percentage = (static_cast<double>(progress) / total) * 100.0;
     WideString titleText = title + Format(L" %.02f%%", percentage);
@@ -117,13 +116,13 @@ void LocalNotificationIOS::ShowProgress(const WideString &title, const WideStrin
     ShowText(titleText, text, useSound);
 }
 
-void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
+void LocalNotificationIOS::PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound)
 {
-    UILocalNotification *notification = [[[UILocalNotification alloc] init] autorelease];
+    UILocalNotification* notification = [[[UILocalNotification alloc] init] autorelease];
     notification.alertBody = NSStringFromWideString(text);
     notification.timeZone = [NSTimeZone defaultTimeZone];
     notification.fireDate = [NSDate dateWithTimeIntervalSinceNow:delaySeconds];
-    
+
     if (useSound)
     {
         notification.soundName = UILocalNotificationDefaultSoundName;
@@ -134,16 +133,15 @@ void LocalNotificationIOS::PostDelayedNotification(const WideString &title, cons
 
 void LocalNotificationIOS::RemoveAllDelayedNotifications()
 {
-    for(UILocalNotification *notification in [[UIApplication sharedApplication] scheduledLocalNotifications])
+    for (UILocalNotification* notification in [[UIApplication sharedApplication] scheduledLocalNotifications])
     {
         [[UIApplication sharedApplication] cancelLocalNotification:notification];
     }
 }
 
-LocalNotificationImpl *LocalNotificationImpl::Create(const String &_id)
+LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationIOS(_id);
 }
-
 }
 #endif
