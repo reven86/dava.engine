@@ -37,10 +37,6 @@ VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const DAVA:
     ApplyValue(member->Value(object));
 }
 
-VisibleValueProperty::~VisibleValueProperty()
-{
-}
-
 void VisibleValueProperty::SetVisibleInEditor(bool visible)
 {
     visibleInEditor = visible;

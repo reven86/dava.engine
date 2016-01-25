@@ -36,7 +36,7 @@ class VisibleValueProperty : public IntrospectionProperty
 {
 public:
     VisibleValueProperty(DAVA::BaseObject* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType copyType);
-    virtual ~VisibleValueProperty();
+    ~VisibleValueProperty() override = default;
 
     void SetVisibleInEditor(bool visible);
     bool GetVisibleInEditor() const;
