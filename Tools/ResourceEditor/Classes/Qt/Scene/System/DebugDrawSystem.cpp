@@ -33,6 +33,8 @@
 #include "Deprecated/EditorConfig.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Main/QtUtils.h"
+
 #include "Deprecated/SceneValidator.h"
 
 using namespace DAVA;
@@ -213,7 +215,8 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
     if(sc)
     {
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+        Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor();
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, ClampColorToVisbleRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
     }
 }
 
@@ -242,8 +245,10 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
             SoundEvent * sEvent = sc->GetSoundEvent(i);
             float32 distance = sEvent->GetMaxDistance();
 
+            Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor();
+
             sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(position, distance,
-                                                                              settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+                                                                              ClampColorToVisbleRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
 
             sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i,
                                                   sEvent->GetEventName(), Color::White, TextDrawSystem::Align::Center);

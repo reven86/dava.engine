@@ -45,10 +45,12 @@
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/WayEditCommands.h"
 
+#include "Main/QtUtils.h"
 
-static DAVA::Color PathColorPallete[] =
+namespace PathSystemInternal
 {
-    DAVA::Color(0x00ffffff),
+const DAVA::Array<DAVA::Color, 16> PathColorPallete =
+{ { DAVA::Color(0x00ffffff),
     DAVA::Color(0x000000ff),
     DAVA::Color(0x0000ffff),
     DAVA::Color(0xff00ffff),
@@ -62,16 +64,14 @@ static DAVA::Color PathColorPallete[] =
     DAVA::Color(0x808000ff),
     DAVA::Color(0x800080ff),
     DAVA::Color(0xff0000ff),
-    
+
     DAVA::Color(0xc0c0c0ff),
     DAVA::Color(0x008080ff),
     DAVA::Color(0xffffffff),
-    DAVA::Color(0xffff00ff)
-};
+    DAVA::Color(0xffff00ff) } };
 
-static const uint32 PALLETE_SIZE = COUNT_OF(PathColorPallete);
-static const String PATH_COLOR_PROP_NAME = "pathColor";
-
+const String PATH_COLOR_PROP_NAME = "pathColor";
+}
 
 PathSystem::PathSystem(DAVA::Scene * scene)
     : DAVA::SceneSystem(scene)
@@ -114,10 +114,10 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
     if (pc && pc->GetColor() == Color())
     {
         KeyedArchive *props = GetCustomPropertiesArchieve(entity);
-        if (props && props->IsKeyExists(PATH_COLOR_PROP_NAME))
+        if (props && props->IsKeyExists(PathSystemInternal::PATH_COLOR_PROP_NAME))
         {
-            pc->SetColor(DAVA::Color(props->GetVector4(PATH_COLOR_PROP_NAME)));
-            props->DeleteKey(PATH_COLOR_PROP_NAME);
+            pc->SetColor(DAVA::Color(props->GetVector4(PathSystemInternal::PATH_COLOR_PROP_NAME)));
+            props->DeleteKey(PathSystemInternal::PATH_COLOR_PROP_NAME);
         }
     }
 }
@@ -257,7 +257,7 @@ void PathSystem::DrawInViewOnlyMode()
 
 void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const Color& color)
 {
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), color, RenderHelper::DRAW_SOLID_DEPTH);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), ClampColorToVisbleRange(color), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
@@ -361,9 +361,9 @@ DAVA::FastName PathSystem::GeneratePathName() const
 const DAVA::Color & PathSystem::GetNextPathColor() const
 {
     const DAVA::uint32 count = pathes.size();
-    const DAVA::uint32 index = count % PALLETE_SIZE;
-    
-    return PathColorPallete[index];
+    const DAVA::uint32 index = count % PathSystemInternal::PathColorPallete.size();
+
+    return PathSystemInternal::PathColorPallete[index];
 }
 
 void PathSystem::EnablePathEdit(bool enable)

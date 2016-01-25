@@ -178,6 +178,16 @@ DAVA::Color QColorToColor(const QColor &qcolor)
 	return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 }
 
+DAVA::Color ClampColorToVisbleRange(DAVA::Color color)
+{
+    color.r = DAVA::Clamp(0.f, 1.f, color.r);
+    color.g = DAVA::Clamp(0.f, 1.f, color.g);
+    color.b = DAVA::Clamp(0.f, 1.f, color.b);
+    color.a = DAVA::Clamp(0.f, 1.f, color.a);
+
+    return color;
+}
+
 int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int buttons, int defaultButton)
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
