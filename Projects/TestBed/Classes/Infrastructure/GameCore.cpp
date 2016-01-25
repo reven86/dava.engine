@@ -49,6 +49,7 @@
 #include "Tests/InputTest.h"
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
+#include "Tests/FormatsTest.h"
 //$UNITTEST_INCLUDE
 
 #include "MemoryManager/MemoryProfiler.h"
@@ -82,6 +83,7 @@ void GameCore::RegisterTests()
     new ClipTest();
     new InputTest();
     new CoreTest();
+    new FormatsTest();
     //$UNITTEST_CTOR
 }
 

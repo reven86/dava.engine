@@ -52,7 +52,7 @@ private:
     void PrintUsage() const;
 
 private:
-    int exitCode = AssetCacheClientConstants::EXIT_OK;
+    int exitCode = AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;
 
     DAVA::List<std::unique_ptr<CacheRequest>> requests;
     CacheRequest* activeRequest = nullptr;
