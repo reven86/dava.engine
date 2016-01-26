@@ -34,6 +34,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "EditorSettings.h"
 
 using namespace DAVA;
 
