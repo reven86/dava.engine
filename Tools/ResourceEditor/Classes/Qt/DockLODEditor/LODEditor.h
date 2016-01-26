@@ -53,7 +53,7 @@ class QPushButton;
 class QFrame;
 
 class LazyUpdater;
-class LODEditor : public QWidget, private EditorLODSystemV2UIDelegate, EditorStatisticsSystemUIDelegate
+class LODEditor : public QWidget, private EditorLODSystemUIDelegate, EditorStatisticsSystemUIDelegate
 {
     Q_OBJECT
 
@@ -64,10 +64,10 @@ public:
 private slots:
     
     //Panels buttons
-    void LODEditorSettingsButtonReleased();
-    void ViewLODButtonReleased();
-    void EditLODButtonReleased();
-    
+    void LODEditorSettingsButtonClicked();
+    void ViewLODButtonClicked();
+    void EditLODButtonClicked();
+
     //force signals
     void ForceDistanceStateChanged(bool checked);
     void ForceDistanceChanged(int distance);
@@ -84,10 +84,10 @@ private slots:
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious);
 
     //mode signal
-    void EditorModeChanged(int newMode);
+    void SceneOrSelectionModeSelected(bool allSceneModeActivated);
 
     //action
-    void CopyLODToLod0Clicked();
+    void CopyLastLODToLOD0Clicked();
     void CreatePlaneLODClicked();
     void DeleteFirstLOD();
     void DeleteLastLOD();

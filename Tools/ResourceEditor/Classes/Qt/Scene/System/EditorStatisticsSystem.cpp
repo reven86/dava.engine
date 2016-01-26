@@ -55,8 +55,7 @@ namespace EditorStatisticsSystemInternal
 
 static const int32 SIZE_OF_TRIANGLES = LodComponent::MAX_LOD_LAYERS + 1;
 
-
-void CollectTriangles(RenderObject *renderObject, Vector<uint32> &triangles, Vector<uint32> &visibleTriangles)
+void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, Vector<uint32>& visibleTriangles)
 {
     uint32 batchCount = renderObject->GetRenderBatchCount();
     for (uint32 b = 0; b < batchCount; ++b)
@@ -99,8 +98,7 @@ void CollectTriangles(RenderObject *renderObject, Vector<uint32> &triangles, Vec
     }
 }
 
-
-void CalculateTriangles(TrianglesData &triangles)
+void EnumerateTriangles(TrianglesData& triangles)
 {
     std::fill(triangles.temporaryTriangles.begin(), triangles.temporaryTriangles.end(), 0);
     std::fill(triangles.visibleTriangles.begin(), triangles.visibleTriangles.end(), 0);
@@ -109,7 +107,7 @@ void CalculateTriangles(TrianglesData &triangles)
         RenderObject *ro = rc->GetRenderObject();
         if (ro && (ro->GetType() == RenderObject::TYPE_MESH || ro->GetType() == RenderObject::TYPE_SPEED_TREE))
         {
-            CollectTriangles(ro, triangles.temporaryTriangles, triangles.visibleTriangles);
+            EnumerateTriangles(ro, triangles.temporaryTriangles, triangles.visibleTriangles);
         }
     }
 }
@@ -232,13 +230,12 @@ void EditorStatisticsSystem::CalculateTriangles()
 {
     SceneEditor2 *editorScene = static_cast<SceneEditor2 *> (GetScene());
 
-    auto CalculateTrianglesForMode = [this](eEditorMode mode)
-    {
-        EditorStatisticsSystemInternal::CalculateTriangles(triangles[mode]);
+    auto CalculateTrianglesForMode = [this](eEditorMode mode) {
+        EditorStatisticsSystemInternal::EnumerateTriangles(triangles[mode]);
         if (triangles[mode].storedTriangles != triangles[mode].temporaryTriangles)
         {
             triangles[mode].storedTriangles.swap(triangles[mode].temporaryTriangles);
-            EmitInvalidateUI({ FLAG_TRIANGLES });
+            EmitInvalidateUI(FLAG_TRIANGLES);
         }
     };
 
@@ -251,31 +248,28 @@ void EditorStatisticsSystem::CalculateTriangles()
     CalculateTrianglesForMode(eEditorMode::MODE_SELECTION);
 }
 
-void EditorStatisticsSystem::EmitInvalidateUI(const Vector<eStatisticsSystemFlag> &flags)
+void EditorStatisticsSystem::EmitInvalidateUI(uint32 flags)
 {
-    for (auto & flag : flags)
-    {
-        invalidateUI[flag] = true;
-    }
+    invalidateUIflag = flags;
 }
 
 
 void EditorStatisticsSystem::DispatchSignals()
 {
-    if (uiDelegates.empty())
+    if (invalidateUIflag == FLAG_NONE)
     {
         return;
     }
 
-    if (invalidateUI.test(FLAG_TRIANGLES))
+    for (auto& d : uiDelegates)
     {
-        invalidateUI[FLAG_TRIANGLES] = false;
-
-        for (auto &d : uiDelegates)
+        if (invalidateUIflag & FLAG_TRIANGLES)
         {
             d->UpdateTrianglesUI(this);
         }
     }
+
+    invalidateUIflag = FLAG_NONE;
 }
 
 void EditorStatisticsSystem::AddDelegate(EditorStatisticsSystemUIDelegate *uiDelegate)

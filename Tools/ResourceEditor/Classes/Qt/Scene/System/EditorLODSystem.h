@@ -43,13 +43,13 @@ namespace DAVA
 
 struct ForceValues
 {
-    enum eApplyFlag: DAVA::uint32
+    enum eApplyFlag : DAVA::uint32
     {
         APPLY_DISTANCE = 1 << 0,
         APPLY_LAYER = 1 << 1,
 
         APPLY_NONE = 0,
-        APPLY_BOTH = APPLY_DISTANCE | APPLY_LAYER,
+        APPLY_ALL = APPLY_DISTANCE | APPLY_LAYER,
 
         APPLY_DEFAULT = APPLY_LAYER,
     };
@@ -73,12 +73,6 @@ class LODComponentHolder
 {
     friend class EditorLODSystem;
 
-    class EditorLODComponent : public DAVA::LodComponent
-    {
-    public:
-        ~EditorLODComponent() = default;
-    };
-
 public:
 
     DAVA::int32 GetMaxLODLayer() const;
@@ -100,7 +94,7 @@ protected:
 protected:
 
     DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
-    EditorLODComponent mergedComponent;
+    DAVA::LodComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent *> lodComponents;
 
     EditorLODSystem *system = nullptr;
@@ -108,23 +102,23 @@ protected:
 };
 
 class EntityGroup;
-class EditorLODSystemV2UIDelegate;
+class EditorLODSystemUIDelegate;
 class EditorLODSystem : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
 
-    enum eLODSystemFlag: DAVA::int32
+    enum eLODSystemFlag : DAVA::uint32
     {
-        FLAG_MODE = 1,
-        FLAG_FORCE,
-        FLAG_DISTANCE,
-        FLAG_ACTION,
+        FLAG_MODE = 1 << 0,
+        FLAG_FORCE = 1 << 1,
+        FLAG_DISTANCE = 1 << 2,
+        FLAG_ACTION = 1 << 3,
 
-        FLAGS_COUNT
+        FLAG_NONE = 0,
+        FLAG_ALL = FLAG_MODE | FLAG_FORCE | FLAG_DISTANCE | FLAG_ACTION
     };
 
 public:
-
 
     EditorLODSystem(DAVA::Scene * scene);
     ~EditorLODSystem() override;
@@ -162,7 +156,8 @@ public:
     void SolidChanged(const DAVA::Entity *entity, bool value);
     void SelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
 
-    void SetDelegate(EditorLODSystemV2UIDelegate *uiDelegate);
+    void AddDelegate(EditorLODSystemUIDelegate* uiDelegate);
+    void RemoveDelegate(EditorLODSystemUIDelegate* uiDelegate);
 
     DAVA::FilePath GetPathForPlaneEntity() const;
 
@@ -177,7 +172,7 @@ private:
     void DeleteLOD(DAVA::int32 layer); 
 
     //signals
-    void EmitInvalidateUI(const DAVA::Vector<eLODSystemFlag> &flags);
+    void EmitInvalidateUI(DAVA::uint32 flags);
     void DispatchSignals();
     //signals
 
@@ -194,15 +189,14 @@ private:
 
     bool generateCommands = false;
 
-    EditorLODSystemV2UIDelegate *uiDelegate = nullptr;
-    std::bitset<FLAGS_COUNT> invalidateUI;
+    DAVA::Vector<EditorLODSystemUIDelegate*> uiDelegates;
+    DAVA::uint32 invalidateUIFlag = FLAG_NONE;
 };
 
-class EditorLODSystemV2UIDelegate
+class EditorLODSystemUIDelegate
 {
 public:
-
-    virtual ~EditorLODSystemV2UIDelegate() = default;
+    virtual ~EditorLODSystemUIDelegate() = default;
 
     virtual void UpdateModeUI(EditorLODSystem *forSystem, const eEditorMode mode){};
     virtual void UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & forceValues){};

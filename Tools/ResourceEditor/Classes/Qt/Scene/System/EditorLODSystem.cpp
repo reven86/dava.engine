@@ -241,7 +241,7 @@ void EditorLODSystem::AddComponent(Entity * entity, Component * component)
 
     if (mode == eEditorMode::MODE_ALL_SCENE)
     {
-        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        EmitInvalidateUI(FLAG_ALL);
     }
 }
 
@@ -258,7 +258,7 @@ void EditorLODSystem::RemoveComponent(Entity * entity, Component * component)
             lodData[m].SummarizeValues();
             if (m == mode)
             {
-                EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+                EmitInvalidateUI(FLAG_ALL);
             }
         }
     }
@@ -269,7 +269,7 @@ void EditorLODSystem::SceneDidLoaded()
     lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
     if (mode == eEditorMode::MODE_ALL_SCENE)
     {
-        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        EmitInvalidateUI(FLAG_ALL);
     }
 }
 
@@ -283,12 +283,12 @@ void EditorLODSystem::SetMode(eEditorMode mode_)
 {
     DVASSERT(activeLodData != nullptr);
 
-    activeLodData->ApplyForce({ -1, -1, ForceValues::APPLY_BOTH});
+    activeLodData->ApplyForce({ -1, -1, ForceValues::APPLY_ALL });
     mode = mode_;
     activeLodData = &lodData[mode];
     activeLodData->ApplyForce(forceValues);
 
-    EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+    EmitInvalidateUI(FLAG_ALL);
 }
 
 const ForceValues & EditorLODSystem::GetForceValues() const
@@ -301,7 +301,7 @@ void EditorLODSystem::SetForceValues(const ForceValues & values)
     DVASSERT(activeLodData != nullptr);
 
     ForceValues distanceDiffValues;
-    distanceDiffValues.flag = ForceValues::APPLY_BOTH;
+    distanceDiffValues.flag = ForceValues::APPLY_ALL;
 
     if (values.flag != forceValues.flag)
     {
@@ -330,7 +330,7 @@ void EditorLODSystem::SetForceValues(const ForceValues & values)
     activeLodData->ApplyForce(distanceDiffValues);
     forceValues = values;
 
-    EmitInvalidateUI({ FLAG_FORCE });
+    EmitInvalidateUI(FLAG_FORCE);
 }
 
 
@@ -400,12 +400,12 @@ void EditorLODSystem::DeleteLOD(DAVA::int32 layer)
 {
     if (activeLodData->GetLODLayersCount() > 0)
     {
-        Guard::BoolGuard guard(generateCommands);
+        Guard::ScopedBoolGuard guard(generateCommands, true);
         bool deleted = activeLodData->DeleteLOD(layer);
         if (deleted)
         {
             RecalculateData();
-            EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+            EmitInvalidateUI(FLAG_ALL);
         }
     }
 }
@@ -414,13 +414,13 @@ void EditorLODSystem::DeleteLOD(DAVA::int32 layer)
 void EditorLODSystem::CopyLastLODToFirst()
 {
     DVASSERT(activeLodData != nullptr);
-    
-    Guard::BoolGuard guard(generateCommands);
+
+    Guard::ScopedBoolGuard guard(generateCommands, true);
     bool copied = activeLodData->CopyLod(activeLodData->GetMaxLODLayer(), 0);
     if (copied)
     {
         RecalculateData();
-        EmitInvalidateUI({ FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        EmitInvalidateUI(FLAG_FORCE | FLAG_DISTANCE | FLAG_ACTION);
     }
 }
 
@@ -438,11 +438,11 @@ void EditorLODSystem::SetLODDistances(const Array<float32, LodComponent::MAX_LOD
         activeLodData->mergedComponent.SetLodLayerDistance(i, distances[i]);
     }
 
-    Guard::BoolGuard guard(generateCommands);
+    Guard::ScopedBoolGuard guard(generateCommands, true);
     activeLodData->PropagateValues();
 
     RecalculateData();
-    EmitInvalidateUI({ FLAG_DISTANCE });
+    EmitInvalidateUI(FLAG_DISTANCE);
 }
 
 void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
@@ -495,58 +495,67 @@ void EditorLODSystem::SelectionChanged(const EntityGroup *selected, const Entity
     {
         lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
 
-        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        EmitInvalidateUI(FLAG_ALL);
     }
 }
 
-void EditorLODSystem::SetDelegate(EditorLODSystemV2UIDelegate *uiDelegate_)
+void EditorLODSystem::AddDelegate(EditorLODSystemUIDelegate* uiDelegate)
 {
-    uiDelegate = uiDelegate_;
+    DVASSERT(uiDelegate != nullptr);
+
+    uiDelegates.push_back(uiDelegate);
     if (uiDelegate != nullptr)
     {
-        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        uiDelegate->UpdateModeUI(this, mode);
+        uiDelegate->UpdateForceUI(this, forceValues);
+        uiDelegate->UpdateDistanceUI(this, activeLodData);
+        uiDelegate->UpdateActionUI(this);
     }
 }
 
-void EditorLODSystem::EmitInvalidateUI(const Vector<eLODSystemFlag> &flags)
+void EditorLODSystem::RemoveDelegate(EditorLODSystemUIDelegate* uiDelegate)
 {
-    for (auto & flag : flags)
-    {
-        invalidateUI[flag] = true;
-    }
+    DVASSERT(uiDelegate != nullptr);
+
+    FindAndRemoveExchangingWithLast(uiDelegates, uiDelegate);
 }
 
+void EditorLODSystem::EmitInvalidateUI(uint32 flags)
+{
+    invalidateUIFlag |= flags;
+}
 
 void EditorLODSystem::DispatchSignals()
 {
-    if (uiDelegate == nullptr)
+    if (invalidateUIFlag == FLAG_NONE)
     {
         return;
     }
 
-    if (invalidateUI.test(FLAG_MODE))
+    for (auto& d : uiDelegates)
     {
-        invalidateUI[FLAG_MODE] = false;
-        uiDelegate->UpdateModeUI(this, mode);
+        if (invalidateUIFlag & FLAG_MODE)
+        {
+            d->UpdateModeUI(this, mode);
+        }
+
+        if (invalidateUIFlag & FLAG_FORCE)
+        {
+            d->UpdateForceUI(this, forceValues);
+        }
+
+        if (invalidateUIFlag & FLAG_DISTANCE)
+        {
+            d->UpdateDistanceUI(this, activeLodData);
+        }
+
+        if (invalidateUIFlag & FLAG_ACTION)
+        {
+            d->UpdateActionUI(this);
+        }
     }
 
-    if (invalidateUI.test(FLAG_FORCE))
-    {
-        invalidateUI[FLAG_FORCE] = false;
-        uiDelegate->UpdateForceUI(this, forceValues);
-    }
-
-    if (invalidateUI.test(FLAG_DISTANCE))
-    {
-        invalidateUI[FLAG_DISTANCE] = false;
-        uiDelegate->UpdateDistanceUI(this, activeLodData);
-    }
-
-    if (invalidateUI.test(FLAG_ACTION))
-    {
-        invalidateUI[FLAG_ACTION] = false;
-        uiDelegate->UpdateActionUI(this);
-    }
+    invalidateUIFlag = FLAG_NONE;
 }
 
 void EditorLODSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -564,7 +573,7 @@ void EditorLODSystem::ProcessCommand(const Command2 *command, bool redo)
     case CMDID_LOD_DISTANCE_CHANGE:
     {
         RecalculateData();
-        EmitInvalidateUI({ FLAG_DISTANCE });
+        EmitInvalidateUI(FLAG_DISTANCE);
         break;
     }
 
@@ -576,7 +585,7 @@ void EditorLODSystem::ProcessCommand(const Command2 *command, bool redo)
             RecalculateData();
             activeLodData->ApplyForce(forceValues);
 
-            EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+            EmitInvalidateUI(FLAG_ALL);
         }
 
         break;
@@ -591,7 +600,7 @@ void EditorLODSystem::ProcessCommand(const Command2 *command, bool redo)
         RecalculateData();
         activeLodData->ApplyForce(forceValues);
 
-        EmitInvalidateUI({ FLAG_MODE, FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION});
+        EmitInvalidateUI(FLAG_ALL);
         break;
     }
 
@@ -644,7 +653,7 @@ void EditorLODSystem::ProcessPlaneLODs()
 
     if (allRequestsProcessed)
     {
-        Guard::BoolGuard guard(generateCommands);
+        Guard::ScopedBoolGuard guard(generateCommands, true);
 
         SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
         sceneEditor2->BeginBatch("Create plane lods");
@@ -656,7 +665,7 @@ void EditorLODSystem::ProcessPlaneLODs()
         planeLODRequests.clear();
 
         RecalculateData();
-        EmitInvalidateUI({ FLAG_FORCE, FLAG_DISTANCE, FLAG_ACTION });
+        EmitInvalidateUI(FLAG_FORCE | FLAG_DISTANCE | FLAG_ACTION);
     }
 }
 

@@ -93,11 +93,11 @@ public:
 		bool isDummy;
 	};
 
-protected:
-    ~LodComponent(){};
 public:
 	LodComponent();
-	virtual Component * Clone(Entity * toEntity);
+    ~LodComponent() override = default;
+
+    virtual Component * Clone(Entity * toEntity);
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 

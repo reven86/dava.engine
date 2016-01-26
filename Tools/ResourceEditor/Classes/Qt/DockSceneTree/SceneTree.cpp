@@ -38,6 +38,7 @@
 #include <QDropEvent>
 #include <QMenu>
 #include <QDebug>
+#include <QSignalBlocker>
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -245,7 +246,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-        Guard::SignalsGuard guard(selectionModel()); 
+        const QSignalBlocker guard(selectionModel());
 
         treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
         treeModel->ReloadFilter();
@@ -341,8 +342,8 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
 	bool sceneTreeItemChecked = item->checkState() == Qt::Checked;
 	if (layer->isDisabled == sceneTreeItemChecked)
 	{
-        Guard::SignalsGuard guard(this);
-		item->setCheckState(sceneTreeItemChecked ? Qt::Unchecked : Qt::Checked);
+        const QSignalBlocker guard(this);
+        item->setCheckState(sceneTreeItemChecked ? Qt::Unchecked : Qt::Checked);
 	}
 	
 	//check if we need to resync tree for superemmiter	
@@ -773,7 +774,7 @@ void SceneTree::CollapseAll()
 	QTreeView::collapseAll();
     bool needSync = false;
     {
-        Guard::BoolGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         QModelIndexList indexList = selectionModel()->selection().indexes();
         for (int i = 0; i < indexList.size(); ++i)
@@ -801,7 +802,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
     bool needSync = false;
     {
-        Guard::BoolGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         // if selected items were inside collapsed item, remove them from selection
         QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -841,7 +842,7 @@ void SceneTree::SyncSelectionToTree()
 {
 	if(!isInSync)
 	{
-        Guard::BoolGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         SceneEditor2* curScene = treeModel->GetScene();
 		if(NULL != curScene)
@@ -875,7 +876,7 @@ void SceneTree::SyncSelectionFromTree()
 {
 	if(!isInSync)
 	{
-        Guard::BoolGuard guard(isInSync);
+        Guard::ScopedBoolGuard guard(isInSync, true);
 
         SceneEditor2* curScene = treeModel->GetScene();
 		if(NULL != curScene)

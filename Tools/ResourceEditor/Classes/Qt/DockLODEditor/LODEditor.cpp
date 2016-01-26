@@ -47,7 +47,7 @@
 #include <QInputDialog>
 #include <QFrame>
 #include <QPushButton>
-
+#include <QSignalBlocker>
 
 using namespace DAVA;
 
@@ -79,7 +79,7 @@ void LODEditor::SetupSceneSignals()
 
 void LODEditor::SetupInternalUI()
 {
-    connect(ui->checkBoxLodEditorMode, &QCheckBox::stateChanged, this, &LODEditor::EditorModeChanged);
+    connect(ui->checkBoxLodEditorMode, &QCheckBox::clicked, this, &LODEditor::SceneOrSelectionModeSelected);
 
     SetupPanelsButtonUI();
     SetupForceUI();
@@ -92,14 +92,13 @@ void LODEditor::SetupInternalUI()
 
 //MODE
 
-void LODEditor::EditorModeChanged(int newMode)
+void LODEditor::SceneOrSelectionModeSelected(bool allSceneModeActivated)
 {
-    const bool allSceneModeEnabled = (newMode == Qt::Checked);
-    VariantType value(allSceneModeEnabled);
+    VariantType value(allSceneModeActivated);
     SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
 
     EditorLODSystem *system = GetCurrentEditorLODSystem();
-    system->SetMode(allSceneModeEnabled ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION);
+    system->SetMode(allSceneModeActivated ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION);
 }
 
 //MODE
@@ -111,9 +110,9 @@ void LODEditor::SetupPanelsButtonUI()
     ui->viewLODButton->setStyleSheet("Text-align:left");
     ui->editLODButton->setStyleSheet("Text-align:left");
 
-    connect(ui->lodEditorSettingsButton, &QPushButton::clicked, this, &LODEditor::LODEditorSettingsButtonReleased);
-    connect(ui->viewLODButton, &QPushButton::clicked, this, &LODEditor::ViewLODButtonReleased);
-    connect(ui->editLODButton, &QPushButton::clicked, this, &LODEditor::EditLODButtonReleased);
+    connect(ui->lodEditorSettingsButton, &QPushButton::clicked, this, &LODEditor::LODEditorSettingsButtonClicked);
+    connect(ui->viewLODButton, &QPushButton::clicked, this, &LODEditor::ViewLODButtonClicked);
+    connect(ui->editLODButton, &QPushButton::clicked, this, &LODEditor::EditLODButtonClicked);
 
     //default state 
     frameViewVisible = true;
@@ -124,18 +123,18 @@ void LODEditor::SetupPanelsButtonUI()
     ui->frameEditLOD->setVisible(frameEditVisible);
 }
 
-void LODEditor::LODEditorSettingsButtonReleased()
+void LODEditor::LODEditorSettingsButtonClicked()
 {
     InvertFrameVisibility(ui->frameLodEditorSettings, ui->lodEditorSettingsButton);
 }
 
-void LODEditor::ViewLODButtonReleased()
+void LODEditor::ViewLODButtonClicked()
 {
     InvertFrameVisibility(ui->frameViewLOD, ui->viewLODButton);
     frameViewVisible = ui->frameViewLOD->isVisible();
 }
 
-void LODEditor::EditLODButtonReleased()
+void LODEditor::EditLODButtonClicked()
 {
     InvertFrameVisibility(ui->frameEditLOD, ui->editLODButton);
     frameEditVisible = ui->frameEditLOD->isVisible();
@@ -180,8 +179,8 @@ void LODEditor::UpdatePanelsForCurrentScene()
     ui->editLODButton->setVisible(panelVisible);
     if (!panelVisible)
     {
-        ui->frameViewLOD->setVisible(panelVisible);
-        ui->frameEditLOD->setVisible(panelVisible);
+        ui->frameViewLOD->setVisible(false);
+        ui->frameEditLOD->setVisible(false);
     }
     else
     {
@@ -281,7 +280,7 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA:
 {
     for (int32 i = 0; i < count; ++i)
     {
-        Guard::SignalsGuard guardWidget(distanceWidgets[i].distance);
+        const QSignalBlocker guardWidget(distanceWidgets[i].distance);
 
         float32 minDistance = (i == 0) ? LodComponent::MIN_LOD_DISTANCE : distances[i - 1];
         float32 maxDistance = (i == count - 1) ? LodComponent::MAX_LOD_DISTANCE : distances[i + 1];
@@ -340,14 +339,14 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
 void LODEditor::SceneActivated(SceneEditor2 *scene)
 {
     DVASSERT(scene);
-    scene->editorLODSystem->SetDelegate(this);
+    scene->editorLODSystem->AddDelegate(this);
     scene->editorStatisticsSystem->AddDelegate(this);
 }
 
 void LODEditor::SceneDeactivated(SceneEditor2 *scene)
 {
     DVASSERT(scene);
-    scene->editorLODSystem->SetDelegate(nullptr);
+    scene->editorLODSystem->RemoveDelegate(this);
     scene->editorStatisticsSystem->RemoveDelegate(this);
 
     if (GetCurrentEditorLODSystem() == nullptr)
@@ -378,13 +377,13 @@ void LODEditor::SolidChanged(SceneEditor2 *scene, const Entity *entity, bool val
 
 void LODEditor::SetupActionsUI()
 {
-    connect(ui->lastLodToFrontButton, &QPushButton::clicked, this, &LODEditor::CopyLODToLod0Clicked);
+    connect(ui->lastLodToFrontButton, &QPushButton::clicked, this, &LODEditor::CopyLastLODToLOD0Clicked);
     connect(ui->createPlaneLodButton, &QPushButton::clicked, this, &LODEditor::CreatePlaneLODClicked);
     connect(ui->buttonDeleteFirstLOD, &QPushButton::clicked, this, &LODEditor::DeleteFirstLOD);
     connect(ui->buttonDeleteLastLOD, &QPushButton::clicked, this, &LODEditor::DeleteLastLOD);
 }
 
-void LODEditor::CopyLODToLod0Clicked()
+void LODEditor::CopyLastLODToLOD0Clicked()
 {
     EditorLODSystem *system = GetCurrentEditorLODSystem();
     system->CopyLastLODToFirst();
@@ -423,7 +422,6 @@ void LODEditor::DeleteLastLOD()
 //DELEGATE
 void LODEditor::UpdateModeUI(EditorLODSystem *forSystem, const eEditorMode mode)
 {
-    Guard::SignalsGuard guard(ui->checkBoxLodEditorMode);
     ui->checkBoxLodEditorMode->setChecked(mode == eEditorMode::MODE_ALL_SCENE);
 
     panelsUpdater->Update();
@@ -431,9 +429,9 @@ void LODEditor::UpdateModeUI(EditorLODSystem *forSystem, const eEditorMode mode)
 
 void LODEditor::UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & forceValues)
 {
-    Guard::SignalsGuard guard1(ui->enableForceDistance);
-    Guard::SignalsGuard guard2(ui->forceSlider);
-    Guard::SignalsGuard guard3(ui->forceLayer);
+    const QSignalBlocker guard1(ui->enableForceDistance);
+    const QSignalBlocker guard2(ui->forceSlider);
+    const QSignalBlocker guard3(ui->forceLayer);
 
     const bool distanceModeSelected = (forceValues.flag & ForceValues::APPLY_DISTANCE) == ForceValues::APPLY_DISTANCE;
     ui->enableForceDistance->setChecked(distanceModeSelected);
@@ -457,7 +455,7 @@ void LODEditor::UpdateDistanceUI(EditorLODSystem *forSystem, const LODComponentH
 {
     DVASSERT(lodData != nullptr);
 
-    Guard::SignalsGuard guard(ui->distanceSlider);
+    const QSignalBlocker guard(ui->distanceSlider);
 
     const LodComponent &lc = lodData->GetLODComponent();
     int32 count = static_cast<int32>(lodData->GetLODLayersCount());

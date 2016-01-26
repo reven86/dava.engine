@@ -35,34 +35,25 @@
 
 namespace Guard
 {
-
-class BoolGuard final
+class ScopedBoolGuard final
 {
 public:
-    BoolGuard(bool &value) : guardedValue(value) { guardedValue = true; };
-    ~BoolGuard() { guardedValue = false; };
+    ScopedBoolGuard(bool& value, bool newValue)
+        : guardedValue(value)
+        , oldValue(value)
+    {
+        guardedValue = newValue;
+    }
+    ~ScopedBoolGuard()
+    {
+        guardedValue = oldValue;
+    };
+
 private:
     bool &guardedValue;
+    const bool oldValue;
 };
 
-
-class SignalsGuard final
-{
-public:
-    SignalsGuard(QObject *object_) : object(object_)
-    {
-        DVASSERT(object);
-        wasBlockedBefore = object->blockSignals(true);
-    }
-    ~SignalsGuard() 
-    {
-        object->blockSignals(wasBlockedBefore);
-    }
-
-private:
-    QObject *object = nullptr;
-    bool wasBlockedBefore = false;
-};
 
 
 }

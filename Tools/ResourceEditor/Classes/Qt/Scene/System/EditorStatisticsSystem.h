@@ -44,10 +44,11 @@ struct TrianglesData;
 
 class EditorStatisticsSystem : public DAVA::SceneSystem
 {
-    enum eStatisticsSystemFlag : DAVA::int32
+    enum eStatisticsSystemFlag : DAVA::uint32
     {
-        FLAG_TRIANGLES = 1,
-        FLAGS_COUNT
+        FLAG_TRIANGLES = 1 << 0,
+
+        FLAG_NONE = 0
     };
 
 public:
@@ -75,15 +76,16 @@ private:
 
 
     //signals
-    void EmitInvalidateUI(const DAVA::Vector<eStatisticsSystemFlag> &flags);
+    void EmitInvalidateUI(DAVA::uint32 flags);
     void DispatchSignals();
     //signals
 
 private:
 
     DAVA::Vector<TrianglesData> triangles;
+
     DAVA::Vector<EditorStatisticsSystemUIDelegate *> uiDelegates;
-    std::bitset<FLAGS_COUNT> invalidateUI;
+    DAVA::uint32 invalidateUIflag = FLAG_NONE;
 };
 
 class EditorStatisticsSystemUIDelegate
