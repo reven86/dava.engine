@@ -67,6 +67,7 @@ using namespace ::Windows::ApplicationModel::Core;
 using namespace ::Windows::UI::Xaml::Media;
 using namespace ::Windows::System::Threading;
 using namespace ::Windows::Phone::UI::Input;
+using namespace ::Windows::UI::Xaml::Markup;
 
 namespace DAVA
 {
@@ -882,10 +883,14 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
-    using Windows::UI::Xaml::Markup::XamlReader;
+    // workaround for Surface, otherwise we lost MouseMoved event  
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
     webview->Visibility = Visibility::Collapsed;
+    // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
+    obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
+    TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
+    textBox->Visibility = Visibility::Collapsed;
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
@@ -893,6 +898,7 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     Window::Current->Content = swapChainPanel;
 
     AddUIElement(webview);
+    AddUIElement(textBox);
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -1241,6 +1247,13 @@ const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
+)";
+
+const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
+<TextBox x:Name="xamlTextBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</TextBox>
 )";
 
 }   // namespace DAVA
