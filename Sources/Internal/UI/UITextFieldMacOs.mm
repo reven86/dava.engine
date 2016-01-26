@@ -42,6 +42,14 @@
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 
 // objective C declaration may appeared only in global scope
+@interface MultilineDelegate : NSObject<NSTextViewDelegate>
+{
+@public
+    DAVA::ObjCWrapper* text;
+    int maxLength;
+}
+@end
+
 @interface CustomTextField : NSTextField
 {
 }
@@ -83,17 +91,17 @@
 
 namespace DAVA
 {
-class IText
+class IField
 {
 public:
-    IText(UITextField* davaText_, ObjCWrapper* wrapper_)
+    IField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : davaText(davaText_)
         , wrapper(wrapper_)
     {
         DVASSERT(davaText);
         DVASSERT(wrapper);
     }
-    virtual ~IText()
+    virtual ~IField()
     {
         davaText = nullptr;
         wrapper = nullptr;
@@ -146,11 +154,309 @@ public:
     ObjCWrapper* wrapper = nullptr;
 };
 
-class SingleLineOrPasswordField : public IText
+class MultilineField : public IField
+{
+public:
+    MultilineField(UITextField* davaText_, ObjCWrapper* wrapper_)
+        : IField(davaText_, wrapper_)
+    {
+        [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+
+        nsTextView = [[NSTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
+
+        //formatter = [[CustomTextFieldFormatter alloc] init];
+        //formatter->text = wrapper;
+        // no formatter [nsTextView setFormatter:formatter];
+
+        objcDelegate = [[MultilineDelegate alloc] init];
+        objcDelegate->text = wrapper;
+
+        [nsTextView setDelegate:objcDelegate];
+
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView addSubview:nsTextView];
+
+        [nsTextView setEditable:YES];
+        //[nsTextView setEnabled:YES];
+
+        // make control border and background transparent
+        nsTextView.drawsBackground = NO;
+        //nsTextView.bezeled = NO;
+
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &MultilineField::OnAppMinimazedResored);
+    }
+
+    ~MultilineField()
+    {
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
+
+        [nsTextView removeFromSuperview];
+        [nsTextView release];
+        nsTextView = nullptr;
+        //[formatter release];
+        //formatter = nullptr;
+        [objcDelegate release];
+        objcDelegate = nullptr;
+    }
+
+    void OnAppMinimazedResored(bool value)
+    {
+        SetVisible(!value);
+    }
+
+    void OpenKeyboard() override
+    {
+        [nsTextView becomeFirstResponder];
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+
+        if (delegate)
+        {
+            Rect emptyRect;
+            delegate->OnKeyboardShown(emptyRect);
+        }
+    }
+    void CloseKeyboard() override
+    {
+        [nsTextView resignFirstResponder];
+    }
+
+    void GetText(WideString& string) const override
+    {
+        NSString* currentText = [nsTextView string];
+        const char* cstr = [currentText cStringUsingEncoding:NSUTF8StringEncoding];
+        size_t strSize = std::strlen(cstr);
+        UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
+    }
+    void SetText(const WideString& string) override
+    {
+        NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
+                                                   length:string.size() * sizeof(wchar_t)
+                                                 encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
+        [nsTextView setString:text];
+    }
+    void UpdateRect(const Rect& rectSrc) override
+    {
+        if (currentRect != rectSrc)
+        {
+            currentRect = rectSrc;
+
+            VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+
+            // 1. map virtual to physical
+            Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
+            rect += coordSystem->GetPhysicalDrawOffset();
+            rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
+
+            // 2. map physical to window
+            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+            NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+
+            [nsTextView setFrame:controlRect];
+        }
+    }
+
+    void SetTextColor(const DAVA::Color& color) override
+    {
+        currentColor = color;
+
+        NSColor* nsColor = [NSColor
+        colorWithCalibratedRed:color.r
+                         green:color.g
+                          blue:color.b
+                         alpha:color.a];
+        [nsTextView setTextColor:nsColor];
+
+        // make cursor same color as text (default - black caret on white back)
+        NSTextView* fieldEditor = (NSTextView*)[nsTextView.window fieldEditor:YES
+                                                                    forObject:nsTextView];
+        fieldEditor.insertionPointColor = nsColor;
+    }
+    void SetFontSize(float virtualFontSize) override
+    {
+        currentFontSize = virtualFontSize;
+
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+        NSSize origSz = NSMakeSize(size, 0);
+        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
+
+        [nsTextView setFont:[NSFont systemFontOfSize:convSz.width]];
+    }
+
+    void SetTextAlign(DAVA::int32 align) override
+    {
+        alignment = static_cast<eAlign>(align);
+
+        NSTextAlignment aligment = NSCenterTextAlignment;
+        if (align & ALIGN_LEFT)
+        {
+            aligment = NSLeftTextAlignment;
+        }
+        else if (align & ALIGN_RIGHT)
+        {
+            aligment = NSRightTextAlignment;
+        }
+        else if (align & ALIGN_VCENTER)
+        {
+            aligment = NSCenterTextAlignment;
+        }
+        [nsTextView setAlignment:aligment];
+
+        // TODO investigate do we need to implement other then ALIGN_VCENTER
+        // several time set align so comment it for now DVASSERT(align & ALIGN_VCENTER);
+        if (align & ALIGN_VCENTER)
+        {
+            // TODO set custom cell properti - vAlignment
+            //[NSSecureTextField setCellClass:[NSSecureTextFieldCell class]];
+        }
+
+        if (useRtlAlign && (aligment == NSLeftTextAlignment ||
+                            aligment == NSRightTextAlignment))
+        {
+            [nsTextView setAlignment:NSNaturalTextAlignment];
+        }
+    }
+    DAVA::int32 GetTextAlign() override
+    {
+        return alignment;
+    }
+    void SetTextUseRtlAlign(bool useRtlAlign_) override
+    {
+        useRtlAlign = useRtlAlign_;
+        SetTextAlign(alignment);
+    }
+    bool GetTextUseRtlAlign() const override
+    {
+        return useRtlAlign;
+    }
+
+    void SetVisible(bool value) override
+    {
+        [nsTextView setHidden:!value];
+    }
+    void ShowField() override
+    {
+        // we always on screen
+    }
+    void HideField() override
+    {
+        // we always on screen
+    }
+
+    void SetInputEnabled(bool value) override
+    {
+        [nsTextView setEditable:value];
+    }
+
+    // Keyboard traits.
+    void SetAutoCapitalizationType(DAVA::int32 value) override
+    {
+        // not supported implement on client in delegate
+    }
+    void SetAutoCorrectionType(DAVA::int32 value) override
+    {
+        // not supported implement on client in delegate
+    }
+    void SetSpellCheckingType(DAVA::int32 value) override
+    {
+        // not supported for NSTextField
+        // we can implement it in NSTextView with property
+        // setContinuousSpellCheckingEnabled:YES
+        // but does we really need it?
+    }
+    void SetKeyboardAppearanceType(DAVA::int32 value) override
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+    void SetKeyboardType(DAVA::int32 value) override
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+    void SetReturnKeyType(DAVA::int32 value) override
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+    void SetEnableReturnKeyAutomatically(bool value) override
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    // Cursor pos.
+    uint32 GetCursorPos() override
+    {
+        NSInteger insertionPoint = [[[nsTextView selectedRanges] objectAtIndex:0] rangeValue].location;
+        return insertionPoint;
+    }
+    void SetCursorPos(uint32 pos) override
+    {
+        [nsTextView setSelectedRange:NSMakeRange(pos, 0)];
+    }
+
+    void SetMultiline(bool value) override
+    {
+        multiline = value;
+        DVASSERT(multiline);
+    }
+    bool IsMultiline() const override
+    {
+        return multiline;
+    }
+
+    void SetIsPassword(bool value) override
+    {
+        DVASSERT(!value);
+        password = value;
+    }
+    bool IsPassword() const
+    {
+        return password;
+    }
+
+    // Max text length.
+    void SetMaxLength(int maxLength) override
+    {
+        objcDelegate->maxLength = maxLength;
+    }
+
+    void SetRenderToTexture(bool value) override
+    {
+        static bool alreadyPrintLog = false;
+        if (!alreadyPrintLog)
+        {
+            alreadyPrintLog = true;
+            Logger::FrameworkDebug("UITextField::SetRenderTotexture not implemented on macos");
+        }
+    }
+    bool IsRenderToTexture() const override
+    {
+        return false;
+    }
+
+    SigConnectionID signalMinimizeRestored;
+
+    NSTextView* nsTextView = nullptr;
+    MultilineDelegate* objcDelegate = nullptr;
+
+    Rect currentRect;
+    Color currentColor;
+    float32 currentFontSize = 0.f;
+
+    eAlign alignment = ALIGN_LEFT;
+    bool useRtlAlign = false;
+    bool multiline = true;
+    bool password = false;
+};
+
+class SingleLineOrPasswordField : public IField
 {
 public:
     explicit SingleLineOrPasswordField(UITextField* davaText_, ObjCWrapper* wrapper_)
-        : IText(davaText_, wrapper_)
+        : IField(davaText_, wrapper_)
     {
         [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
 
@@ -409,6 +715,8 @@ public:
 
     void SetMultiline(bool value) override
     {
+        DVASSERT(!value);
+
         multiline = value;
         [nsTextField setUsesSingleLineMode:(!multiline)];
         [nsTextField.cell setWraps:(!multiline)];
@@ -522,12 +830,38 @@ public:
         ctrl = nullptr;
     }
 
-    IText* operator->()
+    IField* operator->()
     {
         return ctrl;
     }
 
-    IText* ctrl = nullptr;
+    void SetMultiline(bool value)
+    {
+        if (ctrl->IsMultiline() != value)
+        {
+            if (value)
+            {
+                SingleLineOrPasswordField* prevCtrl = static_cast<SingleLineOrPasswordField*>(ctrl);
+                MultilineField* newField = new MultilineField(ctrl->davaText, this);
+
+                newField->SetFontSize(prevCtrl->currentFontSize);
+                newField->SetTextColor(prevCtrl->currentColor);
+
+                WideString oldText;
+                prevCtrl->GetText(oldText);
+
+                newField->SetText(oldText);
+                newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
+                newField->SetTextAlign(prevCtrl->alignment);
+                newField->SetMultiline(value);
+
+                delete prevCtrl;
+                ctrl = newField;
+            }
+        }
+    }
+
+    IField* ctrl = nullptr;
 };
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
@@ -656,7 +990,7 @@ void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 }
 void TextFieldPlatformImpl::SetMultiline(bool multiline)
 {
-    objcWrapper->SetMultiline(multiline);
+    objcWrapper.SetMultiline(multiline);
 }
 
 void TextFieldPlatformImpl::SetRenderToTexture(bool value)
@@ -793,6 +1127,26 @@ doCommandBySelector:(SEL)commandSelector
     return nil;
 }
 
+@end
+
+@implementation MultilineDelegate
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        maxLength = INT_MAX;
+    }
+
+    return self;
+}
+
+- (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
+{
+    // TODO check size
+    // TODO call client delegate
+    return YES;
+}
 @end
 
 @implementation RSVerticallyCenteredTextFieldCell
