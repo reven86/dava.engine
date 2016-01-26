@@ -318,9 +318,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
@@ -1717,6 +1714,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -3066,6 +3066,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.cpp">
       <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
