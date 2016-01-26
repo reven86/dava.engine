@@ -527,16 +527,16 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did hide");
-    
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
 }
 
 - (void)applicationDidUnhide:(NSNotification *)aNotification
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did unhide");
-    
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
 }
 
