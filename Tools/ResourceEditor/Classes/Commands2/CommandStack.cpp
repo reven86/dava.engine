@@ -153,27 +153,27 @@ void CommandStack::Redo()
 
 void CommandStack::Exec(Command2 *command)
 {
-	if(NULL != command)
-	{
-		CommandAction* action = dynamic_cast<CommandAction*>(command);
-		if (!action)
-		{
-			if(NULL != curBatchCommand)
-			{
-				curBatchCommand->AddAndExec(command);
-			}
-			else
-			{
-				ExecInternal(command, true);
-			}
-		}
+    if (command == nullptr)
+        return;
+
+    CommandAction* action = dynamic_cast<CommandAction*>(command);
+    if (action == nullptr) // command is really Command, not CommandAction
+    {
+        if (curBatchCommand != nullptr)
+        {
+            curBatchCommand->AddAndExec(command);
+        }
 		else
 		{
-			action->Redo();
-			EmitNotify(command, true);
-			delete action;
-		}
+            ExecInternal(command, true);
+        }
 	}
+    else
+    {
+        action->Redo();
+        EmitNotify(command, true);
+        delete action;
+    }
 }
 
 void CommandStack::BeginBatch(const DAVA::String &text)

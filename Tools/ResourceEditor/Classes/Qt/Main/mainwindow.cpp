@@ -66,27 +66,23 @@
 
 #include "../Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 
-#include "Classes/Commands2/EntityAddCommand.h"
 #include "StringConstants.h"
 #include "Settings/SettingsManager.h"
 #include "Settings/SettingsDialog.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
-
-#include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Classes/Qt/Main/Request.h"
 
 #include "Classes/CommandLine/SceneSaver/SceneSaver.h"
-#include "Classes/Qt/Main/Request.h"
-#include "Classes/Commands2/BeastAction.h"
 
+#include "Classes/Commands2/EntityAddCommand.h"
+#include "Classes/Commands2/BeastAction.h"
 #include "Classes/Commands2/CustomColorsCommands2.h"
 #include "Classes/Commands2/HeightmapEditorCommands2.h"
-#include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
-#include "Classes/Commands2/RulerToolActions.h"
 #include "Classes/Commands2/TilemaskEditorCommands.h"
-#include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/LandscapeToolsToggleCommand.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 
@@ -114,8 +110,6 @@
 
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-
-#include "Classes/Commands2/PaintHeightDeltaAction.h"
 
 #include "Tools/HeightDeltaTool/HeightDeltaTool.h"
 #include "Tools/ColorPicker/ColorPicker.h"
@@ -2321,8 +2315,8 @@ void QtMainWindow::OnCustomColorsEditor()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableCustomColors(sceneEditor));
-		}
+            sceneEditor->Exec(new EnableCustomColorsCommand(sceneEditor, true));
+        }
 		else
 		{
 			OnLandscapeEditorToggled(sceneEditor);
@@ -2387,8 +2381,8 @@ void QtMainWindow::OnHeightmapEditor()
     
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
-	}
+        sceneEditor->Exec(new DisableHeightmapEditorCommand(sceneEditor));
+    }
 	else
 	{
         if (sceneEditor->pathSystem->IsPathEditEnabled())
@@ -2400,8 +2394,8 @@ void QtMainWindow::OnHeightmapEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-			sceneEditor->Exec(new ActionEnableHeightmapEditor(sceneEditor));
-		}
+            sceneEditor->Exec(new EnableHeightmapEditorCommand(sceneEditor));
+        }
 		else
 		{
 			OnLandscapeEditorToggled(sceneEditor);
@@ -2419,8 +2413,8 @@ void QtMainWindow::OnRulerTool()
 
 	if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableRulerTool(sceneEditor));
-	}
+        sceneEditor->Exec(new DisableRulerToolCommand(sceneEditor));
+    }
 	else
 	{
         if (sceneEditor->pathSystem->IsPathEditEnabled())
@@ -2432,8 +2426,8 @@ void QtMainWindow::OnRulerTool()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableRulerTool(sceneEditor));
-		}
+            sceneEditor->Exec(new EnableRulerToolCommand(sceneEditor));
+        }
 		else
 		{
 			OnLandscapeEditorToggled(sceneEditor);
@@ -2452,8 +2446,8 @@ void QtMainWindow::OnTilemaskEditor()
     
 	if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
-	}
+        sceneEditor->Exec(new DisableTilemaskEditorCommand(sceneEditor));
+    }
 	else
 	{
         if (sceneEditor->pathSystem->IsPathEditEnabled())
@@ -2465,8 +2459,8 @@ void QtMainWindow::OnTilemaskEditor()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableTilemaskEditor(sceneEditor));
-		}
+            sceneEditor->Exec(new EnableTilemaskEditorCommand(sceneEditor));
+        }
 		else
 		{
 			OnLandscapeEditorToggled(sceneEditor);
@@ -2484,8 +2478,8 @@ void QtMainWindow::OnVisibilityTool()
     
 	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
-	}
+        sceneEditor->Exec(new DisableVisibilityToolCommand(sceneEditor));
+    }
 	else
 	{
         if (sceneEditor->pathSystem->IsPathEditEnabled())
@@ -2497,8 +2491,8 @@ void QtMainWindow::OnVisibilityTool()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableVisibilityTool(sceneEditor));
-		}
+            sceneEditor->Exec(new EnableVisibilityToolCommand(sceneEditor));
+        }
 		else
 		{
 			OnLandscapeEditorToggled(sceneEditor);
@@ -2516,8 +2510,8 @@ void QtMainWindow::OnNotPassableTerrain()
 	
 	if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableNotPassable(sceneEditor));
-	}
+        sceneEditor->Exec(new DisableNotPassableCommand(sceneEditor));
+    }
 	else
 	{
         if (sceneEditor->pathSystem->IsPathEditEnabled())
@@ -2529,8 +2523,8 @@ void QtMainWindow::OnNotPassableTerrain()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableNotPassable(sceneEditor));
-		}
+            sceneEditor->Exec(new EnableNotPassableCommand(sceneEditor));
+        }
 		else
 		{
 			OnLandscapeEditorToggled(sceneEditor);

@@ -38,7 +38,6 @@
 #include "Deprecated/EditorConfig.h"
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneHelper.h"
-#include "Commands2/VisibilityToolActions.h"
 
 #include "Render/Material/NMaterialNames.h"
 

@@ -31,38 +31,11 @@
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 
 #include "Commands2/Command2.h"
-#include "Commands2/CommandAction.h"
-#include "DAVAEngine.h"
-
-#include "Render/UniqueStateSet.h"
 
 using namespace DAVA;
 
 class LandscapeProxy;
 class SceneEditor2;
-
-class ActionEnableTilemaskEditor: public CommandAction
-{
-public:
-	ActionEnableTilemaskEditor(SceneEditor2* forSceneEditor);
-	
-protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
-};
-
-class ActionDisableTilemaskEditor: public CommandAction
-{
-public:
-	ActionDisableTilemaskEditor(SceneEditor2* forSceneEditor);
-	
-protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
-};
-
 
 class ModifyTilemaskCommand: public Command2
 {
