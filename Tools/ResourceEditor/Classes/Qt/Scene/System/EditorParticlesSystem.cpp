@@ -338,8 +338,22 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 			break;
 		}
 
-		case CMDID_PARTICLE_EMITTER_LAYER_ADD:
-		{
+        case CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML:
+        {
+            const CommandLoadInnerParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadInnerParticleEmitterFromYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
+            break;
+        }
+
+        case CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML:
+        {
+            const CommandSaveInnerParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveInnerParticleEmitterToYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+            break;
+        }
+
+        case CMDID_PARTICLE_EMITTER_LAYER_ADD:
+        {
 			const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
 			SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
 			break;

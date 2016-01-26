@@ -932,8 +932,8 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         break;
 
     case TEXTURE_FORMAT_DXT1:
-        *internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-        *format = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        *internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        *format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;

@@ -468,7 +468,7 @@ void SceneSelectionSystem::SetLocked(bool lock)
     bool lockChanged = IsLocked() != lock;
     SceneSystem::SetLocked(lock);
 
-	hoodSystem->LockAxis(lock);
+    hoodSystem->LockAxis(lock);
 	hoodSystem->SetVisible(!lock);
 
 	if(!lock)
