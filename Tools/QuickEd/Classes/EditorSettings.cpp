@@ -46,6 +46,7 @@ EditorSettings::EditorSettings()
 
 EditorSettings::~EditorSettings()
 {
+    Save();
     SafeRelease(settings);
 }
 
@@ -143,34 +144,28 @@ bool EditorSettings::IsPixelized() const
     return settings->GetBool("editor.pixelized", true);
 }
 
-Color EditorSettings::GetCurrentBackgroundFrameColor() const
-{
-    return GetColor("editor.currentBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
-}
-
-void EditorSettings::SetCurrentBackgroundFrameColor(const Color& color)
-{
-    SetColor("editor.currentBackgroundFrameColor", color);
-}
-
-Color EditorSettings::GetCustomBackgroundFrameColor() const
-{
-    return GetColor("editor.customBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
-}
-
-void EditorSettings::SetCustomBackgroundFrameColor(const Color& color)
-{
-    SetColor("editor.customBackgroundFrameColor", color);
-}
-
 Color EditorSettings::GetGrigColor() const
 {
     return GetColor("editor.gridColor", DEFAULT_BACKGROUND_FRAME_COLOR);
 }
 
-void EditorSettings::SetGrigColor( const Color& color )
+void EditorSettings::SetGrigColor(const Color& color)
 {
     SetColor("editor.gridColor", color);
+    GridColorChanged.Emit(color);
+}
+
+eBackgroundType EditorSettings::GetGridType() const
+{
+    bool value = settings->GetBool("editor.gridType");
+    return static_cast<eBackgroundType>(value);
+}
+
+void EditorSettings::SetGridType(eBackgroundType type)
+{
+    bool value = static_cast<eBackgroundType>(type);
+    settings->SetBool("editor.gridType", value);
+    GridTypeChanged.Emit(type);
 }
 
 Color EditorSettings::GetColor(const String& colorName, const Color& defaultColor) const

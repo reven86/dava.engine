@@ -99,7 +99,7 @@ private slots:
     
     void RebuildRecentMenu();
 
-    void SetBackgroundColorMenuTriggered(QAction* action);
+    void OnBackgroundCustomColorClicked();
 
     void OnPixelizationStateChanged(bool isPixelized);
 
@@ -115,17 +115,13 @@ private:
     void InitEmulationMode();
     void InitMenu();
     void SetupViewMenu();
+    void SetupBackgroundMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
     // Save/restore positions of DockWidgets and main window geometry
     void SaveMainWindowState();
     void RestoreMainWindowState();
-
-    // Background Frame Color menu actions.
-    QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction = nullptr;
-    QAction* backgroundFrameSelectCustomColorAction = nullptr;
 
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
