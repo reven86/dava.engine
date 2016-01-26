@@ -1619,7 +1619,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     while ( err != GL_NO_ERROR );
 */
 
-#if 1
+#if 0
 
     do 
     {
@@ -1777,7 +1777,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::READ_PIXELS:
         {
             EXEC_GL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), (GLvoid*)(arg[6])));
-            Logger::Info("glReadPixels err= %08X\n",err);
             cmd->retval = 0;
             cmd->status = err;
         }
