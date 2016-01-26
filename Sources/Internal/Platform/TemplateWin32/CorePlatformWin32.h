@@ -52,6 +52,9 @@ public:
 
     void SetIcon(int32 iconId) override;
 
+    void SetWindowMinimumSize(float32 width, float32 height) override;
+    Vector2 GetWindowMinimumSize() const override;
+
 private:
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
@@ -66,14 +69,19 @@ private:
     void OnMouseWheel(float32 wheelDelta, float32 x, float32 y);
     void OnMouseButtonChange(UIEvent::Phase phase, UIEvent::MouseButton button, float32 x, float32 y);
     void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
+    void LoadWindowMinimumSizeSettings();
 
     bool willQuit;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
+
+    float32 minWindowWidth = 0.0f;
+    float32 minWindowHeight = 0.0f;
 };
 
 } // end namespace DAVA

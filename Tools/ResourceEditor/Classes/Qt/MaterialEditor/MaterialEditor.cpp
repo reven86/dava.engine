@@ -753,6 +753,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
         }
         else
         {
+            bool isAssignableFx = true;
             { //set fx name to fx template box
                 int rowToSelect = -1;
                 const DAVA::FastName fxName = material->GetEffectiveFXName();
@@ -773,6 +774,8 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     if (-1 == rowToSelect)
                     {
                         setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                        rowToSelect = 0;
+                        isAssignableFx = false;
                     }
                 }
 
@@ -799,7 +802,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
                 }
 
-                if (parentMaterial == nullptr || parentMaterial == globalMaterial)
+                if (parentMaterial == nullptr || parentMaterial == globalMaterial || isAssignableFx == false)
                 {
                     ui->templateButton->setEnabled(false);
                 }
@@ -808,7 +811,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     ui->templateButton->setEnabled(true);
                 }
 
-                ui->templateBox->setEnabled(hasLocalFxName);
+                ui->templateBox->setEnabled(hasLocalFxName && isAssignableFx);
             }
         }
     }
