@@ -176,7 +176,10 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, i
     auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = dstTex;
+    desc.colorAttachment = dstTex->handle;
+    desc.depthAttachment = dstTex->handleDepthStencil;
+    desc.width = dstTex->GetWidth();
+    desc.height = dstTex->GetHeight();
     desc.shouldClear = false;
     desc.shouldTransformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);

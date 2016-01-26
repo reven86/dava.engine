@@ -80,10 +80,9 @@ protected:
 
 private:
     void PrepareFrameBuffer();
-    void PrepareFrameBufferIfNeed();
 
     bool drawToFrameBuffer;
-    bool needUpdateFrameBuffer;
+
     float32 fbScaleFactor;
     Vector2 fbRenderSize;
     Vector2 fbTexSize;
@@ -110,14 +109,6 @@ inline const Vector2& UI3DView::GetFrameBufferRenderSize() const
     return fbRenderSize;
 }
 
-inline void UI3DView::PrepareFrameBufferIfNeed()
-{
-    if (needUpdateFrameBuffer)
-    {
-        PrepareFrameBuffer();
-        needUpdateFrameBuffer = false;
-    }
-}
 };
 
 #endif

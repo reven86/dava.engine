@@ -107,9 +107,11 @@ public:
 
     struct RenderTargetPassDescriptor
     {
-        Texture* target = nullptr;
+        rhi::HTexture colorAttachment, depthAttachment;
+        uint32 width, height;
         Color clearColor = Color::Clear;
         int32 priority = PRIORITY_SERVICE_2D;
+        int32 priorityOffset = 0;
         bool shouldTransformVirtualToPhysical = true;
         bool shouldClear = true;
     };
@@ -277,6 +279,10 @@ public:
     void DrawPolygonTransformed(const Polygon2& polygon, bool closed, const Matrix3& transform, const Color& color);
 
     void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+
+    const RenderTargetPassDescriptor& GetActiveTargetDescriptor();
+    const RenderTargetPassDescriptor& GeMainTargetDescriptor();
+    void SetMainTargetDescriptor(const RenderTargetPassDescriptor& descriptor);
 
 private:
     void SetVirtualToPhysicalTransformEnabled(bool);

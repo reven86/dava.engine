@@ -41,7 +41,7 @@ NotPassableTerrainProxy::NotPassableTerrainProxy(int32 heightmapSize)
 
     rhi::Viewport viewport;
     viewport.width = viewport.height = 2048;
-    RenderHelper::CreateClearPass(notPassableTexture->handle, PRIORITY_SERVICE_2D + 1, Color::Clear, viewport);
+    RenderHelper::CreateClearPass(notPassableTexture->handle, rhi::HTexture(), PRIORITY_SERVICE_2D + 1, Color::Clear, viewport);
 
     int32 quadLineSize = (int32)ceilf((float32)heightmapSize / GRID_QUAD_SIZE);
     int32 buffersCount = quadLineSize * quadLineSize;

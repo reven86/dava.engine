@@ -454,7 +454,11 @@ void VisibilityToolSystem::RenderVisibilityPoint(bool clearTarget)
     const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = visibilityToolProxy->GetTexture();
+    Texture* tex = visibilityToolProxy->GetTexture();
+    desc.colorAttachment = tex->handle;
+    desc.depthAttachment = tex->handleDepthStencil;
+    desc.width = tex->GetWidth();
+    desc.height = tex->GetHeight();
     desc.shouldClear = clearTarget;
     desc.shouldTransformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
@@ -480,7 +484,10 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
     static const float32 pointSize = 6.f;
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = visibilityAreaTexture;
+    desc.colorAttachment = visibilityAreaTexture->handle;
+    desc.depthAttachment = visibilityAreaTexture->handleDepthStencil;
+    desc.width = visibilityAreaTexture->GetWidth();
+    desc.height = visibilityAreaTexture->GetHeight();
     desc.shouldClear = false;
     desc.shouldTransformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);

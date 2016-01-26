@@ -236,7 +236,10 @@ void CustomColorsSystem::UpdateBrushTool()
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = colorTexture;
+    desc.colorAttachment = colorTexture->handle;
+    desc.depthAttachment = colorTexture->handleDepthStencil;
+    desc.width = colorTexture->GetWidth();
+    desc.height = colorTexture->GetHeight();
     desc.shouldClear = false;
     desc.shouldTransformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
@@ -361,7 +364,10 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::RenderTargetPassDescriptor desc;
-            desc.target = target;
+            desc.colorAttachment = target->handle;
+            desc.depthAttachment = target->handleDepthStencil;
+            desc.width = target->GetWidth();
+            desc.height = target->GetHeight();
             desc.shouldClear = false;
             desc.shouldTransformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);

@@ -40,7 +40,7 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
     viewport.x = viewport.y = 0U;
     viewport.width = (uint32)size;
     viewport.height = (uint32)size;
-    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+    RenderHelper::CreateClearPass(visibilityToolTexture->handle, rhi::HTexture(), PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()

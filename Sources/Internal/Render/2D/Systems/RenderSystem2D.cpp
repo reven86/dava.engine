@@ -181,7 +181,10 @@ void RenderSystem2D::EndFrame()
 void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
     RenderTargetPassDescriptor desc;
-    desc.target = target;
+    desc.colorAttachment = target->handle;
+    desc.depthAttachment = target->handleDepthStencil;
+    desc.width = target->GetWidth();
+    desc.height = target->GetHeight();
     desc.clearColor = clearColor;
     desc.priority = priority;
     desc.shouldClear = needClear;
@@ -192,22 +195,20 @@ void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = 
 void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& desc)
 {
     DVASSERT(!IsRenderTargetPass());
-    DVASSERT(desc.target);
-    DVASSERT(desc.target->GetWidth() && desc.target->GetHeight())
 
     Flush();
 
     SetVirtualToPhysicalTransformEnabled(desc.shouldTransformVirtualToPhysical);
 
     rhi::RenderPassConfig renderTargetPassConfig;
-    renderTargetPassConfig.colorBuffer[0].texture = desc.target->handle;
+    renderTargetPassConfig.colorBuffer[0].texture = desc.colorAttachment;
     renderTargetPassConfig.colorBuffer[0].clearColor[0] = desc.clearColor.r;
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
     renderTargetPassConfig.priority = desc.priority;
-    renderTargetPassConfig.viewport.width = desc.target->GetWidth();
-    renderTargetPassConfig.viewport.height = desc.target->GetHeight();
+    renderTargetPassConfig.viewport.width = desc.width;
+    renderTargetPassConfig.viewport.height = desc.height;
     renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     renderTargetPassConfig.colorBuffer[0].loadAction = desc.shouldClear ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
@@ -217,8 +218,8 @@ void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& des
     rhi::BeginRenderPass(passTargetHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
-    renderTargetWidth = desc.target->GetWidth();
-    renderTargetHeight = desc.target->GetHeight();
+    renderTargetWidth = desc.width;
+    renderTargetHeight = desc.height;
 
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();

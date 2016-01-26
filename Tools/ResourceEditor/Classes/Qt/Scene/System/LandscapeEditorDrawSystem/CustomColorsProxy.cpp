@@ -54,7 +54,7 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
 
     // clear texture, to initialize frame buffer object
     // using PRIORITY_SERVICE_2D + 1 to ensure it will be cleared before drawing existing image into render target
-    RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_SERVICE_2D + 1, DAVA::Color::Clear, rhi::Viewport(0, 0, size, size));
+    RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_SERVICE_2D + 1, DAVA::Color::Clear, rhi::Viewport(0, 0, size, size));
 
     brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
     brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
@@ -145,11 +145,11 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     if (!customColors.empty())
     {
         Color color = customColors.front();
-        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, color, viewport);
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, color, viewport);
     }
     else
     {
-        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color::Clear, viewport);
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);
     }
 }
 

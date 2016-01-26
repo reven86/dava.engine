@@ -165,7 +165,10 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
                                       image->GetWidth(), image->GetHeight(), false);
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = customColorsTarget;
+    desc.colorAttachment = customColorsTarget->handle;
+    desc.depthAttachment = customColorsTarget->handleDepthStencil;
+    desc.width = customColorsTarget->GetWidth();
+    desc.height = customColorsTarget->GetHeight();
     desc.shouldClear = false;
     desc.shouldTransformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
