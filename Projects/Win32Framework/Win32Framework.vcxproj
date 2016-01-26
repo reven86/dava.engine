@@ -293,7 +293,6 @@
     <ClInclude Include="..\..\Sources\Internal\Collision\Collisions.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\ApplicationCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h" />
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\DisplayMode.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\List.h" />
@@ -320,7 +319,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
@@ -616,6 +614,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h" />
@@ -770,8 +769,6 @@
     <ClCompile Include="..\..\Sources\Internal\Collision\Collisions.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\ApplicationCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\Core.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessageWin.cpp">
@@ -1077,6 +1074,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp" />
