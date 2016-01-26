@@ -56,12 +56,13 @@ bool HeightmapProxy::IsHeightmapChanged()
 	return heightmapChanged;
 }
 
-Rect HeightmapProxy::GetChangedRect()
+bool HeightmapProxy::GetChangedRect(Rect& rect)
 {
 	if (IsHeightmapChanged())
 	{
-		return changedRect;
-	}
-	
-	return Rect();
+        rect = changedRect;
+        return true;
+    }
+
+    return false;
 }

@@ -250,32 +250,32 @@ const String Heightmap::FileExtension()
 {
     return ".heightmap";
 }
-    
-    
-Heightmap * Heightmap::Clone(DAVA::Heightmap *clonedHeightmap)
+
+Heightmap* Heightmap::Clone(DAVA::Heightmap* clonedHeightmap)
 {
-    Heightmap *createdHeightmap = clonedHeightmap;
-    if(createdHeightmap)
+    Heightmap* createdHeightmap = clonedHeightmap;
+
+    if ((createdHeightmap != nullptr) && (createdHeightmap->Size() != size))
     {
-        if(createdHeightmap->Size() != size)
+        createdHeightmap->ReleaseData();
+        createdHeightmap->AllocateData(size);
+
+        if (createdHeightmap->Data() == nullptr)
         {
-            createdHeightmap->ReleaseData();
-            createdHeightmap->AllocateData(size);
-            
-            if(!createdHeightmap->Data())
-            {
-                return NULL;
-            }
+            return nullptr;
         }
     }
     else
     {
         createdHeightmap = CreateHeightmapForSize(size);
-        if(!createdHeightmap)   return NULL;
+        if (createdHeightmap == nullptr)
+        {
+            return nullptr;
+        }
     }
-    
+
     memmove(createdHeightmap->data, data, size * size * sizeof(uint16));
-    createdHeightmap->SetTileSize(tileSize); //TODO: is it true?
+    createdHeightmap->SetTileSize(tileSize); // TODO: is it true?
 
     return createdHeightmap;
 }

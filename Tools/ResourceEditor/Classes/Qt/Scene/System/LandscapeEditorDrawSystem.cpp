@@ -231,9 +231,20 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (heightmapProxy && heightmapProxy->IsHeightmapChanged())
 	{
-		Rect changedRect = heightmapProxy->GetChangedRect();
-        Rect2i updateRect = Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy);
-        baseLandscape->UpdatePart(heightmapProxy, updateRect);
+        Rect changedRect;
+        Rect2i updateRect;
+        if (heightmapProxy->GetChangedRect(changedRect))
+        {
+            if (baseLandscape->IsUpdatable())
+            {
+                updateRect = Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy);
+                baseLandscape->UpdatePart(heightmapProxy, updateRect);
+            }
+            else
+            {
+                baseLandscape->SetHeightmap(ScopedPtr<Heightmap>(heightmapProxy->Clone(nullptr)));
+            }
+        }
 
         if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
         {
@@ -415,20 +426,22 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableTilemaskE
 }
 
 void LandscapeEditorDrawSystem::DisableTilemaskEditing()
-{}
+{
+}
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 {
-	if (!heightmapProxy)
-	{
+    if (heightmapProxy == nullptr)
+    {
 		Heightmap* heightmap = baseLandscape->GetHeightmap();
-        if (heightmap == nullptr || heightmap->Size() == 0)
+        if ((heightmap == nullptr) || (heightmap->Size() == 0))
         {
             return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
         }
         ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
         heightmapProxy = new HeightmapProxy(clonedHeightmap);
     }
+
     if (!customColorsProxy)
     {
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
@@ -677,9 +690,8 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
 			if (String("heightmapPath") == cmd->member->Name().c_str())
             {
-                if (heightmapProxy)
+                if ((heightmapProxy != nullptr) && (heightmapProxy->Size() > 0))
                 {
-                    baseLandscape->GetHeightmap()->Clone(heightmapProxy);
                     int32 size = heightmapProxy->Size();
                     heightmapProxy->UpdateRect(Rect(0.f, 0.f, (float32)size, (float32)size));
                 }

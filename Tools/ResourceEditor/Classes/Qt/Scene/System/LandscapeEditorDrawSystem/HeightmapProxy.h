@@ -44,12 +44,12 @@ public:
 	
 	void ResetHeightmapChanged();
 	bool IsHeightmapChanged();
-	
-	Rect GetChangedRect();
-	
+
+    bool GetChangedRect(Rect& rect);
+
 private:
 	Rect changedRect;
-	bool heightmapChanged;
+    bool heightmapChanged = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPPROXY__) */
