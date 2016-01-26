@@ -224,14 +224,14 @@ WebViewControl::WebViewControl(UIWebView& ptr) :
 
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
-    
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 }
 
 WebViewControl::~WebViewControl()
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
     
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;

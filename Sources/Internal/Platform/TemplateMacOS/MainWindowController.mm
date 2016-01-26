@@ -233,7 +233,7 @@ namespace DAVA
 
 - (void)windowDidMiniaturize:(NSNotification *)notification
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
     
     [self OnSuspend];
@@ -241,7 +241,7 @@ namespace DAVA
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
     
     [self OnResume];

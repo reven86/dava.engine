@@ -327,14 +327,14 @@ namespace DAVA
 MovieViewControl::MovieViewControl()
 {
 	moviePlayerHelper = [[MoviePlayerHelper alloc] init];
-    
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &MovieViewControl::OnAppMinimizedRestored);
 }
 	
 MovieViewControl::~MovieViewControl()
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
     
     MoviePlayerHelper* helper = (MoviePlayerHelper*)moviePlayerHelper;

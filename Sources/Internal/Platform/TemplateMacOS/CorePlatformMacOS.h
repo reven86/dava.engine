@@ -45,13 +45,6 @@ public:
     void Quit() override;
 
     virtual Vector2 GetMousePosition();
-    
-    // Signal is emitted when window has been miniaturized/deminiaturized or
-    // when application has been hidden/unhidden.
-    // Signal parameter meaning:
-    //  - when true - application/window has been hidden/minimized
-    //  - when false - application/window has been unhidden/restored
-    Signal<bool> signalAppMinimizedRestored;
 
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
