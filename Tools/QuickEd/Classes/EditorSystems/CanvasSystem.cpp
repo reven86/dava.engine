@@ -77,7 +77,7 @@ void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
         break;
     case BackgroundTexture:
         background->SetDrawType(UIControlBackground::DRAW_TILED);
-        background->SetSprite("~res:/Gfx/GreyGrid", 0);
+        background->SetSprite("~res:/Gfx/GrayGrid", 0);
         background->SetColor(Color());
         break;
     }
