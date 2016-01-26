@@ -369,14 +369,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
@@ -406,7 +406,7 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
 {
     bool visible = args->Visible;
     AllowDisplaySleep(!visible);
-    core->RunOnMainThreadBlocked([this, visible]() {
+    core->RunOnMainThread([this, visible]() {
         if (visible)
         {
             if (!isPhoneApiDetected)
