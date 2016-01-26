@@ -934,8 +934,21 @@ void PropertyEditor::ConvertToShadow()
 
             for ( int i = 0; i < dataList.size(); i++ )
             {
-		        DAVA::RenderBatch *batch = (DAVA::RenderBatch *)dataList.at(i)->object;
-		        curScene->Exec(new ConvertToShadowCommand(batch));
+                DAVA::RenderBatch* batch = (DAVA::RenderBatch*)dataList.at(i)->object;
+                DVASSERT(batch);
+                DAVA::RenderObject* renderObject = batch->GetRenderObject();
+                DAVA::Entity* entity = nullptr;
+                for (int i = 0; i < curNodes.size(); ++i)
+                {
+                    if (GetRenderObject(curNodes.at(i)) == renderObject)
+                    {
+                        entity = curNodes.at(i);
+                        break;
+                    }
+                }
+
+                DVASSERT(entity);
+                curScene->Exec(new ConvertToShadowCommand(entity, batch));
             }
 
             if (usebatch)

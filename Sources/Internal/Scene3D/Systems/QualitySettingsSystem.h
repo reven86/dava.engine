@@ -33,6 +33,7 @@
 #include "Base/StaticSingleton.h"
 #include "Base/FastNameMap.h"
 #include "Math/Vector.h"
+#include "Scene3D/Systems/ParticlesQualitySettings.h"
 
 namespace DAVA
 {
@@ -101,6 +102,9 @@ public:
     FilePath GetSFXQualityConfigPath(const FastName &name) const;
     FilePath GetSFXQualityConfigPath(size_t index) const;
 
+    const ParticlesQualitySettings& GetParticlesQualitySettings() const;
+    ParticlesQualitySettings& GetParticlesQualitySettings();
+
     // ------------------------------------------
 
 	void EnableOption(const FastName & option, bool enabled);
@@ -154,6 +158,8 @@ protected:
     Vector<SFXQ> soundQualities;
 
 	FastNameMap<bool> qualityOptions;
+
+    ParticlesQualitySettings particlesQualitySettings;
 
     bool cutUnusedVertexStreams;
 

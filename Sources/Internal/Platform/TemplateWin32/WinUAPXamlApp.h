@@ -89,6 +89,9 @@ internal:   // Only internal methods of ref class can return pointers to non-ref
     bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
     InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
+    void SetWindowMinimumSize(float32 width, float32 height);
+    Vector2 GetWindowMinimumSize() const;
+
 public:
     void SetQuitFlag();
 
@@ -144,7 +147,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
-    void TrackWindowMinimumSize();
+    void LoadWindowMinimumSizeSettings();
 
     void ResetRender();
 

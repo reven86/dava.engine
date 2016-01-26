@@ -340,14 +340,11 @@ void TextureConvertor::threadThumbnailFinished()
 {
 	if(thumbnailWatcher.isFinished() && NULL != curJobThumbnail)
 	{
-		const DAVA::TextureDescriptor *thumbnailDescriptor = (DAVA::TextureDescriptor *) curJobThumbnail->descriptor;
-
-		TextureInfo watcherResult = thumbnailWatcher.result();
-		emit ReadyThumbnail(thumbnailDescriptor, watcherResult);
-
-		delete curJobThumbnail;
-		curJobThumbnail = NULL;
-	}
+        const DAVA::TextureDescriptor* thumbnailDescriptor = (DAVA::TextureDescriptor*)curJobThumbnail->descriptor;
+        emit ReadyThumbnail(thumbnailDescriptor, thumbnailWatcher.result());
+        delete curJobThumbnail;
+        curJobThumbnail = nullptr;
+    }
 
 	jobRunNextThumbnail();
 }
