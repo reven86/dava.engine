@@ -94,7 +94,7 @@ void GameCore::SetupTriangle()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos = VP_IN_POSITION;"
+    "    float3 in_pos = VP_IN_POSITION.xyz;"
     "    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
     "\n"
     "VPROG_END\n");
@@ -281,7 +281,7 @@ void GameCore::SetupCube()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float4 in_pos      = VP_IN_POSITION;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
@@ -480,7 +480,7 @@ void GameCore::SetupRT()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
     "    float4x4 World = float4x4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
@@ -846,7 +846,7 @@ void GameCore::OnAppStarted()
     ""
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
@@ -883,7 +883,7 @@ void GameCore::OnAppStarted()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
@@ -968,6 +968,15 @@ void GameCore::OnForeground()
 
 void GameCore::Update(float32 timeElapsed)
 {
+    static float screenshot_ttw = 5.0f;
+    
+    screenshot_ttw -= timeElapsed;
+    if( screenshot_ttw < 0 )
+    {
+        rhi::TakeScreenshot( &ScreenShotCallback );
+        screenshot_ttw = 5.0f;
+    }
+
     //    sceneRenderTest->Update(timeElapsed);
 
     static bool old_s_pressed = false;
@@ -1733,5 +1742,5 @@ void GameCore::ScreenShotCallback(uint32 width, uint32 height, const void* rgba)
     DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, (const uint8*)rgba);
 
     if (img)
-        img->Save("screenshot.png");
+        img->Save("~doc:/screenshot.png");
 }
