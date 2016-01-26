@@ -50,7 +50,7 @@ NSString *NSStringFromWideString(const DAVA::WideString &str) {
     return nsstring;
 }
 
-String StringFromNSString(NSString *string)
+String StringFromNSString(NSString* string)
 {
     if(string)
     {
@@ -62,13 +62,13 @@ String StringFromNSString(NSString *string)
     }
 }
 
-WideString WideStringFromNSString(NSString *string)
+WideString WideStringFromNSString(NSString* string)
 {
     if(string)
     {
         NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
         NSData *data = [string dataUsingEncoding:encoding];
-        return WideString((wchar_t *) data.bytes, data.length / sizeof(wchar_t));
+        return WideString(static_cast<wchar_t*>(data.bytes), data.length / sizeof(wchar_t));
     }
     else
     {
