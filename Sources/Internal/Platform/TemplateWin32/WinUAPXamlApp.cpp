@@ -771,7 +771,7 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
     SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED2);
 }
 
-void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ args)
+void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
 

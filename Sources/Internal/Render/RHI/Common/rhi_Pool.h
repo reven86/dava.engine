@@ -102,7 +102,7 @@ public:
             while (entry != end && !entry->allocated)
             {
                 ++entry;
-            }
+            } 
         }
 
         Entry* entry;

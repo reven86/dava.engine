@@ -59,7 +59,7 @@ public:
     AnimationData* GetAnimation() const;
 
     bool GetIsPlaying() const;
-    void SetIsPlaying(bool value);
+ 	void SetIsPlaying(bool value);
 
     void Start();
     void Stop();

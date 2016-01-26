@@ -244,10 +244,10 @@ static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
         }
         lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
         if (!Instance()->RunScript())
-        {
-            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
-        }
-        lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
+		{
+			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
+		}
+		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
 		return 2;
 	}
@@ -308,11 +308,11 @@ static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
 
     String AutotestingSystemLua::GetPlatform()
     {
-        return DeviceInfo::GetPlatformString();
-    }
+		return DeviceInfo::GetPlatformString();
+	}
 
-    String AutotestingSystemLua::GetDeviceName()
-    {
+	String AutotestingSystemLua::GetDeviceName()
+	{
 		String deviceName;
 		if (DeviceInfo::GetPlatformString() == "Android")
 		{
@@ -571,7 +571,7 @@ static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
             str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
             {
-                uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
+				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
 			}
 			break;
 		}
@@ -795,11 +795,11 @@ static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
         return delegate->LoadWrappedLuaObjects(luaState);
     }
 
-    bool AutotestingSystemLua::LoadScript(const String& luaScript)
-    {
-        if (!luaState)
-        {
-            return false;
+    bool AutotestingSystemLua::LoadScript(const String &luaScript)
+	{
+		if (!luaState)
+		{
+			return false;
 		}
 		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
 		{

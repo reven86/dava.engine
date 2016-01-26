@@ -315,7 +315,7 @@ void UIJoypad::InputCancelled(UIEvent *currentInput)
 {
     if (currentInput->touchId == mainTouch)
     {
-        mainTouch = TOUCH_INVALID_ID;
+		mainTouch = TOUCH_INVALID_ID;
 
 		currentPos.x = 0;
 		currentPos.y = 0;

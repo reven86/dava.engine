@@ -65,8 +65,8 @@ namespace DAVA
         KeyedArchive* InsertTestArchive(KeyedArchive* currentGroupArchive, const String& testId);
         KeyedArchive* InsertStepArchive(KeyedArchive* testArchive, const String& stepId, const String& description);
 
-        KeyedArchive* FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String& testId);
-        KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
+        KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
+		KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
 		KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
 
 		// Getting and Setting data from/in DB
@@ -96,6 +96,8 @@ namespace DAVA
         FilePath logFilePath;
         AutotestingSystem* autoSys;
     };
+
+
 }
 
 #endif //__DAVAENGINE_AUTOTESTING__

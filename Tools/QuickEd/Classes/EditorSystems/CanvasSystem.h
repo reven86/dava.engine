@@ -60,7 +60,6 @@ private:
 
     DAVA::Set<PackageBaseNode*> rootControls;
     std::weak_ptr<PackageNode> package;
-    DAVA::TrackedObject signalsTracker;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

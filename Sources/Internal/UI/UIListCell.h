@@ -84,7 +84,7 @@ namespace DAVA
 
     private:
         int32 currentIndex;
-        String identifier;
+		String identifier;
 		
 		void *cellStore;
     public:

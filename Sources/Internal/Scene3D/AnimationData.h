@@ -64,8 +64,8 @@ public:
     void BakeTransform(const Matrix4& transform);
 
     float32 duration;
-
-    DAVA::Vector< SceneNodeAnimationKey > keys;
+	
+	DAVA::Vector< SceneNodeAnimationKey > keys;
 
 	Matrix4 invPose;
 };

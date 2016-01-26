@@ -154,7 +154,6 @@ private:
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
-    DAVA::TrackedObject signalsTracker;
 };
 
 template <class OutIt, class Predicate>
