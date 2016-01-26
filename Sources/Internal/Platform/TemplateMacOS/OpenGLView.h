@@ -38,7 +38,6 @@ using namespace DAVA;
 {
     Vector<DAVA::UIEvent> allTouches;
     
-	bool sizeChanged;
 	NSTrackingArea *trackingArea;
 	bool isFirstDraw;
 	DAVA::Cursor * activeCursor;

@@ -318,9 +318,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
