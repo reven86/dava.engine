@@ -68,7 +68,7 @@ WideString WideStringFromNSString(NSString* string)
     {
         NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
         NSData *data = [string dataUsingEncoding:encoding];
-        return WideString(static_cast<wchar_t*>(data.bytes), data.length / sizeof(wchar_t));
+        return WideString((wchar_t*)data.bytes, data.length / sizeof(wchar_t));
     }
     else
     {
