@@ -1294,7 +1294,7 @@ void Landscape::SetUpdatable(bool isUpdatable)
     }
 }
 
-bool Landscape::IsUpdatable()
+bool Landscape::IsUpdatable() const
 {
     return updatable;
 }
