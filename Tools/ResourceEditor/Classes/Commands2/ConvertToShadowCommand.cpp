@@ -41,7 +41,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
     DVASSERT(oldBatch);
 
     renderObject = DAVA::SafeRetain(oldBatch->GetRenderObject());
-	DVASSERT(renderObject);
+    DVASSERT(renderObject);
 
 	oldBatch->Retain();
 

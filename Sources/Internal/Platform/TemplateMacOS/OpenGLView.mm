@@ -79,22 +79,11 @@ extern void FrameworkMain(int argc, char *argv[]);
 	trackingArea = nil;
 	[self enableTrackingArea];
 	isFirstDraw = true;
-
-	// enable vsync
-	GLint swapInt = 1;
-    [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-    
-    // enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
-	
-#if RHI_COMPLETE
-    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-#endif
-
-    activeCursor = 0;
-
     willQuit = false;
 
+    // enable retina resolution
+    [self setWantsBestResolutionOpenGLSurface:YES];
+    
     return self;
 }
 
@@ -147,55 +136,36 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 - (void)reshape
 {
-    if(Renderer::IsInitialized())
+    if (Renderer::IsInitialized())
     {
-        NSSize windowSize = self.frame.size;
-        NSSize surfaceSize = [self convertRectToBacking:self.frame].size;
-    
-        float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
-
-        rhi::ResetParam params;
-        params.width = surfaceSize.width;
-        params.height = surfaceSize.height;
-        params.scaleX = userScale;
-        params.scaleY = userScale;
-        Renderer::Reset(params);
+        NSSize windowSize = [self frame].size;
+        float32 backingScale = Core::Instance()->GetScreenScaleFactor();
         
+        GLint backingSize[2] = {GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale)};
+        CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+        CGLUpdateContext([[self openGLContext] CGLContextObj]);
+        
+        rhi::ResetParam params;
+        params.window = self;
+        params.width = backingSize[0];
+        params.height = backingSize[1];
+        Renderer::Reset(params);
+
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
         UIScreenManager::Instance()->ScreenSizeChanged();
     }
-    
+
     [super reshape];
 }
 
-- (void)userFireTimer: (id)timer
-{
-	[self setNeedsDisplay:YES];
-}
-	
 - (void)drawRect:(NSRect)theRect
 {
     if(willQuit)
         return;
-    
+
     DAVA::Core::Instance()->SystemProcessFrame();
-}
-
-- (void) resetCursorRects
-{
-	if (activeCursor)
-	{
-		NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-		[self addCursorRect: [self bounds] cursor: cursor];
-	}else {
-		[super resetCursorRects];
-	}
-}
-
--(void)cursorUpdate:(NSEvent *)theEvent
-{
 }
 
 - (BOOL)acceptsFirstResponder
@@ -215,7 +185,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 static Vector<DAVA::UIEvent> activeTouches;
 
-void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
+void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
@@ -376,6 +346,51 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
     UIControlSystem::Instance()->OnInput(&ev);
 }
 
+- (void)magnifyWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = [event magnification];
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)rotateWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = [event rotation];
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)swipeWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = [event deltaX] * (-1.f);
+    ev.gesture.dy = [event deltaY] * (-1.f);
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     [self process:DAVA::UIEvent::Phase::MOVE touch:theEvent];
@@ -390,24 +405,12 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)mouseEntered:(NSEvent *)theEvent
-{
-    NSLog(@"mouse ENTERED");
-#if RHI_COMPLETE
-    if(RenderManager::Instance()->GetCursor())
-    {
-        if(RenderManager::Instance()->GetCursor()->IsShow())
-            [NSCursor unhide];
-        else
-            [NSCursor hide];
-    }
-#endif
-    //	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
-}
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
     [NSCursor unhide];
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];

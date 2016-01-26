@@ -319,12 +319,6 @@
 		02E7C7081BD624A7002F026D /* Core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AD1BD624A5002F026D /* Core.cpp */; };
 		02E7C7091BD624A7002F026D /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1AE1BD624A5002F026D /* Core.h */; };
 		02E7C70A1BD624A7002F026D /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1AE1BD624A5002F026D /* Core.h */; };
-		02E7C70B1BD624A7002F026D /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */; };
-		02E7C70C1BD624A7002F026D /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */; };
-		02E7C7111BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */; };
-		02E7C7121BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */; };
-		02E7C7131BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */; };
-		02E7C7141BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */; };
 		02E7C7151BD624A7002F026D /* DisplayMode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B41BD624A5002F026D /* DisplayMode.h */; };
 		02E7C7161BD624A7002F026D /* DisplayMode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B41BD624A5002F026D /* DisplayMode.h */; };
 		02E7C7171BD624A7002F026D /* PerformanceSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B51BD624A5002F026D /* PerformanceSettings.cpp */; };
@@ -2070,6 +2064,10 @@
 		02FD82061924997C007762C0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		0367CFF41C4FDC8C004D42A0 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 0367CFF21C4FDC8C004D42A0 /* Reachability.h */; };
 		0367CFF51C4FDC8C004D42A0 /* Reachability.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0367CFF31C4FDC8C004D42A0 /* Reachability.mm */; };
+		15373F2D1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F2E1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
+		15373F301C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		5003524E1A52DC8F003418BD /* libuv_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50194DD01A52D94B00557DAB /* libuv_ios.a */; };
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
@@ -2267,9 +2265,6 @@
 		02E7C1AC1BD624A5002F026D /* ApplicationCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ApplicationCore.h; sourceTree = "<group>"; };
 		02E7C1AD1BD624A5002F026D /* Core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Core.cpp; sourceTree = "<group>"; };
 		02E7C1AE1BD624A5002F026D /* Core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
-		02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS.cpp; sourceTree = "<group>"; };
-		02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS_OpenGL.cpp; sourceTree = "<group>"; };
-		02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOS_OpenGL.h; sourceTree = "<group>"; };
 		02E7C1B41BD624A5002F026D /* DisplayMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayMode.h; sourceTree = "<group>"; };
 		02E7C1B51BD624A5002F026D /* PerformanceSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PerformanceSettings.cpp; sourceTree = "<group>"; };
 		02E7C1B61BD624A5002F026D /* PerformanceSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PerformanceSettings.h; sourceTree = "<group>"; };
@@ -3136,6 +3131,8 @@
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0367CFF21C4FDC8C004D42A0 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		0367CFF31C4FDC8C004D42A0 /* Reachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Reachability.mm; sourceTree = "<group>"; };
+		15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
+		15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		5C0105D11577993400E0B939 /* libmongodb_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_ios.a; path = ../../Libs/libs/libmongodb_ios.a; sourceTree = "<group>"; };
@@ -3440,9 +3437,6 @@
 				02E7C1AC1BD624A5002F026D /* ApplicationCore.h */,
 				02E7C1AD1BD624A5002F026D /* Core.cpp */,
 				02E7C1AE1BD624A5002F026D /* Core.h */,
-				02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */,
-				02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */,
-				02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */,
 				02E7C1B41BD624A5002F026D /* DisplayMode.h */,
 				02E7C1B51BD624A5002F026D /* PerformanceSettings.cpp */,
 				02E7C1B61BD624A5002F026D /* PerformanceSettings.h */,
@@ -4382,6 +4376,8 @@
 		02E7C50A1BD624A6002F026D /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */,
+				15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */,
 				02E7C50B1BD624A6002F026D /* ActionUpdateSystem.cpp */,
 				02E7C50C1BD624A6002F026D /* ActionUpdateSystem.h */,
 				02E7C50D1BD624A6002F026D /* AnimationSystem.cpp */,
@@ -4919,6 +4915,7 @@
 				02E7C6061BD624A6002F026D /* Interpolation.h in Headers */,
 				02E7CB9A1BD624A7002F026D /* internal.h in Headers */,
 				02E7C8BE1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
+				15373F301C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */,
 				02E7C6EA1BD624A7002F026D /* LockGuard.h in Headers */,
 				02E7C7B01BD624A7002F026D /* Signal.h in Headers */,
 				02E7CD301BD624A7002F026D /* SceneNodeAnimation.h in Headers */,
@@ -5271,7 +5268,6 @@
 				02E7C7501BD624A7002F026D /* File.h in Headers */,
 				02E7CDBA1BD624A7002F026D /* musicios.h in Headers */,
 				02E7CE5E1BD624A7002F026D /* UIFadeTransition.h in Headers */,
-				02E7C7141BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */,
 				02E7CED01BD624A7002F026D /* UISpinner.h in Headers */,
 				02E7C7D21BD624A7002F026D /* JobQueue.h in Headers */,
 				02E7CE721BD624A7002F026D /* UIHoleTransition.h in Headers */,
@@ -5466,6 +5462,7 @@
 				02E7C6051BD624A6002F026D /* Interpolation.h in Headers */,
 				02E7CB991BD624A7002F026D /* internal.h in Headers */,
 				02E7C8BD1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
+				15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */,
 				02E7C6E91BD624A7002F026D /* LockGuard.h in Headers */,
 				02E7C7AF1BD624A7002F026D /* Signal.h in Headers */,
 				02E7CD2F1BD624A7002F026D /* SceneNodeAnimation.h in Headers */,
@@ -5821,7 +5818,6 @@
 				02E7C74F1BD624A7002F026D /* File.h in Headers */,
 				02E7CDB91BD624A7002F026D /* musicios.h in Headers */,
 				02E7CE5D1BD624A7002F026D /* UIFadeTransition.h in Headers */,
-				02E7C7131BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */,
 				02E7CECF1BD624A7002F026D /* UISpinner.h in Headers */,
 				02E7C7D11BD624A7002F026D /* JobQueue.h in Headers */,
 				02E7CE711BD624A7002F026D /* UIHoleTransition.h in Headers */,
@@ -6121,6 +6117,7 @@
 				02E7C9E01BD624A7002F026D /* WebViewControliOS.mm in Sources */,
 				02E7C0FB1BD6248E002F026D /* MD5.cpp in Sources */,
 				02E7CDB21BD624A7002F026D /* FMODSoundEvent.cpp in Sources */,
+				15373F2E1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				02E7CEB01BD624A7002F026D /* UIScreenManageriPhoneImpl.mm in Sources */,
 				02E7C6081BD624A6002F026D /* KeyframeAnimation.cpp in Sources */,
 				02E7CCD41BD624A7002F026D /* WaveComponent.cpp in Sources */,
@@ -6356,7 +6353,6 @@
 				02E7C6FE1BD624A7002F026D /* ThreadPosix.cpp in Sources */,
 				02E7CD321BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */,
 				02E7C7041BD624A7002F026D /* ApplicationCore.cpp in Sources */,
-				02E7C70C1BD624A7002F026D /* CoreMacOS.cpp in Sources */,
 				02E7CCEC1BD624A7002F026D /* SwitchToRenerObjectConverter.cpp in Sources */,
 				02E7CC561BD624A7002F026D /* TextureDescriptor.cpp in Sources */,
 				02E7CEF41BD624A7002F026D /* TestClass.cpp in Sources */,
@@ -6444,7 +6440,6 @@
 				02E7C7FE1BD624A7002F026D /* NeonMath.cpp in Sources */,
 				02E7C8141BD624A7002F026D /* RectPacker.cpp in Sources */,
 				02E7CB401BD624A7002F026D /* LibTgaHelper.cpp in Sources */,
-				02E7C7121BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */,
 				02E7C62E1BD624A6002F026D /* GameAPI.cpp in Sources */,
 				02E7CEBA1BD624A7002F026D /* UIScreenTransition.cpp in Sources */,
 				02E7C7821BD624A7002F026D /* LoggerWin.cpp in Sources */,
@@ -6611,6 +6606,7 @@
 				02E7C9DF1BD624A7002F026D /* WebViewControliOS.mm in Sources */,
 				02E7C0FA1BD6248E002F026D /* MD5.cpp in Sources */,
 				02E7CDB11BD624A7002F026D /* FMODSoundEvent.cpp in Sources */,
+				15373F2D1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				02E7CEAF1BD624A7002F026D /* UIScreenManageriPhoneImpl.mm in Sources */,
 				02E7C6071BD624A6002F026D /* KeyframeAnimation.cpp in Sources */,
 				02E7CCD31BD624A7002F026D /* WaveComponent.cpp in Sources */,
@@ -6848,7 +6844,6 @@
 				02E7C6FD1BD624A7002F026D /* ThreadPosix.cpp in Sources */,
 				02E7CD311BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */,
 				02E7C7031BD624A7002F026D /* ApplicationCore.cpp in Sources */,
-				02E7C70B1BD624A7002F026D /* CoreMacOS.cpp in Sources */,
 				02E7CCEB1BD624A7002F026D /* SwitchToRenerObjectConverter.cpp in Sources */,
 				02E7CC551BD624A7002F026D /* TextureDescriptor.cpp in Sources */,
 				02E7CEF31BD624A7002F026D /* TestClass.cpp in Sources */,
@@ -6936,7 +6931,6 @@
 				02E7C7FD1BD624A7002F026D /* NeonMath.cpp in Sources */,
 				02E7C8131BD624A7002F026D /* RectPacker.cpp in Sources */,
 				02E7CB3F1BD624A7002F026D /* LibTgaHelper.cpp in Sources */,
-				02E7C7111BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */,
 				02E7C62D1BD624A6002F026D /* GameAPI.cpp in Sources */,
 				02E7CEB91BD624A7002F026D /* UIScreenTransition.cpp in Sources */,
 				02E7C7811BD624A7002F026D /* LoggerWin.cpp in Sources */,

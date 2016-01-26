@@ -128,7 +128,7 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
 bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
 {
     const String argString = argv[argIndex];
-    for (auto & opt: options)
+    for (auto& opt : options)
     {
         if (opt.name == argString)
         {
@@ -232,7 +232,6 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
 
     return false;
 }
-
 
 void ProgramOptions::PrintUsage() const
 {

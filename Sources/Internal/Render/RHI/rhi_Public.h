@@ -47,11 +47,10 @@ InitParam
 {
     uint32 width;
     uint32 height;
-    float32 scaleX;
-    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
+    uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
     DAVA::Mutex* FrameCommandExecutionSync;
 
@@ -76,11 +75,10 @@ InitParam
     InitParam()
         : width(0)
         , height(0)
-        , scaleX(1.0f)
-        , scaleY(1.0f)
         , window(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
+        , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
         , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
@@ -106,17 +104,15 @@ ResetParam
 {
     uint32 width;
     uint32 height;
-    float32 scaleX;
-    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
+    uint32 vsyncEnabled : 1;
 
     ResetParam()
         : width(0)
         , height(0)
-        , scaleX(1.0f)
-        , scaleY(1.0f)
         , fullScreen(false)
+        , vsyncEnabled(true)
         , window(nullptr)
     {
     }

@@ -316,10 +316,8 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     });
 
     core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
-    core->rendererParams.width = viewWidth;
-    core->rendererParams.height = viewHeight;
-    core->rendererParams.scaleX = viewScaleX;
-    core->rendererParams.scaleY = viewScaleY;
+    core->rendererParams.width = physicalWidth;
+    core->rendererParams.height = physicalHeight;
 
     InitCoordinatesSystem();
 
@@ -999,10 +997,8 @@ void WinUAPXamlApp::ResetScreen()
 void WinUAPXamlApp::ResetRender()
 {
     rhi::ResetParam params;
-    params.width = viewWidth;
-    params.height = viewHeight;
-    params.scaleX = viewScaleX;
-    params.scaleY = viewScaleY;
+    params.width = physicalWidth;
+    params.height = physicalHeight;
     Renderer::Reset(params);
 }
 
