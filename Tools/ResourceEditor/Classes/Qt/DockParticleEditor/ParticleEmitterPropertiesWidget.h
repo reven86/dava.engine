@@ -79,7 +79,8 @@ private:
 	QVBoxLayout* mainLayout;
 	QLineEdit* emitterNameLineEdit;
 
-	QLineEdit* emitterYamlPath;
+    QLineEdit* originalEmitterYamlPath = nullptr;
+    QLineEdit* emitterYamlPath;
 	QComboBox* emitterType;
 
 	EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;

@@ -80,7 +80,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 	[self enableTrackingArea];
 	isFirstDraw = true;
     willQuit = false;
-    
+
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
     
@@ -136,7 +136,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 - (void)reshape
 {
-    if(Renderer::IsInitialized())
+    if (Renderer::IsInitialized())
     {
         NSSize windowSize = [self frame].size;
         float32 backingScale = Core::Instance()->GetScreenScaleFactor();
@@ -150,13 +150,13 @@ extern void FrameworkMain(int argc, char *argv[]);
         params.width = backingSize[0];
         params.height = backingSize[1];
         Renderer::Reset(params);
-        
+
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
         UIScreenManager::Instance()->ScreenSizeChanged();
     }
-    
+
     [super reshape];
 }
 
@@ -164,7 +164,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
     if(willQuit)
         return;
-    
+
     DAVA::Core::Instance()->SystemProcessFrame();
 }
 
@@ -185,7 +185,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 static Vector<DAVA::UIEvent> activeTouches;
 
-void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
+void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
@@ -342,6 +342,51 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
     DAVA::UIEvent ev;
 
     ConvertNSEventToUIEvent(self, theEvent, ev, DAVA::UIEvent::Phase::WHEEL);
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)magnifyWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = [event magnification];
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)rotateWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = [event rotation];
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)swipeWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = [event deltaX] * (-1.f);
+    ev.gesture.dy = [event deltaY] * (-1.f);
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
 
     UIControlSystem::Instance()->OnInput(&ev);
 }

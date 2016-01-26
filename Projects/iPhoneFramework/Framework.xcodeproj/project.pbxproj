@@ -393,10 +393,6 @@
 		02E7C76A1BD624A7002F026D /* KeyedUnarchiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1E71BD624A5002F026D /* KeyedUnarchiver.cpp */; };
 		02E7C76B1BD624A7002F026D /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1E81BD624A5002F026D /* KeyedUnarchiver.h */; };
 		02E7C76C1BD624A7002F026D /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1E81BD624A5002F026D /* KeyedUnarchiver.h */; };
-		02E7C7711BD624A7002F026D /* LocalizationIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1EB1BD624A5002F026D /* LocalizationIPhone.h */; };
-		02E7C7721BD624A7002F026D /* LocalizationIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1EB1BD624A5002F026D /* LocalizationIPhone.h */; };
-		02E7C7731BD624A7002F026D /* LocalizationIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1EC1BD624A5002F026D /* LocalizationIPhone.mm */; };
-		02E7C7741BD624A7002F026D /* LocalizationIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1EC1BD624A5002F026D /* LocalizationIPhone.mm */; };
 		02E7C7751BD624A7002F026D /* LocalizationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1ED1BD624A5002F026D /* LocalizationSystem.cpp */; };
 		02E7C7761BD624A7002F026D /* LocalizationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1ED1BD624A5002F026D /* LocalizationSystem.cpp */; };
 		02E7C7771BD624A7002F026D /* LocalizationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1EE1BD624A5002F026D /* LocalizationSystem.h */; };
@@ -2068,6 +2064,10 @@
 		02FD82061924997C007762C0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		0367CFF41C4FDC8C004D42A0 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 0367CFF21C4FDC8C004D42A0 /* Reachability.h */; };
 		0367CFF51C4FDC8C004D42A0 /* Reachability.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0367CFF31C4FDC8C004D42A0 /* Reachability.mm */; };
+		15373F2D1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F2E1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */; };
+		15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
+		15373F301C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		5003524E1A52DC8F003418BD /* libuv_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50194DD01A52D94B00557DAB /* libuv_ios.a */; };
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
@@ -2091,6 +2091,8 @@
 		C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
 		CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC677BA4197D46390089547A /* SystemConfiguration.framework */; };
 		CC677BA6197D46420089547A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC677BA4197D46390089547A /* SystemConfiguration.framework */; };
+		D70303811C523CF9000697A0 /* LocalizationApple.h in Headers */ = {isa = PBXBuildFile; fileRef = D703037F1C523CF9000697A0 /* LocalizationApple.h */; };
+		D70303821C523CF9000697A0 /* LocalizationApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = D70303801C523CF9000697A0 /* LocalizationApple.mm */; };
 		D7660D221C4D071E00E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */; };
 		D7660D231C4D071E00E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */; };
 		D7660D241C4D071E00E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D211C4D071E00E81868 /* ICloudKeyValue.h */; };
@@ -2300,8 +2302,6 @@
 		02E7C1E61BD624A5002F026D /* KeyedArchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedArchiver.h; sourceTree = "<group>"; };
 		02E7C1E71BD624A5002F026D /* KeyedUnarchiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedUnarchiver.cpp; sourceTree = "<group>"; };
 		02E7C1E81BD624A5002F026D /* KeyedUnarchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedUnarchiver.h; sourceTree = "<group>"; };
-		02E7C1EB1BD624A5002F026D /* LocalizationIPhone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationIPhone.h; sourceTree = "<group>"; };
-		02E7C1EC1BD624A5002F026D /* LocalizationIPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationIPhone.mm; sourceTree = "<group>"; };
 		02E7C1ED1BD624A5002F026D /* LocalizationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationSystem.cpp; sourceTree = "<group>"; };
 		02E7C1EE1BD624A5002F026D /* LocalizationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationSystem.h; sourceTree = "<group>"; };
 		02E7C1EF1BD624A5002F026D /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -3131,6 +3131,8 @@
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0367CFF21C4FDC8C004D42A0 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		0367CFF31C4FDC8C004D42A0 /* Reachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Reachability.mm; sourceTree = "<group>"; };
+		15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
+		15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		5C0105D11577993400E0B939 /* libmongodb_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_ios.a; path = ../../Libs/libs/libmongodb_ios.a; sourceTree = "<group>"; };
@@ -3150,6 +3152,8 @@
 		C7E76D4216DF6CC70041ED9A /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
 		CC677BA4197D46390089547A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D703037F1C523CF9000697A0 /* LocalizationApple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationApple.h; sourceTree = "<group>"; };
+		D70303801C523CF9000697A0 /* LocalizationApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationApple.mm; sourceTree = "<group>"; };
 		D7660D1F1C4D071E00E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
 		D7660D201C4D071E00E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D211C4D071E00E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
@@ -3496,6 +3500,8 @@
 		02E7C1D31BD624A5002F026D /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				D703037F1C523CF9000697A0 /* LocalizationApple.h */,
+				D70303801C523CF9000697A0 /* LocalizationApple.mm */,
 				02E7CF931BD63A20002F026D /* DynamicMemoryFile.cpp */,
 				02E7C1D41BD624A5002F026D /* Bitstream.cpp */,
 				02E7C1D51BD624A5002F026D /* Bitstream.h */,
@@ -3516,8 +3522,6 @@
 				02E7C1E61BD624A5002F026D /* KeyedArchiver.h */,
 				02E7C1E71BD624A5002F026D /* KeyedUnarchiver.cpp */,
 				02E7C1E81BD624A5002F026D /* KeyedUnarchiver.h */,
-				02E7C1EB1BD624A5002F026D /* LocalizationIPhone.h */,
-				02E7C1EC1BD624A5002F026D /* LocalizationIPhone.mm */,
 				02E7C1ED1BD624A5002F026D /* LocalizationSystem.cpp */,
 				02E7C1EE1BD624A5002F026D /* LocalizationSystem.h */,
 				02E7C1EF1BD624A5002F026D /* Logger.cpp */,
@@ -4372,6 +4376,8 @@
 		02E7C50A1BD624A6002F026D /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */,
+				15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */,
 				02E7C50B1BD624A6002F026D /* ActionUpdateSystem.cpp */,
 				02E7C50C1BD624A6002F026D /* ActionUpdateSystem.h */,
 				02E7C50D1BD624A6002F026D /* AnimationSystem.cpp */,
@@ -4909,6 +4915,7 @@
 				02E7C6061BD624A6002F026D /* Interpolation.h in Headers */,
 				02E7CB9A1BD624A7002F026D /* internal.h in Headers */,
 				02E7C8BE1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
+				15373F301C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */,
 				02E7C6EA1BD624A7002F026D /* LockGuard.h in Headers */,
 				02E7C7B01BD624A7002F026D /* Signal.h in Headers */,
 				02E7CD301BD624A7002F026D /* SceneNodeAnimation.h in Headers */,
@@ -5141,7 +5148,6 @@
 				02E7CEA41BD624A7002F026D /* UIScreenManager.h in Headers */,
 				02E7CC421BD624A7002F026D /* rhi_ShaderSource.h in Headers */,
 				02E7CB2E1BD624A7002F026D /* ImageSystem.h in Headers */,
-				02E7C7721BD624A7002F026D /* LocalizationIPhone.h in Headers */,
 				02E7CEEC1BD624A7002F026D /* UIWebView.h in Headers */,
 				02E7CC0A1BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD901BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
@@ -5456,6 +5462,7 @@
 				02E7C6051BD624A6002F026D /* Interpolation.h in Headers */,
 				02E7CB991BD624A7002F026D /* internal.h in Headers */,
 				02E7C8BD1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
+				15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */,
 				02E7C6E91BD624A7002F026D /* LockGuard.h in Headers */,
 				02E7C7AF1BD624A7002F026D /* Signal.h in Headers */,
 				02E7CD2F1BD624A7002F026D /* SceneNodeAnimation.h in Headers */,
@@ -5492,6 +5499,7 @@
 				02E7CF481BD639A4002F026D /* Stats.h in Headers */,
 				02E7CC8D1BD624A7002F026D /* RotationControllerComponent.h in Headers */,
 				02E7CCF51BD624A7002F026D /* DataNode.h in Headers */,
+				D70303811C523CF9000697A0 /* LocalizationApple.h in Headers */,
 				02E7CDED1BD624A7002F026D /* LinearLayoutAlgorithm.h in Headers */,
 				02E7CDDD1BD624A7002F026D /* AnchorLayoutAlgorithm.h in Headers */,
 				02E7C6D91BD624A6002F026D /* Collisions.h in Headers */,
@@ -5689,7 +5697,6 @@
 				02E7CEA31BD624A7002F026D /* UIScreenManager.h in Headers */,
 				02E7CC411BD624A7002F026D /* rhi_ShaderSource.h in Headers */,
 				02E7CB2D1BD624A7002F026D /* ImageSystem.h in Headers */,
-				02E7C7711BD624A7002F026D /* LocalizationIPhone.h in Headers */,
 				02E7CEEB1BD624A7002F026D /* UIWebView.h in Headers */,
 				02E7CC091BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD8F1BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
@@ -6110,6 +6117,7 @@
 				02E7C9E01BD624A7002F026D /* WebViewControliOS.mm in Sources */,
 				02E7C0FB1BD6248E002F026D /* MD5.cpp in Sources */,
 				02E7CDB21BD624A7002F026D /* FMODSoundEvent.cpp in Sources */,
+				15373F2E1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				02E7CEB01BD624A7002F026D /* UIScreenManageriPhoneImpl.mm in Sources */,
 				02E7C6081BD624A6002F026D /* KeyframeAnimation.cpp in Sources */,
 				02E7CCD41BD624A7002F026D /* WaveComponent.cpp in Sources */,
@@ -6468,7 +6476,6 @@
 				02E7C6801BD624A6002F026D /* FixedSizePoolAllocator.cpp in Sources */,
 				02E7C7A81BD624A7002F026D /* ZipFile.cpp in Sources */,
 				02E7C63E1BD624A6002F026D /* Polygon2_wrap.cxx in Sources */,
-				02E7C7741BD624A7002F026D /* LocalizationIPhone.mm in Sources */,
 				02E7CD2E1BD624A7002F026D /* SceneNodeAnimation.cpp in Sources */,
 				02E7C5F81BD624A6002F026D /* Animation.cpp in Sources */,
 				02E7CCB81BD624A7002F026D /* SoundComponent.cpp in Sources */,
@@ -6599,6 +6606,7 @@
 				02E7C9DF1BD624A7002F026D /* WebViewControliOS.mm in Sources */,
 				02E7C0FA1BD6248E002F026D /* MD5.cpp in Sources */,
 				02E7CDB11BD624A7002F026D /* FMODSoundEvent.cpp in Sources */,
+				15373F2D1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				02E7CEAF1BD624A7002F026D /* UIScreenManageriPhoneImpl.mm in Sources */,
 				02E7C6071BD624A6002F026D /* KeyframeAnimation.cpp in Sources */,
 				02E7CCD31BD624A7002F026D /* WaveComponent.cpp in Sources */,
@@ -6789,6 +6797,7 @@
 				02E7CE831BD624A7002F026D /* UIMoveInTransition.cpp in Sources */,
 				02E7C7891BD624A7002F026D /* StaticMemoryFile.cpp in Sources */,
 				02E7C89B1BD624A7002F026D /* TCPClientTransport.cpp in Sources */,
+				D70303821C523CF9000697A0 /* LocalizationApple.mm in Sources */,
 				02E7CD111BD624A7002F026D /* PathManip.cpp in Sources */,
 				02E7CF421BD639A4002F026D /* Replay.cpp in Sources */,
 				02E7CE2B1BD624A7002F026D /* UIStyleSheetSystem.cpp in Sources */,
@@ -6958,7 +6967,6 @@
 				02E7C67F1BD624A6002F026D /* FixedSizePoolAllocator.cpp in Sources */,
 				02E7C7A71BD624A7002F026D /* ZipFile.cpp in Sources */,
 				02E7C63D1BD624A6002F026D /* Polygon2_wrap.cxx in Sources */,
-				02E7C7731BD624A7002F026D /* LocalizationIPhone.mm in Sources */,
 				02E7CD2D1BD624A7002F026D /* SceneNodeAnimation.cpp in Sources */,
 				02E7C5F71BD624A6002F026D /* Animation.cpp in Sources */,
 				02E7CCB71BD624A7002F026D /* SoundComponent.cpp in Sources */,

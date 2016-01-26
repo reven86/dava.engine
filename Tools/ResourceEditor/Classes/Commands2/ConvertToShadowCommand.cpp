@@ -29,15 +29,19 @@
 
 #include "ConvertToShadowCommand.h"
 
-ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
-    : Command2(CMDID_CONVERT_TO_SHADOW, "Convert To Shadow")
-	, oldBatch(batch)
-	, newBatch(NULL)
-{
-	DVASSERT(oldBatch);
+#include "Qt/Scene/SceneEditor2.h"
 
-	renderObject = DAVA::SafeRetain(oldBatch->GetRenderObject());
-	DVASSERT(renderObject);
+ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::RenderBatch* batch)
+    : Command2(CMDID_CONVERT_TO_SHADOW, "Convert To Shadow")
+    , entity(SafeRetain(entity_))
+    , oldBatch(batch)
+    , newBatch(NULL)
+{
+    DVASSERT(entity);
+    DVASSERT(oldBatch);
+
+    renderObject = DAVA::SafeRetain(oldBatch->GetRenderObject());
+    DVASSERT(renderObject);
 
 	oldBatch->Retain();
 
@@ -47,13 +51,31 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
     newBatch->SetPolygonGroup(shadowPg);
     shadowPg->Release();
 
-    DAVA::NMaterial* shadowMaterial = new DAVA::NMaterial();
-    shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
-    shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
+    DAVA::ScopedPtr<DAVA::NMaterial> shadowMaterialInst(new DAVA::NMaterial());
+    shadowMaterialInst->SetMaterialName(DAVA::FastName("Shadow_Material_Instance"));
 
-    newBatch->SetMaterial(shadowMaterial);
+    newBatch->SetMaterial(shadowMaterialInst);
 
-    shadowMaterial->Release();
+    SceneEditor2* scene = static_cast<SceneEditor2*>(entity->GetScene());
+    DVASSERT(scene != nullptr);
+    const DAVA::Set<NMaterial*> topLevelMaterials = scene->materialSystem->GetTopParents();
+    DAVA::Set<NMaterial*>::iterator iter = std::find_if(topLevelMaterials.begin(), topLevelMaterials.end(), [](NMaterial* material) {
+        DVASSERT(material->HasLocalFXName());
+        return material->GetLocalFXName() == DAVA::NMaterialName::SHADOW_VOLUME;
+    });
+
+    if (iter != topLevelMaterials.end())
+    {
+        shadowMaterialInst->SetParent(*iter);
+    }
+    else
+    {
+        ScopedPtr<DAVA::NMaterial> shadowMaterial(new DAVA::NMaterial());
+        shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
+        shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
+
+        shadowMaterialInst->SetParent(shadowMaterial.get());
+    }
 }
 
 ConvertToShadowCommand::~ConvertToShadowCommand()
@@ -61,6 +83,7 @@ ConvertToShadowCommand::~ConvertToShadowCommand()
 	DAVA::SafeRelease(oldBatch);
 	DAVA::SafeRelease(newBatch);
     DAVA::SafeRelease(renderObject);
+    DAVA::SafeRelease(entity);
 }
 
 void ConvertToShadowCommand::Redo()
@@ -75,7 +98,7 @@ void ConvertToShadowCommand::Undo()
 
 DAVA::Entity* ConvertToShadowCommand::GetEntity() const
 {
-    return NULL;
+    return entity;
 }
 
 bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch)

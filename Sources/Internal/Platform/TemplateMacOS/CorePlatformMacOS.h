@@ -43,7 +43,7 @@ public:
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void Quit() override;
-    
+
     // Signal is emitted when window has been miniaturized/deminiaturized or
     // when application has been hidden/unhidden.
     // Signal parameter meaning:
@@ -53,14 +53,12 @@ public:
 
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
-    
     void SetScreenScaleMultiplier(float32 multiplier) override;
 
 private:
     float32 minWindowWidth = 0.0f;
     float32 minWindowHeight = 0.0f;
 };
-
 };
 
 #endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__

@@ -44,8 +44,8 @@ public:
 	virtual void Redo();
 	virtual DAVA::Entity* GetEntity() const { return NULL; }
 
-	DAVA::ParticleEmitter* emitter;
-	DAVA::ParticleEffectComponent* oldEffect, *newEffect;		
+    DAVA::ParticleEmitterData emitterData;
+    DAVA::ParticleEffectComponent* oldEffect, *newEffect;		
 	int oldIndex, newIndex;
 };
 
