@@ -74,10 +74,15 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 void UIScrollViewContainer::SetSize(const Vector2& size)
 {
     UIControl::SetSize(size);
+    ApplySizeChanges();
+}
 
+void UIScrollViewContainer::ApplySizeChanges()
+{
     UIControl* parent = GetParent();
     if (parent)
     {
+        const Vector2& size = GetSize();
         const Vector2& parentSize = parent->GetSize();
         // We should not allow scrolling when content rect is less than or is equal ScrollView "window"
         enableHorizontalScroll = size.dx > parentSize.dx;
@@ -99,7 +104,7 @@ void UIScrollViewContainer::SetSize(const Vector2& size)
                     {
                         if (scrollView->IsCenterContent())
                         {
-                            relativePosition.data[axis] = (scrollView->GetSize().data[axis] - GetSize().data[axis]) / 2;
+                            relativePosition.data[axis] = (parentSize.data[axis] - size.data[axis]) / 2;
                         }
                         else
                         {
@@ -125,10 +130,10 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
 {
     if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
-        newScroll += currentTouch->scrollDelta.y * GetWheelSensitivity();
+        newScroll += currentTouch->wheelDelta.y * GetWheelSensitivity();
     }
 
-    if (currentTouch->tid == mainTouch)
+    if (currentTouch->touchId == mainTouch)
     {
         newPos = currentTouch->point;
 
@@ -188,13 +193,13 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     {
         if (IsPointInside(currentTouch->point))
         {
-            currentScroll = NULL;
-			mainTouch = currentTouch->tid;
-			PerformEvent(EVENT_TOUCH_DOWN);
-			Input(currentTouch);
+            currentScroll = nullptr;
+            mainTouch = currentTouch->touchId;
+            PerformEvent(EVENT_TOUCH_DOWN);
+            Input(currentTouch);
 		}
 	}
-    else if (currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::Phase::DRAG)
+    else if (currentTouch->touchId == mainTouch && currentTouch->phase == UIEvent::Phase::DRAG)
     {
         // Don't scroll if touchTreshold is not exceeded
         if ((Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold) ||
@@ -221,7 +226,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 			Input(currentTouch);
 		}
 	}
-    else if (currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::Phase::ENDED)
+    else if (currentTouch->touchId == mainTouch && currentTouch->phase == UIEvent::Phase::ENDED)
     {
         Input(currentTouch);
         mainTouch = -1;
@@ -231,7 +236,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
         Input(currentTouch);
     }
 
-    if (scrollStartMovement && currentTouch->tid == mainTouch)
+    if (scrollStartMovement && currentTouch->touchId == mainTouch)
     {
         return true;
     }
@@ -320,7 +325,7 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 
 void UIScrollViewContainer::InputCancelled( UIEvent *currentInput )
 {
-    if (currentInput->tid == mainTouch)
+    if (currentInput->touchId == mainTouch)
     {
         mainTouch = -1;
         lockTouch = false;

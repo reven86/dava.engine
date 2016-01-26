@@ -73,7 +73,7 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
@@ -937,8 +937,21 @@ void PropertyEditor::ConvertToShadow()
 
             for ( int i = 0; i < dataList.size(); i++ )
             {
-		        DAVA::RenderBatch *batch = (DAVA::RenderBatch *)dataList.at(i)->object;
-		        curScene->Exec(new ConvertToShadowCommand(batch));
+                DAVA::RenderBatch* batch = (DAVA::RenderBatch*)dataList.at(i)->object;
+                DVASSERT(batch);
+                DAVA::RenderObject* renderObject = batch->GetRenderObject();
+                DAVA::Entity* entity = nullptr;
+                for (int i = 0; i < curNodes.size(); ++i)
+                {
+                    if (GetRenderObject(curNodes.at(i)) == renderObject)
+                    {
+                        entity = curNodes.at(i);
+                        break;
+                    }
+                }
+
+                DVASSERT(entity);
+                curScene->Exec(new ConvertToShadowCommand(entity, batch));
             }
 
             if (usebatch)
@@ -1553,7 +1566,7 @@ QString PropertyEditor::GetDefaultFilePath()
         {
             defaultPath = scenePath.c_str();
         }
-	}
+    }
 
 	return defaultPath;
 }

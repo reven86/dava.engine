@@ -168,11 +168,6 @@ bool sortFunc(const ColladaVertex& a, const ColladaVertex& b)
 
 ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPolygons* _polygons, ColladaVertexWeight* vertexWeightArray)
 {
-    bool rebuildTangentSpace = false;
-    #ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
-    rebuildTangentSpace = true;
-    #endif
-
     vertexFormat = EVF_VERTEX | EVF_NORMAL;
     parentMesh = _parentMesh;
     polygons = _polygons;
@@ -537,40 +532,6 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
                 if (!FLOAT_EQUAL_EPS(tvi->texCoords[1].y, tvj->texCoords[1].y, EPS))
                 {
                     equalIJ = false;
-                }
-            }
-
-            if (!rebuildTangentSpace) //if we are going to rebuild tangent space later - no need to compare here
-            {
-                if (pTangentSource)
-                {
-                    if (!FLOAT_EQUAL_EPS(tvi->tangent.x, tvj->tangent.x, EPS))
-                    {
-                        equalIJ = false;
-                    }
-                    if (!FLOAT_EQUAL_EPS(tvi->tangent.y, tvj->tangent.y, EPS))
-                    {
-                        equalIJ = false;
-                    }
-                    if (!FLOAT_EQUAL_EPS(tvi->tangent.z, tvj->tangent.z, EPS))
-                    {
-                        equalIJ = false;
-                    }
-                }
-                if (pBinormalSource)
-                {
-                    if (!FLOAT_EQUAL_EPS(tvi->binormal.x, tvj->binormal.x, EPS))
-                    {
-                        equalIJ = false;
-                    }
-                    if (!FLOAT_EQUAL_EPS(tvi->binormal.y, tvj->binormal.y, EPS))
-                    {
-                        equalIJ = false;
-                    }
-                    if (!FLOAT_EQUAL_EPS(tvi->binormal.z, tvj->binormal.z, EPS))
-                    {
-                        equalIJ = false;
-                    }
                 }
             }
 

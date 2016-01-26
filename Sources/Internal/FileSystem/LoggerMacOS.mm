@@ -29,19 +29,30 @@
 
 #include "FileSystem/Logger.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-#import <Foundation/Foundation.h>
+#if defined(__DAVAENGINE_MACOS__)
 
-namespace DAVA 
+#include <cstdio>
+namespace DAVA
 {
-// iPhone / MacOS implementation of Logger
-	
-	
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-	NSLog(@"[%s] %s", GetLogLevelString(ll), text);
+    // Use printf instead of std::cout as std::cout can produce mess when
+    // logging from several threads
+    std::printf("[%s] %s", GetLogLevelString(ll), text);
+}
+} // namespace DAVA
+
+#elif defined(__DAVAENGINE_IPHONE__)
+
+#import <Foundation/Foundation.h>
+namespace DAVA
+{
+
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
+{
+    NSLog(@"[%s] %s", GetLogLevelString(ll), text);
 }
 
-}
+} // namespace DAVA
 
 #endif

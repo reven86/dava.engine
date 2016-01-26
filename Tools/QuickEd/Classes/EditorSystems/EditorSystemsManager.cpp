@@ -27,12 +27,10 @@
 =====================================================================================*/
 
 #include "EditorSystems/EditorSystemsManager.h"
-#include "EditorSystems/KeyboardProxy.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/ControlProperties/RootProperty.h"
 
 #include "EditorSystems/SelectionSystem.h"
 #include "EditorSystems/CanvasSystem.h"
@@ -44,6 +42,15 @@
 
 using namespace DAVA;
 
+Vector2 RotateVector(const Vector2& in, float32 angle)
+{
+    DAVA::Matrix3 rotateMatrix;
+    rotateMatrix.BuildRotation(angle);
+    return in * rotateMatrix;
+}
+
+EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](DAVA::UIControl* ) {return false;};
+
 class EditorSystemsManager::RootControl : public UIControl
 {
 public:
@@ -52,7 +59,7 @@ public:
 
 private:
     bool SystemInput(UIEvent* currentInput) override;
-    
+
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
     Vector2 prevPosition;
@@ -79,16 +86,16 @@ bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
     return UIControl::SystemInput(currentInput);
 }
 
-EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
+EditorSystemsManager::EditorSystemsManager()
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
-    , package(SafeRetain(_package))
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName("rootControl");
     rootControl->AddControl(scalableControl.Get());
     scalableControl->SetName("scalableContent");
 
+    PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     systems.emplace_back(new CanvasSystem(this));
@@ -96,20 +103,9 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
-
-    package->AddListener(this);
 }
 
-EditorSystemsManager::~EditorSystemsManager()
-{
-    package->RemoveListener(this);
-    SafeRelease(package);
-}
-
-PackageNode* EditorSystemsManager::GetPackage()
-{
-    return package;
-}
+EditorSystemsManager::~EditorSystemsManager() = default;
 
 UIControl* EditorSystemsManager::GetRootControl()
 {
@@ -119,27 +115,6 @@ UIControl* EditorSystemsManager::GetRootControl()
 UIControl* EditorSystemsManager::GetScalableControl()
 {
     return scalableControl.Get();
-}
-
-void EditorSystemsManager::Deactivate()
-{
-    for (auto& system : systems)
-    {
-        system->OnDeactivated();
-    }
-    rootControl->RemoveFromParent();
-}
-
-void EditorSystemsManager::Activate()
-{
-    for (auto& system : systems)
-    {
-        system->OnActivated();
-    }
-    if (editingRootControls.empty())
-    {
-        SetPreviewMode(true);
-    }
 }
 
 bool EditorSystemsManager::OnInput(UIEvent* currentInput)
@@ -169,7 +144,27 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorSystemsManager::OnPackageNodeChanged(const std::weak_ptr<PackageNode> &package_)
+{
+    {
+        auto lastNode = package.lock();
+        if (nullptr != lastNode)
+        {
+            lastNode->RemoveListener(this);
+        }
+    }
+    package = package_;
+    SetPreviewMode(true);
+    {
+        auto newNode = package.lock();
+        if (nullptr != newNode)
+        {
+            newNode->AddListener(this);
+        }
+    }
+}
+
+void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
@@ -189,11 +184,16 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 {
     if (previewMode)
     {
-        PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
-        if (destination == packageControlsNode)
+        auto packagePtr = package.lock();
+        DVASSERT(nullptr != packagePtr);
+        if (nullptr != packagePtr)
         {
-            editingRootControls.insert(node);
-            EditingRootControlsChanged.Emit(editingRootControls);
+            PackageControlsNode* packageControlsNode = packagePtr->GetPackageControlsNode();
+            if (destination == packageControlsNode)
+            {
+                editingRootControls.insert(node);
+                EditingRootControlsChanged.Emit(editingRootControls);
+            }
         }
     }
 }
@@ -201,13 +201,23 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 void EditorSystemsManager::SetPreviewMode(bool mode)
 {
     previewMode = mode;
-    editingRootControls.clear();
+    RefreshRootControls();
+}
+
+void EditorSystemsManager::RefreshRootControls()
+{
+    SortedPackageBaseNodeSet newRootControls(CompareByLCA);
+
     if (previewMode)
     {
-        PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-        for (int index = 0; index < controlsNode->GetCount(); ++index)
+        auto packagePtr = package.lock();
+        if (nullptr != packagePtr)
         {
-            editingRootControls.insert(controlsNode->Get(index));
+            PackageControlsNode* controlsNode = packagePtr->GetPackageControlsNode();
+            for (int index = 0; index < controlsNode->GetCount(); ++index)
+            {
+                newRootControls.insert(controlsNode->Get(index));
+            }
         }
     }
     else
@@ -221,9 +231,13 @@ void EditorSystemsManager::SetPreviewMode(bool mode)
             }
             if (nullptr != root)
             {
-                editingRootControls.insert(root);
+                newRootControls.insert(root);
             }
         }
     }
-    EditingRootControlsChanged.Emit(editingRootControls);
+    if (editingRootControls != newRootControls)
+    {
+        editingRootControls = newRootControls;
+        EditingRootControlsChanged.Emit(editingRootControls);
+    }
 }

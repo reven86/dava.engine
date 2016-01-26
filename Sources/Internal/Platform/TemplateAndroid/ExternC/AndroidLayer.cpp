@@ -327,7 +327,7 @@ int Java_com_dava_framework_JNIActivity_nativeGetDesiredFPS(JNIEnv* env, jobject
     return DAVA::Renderer::GetDesiredFPS();
 }
 
-namespace
+namespace android_details
 {
 DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
 {
@@ -355,32 +355,35 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
     return phase;
 }
 
-DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
+DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
+                                         jint action, jint source)
 {
     DAVA::UIEvent event;
-    event.tid = env->GetIntField(input, gInputEventTidField);
-    event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
-    event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
+    event.touchId = static_cast<DAVA::uint32>(env->GetIntField(input, gInputEventTidField));
+    event.point.x = event.physPoint.x = env->GetFloatField(input,
+                                                           gInputEventXField);
+    event.point.y = event.physPoint.y = env->GetFloatField(input,
+                                                           gInputEventYField);
     event.tapCount = env->GetIntField(input, gInputEventTapCountField);
     event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
-        event.phase = GetPhase(action, source);
-        if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
-        {
-            event.device = DAVA::UIEvent::Device::GAMEPAD;
-        }
-        else if (event.phase >= DAVA::UIEvent::Phase::CHAR &&
-                 event.phase <= DAVA::UIEvent::Phase::KEY_UP)
-        {
-            event.device = DAVA::UIEvent::Device::KEYBOARD;
-        }
-        else
-        {
-            event.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
-        }
+    event.phase = GetPhase(action, source);
 
-        return event;
+    if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
+    {
+        event.device = DAVA::UIEvent::Device::GAMEPAD;
     }
+    else if (event.phase >= DAVA::UIEvent::Phase::CHAR && event.phase <= DAVA::UIEvent::Phase::KEY_UP)
+    {
+        event.device = DAVA::UIEvent::Device::KEYBOARD;
+    }
+    else
+    {
+        event.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
+    }
+
+    return event;
 }
+} // end namespace android_details
 
 // CALLED FROM JNIGLSurfaceView
 
@@ -409,8 +412,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 				{
 					jobject jInput = gArrayListGetMethod(javaAllInputs, touchIndex);
 
-					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
-					allInputs.push_back(event);
+                    DAVA::UIEvent event = android_details::CreateUIEventFromJavaEvent(env, jInput, action, source);
+                    allInputs.push_back(event);
 
                     env->DeleteLocalRef(jInput);
                 }
@@ -418,16 +421,15 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
                 {
                     jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
-					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
-					activeInputs.push_back(event);
+                    DAVA::UIEvent event = android_details::CreateUIEventFromJavaEvent(env, jInput, action, source);
+                    activeInputs.push_back(event);
 
                     env->DeleteLocalRef(jInput);
                 }
             }
             core->OnInput(action, source, activeInputs, allInputs);
         }
-	}
-
+    }
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)

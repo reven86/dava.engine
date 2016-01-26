@@ -55,6 +55,7 @@ class PackageNode : public PackageBaseNode
 {
 public:
     PackageNode(const DAVA::FilePath &path);
+
 private:
     virtual ~PackageNode();
     
@@ -83,9 +84,9 @@ public:
     bool FindPackageInImportedPackagesRecursively(const PackageNode *node) const;
     bool FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const;
 
-    void AddListener(PackageListener *listener);
-    void RemoveListener(PackageListener *listener);
-    
+    void AddListener(PackageListener* listener);
+    void RemoveListener(PackageListener* listener);
+
     void SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
     void RefreshProperty(ControlNode *node, AbstractProperty *property);

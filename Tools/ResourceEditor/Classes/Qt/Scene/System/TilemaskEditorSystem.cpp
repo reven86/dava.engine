@@ -237,10 +237,10 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 	}
 	
 	UpdateCursorPosition();
-	
-	if (event->tid == UIEvent::BUTTON_1)
-	{
-		Vector3 point;
+
+    if (event->mouseButton == UIEvent::MouseButton::LEFT)
+    {
+        Vector3 point;
 
 		switch(event->phase)
 		{

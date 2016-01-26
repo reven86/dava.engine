@@ -53,7 +53,7 @@ bool YamlParser::Parse(const FilePath & pathName)
     File * yamlFile = File::Create(pathName, File::OPEN | File::READ);
     if (!yamlFile)
     {
-        Logger::Error("[YamlParser::Parse] Can't create file: %s", pathName.GetAbsolutePathname().c_str());
+        Logger::Error("[YamlParser::Parse] Can't Open file %s for read", pathName.GetAbsolutePathname().c_str());
         return false;
     }
 

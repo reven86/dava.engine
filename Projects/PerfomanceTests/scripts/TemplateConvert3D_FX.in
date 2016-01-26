@@ -71,10 +71,6 @@ def main_convert_3d(): # it's function for external usage
     
     print "ex: " + executable;
 
-    # clean folders
-    for i in range(0, len(fx)):
-        os.spawnv(os.P_WAIT, executable, [executable, '-cleanfolder', '-folder', dataDir +"/" + fx[i], '-forceclose']);
-
     # export tanks
     for i in range(0, len(fx)):
         log_time()

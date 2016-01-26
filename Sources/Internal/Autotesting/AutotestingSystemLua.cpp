@@ -37,6 +37,10 @@
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "MemoryManager/MemoryProfiler.h"
+#endif
+
 extern "C"{
 #include "lua.h"
 #include "lualib.h"
@@ -58,9 +62,28 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 
 namespace DAVA
 {
-	static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+    if (0 == nsize)
+    {
+        MemoryManager::Instance()->Deallocate(ptr);
+        return nullptr;
+    }
 
-	void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
+    void* newPtr = MemoryManager::Instance()->Allocate(nsize, ALLOC_POOL_LUA);
+    if (osize != 0 && newPtr != nullptr)
+    {
+        size_t n = std::min(osize, nsize);
+        memcpy(newPtr, ptr, n);
+        MemoryManager::Instance()->Deallocate(ptr);
+    }
+    return newPtr;
+}
+#else
+static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
+
+    void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 	{
 		if (nsize == 0)
 		{
@@ -74,11 +97,15 @@ namespace DAVA
 			return mem;
 		}
 	}
+#endif
 
-	AutotestingSystemLua::AutotestingSystemLua() : delegate(nullptr), luaState(nullptr), memoryPool(nullptr), memorySpace(nullptr)
+    AutotestingSystemLua::AutotestingSystemLua() : delegate(nullptr), luaState(nullptr), memoryPool(nullptr), memorySpace(nullptr)
 	{
-
-	}
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        // Suppress warning about unused data member
+        (void)memoryPool;
+#endif
+    }
 
 	AutotestingSystemLua::~AutotestingSystemLua()
 	{
@@ -90,9 +117,11 @@ namespace DAVA
 		lua_close(luaState);
 		luaState = nullptr;
     
-		destroy_mspace(memorySpace);
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
+        destroy_mspace(memorySpace);
 		free(memoryPool);
-	}
+#endif
+    }
 
 	void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
 	{
@@ -109,11 +138,13 @@ namespace DAVA
 
 		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
 
-		memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
+        memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
 		memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
 		memorySpace = create_mspace_with_base(memoryPool, LUA_MEMORY_POOL_SIZE, 0);
 		mspace_set_footprint_limit(memorySpace, LUA_MEMORY_POOL_SIZE);
-		luaState = lua_newstate(lua_allocator, memorySpace);
+#endif
+        luaState = lua_newstate(lua_allocator, memorySpace);
 		luaL_openlibs(luaState);
 
 		lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
@@ -212,11 +243,11 @@ namespace DAVA
             AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
         }
         lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript())
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
-		}
-		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
+        if (!Instance()->RunScript())
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
+        }
+        lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
 		return 2;
 	}
@@ -276,12 +307,12 @@ namespace DAVA
     }
 
     String AutotestingSystemLua::GetPlatform()
-	{
-		return DeviceInfo::GetPlatformString();
-	}
+    {
+        return DeviceInfo::GetPlatformString();
+    }
 
-	String AutotestingSystemLua::GetDeviceName()
-	{
+    String AutotestingSystemLua::GetDeviceName()
+    {
 		String deviceName;
 		if (DeviceInfo::GetPlatformString() == "Android")
 		{
@@ -500,17 +531,17 @@ namespace DAVA
 			return;
 		}
 
-		UIEvent keyPress;
-		keyPress.tid = keyChar;
+        UIEvent keyPress;
+        keyPress.keyChar = keyChar;
         keyPress.phase = UIEvent::Phase::CHAR;
         keyPress.tapCount = 1;
         keyPress.keyChar = keyChar;
 
-        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
+        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.key, keyPress.phase,
                                keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-        switch (keyPress.tid)
+        switch (keyPress.keyChar)
         {
-        case DVKEY_BACKSPACE:
+        case '\b':
         {
             //TODO: act the same way on iPhone
             WideString str = L"";
@@ -520,14 +551,14 @@ namespace DAVA
             }
             break;
         }
-        case DVKEY_ENTER:
+        case '\n':
         {
             uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
             break;
-		}
-		case DVKEY_ESCAPE:
-		{
-			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
+        }
+        case 27: // ESCAPE
+        {
+            uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
 			break;
 		}
 		default:
@@ -537,10 +568,10 @@ namespace DAVA
 				break;
 			}
 			WideString str;
-			str += keyPress.keyChar;
-			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
-			{
-				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
+            str += keyPress.keyChar;
+            if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
+            {
+                uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
 			}
 			break;
 		}
@@ -685,7 +716,7 @@ namespace DAVA
 	{
 		UIEvent touchDown;
         touchDown.phase = UIEvent::Phase::BEGAN;
-        touchDown.tid = touchId;
+        touchDown.touchId = touchId;
         touchDown.tapCount = tapCount;
         touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchDown.point = point;
@@ -695,7 +726,7 @@ namespace DAVA
     void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
     {
         UIEvent touchMove;
-        touchMove.tid = touchId;
+        touchMove.touchId = touchId;
         touchMove.tapCount = 1;
         touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchMove.point = point;
@@ -724,7 +755,7 @@ namespace DAVA
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
         touchUp.phase = UIEvent::Phase::ENDED;
-        touchUp.tid = touchId;
+        touchUp.touchId = touchId;
 
         ProcessInput(touchUp);
     }
@@ -764,11 +795,11 @@ namespace DAVA
         return delegate->LoadWrappedLuaObjects(luaState);
     }
 
-	bool AutotestingSystemLua::LoadScript(const String &luaScript)
-	{
-		if (!luaState)
-		{
-			return false;
+    bool AutotestingSystemLua::LoadScript(const String& luaScript)
+    {
+        if (!luaState)
+        {
+            return false;
 		}
 		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
 		{

@@ -185,12 +185,12 @@ bool PackageNode::FindPackageInImportedPackagesRecursively(const DAVA::FilePath 
     return false;
 }
 
-void PackageNode::AddListener(PackageListener *listener)
+void PackageNode::AddListener(PackageListener* listener)
 {
     listeners.push_back(listener);
 }
 
-void PackageNode::RemoveListener(PackageListener *listener)
+void PackageNode::RemoveListener(PackageListener* listener)
 {
     auto it = std::find(listeners.begin(), listeners.end(), listener);
     if (it != listeners.end())
@@ -266,7 +266,7 @@ void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *prope
 
     for (PackageListener* listener : listeners)
         listener->StylePropertyWasChanged(node, property);
-    
+
     RefreshPackageStylesAndLayout();
 }
 
@@ -300,7 +300,7 @@ void PackageNode::RemoveSelector(StyleSheetNode *node, StyleSheetSelectorPropert
 
     for (PackageListener* listener : listeners)
         listener->StylePropertyWasChanged(node, property);
-    
+
     RefreshPackageStylesAndLayout();
 }
 
@@ -308,13 +308,13 @@ void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, 
 {
     for (PackageListener* listener : listeners)
         listener->ControlWillBeAdded(node, dest, index);
-    
+
     node->MarkAsAlive();
     dest->InsertAtIndex(index, node);
 
     for (PackageListener* listener : listeners)
         listener->ControlWasAdded(node, dest, index);
-    
+
     RefreshControlStylesAndLayout(node);
 }
 
@@ -322,13 +322,13 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
 {
     for (PackageListener* listener : listeners)
         listener->ControlWillBeRemoved(node, from);
-    
+
     node->MarkAsRemoved();
     from->Remove(node);
 
     for (PackageListener* listener : listeners)
         listener->ControlWasRemoved(node, from);
-    
+
     if (from->GetControl() != nullptr)
         RefreshControlStylesAndLayout(node);
 }
@@ -337,7 +337,7 @@ void PackageNode::InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA:
 {
     for (PackageListener* listener : listeners)
         listener->StyleWillBeAdded(node, dest, index);
-    
+
     dest->InsertAtIndex(index, node);
 
     for (PackageListener* listener : listeners)
@@ -350,7 +350,7 @@ void PackageNode::RemoveStyle(StyleSheetNode *node, StyleSheetsNode *from)
 {
     for (PackageListener* listener : listeners)
         listener->StyleWillBeRemoved(node, from);
-    
+
     from->Remove(node);
 
     for (PackageListener* listener : listeners)
@@ -363,7 +363,7 @@ void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
 {
     for (PackageListener* listener : listeners)
         listener->ImportedPackageWillBeAdded(node, importedPackagesNode, index);
-    
+
     importedPackagesNode->InsertAtIndex(index, node);
 
     for (PackageListener* listener : listeners)
@@ -376,7 +376,7 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
 {
     for (PackageListener* listener : listeners)
         listener->ImportedPackageWillBeRemoved(node, importedPackagesNode);
-    
+
     importedPackagesNode->Remove(node);
     
     RefreshPackageStylesAndLayout();

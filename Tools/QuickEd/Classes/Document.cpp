@@ -28,7 +28,6 @@
 
 
 #include "Document.h"
-#include "EditorSystems/EditorSystemsManager.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -41,18 +40,12 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(PackageNode* _package, QObject* parent)
+Document::Document(std::shared_ptr<PackageNode> package_, QObject* parent)
     : QObject(parent)
-    , package(SafeRetain(_package))
+    , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
-    , systemManager(_package)
 {
-    systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
-    systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
-    systemManager.RootControlPositionChanged.Connect(this, &Document::RootControlPositionChanged);
-    systemManager.PropertiesChanged.Connect(this, &Document::OnPropertiesChanged);
-
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -62,12 +55,6 @@ Document::~Document()
     {
         delete context.second;
     }
-    SafeRelease(package);
-}
-
-EditorSystemsManager* Document::GetSystemManager()
-{
-    return &systemManager;
 }
 
 const FilePath& Document::GetPackageFilePath() const
@@ -80,22 +67,22 @@ QString Document::GetPackageAbsolutePath() const
     return QString::fromStdString(GetPackageFilePath().GetAbsolutePathname());
 }
 
-QUndoStack* Document::GetUndoStack()
+QUndoStack* Document::GetUndoStack() const
 {
     return undoStack;
 }
 
-PackageNode* Document::GetPackage()
+std::shared_ptr<PackageNode> Document::GetPackage() const
 {
     return package;
 }
 
-QtModelPackageCommandExecutor* Document::GetCommandExecutor()
+std::shared_ptr<QtModelPackageCommandExecutor> Document::GetCommandExecutor() const
 {
     return commandExecutor;
 }
 
-WidgetContext* Document::GetContext(QObject* requester) const
+WidgetContext* Document::GetContext(void* requester) const
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -105,17 +92,7 @@ WidgetContext* Document::GetContext(QObject* requester) const
     return nullptr;
 }
 
-void Document::Activate()
-{
-    systemManager.Activate();
-}
-
-void Document::Deactivate()
-{
-    systemManager.Deactivate();
-}
-
-void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
+void Document::SetContext(void* requester, WidgetContext* widgetContext)
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -124,7 +101,7 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
         delete iter->second;
         contexts.erase(iter);
     }
-    contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
+    contexts.emplace(requester, widgetContext);
 }
 
 void Document::RefreshLayout()
@@ -132,39 +109,7 @@ void Document::RefreshLayout()
     package->RefreshPackageStylesAndLayout(true);
 }
 
-void Document::SetScale(float scale)
-{
-    DAVA::float32 realScale = scale;
-    systemManager.GetScalableControl()->SetScale(Vector2(realScale, realScale));
-    emit CanvasSizeChanged();
-}
-
-void Document::SetEmulationMode(bool arg)
-{
-    systemManager.SetEmulationMode(arg);
-}
-
-void Document::SetPixelization(bool hasPixelization)
-{
-    Texture::SetPixelization(hasPixelization);
-}
-
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
-}
-
-void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    systemManager.SelectionChanged.Emit(selected, deselected);
-}
-
-void Document::OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    SelectedNodesChanged(selected, deselected);
-}
-
-void Document::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
-{
-    commandExecutor->ChangeProperty(properties, hash);
 }

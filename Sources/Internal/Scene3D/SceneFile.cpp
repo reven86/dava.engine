@@ -326,15 +326,14 @@ bool SceneFile::ReadMaterial()
 	
 bool SceneFile::ReadStaticMesh()
 {
-
     bool rebuildTangentSpace = false;
     #ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
     rebuildTangentSpace = true;
     #endif
 
-	uint32 polyGroupCount;
-	sceneFP->Read(&polyGroupCount, sizeof(uint32));
-	if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
+    uint32 polyGroupCount;
+    sceneFP->Read(&polyGroupCount, sizeof(uint32));
+    if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
 	
 	StaticMesh * mesh = new StaticMesh(scene);
     
@@ -406,7 +405,7 @@ bool SceneFile::ReadStaticMesh()
         delete [] indices;
 
         const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
-        if (rebuildTangentSpace&&((polygonGroup->GetFormat()&prerequiredFormat) == prerequiredFormat))
+        if (rebuildTangentSpace && ((polygonGroup->GetFormat() & prerequiredFormat) == prerequiredFormat))
             MeshUtils::RebuildMeshTangentSpace(polygonGroup, true);
         else
             polygonGroup->BuildBuffers();

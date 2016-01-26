@@ -38,30 +38,28 @@
 
 namespace DAVA {
     class InspInfo;
-    enum ItemDataRole
-    {
-        ResetRole = Qt::UserRole +1,
-    };
 }
 
-class QTimer;
-
 class AbstractProperty;
+class PackageBaseNode;
 class ControlNode;
 class StyleSheetNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
+class LazyUpdater;
 
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
     Q_OBJECT
     
 public:
-    PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
-    PropertiesModel(StyleSheetNode *styleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
+    enum
+    {
+        ResetRole = Qt::UserRole + 1
+    };
+    PropertiesModel(QObject* parent = nullptr);
     virtual ~PropertiesModel();
-    void Init();
-    ControlNode *GetControlNode() const {return controlNode; }
+    void Reset(PackageBaseNode* node_, std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
@@ -73,10 +71,11 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
-private slots:
+
+private:
     void UpdateAllChangedProperties();
 
-private: // PropertyListener
+    // PropertyListener
     void PropertyChanged(AbstractProperty *property) override;
 
     void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
@@ -97,22 +96,21 @@ private: // PropertyListener
     void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
     void StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
 
-private:
     void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);
     void ResetProperty(AbstractProperty *property);
     
-private:
     QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
     QString makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
-    
+    void CleanUp();
+
 private:
     ControlNode *controlNode = nullptr;
     StyleSheetNode *styleSheet = nullptr;
     AbstractProperty *rootProperty = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
     QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
-    QTimer* updatePropertyTimer = nullptr;
+    LazyUpdater *lazyUpdater = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

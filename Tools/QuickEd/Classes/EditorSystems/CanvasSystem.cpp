@@ -78,7 +78,7 @@ public:
     void AdjustToNestedControl();
 
     DAVA::Signal<> ContentSizeChanged;
-    DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
+    DAVA::Signal<const DAVA::Vector2&> RootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
@@ -179,7 +179,7 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
     } //unnamed namespace
 
-void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
+    void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
@@ -262,37 +262,35 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
-    systemManager->GetPackage()->AddListener(this);
-
     controlsCanvas->SetName("controls canvas");
+    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
+    systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
 }
 
 CanvasSystem::~CanvasSystem()
 {
-    PackageNode* package = systemManager->GetPackage();
-    if (nullptr != package)
-    {
-        systemManager->GetPackage()->RemoveListener(this);
-    }
     systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
-void CanvasSystem::OnActivated()
+void CanvasSystem::OnPackageNodeChanged(const std::weak_ptr<PackageNode> &package_)
 {
-    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
-    for (auto& iter : gridControls)
     {
-        iter->AdjustToNestedControl();
+        auto lastNode = package.lock();
+        if (nullptr != lastNode)
+        {
+            lastNode->RemoveListener(this);
+        }
     }
-}
-
-void CanvasSystem::OnDeactivated()
-{
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
-    systemManager->GetScalableControl()->SetSize(Vector2());
-    systemManager->CanvasSizeChanged.Emit();
+    package = package_;
+    {
+        auto newNode = package.lock();
+        if (nullptr != newNode)
+        {
+            newNode->AddListener(this);
+        }
+    }
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -335,7 +333,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<DAVA::Vector2>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }

@@ -45,7 +45,7 @@
 
 __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
-const wchar_t* KOSTIL_SURFACE_MOUSE =    L"NTRG0001";
+const wchar_t* KOSTIL_SURFACE_MOUSE = L"NTRG0001";
 const wchar_t* KOSTIL_SURFACE_KEYBOARD = L"MSHW0029";
 
 using namespace ::Windows::UI::Core;
@@ -102,7 +102,16 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     modelName = RTStringToString(deviceInfo.SystemSku);
     deviceName = WideString(deviceInfo.FriendlyName->Data());
     gpu = GPUFamily();
-    uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+
+    try
+    {
+        uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+    }
+    catch (Platform::Exception ^ e)
+    {
+        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
+        uDID = "";
+    }
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -333,8 +342,8 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
     hids.GetAccessor()->emplace(type, Set<String>());
-    DeviceWatcher^ watcher = nullptr;
-    Platform::Collections::Vector<Platform::String^>^ requestedProperties = ref new Platform::Collections::Vector<Platform::String^>();
+    DeviceWatcher ^ watcher = nullptr;
+    Platform::Collections::Vector<Platform::String ^> ^ requestedProperties = ref new Platform::Collections::Vector<Platform::String ^>();
     requestedProperties->Append("System.Devices.InterfaceClassGuid");
     requestedProperties->Append("System.ItemNameDisplay");
     if (MOUSE == type)
@@ -462,11 +471,11 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
             {
                 isEnabled = safe_cast<bool>(properties->Lookup(L"System.Devices.InterfaceEnabled"));
             }
-            catch (Platform::InvalidCastException^ e)
+            catch (Platform::InvalidCastException ^ e)
             {
                 Logger::FrameworkDebug("DeviceInfoPrivate::OnDeviceUpdated. Can't cast System.Devices.InterfaceEnabled.");
             }
-            catch (Platform::OutOfBoundsException^ e)
+            catch (Platform::OutOfBoundsException ^ e)
             {
                 Logger::FrameworkDebug("DeviceInfoPrivate::OnDeviceUpdated. OutOfBoundsException.");
             }
