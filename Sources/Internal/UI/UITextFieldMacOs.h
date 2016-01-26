@@ -92,7 +92,7 @@ public:
     }
 
 private:
-    std::unique_ptr<ObjCWrapper> objcWrapper;
+    ObjCWrapper& objcWrapper;
 };
 } // end namespace DAVA
 
