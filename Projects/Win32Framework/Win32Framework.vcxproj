@@ -615,6 +615,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h" />
@@ -1076,6 +1077,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp" />

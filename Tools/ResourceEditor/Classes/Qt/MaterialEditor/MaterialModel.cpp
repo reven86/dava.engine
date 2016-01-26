@@ -472,7 +472,7 @@ bool MaterialModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         return false;
 
 	QVector<DAVA::NMaterial *> materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
-    
+
     if (materials.empty())
         return false;
 
