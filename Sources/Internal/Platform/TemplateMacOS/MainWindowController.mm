@@ -173,8 +173,6 @@ namespace DAVA
     [mainWindow setContentSize: NSMakeSize(width, height)];
     mainWindow.contentMinSize = NSMakeSize(width, height);
     [mainWindowController setMinimumWindowSize: 0.0f height: 0.0f];
-
-    willQuit = false;
     
     if (minWidth > 0 && minHeight > 0)
     {
@@ -383,13 +381,6 @@ namespace DAVA
 
 - (void) animationTimerFired:(NSTimer *)timer
 {
-    if(willQuit)
-    {
-        [self stopAnimationTimer];
-        return;
-    }
-    
-    DAVA::Core::Instance()->SystemProcessFrame();
     [openGLView setNeedsDisplay:YES];
     
     if (currFPS != Renderer::GetDesiredFPS())
@@ -536,7 +527,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 {
 	Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
 
-    mainWindowController->willQuit = true;
+    mainWindowController->openGLView.willQuit = true;
     
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
@@ -599,7 +590,7 @@ bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 
 void CoreMacOSPlatform::Quit()
 {
-	mainWindowController->willQuit = true;
+	mainWindowController->openGLView.willQuit = true;
 	[[NSApplication sharedApplication] terminate: nil];
 }
 
