@@ -319,12 +319,6 @@
 		02E7C7081BD624A7002F026D /* Core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AD1BD624A5002F026D /* Core.cpp */; };
 		02E7C7091BD624A7002F026D /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1AE1BD624A5002F026D /* Core.h */; };
 		02E7C70A1BD624A7002F026D /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1AE1BD624A5002F026D /* Core.h */; };
-		02E7C70B1BD624A7002F026D /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */; };
-		02E7C70C1BD624A7002F026D /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */; };
-		02E7C7111BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */; };
-		02E7C7121BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */; };
-		02E7C7131BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */; };
-		02E7C7141BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */; };
 		02E7C7151BD624A7002F026D /* DisplayMode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B41BD624A5002F026D /* DisplayMode.h */; };
 		02E7C7161BD624A7002F026D /* DisplayMode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B41BD624A5002F026D /* DisplayMode.h */; };
 		02E7C7171BD624A7002F026D /* PerformanceSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B51BD624A5002F026D /* PerformanceSettings.cpp */; };
@@ -2271,9 +2265,6 @@
 		02E7C1AC1BD624A5002F026D /* ApplicationCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ApplicationCore.h; sourceTree = "<group>"; };
 		02E7C1AD1BD624A5002F026D /* Core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Core.cpp; sourceTree = "<group>"; };
 		02E7C1AE1BD624A5002F026D /* Core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
-		02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS.cpp; sourceTree = "<group>"; };
-		02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS_OpenGL.cpp; sourceTree = "<group>"; };
-		02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOS_OpenGL.h; sourceTree = "<group>"; };
 		02E7C1B41BD624A5002F026D /* DisplayMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayMode.h; sourceTree = "<group>"; };
 		02E7C1B51BD624A5002F026D /* PerformanceSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PerformanceSettings.cpp; sourceTree = "<group>"; };
 		02E7C1B61BD624A5002F026D /* PerformanceSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PerformanceSettings.h; sourceTree = "<group>"; };
@@ -3446,9 +3437,6 @@
 				02E7C1AC1BD624A5002F026D /* ApplicationCore.h */,
 				02E7C1AD1BD624A5002F026D /* Core.cpp */,
 				02E7C1AE1BD624A5002F026D /* Core.h */,
-				02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */,
-				02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */,
-				02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */,
 				02E7C1B41BD624A5002F026D /* DisplayMode.h */,
 				02E7C1B51BD624A5002F026D /* PerformanceSettings.cpp */,
 				02E7C1B61BD624A5002F026D /* PerformanceSettings.h */,
@@ -5280,7 +5268,6 @@
 				02E7C7501BD624A7002F026D /* File.h in Headers */,
 				02E7CDBA1BD624A7002F026D /* musicios.h in Headers */,
 				02E7CE5E1BD624A7002F026D /* UIFadeTransition.h in Headers */,
-				02E7C7141BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */,
 				02E7CED01BD624A7002F026D /* UISpinner.h in Headers */,
 				02E7C7D21BD624A7002F026D /* JobQueue.h in Headers */,
 				02E7CE721BD624A7002F026D /* UIHoleTransition.h in Headers */,
@@ -5831,7 +5818,6 @@
 				02E7C74F1BD624A7002F026D /* File.h in Headers */,
 				02E7CDB91BD624A7002F026D /* musicios.h in Headers */,
 				02E7CE5D1BD624A7002F026D /* UIFadeTransition.h in Headers */,
-				02E7C7131BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */,
 				02E7CECF1BD624A7002F026D /* UISpinner.h in Headers */,
 				02E7C7D11BD624A7002F026D /* JobQueue.h in Headers */,
 				02E7CE711BD624A7002F026D /* UIHoleTransition.h in Headers */,
@@ -6367,7 +6353,6 @@
 				02E7C6FE1BD624A7002F026D /* ThreadPosix.cpp in Sources */,
 				02E7CD321BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */,
 				02E7C7041BD624A7002F026D /* ApplicationCore.cpp in Sources */,
-				02E7C70C1BD624A7002F026D /* CoreMacOS.cpp in Sources */,
 				02E7CCEC1BD624A7002F026D /* SwitchToRenerObjectConverter.cpp in Sources */,
 				02E7CC561BD624A7002F026D /* TextureDescriptor.cpp in Sources */,
 				02E7CEF41BD624A7002F026D /* TestClass.cpp in Sources */,
@@ -6455,7 +6440,6 @@
 				02E7C7FE1BD624A7002F026D /* NeonMath.cpp in Sources */,
 				02E7C8141BD624A7002F026D /* RectPacker.cpp in Sources */,
 				02E7CB401BD624A7002F026D /* LibTgaHelper.cpp in Sources */,
-				02E7C7121BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */,
 				02E7C62E1BD624A6002F026D /* GameAPI.cpp in Sources */,
 				02E7CEBA1BD624A7002F026D /* UIScreenTransition.cpp in Sources */,
 				02E7C7821BD624A7002F026D /* LoggerWin.cpp in Sources */,
@@ -6860,7 +6844,6 @@
 				02E7C6FD1BD624A7002F026D /* ThreadPosix.cpp in Sources */,
 				02E7CD311BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */,
 				02E7C7031BD624A7002F026D /* ApplicationCore.cpp in Sources */,
-				02E7C70B1BD624A7002F026D /* CoreMacOS.cpp in Sources */,
 				02E7CCEB1BD624A7002F026D /* SwitchToRenerObjectConverter.cpp in Sources */,
 				02E7CC551BD624A7002F026D /* TextureDescriptor.cpp in Sources */,
 				02E7CEF31BD624A7002F026D /* TestClass.cpp in Sources */,
@@ -6948,7 +6931,6 @@
 				02E7C7FD1BD624A7002F026D /* NeonMath.cpp in Sources */,
 				02E7C8131BD624A7002F026D /* RectPacker.cpp in Sources */,
 				02E7CB3F1BD624A7002F026D /* LibTgaHelper.cpp in Sources */,
-				02E7C7111BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */,
 				02E7C62D1BD624A6002F026D /* GameAPI.cpp in Sources */,
 				02E7CEB91BD624A7002F026D /* UIScreenTransition.cpp in Sources */,
 				02E7C7811BD624A7002F026D /* LoggerWin.cpp in Sources */,

@@ -33,14 +33,22 @@
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 
-void macos_gl_init(void* glView)
+void macos_gl_init(const rhi::InitParam & params)
 {
-    _GLES2_Native_Window = glView;
+    _GLES2_Native_Window = params.window;
     _GLES2_Context = [(NSOpenGLView*)_GLES2_Native_Window openGLContext];
+    
+    GLint swapInt = params.vsyncEnabled ? 1 : 0;
+    [(NSOpenGLContext*)_GLES2_Context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+}
 
-    CGSize backingSize = [(NSOpenGLView*)_GLES2_Native_Window convertSizeToBacking:((NSOpenGLView*)_GLES2_Native_Window).frame.size];
-    _GLES2_DefaultFrameBuffer_Width = backingSize.width;
-    _GLES2_DefaultFrameBuffer_Height = backingSize.height;
+void macos_gl_reset(const rhi::ResetParam & params)
+{
+    _GLES2_Native_Window = params.window;
+    _GLES2_Context = [(NSOpenGLView*)_GLES2_Native_Window openGLContext];
+    
+    GLint swapInt = params.vsyncEnabled ? 1 : 0;
+    [(NSOpenGLContext*)_GLES2_Context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 }
 
 void macos_gl_end_frame()

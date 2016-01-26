@@ -293,7 +293,6 @@
     <ClInclude Include="..\..\Sources\Internal\Collision\Collisions.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\ApplicationCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h" />
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\DisplayMode.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\List.h" />
@@ -770,8 +769,6 @@
     <ClCompile Include="..\..\Sources\Internal\Collision\Collisions.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\ApplicationCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\Core.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessageWin.cpp">
