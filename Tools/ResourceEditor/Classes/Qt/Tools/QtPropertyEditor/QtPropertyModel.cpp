@@ -106,7 +106,7 @@ QVariant QtPropertyModel::data(const QModelIndex & index, int role /* = Qt::Disp
 			switch(role)
 			{
 			case Qt::DisplayRole:
-                        case Qt::ToolTipRole:
+            case Qt::ToolTipRole:
 				ret = data->GetName();
 				break;
 			case Qt::FontRole:
@@ -253,6 +253,18 @@ QModelIndex QtPropertyModel::indexFromItem(QtPropertyData *data) const
 	return ret;
 }
 
+void QtPropertyModel::AppendProperties(const QVector<QtPropertyData *>& properties, const QModelIndex& parent /*= QModelIndex()*/)
+{
+    if (properties.empty())
+        return;
+
+    QtPropertyData *parentData = itemFromIndexInternal(parent);
+    if (parentData != nullptr)
+    {
+        parentData->ChildrenAdd(properties);
+    }
+}
+
 QModelIndex QtPropertyModel::AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent /* = QModelIndex() */)
 {
 	if(NULL != data)
@@ -309,7 +321,9 @@ void QtPropertyModel::RemoveProperty(const QModelIndex &index)
 
 void QtPropertyModel::RemovePropertyAll()
 {
-	root->ChildRemoveAll();
+    beginResetModel();
+    root->ResetChildren();
+    endResetModel();
 }
 
 void QtPropertyModel::UpdateStructure(const QModelIndex &parent /* = QModelIndex */)

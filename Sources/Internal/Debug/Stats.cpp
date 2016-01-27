@@ -119,24 +119,24 @@ void TimeMeasure::Dump(FunctionMeasure * function, uint32 level)
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
     if (level == 0)
     {
-		Logger::Info("Stats for frame: %d", Core::Instance()->GetGlobalFrameIndex());
+        if (!mainThread.topFunctions.empty())
+        {
+            Logger::Info("Stats for frame: %d", Core::Instance()->GetGlobalFrameIndex());
 
-		for (List<FunctionMeasure*>::iterator it = mainThread.topFunctions.begin(); it != mainThread.topFunctions.end(); ++it)
-		{
-			FunctionMeasure * function = *it;
-			if (function->frameCounter == Core::Instance()->GetGlobalFrameIndex())
-				Dump(function, level + 1);
-		}
+            for (auto function : mainThread.topFunctions)
+            {
+                if (function->frameCounter == Core::Instance()->GetGlobalFrameIndex())
+                    Dump(function, level + 1);
+            }
+        }
 	}
 	else
     {
         Logger::Info("%s %s %0.9llf seconds", GetIndentString('-', level + 1).c_str(), function->name.c_str(), (double)function->timeSpent / 1e+9);
-        for (HashMap<FunctionMeasure *, FunctionMeasure *>::iterator it = function->children.begin();
-             it != function->children.end(); ++it)
+        for (auto childFunction : function->children)
         {
-            FunctionMeasure * childFunction = it->second;
-            if (childFunction->frameCounter == Core::Instance()->GetGlobalFrameIndex())
-                Dump(childFunction, level + 1);
+            if (childFunction.second->frameCounter == Core::Instance()->GetGlobalFrameIndex())
+                Dump(childFunction.first, level + 1);
         }
     }
 #endif

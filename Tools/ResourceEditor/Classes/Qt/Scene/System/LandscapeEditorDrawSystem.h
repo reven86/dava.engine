@@ -64,7 +64,7 @@ public:
 
     LandscapeProxy* GetLandscapeProxy();
     HeightmapProxy* GetHeightmapProxy();
-	CustomColorsProxy* GetCustomColorsProxy();
+    CustomColorsProxy* GetCustomColorsProxy();
 	RulerToolProxy* GetRulerToolProxy();
 
 	eErrorType EnableCustomDraw();

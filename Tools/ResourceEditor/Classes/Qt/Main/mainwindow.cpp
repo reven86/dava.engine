@@ -985,9 +985,8 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 
         if(scene->cameraSystem)
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
-        
-        EntityGroup curSelection = scene->selectionSystem->GetSelection();
-        SceneSelectionChanged(scene, &curSelection, nullptr);
+
+        SceneSelectionChanged(scene, &scene->selectionSystem->GetSelection(), nullptr);
     }
 }
 
@@ -1098,7 +1097,7 @@ void QtMainWindow::UpdateModificationActionsState()
     SceneEditor2 *scene = GetCurrentScene();
     if(nullptr != scene)
     {
-        EntityGroup selection = scene->selectionSystem->GetSelection();
+        const EntityGroup& selection = scene->selectionSystem->GetSelection();
         canModify = scene->modifSystem->ModifCanStart(selection);
         isMultiple = (selection.Size() > 1);
     }
@@ -1581,9 +1580,8 @@ void QtMainWindow::OnPlaceOnLandscape()
 			return;
 		}
 
-		EntityGroup selection = scene->selectionSystem->GetSelection();
-		scene->modifSystem->PlaceOnLandscape(selection);
-	}
+        scene->modifSystem->PlaceOnLandscape(scene->selectionSystem->GetSelection());
+    }
 }
 
 void QtMainWindow::OnSnapToLandscape()
@@ -1609,9 +1607,8 @@ void QtMainWindow::OnResetTransform()
 	SceneEditor2* scene = GetCurrentScene();
 	if(nullptr != scene)
 	{
-		EntityGroup selection = scene->selectionSystem->GetSelection();
-		scene->modifSystem->ResetTransform(selection);
-	}
+        scene->modifSystem->ResetTransform(scene->selectionSystem->GetSelection());
+    }
 }
 
 void QtMainWindow::OnLockTransform()
@@ -1619,9 +1616,8 @@ void QtMainWindow::OnLockTransform()
 	SceneEditor2* scene = GetCurrentScene();
 	if(nullptr != scene)
 	{
-		EntityGroup selection = scene->selectionSystem->GetSelection();
-		scene->modifSystem->LockTransform(selection, true);
-	}
+        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), true);
+    }
 
     UpdateModificationActionsState();
 }
@@ -1631,9 +1627,8 @@ void QtMainWindow::OnUnlockTransform()
 	SceneEditor2* scene = GetCurrentScene();
 	if(nullptr != scene)
 	{
-		EntityGroup selection = scene->selectionSystem->GetSelection();
-		scene->modifSystem->LockTransform(selection, false);
-	}
+        scene->modifSystem->LockTransform(scene->selectionSystem->GetSelection(), false);
+    }
 
     UpdateModificationActionsState();
 }
@@ -1643,8 +1638,7 @@ void QtMainWindow::OnCenterPivotPoint()
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 	if(nullptr != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
-		curScene->modifSystem->MovePivotCenter(selection);
+        curScene->modifSystem->MovePivotCenter(curScene->selectionSystem->GetSelection());
     }
 }
 
@@ -1653,8 +1647,7 @@ void QtMainWindow::OnZeroPivotPoint()
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 	if(nullptr != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
-		curScene->modifSystem->MovePivotZero(selection);
+        curScene->modifSystem->MovePivotZero(curScene->selectionSystem->GetSelection());
     }
 }
 
@@ -1666,12 +1659,12 @@ void QtMainWindow::OnMaterialEditor()
 void QtMainWindow::OnTextureBrowser()
 {
 	SceneEditor2* sceneEditor = GetCurrentScene();
-	EntityGroup selectedEntities;
 
-	if(nullptr != sceneEditor)
-	{
-		selectedEntities = sceneEditor->selectionSystem->GetSelection();
-	}
+    EntityGroup selectedEntities;
+    if (nullptr != sceneEditor)
+    {
+        selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
+    }
 
 	TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
@@ -3153,7 +3146,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
                     }
                 }
 
-                if (entityGroup.Size() > 0)
+                if (!entityGroup.IsEmpty())
                 {
                     currentScene->selectionSystem->SetSelection(entityGroup);
 					currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());

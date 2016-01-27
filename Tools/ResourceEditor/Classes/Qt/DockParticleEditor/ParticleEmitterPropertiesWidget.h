@@ -87,7 +87,7 @@ private:
 
     QCheckBox* shortEffectCheckBox;
 
-	TimeLineWidget* emitterEmissionRange;
+    TimeLineWidget* emitterEmissionRange;
 	TimeLineWidget* emitterEmissionVector;
 	TimeLineWidget* emitterRadius;
 	TimeLineWidget* emitterSize;

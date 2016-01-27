@@ -108,8 +108,8 @@ void Replay::RecordEvent(const UIEvent * ev)
     Write(ev->point.x);
     Write(ev->point.y);
     Write(ev->timestamp);
-	Write(ev->phase);
-	Write(ev->controlState);
+    Write(ev->phase);
+    Write(ev->controlState);
 	Write(ev->tapCount);
     Write(static_cast<uint32>(ev->device));
 }
@@ -202,7 +202,9 @@ UIEvent	Replay::PlayEvent()
     ev.point.y = Read<float32>();
     if (!isPlayback)
         return ev;
-    ev.timestamp = Read<float64>(); if(!isPlayback) return ev;
+    ev.timestamp = Read<float64>();
+    if (!isPlayback)
+        return ev;
     ev.phase = static_cast<UIEvent::Phase>(Read<int32>());
     if (!isPlayback)
         return ev;

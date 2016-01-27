@@ -173,8 +173,8 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
     {
         Vector3 point;
 
-        switch(event->phase)
-		{
+        switch (event->phase)
+        {
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)
             {

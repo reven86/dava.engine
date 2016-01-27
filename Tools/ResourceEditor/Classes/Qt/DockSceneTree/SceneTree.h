@@ -153,7 +153,7 @@ private:
     ParticleEffectComponent* selectedEffect;
     ParticleEmitter* selectedEmitter;
     ParticleLayer* selectedLayer;
-	ParticleForce* selectedForce;
+    ParticleForce* selectedForce;
 
 	QPointer< SceneTreeModel > treeModel;
 	QPointer< SceneTreeFilteringModel > filteringProxyModel;

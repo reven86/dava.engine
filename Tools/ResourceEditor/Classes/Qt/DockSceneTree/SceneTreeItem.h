@@ -73,10 +73,10 @@ public:
 	QVariant data(int role) const;
 
 	int ItemType() const;
-	virtual QIcon ItemIcon() const;
+    virtual const QIcon& ItemIcon() const;
 
-	virtual QString ItemName() const = 0;
-	virtual QVariant ItemData() const = 0;
+    virtual QString ItemName() const = 0;
+    virtual QVariant ItemData() const = 0;
 
     bool IsAcceptedByFilter() const;
     void SetAcceptByFilter(bool state);
@@ -99,11 +99,11 @@ public:
 	static DAVA::Entity* GetEntity(SceneTreeItem *item);
 	static void DoSync(QStandardItem *rootItem, DAVA::Entity *entity);
 
-	virtual QString ItemName() const;
-	virtual QVariant ItemData() const;
-	virtual QIcon ItemIcon() const;    
+    QString ItemName() const override;
+    QVariant ItemData() const override;
+    const QIcon& ItemIcon() const override;
 
-	DAVA::Entity *entity;
+    DAVA::Entity* entity;
 };
 
 class SceneTreeItemParticleEmitter : public SceneTreeItem
@@ -116,13 +116,12 @@ public:
     static DAVA::ParticleEmitter* GetEmitterStrict(SceneTreeItem *item);
 	static void DoSync(QStandardItem *rootItem, DAVA::ParticleEmitter *layer);
 
-	virtual QString ItemName() const;
-	virtual QVariant ItemData() const;
-	virtual QIcon ItemIcon() const;
-	//virtual QVariant ItemBackgroundColor() const;
+    QString ItemName() const override;
+    QVariant ItemData() const override;
+    const QIcon& ItemIcon() const override;
 
-	DAVA::ParticleEffectComponent *effect;
-	DAVA::ParticleEmitter *emitter;
+    DAVA::ParticleEffectComponent* effect;
+    DAVA::ParticleEmitter *emitter;
 	
 };
 
@@ -135,12 +134,12 @@ public:
 	static DAVA::ParticleLayer* GetLayer(SceneTreeItem *item);	
 	static void DoSync(QStandardItem *rootItem, DAVA::ParticleLayer *layer);
 
-	virtual QString ItemName() const;
-	virtual QVariant ItemData() const;
-	virtual QIcon ItemIcon() const;
+    QString ItemName() const override;
+    QVariant ItemData() const override;
+    const QIcon& ItemIcon() const override;
 
-	DAVA::ParticleEffectComponent *effect;
-	DAVA::ParticleEmitter *emitter;
+    DAVA::ParticleEffectComponent* effect;
+    DAVA::ParticleEmitter *emitter;
 	DAVA::ParticleLayer *layer;
 	bool hasInnerEmmiter;
 };
@@ -153,12 +152,12 @@ public:
 
 	static DAVA::ParticleForce* GetForce(SceneTreeItem *rootItem);
 
-	virtual QString ItemName() const;
-	virtual QVariant ItemData() const;
-	virtual QIcon ItemIcon() const;
+    QString ItemName() const override;
+    QVariant ItemData() const override;
+    const QIcon& ItemIcon() const override;
 
-	DAVA::ParticleLayer *layer;
-	DAVA::ParticleForce *force;
+    DAVA::ParticleLayer* layer;
+    DAVA::ParticleForce *force;
 };
 
 class SceneTreeItemParticleInnerEmitter : public SceneTreeItemParticleEmitter

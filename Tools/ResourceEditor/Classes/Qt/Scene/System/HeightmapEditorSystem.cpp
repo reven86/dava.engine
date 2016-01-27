@@ -151,8 +151,8 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
     {
         Vector3 point;
 
-        switch(event->phase)
-		{
+        switch (event->phase)
+        {
         case UIEvent::Phase::BEGAN:
             if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
                 drawingType == HEIGHTMAP_DROPPER)

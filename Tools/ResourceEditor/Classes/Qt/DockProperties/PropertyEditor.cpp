@@ -74,6 +74,7 @@
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
@@ -130,22 +131,24 @@ PropertyEditor::~PropertyEditor()
 void PropertyEditor::SetEntities(const EntityGroup *selected)
 {
     ClearCurrentNodes();
-    if(NULL != selected && selected->Size() > 0)
+    SCOPE_EXIT
     {
-        const int nSelected = selected->Size();
-        curNodes.reserve( nSelected );
-        for ( size_t i = 0; i < selected->Size(); i++ )
-        {
-            DAVA::Entity * node = SafeRetain(selected->GetEntity(i));
-            curNodes << node;
-            // ensure that custom properties exist
-            // this call will create them if they are not created yet
-            GetOrCreateCustomProperties(node);
-        }
-    }
+        ResetProperties();
+        SaveScheme("~doc:/PropEditorDefault.scheme");
+    };
 
-    ResetProperties();
-    SaveScheme("~doc:/PropEditorDefault.scheme");
+    if (selected == nullptr || selected->IsEmpty())
+        return;
+
+    curNodes.reserve(selected->Size());
+    for (const EntityGroup::EntityMap::value_type & mapNode : selected->GetContent())
+    {
+        DAVA::Entity* node = SafeRetain(mapNode.first);
+        curNodes << node;
+        // ensure that custom properties exist
+        // this call will create them if they are not created yet
+        GetOrCreateCustomProperties(node);
+    }
 }
 
 void PropertyEditor::SetViewMode(eViewMode mode)
@@ -238,7 +241,7 @@ void PropertyEditor::ResetProperties()
 
                         if (isRemovable)
                         {
-				            QtPropertyToolButton * deleteButton = CreateButton(componentData, QIcon(":/QtIcons/remove.png"), "Remove Component");
+                            QtPropertyToolButton* deleteButton = CreateButton(componentData, SharedIcon(":/QtIcons/remove.png"), "Remove Component");
                             deleteButton->setObjectName("RemoveButton");
                             deleteButton->setEnabled(true);
 				            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
@@ -262,15 +265,13 @@ void PropertyEditor::ResetProperties()
 		ApplyModeFilter(favoriteGroup);
 		ApplyCustomExtensions(root);
 
-		// add not empty rows from root
-		while(0 != root->ChildCount())
-		{
-			QtPropertyData *row = root->ChildGet(0);
-			root->ChildExtract(row);
-
-            AppendProperty(row->GetName(), row);
+        QVector<QtPropertyData *> properies;
+        root->ChildrenExtract(properies);
+        AppendProperties(properies);
+        foreach(QtPropertyData * row, properies)
+        {
             ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
-		}
+        }
 
 		delete root;
 	}
@@ -378,20 +379,20 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
 			{
 				// Add optional button to edit action component
-				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
+                QtPropertyToolButton* editActions = CreateButton(data, SharedIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
 				QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
-                QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
+                QtPropertyToolButton* editSound = CreateButton(data, SharedIcon(":/QtIcons/settings.png"), "Edit sound component");
                 editSound->setAutoRaise(true);
                 QObject::connect(editSound, SIGNAL(clicked()), this, SLOT(ActionEditSoundComponent()));
             }
             else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
             {
                 QtPropertyToolButton *triggerWave = data->AddButton();
-                triggerWave->setIcon(QIcon(":/QtIcons/clone.png"));
+                triggerWave->setIcon(SharedIcon(":/QtIcons/clone.png"));
                 triggerWave->setAutoRaise(true);
 
                 QObject::connect(triggerWave, SIGNAL(clicked()), this, SLOT(OnTriggerWaveComponent()));
@@ -404,7 +405,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                     DAVA::RenderObject *renderObject = (DAVA::RenderObject *) introData->object;
                     if(SceneValidator::IsObjectHasDifferentLODsCount(renderObject))
                     {
-                        QtPropertyToolButton * cloneBatches = CreateButton(data, QIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
+                        QtPropertyToolButton* cloneBatches = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
@@ -412,7 +413,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
 			{
-				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
+                QtPropertyToolButton* deleteButton = CreateButton(data, SharedIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
 
@@ -425,7 +426,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					    DAVA::RenderObject *ro = batch->GetRenderObject();
 					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
 					    {
-						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
+                            QtPropertyToolButton* convertButton = CreateButton(data, SharedIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
                             convertButton->setEnabled(isSingleSelection);
 						    connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
 					    }
@@ -440,7 +441,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 
                             if (isRebuildTsEnabled)
                             {
-                                QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                                QtPropertyToolButton* rebuildTangentButton = CreateButton(data, SharedIcon(":/QtIcons/external.png"), "Rebuild tangent space");
                                 rebuildTangentButton->setEnabled(isSingleSelection);
                                 connect(rebuildTangentButton, SIGNAL(clicked()), this, SLOT(RebuildTangentSpace()));
                             }
@@ -450,7 +451,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
-				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
+                QtPropertyToolButton* goToMaterialButton = CreateButton(data, SharedIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
 				QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
 			}
@@ -719,9 +720,8 @@ void PropertyEditor::sceneActivated(SceneEditor2 *scene)
 {
 	if(NULL != scene)
 	{
-        const EntityGroup selection = scene->selectionSystem->GetSelection();
-		SetEntities(&selection);
-	}
+        SetEntities(&scene->selectionSystem->GetSelection());
+    }
 }
 
 void PropertyEditor::sceneDeactivated(SceneEditor2 *scene)
@@ -862,10 +862,7 @@ void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
 
 void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-	static QIcon favIcon = QIcon(":/QtIcons/star.png");
-	static QIcon nfavIcon = QIcon(":/QtIcons/star_empty.png");
-
-	// custom draw for favorites edit mode
+    // custom draw for favorites edit mode
 	QStyleOptionViewItemV4 opt = option;
 	if(index.parent().isValid() && favoritesEditMode)
 	{
@@ -876,13 +873,13 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 			{
 				if(IsFavorite(data))
 				{
-					favIcon.paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
-				}
-				else
+                    SharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                }
+                else
 				{
-					nfavIcon.paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
-				}
-			}
+                    SharedIcon(":/QtIcons/star_empty.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                }
+            }
 		}
 	}
 

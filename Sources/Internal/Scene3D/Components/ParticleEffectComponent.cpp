@@ -299,7 +299,7 @@ void ParticleEffectComponent::RebuildEffectModifiables()
     {
         externalModifiables.insert(std::make_pair((*it)->GetValueName(), (*it)));
         Map<String, float32>::iterator itName = externalValues.find((*it)->GetValueName());
-		if (itName!=externalValues.end())
+        if (itName!=externalValues.end())
 			(*it)->SetModifier((*itName).second);
 	}	
 }
@@ -431,7 +431,7 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
             LodComponent* lodComponent = static_cast<LodComponent*>(child->GetComponent(Component::LOD_COMPONENT));
             if (lodComponent)
             {
-				entity->AddComponent(lodComponent->Clone(entity));
+                entity->AddComponent(lodComponent->Clone(entity));
 				lodDefined = true;
 			}
 		}

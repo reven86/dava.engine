@@ -134,7 +134,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
         {
             textures[texture] = markedGPUs;
         }
-	}
+    }
 	return retValue;
 }
 

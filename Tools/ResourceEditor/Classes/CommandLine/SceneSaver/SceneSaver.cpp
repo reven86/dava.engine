@@ -267,7 +267,7 @@ void SceneSaver::CopyEffects(Entity *node)
     {
         CopyEffects(node->GetChild(i));
     }
-    
+
     for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
     {
         FilePath flagsTXT = *it + "flags.txt";

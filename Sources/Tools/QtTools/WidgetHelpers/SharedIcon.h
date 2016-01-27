@@ -26,44 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_SHAREDICON_H__
+#define __DAVAENGINE_SHAREDICON_H__
 
-#ifndef __DAVAENGINE_DEFINITION_FILE_H__
-#define __DAVAENGINE_DEFINITION_FILE_H__
+#include <QIcon>
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Math/Math2D.h"
+const QIcon& SharedIcon(const char*);
 
-namespace DAVA
-{
- 
-class DefinitionFile 
-{
-public:
-    bool Load(const FilePath& filename);
-    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
-
-    DefinitionFile();
-    ~DefinitionFile();
-
-    void ClearPackedFrames();
-    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
-
-    Size2i GetFrameSize(int frame) const;
-    int GetFrameWidth(int frame) const;
-    int GetFrameHeight(int frame) const;
-
-    FilePath filename;
-    int frameCount;
-    int spriteWidth;
-    int spriteHeight;
-    Rect2i* frameRects;
-
-    Vector<String> pathsInfo;
-    Vector<String> frameNames;
-};
-
-};
-
-
-#endif // __DAVAENGINE_DEFINITION_FILE_H__
+#endif

@@ -1136,15 +1136,13 @@ void CommandBufferGLES2_t::Execute()
 
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
-                
+
                 glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
 
                 if (flags)
                 {
                     glClear(flags);
                 }
-
-                
             }
         }
         break;
@@ -1159,7 +1157,7 @@ void CommandBufferGLES2_t::Execute()
             #endif
 
             #if defined(__DAVAENGINE_IPHONE__)
-            if ((isLastInPass)&&(_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)) //defualt framebuffer is discard once after frame
+            if ((isLastInPass) && (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)) //defualt framebuffer is discard once after frame
             {
                 GLenum discards[3];
                 int32 discardsCount = 0;
@@ -1170,8 +1168,8 @@ void CommandBufferGLES2_t::Execute()
                     discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
                     discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
                 }
-                
-                if (discardsCount!=0)
+
+                if (discardsCount != 0)
                     glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
             }
 

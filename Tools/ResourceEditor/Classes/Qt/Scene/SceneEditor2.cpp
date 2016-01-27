@@ -181,9 +181,12 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
     
     if(ret)
     {
+        for (int32 i = 0, e = GetScene()->GetChildrenCount(); i < e; ++i)
+        {
+            structureSystem->CheckAndMarkSolid(GetScene()->GetChild(i));
+        }
         curScenePath = path;
 		isLoaded = true;
-        
 		commandStack.SetClean(true);
     }
 

@@ -218,12 +218,11 @@ void PathSystem::DrawInViewOnlyMode()
 {
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
-    const size_t count = selection.Size();
-    for(size_t p = 0; p < count; ++p)
+    for (const auto& item : selection.GetContent())
     {
-        DAVA::Entity * path = selection.GetEntity(p);
+        DAVA::Entity* path = item.first;
         DAVA::PathComponent *pathComponent = DAVA::GetPathComponent(path);
         if(path->GetVisible() == false || !pathComponent)
         {
@@ -262,22 +261,22 @@ void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& fini
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    const EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
-    if(currentSelection != selection)
+    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    if (currentSelection != selection)
     {
-        currentSelection = selection;
-        
-        const size_t count = currentSelection.Size();
-        for(size_t i = 0; i < count; ++i)
+        currentSelection.Clear();
+        currentSelection.Join(selection);
+
+        for (const auto& item : currentSelection.GetContent())
         {
-            Entity * entity = currentSelection.GetEntity(i);
-            if(entity->GetComponent(Component::PATH_COMPONENT))
+            DAVA::Entity* entity = item.first;
+            if (entity->GetComponent(Component::PATH_COMPONENT))
             {
                 currentPath = entity;
                 break;
             }
-            
-            if(GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
+
+            if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
                 currentPath = entity->GetParent();
                 break;

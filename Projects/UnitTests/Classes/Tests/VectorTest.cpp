@@ -26,44 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
+#include "Math/Vector.h"
 
-#ifndef __DAVAENGINE_DEFINITION_FILE_H__
-#define __DAVAENGINE_DEFINITION_FILE_H__
+using namespace DAVA;
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Math/Math2D.h"
+DAVA_TESTCLASS(VectorTest){
+    DAVA_TEST(Vector4ToVector3Test){
+    Vector4 mutableSource(0.1f, 0.2f, 0.3f, 0.4f);
+Vector3& mutableVector3 = mutableSource.GetVector3();
+TEST_VERIFY((mutableVector3.x == mutableSource.x) && (mutableVector3.y == mutableSource.y) && (mutableVector3.z == mutableSource.z))
 
-namespace DAVA
-{
- 
-class DefinitionFile 
-{
-public:
-    bool Load(const FilePath& filename);
-    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
-
-    DefinitionFile();
-    ~DefinitionFile();
-
-    void ClearPackedFrames();
-    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
-
-    Size2i GetFrameSize(int frame) const;
-    int GetFrameWidth(int frame) const;
-    int GetFrameHeight(int frame) const;
-
-    FilePath filename;
-    int frameCount;
-    int spriteWidth;
-    int spriteHeight;
-    Rect2i* frameRects;
-
-    Vector<String> pathsInfo;
-    Vector<String> frameNames;
-};
-
-};
-
-
-#endif // __DAVAENGINE_DEFINITION_FILE_H__
+const Vector4 immutableSource(0.3f, 0.2f, 0.1f, 0.0f);
+const Vector3& immutableVector3 = immutableSource.GetVector3();
+TEST_VERIFY((immutableVector3.x == immutableSource.x) && (immutableVector3.y == immutableSource.y) && (immutableVector3.z == immutableSource.z))
+}
+}
+;

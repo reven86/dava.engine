@@ -33,6 +33,7 @@
 
 // framework
 #include "Scene3d/Components/ComponentHelpers.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 SceneTreeItem::SceneTreeItem(eItemType _type)
 	: type(_type)
@@ -80,10 +81,9 @@ int SceneTreeItem::ItemType() const
 	return type;
 }
 
-QIcon SceneTreeItem::ItemIcon() const
+const QIcon& SceneTreeItem::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/node.png");
-	return icon;
+    return SharedIcon(":/QtIcons/node.png");
 }
 
 bool SceneTreeItem::IsAcceptedByFilter() const
@@ -125,9 +125,9 @@ DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem *item)
 {
 	DAVA::Entity *ret = NULL;
 
-	if(NULL != item && item->ItemType() == SceneTreeItem::EIT_Entity)
-	{
-		SceneTreeItemEntity *itemEntity = (SceneTreeItemEntity *) item;
+    if (nullptr != item && item->ItemType() == SceneTreeItem::EIT_Entity)
+    {
+        SceneTreeItemEntity *itemEntity = (SceneTreeItemEntity *) item;
 		ret = itemEntity->entity;
 	}
 
@@ -136,11 +136,11 @@ DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem *item)
 
 QString SceneTreeItemEntity::ItemName() const
 {
-	QString ret; 
+    QString ret;
 
-	if(NULL != entity)
-	{
-		ret = entity->GetName().c_str();
+    if (nullptr != entity)
+    {
+        ret = entity->GetName().c_str();
 	}
 
 	return ret;
@@ -151,91 +151,68 @@ QVariant SceneTreeItemEntity::ItemData() const
 	return qVariantFromValue(entity);
 }
 
-QIcon SceneTreeItemEntity::ItemIcon() const
+const QIcon& SceneTreeItemEntity::ItemIcon() const
 {
-	static QIcon effectIcon(":/QtIcons/effect.png");
-	static QIcon emitterIcon(":/QtIcons/emitter_particle.png");
-	static QIcon renderobjIcon(":/QtIcons/render_object.png");
-	static QIcon lodobjIcon(":/QtIcons/lod_object.png");
-	static QIcon userobjIcon(":/QtIcons/user_object.png");
-	static QIcon landscapeIcon(":/QtIcons/heightmapeditor.png");
-	static QIcon cameraIcon(":/QtIcons/camera.png");
-	static QIcon lightIcon(":/QtIcons/light.png");
-	static QIcon shadowIcon(":/QtIcons/shadow.png");
-	static QIcon switchIcon(":/QtIcons/switch.png");
-	static QIcon windIcon(":/QtIcons/wind.png");
-    static QIcon soIcon(":/QtIcons/so.png");
-    static QIcon pathIcon(":/QtIcons/path.png");
-    static QIcon grassIcon(":/QtIcons/grass.png");
-
-	QIcon ret;
-
-	if(NULL != entity)
-	{	
-        if(NULL != entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT))
+    if (nullptr != entity)
+    {
+        if (nullptr != entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT))
         {
-            ret = soIcon;
+            return SharedIcon(":/QtIcons/so.png");
         }
-		if(NULL != DAVA::GetEffectComponent(entity))
-		{
-			ret = effectIcon;
-		}
-		else if(NULL != DAVA::GetLandscape(entity))
-		{
-			ret = landscapeIcon;
-		}
-		else if(NULL != GetLodComponent(entity))
-		{
-			ret = lodobjIcon;
-		}
-		else if(NULL != GetSwitchComponent(entity))
-		{
-			ret = switchIcon;
-		}
-        else if (NULL != DAVA::GetVegetation(entity))
+        if (nullptr != DAVA::GetEffectComponent(entity))
         {
-            ret = grassIcon;
+            return SharedIcon(":/QtIcons/effect.png");
         }
-		else if(NULL != DAVA::GetRenderObject(entity))
-		{
-			ret = renderobjIcon;
-		}
-		else if(NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
-		{
-			ret = userobjIcon;
-		}
-		else if(NULL != DAVA::GetCamera(entity))
-		{
-			ret = cameraIcon;
-		}
-		else if(NULL != DAVA::GetLight(entity))
-		{
-			ret = lightIcon;
-		}
-		else if(NULL != DAVA::GetWindComponent(entity))
-		{
-			ret = windIcon;
-		}
-        else if(NULL != DAVA::GetPathComponent(entity))
+        else if (nullptr != DAVA::GetLandscape(entity))
         {
-            ret = pathIcon;
+            return SharedIcon(":/QtIcons/heightmapeditor.png");
+        }
+        else if (nullptr != GetLodComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/lod_object.png");
+        }
+        else if (nullptr != GetSwitchComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/switch.png");
+        }
+        else if (nullptr != DAVA::GetVegetation(entity))
+        {
+            return SharedIcon(":/QtIcons/grass.png");
+        }
+        else if (nullptr != DAVA::GetRenderObject(entity))
+        {
+            return SharedIcon(":/QtIcons/render_object.png");
+        }
+        else if (nullptr != entity->GetComponent(DAVA::Component::USER_COMPONENT))
+        {
+            return SharedIcon(":/QtIcons/user_object.png");
+        }
+        else if (nullptr != DAVA::GetCamera(entity))
+        {
+            return SharedIcon(":/QtIcons/camera.png");
+        }
+        else if (nullptr != DAVA::GetLight(entity))
+        {
+            return SharedIcon(":/QtIcons/light.png");
+        }
+        else if (nullptr != DAVA::GetWindComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/wind.png");
+        }
+        else if (nullptr != DAVA::GetPathComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/path.png");
         }
 	}
 
-	if(ret.isNull())
-	{
-		ret = SceneTreeItem::ItemIcon();
-	}
-
-	return ret;
+    return SceneTreeItem::ItemIcon();
 }
-
 
 void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
 {
-	if(NULL != rootItem && NULL != entity)
-	{
-		DAVA::int32 i;
+    if (nullptr != rootItem && nullptr != entity)
+    {
+        DAVA::int32 i;
 		QSet<DAVA::Entity *> entitiesSet;
 		QSet<DAVA::ParticleEmitter *> emitterSet;
 
@@ -244,13 +221,13 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
         // remember all entity childs
         for (i = 0; i < entity->GetChildrenCount(); ++i)
         {
-			entitiesSet.insert(entity->GetChild(i));
+            entitiesSet.insert(entity->GetChild(i));
 		}
 
 		// remember all particle emitters
-		if(NULL != effect)
-		{			
-			for(DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
+        if (nullptr != effect)
+        {
+            for(DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
 			{
 				emitterSet.insert(effect->GetEmitter(i));
 			}
@@ -466,9 +443,9 @@ DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem *i
 {
 	DAVA::ParticleEmitter *ret = NULL;
 
-	if(NULL != item && ((item->ItemType() == SceneTreeItem::EIT_Emitter)||(item->ItemType() == SceneTreeItem::EIT_InnerEmitter)))
-	{
-		SceneTreeItemParticleEmitter *itemEmitter = (SceneTreeItemParticleEmitter *) item;
+    if (nullptr != item && ((item->ItemType() == SceneTreeItem::EIT_Emitter) || (item->ItemType() == SceneTreeItem::EIT_InnerEmitter)))
+    {
+        SceneTreeItemParticleEmitter *itemEmitter = (SceneTreeItemParticleEmitter *) item;
 		ret = itemEmitter->emitter;
 	}
 	return ret;
@@ -487,9 +464,9 @@ DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitterStrict(SceneTreeI
 }
 void SceneTreeItemParticleEmitter::DoSync(QStandardItem *rootItem, DAVA::ParticleEmitter *emitter)
 {
-	if(NULL != rootItem && NULL != emitter)
-	{
-		SceneTreeItemParticleEmitter *rootEmitterItem = (SceneTreeItemParticleEmitter *) rootItem;
+    if (nullptr != rootItem && nullptr != emitter)
+    {
+        SceneTreeItemParticleEmitter *rootEmitterItem = (SceneTreeItemParticleEmitter *) rootItem;
 
 		for(int i = 0; i < rootItem->rowCount(); )
 		{	
@@ -513,11 +490,9 @@ QVariant SceneTreeItemParticleEmitter::ItemData() const
 	return qVariantFromValue(emitter);
 }
 
-
-QIcon SceneTreeItemParticleEmitter::ItemIcon() const
+const QIcon& SceneTreeItemParticleEmitter::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/emitter_particle.png");
-	return icon;
+    return SharedIcon(":/QtIcons/emitter_particle.png");
 }
 
 // =========================================================================================
@@ -531,9 +506,9 @@ SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectCompo
 	, layer(_layer)
 	, hasInnerEmmiter(false)
 {
-	if(NULL != layer)
-	{
-		setCheckable(true);
+    if (nullptr != layer)
+    {
+        setCheckable(true);
 
 		if(layer->isDisabled)
 		{
@@ -556,9 +531,9 @@ DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer(SceneTreeItem *item)
 {
 	DAVA::ParticleLayer *ret = NULL;
 
-	if(NULL != item && item->ItemType() == SceneTreeItem::EIT_Layer)
-	{
-		SceneTreeItemParticleLayer *itemLayer = (SceneTreeItemParticleLayer *) item;
+    if (nullptr != item && item->ItemType() == SceneTreeItem::EIT_Layer)
+    {
+        SceneTreeItemParticleLayer *itemLayer = (SceneTreeItemParticleLayer *) item;
 		ret = itemLayer->layer;
 	}
 
@@ -567,11 +542,11 @@ DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer(SceneTreeItem *item)
 
 QString SceneTreeItemParticleLayer::ItemName() const
 {
-	QString ret; 
+    QString ret;
 
-	if(NULL != layer)
-	{
-		ret = layer->layerName.c_str();
+    if (nullptr != layer)
+    {
+        ret = layer->layerName.c_str();
 	}
 
 	return ret;
@@ -584,9 +559,9 @@ QVariant SceneTreeItemParticleLayer::ItemData() const
 
 void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleLayer *layer)
 {
-	if(NULL != rootItem && NULL != layer)
-	{	
-		SceneTreeItemParticleLayer *rootLayerItem = (SceneTreeItemParticleLayer *) rootItem;
+    if (nullptr != rootItem && nullptr != layer)
+    {
+        SceneTreeItemParticleLayer *rootLayerItem = (SceneTreeItemParticleLayer *) rootItem;
 		bool hadInnerEmmiter = false;
 		for (int i=0; i<rootItem->rowCount(); i++)
 		{
@@ -628,10 +603,9 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleL
 	}
 }
 
-QIcon SceneTreeItemParticleLayer::ItemIcon() const
+const QIcon& SceneTreeItemParticleLayer::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/layer_particle.png");
-	return icon;
+    return SharedIcon(":/QtIcons/layer_particle.png");
 }
 
 // =========================================================================================
@@ -648,9 +622,9 @@ DAVA::ParticleForce* SceneTreeItemParticleForce::GetForce(SceneTreeItem *item)
 {
 	DAVA::ParticleForce *ret = NULL;
 
-	if(NULL != item && item->ItemType() == SceneTreeItem::EIT_Force)
-	{
-		SceneTreeItemParticleForce *itemForce = (SceneTreeItemParticleForce *) item;
+    if (nullptr != item && item->ItemType() == SceneTreeItem::EIT_Force)
+    {
+        SceneTreeItemParticleForce *itemForce = (SceneTreeItemParticleForce *) item;
 		ret = itemForce->force;
 	}
 
@@ -670,10 +644,9 @@ QVariant SceneTreeItemParticleForce::ItemData() const
 	return qVariantFromValue(force);
 }
 
-QIcon SceneTreeItemParticleForce::ItemIcon() const
+const QIcon& SceneTreeItemParticleForce::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/force.png");
-	return icon;
+    return SharedIcon(":/QtIcons/force.png");
 }
 
 
