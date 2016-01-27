@@ -74,7 +74,6 @@ void UI3DView::SetScene(Scene * _scene)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
-        needUpdateFrameBuffer = true;
     }
 }
 
@@ -132,7 +131,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 
         config.colorBuffer[0].texture = currentTarget.colorAttachment;
         config.depthStencilBuffer.texture = currentTarget.depthAttachment;
-        config.priority = currentTarget.priorityOffset + PRIORITY_MAIN_3D;
+        config.priority = currentTarget.priority + PRIORITY_MAIN_3D;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;

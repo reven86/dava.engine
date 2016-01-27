@@ -150,16 +150,13 @@ extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
 enum eDefaultPassPriority
 {
-    PRIORITY_MAIN_2D = 10,
-    PRIORITY_MAIN_3D = 20,
+    PRIORITY_MAIN_2D = 00,
+    PRIORITY_MAIN_3D = 10,
+    PRIORITY_CLEAR = 15,
+    PRIORITY_SERVICE_3D = 20,
+    PRIORITY_SCREENSHOT = 50,
 
-    PRIORITY_CLEAR = 25,
-
-    PRIORITY_SERVICE_3D = 30,
-    PRIORITY_SERVICE_2D = 40,
-
-    PRIORITY_SCREENSHOT_2D = 50,
-    PRIORITY_SCREENSHOT_3D = 60
+    PRIORITY_SERVICE_2D = 1000 //service 2d is most commonly used for system's draw to texture etc.
 };
 
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them
