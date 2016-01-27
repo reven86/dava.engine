@@ -131,7 +131,7 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
                 // this key already in items list
                 if (NULL != childData)
                 {
-					// remove deleting mark
+                    // remove deleting mark
 					dataToRemove.remove(childData);
 				}
 				// create new child data

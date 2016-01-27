@@ -131,8 +131,8 @@ protected:
 	QtPropertyData *favoriteGroup;
 	QList<QtPropertyData *> favoriteList;
 
-	QVector<DAVA::Entity *> curNodes;
-	PropertyEditorStateHelper treeStateHelper;
+    QVector<DAVA::Entity*> curNodes;
+    PropertyEditorStateHelper treeStateHelper;
 
 	QtPropertyData* CreateInsp(void *object, const DAVA::InspInfo *info);
 	QtPropertyData* CreateInspMember(void *object, const DAVA::InspMember *member);

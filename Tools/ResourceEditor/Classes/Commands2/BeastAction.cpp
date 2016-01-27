@@ -101,7 +101,7 @@ void BeastAction::Redo()
     if (NULL != waitDialog)
     {
         waitDialog->EnableCancel(false);
-	}
+    }
 
     Finish(canceled);
 

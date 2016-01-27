@@ -113,7 +113,7 @@ protected:
     EnumMap enumFormats;
     EnumMap enumSizes;
     EnumMap enumWpar;
-	EnumMap enumFiltersMin;
+    EnumMap enumFiltersMin;
 	EnumMap enumFiltersMag;
     EnumMap enumFiltersMip;
 

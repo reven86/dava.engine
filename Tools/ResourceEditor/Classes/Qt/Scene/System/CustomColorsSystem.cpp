@@ -179,8 +179,8 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
             if (isIntersectsLandscape)
             {
                 UpdateToolImage();
-                    StoreOriginalState();
-					editingIsEnabled = true;
+                StoreOriginalState();
+                    editingIsEnabled = true;
 				}
 				break;
 
@@ -273,7 +273,7 @@ void CustomColorsSystem::SetBrushSize(int32 brushSize, bool updateDrawSystem /*=
         {
             drawSystem->SetCursorSize(cursorSize);
         }
-	}
+    }
 }
 
 void CustomColorsSystem::SetColor(int32 colorIndex)

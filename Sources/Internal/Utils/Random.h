@@ -142,9 +142,9 @@ public:
     float32 RandFloat32InBounds(const float32 lower, const float32 upper);
 
     // Access to 53-bit random numbers (capacity of IEEE float64 precision)
-    float64 Rand53();  // real number in [0,1)
-	
-	// Access to nonuniform random number distributions
+    float64 Rand53(); // real number in [0,1)
+
+    // Access to nonuniform random number distributions
 	float64 RandNorm(const float64 mean = 0.0, const float64 stddev = 1.0);
 	
 	// Re-seeding functions with same behavior as initializers

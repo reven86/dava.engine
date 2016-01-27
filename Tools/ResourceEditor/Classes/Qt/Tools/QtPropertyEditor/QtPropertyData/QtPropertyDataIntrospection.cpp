@@ -130,7 +130,7 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
                                 dynamicMember->SetEnabled(false);
                             }
 
-							retData->ChildAdd(membersList[i].c_str(), dynamicMember);
+                            retData->ChildAdd(membersList[i].c_str(), dynamicMember);
 						}
 					}
 				}

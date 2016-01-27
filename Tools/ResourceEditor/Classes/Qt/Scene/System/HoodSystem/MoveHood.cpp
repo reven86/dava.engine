@@ -117,7 +117,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
         poly.AddPoint(curPos);
         poly.AddPoint(axisXY1->curFrom);
         poly.AddPoint(axisXY1->curTo);
-		poly.AddPoint(axisXY2->curFrom);
+        poly.AddPoint(axisXY2->curFrom);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
     }
     else
@@ -136,7 +136,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
         poly.AddPoint(curPos);
         poly.AddPoint(axisXZ1->curFrom);
         poly.AddPoint(axisXZ1->curTo);
-		poly.AddPoint(axisXZ2->curFrom);
+        poly.AddPoint(axisXZ2->curFrom);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
     }
     else
@@ -155,7 +155,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
         poly.AddPoint(curPos);
         poly.AddPoint(axisYZ1->curFrom);
         poly.AddPoint(axisYZ1->curTo);
-		poly.AddPoint(axisYZ2->curFrom);
+        poly.AddPoint(axisYZ2->curFrom);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
     }
     else
@@ -168,7 +168,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
 
     if (!modifOffset.IsZero())
     {
-		char tmp[255];
+        char tmp[255];
 		DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
 
 		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifOffset.x, modifOffset.y, modifOffset.z);

@@ -74,8 +74,8 @@ public:
     RefPtr(const RefPtr<Other>& rp)
     {
         _ptr = rp.Get();
-		
-		SafeRetain(_ptr);
+
+        SafeRetain(_ptr);
 	}
 	
 	T * Get() const

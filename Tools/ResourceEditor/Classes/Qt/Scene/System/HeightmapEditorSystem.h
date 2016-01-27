@@ -90,7 +90,7 @@ protected:
     float32 strength;
     float32 averageStrength;
     bool inverseDrawingEnabled;
-	FilePath toolImagePath;
+    FilePath toolImagePath;
 	int32 toolImageIndex;
 
 	float32 curHeight;
@@ -111,8 +111,8 @@ protected:
     void AddRectToAccumulator(Rect& accumulator, const Rect& rect);
     void ResetAccumulatorRect(Rect& accumulator);
     Rect GetHeightmapUpdatedRect();
-	
-	void StoreOriginalHeightmap();
+
+    void StoreOriginalHeightmap();
 	void CreateHeightmapUndo();
 
 	void FinishEditing();

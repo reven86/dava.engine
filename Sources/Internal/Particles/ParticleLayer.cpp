@@ -458,8 +458,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
             SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
     }
 
-
-	colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
+    colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
 	colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
 	alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
 	
@@ -671,9 +670,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     const YamlNode* loopEndTimeNode = node->Get("loopEndTime");
     if (loopEndTimeNode)
-        loopEndTime = loopEndTimeNode->AsFloat();				
+        loopEndTime = loopEndTimeNode->AsFloat();
 
-	/*validate all time depended property lines*/	
+    /*validate all time depended property lines*/	
 	UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);

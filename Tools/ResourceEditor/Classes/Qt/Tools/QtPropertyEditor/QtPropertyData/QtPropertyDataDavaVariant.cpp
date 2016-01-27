@@ -463,7 +463,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
             colorBtn->setIcon(SharedIcon(":/QtIcons/color.png"));
             colorBtn->setIconSize(QSize(12, 12));
-			colorBtn->setAutoRaise(true);
+            colorBtn->setAutoRaise(true);
             colorBtn->setObjectName("colorButton");
             QObject::connect(colorBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::ColorOWPressed);
 
@@ -491,7 +491,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			QToolButton *filePathBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
             filePathBtn->setIcon(SharedIcon(":/QtIcons/openscene.png"));
             filePathBtn->setIconSize(QSize(14, 14));
-			filePathBtn->setAutoRaise(true);
+            filePathBtn->setAutoRaise(true);
 			connect(filePathBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::FilePathOWPressed);
 		}
 		break;

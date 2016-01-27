@@ -44,6 +44,7 @@ public:
     bool SetScreenMode(eScreenMode screenMode) override;
     void Quit() override;
 
+
     // Signal is emitted when window has been miniaturized/deminiaturized or
     // when application has been hidden/unhidden.
     // Signal parameter meaning:

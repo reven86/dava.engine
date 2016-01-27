@@ -216,7 +216,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
     if (DAVA::SceneFileV2::ERROR_NO_ERROR == err)
     {
         curScenePath = path;
-		isLoaded = true;
+        isLoaded = true;
 
 		// mark current position in command stack as clean
 		wasChanged = false;
@@ -418,8 +418,8 @@ void SceneEditor2::Draw()
 
         modifSystem->Draw();
 
-        if(structureSystem)
-			structureSystem->Draw();
+        if (structureSystem)
+            structureSystem->Draw();
 	}
  
 	tilemaskEditorSystem->Draw();
@@ -436,7 +436,7 @@ void SceneEditor2::Draw()
 
         // should be last
         selectionSystem->Draw();
-		hoodSystem->Draw();
+        hoodSystem->Draw();
 		textDrawSystem->Draw();
     }
 }
@@ -520,7 +520,7 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
-		Exec(new ActionDisableHeightmapEditor(this));
+        Exec(new ActionDisableHeightmapEditor(this));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
@@ -550,7 +550,7 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
-		res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
+        res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)

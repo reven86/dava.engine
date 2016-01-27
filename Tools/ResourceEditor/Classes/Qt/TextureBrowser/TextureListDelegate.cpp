@@ -341,7 +341,7 @@ void TextureListDelegate::drawPreviewSmall(QPainter *painter, const QStyleOption
 int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const
 {
     int ret = 0;
-	QRect r = rect;
+    QRect r = rect;
 
 	if(nullptr != descriptor && nullptr != texture)
 	{
@@ -369,7 +369,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(c);
                 painter->drawRect(r);
-			}
+            }
 
 			r.moveLeft(r.x() - FORMAT_INFO_SPACING);
 		}
@@ -382,7 +382,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
         }
 
         ret = rect.width() - (r.x() - rect.x());
-	}
+    }
 
 	return ret;
 }

@@ -84,7 +84,7 @@ public:
 
     DAVA::Landscape* GetLandscape() const;
 
-	void UpdateCollisionObject(DAVA::Entity *entity);
+    void UpdateCollisionObject(DAVA::Entity *entity);
 	void RemoveCollisionObject(DAVA::Entity *entity);
 
     void Process(DAVA::float32 timeElapsed) override;
@@ -107,7 +107,7 @@ private:
     DAVA::Vector3 lastRayFrom;
     DAVA::Vector3 lastRayTo;
     DAVA::Vector2 lastMousePos;
-	DAVA::Vector3 lastLandRayFrom;
+    DAVA::Vector3 lastLandRayFrom;
 	DAVA::Vector3 lastLandRayTo;
 	DAVA::Vector3 lastLandCollision;
 	DAVA::Set<DAVA::Entity*> entitiesToAdd;

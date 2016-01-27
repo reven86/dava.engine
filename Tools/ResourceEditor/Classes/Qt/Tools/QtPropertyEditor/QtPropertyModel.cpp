@@ -107,7 +107,7 @@ QVariant QtPropertyModel::data(const QModelIndex & index, int role /* = Qt::Disp
 			{
 			case Qt::DisplayRole:
             case Qt::ToolTipRole:
-				ret = data->GetName();
+                ret = data->GetName();
 				break;
 			case Qt::FontRole:
 			case Qt::BackgroundRole:
@@ -253,12 +253,12 @@ QModelIndex QtPropertyModel::indexFromItem(QtPropertyData *data) const
 	return ret;
 }
 
-void QtPropertyModel::AppendProperties(const QVector<QtPropertyData *>& properties, const QModelIndex& parent /*= QModelIndex()*/)
+void QtPropertyModel::AppendProperties(const QVector<QtPropertyData*>& properties, const QModelIndex& parent /*= QModelIndex()*/)
 {
     if (properties.empty())
         return;
 
-    QtPropertyData *parentData = itemFromIndexInternal(parent);
+    QtPropertyData* parentData = itemFromIndexInternal(parent);
     if (parentData != nullptr)
     {
         parentData->ChildrenAdd(properties);

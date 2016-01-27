@@ -88,7 +88,7 @@ public:
     SceneEditor2();
     ~SceneEditor2();
 
-	// editor systems
+    // editor systems
 	SceneCameraSystem *cameraSystem;
 	SceneCollisionSystem *collisionSystem;
 	SceneGridSystem *gridSystem;
@@ -113,8 +113,8 @@ public:
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem;
-    DAVA::RotationControllerSystem *rotationSystem;
-	DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+    DAVA::RotationControllerSystem* rotationSystem;
+    DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
 
 	WayEditSystem *wayEditSystem;
 	PathSystem *pathSystem;

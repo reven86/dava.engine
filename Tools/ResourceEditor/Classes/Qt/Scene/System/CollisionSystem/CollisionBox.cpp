@@ -33,7 +33,7 @@ CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::
 {
     if (word != nullptr)
     {
-		btTransform trans;
+        btTransform trans;
 		trans.setIdentity();
 		trans.setOrigin(btVector3(position.x, position.y, position.z));
 
@@ -43,7 +43,7 @@ CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::
         btObject->setWorldTransform(trans);
         btWord->addCollisionObject(btObject);
 
-		boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxSize);
+        boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxSize);
 	}
 }
 
@@ -51,7 +51,7 @@ CollisionBox::~CollisionBox()
 {
     if (btObject != nullptr)
     {
-		btWord->removeCollisionObject(btObject);
+        btWord->removeCollisionObject(btObject);
 		DAVA::SafeDelete(btObject);
 		DAVA::SafeDelete(btShape);
 	}

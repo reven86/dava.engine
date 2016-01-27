@@ -70,9 +70,9 @@ namespace DAVA
         KeyedArchive* FindOrInsertTestStepLogEntryArchive(KeyedArchive* testStepArchive, const String& logId);
 
         // Getting and Setting data from/in DB
-        bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
+        bool SaveToDB(MongodbUpdateObject* dbUpdateObject);
 
-		void WriteLogHeader();
+        void WriteLogHeader();
 		void WriteLog(const char8 *text, ...);
 		void Log(const String &level, const String &message);
 

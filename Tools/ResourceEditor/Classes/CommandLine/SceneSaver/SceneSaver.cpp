@@ -101,7 +101,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
     else
     {
         errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
-	}
+    }
 
 	SafeRelease(scene);
     RenderObjectsFlusher::Flush();

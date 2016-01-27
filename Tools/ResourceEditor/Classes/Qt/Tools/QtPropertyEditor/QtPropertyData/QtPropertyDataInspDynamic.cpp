@@ -131,7 +131,7 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
         if (v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
         {
             QtPropertyDataDavaVariant::SetVariantValue(v);
-			ret = true;
+            ret = true;
 		}
 	}
 

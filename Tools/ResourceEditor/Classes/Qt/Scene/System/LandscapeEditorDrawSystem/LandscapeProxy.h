@@ -81,7 +81,7 @@ public:
 
     void CursorEnable();
     void CursorDisable();
-	void SetCursorTexture(Texture* texture);
+    void SetCursorTexture(Texture* texture);
     void SetCursorSize(float32 size);
     void SetCursorPosition(const Vector2& position);
 
@@ -89,7 +89,7 @@ public:
 
     bool IsTilemaskChanged();
     void ResetTilemaskChanged();
-	void IncreaseTilemaskChanges();
+    void IncreaseTilemaskChanges();
 	void DecreaseTilemaskChanges();
 
 	void InitTilemaskImageCopy();

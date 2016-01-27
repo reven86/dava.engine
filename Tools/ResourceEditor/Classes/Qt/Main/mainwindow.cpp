@@ -818,7 +818,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionForceFirstLODonLandscape, SIGNAL(triggered(bool)), this, SLOT(OnForceFirstLod(bool)));
     QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
     QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
-	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
+    QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
 	QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
@@ -1058,7 +1058,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionEnableCameraLight->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
-	ui->actionReloadSprites->setEnabled(enable);
+    ui->actionReloadSprites->setEnabled(enable);
     ui->actionSetLightViewMode->setEnabled(enable);
 
 	ui->actionSaveHeightmapToPNG->setEnabled(enable);
@@ -1666,7 +1666,7 @@ void QtMainWindow::OnTextureBrowser()
         selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
     }
 
-	TextureBrowser::Instance()->show();
+    TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
 	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr); 
 }
@@ -2082,7 +2082,7 @@ void QtMainWindow::OnSaveTiledTexture()
     }
 
     LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
-	if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
 		return;
@@ -2303,26 +2303,26 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
     bool shouldEnableFirstLod = false;
     if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
     {
-		ui->actionCustomColorsEditor->setChecked(true);
+        ui->actionCustomColorsEditor->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
-	{
+    {
 		ui->actionHeightMapEditor->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
-	{
+    {
 		ui->actionRulerTool->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
-	{
+    {
 		ui->actionTileMapEditor->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
-	{
+    {
 		ui->actionShowNotPassableLandscape->setChecked(true);
         shouldEnableFirstLod = true;
     }

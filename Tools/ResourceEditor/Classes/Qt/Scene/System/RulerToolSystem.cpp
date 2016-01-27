@@ -80,7 +80,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
     previewEnabled = true;
 
     Clear();
-	DrawPoints();
+    DrawPoints();
 
 	SendUpdatedLength();
 
@@ -107,7 +107,7 @@ bool RulerToolSystem::DisableLandscapeEdititing()
     SendUpdatedLength();
 
     enabled = false;
-	return !enabled;
+    return !enabled;
 }
 
 
@@ -203,7 +203,7 @@ void RulerToolSystem::AddPoint(const DAVA::Vector2& point)
         linePoints.push_back(point);
         lengths.push_back(l);
 
-		SendUpdatedLength();
+        SendUpdatedLength();
 	}
 }
 
@@ -218,7 +218,7 @@ void RulerToolSystem::RemoveLastPoint()
 
         List<float32>::iterator lengthsIter = lengths.end();
         --lengthsIter;
-		lengths.erase(lengthsIter);
+        lengths.erase(lengthsIter);
 
 		SendUpdatedLength();
 	}
@@ -239,7 +239,7 @@ void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
         previewPoint = point;
         previewLength = lengths.back() + previewLen;
     }
-	else if (!isIntersectsLandscape)
+    else if (!isIntersectsLandscape)
 	{
 		previewLength = -1.f;
 	}
@@ -262,7 +262,7 @@ DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector2& startPoint, const 
 
         prevPoint = point;
         prevLandscapePoint = landscapePoint;
-	}
+    }
 
 	return lineSize;
 }
@@ -287,7 +287,7 @@ void RulerToolSystem::DrawPoints()
 
     if (previewEnabled && isIntersectsLandscape)
     {
-		points.push_back(previewPoint);
+        points.push_back(previewPoint);
 	}
     
     const uint32 pointsCount = points.size();

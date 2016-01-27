@@ -659,7 +659,7 @@ void QtPropertyData::ChildAdd(const QString &key, const QVariant &value)
 	ChildInsert(key, new QtPropertyData(value), ChildCount());
 }
 
-void QtPropertyData::ChildrenAdd(const QVector<QtPropertyData *> & data)
+void QtPropertyData::ChildrenAdd(const QVector<QtPropertyData*>& data)
 {
     if (data.empty())
         return;
@@ -674,7 +674,7 @@ void QtPropertyData::ChildrenAdd(const QVector<QtPropertyData *> & data)
     childrenData.reserve(newSize);
     childrenNames.reserve(newSize);
 
-    foreach(QtPropertyData * d, data)
+    foreach (QtPropertyData* d, data)
     {
         childrenData.push_back(d);
         childrenNames.push_back(d->GetName());
@@ -768,7 +768,7 @@ void QtPropertyData::ChildExtract(QtPropertyData *data)
 	ChildRemoveInternal(index, false);
 }
 
-void QtPropertyData::ChildrenExtract(QVector<QtPropertyData *> & children)
+void QtPropertyData::ChildrenExtract(QVector<QtPropertyData*>& children)
 {
     if (childrenData.empty())
         return;
@@ -854,12 +854,12 @@ void QtPropertyData::ChildRemoveAll()
 
 void QtPropertyData::ResetChildren()
 {
-    std::for_each(childrenData.begin(), childrenData.end(), [](QtPropertyData * data) { delete data; });
+    std::for_each(childrenData.begin(), childrenData.end(), [](QtPropertyData* data) { delete data; });
     childrenData.clear();
     childrenNames.clear();
 }
 
-QtPropertyData * QtPropertyData::GetMergedData(int idx) const
+QtPropertyData* QtPropertyData::GetMergedData(int idx) const
 {
     return mergedData.value(idx);
 }

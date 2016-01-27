@@ -84,8 +84,8 @@ private:
 
     //A pointer to MacOS WebView.
     void* webViewPtr;
-	
-	// A pointer to the WebView delegate.
+
+    // A pointer to the WebView delegate.
 	void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;

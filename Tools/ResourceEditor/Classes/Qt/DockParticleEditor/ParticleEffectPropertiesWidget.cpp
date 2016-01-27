@@ -66,22 +66,22 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
 	QHBoxLayout *playerBox = new QHBoxLayout();
     playBtn = new QPushButton(SharedIcon(":/QtIcons/play.png"), "");
     playBtn->setToolTip("Play");
-	playerBox->addWidget(playBtn);
+    playerBox->addWidget(playBtn);
     stopBtn = new QPushButton(SharedIcon(":/QtIcons/stop.png"), "");
     stopBtn->setToolTip("Stop");
-	playerBox->addWidget(stopBtn);
+    playerBox->addWidget(stopBtn);
     stopAndDeleteBtn = new QPushButton(SharedIcon(":/QtIcons/stop_clear.png"), "");
     stopAndDeleteBtn->setToolTip("Stop and delete particles");
-	playerBox->addWidget(stopAndDeleteBtn);
+    playerBox->addWidget(stopAndDeleteBtn);
     pauseBtn = new QPushButton(SharedIcon(":/QtIcons/pause.png"), "");
     pauseBtn->setToolTip("Pause");
-	playerBox->addWidget(pauseBtn);
+    playerBox->addWidget(pauseBtn);
     restartBtn = new QPushButton(SharedIcon(":/QtIcons/restart.png"), "");
     restartBtn->setToolTip("Restart");
-	playerBox->addWidget(restartBtn);
+    playerBox->addWidget(restartBtn);
     stepForwardBtn = new QPushButton(SharedIcon(":/QtIcons/step_forward.png"), "");
     stepForwardBtn->setToolTip("Step forward");
-	playerBox->addWidget(stepForwardBtn);	
+    playerBox->addWidget(stepForwardBtn);	
 	stepForwardFPSSpin = new QSpinBox(this);
 	stepForwardFPSSpin->setMinimum(1);
 	stepForwardFPSSpin->setMaximum(100);
@@ -112,7 +112,7 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
     iconExternal = SharedIcon(":/QtIcons/external.png");
 
     mainLayout->addWidget(new QLabel("Effect Variables"));
-	effectVariables = new QTableWidget(this);
+    effectVariables = new QTableWidget(this);
 	effectVariables->setColumnCount(2);
 	effectVariables->setRowCount(0);
 	effectEditDelegate = new VariableEditDelegate(effectVariables, effectVariables);

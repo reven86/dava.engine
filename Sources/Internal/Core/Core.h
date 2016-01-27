@@ -230,8 +230,8 @@ public:
 		\returns global frame index from the launch of your application
 	 */
     uint32 GetGlobalFrameIndex();
-	
-	/*
+
+    /*
 		This function performs message on main thread 
 		\param[in] message message to be performed
 	 */

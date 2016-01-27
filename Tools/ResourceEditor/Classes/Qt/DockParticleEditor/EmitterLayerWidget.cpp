@@ -199,7 +199,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     QVBoxLayout* pivotPointLayout = new QVBoxLayout();
     pivotPointLabel = new QLabel("Pivot Point", this);
     pivotPointLayout->addWidget(pivotPointLabel);
-	QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
+    QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
 
 	pivotPointXSpinBoxLabel = new QLabel("X:", this);
 	pivotPointInnerLayout->addWidget(pivotPointXSpinBoxLabel);
@@ -240,7 +240,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     QHBoxLayout* facingLayout = new QHBoxLayout();
 
     cameraFacingCheckBox = new QCheckBox("Camera Facing");
-	facingLayout->addWidget(cameraFacingCheckBox);
+    facingLayout->addWidget(cameraFacingCheckBox);
 	connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));		
 
 	xFacingCheckBox = new QCheckBox("X-Facing");
@@ -292,7 +292,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     numberTimeLine = new TimeLineWidget(this);
     InitWidget(numberTimeLine);
     sizeTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeTimeLine);
+    InitWidget(sizeTimeLine);
 	sizeVariationTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeVariationTimeLine);
 	sizeOverLifeTimeLine = new TimeLineWidget(this);
@@ -665,7 +665,7 @@ void EmitterLayerWidget::OnValueChanged()
     if (yFacingCheckBox->isChecked())
         particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
     if (zFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
+        particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
 	if (worldAlignCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
@@ -1087,7 +1087,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     frameOverlifeFPSSpin->setVisible(!isSuperemitter);
     frameOverlifeFPSLabel->setVisible(!isSuperemitter);
     randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
-	loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
+    loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
 	animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
 
 	// The Pivot Point must be hidden for Superemitter mode.
@@ -1120,7 +1120,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     if (isSuperemitter && this->layer->innerEmitter)
     {
         innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
-	}
+    }
 }
 
 void EmitterLayerWidget::OnPivotPointReset()

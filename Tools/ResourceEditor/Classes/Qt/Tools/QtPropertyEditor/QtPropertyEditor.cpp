@@ -64,7 +64,7 @@ QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 QtPropertyEditor::~QtPropertyEditor()
 { }
 
-void QtPropertyEditor::AppendProperties(const QVector<QtPropertyData *>& properties, const QModelIndex& parent /*= QModelIndex()*/)
+void QtPropertyEditor::AppendProperties(const QVector<QtPropertyData*>& properties, const QModelIndex& parent /*= QModelIndex()*/)
 {
     curModel->AppendProperties(properties, parent);
 }

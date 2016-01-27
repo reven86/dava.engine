@@ -45,7 +45,6 @@
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/WayEditCommands.h"
 
-
 namespace PathSystemInternal
 {
 const DAVA::Array<DAVA::Color, 16> PathColorPallete =

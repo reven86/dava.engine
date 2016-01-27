@@ -163,8 +163,8 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
             }
 
             if (isIntersectsLandscape)
-                {
-					if (drawingType == HEIGHTMAP_COPY_PASTE)
+            {
+                    if (drawingType == HEIGHTMAP_COPY_PASTE)
 					{
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
 						if (curKeyModifiers & Qt::AltModifier)
@@ -248,15 +248,15 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
         DAVA::Logger::Error("Tool image is empty!");
         return;
     }
-	
-	EditorHeightmap* editorHeightmap = drawSystem->GetHeightmapProxy();
+
+    EditorHeightmap* editorHeightmap = drawSystem->GetHeightmapProxy();
 
     int32 scaleSize = curToolImage->GetWidth();
     Vector2 pos = GetHeightmapPositionFromCursor() - Vector2((float32)scaleSize, (float32)scaleSize) / 2.0f;
     {
         switch (activeDrawingType)
         {
-			case HEIGHTMAP_DRAW_RELATIVE:
+            case HEIGHTMAP_DRAW_RELATIVE:
 			{
 				float32 koef = (strength * timeElapsed);
 				if(inverseDrawingEnabled)
@@ -275,14 +275,14 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
             case HEIGHTMAP_DRAW_AVERAGE:
             {
-				float32 koef = (averageStrength * timeElapsed) * 2.0f;
+                float32 koef = (averageStrength * timeElapsed) * 2.0f;
                 editorHeightmap->DrawAverageRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef);
                 break;
             }
 
             case HEIGHTMAP_DRAW_ABSOLUTE:
             case HEIGHTMAP_DRAW_ABSOLUTE_DROPPER:
-			{
+            {
 				float32 maxHeight = drawSystem->GetLandscapeMaxHeight();
 				float32 height = curHeight / maxHeight * Heightmap::MAX_VALUE;
 				
@@ -299,7 +299,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
             }
 
             case HEIGHTMAP_COPY_PASTE:
-			{
+            {
 				if (copyPasteFrom == Vector2(-1.f, -1.f) || copyPasteTo == Vector2(-1.f, -1.f))
 				{
 					return;
@@ -319,7 +319,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
             default:
                 DAVA::Logger::Error("Invalid drawing type!");
-				return;
+                return;
 		}
 		
 		Rect rect(pos.x, pos.y, (float32)scaleSize, (float32)scaleSize);
@@ -386,7 +386,7 @@ void HeightmapEditorSystem::SetStrength(float32 strength)
     inverseDrawingEnabled = false;
     if (strength < 0.f)
     {
-		inverseDrawingEnabled = true;
+        inverseDrawingEnabled = true;
 	}
 }
 

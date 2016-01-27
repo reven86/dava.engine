@@ -62,7 +62,7 @@ namespace DAVA
     {
         DVASSERT(nullptr == dbClient);
 
-		dbClient = MongodbClient::Create(dbHost, dbPort);
+        dbClient = MongodbClient::Create(dbHost, dbPort);
 		if (dbClient)
 		{
 			dbClient->SetDatabaseName(dbName);
@@ -303,7 +303,7 @@ namespace DAVA
         KeyedArchive* currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
         if (!currentRunArchive)
         {
-			autoSys->ForceQuit(Format("Couldn't find archive autotesting_system device"));
+            autoSys->ForceQuit(Format("Couldn't find archive autotesting_system device"));
 		}
 		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName, nullptr);
 

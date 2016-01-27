@@ -409,7 +409,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
     else
     {
         TabBarDataDropped(data);
-	}
+    }
 }
 
 void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup *entities)

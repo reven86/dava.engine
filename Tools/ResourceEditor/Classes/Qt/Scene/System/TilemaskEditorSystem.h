@@ -92,7 +92,7 @@ protected:
     eTilemaskDrawType activeDrawingType;
     float32 strength;
     FilePath toolImagePath;
-	int32 toolImageIndex;
+    int32 toolImageIndex;
 
     rhi::HVertexBuffer quadBuffer;
     rhi::Packet quadPacket;
@@ -107,8 +107,8 @@ protected:
 
     Texture* toolTexture;
     bool toolSpriteUpdated;
-    
-	bool needCreateUndo;
+
+    bool needCreateUndo;
 
     const FastName& textureLevel;
 
@@ -120,7 +120,7 @@ protected:
     Rect GetUpdatedRect();
 
     void CreateMaskTexture();
-	void CreateMaskFromTexture(Texture* texture);
+    void CreateMaskFromTexture(Texture* texture);
 
 	void CreateUndoPoint();
 

@@ -155,7 +155,7 @@ private:
     ParticleLayer* selectedLayer;
     ParticleForce* selectedForce;
 
-	QPointer< SceneTreeModel > treeModel;
+    QPointer< SceneTreeModel > treeModel;
 	QPointer< SceneTreeFilteringModel > filteringProxyModel;
 	SceneTreeDelegate *treeDelegate;
 

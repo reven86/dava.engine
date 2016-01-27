@@ -127,7 +127,7 @@ Component * Component::CreateByType(uint32 componentType)
 
     case ANIMATION_COMPONENT:
     case COLLISION_COMPONENT:
-	case SCRIPT_COMPONENT:
+    case SCRIPT_COMPONENT:
         
 	default:
 		DVASSERT(0);

@@ -115,7 +115,7 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 
     SetUpdateTimeout(5000);
     SetEditTracking(true);
-	setMouseTracking(true);
+    setMouseTracking(true);
 
 	LoadScheme("~doc:/PropEditorDefault.scheme");
 }
@@ -141,7 +141,7 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
         return;
 
     curNodes.reserve(selected->Size());
-    for (const EntityGroup::EntityMap::value_type & mapNode : selected->GetContent())
+    for (const EntityGroup::EntityMap::value_type& mapNode : selected->GetContent())
     {
         DAVA::Entity* node = SafeRetain(mapNode.first);
         curNodes << node;
@@ -265,15 +265,15 @@ void PropertyEditor::ResetProperties()
 		ApplyModeFilter(favoriteGroup);
 		ApplyCustomExtensions(root);
 
-        QVector<QtPropertyData *> properies;
+        QVector<QtPropertyData*> properies;
         root->ChildrenExtract(properies);
         AppendProperties(properies);
-        foreach(QtPropertyData * row, properies)
+        foreach (QtPropertyData* row, properies)
         {
             ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
         }
 
-		delete root;
+        delete root;
 	}
     
 	// Restore back the tree view state from the shared storage.
@@ -692,7 +692,7 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
     QtPropertyDataMetaObject* metaData = dynamic_cast<QtPropertyDataMetaObject*>(original);
     if (NULL != metaData)
     {
-		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
+        return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
 	}
 
 	QtPropertyDataInspColl *memberCollection = dynamic_cast<QtPropertyDataInspColl *>(original);
@@ -863,7 +863,7 @@ void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
 void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
     // custom draw for favorites edit mode
-	QStyleOptionViewItemV4 opt = option;
+    QStyleOptionViewItemV4 opt = option;
 	if(index.parent().isValid() && favoritesEditMode)
 	{
 		QtPropertyData *data = GetProperty(index);
@@ -876,11 +876,11 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
                     SharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
                 }
                 else
-				{
+                {
                     SharedIcon(":/QtIcons/star_empty.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
                 }
             }
-		}
+        }
 	}
 
 	QtPropertyEditor::drawRow(painter, opt, index);

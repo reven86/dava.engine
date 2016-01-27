@@ -48,8 +48,8 @@ bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
     va_list vl;
     va_start(vl, text);
 
-    char tmp[4096] = {0};
-	// sizeof(tmp) - 2  - We need two characters for appending "\n" if the number of characters exceeds the size of buffer. 
+    char tmp[4096] = { 0 };
+    // sizeof(tmp) - 2  - We need two characters for appending "\n" if the number of characters exceeds the size of buffer. 
 	vsnprintf(tmp, sizeof(tmp)-2, text, vl);
 	strcat(tmp, "\n");
     messageDisplayed.Increment();

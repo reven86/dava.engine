@@ -277,7 +277,7 @@ public:
     inline Vector4(const Vector3& xyz, float32 _w);
     explicit inline Vector4(const Vector3& v);
     inline Vector4& operator=(const Vector4& _v);
-    inline Vector4 & operator =(const Vector3 & _v);
+    inline Vector4& operator=(const Vector3& _v);
 
     //! Get operators
     float32& operator[](eAxis axis);

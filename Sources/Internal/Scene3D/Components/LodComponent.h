@@ -49,7 +49,7 @@ public:
     static const int32 LAST_LOD_LAYER = 0x7fffffff;
     static const float32 MIN_LOD_DISTANCE;
     static const float32 MAX_LOD_DISTANCE;
-	static const float32 INVALID_DISTANCE;
+    static const float32 INVALID_DISTANCE;
     
 	enum eFlags
 	{

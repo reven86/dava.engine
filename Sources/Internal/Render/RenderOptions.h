@@ -88,7 +88,7 @@ public:
     };
 
     bool IsOptionEnabled(RenderOption option);
-	void SetOption(RenderOption option, bool value);
+    void SetOption(RenderOption option, bool value);
     FastName GetOptionName(RenderOption option);
     RenderOptions();
 

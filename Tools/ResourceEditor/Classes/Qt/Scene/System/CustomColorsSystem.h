@@ -85,7 +85,7 @@ protected:
     Rect GetUpdatedRect();
 
     void StoreOriginalState();
-	void CreateUndoPoint();
+    void CreateUndoPoint();
 
 	void StoreSaveFileName(const FilePath& filePath);
 

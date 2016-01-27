@@ -160,7 +160,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
         return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
     }
 
-	eErrorType enableCustomDrawError = EnableCustomDraw();
+    eErrorType enableCustomDrawError = EnableCustomDraw();
 	if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
 		return enableCustomDrawError;
@@ -236,8 +236,8 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         {
             UpdateBaseLandscapeHeightmap();
         }
-		
-		heightmapProxy->ResetHeightmapChanged();
+
+        heightmapProxy->ResetHeightmapChanged();
 	}
 	
 	if (customColorsProxy && customColorsProxy->IsTargetChanged())

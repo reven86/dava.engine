@@ -86,8 +86,8 @@ static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
 void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
 {
     if (nsize == 0)
-        {
-			mspace_free(ud, ptr);
+    {
+            mspace_free(ud, ptr);
 			return nullptr;
 		}
 		else
@@ -106,15 +106,15 @@ AutotestingSystemLua::AutotestingSystemLua()
     , memorySpace(nullptr)
 {
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-        // Suppress warning about unused data member
-        (void)memoryPool;
+    // Suppress warning about unused data member
+    (void)memoryPool;
 #endif
-    }
+}
 
-    AutotestingSystemLua::~AutotestingSystemLua()
-    {
-        if (!luaState)
-		{
+AutotestingSystemLua::~AutotestingSystemLua()
+{
+    if (!luaState)
+        {
 			return;
 		}
 		lua_close(luaState);
@@ -124,12 +124,12 @@ AutotestingSystemLua::AutotestingSystemLua()
         destroy_mspace(memorySpace);
         free(memoryPool);
 #endif
-    }
+}
 
-    void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
-    {
-        delegate = _delegate;
-	}
+void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
+{
+    delegate = _delegate;
+    }
 
 	void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 	{
@@ -153,7 +153,7 @@ AutotestingSystemLua::AutotestingSystemLua()
         lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
         lua_setglobal(luaState, "print");
 
-		lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
+        lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
 		lua_setglobal(luaState, "require");
 
 		if (!LoadWrappedLuaObjects())
@@ -250,7 +250,7 @@ AutotestingSystemLua::AutotestingSystemLua()
         {
             AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
         }
-		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
+        lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
 		return 2;
 	}
@@ -316,7 +316,7 @@ AutotestingSystemLua::AutotestingSystemLua()
 
     String AutotestingSystemLua::GetDeviceName()
     {
-		String deviceName;
+        String deviceName;
 		if (DeviceInfo::GetPlatformString() == "Android")
 		{
 			deviceName = DeviceInfo::GetModel();
@@ -565,7 +565,7 @@ AutotestingSystemLua::AutotestingSystemLua()
             break;
         }
         default:
-		{
+        {
 			if (keyPress.keyChar == 0)
 			{
 				break;
@@ -577,7 +577,7 @@ AutotestingSystemLua::AutotestingSystemLua()
                 uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
             }
             break;
-		}
+        }
 		}
 	}
 
@@ -802,7 +802,7 @@ AutotestingSystemLua::AutotestingSystemLua()
     {
         if (!luaState)
         {
-			return false;
+            return false;
 		}
 		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
 		{

@@ -82,11 +82,11 @@ public:
 	bool InCloneState() const;
     bool InCloneDoneState() const;
 
-    bool ModifCanStart(const EntityGroup &selectedEntities) const;
+    bool ModifCanStart(const EntityGroup& selectedEntities) const;
     bool ModifCanStartByMouse(const EntityGroup& selectedEntities) const;
 
-    void RemoveEntity(DAVA::Entity * entity) override;
-	void Process(DAVA::float32 timeElapsed) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+    void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
     void AddDelegate(EntityModificationSystemDelegate *delegate);

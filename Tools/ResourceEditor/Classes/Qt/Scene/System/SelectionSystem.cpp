@@ -53,7 +53,7 @@ SceneSelectionSystem::~SceneSelectionSystem()
     if (GetScene())
     {
         GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-	}
+    }
 }
 
 void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
@@ -70,7 +70,7 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
 
     bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
-    
+
     if (addSelection)
     {
         groupSelectionMode = GroupSelectionMode::Add;
@@ -116,7 +116,7 @@ void SceneSelectionSystem::ForceEmitSignals()
         SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), &curSelections, &curDeselections);
         selectionHasChanges = false;
         curDeselections.Clear();
-	}
+    }
 }
 
 void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector& allObjects)
@@ -156,10 +156,10 @@ void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector&
     }
 
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    
-    bool addSelection =  keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
+
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
-    
+
     if (addSelection)
     {
         AddSelection(firstEntity);
@@ -259,7 +259,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
     if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::UIEvent::MouseButton::LEFT))
     {
         return;
-	}
+    }
 
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
     {
@@ -279,7 +279,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
             lastGroupSelection.Clear();
             PerformSelectionAtPoint(selectionStartPoint);
         }
-	}
+    }
     else if (selecting && (DAVA::UIEvent::Phase::DRAG == event->phase))
     {
         selectionEndPoint = event->point;
@@ -355,19 +355,19 @@ void SceneSelectionSystem::Draw()
         }
         }
 
-    DAVA::Color drawColor = DAVA::Color::White;
-    if (groupSelectionMode == GroupSelectionMode::Add)
-    {
-        drawColor = DAVA::Color(0.5f, 1.0f, 0.5f, 1.0f);
-    }
-    else if (groupSelectionMode == GroupSelectionMode::Remove)
-    {
-        drawColor = DAVA::Color(1.0f, 0.5f, 0.5f, 1.0f);
-    }
+        DAVA::Color drawColor = DAVA::Color::White;
+        if (groupSelectionMode == GroupSelectionMode::Add)
+        {
+            drawColor = DAVA::Color(0.5f, 1.0f, 0.5f, 1.0f);
+        }
+        else if (groupSelectionMode == GroupSelectionMode::Remove)
+        {
+            drawColor = DAVA::Color(1.0f, 0.5f, 0.5f, 1.0f);
+        }
 
-    for (const auto& item : objectsToSelect.GetContent())
-    {
-        DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, drawColor);
+        for (const auto& item : objectsToSelect.GetContent())
+        {
+            DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, drawColor);
     }
 }
 
@@ -382,8 +382,8 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 			// remove from selection entity that was removed by command
             ExcludeSelection(command->GetEntity());
         }
-        else if((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
-		{
+        else if ((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
+        {
             invalidSelectionBoxes = true;
         }
     }
@@ -402,8 +402,8 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
         {
             if (IsEntitySelectable(item.first) && !curSelections.ContainsEntity(item.first))
             {
-            curSelections.Add(item.first, item.second);
-            selectionHasChanges = true;
+                curSelections.Add(item.first, item.second);
+                selectionHasChanges = true;
             }
         }
 
@@ -441,9 +441,9 @@ void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
         {
             if (IsEntitySelectable(item.first) && !curSelections.ContainsEntity(item.first))
             {
-            curSelections.Add(item.first, GetSelectionAABox(item.first));
-            selectionHasChanges = true;
-            invalidSelectionBoxes = true;
+                curSelections.Add(item.first, GetSelectionAABox(item.first));
+                selectionHasChanges = true;
+                invalidSelectionBoxes = true;
             }
         }
         UpdateHoodPos();
@@ -610,7 +610,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
     else
     {
         DAVA::Vector3 p;
-		bool lockHoodModif = false;
+        bool lockHoodModif = false;
 
 		switch (curPivotPoint)
 		{
@@ -623,14 +623,14 @@ void SceneSelectionSystem::UpdateHoodPos() const
             break;
         }
 
-		// check if we have locked entities in selection group
+        // check if we have locked entities in selection group
 		// if so - lock modification hood
         for (const auto& item : curSelections.GetContent())
         {
             if (item.first->GetLocked())
             {
                 lockHoodModif = true;
-				break;
+                break;
 			}
 		}
 
@@ -668,8 +668,8 @@ DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity, cons
 
     if (nullptr != entity)
     {
-        // we will get selection bbox from collision system 
-		DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(entity);
+        // we will get selection bbox from collision system
+        DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(entity);
 
 		// add childs boxes into entity box
 		for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)

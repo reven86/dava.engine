@@ -178,7 +178,6 @@ DAVA::Color QColorToColor(const QColor &qcolor)
 	return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 }
 
-
 int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int buttons, int defaultButton)
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
@@ -207,7 +206,7 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
         String newString = sourceString;
         newString = newString.replace(pos, what.length(), on);
         return newString;
-	}
+    }
 
 	return sourceString;
 }

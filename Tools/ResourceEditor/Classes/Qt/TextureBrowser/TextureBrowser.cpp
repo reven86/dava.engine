@@ -108,7 +108,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     // ui->actionShowBorder->trigger();
 
     // set initial empty texture
-	setTexture(curTexture, curDescriptor);
+    setTexture(curTexture, curDescriptor);
     setTextureView(curTextureView, getConvertMode());
 
     // ui->splitter->setSizes(QList<int>() << 60 << 0 << 40);
@@ -856,7 +856,7 @@ void TextureBrowser::textureZoomFit(bool checked)
                 QSize size = ui->textureAreaOriginal->getContentSize();
                 w = size.width();
                 h = size.height();
-			}
+            }
 			else
 			{
 				w = curTexture->width;

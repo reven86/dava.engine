@@ -94,8 +94,8 @@ AutotestingSystem::~AutotestingSystem()
 }
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
-    {
-		Logger::Info("AutotestingSystem::InitLua");
+{
+        Logger::Info("AutotestingSystem::InitLua");
 		DVASSERT(nullptr == luaSystem);
 		luaSystem = new AutotestingSystemLua();
 		luaSystem->SetDelegate(_delegate);
@@ -186,7 +186,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         branch = option->GetString("Branch");
         framework = option->GetString("Framework");
         branchRev = option->GetString("BranchRev");
-		frameworkRev = option->GetString("FrameworkRev");
+        frameworkRev = option->GetString("FrameworkRev");
 
 		// Check is build fol local debugging.  By default: use DB.
 		bool isLocalBuild = option->GetBool("LocalBuild", false);
@@ -285,7 +285,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
         AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
         if (isDB)
-			AutotestingDB::Instance()->SetTestStarted();
+            AutotestingDB::Instance()->SetTestStarted();
 	}
 
 	void AutotestingSystem::OnStepStart(const String &stepName)
@@ -384,7 +384,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     void AutotestingSystem::MakeScreenShot()
     {
         Logger::Info("AutotestingSystem::MakeScreenShot");
-		String currentDateTime = GetCurrentTimeString();
+        String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
         Renderer::RequestGLScreenShot(this);
@@ -439,7 +439,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         {
             String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
             Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
-		}
+        }
 
         int32 id = input.touchId;
         switch (input.phase)
@@ -525,7 +525,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         {
             return;
         }
-		isRunning = false;
+        isRunning = false;
 		isWaiting = false;
 		needExitApp = true;
 		timeBeforeExit = 1.0f;

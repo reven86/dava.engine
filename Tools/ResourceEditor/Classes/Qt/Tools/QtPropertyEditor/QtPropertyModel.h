@@ -63,8 +63,8 @@ public:
 	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
 	QModelIndex indexFromItem(QtPropertyData *data) const;
 
-    void AppendProperties(const QVector<QtPropertyData *> & properties, const QModelIndex& parent = QModelIndex());
-	QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
+    void AppendProperties(const QVector<QtPropertyData*>& properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
     void MergeProperty(QtPropertyData* data, const QModelIndex &parent = QModelIndex());
 	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex());
 

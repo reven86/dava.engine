@@ -35,7 +35,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 {
     if ((renderObject != nullptr) && (word != nullptr))
     {
-		DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
+        DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
 
         int maxVertexCount = 0;
         int bestLodIndex = 0;
@@ -67,16 +67,16 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 			    DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
                 if (pg != nullptr)
                 {
-				    // is this the first polygon in cycle
+                    // is this the first polygon in cycle
                     if (!anyPolygonAdded)
                     {
-					    anyPolygonAdded = true;
+                        anyPolygonAdded = true;
 					    btTriangles = new btTriangleMesh();
 				    }
 
                     for (int i = 0; i < pg->indexCount; i += 3)
                     {
-					    DAVA::uint16 index0 = pg->indexArray[i];
+                        DAVA::uint16 index0 = pg->indexArray[i];
 					    DAVA::uint16 index1 = pg->indexArray[i+1];
 					    DAVA::uint16 index2 = pg->indexArray[i+2];
 
@@ -96,7 +96,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
                                                  btVector3(v2.x, v2.y, v2.z), false);
                     }
 
-				    // save original bbox
+                    // save original bbox
 				    boundingBox.AddAABBox(pg->GetBoundingBox());
 			    }
             }
@@ -106,12 +106,12 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
         {
             // increase bbox a little bit
             boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
-			boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
+            boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
 
 			btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
             btObject = new btCollisionObject();
             btObject->setCollisionShape(btShape);
-			btWord->addCollisionObject(btObject);
+            btWord->addCollisionObject(btObject);
 		}
 	}
 }
@@ -120,7 +120,7 @@ CollisionRenderObject::~CollisionRenderObject()
 {
     if (btObject != nullptr)
     {
-		btWord->removeCollisionObject(btObject);
+        btWord->removeCollisionObject(btObject);
 		DAVA::SafeDelete(btObject);
 		DAVA::SafeDelete(btShape);
 		DAVA::SafeDelete(btTriangles);

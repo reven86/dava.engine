@@ -480,7 +480,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             if (entity->GetLocked())
             {
                 lockAction->setDisabled(true);
- 			}
+            }
  			else
  			{
  				unlockAction->setDisabled(true);
@@ -494,7 +494,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             DAVA::KeyedArchive* customProp = GetCustomPropertiesArchieve(entity);
             if (NULL != customProp)
             {
-				DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+                DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 				if(!ownerRef.IsEmpty())
 				{
 					if(selectionSize == 1)
@@ -526,13 +526,13 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 
             if (selectionSize == 1)
             {
-				contextMenu.addSeparator();
+                contextMenu.addSeparator();
                 contextMenu.addAction(SharedIcon(":/QtIconsTextureDialog/filter.png"), "Set name as filter", this, SLOT(SetEntityNameAsFilter()));
             }
         }
 
         contextMenu.exec(pos);
-	}
+    }
 }
 
 void SceneTree::ShowContextMenuLayer(DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *layer, const QPoint &pos)
@@ -605,7 +605,7 @@ void SceneTree::LookAtSelection()
         {
             sceneEditor->cameraSystem->LookAt(selection.GetCommonBbox());
         }
-	}
+    }
 }
 
 void SceneTree::RemoveSelection()
@@ -680,7 +680,7 @@ void SceneTree::EditModel()
                 }
             }
         }
-	}
+    }
 }
 
 void SceneTree::ReloadModel()
@@ -887,12 +887,12 @@ void SceneTree::SyncSelectionToTree()
     if (toSelect.empty())
         return;
 
-    QItemSelectionModel * selectModel = selectionModel();
+    QItemSelectionModel* selectModel = selectionModel();
     selectModel->clear();
 
-    for (TSelectionMap::value_type & selectionNode : toSelect)
+    for (TSelectionMap::value_type& selectionNode : toSelect)
     {
-        DAVA::Vector<QModelIndex> & indexes = selectionNode.second;
+        DAVA::Vector<QModelIndex>& indexes = selectionNode.second;
         sort(indexes.begin(), indexes.end(), [](const QModelIndex& left, const QModelIndex& right) {
             DVASSERT(left.parent() == right.parent());
             return left.row() < right.row();
@@ -953,9 +953,9 @@ void SceneTree::SyncSelectionFromTree()
             curScene->selectionSystem->SetSelection(group);
 
             // force selection system emit signals about new selection
-			// this should be done until we are inSync mode, to prevent unnecessary updates
-			// when signals from selection system will be emitted on next frame
-			curScene->selectionSystem->ForceEmitSignals();
+            // this should be done until we are inSync mode, to prevent unnecessary updates
+            // when signals from selection system will be emitted on next frame
+            curScene->selectionSystem->ForceEmitSignals();
 		}
 	}
 }
@@ -1475,7 +1475,7 @@ void SceneTree::SetCurrentCamera()
         {
             sceneEditor->SetCurrentCamera(camera);
         }
-	}
+    }
 }
 
 void SceneTree::SetCustomDrawCamera()
@@ -1488,7 +1488,7 @@ void SceneTree::SetCustomDrawCamera()
         {
             sceneEditor->SetCustomDrawCamera(camera);
         }
-	}
+    }
 }
 
 void SceneTree::UpdateTree()

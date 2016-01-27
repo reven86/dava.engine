@@ -79,8 +79,8 @@ void TextureProperties::setTextureDescriptor(DAVA::TextureDescriptor *descriptor
         // we don't know avaliable mipmap sizes for newly set texture until setOriginalSize() method will be called by user
         MipMapSizesReset();
 
-        // reload all properties for current gpu and from current descriptor 
-		ReloadProperties();
+        // reload all properties for current gpu and from current descriptor
+        ReloadProperties();
 	}
 	else
 	{
@@ -215,7 +215,7 @@ void TextureProperties::ReloadProperties()
         ReloadEnumWrap();
         ReloadEnumFilters();
 
-		SetPropertyItemValidValues(propWrapModeS, &enumWpar);
+        SetPropertyItemValidValues(propWrapModeS, &enumWpar);
 		SetPropertyItemValidValues(propWrapModeT, &enumWpar);
 		SetPropertyItemValidValues(propMinFilter, &enumFiltersMin);
         SetPropertyItemValidValues(propMagFilter, &enumFiltersMag);
@@ -225,7 +225,7 @@ void TextureProperties::ReloadProperties()
 
         if (0 == enumSizes.GetCount())
         {
-			propSizes->SetEnabled(false);
+            propSizes->SetEnabled(false);
 		}
 
 		expandAll();
@@ -367,7 +367,7 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
     else if (data == propWrapModeS || data == propWrapModeT)
     {
         emit PropertyChanged(PROP_WRAP);
-	}
+    }
 	else if(data == propSizes)
 	{
 		SaveCurSizeFromProp();
@@ -400,7 +400,7 @@ void TextureProperties::LoadCurSizeToProp()
         if (-1 != level)
         {
             skipPropSizeChanged = true;
-			propSizes->SetValue(level);
+            propSizes->SetValue(level);
             propSizes->UpdateValue(true);
 			skipPropSizeChanged = false;
 		}
@@ -418,7 +418,7 @@ void TextureProperties::SaveCurSizeFromProp()
         {
             DVASSERT(curTextureDescriptor->compression);
             curTextureDescriptor->compression[curGPU].compressToWidth = availableSizes[level].width();
-			curTextureDescriptor->compression[curGPU].compressToHeight = availableSizes[level].height();
+            curTextureDescriptor->compression[curGPU].compressToHeight = availableSizes[level].height();
 		}
 	}
 }

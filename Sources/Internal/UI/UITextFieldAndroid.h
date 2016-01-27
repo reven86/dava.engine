@@ -142,7 +142,7 @@ public:
     void SetEnableReturnKeyAutomatically(bool value);
     uint32 GetCursorPos();
     void SetCursorPos(uint32 pos);
-	void SetMaxLength(DAVA::int32 value);
+    void SetMaxLength(DAVA::int32 value);
 	void SetMultiline(bool value);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
