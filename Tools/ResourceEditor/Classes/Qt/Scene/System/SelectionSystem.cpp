@@ -199,8 +199,8 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
     {
         if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
         {
-			if(applyOnPhaseEnd)
-			{
+            if (applyOnPhaseEnd)
+            {
 				applyOnPhaseEnd = false;
 				SetSelection(lastSelection);
 			}

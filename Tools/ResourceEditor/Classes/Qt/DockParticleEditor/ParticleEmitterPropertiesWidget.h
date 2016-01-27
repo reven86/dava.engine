@@ -81,9 +81,9 @@ private:
 
     QLineEdit* originalEmitterYamlPath = nullptr;
     QLineEdit* emitterYamlPath;
-	QComboBox* emitterType;
+    QComboBox* emitterType;
 
-	EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
+    EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
 
 	QCheckBox* shortEffectCheckBox;
 

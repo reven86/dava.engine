@@ -615,9 +615,9 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
 
     samplerState.addrU = texDescriptor->drawSettings.wrapModeS;
     samplerState.addrV = texDescriptor->drawSettings.wrapModeT;
-    samplerState.minFilter = texDescriptor->drawSettings.minFilter;
-    samplerState.magFilter = texDescriptor->drawSettings.magFilter;
-    samplerState.mipFilter = texDescriptor->drawSettings.mipFilter;
+    samplerState.minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : texDescriptor->drawSettings.minFilter;
+    samplerState.magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : texDescriptor->drawSettings.magFilter;
+    samplerState.mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : texDescriptor->drawSettings.mipFilter;
 
     rhi::ReleaseSamplerState(samplerStateHandle);
     samplerStateHandle = CreateSamplerStateHandle(samplerState);

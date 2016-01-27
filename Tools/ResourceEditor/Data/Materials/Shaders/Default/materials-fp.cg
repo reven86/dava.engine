@@ -304,7 +304,12 @@ FPROG_BEGIN
         
             #if VIEW_DIFFUSE
                 #if MATERIAL_LIGHTMAP
-                    color = textureColor1.rgb * 2.0;
+					#if VIEW_ALBEDO
+						color = textureColor1.rgb * 2.0;
+					#else
+						//do not scale lightmap in view diffuse only case. artist request
+						color = textureColor1.rgb; 
+					#endif
                 #else
                     color += FP_IN(varDiffuseColor) * lightColor0;
                 #endif
@@ -431,7 +436,12 @@ FPROG_BEGIN
     
         #if VIEW_DIFFUSE
             #if MATERIAL_LIGHTMAP
-                color = textureColor1.rgb * 2.0;
+                #if VIEW_ALBEDO
+					color = textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color = textureColor1.rgb; 
+				#endif
             #else
                 color += diffuse * lightColor0;
             #endif
@@ -468,7 +478,12 @@ FPROG_BEGIN
 			#endif
 
 			#if VIEW_DIFFUSE
-				color *= textureColor1.rgb * 2.0;
+				#if VIEW_ALBEDO
+					color *= textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color *= textureColor1.rgb; 
+				#endif				
 			#endif
 
 		#elif MATERIAL_TEXTURE

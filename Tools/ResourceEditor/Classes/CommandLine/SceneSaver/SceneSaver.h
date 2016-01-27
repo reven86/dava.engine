@@ -64,7 +64,7 @@ private:
     void CopyEmitter(ParticleEmitter* emitter);
     Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;
 
-    void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
+    void CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog);
 
     SceneUtils sceneUtils;
     TexturesMap texturesForSave;

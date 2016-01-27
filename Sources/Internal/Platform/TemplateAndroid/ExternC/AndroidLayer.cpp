@@ -430,7 +430,6 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
             core->OnInput(action, source, activeInputs, allInputs);
         }
     }
-
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)

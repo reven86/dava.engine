@@ -40,8 +40,7 @@ using namespace DAVA;
     
 	NSTrackingArea *trackingArea;
 	bool isFirstDraw;
-	DAVA::Cursor * activeCursor;
-	bool willQuit;
+    bool willQuit;
 }
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__

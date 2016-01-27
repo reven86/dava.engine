@@ -48,7 +48,6 @@
 using namespace DAVA;
 
 GameCore::GameCore()
-    : cursor(nullptr)
 {
     new GridVisualizer();
 
@@ -77,13 +76,11 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-    cursor = nullptr;
     Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
 {
-	SafeRelease(cursor);
 }
 
 void GameCore::OnSuspend()

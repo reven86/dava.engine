@@ -346,7 +346,7 @@ void TextureConvertor::threadThumbnailFinished()
         curJobThumbnail = nullptr;
     }
 
-	jobRunNextThumbnail();
+    jobRunNextThumbnail();
 }
 
 

@@ -102,8 +102,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     resetTextureInfo();
 
-	// let textures list show images-view by default
-	ui->actionViewImagesList->trigger();
+    // let textures list show images-view by default
+    ui->actionViewImagesList->trigger();
 
 	// let textures view show border by default
 	// ui->actionShowBorder->trigger();

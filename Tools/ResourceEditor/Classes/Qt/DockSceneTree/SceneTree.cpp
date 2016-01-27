@@ -677,8 +677,8 @@ void SceneTree::EditModel()
                 {
                     ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
                 }
-			}
-		}
+            }
+        }
 	}
 }
 
@@ -1143,7 +1143,7 @@ void SceneTree::LoadEmitterFromYaml()
     sceneEditor->Exec(command);
     sceneEditor->MarkAsChanged();
 
-	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
 void SceneTree::SaveEmitterToYaml()
@@ -1170,15 +1170,14 @@ void SceneTree::LoadInnerEmitterFromYaml()
 	if (filePath.isEmpty())
 	{
 		return;
-	}
+    }
 
     selectedLayer->innerEmitterPath = filePath.toStdString();
     CommandLoadInnerParticleEmitterFromYaml* command = new CommandLoadInnerParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
     sceneEditor->Exec(command);
     sceneEditor->MarkAsChanged();
 
-	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
-
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 void SceneTree::SaveInnerEmitterToYaml()
 {

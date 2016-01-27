@@ -312,8 +312,8 @@ AutotestingSystemLua::AutotestingSystemLua()
 
     String AutotestingSystemLua::GetPlatform()
     {
-		return DeviceInfo::GetPlatformString();
-	}
+        return DeviceInfo::GetPlatformString();
+    }
 
 	String AutotestingSystemLua::GetDeviceName()
 	{

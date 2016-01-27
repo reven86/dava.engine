@@ -410,7 +410,7 @@ bool Landscape::PlacePoint(const Vector3& worldPoint, Vector3& result, Vector3* 
         GetHeightAtPoint(dy, dy.z);
         *normal = (dx - result).CrossProduct(dy - result);
         normal->Normalize();
-	}
+    }
 
     return true;
 };

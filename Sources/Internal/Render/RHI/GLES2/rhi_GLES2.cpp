@@ -333,6 +333,10 @@ gles2_Reset(const ResetParam& param)
     _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
     android_gl_reset(param.window);
+#elif defined(__DAVAENGINE_IPHONE__)
+    ios_gl_reset(param.window);
+#elif defined(__DAVAENGINE_MACOS__)
+    macos_gl_reset(param);
 #endif
 }
 
@@ -476,6 +480,7 @@ void gles2_Initialize(const InitParam& param)
         VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
         IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
         QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+        PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
         TextureGLES2::SetupDispatch(&DispatchGLES2);
         PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
         ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -570,7 +575,10 @@ void gles2_Initialize(const InitParam& param)
 
 void gles2_Initialize(const InitParam& param)
 {
-    macos_gl_init(param.window);
+    macos_gl_init(param);
+
+    _GLES2_DefaultFrameBuffer_Width = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
 
     _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &macos_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;
@@ -615,6 +623,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -709,6 +718,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -804,6 +814,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);

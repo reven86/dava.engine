@@ -57,6 +57,7 @@ enum ResourceType
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
+    RESOURCE_PERFQUERY_SET = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -791,6 +792,8 @@ RenderPassConfig
     DepthStencilBuffer depthStencilBuffer;
 
     Handle queryBuffer;
+    uint32 PerfQueryIndex0;
+    uint32 PerfQueryIndex1;
     Viewport viewport;
 
     int priority;
@@ -800,6 +803,8 @@ RenderPassConfig
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
+        , PerfQueryIndex0(DAVA::InvalidIndex)
+        , PerfQueryIndex1(DAVA::InvalidIndex)
     {
     }
 };
