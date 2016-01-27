@@ -37,6 +37,10 @@
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "MemoryManager/MemoryProfiler.h"
+#endif
+
 extern "C"{
 #include "lua.h"
 #include "lualib.h"
@@ -58,11 +62,30 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 
 namespace DAVA
 {
-	static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+    if (0 == nsize)
+    {
+        MemoryManager::Instance()->Deallocate(ptr);
+        return nullptr;
+    }
 
-	void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
-	{
-		if (nsize == 0)
+    void* newPtr = MemoryManager::Instance()->Allocate(nsize, ALLOC_POOL_LUA);
+    if (osize != 0 && newPtr != nullptr)
+    {
+        size_t n = std::min(osize, nsize);
+        memcpy(newPtr, ptr, n);
+        MemoryManager::Instance()->Deallocate(ptr);
+    }
+    return newPtr;
+}
+#else
+static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
+
+void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+        if (nsize == 0)
 		{
 			mspace_free(ud, ptr);
 			return nullptr;
@@ -74,14 +97,22 @@ namespace DAVA
 			return mem;
 		}
 	}
+#endif
 
-	AutotestingSystemLua::AutotestingSystemLua() : delegate(nullptr), luaState(nullptr), memoryPool(nullptr), memorySpace(nullptr)
-	{
+AutotestingSystemLua::AutotestingSystemLua()
+    : delegate(nullptr)
+    , luaState(nullptr)
+    , memoryPool(nullptr)
+    , memorySpace(nullptr)
+{
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    // Suppress warning about unused data member
+    (void)memoryPool;
+#endif
+}
 
-	}
-
-	AutotestingSystemLua::~AutotestingSystemLua()
-	{
+AutotestingSystemLua::~AutotestingSystemLua()
+    {
 
 		if (!luaState)
 		{
@@ -90,12 +121,14 @@ namespace DAVA
 		lua_close(luaState);
 		luaState = nullptr;
     
-		destroy_mspace(memorySpace);
-		free(memoryPool);
-	}
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
+        destroy_mspace(memorySpace);
+        free(memoryPool);
+#endif
+    }
 
-	void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
-	{
+    void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
+    {
 		delegate = _delegate;
 	}
 
@@ -109,14 +142,16 @@ namespace DAVA
 
 		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
 
-		memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
-		memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
-		memorySpace = create_mspace_with_base(memoryPool, LUA_MEMORY_POOL_SIZE, 0);
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
+        memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
+        memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
+        memorySpace = create_mspace_with_base(memoryPool, LUA_MEMORY_POOL_SIZE, 0);
 		mspace_set_footprint_limit(memorySpace, LUA_MEMORY_POOL_SIZE);
-		luaState = lua_newstate(lua_allocator, memorySpace);
-		luaL_openlibs(luaState);
+#endif
+        luaState = lua_newstate(lua_allocator, memorySpace);
+        luaL_openlibs(luaState);
 
-		lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
+        lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
 		lua_setglobal(luaState, "print");
 
 		lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
@@ -213,8 +248,8 @@ namespace DAVA
         }
         lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
         if (!Instance()->RunScript())
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
 		}
 		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
@@ -277,10 +312,10 @@ namespace DAVA
 
     String AutotestingSystemLua::GetPlatform()
     {
-		return DeviceInfo::GetPlatformString();
-	}
+        return DeviceInfo::GetPlatformString();
+    }
 
-	String AutotestingSystemLua::GetDeviceName()
+    String AutotestingSystemLua::GetDeviceName()
 	{
 		String deviceName;
 		if (DeviceInfo::GetPlatformString() == "Android")
@@ -528,8 +563,8 @@ namespace DAVA
         case 27: // ESCAPE
         {
             uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
-			break;
-		}
+            break;
+        }
 		default:
 		{
 			if (keyPress.keyChar == 0)
@@ -540,8 +575,8 @@ namespace DAVA
             str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
             {
-				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
-			}
+                uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
+            }
 			break;
 		}
 		}
@@ -764,9 +799,9 @@ namespace DAVA
         return delegate->LoadWrappedLuaObjects(luaState);
     }
 
-    bool AutotestingSystemLua::LoadScript(const String &luaScript)
-	{
-		if (!luaState)
+    bool AutotestingSystemLua::LoadScript(const String& luaScript)
+    {
+        if (!luaState)
 		{
 			return false;
 		}

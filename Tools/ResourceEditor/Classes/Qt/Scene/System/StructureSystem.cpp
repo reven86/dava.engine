@@ -265,9 +265,9 @@ void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce *> &for
 EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings)
 {
     EntityGroup result;
-    if(entityGroup.Size() > 0)
-	{
-		DAVA::Set<DAVA::FilePath> refsToReload;
+    if (entityGroup.Size() > 0)
+    {
+        DAVA::Set<DAVA::FilePath> refsToReload;
 
 		for(int i = 0; i < (int)entityGroup.Size(); ++i)
 		{
@@ -284,8 +284,8 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
 
 		DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
         DAVA::Map<Entity*, Entity*> groupMapping;
-        for(; it != refsToReload.end(); ++it)
-		{
+        for (; it != refsToReload.end(); ++it)
+        {
             DAVA::Map<Entity*, Entity*> mapping;
             ReloadRefs(*it, mapping, saveLightmapSettings);
             groupMapping.insert(mapping.begin(), mapping.end());
@@ -310,16 +310,16 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA
 EntityGroup StructureSystem::ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
 {
     EntityGroup result;
-    if(entityGroup.Size() > 0)
-	{
+    if (entityGroup.Size() > 0)
+    {
         DAVA::Map<DAVA::Entity*, DAVA::Entity*> entitiesToReload;
 
         for (int i = 0; i < (int)entityGroup.Size(); i++)
-		{
+        {
             entitiesToReload.emplace(entityGroup.GetEntity(i), nullptr);
         }
 
-		ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
+        ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
 
         DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
         SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
@@ -341,8 +341,8 @@ void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& ma
 
         if (mapping.size() > 0)
         {
-			// try to load new model
-			DAVA::Entity *loadedEntity = LoadInternal(newModelPath, true);
+            // try to load new model
+            DAVA::Entity *loadedEntity = LoadInternal(newModelPath, true);
 
 			if(NULL != loadedEntity)
 			{
@@ -351,23 +351,23 @@ void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& ma
 
                 sceneEditor->BeginBatch("Reload model");
 
-				for(; it != end; ++it)
-				{
+                for (; it != end; ++it)
+                {
 					DAVA::Entity *newEntityInstance = loadedEntity->Clone();
                     DAVA::Entity* origEntity = it->first;
 
-                    if(NULL != origEntity && NULL != newEntityInstance && NULL != origEntity->GetParent())
-					{
-						DAVA::Entity *before = origEntity->GetParent()->GetNextChild(origEntity);
+                    if (NULL != origEntity && NULL != newEntityInstance && NULL != origEntity->GetParent())
+                    {
+                        DAVA::Entity *before = origEntity->GetParent()->GetNextChild(origEntity);
 
 						newEntityInstance->SetLocalTransform(origEntity->GetLocalTransform());
                         newEntityInstance->SetID(origEntity->GetID());
                         newEntityInstance->SetSceneID(origEntity->GetSceneID());
                         it->second = newEntityInstance;
 
-                        if(saveLightmapSettings)
-						{
-							CopyLightmapSettings(origEntity, newEntityInstance);
+                        if (saveLightmapSettings)
+                        {
+                            CopyLightmapSettings(origEntity, newEntityInstance);
 						}
 
 						sceneEditor->Exec(new EntityParentChangeCommand(newEntityInstance, origEntity->GetParent(), before));
@@ -790,9 +790,9 @@ void StructureSystem::FindMeshesRecursive(DAVA::Entity *entity, DAVA::Vector<DAV
 void StructureSystem::SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePath& refToOwner, const DAVA::Function<void(DAVA::Entity*)>& callback)
 {
     DVASSERT(callback);
-    if(NULL != parent)
-	{
-		for(int i = 0; i < parent->GetChildrenCount(); ++i)
+    if (NULL != parent)
+    {
+        for(int i = 0; i < parent->GetChildrenCount(); ++i)
 		{
 			DAVA::Entity *entity = parent->GetChild(i);
 			DAVA::KeyedArchive *arch = GetCustomPropertiesArchieve(entity);
@@ -810,5 +810,5 @@ void StructureSystem::SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePa
             // else continue searching in child entities
             SearchEntityByRef(entity, refToOwner, callback);
         }
-	}
+    }
 }

@@ -110,9 +110,10 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
     connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
     connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
+    connect(mainUi->actionAddVisibilityComponent, SIGNAL(triggered()), SLOT(OnAddVisibilityComponent()));
 
-	SetUpdateTimeout(5000);
-	SetEditTracking(true);
+    SetUpdateTimeout(5000);
+    SetEditTracking(true);
 	setMouseTracking(true);
 
 	LoadScheme("~doc:/PropEditorDefault.scheme");
@@ -687,9 +688,9 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
-    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
-	if(NULL != metaData)
-	{
+    QtPropertyDataMetaObject* metaData = dynamic_cast<QtPropertyDataMetaObject*>(original);
+    if (NULL != metaData)
+    {
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
 	}
 
@@ -937,8 +938,21 @@ void PropertyEditor::ConvertToShadow()
 
             for ( int i = 0; i < dataList.size(); i++ )
             {
-		        DAVA::RenderBatch *batch = (DAVA::RenderBatch *)dataList.at(i)->object;
-		        curScene->Exec(new ConvertToShadowCommand(batch));
+                DAVA::RenderBatch* batch = (DAVA::RenderBatch*)dataList.at(i)->object;
+                DVASSERT(batch);
+                DAVA::RenderObject* renderObject = batch->GetRenderObject();
+                DAVA::Entity* entity = nullptr;
+                for (int i = 0; i < curNodes.size(); ++i)
+                {
+                    if (GetRenderObject(curNodes.at(i)) == renderObject)
+                    {
+                        entity = curNodes.at(i);
+                        break;
+                    }
+                }
+
+                DVASSERT(entity);
+                curScene->Exec(new ConvertToShadowCommand(entity, batch));
             }
 
             if (usebatch)
@@ -1478,6 +1492,11 @@ void PropertyEditor::OnAddWASDControllerComponent()
     OnAddComponent(Component::WASD_CONTROLLER_COMPONENT);
 }
 
+void PropertyEditor::OnAddVisibilityComponent()
+{
+    OnAddComponent(Component::VISIBILITY_CHECK_COMPONENT);
+}
+
 void PropertyEditor::OnRemoveComponent()
 {
 	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
@@ -1555,5 +1574,5 @@ QString PropertyEditor::GetDefaultFilePath()
         }
     }
 
-	return defaultPath;
+    return defaultPath;
 }

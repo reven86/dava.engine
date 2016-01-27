@@ -109,7 +109,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     bool success = false;
     GLuint uid[2] = { 0, 0 };
     bool is_depth = desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8;
-    //    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
 
     if (is_depth)
     {
@@ -179,8 +178,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             uint32 cmd2_cnt = 2;
             GLCommand cmd2[4 + countof(desc.initialData)] =
             {
-              { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } } //,
-              //                { GLCommand::BIND_TEXTURE, { target, uid[0] } }
+              { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
             };
 
             if (desc.autoGenMipmaps && !desc.isRenderTarget)
@@ -190,7 +188,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             }
 
             // process initial-data, if any
-            //            if( desc.type == TEXTURE_TYPE_CUBE )
             {
                 uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
                 GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
@@ -251,10 +248,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
                 ++cmd2_cnt;
             }
-            //            else
-            //            {
-            //                DVASSERT(desc.initialData[0]==nullptr);
-            //            }
 
             ExecGL(cmd2, cmd2_cnt, force_immediate);
         }

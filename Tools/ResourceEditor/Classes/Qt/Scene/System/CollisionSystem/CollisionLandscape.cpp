@@ -27,68 +27,131 @@
 =====================================================================================*/
 
 
+#include "Base/AlignedAllocator.h"
 #include "Qt/Scene/System/CollisionSystem/CollisionLandscape.h"
 #include "Render/Highlevel/Heightmap.h"
 
-CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Landscape *landscape)
-	: CollisionBaseObject(entity, word)
+const DAVA::int32 targetChunkSize = 64;
+
+class CollisionLandscape::CollisionLandscapePrivate
 {
-	if(NULL != landscape && NULL != word)
-	{
-		DAVA::Heightmap *heightmap = landscape->GetHeightmap();
-		if(NULL != heightmap && heightmap->Size() > 0)
-		{
-			DAVA::Vector3 landSize;
-			DAVA::AABBox3 landBox = landscape->GetBoundingBox();
+public:
+    struct LandscapeChunk
+    {
+        DAVA::Vector<DAVA::float32> data;
+        btHeightfieldTerrainShape* shape = nullptr;
+        btCollisionObject* object = nullptr;
+    };
 
-			//DAVA::AABBox3 landTransformedBox;
-			//DAVA::Matrix4 landWorldTransform = entity->GetWorldTransform();
-			// 
-			//landBox.GetTransformedBox(landWorldTransform, landTransformedBox);
-			//landSize = landTransformedBox.max - landTransformedBox.min;
+    void buildCollisionObject(const DAVA::Rect2i& bounds, DAVA::Heightmap* hm);
 
-			landSize = landBox.max - landBox.min;
+public:
+    CollisionLandscape* owner = nullptr;
+    DAVA::Vector<LandscapeChunk*> chunks;
+};
 
-			DAVA::float32 landWidth = landSize.x;
-			DAVA::float32 landScaleW = landWidth / heightmap->Size();
-			DAVA::float32 landHeight = landSize.z;
-			DAVA::float32 landScaleH = landHeight / 65535.f;
+CollisionLandscape::CollisionLandscape(DAVA::Entity* entity, btCollisionWorld* world, DAVA::Landscape* landscape)
+    : CollisionBaseObject(entity, world)
+{
+    static_assert(sizeof(implData) >= sizeof(CollisionLandscapePrivate), "Invalid configuration, increase implData size");
+    impl = new (implData) CollisionLandscapePrivate();
+    impl->owner = this;
 
-			DAVA::uint16 *heightData = heightmap->Data();
-			btHMap.resize(heightmap->Size() * heightmap->Size());
+    if ((nullptr == world) || (nullptr == landscape))
+        return;
 
-			for(DAVA::int32 y = 0; y < heightmap->Size(); ++y)
-			{
-				for (DAVA::int32 x = 0; x < heightmap->Size(); ++x)
-				{
-					DAVA::int32 heightIndex = x + y * heightmap->Size();
-					btHMap[heightIndex] = heightData[heightIndex] * landScaleH;
-				}
-			}
+    DAVA::Heightmap* heightmap = landscape->GetHeightmap();
+    if ((nullptr == heightmap) || (heightmap->Size() <= 0))
+        return;
 
-			btTerrain = new btHeightfieldTerrainShape(heightmap->Size(), heightmap->Size(),	&btHMap.front(), landScaleH, 0, landHeight, 2, PHY_FLOAT, true);
-			btTerrain->setLocalScaling(btVector3(landScaleW, landScaleW, 1.0f));
-			
-			btTransform landTransform;
-			landTransform.setIdentity();
-			landTransform.setOrigin(btVector3(0, 0, landHeight / 2.0f));
+    boundingBox = landscape->GetBoundingBox();
 
-			btObject = new btCollisionObject();
-			btObject->setWorldTransform(landTransform);
-			btObject->setCollisionShape(btTerrain);
-			btWord->addCollisionObject(btObject);
+    DAVA::Vector<DAVA::Rect2i> subdivisions;
 
-			boundingBox = landBox;
-		}
-	}
+    auto hmSize = heightmap->Size();
+
+    DAVA::int32 landcapeSubdivisionsX = hmSize / targetChunkSize;
+    DAVA::int32 landcapeSubdivisionsY = hmSize / targetChunkSize;
+
+    auto hmPartSizeX = hmSize / landcapeSubdivisionsX;
+    auto hmPartSizeY = hmSize / landcapeSubdivisionsY;
+
+    auto generateSubdivisions = [&subdivisions, &hmSize, &hmPartSizeX, &landcapeSubdivisionsX](DAVA::int32 y0, DAVA::int32 h) {
+        DAVA::int32 u = 0;
+        for (; u + 1 < landcapeSubdivisionsX; ++u)
+        {
+            subdivisions.emplace_back(u * hmPartSizeX, y0, hmPartSizeX, h);
+        }
+        DAVA::int32 remainingSize = hmSize - u * hmPartSizeX;
+        subdivisions.emplace_back(u * hmPartSizeX, y0, remainingSize, h);
+    };
+
+    DAVA::int32 v = 0;
+    for (; v + 1 < landcapeSubdivisionsY; ++v)
+    {
+        generateSubdivisions(v * hmPartSizeY, hmPartSizeY);
+    }
+    generateSubdivisions(v * hmPartSizeY, hmSize - v * hmPartSizeY);
+
+    for (const auto& b : subdivisions)
+    {
+        impl->buildCollisionObject(b, heightmap);
+    }
 }
 
 CollisionLandscape::~CollisionLandscape()
 {
-	if(NULL != btObject)
-	{
-		btWord->removeCollisionObject(btObject);
-		DAVA::SafeDelete(btObject);
-		DAVA::SafeDelete(btTerrain);
-	}
+    for (auto& c : impl->chunks)
+    {
+        btWord->removeCollisionObject(c->object);
+        DAVA::SafeDelete(c->object);
+        DAVA::DestroyObjectAligned(c->shape);
+        delete c;
+    }
+    impl->~CollisionLandscapePrivate();
+}
+
+void CollisionLandscape::CollisionLandscapePrivate::buildCollisionObject(const DAVA::Rect2i& bounds, DAVA::Heightmap* heightmap)
+{
+    LandscapeChunk* chunk = new LandscapeChunk();
+    chunks.push_back(chunk);
+
+    DAVA::float32 invHmSize = 1.0f / static_cast<DAVA::float32>(heightmap->Size());
+
+    DAVA::Vector3 landSize = owner->boundingBox.max - owner->boundingBox.min;
+    DAVA::float32 landScaleX = (landSize.x + 0.5f) * invHmSize;
+    DAVA::float32 landScaleY = (landSize.y + 0.5f) * invHmSize;
+    DAVA::float32 landScaleZ = landSize.z / static_cast<DAVA::float32>(DAVA::Heightmap::MAX_VALUE);
+
+    DAVA::uint16* heightData = heightmap->Data();
+    chunk->data.resize(bounds.dx * bounds.dy);
+
+    DAVA::int32 k = 0;
+    for (DAVA::int32 y = bounds.y; y < bounds.y + bounds.dy; ++y)
+    {
+        for (DAVA::int32 x = bounds.x; x < bounds.x + bounds.dx; ++x)
+        {
+            chunk->data[k++] = float(heightData[x + y * heightmap->Size()]) * landScaleZ;
+        }
+    }
+
+    chunk->shape = DAVA::CreateObjectAligned<btHeightfieldTerrainShape, 16>(bounds.dx, bounds.dy,
+                                                                            chunk->data.data(), landScaleZ, 0.0f, landSize.z, 2, PHY_FLOAT, true);
+    chunk->shape->setLocalScaling(btVector3(landScaleX, landScaleY, 1.0f));
+
+    DAVA::float32 xr = static_cast<DAVA::float32>(bounds.x) * invHmSize;
+    DAVA::float32 yr = static_cast<DAVA::float32>(bounds.y) * invHmSize;
+    DAVA::float32 bx = static_cast<DAVA::float32>(bounds.dx) * invHmSize;
+    DAVA::float32 by = static_cast<DAVA::float32>(bounds.dy) * invHmSize;
+    DAVA::float32 dx = (xr + 0.5f * bx - 0.5f) * landSize.x;
+    DAVA::float32 dy = (yr + 0.5f * by - 0.5f) * landSize.y;
+    DAVA::float32 dz = 0.5f * landSize.z;
+
+    btTransform landTransform = btTransform::getIdentity();
+    landTransform.setOrigin(btVector3(dx, dy, dz));
+
+    chunk->object = new btCollisionObject();
+    chunk->object->setWorldTransform(landTransform);
+    chunk->object->setCollisionShape(chunk->shape);
+    owner->btWord->addCollisionObject(chunk->object);
 }
