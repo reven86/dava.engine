@@ -254,7 +254,7 @@ void SceneCollisionSystem::RemoveCollisionObject(DAVA::Entity *entity)
 
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity *entity)
 {
-	DAVA::AABBox3 aabox;
+    DAVA::AABBox3 aabox = DAVA::AABBox3(DAVA::Vector3(0, 0, 0), 1.0f);
 
     if (entity != nullptr)
     {
