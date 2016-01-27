@@ -27,53 +27,32 @@
 =====================================================================================*/
 
 
-#include "VisibilityToolProxy.h"
+#ifndef __DAVAENGINE_ALIGNED_ALLOCATOR_H__
+#define __DAVAENGINE_ALIGNED_ALLOCATOR_H__
 
-VisibilityToolProxy::VisibilityToolProxy(int32 size)
-    : size(size)
-    , visibilityPoint(Vector2(-1.f, -1.f))
-    , isVisibilityPointSet(false)
+#include <stdlib.h>
+#include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
+
+namespace DAVA
 {
-    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+void* AllocateAlignedMemory(uint32 size, uint32 align);
+void FreeAlignedMemory(void*);
 
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)size;
-    viewport.height = (uint32)size;
-    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+template <class C, uint32 align, class... Args>
+C* CreateObjectAligned(Args&&... a)
+{
+    auto ptr = AllocateAlignedMemory(sizeof(C), align);
+    return new (ptr) C(std::forward<Args>(a)...);
 }
 
-VisibilityToolProxy::~VisibilityToolProxy()
+template <class C>
+void DestroyObjectAligned(C* c)
 {
-	SafeRelease(visibilityToolTexture);
+    DVASSERT(nullptr != c);
+    c->~C();
+    FreeAlignedMemory(c);
+}
 }
 
-int32 VisibilityToolProxy::GetSize()
-{
-	return size;
-}
-
-Texture* VisibilityToolProxy::GetTexture()
-{
-	return visibilityToolTexture;
-}
-
-void VisibilityToolProxy::SetVisibilityPoint(const Vector2& visibilityPoint)
-{
-	this->visibilityPoint = visibilityPoint;
-}
-
-Vector2 VisibilityToolProxy::GetVisibilityPoint()
-{
-	return visibilityPoint;
-}
-
-bool VisibilityToolProxy::IsVisibilityPointSet()
-{
-	return isVisibilityPointSet;
-}
-
-void VisibilityToolProxy::UpdateVisibilityPointSet(bool visibilityPointSet)
-{
-	isVisibilityPointSet = visibilityPointSet;
-}
+#endif //__DAVAENGINE_ALIGNED_ALLOCATOR_H__

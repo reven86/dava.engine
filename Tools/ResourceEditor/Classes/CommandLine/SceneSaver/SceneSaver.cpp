@@ -99,8 +99,8 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
         scene->SaveScene(sc2Filename, false);
     }
     else
-	{
-		errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
+    {
+        errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
 	}
 
 	SafeRelease(scene);
@@ -264,10 +264,10 @@ void SceneSaver::CopyEffects(Entity *node)
     }
 
     for (int i = 0; i < node->GetChildrenCount(); ++i)
-	{
-		CopyEffects(node->GetChild(i));
-	}
-    
+    {
+        CopyEffects(node->GetChild(i));
+    }
+
     for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
     {
         FilePath flagsTXT = *it + "flags.txt";

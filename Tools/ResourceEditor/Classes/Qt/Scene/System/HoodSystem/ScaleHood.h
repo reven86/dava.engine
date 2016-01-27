@@ -40,10 +40,10 @@ struct ScaleHood : public HoodObject
     virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem);
 
     HoodCollObject* axisX;
-    HoodCollObject *axisY;
-	HoodCollObject *axisZ;
+    HoodCollObject* axisY;
+    HoodCollObject* axisZ;
 
-	HoodCollObject *axisXY;
+    HoodCollObject *axisXY;
 	HoodCollObject *axisXZ;
 	HoodCollObject *axisYZ;
 

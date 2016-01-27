@@ -26,37 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
-
 #include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
+#include "Math/Vector.h"
 
 using namespace DAVA;
 
-class VisibilityToolProxy: public BaseObject
-{
-protected:
-	~VisibilityToolProxy();
-public:
-	VisibilityToolProxy(int32 size);
+DAVA_TESTCLASS(VectorTest){
+    DAVA_TEST(Vector4ToVector3Test){
+    Vector4 mutableSource(0.1f, 0.2f, 0.3f, 0.4f);
+Vector3& mutableVector3 = mutableSource.GetVector3();
+TEST_VERIFY((mutableVector3.x == mutableSource.x) && (mutableVector3.y == mutableSource.y) && (mutableVector3.z == mutableSource.z))
 
-	int32 GetSize();
-
-	Texture* GetTexture();
-
-	void SetVisibilityPoint(const Vector2& visibilityPoint);
-	Vector2 GetVisibilityPoint();
-
-	void UpdateVisibilityPointSet(bool visibilityPointSet);
-	bool IsVisibilityPointSet();
-
-protected:
-	Texture* visibilityToolTexture;
-
-    int32 size;
-    Vector2 visibilityPoint;
-	bool isVisibilityPointSet;
-};
-
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPROXY__) */
+const Vector4 immutableSource(0.3f, 0.2f, 0.1f, 0.0f);
+const Vector3& immutableVector3 = immutableSource.GetVector3();
+TEST_VERIFY((immutableVector3.x == immutableSource.x) && (immutableVector3.y == immutableSource.y) && (immutableVector3.z == immutableSource.z))
+}
+}
+;

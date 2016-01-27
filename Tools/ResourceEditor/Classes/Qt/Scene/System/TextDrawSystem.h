@@ -76,8 +76,8 @@ protected:
 
         DAVA::Vector2 pos;
         DAVA::String text;
-		DAVA::Color color;
-		Align align;
+        DAVA::Color color;
+        Align align;
 	};
 
     using GraphicFontVertexVector = DAVA::Vector<DAVA::GraphicFont::GraphicFontVertex>;

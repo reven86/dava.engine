@@ -33,6 +33,7 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
+#include "Base/AlignedAllocator.h"
 
 HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	: DAVA::SceneSystem(scene)
@@ -51,14 +52,14 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	btVector3 worldMax(1000,1000,1000);
 
 	collConfiguration = new btDefaultCollisionConfiguration();
-	collDispatcher = new btCollisionDispatcher(collConfiguration);
-	collBroadphase = new btAxisSweep3(worldMin,worldMax);
+    collDispatcher = CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
+    collBroadphase = new btAxisSweep3(worldMin, worldMax);
     collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
     collWorld = new btCollisionWorld(collDispatcher, collBroadphase, collConfiguration);
-	collWorld->setDebugDrawer(collDebugDraw);
+    collWorld->setDebugDrawer(collDebugDraw);
 
-	SetModifAxis(ST_AXIS_X);
+    SetModifAxis(ST_AXIS_X);
 	SetModifMode(ST_MODIF_MOVE);
 
 	moveHood.colorX = DAVA::Color(1, 0, 0, 1);
@@ -87,8 +88,8 @@ HoodSystem::~HoodSystem()
 	delete collWorld;
 	delete collDebugDraw;
 	delete collBroadphase;
-	delete collDispatcher;
-	delete collConfiguration;
+    DestroyObjectAligned(collDispatcher);
+    delete collConfiguration;
 }
 
 DAVA::Vector3 HoodSystem::GetPosition() const
@@ -342,9 +343,9 @@ void HoodSystem::Draw()
 {
     if (NULL != curHood && IsVisible())
     {
-		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
+        TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
 
-		// modification isn't locked and whole system isn't locked
+        // modification isn't locked and whole system isn't locked
 		if(!IsLocked() && !lockedModif)
 		{
 			ST_Axis showAsSelected = curAxis;
@@ -365,8 +366,8 @@ void HoodSystem::Draw()
             // debug draw axis collision word
             //collWorld->debugDrawWorld();
         }
-		else
-		{
+        else
+        {
             normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
         }
     }

@@ -178,6 +178,7 @@ DAVA::Color QColorToColor(const QColor &qcolor)
 	return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 }
 
+
 int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int buttons, int defaultButton)
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
@@ -190,7 +191,7 @@ void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
     if (NULL != toolbar && NULL != action)
     {
-        QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
+        QToolButton* toolBnt = dynamic_cast<QToolButton*>(toolbar->widgetForAction(action));
         if (NULL != toolBnt)
         {
             toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
@@ -204,8 +205,8 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
     if (pos != String::npos)
     {
         String newString = sourceString;
-		newString = newString.replace(pos, what.length(), on);
-		return newString;
+        newString = newString.replace(pos, what.length(), on);
+        return newString;
 	}
 
 	return sourceString;
@@ -256,6 +257,3 @@ void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
 {
     DAVA::ImageSystem::Instance()->Save(path, image);
 }
-
-
-

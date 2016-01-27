@@ -41,8 +41,8 @@ public:
     virtual ~NotPassableTerrainProxy();
 
     bool Enable();
-	bool Disable();
-	bool IsEnabled() const;
+    bool Disable();
+    bool IsEnabled() const;
 	
 	Texture* GetTexture();
     void UpdateTexture(DAVA::Heightmap* heightmap,

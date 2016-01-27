@@ -26,17 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_SHAREDICON_H__
+#define __DAVAENGINE_SHAREDICON_H__
 
-#include "Base/BaseTypes.h"
+#include <QIcon>
 
-#if defined(__DAVAENGINE_MACOS__)
+const QIcon& SharedIcon(const char*);
 
-#include "Core/CoreMacOS_OpenGL.h"
-
-namespace DAVA 
-{
-	
-};
-
-#endif // #if defined(__DAVAENGINE_MACOS__)
-
+#endif

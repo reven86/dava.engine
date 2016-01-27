@@ -681,11 +681,12 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 
 void SceneInfo::CollectSelectedRenderObjects(const EntityGroup *selected)
 {
-    for (int32 i = 0, sz = selected->Size(); i<sz; ++i)
+    for (const auto& item : selected->GetContent())
     {
-        CollectSelectedRenderObjectsRecursivly(selected->GetEntity(i));
+        CollectSelectedRenderObjectsRecursivly(item.first);
     }
 }
+
 void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity * entity)
 {
     RenderObject *renderObject = GetRenderObject(entity);
@@ -700,10 +701,9 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
 {
     speedTreeLeafInfo.clear();
 
-    int32 entitiesCount = forGroup->Size();
-    for(int32 i = 0; i < entitiesCount; i++)
+    for (const auto& item : forGroup->GetContent())
     {
-        RenderObject * ro = GetRenderObject(forGroup->GetEntity(i));
+        RenderObject* ro = GetRenderObject(item.first);
         if(ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }

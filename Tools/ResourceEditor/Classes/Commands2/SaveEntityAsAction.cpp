@@ -106,14 +106,14 @@ void SaveEntityAsAction::Redo()
         };
 
         //reset global material because of global material :)
-        ElegantSceneGuard guard(entities->GetEntity(0)->GetScene());
+        ElegantSceneGuard guard(entities->GetFirstEntity()->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
 
         if (count == 1) // saving of single object
         {
-            container.reset(entities->GetEntity(0)->Clone());
+            container.reset(entities->GetFirstEntity()->Clone());
             RemoveReferenceToOwner(container);
             container->SetLocalTransform(Matrix4::IDENTITY);
         }
@@ -121,10 +121,10 @@ void SaveEntityAsAction::Redo()
         {
             container.reset(new Entity());
 
-            const Vector3 oldZero = entities->GetCommonZeroPos();
-            for (uint32 i = 0; i < count; ++i)
+            const Vector3 oldZero = entities->GetCommonTranslationVector();
+            for (const auto& item : entities->GetContent())
             {
-                ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
+                ScopedPtr<Entity> clone(item.first->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();
@@ -141,9 +141,9 @@ void SaveEntityAsAction::Redo()
 
         scene->AddNode(container); //1. Added new items in zero position with identity matrix
         scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
-        RemoveLightmapsRecursive(container);					//3. Reset lightmaps
-				
-		scene->SaveScene(sc2Path);
+        RemoveLightmapsRecursive(container); //3. Reset lightmaps
+
+        scene->SaveScene(sc2Path);
     }
 }
 
@@ -161,9 +161,9 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
                 material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
             }
         }
-	}
+    }
 
-	const int32 count = entity->GetChildrenCount();
+    const int32 count = entity->GetChildrenCount();
 	for (int32 ch = 0; ch < count; ++ch)
 	{
 		RemoveLightmapsRecursive(entity->GetChild(ch));
