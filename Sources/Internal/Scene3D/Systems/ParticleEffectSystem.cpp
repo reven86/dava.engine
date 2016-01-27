@@ -200,7 +200,7 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
     }
 
     effect->state = ParticleEffectComponent::STATE_PLAYING;
-	effect->time = 0;
+    effect->time = 0;
 }
 
 void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
