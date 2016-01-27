@@ -106,6 +106,7 @@ public slots:
     void OnAddRotationControllerComponent();
     void OnAddSnapToLandscapeControllerComponent();
     void OnAddWASDControllerComponent();
+    void OnAddVisibilityComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	

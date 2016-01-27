@@ -134,10 +134,11 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
     connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
     connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
+    connect(mainUi->actionAddVisibilityComponent, SIGNAL(triggered()), SLOT(OnAddVisibilityComponent()));
 
-	SetUpdateTimeout(5000);
-	SetEditTracking(true);
-	setMouseTracking(true);
+    SetUpdateTimeout(5000);
+    SetEditTracking(true);
+    setMouseTracking(true);
 
 	LoadScheme("~doc:/PropEditorDefault.scheme");
 }
@@ -710,8 +711,8 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
     }
 
     QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
-	if(NULL != metaData)
-	{
+    if (NULL != metaData)
+    {
         return new QtPropertyDataMetaObject(original->GetName(), metaData->object, metaData->meta);
 	}
 
@@ -929,15 +930,34 @@ void PropertyEditor::ConvertToShadow()
 
         if(NULL != data && NULL != curScene)
         {
+            auto findEntityFn = [this](DAVA::RenderBatch* batch) {
+                DVASSERT(batch);
+                DAVA::RenderObject* renderObject = batch->GetRenderObject();
+                DAVA::Entity* entity = nullptr;
+                for (int i = 0; i < curNodes.size(); ++i)
+                {
+                    if (GetRenderObject(curNodes.at(i)) == renderObject)
+                    {
+                        entity = curNodes.at(i);
+                        break;
+                    }
+                }
+
+                DVASSERT(entity);
+                return entity;
+            };
+
             DAVA::Vector<Command2 *> commands;
             commands.reserve(data->GetMergedItemCount() + 1);
-            commands.push_back(new ConvertToShadowCommand(reinterpret_cast<DAVA::RenderBatch *>(data->object)));
-            data->ForeachMergedItem([&commands](QtPropertyData* item)
-            {
+
+            DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
+            commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
+            data->ForeachMergedItem([&commands, &findEntityFn](QtPropertyData* item) {
                 QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item);
                 if (dynamicData != nullptr)
                 {
-                    commands.push_back(new ConvertToShadowCommand(reinterpret_cast<DAVA::RenderBatch *>(dynamicData->object)));
+                    DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
+                    commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
                 }
                 return true;
             });
@@ -1457,6 +1477,11 @@ void PropertyEditor::OnAddWASDControllerComponent()
     OnAddComponent(Component::WASD_CONTROLLER_COMPONENT);
 }
 
+void PropertyEditor::OnAddVisibilityComponent()
+{
+    OnAddComponent(Component::VISIBILITY_CHECK_COMPONENT);
+}
+
 void PropertyEditor::OnRemoveComponent()
 {
 	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
@@ -1523,5 +1548,5 @@ QString PropertyEditor::GetDefaultFilePath()
         }
     }
 
-	return defaultPath;
+    return defaultPath;
 }

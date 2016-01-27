@@ -222,7 +222,7 @@ protected:
         bool operator != (const ChildKey & other) const;
         bool operator < (const ChildKey & other) const;
 
-        const QtPropertyData* child;
+        const QtPropertyData* child = nullptr;
     };
 
     using TChildMap = DAVA::Map<ChildKey, size_t>;

@@ -339,7 +339,7 @@ bool SceneFile::ReadStaticMesh()
     StaticMesh* mesh = new StaticMesh(scene);
 
     for (uint32 polyGroupIndex = 0; polyGroupIndex < polyGroupCount; polyGroupIndex++)
-	{
+    {
         PolygonGroup * polygonGroup = new PolygonGroup();
         mesh->AddNode(polygonGroup);
         

@@ -336,17 +336,17 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
     {
     case 5: //ACTION_POINTER_DOWN
     case 0: //ACTION_DOWN
-                phase = DAVA::UIEvent::Phase::BEGAN;
-                break;
+        phase = DAVA::UIEvent::Phase::BEGAN;
+        break;
 
     case 6: //ACTION_POINTER_UP
     case 1: //ACTION_UP
-                phase = DAVA::UIEvent::Phase::ENDED;
-                break;
+        phase = DAVA::UIEvent::Phase::ENDED;
+        break;
 
     case 3: //ACTION_CANCEL
-                phase = DAVA::UIEvent::Phase::CANCELLED;
-                break;
+        phase = DAVA::UIEvent::Phase::CANCELLED;
+        break;
 
     case 4: //ACTION_OUTSIDE
         break;

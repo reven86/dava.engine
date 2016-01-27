@@ -126,7 +126,7 @@ private:
 	QString GetParticlesConfigPath();
 	
 	// Perform save for selected Emitters.
-	void PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, const QString& defaultName);
+    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName);
 
     void PerformSaveEffectEmitters(bool forceAskFileName);
 
@@ -153,9 +153,9 @@ private:
     ParticleEffectComponent* selectedEffect;
     ParticleEmitter* selectedEmitter;
     ParticleLayer* selectedLayer;
-	ParticleForce* selectedForce;
+    ParticleForce* selectedForce;
 
-	QPointer< SceneTreeModel > treeModel;
+    QPointer< SceneTreeModel > treeModel;
 	QPointer< SceneTreeFilteringModel > filteringProxyModel;
 	SceneTreeDelegate *treeDelegate;
 

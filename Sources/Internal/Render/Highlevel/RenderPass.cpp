@@ -308,6 +308,8 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     PrepareVisibilityArrays(mainCamera, renderSystem);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
+    passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
+    passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
     BeginRenderPass();
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")

@@ -44,7 +44,7 @@ DAVA_TESTCLASS(DataVaultTest)
         storage->SetStringValue("TestStringKey", "Test");
         storage->Push();
         String ret = storage->GetStringValue("TestStringKey");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
         TEST_VERIFY("" == ret);
 #else
         TEST_VERIFY("Test" == ret);

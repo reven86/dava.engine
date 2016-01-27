@@ -221,8 +221,8 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
         // remember all entity childs
         for (i = 0; i < entity->GetChildrenCount(); ++i)
         {
-			entitiesSet.insert(entity->GetChild(i));
-		}
+            entitiesSet.insert(entity->GetChild(i));
+        }
 
 		// remember all particle emitters
         if (nullptr != effect)

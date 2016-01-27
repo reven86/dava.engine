@@ -93,9 +93,9 @@ AutotestingSystem::~AutotestingSystem()
         AutotestingDB::Instance()->Release();
 }
 
-    void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
-	{
-		Logger::Info("AutotestingSystem::InitLua");
+void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
+{
+        Logger::Info("AutotestingSystem::InitLua");
 		DVASSERT(nullptr == luaSystem);
 		luaSystem = new AutotestingSystemLua();
 		luaSystem->SetDelegate(_delegate);
@@ -185,8 +185,8 @@ AutotestingSystem::~AutotestingSystem()
         buildDate = option->GetString("Date");
         branch = option->GetString("Branch");
         framework = option->GetString("Framework");
-		branchRev = option->GetString("BranchRev");
-		frameworkRev = option->GetString("FrameworkRev");
+        branchRev = option->GetString("BranchRev");
+        frameworkRev = option->GetString("FrameworkRev");
 
 		// Check is build fol local debugging.  By default: use DB.
 		bool isLocalBuild = option->GetBool("LocalBuild", false);
@@ -284,8 +284,8 @@ AutotestingSystem::~AutotestingSystem()
     {
         Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
         AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
-		if (isDB)
-			AutotestingDB::Instance()->SetTestStarted();
+        if (isDB)
+            AutotestingDB::Instance()->SetTestStarted();
 	}
 
 	void AutotestingSystem::OnStepStart(const String &stepName)
@@ -383,8 +383,8 @@ AutotestingSystem::~AutotestingSystem()
 
     void AutotestingSystem::MakeScreenShot()
     {
-		Logger::Info("AutotestingSystem::MakeScreenShot");
-		String currentDateTime = GetCurrentTimeString();
+        Logger::Info("AutotestingSystem::MakeScreenShot");
+        String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
         Renderer::RequestGLScreenShot(this);
@@ -438,8 +438,8 @@ AutotestingSystem::~AutotestingSystem()
         if (UIScreenManager::Instance())
         {
             String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
-			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
-		}
+            Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
+        }
 
         int32 id = input.touchId;
         switch (input.phase)
@@ -524,8 +524,8 @@ AutotestingSystem::~AutotestingSystem()
         if (needExitApp)
         {
             return;
-		}
-		isRunning = false;
+        }
+        isRunning = false;
 		isWaiting = false;
 		needExitApp = true;
 		timeBeforeExit = 1.0f;

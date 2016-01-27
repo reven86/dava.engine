@@ -4,6 +4,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Concurrency/Thread.h"
+
 #include "uap_dx11.h"
 
 #include <agile.h>
@@ -32,23 +34,20 @@ static D3D11_VIEWPORT m_screenViewport;
 static D3D_FEATURE_LEVEL m_d3dFeatureLevel;
 
 static Windows::Foundation::Size m_d3dRenderTargetSize;
-static Windows::Foundation::Size m_outputSize;
 static Windows::Foundation::Size m_logicalSize;
+static Windows::Foundation::Size m_backbufferSize;
 
 DirectX::XMFLOAT4X4 m_orientationTransform3D;
 DisplayOrientations m_nativeOrientation;
 DisplayOrientations m_currentOrientation;
 float m_dpi = 1.f;
-float m_compositionScaleX = 1.f;
-float m_compositionScaleY = 1.f;
 
 DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
 void CreateWindowSizeDependentResources();
 void SetSwapChainPanel(SwapChainPanel ^ panel);
-void SetLogicalSize(Windows::Foundation::Size logicalSize);
+void SetBackBufferSize(Windows::Foundation::Size backbufferSize);
 void SetCurrentOrientation(DisplayOrientations currentOrientation);
-void SetCompositionScale(float compositionScaleX, float compositionScaleY);
 void ValidateDevice();
 void HandleDeviceLost();
 void Trim();
@@ -353,14 +352,9 @@ void CreateWindowSizeDependentResources()
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
-
-    // Calculate the necessary swap chain and render target size in pixels.
-    m_outputSize.Width = m_logicalSize.Width * m_compositionScaleX;
-    m_outputSize.Height = m_logicalSize.Height * m_compositionScaleY;
-
     // Prevent zero size DirectX content from being created.
-    m_outputSize.Width = std::max(m_outputSize.Width, 1.f);
-    m_outputSize.Height = std::max(m_outputSize.Height, 1.f);
+    m_backbufferSize.Width = std::max(m_backbufferSize.Width, 1.f);
+    m_backbufferSize.Height = std::max(m_backbufferSize.Height, 1.f);
 
     // The width and height of the swap chain must be based on the window's
     // natively-oriented width and height. If the window is not in the native
@@ -368,8 +362,8 @@ void CreateWindowSizeDependentResources()
     DXGI_MODE_ROTATION displayRotation = ComputeDisplayRotation();
 
     bool swapDimensions = displayRotation == DXGI_MODE_ROTATION_ROTATE90 || displayRotation == DXGI_MODE_ROTATION_ROTATE270;
-    m_d3dRenderTargetSize.Width = swapDimensions ? m_outputSize.Height : m_outputSize.Width;
-    m_d3dRenderTargetSize.Height = swapDimensions ? m_outputSize.Width : m_outputSize.Height;
+    m_d3dRenderTargetSize.Width = swapDimensions ? m_backbufferSize.Height : m_backbufferSize.Width;
+    m_d3dRenderTargetSize.Height = swapDimensions ? m_backbufferSize.Width : m_backbufferSize.Height;
 
     if (m_swapChain != nullptr)
     {
@@ -446,7 +440,7 @@ void CreateWindowSizeDependentResources()
 
         // Associate swap chain with SwapChainPanel
         // UI changes will need to be dispatched back to the UI thread
-        m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([=]() {
+        m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
                                                    // Get backing native interface for SwapChainPanel
                                                    ComPtr<ISwapChainPanelNative> panelNative;
                                                    ThrowIfFailed(
@@ -496,18 +490,25 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-// Setup inverse scale on the swap chain
-#if 1
+    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
+                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
+                                                                                        }));
+
+    while (action->Status == Windows::Foundation::AsyncStatus::Started)
+    {
+        DAVA::Thread::Sleep(1);
+    }
+
+    // Setup inverse scale on the swap chain
     DXGI_MATRIX_3X2_F inverseScale = { 0 };
-    inverseScale._11 = 1.0f / m_compositionScaleX;
-    inverseScale._22 = 1.0f / m_compositionScaleY;
+    inverseScale._11 = m_logicalSize.Width / m_backbufferSize.Width;
+    inverseScale._22 = m_logicalSize.Height / m_backbufferSize.Height;
     ComPtr<IDXGISwapChain2> spSwapChain2;
     ThrowIfFailed(
     m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
 
     ThrowIfFailed(
     spSwapChain2->SetMatrixTransform(&inverseScale));
-#endif
 
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(
@@ -571,11 +572,11 @@ void SetSwapChainPanel(SwapChainPanel ^ panel)
 }
 
 // This method is called in the event handler for the SizeChanged event.
-void SetLogicalSize(Windows::Foundation::Size logicalSize)
+void SetBackBufferSize(Windows::Foundation::Size backbufferSize)
 {
-    if (m_logicalSize != logicalSize)
+    if (m_backbufferSize != backbufferSize)
     {
-        m_logicalSize = logicalSize;
+        m_backbufferSize = backbufferSize;
     }
 }
 
@@ -586,17 +587,6 @@ void SetCurrentOrientation(DisplayOrientations currentOrientation)
     {
         m_currentOrientation = currentOrientation;
         CreateWindowSizeDependentResources();
-    }
-}
-
-// This method is called in the event handler for the CompositionScaleChanged event.
-void SetCompositionScale(float compositionScaleX, float compositionScaleY)
-{
-    if (m_compositionScaleX != compositionScaleX ||
-        m_compositionScaleY != compositionScaleY)
-    {
-        m_compositionScaleX = compositionScaleX;
-        m_compositionScaleY = compositionScaleY;
     }
 }
 
@@ -719,8 +709,7 @@ void init_device_and_swapchain_uap(void* panel)
 
     CreateDeviceResources();
     SetSwapChainPanel(swapChain);
-    SetCompositionScale(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
-    SetLogicalSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)));
+    SetBackBufferSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)));
     CreateWindowSizeDependentResources();
 
     _D3D11_Device = m_d3dDevice.Get();
@@ -736,19 +725,13 @@ void init_device_and_swapchain_uap(void* panel)
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
-void resize_swapchain(int32 width, int32 height, float32 sx, float32 sy)
+void resize_swapchain(int32 width, int32 height)
 {
-    // Do not actually resize swapchain if sizes and scales are the same
-    const float32 MAGNITUDE = 1000.0f; // Compare up to 3 digits after point
-    bool doResize = int32(m_logicalSize.Width) != width ||
-    int32(m_logicalSize.Height) != height ||
-    int32((m_compositionScaleX - sx) * MAGNITUDE) != 0 ||
-    int32((m_compositionScaleY - sy) * MAGNITUDE) != 0;
+    bool doResize = int32(m_backbufferSize.Width) != width || int32(m_backbufferSize.Height) != height;
 
     if (doResize)
     {
-        SetCompositionScale(sx, sy);
-        SetLogicalSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)));
+        SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)));
 
         rhi::CommandBufferDX11::DiscardAll();
         CreateWindowSizeDependentResources();

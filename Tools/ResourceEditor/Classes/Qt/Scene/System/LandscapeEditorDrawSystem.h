@@ -39,7 +39,6 @@ class LandscapeProxy;
 class HeightmapProxy;
 class NotPassableTerrainProxy;
 class CustomColorsProxy;
-class VisibilityToolProxy;
 class RulerToolProxy;
 class Command2;
 
@@ -64,10 +63,9 @@ public:
     virtual ~LandscapeEditorDrawSystem();
 
     LandscapeProxy* GetLandscapeProxy();
-	HeightmapProxy* GetHeightmapProxy();
-	CustomColorsProxy* GetCustomColorsProxy();
-	VisibilityToolProxy* GetVisibilityToolProxy();
-	RulerToolProxy* GetRulerToolProxy();
+    HeightmapProxy* GetHeightmapProxy();
+    CustomColorsProxy* GetCustomColorsProxy();
+    RulerToolProxy* GetRulerToolProxy();
 
 	eErrorType EnableCustomDraw();
 	void DisableCustomDraw();
@@ -105,8 +103,8 @@ public:
     void ClampToTexture(const FastName& level, Rect& rect);
     void ClampToHeightmap(Rect& rect);
 
-    void AddEntity(DAVA::Entity * entity) override;
-	void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     Rect GetTextureRect(const FastName& level);
     Rect GetHeightmapRect();
@@ -140,7 +138,6 @@ protected:
     HeightmapProxy* heightmapProxy = nullptr;
     NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
     CustomColorsProxy* customColorsProxy = nullptr;
-    VisibilityToolProxy* visibilityToolProxy = nullptr;
     RulerToolProxy* rulerToolProxy = nullptr;
 
     uint32 customDrawRequestCount;

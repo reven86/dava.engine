@@ -79,15 +79,16 @@ private:
 	QVBoxLayout* mainLayout;
 	QLineEdit* emitterNameLineEdit;
 
-	QLineEdit* emitterYamlPath;
-	QComboBox* emitterType;
+    QLineEdit* originalEmitterYamlPath = nullptr;
+    QLineEdit* emitterYamlPath;
+    QComboBox* emitterType;
 
-	EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
+    EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
 
-	QCheckBox* shortEffectCheckBox;
+    QCheckBox* shortEffectCheckBox;
 
-	TimeLineWidget* emitterEmissionRange;
-	TimeLineWidget* emitterEmissionVector;
+    TimeLineWidget* emitterEmissionRange;
+    TimeLineWidget* emitterEmissionVector;
 	TimeLineWidget* emitterRadius;
 	TimeLineWidget* emitterSize;
     TimeLineWidget* emitterAngle;
