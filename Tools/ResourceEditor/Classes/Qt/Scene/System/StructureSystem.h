@@ -74,9 +74,9 @@ public:
     // Mapping is link between old entity and new entity
     void ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, bool saveLightmapSettings = false);
     EntityGroup ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
-    void Add(const DAVA::FilePath &newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
+    void Add(const DAVA::FilePath& newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
 
-	void EmitChanged();
+    void EmitChanged();
 
 	DAVA::Entity* Load(const DAVA::FilePath& sc2path);
 

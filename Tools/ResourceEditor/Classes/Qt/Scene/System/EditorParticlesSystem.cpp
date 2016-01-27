@@ -290,7 +290,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
             SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
                                                                     castedCmd->GetLayer());
             break;
-		}
+        }
 
 		case CMDID_PARTICLE_FORCE_UPDATE:
 		{
@@ -354,7 +354,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 
         case CMDID_PARTICLE_EMITTER_LAYER_ADD:
         {
-			const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
+            const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
 			SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
 			break;
 		}

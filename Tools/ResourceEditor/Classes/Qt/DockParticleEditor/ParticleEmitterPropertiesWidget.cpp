@@ -103,7 +103,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
     }
 
     shortEffectCheckBox = new QCheckBox("Short effect");
-	mainLayout->addWidget(shortEffectCheckBox);
+    mainLayout->addWidget(shortEffectCheckBox);
 	connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
 	QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
@@ -298,7 +298,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     this->effect = effect;
     SetActiveScene(scene);
 
-	blockSignals = true;
+    blockSignals = true;
 
 	emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
 	shortEffectCheckBox->setChecked(emitter->shortEffect);
@@ -326,7 +326,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     originalEmitterYamlPath->setText(originalYamlPath);
 
     emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
-	emitterType->setCurrentIndex(emitter->emitterType);
+    emitterType->setCurrentIndex(emitter->emitterType);
 
     int32 emitterId = effect->GetEmitterId(emitter);
     Vector3 position = (emitterId==-1)?Vector3(0,0,0):effect->GetSpawnPosition(emitterId);

@@ -439,6 +439,7 @@ void gles2_Initialize(const InitParam& param)
         VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
         IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
         QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+        PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
         TextureGLES2::SetupDispatch(&DispatchGLES2);
         PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
         ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -531,7 +532,7 @@ void gles2_Initialize(const InitParam& param)
 void gles2_Initialize(const InitParam& param)
 {
     macos_gl_init(param);
-    
+
     _GLES2_DefaultFrameBuffer_Width = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
 
@@ -578,6 +579,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -670,6 +672,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -765,6 +768,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);

@@ -970,6 +970,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DepthStencilStateDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_IndexBufferDX11.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PerfQuerySetDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PipelineStateDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_QueryBufferDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_SamplerStateDX11.cpp" />
@@ -980,6 +981,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DepthStencilStateDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_IndexBufferDX9.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PerfQuerySetDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PipelineStateDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_QueryBufferDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_SamplerStateDX9.cpp" />
@@ -990,6 +992,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_DepthStencilStateGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_GLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_IndexBufferGLES2.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PipelineStateGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_ProgGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_QueryBufferGLES2.cpp" />

@@ -71,8 +71,8 @@ JniWebView::JniWebView()
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
 {
 	controls[id] = control;
-	Rect rect = JNI::V2I(controlRect);
-	initialize(id, rect.x, rect.y, rect.dx, rect.dy);
+    Rect rect = JNI::V2I(controlRect);
+    initialize(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniWebView::Deinitialize(int id)
@@ -186,8 +186,8 @@ void JniWebView::OpenFromBuffer(int id, const String& string, const String& base
 
 void JniWebView::SetRect(int id, const Rect& controlRect)
 {
-	Rect rect = JNI::V2I(controlRect);
-	setRect(id, rect.x, rect.y, rect.dx, rect.dy);
+    Rect rect = JNI::V2I(controlRect);
+    setRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniWebView::SetVisible(int id, bool isVisible)

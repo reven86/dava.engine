@@ -97,10 +97,10 @@ public:
     inline Rect ConvertVirtualToPhysical(const Rect & rect) const;
     inline Rect ConvertResourceToVirtual(const Rect & rect, int32 resourceIndex) const;
     inline Rect ConvertResourceToPhysical(const Rect & rect, int32 resourceIndex) const;
-    inline Rect ConvertInputToVirtual(const Rect & rect) const;
-    inline Rect ConvertVirtualToInput(const Rect & rect) const;
-    
-	inline const String & GetResourceFolder(int32 resourceIndex) const;
+    inline Rect ConvertInputToVirtual(const Rect& rect) const;
+    inline Rect ConvertVirtualToInput(const Rect& rect) const;
+
+    inline const String & GetResourceFolder(int32 resourceIndex) const;
 	inline int32 GetDesirableResourceIndex() const;
     inline void SetDesirableResourceIndex(int32 resourceIndex);
     inline int32 GetBaseResourceIndex() const;
@@ -196,12 +196,12 @@ inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(float32 value
 
 inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputX(float32 value) const
 {
-	return value / inputScaleFactor;
+    return value / inputScaleFactor;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputY(float32 value) const
 {
-	return value / inputScaleFactor;
+    return value / inputScaleFactor;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualX(float32 value, DAVA::int32 resourceIndex) const
@@ -309,14 +309,14 @@ inline Vector2 VirtualCoordinatesSystem::ConvertInputToVirtual(const Vector2 &po
     return calcPoint;
 }
 
-inline Rect VirtualCoordinatesSystem::ConvertInputToVirtual(const Rect & rect) const
+inline Rect VirtualCoordinatesSystem::ConvertInputToVirtual(const Rect& rect) const
 {
-	return Rect(ConvertInputToVirtual(rect.GetPosition()) + inputOffset, ConvertInputToVirtual(rect.GetSize()));
+    return Rect(ConvertInputToVirtual(rect.GetPosition()) + inputOffset, ConvertInputToVirtual(rect.GetSize()));
 }
 
-inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect & rect) const
+inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect& rect) const
 {
-	return Rect(ConvertVirtualToInput(rect.GetPosition() - inputOffset), ConvertVirtualToInput(rect.GetSize()));
+    return Rect(ConvertVirtualToInput(rect.GetPosition() - inputOffset), ConvertVirtualToInput(rect.GetSize()));
 }
 
 inline const String & VirtualCoordinatesSystem::GetResourceFolder(int32 resourceIndex) const

@@ -83,7 +83,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
-    
+
     return self;
 }
 
@@ -140,11 +140,11 @@ extern void FrameworkMain(int argc, char *argv[]);
     {
         NSSize windowSize = [self frame].size;
         float32 backingScale = Core::Instance()->GetScreenScaleFactor();
-        
-        GLint backingSize[2] = {GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale)};
+
+        GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
-        
+
         rhi::ResetParam params;
         params.window = self;
         params.width = backingSize[0];
