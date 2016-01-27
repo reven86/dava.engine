@@ -56,7 +56,7 @@ namespace DAVA
     AutotestingDB::~AutotestingDB()
     {
         CloseConnection();
-	}
+    }
 
 	bool AutotestingDB::ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort)
 	{
@@ -299,7 +299,7 @@ namespace DAVA
     void AutotestingDB::SetTestStarted()
     {
         Logger::Info("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
 		if (!currentRunArchive)
 		{

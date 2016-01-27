@@ -149,7 +149,7 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
-		Vector3 point;
+        Vector3 point;
 		
 		switch(event->phase)
 		{
@@ -266,7 +266,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
                 if (IsKeyModificatorPressed(Key::LALT))
                 {
-					koef = -koef;
+                    koef = -koef;
 				}
 
                 editorHeightmap->DrawRelativeRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef);

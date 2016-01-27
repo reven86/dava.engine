@@ -141,7 +141,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 		{
             if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
             {
-				const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+                const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 				EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
 
 				DAVA::Entity *firstEntity = selectableItems.GetEntity(0);
@@ -199,7 +199,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
     {
         if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
         {
-			if(applyOnPhaseEnd)
+            if(applyOnPhaseEnd)
 			{
 				applyOnPhaseEnd = false;
 				SetSelection(lastSelection);
@@ -468,7 +468,7 @@ void SceneSelectionSystem::SetLocked(bool lock)
     bool lockChanged = IsLocked() != lock;
     SceneSystem::SetLocked(lock);
 
-	hoodSystem->LockAxis(lock);
+    hoodSystem->LockAxis(lock);
 	hoodSystem->SetVisible(!lock);
 
 	if(!lock)
