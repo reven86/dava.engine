@@ -163,6 +163,7 @@ private:
     void AllowDisplaySleep(bool sleep);
     void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
     void SendBackKeyEvents();
+    void RestoreCursorVisible();
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -186,6 +187,7 @@ private:
     bool isPhoneApiDetected = false;
 
     bool isWindowVisible = true;
+    bool isWindowFocused = true;
     bool isWindowClosed = false;
     bool isFullscreen = false;
     bool isRenderCreated = false;

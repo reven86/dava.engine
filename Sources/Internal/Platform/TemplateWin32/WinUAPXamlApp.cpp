@@ -151,6 +151,7 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
             break;
         case DAVA::InputSystem::eMouseCaptureMode::PINING:
             mouseCaptureMode = newMode;
+            core->RunOnUIThread([this] { RestoreCursorVisible(); });
             break;
         default:
             DVASSERT("Incorrect cursor capture mode");
@@ -386,22 +387,49 @@ void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ a
 void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args)
 {
     CoreWindowActivationState state = args->WindowActivationState;
+    bool needProcess = false;
 
-    core->RunOnMainThread([this, state]() {
-        switch (state)
-        {
-        case CoreWindowActivationState::CodeActivated:
-        case CoreWindowActivationState::PointerActivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
-            break;
-        case CoreWindowActivationState::Deactivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            break;
-        default:
-            break;
-        }
-    });
+    if (state == CoreWindowActivationState::CodeActivated ||
+        state == CoreWindowActivationState::PointerActivated)
+    {
+        isWindowFocused = true;
+        needProcess = true;
+    }
+    else if (state == CoreWindowActivationState::Deactivated)
+    {
+        isWindowFocused = false;
+        needProcess = true;
+    }
+
+    if (needProcess)
+    {
+        bool isFocused = isWindowFocused;
+        core->RunOnMainThread([this, isFocused]() {
+            if (isFocused)
+            {
+                if (isPhoneApiDetected)
+                {
+                    Core::Instance()->SetIsActive(true);
+                }
+                else
+                {
+                    Core::Instance()->FocusReceived();
+                }
+            }
+            else
+            {
+                if (isPhoneApiDetected)
+                {
+                    Core::Instance()->SetIsActive(false);
+                }
+                else
+                {
+                    Core::Instance()->FocusLost();
+                }
+                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            }
+        });
+    }
 }
 
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
@@ -516,6 +544,12 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
+        if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING &&
+            isMouseCursorShown)
+        {
+            SetCursorVisible(false);
+        }
+
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
         for (auto& change : mouseButtonChanges)
         {
@@ -613,7 +647,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/
 {
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type && mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
+    if (PointerDeviceType::Mouse == type && 
+        mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING &&
+        isWindowFocused)
     {
         SetCursorVisible(false);
     }
@@ -1122,6 +1158,14 @@ void WinUAPXamlApp::SendBackKeyEvents()
         UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(Key::BACK);
     });
+}
+
+void WinUAPXamlApp::RestoreCursorVisible()
+{
+    if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
+    {
+        SetCursorVisible(isWindowFocused);
+    }
 }
 
 void WinUAPXamlApp::SetWindowMinimumSize(float32 width, float32 height)
