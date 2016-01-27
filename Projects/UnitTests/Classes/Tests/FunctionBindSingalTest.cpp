@@ -308,7 +308,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         void Slot1(int v) { v1 = v; }
         void Slot2(int v) { v2 = v; }
     };
-    
+
     class TestObjB
     {
     public:
@@ -394,19 +394,19 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             TEST_VERIFY(objC.v1 == 10);
             TEST_VERIFY(testSignal.IsBlocked(connC1) == true);
         }
-        
+
         // check if signal will forward complex type gived by value into
         // multiple slots. it should make a copy of the given value for
         // each invoked slot
         {
             int v = 123321;
-            
+
             auto shrd = std::make_shared<int>(v);
             std::weak_ptr<int> w = shrd;
 
-            auto test_weakptr = [](int& v, std::weak_ptr<int> ptr)
-            {
-                if(!ptr.expired()) {
+            auto test_weakptr = [](int& v, std::weak_ptr<int> ptr) {
+                if (!ptr.expired())
+                {
                     std::shared_ptr<int> shared = ptr.lock();
                     v = *shared.get();
                 }
@@ -415,15 +415,15 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
                     v = 0;
                 }
             };
-            
+
             Signal<int&, std::weak_ptr<int>> sig;
 
             // connect twice to the same slot
             sig.Connect(test_weakptr);
             sig.Connect(test_weakptr);
-            
+
             int res = 0;
-            
+
             // this will call test_fn twice.
             // each call should receive separate copy of weak_ptr
             // so "res" should be equal to the "v" value

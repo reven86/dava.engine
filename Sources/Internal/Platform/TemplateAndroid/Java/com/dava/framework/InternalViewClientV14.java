@@ -110,7 +110,8 @@ public class InternalViewClientV14 extends WebViewClient {
             @Override
             public void run() {
                 // if user lock screen just return - prevent crush in gl thread
-                if(!JNISurfaceView.isPaused())
+                JNIActivity activity = JNIActivity.GetActivity();
+                if(!activity.GetIsPausing())
                 {
                     JNIWebView.OnPageLoaded(id, pixels, width, height);
                 }

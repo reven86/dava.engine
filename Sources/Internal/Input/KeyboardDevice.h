@@ -161,6 +161,14 @@ enum class Key : uint32
     RCTRL,
     RALT,
 
+    F13, // on mac - printscreen
+    F14, // on mac - scrlock
+    F15, // on mac - pause/break
+    F16,
+    F17,
+    F18,
+    F19,
+
     TOTAL_KEYS_COUNT
 };
 
@@ -189,12 +197,12 @@ public:
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
+    void ClearAllKeys();
 
 #ifdef __DAVAENGINE_MACOS__
 private:
 #endif
     void OnFinishFrame();
-    void ClearAllKeys();
 
     void PrepareKeyTranslator();
 

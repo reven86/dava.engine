@@ -166,19 +166,22 @@ public:
 	QtPropertyData *Parent() const;
 	void ChildAdd(const QString &key, QtPropertyData *data);
 	void ChildAdd(const QString &key, const QVariant &value);
-	void ChildInsert(const QString &key, QtPropertyData *data, int pos);
+    void ChildrenAdd(const QVector<QtPropertyData*>& data);
+    void ChildInsert(const QString &key, QtPropertyData *data, int pos);
 	void ChildInsert(const QString &key, const QVariant &value, int pos);
 	int ChildCount() const;
 	QtPropertyData* ChildGet(int i) const;
 	QtPropertyData* ChildGet(const QString &key) const;
 	int ChildIndex(QtPropertyData *data) const;
 	void ChildExtract(QtPropertyData *data);
-	void ChildRemove(QtPropertyData *data);
+    void ChildrenExtract(QVector<QtPropertyData*>& children);
+    void ChildRemove(QtPropertyData *data);
 	void ChildRemove(const QString &key);
 	void ChildRemove(int i);
 	void ChildRemoveAll();
+    void ResetChildren();
 
-	// Optional widgets
+    // Optional widgets
 	int GetButtonsCount() const;
 	QtPropertyToolButton* GetButton(int index = 0);
 	QtPropertyToolButton* AddButton(QtPropertyToolButton::StateVariant stateVariant = QtPropertyToolButton::ACTIVE_ALWAYS);
@@ -212,12 +215,12 @@ protected:
 	QtPropertyData *parent;
 	UserData* userData;
 
-	QList<QString> childrenNames;
-	QList<QtPropertyData*> childrenData;
-    QList<QtPropertyData*> mergedData;
-	
-	QWidget *optionalButtonsViewport;
-	QVector<QtPropertyToolButton *> optionalButtons;
+    QList<QString> childrenNames;
+    QVector<QtPropertyData*> childrenData;
+    QVector<QtPropertyData*> mergedData;
+
+    QWidget* optionalButtonsViewport;
+    QVector<QtPropertyToolButton *> optionalButtons;
     
     QtPropertyDataValidator* validator;
     
