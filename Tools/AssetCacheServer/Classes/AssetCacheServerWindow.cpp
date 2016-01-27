@@ -166,9 +166,7 @@ void AssetCacheServerWindow::closeEvent(QCloseEvent* e)
 void AssetCacheServerWindow::ChangeSettingsState(SettingsState newState)
 {
     settingsState = newState;
-
-    bool isEmpty = ui->cacheFolderLineEdit->text().isEmpty();
-    ui->applyButton->setEnabled((settingsState == EDITED) && !isEmpty);
+    ui->applyButton->setEnabled(settingsState == EDITED);
 }
 
 void AssetCacheServerWindow::OnFirstLaunch()
@@ -271,8 +269,6 @@ void AssetCacheServerWindow::OnFolderTextChanged()
     bool isEmpty = ui->cacheFolderLineEdit->text().isEmpty();
 
     ui->clearDirectoryButton->setEnabled(!isEmpty);
-    ui->applyButton->setEnabled(!isEmpty);
-
     ui->cacheFolderLineEdit->setFocus();
     VerifyData();
 }
@@ -386,7 +382,17 @@ void AssetCacheServerWindow::RemoveServers()
 
 void AssetCacheServerWindow::VerifyData()
 {
-    ChangeSettingsState(EDITED);
+    SettingsState newState = NOT_EDITED;
+    if (ui->cacheFolderLineEdit->text().isEmpty())
+    {
+        newState = EDITED_NOT_CORRECT;
+    }
+    else
+    {
+        newState = EDITED;
+    }
+
+    ChangeSettingsState(newState);
 }
 
 void AssetCacheServerWindow::OnApplyButtonClicked()
