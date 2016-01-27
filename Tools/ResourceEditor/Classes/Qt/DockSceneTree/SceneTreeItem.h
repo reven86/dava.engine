@@ -139,8 +139,8 @@ public:
 
     DAVA::ParticleEffectComponent* effect;
     DAVA::ParticleEmitter* emitter;
-    DAVA::ParticleLayer *layer;
-	bool hasInnerEmmiter;
+    DAVA::ParticleLayer* layer;
+    bool hasInnerEmmiter;
 };
 
 class SceneTreeItemParticleForce : public SceneTreeItem

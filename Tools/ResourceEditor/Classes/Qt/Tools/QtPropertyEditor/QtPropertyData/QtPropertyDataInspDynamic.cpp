@@ -31,11 +31,11 @@
 
 #include <QDebug>
 
-QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata, DAVA::FastName _name)
-    : QtPropertyDataDavaVariant(DAVA::VariantType())
+QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(const DAVA::FastName& name_, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata)
+    : QtPropertyDataDavaVariant(name_, DAVA::VariantType())
     , dynamicInfo(_dynamicInfo)
     , ddata(_ddata)
-    , name(_name)
+    , name(name_)
     , inspFlags(0)
     , lastCommand(NULL)
 {
