@@ -32,6 +32,7 @@
 
 #include <AppKit/NSTextField.h>
 #include <AppKit/NSTextView.h>
+#include <AppKit/NSScrollView.h>
 #include <AppKit/NSWindow.h>
 #include <AppKit/NSColor.h>
 #include <AppKit/NSText.h>
@@ -160,29 +161,31 @@ public:
     MultilineField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : IField(davaText_, wrapper_)
     {
-        [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+        nsScrollView = [[NSScrollView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+
+        [nsScrollView setBorderType:NSNoBorder];
+        [nsScrollView setHasVerticalScroller:YES];
+        [nsScrollView setHasHorizontalScroller:NO];
+        [nsScrollView setAutoresizingMask:NSViewWidthSizable |
+                      NSViewHeightSizable];
 
         nsTextView = [[NSTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
         [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
-
-        //formatter = [[CustomTextFieldFormatter alloc] init];
-        //formatter->text = wrapper;
-        // no formatter [nsTextView setFormatter:formatter];
 
         objcDelegate = [[MultilineDelegate alloc] init];
         objcDelegate->text = wrapper;
 
         [nsTextView setDelegate:objcDelegate];
 
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-        [openGLView addSubview:nsTextView];
-
         [nsTextView setEditable:YES];
-        //[nsTextView setEnabled:YES];
 
         // make control border and background transparent
         nsTextView.drawsBackground = NO;
-        //nsTextView.bezeled = NO;
+
+        [nsScrollView setDocumentView:nsTextView];
+
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView addSubview:nsScrollView];
 
         CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
         signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &MultilineField::OnAppMinimazedResored);
@@ -193,11 +196,13 @@ public:
         CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
         xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
 
+        [nsScrollView removeFromSuperview];
+        [nsScrollView release];
+        nsScrollView = nullptr;
         [nsTextView removeFromSuperview];
         [nsTextView release];
         nsTextView = nullptr;
-        //[formatter release];
-        //formatter = nullptr;
+
         [objcDelegate release];
         objcDelegate = nullptr;
     }
@@ -255,6 +260,7 @@ public:
             NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
             NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 
+            [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
         }
     }
@@ -270,10 +276,7 @@ public:
                          alpha:color.a];
         [nsTextView setTextColor:nsColor];
 
-        // make cursor same color as text (default - black caret on white back)
-        NSTextView* fieldEditor = (NSTextView*)[nsTextView.window fieldEditor:YES
-                                                                    forObject:nsTextView];
-        fieldEditor.insertionPointColor = nsColor;
+        [nsTextView setInsertionPointColor:nsColor];
     }
     void SetFontSize(float virtualFontSize) override
     {
@@ -337,7 +340,7 @@ public:
 
     void SetVisible(bool value) override
     {
-        [nsTextView setHidden:!value];
+        [nsScrollView setHidden:!value];
     }
     void ShowField() override
     {
@@ -439,6 +442,7 @@ public:
 
     SigConnectionID signalMinimizeRestored;
 
+    NSScrollView* nsScrollView = nullptr;
     NSTextView* nsTextView = nullptr;
     MultilineDelegate* objcDelegate = nullptr;
 
@@ -858,6 +862,25 @@ public:
                 delete prevCtrl;
                 ctrl = newField;
             }
+            else
+            {
+                MultilineField* prevCtrl = static_cast<MultilineField*>(ctrl);
+                SingleLineOrPasswordField* newField = new SingleLineOrPasswordField(ctrl->davaText, this);
+
+                newField->SetFontSize(prevCtrl->currentFontSize);
+                newField->SetTextColor(prevCtrl->currentColor);
+
+                WideString oldText;
+                prevCtrl->GetText(oldText);
+
+                newField->SetText(oldText);
+                newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
+                newField->SetTextAlign(prevCtrl->alignment);
+                newField->SetMultiline(value);
+
+                delete prevCtrl;
+                ctrl = newField;
+            }
         }
     }
 
@@ -1143,9 +1166,48 @@ doCommandBySelector:(SEL)commandSelector
 
 - (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
 {
-    // TODO check size
-    // TODO call client delegate
-    return YES;
+    BOOL result = YES;
+
+    // Get string after changing
+    NSString* newString = [[aTextView string] stringByReplacingCharactersInRange:affectedCharRange withString:replacementString];
+
+    // check size
+    if ([newString length] > maxLength)
+    {
+        result = NO;
+    }
+    else
+    {
+        // call client delegate
+        DAVA::UITextField* textField = (*text).ctrl->davaText;
+        DAVA::UITextFieldDelegate* delegate = textField->GetDelegate();
+        if (delegate)
+        {
+            DAVA::WideString oldStr = textField->GetText();
+
+            DAVA::WideString repString;
+            const char* cstr = [replacementString cStringUsingEncoding:NSUTF8StringEncoding];
+            DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
+
+            bool isValid = delegate->TextFieldKeyPressed(
+            textField,
+            static_cast<DAVA::int32>(affectedCharRange.location),
+            static_cast<DAVA::int32>(affectedCharRange.length),
+            repString);
+
+            if (isValid)
+            {
+                DAVA::WideString newStr;
+                const char* cstr = [newString cStringUsingEncoding:NSUTF8StringEncoding];
+                DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newStr);
+                delegate->TextFieldOnTextChanged(textField, newStr, oldStr);
+            }
+
+            result = isValid ? YES : NO;
+        }
+    }
+
+    return result;
 }
 @end
 
