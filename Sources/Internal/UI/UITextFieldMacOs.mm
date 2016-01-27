@@ -99,8 +99,8 @@ public:
         : davaText(davaText_)
         , wrapper(wrapper_)
     {
-        DVASSERT(davaText);
-        DVASSERT(wrapper);
+        DVASSERT(davaText != nullptr);
+        DVASSERT(wrapper != nullptr);
     }
     virtual ~IField()
     {
@@ -151,9 +151,35 @@ public:
     virtual void SetRenderToTexture(bool value) = 0;
     virtual bool IsRenderToTexture() const = 0;
 
+    SigConnectionID signalMinimizeRestored;
+
     UITextField* davaText = nullptr;
     ObjCWrapper* wrapper = nullptr;
+
+    Rect currentRect;
+    Color currentColor;
+    float32 currentFontSize = 0.f;
+
+    eAlign alignment = ALIGN_LEFT;
+    bool useRtlAlign = false;
+    bool multiline = false;
+    bool password = false;
 };
+
+static NSRect ConvertDavaRectToNSRect(Rect rectSrc)
+{
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+
+    // 1. map virtual to physical
+    Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
+    rect += coordSystem->GetPhysicalDrawOffset();
+    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
+
+    // 2. map physical to window
+    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+    return controlRect;
+}
 
 class MultilineField : public IField
 {
@@ -248,17 +274,7 @@ public:
         if (currentRect != rectSrc)
         {
             currentRect = rectSrc;
-
-            VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-            // 1. map virtual to physical
-            Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
-            rect += coordSystem->GetPhysicalDrawOffset();
-            rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-            // 2. map physical to window
-            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-            NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+            NSRect controlRect = ConvertDavaRectToNSRect(rectSrc);
 
             [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
@@ -440,20 +456,9 @@ public:
         return false;
     }
 
-    SigConnectionID signalMinimizeRestored;
-
     NSScrollView* nsScrollView = nullptr;
     NSTextView* nsTextView = nullptr;
     MultilineDelegate* objcDelegate = nullptr;
-
-    Rect currentRect;
-    Color currentColor;
-    float32 currentFontSize = 0.f;
-
-    eAlign alignment = ALIGN_LEFT;
-    bool useRtlAlign = false;
-    bool multiline = true;
-    bool password = false;
 };
 
 class SingleLineOrPasswordField : public IField
@@ -553,17 +558,7 @@ public:
         if (currentRect != rectSrc)
         {
             currentRect = rectSrc;
-
-            VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-            // 1. map virtual to physical
-            Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
-            rect += coordSystem->GetPhysicalDrawOffset();
-            rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-            // 2. map physical to window
-            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-            NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+            NSRect controlRect = ConvertDavaRectToNSRect(rectSrc);
 
             [nsTextField setFrame:controlRect];
         }
@@ -805,20 +800,9 @@ public:
         return false;
     }
 
-    SigConnectionID signalMinimizeRestored;
-
     CustomTextField* nsTextField = nullptr;
     CustomDelegate* objcDelegate = nullptr;
     CustomTextFieldFormatter* formatter = nullptr;
-
-    Rect currentRect;
-    Color currentColor;
-    float32 currentFontSize = 0.f;
-
-    eAlign alignment = ALIGN_LEFT;
-    bool useRtlAlign = false;
-    bool multiline = false;
-    bool password = false;
 };
 
 class ObjCWrapper
@@ -843,44 +827,30 @@ public:
     {
         if (ctrl->IsMultiline() != value)
         {
+            IField* prevCtrl = ctrl;
+            IField* newField = nullptr;
             if (value)
             {
-                SingleLineOrPasswordField* prevCtrl = static_cast<SingleLineOrPasswordField*>(ctrl);
-                MultilineField* newField = new MultilineField(ctrl->davaText, this);
-
-                newField->SetFontSize(prevCtrl->currentFontSize);
-                newField->SetTextColor(prevCtrl->currentColor);
-
-                WideString oldText;
-                prevCtrl->GetText(oldText);
-
-                newField->SetText(oldText);
-                newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
-                newField->SetTextAlign(prevCtrl->alignment);
-                newField->SetMultiline(value);
-
-                delete prevCtrl;
-                ctrl = newField;
+                newField = new MultilineField(ctrl->davaText, this);
             }
             else
             {
-                MultilineField* prevCtrl = static_cast<MultilineField*>(ctrl);
-                SingleLineOrPasswordField* newField = new SingleLineOrPasswordField(ctrl->davaText, this);
-
-                newField->SetFontSize(prevCtrl->currentFontSize);
-                newField->SetTextColor(prevCtrl->currentColor);
-
-                WideString oldText;
-                prevCtrl->GetText(oldText);
-
-                newField->SetText(oldText);
-                newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
-                newField->SetTextAlign(prevCtrl->alignment);
-                newField->SetMultiline(value);
-
-                delete prevCtrl;
-                ctrl = newField;
+                newField = new SingleLineOrPasswordField(ctrl->davaText, this);
             }
+
+            newField->SetFontSize(prevCtrl->currentFontSize);
+            newField->SetTextColor(prevCtrl->currentColor);
+
+            WideString oldText;
+            prevCtrl->GetText(oldText);
+
+            newField->SetText(oldText);
+            newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
+            newField->SetTextAlign(prevCtrl->alignment);
+            newField->SetMultiline(value);
+
+            delete prevCtrl;
+            ctrl = newField;
         }
     }
 
