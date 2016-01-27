@@ -1822,6 +1822,43 @@ _GLES2_ExecuteQueuedCommands()
 
     if (_GLES2_Context)
     {
+        // take screenshot, if needed
+
+        _GLES2_ScreenshotCallbackSync.Lock();
+        if (_GLES2_PendingScreenshotCallback)
+        {
+            const uint32 stride = 4 * _GLES2_DefaultFrameBuffer_Width;
+            uint8* rgba = new uint8[stride * _GLES2_DefaultFrameBuffer_Height];
+
+            GLCommand cmd[] =
+            {
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer } },
+              { GLCommand::PIXEL_STORE_I, { GL_PACK_ALIGNMENT, 1 } },
+              { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, (uint64)rgba } },
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
+            };
+
+            _ExecGL(cmd, countof(cmd));
+            for (int y = 0; y < _GLES2_DefaultFrameBuffer_Height / 2; ++y)
+            {
+                uint8* line1 = rgba + y * stride;
+                uint8* line2 = rgba + (_GLES2_DefaultFrameBuffer_Height - y - 1) * stride;
+                uint8 tmp[5 * 1024 * 4];
+
+                DVASSERT(stride <= sizeof(tmp));
+                memcpy(tmp, line1, stride);
+                memcpy(line1, line2, stride);
+                memcpy(line2, tmp, stride);
+            }
+            (*_GLES2_PendingScreenshotCallback)(_GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, rgba);
+            delete[] rgba;
+            _GLES2_PendingScreenshotCallback = nullptr;
+        }
+        _GLES2_ScreenshotCallbackSync.Unlock();
+        
+        
+        // do swap-buffers
+
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
         
 #if defined(__DAVAENGINE_WIN32__)
@@ -2089,8 +2126,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     #define EXEC_GL(expr) \
     expr; \
     err = glGetError(); \
-    if (err != GL_NO_ERROR) \
-        _LogGLError(#expr, err); \
 
 #else
 
@@ -2227,6 +2262,13 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
             cmd->status = err;
         }
         break;
+        
+        case GLCommand::PIXEL_STORE_I :
+        {
+            EXEC_GL(glPixelStorei( (GLenum)(arg[0]), (GLint)(arg[1]) ));
+            cmd->retval = 0;
+            cmd->status = err;
+        }   break;
 
         case GLCommand::READ_PIXELS:
         {

@@ -1219,6 +1219,47 @@ _ExecuteQueuedCommandsDX11()
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+
+    // take screenshot, if needed
+
+    _D3D11_ScreenshotCallbackSync.Lock();
+    if (_D3D11_PendingScreenshotCallback)
+    {
+        D3D11_TEXTURE2D_DESC desc = { 0 };
+
+        _D3D11_SwapChainBuffer->GetDesc(&desc);
+
+        if (!_D3D11_SwapChainBufferCopy)
+        {
+            desc.Usage = D3D11_USAGE_STAGING;
+            desc.BindFlags = 0;
+            desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+            _D3D11_Device->CreateTexture2D(&desc, NULL, &_D3D11_SwapChainBufferCopy);
+        }
+
+        if (_D3D11_SwapChainBufferCopy)
+        {
+            D3D11_MAPPED_SUBRESOURCE res = { 0 };
+
+            _D3D11_ImmediateContext->CopyResource(_D3D11_SwapChainBufferCopy, _D3D11_SwapChainBuffer);
+            _D3D11_ImmediateContext->Map(_D3D11_SwapChainBufferCopy, 0, D3D11_MAP_READ, 0, &res);
+            if (res.pData)
+            {
+                for (uint8 *p = (uint8 *)res.pData, *p_end = (uint8 *)res.pData + desc.Width * desc.Height * 4; p != p_end; p += 4)
+                {
+                    uint8 tmp = p[0];
+                    p[0] = p[2];
+                    p[2] = tmp;
+                }
+
+                (*_D3D11_PendingScreenshotCallback)(desc.Width, desc.Height, res.pData);
+                _D3D11_ImmediateContext->Unmap(_D3D11_SwapChainBufferCopy, 0);
+                _D3D11_PendingScreenshotCallback = nullptr;
+            }
+        }
+    }
+    _D3D11_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
