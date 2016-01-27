@@ -54,6 +54,8 @@
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include <dirent.h>
 
+#include "Render/Renderer.h"
+
 extern "C"
 {
 	jint JNI_OnLoad(JavaVM *vm, void *reserved);
@@ -85,7 +87,7 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jint width, jint height);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
@@ -336,17 +338,17 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
     {
     case 5: //ACTION_POINTER_DOWN
     case 0: //ACTION_DOWN
-                phase = DAVA::UIEvent::Phase::BEGAN;
-                break;
+        phase = DAVA::UIEvent::Phase::BEGAN;
+        break;
 
     case 6: //ACTION_POINTER_UP
     case 1: //ACTION_UP
-                phase = DAVA::UIEvent::Phase::ENDED;
-                break;
+        phase = DAVA::UIEvent::Phase::ENDED;
+        break;
 
     case 3: //ACTION_CANCEL
-                phase = DAVA::UIEvent::Phase::CANCELLED;
-                break;
+        phase = DAVA::UIEvent::Phase::CANCELLED;
+        break;
 
     case 4: //ACTION_OUTSIDE
         break;
@@ -430,7 +432,6 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
             core->OnInput(action, source, activeInputs, allInputs);
         }
     }
-
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)
@@ -472,10 +473,18 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jo
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jint width, jint height)
+void Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height)
 {
-	if(core)
-	{
+    if (nativeWindow)
+    {
+        ANativeWindow_release(nativeWindow);
+    }
+
+    nativeWindow = ANativeWindow_fromSurface(env, surface);
+
+    if (core)
+    {
+        core->SetNativeWindow(nativeWindow);
         core->RenderReset(width, height);
     }
 }
@@ -490,7 +499,12 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
         if (core)
         {
             core->SetNativeWindow(nullptr);
-            core->RenderReset(0, 0);
+
+            rhi::ResetParam params;
+            params.width = 0;
+            params.height = 0;
+            params.window = nullptr;
+            DAVA::Renderer::Reset(params);
         }
     }
 }

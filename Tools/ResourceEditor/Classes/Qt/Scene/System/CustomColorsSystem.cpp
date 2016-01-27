@@ -81,7 +81,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     FilePath filePath = GetCurrentSaveFileName();
     if (!filePath.IsEmpty())
-	{
+    {
         const bool isTextureLoaded = LoadTexture(filePath, false);
         drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
 	}
@@ -103,7 +103,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     }
 
     enabled = true;
-	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool CustomColorsSystem::ChangesPresent()
@@ -157,7 +157,7 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
             UpdateBrushTool();
             prevCursorPos = cursorPosition;
         }
-	}
+    }
 }
 
 void CustomColorsSystem::Input(DAVA::UIEvent *event)
@@ -171,16 +171,16 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
-		Vector3 point;
-		
-		switch(event->phase)
-		{
+        Vector3 point;
+
+        switch (event->phase)
+        {
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)
-                {
-					UpdateToolImage();
-					StoreOriginalState();
-					editingIsEnabled = true;
+            {
+                UpdateToolImage();
+                StoreOriginalState();
+                    editingIsEnabled = true;
 				}
 				break;
 
@@ -189,9 +189,9 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 
         case UIEvent::Phase::ENDED:
             FinishEditing();
-                break;
-		}
-	}
+            break;
+        }
+    }
 }
 
 void CustomColorsSystem::FinishEditing()
@@ -271,9 +271,9 @@ void CustomColorsSystem::SetBrushSize(int32 brushSize, bool updateDrawSystem /*=
         cursorSize = (float32)brushSize / landscapeSize;
         if (updateDrawSystem)
         {
-			drawSystem->SetCursorSize(cursorSize);
-		}
-	}
+            drawSystem->SetCursorSize(cursorSize);
+        }
+    }
 }
 
 void CustomColorsSystem::SetColor(int32 colorIndex)

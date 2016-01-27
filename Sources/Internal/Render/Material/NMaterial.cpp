@@ -850,6 +850,7 @@ NMaterial* NMaterial::Clone()
     NMaterial* clonedMaterial = new NMaterial();
     clonedMaterial->materialName = materialName;
     clonedMaterial->fxName = fxName;
+    clonedMaterial->qualityGroup = qualityGroup;
 
     for (auto prop : localProperties)
         clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);

@@ -292,10 +292,10 @@ protected:
 	float32 scaleVelocityFactor;
 	bool inheritPosition;
 	bool isLooped;
-	int32 particleOrientation;
-	RefPtr< PropertyLine<float32> > life;
-	RefPtr< PropertyLine<float32> > lifeVariation;
-	RefPtr< PropertyLine<float32> > number;
+    int32 particleOrientation;
+    RefPtr<PropertyLine<float32>> life;
+    RefPtr<PropertyLine<float32>> lifeVariation;
+    RefPtr< PropertyLine<float32> > number;
 	RefPtr< PropertyLine<float32> > numberVariation;
 	RefPtr< PropertyLine<Vector2> > size;
 	RefPtr< PropertyLine<Vector2> > sizeVariation;
@@ -388,30 +388,68 @@ protected:
 class CommandLoadParticleEmitterFromYaml : public CommandAction
 {
 public:
-	CommandLoadParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path);
+    CommandLoadParticleEmitterFromYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path);
     virtual void Redo();
-	
-	ParticleEmitter* GetEmitter() const {return selectedEmitter;};
+
+    ParticleEmitter* GetEmitter() const
+    {
+        return selectedEmitter.Get();
+    };
 
 protected:
-	ParticleEmitter* selectedEmitter;
-	FilePath filePath;
+    ParticleEffectComponent* selectedEffect = nullptr;
+    RefPtr<ParticleEmitter> selectedEmitter;
+    FilePath filePath;
 };
 
 class CommandSaveParticleEmitterToYaml : public CommandAction
 {
 public:
-	CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path);
-	virtual void Redo();
+    CommandSaveParticleEmitterToYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path);
+    virtual void Redo();
 
-	ParticleEmitter* GetEmitter() const {return selectedEmitter;};    
+    ParticleEmitter* GetEmitter() const
+    {
+        return selectedEmitter.Get();
+    };
 
 protected:
-	ParticleEmitter* selectedEmitter;
-	FilePath filePath;    
+    ParticleEffectComponent* selectedEffect = nullptr;
+    RefPtr<ParticleEmitter> selectedEmitter;
+    FilePath filePath;
 };
 
+// Load/save Particle Inner Emitter Node.
+class CommandLoadInnerParticleEmitterFromYaml : public CommandAction
+{
+public:
+    CommandLoadInnerParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path);
+    virtual void Redo();
 
+    ParticleEmitter* GetEmitter() const
+    {
+        return selectedEmitter;
+    };
 
+protected:
+    ParticleEmitter* selectedEmitter = nullptr;
+    FilePath filePath;
+};
+
+class CommandSaveInnerParticleEmitterToYaml : public CommandAction
+{
+public:
+    CommandSaveInnerParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path);
+    virtual void Redo();
+
+    ParticleEmitter* GetEmitter() const
+    {
+        return selectedEmitter;
+    };
+
+protected:
+    ParticleEmitter* selectedEmitter = nullptr;
+    FilePath filePath;
+};
 
 #endif //__PARTICLE_EDITOR_COMMANDS_H__
