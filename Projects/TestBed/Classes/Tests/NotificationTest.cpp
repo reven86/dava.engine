@@ -112,7 +112,7 @@ void NotificationScreen::LoadResources()
     hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
     AddControl(hideNotificationProgress);
 
-	SafeRelease(font);
+    SafeRelease(font);
 }
 
 void NotificationScreen::UnloadResources()

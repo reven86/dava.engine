@@ -83,8 +83,8 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
     stepForwardBtn->setToolTip("Step forward");
     playerBox->addWidget(stepForwardBtn);
     stepForwardFPSSpin = new QSpinBox(this);
-	stepForwardFPSSpin->setMinimum(1);
-	stepForwardFPSSpin->setMaximum(100);
+    stepForwardFPSSpin->setMinimum(1);
+    stepForwardFPSSpin->setMaximum(100);
 	stepForwardFPSSpin->setValue(30);
 	playerBox->addWidget(stepForwardFPSSpin);
 	playerBox->addWidget(new QLabel("step FPS"));
@@ -114,8 +114,8 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
     mainLayout->addWidget(new QLabel("Effect Variables"));
     effectVariables = new QTableWidget(this);
     effectVariables->setColumnCount(2);
-	effectVariables->setRowCount(0);
-	effectEditDelegate = new VariableEditDelegate(effectVariables, effectVariables);
+    effectVariables->setRowCount(0);
+    effectEditDelegate = new VariableEditDelegate(effectVariables, effectVariables);
 	effectVariables->setItemDelegate(effectEditDelegate);
 	mainLayout->addWidget(effectVariables);
 	connect(effectVariables, SIGNAL(cellChanged(int, int)), this, SLOT(OnVariableValueChanged(int, int)));

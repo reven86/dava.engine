@@ -820,7 +820,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
     QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
     QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
-	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
+    QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
@@ -1668,7 +1668,7 @@ void QtMainWindow::OnTextureBrowser()
 
     TextureBrowser::Instance()->show();
     TextureBrowser::Instance()->sceneActivated(sceneEditor);
-	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr); 
+    TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr);
 }
 
 void QtMainWindow::OnSceneLightMode()
@@ -2084,7 +2084,7 @@ void QtMainWindow::OnSaveTiledTexture()
     LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
     if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
     {
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
 		return;
 	}
 

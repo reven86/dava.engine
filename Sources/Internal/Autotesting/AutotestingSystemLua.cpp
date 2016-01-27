@@ -88,8 +88,8 @@ void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
     if (nsize == 0)
     {
         mspace_free(ud, ptr);
-            return nullptr;
-		}
+        return nullptr;
+        }
 		else
 		{
 			void* mem = mspace_realloc(ud, ptr, nsize);
@@ -115,8 +115,8 @@ AutotestingSystemLua::~AutotestingSystemLua()
 {
     if (!luaState)
     {
-            return;
-		}
+        return;
+        }
 		lua_close(luaState);
 		luaState = nullptr;
     
@@ -131,8 +131,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
     delegate = _delegate;
 }
 
-    void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
-	{
+void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
+    {
 		if (luaState)
 		{
 			Logger::Debug("AutotestingSystemLua::Has initialised already.");
@@ -156,7 +156,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
         lua_setglobal(luaState, "require");
 
-		if (!LoadWrappedLuaObjects())
+        if (!LoadWrappedLuaObjects())
 		{
 			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
 		}
@@ -252,8 +252,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         }
         lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
         lua_pushstring(L, path.GetBasename().c_str());
-		return 2;
-	}
+        return 2;
+    }
 
 	void AutotestingSystemLua::StackDump(lua_State* L)
 	{
@@ -318,7 +318,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
     {
         String deviceName;
         if (DeviceInfo::GetPlatformString() == "Android")
-		{
+        {
 			deviceName = DeviceInfo::GetModel();
 		}
 		else
@@ -567,8 +567,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         default:
         {
             if (keyPress.keyChar == 0)
-			{
-				break;
+            {
+                break;
 			}
 			WideString str;
             str += keyPress.keyChar;
@@ -579,9 +579,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
             break;
         }
         }
-	}
+    }
 
-	String AutotestingSystemLua::GetText(UIControl *control)
+    String AutotestingSystemLua::GetText(UIControl *control)
 	{
 		UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)

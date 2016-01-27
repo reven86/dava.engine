@@ -301,9 +301,9 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
             if (props != nullptr)
             {
                 DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-                if(!pathToReload.IsEmpty())
-				{
-					refsToReload.insert(pathToReload);
+                if (!pathToReload.IsEmpty())
+                {
+                    refsToReload.insert(pathToReload);
 				}
 			}
 		}
@@ -814,8 +814,8 @@ void StructureSystem::SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePa
         for (int i = 0; i < parent->GetChildrenCount(); ++i)
         {
             DAVA::Entity* entity = parent->GetChild(i);
-            DAVA::KeyedArchive *arch = GetCustomPropertiesArchieve(entity);
-            
+            DAVA::KeyedArchive* arch = GetCustomPropertiesArchieve(entity);
+
             if(arch)
             {
                 // if this entity has searched reference - add it to the set

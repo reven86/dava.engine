@@ -343,9 +343,9 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
     int ret = 0;
     QRect r = rect;
 
-    if(nullptr != descriptor && nullptr != texture)
-	{
-		r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
+    if (nullptr != descriptor && nullptr != texture)
+    {
+        r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
 		r.setX(rect.x() + rect.width());
 		r.setWidth(FORMAT_INFO_WIDTH);
 
@@ -372,7 +372,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
             }
 
             r.moveLeft(r.x() - FORMAT_INFO_SPACING);
-		}
+        }
 
 		// error icon
 		if(texture->width != texture->height)

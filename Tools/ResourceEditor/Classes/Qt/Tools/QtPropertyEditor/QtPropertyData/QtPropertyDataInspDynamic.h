@@ -40,7 +40,7 @@
 class QtPropertyDataInspDynamic : public QtPropertyDataDavaVariant
 {
 public:
-    QtPropertyDataInspDynamic(DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata, DAVA::FastName name);
+    QtPropertyDataInspDynamic(const DAVA::FastName& name, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata);
     virtual ~QtPropertyDataInspDynamic();
 
     int InspFlags() const;

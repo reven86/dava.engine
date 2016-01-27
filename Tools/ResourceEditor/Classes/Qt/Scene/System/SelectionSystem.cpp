@@ -111,8 +111,8 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
 void SceneSelectionSystem::ForceEmitSignals()
 {
-	if (selectionHasChanges)
-	{
+    if (selectionHasChanges)
+    {
         SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), &curSelections, &curDeselections);
         selectionHasChanges = false;
         curDeselections.Clear();
@@ -573,9 +573,9 @@ void SceneSelectionSystem::SetLocked(bool lock)
     SceneSystem::SetLocked(lock);
 
     hoodSystem->LockAxis(lock);
-	hoodSystem->SetVisible(!lock);
+    hoodSystem->SetVisible(!lock);
 
-	if(!lock)
+    if(!lock)
 	{
 		UpdateHoodPos();
 	}

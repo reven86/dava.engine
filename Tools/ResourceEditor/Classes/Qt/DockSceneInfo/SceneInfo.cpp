@@ -504,45 +504,45 @@ void SceneInfo::CollectTexture(TexturesMap &textures, const FilePath &name, Text
 
 QtPropertyData * SceneInfo::CreateInfoHeader(const QString &key)
 {
-    QtPropertyData* headerData = new QtPropertyData("");
+    QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
 	headerData->SetBackground(QBrush(QColor(Qt::lightGray)));
-    AppendProperty(key, headerData);
-	return headerData;
+    AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
+    return headerData;
 }
 
 QtPropertyData * SceneInfo::GetInfoHeader(const QString &key)
 {
-	QtPropertyData *header = NULL;
+    QtPropertyData* header = nullptr;
     QtPropertyData *root = GetRootProperty();
 	if(NULL != root)
 	{
-		header = root->ChildGet(key);
-	}
+        header = root->ChildGet(DAVA::FastName(key.toStdString()));
+    }
 	return header;
 }
 
 void SceneInfo::AddChild(const QString & key, QtPropertyData *parent)
 {
-    QtPropertyData *propData = new QtPropertyData(0);
-	propData->SetEditable(false);
-    parent->ChildAdd(key, propData);
+    std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
+    propData->SetEditable(false);
+    parent->ChildAdd(std::move(propData));
 }
 
 void SceneInfo::AddChild(const QString & key, const QString& toolTip, QtPropertyData *parent)
 {
-    QtPropertyData *propData = new QtPropertyData(0);
-	propData->SetEditable(false);
+    std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
+    propData->SetEditable(false);
     propData->SetToolTip(toolTip);
-    parent->ChildAdd(key, propData);
+    parent->ChildAdd(std::move(propData));
 }
 
 void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyData *parent)
 {
 	if(NULL != parent)
 	{
-		QtPropertyData *propData = parent->ChildGet(key);
-		if(NULL != propData)
+        QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
+        if(NULL != propData)
 		{
 			propData->SetValue(value);
 		}
@@ -554,8 +554,8 @@ bool SceneInfo::HasChild(const QString & key, QtPropertyData *parent)
     bool hasChild = false;
     if(NULL != parent)
 	{
-		QtPropertyData *propData = parent->ChildGet(key);
-		hasChild = (propData != NULL);
+        QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
+        hasChild = (propData != NULL);
 	}
     
     return hasChild;

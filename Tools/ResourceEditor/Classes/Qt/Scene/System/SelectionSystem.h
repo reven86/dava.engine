@@ -94,9 +94,9 @@ public:
     void SetLocked(bool lock) override;
 
     DAVA::AABBox3 GetSelectionAABox(DAVA::Entity* entity) const;
-    DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity, const DAVA::Matrix4 &transform) const;
+    DAVA::AABBox3 GetSelectionAABox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
 
-	void ForceEmitSignals();
+    void ForceEmitSignals();
 
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 

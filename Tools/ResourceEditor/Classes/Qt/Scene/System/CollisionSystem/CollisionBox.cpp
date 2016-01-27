@@ -35,7 +35,7 @@ CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::
     {
         btTransform trans;
         trans.setIdentity();
-		trans.setOrigin(btVector3(position.x, position.y, position.z));
+        trans.setOrigin(btVector3(position.x, position.y, position.z));
 
         btShape = new btBoxShape(btVector3(boxSize / 2, boxSize / 2, boxSize / 2));
         btObject = new btCollisionObject();
@@ -53,8 +53,8 @@ CollisionBox::~CollisionBox()
     {
         btWord->removeCollisionObject(btObject);
         DAVA::SafeDelete(btObject);
-		DAVA::SafeDelete(btShape);
-	}
+        DAVA::SafeDelete(btShape);
+    }
 }
 
 CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAVA::Plane& plane)
