@@ -391,8 +391,8 @@ void SceneCameraSystem::Draw()
                     sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
                 }
             }
-		}
-	}
+        }
+    }
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)

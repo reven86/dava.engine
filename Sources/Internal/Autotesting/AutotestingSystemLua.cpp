@@ -248,8 +248,8 @@ AutotestingSystemLua::AutotestingSystemLua()
         }
         lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
         if (!Instance()->RunScript())
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
 		}
 		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
@@ -799,9 +799,9 @@ AutotestingSystemLua::AutotestingSystemLua()
         return delegate->LoadWrappedLuaObjects(luaState);
     }
 
-    bool AutotestingSystemLua::LoadScript(const String &luaScript)
-	{
-		if (!luaState)
+    bool AutotestingSystemLua::LoadScript(const String& luaScript)
+    {
+        if (!luaState)
 		{
 			return false;
 		}

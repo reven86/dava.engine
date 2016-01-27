@@ -27,36 +27,36 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
+#include "Base/AlignedAllocator.h"
 
-#include "DAVAEngine.h"
-
-using namespace DAVA;
-
-class VisibilityToolProxy: public BaseObject
+namespace DAVA
 {
-protected:
-	~VisibilityToolProxy();
-public:
-	VisibilityToolProxy(int32 size);
+void* AllocateAlignedMemory(uint32 size, uint32 align)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
 
-	int32 GetSize();
+    return _aligned_malloc(size, align);
 
-	Texture* GetTexture();
+#else // assuming POSIX for now
 
-	void SetVisibilityPoint(const Vector2& visibilityPoint);
-	Vector2 GetVisibilityPoint();
+    void* result = nullptr;
+    int32 success = posix_memalign(&result, align, size);
+    DVASSERT(success == 0);
+    return result;
 
-	void UpdateVisibilityPointSet(bool visibilityPointSet);
-	bool IsVisibilityPointSet();
+#endif
+}
 
-protected:
-	Texture* visibilityToolTexture;
+void FreeAlignedMemory(void* ptr)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
 
-    int32 size;
-    Vector2 visibilityPoint;
-	bool isVisibilityPointSet;
-};
+    _aligned_free(ptr);
 
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPROXY__) */
+#else // still assuming POSIX for now
+
+    free(ptr);
+
+#endif
+}
+}

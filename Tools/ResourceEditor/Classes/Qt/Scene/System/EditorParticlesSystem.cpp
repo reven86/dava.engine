@@ -72,8 +72,8 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
     {
         if (NULL != effectEntity)
         {
-			DAVA::AABBox3 wordBox;
-			DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
+            DAVA::AABBox3 wordBox;
+            DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
 			collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
 			// Get sphere radius (size) of debug effect
 			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
@@ -106,8 +106,8 @@ void EditorParticlesSystem::Draw()
         DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
         switch (selectedEmitter->emitterType)
-		{
-		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
+        {
+        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
 			{
 				DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);

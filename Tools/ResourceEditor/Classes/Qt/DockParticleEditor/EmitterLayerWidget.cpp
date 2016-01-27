@@ -236,10 +236,10 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     //particle orieantation
     QVBoxLayout* orientationLayout = new QVBoxLayout();
     particleOrientationLabel = new QLabel("Particle Orientation");
-	orientationLayout->addWidget(particleOrientationLabel);
-	QHBoxLayout* facingLayout = new QHBoxLayout();
-	
-	cameraFacingCheckBox = new QCheckBox("Camera Facing");
+    orientationLayout->addWidget(particleOrientationLabel);
+    QHBoxLayout* facingLayout = new QHBoxLayout();
+
+    cameraFacingCheckBox = new QCheckBox("Camera Facing");
 	facingLayout->addWidget(cameraFacingCheckBox);
 	connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));		
 
@@ -273,7 +273,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 
     QHBoxLayout* blendLayout = new QHBoxLayout();
-    QVBoxLayout *presetLayout = new QVBoxLayout();
+    QVBoxLayout* presetLayout = new QVBoxLayout();
 
     presetLayout->addWidget(presetLabel);
     presetLayout->addWidget(presetComboBox);
@@ -290,8 +290,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     lifeTimeLine = new TimeLineWidget(this);
     InitWidget(lifeTimeLine);
     numberTimeLine = new TimeLineWidget(this);
-	InitWidget(numberTimeLine);
-	sizeTimeLine = new TimeLineWidget(this);
+    InitWidget(numberTimeLine);
+    sizeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeTimeLine);
 	sizeVariationTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeVariationTimeLine);
@@ -659,12 +659,12 @@ void EmitterLayerWidget::OnValueChanged()
 
     int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
-	if (xFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
-	if (yFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
-	if (zFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
+    if (xFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
+    if (yFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
+    if (zFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
 	if (worldAlignCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
@@ -720,7 +720,7 @@ void EmitterLayerWidget::OnValueChanged()
 
     DVASSERT(activeScene);
     activeScene->Exec(updateLayerCmd);
-	activeScene->MarkAsChanged();
+    activeScene->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
@@ -1113,13 +1113,13 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     fogCheckBox->setVisible(!isSuperemitter);
     frameBlendingCheckBox->setVisible(!isSuperemitter);
 
-	// Some controls are however specific for this mode only - display and update them.
-	innerEmitterLabel->setVisible(isSuperemitter);
-	innerEmitterPathLabel->setVisible(isSuperemitter);
-	
-	if (isSuperemitter && this->layer->innerEmitter)
-	{
-		innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
+    // Some controls are however specific for this mode only - display and update them.
+    innerEmitterLabel->setVisible(isSuperemitter);
+    innerEmitterPathLabel->setVisible(isSuperemitter);
+
+    if (isSuperemitter && this->layer->innerEmitter)
+    {
+        innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
 	}
 }
 

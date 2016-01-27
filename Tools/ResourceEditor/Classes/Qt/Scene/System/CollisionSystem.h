@@ -79,8 +79,8 @@ public:
     const EntityGroup::EntityVector& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
     const EntityGroup::EntityVector& ObjectsRayTestFromCamera();
 
-    bool LandRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to, DAVA::Vector3& intersectionPoint);
-	bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
+    bool LandRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to, DAVA::Vector3& intersectionPoint);
+    bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
 
 	DAVA::Landscape* GetLandscape() const;
 
@@ -95,7 +95,7 @@ public:
 private:
     void Draw();
 
-	void ProcessCommand(const Command2 *command, bool redo);
+    void ProcessCommand(const Command2 *command, bool redo);
 
     virtual void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
 	virtual void AddEntity(DAVA::Entity * entity);
@@ -105,7 +105,7 @@ private:
 
 private:
     DAVA::Vector3 lastRayFrom;
-	DAVA::Vector3 lastRayTo;
+    DAVA::Vector3 lastRayTo;
 	DAVA::Vector2 lastMousePos;
 	DAVA::Vector3 lastLandRayFrom;
 	DAVA::Vector3 lastLandRayTo;

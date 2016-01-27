@@ -128,9 +128,9 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
 
         // if current variant value not equal to the real member value
         // we should update current variant value
-        if(v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
-		{
-			QtPropertyDataDavaVariant::SetVariantValue(v);
+        if (v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
+        {
+            QtPropertyDataDavaVariant::SetVariantValue(v);
 			ret = true;
 		}
 	}

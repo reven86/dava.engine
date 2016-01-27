@@ -367,8 +367,8 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
                 QColor c = gpuInfoColors[i];
 
                 painter->setPen(Qt::NoPen);
-				painter->setBrush(c);
-				painter->drawRect(r);
+                painter->setBrush(c);
+                painter->drawRect(r);
 			}
 
 			r.moveLeft(r.x() - FORMAT_INFO_SPACING);

@@ -143,7 +143,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
     modifSystem->SetLocked(true);
 
     landscapeSize = drawSystem->GetTextureSize(textureLevel);
-	copyPasteFrom = Vector2(-1.f, -1.f);
+    copyPasteFrom = Vector2(-1.f, -1.f);
 
     drawSystem->EnableCursor();
     drawSystem->EnableCustomDraw();
@@ -226,7 +226,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
             AddRectToAccumulator(toolRect);
         }
-	}
+    }
 }
 
 void TilemaskEditorSystem::Input(UIEvent* event)
@@ -246,9 +246,9 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape && !needCreateUndo)
-                {
-					if (drawingType == TILEMASK_DRAW_COPY_PASTE)
-					{
+            {
+                if (drawingType == TILEMASK_DRAW_COPY_PASTE)
+                    {
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
 						if (curKeyModifiers & Qt::AltModifier)
 						{
@@ -256,8 +256,8 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                             copyPasteOffset = Vector2();
                             return;
                         }
-						else
-						{
+                        else
+                        {
 							if (copyPasteFrom == Vector2(-1.f, -1.f))
 							{
 								return;
@@ -266,8 +266,8 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                         }
                     }
 
-					ResetAccumulatorRect();
-					editingIsEnabled = true;
+                    ResetAccumulatorRect();
+                    editingIsEnabled = true;
 					activeDrawingType = drawingType;
 				}
 				break;
@@ -277,9 +277,9 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 
         case UIEvent::Phase::ENDED:
             FinishEditing();
-                break;
-		}
-	}
+            break;
+        }
+    }
 }
 
 void TilemaskEditorSystem::FinishEditing()
@@ -440,7 +440,7 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
 
     if (curColor != color)
     {
-		SceneEditor2* scene = (SceneEditor2*)(GetScene());
+        SceneEditor2* scene = (SceneEditor2*)(GetScene());
         scene->Exec(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
     }
 }

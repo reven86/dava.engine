@@ -854,8 +854,8 @@ void TextureBrowser::textureZoomFit(bool checked)
             if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
             {
                 QSize size = ui->textureAreaOriginal->getContentSize();
-				w = size.width();
-				h = size.height();
+                w = size.width();
+                h = size.height();
 			}
 			else
 			{

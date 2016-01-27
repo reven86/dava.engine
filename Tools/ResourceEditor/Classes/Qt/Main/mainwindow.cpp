@@ -43,6 +43,7 @@
 #include "Project/ProjectManager.h"
 #include "Scene/SceneHelper.h"
 #include "Scene/LandscapeThumbnails.h"
+#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "SpritesPacker/SpritePackerHelper.h"
 
 #include "TextureBrowser/TextureBrowser.h"
@@ -84,7 +85,6 @@
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 #include "Classes/Commands2/RulerToolActions.h"
 #include "Classes/Commands2/TilemaskEditorCommands.h"
-#include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
 
@@ -670,6 +670,7 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
     CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
 
     QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
@@ -776,6 +777,11 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
+    QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(toggled(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
+
+    QObject::connect(ui->actionRefreshVisibilitySystem, SIGNAL(triggered()), this, SLOT(OnRefreshVisibilitySystem()));
+    QObject::connect(ui->actionFixCurrentFrame, SIGNAL(triggered()), this, SLOT(OnFixVisibilityFrame()));
+    QObject::connect(ui->actionReleaseCurrentFrame, SIGNAL(triggered()), this, SLOT(OnReleaseVisibilityFrame()));
 
     QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
     
@@ -809,11 +815,11 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionCubemapEditor, SIGNAL(triggered()), this, SLOT(OnCubemapEditor()));
     QObject::connect(ui->actionImageSplitter, SIGNAL(triggered()), this, SLOT(OnImageSplitter()));
 
-	QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
-	QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
+    QObject::connect(ui->actionForceFirstLODonLandscape, SIGNAL(triggered(bool)), this, SLOT(OnForceFirstLod(bool)));
+    QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
+    QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
 	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
 	QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
-	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
 
@@ -856,7 +862,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
 
 	//Landscape editors toggled
-	QObject::connect(SceneSignals::Instance(), SIGNAL(VisibilityToolToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(HeightmapEditorToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(TilemaskEditorToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
@@ -1049,9 +1054,10 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionVisibilityCheckTool->setEnabled(enable);
 	ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionWayEditor->setEnabled(enable);
+    ui->actionForceFirstLODonLandscape->setEnabled(enable);
 
-	ui->actionEnableCameraLight->setEnabled(enable);
-	ui->actionReloadTextures->setEnabled(enable);
+    ui->actionEnableCameraLight->setEnabled(enable);
+    ui->actionReloadTextures->setEnabled(enable);
 	ui->actionReloadSprites->setEnabled(enable);
     ui->actionSetLightViewMode->setEnabled(enable);
 
@@ -1438,6 +1444,31 @@ void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 {
     Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
+}
+
+void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
+{
+    Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
+    if (enabled)
+    {
+        ui->actionForceFirstLODonLandscape->setChecked(true);
+        OnForceFirstLod(true);
+    }
+}
+
+void QtMainWindow::OnRefreshVisibilitySystem()
+{
+    GetCurrentScene()->visibilityCheckSystem->Recalculate();
+}
+
+void QtMainWindow::OnFixVisibilityFrame()
+{
+    GetCurrentScene()->visibilityCheckSystem->FixCurrentFrame();
+}
+
+void QtMainWindow::OnReleaseVisibilityFrame()
+{
+    GetCurrentScene()->visibilityCheckSystem->ReleaseFixedFrame();
 }
 
 void QtMainWindow::OnEnableDisableShadows(bool enable)
@@ -2048,9 +2079,9 @@ void QtMainWindow::OnSaveTiledTexture()
     if (!IsSavingAllowed() || (nullptr == scene))
     {
         return;
-	}
+    }
 
-	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
+    LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
 	if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
@@ -2269,30 +2300,35 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 
 	UpdateConflictingActionsState(tools == 0);
 
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
-	{
+    bool shouldEnableFirstLod = false;
+    if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
 		ui->actionCustomColorsEditor->setChecked(true);
-	}
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+        shouldEnableFirstLod = true;
+    }
+    if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
 	{
 		ui->actionHeightMapEditor->setChecked(true);
-	}
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
+        shouldEnableFirstLod = true;
+    }
+    if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
 	{
 		ui->actionRulerTool->setChecked(true);
-	}
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
+        shouldEnableFirstLod = true;
+    }
+    if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
 	{
 		ui->actionTileMapEditor->setChecked(true);
-	}
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_VISIBILITY)
-	{
-		ui->actionVisibilityCheckTool->setChecked(true);
-	}
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+        shouldEnableFirstLod = true;
+    }
+    if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
 	{
 		ui->actionShowNotPassableLandscape->setChecked(true);
-	}
+        shouldEnableFirstLod = true;
+    }
+
+    ui->actionForceFirstLODonLandscape->setChecked(shouldEnableFirstLod);
+    OnForceFirstLod(shouldEnableFirstLod);
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -2467,36 +2503,24 @@ void QtMainWindow::OnTilemaskEditor()
 	}
 }
 
-void QtMainWindow::OnVisibilityTool()
+void QtMainWindow::OnForceFirstLod(bool enabled)
 {
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if (!sceneEditor)
-	{
-		return;
-	}
-    
-	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
-	{
-		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
-	}
-	else
-	{
-        if (sceneEditor->pathSystem->IsPathEditEnabled())
-        {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
-            OnLandscapeEditorToggled(sceneEditor);
-            return;
-        }
+    auto scene = GetCurrentScene();
+    if (scene == nullptr)
+    {
+        ui->actionForceFirstLODonLandscape->setChecked(false);
+        return;
+    }
 
-        if (LoadAppropriateTextureFormat())
-		{
-			sceneEditor->Exec(new ActionEnableVisibilityTool(sceneEditor));
-		}
-		else
-		{
-			OnLandscapeEditorToggled(sceneEditor);
-		}
-	}
+    auto landscape = FindLandscape(scene);
+    if (landscape == nullptr)
+    {
+        ui->actionForceFirstLODonLandscape->setChecked(false);
+        return;
+    }
+
+    landscape->SetForceFirstLod(enabled);
+    scene->visibilityCheckSystem->Recalculate();
 }
 
 void QtMainWindow::OnNotPassableTerrain()
@@ -3021,19 +3045,25 @@ void QtMainWindow::OnReloadShaders()
         }
 
         sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
-
         sceneEditor->renderSystem->SetForceUpdateLights();
+
+        sceneEditor->visibilityCheckSystem->InvalidateMaterials();
     }
 
 #define INVALIDATE_2D_MATERIAL(material) \
     if (RenderSystem2D::material)        \
-        RenderSystem2D::material->InvalidateRenderVariants();
+	{ \
+        RenderSystem2D::material->InvalidateRenderVariants(); \
+		RenderSystem2D::material->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME); \
+	}
 
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL)
 
 #undef INVALIDATE_2D_MATERIAL
 }
