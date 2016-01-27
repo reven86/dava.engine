@@ -104,10 +104,10 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     // let textures list show images-view by default
     ui->actionViewImagesList->trigger();
 
-	// let textures view show border by default
-	// ui->actionShowBorder->trigger();
+    // let textures view show border by default
+    // ui->actionShowBorder->trigger();
 
-	// set initial empty texture
+    // set initial empty texture
 	setTexture(curTexture, curDescriptor);
     setTextureView(curTextureView, getConvertMode());
 

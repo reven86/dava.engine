@@ -461,8 +461,8 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             contextMenu.addAction(SharedIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
 
             // look from
-            if(NULL != camera)
-			{
+            if (NULL != camera)
+            {
                 AddCameraActions(contextMenu);
 			}
 
@@ -479,7 +479,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             QAction* unlockAction = contextMenu.addAction(SharedIcon(":/QtIcons/lock_delete.png"), "Unlock", QtMainWindow::Instance(), SLOT(OnUnlockTransform()));
             if (entity->GetLocked())
             {
- 				lockAction->setDisabled(true);
+                lockAction->setDisabled(true);
  			}
  			else
  			{
@@ -492,8 +492,8 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             contextMenu.addAction(SharedIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
 
             DAVA::KeyedArchive* customProp = GetCustomPropertiesArchieve(entity);
-            if(NULL != customProp)
-			{
+            if (NULL != customProp)
+            {
 				DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 				if(!ownerRef.IsEmpty())
 				{
@@ -524,14 +524,14 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
                 particleEffectMenu->addAction(SharedIcon(":/QtIcons/restart.png"), "Restart", this, SLOT(RestartEffect()));
             }
 
-            if(selectionSize == 1)
-			{
+            if (selectionSize == 1)
+            {
 				contextMenu.addSeparator();
                 contextMenu.addAction(SharedIcon(":/QtIconsTextureDialog/filter.png"), "Set name as filter", this, SLOT(SetEntityNameAsFilter()));
             }
         }
 
-		contextMenu.exec(pos);
+        contextMenu.exec(pos);
 	}
 }
 
@@ -604,7 +604,7 @@ void SceneTree::LookAtSelection()
         if (!selection.IsEmpty())
         {
             sceneEditor->cameraSystem->LookAt(selection.GetCommonBbox());
-		}
+        }
 	}
 }
 
@@ -952,7 +952,7 @@ void SceneTree::SyncSelectionFromTree()
 
             curScene->selectionSystem->SetSelection(group);
 
-			// force selection system emit signals about new selection
+            // force selection system emit signals about new selection
 			// this should be done until we are inSync mode, to prevent unnecessary updates
 			// when signals from selection system will be emitted on next frame
 			curScene->selectionSystem->ForceEmitSignals();
@@ -1079,7 +1079,7 @@ void SceneTree::StartEffect()
                 sceneEditor->Exec(command);
             }
         }
-	}
+    }
 }
 
 void SceneTree::StopEffect()
@@ -1098,7 +1098,7 @@ void SceneTree::StopEffect()
                 sceneEditor->Exec(command);
             }
         }
-	}
+    }
 }
 
 void SceneTree::RestartEffect()
@@ -1117,7 +1117,7 @@ void SceneTree::RestartEffect()
                 sceneEditor->Exec(command);
             }
         }
-	}
+    }
 }
 
 void SceneTree::RemoveEmitter()
@@ -1474,7 +1474,7 @@ void SceneTree::SetCurrentCamera()
         if (NULL != camera)
         {
             sceneEditor->SetCurrentCamera(camera);
-		}
+        }
 	}
 }
 
@@ -1487,7 +1487,7 @@ void SceneTree::SetCustomDrawCamera()
         if (NULL != camera)
         {
             sceneEditor->SetCustomDrawCamera(camera);
-		}
+        }
 	}
 }
 

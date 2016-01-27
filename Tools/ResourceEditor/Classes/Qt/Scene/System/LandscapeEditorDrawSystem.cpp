@@ -639,7 +639,7 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
             break;
         case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
-			break;
+            break;
         case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
             break;
@@ -648,7 +648,7 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
             DVASSERT(false && "Unknown error");
             break;
         }
-    return ret;
+        return ret;
 }
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)

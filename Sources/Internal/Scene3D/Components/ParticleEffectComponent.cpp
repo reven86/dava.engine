@@ -298,8 +298,8 @@ void ParticleEffectComponent::RebuildEffectModifiables()
     for (List<ModifiablePropertyLineBase *>::iterator it = modifiables.begin(), e = modifiables.end(); it != e; ++it)
     {
         externalModifiables.insert(std::make_pair((*it)->GetValueName(), (*it)));
-		Map<String, float32>::iterator itName = externalValues.find((*it)->GetValueName());
-		if (itName!=externalValues.end())
+        Map<String, float32>::iterator itName = externalValues.find((*it)->GetValueName());
+        if (itName!=externalValues.end())
 			(*it)->SetModifier((*itName).second);
 	}	
 }
@@ -336,7 +336,7 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
         emitterArch->Release();
     }
     archive->SetArchive("pe.emitters", emittersArch);
-    
+
     archive->SetUInt32("ro.flags", effectRenderObject->GetFlags() & PARTICLE_FLAGS_SERIALIZATION_CRITERIA);
 	emittersArch->Release();
 }
@@ -430,8 +430,8 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
         {
             LodComponent* lodComponent = static_cast<LodComponent*>(child->GetComponent(Component::LOD_COMPONENT));
             if (lodComponent)
-			{
-				entity->AddComponent(lodComponent->Clone(entity));
+            {
+                entity->AddComponent(lodComponent->Clone(entity));
 				lodDefined = true;
 			}
 		}

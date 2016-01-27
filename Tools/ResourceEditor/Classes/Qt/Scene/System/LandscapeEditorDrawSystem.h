@@ -63,8 +63,8 @@ public:
     virtual ~LandscapeEditorDrawSystem();
 
     LandscapeProxy* GetLandscapeProxy();
-	HeightmapProxy* GetHeightmapProxy();
-	CustomColorsProxy* GetCustomColorsProxy();
+    HeightmapProxy* GetHeightmapProxy();
+    CustomColorsProxy* GetCustomColorsProxy();
 	RulerToolProxy* GetRulerToolProxy();
 
 	eErrorType EnableCustomDraw();

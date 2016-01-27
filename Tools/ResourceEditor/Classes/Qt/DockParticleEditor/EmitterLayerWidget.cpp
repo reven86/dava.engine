@@ -197,8 +197,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addLayout(innerEmitterLayout);
 
     QVBoxLayout* pivotPointLayout = new QVBoxLayout();
-	pivotPointLabel = new QLabel("Pivot Point", this);
-	pivotPointLayout->addWidget(pivotPointLabel);
+    pivotPointLabel = new QLabel("Pivot Point", this);
+    pivotPointLayout->addWidget(pivotPointLabel);
 	QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
 
 	pivotPointXSpinBoxLabel = new QLabel("X:", this);
@@ -1085,8 +1085,8 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 
     frameOverlifeCheckBox->setVisible(!isSuperemitter);
     frameOverlifeFPSSpin->setVisible(!isSuperemitter);
-	frameOverlifeFPSLabel->setVisible(!isSuperemitter);
-	randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
+    frameOverlifeFPSLabel->setVisible(!isSuperemitter);
+    randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
 	loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
 	animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
 
