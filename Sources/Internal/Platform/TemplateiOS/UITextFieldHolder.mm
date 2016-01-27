@@ -166,7 +166,8 @@
             if((range.location + range.length) > maxLength)
             {
                 range.length = maxLength - range.location;
-                if (range.length == 0) {
+                if (range.length == 0)
+                {
                     return false;
                 }
                 NSString* currentText =[textCtrl valueForKey:@"text"];
