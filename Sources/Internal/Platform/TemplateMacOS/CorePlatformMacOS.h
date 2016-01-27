@@ -50,7 +50,6 @@ public:
     //  - when true - application/window has been hidden/minimized
     //  - when false - application/window has been unhidden/restored
     Signal<bool> signalAppMinimizedRestored;
-    virtual Vector2 GetMousePosition();
 
     void SetWindowMinimumSize(float32 width, float32 height) override;
     Vector2 GetWindowMinimumSize() const override;
