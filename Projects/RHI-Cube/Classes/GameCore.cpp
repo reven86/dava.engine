@@ -784,6 +784,9 @@ void GameCore::OnAppStarted()
     //    SetupTank();
     SetupRT();
 
+    perfQuerySet = rhi::CreatePerfQuerySet(16);
+    perfQuerySetFired = false;
+
     //    sceneRenderTest.reset(new SceneRenderTestV3());
 
     /*
@@ -1254,6 +1257,36 @@ void GameCore::manticoreDraw()
     rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 1, pl);
     #endif
 
+    if (perfQuerySetFired)
+    {
+        bool ready = false;
+        bool valid = false;
+
+        rhi::GetPerfQuerySetStatus(perfQuerySet, &ready, &valid);
+
+        if (ready && valid)
+        {
+            uint64 freq = 0;
+            uint64 t0, t1;
+
+            rhi::GetPerfQuerySetFreq(perfQuerySet, &freq);
+            //            Logger::Info("perf-query:  freq= %u",uint32(freq));
+
+            rhi::GetPerfQuerySetFrameTimestamps(perfQuerySet, &t0, &t1);
+
+            Logger::Info("GPU frame = %.3f ms", float(t1 - t0) / float(freq / 1000));
+
+            perfQuerySetFired = false;
+        }
+    }
+
+    if (!perfQuerySetFired)
+    {
+        rhi::ResetPerfQuerySet(perfQuerySet);
+        rhi::SetFramePerfQuerySet(perfQuerySet);
+        perfQuerySetFired = true;
+    }
+
     rhi::RenderPass::Begin(pass);
     rhi::BeginPacketList(pl[0]);
 
@@ -1322,7 +1355,7 @@ void GameCore::manticoreDraw()
 
     #if USE_SECOND_CB
     {
-        packet.options |= rhi::Packet::OPT_WIREFRAME;
+        //        packet.options |= rhi::Packet::OPT_WIREFRAME;
         const unsigned row_cnt = 200;
         const unsigned col_cnt = 12;
         //const unsigned  row_cnt = 1;

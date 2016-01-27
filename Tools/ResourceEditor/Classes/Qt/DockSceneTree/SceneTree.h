@@ -126,7 +126,7 @@ private:
 	QString GetParticlesConfigPath();
 	
 	// Perform save for selected Emitters.
-	void PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, const QString& defaultName);
+    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName);
 
     void PerformSaveEffectEmitters(bool forceAskFileName);
 
@@ -150,8 +150,8 @@ private:
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
-    ParticleEffectComponent *selectedEffect;
-	ParticleEmitter *selectedEmitter;
+    ParticleEffectComponent* selectedEffect;
+    ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
 	ParticleForce* selectedForce;
 
