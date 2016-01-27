@@ -129,8 +129,8 @@ void TimeMeasure::Dump(FunctionMeasure * function, uint32 level)
                     Dump(function, level + 1);
             }
         }
-	}
-	else
+    }
+    else
     {
         Logger::Info("%s %s %0.9llf seconds", GetIndentString('-', level + 1).c_str(), function->name.c_str(), (double)function->timeSpent / 1e+9);
         for (auto childFunction : function->children)

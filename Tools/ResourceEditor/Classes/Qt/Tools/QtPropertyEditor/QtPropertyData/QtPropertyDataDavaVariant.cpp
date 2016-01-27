@@ -461,7 +461,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
             colorBtn->setIcon(SharedIcon(":/QtIcons/color.png"));
             colorBtn->setIconSize(QSize(12, 12));
-			colorBtn->setAutoRaise(true);
+            colorBtn->setAutoRaise(true);
             colorBtn->setObjectName("colorButton");
             connections.AddConnection(colorBtn, &QToolButton::clicked, [this]()
             {

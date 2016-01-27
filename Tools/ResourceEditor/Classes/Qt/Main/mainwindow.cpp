@@ -1666,9 +1666,9 @@ void QtMainWindow::OnTextureBrowser()
         selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
     }
 
-	TextureBrowser::Instance()->show();
-	TextureBrowser::Instance()->sceneActivated(sceneEditor);
-	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr); 
+    TextureBrowser::Instance()->show();
+    TextureBrowser::Instance()->sceneActivated(sceneEditor);
+    TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr); 
 }
 
 void QtMainWindow::OnSceneLightMode()

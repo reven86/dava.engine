@@ -887,12 +887,12 @@ void SceneTree::SyncSelectionToTree()
     if (toSelect.empty())
         return;
 
-    QItemSelectionModel * selectModel = selectionModel();
+    QItemSelectionModel* selectModel = selectionModel();
     selectModel->clear();
 
-    for (TSelectionMap::value_type & selectionNode : toSelect)
+    for (TSelectionMap::value_type& selectionNode : toSelect)
     {
-        DAVA::Vector<QModelIndex> & indexes = selectionNode.second;
+        DAVA::Vector<QModelIndex>& indexes = selectionNode.second;
         sort(indexes.begin(), indexes.end(), [](const QModelIndex& left, const QModelIndex& right) {
             DVASSERT(left.parent() == right.parent());
             return left.row() < right.row();

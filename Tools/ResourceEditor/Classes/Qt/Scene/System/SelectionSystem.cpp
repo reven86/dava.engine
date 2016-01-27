@@ -279,7 +279,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
             lastGroupSelection.Clear();
             PerformSelectionAtPoint(selectionStartPoint);
         }
-	}
+    }
     else if (selecting && (DAVA::UIEvent::Phase::DRAG == event->phase))
     {
         selectionEndPoint = event->point;
@@ -402,8 +402,8 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
         {
             if (IsEntitySelectable(item.first) && !curSelections.ContainsEntity(item.first))
             {
-            curSelections.Add(item.first, item.second);
-            selectionHasChanges = true;
+                curSelections.Add(item.first, item.second);
+                selectionHasChanges = true;
             }
         }
 
@@ -441,9 +441,9 @@ void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
         {
             if (IsEntitySelectable(item.first) && !curSelections.ContainsEntity(item.first))
             {
-            curSelections.Add(item.first, GetSelectionAABox(item.first));
-            selectionHasChanges = true;
-            invalidSelectionBoxes = true;
+                curSelections.Add(item.first, GetSelectionAABox(item.first));
+                selectionHasChanges = true;
+                invalidSelectionBoxes = true;
             }
         }
         UpdateHoodPos();
@@ -623,8 +623,8 @@ void SceneSelectionSystem::UpdateHoodPos() const
             break;
         }
 
-		// check if we have locked entities in selection group
-		// if so - lock modification hood
+        // check if we have locked entities in selection group
+        // if so - lock modification hood
         for (const auto& item : curSelections.GetContent())
         {
             if (item.first->GetLocked())

@@ -300,9 +300,9 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
             DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(item.first);
             if (props != nullptr)
             {
-				DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-				if(!pathToReload.IsEmpty())
-				{
+                DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+                if (!pathToReload.IsEmpty())
+                {
 					refsToReload.insert(pathToReload);
 				}
 			}

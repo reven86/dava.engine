@@ -87,16 +87,16 @@ SceneCollisionSystem::~SceneCollisionSystem()
 {
     if (GetScene())
     {
-		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-	}
+        GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    }
 
     for (const auto& etc : entityToCollision)
     {
         delete etc.second;
     }
 
-	DAVA::SafeDelete(objectsCollWorld);
-	DAVA::SafeDelete(objectsBroadphase);
+    DAVA::SafeDelete(objectsCollWorld);
+    DAVA::SafeDelete(objectsBroadphase);
     DAVA::SafeDelete(objectsDebugDrawer);
 	DAVA::SafeDelete(objectsCollConf);
 
@@ -127,16 +127,16 @@ const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTest(const DAVA
         return rayIntersectedEntities;
     }
 
-	// no cache. start ray new ray test
-	lastRayFrom = from;
-	lastRayTo = to;
+    // no cache. start ray new ray test
+    lastRayFrom = from;
+    lastRayTo = to;
     rayIntersectedEntities.clear();
 
     btVector3 btFrom(from.x, from.y, from.z);
-	btVector3 btTo(to.x, to.y, to.z);
+    btVector3 btTo(to.x, to.y, to.z);
 
-	btCollisionWorld::AllHitsRayResultCallback btCallback(btFrom, btTo);
-	objectsCollWorld->rayTest(btFrom, btTo, btCallback);
+    btCollisionWorld::AllHitsRayResultCallback btCallback(btFrom, btTo);
+    objectsCollWorld->rayTest(btFrom, btTo, btCallback);
 
     int collidedObjects = btCallback.m_collisionObjects.size();
     if (btCallback.hasHit() && (collidedObjects > 0))
@@ -159,9 +159,9 @@ const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTest(const DAVA
             auto entity = collisionToEntity[hit.first];
             rayIntersectedEntities.emplace_back(entity, GetBoundingBox(entity));
         }
-	}
+    }
 
-	rayIntersectCached = true;
+    rayIntersectCached = true;
     return rayIntersectedEntities;
 }
 
@@ -364,15 +364,15 @@ void SceneCollisionSystem::Draw()
                 CollisionBaseObject* cObj = entityToCollision[item.first];
 
                 // if no collision object for solid selected entity,
-				// try to get collision object for real selected entity
-				if(NULL == cObj)
-				{
+                // try to get collision object for real selected entity
+                if (NULL == cObj)
+                {
                     cObj = entityToCollision[item.first];
                 }
 
-				if(NULL != cObj && NULL != cObj->btObject)
-				{
-					objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));
+                if (NULL != cObj && NULL != cObj->btObject)
+                {
+                    objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));
 				}
 			}
 		}
@@ -488,20 +488,20 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 
     bool isLandscape = false;
 
-    DAVA::Landscape *landscape = DAVA::GetLandscape(entity);
+    DAVA::Landscape* landscape = DAVA::GetLandscape(entity);
     if (landscape != nullptr)
     {
-		isLandscape = true;
+        isLandscape = true;
         cObj = new CollisionLandscape(entity, landCollWorld, landscape);
     }
 
-	DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
+    DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
     if ((cObj == nullptr) && (particleEffect != nullptr))
     {
         cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxParticleScale);
     }
 
-	DAVA::RenderObject *renderObject = DAVA::GetRenderObject(entity);
+    DAVA::RenderObject* renderObject = DAVA::GetRenderObject(entity);
     if ((cObj == nullptr) && (renderObject != nullptr) && entity->IsLodMain(0))
     {
         RenderObject::eType objType = renderObject->GetType();
@@ -517,7 +517,7 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
         cObj = new CollisionBox(entity, objectsCollWorld, camera->GetPosition(), debugBoxScale);
     }
 
-	// build simple collision box for all other entities, that has more than two components
+    // build simple collision box for all other entities, that has more than two components
     if ((cObj == nullptr) && (entity != nullptr))
     {
         if ((entity->GetComponent(DAVA::Component::SOUND_COMPONENT) != nullptr) ||
@@ -540,19 +540,19 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
     {
         if (entityToCollision.count(entity) > 0)
         {
-			DestroyFromEntity(entity);
-		}
+            DestroyFromEntity(entity);
+        }
 
-		entityToCollision[entity] = cObj;
+        entityToCollision[entity] = cObj;
 		collisionToEntity[cObj->btObject] = entity;
 	}
 
     if (isLandscape)
     {
-		curLandscapeEntity = entity;
-	}
+        curLandscapeEntity = entity;
+    }
 
-	return cObj;
+    return cObj;
 }
 
 void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)

@@ -121,8 +121,7 @@ public:
     const QIcon& ItemIcon() const override;
 
     DAVA::ParticleEffectComponent* effect;
-    DAVA::ParticleEmitter *emitter;
-	
+    DAVA::ParticleEmitter* emitter;
 };
 
 class SceneTreeItemParticleLayer : public SceneTreeItem
@@ -139,9 +138,9 @@ public:
     const QIcon& ItemIcon() const override;
 
     DAVA::ParticleEffectComponent* effect;
-    DAVA::ParticleEmitter *emitter;
-	DAVA::ParticleLayer *layer;
-	bool hasInnerEmmiter;
+    DAVA::ParticleEmitter* emitter;
+    DAVA::ParticleLayer* layer;
+    bool hasInnerEmmiter;
 };
 
 class SceneTreeItemParticleForce : public SceneTreeItem
@@ -157,7 +156,7 @@ public:
     const QIcon& ItemIcon() const override;
 
     DAVA::ParticleLayer* layer;
-    DAVA::ParticleForce *force;
+    DAVA::ParticleForce* force;
 };
 
 class SceneTreeItemParticleInnerEmitter : public SceneTreeItemParticleEmitter

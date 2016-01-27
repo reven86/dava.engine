@@ -35,12 +35,12 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
 {
     if ((landscape != nullptr) && (word != nullptr))
     {
-		DAVA::Heightmap *heightmap = landscape->GetHeightmap();
+        DAVA::Heightmap* heightmap = landscape->GetHeightmap();
         if ((heightmap != nullptr) && (heightmap->Size() > 0))
         {
-			DAVA::Vector3 landSize;
-			DAVA::AABBox3 landBox = landscape->GetBoundingBox();
-			landSize = landBox.max - landBox.min;
+            DAVA::Vector3 landSize;
+            DAVA::AABBox3 landBox = landscape->GetBoundingBox();
+            landSize = landBox.max - landBox.min;
 
 			DAVA::float32 landWidth = landSize.x;
 			DAVA::float32 landScaleW = landWidth / heightmap->Size();
@@ -52,9 +52,9 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
 
             for (DAVA::int32 y = 0; y < heightmap->Size(); ++y)
             {
-				for (DAVA::int32 x = 0; x < heightmap->Size(); ++x)
-				{
-					DAVA::int32 heightIndex = x + y * heightmap->Size();
+                for (DAVA::int32 x = 0; x < heightmap->Size(); ++x)
+                {
+                    DAVA::int32 heightIndex = x + y * heightmap->Size();
 					btHMap[heightIndex] = heightData[heightIndex] * landScaleH;
 				}
 			}
@@ -66,9 +66,9 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
             btTerrain = new btHeightfieldTerrainShape(heightmap->Size(), heightmap->Size(), &btHMap.front(), landScaleH, 0, landHeight, 2, PHY_FLOAT, true);
             btTerrain->setLocalScaling(btVector3(landScaleW, landScaleW, 1.0f));
             btObject = new btCollisionObject();
-			btObject->setWorldTransform(landTransform);
-			btObject->setCollisionShape(btTerrain);
-			btWord->addCollisionObject(btObject);
+            btObject->setWorldTransform(landTransform);
+            btObject->setCollisionShape(btTerrain);
+            btWord->addCollisionObject(btObject);
 
 			boundingBox = landBox;
 		}

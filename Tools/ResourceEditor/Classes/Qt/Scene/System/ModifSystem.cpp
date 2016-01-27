@@ -141,13 +141,13 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
             {
                 sceneEditor->Exec(new TransformCommand(item.first, item.first->GetLocalTransform(), zeroTransform));
             }
-		}
+        }
 
         if (isMultiple)
         {
-			sceneEditor->EndBatch();
-		}
-	}
+            sceneEditor->EndBatch();
+        }
+    }
 }
 
 bool EntityModificationSystem::InModifState() const
@@ -273,9 +273,9 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     selectionSystem->CancelSelection();
 
                     // lock hood, so it wont process ui events, wont calc. scale depending on it current position
-					hoodSystem->LockScale(true);
-					hoodSystem->SetModifOffset(moveOffset);
-					hoodSystem->SetModifRotate(rotateAngle);
+                    hoodSystem->LockScale(true);
+                    hoodSystem->SetModifOffset(moveOffset);
+                    hoodSystem->SetModifRotate(rotateAngle);
 					hoodSystem->SetModifScale(scaleForce);
 				}
 			}
@@ -341,10 +341,10 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
         for (const auto& item : entitiesContent)
         {
             DAVA::Entity* en = item.first;
-            if(NULL != en)
-			{
-				EntityToModify etm;
-				etm.entity = en;
+            if (NULL != en)
+            {
+                EntityToModify etm;
+                etm.entity = en;
 				etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
 				etm.originalTransform = en->GetLocalTransform();
 				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
@@ -447,16 +447,16 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
 
     if (!selectedEntities.IsEmpty())
     {
-		bool hasLocked = false;
+        bool hasLocked = false;
 
-		// check if we have some locked items in selection
+        // check if we have some locked items in selection
         for (const auto& item : selectedEntities.GetContent())
         {
             if (item.first->GetLocked())
             {
-				hasLocked = true;
-				break;
-			}
+                hasLocked = true;
+                break;
+            }
 		}
 
         modifCanStart = !hasLocked;
@@ -487,7 +487,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
             const EntityGroup::EntityVector& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 
             // check if one of got collision objects is intersected with selected items
-			// if so - we can start modification
+            // if so - we can start modification
             if (!collisionEntities.empty())
             {
                 for (const auto& collisionItem : collisionEntities)
@@ -496,8 +496,8 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
                     {
                         if (selectedItem.first == collisionItem.first)
                         {
-							modifCanStart = true;
-						}
+                            modifCanStart = true;
+                        }
                         else if (selectedItem.first->GetSolid())
                         {
                             modifCanStart = IsEntityContainRecursive(selectedItem.first, collisionItem.first);
@@ -507,16 +507,16 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
                         {
                             break;
                         }
-					}
+                    }
 
                     if (modifCanStart)
                     {
                         break;
                     }
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 
 	return modifCanStart;
 }

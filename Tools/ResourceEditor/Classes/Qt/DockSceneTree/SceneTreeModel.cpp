@@ -147,26 +147,26 @@ bool SceneTreeModel::GetLocked(const QModelIndex &index) const
 QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
 {
     QVector<QIcon> ret;
-	SceneTreeItem *item = GetItem(index);
+    SceneTreeItem* item = GetItem(index);
 
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
-	if(NULL != entity)
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
+    if(NULL != entity)
 	{
 		if(entity->GetLocked())
 		{
             ret.push_back(SharedIcon(":/QtIcons/locked.png"));
         }
 
-        if(NULL != GetCamera(entity))
-		{
-			if(curScene->GetCurrentCamera() == GetCamera(entity))
-			{
+        if (NULL != GetCamera(entity))
+        {
+            if (curScene->GetCurrentCamera() == GetCamera(entity))
+            {
                 ret.push_back(SharedIcon(":/QtIcons/eye.png"));
             }
         }
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
 int SceneTreeModel::GetCustomFlags(const QModelIndex &index) const
@@ -349,9 +349,9 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
                     entityGroup.Add((DAVA::Entity*)entitiesV[i], DAVA::AABBox3());
                 }
 
-				curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
-				ret = true;
-			}
+                curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
+                ret = true;
+            }
 		}
 		break;
 

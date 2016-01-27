@@ -565,9 +565,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
             break;
         }
         default:
-		{
-			if (keyPress.keyChar == 0)
-			{
+        {
+            if (keyPress.keyChar == 0)
+            {
 				break;
 			}
 			WideString str;
@@ -577,9 +577,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
                 uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
             }
             break;
-		}
-		}
-	}
+        }
+        }
+    }
 
 	String AutotestingSystemLua::GetText(UIControl *control)
 	{

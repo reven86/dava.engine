@@ -64,10 +64,12 @@ public:
     CollisionBaseObject(DAVA::Entity* ent, btCollisionWorld* word)
         : entity(ent)
         , btWord(word)
-    { }
+    {
+    }
 
-	virtual ~CollisionBaseObject()
-	{ }
+    virtual ~CollisionBaseObject()
+    {
+    }
 
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
     virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;
@@ -75,10 +77,10 @@ public:
     inline CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
     inline DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
 
-    DAVA::Entity *entity;
-	DAVA::AABBox3 boundingBox;
+    DAVA::Entity* entity;
+    DAVA::AABBox3 boundingBox;
     btCollisionObject* btObject = nullptr;
-    btCollisionWorld *btWord;
+    btCollisionWorld* btWord;
 };
 
 CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const

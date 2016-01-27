@@ -101,8 +101,8 @@ public:
 	
 	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
 
-    int32 GetViewWidth() const { return width; };
-    int32 GetViewHeight() const { return height; };
+    int32 GetViewWidth() const;
+    int32 GetViewHeight() const;
 
     void SetNativeWindow(void* nativeWindow);
 
@@ -111,13 +111,11 @@ private:
 	void QuitAction();
 	void ProcessWithoutDrawing();
 
-	void UpdateScreenMode();
-
-    void ProcessResizeView();
+    void ApplyPendingViewSize();
 
 private:
-    int32 width = 0;
-    int32 height = 0;
+    int32 pendingWidth = 0;
+    int32 pendingHeight = 0;
     int32 backbufferWidth = 0;
     int32 backbufferHeight = 0;
 

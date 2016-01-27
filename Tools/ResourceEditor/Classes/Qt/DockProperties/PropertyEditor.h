@@ -131,10 +131,10 @@ protected:
 	QtPropertyData * favoriteGroup;
 	DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
 
-	QVector<DAVA::Entity *> curNodes;
-	PropertyEditorStateHelper treeStateHelper;
+    QVector<DAVA::Entity*> curNodes;
+    PropertyEditorStateHelper treeStateHelper;
 
-	QtPropertyData* CreateInsp(const DAVA::FastName& name, void *object, const DAVA::InspInfo *info);
+    QtPropertyData* CreateInsp(const DAVA::FastName& name, void *object, const DAVA::InspInfo *info);
     QtPropertyData* CreateInspMember(const DAVA::FastName& name, void *object, const DAVA::InspMember *member);
     QtPropertyData* CreateInspCollection(const DAVA::FastName& name, void *object, const DAVA::InspColl *collection);
 	QtPropertyData* CreateClone(QtPropertyData *original);
