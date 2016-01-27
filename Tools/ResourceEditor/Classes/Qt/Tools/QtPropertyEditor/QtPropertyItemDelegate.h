@@ -54,20 +54,23 @@ public:
     void setEditorData(QWidget *editor, const QModelIndex &index) const;
 	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 	void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const;
+    
+    void showButtons(QtPropertyData *data);
+    void invalidateButtons();
 
 public slots:
 	bool helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index);
-    void showButtons(QtPropertyData *data);
-	void invalidateButtons();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);
 	void drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &option, const QModelIndex &index) const;
-	void showOptionalButtons(QtPropertyData *data, bool show);
+	void showOptionalButtons(QtPropertyData *data);
+    void hideButtons();
     void DrawButton(QPainter* painter, QStyleOptionViewItem& opt, QtPropertyToolButton* btn) const;
 
-	QtPropertyModel *model;
-	QPointer<QtPropertyData> lastHoverData;
+	QtPropertyModel *model = nullptr;
+    QtPropertyData * lastHoverData = nullptr;
+    DAVA::Vector<QPointer<QtPropertyToolButton>> visibleButtons;
     QPointer<QAbstractItemView> view;
     mutable QPointer<QWidget> activeEditor;
     mutable bool editorDataWasSet;

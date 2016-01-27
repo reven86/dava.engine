@@ -229,7 +229,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 {
 	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
 	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
-	screenInfo.scale = 1;
+    screenInfo.scale = [[NSScreen mainScreen] backingScaleFactor];
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)

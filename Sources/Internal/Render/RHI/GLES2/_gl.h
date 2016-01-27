@@ -216,6 +216,8 @@ extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
 
+extern rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback;
+extern DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 #if defined(__DAVAENGINE_WIN32__)
 extern HDC _GLES2_WindowDC;
 #endif
