@@ -1132,3 +1132,164 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
         }
     }
 }
+
+void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values)
+{
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    if (selection.Size() > 1)
+    {
+        sceneEditor->BeginBatch("Multiple move");
+    }
+
+    for (const auto& item : selection.GetContent())
+    {
+        DAVA::Matrix4 origMatrix = item.first->GetLocalTransform();
+        DAVA::Vector3 newPos = origMatrix.GetTranslationVector();
+
+        switch (axis)
+        {
+        case ST_AXIS_X:
+            newPos.x = values.x;
+            break;
+        case ST_AXIS_Y:
+            newPos.y = values.y;
+            break;
+        case ST_AXIS_Z:
+            if (!snapToLandscape)
+            {
+                newPos.z = values.z;
+            }
+            break;
+        default:
+            break;
+        }
+
+        DAVA::Matrix4 newMatrix = origMatrix;
+        newMatrix.SetTranslationVector(newPos);
+        sceneEditor->Exec(new TransformCommand(item.first, origMatrix, newMatrix));
+    }
+
+    if (selection.Size() > 1)
+    {
+        sceneEditor->EndBatch();
+    }
+}
+
+void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+{
+    DAVA::float32 x = DAVA::DegToRad(values.x);
+    DAVA::float32 y = DAVA::DegToRad(values.y);
+    DAVA::float32 z = DAVA::DegToRad(values.z);
+
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    if (selection.Size() > 1)
+    {
+        sceneEditor->BeginBatch("Multiple rotate");
+    }
+
+    for (const auto& item : selection.GetContent())
+    {
+        DAVA::Entity* entity = item.first;
+        DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
+
+        DAVA::Vector3 pos, scale, rotate;
+        if (origMatrix.Decomposition(pos, scale, rotate))
+        {
+            if (absoluteTransform == false)
+            {
+                rotate *= 0.0f;
+            }
+
+            DAVA::Matrix4 rotationMatrix;
+            DAVA::Matrix4 moveToZeroPos;
+            DAVA::Matrix4 moveFromZeroPos;
+            moveToZeroPos.CreateTranslation(-origMatrix.GetTranslationVector());
+            moveFromZeroPos.CreateTranslation(origMatrix.GetTranslationVector());
+
+            switch (axis)
+            {
+            case ST_AXIS_X:
+                rotationMatrix.CreateRotation(DAVA::Vector3(1, 0, 0), x - rotate.x);
+                break;
+            case ST_AXIS_Y:
+                rotationMatrix.CreateRotation(DAVA::Vector3(0, 1, 0), y - rotate.y);
+                break;
+            case ST_AXIS_Z:
+                rotationMatrix.CreateRotation(DAVA::Vector3(0, 0, 1), z - rotate.z);
+                break;
+            default:
+                break;
+            }
+
+            DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
+            newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
+
+            sceneEditor->Exec(new TransformCommand(entity, origMatrix, newMatrix));
+        }
+    }
+
+    if (selection.Size() > 1)
+    {
+        sceneEditor->EndBatch();
+    }
+}
+
+void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+{
+    DAVA::float32 scaleValue = 1.0f;
+
+    switch (axis)
+    {
+    case ST_AXIS_X:
+        scaleValue = values.x;
+        break;
+    case ST_AXIS_Y:
+        scaleValue = values.y;
+        break;
+    case ST_AXIS_Z:
+        scaleValue = values.z;
+        break;
+    default:
+        break;
+    }
+
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    if (selection.Size() > 1)
+    {
+        sceneEditor->BeginBatch("Multiple scale");
+    }
+
+    for (const auto& item : selection.GetContent())
+    {
+        DAVA::Entity* entity = item.first;
+        DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
+
+        DAVA::Vector3 pos, scale, rotate;
+        if (origMatrix.Decomposition(pos, scale, rotate))
+        {
+            if (absoluteTransform)
+            {
+                scaleValue = (scale.x < std::numeric_limits<float>::epsilon()) ? 0.0f : (scaleValue / scale.x);
+            }
+
+            DAVA::Matrix4 moveToZeroPos;
+            moveToZeroPos.CreateTranslation(-origMatrix.GetTranslationVector());
+
+            DAVA::Matrix4 moveFromZeroPos;
+            moveFromZeroPos.CreateTranslation(origMatrix.GetTranslationVector());
+
+            DAVA::Matrix4 scaleMatrix;
+            scaleMatrix.CreateScale(DAVA::Vector3(scaleValue, scaleValue, scaleValue));
+
+            DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
+            newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
+
+            sceneEditor->Exec(new TransformCommand(entity, origMatrix, newMatrix));
+        }
+    }
+
+    if (selection.Size() > 1)
+    {
+        sceneEditor->EndBatch();
+    }
+}

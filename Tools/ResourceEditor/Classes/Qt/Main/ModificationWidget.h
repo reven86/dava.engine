@@ -72,24 +72,20 @@ private slots:
 	void OnZChanged();
 
 private:
-	QLabel *xLabel;
-	QLabel *yLabel;
-	QLabel *zLabel;
-	DAVAFloat32SpinBox *xAxisModify;
-	DAVAFloat32SpinBox *yAxisModify;
-	DAVAFloat32SpinBox *zAxisModify;
-	SceneEditor2 *curScene;
-	bool groupMode;
-
-	PivotMode pivotMode;
-	ST_ModifMode modifMode;
-
 	void ReloadValues();
-
 	void ApplyValues(ST_Axis axis);
-    void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities);
-    void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities);
-    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities);
+
+private:
+    QLabel* xLabel = nullptr;
+    QLabel* yLabel = nullptr;
+    QLabel* zLabel = nullptr;
+    DAVAFloat32SpinBox* xAxisModify = nullptr;
+    DAVAFloat32SpinBox* yAxisModify = nullptr;
+    DAVAFloat32SpinBox* zAxisModify = nullptr;
+    SceneEditor2* curScene = nullptr;
+    PivotMode pivotMode = PivotMode::PivotRelative;
+    ST_ModifMode modifMode = ST_ModifMode::ST_MODIF_OFF;
+    bool groupMode = false;
 };
 
 class DAVAFloat32SpinBox
