@@ -82,10 +82,10 @@ protected:
 
     void AddRectToAccumulator(const Rect& rect);
     void ResetAccumulatorRect();
-	Rect GetUpdatedRect();
-	
-	void StoreOriginalState();
-	void CreateUndoPoint();
+    Rect GetUpdatedRect();
+
+    void StoreOriginalState();
+    void CreateUndoPoint();
 
 	void StoreSaveFileName(const FilePath& filePath);
 

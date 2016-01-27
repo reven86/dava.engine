@@ -52,11 +52,14 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = (uint32)(-2);
 
+typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
+
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
+    RESOURCE_PERFQUERY_SET = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -345,7 +348,15 @@ enum TextureFormat
     TEXTURE_FORMAT_EAC_R11G11_SIGNED,
 
     TEXTURE_FORMAT_D16,
-    TEXTURE_FORMAT_D24S8
+    TEXTURE_FORMAT_D24S8,
+
+    TEXTURE_FORMAT_R16F,
+    TEXTURE_FORMAT_RG16F,
+    TEXTURE_FORMAT_RGBA16F,
+
+    TEXTURE_FORMAT_R32F,
+    TEXTURE_FORMAT_RG32F,
+    TEXTURE_FORMAT_RGBA32F,
 };
 
 enum TextureFace
@@ -783,6 +794,8 @@ RenderPassConfig
     DepthStencilBuffer depthStencilBuffer;
 
     Handle queryBuffer;
+    uint32 PerfQueryIndex0;
+    uint32 PerfQueryIndex1;
     Viewport viewport;
 
     int priority;
@@ -792,6 +805,8 @@ RenderPassConfig
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
+        , PerfQueryIndex0(DAVA::InvalidIndex)
+        , PerfQueryIndex1(DAVA::InvalidIndex)
     {
     }
 };

@@ -81,8 +81,8 @@ public:
 	void SetFavoritesEditMode(bool set);
 	bool GetFavoritesEditMode() const;
 
-	bool IsFavorite(QtPropertyData *data) const;
-	void SetFavorite(QtPropertyData *data, bool favorite);
+	bool IsFavorite(QtPropertyData * data) const;
+	void SetFavorite(QtPropertyData * data, bool favorite);
 
 	void LoadScheme(const DAVA::FilePath &path);
 	void SaveScheme(const DAVA::FilePath &path);
@@ -106,6 +106,7 @@ public slots:
     void OnAddRotationControllerComponent();
     void OnAddSnapToLandscapeControllerComponent();
     void OnAddWASDControllerComponent();
+    void OnAddVisibilityComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	
@@ -127,27 +128,27 @@ protected:
 	QtPosSaver posSaver;
 	QSet<QString> scheme;
 
-	QtPropertyData *favoriteGroup;
-	QList<QtPropertyData *> favoriteList;
+	QtPropertyData * favoriteGroup;
+	DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
 
-	QList<DAVA::Entity *> curNodes;
-	PropertyEditorStateHelper treeStateHelper;
+    QVector<DAVA::Entity*> curNodes;
+    PropertyEditorStateHelper treeStateHelper;
 
-	QtPropertyData* CreateInsp(void *object, const DAVA::InspInfo *info);
-	QtPropertyData* CreateInspMember(void *object, const DAVA::InspMember *member);
-	QtPropertyData* CreateInspCollection(void *object, const DAVA::InspColl *collection);
+    QtPropertyData* CreateInsp(const DAVA::FastName& name, void *object, const DAVA::InspInfo *info);
+    QtPropertyData* CreateInspMember(const DAVA::FastName& name, void *object, const DAVA::InspMember *member);
+    QtPropertyData* CreateInspCollection(const DAVA::FastName& name, void *object, const DAVA::InspColl *collection);
 	QtPropertyData* CreateClone(QtPropertyData *original);
 
     void ClearCurrentNodes();
-	void ApplyModeFilter(QtPropertyData *parent);
-	void ApplyFavorite(QtPropertyData *data);
-	void ApplyCustomExtensions(QtPropertyData *data);
+	void ApplyModeFilter(QtPropertyData * parent);
+	void ApplyFavorite(QtPropertyData * data);
+	void ApplyCustomExtensions(QtPropertyData * data);
 
     void OnAddComponent(Component::eType type);
     void OnAddComponent(Component *component);
 
-	void AddFavoriteChilds(QtPropertyData *parent);
-	void RemFavoriteChilds(QtPropertyData *parent);
+    void AddFavoriteChilds(QtPropertyData * parent);
+    void RemFavoriteChilds(QtPropertyData * parent);
 
 	bool IsInspViewAllowed(const DAVA::InspInfo *info) const;
 
@@ -155,13 +156,12 @@ protected:
 	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 
-	//void FindAndCheckFavorite(QtPropertyData *data);
-	bool IsParentFavorite(QtPropertyData *data) const;
-	PropEditorUserData* GetUserData(QtPropertyData *data) const;
+    bool IsParentFavorite(const QtPropertyData * data) const;
+    PropEditorUserData* GetUserData(QtPropertyData * data) const;
 
-	QtPropertyToolButton * CreateButton(QtPropertyData *data, const QIcon & icon, const QString & tooltip);
+    QtPropertyToolButton * CreateButton(QtPropertyData * data, const QIcon & icon, const QString & tooltip);
 
-	QString GetDefaultFilePath(); 
+	QString GetDefaultFilePath();
 
 private:
 	LazyUpdater *propertiesUpdater;

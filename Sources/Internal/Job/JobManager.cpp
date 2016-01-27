@@ -62,7 +62,7 @@ JobManager::~JobManager()
     mainJobLastExecutedID = mainJobIDCounter;
     mainJobIDCounter = 0;
     mainCV.NotifyAll();
-    
+
     for(uint32 i = 0; i < workerThreads.size(); ++i)
     {
         SafeDelete(workerThreads[i]);

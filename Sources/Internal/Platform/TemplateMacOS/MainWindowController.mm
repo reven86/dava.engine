@@ -32,6 +32,27 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#import <AppKit/NSApplication.h>
+
+@interface DavaApp : NSApplication
+@end
+
+@implementation DavaApp
+// http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
+- (void)sendEvent:(NSEvent*)theEvent
+{
+    [super sendEvent:theEvent];
+    if (theEvent.modifierFlags & NSCommandKeyMask)
+    {
+        if (theEvent.type == NSKeyUp)
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKeyUp" object:theEvent];
+        }
+    }
+}
+
+@end
+
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -41,11 +62,11 @@ namespace DAVA
 	{
 		NSAutoreleasePool * globalPool = 0;
 		globalPool = [[NSAutoreleasePool alloc] init];
-		CoreMacOSPlatform * core = new CoreMacOSPlatform();
-		core->SetCommandLine(argc, argv);
-		core->CreateSingletons();
+        CoreMacOSPlatform* core = new CoreMacOSPlatform();
+        core->SetCommandLine(argc, argv);
+        core->CreateSingletons();
 
-		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
+        [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
@@ -87,6 +108,7 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
 
 - (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
@@ -99,30 +121,19 @@ static MainWindowController * mainWindowController = nil;
  */
 namespace DAVA 
 {
-	Vector2 CoreMacOSPlatform::GetMousePosition()
-	{
-		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBacking: p];
+void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+{
+    DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+    minWindowWidth = width;
+    minWindowHeight = height;
 
-        Vector2 mouseLocation;
-		mouseLocation.x = p.x;
-		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
-		return mouseLocation;
-	}
-    
-    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
-    {
-        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
-        minWindowWidth = width;
-        minWindowHeight = height;
+    [mainWindowController setMinimumWindowSize:minWindowWidth height:minWindowHeight];
+}
 
-        [mainWindowController setMinimumWindowSize: minWindowWidth height: minWindowHeight];
-    }
-    
-    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
-    {
-        return Vector2(minWindowWidth, minWindowHeight);
-    }
+Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+{
+    return Vector2(minWindowWidth, minWindowHeight);
+}
 }
 
 - (id)init
@@ -135,21 +146,25 @@ namespace DAVA
 		mainWindow = nil;
 		animationTimer = nil;
 		core = 0;
-
-	}
-	return self;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(OnKeyUpDuringCMDHold:)
+                                                     name:@"DavaKeyUp"
+                                                   object:nil];
+    }
+    return self;
 }
 
 - (void)dealloc
 {
-	[super dealloc];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 -(void)createWindows
 {
     NSRect displayRect = [[NSScreen mainScreen] frame];
-	
-	FrameworkDidLaunched();
+
+    FrameworkDidLaunched();
 
     String title;
     int32 width = 800;
@@ -167,7 +182,7 @@ namespace DAVA
             width = options->GetInt32("width");
             height = options->GetInt32("height");
         }
-        
+
         isFull = (0 != options->GetInt32("fullscreen", 0));
         minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
         minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
@@ -181,10 +196,10 @@ namespace DAVA
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
-    [mainWindow setContentSize: NSMakeSize(width, height)];
+    [mainWindow setContentSize:NSMakeSize(width, height)];
     mainWindow.contentMinSize = NSMakeSize(width, height);
-    [mainWindowController setMinimumWindowSize: 0.0f height: 0.0f];
-    
+    [mainWindowController setMinimumWindowSize:0.0f height:0.0f];
+
     if (minWidth > 0 && minHeight > 0)
     {
         // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
@@ -195,35 +210,33 @@ namespace DAVA
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
 
-#if RHI_COMPLETE
-    RenderManager::Instance()->DetectRenderingCapabilities();
-#endif
-
 // start animation
-    currFPS = 60;
+    currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
 
     // make window main
     [mainWindow makeKeyAndOrderFront:nil];
     [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
     [mainWindow setAcceptsMouseMovedEvents:YES];
-    
-    if(isFull)
+
+    if (isFull)
     {
         [self setFullScreen:true];
     }
 }
 
--(void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
 {
     const float32 MIN_WIDTH = 64.0f;
     const float32 MIN_HEIGHT = 64.0f;
- 
+
     // Always limit minimum window size to 64x64, as application crashes
     // when resizing window to zero height (stack overflow occures)
     // It seems that NSOpenGLView is responsible for that
-    if (width < MIN_WIDTH) width = MIN_WIDTH;
-    if (height < MIN_HEIGHT) height = MIN_HEIGHT;
+    if (width < MIN_WIDTH)
+        width = MIN_WIDTH;
+    if (height < MIN_HEIGHT)
+        height = MIN_HEIGHT;
     mainWindow.contentMinSize = NSMakeSize(width, height);
 }
 
@@ -235,7 +248,7 @@ namespace DAVA
 {
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
-    
+
     [self OnSuspend];
 }
 
@@ -243,16 +256,16 @@ namespace DAVA
 {
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
-    
+
     [self OnResume];
 }
 
-- (void)windowDidBecomeKey:(NSNotification *)notification
+- (void)windowDidBecomeKey:(NSNotification*)notification
 {
     Core::Instance()->FocusReceived();
 }
 
-- (void)windowDidResignKey:(NSNotification *)notification
+- (void)windowDidResignKey:(NSNotification*)notification
 {
     Core::Instance()->FocusLost();
     InputSystem::Instance()->GetKeyboard().ClearAllKeys();
@@ -268,6 +281,11 @@ namespace DAVA
 {
     fullScreen = false;
     Core::Instance()->GetApplicationCore()->OnExitFullscreen();
+}
+
+- (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
+{
+    [self keyUp:(NSEvent*)[notification object]];
 }
 
 -(bool) isFullScreen
@@ -397,6 +415,7 @@ namespace DAVA
 - (void) animationTimerFired:(NSTimer *)timer
 {
     [openGLView setNeedsDisplay:YES];
+
     if (currFPS != Renderer::GetDesiredFPS())
     {
         currFPS = Renderer::GetDesiredFPS();
@@ -408,24 +427,15 @@ namespace DAVA
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did finish launching");
-    
+
     [self OnResume];
-    
-#if RHI_COMPLETE
-    DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
-    if (activeCursor)
-    {
-        NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-        [cursor set];
-    }
-#endif
 }
 
 static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
 {
     static bool restorePinning = false;
     static int64_t myPid = static_cast<int64_t>(getpid());
-    
+
     int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
     if (targetPid != myPid)
     {
@@ -453,12 +463,12 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 {
 	[self createWindows];
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application will finish launching: %s", [[[NSBundle mainBundle] bundlePath] UTF8String]);
-    
+
     {
         // OS X application has no way to detect when she is no longer in control,
         // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
         // And application has no chance to release mouse capture.
-        
+
         // Install mouse hook which determines whether Mission Control, Launchpad is active
         // and temporary turns off mouse pinning
         // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
@@ -468,7 +478,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
                                                  NSAnyEventMask,
                                                  &EventTapCallback,
                                                  nullptr);
-        
+
         if (portRef != nullptr)
         {
             CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
@@ -482,20 +492,21 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
         }
     }
 
-    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+    NSSize windowSize = [openGLView frame].size;
+    float32 backingScale = Core::Instance()->GetScreenScaleFactor();
 
-    NSSize windowsSize =[openGLView frame].size;
-    NSSize surfaceSize = [openGLView convertSizeToBacking:windowsSize];
-    
-    DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
-    macCore->rendererParams.window = mainWindowController->openGLView;
-    macCore->rendererParams.width = surfaceSize.width;
-    macCore->rendererParams.height = surfaceSize.height;
-    macCore->rendererParams.scaleX = userScale;
-    macCore->rendererParams.scaleY = userScale;
+    GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
+    CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+    CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+    CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowsSize.width, windowsSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
+    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
+    rendererParams.window = mainWindowController->openGLView;
+    rendererParams.width = backingSize[0];
+    rendererParams.height = backingSize[1];
+
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
 
     Core::Instance()->SystemAppStarted();
 }
@@ -527,7 +538,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did hide");
-    
+
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
 }
@@ -535,7 +546,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (void)applicationDidUnhide:(NSNotification *)aNotification
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did unhide");
-    
+
     CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
 }
@@ -548,15 +559,15 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
-    
+
     mainWindowController->openGLView.willQuit = true;
     
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
 
-	NSLog(@"[CoreMacOSPlatform] Application has terminated");
-	return NSTerminateNow;
+    NSLog(@"[CoreMacOSPlatform] Application has terminated");
+    return NSTerminateNow;
 }
 
 - (void)OnSuspend
@@ -615,5 +626,17 @@ void CoreMacOSPlatform::Quit()
 	mainWindowController->openGLView.willQuit = true;
 	[[NSApplication sharedApplication] terminate: nil];
 }
-	
+
+void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
+{
+    if (!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
+    {
+        Core::SetScreenScaleMultiplier(multiplier);
+
+        //This magick needed to correctly 'reshape' GLView and resize back-buffer.
+        //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
+        [mainWindowController->mainWindow setContentView:nil];
+        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+    }
+}
 };
