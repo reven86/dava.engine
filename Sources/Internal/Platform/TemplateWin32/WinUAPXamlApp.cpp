@@ -884,11 +884,9 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     // workaround for Surface, otherwise we lost MouseMoved event  
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
-    webview->Visibility = Visibility::Collapsed;
     // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
     obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
     TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
-    textBox->Visibility = Visibility::Collapsed;
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
@@ -1239,14 +1237,14 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 )";
 
 const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
-<WebView x:Name="xamlWebView"
+<WebView x:Name="xamlWebView" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
 )";
 
 const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
-<TextBox x:Name="xamlTextBox"
+<TextBox x:Name="xamlTextBox" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </TextBox>
