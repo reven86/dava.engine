@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,50 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_RAW_TIMER_H__
-#define __DAVAENGINE_RAW_TIMER_H__
+#ifndef __QTTOOLS_QTCONNECTIONS_H__
+#define __QTTOOLS_QTCONNECTIONS_H__
 
 #include "Base/BaseTypes.h"
 
-namespace  DAVA
-{
-    
-/*
- Raw Timer should be used when you need to get elapsed time in miliseconds from calling Start() to calling GetElapsed().
- It is not thread safe class.
-*/
+#include <QMetaObject>
+#include <QPointer>
 
-class RawTimer
+class QtConnections
 {
 public:
-    /* 
-       \brief Starts time calculation. Now GetElapsed() should return not 0
-     */
-    void Start();
-    /*
-     \brief Stops time calculation. GetElapsed() whould return 0.
-     */
-    void Stop();
-    /*
-     \brief Resumes stopped time calculation. It means that GetElapsed() will return time delta from calling Start().
-     */
-    void Resume();
-    
-    /*
-     \brief Indicates if time calculation is started
-     */
-    bool IsStarted();
-    /*
-     \brief Returns time in ms elapsed from calling Start(). Returns 0 if timer is stopped.
-     */
-    uint64 GetElapsed();
-    
-private:
-    uint64 timerStartTime;
-    bool isStarted = false;
-};
-    
-}
-#endif //__DAVAENGINE_RAW_TIMER_H__
+    ~QtConnections()
+    {
+        for (QMetaObject::Connection & connection : connections)
+        {
+            QObject::disconnect(connection);
+        }
 
+        connections.clear();
+    }
+
+    template <typename Func1, typename Func2>
+    void AddConnection(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+    {
+        connections.push_back(QObject::connect(sender, signal, slot));
+    }
+
+private:
+    DAVA::Vector<QMetaObject::Connection> connections;
+};
+
+#endif // __QTTOOLS_QTCONNECTIONS_H__

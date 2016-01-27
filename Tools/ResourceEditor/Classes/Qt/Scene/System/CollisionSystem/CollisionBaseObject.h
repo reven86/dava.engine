@@ -68,7 +68,8 @@ public:
     }
 
     virtual ~CollisionBaseObject()
-	{ }
+    {
+    }
 
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
     virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;

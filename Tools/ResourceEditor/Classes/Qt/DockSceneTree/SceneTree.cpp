@@ -323,7 +323,7 @@ void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QIte
     SyncSelectionFromTree();
 
     // emit some signal about particles
-	EmitParticleSignals(selected);
+    EmitParticleSignals(selected);
 }
 
 void SceneTree::TreeItemClicked(const QModelIndex & index)
@@ -630,7 +630,7 @@ void SceneTree::RemoveSelection()
             else
             {
                 objectToRemove.Add(item.first, item.second);
-        }
+            }
         }
 
         if (!objectToRemove.IsEmpty())
@@ -933,8 +933,8 @@ void SceneTree::SyncSelectionFromTree()
         SceneTreeDetails::SyncGuard guard(isInSync);
 
         SceneEditor2* curScene = treeModel->GetScene();
-        if(NULL != curScene)
-		{
+        if (NULL != curScene)
+        {
 			// select items in scene
 			EntityGroup group;
 

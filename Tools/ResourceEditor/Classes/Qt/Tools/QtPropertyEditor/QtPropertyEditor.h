@@ -53,15 +53,17 @@ public:
 	QtPropertyEditor(QWidget *parent = 0);
 	~QtPropertyEditor();
 
-    void AppendProperties(const QVector<QtPropertyData*>& properties, const QModelIndex& parent = QModelIndex());
-    QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
-    void MergeProperty(QtPropertyData* data, const QModelIndex &parent = QModelIndex());
-	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex());
+    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>> && properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
+    void MergeProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex());
 	QModelIndex AppendHeader(const QString &text);
 	QModelIndex InsertHeader(const QString &text, int row);
 
 	QtPropertyData * GetProperty(const QModelIndex &index) const;
 	QtPropertyData * GetRootProperty() const;
+
+    void FinishTreeCreation();
 	
 	bool GetEditTracking() const;
 	void SetEditTracking(bool enabled);

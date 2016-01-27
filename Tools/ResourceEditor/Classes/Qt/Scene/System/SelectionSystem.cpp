@@ -111,8 +111,8 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
 void SceneSelectionSystem::ForceEmitSignals()
 {
-	if (selectionHasChanges)
-	{
+    if (selectionHasChanges)
+    {
         SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), &curSelections, &curDeselections);
         selectionHasChanges = false;
         curDeselections.Clear();
@@ -353,21 +353,21 @@ void SceneSelectionSystem::Draw()
         {
             DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
         }
-        }
+    }
 
-        DAVA::Color drawColor = DAVA::Color::White;
-        if (groupSelectionMode == GroupSelectionMode::Add)
-        {
-            drawColor = DAVA::Color(0.5f, 1.0f, 0.5f, 1.0f);
-        }
-        else if (groupSelectionMode == GroupSelectionMode::Remove)
-        {
-            drawColor = DAVA::Color(1.0f, 0.5f, 0.5f, 1.0f);
-        }
+    DAVA::Color drawColor = DAVA::Color::White;
+    if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        drawColor = DAVA::Color(0.5f, 1.0f, 0.5f, 1.0f);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        drawColor = DAVA::Color(1.0f, 0.5f, 0.5f, 1.0f);
+    }
 
-        for (const auto& item : objectsToSelect.GetContent())
-        {
-            DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, drawColor);
+    for (const auto& item : objectsToSelect.GetContent())
+    {
+        DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, drawColor);
     }
 }
 
@@ -573,7 +573,7 @@ void SceneSelectionSystem::SetLocked(bool lock)
     SceneSystem::SetLocked(lock);
 
     hoodSystem->LockAxis(lock);
-	hoodSystem->SetVisible(!lock);
+    hoodSystem->SetVisible(!lock);
 
 	if(!lock)
 	{
@@ -624,7 +624,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
         }
 
         // check if we have locked entities in selection group
-		// if so - lock modification hood
+        // if so - lock modification hood
         for (const auto& item : curSelections.GetContent())
         {
             if (item.first->GetLocked())

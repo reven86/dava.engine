@@ -251,8 +251,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
             AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
         }
         lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
-		lua_pushstring(L, path.GetBasename().c_str());
-		return 2;
+        lua_pushstring(L, path.GetBasename().c_str());
+        return 2;
 	}
 
 	void AutotestingSystemLua::StackDump(lua_State* L)
@@ -566,8 +566,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         }
         default:
         {
-			if (keyPress.keyChar == 0)
-			{
+            if (keyPress.keyChar == 0)
+            {
 				break;
 			}
 			WideString str;
@@ -578,8 +578,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
             }
             break;
         }
-		}
-	}
+        }
+    }
 
 	String AutotestingSystemLua::GetText(UIControl *control)
 	{
@@ -803,7 +803,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         if (!luaState)
         {
             return false;
-		}
+        }
 		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
 		{
 			Logger::Error("AutotestingSystemLua::LoadScript Error: unable to load %s", luaScript.c_str());

@@ -129,9 +129,9 @@ DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem *item)
     {
         SceneTreeItemEntity* itemEntity = (SceneTreeItemEntity*)item;
         ret = itemEntity->entity;
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
 QString SceneTreeItemEntity::ItemName() const
@@ -143,7 +143,7 @@ QString SceneTreeItemEntity::ItemName() const
         ret = entity->GetName().c_str();
     }
 
-	return ret;
+    return ret;
 }
 
 QVariant SceneTreeItemEntity::ItemData() const
@@ -213,8 +213,8 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
     if (nullptr != rootItem && nullptr != entity)
     {
         DAVA::int32 i;
-        QSet<DAVA::Entity *> entitiesSet;
-		QSet<DAVA::ParticleEmitter *> emitterSet;
+        QSet<DAVA::Entity*> entitiesSet;
+        QSet<DAVA::ParticleEmitter*> emitterSet;
 
         DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
 
@@ -229,8 +229,8 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
         {
             for (DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
             {
-				emitterSet.insert(effect->GetEmitter(i));
-			}
+                emitterSet.insert(effect->GetEmitter(i));
+            }
 		}
 
 		// remove items that are not in set
@@ -447,8 +447,8 @@ DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem *i
     {
         SceneTreeItemParticleEmitter* itemEmitter = (SceneTreeItemParticleEmitter*)item;
         ret = itemEmitter->emitter;
-	}
-	return ret;
+    }
+    return ret;
 }
 
 DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitterStrict(SceneTreeItem *item)
@@ -468,9 +468,9 @@ void SceneTreeItemParticleEmitter::DoSync(QStandardItem *rootItem, DAVA::Particl
     {
         SceneTreeItemParticleEmitter* rootEmitterItem = (SceneTreeItemParticleEmitter*)rootItem;
 
-        for(int i = 0; i < rootItem->rowCount(); )
-		{	
-			DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);			
+        for (int i = 0; i < rootItem->rowCount();)
+        {
+            DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);			
 			rootItem->removeRow(i);						
 		}
 		for (DAVA::uint32 i=0; i<(DAVA::uint32)emitter->layers.size(); ++i)
@@ -510,9 +510,9 @@ SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectCompo
     {
         setCheckable(true);
 
-        if(layer->isDisabled)
-		{
-			setCheckState(Qt::Unchecked);
+        if (layer->isDisabled)
+        {
+            setCheckState(Qt::Unchecked);
 		}
 		else
 		{
@@ -535,9 +535,9 @@ DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer(SceneTreeItem *item)
     {
         SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
         ret = itemLayer->layer;
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
 QString SceneTreeItemParticleLayer::ItemName() const
@@ -549,7 +549,7 @@ QString SceneTreeItemParticleLayer::ItemName() const
         ret = layer->layerName.c_str();
     }
 
-	return ret;
+    return ret;
 }
 
 QVariant SceneTreeItemParticleLayer::ItemData() const
@@ -563,8 +563,8 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleL
     {
         SceneTreeItemParticleLayer* rootLayerItem = (SceneTreeItemParticleLayer*)rootItem;
         bool hadInnerEmmiter = false;
-		for (int i=0; i<rootItem->rowCount(); i++)
-		{
+        for (int i = 0; i < rootItem->rowCount(); i++)
+        {
 			bool keepItem = false;
 			SceneTreeItem*item = (SceneTreeItem*)rootItem->child(i);
 			if ((item)->ItemType() == SceneTreeItem::EIT_InnerEmitter)
@@ -626,9 +626,9 @@ DAVA::ParticleForce* SceneTreeItemParticleForce::GetForce(SceneTreeItem *item)
     {
         SceneTreeItemParticleForce* itemForce = (SceneTreeItemParticleForce*)item;
         ret = itemForce->force;
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
 SceneTreeItemParticleForce::~SceneTreeItemParticleForce()

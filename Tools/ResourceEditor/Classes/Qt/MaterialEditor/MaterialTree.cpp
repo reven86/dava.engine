@@ -76,7 +76,7 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
         OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), nullptr);
     }
     else
-	{
+    {
         treeModel->SetSelection(nullptr);
     }
 

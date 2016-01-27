@@ -146,8 +146,8 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
         if (isMultiple)
         {
             sceneEditor->EndBatch();
-		}
-	}
+        }
+    }
 }
 
 bool EntityModificationSystem::InModifState() const
@@ -274,8 +274,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 
                     // lock hood, so it wont process ui events, wont calc. scale depending on it current position
                     hoodSystem->LockScale(true);
-					hoodSystem->SetModifOffset(moveOffset);
-					hoodSystem->SetModifRotate(rotateAngle);
+                    hoodSystem->SetModifOffset(moveOffset);
+                    hoodSystem->SetModifRotate(rotateAngle);
 					hoodSystem->SetModifScale(scaleForce);
 				}
 			}
@@ -343,8 +343,8 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
             DAVA::Entity* en = item.first;
             if (NULL != en)
             {
-				EntityToModify etm;
-				etm.entity = en;
+                EntityToModify etm;
+                etm.entity = en;
 				etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
 				etm.originalTransform = en->GetLocalTransform();
 				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
@@ -449,14 +449,14 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
     {
         bool hasLocked = false;
 
-		// check if we have some locked items in selection
+        // check if we have some locked items in selection
         for (const auto& item : selectedEntities.GetContent())
         {
             if (item.first->GetLocked())
             {
                 hasLocked = true;
-				break;
-			}
+                break;
+            }
 		}
 
         modifCanStart = !hasLocked;
@@ -497,7 +497,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
                         if (selectedItem.first == collisionItem.first)
                         {
                             modifCanStart = true;
-						}
+                        }
                         else if (selectedItem.first->GetSolid())
                         {
                             modifCanStart = IsEntityContainRecursive(selectedItem.first, collisionItem.first);
@@ -515,8 +515,8 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
                     }
                 }
             }
-		}
-	}
+        }
+    }
 
 	return modifCanStart;
 }

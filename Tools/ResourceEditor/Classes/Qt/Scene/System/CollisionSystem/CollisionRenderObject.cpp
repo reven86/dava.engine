@@ -71,14 +71,14 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
                     if (!anyPolygonAdded)
                     {
                         anyPolygonAdded = true;
-					    btTriangles = new btTriangleMesh();
-				    }
+                        btTriangles = new btTriangleMesh();
+                    }
 
                     for (int i = 0; i < pg->indexCount; i += 3)
                     {
                         DAVA::uint16 index0 = pg->indexArray[i];
-					    DAVA::uint16 index1 = pg->indexArray[i+1];
-					    DAVA::uint16 index2 = pg->indexArray[i+2];
+                        DAVA::uint16 index1 = pg->indexArray[i + 1];
+                        DAVA::uint16 index2 = pg->indexArray[i+2];
 
                         DAVA::Vector3 v0;
                         DAVA::Vector3 v1;
@@ -97,8 +97,8 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
                     }
 
                     // save original bbox
-				    boundingBox.AddAABBox(pg->GetBoundingBox());
-			    }
+                    boundingBox.AddAABBox(pg->GetBoundingBox());
+                }
             }
 		}
 
@@ -108,12 +108,12 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
             boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
             boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
 
-			btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
+            btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
             btObject = new btCollisionObject();
             btObject->setCollisionShape(btShape);
             btWord->addCollisionObject(btObject);
-		}
-	}
+        }
+    }
 }
 
 CollisionRenderObject::~CollisionRenderObject()
@@ -121,8 +121,8 @@ CollisionRenderObject::~CollisionRenderObject()
     if (btObject != nullptr)
     {
         btWord->removeCollisionObject(btObject);
-		DAVA::SafeDelete(btObject);
-		DAVA::SafeDelete(btShape);
+        DAVA::SafeDelete(btObject);
+        DAVA::SafeDelete(btShape);
 		DAVA::SafeDelete(btTriangles);
 	}
 }
