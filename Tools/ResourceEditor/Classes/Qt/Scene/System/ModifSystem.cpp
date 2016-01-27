@@ -329,109 +329,110 @@ void EntityModificationSystem::ProcessCommand(const Command2 *command, bool redo
 
 }
 
-void EntityModificationSystem::BeginModification(const EntityGroup &entities)
+EntityGroup EntityModificationSystem::BeginModification(const EntityGroup& inputEntities)
 {
-	// clear any priv. selection
 	EndModification();
+    if (inputEntities.IsEmpty())
+        return inputEntities;
 
-    const auto& entitiesContent = entities.GetContent();
-    if (!entitiesContent.empty())
+    EntityGroup result = inputEntities;
+    result.FilterChildrenComponents();
+    modifEntities.reserve(result.Size());
+    for (const auto& item : result.GetContent())
     {
-        modifEntities.reserve(entities.Size());
-        for (const auto& item : entitiesContent)
+        DAVA::Entity* en = item.first;
+        DVASSERT(en != nullptr)
+
+        EntityToModify etm;
+        etm.entity = en;
+        etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
+        etm.originalTransform = en->GetLocalTransform();
+        etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
+        etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
+
+        // inverse parent world transform, and remember it
+        if (en->GetParent() != nullptr)
         {
-            DAVA::Entity* en = item.first;
-            if (NULL != en)
+            etm.originalParentWorldTransform = en->GetParent()->GetWorldTransform();
+            etm.inversedParentWorldTransform = etm.originalParentWorldTransform;
+            etm.inversedParentWorldTransform.SetTranslationVector(DAVA::Vector3(0, 0, 0));
+            if (!etm.inversedParentWorldTransform.Inverse())
             {
-                EntityToModify etm;
-                etm.entity = en;
-				etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
-				etm.originalTransform = en->GetLocalTransform();
-				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
-				etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
-
-				// inverse parent world transform, and remember it
-				if(NULL != en->GetParent())
-				{
-					etm.originalParentWorldTransform = en->GetParent()->GetWorldTransform();
-					etm.inversedParentWorldTransform = etm.originalParentWorldTransform;
-					etm.inversedParentWorldTransform.SetTranslationVector(DAVA::Vector3(0, 0, 0));
-					if(!etm.inversedParentWorldTransform.Inverse())
-					{
-						etm.inversedParentWorldTransform.Identity();
-					}
-				}
-				else
-				{
-					etm.inversedParentWorldTransform.Identity();
-					etm.originalParentWorldTransform.Identity();
-				}
-
-				modifEntities.push_back(etm);
-			}
+                etm.inversedParentWorldTransform.Identity();
+            }
 		}
-
-		// remember current selection pivot point
-		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *)GetScene())->selectionSystem;
-		modifPivotPoint = selectionSystem->GetPivotPoint();
-
-		// center of this bbox will modification center, common for all entities
-        modifEntitiesCenter = entities.GetCommonTranslationVector();
-
-        // prepare translation matrix's, used before and after rotation
-        moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
-		moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
-
-		// remember axis vector we are rotating around
-		switch(curAxis)
-		{
-		case ST_AXIS_X:
-		case ST_AXIS_YZ:
-			rotateAround = DAVA::Vector3(1, 0, 0);
-			break;
-		case ST_AXIS_Y:
-		case ST_AXIS_XZ:
-			rotateAround = DAVA::Vector3(0, 1, 0);
-			break;
-		case ST_AXIS_XY:
-		case ST_AXIS_Z:
-			rotateAround = DAVA::Vector3(0, 0, 1);
-			break;
-                
-            default: break;
-		}
-
-		// 2d axis projection we are rotating around
-		DAVA::Vector2 rotateAxis = Cam2dProjection(modifEntitiesCenter, modifEntitiesCenter + rotateAround);
-
-		// axis dot products
-		DAVA::Vector2 zeroPos = cameraSystem->GetScreenPos(modifEntitiesCenter);
-		DAVA::Vector2 xPos = cameraSystem->GetScreenPos(modifEntitiesCenter + DAVA::Vector3(1, 0, 0));
-		DAVA::Vector2 yPos = cameraSystem->GetScreenPos(modifEntitiesCenter + DAVA::Vector3(0, 1, 0));
-		DAVA::Vector2 zPos = cameraSystem->GetScreenPos(modifEntitiesCenter + DAVA::Vector3(0, 0, 1));
-
-		DAVA::Vector2 vx = xPos - zeroPos;
-		DAVA::Vector2 vy = yPos - zeroPos;
-		DAVA::Vector2 vz = zPos - zeroPos;
-
-		crossXY = Abs(vx.CrossProduct(vy));
-		crossXZ = Abs(vx.CrossProduct(vz));
-		crossYZ = Abs(vy.CrossProduct(vz));
-
-		// real rotate should be done in direction of 2dAxis normal,
-		// so calculate this normal
-		rotateNormal = DAVA::Vector2(-rotateAxis.y, rotateAxis.x);
-        if(!rotateNormal.IsZero())
+        else
         {
-            rotateNormal.Normalize();
+            etm.inversedParentWorldTransform.Identity();
+            etm.originalParentWorldTransform.Identity();
         }
 
-        DAVA::Camera *camera = cameraSystem->GetCurCamera();
-        if(NULL != camera)
-        {
-            isOrthoModif = camera->GetIsOrtho();
-        }
-	}
+        modifEntities.push_back(etm);
+    }
+
+    // remember current selection pivot point
+    SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
+    modifPivotPoint = selectionSystem->GetPivotPoint();
+
+    // center of this bbox will modification center, common for all entities
+    modifEntitiesCenter = inputEntities.GetCommonTranslationVector();
+
+    // prepare translation matrix's, used before and after rotation
+    moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
+    moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
+
+    // remember axis vector we are rotating around
+    switch (curAxis)
+    {
+    case ST_AXIS_X:
+    case ST_AXIS_YZ:
+        rotateAround = DAVA::Vector3(1, 0, 0);
+        break;
+    case ST_AXIS_Y:
+    case ST_AXIS_XZ:
+        rotateAround = DAVA::Vector3(0, 1, 0);
+        break;
+    case ST_AXIS_XY:
+    case ST_AXIS_Z:
+        rotateAround = DAVA::Vector3(0, 0, 1);
+        break;
+
+    default:
+        break;
+    }
+
+    // 2d axis projection we are rotating around
+    DAVA::Vector2 rotateAxis = Cam2dProjection(modifEntitiesCenter, modifEntitiesCenter + rotateAround);
+
+    // axis dot products
+    DAVA::Vector2 zeroPos = cameraSystem->GetScreenPos(modifEntitiesCenter);
+    DAVA::Vector2 xPos = cameraSystem->GetScreenPos(modifEntitiesCenter + DAVA::Vector3(1, 0, 0));
+    DAVA::Vector2 yPos = cameraSystem->GetScreenPos(modifEntitiesCenter + DAVA::Vector3(0, 1, 0));
+    DAVA::Vector2 zPos = cameraSystem->GetScreenPos(modifEntitiesCenter + DAVA::Vector3(0, 0, 1));
+
+    DAVA::Vector2 vx = xPos - zeroPos;
+    DAVA::Vector2 vy = yPos - zeroPos;
+    DAVA::Vector2 vz = zPos - zeroPos;
+
+    crossXY = Abs(vx.CrossProduct(vy));
+    crossXZ = Abs(vx.CrossProduct(vz));
+    crossYZ = Abs(vy.CrossProduct(vz));
+
+    // real rotate should be done in direction of 2dAxis normal,
+    // so calculate this normal
+    rotateNormal = DAVA::Vector2(-rotateAxis.y, rotateAxis.x);
+    if (!rotateNormal.IsZero())
+    {
+        rotateNormal.Normalize();
+    }
+
+    DAVA::Camera* camera = cameraSystem->GetCurCamera();
+    if (camera != nullptr)
+    {
+        isOrthoModif = camera->GetIsOrtho();
+    }
+
+    return result;
 }
 
 void EntityModificationSystem::EndModification()

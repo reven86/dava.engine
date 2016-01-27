@@ -87,9 +87,9 @@ private:
 	void ReloadValues();
 
 	void ApplyValues(ST_Axis axis);
-	void ApplyMoveValues(ST_Axis axis);
-	void ApplyRotateValues(ST_Axis axis);
-	void ApplyScaleValues(ST_Axis axis);
+    void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities);
+    void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities);
+    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities);
 };
 
 class DAVAFloat32SpinBox

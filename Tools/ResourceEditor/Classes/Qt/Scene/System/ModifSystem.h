@@ -156,8 +156,8 @@ protected:
 	DAVA::float32 crossXZ;
 	DAVA::float32 crossYZ;
 
-	void BeginModification(const EntityGroup &entities);
-	void EndModification();
+    EntityGroup BeginModification(const EntityGroup& entities);
+    void EndModification();
 
 	void CloneBegin();
 	void CloneEnd();

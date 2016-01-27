@@ -191,3 +191,19 @@ EntityGroup::EntityVector EntityGroup::CopyContentToVector() const
     }
     return result;
 }
+
+void EntityGroup::FilterChildrenComponents()
+{
+    auto i = entities.begin();
+    while (i != entities.end())
+    {
+        if (ContainsEntity(i->first->GetParent()))
+        {
+            entities.erase(i++);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+}

@@ -44,6 +44,8 @@ public:
 
 public:
     EntityGroup() = default;
+    EntityGroup(const EntityGroup&) = default;
+
     EntityGroup(const EntityVector& ss);
     EntityGroup(EntityGroup&&);
     EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
@@ -80,8 +82,7 @@ public:
     void Exclude(const EntityGroup&);
     void RebuildBoundingBox();
 
-private:
-    EntityGroup(const EntityGroup&) = delete;
+    void FilterChildrenComponents();
 
 private:
     EntityMap entities;
