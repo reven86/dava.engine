@@ -85,7 +85,7 @@ private:
 
     EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
 
-	QCheckBox* shortEffectCheckBox;
+    QCheckBox* shortEffectCheckBox;
 
 	TimeLineWidget* emitterEmissionRange;
 	TimeLineWidget* emitterEmissionVector;

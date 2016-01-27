@@ -63,7 +63,7 @@ public:
     virtual ~LandscapeEditorDrawSystem();
 
     LandscapeProxy* GetLandscapeProxy();
-	HeightmapProxy* GetHeightmapProxy();
+    HeightmapProxy* GetHeightmapProxy();
 	CustomColorsProxy* GetCustomColorsProxy();
 	RulerToolProxy* GetRulerToolProxy();
 
@@ -104,7 +104,7 @@ public:
     void ClampToHeightmap(Rect& rect);
 
     void AddEntity(DAVA::Entity* entity) override;
-    void RemoveEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     Rect GetTextureRect(const FastName& level);
     Rect GetHeightmapRect();

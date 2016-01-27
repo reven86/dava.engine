@@ -41,7 +41,7 @@ struct NormalHood : public HoodObject
 
     HoodCollObject* axisX;
     HoodCollObject* axisY;
-    HoodCollObject *axisZ;
+    HoodCollObject* axisZ;
 };
 
 #endif // __NORMAL_HOOD_H__

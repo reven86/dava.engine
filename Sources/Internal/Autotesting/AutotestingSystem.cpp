@@ -90,8 +90,8 @@ AutotestingSystem::~AutotestingSystem()
 {
     SafeRelease(luaSystem);
     if (AutotestingDB::Instance())
-            AutotestingDB::Instance()->Release();
-	}
+        AutotestingDB::Instance()->Release();
+    }
 
 	void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 	{
@@ -183,7 +183,7 @@ AutotestingSystem::~AutotestingSystem()
 
         buildId = option->GetString("BuildId");
         buildDate = option->GetString("Date");
-		branch = option->GetString("Branch");
+        branch = option->GetString("Branch");
 		framework = option->GetString("Framework");
 		branchRev = option->GetString("BranchRev");
 		frameworkRev = option->GetString("FrameworkRev");
@@ -282,7 +282,7 @@ AutotestingSystem::~AutotestingSystem()
 
     void AutotestingSystem::OnTestStart(const String& testDescription)
     {
-		Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
+        Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
 		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
 		if (isDB)
 			AutotestingDB::Instance()->SetTestStarted();
@@ -381,7 +381,7 @@ AutotestingSystem::~AutotestingSystem()
         Core::Instance()->Quit();
     }
 
-	void AutotestingSystem::MakeScreenShot()
+    void AutotestingSystem::MakeScreenShot()
 	{
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
@@ -436,7 +436,7 @@ AutotestingSystem::~AutotestingSystem()
     void AutotestingSystem::OnInput(const UIEvent& input)
     {
         if (UIScreenManager::Instance())
-		{
+        {
 			String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
 			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
 		}
@@ -522,7 +522,7 @@ AutotestingSystem::~AutotestingSystem()
     void AutotestingSystem::ExitApp()
     {
         if (needExitApp)
-		{
+        {
 			return;
 		}
 		isRunning = false;

@@ -1108,36 +1108,12 @@ void CommandBufferGLES2_t::Execute()
                 }
                 else
                 {
-                    GLint fbo = 0;
-
-                    // this is SLOW AS HELL
-                    //                        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
-
-                    if (fbo)
+                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
+                    if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
-                        GLint type = 0;
-                        GLint obj = 0;
-
-                        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type);
-                        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &obj);
-
-                        if (type == GL_RENDERBUFFER)
-                        {
-                            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, def_viewport + 2);
-                            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, def_viewport + 3);
-                        }
-                        else if (type == GL_TEXTURE)
-                        {
-                            //                                GLint   w,h;
-                            //
-                            //                                glGetTexParameteriv( GL_TEXTURE_2D, obj,  );
-                        }
-                    }
-                    else
-                    {
-                        def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                        def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                        //                            glGetIntegerv( GL_VIEWPORT, def_viewport );
+                        glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
+                        _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
 
@@ -1160,13 +1136,15 @@ void CommandBufferGLES2_t::Execute()
 
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
+                
+                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
 
                 if (flags)
                 {
                     glClear(flags);
                 }
 
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                
             }
         }
         break;
@@ -1180,16 +1158,24 @@ void CommandBufferGLES2_t::Execute()
             c += 1;
             #endif
 
-            if (isLastInPass)
+            #if defined(__DAVAENGINE_IPHONE__)
+            if ((isLastInPass)&&(_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)) //defualt framebuffer is discard once after frame
             {
-                //                    glFlush();
-
-                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
+                GLenum discards[3];
+                int32 discardsCount = 0;
+                if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
+                    discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
+                if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
                 {
-                    glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
-                    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+                    discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
+                    discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
                 }
+                
+                if (discardsCount!=0)
+                    glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
             }
+
+            #endif
         }
         break;
 

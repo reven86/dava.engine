@@ -63,7 +63,7 @@ bool OwnersSignatureSystem::IsCommandIdValid(int _id)
     {
         if (validIDs[i] == _id)
         {
-			return true;
+            return true;
 		}
 	}
 	return false;

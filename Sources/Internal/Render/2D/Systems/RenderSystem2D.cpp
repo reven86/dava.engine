@@ -973,14 +973,14 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         Vector2 virtualTexSize = Vector2((float32)t->width, (float32)t->height);
         if (virtualToPhysicalTransformEnabled)
         {
-        if (sprite->type == Sprite::SPRITE_FROM_FILE)
-        {
-            virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
-        }
-        else if (!sprite->textureInVirtualSpace)
-        {
-            virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
-        }
+            if (sprite->type == Sprite::SPRITE_FROM_FILE)
+            {
+                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
+            }
+            else if (!sprite->textureInVirtualSpace)
+            {
+                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
+            }
         }
         float32 adjWidth = 1.f / virtualTexSize.x;
         float32 adjHeight = 1.f / virtualTexSize.y;

@@ -180,14 +180,14 @@ public slots:
     void OnCloseTabRequest(int tabIndex, Request* closeRequest);
 
     void OnBeastAndSave();
-    
+
     void OnBuildStaticOcclusion();
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
     void OnForceFirstLod(bool);
     void OnCustomColorsEditor();
-	void OnHeightmapEditor();
+    void OnHeightmapEditor();
 	void OnRulerTool();
 	void OnTilemaskEditor();
 	void OnNotPassableTerrain();

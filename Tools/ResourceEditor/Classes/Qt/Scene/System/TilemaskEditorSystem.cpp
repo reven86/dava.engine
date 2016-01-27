@@ -242,13 +242,13 @@ void TilemaskEditorSystem::Input(UIEvent* event)
     {
         Vector3 point;
 
-		switch(event->phase)
+        switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape && !needCreateUndo)
             {
-                    if (drawingType == TILEMASK_DRAW_COPY_PASTE)
-					{
+                if (drawingType == TILEMASK_DRAW_COPY_PASTE)
+                    {
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
 						if (curKeyModifiers & Qt::AltModifier)
 						{
@@ -257,7 +257,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                             return;
                         }
                         else
-						{
+                        {
 							if (copyPasteFrom == Vector2(-1.f, -1.f))
 							{
 								return;
@@ -267,7 +267,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                     }
 
                     ResetAccumulatorRect();
-					editingIsEnabled = true;
+                    editingIsEnabled = true;
 					activeDrawingType = drawingType;
 				}
 				break;
@@ -279,7 +279,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
             FinishEditing();
             break;
         }
-	}
+    }
 }
 
 void TilemaskEditorSystem::FinishEditing()

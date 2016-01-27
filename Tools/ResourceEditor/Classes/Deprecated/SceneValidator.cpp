@@ -323,7 +323,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
     DAVA::Map<DAVA::Texture*, DAVA::String> texturesMap;
     auto endItMaterials = materials.end();
     for (auto it = materials.begin(); it != endItMaterials; ++it)
-	{
+    {
         for (const FastName& textureName : textureNames)
         {
             if ((*it)->HasLocalTexture(textureName))

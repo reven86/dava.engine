@@ -40,8 +40,8 @@ void TextureDescriptorUtils::ResaveDescriptorsForFolder(const FilePath &folderPa
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
-        if(IsCorrectDirectory(fileList, fi))
-		{
+        if (IsCorrectDirectory(fileList, fi))
+        {
             ResaveDescriptorsForFolder(pathname);
 		}
         else if(IsDescriptorPathname(pathname))
@@ -64,8 +64,8 @@ void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath &fold
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
-        if(IsCorrectDirectory(fileList, fi))
-		{
+        if (IsCorrectDirectory(fileList, fi))
+        {
 			CopyCompressionParamsForFolder(pathname);
 		}
 		else if(IsDescriptorPathname(pathname))
@@ -129,8 +129,8 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
-        if(IsCorrectDirectory(fileList, fi))
-		{
+        if (IsCorrectDirectory(fileList, fi))
+        {
 			CreateDescriptorsForFolder(pathname);
 		}
         else if(DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
@@ -180,8 +180,8 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         const FilePath& pathname = fileList->GetPathname(fi);
-        if(IsCorrectDirectory(fileList, fi))
-		{
+        if (IsCorrectDirectory(fileList, fi))
+        {
 			SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
 		}
 		else if(IsDescriptorPathname(pathname))
@@ -204,7 +204,7 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
     auto endIt = compressionParams.end();
     for (auto it = compressionParams.begin(); it != endIt; ++it)
     {
-		eGPUFamily gpu = it->first;
+        eGPUFamily gpu = it->first;
 
 		if(force || (descriptor->compression[gpu].format == FORMAT_INVALID))
 		{

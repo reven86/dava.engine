@@ -142,7 +142,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
             if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
             {
                 const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
-				EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
+                EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
 
 				DAVA::Entity *firstEntity = selectableItems.GetEntity(0);
 				DAVA::Entity *nextEntity = selectableItems.GetEntity(0);
@@ -201,7 +201,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
         {
             if (applyOnPhaseEnd)
             {
-				applyOnPhaseEnd = false;
+                applyOnPhaseEnd = false;
 				SetSelection(lastSelection);
 			}
 		}
@@ -276,7 +276,7 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
             auto entity = newSelection.GetEntity(i);
             if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
             {
-				curSelections.Add(entity, GetSelectionAABox(entity));
+                curSelections.Add(entity, GetSelectionAABox(entity));
 				selectionHasChanges = true;
 			}
 		}
@@ -469,7 +469,7 @@ void SceneSelectionSystem::SetLocked(bool lock)
     SceneSystem::SetLocked(lock);
 
     hoodSystem->LockAxis(lock);
-	hoodSystem->SetVisible(!lock);
+    hoodSystem->SetVisible(!lock);
 
 	if(!lock)
 	{

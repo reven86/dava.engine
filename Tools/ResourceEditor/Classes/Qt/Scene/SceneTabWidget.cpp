@@ -94,9 +94,9 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
 
-	SetCurrentTab(0);
+    SetCurrentTab(0);
 
     auto mouseWheelHandler = [&]( int ofs )
     {
@@ -408,7 +408,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
     }
     else
     {
-		TabBarDataDropped(data);
+        TabBarDataDropped(data);
 	}
 }
 
@@ -424,7 +424,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
     {
         switch (scene->modifSystem->GetModifMode())
         {
-		case ST_MODIF_MOVE:
+        case ST_MODIF_MOVE:
             view->setCursor(cursorMove);
             break;
         case ST_MODIF_ROTATE:
@@ -440,7 +440,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
         }
     }
     else
-	{
+    {
         view->unsetCursor();
     }
 }

@@ -40,7 +40,7 @@ public:
 
     virtual void Undo();
     virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const { return NULL; };
+    virtual DAVA::Entity* GetEntity() const { return NULL; };
 
 	DAVA::InspInfoDynamic *dynamicInfo;
 	DAVA::FastName key;

@@ -128,7 +128,7 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
                             if (!(memberFlags & DAVA::I_EDIT))
                             {
                                 dynamicMember->SetEnabled(false);
-							}
+                            }
 
 							retData->ChildAdd(membersList[i].c_str(), dynamicMember);
 						}

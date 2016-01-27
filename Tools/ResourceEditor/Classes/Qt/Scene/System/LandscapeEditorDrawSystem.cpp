@@ -158,7 +158,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     if (notPassableTerrainProxy->IsEnabled())
     {
         return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
+    }
 
 	eErrorType enableCustomDrawError = EnableCustomDraw();
 	if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
@@ -235,7 +235,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         if (customDrawRequestCount == 0)
         {
             UpdateBaseLandscapeHeightmap();
-		}
+        }
 		
 		heightmapProxy->ResetHeightmapChanged();
 	}
@@ -266,7 +266,7 @@ float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
     {
         size = (float32)texture->GetWidth();
     }
-	return size;
+    return size;
 }
 
 Vector3 LandscapeEditorDrawSystem::GetLandscapeSize()
@@ -639,7 +639,7 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
             break;
         case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
-			break;
+            break;
         case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
             break;
@@ -648,7 +648,7 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
             DVASSERT(false && "Unknown error");
             break;
         }
-    return ret;
+        return ret;
 }
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)

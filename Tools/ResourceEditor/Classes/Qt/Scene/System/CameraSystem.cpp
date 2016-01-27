@@ -392,7 +392,7 @@ void SceneCameraSystem::Draw()
                 }
             }
         }
-	}
+    }
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)

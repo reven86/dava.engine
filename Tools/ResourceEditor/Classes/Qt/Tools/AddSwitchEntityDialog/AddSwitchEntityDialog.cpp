@@ -65,7 +65,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
 
     AddControlToUserContainer(firstWidget, "First Entity:");
     AddControlToUserContainer(secondWidget, "Second Entity:");
-	AddControlToUserContainer(thirdWidget, "Third Entity:");
+    AddControlToUserContainer(thirdWidget, "Third Entity:");
 
 	pathWidgets.push_back(firstWidget);
 	pathWidgets.push_back(secondWidget);

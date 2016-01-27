@@ -398,8 +398,8 @@ bool Landscape::PlacePoint(const Vector3& worldPoint, Vector3& result, Vector3* 
 
     if (GetHeightAtPoint(worldPoint, result.z) == false)
     {
-		return false;
-	}
+        return false;
+    }
 
     if (normal != nullptr)
     {

@@ -200,7 +200,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                         // go to modification state
                         inModifState = true;
 
-						// select current hood axis as active
+                        // select current hood axis as active
 						if(curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
 						{
 							SetModifAxis(hoodSystem->GetPassingAxis());
@@ -237,7 +237,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                 DAVA::float32 rotateAngle;
                 DAVA::float32 scaleForce;
 
-				switch (curMode)
+                switch (curMode)
 				{
 				case ST_MODIF_MOVE:
 					{
@@ -287,7 +287,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                 {
                     if (modified)
                     {
-						if(cloneState == CLONE_DONE)
+                        if(cloneState == CLONE_DONE)
 						{
 							CloneEnd();
 						}

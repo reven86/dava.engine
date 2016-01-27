@@ -172,14 +172,14 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
         Vector3 point;
-		
-		switch(event->phase)
+
+        switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)
             {
-                    UpdateToolImage();
-					StoreOriginalState();
+                UpdateToolImage();
+                    StoreOriginalState();
 					editingIsEnabled = true;
 				}
 				break;
@@ -191,7 +191,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
             FinishEditing();
             break;
         }
-	}
+    }
 }
 
 void CustomColorsSystem::FinishEditing()
@@ -272,7 +272,7 @@ void CustomColorsSystem::SetBrushSize(int32 brushSize, bool updateDrawSystem /*=
         if (updateDrawSystem)
         {
             drawSystem->SetCursorSize(cursorSize);
-		}
+        }
 	}
 }
 

@@ -242,8 +242,8 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
         DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
 
         // remember all entity childs
-        for(i = 0; i < entity->GetChildrenCount(); ++i)
-		{
+        for (i = 0; i < entity->GetChildrenCount(); ++i)
+        {
 			entitiesSet.insert(entity->GetChild(i));
 		}
 

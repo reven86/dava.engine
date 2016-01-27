@@ -212,7 +212,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
     DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR == err)
     {
-		curScenePath = path;
+        curScenePath = path;
 		isLoaded = true;
 
 		// mark current position in command stack as clean
@@ -415,7 +415,7 @@ void SceneEditor2::Draw()
 
         modifSystem->Draw();
 
-		if(structureSystem)
+        if(structureSystem)
 			structureSystem->Draw();
 	}
  
@@ -432,7 +432,7 @@ void SceneEditor2::Draw()
         visibilityCheckSystem->Draw();
 
         // should be last
-		selectionSystem->Draw();
+        selectionSystem->Draw();
 		hoodSystem->Draw();
 		textDrawSystem->Draw();
     }
@@ -516,7 +516,7 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 	}
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
-	{
+    {
 		Exec(new ActionDisableHeightmapEditor(this));
 	}
 	
@@ -546,7 +546,7 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 	}
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
-	{
+    {
 		res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
 	}
 	

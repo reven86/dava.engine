@@ -78,118 +78,118 @@ MetalTextureFormat(TextureFormat format)
 {
     switch (format)
     {
-            //        case TEXTURE_FORMAT_A8R8G8B8    : return MTLPixelFormatBGRA8Unorm;
-        case TEXTURE_FORMAT_R8G8B8A8:
-            return MTLPixelFormatRGBA8Unorm;
-            //        TEXTURE_FORMAT_X8R8G8B8,
-            
-        case TEXTURE_FORMAT_R5G5B5A1:
-            return MTLPixelFormatA1BGR5Unorm;
-        case TEXTURE_FORMAT_R5G6B5:
-            return MTLPixelFormatB5G6R5Unorm;
-            
-        case TEXTURE_FORMAT_R4G4B4A4:
-            return MTLPixelFormatABGR4Unorm;
-            
-            //        TEXTURE_FORMAT_A16R16G16B16,
-            //        TEXTURE_FORMAT_A32R32G32B32,
-            
-        case TEXTURE_FORMAT_R8:
-            return MTLPixelFormatA8Unorm;
-            //        TEXTURE_FORMAT_R16,
-            
-        case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
-            return MTLPixelFormatPVRTC_RGBA_4BPP;
-        case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
-            return MTLPixelFormatPVRTC_RGBA_2BPP;
-            
-        case TEXTURE_FORMAT_PVRTC2_4BPP_RGB:
-            return MTLPixelFormatPVRTC_RGB_4BPP;
-        case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
-            return MTLPixelFormatPVRTC_RGBA_4BPP;
-        case TEXTURE_FORMAT_PVRTC2_2BPP_RGB:
-            return MTLPixelFormatPVRTC_RGB_2BPP;
-        case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
-            return MTLPixelFormatPVRTC_RGBA_2BPP;
-            
-            //        TEXTURE_FORMAT_ATC_RGB,
-            //        TEXTURE_FORMAT_ATC_RGBA_EXPLICIT,
-            //        TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED,
-            
-            //        TEXTURE_FORMAT_ETC1,
-        case TEXTURE_FORMAT_ETC2_R8G8B8:
-            return MTLPixelFormatETC2_RGB8;
-            //        case TEXTURE_FORMAT_ETC2_R8G8B8A8       : pf = MTLPixelFormatETC2_RGBA8; break;
-        case TEXTURE_FORMAT_ETC2_R8G8B8A1:
-            return MTLPixelFormatETC2_RGB8A1;
-            
-        case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
-            return MTLPixelFormatEAC_R11Unorm;
-        case TEXTURE_FORMAT_EAC_R11_SIGNED:
-            return MTLPixelFormatEAC_R11Snorm;
-            //        case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED : pf = MTLPixelFormatEAC_R11G11Unorm; break;
-            //        case TEXTURE_FORMAT_EAC_R11G11_SIGNED   : pf = MTLPixelFormatEAC_R11G11Snorm; break;
-            
-        case TEXTURE_FORMAT_D24S8:
-        case TEXTURE_FORMAT_D16:
-            return MTLPixelFormatDepth32Float;
-            
-        case TEXTURE_FORMAT_R16F:
-            return MTLPixelFormatR16Float;
-        case TEXTURE_FORMAT_R32F:
-            return MTLPixelFormatR32Float;
-        case TEXTURE_FORMAT_RG16F:
-            return MTLPixelFormatRG16Float;
-        case TEXTURE_FORMAT_RG32F:
-            return MTLPixelFormatRG32Float;
-        case TEXTURE_FORMAT_RGBA16F:
-            return MTLPixelFormatRGBA16Float;
-        case TEXTURE_FORMAT_RGBA32F:
-            return MTLPixelFormatRGBA32Float;
-            
-        default:
-            return MTLPixelFormatInvalid;
+    //        case TEXTURE_FORMAT_A8R8G8B8    : return MTLPixelFormatBGRA8Unorm;
+    case TEXTURE_FORMAT_R8G8B8A8:
+        return MTLPixelFormatRGBA8Unorm;
+    //        TEXTURE_FORMAT_X8R8G8B8,
+
+    case TEXTURE_FORMAT_R5G5B5A1:
+        return MTLPixelFormatA1BGR5Unorm;
+    case TEXTURE_FORMAT_R5G6B5:
+        return MTLPixelFormatB5G6R5Unorm;
+
+    case TEXTURE_FORMAT_R4G4B4A4:
+        return MTLPixelFormatABGR4Unorm;
+
+    //        TEXTURE_FORMAT_A16R16G16B16,
+    //        TEXTURE_FORMAT_A32R32G32B32,
+
+    case TEXTURE_FORMAT_R8:
+        return MTLPixelFormatA8Unorm;
+    //        TEXTURE_FORMAT_R16,
+
+    case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
+        return MTLPixelFormatPVRTC_RGBA_4BPP;
+    case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
+        return MTLPixelFormatPVRTC_RGBA_2BPP;
+
+    case TEXTURE_FORMAT_PVRTC2_4BPP_RGB:
+        return MTLPixelFormatPVRTC_RGB_4BPP;
+    case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
+        return MTLPixelFormatPVRTC_RGBA_4BPP;
+    case TEXTURE_FORMAT_PVRTC2_2BPP_RGB:
+        return MTLPixelFormatPVRTC_RGB_2BPP;
+    case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
+        return MTLPixelFormatPVRTC_RGBA_2BPP;
+
+    //        TEXTURE_FORMAT_ATC_RGB,
+    //        TEXTURE_FORMAT_ATC_RGBA_EXPLICIT,
+    //        TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED,
+
+    //        TEXTURE_FORMAT_ETC1,
+    case TEXTURE_FORMAT_ETC2_R8G8B8:
+        return MTLPixelFormatETC2_RGB8;
+    //        case TEXTURE_FORMAT_ETC2_R8G8B8A8       : pf = MTLPixelFormatETC2_RGBA8; break;
+    case TEXTURE_FORMAT_ETC2_R8G8B8A1:
+        return MTLPixelFormatETC2_RGB8A1;
+
+    case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
+        return MTLPixelFormatEAC_R11Unorm;
+    case TEXTURE_FORMAT_EAC_R11_SIGNED:
+        return MTLPixelFormatEAC_R11Snorm;
+    //        case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED : pf = MTLPixelFormatEAC_R11G11Unorm; break;
+    //        case TEXTURE_FORMAT_EAC_R11G11_SIGNED   : pf = MTLPixelFormatEAC_R11G11Snorm; break;
+
+    case TEXTURE_FORMAT_D24S8:
+    case TEXTURE_FORMAT_D16:
+        return MTLPixelFormatDepth32Float;
+
+    case TEXTURE_FORMAT_R16F:
+        return MTLPixelFormatR16Float;
+    case TEXTURE_FORMAT_R32F:
+        return MTLPixelFormatR32Float;
+    case TEXTURE_FORMAT_RG16F:
+        return MTLPixelFormatRG16Float;
+    case TEXTURE_FORMAT_RG32F:
+        return MTLPixelFormatRG32Float;
+    case TEXTURE_FORMAT_RGBA16F:
+        return MTLPixelFormatRGBA16Float;
+    case TEXTURE_FORMAT_RGBA32F:
+        return MTLPixelFormatRGBA32Float;
+
+    default:
+        return MTLPixelFormatInvalid;
     }
 }
-    
+
 static MTLPixelFormat
 MetalRenderableTextureFormat(TextureFormat format)
 {
     switch (format)
     {
-        case TEXTURE_FORMAT_R8G8B8A8:
-            return MTLPixelFormatRGBA8Unorm;
-        case TEXTURE_FORMAT_R8:
-            return MTLPixelFormatR8Unorm;
-        case TEXTURE_FORMAT_R16:
-            return MTLPixelFormatR16Unorm;
-        case TEXTURE_FORMAT_R5G6B5:
-            return MTLPixelFormatB5G6R5Unorm;
-        case TEXTURE_FORMAT_R5G5B5A1:
-            return MTLPixelFormatA1BGR5Unorm;
-        case TEXTURE_FORMAT_R4G4B4A4:
-            return MTLPixelFormatABGR4Unorm;
-        case TEXTURE_FORMAT_D16:
-            return MTLPixelFormatDepth32Float;
-        case TEXTURE_FORMAT_R16F:
-            return MTLPixelFormatR16Float;
-        case TEXTURE_FORMAT_R32F:
-            return MTLPixelFormatR32Float;
-        case TEXTURE_FORMAT_RG16F:
-            return MTLPixelFormatRG16Float;
-        case TEXTURE_FORMAT_RG32F:
-            return MTLPixelFormatRG32Float;
-        case TEXTURE_FORMAT_RGBA16F:
-            return MTLPixelFormatRGBA16Float;
-        case TEXTURE_FORMAT_RGBA32F:
-            return MTLPixelFormatRGBA32Float;
-        case TEXTURE_FORMAT_D24S8:
-            return MTLPixelFormatDepth32Float;
-        default:
-        {
-            DAVA::Logger::Error("Invalid or unsupported renderable format requested: %u", static_cast<DAVA::uint32>(format));
-            return MTLPixelFormatRGBA8Unorm;
-        }
+    case TEXTURE_FORMAT_R8G8B8A8:
+        return MTLPixelFormatRGBA8Unorm;
+    case TEXTURE_FORMAT_R8:
+        return MTLPixelFormatR8Unorm;
+    case TEXTURE_FORMAT_R16:
+        return MTLPixelFormatR16Unorm;
+    case TEXTURE_FORMAT_R5G6B5:
+        return MTLPixelFormatB5G6R5Unorm;
+    case TEXTURE_FORMAT_R5G5B5A1:
+        return MTLPixelFormatA1BGR5Unorm;
+    case TEXTURE_FORMAT_R4G4B4A4:
+        return MTLPixelFormatABGR4Unorm;
+    case TEXTURE_FORMAT_D16:
+        return MTLPixelFormatDepth32Float;
+    case TEXTURE_FORMAT_R16F:
+        return MTLPixelFormatR16Float;
+    case TEXTURE_FORMAT_R32F:
+        return MTLPixelFormatR32Float;
+    case TEXTURE_FORMAT_RG16F:
+        return MTLPixelFormatRG16Float;
+    case TEXTURE_FORMAT_RG32F:
+        return MTLPixelFormatRG32Float;
+    case TEXTURE_FORMAT_RGBA16F:
+        return MTLPixelFormatRGBA16Float;
+    case TEXTURE_FORMAT_RGBA32F:
+        return MTLPixelFormatRGBA32Float;
+    case TEXTURE_FORMAT_D24S8:
+        return MTLPixelFormatDepth32Float;
+    default:
+    {
+        DAVA::Logger::Error("Invalid or unsupported renderable format requested: %u", static_cast<DAVA::uint32>(format));
+        return MTLPixelFormatRGBA8Unorm;
+    }
     }
 }
 
@@ -249,7 +249,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                         _FlipRGBA4_ABGR4(texDesc.initialData[m], sz);
                     else if (texDesc.format == TEXTURE_FORMAT_R5G5B5A1)
                         _ABGR1555toRGBA5551(texDesc.initialData[m], sz);
-                    
+
                     if ((texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA) || (texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA))
                     {
                         stride = 0;

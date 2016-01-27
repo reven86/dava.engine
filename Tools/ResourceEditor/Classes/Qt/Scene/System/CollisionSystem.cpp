@@ -71,15 +71,15 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 
 	objectsCollConf = new btDefaultCollisionConfiguration();
     objectsCollDisp = DAVA::CreateObjectAligned<btCollisionDispatcher, 16>(objectsCollConf);
-    objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
+    objectsBroadphase = new btAxisSweep3(worldMin, worldMax);
     objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
     objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
     objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
 
-	landCollConf = new btDefaultCollisionConfiguration();
+    landCollConf = new btDefaultCollisionConfiguration();
     landCollDisp = DAVA::CreateObjectAligned<btCollisionDispatcher, 16>(landCollConf);
-    landBroadphase = new btAxisSweep3(worldMin,worldMax);
+    landBroadphase = new btAxisSweep3(worldMin, worldMax);
     landDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
     landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
@@ -225,11 +225,11 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Ve
         btVector3 btTo = btFrom + btStep;
 
         btCollisionWorld::ClosestRayResultCallback btCallback(btFrom, btTo);
-		landCollWorld->rayTest(btFrom, btTo, btCallback);
+        landCollWorld->rayTest(btFrom, btTo, btCallback);
 
         if (btCallback.hasHit())
         {
-			btVector3 hitPoint = btCallback.m_hitPointWorld;
+            btVector3 hitPoint = btCallback.m_hitPointWorld;
 			ret = DAVA::Vector3(hitPoint.x(), hitPoint.y(), hitPoint.z());
 			landIntersectCachedResult = true;
 			break;
@@ -239,7 +239,7 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Ve
         rayLength -= stepSize;
     }
 
-	lastLandCollision = ret;
+    lastLandCollision = ret;
 	intersectionPoint = ret;
 
 	return landIntersectCachedResult;
@@ -342,7 +342,7 @@ void SceneCollisionSystem::Draw()
     if (drawMode & CS_DRAW_LAND)
     {
         landCollWorld->debugDrawWorld();
-	}
+    }
 
 	if(drawMode & CS_DRAW_LAND_RAYTEST)
 	{
@@ -356,7 +356,7 @@ void SceneCollisionSystem::Draw()
 
     if (drawMode & CS_DRAW_OBJECTS)
     {
-		objectsCollWorld->debugDrawWorld();
+        objectsCollWorld->debugDrawWorld();
 	}
 
 	if(drawMode & CS_DRAW_OBJECTS_RAYTEST)
@@ -366,7 +366,7 @@ void SceneCollisionSystem::Draw()
 
     if (drawMode & CS_DRAW_OBJECTS_SELECTED)
     {
-		// current selected entities
+        // current selected entities
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
 		if(NULL != selectionSystem)
 		{

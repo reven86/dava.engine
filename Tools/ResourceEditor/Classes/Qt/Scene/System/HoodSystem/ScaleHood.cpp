@@ -92,7 +92,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
     // xy xz yz plane
     if (mouseOverAxis)
     {
-		DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
+        DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 
 		DAVA::Polygon3 poly;
 		poly.AddPoint(axisXY->curFrom);
@@ -114,7 +114,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
 
     if (0 != modifScale)
     {
-		char tmp[255];
+        char tmp[255];
 		DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
 
 		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifScale, modifScale, modifScale);

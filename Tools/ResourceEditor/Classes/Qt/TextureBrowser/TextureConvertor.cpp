@@ -158,7 +158,7 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
         // add jobs to convert every texture
         if (allTextures.size() > 0)
         {
-			DAVA::TexturesMap::iterator begin = allTextures.begin();
+            DAVA::TexturesMap::iterator begin = allTextures.begin();
 			DAVA::TexturesMap::iterator end = allTextures.end();
 
 			for(; begin != end; begin++)

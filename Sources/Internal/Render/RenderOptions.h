@@ -87,7 +87,7 @@ public:
         OPTIONS_COUNT
     };
 
-	bool IsOptionEnabled(RenderOption option);
+    bool IsOptionEnabled(RenderOption option);
 	void SetOption(RenderOption option, bool value);
     FastName GetOptionName(RenderOption option);
     RenderOptions();

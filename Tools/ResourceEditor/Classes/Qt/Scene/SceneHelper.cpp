@@ -111,14 +111,14 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
         {
             continue;
         }
-		
-		DAVA::TextureDescriptor *descriptor = texture->GetDescriptor();
+
+        DAVA::TextureDescriptor *descriptor = texture->GetDescriptor();
         DVASSERT(descriptor);
         DVASSERT(descriptor->compression);
 
         DAVA::Vector<DAVA::eGPUFamily> markedGPUs;
-        for(int i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
-		{
+        for (int i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
+        {
 			eGPUFamily gpu = (eGPUFamily)i;
 			if(GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))
 			{
@@ -133,7 +133,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
         if (markedGPUs.size() > 0)
         {
             textures[texture] = markedGPUs;
-		}
+        }
 	}
 	return retValue;
 }

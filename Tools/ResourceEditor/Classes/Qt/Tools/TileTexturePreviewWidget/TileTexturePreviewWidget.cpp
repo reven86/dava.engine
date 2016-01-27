@@ -87,7 +87,7 @@ void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& co
 
     images.push_back(SafeRetain(previewTexture));
 
-	QTreeWidgetItem* item = new QTreeWidgetItem();
+    QTreeWidgetItem* item = new QTreeWidgetItem();
 	item->setCheckState(0, Qt::Unchecked);
 	addTopLevelItem(item);
 
@@ -227,7 +227,7 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
     palette.setColor(labels[number]->backgroundRole(), color);
     labels[number]->setPalette(palette);
 
-	QString str;
+    QString str;
 	str.sprintf("#%02x%02x%02x", color.red(), color.green(), color.blue());
 	item->setText(0, str);
 

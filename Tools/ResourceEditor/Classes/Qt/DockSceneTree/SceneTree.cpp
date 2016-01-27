@@ -323,7 +323,7 @@ void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QIte
     SyncSelectionFromTree();
 
     // emit some signal about particles
-	EmitParticleSignals(selected);
+    EmitParticleSignals(selected);
 }
 
 void SceneTree::TreeItemClicked(const QModelIndex & index)
@@ -679,7 +679,7 @@ void SceneTree::EditModel()
                 }
             }
         }
-	}
+    }
 }
 
 void SceneTree::ReloadModel()
@@ -708,7 +708,7 @@ void SceneTree::ReloadModel()
         if (QDialog::Accepted == dlg.exec())
         {
             EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
-			String wrongPathes;
+            String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
 				DAVA::Entity *entity = selection.GetEntity(i);
@@ -865,8 +865,8 @@ void SceneTree::SyncSelectionToTree()
         SceneTreeDetails::SyncGuard guard(isInSync);
 
         SceneEditor2* curScene = treeModel->GetScene();
-        if(NULL != curScene)
-		{
+        if (NULL != curScene)
+        {
 			QModelIndex lastValidIndex;
 
 			selectionModel()->clear();
@@ -899,8 +899,8 @@ void SceneTree::SyncSelectionFromTree()
         SceneTreeDetails::SyncGuard guard(isInSync);
 
         SceneEditor2* curScene = treeModel->GetScene();
-        if(NULL != curScene)
-		{
+        if (NULL != curScene)
+        {
 			// select items in scene
 			EntityGroup group;
 

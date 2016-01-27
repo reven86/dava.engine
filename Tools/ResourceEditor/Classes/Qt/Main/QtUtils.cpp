@@ -205,7 +205,7 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
     {
         String newString = sourceString;
         newString = newString.replace(pos, what.length(), on);
-		return newString;
+        return newString;
 	}
 
 	return sourceString;

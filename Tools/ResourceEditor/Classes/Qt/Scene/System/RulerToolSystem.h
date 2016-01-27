@@ -73,7 +73,7 @@ protected:
     void DisablePreview();
     void SendUpdatedLength();
 
-	void Clear();
+    void Clear();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__RULERTOOLSYSTEM__) */

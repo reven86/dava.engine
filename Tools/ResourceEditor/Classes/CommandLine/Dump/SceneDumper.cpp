@@ -127,8 +127,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
     switch (renderObject->GetType())
     {
-        case RenderObject::TYPE_LANDSCAPE:
-		{
+    case RenderObject::TYPE_LANDSCAPE:
+        {
 			Landscape *landscape = static_cast<Landscape *> (renderObject);
 			links.insert(landscape->GetHeightmapPathname());
 			break;
@@ -144,7 +144,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
         }
 
         default:
-			break;
+            break;
 	}
 
     //Enumerate textures from materials
@@ -152,7 +152,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
     const uint32 count = renderObject->GetRenderBatchCount();
     for (uint32 rb = 0; rb < count; ++rb)
     {
-		auto renderBatch = renderObject->GetRenderBatch(rb);
+        auto renderBatch = renderObject->GetRenderBatch(rb);
 		auto material = renderBatch->GetMaterial();
 
 		while (nullptr != material)

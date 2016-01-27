@@ -79,7 +79,7 @@ void TextureProperties::setTextureDescriptor(DAVA::TextureDescriptor *descriptor
         // we don't know avaliable mipmap sizes for newly set texture until setOriginalSize() method will be called by user
         MipMapSizesReset();
 
-		// reload all properties for current gpu and from current descriptor 
+        // reload all properties for current gpu and from current descriptor 
 		ReloadProperties();
 	}
 	else
@@ -213,7 +213,7 @@ void TextureProperties::ReloadProperties()
 
         ReloadEnumFormats();
         ReloadEnumWrap();
-		ReloadEnumFilters();
+        ReloadEnumFilters();
 
 		SetPropertyItemValidValues(propWrapModeS, &enumWpar);
 		SetPropertyItemValidValues(propWrapModeT, &enumWpar);
@@ -223,8 +223,8 @@ void TextureProperties::ReloadProperties()
         SetPropertyItemValidValues(propFormat, &enumFormats);
         SetPropertyItemValidValues(propSizes, &enumSizes);
 
-        if(0 == enumSizes.GetCount())
-		{
+        if (0 == enumSizes.GetCount())
+        {
 			propSizes->SetEnabled(false);
 		}
 
@@ -305,7 +305,7 @@ QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const DAVA::FastNam
         }
     }
 
-	return ret;
+    return ret;
 }
 
 void TextureProperties::SetPropertyItemValidValues(QtPropertyDataInspMember* item, EnumMap *validValues)
@@ -366,7 +366,7 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
     }
     else if (data == propWrapModeS || data == propWrapModeT)
     {
-		emit PropertyChanged(PROP_WRAP);
+        emit PropertyChanged(PROP_WRAP);
 	}
 	else if(data == propSizes)
 	{
@@ -399,7 +399,7 @@ void TextureProperties::LoadCurSizeToProp()
 
         if (-1 != level)
         {
-			skipPropSizeChanged = true;
+            skipPropSizeChanged = true;
 			propSizes->SetValue(level);
             propSizes->UpdateValue(true);
 			skipPropSizeChanged = false;
@@ -417,7 +417,7 @@ void TextureProperties::SaveCurSizeFromProp()
         if (availableSizes.contains(level))
         {
             DVASSERT(curTextureDescriptor->compression);
-			curTextureDescriptor->compression[curGPU].compressToWidth = availableSizes[level].width();
+            curTextureDescriptor->compression[curGPU].compressToWidth = availableSizes[level].width();
 			curTextureDescriptor->compression[curGPU].compressToHeight = availableSizes[level].height();
 		}
 	}

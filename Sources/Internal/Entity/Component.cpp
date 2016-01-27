@@ -126,7 +126,7 @@ Component * Component::CreateByType(uint32 componentType)
         return new VisibilityCheckComponent();
 
     case ANIMATION_COMPONENT:
-	case COLLISION_COMPONENT:
+    case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
         
 	default:

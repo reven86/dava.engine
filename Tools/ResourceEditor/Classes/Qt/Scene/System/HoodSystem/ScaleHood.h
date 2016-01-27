@@ -41,9 +41,9 @@ struct ScaleHood : public HoodObject
 
     HoodCollObject* axisX;
     HoodCollObject* axisY;
-    HoodCollObject *axisZ;
+    HoodCollObject* axisZ;
 
-	HoodCollObject *axisXY;
+    HoodCollObject *axisXY;
 	HoodCollObject *axisXZ;
 	HoodCollObject *axisYZ;
 

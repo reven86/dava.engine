@@ -72,7 +72,7 @@ public:
 
     virtual void Undo();
     virtual void Redo();
-	virtual Entity* GetEntity() const;
+    virtual Entity* GetEntity() const;
 
 protected:
 	CustomColorsProxy* customColorsProxy;

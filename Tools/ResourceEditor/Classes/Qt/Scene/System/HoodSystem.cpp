@@ -59,7 +59,7 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
     collWorld = new btCollisionWorld(collDispatcher, collBroadphase, collConfiguration);
     collWorld->setDebugDrawer(collDebugDraw);
 
-	SetModifAxis(ST_AXIS_X);
+    SetModifAxis(ST_AXIS_X);
 	SetModifMode(ST_MODIF_MOVE);
 
 	moveHood.colorX = DAVA::Color(1, 0, 0, 1);
@@ -343,9 +343,9 @@ void HoodSystem::Draw()
 {
     if (NULL != curHood && IsVisible())
     {
-        TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
+        TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
 
-		// modification isn't locked and whole system isn't locked
+        // modification isn't locked and whole system isn't locked
 		if(!IsLocked() && !lockedModif)
 		{
 			ST_Axis showAsSelected = curAxis;
@@ -367,7 +367,7 @@ void HoodSystem::Draw()
             //collWorld->debugDrawWorld();
         }
         else
-		{
+        {
             normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
         }
     }
