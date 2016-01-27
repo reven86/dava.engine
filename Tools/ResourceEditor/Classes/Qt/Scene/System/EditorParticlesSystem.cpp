@@ -72,7 +72,7 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
     {
         if (NULL != effectEntity)
         {
-			DAVA::AABBox3 wordBox;
+            DAVA::AABBox3 wordBox;
 			DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
 			collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
 			// Get sphere radius (size) of debug effect
@@ -106,7 +106,7 @@ void EditorParticlesSystem::Draw()
         DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
         switch (selectedEmitter->emitterType)
-		{
+        {
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
 			{
@@ -292,7 +292,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
             break;
         }
 
-		case CMDID_PARTICLE_FORCE_UPDATE:
+        case CMDID_PARTICLE_FORCE_UPDATE:
 		{
 			const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
 			SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
@@ -355,7 +355,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
         case CMDID_PARTICLE_EMITTER_LAYER_ADD:
         {
             const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
-			SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
+            SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
 			break;
 		}
 // Return to this code when implementing Layer popup menus.

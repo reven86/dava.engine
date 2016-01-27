@@ -368,7 +368,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
                 QColor c = gpuInfoColors[i];
 
                 painter->setPen(Qt::NoPen);
-				painter->setBrush(c);
+                painter->setBrush(c);
 				painter->drawRect(r);
 			}
 

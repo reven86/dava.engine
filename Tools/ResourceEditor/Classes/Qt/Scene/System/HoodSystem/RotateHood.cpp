@@ -80,8 +80,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     DAVA::Color lineColor = colorX;
 
     // x
-    if(selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ) 
-	{
+    if (selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ)
+    {
 		if(0 == modifRotate)
 		{
 			DAVA::Polygon3 poly;
@@ -94,7 +94,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
             drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
         }
         // draw rotate circle
-		else
+        else
 		{
 			DAVA::float32 step = modifRotate / 24;
 			DAVA::Color modifColor = colorX;
@@ -130,8 +130,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 
     lineColor = colorY;
     // y
-    if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ) 
-	{
+    if (selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ)
+    {
 		if(0 == modifRotate)
 		{
 			DAVA::Polygon3 poly;
@@ -144,7 +144,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
             drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
         }
         // draw rotate circle
-		else
+        else
 		{
 			DAVA::float32 step = modifRotate / 24;
 			DAVA::Color modifColor = colorY;
@@ -180,8 +180,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 
     lineColor = colorZ;
     // z
-    if(selectedAxis == ST_AXIS_Z || selectedAxis == ST_AXIS_XY)
-	{
+    if (selectedAxis == ST_AXIS_Z || selectedAxis == ST_AXIS_XY)
+    {
 		if(0 == modifRotate)
 		{
 			DAVA::Polygon3 poly;
@@ -194,7 +194,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
             drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
         }
         // draw rotate circle
-		else
+        else
 		{
 			DAVA::float32 step = modifRotate / 24;
 			DAVA::Color modifColor = colorZ;
@@ -229,7 +229,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     }
 
     // draw axis spheres
-	DAVA::float32 radius = axisX->curScale * baseSize / 24;
+    DAVA::float32 radius = axisX->curScale * baseSize / 24;
 
     drawer->DrawIcosahedron(axisX->curTo, radius, colorX, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
     drawer->DrawIcosahedron(axisY->curTo, radius, colorY, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
@@ -237,8 +237,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 
     DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
-    if(0 != modifRotate)
-	{
+    if (0 != modifRotate)
+    {
 		char tmp[255];
 		tmp[0] = 0;
 

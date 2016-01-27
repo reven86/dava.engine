@@ -138,7 +138,7 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
         {
             retList.push_back(entity);
         }
-	}
+    }
 	// for just created entities no need to increase refCouner
 	// it will be released in ~SelectEntityPathWidget()
 	SetEntities(retList, false);

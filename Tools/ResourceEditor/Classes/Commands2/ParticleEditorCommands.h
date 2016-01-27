@@ -292,8 +292,8 @@ protected:
 	float32 scaleVelocityFactor;
 	bool inheritPosition;
 	bool isLooped;
-	int32 particleOrientation;
-	RefPtr< PropertyLine<float32> > life;
+    int32 particleOrientation;
+    RefPtr< PropertyLine<float32> > life;
 	RefPtr< PropertyLine<float32> > lifeVariation;
 	RefPtr< PropertyLine<float32> > number;
 	RefPtr< PropertyLine<float32> > numberVariation;

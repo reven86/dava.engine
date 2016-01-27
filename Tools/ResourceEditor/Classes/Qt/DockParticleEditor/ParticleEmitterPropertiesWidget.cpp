@@ -104,7 +104,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 
     shortEffectCheckBox = new QCheckBox("Short effect");
     mainLayout->addWidget(shortEffectCheckBox);
-	connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
 	QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
 	emitterTypeHBox->addWidget(new QLabel("type"));
@@ -300,7 +300,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 
     blockSignals = true;
 
-	emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
+    emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
 	shortEffectCheckBox->setChecked(emitter->shortEffect);
 
 	float32 emitterLifeTime = emitter->lifeTime;

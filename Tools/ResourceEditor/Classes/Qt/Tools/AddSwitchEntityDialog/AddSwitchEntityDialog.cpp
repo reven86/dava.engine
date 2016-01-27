@@ -64,7 +64,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
     SelectEntityPathWidget* thirdWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(), "");
 
     AddControlToUserContainer(firstWidget, "First Entity:");
-	AddControlToUserContainer(secondWidget, "Second Entity:");
+    AddControlToUserContainer(secondWidget, "Second Entity:");
 	AddControlToUserContainer(thirdWidget, "Third Entity:");
 
 	pathWidgets.push_back(firstWidget);

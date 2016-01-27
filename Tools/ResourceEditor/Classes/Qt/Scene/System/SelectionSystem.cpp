@@ -133,12 +133,12 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
     {
         // we can select only if mouse isn't over hood axis
-		// or if hood is invisible now
-		// or if current mode is NORMAL (no modification)
-		if(!hoodSystem->IsVisible() ||
-			ST_MODIF_OFF == hoodSystem->GetModifMode() ||
-			ST_AXIS_NONE == hoodSystem->GetPassingAxis())
-		{
+        // or if hood is invisible now
+        // or if current mode is NORMAL (no modification)
+        if (!hoodSystem->IsVisible() ||
+            ST_MODIF_OFF == hoodSystem->GetModifMode() ||
+            ST_AXIS_NONE == hoodSystem->GetPassingAxis())
+        {
             if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
             {
                 const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
@@ -199,8 +199,8 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
     {
         if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
         {
-            if(applyOnPhaseEnd)
-			{
+            if (applyOnPhaseEnd)
+            {
 				applyOnPhaseEnd = false;
 				SetSelection(lastSelection);
 			}
@@ -232,14 +232,14 @@ void SceneSelectionSystem::Draw()
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
             }
             // draw selection share
-			else if(drawMode & SS_DRAW_CORNERS)
-			{
+            else if (drawMode & SS_DRAW_CORNERS)
+            {
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
             }
 
             // fill selection shape
-			if(drawMode & SS_DRAW_BOX)
-			{
+            if (drawMode & SS_DRAW_BOX)
+            {
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
             }
         }
@@ -274,8 +274,8 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
         for (uint32 i = 0; i < count; ++i)
         {
             auto entity = newSelection.GetEntity(i);
-			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
-			{
+            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+            {
 				curSelections.Add(entity, GetSelectionAABox(entity));
 				selectionHasChanges = true;
 			}

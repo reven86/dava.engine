@@ -27,66 +27,32 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPANEL__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLPANEL__
+#ifndef __DAVAENGINE_ALIGNED_ALLOCATOR_H__
+#define __DAVAENGINE_ALIGNED_ALLOCATOR_H__
 
-#include "LandscapeEditorBasePanel.h"
-#include "DAVAEngine.h"
-#include "../../Scene/System/VisibilityToolSystem.h"
+#include <stdlib.h>
+#include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 
-using namespace DAVA;
-
-class QPushButton;
-class SliderWidget;
-
-class VisibilityToolPanel: public LandscapeEditorBasePanel
+namespace DAVA
 {
-	Q_OBJECT
+void* AllocateAlignedMemory(uint32 size, uint32 align);
+void FreeAlignedMemory(void*);
 
-public:
-	static const int DEF_AREA_MIN_SIZE = 3;
-	static const int DEF_AREA_MAX_SIZE = 40;
+template <class C, uint32 align, class... Args>
+C* CreateObjectAligned(Args&&... a)
+{
+    auto ptr = AllocateAlignedMemory(sizeof(C), align);
+    return new (ptr) C(std::forward<Args>(a)...);
+}
 
-	explicit VisibilityToolPanel(QWidget* parent = 0);
-	~VisibilityToolPanel();
+template <class C>
+void DestroyObjectAligned(C* c)
+{
+    DVASSERT(nullptr != c);
+    c->~C();
+    FreeAlignedMemory(c);
+}
+}
 
-private slots:
-	void SetVisibilityToolButtonsState(SceneEditor2* scene,
-									   VisibilityToolSystem::eVisibilityToolState state);
-
-	void SaveTexture();
-	void SetVisibilityPoint();
-	void SetVisibilityArea();
-	void SetVisibilityAreaSize(int areaSize);
-
-	void IncreaseBrushSize();
-	void DecreaseBrushSize();
-	void IncreaseBrushSizeLarge();
-	void DecreaseBrushSizeLarge();
-
-protected:
-	virtual bool GetEditorEnabled();
-
-	virtual void SetWidgetsState(bool enabled);
-	virtual void BlockAllSignals(bool block);
-
-	virtual void InitUI();
-	virtual void ConnectToSignals();
-
-	virtual void StoreState();
-	virtual void RestoreState();
-
-	virtual void ConnectToShortcuts();
-	virtual void DisconnectFromShortcuts();
-
-private:
-	QPushButton* buttonSetVisibilityPoint;
-	QPushButton* buttonSetVisibilityArea;
-	QPushButton* buttonSaveTexture;
-	SliderWidget* sliderWidgetAreaSize;
-
-	int32 AreaSizeUIToSystem(int32 uiValue);
-	int32 AreaSizeSystemToUI(int32 systemValue);
-};
-
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPANEL__) */
+#endif //__DAVAENGINE_ALIGNED_ALLOCATOR_H__

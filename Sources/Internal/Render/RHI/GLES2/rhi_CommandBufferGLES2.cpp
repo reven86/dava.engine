@@ -1855,8 +1855,7 @@ _GLES2_ExecuteQueuedCommands()
             _GLES2_PendingScreenshotCallback = nullptr;
         }
         _GLES2_ScreenshotCallbackSync.Unlock();
-        
-        
+
         // do swap-buffers
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
@@ -2000,8 +1999,8 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                     _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                     _GLES2_PendingImmediateCmd = nullptr;
                     _GLES2_PendingImmediateCmdCount = 0;
-                //Trace("exec-imm-cmd done\n");
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+                    //Trace("exec-imm-cmd done\n");
+                    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
                 }
                 _GLES2_PendingImmediateCmdSync.Unlock();
 
@@ -2262,13 +2261,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
             cmd->status = err;
         }
         break;
-        
-        case GLCommand::PIXEL_STORE_I :
+
+        case GLCommand::PIXEL_STORE_I:
         {
-            EXEC_GL(glPixelStorei( (GLenum)(arg[0]), (GLint)(arg[1]) ));
+            EXEC_GL(glPixelStorei((GLenum)(arg[0]), (GLint)(arg[1])));
             cmd->retval = 0;
             cmd->status = err;
-        }   break;
+        }
+        break;
 
         case GLCommand::READ_PIXELS:
         {

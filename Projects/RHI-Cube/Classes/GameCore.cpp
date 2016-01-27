@@ -972,11 +972,11 @@ void GameCore::OnForeground()
 void GameCore::Update(float32 timeElapsed)
 {
     static float screenshot_ttw = 5.0f;
-    
+
     screenshot_ttw -= timeElapsed;
-    if( screenshot_ttw < 0 )
+    if (screenshot_ttw < 0)
     {
-        rhi::TakeScreenshot( &ScreenShotCallback );
+        rhi::TakeScreenshot(&ScreenShotCallback);
         screenshot_ttw = 5.0f;
     }
 

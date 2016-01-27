@@ -103,7 +103,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     resetTextureInfo();
 
     // let textures list show images-view by default
-	ui->actionViewImagesList->trigger();
+    ui->actionViewImagesList->trigger();
 
 	// let textures view show border by default
 	// ui->actionShowBorder->trigger();
@@ -855,7 +855,7 @@ void TextureBrowser::textureZoomFit(bool checked)
             if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
             {
                 QSize size = ui->textureAreaOriginal->getContentSize();
-				w = size.width();
+                w = size.width();
 				h = size.height();
 			}
 			else

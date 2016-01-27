@@ -76,7 +76,7 @@ protected:
 
         DAVA::Vector2 pos;
         DAVA::String text;
-		DAVA::Color color;
+        DAVA::Color color;
 		Align align;
 	};
 

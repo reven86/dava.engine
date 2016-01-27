@@ -83,7 +83,7 @@ private:
     QLineEdit* emitterYamlPath;
     QComboBox* emitterType;
 
-	EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
+    EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
 
 	QCheckBox* shortEffectCheckBox;
 

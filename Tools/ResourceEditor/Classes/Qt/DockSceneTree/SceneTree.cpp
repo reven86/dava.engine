@@ -678,7 +678,7 @@ void SceneTree::EditModel()
                     ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
                 }
             }
-		}
+        }
 	}
 }
 
@@ -1178,7 +1178,6 @@ void SceneTree::LoadInnerEmitterFromYaml()
     sceneEditor->MarkAsChanged();
 
     treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
-
 }
 void SceneTree::SaveInnerEmitterToYaml()
 {

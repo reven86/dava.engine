@@ -79,7 +79,7 @@ public:
     RenderObject* GetRenderObject();
     void SetHeightmap(Heightmap* heightmap);
 
-	void CursorEnable();
+    void CursorEnable();
 	void CursorDisable();
 	void SetCursorTexture(Texture* texture);
     void SetCursorSize(float32 size);
@@ -87,7 +87,7 @@ public:
 
     Vector3 PlacePoint(const Vector3& point);
 
-	bool IsTilemaskChanged();
+    bool IsTilemaskChanged();
 	void ResetTilemaskChanged();
 	void IncreaseTilemaskChanges();
 	void DecreaseTilemaskChanges();

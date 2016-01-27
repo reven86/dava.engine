@@ -40,6 +40,20 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_ARB)
+#   define GL_RGBA32F GL_RGBA32F_ARB
+#endif
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_EXT)
+#   define GL_RGBA32F GL_RGBA32F_EXT
+#endif
+
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_ARB)
+#   define GL_RGBA16F GL_RGBA16F_ARB
+#endif
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_EXT)
+#   define GL_RGBA16F GL_RGBA16F_EXT
+#endif
+
 GLuint _GLES2_Binded_FrameBuffer = 0;
 GLuint _GLES2_Default_FrameBuffer = 0;
 void* _GLES2_Native_Window = nullptr;
@@ -78,6 +92,10 @@ static bool EAC_Supported = false;
 static bool DXT_Supported = false;
 static bool Float_Supported = false;
 static bool Half_Supported = false;
+static bool RG16F_Supported = false;
+static bool RGBA16F_Supported = false;
+static bool RG32F_Supported = false;
+static bool RGBA32F_Supported = false;
 
 static RenderDeviceCaps _GLES2_DeviceCaps = {};
 
@@ -188,6 +206,14 @@ gles_check_GL_extensions()
         Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
 
+        RGBA16F_Supported = strstr(ext, "OES_texture_half_float") != nullptr;
+        RGBA32F_Supported = (strstr(ext, "OES_texture_float") != nullptr) || (strstr(ext, "ARB_texture_float") != nullptr);
+        
+        bool hasARBTextureRG = (strstr(ext, "GL_ARB_texture_rg") != nullptr);
+        bool hasEXTTextureRG = (strstr(ext, "EXT_texture_rg") != nullptr);
+        RG16F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA16F_Supported;
+        RG32F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA32F_Supported;
+
         _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
         _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
@@ -204,24 +230,39 @@ gles_check_GL_extensions()
     const char* version = (const char*)glGetString(GL_VERSION);
     if (!IsEmptyString(version))
     {
+        int majorVersion = 2;
+        const char* dotChar = strchr(version, '.');
+        if (dotChar && dotChar != version)
+        {
+            majorVersion = atoi(dotChar - 1);
+        }
+
         if (strstr(version, "OpenGL ES"))
         {
-            const char* dotChar = strchr(version, '.');
-            if (dotChar && dotChar != version)
+            if (majorVersion >= 3)
             {
-                int majorVersion = atoi(dotChar - 1);
-                if (majorVersion >= 3)
-                {
-                    _GLES2_DeviceCaps.is32BitIndicesSupported = true;
-                    _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
-                }
+                _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+                _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             }
         }
         else
         {
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
-            _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
+            _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
+
+#if defined(GL_R16F) && defined(GL_RG16F)
+            RG16F_Supported = majorVersion >= 3;
+#endif
+#if defined(GL_RGBA16F)
+            RGBA16F_Supported = majorVersion >= 3;
+#endif
+#if defined(GL_R32F) && defined(GL_RG32F)
+            RG32F_Supported = majorVersion >= 3;
+#endif
+#if defined(GL_RGBA32F)
+            RGBA32F_Supported = majorVersion >= 3;
+#endif
         }
     }
 }
@@ -515,7 +556,10 @@ void gles2_Initialize(const InitParam& param)
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
         glDebugMessageCallback(&_OGLErrorCallback, 0);
+
 #endif
+
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -624,6 +668,8 @@ void gles2_Initialize(const InitParam& param)
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
+
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -1057,8 +1103,69 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         success = true;
         break;
 
+#if defined(GL_R16F)
+    case TEXTURE_FORMAT_R16F:
+        *internalFormat = GL_R16F;
+        *format = GL_RED;
+        *type = GL_HALF_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RG16F)
+    case TEXTURE_FORMAT_RG16F:
+        *internalFormat = GL_RG16F;
+        *format = GL_RG;
+        *type = GL_HALF_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RGBA16F)
+    case TEXTURE_FORMAT_RGBA16F:
+        *internalFormat = GL_RGBA16F;
+        *format = GL_RGBA;
+        *type = GL_HALF_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_R32F)
+    case TEXTURE_FORMAT_R32F:
+        *internalFormat = GL_R32F;
+        *format = GL_RED;
+        *type = GL_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RG32F)
+    case TEXTURE_FORMAT_RG32F:
+        *internalFormat = GL_RG32F;
+        *format = GL_RG;
+        *type = GL_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RGBA32F)
+    case TEXTURE_FORMAT_RGBA32F:
+        *internalFormat = GL_RGBA32F;
+        *format = GL_RGBA;
+        *type = GL_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
     default:
         success = false;
+        DVASSERT_MSG(0, "Unsupported or unknown texture format specified");
     }
 
     return success;

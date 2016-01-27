@@ -110,8 +110,9 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
     connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
     connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
+    connect(mainUi->actionAddVisibilityComponent, SIGNAL(triggered()), SLOT(OnAddVisibilityComponent()));
 
-	SetUpdateTimeout(5000);
+    SetUpdateTimeout(5000);
 	SetEditTracking(true);
 	setMouseTracking(true);
 
@@ -687,8 +688,8 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
-    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
-	if(NULL != metaData)
+    QtPropertyDataMetaObject* metaData = dynamic_cast<QtPropertyDataMetaObject*>(original);
+    if(NULL != metaData)
 	{
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
 	}
@@ -1489,6 +1490,11 @@ void PropertyEditor::OnAddSnapToLandscapeControllerComponent()
 void PropertyEditor::OnAddWASDControllerComponent()
 {
     OnAddComponent(Component::WASD_CONTROLLER_COMPONENT);
+}
+
+void PropertyEditor::OnAddVisibilityComponent()
+{
+    OnAddComponent(Component::VISIBILITY_CHECK_COMPONENT);
 }
 
 void PropertyEditor::OnRemoveComponent()
