@@ -47,7 +47,6 @@ void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 #import <Foundation/Foundation.h>
 namespace DAVA
 {
-
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
     NSLog(@"[%s] %s", GetLogLevelString(ll), text);

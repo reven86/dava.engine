@@ -290,9 +290,9 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
             SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
                                                                     castedCmd->GetLayer());
             break;
-		}
+        }
 
-		case CMDID_PARTICLE_FORCE_UPDATE:
+        case CMDID_PARTICLE_FORCE_UPDATE:
 		{
 			const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
 			SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
@@ -354,8 +354,8 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 
         case CMDID_PARTICLE_EMITTER_LAYER_ADD:
         {
-			const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
-			SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
+            const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
+            SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
 			break;
 		}
 // Return to this code when implementing Layer popup menus.

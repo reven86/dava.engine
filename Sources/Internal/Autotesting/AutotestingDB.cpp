@@ -58,8 +58,8 @@ namespace DAVA
         CloseConnection();
     }
 
-    bool AutotestingDB::ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort)
-	{
+    bool AutotestingDB::ConnectToDB(const String& collection, const String& dbName, const String& dbHost, const int32 dbPort)
+    {
 		DVASSERT(nullptr == dbClient);
 
 		dbClient = MongodbClient::Create(dbHost, dbPort);
@@ -300,8 +300,8 @@ namespace DAVA
     {
         Logger::Info("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());
         MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
-        KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		if (!currentRunArchive)
+        KeyedArchive* currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
+        if (!currentRunArchive)
 		{
 			autoSys->ForceQuit(Format("Couldn't find archive autotesting_system device"));
 		}

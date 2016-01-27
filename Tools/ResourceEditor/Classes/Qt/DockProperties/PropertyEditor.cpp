@@ -1565,5 +1565,5 @@ QString PropertyEditor::GetDefaultFilePath()
         }
     }
 
-	return defaultPath;
+    return defaultPath;
 }

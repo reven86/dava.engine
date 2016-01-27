@@ -91,9 +91,9 @@ AutotestingSystem::~AutotestingSystem()
     SafeRelease(luaSystem);
     if (AutotestingDB::Instance())
         AutotestingDB::Instance()->Release();
-    }
+}
 
-	void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
+    void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 	{
 		Logger::Info("AutotestingSystem::InitLua");
 		DVASSERT(nullptr == luaSystem);
@@ -184,7 +184,7 @@ AutotestingSystem::~AutotestingSystem()
         buildId = option->GetString("BuildId");
         buildDate = option->GetString("Date");
         branch = option->GetString("Branch");
-		framework = option->GetString("Framework");
+        framework = option->GetString("Framework");
 		branchRev = option->GetString("BranchRev");
 		frameworkRev = option->GetString("FrameworkRev");
 
@@ -283,7 +283,7 @@ AutotestingSystem::~AutotestingSystem()
     void AutotestingSystem::OnTestStart(const String& testDescription)
     {
         Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
-		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
+        AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
 		if (isDB)
 			AutotestingDB::Instance()->SetTestStarted();
 	}
@@ -382,7 +382,7 @@ AutotestingSystem::~AutotestingSystem()
     }
 
     void AutotestingSystem::MakeScreenShot()
-	{
+    {
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
@@ -437,7 +437,7 @@ AutotestingSystem::~AutotestingSystem()
     {
         if (UIScreenManager::Instance())
         {
-			String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
+            String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
 			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
 		}
 
@@ -523,7 +523,7 @@ AutotestingSystem::~AutotestingSystem()
     {
         if (needExitApp)
         {
-			return;
+            return;
 		}
 		isRunning = false;
 		isWaiting = false;

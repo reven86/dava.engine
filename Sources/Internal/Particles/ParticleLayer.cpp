@@ -454,8 +454,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (lodsNode)
     {
         const Vector<YamlNode*>& vec = lodsNode->AsVector();
-        for (uint32 i=0; i<(uint32)vec.size(); ++i)
-			SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
+        for (uint32 i = 0; i < (uint32)vec.size(); ++i)
+            SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
 	}
 
 
@@ -669,8 +669,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (loopVariationNode)
         loopVariation = loopVariationNode->AsFloat();
 
-    const YamlNode * loopEndTimeNode = node->Get("loopEndTime");
-	if (loopEndTimeNode)
+    const YamlNode* loopEndTimeNode = node->Get("loopEndTime");
+    if (loopEndTimeNode)
 		loopEndTime = loopEndTimeNode->AsFloat();				
 
 	/*validate all time depended property lines*/	

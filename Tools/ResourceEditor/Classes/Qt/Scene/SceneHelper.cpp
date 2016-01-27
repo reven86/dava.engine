@@ -130,9 +130,9 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
                 }
             }
         }
-        if(markedGPUs.size() > 0)
-		{
-			textures[texture] = markedGPUs;
+        if (markedGPUs.size() > 0)
+        {
+            textures[texture] = markedGPUs;
 		}
 	}
 	return retValue;

@@ -64,11 +64,11 @@ public:
 
 	void SetScene(SceneEditor2 * scene);
     SceneEditor2* GetScene();
-    void SetSelection(const EntityGroup *group);
-	DAVA::NMaterial * GetMaterial(const QModelIndex & index) const;
+    void SetSelection(const EntityGroup* group);
+    DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
     QModelIndex GetIndex(DAVA::NMaterial* material, const QModelIndex& parent = QModelIndex()) const;
 
-    bool dropCanBeAccepted(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+    bool dropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
     void setFilterType(int type);
     int getFilterType() const;
 
@@ -82,7 +82,7 @@ public:
 private:
     int compareNames(DAVA::NMaterial* left, DAVA::NMaterial* right) const;
 
-    MaterialModel *materialModel;
+    MaterialModel* materialModel;
     eFilterType filterType;
 };
 
