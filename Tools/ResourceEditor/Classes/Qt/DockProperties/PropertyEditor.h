@@ -106,6 +106,7 @@ public slots:
     void OnAddRotationControllerComponent();
     void OnAddSnapToLandscapeControllerComponent();
     void OnAddWASDControllerComponent();
+    void OnAddVisibilityComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	
@@ -130,10 +131,10 @@ protected:
 	QtPropertyData *favoriteGroup;
 	QList<QtPropertyData *> favoriteList;
 
-	QList<DAVA::Entity *> curNodes;
-	PropertyEditorStateHelper treeStateHelper;
+    QVector<DAVA::Entity*> curNodes;
+    PropertyEditorStateHelper treeStateHelper;
 
-	QtPropertyData* CreateInsp(void *object, const DAVA::InspInfo *info);
+    QtPropertyData* CreateInsp(void *object, const DAVA::InspInfo *info);
 	QtPropertyData* CreateInspMember(void *object, const DAVA::InspMember *member);
 	QtPropertyData* CreateInspCollection(void *object, const DAVA::InspColl *collection);
 	QtPropertyData* CreateClone(QtPropertyData *original);

@@ -26,37 +26,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SharedIcon.h"
+#include "Base/BaseTypes.h"
 
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
+#include <qcoreapplication.h>
 
-#include "DAVAEngine.h"
-
-using namespace DAVA;
-
-class VisibilityToolProxy: public BaseObject
+const QIcon& SharedIcon(const char* path)
 {
-protected:
-	~VisibilityToolProxy();
-public:
-	VisibilityToolProxy(int32 size);
-
-	int32 GetSize();
-
-	Texture* GetTexture();
-
-	void SetVisibilityPoint(const Vector2& visibilityPoint);
-	Vector2 GetVisibilityPoint();
-
-	void UpdateVisibilityPointSet(bool visibilityPointSet);
-	bool IsVisibilityPointSet();
-
-protected:
-	Texture* visibilityToolTexture;
-
-    int32 size;
-    Vector2 visibilityPoint;
-	bool isVisibilityPointSet;
-};
-
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPROXY__) */
+    static DAVA::UnorderedMap<DAVA::String, QIcon> sharedMap;
+    qAddPostRoutine([]() {
+        sharedMap.clear();
+    });
+    return sharedMap.emplace(DAVA::String(path), QIcon(path)).first->second;
+}

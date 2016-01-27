@@ -26,54 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
+#include "Math/Vector.h"
 
-#include "VisibilityToolProxy.h"
+using namespace DAVA;
 
-VisibilityToolProxy::VisibilityToolProxy(int32 size)
-    : size(size)
-    , visibilityPoint(Vector2(-1.f, -1.f))
-    , isVisibilityPointSet(false)
-{
-    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+DAVA_TESTCLASS(VectorTest){
+    DAVA_TEST(Vector4ToVector3Test){
+    Vector4 mutableSource(0.1f, 0.2f, 0.3f, 0.4f);
+Vector3& mutableVector3 = mutableSource.GetVector3();
+TEST_VERIFY((mutableVector3.x == mutableSource.x) && (mutableVector3.y == mutableSource.y) && (mutableVector3.z == mutableSource.z))
 
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)size;
-    viewport.height = (uint32)size;
-    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+const Vector4 immutableSource(0.3f, 0.2f, 0.1f, 0.0f);
+const Vector3& immutableVector3 = immutableSource.GetVector3();
+TEST_VERIFY((immutableVector3.x == immutableSource.x) && (immutableVector3.y == immutableSource.y) && (immutableVector3.z == immutableSource.z))
 }
-
-VisibilityToolProxy::~VisibilityToolProxy()
-{
-	SafeRelease(visibilityToolTexture);
 }
-
-int32 VisibilityToolProxy::GetSize()
-{
-	return size;
-}
-
-Texture* VisibilityToolProxy::GetTexture()
-{
-	return visibilityToolTexture;
-}
-
-void VisibilityToolProxy::SetVisibilityPoint(const Vector2& visibilityPoint)
-{
-	this->visibilityPoint = visibilityPoint;
-}
-
-Vector2 VisibilityToolProxy::GetVisibilityPoint()
-{
-	return visibilityPoint;
-}
-
-bool VisibilityToolProxy::IsVisibilityPointSet()
-{
-	return isVisibilityPointSet;
-}
-
-void VisibilityToolProxy::UpdateVisibilityPointSet(bool visibilityPointSet)
-{
-	isVisibilityPointSet = visibilityPointSet;
-}
+;

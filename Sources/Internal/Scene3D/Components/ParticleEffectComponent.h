@@ -147,9 +147,9 @@ private:
     Vector<ParticleEmitterData> emitterDatas;
 
     ParticleEffectData effectData;
-    ParticleRenderObject *effectRenderObject;
+    ParticleRenderObject* effectRenderObject;
 
-	int32 desiredLodLevel, activeLodLevel;
+    int32 desiredLodLevel, activeLodLevel;
 
 public: //mostly editor commands
     int32 GetEmittersCount() const;

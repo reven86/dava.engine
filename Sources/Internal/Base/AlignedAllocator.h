@@ -27,37 +27,32 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
+#ifndef __DAVAENGINE_ALIGNED_ALLOCATOR_H__
+#define __DAVAENGINE_ALIGNED_ALLOCATOR_H__
 
-#include "Commands2/CommandAction.h"
-#include "DAVAEngine.h"
+#include <stdlib.h>
+#include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 
-using namespace DAVA;
-
-class VisibilityToolProxy;
-class SceneEditor2;
-
-class ActionEnableVisibilityTool: public CommandAction
+namespace DAVA
 {
-public:
-	ActionEnableVisibilityTool(SceneEditor2* forSceneEditor);
+void* AllocateAlignedMemory(uint32 size, uint32 align);
+void FreeAlignedMemory(void*);
 
-protected:
-	SceneEditor2* sceneEditor;
-
-	virtual void Redo();
-};
-
-class ActionDisableVisibilityTool: public CommandAction
+template <class C, uint32 align, class... Args>
+C* CreateObjectAligned(Args&&... a)
 {
-public:
-	ActionDisableVisibilityTool(SceneEditor2* forSceneEditor);
+    auto ptr = AllocateAlignedMemory(sizeof(C), align);
+    return new (ptr) C(std::forward<Args>(a)...);
+}
 
-protected:
-	SceneEditor2* sceneEditor;
+template <class C>
+void DestroyObjectAligned(C* c)
+{
+    DVASSERT(nullptr != c);
+    c->~C();
+    FreeAlignedMemory(c);
+}
+}
 
-	virtual void Redo();
-};
-
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__) */
+#endif //__DAVAENGINE_ALIGNED_ALLOCATOR_H__

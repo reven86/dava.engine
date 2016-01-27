@@ -1714,6 +1714,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -3060,6 +3063,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PerfQuerySetDX11.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PerfQuerySetDX9.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

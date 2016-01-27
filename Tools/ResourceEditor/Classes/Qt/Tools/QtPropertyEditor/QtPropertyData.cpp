@@ -172,16 +172,10 @@ void QtPropertyData::BuildCurrentValue()
     // Update Qt MVC properties
     if ( !isAllEqual )
     {
-        QList<int> roles;
-        roles << Qt::DecorationRole;
-        for ( int iRole = 0; iRole < roles.size(); iRole++ )
+        auto it = style.find(Qt::DecorationRole);
+        if (it != style.end())
         {
-            const int role = roles.at(iRole);
-            auto it = style.find( role );
-            if ( it != style.end() )
-            {
-                *it = QVariant();
-            }
+            *it = QVariant();
         }
     }
 
@@ -665,6 +659,37 @@ void QtPropertyData::ChildAdd(const QString &key, const QVariant &value)
 	ChildInsert(key, new QtPropertyData(value), ChildCount());
 }
 
+void QtPropertyData::ChildrenAdd(const QVector<QtPropertyData*>& data)
+{
+    if (data.empty())
+        return;
+
+    int currentSize = childrenData.size();
+    int newSize = currentSize + data.size();
+    if (model != nullptr)
+    {
+        model->DataAboutToBeAdded(this, currentSize, newSize - 1);
+    }
+
+    childrenData.reserve(newSize);
+    childrenNames.reserve(newSize);
+
+    foreach (QtPropertyData* d, data)
+    {
+        childrenData.push_back(d);
+        childrenNames.push_back(d->GetName());
+        d->curName = d->GetName();
+        d->parent = this;
+        d->SetModel(model);
+        d->SetOWViewport(optionalButtonsViewport);
+    }
+
+    if (model != nullptr)
+    {
+        model->DataAdded();
+    }
+}
+
 void QtPropertyData::ChildInsert(const QString &key, QtPropertyData *data, int pos)
 {
 	if(NULL != data && !key.isEmpty())
@@ -743,6 +768,23 @@ void QtPropertyData::ChildExtract(QtPropertyData *data)
 	ChildRemoveInternal(index, false);
 }
 
+void QtPropertyData::ChildrenExtract(QVector<QtPropertyData*>& children)
+{
+    if (childrenData.empty())
+        return;
+
+    if (model != nullptr)
+    {
+        model->DataAboutToBeRemoved(this, 0, childrenData.size() - 1);
+    }
+    children = std::move(childrenData);
+
+    if (model != nullptr)
+    {
+        model->DataRemoved();
+    }
+}
+
 void QtPropertyData::ChildRemove(QtPropertyData *data)
 {
 	int index = childrenData.indexOf(data);
@@ -810,7 +852,14 @@ void QtPropertyData::ChildRemoveAll()
 	}
 }
 
-QtPropertyData * QtPropertyData::GetMergedData( int idx ) const
+void QtPropertyData::ResetChildren()
+{
+    std::for_each(childrenData.begin(), childrenData.end(), [](QtPropertyData* data) { delete data; });
+    childrenData.clear();
+    childrenNames.clear();
+}
+
+QtPropertyData* QtPropertyData::GetMergedData(int idx) const
 {
     return mergedData.value(idx);
 }

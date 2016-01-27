@@ -127,11 +127,11 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
                             QtPropertyDataInspDynamic* dynamicMember = new QtPropertyDataInspDynamic(dynamicInfo, ddata, membersList[i]);
                             if (!(memberFlags & DAVA::I_EDIT))
                             {
-								dynamicMember->SetEnabled(false);
-							}
+                                dynamicMember->SetEnabled(false);
+                            }
 
-							retData->ChildAdd(membersList[i].c_str(), dynamicMember);
-						}
+                            retData->ChildAdd(membersList[i].c_str(), dynamicMember);
+                        }
 					}
 				}
 			}
