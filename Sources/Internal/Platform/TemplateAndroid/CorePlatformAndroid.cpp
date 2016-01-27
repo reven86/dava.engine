@@ -73,17 +73,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 }
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
-    : Core()
 {
-    wasCreated = false;
-    renderIsActive = false;
-    viewSizeChanged = false;
-    pendingWidth = 0;
-    pendingHeight = 0;
-    screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
-
-    foreground = false;
-
     SetCommandLine(cmdLine);
 }
 
@@ -147,7 +137,8 @@ void CorePlatformAndroid::ApplyPendingViewSize()
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(pendingWidth, pendingHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
-    Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] out");
+    Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] out");
+    Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] done");
 }
 
 void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char8* docPathIn, const char8* assets, const char8* logTag, AndroidSystemDelegate* sysDelegate)
@@ -171,13 +162,16 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     pendingWidth = w;
     pendingHeight = h;
+    backbufferWidth = int32(w * GetScreenScaleFactor());
+    backbufferHeight = int32(h * GetScreenScaleFactor());
+
     viewSizeChanged = true;
 
     if (wasCreated)
     {
         rhi::ResetParam params;
-        params.width = (uint32)w;
-        params.height = (uint32)h;
+        params.width = (uint32)backbufferWidth;
+        params.height = (uint32)backbufferHeight;
         params.window = rendererParams.window;
         Renderer::Reset(params);
     }
@@ -186,8 +180,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
         wasCreated = true;
 
         ApplyPendingViewSize();
-        rendererParams.width = (uint32)w;
-        rendererParams.height = (uint32)h;
+        rendererParams.width = (uint32)backbufferWidth;
+        rendererParams.height = (uint32)backbufferHeight;
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();

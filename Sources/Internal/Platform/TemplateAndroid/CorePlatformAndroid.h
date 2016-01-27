@@ -114,16 +114,18 @@ private:
     void ApplyPendingViewSize();
 
 private:
-    int32 pendingWidth;
-    int32 pendingHeight;
+    int32 pendingWidth = 0;
+    int32 pendingHeight = 0;
+    int32 backbufferWidth = 0;
+    int32 backbufferHeight = 0;
 
-    bool wasCreated;
-    bool renderIsActive;
-    bool viewSizeChanged;
+    bool wasCreated = false;
+    bool renderIsActive = false;
+    bool viewSizeChanged = false;
 
-    bool foreground;
+    bool foreground = false;
 
-    AndroidSystemDelegate* androidDelegate;
+    AndroidSystemDelegate* androidDelegate = nullptr;
 
     String externalStorage;
     String internalStorage;

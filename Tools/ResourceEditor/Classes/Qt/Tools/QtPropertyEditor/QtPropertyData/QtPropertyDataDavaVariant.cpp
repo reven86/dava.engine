@@ -36,7 +36,7 @@
 #include "Tools/Widgets/MultilineEditor.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
-
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QListWidget>
 #include <QDoubleSpinBox>
@@ -461,9 +461,9 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 	case DAVA::VariantType::TYPE_COLOR:
 		{
 			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
-			colorBtn->setIcon(QIcon(":/QtIcons/color.png"));
-			colorBtn->setIconSize(QSize(12, 12));
-			colorBtn->setAutoRaise(true);
+            colorBtn->setIcon(SharedIcon(":/QtIcons/color.png"));
+            colorBtn->setIconSize(QSize(12, 12));
+            colorBtn->setAutoRaise(true);
             colorBtn->setObjectName("colorButton");
             QObject::connect(colorBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::ColorOWPressed);
 
@@ -489,16 +489,16 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 	case DAVA::VariantType::TYPE_FILEPATH:
 		{
 			QToolButton *filePathBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
-			filePathBtn->setIcon(QIcon(":/QtIcons/openscene.png"));
-			filePathBtn->setIconSize(QSize(14, 14));
-			filePathBtn->setAutoRaise(true);
+            filePathBtn->setIcon(SharedIcon(":/QtIcons/openscene.png"));
+            filePathBtn->setIconSize(QSize(14, 14));
+            filePathBtn->setAutoRaise(true);
 			connect(filePathBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::FilePathOWPressed);
 		}
 		break;
     case DAVA::VariantType::TYPE_STRING:
         {
             QToolButton *editMultiline = AddButton( QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED );
-            editMultiline->setIcon( QIcon( ":/QtIcons/pencil.png" ) );
+            editMultiline->setIcon(SharedIcon(":/QtIcons/pencil.png"));
             editMultiline->setIconSize( QSize( 14, 14 ) );
             editMultiline->setAutoRaise( true );
             editMultiline->setToolTip( "Open multiline editor" );

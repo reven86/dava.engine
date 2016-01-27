@@ -87,9 +87,9 @@ void LandscapeEditorSystem::UpdateCursorPosition()
 
         drawSystem->SetCursorPosition(cursorPosition);
     }
-	else
-	{
-		// hide cursor
+    else
+    {
+        // hide cursor
 		drawSystem->SetCursorPosition(DAVA::Vector2(-100.f, -100.f));
 	}
 }

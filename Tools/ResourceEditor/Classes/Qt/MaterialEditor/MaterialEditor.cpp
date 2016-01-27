@@ -62,6 +62,7 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace UIName
 {
@@ -689,7 +690,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         if (memberFlags & DAVA::I_EDIT)
         {
             editEnabled = true;
-            addRemoveButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
             addRemoveButton->setToolTip("Remove property");
 
             // isn't set in parent or shader
@@ -703,7 +704,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         {
             editEnabled = false;
             bgColor = QBrush(QColor(0, 0, 0, 25));
-            addRemoveButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
             addRemoveButton->setToolTip("Add property");
         }
 
@@ -750,10 +751,11 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             ui->templateBox->setCurrentIndex(-1);
             ui->templateBox->setEnabled(false);
             ui->templateButton->setEnabled(false);
-            ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+            ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
         }
         else
         {
+            bool isAssignableFx = true;
             { //set fx name to fx template box
                 int rowToSelect = -1;
                 const DAVA::FastName fxName = material->GetEffectiveFXName();
@@ -774,6 +776,8 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     if (-1 == rowToSelect)
                     {
                         setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                        rowToSelect = 0;
+                        isAssignableFx = false;
                     }
                 }
 
@@ -793,14 +797,14 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 
                 if (hasLocalFxName)
                 {
-                    ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+                    ui->templateButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
                 }
                 else
                 {
-                    ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+                    ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
                 }
 
-                if (parentMaterial == nullptr || parentMaterial == globalMaterial)
+                if (parentMaterial == nullptr || parentMaterial == globalMaterial || isAssignableFx == false)
                 {
                     ui->templateButton->setEnabled(false);
                 }
@@ -809,7 +813,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     ui->templateButton->setEnabled(true);
                 }
 
-                ui->templateBox->setEnabled(hasLocalFxName);
+                ui->templateBox->setEnabled(hasLocalFxName && isAssignableFx);
             }
         }
     }
@@ -818,7 +822,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
         ui->templateBox->setCurrentIndex(-1);
         ui->templateBox->setEnabled(false);
         ui->templateButton->setEnabled(false);
-        ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+        ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
     }
 }
 

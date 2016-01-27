@@ -69,7 +69,7 @@ private:
     SigConnectionID appMinimizedRestoredConnectionId;
 
     // Pointer to MacOS video player helper.
-	void* moviePlayerHelper;
+    void* moviePlayerHelper;
 };
 	
 };

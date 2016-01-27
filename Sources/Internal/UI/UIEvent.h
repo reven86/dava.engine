@@ -60,7 +60,8 @@ public:
         KEY_DOWN,
         KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
         KEY_UP,
-        JOYSTICK
+        JOYSTICK,
+        GESTURE, // mac os touch pad gestures only for now
     };
 
     /**
@@ -104,7 +105,8 @@ public:
         MOUSE,
         KEYBOARD,
         GAMEPAD,
-        PEN
+        PEN,
+        TOUCH_PAD,
     };
 
     UIEvent() = default;
@@ -132,6 +134,13 @@ public:
             float32 x;
             float32 y;
         } wheelDelta; // scroll delta in mouse wheel clicks (or lines)
+        struct
+        {
+            float32 magnification; // delta -1..1
+            float32 rotation; // delta angle in degrees -cw +ccw
+            float32 dx; // -1..1 (-1 left)
+            float32 dy; // -1..1 (-1 top)
+        } gesture; // pinch/rotate/swipe
     };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
