@@ -53,7 +53,7 @@ RuntimeTextures runtimeTextures;
 RenderStats stats;
 
 rhi::ResetParam resetParams;
-    
+
 ScreenShotCallbackDelegate* screenshotCallback = nullptr;
 }
 
@@ -81,7 +81,7 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     resetParams.vsyncEnabled = params.vsyncEnabled;
     resetParams.window = params.window;
     resetParams.fullScreen = params.fullScreen;
-    
+
     ininialized = true;
 }
 
@@ -104,7 +104,7 @@ bool IsInitialized()
 void Reset(const rhi::ResetParam& params)
 {
     resetParams = params;
-    
+
     rhi::Reset(params);
 }
 
@@ -132,18 +132,18 @@ void SetDesiredFPS(int32 fps)
 
 void SetVSyncEnabled(bool enable)
 {
-    if(resetParams.vsyncEnabled != enable)
+    if (resetParams.vsyncEnabled != enable)
     {
         resetParams.vsyncEnabled = enable;
         rhi::Reset(resetParams);
     }
 }
-    
+
 bool IsVSyncEnabled()
 {
     return resetParams.vsyncEnabled;
 }
-    
+
 RenderOptions* GetOptions()
 {
     DVASSERT(ininialized);

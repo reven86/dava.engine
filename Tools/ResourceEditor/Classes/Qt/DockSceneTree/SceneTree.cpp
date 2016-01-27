@@ -677,7 +677,7 @@ void SceneTree::EditModel()
                 {
                     ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
                 }
-			}
+            }
 		}
 	}
 }
@@ -689,15 +689,15 @@ void SceneTree::ReloadModel()
 	{
         QDialog dlg(this);
 
-        QVBoxLayout *dlgLayout = new QVBoxLayout();
-		dlgLayout->setMargin(10);
+        QVBoxLayout* dlgLayout = new QVBoxLayout();
+        dlgLayout->setMargin(10);
 
         dlg.setWindowTitle("Reload Model options");
         dlg.setLayout(dlgLayout);
 
         QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
         dlgLayout->addWidget(lightmapsChBox);
-		lightmapsChBox->setCheckState(Qt::Checked);
+        lightmapsChBox->setCheckState(Qt::Checked);
 
         QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
         dlgLayout->addWidget(buttons);
@@ -707,7 +707,7 @@ void SceneTree::ReloadModel()
 
         if (QDialog::Accepted == dlg.exec())
         {
-			EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+            EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
 			String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
@@ -730,7 +730,7 @@ void SceneTree::ReloadModel()
             EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
             sceneEditor->selectionSystem->SetSelection(newSelection);
         }
-	}
+    }
 }
 
 void SceneTree::ReloadModelAs()
@@ -1143,7 +1143,7 @@ void SceneTree::LoadEmitterFromYaml()
     sceneEditor->Exec(command);
     sceneEditor->MarkAsChanged();
 
-	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
 void SceneTree::SaveEmitterToYaml()
@@ -1170,14 +1170,14 @@ void SceneTree::LoadInnerEmitterFromYaml()
 	if (filePath.isEmpty())
 	{
 		return;
-	}
+    }
 
     selectedLayer->innerEmitterPath = filePath.toStdString();
     CommandLoadInnerParticleEmitterFromYaml* command = new CommandLoadInnerParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
     sceneEditor->Exec(command);
     sceneEditor->MarkAsChanged();
 
-	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 
 }
 void SceneTree::SaveInnerEmitterToYaml()

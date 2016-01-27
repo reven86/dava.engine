@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 class Cursor
 {
 public:

@@ -157,6 +157,16 @@ protected:
 
     Tank tank;
 
+    /*
+    rhi::HPerfQuerySet  perfQuerySet[3];
+    bool                perfQuerySetUsed[3];
+    bool                perfQuerySetReady[3];
+    unsigned            curPerfQuerySet;
+    unsigned            firedPerfQuerySet;
+*/
+    rhi::HPerfQuerySet perfQuerySet;
+    bool perfQuerySetFired;
+
     //    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;
 };
 

@@ -222,8 +222,8 @@ void UISlider::Input(UIEvent *currentInput)
     {
         return;
     }
-	
-	const Rect & absRect = GetGeometricData().GetUnrotatedRect();
+
+    const Rect & absRect = GetGeometricData().GetUnrotatedRect();
 	//absTouchPoint = currentInput->point;
 	
 	relTouchPoint = currentInput->point;

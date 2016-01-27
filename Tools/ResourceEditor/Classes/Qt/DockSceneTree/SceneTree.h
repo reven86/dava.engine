@@ -150,8 +150,8 @@ private:
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
-    ParticleEffectComponent *selectedEffect;
-	ParticleEmitter *selectedEmitter;
+    ParticleEffectComponent* selectedEffect;
+    ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
 	ParticleForce* selectedForce;
 

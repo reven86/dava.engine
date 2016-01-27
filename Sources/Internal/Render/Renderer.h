@@ -60,7 +60,7 @@ int32 GetDesiredFPS();
 
 void SetVSyncEnabled(bool enable);
 bool IsVSyncEnabled();
-    
+
 //frame management
 void BeginFrame();
 void EndFrame();

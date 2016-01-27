@@ -62,8 +62,8 @@ public:
 
     LandscapeEditorDrawSystem(Scene* scene);
     virtual ~LandscapeEditorDrawSystem();
-	
-	LandscapeProxy* GetLandscapeProxy();
+
+    LandscapeProxy* GetLandscapeProxy();
 	HeightmapProxy* GetHeightmapProxy();
 	CustomColorsProxy* GetCustomColorsProxy();
 	VisibilityToolProxy* GetVisibilityToolProxy();

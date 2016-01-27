@@ -312,7 +312,7 @@ AutotestingSystemLua::AutotestingSystemLua()
 
     String AutotestingSystemLua::GetPlatform()
     {
-		return DeviceInfo::GetPlatformString();
+        return DeviceInfo::GetPlatformString();
 	}
 
 	String AutotestingSystemLua::GetDeviceName()
@@ -563,7 +563,7 @@ AutotestingSystemLua::AutotestingSystemLua()
         case 27: // ESCAPE
         {
             uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
-			break;
+            break;
 		}
 		default:
 		{
@@ -575,7 +575,7 @@ AutotestingSystemLua::AutotestingSystemLua()
             str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
             {
-				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
+                uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
 			}
 			break;
 		}

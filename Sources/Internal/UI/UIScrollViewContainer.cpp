@@ -196,7 +196,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
             currentScroll = nullptr;
             mainTouch = currentTouch->touchId;
             PerformEvent(EVENT_TOUCH_DOWN);
-			Input(currentTouch);
+            Input(currentTouch);
 		}
 	}
     else if (currentTouch->touchId == mainTouch && currentTouch->phase == UIEvent::Phase::DRAG)

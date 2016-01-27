@@ -264,7 +264,7 @@ void SceneSaver::CopyEffects(Entity *node)
     }
 
     for (int i = 0; i < node->GetChildrenCount(); ++i)
-	{
+    {
 		CopyEffects(node->GetChild(i));
 	}
     

@@ -490,12 +490,14 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    Windows::Foundation::IAsyncAction^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]()
-    {
-        m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
-    }));
+    Windows::Foundation::IAsyncAction ^ action = m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
+                                                                                            m_logicalSize = Windows::Foundation::Size(static_cast<float32>(m_swapChainPanel->ActualWidth), static_cast<float32>(m_swapChainPanel->ActualHeight));
+                                                                                        }));
 
-    while (action->Status == Windows::Foundation::AsyncStatus::Started) { DAVA::Thread::Sleep(1); }
+    while (action->Status == Windows::Foundation::AsyncStatus::Started)
+    {
+        DAVA::Thread::Sleep(1);
+    }
 
     // Setup inverse scale on the swap chain
     DXGI_MATRIX_3X2_F inverseScale = { 0 };

@@ -2967,6 +2967,7 @@
 		7CCE26A71C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
 		7CCE26A81C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
 		7CCE26A91C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
+		87464EF91C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87464EF81C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp */; };
 		B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
@@ -4028,6 +4029,7 @@
 		72C84EB21B29C220003A52E0 /* libwebp_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_macos.a; path = ../../Libs/libs/libwebp_macos.a; sourceTree = "<group>"; };
 		7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenManagerDefault.cpp; sourceTree = "<group>"; };
 		7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
+		87464EF81C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rhi_PerfQuerySetGLES2.cpp; sourceTree = "<group>"; };
 		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
 		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
 		C151B18B16D37DD400E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -5084,6 +5086,7 @@
 		028C0B881BD66A5F00B2266F /* GLES2 */ = {
 			isa = PBXGroup;
 			children = (
+				87464EF81C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp */,
 				028C0B891BD66A5F00B2266F /* _gl.h */,
 				028C0B8E1BD66A5F00B2266F /* macos_gl.h */,
 				028C0B8F1BD66A5F00B2266F /* macos_gl.mm */,
@@ -7974,6 +7977,7 @@
 				028C146B1BD66A6000B2266F /* TextBlockGraphicRender.cpp in Sources */,
 				028C19721BD66A6000B2266F /* UIControlFamily.cpp in Sources */,
 				028C0F3D1BD66A6000B2266F /* Profiler.cpp in Sources */,
+				87464EF91C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */,
 				028C18FD1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
 				028C10721BD66A6000B2266F /* JobManager.cpp in Sources */,
 				028C19031BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,

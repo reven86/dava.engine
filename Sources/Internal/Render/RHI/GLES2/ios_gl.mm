@@ -45,9 +45,9 @@ static bool resize_pending = true;
 
 bool ios_gl_check_layer()
 {
-    if(!resize_pending)
+    if (!resize_pending)
         return YES;
-    
+
     // Allocate color buffer backing based on the current layer size
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
     [(EAGLContext*)_GLES2_Context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)_GLES2_Native_Window];
@@ -57,11 +57,11 @@ bool ios_gl_check_layer()
     _GLES2_DefaultFrameBuffer_Width = backingWidth;
     _GLES2_DefaultFrameBuffer_Height = backingHeight;
 
-    if(depthRenderbuffer != GLuint(-1))
+    if (depthRenderbuffer != GLuint(-1))
     {
         glDeleteRenderbuffers(1, &depthRenderbuffer);
     }
-    
+
     glGenRenderbuffers(1, &depthRenderbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
@@ -69,7 +69,7 @@ bool ios_gl_check_layer()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
 
     resize_pending = false;
-    
+
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -111,7 +111,7 @@ void ios_gl_begin_frame()
 void ios_gl_reset(void* nativeLayer)
 {
     resize_pending = (_GLES2_DefaultFrameBuffer_Width != backingWidth) || (_GLES2_DefaultFrameBuffer_Height != backingHeight) || (_GLES2_Native_Window != nativeLayer);
-    
+
     _GLES2_Native_Window = nativeLayer;
 }
 
