@@ -79,21 +79,10 @@ extern void FrameworkMain(int argc, char *argv[]);
 	trackingArea = nil;
 	[self enableTrackingArea];
 	isFirstDraw = true;
-
-	// enable vsync
-	GLint swapInt = 1;
-    [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    willQuit = false;
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
-	
-#if RHI_COMPLETE
-    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-#endif
-
-    activeCursor = 0;
-
-    willQuit = false;
 
     return self;
 }
@@ -149,20 +138,21 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
     if (Renderer::IsInitialized())
     {
-        NSSize windowSize = self.frame.size;
-        NSSize surfaceSize = [self convertRectToBacking:self.frame].size;
+        NSSize windowSize = [self frame].size;
+        float32 backingScale = Core::Instance()->GetScreenScaleFactor();
 
-        float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+        GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
+        CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+        CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
         rhi::ResetParam params;
-        params.width = surfaceSize.width;
-        params.height = surfaceSize.height;
-        params.scaleX = userScale;
-        params.scaleY = userScale;
+        params.window = self;
+        params.width = backingSize[0];
+        params.height = backingSize[1];
         Renderer::Reset(params);
 
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
         UIScreenManager::Instance()->ScreenSizeChanged();
     }
@@ -170,32 +160,12 @@ extern void FrameworkMain(int argc, char *argv[]);
     [super reshape];
 }
 
-- (void)userFireTimer: (id)timer
-{
-	[self setNeedsDisplay:YES];
-}
-	
 - (void)drawRect:(NSRect)theRect
 {
     if(willQuit)
         return;
 
     DAVA::Core::Instance()->SystemProcessFrame();
-}
-
-- (void) resetCursorRects
-{
-	if (activeCursor)
-	{
-		NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-		[self addCursorRect: [self bounds] cursor: cursor];
-	}else {
-		[super resetCursorRects];
-	}
-}
-
--(void)cursorUpdate:(NSEvent *)theEvent
-{
 }
 
 - (BOOL)acceptsFirstResponder
@@ -436,24 +406,12 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)mouseEntered:(NSEvent *)theEvent
-{
-    NSLog(@"mouse ENTERED");
-#if RHI_COMPLETE
-    if(RenderManager::Instance()->GetCursor())
-    {
-        if(RenderManager::Instance()->GetCursor()->IsShow())
-            [NSCursor unhide];
-        else
-            [NSCursor hide];
-    }
-#endif
-    //	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
-}
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
     [NSCursor unhide];
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];

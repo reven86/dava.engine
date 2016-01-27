@@ -105,7 +105,7 @@ namespace DAVA
 		globalPool = [[NSAutoreleasePool alloc] init];
         CoreMacOSPlatform* core = new CoreMacOSPlatform();
         core->SetCommandLine(argc, argv);
-		core->CreateSingletons();
+        core->CreateSingletons();
 
         [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
@@ -162,30 +162,19 @@ static MainWindowController * mainWindowController = nil;
  */
 namespace DAVA 
 {
-	Vector2 CoreMacOSPlatform::GetMousePosition()
-	{
-		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBacking: p];
+void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+{
+    DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+    minWindowWidth = width;
+    minWindowHeight = height;
 
-        Vector2 mouseLocation;
-		mouseLocation.x = p.x;
-		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
-		return mouseLocation;
-	}
+    [mainWindowController setMinimumWindowSize:minWindowWidth height:minWindowHeight];
+}
 
-    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
-    {
-        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
-        minWindowWidth = width;
-        minWindowHeight = height;
-
-        [mainWindowController setMinimumWindowSize:minWindowWidth height:minWindowHeight];
-    }
-
-    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
-    {
-        return Vector2(minWindowWidth, minWindowHeight);
-    }
+Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+{
+    return Vector2(minWindowWidth, minWindowHeight);
+}
 }
 
 - (id)init
@@ -261,12 +250,8 @@ namespace DAVA
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
 
-#if RHI_COMPLETE
-    RenderManager::Instance()->DetectRenderingCapabilities();
-#endif
-
 // start animation
-    currFPS = 60;
+    currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
 
     // make window main
@@ -470,6 +455,7 @@ namespace DAVA
 - (void) animationTimerFired:(NSTimer *)timer
 {
     [openGLView setNeedsDisplay:YES];
+
     if (currFPS != Renderer::GetDesiredFPS())
     {
         currFPS = Renderer::GetDesiredFPS();
@@ -483,15 +469,6 @@ namespace DAVA
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did finish launching");
 
     [self OnResume];
-    
-#if RHI_COMPLETE
-    DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
-    if (activeCursor)
-    {
-        NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-        [cursor set];
-    }
-#endif
 }
 
 static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
@@ -555,20 +532,21 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
         }
     }
 
-    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+    NSSize windowSize = [openGLView frame].size;
+    float32 backingScale = Core::Instance()->GetScreenScaleFactor();
 
-    NSSize windowsSize = [openGLView frame].size;
-    NSSize surfaceSize = [openGLView convertSizeToBacking:windowsSize];
+    GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
+    CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+    CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+    CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
-    DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
-    macCore->rendererParams.window = mainWindowController->openGLView;
-    macCore->rendererParams.width = surfaceSize.width;
-    macCore->rendererParams.height = surfaceSize.height;
-    macCore->rendererParams.scaleX = userScale;
-    macCore->rendererParams.scaleY = userScale;
+    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
+    rendererParams.window = mainWindowController->openGLView;
+    rendererParams.width = backingSize[0];
+    rendererParams.height = backingSize[1];
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowsSize.width, windowsSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
 
     Core::Instance()->SystemAppStarted();
 }
@@ -688,5 +666,17 @@ void CoreMacOSPlatform::Quit()
 	mainWindowController->openGLView.willQuit = true;
 	[[NSApplication sharedApplication] terminate: nil];
 }
-	
+
+void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
+{
+    if (!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
+    {
+        Core::SetScreenScaleMultiplier(multiplier);
+
+        //This magick needed to correctly 'reshape' GLView and resize back-buffer.
+        //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
+        [mainWindowController->mainWindow setContentView:nil];
+        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+    }
+}
 };
