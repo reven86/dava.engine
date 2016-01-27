@@ -40,6 +40,7 @@ namespace rhi
 ID3D11Device* _D3D11_Device = nullptr;
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
+ID3D11Texture2D* _D3D11_SwapChainBufferCopy = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
 ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
 ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
@@ -49,6 +50,8 @@ ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
 DAVA::Mutex _D3D11_SecondaryContextSync;
 ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
+ScreenShotCallback _D3D11_PendingScreenshotCallback = nullptr;
+DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 InitParam _DX11_InitParam;
 }

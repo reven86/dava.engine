@@ -40,7 +40,7 @@
     #elif defined(__DAVAENGINE_IPHONE__)
         #include "../Metal/rhi_Metal.h"
         #include "../GLES2/rhi_GLES2.h"
-	#elif defined(__DAVAENGINE_ANDROID__)
+    #elif defined(__DAVAENGINE_ANDROID__)
         #include "../GLES2/rhi_GLES2.h"
     #else
     #endif
@@ -158,6 +158,12 @@ void InvalidateCache()
 {
     if (_Impl.impl_InvalidateCache)
         (*_Impl.impl_InvalidateCache)();
+}
+
+void TakeScreenshot(ScreenShotCallback callback)
+{
+    if (_Impl.impl_TakeScreenshot)
+        (*_Impl.impl_TakeScreenshot)(callback);
 }
 
 //////////////////////////////////////////////////////////////////////////

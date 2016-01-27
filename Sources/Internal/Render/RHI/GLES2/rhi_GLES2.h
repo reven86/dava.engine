@@ -170,6 +170,7 @@ GLCommand
         TEX_IMAGE2D,
         GENERATE_MIPMAP,
         READ_PIXELS,
+        PIXEL_STORE_I,
 
         CREATE_PROGRAM,
         CREATE_SHADER,
