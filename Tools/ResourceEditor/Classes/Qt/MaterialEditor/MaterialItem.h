@@ -70,7 +70,7 @@ private slots:
     void onThumbnailReady(const QList<QImage>& images, QVariant userData);
 
 private:
-    DAVA::NMaterial * material;
+    DAVA::NMaterial* material;
     DAVA::uint32 curFlag = 0;
     DAVA::int32 lodIndex = -1;
     DAVA::int32 switchIndex = -1;

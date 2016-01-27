@@ -68,7 +68,7 @@ enum MoviePlayerHelperPlaybackState
     
     // Whether the video screen is visible.
     bool videoVisible;
-    
+
     // Scaling mode for newly open media
     DAVA::eMovieScalingMode scalingMode;
     double videoDuration;
@@ -81,7 +81,7 @@ enum MoviePlayerHelperPlaybackState
 -(void) setVisible:(bool) isVisible;
 
 // Load the movie in async way.
--(void) loadMovie:(NSURL*) movieURL scalingMode:(DAVA::eMovieScalingMode)desiredScalingMode;
+- (void)loadMovie:(NSURL*)movieURL scalingMode:(DAVA::eMovieScalingMode)desiredScalingMode;
 
 // Playback control.
 -(void) play;
@@ -105,7 +105,7 @@ enum MoviePlayerHelperPlaybackState
         playbackState = eNone;
         playerState = eStateNone;
         videoVisible = true;
-        
+
         scalingMode = DAVA::scalingModeNone;
         videoDuration = 0.0;
     }
@@ -124,34 +124,33 @@ enum MoviePlayerHelperPlaybackState
     [super dealloc];
 }
 
--(void) loadMovie:(NSURL *)movieURL scalingMode:(DAVA::eMovieScalingMode)desiredScalingMode
+- (void)loadMovie:(NSURL*)movieURL scalingMode:(DAVA::eMovieScalingMode)desiredScalingMode
 {
     if (videoPlayer != nullptr)
     {
         [videoView removeFromSuperview];
         [videoView release];
         videoView = nil;
-        
+
         [videoPlayer release];
         videoPlayer = nil;
     }
-    
+
     videoPlayer = [[AVPlayer alloc] init];
 
     scalingMode = desiredScalingMode;
     playerState = eStateInitializing;
-    
+
     AVAsset* asset = [AVAsset assetWithURL:movieURL];
     NSArray *assetKeysToLoadAndTest = [NSArray arrayWithObjects:@"playable", @"tracks", @"duration", nil];
-    [asset loadValuesAsynchronouslyForKeys:assetKeysToLoadAndTest completionHandler:^(void)
-    {
-        // The asset invokes its completion handler on an arbitrary queue when loading is complete.
-        // Because we want to access our AVPlayer in our ensuing set-up, we must dispatch our handler to the main queue.
-        dispatch_async(dispatch_get_main_queue(), ^(void)
-        {
-            [self setUpPlaybackOfVideoAsset:asset withKeys:assetKeysToLoadAndTest];
-        });
-    }];
+    [asset loadValuesAsynchronouslyForKeys:assetKeysToLoadAndTest
+                         completionHandler:^(void) {
+                           // The asset invokes its completion handler on an arbitrary queue when loading is complete.
+                           // Because we want to access our AVPlayer in our ensuing set-up, we must dispatch our handler to the main queue.
+                           dispatch_async(dispatch_get_main_queue(), ^(void) {
+                             [self setUpPlaybackOfVideoAsset:asset withKeys:assetKeysToLoadAndTest];
+                           });
+                         }];
 }
 
 - (void)setUpPlaybackOfVideoAsset:(AVAsset *)asset withKeys:(NSArray *)keys
@@ -192,24 +191,24 @@ enum MoviePlayerHelperPlaybackState
 
     AVPlayerLayer *newPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:videoPlayer];
     [newPlayerLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
-    
+
     NSString* mode = nullptr;
     switch (scalingMode)
     {
-        case DAVA::scalingModeAspectFit:
-            mode = AVLayerVideoGravityResizeAspect;
-            break;
-        case DAVA::scalingModeAspectFill:
-            mode = AVLayerVideoGravityResizeAspectFill;
-            break;
-        case DAVA::scalingModeFill:
-            mode = AVLayerVideoGravityResize;
-            break;
-        default:
-            break;
+    case DAVA::scalingModeAspectFit:
+        mode = AVLayerVideoGravityResizeAspect;
+        break;
+    case DAVA::scalingModeAspectFill:
+        mode = AVLayerVideoGravityResizeAspectFill;
+        break;
+    case DAVA::scalingModeFill:
+        mode = AVLayerVideoGravityResize;
+        break;
+    default:
+        break;
     }
     newPlayerLayer.videoGravity = mode;
-    
+
     [[videoView layer] addSublayer:newPlayerLayer];
     
     // Create a new AVPlayerItem and make it our player's current item.
@@ -269,12 +268,12 @@ enum MoviePlayerHelperPlaybackState
 -(void) applyVideoRect
 {
     DAVA::VirtualCoordinatesSystem* coordSystem = DAVA::VirtualCoordinatesSystem::Instance();
-    
+
     // 1. map virtual to physical
     DAVA::Rect rect = coordSystem->ConvertVirtualToPhysical(videoRect);
     rect += coordSystem->GetPhysicalDrawOffset();
     rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-    
+
     // 2. map physical to window
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
@@ -285,7 +284,7 @@ enum MoviePlayerHelperPlaybackState
 {
     double curPlayTime = CMTimeGetSeconds(videoPlayer.currentTime);
     bool videoAtEnd = curPlayTime == videoDuration;
-    
+
     switch (playbackState)
     {
     case ePlayback:
@@ -323,7 +322,6 @@ enum MoviePlayerHelperPlaybackState
 
 namespace DAVA
 {
-
 MovieViewControl::MovieViewControl()
 {
 	moviePlayerHelper = [[MoviePlayerHelper alloc] init];
@@ -336,7 +334,7 @@ MovieViewControl::~MovieViewControl()
 {
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
-    
+
     MoviePlayerHelper* helper = (MoviePlayerHelper*)moviePlayerHelper;
     [helper release];
 }
@@ -392,4 +390,4 @@ void MovieViewControl::OnAppMinimizedRestored(bool minimized)
     SetVisible(!minimized);
 }
 
-}   // namespace DAVA
+} // namespace DAVA
