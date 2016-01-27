@@ -102,7 +102,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     resetTextureInfo();
 
-	// let textures list show images-view by default
+    // let textures list show images-view by default
 	ui->actionViewImagesList->trigger();
 
 	// let textures view show border by default
@@ -377,7 +377,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
     }
     else
     {
-		ui->labelOriginalFormat->setText("");
+        ui->labelOriginalFormat->setText("");
 	}
 }
 

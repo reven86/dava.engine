@@ -240,7 +240,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 
     if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
-		Vector3 point;
+        Vector3 point;
 
 		switch(event->phase)
 		{

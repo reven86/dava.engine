@@ -39,8 +39,8 @@ void TextureDescriptorUtils::ResaveDescriptorsForFolder(const FilePath &folderPa
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if(IsCorrectDirectory(fileList, fi))
 		{
             ResaveDescriptorsForFolder(pathname);
 		}
@@ -63,8 +63,8 @@ void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath &fold
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if(IsCorrectDirectory(fileList, fi))
 		{
 			CopyCompressionParamsForFolder(pathname);
 		}
@@ -128,8 +128,8 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if(IsCorrectDirectory(fileList, fi))
 		{
 			CreateDescriptorsForFolder(pathname);
 		}
@@ -179,8 +179,8 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
 
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if(IsCorrectDirectory(fileList, fi))
 		{
 			SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
 		}
@@ -202,8 +202,8 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
     DVASSERT(descriptor->compression);
 
     auto endIt = compressionParams.end();
-    for(auto it = compressionParams.begin(); it != endIt; ++it)
-	{
+    for (auto it = compressionParams.begin(); it != endIt; ++it)
+    {
 		eGPUFamily gpu = it->first;
 
 		if(force || (descriptor->compression[gpu].format == FORMAT_INVALID))

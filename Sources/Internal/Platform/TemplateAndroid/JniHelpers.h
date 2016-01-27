@@ -99,7 +99,7 @@ JNIEnv *GetEnv();
 void AttachCurrentThreadToJVM();
 void DetachCurrentThreadFromJVM();
 
-Rect V2P(const Rect& rect);
+Rect V2I(const Rect& rect);
 
 String ToString(const jstring jniString);
 
