@@ -30,6 +30,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 
 #include "GameCore.h"
 #include "Version.h"
@@ -59,12 +60,11 @@ void FrameworkDidLaunched()
     DAVA::Core::SetApplicationCore(core);
     DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
-
-//    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
     
 	SafeRelease(appOptions);
 }
 
-
 void FrameworkWillTerminate()
-{ }
+{
+    VisibilityCheckSystem::ReleaseCubemapRenderTargets();
+}

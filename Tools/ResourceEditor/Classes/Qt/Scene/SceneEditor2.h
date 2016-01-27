@@ -33,7 +33,6 @@
 #include <QObject>
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
@@ -48,7 +47,6 @@
 #include "Scene/System/HeightmapEditorSystem.h"
 #include "Scene/System/TilemaskEditorSystem.h"
 #include "Scene/System/CustomColorsSystem.h"
-#include "Scene/System/VisibilityToolSystem.h"
 #include "Scene/System/RulerToolSystem.h"
 #include "Scene/System/StructureSystem.h"
 #include "Scene/System/EditorParticlesSystem.h"
@@ -61,39 +59,36 @@
 #include "Scene/System/WayEditSystem.h"
 #include "Scene/System/PathSystem.h"
 
+#include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
-
-
 class SceneCameraSystem;
 class SceneCollisionSystem;
-
 class HoodSystem;
-
 class EditorLODSystem;
 class FogSettingsChangedReceiver;
+class VisibilityCheckSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {
 public:
-	enum LandscapeTools
-	{
-		LANDSCAPE_TOOL_CUSTOM_COLOR			= 1 << 0,
-		LANDSCAPE_TOOL_VISIBILITY			= 1 << 1,
-		LANDSCAPE_TOOL_HEIGHTMAP_EDITOR		= 1 << 2,
-		LANDSCAPE_TOOL_TILEMAP_EDITOR		= 1 << 3,
-		LANDSCAPE_TOOL_RULER				= 1 << 4,
-		LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN	= 1 << 5,
+    enum LandscapeTools
+    {
+        LANDSCAPE_TOOL_CUSTOM_COLOR = 1 << 0,
+        LANDSCAPE_TOOL_HEIGHTMAP_EDITOR = 1 << 1,
+        LANDSCAPE_TOOL_TILEMAP_EDITOR = 1 << 2,
+        LANDSCAPE_TOOL_RULER = 1 << 3,
+        LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN = 1 << 4,
 
-		LANDSCAPE_TOOLS_ALL					= 0x7FFFFFFF
-	};
+        LANDSCAPE_TOOLS_ALL = 0x7FFFFFFF
+    };
 
-	SceneEditor2();
-	~SceneEditor2();
+    SceneEditor2();
+    ~SceneEditor2();
 
-	// editor systems
+    // editor systems
 	SceneCameraSystem *cameraSystem;
 	SceneCollisionSystem *collisionSystem;
 	SceneGridSystem *gridSystem;
@@ -104,7 +99,6 @@ public:
 	HeightmapEditorSystem* heightmapEditorSystem;
 	TilemaskEditorSystem* tilemaskEditorSystem;
 	CustomColorsSystem* customColorsSystem;
-	VisibilityToolSystem* visibilityToolSystem;
 	RulerToolSystem* rulerToolSystem;
 	StructureSystem *structureSystem;
 	EditorParticlesSystem *particlesSystem;
@@ -116,10 +110,11 @@ public:
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
 	EditorLODSystem *editorLODSystem;
+    VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
-	DAVA::WASDControllerSystem *wasdSystem;
-	DAVA::RotationControllerSystem *rotationSystem;
-	DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+    DAVA::WASDControllerSystem* wasdSystem;
+    DAVA::RotationControllerSystem* rotationSystem;
+    DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
 
 	WayEditSystem *wayEditSystem;
 	PathSystem *pathSystem;

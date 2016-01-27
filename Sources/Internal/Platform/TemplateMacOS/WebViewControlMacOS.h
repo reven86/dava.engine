@@ -65,9 +65,9 @@ public:
     void SetRect(const Rect& rect) override;
     void SetVisible(bool isVisible, bool hierarchic) override;
 
-	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) override;
-	void SetBackgroundTransparency(bool enabled) override;
-    
+    void SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView) override;
+    void SetBackgroundTransparency(bool enabled) override;
+
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override {return isRenderToTexture;}
     
@@ -75,16 +75,17 @@ public:
     void* GetImageCache() const;
 
     void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl);
+
 private:
     void SetNativeVisible(bool visible);
-    
+
     void OnAppMinimizedRestored(bool minimized);
     SigConnectionID appMinimizedRestoredConnectionId;
-    
-	//A pointer to MacOS WebView.
-	void* webViewPtr;
-	
-	// A pointer to the WebView delegate.
+
+    //A pointer to MacOS WebView.
+    void* webViewPtr;
+
+    // A pointer to the WebView delegate.
 	void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;

@@ -74,8 +74,8 @@ public:
     void SetDrawingType(eHeightmapDrawType type);
     eHeightmapDrawType GetDrawingType();
 
-	void SetDropperHeight(float32 height);
-	float32 GetDropperHeight();
+    void SetDropperHeight(float32 height);
+    float32 GetDropperHeight();
 
 protected:
     
@@ -88,9 +88,9 @@ protected:
 
     eHeightmapDrawType drawingType;
     float32 strength;
-	float32 averageStrength;
-	bool inverseDrawingEnabled;
-	FilePath toolImagePath;
+    float32 averageStrength;
+    bool inverseDrawingEnabled;
+    FilePath toolImagePath;
 	int32 toolImageIndex;
 
 	float32 curHeight;
@@ -109,10 +109,10 @@ protected:
     void UpdateBrushTool(float32 timeElapsed);
 
     void AddRectToAccumulator(Rect& accumulator, const Rect& rect);
-	void ResetAccumulatorRect(Rect& accumulator);
-	Rect GetHeightmapUpdatedRect();
-	
-	void StoreOriginalHeightmap();
+    void ResetAccumulatorRect(Rect& accumulator);
+    Rect GetHeightmapUpdatedRect();
+
+    void StoreOriginalHeightmap();
 	void CreateHeightmapUndo();
 
 	void FinishEditing();

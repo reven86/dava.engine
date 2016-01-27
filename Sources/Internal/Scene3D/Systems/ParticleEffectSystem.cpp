@@ -139,9 +139,9 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
-    for (auto emitter : component->emitters)
+    for (auto& emitter : component->emitterDatas)
     {
-        for (auto layer : emitter->layers)
+        for (auto layer : emitter.emitter->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
             {
@@ -196,13 +196,13 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 	if (effect->effectData.groups.empty()) //clean position sources
 		effect->effectData.infoSources.resize(1);
 	//create particle groups
-	for (size_t emitterId = 0, emittersCount = effect->emitters.size(); emitterId<emittersCount; ++emitterId)
-	{
-		RunEmitter(effect, effect->emitters[emitterId], effect->spawnPositions[emitterId]);		
-	}
-		
-	effect->state = ParticleEffectComponent::STATE_PLAYING;
-	effect->time = 0;
+    for (size_t emitterId = 0, emittersCount = effect->emitterDatas.size(); emitterId < emittersCount; ++emitterId)
+    {
+        RunEmitter(effect, effect->emitterDatas[emitterId].emitter.Get(), effect->emitterDatas[emitterId].spawnPosition);
+    }
+
+    effect->state = ParticleEffectComponent::STATE_PLAYING;
+    effect->time = 0;
 }
 
 void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)

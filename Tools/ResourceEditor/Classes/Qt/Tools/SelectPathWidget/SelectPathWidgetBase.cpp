@@ -226,7 +226,7 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
     {
         setText(itemName);
     }
-	
+
     event->setDropAction(Qt::LinkAction);
     event->accept();
 }
