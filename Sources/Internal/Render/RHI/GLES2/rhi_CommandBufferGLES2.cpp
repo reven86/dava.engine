@@ -1941,6 +1941,8 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
+#elif defined __DAVAENGINE_IPHONE__
+            ios_gl_check_layer();
 #endif
 
             // CRAP: busy-wait
