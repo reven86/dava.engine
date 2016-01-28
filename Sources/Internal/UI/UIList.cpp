@@ -500,13 +500,34 @@ void UIList::Input(UIEvent *currentInput)
         return;
     }
 
+    if (Key::LSHIFT == currentInput->key || Key::RSHIFT == currentInput->key)
+    {
+        if (UIEvent::Phase::KEY_DOWN == currentInput->phase)
+        {
+            Logger::Error("SHIFT_DOWN");
+            isShiftPressed = true;
+        }
+        if (UIEvent::Phase::KEY_UP == currentInput->phase)
+        {
+            Logger::Error("SHIFT_UP");
+            isShiftPressed = false;
+        }
+    }
+
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
         if (UIEvent::Device::MOUSE == currentInput->device)
         {
-            newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            if (isShiftPressed)
+            {
+                newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
+            }
+            else
+            {
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
         }
-        else
+        else // UIEvent::Phase::TOUCH_PAD
         {
             if (ORIENTATION_HORIZONTAL == orientation)
             {
