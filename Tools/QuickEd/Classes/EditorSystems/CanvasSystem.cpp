@@ -45,7 +45,7 @@ enum eBackgroundType : bool
 
 namespace CanvasSystem_namespace
 {
-class GridControl : public UIControl
+class GridControl : public UIControl, public TrackedObject 
 {
 public:
     GridControl();
