@@ -216,7 +216,7 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Ve
             break;
         }
 
-		btFrom = btTo;
+        btFrom = btTo;
         rayLength -= stepSize;
     }
 
@@ -275,7 +275,7 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity *entity)
         }
     }
 
-	return aabox;
+    return aabox;
 }
 
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)

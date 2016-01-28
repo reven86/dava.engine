@@ -815,7 +815,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
 	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
 	QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
-	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
+    QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
@@ -1286,8 +1286,8 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
 	{
 		if (toolsFlags)
 		{
-			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-		}
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+        }
 		closeRequest->Accept();
         return;
 	}
@@ -1309,8 +1309,8 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
 	{
 		if (toolsFlags)
 		{
-			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
-		}
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
+        }
 		closeRequest->Accept();
 		return;
 	}
@@ -1325,7 +1325,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
             return;
         }
 
-        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+        scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
     }
 
     if(!SaveScene(scene))
@@ -2079,9 +2079,9 @@ void QtMainWindow::OnSaveTiledTexture()
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
 	if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
-		return;
-	}
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
+        return;
+    }
 
     Landscape* landscape = FindLandscape(scene);
     if (nullptr != landscape)
@@ -2210,9 +2210,9 @@ void QtMainWindow::OnBeastAndSave()
 	{
 		if(QMessageBox::Yes == QMessageBox::question(this, "Starting Beast", "Disable landscape editor and start beasting?", (QMessageBox::Yes | QMessageBox::No), QMessageBox::No))
 		{
-			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
-			bool success = !scene->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+            bool success = !scene->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 			if (!success )
 			{
 				ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
@@ -2364,9 +2364,9 @@ void QtMainWindow::OnCustomColorsEditor()
             return;
         }
 	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR, true);
-	ui->actionCustomColorsEditor->setChecked(false);
+
+    sceneEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR, true);
+    ui->actionCustomColorsEditor->setChecked(false);
 }
 
 bool QtMainWindow::SelectCustomColorsTexturePath()
@@ -2965,9 +2965,9 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 					case QMessageBox::Yes:
 						{
 							// turn off editor
-							tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                            tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
-							// save
+                            // save
 							tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
 						}
 						break;
@@ -2977,8 +2977,8 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 					case QMessageBox::No:
 						{
 							// turn off editor
-							tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-						}
+                            tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                        }
 						break;
 
 					case QMessageBox::Cancel:
