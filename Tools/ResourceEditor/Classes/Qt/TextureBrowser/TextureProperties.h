@@ -114,7 +114,7 @@ protected:
     EnumMap enumSizes;
     EnumMap enumWpar;
     EnumMap enumFiltersMin;
-	EnumMap enumFiltersMag;
+    EnumMap enumFiltersMag;
     EnumMap enumFiltersMip;
 
     QMap<int, QSize> availableSizes;

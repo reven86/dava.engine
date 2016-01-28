@@ -227,7 +227,7 @@ void UISlider::Input(UIEvent *currentInput)
     //absTouchPoint = currentInput->point;
 
     relTouchPoint = currentInput->point;
-	relTouchPoint -= absRect.GetPosition();
+    relTouchPoint -= absRect.GetPosition();
 	
 	
 	float oldVal = currentValue;

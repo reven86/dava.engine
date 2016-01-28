@@ -33,10 +33,10 @@
 #include "Main/QtUtils.h"
 
 QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive_, const DAVA::String& key_)
-	: QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
     , archive(archive_)
     , key(key_.c_str())
-	, lastCommand(NULL)
+    , lastCommand(NULL)
 {
     CheckAndFillPresetValues();
 

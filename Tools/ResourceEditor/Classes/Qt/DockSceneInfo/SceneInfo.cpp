@@ -508,31 +508,31 @@ QtPropertyData * SceneInfo::CreateInfoHeader(const QString &key)
     headerData->SetEditable(false);
 	headerData->SetBackground(QBrush(QColor(Qt::lightGray)));
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
-	return headerData;
+    return headerData;
 }
 
 QtPropertyData * SceneInfo::GetInfoHeader(const QString &key)
 {
-	QtPropertyData *header = nullptr;
+    QtPropertyData* header = nullptr;
     QtPropertyData *root = GetRootProperty();
 	if(NULL != root)
 	{
-		header = root->ChildGet(DAVA::FastName(key.toStdString()));
-	}
+        header = root->ChildGet(DAVA::FastName(key.toStdString()));
+    }
 	return header;
 }
 
 void SceneInfo::AddChild(const QString & key, QtPropertyData *parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
-	propData->SetEditable(false);
+    propData->SetEditable(false);
     parent->ChildAdd(std::move(propData));
 }
 
 void SceneInfo::AddChild(const QString & key, const QString& toolTip, QtPropertyData *parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
-	propData->SetEditable(false);
+    propData->SetEditable(false);
     propData->SetToolTip(toolTip);
     parent->ChildAdd(std::move(propData));
 }
@@ -541,8 +541,8 @@ void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyD
 {
 	if(NULL != parent)
 	{
-        QtPropertyData * propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
-		if(NULL != propData)
+        QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
+        if(NULL != propData)
 		{
 			propData->SetValue(value);
 		}
@@ -554,8 +554,8 @@ bool SceneInfo::HasChild(const QString & key, QtPropertyData *parent)
     bool hasChild = false;
     if(NULL != parent)
 	{
-		QtPropertyData * propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
-		hasChild = (propData != NULL);
+        QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
+        hasChild = (propData != NULL);
 	}
     
     return hasChild;

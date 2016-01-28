@@ -109,7 +109,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
     QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
     emitterTypeHBox->addWidget(new QLabel("type"));
     emitterType = new QComboBox(this);
-	emitterType->addItem("Point");
+    emitterType->addItem("Point");
 	emitterType->addItem("Box");
 	emitterType->addItem("Circle - Volume");
 	emitterType->addItem("Circle - Edges");
@@ -305,8 +305,8 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 
     float32 emitterLifeTime = emitter->lifeTime;
 
-    float minTime		= 0.f;
-	float minTimeLimit	= 0.f;
+    float minTime = 0.f;
+    float minTimeLimit	= 0.f;
     
 	float maxTime		= emitterLifeTime;
 	float maxTimeLimit	= emitterLifeTime;

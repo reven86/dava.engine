@@ -169,7 +169,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
     if (!modifOffset.IsZero())
     {
         char tmp[255];
-		DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
+        DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
 
 		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifOffset.x, modifOffset.y, modifOffset.z);
         textDrawSystem->DrawText(topPos, tmp, DAVA::Color(1.0f, 1.0f, 0.0f, 1.0f));

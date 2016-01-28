@@ -67,7 +67,7 @@ void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath &fold
         if (IsCorrectDirectory(fileList, fi))
         {
             CopyCompressionParamsForFolder(pathname);
-		}
+        }
 		else if(IsDescriptorPathname(pathname))
         {
             CopyCompressionParams(pathname);
@@ -132,7 +132,7 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
         if (IsCorrectDirectory(fileList, fi))
         {
             CreateDescriptorsForFolder(pathname);
-		}
+        }
         else if(DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
         {
             CreateDescriptorIfNeed(pathname);
@@ -183,7 +183,7 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
         if (IsCorrectDirectory(fileList, fi))
         {
             SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
-		}
+        }
 		else if(IsDescriptorPathname(pathname))
 		{
 			SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
@@ -206,8 +206,8 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
     {
         eGPUFamily gpu = it->first;
 
-        if(force || (descriptor->compression[gpu].format == FORMAT_INVALID))
-		{
+        if (force || (descriptor->compression[gpu].format == FORMAT_INVALID))
+        {
 			descriptor->compression[gpu] = it->second;
 
 			if(convertionEnabled)

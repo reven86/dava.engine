@@ -87,7 +87,7 @@ protected:
     void StoreOriginalState();
     void CreateUndoPoint();
 
-	void StoreSaveFileName(const FilePath& filePath);
+    void StoreSaveFileName(const FilePath& filePath);
 
 	FilePath GetScenePath();
 	String GetRelativePathToScenePath(const FilePath& absolutePath);

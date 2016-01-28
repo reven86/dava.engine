@@ -200,8 +200,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                         inModifState = true;
 
                         // select current hood axis as active
-                        if(curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
-						{
+                        if (curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
+                        {
 							SetModifAxis(hoodSystem->GetPassingAxis());
 						}
 
@@ -238,7 +238,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 
                 switch (curMode)
                 {
-				case ST_MODIF_MOVE:
+                case ST_MODIF_MOVE:
 					{
 						DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
 						moveOffset = Move(newPos3d);
@@ -276,7 +276,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     hoodSystem->LockScale(true);
                     hoodSystem->SetModifOffset(moveOffset);
                     hoodSystem->SetModifRotate(rotateAngle);
-					hoodSystem->SetModifScale(scaleForce);
+                    hoodSystem->SetModifScale(scaleForce);
 				}
 			}
 			// phase ended
@@ -288,7 +288,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     {
                         if (cloneState == CLONE_DONE)
                         {
-							CloneEnd();
+                            CloneEnd();
 						}
 						else
 						{
@@ -345,7 +345,7 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
             {
                 EntityToModify etm;
                 etm.entity = en;
-				etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
+                etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
 				etm.originalTransform = en->GetLocalTransform();
 				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
 				etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
@@ -380,7 +380,7 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 
         // prepare translation matrix's, used before and after rotation
         moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
-		moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
+        moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
 
 		// remember axis vector we are rotating around
 		switch(curAxis)
@@ -457,7 +457,7 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
                 hasLocked = true;
                 break;
             }
-		}
+        }
 
         modifCanStart = !hasLocked;
     }
@@ -518,7 +518,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
         }
     }
 
-	return modifCanStart;
+    return modifCanStart;
 }
 
 void EntityModificationSystem::ApplyModification()

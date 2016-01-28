@@ -80,7 +80,7 @@ void TextureProperties::setTextureDescriptor(DAVA::TextureDescriptor *descriptor
 
         // reload all properties for current gpu and from current descriptor
         ReloadProperties();
-	}
+    }
 	else
 	{
 		// no texture - disable this widget
@@ -216,7 +216,7 @@ void TextureProperties::ReloadProperties()
         ReloadEnumFilters();
 
         SetPropertyItemValidValues(propWrapModeS, &enumWpar);
-		SetPropertyItemValidValues(propWrapModeT, &enumWpar);
+        SetPropertyItemValidValues(propWrapModeT, &enumWpar);
 		SetPropertyItemValidValues(propMinFilter, &enumFiltersMin);
         SetPropertyItemValidValues(propMagFilter, &enumFiltersMag);
         SetPropertyItemValidValues(propMipFilter, &enumFiltersMip);
@@ -226,7 +226,7 @@ void TextureProperties::ReloadProperties()
         if (0 == enumSizes.GetCount())
         {
             propSizes->SetEnabled(false);
-		}
+        }
 
 		expandAll();
 	}
@@ -368,7 +368,7 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
     {
         emit PropertyChanged(PROP_WRAP);
     }
-	else if(data == propSizes)
+    else if(data == propSizes)
 	{
 		SaveCurSizeFromProp();
 
@@ -419,6 +419,6 @@ void TextureProperties::SaveCurSizeFromProp()
             DVASSERT(curTextureDescriptor->compression);
             curTextureDescriptor->compression[curGPU].compressToWidth = availableSizes[level].width();
             curTextureDescriptor->compression[curGPU].compressToHeight = availableSizes[level].height();
-		}
+        }
 	}
 }

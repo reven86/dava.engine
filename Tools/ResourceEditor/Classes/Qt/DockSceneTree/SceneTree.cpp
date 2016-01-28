@@ -481,7 +481,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             {
                 lockAction->setDisabled(true);
             }
- 			else
+            else
  			{
  				unlockAction->setDisabled(true);
  			}
@@ -495,7 +495,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             if (NULL != customProp)
             {
                 DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-				if(!ownerRef.IsEmpty())
+                if(!ownerRef.IsEmpty())
 				{
 					if(selectionSize == 1)
 					{
@@ -935,7 +935,7 @@ void SceneTree::SyncSelectionFromTree()
         SceneEditor2* curScene = treeModel->GetScene();
         if (NULL != curScene)
         {
-			// select items in scene
+            // select items in scene
 			EntityGroup group;
 
 			QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -956,7 +956,7 @@ void SceneTree::SyncSelectionFromTree()
             // this should be done until we are inSync mode, to prevent unnecessary updates
             // when signals from selection system will be emitted on next frame
             curScene->selectionSystem->ForceEmitSignals();
-		}
+        }
 	}
 }
 

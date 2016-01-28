@@ -89,7 +89,7 @@ private:
 
     TimeLineWidget* emitterEmissionRange;
     TimeLineWidget* emitterEmissionVector;
-	TimeLineWidget* emitterRadius;
+    TimeLineWidget* emitterRadius;
 	TimeLineWidget* emitterSize;
     TimeLineWidget* emitterAngle;
 	EventFilterDoubleSpinBox* emitterLife;

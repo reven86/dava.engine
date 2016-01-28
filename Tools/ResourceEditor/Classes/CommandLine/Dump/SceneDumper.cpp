@@ -129,8 +129,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
     {
     case RenderObject::TYPE_LANDSCAPE:
     {
-            Landscape *landscape = static_cast<Landscape *> (renderObject);
-			links.insert(landscape->GetHeightmapPathname());
+        Landscape* landscape = static_cast<Landscape*>(renderObject);
+            links.insert(landscape->GetHeightmapPathname());
 			break;
 		}
 		case RenderObject::TYPE_VEGETATION:
@@ -145,7 +145,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
         default:
             break;
-    }
+        }
 
     //Enumerate textures from materials
     Set<MaterialTextureInfo*> materialTextures;
@@ -155,7 +155,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
         auto renderBatch = renderObject->GetRenderBatch(rb);
         auto material = renderBatch->GetMaterial();
 
-		while (nullptr != material)
+        while (nullptr != material)
 		{
             material->CollectLocalTextures(materialTextures);
             material = material->GetParent();

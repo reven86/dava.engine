@@ -87,8 +87,8 @@ void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
 {
     if (nsize == 0)
     {
-            mspace_free(ud, ptr);
-			return nullptr;
+        mspace_free(ud, ptr);
+            return nullptr;
 		}
 		else
 		{
@@ -114,8 +114,8 @@ AutotestingSystemLua::AutotestingSystemLua()
 AutotestingSystemLua::~AutotestingSystemLua()
 {
     if (!luaState)
-        {
-			return;
+    {
+            return;
 		}
 		lua_close(luaState);
 		luaState = nullptr;
@@ -129,9 +129,9 @@ AutotestingSystemLua::~AutotestingSystemLua()
 void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
 {
     delegate = _delegate;
-    }
+}
 
-	void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
+    void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 	{
 		if (luaState)
 		{
@@ -154,7 +154,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         lua_setglobal(luaState, "print");
 
         lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
-		lua_setglobal(luaState, "require");
+        lua_setglobal(luaState, "require");
 
 		if (!LoadWrappedLuaObjects())
 		{
@@ -253,7 +253,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
         lua_pushstring(L, path.GetBasename().c_str());
         return 2;
-	}
+    }
 
 	void AutotestingSystemLua::StackDump(lua_State* L)
 	{
@@ -317,7 +317,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
     String AutotestingSystemLua::GetDeviceName()
     {
         String deviceName;
-		if (DeviceInfo::GetPlatformString() == "Android")
+        if (DeviceInfo::GetPlatformString() == "Android")
 		{
 			deviceName = DeviceInfo::GetModel();
 		}
@@ -568,7 +568,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         {
             if (keyPress.keyChar == 0)
             {
-				break;
+                break;
 			}
 			WideString str;
             str += keyPress.keyChar;
@@ -581,7 +581,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         }
     }
 
-	String AutotestingSystemLua::GetText(UIControl *control)
+    String AutotestingSystemLua::GetText(UIControl *control)
 	{
 		UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)
@@ -804,7 +804,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         {
             return false;
         }
-		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
+        if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
 		{
 			Logger::Error("AutotestingSystemLua::LoadScript Error: unable to load %s", luaScript.c_str());
 			return false;

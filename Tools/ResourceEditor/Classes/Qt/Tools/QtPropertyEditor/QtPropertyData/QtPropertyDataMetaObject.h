@@ -38,8 +38,8 @@
 class QtPropertyDataMetaObject : public QtPropertyDataDavaVariant
 {
 public:
-	QtPropertyDataMetaObject(const DAVA::FastName& name, void *_object, const DAVA::MetaInfo *_meta);
-	virtual ~QtPropertyDataMetaObject();
+    QtPropertyDataMetaObject(const DAVA::FastName& name, void* _object, const DAVA::MetaInfo* _meta);
+    virtual ~QtPropertyDataMetaObject();
 
 	virtual const DAVA::MetaInfo* MetaInfo() const;
 	virtual void* CreateLastCommand() const;

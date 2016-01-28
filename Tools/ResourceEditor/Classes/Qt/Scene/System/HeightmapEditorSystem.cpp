@@ -164,8 +164,8 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 
             if (isIntersectsLandscape)
             {
-                    if (drawingType == HEIGHTMAP_COPY_PASTE)
-					{
+                if (drawingType == HEIGHTMAP_COPY_PASTE)
+                    {
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
 						if (curKeyModifiers & Qt::AltModifier)
 						{
@@ -256,8 +256,8 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
     {
         switch (activeDrawingType)
         {
-            case HEIGHTMAP_DRAW_RELATIVE:
-			{
+        case HEIGHTMAP_DRAW_RELATIVE:
+            {
 				float32 koef = (strength * timeElapsed);
 				if(inverseDrawingEnabled)
 				{
@@ -283,7 +283,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
             case HEIGHTMAP_DRAW_ABSOLUTE:
             case HEIGHTMAP_DRAW_ABSOLUTE_DROPPER:
             {
-				float32 maxHeight = drawSystem->GetLandscapeMaxHeight();
+                float32 maxHeight = drawSystem->GetLandscapeMaxHeight();
 				float32 height = curHeight / maxHeight * Heightmap::MAX_VALUE;
 				
 				float32 koef = (averageStrength * timeElapsed) * 2.0f;
@@ -300,7 +300,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
             case HEIGHTMAP_COPY_PASTE:
             {
-				if (copyPasteFrom == Vector2(-1.f, -1.f) || copyPasteTo == Vector2(-1.f, -1.f))
+                if (copyPasteFrom == Vector2(-1.f, -1.f) || copyPasteTo == Vector2(-1.f, -1.f))
 				{
 					return;
 				}
@@ -320,7 +320,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
             default:
                 DAVA::Logger::Error("Invalid drawing type!");
                 return;
-		}
+        }
 		
 		Rect rect(pos.x, pos.y, (float32)scaleSize, (float32)scaleSize);
 		drawSystem->GetHeightmapProxy()->UpdateRect(rect);
@@ -387,7 +387,7 @@ void HeightmapEditorSystem::SetStrength(float32 strength)
     if (strength < 0.f)
     {
         inverseDrawingEnabled = true;
-	}
+    }
 }
 
 void HeightmapEditorSystem::SetAverageStrength(float32 averageStrength)

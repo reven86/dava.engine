@@ -34,10 +34,9 @@
 QtPropertyData::ChildKey::ChildKey(const QtPropertyData* child_)
     : child(child_)
 {
-
 }
 
-bool QtPropertyData::ChildKey::operator<(const ChildKey & other) const
+bool QtPropertyData::ChildKey::operator<(const ChildKey& other) const
 {
     if (child->name != other.child->name)
         return child->name < other.child->name;
@@ -50,19 +49,19 @@ bool QtPropertyData::ChildKey::operator<(const ChildKey & other) const
     return child->IsEnabled() < other.child->IsEnabled();
 }
 
-bool QtPropertyData::ChildKey::operator!=(const ChildKey & other) const
+bool QtPropertyData::ChildKey::operator!=(const ChildKey& other) const
 {
     return !(*this == other);
 }
 
-bool QtPropertyData::ChildKey::operator==(const ChildKey & other) const
+bool QtPropertyData::ChildKey::operator==(const ChildKey& other) const
 {
     return child->name == other.child->name &&
     child->MetaInfo() == other.child->MetaInfo() &&
     child->IsEnabled() == other.child->IsEnabled();
 }
 
-QtPropertyData::QtPropertyData(const DAVA::FastName & name_)
+QtPropertyData::QtPropertyData(const DAVA::FastName& name_)
     : name(name_)
 {
     childrenData.reserve(16);
@@ -83,7 +82,7 @@ QtPropertyData::~QtPropertyData()
 	childrenData.clear();
     mergedData.clear();
 
-	for (int i = 0; i < optionalButtons.size(); i++)
+    for (int i = 0; i < optionalButtons.size(); i++)
 	{
         optionalButtons.at(i)->deleteLater();
     }
@@ -174,8 +173,7 @@ void QtPropertyData::BuildCurrentValue()
     bool isAllEqual = true;
 
     isValuesMerged = false;
-    ForeachMergedItem([&master, &isAllEqual](QtPropertyData * item)
-    {
+    ForeachMergedItem([&master, &isAllEqual](QtPropertyData* item) {
         isAllEqual = (master == item->GetValue());
         return isAllEqual;
     });
@@ -200,7 +198,7 @@ QVariant QtPropertyData::GetValue() const
     QtPropertyData *self = const_cast<QtPropertyData*>(this);
 
     bool hasValue = curValue.isValid() || !curValue.isNull();
-    
+
     if (hasValue)
     {
         self->UpdateValue();
@@ -215,9 +213,9 @@ bool QtPropertyData::IsMergedDataEqual() const
     return isValuesMerged;
 }
 
-void QtPropertyData::ForeachMergedItem(DAVA::Function<bool(QtPropertyData *)> const & functor) const
+void QtPropertyData::ForeachMergedItem(DAVA::Function<bool(QtPropertyData*)> const& functor) const
 {
-    for (const std::unique_ptr<QtPropertyData> & item : mergedData)
+    for (const std::unique_ptr<QtPropertyData>& item : mergedData)
     {
         if (functor(item.get()) == false)
             break;
@@ -229,7 +227,7 @@ int QtPropertyData::GetMergedItemCount() const
     return static_cast<int>(!mergedData.empty());
 }
 
-void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
+void QtPropertyData::SetValue(const QVariant& value, ValueChangeReason reason)
 {
     QVariant oldValue = curValue;
 
@@ -240,9 +238,8 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
             updatingValue = false;
         };
 
-        auto setValueFunctor = [value, reason](QtPropertyData* item)
-        {
-            QtPropertyDataValidator *mergedValidator = item->GetValidator();
+        auto setValueFunctor = [value, reason](QtPropertyData* item) {
+            QtPropertyDataValidator* mergedValidator = item->GetValidator();
             QVariant validatedValue = value;
 
             if (reason == VALUE_EDITED && mergedValidator != nullptr)
@@ -312,22 +309,22 @@ QVariant QtPropertyData::GetAlias() const
 	return alias;
 }
 
-const DAVA::FastName & QtPropertyData::GetName() const
+const DAVA::FastName& QtPropertyData::GetName() const
 {
-	return name;
+    return name;
 }
 
 QString QtPropertyData::GetPath() const
 {
-	QString path = name.c_str();
+    QString path = name.c_str();
 
-	// search top level parent
+    // search top level parent
 	const QtPropertyData *parent = this;
 	while(NULL != parent->Parent())
 	{
 		parent = parent->Parent();
-		path = QString(parent->name.c_str()) + "/" + path;
-	}
+        path = QString(parent->name.c_str()) + "/" + path;
+    }
 
 	return path;
 }
@@ -454,13 +451,13 @@ void QtPropertyData::UpdateOWState()
 
 void QtPropertyData::SetUserData(UserData *data)
 {
-	userData.reset(data);
+    userData.reset(data);
     EmitDataChanged(VALUE_SET);
 }
 
 QtPropertyData::UserData* QtPropertyData::GetUserData() const
 {
-	return userData.get();
+    return userData.get();
 }
 
 void QtPropertyData::SetToolTip(const QVariant& toolTip)
@@ -488,7 +485,7 @@ QtPropertyModel* QtPropertyData::GetModel() const
 	return model;
 }
 
-void QtPropertyData::Merge(std::unique_ptr<QtPropertyData> && data)
+void QtPropertyData::Merge(std::unique_ptr<QtPropertyData>&& data)
 {
     DVASSERT(data);
 
@@ -499,21 +496,21 @@ void QtPropertyData::Merge(std::unique_ptr<QtPropertyData> && data)
     }
 
     data->parent = nullptr;
-    
+
     DAVA::Vector<std::unique_ptr<QtPropertyData>> children;
     data->ChildrenExtract(children);
     mergedData.emplace_back(std::move(data));
 
-    for (std::unique_ptr<QtPropertyData> & item : children)
+    for (std::unique_ptr<QtPropertyData>& item : children)
     {
         MergeChild(std::move(item));
     }
     children.clear();
-    
+
     UpdateValue(true);
 }
 
-void QtPropertyData::MergeChild(std::unique_ptr<QtPropertyData> && data)
+void QtPropertyData::MergeChild(std::unique_ptr<QtPropertyData>&& data)
 {
     DVASSERT(data);
 
@@ -551,7 +548,7 @@ void QtPropertyData::SetModel(QtPropertyModel* model_)
 {
     model = model_;
 
-    for (std::unique_ptr<QtPropertyData> & child : childrenData)
+    for (std::unique_ptr<QtPropertyData>& child : childrenData)
     {
         DVASSERT(child != nullptr);
         child->SetModel(model);
@@ -602,7 +599,7 @@ void QtPropertyData::UpdateUp()
 
 void QtPropertyData::UpdateDown()
 {
-    for (std::unique_ptr<QtPropertyData> & child : childrenData)
+    for (std::unique_ptr<QtPropertyData>& child : childrenData)
     {
         DVASSERT(child != nullptr);
         child->UpdateValue();
@@ -615,7 +612,7 @@ QtPropertyData* QtPropertyData::Parent() const
 	return parent;
 }
 
-void QtPropertyData::ChildAdd(std::unique_ptr<QtPropertyData> && data)
+void QtPropertyData::ChildAdd(std::unique_ptr<QtPropertyData>&& data)
 {
     if (data == nullptr)
         return;
@@ -629,7 +626,7 @@ void QtPropertyData::ChildAdd(std::unique_ptr<QtPropertyData> && data)
     childrenData.push_back(std::move(data));
 }
 
-void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>> && data)
+void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& data)
 {
     if (data.empty())
         return;
@@ -637,10 +634,10 @@ void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>> &
     int currentSize = childrenData.size();
     int newSize = currentSize + data.size();
     QtPropertyModel::InsertionGuard insertGuard(model, this, currentSize, newSize - 1);
-    
+
     childrenData.reserve(newSize);
 
-    for (std::unique_ptr<QtPropertyData> & item : data)
+    for (std::unique_ptr<QtPropertyData>& item : data)
     {
         DVASSERT(item != nullptr);
         item->parent = this;
@@ -653,7 +650,7 @@ void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>> &
     data.clear();
 }
 
-void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData> && data, int pos)
+void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData>&& data, int pos)
 {
     if (data == nullptr)
         return;
@@ -689,14 +686,14 @@ QtPropertyData* QtPropertyData::ChildGet(int i) const
     return childrenData[static_cast<size_t>(i)].get();
 }
 
-QtPropertyData*  QtPropertyData::ChildGet(const DAVA::FastName & key) const
+QtPropertyData* QtPropertyData::ChildGet(const DAVA::FastName& key) const
 {
-    for (const std::unique_ptr<QtPropertyData> & item : childrenData)
+    for (const std::unique_ptr<QtPropertyData>& item : childrenData)
     {
         if (item->name == key)
             return item.get();
     }
-    
+
     return nullptr;
 }
 
@@ -709,7 +706,7 @@ int QtPropertyData::ChildIndex(const QtPropertyData* data) const
     return -1;
 }
 
-void QtPropertyData::ChildrenExtract(DAVA::Vector<std::unique_ptr<QtPropertyData>> & children)
+void QtPropertyData::ChildrenExtract(DAVA::Vector<std::unique_ptr<QtPropertyData>>& children)
 {
     if (childrenData.empty())
         return;
@@ -749,7 +746,7 @@ void QtPropertyData::ResetChildren()
 
 void QtPropertyData::FinishTreeCreation()
 {
-    for (std::unique_ptr<QtPropertyData> & child : childrenData)
+    for (std::unique_ptr<QtPropertyData>& child : childrenData)
     {
         child->FinishTreeCreation();
     }
@@ -789,7 +786,7 @@ QtPropertyToolButton* QtPropertyData::AddButton(QtPropertyToolButton::StateVaria
 
 void QtPropertyData::RemButton(QtPropertyToolButton *button)
 {
-    QVector<QtPropertyToolButton *>::iterator iter = std::find(optionalButtons.begin(), optionalButtons.end(), button);
+    QVector<QtPropertyToolButton*>::iterator iter = std::find(optionalButtons.begin(), optionalButtons.end(), button);
     if (iter != optionalButtons.end())
     {
         delete *iter;
@@ -814,10 +811,10 @@ void QtPropertyData::SetOWViewport(QWidget *viewport)
 		}
 	}
 
-	for(size_t i = 0; i < childrenData.size(); i++)
-	{
-		childrenData[i]->SetOWViewport(viewport);
-	}
+    for (size_t i = 0; i < childrenData.size(); i++)
+    {
+        childrenData[i]->SetOWViewport(viewport);
+    }
 }
 
 void* QtPropertyData::CreateLastCommand() const
@@ -848,17 +845,15 @@ QVariant QtPropertyData::GetValueAlias() const
 
 void QtPropertyData::SetTempValue(const QVariant &value)
 {
-    auto setValueFunctor = [](QtPropertyData * data, QVariant value)
-    {
-        QtPropertyDataValidator * validator = data->GetValidator();
+    auto setValueFunctor = [](QtPropertyData* data, QVariant value) {
+        QtPropertyDataValidator* validator = data->GetValidator();
         if (validator == nullptr || validator->Validate(value))
         {
             data->SetTempValueInternal(value);
         }
     };
 
-    ForeachMergedItem([&setValueFunctor, &value](QtPropertyData* item)
-    {
+    ForeachMergedItem([&setValueFunctor, &value](QtPropertyData* item) {
         setValueFunctor(item, value);
         return true;
     });
@@ -981,7 +976,7 @@ void QtPropertyData::RefillSearchIndex()
     keyToDataMap.clear();
     for (size_t i = 0; i < childrenData.size(); ++i)
     {
-        const std::unique_ptr<QtPropertyData> & data = childrenData[i];
+        const std::unique_ptr<QtPropertyData>& data = childrenData[i];
         DVVERIFY(keyToDataMap.emplace(ChildKey(data.get()), i).second);
     }
 }

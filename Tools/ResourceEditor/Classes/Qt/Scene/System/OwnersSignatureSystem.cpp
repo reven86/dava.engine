@@ -65,7 +65,7 @@ bool OwnersSignatureSystem::IsCommandIdValid(int _id)
         {
             return true;
         }
-	}
+    }
 	return false;
 }
 

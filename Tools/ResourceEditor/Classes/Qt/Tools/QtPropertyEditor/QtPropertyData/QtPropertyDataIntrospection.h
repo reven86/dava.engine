@@ -40,13 +40,13 @@ class QtPropertyDataDavaVariant;
 class QtPropertyDataIntrospection : public QtPropertyData
 {
 public:
-	QtPropertyDataIntrospection(const DAVA::FastName & name, void *object, const DAVA::InspInfo *info, bool autoAddChilds = true);
-	virtual ~QtPropertyDataIntrospection();
+    QtPropertyDataIntrospection(const DAVA::FastName& name, void* object, const DAVA::InspInfo* info, bool autoAddChilds = true);
+    virtual ~QtPropertyDataIntrospection();
 
 	virtual const DAVA::MetaInfo * MetaInfo() const;
-	static QtPropertyData * CreateMemberData(const DAVA::FastName & name, void *_object, const DAVA::InspMember *member);
+    static QtPropertyData* CreateMemberData(const DAVA::FastName& name, void* _object, const DAVA::InspMember* member);
 
-	void *object;
+    void *object;
 	const DAVA::InspInfo *info;
 
 protected:

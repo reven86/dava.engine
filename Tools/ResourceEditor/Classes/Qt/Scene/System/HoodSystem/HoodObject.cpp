@@ -127,7 +127,7 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
         minY = pos2d.y;
 
     // y
-	pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(y));
+    pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(y));
     textDrawSystem->DrawText(pos2d, "Y", colorY, TextDrawSystem::Align::Center);
 
     if (pos2d.x > maxX)
@@ -140,7 +140,7 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
         minY = pos2d.y;
 
     // z
-	pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(z));
+    pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(z));
     textDrawSystem->DrawText(pos2d, "Z", colorZ, TextDrawSystem::Align::Center);
 
     if (pos2d.x > maxX)

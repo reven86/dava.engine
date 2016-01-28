@@ -53,19 +53,19 @@ public:
 	QtPropertyEditor(QWidget *parent = 0);
 	~QtPropertyEditor();
 
-    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>> && properties, const QModelIndex& parent = QModelIndex());
-    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
-    void MergeProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
-    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex());
-	QModelIndex AppendHeader(const QString &text);
+    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
+    void MergeProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendHeader(const QString &text);
 	QModelIndex InsertHeader(const QString &text, int row);
 
 	QtPropertyData * GetProperty(const QModelIndex &index) const;
 	QtPropertyData * GetRootProperty() const;
 
     void FinishTreeCreation();
-	
-	bool GetEditTracking() const;
+
+    bool GetEditTracking() const;
 	void SetEditTracking(bool enabled);
 
 	void RemoveProperty(const QModelIndex &index);

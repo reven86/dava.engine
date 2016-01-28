@@ -95,7 +95,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
         DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 
         DAVA::Polygon3 poly;
-		poly.AddPoint(axisXY->curFrom);
+        poly.AddPoint(axisXY->curFrom);
 		poly.AddPoint(axisXY->curTo);
 		poly.AddPoint(axisYZ->curTo);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
@@ -115,9 +115,9 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
     if (0 != modifScale)
     {
         char tmp[255];
-        DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
+        DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx) / 2, r.y - 20);
 
-		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifScale, modifScale, modifScale);
+        sprintf(tmp, "[%.2f, %.2f, %.2f]", modifScale, modifScale, modifScale);
         textDrawSystem->DrawText(topPos, tmp, DAVA::Color(1.0f, 1.0f, 0.0f, 1.0f));
     }
 }

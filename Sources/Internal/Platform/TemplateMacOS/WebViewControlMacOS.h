@@ -86,7 +86,7 @@ private:
     void* webViewPtr;
 
     // A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
+    void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;
     // A pointer to NSBitmapImageRep cached image of web view to texture

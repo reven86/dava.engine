@@ -122,7 +122,7 @@ protected:
     void CreateMaskTexture();
     void CreateMaskFromTexture(Texture* texture);
 
-	void CreateUndoPoint();
+    void CreateUndoPoint();
 
 	void InitSprites();
 

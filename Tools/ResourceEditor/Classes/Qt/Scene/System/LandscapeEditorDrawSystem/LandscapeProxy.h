@@ -90,7 +90,7 @@ public:
     bool IsTilemaskChanged();
     void ResetTilemaskChanged();
     void IncreaseTilemaskChanges();
-	void DecreaseTilemaskChanges();
+    void DecreaseTilemaskChanges();
 
 	void InitTilemaskImageCopy();
 	Image* GetTilemaskImageCopy();

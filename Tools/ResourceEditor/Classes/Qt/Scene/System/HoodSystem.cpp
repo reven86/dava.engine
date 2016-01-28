@@ -62,7 +62,7 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
     SetModifAxis(ST_AXIS_X);
     SetModifMode(ST_MODIF_MOVE);
 
-	moveHood.colorX = DAVA::Color(1, 0, 0, 1);
+    moveHood.colorX = DAVA::Color(1, 0, 0, 1);
 	moveHood.colorY = DAVA::Color(0, 1, 0, 1);
 	moveHood.colorZ = DAVA::Color(0, 0, 1, 1);
 	moveHood.colorS = DAVA::Color(1, 1, 0, 1);
@@ -346,8 +346,8 @@ void HoodSystem::Draw()
         TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
 
         // modification isn't locked and whole system isn't locked
-        if(!IsLocked() && !lockedModif)
-		{
+        if (!IsLocked() && !lockedModif)
+        {
 			ST_Axis showAsSelected = curAxis;
 
 			if(curMode != ST_MODIF_OFF)

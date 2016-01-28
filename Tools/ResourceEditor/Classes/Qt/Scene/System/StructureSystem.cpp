@@ -303,7 +303,7 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
                 DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
                 if (!pathToReload.IsEmpty())
                 {
-					refsToReload.insert(pathToReload);
+                    refsToReload.insert(pathToReload);
 				}
 			}
 		}
@@ -397,7 +397,7 @@ void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& ma
                         }
 
                         sceneEditor->Exec(new EntityParentChangeCommand(newEntityInstance, origEntity->GetParent(), before));
-						sceneEditor->Exec(new EntityRemoveCommand(origEntity));
+                        sceneEditor->Exec(new EntityRemoveCommand(origEntity));
 
                         newEntityInstance->Release();
 					}
@@ -813,8 +813,8 @@ void StructureSystem::SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePa
     {
         for (int i = 0; i < parent->GetChildrenCount(); ++i)
         {
-            DAVA::Entity *entity = parent->GetChild(i);
-			DAVA::KeyedArchive *arch = GetCustomPropertiesArchieve(entity);
+            DAVA::Entity* entity = parent->GetChild(i);
+            DAVA::KeyedArchive *arch = GetCustomPropertiesArchieve(entity);
 
             if(arch)
             {

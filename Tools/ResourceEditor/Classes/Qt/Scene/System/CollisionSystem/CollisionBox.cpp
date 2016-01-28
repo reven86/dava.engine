@@ -54,7 +54,7 @@ CollisionBox::~CollisionBox()
         btWord->removeCollisionObject(btObject);
         DAVA::SafeDelete(btObject);
         DAVA::SafeDelete(btShape);
-	}
+    }
 }
 
 CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAVA::Plane& plane)

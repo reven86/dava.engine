@@ -89,7 +89,7 @@ public:
     ~SceneEditor2();
 
     // editor systems
-	SceneCameraSystem *cameraSystem;
+    SceneCameraSystem *cameraSystem;
 	SceneCollisionSystem *collisionSystem;
 	SceneGridSystem *gridSystem;
 	HoodSystem *hoodSystem;
@@ -114,9 +114,9 @@ public:
 
     DAVA::WASDControllerSystem* wasdSystem;
     DAVA::RotationControllerSystem* rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
 
-	WayEditSystem *wayEditSystem;
+    WayEditSystem *wayEditSystem;
 	PathSystem *pathSystem;
     
 	// save/load

@@ -50,13 +50,17 @@ public:
 	QModelIndex indexFromItem(QtPropertyData *data) const
 	{ return mapFromSource(propModel->indexFromItem(data)); }
 
-	QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex())
-	{ return mapFromSource(propModel->AppendProperty(std::move(data), mapToSource(parent))); }
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex())
+    {
+        return mapFromSource(propModel->AppendProperty(std::move(data), mapToSource(parent)));
+    }
 
-    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex())
-	{ return mapFromSource(propModel->InsertProperty(std::move(data), row, mapToSource(parent))); }
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent = QModelIndex())
+    {
+        return mapFromSource(propModel->InsertProperty(std::move(data), row, mapToSource(parent)));
+    }
 
-	bool GetEditTracking()
+    bool GetEditTracking()
 	{ return propModel->GetEditTracking(); }
 
 	void SetEditTracking(bool enabled)

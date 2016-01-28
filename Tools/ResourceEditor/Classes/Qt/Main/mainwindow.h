@@ -189,7 +189,7 @@ public slots:
     void OnCustomColorsEditor();
     void OnHeightmapEditor();
     void OnRulerTool();
-	void OnTilemaskEditor();
+    void OnTilemaskEditor();
 	void OnNotPassableTerrain();
     void OnWayEditor();
 	

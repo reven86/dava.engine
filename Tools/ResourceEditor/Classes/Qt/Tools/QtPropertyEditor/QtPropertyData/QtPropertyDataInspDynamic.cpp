@@ -132,7 +132,7 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
         {
             QtPropertyDataDavaVariant::SetVariantValue(v);
             ret = true;
-		}
+        }
 	}
 
 	return ret;
