@@ -65,6 +65,7 @@ const FastName Settings::Scene_CameraFar = FastName("Scene/CameraFar");
 const FastName Settings::Scene_CameraHeightOnLandscape = FastName("Scene/HeightOnLandscape");
 const FastName Settings::Scene_CameraHeightOnLandscapeStep = FastName("Scene/HeightOnLandscapeStep");
 const FastName Settings::Scene_SelectionSequent = FastName("Scene/SelectionSequent");
+const FastName Settings::Scene_SelectionOnClick = FastName("Scene/SelectionOnClick");
 const FastName Settings::Scene_SelectionDrawMode = FastName("Scene/SelectionDrawMode");
 const FastName Settings::Scene_CollisionDrawMode = FastName("Scene/CollisionDrawMode");
 const FastName Settings::Scene_ModificationByGizmoOnly = FastName("Scene/ModificationByGizmoOnly");

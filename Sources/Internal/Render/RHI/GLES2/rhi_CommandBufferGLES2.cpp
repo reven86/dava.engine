@@ -1108,36 +1108,12 @@ void CommandBufferGLES2_t::Execute()
                 }
                 else
                 {
-                    GLint fbo = 0;
-
-                    // this is SLOW AS HELL
-                    //                        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
-
-                    if (fbo)
+                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
+                    if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
-                        GLint type = 0;
-                        GLint obj = 0;
-
-                        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type);
-                        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &obj);
-
-                        if (type == GL_RENDERBUFFER)
-                        {
-                            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, def_viewport + 2);
-                            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, def_viewport + 3);
-                        }
-                        else if (type == GL_TEXTURE)
-                        {
-                            //                                GLint   w,h;
-                            //
-                            //                                glGetTexParameteriv( GL_TEXTURE_2D, obj,  );
-                        }
-                    }
-                    else
-                    {
-                        def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                        def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                        //                            glGetIntegerv( GL_VIEWPORT, def_viewport );
+                        glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
+                        _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
 
@@ -1161,12 +1137,12 @@ void CommandBufferGLES2_t::Execute()
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
 
+                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+
                 if (flags)
                 {
                     glClear(flags);
                 }
-
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
             }
         }
         break;
@@ -1180,16 +1156,24 @@ void CommandBufferGLES2_t::Execute()
             c += 1;
             #endif
 
-            if (isLastInPass)
+            #if defined(__DAVAENGINE_IPHONE__)
+            if ((isLastInPass) && (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)) //defualt framebuffer is discard once after frame
             {
-                //                    glFlush();
-
-                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
+                GLenum discards[3];
+                int32 discardsCount = 0;
+                if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
+                    discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
+                if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
                 {
-                    glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
-                    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+                    discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
+                    discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
                 }
+
+                if (discardsCount != 0)
+                    glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
             }
+
+            #endif
         }
         break;
 
@@ -1608,7 +1592,7 @@ void CommandBufferGLES2_t::Execute()
                 i_off = startIndex * sizeof(uint32);
             }
 
-            GL_CALL(glDrawElements(mode, v_cnt, i_sz, (void*)((uint64)i_off)));
+            GL_CALL(glDrawElements(mode, v_cnt, i_sz, _GLES2_LastSetIndices + i_off));
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
             {
@@ -1822,6 +1806,42 @@ _GLES2_ExecuteQueuedCommands()
 
     if (_GLES2_Context)
     {
+        // take screenshot, if needed
+
+        _GLES2_ScreenshotCallbackSync.Lock();
+        if (_GLES2_PendingScreenshotCallback)
+        {
+            const uint32 stride = 4 * _GLES2_DefaultFrameBuffer_Width;
+            uint8* rgba = new uint8[stride * _GLES2_DefaultFrameBuffer_Height];
+
+            GLCommand cmd[] =
+            {
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer } },
+              { GLCommand::PIXEL_STORE_I, { GL_PACK_ALIGNMENT, 1 } },
+              { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, (uint64)rgba } },
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
+            };
+
+            _ExecGL(cmd, countof(cmd));
+            for (int y = 0; y < _GLES2_DefaultFrameBuffer_Height / 2; ++y)
+            {
+                uint8* line1 = rgba + y * stride;
+                uint8* line2 = rgba + (_GLES2_DefaultFrameBuffer_Height - y - 1) * stride;
+                uint8 tmp[5 * 1024 * 4];
+
+                DVASSERT(stride <= sizeof(tmp));
+                memcpy(tmp, line1, stride);
+                memcpy(line1, line2, stride);
+                memcpy(line2, tmp, stride);
+            }
+            (*_GLES2_PendingScreenshotCallback)(_GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, rgba);
+            delete[] rgba;
+            _GLES2_PendingScreenshotCallback = nullptr;
+        }
+        _GLES2_ScreenshotCallbackSync.Unlock();
+
+        // do swap-buffers
+
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
         
 #if defined(__DAVAENGINE_WIN32__)
@@ -1963,8 +1983,8 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                     _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                     _GLES2_PendingImmediateCmd = nullptr;
                     _GLES2_PendingImmediateCmdCount = 0;
-                //Trace("exec-imm-cmd done\n");
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+                    //Trace("exec-imm-cmd done\n");
+                    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
                 }
                 _GLES2_PendingImmediateCmdSync.Unlock();
 
@@ -2089,8 +2109,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     #define EXEC_GL(expr) \
     expr; \
     err = glGetError(); \
-    if (err != GL_NO_ERROR) \
-        _LogGLError(#expr, err); \
 
 #else
 
@@ -2224,6 +2242,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::GENERATE_MIPMAP:
         {
             EXEC_GL(glGenerateMipmap((GLenum)(arg[0])));
+            cmd->status = err;
+        }
+        break;
+
+        case GLCommand::PIXEL_STORE_I:
+        {
+            EXEC_GL(glPixelStorei((GLenum)(arg[0]), (GLint)(arg[1])));
+            cmd->retval = 0;
             cmd->status = err;
         }
         break;

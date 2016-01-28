@@ -26,38 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
-
-#include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
+#include "Math/Vector.h"
 
 using namespace DAVA;
 
-class VisibilityToolProxy;
-class SceneEditor2;
+DAVA_TESTCLASS(VectorTest){
+    DAVA_TEST(Vector4ToVector3Test){
+    Vector4 mutableSource(0.1f, 0.2f, 0.3f, 0.4f);
+Vector3& mutableVector3 = mutableSource.GetVector3();
+TEST_VERIFY((mutableVector3.x == mutableSource.x) && (mutableVector3.y == mutableSource.y) && (mutableVector3.z == mutableSource.z))
 
-class ActionEnableVisibilityTool: public CommandAction
-{
-public:
-	ActionEnableVisibilityTool(SceneEditor2* forSceneEditor);
-
-protected:
-	SceneEditor2* sceneEditor;
-
-	virtual void Redo();
-};
-
-class ActionDisableVisibilityTool: public CommandAction
-{
-public:
-	ActionDisableVisibilityTool(SceneEditor2* forSceneEditor);
-
-protected:
-	SceneEditor2* sceneEditor;
-
-	virtual void Redo();
-};
-
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__) */
+const Vector4 immutableSource(0.3f, 0.2f, 0.1f, 0.0f);
+const Vector3& immutableVector3 = immutableSource.GetVector3();
+TEST_VERIFY((immutableVector3.x == immutableSource.x) && (immutableVector3.y == immutableSource.y) && (immutableVector3.z == immutableSource.z))
+}
+}
+;

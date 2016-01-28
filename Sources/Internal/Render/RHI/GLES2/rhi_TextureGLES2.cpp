@@ -917,7 +917,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
 #endif
 
             int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             if (status == GL_FRAMEBUFFER_COMPLETE)
             {

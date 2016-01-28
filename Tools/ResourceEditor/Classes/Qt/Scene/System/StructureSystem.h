@@ -78,7 +78,7 @@ public:
 
     void EmitChanged();
 
-	DAVA::Entity* Load(const DAVA::FilePath& sc2path);
+    DAVA::Entity* Load(const DAVA::FilePath& sc2path);
 
     void AddDelegate(StructureSystemDelegate *delegate);
     void RemoveDelegate(StructureSystemDelegate *delegate);

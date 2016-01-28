@@ -105,7 +105,6 @@ void ios_gl_init(void* nativeLayer)
 void ios_gl_begin_frame()
 {
     SCOPED_NAMED_TIMING("ios_GL_begin_frame");
-    glViewport(0, 0, backingWidth, backingHeight);
 }
 
 void ios_gl_reset(void* nativeLayer)

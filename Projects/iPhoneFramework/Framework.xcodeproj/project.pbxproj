@@ -2074,6 +2074,8 @@
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
 		6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6252BF2518ED506E00058754 /* libjpeg_ios.a */; };
+		6EC468251C58E58E0083C264 /* VisibilityCheckComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EC468231C58E58E0083C264 /* VisibilityCheckComponent.cpp */; };
+		6EC468261C58E58E0083C264 /* VisibilityCheckComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EC468241C58E58E0083C264 /* VisibilityCheckComponent.h */; };
 		72C84EB61B29C98B003A52E0 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
 		7CF246E81C103C5F00A821DC /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CF246E61C103C5F00A821DC /* UIScreenManagerDefault.cpp */; };
 		7CF246E91C103C5F00A821DC /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CF246E61C103C5F00A821DC /* UIScreenManagerDefault.cpp */; };
@@ -3141,6 +3143,8 @@
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
 		6252BF2518ED506E00058754 /* libjpeg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_ios.a; path = ../../Libs/libs/libjpeg_ios.a; sourceTree = "<group>"; };
+		6EC468231C58E58E0083C264 /* VisibilityCheckComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VisibilityCheckComponent.cpp; sourceTree = "<group>"; };
+		6EC468241C58E58E0083C264 /* VisibilityCheckComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityCheckComponent.h; sourceTree = "<group>"; };
 		72C84EB51B29C98B003A52E0 /* libwebp_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_ios.a; path = ../../Libs/libs/libwebp_ios.a; sourceTree = "<group>"; };
 		7CF246E61C103C5F00A821DC /* UIScreenManagerDefault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenManagerDefault.cpp; sourceTree = "<group>"; };
 		7CF246E71C103C5F00A821DC /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
@@ -4317,6 +4321,8 @@
 				02E7C4CB1BD624A6002F026D /* UpdatableComponent.h */,
 				02E7C4CC1BD624A6002F026D /* UserComponent.cpp */,
 				02E7C4CD1BD624A6002F026D /* UserComponent.h */,
+				6EC468231C58E58E0083C264 /* VisibilityCheckComponent.cpp */,
+				6EC468241C58E58E0083C264 /* VisibilityCheckComponent.h */,
 				02E7C4CE1BD624A6002F026D /* WaveComponent.cpp */,
 				02E7C4CF1BD624A6002F026D /* WaveComponent.h */,
 				02E7C4D01BD624A6002F026D /* Waypoint */,
@@ -5936,6 +5942,7 @@
 				02E7C81B1BD624A7002F026D /* Spline.h in Headers */,
 				02E7CAB71BD624A7002F026D /* Frustum.h in Headers */,
 				02E7C8F71BD624A7002F026D /* ParticlePropertyLine.h in Headers */,
+				6EC468261C58E58E0083C264 /* VisibilityCheckComponent.h in Headers */,
 				02E7C5F91BD624A6002F026D /* Animation.h in Headers */,
 				02E7CED31BD624A7002F026D /* UIStaticText.h in Headers */,
 				02E7CD0B1BD624A7002F026D /* ParticleEffectNode.h in Headers */,
@@ -6583,6 +6590,7 @@
 				02E7C9CB1BD624A7002F026D /* OpenUDIDios.mm in Sources */,
 				02E7C1001BD6248E002F026D /* NSStringUtils.mm in Sources */,
 				02E7C8AB1BD624A7002F026D /* MMBigDataTransferService.cpp in Sources */,
+				6EC468251C58E58E0083C264 /* VisibilityCheckComponent.cpp in Sources */,
 				02E7CF3E1BD639A4002F026D /* Profiler.cpp in Sources */,
 				02E7C6231BD624A6002F026D /* AutotestingSystemLua.cpp in Sources */,
 				02E7CB631BD624A7002F026D /* OcclusionQuery.cpp in Sources */,

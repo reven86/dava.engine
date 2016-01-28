@@ -195,13 +195,13 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterLayout->addWidget(innerEmitterLabel);
     innerEmitterLayout->addWidget(innerEmitterPathLabel);
     mainBox->addLayout(innerEmitterLayout);
-	
-	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
-	pivotPointLabel = new QLabel("Pivot Point", this);
-	pivotPointLayout->addWidget(pivotPointLabel);
-	QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
 
-	pivotPointXSpinBoxLabel = new QLabel("X:", this);
+    QVBoxLayout* pivotPointLayout = new QVBoxLayout();
+    pivotPointLabel = new QLabel("Pivot Point", this);
+    pivotPointLayout->addWidget(pivotPointLabel);
+    QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
+
+    pivotPointXSpinBoxLabel = new QLabel("X:", this);
 	pivotPointInnerLayout->addWidget(pivotPointXSpinBoxLabel);
 	pivotPointXSpinBox = new EventFilterDoubleSpinBox(this);
 	pivotPointXSpinBox->setMinimum(-99);
@@ -236,12 +236,12 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     //particle orieantation
     QVBoxLayout* orientationLayout = new QVBoxLayout();
     particleOrientationLabel = new QLabel("Particle Orientation");
-	orientationLayout->addWidget(particleOrientationLabel);
-	QHBoxLayout* facingLayout = new QHBoxLayout();
-	
-	cameraFacingCheckBox = new QCheckBox("Camera Facing");
-	facingLayout->addWidget(cameraFacingCheckBox);
-	connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));		
+    orientationLayout->addWidget(particleOrientationLabel);
+    QHBoxLayout* facingLayout = new QHBoxLayout();
+
+    cameraFacingCheckBox = new QCheckBox("Camera Facing");
+    facingLayout->addWidget(cameraFacingCheckBox);
+    connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));		
 
 	xFacingCheckBox = new QCheckBox("X-Facing");
 	facingLayout->addWidget(xFacingCheckBox);
@@ -273,7 +273,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 
     QHBoxLayout* blendLayout = new QHBoxLayout();
-    QVBoxLayout *presetLayout = new QVBoxLayout();
+    QVBoxLayout* presetLayout = new QVBoxLayout();
 
     presetLayout->addWidget(presetLabel);
     presetLayout->addWidget(presetComboBox);
@@ -290,10 +290,10 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     lifeTimeLine = new TimeLineWidget(this);
     InitWidget(lifeTimeLine);
     numberTimeLine = new TimeLineWidget(this);
-	InitWidget(numberTimeLine);
-	sizeTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeTimeLine);
-	sizeVariationTimeLine = new TimeLineWidget(this);
+    InitWidget(numberTimeLine);
+    sizeTimeLine = new TimeLineWidget(this);
+    InitWidget(sizeTimeLine);
+    sizeVariationTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeVariationTimeLine);
 	sizeOverLifeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeOverLifeTimeLine);
@@ -659,14 +659,14 @@ void EmitterLayerWidget::OnValueChanged()
 
     int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
-	if (xFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
-	if (yFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
-	if (zFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
-	if (worldAlignCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
+    if (xFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
+    if (yFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
+    if (zFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
+    if (worldAlignCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
@@ -720,7 +720,7 @@ void EmitterLayerWidget::OnValueChanged()
 
     DVASSERT(activeScene);
     activeScene->Exec(updateLayerCmd);
-	activeScene->MarkAsChanged();
+    activeScene->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
@@ -1084,11 +1084,11 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
     frameOverlifeCheckBox->setVisible(!isSuperemitter);
-	frameOverlifeFPSSpin->setVisible(!isSuperemitter);
-	frameOverlifeFPSLabel->setVisible(!isSuperemitter);
-	randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
-	loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
-	animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
+    frameOverlifeFPSSpin->setVisible(!isSuperemitter);
+    frameOverlifeFPSLabel->setVisible(!isSuperemitter);
+    randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
+    loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
+    animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
 
 	// The Pivot Point must be hidden for Superemitter mode.
 	pivotPointLabel->setVisible(!isSuperemitter);
@@ -1113,14 +1113,14 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     fogCheckBox->setVisible(!isSuperemitter);
     frameBlendingCheckBox->setVisible(!isSuperemitter);
 
-	// Some controls are however specific for this mode only - display and update them.
-	innerEmitterLabel->setVisible(isSuperemitter);
-	innerEmitterPathLabel->setVisible(isSuperemitter);
-	
-	if (isSuperemitter && this->layer->innerEmitter)
-	{
-		innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
-	}
+    // Some controls are however specific for this mode only - display and update them.
+    innerEmitterLabel->setVisible(isSuperemitter);
+    innerEmitterPathLabel->setVisible(isSuperemitter);
+
+    if (isSuperemitter && this->layer->innerEmitter)
+    {
+        innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
+    }
 }
 
 void EmitterLayerWidget::OnPivotPointReset()

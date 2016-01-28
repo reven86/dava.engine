@@ -100,8 +100,8 @@ public:
     inline Rect ConvertInputToVirtual(const Rect& rect) const;
     inline Rect ConvertVirtualToInput(const Rect& rect) const;
 
-    inline const String & GetResourceFolder(int32 resourceIndex) const;
-	inline int32 GetDesirableResourceIndex() const;
+    inline const String& GetResourceFolder(int32 resourceIndex) const;
+    inline int32 GetDesirableResourceIndex() const;
     inline void SetDesirableResourceIndex(int32 resourceIndex);
     inline int32 GetBaseResourceIndex() const;
 

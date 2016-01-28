@@ -2960,6 +2960,8 @@
 		5C97965A14E3F09F00FFFA14 /* libyaml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97965914E3F09F00FFFA14 /* libyaml_macos.a */; };
 		620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
 		6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
+		6EC4681E1C58E54D0083C264 /* VisibilityCheckComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */; };
+		6EC4681F1C58E54D0083C264 /* VisibilityCheckComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */; };
 		72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB21B29C220003A52E0 /* libwebp_macos.a */; };
 		7CCE26A41C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */; };
 		7CCE26A51C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */; };
@@ -4026,6 +4028,8 @@
 		5C77AB7C14C7509D00E92D28 /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_macos.a; path = ../../Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		5C97965914E3F09F00FFFA14 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_macos.a; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
 		627AFA6C18E964E300F2A52A /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_macos.a; path = ../../Libs/libs/libjpeg_macos.a; sourceTree = "<group>"; };
+		6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisibilityCheckComponent.cpp; path = Components/VisibilityCheckComponent.cpp; sourceTree = "<group>"; };
+		6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VisibilityCheckComponent.h; path = Components/VisibilityCheckComponent.h; sourceTree = "<group>"; };
 		72C84EB21B29C220003A52E0 /* libwebp_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_macos.a; path = ../../Libs/libs/libwebp_macos.a; sourceTree = "<group>"; };
 		7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenManagerDefault.cpp; sourceTree = "<group>"; };
 		7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
@@ -5123,14 +5127,14 @@
 		028C0BC11BD66A5F00B2266F /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
+				028C0BC81BD66A5F00B2266F /* Components */,
+				028C0C031BD66A5F00B2266F /* Converters */,
 				028C0BC21BD66A5F00B2266F /* AnimationData.cpp */,
 				028C0BC31BD66A5F00B2266F /* AnimationData.h */,
 				028C0BC41BD66A5F00B2266F /* BillboardNode.cpp */,
 				028C0BC51BD66A5F00B2266F /* BillboardNode.h */,
 				028C0BC61BD66A5F00B2266F /* BoneNode.cpp */,
 				028C0BC71BD66A5F00B2266F /* BoneNode.h */,
-				028C0BC81BD66A5F00B2266F /* Components */,
-				028C0C031BD66A5F00B2266F /* Converters */,
 				028C0C0A1BD66A5F00B2266F /* DataNode.cpp */,
 				028C0C0B1BD66A5F00B2266F /* DataNode.h */,
 				028C0C0C1BD66A5F00B2266F /* Drawable.h */,
@@ -5169,6 +5173,8 @@
 				028C0C311BD66A5F00B2266F /* SkeletonNode.h */,
 				028C0C321BD66A5F00B2266F /* SwitchNode.cpp */,
 				028C0C331BD66A5F00B2266F /* SwitchNode.h */,
+				6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */,
+				6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */,
 				028C0C341BD66A5F00B2266F /* Systems */,
 				028C0C681BD66A5F00B2266F /* UserNode.cpp */,
 				028C0C691BD66A5F00B2266F /* UserNode.h */,
@@ -6594,6 +6600,7 @@
 				028C1ADA1BD66A6100B2266F /* UIScrollBar.h in Headers */,
 				028C17DD1BD66A6000B2266F /* StaticOcclusionComponent.h in Headers */,
 				028C154C1BD66A6000B2266F /* VegetationGeometry.h in Headers */,
+				6EC4681F1C58E54D0083C264 /* VisibilityCheckComponent.h in Headers */,
 				028C183A1BD66A6000B2266F /* EntityFamily.h in Headers */,
 				028C1AB01BD66A6100B2266F /* UIScreenManager.h in Headers */,
 				028C0F791BD66A6000B2266F /* bs_common.h in Headers */,
@@ -8257,6 +8264,7 @@
 				028C16DE1BD66A6000B2266F /* rhi_PipelineStateGLES2.cpp in Sources */,
 				028C1AAA1BD66A6100B2266F /* UIScreen.cpp in Sources */,
 				028C17E01BD66A6000B2266F /* SwitchComponent.cpp in Sources */,
+				6EC4681E1C58E54D0083C264 /* VisibilityCheckComponent.cpp in Sources */,
 				028C0DC01BD66A6000B2266F /* VectorSwig.cpp in Sources */,
 				028C0EAD1BD66A6000B2266F /* PosixThreads.cpp in Sources */,
 				028C16CF1BD66A6000B2266F /* rhi_CommandBufferGLES2.cpp in Sources */,
