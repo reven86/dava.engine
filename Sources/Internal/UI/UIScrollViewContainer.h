@@ -84,8 +84,8 @@ protected:
 	Vector2 	oldPos;
 	Vector2		newPos;
 
-    float32 oldScroll = 0.f;
-    float32 newScroll = 0.f;
+    Vector2 oldScroll;
+    Vector2 newScroll;
 
     ScrollHelper *currentScroll;
 
