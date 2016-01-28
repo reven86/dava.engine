@@ -299,10 +299,10 @@ void PropertyEditor::ResetProperties()
         AppendProperties(std::move(properies));
         FinishTreeCreation();
     }
-    
-	// Restore back the tree view state from the shared storage.
-	if (!treeStateHelper.IsTreeStateStorageEmpty())
-	{
+
+    // Restore back the tree view state from the shared storage.
+    if (!treeStateHelper.IsTreeStateStorageEmpty())
+    {
 		treeStateHelper.RestoreTreeViewState();
 	}
 	else
@@ -710,15 +710,15 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return CreateInspMember(original->GetName(), memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
-    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
+    QtPropertyDataMetaObject* metaData = dynamic_cast<QtPropertyDataMetaObject*>(original);
     if (NULL != metaData)
     {
         return new QtPropertyDataMetaObject(original->GetName(), metaData->object, metaData->meta);
     }
 
-	QtPropertyDataInspColl *memberCollection = dynamic_cast<QtPropertyDataInspColl *>(original);
-	if(NULL != memberCollection)
-	{
+    QtPropertyDataInspColl* memberCollection = dynamic_cast<QtPropertyDataInspColl*>(original);
+    if (NULL != memberCollection)
+    {
         return CreateInspCollection(original->GetName(), memberCollection->object, memberCollection->collection);
     }
 

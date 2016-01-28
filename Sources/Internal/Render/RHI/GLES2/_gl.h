@@ -211,6 +211,7 @@ extern int _GLES2_DefaultFrameBuffer_Width;
 extern int _GLES2_DefaultFrameBuffer_Height;
 
 extern GLuint _GLES2_LastSetIB;
+extern DAVA::uint8* _GLES2_LastSetIndices;
 extern GLuint _GLES2_LastSetVB;
 extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
@@ -224,5 +225,6 @@ extern HDC _GLES2_WindowDC;
 
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
+extern bool _GLES2_UseUserProvidedIndices;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);
