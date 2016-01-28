@@ -814,7 +814,7 @@ void StructureSystem::SearchEntityByRef(DAVA::Entity* parent, const DAVA::FilePa
         for (int i = 0; i < parent->GetChildrenCount(); ++i)
         {
             DAVA::Entity* entity = parent->GetChild(i);
-            DAVA::KeyedArchive *arch = GetCustomPropertiesArchieve(entity);
+            DAVA::KeyedArchive* arch = GetCustomPropertiesArchieve(entity);
 
             if(arch)
             {

@@ -133,8 +133,8 @@ QtPropertyData* QtPropertyDataIntrospection::CreateMemberData(const DAVA::FastNa
 
                             retData->ChildAdd(std::unique_ptr<QtPropertyData>(dynamicMember));
                         }
-					}
-				}
+                    }
+                }
 			}
 			// variant
             else

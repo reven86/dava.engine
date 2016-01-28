@@ -246,7 +246,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)windowDidMiniaturize:(NSNotification *)notification
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
 
     [self OnSuspend];
@@ -254,7 +254,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
 
     [self OnResume];
@@ -539,7 +539,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did hide");
 
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
 }
 
@@ -547,7 +547,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 {
     Logger::FrameworkDebug("[CoreMacOSPlatform] Application did unhide");
 
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
 }
 

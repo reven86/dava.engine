@@ -71,8 +71,8 @@ void RenderBatchArray::Sort(Camera* camera)
                 uint32 materialIndex = batch->GetMaterial()->GetSortingKey();
 				//VI: sorting key has the following layout: (m:8)(s:4)(d:20)
                 //batch->layerSortingKey = (pointer_size)((materialIndex << 20) | (batch->GetSortingKey() << 28) | (distanceBits));
-				batch->layerSortingKey = (pointer_size)( (materialIndex & 0x0FFFFFFF) | (batch->GetSortingKey() << 28) );
-				//batch->layerSortingKey = (pointer_size)((batch->GetMaterial()->GetSortingKey() << 20) | (batch->GetSortingKey() << 28) | (renderObjectId & 0x000FFFFF));
+                batch->layerSortingKey = (pointer_size)((materialIndex & 0x0FFFFFFF) | (batch->GetSortingKey() << 28));
+                //batch->layerSortingKey = (pointer_size)((batch->GetMaterial()->GetSortingKey() << 20) | (batch->GetSortingKey() << 28) | (renderObjectId & 0x000FFFFF));
             }
             
 			std::sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);

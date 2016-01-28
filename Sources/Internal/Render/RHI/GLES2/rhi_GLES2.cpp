@@ -273,9 +273,9 @@ gles_check_GL_extensions()
     {
         if (strstr(renderer, "Mali"))
         {
-        	// drawing from memory is worst case scenario,
-        	// unless running on some buggy piece of shit
-        	_GLES2_UseUserProvidedIndices = true;
+            // drawing from memory is worst case scenario,
+            // unless running on some buggy piece of shit
+            _GLES2_UseUserProvidedIndices = true;
         }
     }
 }

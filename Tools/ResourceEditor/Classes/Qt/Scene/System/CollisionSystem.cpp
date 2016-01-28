@@ -214,9 +214,9 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Ve
             ret = DAVA::Vector3(hitPoint.x(), hitPoint.y(), hitPoint.z());
             landIntersectCachedResult = true;
             break;
-		}
+        }
 
-		btFrom = btTo;
+        btFrom = btTo;
         rayLength -= stepSize;
     }
 
@@ -273,9 +273,9 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity *entity)
         {
             aabox = collObj->boundingBox;
         }
-	}
+    }
 
-	return aabox;
+    return aabox;
 }
 
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
@@ -347,8 +347,8 @@ void SceneCollisionSystem::Draw()
         objectsCollWorld->debugDrawWorld();
     }
 
-    if(drawMode & CS_DRAW_OBJECTS_RAYTEST)
-	{
+    if (drawMode & CS_DRAW_OBJECTS_RAYTEST)
+    {
         drawer->DrawLine(lastRayFrom, lastRayTo, DAVA::Color(1.0f, 0, 0, 1.0f));
     }
 
@@ -356,8 +356,8 @@ void SceneCollisionSystem::Draw()
     {
         // current selected entities
         SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
-        if(NULL != selectionSystem)
-		{
+        if (NULL != selectionSystem)
+        {
             for (const auto& item : selectionSystem->GetSelection().GetContent())
             {
                 // get collision object for solid selected entity

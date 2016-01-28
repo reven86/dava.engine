@@ -51,7 +51,7 @@ public:
         , uid(0)
         , is_32bit(false)
         , isMapped(false)
-		, isUPBuffer(false)
+        , isUPBuffer(false)
     {
     }
 
@@ -156,7 +156,7 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
 {
     if (uid)
     {
-        GLCommand cmd = { GLCommand::DELETE_BUFFERS,{ 1, (uint64)(&uid) } };
+        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
 
         uid = 0;
@@ -219,9 +219,9 @@ gles2_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
 
     if (offset + size <= self->size)
     {
-        if(self->isUPBuffer)
+        if (self->isUPBuffer)
         {
-        	DVASSERT(self->mappedData);
+            DVASSERT(self->mappedData);
             memcpy((uint8*)self->mappedData + offset, (uint8*)data + offset, size);
 
             success = true;
@@ -277,12 +277,12 @@ gles2_IndexBuffer_Unmap(Handle ib)
     DVASSERT(self->usage != GL_STATIC_DRAW);
     DVASSERT(self->isMapped);
 
-    if(self->isUPBuffer)
+    if (self->isUPBuffer)
     {
-    	self->isMapped = false;
+        self->isMapped = false;
         self->MarkRestored();
     }
-    else if(self->usage == GL_DYNAMIC_DRAW)
+    else if (self->usage == GL_DYNAMIC_DRAW)
     {
         self->isMapped = false;
         self->updatePending = true;
@@ -342,7 +342,7 @@ SetToRHI(Handle ib)
 
     DVASSERT(!self->isMapped);
 
-    if(self->isUPBuffer)
+    if (self->isUPBuffer)
     {
         DVASSERT(self->mappedData);
 
