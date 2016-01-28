@@ -504,12 +504,10 @@ void UIList::Input(UIEvent *currentInput)
     {
         if (UIEvent::Phase::KEY_DOWN == currentInput->phase)
         {
-            Logger::Error("SHIFT_DOWN");
             isShiftPressed = true;
         }
         if (UIEvent::Phase::KEY_UP == currentInput->phase)
         {
-            Logger::Error("SHIFT_UP");
             isShiftPressed = false;
         }
     }
