@@ -156,12 +156,12 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
         SceneHelper::EnumerateSceneTextures(scene, allTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
         // add jobs to convert every texture
-        if(allTextures.size() > 0)
-		{
-			DAVA::TexturesMap::iterator begin = allTextures.begin();
-			DAVA::TexturesMap::iterator end = allTextures.end();
+        if (allTextures.size() > 0)
+        {
+            DAVA::TexturesMap::iterator begin = allTextures.begin();
+            DAVA::TexturesMap::iterator end = allTextures.end();
 
-			for(; begin != end; begin++)
+            for(; begin != end; begin++)
 			{
 				DAVA::TextureDescriptor *descriptor = begin->second->GetDescriptor();
 
@@ -346,7 +346,7 @@ void TextureConvertor::threadThumbnailFinished()
         curJobThumbnail = nullptr;
     }
 
-	jobRunNextThumbnail();
+    jobRunNextThumbnail();
 }
 
 

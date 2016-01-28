@@ -41,9 +41,9 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
     DVASSERT(oldBatch);
 
     renderObject = DAVA::SafeRetain(oldBatch->GetRenderObject());
-	DVASSERT(renderObject);
+    DVASSERT(renderObject);
 
-	oldBatch->Retain();
+    oldBatch->Retain();
 
     newBatch = new DAVA::RenderBatch();
     DAVA::PolygonGroup * shadowPg = DAVA::MeshUtils::CreateShadowPolygonGroup(oldBatch->GetPolygonGroup());

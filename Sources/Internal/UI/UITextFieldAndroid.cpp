@@ -71,7 +71,7 @@ JniTextField::JniTextField(uint32_t id)
 
 void JniTextField::Create(Rect controlRect)
 {
-    Rect rect = JNI::V2P(controlRect);
+    Rect rect = JNI::V2I(controlRect);
     create(id, rect.x, rect.y, rect.dx,    rect.dy);
 }
 
@@ -82,7 +82,7 @@ void JniTextField::Destroy()
 
 void JniTextField::UpdateRect(const Rect & controlRect)
 {
-    Rect rect = JNI::V2P(controlRect);
+    Rect rect = JNI::V2I(controlRect);
     updateRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
@@ -101,7 +101,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
-    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size));
+    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputY(size));
 }
 
 void JniTextField::SetIsPassword(bool isPassword)
@@ -544,8 +544,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
             SCOPE_EXIT{SafeRelease(tex);};
 
             Rect rect = textField.GetRect();
-            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
-                    rect.dy);
+            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
             SCOPE_EXIT{SafeRelease(spr);};
 
             textField.GetBackground()->SetSprite(spr, 0);

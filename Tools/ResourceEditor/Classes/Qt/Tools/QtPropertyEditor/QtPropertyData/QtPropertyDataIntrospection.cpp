@@ -34,9 +34,10 @@
 #include "QtPropertyDataInspDynamic.h"
 #include "QtPropertyDataInspColl.h"
 
-QtPropertyDataIntrospection::QtPropertyDataIntrospection(void *_object, const DAVA::InspInfo *_info, bool autoAddChilds)
-	: object(_object)
-	, info(_info)
+QtPropertyDataIntrospection::QtPropertyDataIntrospection(const DAVA::FastName& name, void* _object, const DAVA::InspInfo* _info, bool autoAddChilds)
+    : QtPropertyData(name)
+    , object(_object)
+    , info(_info)
 {
 	if(autoAddChilds)
 	{
@@ -71,7 +72,7 @@ const DAVA::MetaInfo * QtPropertyDataIntrospection::MetaInfo() const
 	return NULL;
 }
 
-QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, const DAVA::InspMember *member)
+QtPropertyData* QtPropertyDataIntrospection::CreateMemberData(const DAVA::FastName& name, void* _object, const DAVA::InspMember* member)
 {
 	void *memberObject = member->Data(_object);
 	int memberFlags = member->Flags();
@@ -83,12 +84,12 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
 	// keyed archive
 	if(NULL != memberIntrospection && (memberIntrospection->Type() == DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()))
 	{
-		retData = new QtPropertyDataDavaKeyedArcive((DAVA::KeyedArchive *) memberObject);
-	}
+        retData = new QtPropertyDataDavaKeyedArcive(name, (DAVA::KeyedArchive*)memberObject);
+    }
 	// introspection
 	else if(NULL != memberObject && NULL != memberIntrospection)
     {
-		retData = new QtPropertyDataIntrospection(memberObject, memberIntrospection);
+        retData = new QtPropertyDataIntrospection(name, memberObject, memberIntrospection);
     }
 	// any other value
     else
@@ -97,8 +98,8 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
         if(memberMetaInfo->IsPointer())
         {
 			QString s;
-            retData = new QtPropertyData(s.sprintf("[%p] Pointer", memberObject));
-			retData->SetEnabled(false);
+            retData = new QtPropertyData(name, s.sprintf("[%p] Pointer", memberObject));
+            retData->SetEnabled(false);
         }
 		// other value
         else
@@ -106,13 +107,13 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
 			// collection
             if(member->Collection() && !isKeyedArchive)
             {
-                retData = new QtPropertyDataInspColl(memberObject, member->Collection());
+                retData = new QtPropertyDataInspColl(name, memberObject, member->Collection());
             }
 			// dynamic 
 			else if(NULL != member->Dynamic())
 			{
-				retData = new QtPropertyData("Dynamic data");
-				retData->SetEnabled(false);
+                retData = new QtPropertyData(DAVA::FastName("Dynamic data"), "Dynamic data");
+                retData->SetEnabled(false);
 
 				DAVA::InspInfoDynamic *dynamicInfo = member->Dynamic()->GetDynamicInfo();
 				if(NULL != dynamicInfo)
@@ -124,22 +125,22 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
                         int memberFlags = dynamicInfo->MemberFlags(ddata, membersList[i]);
                         if (memberFlags & DAVA::I_VIEW)
                         {
-                            QtPropertyDataInspDynamic* dynamicMember = new QtPropertyDataInspDynamic(dynamicInfo, ddata, membersList[i]);
+                            QtPropertyDataInspDynamic* dynamicMember = new QtPropertyDataInspDynamic(membersList[i], dynamicInfo, ddata);
                             if (!(memberFlags & DAVA::I_EDIT))
                             {
-								dynamicMember->SetEnabled(false);
-							}
+                                dynamicMember->SetEnabled(false);
+                            }
 
-							retData->ChildAdd(membersList[i].c_str(), dynamicMember);
-						}
-					}
-				}
+                            retData->ChildAdd(std::unique_ptr<QtPropertyData>(dynamicMember));
+                        }
+                    }
+                }
 			}
 			// variant
             else
             {
-                QtPropertyDataInspMember *childData = new QtPropertyDataInspMember(_object, member);
-				if(memberFlags & DAVA::I_EDIT)
+                QtPropertyDataInspMember* childData = new QtPropertyDataInspMember(name, _object, member);
+                if(memberFlags & DAVA::I_EDIT)
                 {
 					// check if description has some predefines enum values
 					const DAVA::InspDesc &desc = member->Desc();
@@ -163,13 +164,13 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
 {
 	if((member->Flags() & DAVA::I_VIEW))
 	{
-		QtPropertyData* data = CreateMemberData(object, member);
-		void *memberObject = member->Data(object);
+        QtPropertyData* data = CreateMemberData(member->Name(), object, member);
+        void *memberObject = member->Data(object);
 		const DAVA::MetaInfo *memberMetaInfo = member->Type();
 		const DAVA::InspInfo *memberIntrospection = memberMetaInfo->GetIntrospection(memberObject);
-	
-		ChildAdd(member->Name().c_str(), data);
-		//condition for variant
+
+        ChildAdd(std::unique_ptr<QtPropertyData>(data));
+        //condition for variant
 		if((!memberMetaInfo->IsPointer()) && (!member->Collection()) && 
 			(NULL == memberIntrospection || (memberIntrospection->Type() != DAVA::MetaInfo::Instance<DAVA::KeyedArchive>())))
 		{

@@ -45,7 +45,8 @@
     
     #include "../rhi_Type.h"
 
-    #define RHI__FORCE_DX11_91 0
+    #define RHI_DX11__FORCE_9X_PROFILE 0
+    #define RHI_DX11__USE_DEFERRED_CONTEXTS 1
 
 const char* D3D11ErrorText(HRESULT hr);
 
@@ -61,6 +62,7 @@ void UninitializeRenderThreadDX11();
 extern ID3D11Device* _D3D11_Device;
 extern IDXGISwapChain* _D3D11_SwapChain;
 extern ID3D11Texture2D* _D3D11_SwapChainBuffer;
+extern ID3D11Texture2D* _D3D11_SwapChainBufferCopy;
 extern ID3D11RenderTargetView* _D3D11_RenderTargetView;
 extern ID3D11Texture2D* _D3D11_DepthStencilBuffer;
 extern ID3D11DepthStencilView* _D3D11_DepthStencilView;
@@ -70,6 +72,9 @@ extern ID3D11DeviceContext* _D3D11_SecondaryContext;
 extern DAVA::Mutex _D3D11_SecondaryContextSync;
 extern ID3D11Debug* _D3D11_Debug;
 extern ID3DUserDefinedAnnotation* _D3D11_UserAnnotation;
+
+extern ScreenShotCallback _D3D11_PendingScreenshotCallback;
+extern DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 extern InitParam _DX11_InitParam;
 

@@ -172,7 +172,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setMinimumSize(cMinSize);
 
     davaGLView = new DavaGLView();
-    
+
     connect(qApp, &QApplication::focusWindowChanged, [this](QWindow* now) //fix bug with actions focus scope
             {
                 bool isActive = (now == davaGLView);
@@ -186,7 +186,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, davaGLView, &DavaGLView::update);
     timer->start(16); //62.5 fps :)
-    
+
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
     connect(davaGLView, &QQuickWindow::beforeSynchronizing, this, &DavaGLWidget::OnSync, Qt::DirectConnection);

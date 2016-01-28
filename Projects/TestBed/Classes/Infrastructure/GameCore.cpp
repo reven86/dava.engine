@@ -48,6 +48,7 @@
 #include "Tests/ClipTest.h"
 #include "Tests/InputTest.h"
 #include "Tests/DlcTest.h"
+#include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
 //$UNITTEST_INCLUDE
 
@@ -81,6 +82,7 @@ void GameCore::RegisterTests()
     new UIBackgroundTest();
     new ClipTest();
     new InputTest();
+    new CoreTest();
     new FormatsTest();
     //$UNITTEST_CTOR
 }

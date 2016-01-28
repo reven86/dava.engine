@@ -32,6 +32,7 @@
 #include "Main/mainwindow.h"
 #include "Scene/SceneSignals.h"
 #include "MaterialEditor/MaterialAssignSystem.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QDragMoveEvent>
 #include <QDragEnterEvent>
@@ -70,15 +71,14 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
     setSortingEnabled(false);
 	treeModel->SetScene(sceneEditor);
 
-	if(NULL != sceneEditor)
-	{
-		EntityGroup curSelection = sceneEditor->selectionSystem->GetSelection();
-        OnSelectionChanged( sceneEditor, &curSelection, NULL );
-	}
-	else
-	{
-		treeModel->SetSelection(NULL);
-	}
+    if (nullptr != sceneEditor)
+    {
+        OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), nullptr);
+    }
+    else
+    {
+        treeModel->SetSelection(nullptr);
+    }
 
     sortByColumn(0);
     setSortingEnabled(true);
@@ -106,7 +106,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 {
 	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 
-    if (NULL != curScene && materials.size() > 0)
+    if (nullptr != curScene && materials.size() > 0)
     {
         std::function<void(DAVA::NMaterial*)> fn = [&fn, &curScene](DAVA::NMaterial* material) {
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
@@ -153,7 +153,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 { 
 	QMenu contextMenu(this);
 
-	contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
+    contextMenu.addAction(SharedIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
     emit ContextMenuPrepare(&contextMenu);
 	contextMenu.exec(mapToGlobal(pos));
@@ -269,7 +269,7 @@ void MaterialTree::OnSelectEntities()
     for (int i = 0; i < selection.size(); i++)
     {
         DAVA::NMaterial * material = treeModel->GetMaterial(selection.at(i));
-        if ( material != NULL )
+        if (material != nullptr)
             materials << material;
     }
 
