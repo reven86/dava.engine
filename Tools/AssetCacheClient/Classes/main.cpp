@@ -30,11 +30,11 @@
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/Logger.h"
-#include "Network/NetCore.h""
+#include "Network/NetCore.h"
 #include "Platform/SystemTimer.h"
-#if defined (__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__)
     #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
-#elif defined (__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__)
     #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #endif //PLATFORMS
 
@@ -50,10 +50,10 @@ void FrameworkWillTerminate()
 
 void CreateDAVA()
 {
-#if defined (__DAVAENGINE_MACOS__)
-    DAVA::Core *core = new DAVA::CoreMacOSPlatform();
-#elif defined (__DAVAENGINE_WIN32__)
-    DAVA::Core *core = new DAVA::CoreWin32Platform();
+#if defined(__DAVAENGINE_MACOS__)
+    DAVA::Core* core = new DAVA::CoreMacOSPlatform();
+#elif defined(__DAVAENGINE_WIN32__)
+    DAVA::Core* core = new DAVA::CoreWin32Platform();
 #else // PLATFORMS
     static_assert(false, "Need create Core object");
 #endif //PLATFORMS
@@ -102,4 +102,3 @@ int main(int argc, char* argv[])
     ReleaseDAVA();
     return cacheClient.GetExitCode();
 }
-

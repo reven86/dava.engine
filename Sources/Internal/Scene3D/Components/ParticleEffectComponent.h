@@ -44,7 +44,12 @@ namespace DAVA
 
 class ParticleEmitter;
 class ModifiablePropertyLineBase;
-
+struct ParticleEmitterData
+{
+    RefPtr<ParticleEmitter> emitter;
+    FilePath originalFilepath;
+    Vector3 spawnPosition;
+};
 
 class ParticleEffectComponent : public Component
 {
@@ -109,6 +114,8 @@ public:
     bool GetRefractionVisible() const;
     void SetRefractionVisible(bool visible);
 
+    void ReloadEmitters();
+
 private:
     void ClearGroup(ParticleGroup& group);
 	void ClearCurrentGroups();
@@ -137,23 +144,31 @@ private:
 	Map<String, float32> externalValues;
     
 	/*Emitters setup*/
-	Vector<ParticleEmitter*> emitters;
-    Vector<Vector3> spawnPositions;
-		
-	ParticleEffectData effectData;
-	ParticleRenderObject *effectRenderObject;
+    Vector<ParticleEmitterData> emitterDatas;
 
-	int32 desiredLodLevel, activeLodLevel;
+    ParticleEffectData effectData;
+    ParticleRenderObject* effectRenderObject;
+
+    int32 desiredLodLevel, activeLodLevel;
 
 public: //mostly editor commands
-	int32 GetEmittersCount();
-	ParticleEmitter* GetEmitter(int32 id);
-    Vector3 GetSpawnPosition(int id);
-    void SetSpawnPosition(int id, Vector3 position);
-	void AddEmitter(ParticleEmitter *emitter);
-    int32 GetEmitterId(ParticleEmitter *emitter);
-    void InsertEmitterAt(ParticleEmitter *emitter, int32 position);
-	void RemoveEmitter(ParticleEmitter *emitter);
+    int32 GetEmittersCount() const;
+    ParticleEmitter* GetEmitter(int32 id) const;
+    int32 GetEmitterId(const ParticleEmitter* emitter) const;
+    void RemoveEmitter(const ParticleEmitter* emitter);
+
+    Vector3 GetSpawnPosition(int32 id) const;
+    void SetSpawnPosition(int32 id, const Vector3& position);
+
+    FilePath GetOriginalConfigPath(int32 id) const;
+    void SetOriginalConfigPath(int32 id, const FilePath& filepath);
+
+    int32 GetEmitterDataId(const ParticleEmitterData& emitter) const;
+    const ParticleEmitterData& GetEmitterData(int32 id) const;
+    void AddEmitterData(const ParticleEmitterData& emitter);
+    void InsertEmitterDataAt(const ParticleEmitterData& emitter, int32 position);
+    void RemoveEmitterData(const ParticleEmitterData& emitter);
+
     float32 GetCurrTime();
 
     /*statistics for editor*/

@@ -158,9 +158,3 @@ void LandscapeEditorShortcutManager::SetAvgStrengthShortcutsEnabled(bool enabled
 	shortcutsMap[ResourceEditor::SHORTCUT_AVG_STRENGTH_INCREASE_LARGE]->setEnabled(enabled);
 	shortcutsMap[ResourceEditor::SHORTCUT_AVG_STRENGTH_DECREASE_LARGE]->setEnabled(enabled);
 }
-
-void LandscapeEditorShortcutManager::SetVisibilityToolShortcutsEnabled(bool enabled)
-{
-	shortcutsMap[ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT]->setEnabled(enabled);
-	shortcutsMap[ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA]->setEnabled(enabled);
-}
