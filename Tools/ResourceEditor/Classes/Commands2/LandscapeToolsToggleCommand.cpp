@@ -124,7 +124,10 @@ void LandscapeToolsToggleCommand::SaveEnabledToolsState()
 
 void LandscapeToolsToggleCommand::ApplySavedState()
 {
-    sceneEditor->EnableToolsInstantly(enabledTools);
+    if (sceneEditor != nullptr)
+    {
+        sceneEditor->EnableToolsInstantly(enabledTools);
+    }
 }
 
 /*
