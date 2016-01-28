@@ -153,26 +153,26 @@ void CommandStack::Redo()
 
 void CommandStack::Exec(Command2 *command)
 {
-    if (command == nullptr)
-        return;
-
-    CommandAction* action = dynamic_cast<CommandAction*>(command);
-    if (action == nullptr) // command is really Command, not CommandAction
+    if (NULL != command)
     {
-        if (curBatchCommand != nullptr)
+        CommandAction* action = dynamic_cast<CommandAction*>(command);
+        if (!action)
         {
-            curBatchCommand->AddAndExec(command);
+            if (NULL != curBatchCommand)
+            {
+                curBatchCommand->AddAndExec(command);
+            }
+            else
+            {
+                ExecInternal(command, true);
+            }
         }
-		else
+        else
 		{
-            ExecInternal(command, true);
+            action->Redo();
+            EmitNotify(command, true);
+            delete action;
         }
-	}
-    else
-    {
-        action->Redo();
-        EmitNotify(command, true);
-        delete action;
     }
 }
 
