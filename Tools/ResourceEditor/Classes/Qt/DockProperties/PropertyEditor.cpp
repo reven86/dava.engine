@@ -301,7 +301,7 @@ void PropertyEditor::ResetProperties()
     }
 
     // Restore back the tree view state from the shared storage.
-	if (!treeStateHelper.IsTreeStateStorageEmpty())
+    if (!treeStateHelper.IsTreeStateStorageEmpty())
 	{
 		treeStateHelper.RestoreTreeViewState();
 	}
@@ -716,8 +716,8 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return new QtPropertyDataMetaObject(original->GetName(), metaData->object, metaData->meta);
     }
 
-    QtPropertyDataInspColl *memberCollection = dynamic_cast<QtPropertyDataInspColl *>(original);
-	if(NULL != memberCollection)
+    QtPropertyDataInspColl* memberCollection = dynamic_cast<QtPropertyDataInspColl*>(original);
+    if(NULL != memberCollection)
 	{
         return CreateInspCollection(original->GetName(), memberCollection->object, memberCollection->collection);
     }

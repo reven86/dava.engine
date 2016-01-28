@@ -185,7 +185,7 @@ public:
     // Optional widgets
     int GetButtonsCount() const;
     QtPropertyToolButton* GetButton(int index = 0);
-	QtPropertyToolButton* AddButton(QtPropertyToolButton::StateVariant stateVariant = QtPropertyToolButton::ACTIVE_ALWAYS);
+    QtPropertyToolButton* AddButton(QtPropertyToolButton::StateVariant stateVariant = QtPropertyToolButton::ACTIVE_ALWAYS);
 	void RemButton(QtPropertyToolButton *button);
 
 	void EmitDataChanged(ValueChangeReason reason);

@@ -374,7 +374,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
             r.moveLeft(r.x() - FORMAT_INFO_SPACING);
         }
 
-		// error icon
+        // error icon
 		if(texture->width != texture->height)
 		{
 			r.moveLeft(r.x() - 16);

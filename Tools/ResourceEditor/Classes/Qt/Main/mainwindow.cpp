@@ -2085,7 +2085,7 @@ void QtMainWindow::OnSaveTiledTexture()
     if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
     {
         ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
-		return;
+        return;
 	}
 
     Landscape* landscape = FindLandscape(scene);
