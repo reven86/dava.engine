@@ -114,69 +114,6 @@ void EnableRulerToolCommand::Undo()
 }
 
 /*
- * Visibility
- */
-EnableVisibilityToolCommand::EnableVisibilityToolCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_VISIBILITY_TOOL_ENABLE, forSceneEditor)
-{
-}
-
-void EnableVisibilityToolCommand::Redo()
-{
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool enabled = sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->visibilityToolSystem->EnableLandscapeEditing();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-
-    if (success && (LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError))
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
-    }
-
-    SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
-}
-
-void EnableVisibilityToolCommand::Undo()
-{
-    if ((sceneEditor == nullptr) || !sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
-    {
-        return;
-    }
-
-    if (sceneEditor->visibilityToolSystem->DisableLandscapeEdititing())
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(true);
-    }
-    else
-    {
-        ShowErrorDialog(ResourceEditor::VISIBILITY_TOOL_DISABLE_ERROR);
-    }
-
-    SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
-}
-
-/*
  * Tilemask
  */
 EnableTilemaskEditorCommand::EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor)

@@ -79,16 +79,6 @@ public:
 };
 using DisableHeightmapEditorCommand = LandscapeToolsReverseCommand<EnableHeightmapEditorCommand>;
 
-class EnableVisibilityToolCommand : public LandscapeToolsToggleCommand
-{
-public:
-    EnableVisibilityToolCommand(SceneEditor2* forSceneEditor);
-
-    void Redo() override;
-    void Undo() override;
-};
-using DisableVisibilityToolCommand = LandscapeToolsReverseCommand<EnableVisibilityToolCommand>;
-
 class EnableNotPassableCommand : public LandscapeToolsToggleCommand
 {
 public:

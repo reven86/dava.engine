@@ -121,9 +121,9 @@ namespace DAVA
         if (viewSize > elementSize)
         {
             virtualViewSize = elementSize;
-		}
-	}
-    
+        }
+    }
+
     float32 ScrollHelper::GetViewSize() const
     {
         return viewSize;

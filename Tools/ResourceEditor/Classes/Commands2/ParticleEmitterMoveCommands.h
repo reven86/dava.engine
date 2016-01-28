@@ -45,8 +45,8 @@ public:
 	virtual DAVA::Entity* GetEntity() const { return NULL; }
 
     DAVA::ParticleEmitterData emitterData;
-    DAVA::ParticleEffectComponent* oldEffect, *newEffect;		
-	int oldIndex, newIndex;
+    DAVA::ParticleEffectComponent *oldEffect, *newEffect;
+    int oldIndex, newIndex;
 };
 
 #endif

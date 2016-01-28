@@ -103,14 +103,14 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
     }
 
     shortEffectCheckBox = new QCheckBox("Short effect");
-	mainLayout->addWidget(shortEffectCheckBox);
-	connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    mainLayout->addWidget(shortEffectCheckBox);
+    connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
-	QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
-	emitterTypeHBox->addWidget(new QLabel("type"));
-	emitterType = new QComboBox(this);
-	emitterType->addItem("Point");
-	emitterType->addItem("Box");
+    QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
+    emitterTypeHBox->addWidget(new QLabel("type"));
+    emitterType = new QComboBox(this);
+    emitterType->addItem("Point");
+    emitterType->addItem("Box");
 	emitterType->addItem("Circle - Volume");
 	emitterType->addItem("Circle - Edges");
 	emitterType->addItem("Shockwave");
@@ -298,18 +298,17 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     this->effect = effect;
     SetActiveScene(scene);
 
-	blockSignals = true;
+    blockSignals = true;
 
-	emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
-	shortEffectCheckBox->setChecked(emitter->shortEffect);
+    emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
+    shortEffectCheckBox->setChecked(emitter->shortEffect);
 
-	float32 emitterLifeTime = emitter->lifeTime;
+    float32 emitterLifeTime = emitter->lifeTime;
 
-    
-	float minTime		= 0.f;
-	float minTimeLimit	= 0.f;
-    
-	float maxTime		= emitterLifeTime;
+    float minTime = 0.f;
+    float minTimeLimit = 0.f;
+
+    float maxTime		= emitterLifeTime;
 	float maxTimeLimit	= emitterLifeTime;
     QString originalYamlPath;
     bool isInnerEmitter = ParticleEmitterPropertiesWidget_namespace::IsInnerEmitter(effect, emitter);
@@ -326,7 +325,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     originalEmitterYamlPath->setText(originalYamlPath);
 
     emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
-	emitterType->setCurrentIndex(emitter->emitterType);
+    emitterType->setCurrentIndex(emitter->emitterType);
 
     int32 emitterId = effect->GetEmitterId(emitter);
     Vector3 position = (emitterId==-1)?Vector3(0,0,0):effect->GetSpawnPosition(emitterId);
