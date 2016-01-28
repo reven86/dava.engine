@@ -104,19 +104,16 @@ int MaterialFilteringModel::getFilterType() const
 bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
 	MaterialItem *item = (MaterialItem *)materialModel->itemFromIndex(materialModel->index(sourceRow, 0, sourceParent));
-    if ( !item )
+    if (item == nullptr)
+    {
         return false;
-
-    bool isSelected = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
-    bool isMaterial = false;
+    }
 
     DAVA::NMaterial* material = item->GetMaterial();
-    if (nullptr == material->GetParent() ||
-        materialModel->GetGlobalMaterial() == material->GetParent())
-    {
-        isMaterial = true;
-    }
-    switch ( filterType )
+    bool isSelected = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
+    bool isTopLevelMaterial = (nullptr == material->GetParent()) || (materialModel->GetGlobalMaterial() == material->GetParent());
+
+    switch (filterType)
     {
     case SHOW_ALL:
         return true;
@@ -125,31 +122,36 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
         return false;
 
     case SHOW_INSTANCES_AND_MATERIALS:
-        return isMaterial || isSelected;
+        return isTopLevelMaterial || isSelected;
 
     case SHOW_ONLY_INSTANCES:
-        {
-            if ( !isMaterial )
-                return isSelected;
-            const int n = item->rowCount();
-            for ( int i = 0; i < n; i++ )
-            {
-                MaterialItem *childItem = (MaterialItem*)item->child( i, 0 );
-                if ( !childItem )
-                    continue;
-                const bool isSelected = childItem->GetFlag( MaterialItem::IS_PART_OF_SELECTION );
-                if ( isSelected )
-                    return true;
-            }
+    {
+        if (isSelected)
+            return true;
 
-            return false;
+        if (isTopLevelMaterial)
+        {
+            const int n = item->rowCount();
+            for (int i = 0; i < n; i++)
+            {
+                MaterialItem* childItem = static_cast<MaterialItem*>(item->child(i));
+                DVASSERT(childItem != nullptr);
+                if (childItem->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+                {
+                    return true;
+                }
+            }
         }
 
+        return false;
+    }
+
     default:
+        DVASSERT_MSG(0, "Invalid material editor filter used");
         break;
     }
 
-	return false;
+    return false;
 }
 
 bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
