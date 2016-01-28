@@ -50,6 +50,32 @@ NSString *NSStringFromWideString(const DAVA::WideString &str) {
     return nsstring;
 }
 
+String StringFromNSString(NSString* string)
+{
+    if(string)
+    {
+        return String([string cStringUsingEncoding:NSASCIIStringEncoding]);
+    }
+    else
+    {
+        return "";
+    }
+}
+
+WideString WideStringFromNSString(NSString* string)
+{
+    if(string)
+    {
+        NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
+        NSData *data = [string dataUsingEncoding:encoding];
+        return WideString((wchar_t*)data.bytes, data.length / sizeof(wchar_t));
+    }
+    else
+    {
+        return L"";
+    }
+}
+
 }
 
 #endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
