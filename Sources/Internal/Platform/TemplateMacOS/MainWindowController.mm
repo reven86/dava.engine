@@ -64,7 +64,7 @@ namespace DAVA
 		globalPool = [[NSAutoreleasePool alloc] init];
         CoreMacOSPlatform* core = new CoreMacOSPlatform();
         core->SetCommandLine(argc, argv);
-		core->CreateSingletons();
+        core->CreateSingletons();
 
         [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
@@ -121,19 +121,19 @@ static MainWindowController * mainWindowController = nil;
  */
 namespace DAVA 
 {
-    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
-    {
-        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
-        minWindowWidth = width;
-        minWindowHeight = height;
+void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+{
+    DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+    minWindowWidth = width;
+    minWindowHeight = height;
 
-        [mainWindowController setMinimumWindowSize:minWindowWidth height:minWindowHeight];
-    }
+    [mainWindowController setMinimumWindowSize:minWindowWidth height:minWindowHeight];
+}
 
-    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
-    {
-        return Vector2(minWindowWidth, minWindowHeight);
-    }
+Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+{
+    return Vector2(minWindowWidth, minWindowHeight);
+}
 }
 
 - (id)init
@@ -151,7 +151,7 @@ namespace DAVA
                                                      name:@"DavaKeyUp"
                                                    object:nil];
     }
-	return self;
+    return self;
 }
 
 - (void)dealloc
@@ -415,7 +415,7 @@ namespace DAVA
 - (void) animationTimerFired:(NSTimer *)timer
 {
     [openGLView setNeedsDisplay:YES];
-    
+
     if (currFPS != Renderer::GetDesiredFPS())
     {
         currFPS = Renderer::GetDesiredFPS();
@@ -494,20 +494,20 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
     NSSize windowSize = [openGLView frame].size;
     float32 backingScale = Core::Instance()->GetScreenScaleFactor();
-    
-    GLint backingSize[2] = {GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale)};
+
+    GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
     CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
-    
-    rhi::InitParam & rendererParams = Core::Instance()->rendererParams;
+
+    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
     rendererParams.window = mainWindowController->openGLView;
     rendererParams.width = backingSize[0];
     rendererParams.height = backingSize[1];
 
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-    
+
     Core::Instance()->SystemAppStarted();
 }
 
@@ -558,7 +558,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-	Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
+    Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
 
     mainWindowController->openGLView.willQuit = true;
     
@@ -629,15 +629,14 @@ void CoreMacOSPlatform::Quit()
 
 void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 {
-    if(!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
+    if (!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
     {
         Core::SetScreenScaleMultiplier(multiplier);
-        
+
         //This magick needed to correctly 'reshape' GLView and resize back-buffer.
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
         [mainWindowController->mainWindow setContentView:nil];
         [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
     }
 }
-    
 };

@@ -160,6 +160,17 @@ dx11_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
+static void
+dx11_TakeScreenshot(ScreenShotCallback callback)
+{
+    _D3D11_ScreenshotCallbackSync.Lock();
+    DVASSERT(!_D3D11_PendingScreenshotCallback);
+    _D3D11_PendingScreenshotCallback = callback;
+    _D3D11_ScreenshotCallbackSync.Unlock();
+}
+
+//------------------------------------------------------------------------------
+
 void _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -171,7 +182,7 @@ void _InitDX11()
 
     HRESULT hr;
     DWORD flags = 0;
-    #if RHI__FORCE_DX11_91
+    #if RHI_DX11__FORCE_9X_PROFILE
     D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
     #else
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
@@ -323,6 +334,10 @@ void _InitDX11()
     }
 
 #endif
+
+    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -335,6 +350,7 @@ void dx11_Initialize(const InitParam& param)
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
     QueryBufferDX11::SetupDispatch(&DispatchDX11);
+    PerfQuerySetDX11::SetupDispatch(&DispatchDX11);
     TextureDX11::SetupDispatch(&DispatchDX11);
     PipelineStateDX11::SetupDispatch(&DispatchDX11);
     ConstBufferDX11::SetupDispatch(&DispatchDX11);
@@ -349,6 +365,7 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
+    DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
 
     SetDispatchTable(DispatchDX11);
 

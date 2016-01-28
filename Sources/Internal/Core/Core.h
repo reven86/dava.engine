@@ -206,7 +206,7 @@ public:
 	For Win32 function not implemented yet, and I do not have time to implement it right now, so left that for the future.
      
      */
-	/*
+    /*
 		\brief Function that return number of frame from the launch of the application
 		
 		This function supposed for such situations when you do not want to recompute something during one frame more than 
@@ -229,9 +229,9 @@ public:
 		
 		\returns global frame index from the launch of your application
 	 */
-	uint32 GetGlobalFrameIndex();
-	
-	/*
+    uint32 GetGlobalFrameIndex();
+
+    /*
 		This function performs message on main thread 
 		\param[in] message message to be performed
 	 */
