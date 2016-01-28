@@ -56,10 +56,10 @@ public:
     FilePath filename;
     int frameCount;
     int spriteWidth;
-    int			spriteHeight;
-	Rect2i		* frameRects;
+    int spriteHeight;
+    Rect2i* frameRects;
 
-	Vector<String> pathsInfo;
+    Vector<String> pathsInfo;
     Vector<String> frameNames;
 };
 

@@ -99,9 +99,9 @@ public slots:
 
     // scene signals
     void MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup* entities);
-    void SceneSaved(SceneEditor2 *scene);
-	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
-    
+    void SceneSaved(SceneEditor2* scene);
+    void SceneModifyStatusChanged(SceneEditor2* scene, bool modified);
+
 protected:
     
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);

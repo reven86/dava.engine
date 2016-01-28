@@ -197,8 +197,8 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
             mainTouch = currentTouch->touchId;
             PerformEvent(EVENT_TOUCH_DOWN);
             Input(currentTouch);
-		}
-	}
+        }
+    }
     else if (currentTouch->touchId == mainTouch && currentTouch->phase == UIEvent::Phase::DRAG)
     {
         // Don't scroll if touchTreshold is not exceeded
