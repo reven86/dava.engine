@@ -36,7 +36,6 @@ namespace DAVA
 {
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-    std::cout << "[" << GetLogLevelString(ll) << "] " << text << std::endl;
     // Use printf instead of std::cout as std::cout can produce mess when
     // logging from several threads
     std::printf("[%s] %s", GetLogLevelString(ll), text);
