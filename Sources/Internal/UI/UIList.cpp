@@ -35,6 +35,7 @@
 #include "FileSystem/YamlNode.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -500,23 +501,12 @@ void UIList::Input(UIEvent *currentInput)
         return;
     }
 
-    if (Key::LSHIFT == currentInput->key || Key::RSHIFT == currentInput->key)
-    {
-        if (UIEvent::Phase::KEY_DOWN == currentInput->phase)
-        {
-            isShiftPressed = true;
-        }
-        if (UIEvent::Phase::KEY_UP == currentInput->phase)
-        {
-            isShiftPressed = false;
-        }
-    }
-
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
         if (UIEvent::Device::MOUSE == currentInput->device)
         {
-            if (isShiftPressed)
+            KeyboardDevice& keyb_dev = InputSystem::Instance()->GetKeyboard();
+            if (keyb_dev.IsKeyPressed(Key::LSHIFT) || keyb_dev.IsKeyPressed(Key::RSHIFT))
             {
                 newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
             }

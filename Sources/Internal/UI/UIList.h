@@ -264,7 +264,6 @@ protected:
     float32 newPos;
     float32 oldScroll = 0.f;
     float32 newScroll = 0.f;
-    bool isShiftPressed = false;
 
     int32 touchHoldSize;
 
