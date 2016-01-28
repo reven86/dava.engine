@@ -3,7 +3,6 @@
 #include "LogModel.h"
 #include "Debug/DVAssert.h"
 
-
 LogFilterModel::LogFilterModel(QObject* parent)
     : QSortFilterProxyModel(parent)
 {

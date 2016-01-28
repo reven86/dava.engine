@@ -39,6 +39,8 @@
 #include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
 #include "ui_LODEditor.h"
 
 #include <QLabel>
@@ -231,20 +233,28 @@ void LODEditor::ForceDistanceChanged(int distance)
 void LODEditor::ForceLayerActivated(int index)
 {
     EditorLODSystem *system = GetCurrentEditorLODSystem();
+    const LODComponentHolder *lodData = system->GetActiveLODData();
 
     ForceValues forceValues = system->GetForceValues();
     forceValues.layer = index - 1;
+
+    if (forceValues.layer == lodData->GetLODLayersCount())
+    {
+        forceValues.layer = LodComponent::LAST_LOD_LAYER;
+    }
+
     system->SetForceValues(forceValues);
 }
 
 void LODEditor::CreateForceLayerValues(uint32 layersCount)
 {
     ui->forceLayer->clear();
-    ui->forceLayer->addItem("Auto", QVariant(LodComponent::INVALID_LOD_LAYER));
+    ui->forceLayer->addItem("Auto", LodComponent::INVALID_LOD_LAYER);
     for (uint32 i = 0; i < layersCount; ++i)
     {
         ui->forceLayer->addItem(Format("%u", i).c_str(), QVariant(i));
     }
+    ui->forceLayer->addItem("Last", LodComponent::LAST_LOD_LAYER);
     ui->forceLayer->setCurrentIndex(0);
 }
 
@@ -313,7 +323,6 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
     }
     else
     {
-
         system->SetLODDistances(distances);
     }
 }
@@ -447,8 +456,15 @@ void LODEditor::UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & fo
         CreateForceLayerValues(layerItemsCount);
     }
 
-    int32 forceIndex = Min(forceValues.layer + 1, ui->forceLayer->count() - 1);
-    ui->forceLayer->setCurrentIndex(forceIndex);
+    if (forceValues.layer == LodComponent::LAST_LOD_LAYER)
+    {
+        ui->forceLayer->setCurrentIndex(ui->forceLayer->count() - 1);
+    }
+    else
+    {
+        int32 forceIndex = Min(forceValues.layer + 1, ui->forceLayer->count() - 1);
+        ui->forceLayer->setCurrentIndex(forceIndex);
+    }
 }
 
 void LODEditor::UpdateDistanceUI(EditorLODSystem *forSystem, const LODComponentHolder *lodData)

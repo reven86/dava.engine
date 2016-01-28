@@ -146,9 +146,10 @@ void EnumerateRenderComponents(const EntityGroup &entities, Vector<RenderCompone
         renderComponents.reserve(count);
 
         const bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
-        for (uint32 i = 0; i < count; ++i)
+        const auto & entitiesContent = entities.GetContent();
+        for (auto & it : entitiesContent)
         {
-            Entity *entity = entities.GetEntity(i);
+            Entity *entity = it.first;
             bool recursive = entity->GetSolid() || !ignoreChildren;
             EnumerateRenderComponentsRecursive(entity, renderComponents, recursive);
         }

@@ -49,6 +49,7 @@
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/SelectionSystem.h"
 
 
 using namespace DAVA;
@@ -160,6 +161,7 @@ void LODComponentHolder::ApplyForce(const ForceValues &force)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
+            lc->currentLod = LodComponent::INVALID_LOD_LAYER;
             lc->SetForceLodLayer(force.layer);
         }
 
@@ -448,9 +450,9 @@ void EditorLODSystem::SetLODDistances(const Array<float32, LodComponent::MAX_LOD
 void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
 {
     SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *> (GetScene());
-    EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+    EntityGroup selection(sceneEditor->selectionSystem->GetSelection().CopyContentToVector());
 
-    if (selection.ContainsEntity(entity) == false)
+    if (selection.ContainsEntity(const_cast<Entity *>(entity)) == false)
     {
         return;
     }
@@ -467,9 +469,11 @@ void EditorLODSystem::SelectionChanged(const EntityGroup *selected, const Entity
     uint32 count = selected->Size();
     Vector<Entity *>lodEntities;
     lodEntities.reserve(count);    //mostly we have less than 5 lods in hierarchy
-    for (uint32 i = 0; i < count; ++i)
+
+    const auto & entitiesContent = selected->GetContent();
+    for (auto & it : entitiesContent)
     {
-        Entity *entity = selected->GetEntity(i);
+        Entity *entity = it.first;
         if (entity->GetSolid() || !ignoreChildren)
         {
             entity->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);

@@ -68,6 +68,11 @@ void BeginQuery(Handle buf, uint32 objectIndex);
 void EndQuery(Handle buf, uint32 objectIndex);
 }
 
+namespace PerfQuerySetDX9
+{
+void SetupDispatch(Dispatch* dispatch);
+}
+
 namespace PipelineStateDX9
 {
 void SetupDispatch(Dispatch* dispatch);

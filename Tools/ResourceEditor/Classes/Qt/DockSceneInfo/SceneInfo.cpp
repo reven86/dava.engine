@@ -449,45 +449,45 @@ void SceneInfo::CollectTexture(TexturesMap &textures, const FilePath &name, Text
 
 QtPropertyData * SceneInfo::CreateInfoHeader(const QString &key)
 {
-    QtPropertyData* headerData = new QtPropertyData("");
+    QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
 	headerData->SetBackground(QBrush(QColor(Qt::lightGray)));
-    AppendProperty(key, headerData);
-	return headerData;
+    AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
+    return headerData;
 }
 
 QtPropertyData * SceneInfo::GetInfoHeader(const QString &key)
 {
-	QtPropertyData *header = NULL;
+    QtPropertyData* header = nullptr;
     QtPropertyData *root = GetRootProperty();
 	if(NULL != root)
 	{
-		header = root->ChildGet(key);
-	}
+        header = root->ChildGet(DAVA::FastName(key.toStdString()));
+    }
 	return header;
 }
 
 void SceneInfo::AddChild(const QString & key, QtPropertyData *parent)
 {
-    QtPropertyData *propData = new QtPropertyData(0);
-	propData->SetEditable(false);
-    parent->ChildAdd(key, propData);
+    std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
+    propData->SetEditable(false);
+    parent->ChildAdd(std::move(propData));
 }
 
 void SceneInfo::AddChild(const QString & key, const QString& toolTip, QtPropertyData *parent)
 {
-    QtPropertyData *propData = new QtPropertyData(0);
-	propData->SetEditable(false);
+    std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
+    propData->SetEditable(false);
     propData->SetToolTip(toolTip);
-    parent->ChildAdd(key, propData);
+    parent->ChildAdd(std::move(propData));
 }
 
 void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyData *parent)
 {
 	if(NULL != parent)
 	{
-		QtPropertyData *propData = parent->ChildGet(key);
-		if(NULL != propData)
+        QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
+        if(NULL != propData)
 		{
 			propData->SetValue(value);
 		}
@@ -499,8 +499,8 @@ bool SceneInfo::HasChild(const QString & key, QtPropertyData *parent)
     bool hasChild = false;
     if(NULL != parent)
 	{
-		QtPropertyData *propData = parent->ChildGet(key);
-		hasChild = (propData != NULL);
+        QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
+        hasChild = (propData != NULL);
 	}
     
     return hasChild;
@@ -624,11 +624,12 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 
 void SceneInfo::CollectSelectedRenderObjects(const EntityGroup *selected)
 {
-    for (int32 i = 0, sz = selected->Size(); i<sz; ++i)
+    for (const auto& item : selected->GetContent())
     {
-        CollectSelectedRenderObjectsRecursivly(selected->GetEntity(i));
+        CollectSelectedRenderObjectsRecursivly(item.first);
     }
 }
+
 void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity * entity)
 {
     RenderObject *renderObject = GetRenderObject(entity);
@@ -643,10 +644,9 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
 {
     speedTreeLeafInfo.clear();
 
-    int32 entitiesCount = forGroup->Size();
-    for(int32 i = 0; i < entitiesCount; i++)
+    for (const auto& item : forGroup->GetContent())
     {
-        RenderObject * ro = GetRenderObject(forGroup->GetEntity(i));
+        RenderObject* ro = GetRenderObject(item.first);
         if(ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }

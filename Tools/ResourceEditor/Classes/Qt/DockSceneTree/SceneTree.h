@@ -126,7 +126,7 @@ private:
 	QString GetParticlesConfigPath();
 	
 	// Perform save for selected Emitters.
-	void PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, const QString& defaultName);
+    void PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName);
 
     void PerformSaveEffectEmitters(bool forceAskFileName);
 
@@ -150,13 +150,13 @@ private:
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
-    ParticleEffectComponent *selectedEffect;
-	ParticleEmitter *selectedEmitter;
-	ParticleLayer* selectedLayer;
-	ParticleForce* selectedForce;
+    ParticleEffectComponent* selectedEffect;
+    ParticleEmitter* selectedEmitter;
+    ParticleLayer* selectedLayer;
+    ParticleForce* selectedForce;
 
-	QPointer< SceneTreeModel > treeModel;
-	QPointer< SceneTreeFilteringModel > filteringProxyModel;
+    QPointer<SceneTreeModel> treeModel;
+    QPointer< SceneTreeFilteringModel > filteringProxyModel;
 	SceneTreeDelegate *treeDelegate;
 
 	bool isInSync;
