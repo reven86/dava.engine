@@ -165,8 +165,8 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 
     const int32 count = entity->GetChildrenCount();
     for (int32 ch = 0; ch < count; ++ch)
-	{
-		RemoveLightmapsRecursive(entity->GetChild(ch));
-	}
+    {
+        RemoveLightmapsRecursive(entity->GetChild(ch));
+    }
 }
 

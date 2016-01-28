@@ -65,8 +65,8 @@ bool OwnersSignatureSystem::IsCommandIdValid(int _id)
         {
             return true;
         }
-	}
-	return false;
+    }
+    return false;
 }
 
 DAVA::String OwnersSignatureSystem::GetCurrentTime()

@@ -150,10 +150,10 @@ QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
     SceneTreeItem* item = GetItem(index);
 
     DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
-    if(NULL != entity)
-	{
-		if(entity->GetLocked())
-		{
+    if (NULL != entity)
+    {
+        if (entity->GetLocked())
+        {
             ret.push_back(SharedIcon(":/QtIcons/locked.png"));
         }
 
@@ -352,8 +352,8 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
                 curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
                 ret = true;
             }
-		}
-		break;
+        }
+        break;
 
     case DropingEmitter:
         {

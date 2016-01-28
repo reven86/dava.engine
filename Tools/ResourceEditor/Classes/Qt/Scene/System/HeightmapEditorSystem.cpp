@@ -164,10 +164,10 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 
             if (isIntersectsLandscape)
             {
-                    if (drawingType == HEIGHTMAP_COPY_PASTE)
-					{
-						int32 curKeyModifiers = QApplication::keyboardModifiers();
-						if (curKeyModifiers & Qt::AltModifier)
+                if (drawingType == HEIGHTMAP_COPY_PASTE)
+                {
+                    int32 curKeyModifiers = QApplication::keyboardModifiers();
+                        if (curKeyModifiers & Qt::AltModifier)
 						{
 							copyPasteFrom = GetHeightmapPositionFromCursor();
 							copyPasteTo = Vector2(-1.f, -1.f);
@@ -256,10 +256,10 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
     {
         switch (activeDrawingType)
         {
-            case HEIGHTMAP_DRAW_RELATIVE:
-			{
-				float32 koef = (strength * timeElapsed);
-				if(inverseDrawingEnabled)
+        case HEIGHTMAP_DRAW_RELATIVE:
+        {
+            float32 koef = (strength * timeElapsed);
+                if(inverseDrawingEnabled)
 				{
 					koef = -koef;
 				}
@@ -283,10 +283,10 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
             case HEIGHTMAP_DRAW_ABSOLUTE:
             case HEIGHTMAP_DRAW_ABSOLUTE_DROPPER:
             {
-				float32 maxHeight = drawSystem->GetLandscapeMaxHeight();
-				float32 height = curHeight / maxHeight * Heightmap::MAX_VALUE;
-				
-				float32 koef = (averageStrength * timeElapsed) * 2.0f;
+                float32 maxHeight = drawSystem->GetLandscapeMaxHeight();
+                float32 height = curHeight / maxHeight * Heightmap::MAX_VALUE;
+
+                float32 koef = (averageStrength * timeElapsed) * 2.0f;
                 editorHeightmap->DrawAbsoluteRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef, height);
                 break;
             }
@@ -300,9 +300,9 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
             case HEIGHTMAP_COPY_PASTE:
             {
-				if (copyPasteFrom == Vector2(-1.f, -1.f) || copyPasteTo == Vector2(-1.f, -1.f))
-				{
-					return;
+                if (copyPasteFrom == Vector2(-1.f, -1.f) || copyPasteTo == Vector2(-1.f, -1.f))
+                {
+                    return;
 				}
 
 				Vector2 posTo = pos;
@@ -320,10 +320,10 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
             default:
                 DAVA::Logger::Error("Invalid drawing type!");
                 return;
-		}
-		
-		Rect rect(pos.x, pos.y, (float32)scaleSize, (float32)scaleSize);
-		drawSystem->GetHeightmapProxy()->UpdateRect(rect);
+            }
+
+            Rect rect(pos.x, pos.y, (float32)scaleSize, (float32)scaleSize);
+        drawSystem->GetHeightmapProxy()->UpdateRect(rect);
 		AddRectToAccumulator(heightmapUpdatedRect, rect);
 	}
 }
@@ -387,7 +387,7 @@ void HeightmapEditorSystem::SetStrength(float32 strength)
     if (strength < 0.f)
     {
         inverseDrawingEnabled = true;
-	}
+    }
 }
 
 void HeightmapEditorSystem::SetAverageStrength(float32 averageStrength)

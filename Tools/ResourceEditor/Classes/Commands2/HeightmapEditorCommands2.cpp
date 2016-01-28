@@ -167,9 +167,9 @@ uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
 
     for (int32 i = 0; i < height; ++i)
     {
-		uint16* src = oldData + (yOffset + i) * size + xOffset;
-		uint16* dst = newData + i * width;
-		memcpy(dst, src, sizeof(uint16) * width);
+        uint16* src = oldData + (yOffset + i) * size + xOffset;
+        uint16* dst = newData + i * width;
+        memcpy(dst, src, sizeof(uint16) * width);
 	}
 	
 	return newData;
@@ -190,9 +190,9 @@ void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)
     for (int32 i = 0; i < height; ++i)
     {
         uint16* src = region + i * width;
-		uint16* dst = data + (yOffset + i) * size + xOffset;
-		memcpy(dst, src, sizeof(uint16) * width);
-	}
+        uint16* dst = data + (yOffset + i) * size + xOffset;
+        memcpy(dst, src, sizeof(uint16) * width);
+    }
 	
 	heightmapProxy->UpdateRect(updatedRect);
 }

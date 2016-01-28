@@ -345,8 +345,8 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 
     if (nullptr != descriptor && nullptr != texture)
     {
-		r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
-		r.setX(rect.x() + rect.width());
+        r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
+        r.setX(rect.x() + rect.width());
 		r.setWidth(FORMAT_INFO_WIDTH);
 
 		QColor gpuInfoColors[DAVA::GPU_DEVICE_COUNT];
@@ -371,11 +371,11 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
                 painter->drawRect(r);
             }
 
-			r.moveLeft(r.x() - FORMAT_INFO_SPACING);
-		}
+            r.moveLeft(r.x() - FORMAT_INFO_SPACING);
+        }
 
-		// error icon
-		if(texture->width != texture->height)
+        // error icon
+        if(texture->width != texture->height)
 		{
 			r.moveLeft(r.x() - 16);
             SharedIcon(":/QtIcons/error.png").paint(painter, r.x(), r.y(), 16, 16);

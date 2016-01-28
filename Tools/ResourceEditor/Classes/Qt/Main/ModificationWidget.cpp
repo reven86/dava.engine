@@ -245,12 +245,12 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     selection.FilterChildrenComponents();
 
     switch (modifMode)
-	{
-	case ST_MODIF_MOVE:
+    {
+    case ST_MODIF_MOVE:
     {
         curScene->modifSystem->ApplyMoveValues(axis, selection, values);
         break;
-	}
+    }
 
     case ST_MODIF_ROTATE:
     {
@@ -264,8 +264,8 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
         break;
     }
     default:
-		break;
-	}
+        break;
+    }
 
     ReloadValues();
 }

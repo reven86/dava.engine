@@ -459,10 +459,10 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     }
 
     colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
-	colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
-	alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
-	
-	const YamlNode* frameOverLifeEnabledNode = node->Get("frameOverLifeEnabled");
+    colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
+    alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
+
+    const YamlNode* frameOverLifeEnabledNode = node->Get("frameOverLifeEnabled");
 	if (frameOverLifeEnabledNode)
 	{
 		frameOverLifeEnabled = frameOverLifeEnabledNode->AsBool();
@@ -672,10 +672,10 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (loopEndTimeNode)
         loopEndTime = loopEndTimeNode->AsFloat();
 
-    /*validate all time depended property lines*/	
-	UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
-	UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
-	UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);
+    /*validate all time depended property lines*/
+    UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
+    UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
+    UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(numberVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(size.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(sizeVariation.Get(), startTime, endTime);

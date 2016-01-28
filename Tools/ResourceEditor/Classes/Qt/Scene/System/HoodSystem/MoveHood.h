@@ -45,9 +45,9 @@ struct MoveHood : public HoodObject
     HoodCollObject* axisY;
     HoodCollObject* axisZ;
 
-    HoodCollObject *axisXY1;
-	HoodCollObject *axisXY2;
-	HoodCollObject *axisXZ1;
+    HoodCollObject* axisXY1;
+    HoodCollObject* axisXY2;
+    HoodCollObject *axisXZ1;
 	HoodCollObject *axisXZ2;
 	HoodCollObject *axisYZ1;
 	HoodCollObject *axisYZ2;

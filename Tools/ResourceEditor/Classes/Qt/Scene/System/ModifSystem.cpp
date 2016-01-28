@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 
 
 #include "Qt/Scene/System/ModifSystem.h"
@@ -65,8 +65,8 @@ EntityModificationSystem::~EntityModificationSystem()
 
 void EntityModificationSystem::SetModifAxis(ST_Axis axis)
 {
-	if(axis != ST_AXIS_NONE)
-	{
+    if (axis != ST_AXIS_NONE)
+    {
 		curAxis = axis;
 		hoodSystem->SetModifAxis(axis);
 	}
@@ -100,8 +100,8 @@ void EntityModificationSystem::SetLandscapeSnap(bool snap)
 
 void EntityModificationSystem::PlaceOnLandscape(const EntityGroup &entities)
 {
-	if(ModifCanStart(entities))
-	{
+    if (ModifCanStart(entities))
+    {
 		bool prevSnapToLandscape = snapToLandscape;
 
 		snapToLandscape = true;
@@ -121,20 +121,13 @@ void EntityModificationSystem::PlaceOnLandscape(const EntityGroup &entities)
 
 void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
 {
-	SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
+    SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
-	if(NULL != sceneEditor && ModifCanStart(entities))
-	{
-		bool isMultiple = (entities.Size() > 1);
-		
+    if (nullptr != sceneEditor && ModifCanStart(entities))
+    {
 		DAVA::Matrix4 zeroTransform;
 		zeroTransform.Identity();
-
-		if(isMultiple)
-		{
-			sceneEditor->BeginBatch("Multiple transform");
-		}
-
+        sceneEditor->BeginBatch("Multiple transform");
         for (const auto& item : entities.GetContent())
         {
             if (item.first != nullptr)
@@ -142,11 +135,7 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
                 sceneEditor->Exec(new TransformCommand(item.first, item.first->GetLocalTransform(), zeroTransform));
             }
         }
-
-        if (isMultiple)
-        {
-            sceneEditor->EndBatch();
-        }
+        sceneEditor->EndBatch();
     }
 }
 
@@ -175,22 +164,22 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-	if(NULL != collisionSystem)
-	{
+    if (NULL != collisionSystem)
+    {
 		// current selected entities
-		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
+        SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
         const EntityGroup& selectedEntities = selectionSystem->GetSelection();
 
-        DAVA::Camera *camera = cameraSystem->GetCurCamera();
+        DAVA::Camera* camera = cameraSystem->GetCurCamera();
 
-		// if we are not in modification state, try to find some selected item
+        // if we are not in modification state, try to find some selected item
 		// that have mouse cursor at the top of it
-		if(!inModifState)
-		{
+        if (!inModifState)
+        {
 			// can we start modification???
-			if(ModifCanStartByMouse(selectedEntities))
-			{
-				SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2 *) GetScene(), &selectedEntities);
+            if (ModifCanStartByMouse(selectedEntities))
+            {
+                SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
 
                 if (DAVA::UIEvent::Phase::BEGAN == event->phase)
                 {
@@ -200,8 +189,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                         inModifState = true;
 
                         // select current hood axis as active
-                        if(curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
-						{
+                        if (curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
+                        {
 							SetModifAxis(hoodSystem->GetPassingAxis());
 						}
 
@@ -214,8 +203,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 
 						// check if this is move with copy action
 						int curKeyModifiers = QApplication::keyboardModifiers();
-						if(curKeyModifiers & Qt::ShiftModifier && curMode == ST_MODIF_MOVE)
-						{
+                        if (curKeyModifiers & Qt::ShiftModifier && curMode == ST_MODIF_MOVE)
+                        {
 							cloneState = CLONE_NEED;
 						}
 					}
@@ -223,8 +212,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			}
 			else
 			{
-				SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2 *) GetScene(), NULL);
-			}
+                SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), NULL);
+            }
 		}
 		// or we are already in modification state
 		else
@@ -238,33 +227,33 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 
                 switch (curMode)
                 {
-				case ST_MODIF_MOVE:
-					{
-						DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
-						moveOffset = Move(newPos3d);
-						modified = true;
-					}
-					break;
-				case ST_MODIF_ROTATE:
-					{
-						rotateAngle = Rotate(event->point);
-						modified = true;
-					}
-					break;
-				case ST_MODIF_SCALE:
-					{
-						scaleForce = Scale(event->point);
-						modified = true;
-					}
-					break;
-				default:
+                case ST_MODIF_MOVE:
+                {
+                    DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
+                    moveOffset = Move(newPos3d);
+                    modified = true;
+                }
+                break;
+                case ST_MODIF_ROTATE:
+                {
+                    rotateAngle = Rotate(event->point);
+                    modified = true;
+                }
+                break;
+                case ST_MODIF_SCALE:
+                {
+                    scaleForce = Scale(event->point);
+                    modified = true;
+                }
+                break;
+                default:
 					break;
 				}
 
-				if(modified)
-				{
-					if(cloneState == CLONE_NEED)
-					{
+                if (modified)
+                {
+                    if (cloneState == CLONE_NEED)
+                    {
 						CloneBegin();
 						cloneState = CLONE_DONE;
 					}
@@ -276,7 +265,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     hoodSystem->LockScale(true);
                     hoodSystem->SetModifOffset(moveOffset);
                     hoodSystem->SetModifRotate(rotateAngle);
-					hoodSystem->SetModifScale(scaleForce);
+                    hoodSystem->SetModifScale(scaleForce);
 				}
 			}
 			// phase ended
@@ -288,7 +277,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     {
                         if (cloneState == CLONE_DONE)
                         {
-							CloneEnd();
+                            CloneEnd();
 						}
 						else
 						{
@@ -360,7 +349,7 @@ EntityGroup EntityModificationSystem::BeginModification(const EntityGroup& input
             {
                 etm.inversedParentWorldTransform.Identity();
             }
-		}
+        }
         else
         {
             etm.inversedParentWorldTransform.Identity();
@@ -458,7 +447,7 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
                 hasLocked = true;
                 break;
             }
-		}
+        }
 
         modifCanStart = !hasLocked;
     }
@@ -471,19 +460,19 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 	bool modifCanStart = false;
 
 	// we can start modif only if there is no locked entities
-	if(ModifCanStart(selectedEntities))
-	{
+    if (ModifCanStart(selectedEntities))
+    {
         const bool modificationByGizmoOnly = SettingsManager::GetValue(Settings::Scene_ModificationByGizmoOnly).AsBool();
-        
-		// we can start modification only if mouse is over hood
+
+        // we can start modification only if mouse is over hood
 		// on mouse is over one of currently selected items
-		if(hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
-		{
+        if (hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
+        {
 			// allow starting modification
 			modifCanStart = true;
 		}
-		else if(!modificationByGizmoOnly)
-		{
+        else if (!modificationByGizmoOnly)
+        {
 			// send this ray to collision system and get collision objects
             const EntityGroup::EntityVector& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 
@@ -519,44 +508,34 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
         }
     }
 
-	return modifCanStart;
+    return modifCanStart;
 }
 
 void EntityModificationSystem::ApplyModification()
 {
-	SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
+    SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
-	if(NULL != sceneEditor)
-	{
+    if (NULL != sceneEditor)
+    {
 		bool transformChanged = false;
 		for (size_t i = 0; i < modifEntities.size(); ++i)
 		{
-			if(modifEntities[i].originalTransform != modifEntities[i].entity->GetLocalTransform())
-			{
+            if (modifEntities[i].originalTransform != modifEntities[i].entity->GetLocalTransform())
+            {
 				transformChanged = true;
 				break;
 			}
 		}
 
-		if(transformChanged)
-		{
-			bool isMultiple = (modifEntities.size() > 1);
-
-			if(isMultiple)
+        if (transformChanged)
+        {
+            sceneEditor->BeginBatch("Multiple transform");
+            for (size_t i = 0; i < modifEntities.size(); ++i)
 			{
-				sceneEditor->BeginBatch("Multiple transform");
-			}
-
-			for (size_t i = 0; i < modifEntities.size(); ++i)
-			{
-				sceneEditor->Exec(new TransformCommand(modifEntities[i].entity,	modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform()));
-			}
-
-			if(isMultiple)
-			{
-				sceneEditor->EndBatch();
-			}
-		}
+                sceneEditor->Exec(new TransformCommand(modifEntities[i].entity, modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform()));
+            }
+            sceneEditor->EndBatch();
+        }
 	}
 }
 
@@ -565,9 +544,9 @@ DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(DAVA::Camera *cam
 {
     DAVA::Vector3 ret;
 
-    if(NULL != camera)
+    if (NULL != camera)
     {
-        if(camera->GetIsOrtho())
+        if (camera->GetIsOrtho())
         {
             DAVA::Vector3 dir = cameraSystem->GetPointDirection(pos);
             ret = DAVA::Vector3(dir.x, dir.y, 0);
@@ -578,36 +557,42 @@ DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(DAVA::Camera *cam
             DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
             DAVA::Vector3 camToPointDirection = cameraSystem->GetPointDirection(pos);
 
-            switch(curAxis)
+            switch (curAxis)
             {
-                case ST_AXIS_X:
-                    {
-                        if(crossXY > crossXZ) planeNormal = DAVA::Vector3(0, 0, 1);
-                        else planeNormal = DAVA::Vector3(0, 1, 0);
-                    }
-                    break;
-                case ST_AXIS_Y:
-                    {
-                        if(crossXY > crossYZ) planeNormal = DAVA::Vector3(0, 0, 1);
-                        else planeNormal = DAVA::Vector3(1, 0, 0);
-                    }
-                    break;
-                case ST_AXIS_Z:
-                    {
-                        if(crossXZ > crossYZ) planeNormal = DAVA::Vector3(0, 1, 0);
-                        else planeNormal = DAVA::Vector3(1, 0, 0);
-                    }
-                    break;
-                case ST_AXIS_XZ:
-                    planeNormal = DAVA::Vector3(0, 1, 0);
-                    break;
-                case ST_AXIS_YZ:
-                    planeNormal = DAVA::Vector3(1, 0, 0);
-                    break;
-                case ST_AXIS_XY:
-                default:
+            case ST_AXIS_X:
+            {
+                if (crossXY > crossXZ)
                     planeNormal = DAVA::Vector3(0, 0, 1);
-                    break;
+                else
+                    planeNormal = DAVA::Vector3(0, 1, 0);
+            }
+            break;
+            case ST_AXIS_Y:
+            {
+                if (crossXY > crossYZ)
+                    planeNormal = DAVA::Vector3(0, 0, 1);
+                else
+                    planeNormal = DAVA::Vector3(1, 0, 0);
+            }
+            break;
+            case ST_AXIS_Z:
+            {
+                if (crossXZ > crossYZ)
+                    planeNormal = DAVA::Vector3(0, 1, 0);
+                else
+                    planeNormal = DAVA::Vector3(1, 0, 0);
+            }
+            break;
+            case ST_AXIS_XZ:
+                planeNormal = DAVA::Vector3(0, 1, 0);
+                break;
+            case ST_AXIS_YZ:
+                planeNormal = DAVA::Vector3(1, 0, 0);
+                break;
+            case ST_AXIS_XY:
+            default:
+                planeNormal = DAVA::Vector3(0, 0, 1);
+                break;
             }
 
             DAVA::Plane plane(planeNormal, modifEntitiesCenter);
@@ -617,8 +602,8 @@ DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(DAVA::Camera *cam
             ret = camPosition + (camToPointDirection * distance);
         }
     }
-	
-	return ret;
+
+    return ret;
 }
 
 DAVA::Vector2 EntityModificationSystem::Cam2dProjection(const DAVA::Vector3 &from, const DAVA::Vector3 &to)
@@ -627,13 +612,13 @@ DAVA::Vector2 EntityModificationSystem::Cam2dProjection(const DAVA::Vector3 &fro
 	DAVA::Vector2 axisEnd = cameraSystem->GetScreenPos(to);
 	DAVA::Vector2 ret = axisEnd - axisBegin;
 
-    if(ret.IsZero())
+    if (ret.IsZero())
     {
         ret = DAVA::Vector2(1.0f, 1.0f);
     }
 
     ret.Normalize();
-	return ret;
+    return ret;
 }
 
 DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3 &newPos3d)
@@ -642,8 +627,8 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3 &newPos3d)
 	DAVA::Vector3 modifPosWithLocedAxis = modifStartPos3d;
 	DAVA::Vector3 deltaPos3d = newPos3d - modifStartPos3d;
 
-	switch(curAxis)
-	{
+    switch (curAxis)
+    {
 	case ST_AXIS_X:
 		modifPosWithLocedAxis.x += DAVA::Vector3(1, 0, 0).DotProduct(deltaPos3d);
 		break;
@@ -651,31 +636,32 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3 &newPos3d)
 		modifPosWithLocedAxis.y += DAVA::Vector3(0, 1, 0).DotProduct(deltaPos3d);
 		break;
 	case ST_AXIS_Z:
-        if(!isOrthoModif)
+        if (!isOrthoModif)
         {
             modifPosWithLocedAxis.z += DAVA::Vector3(0, 0, 1).DotProduct(deltaPos3d);
         }
-		break;
+        break;
 	case ST_AXIS_XY:
 		modifPosWithLocedAxis.x = newPos3d.x;
 		modifPosWithLocedAxis.y = newPos3d.y;
 		break;
 	case ST_AXIS_XZ:
-        if(!isOrthoModif)
+        if (!isOrthoModif)
         {
             modifPosWithLocedAxis.x = newPos3d.x;
             modifPosWithLocedAxis.z = newPos3d.z;
         }
-		break;
+        break;
 	case ST_AXIS_YZ:
-        if(!isOrthoModif)
+        if (!isOrthoModif)
         {
             modifPosWithLocedAxis.z = newPos3d.z;
             modifPosWithLocedAxis.y = newPos3d.y;
         }
-		break;
-    default: break;
-	}
+        break;
+    default:
+        break;
+    }
 
 	moveOffset = modifPosWithLocedAxis - modifStartPos3d;
 
@@ -687,8 +673,8 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3 &newPos3d)
 
 		DAVA::Matrix4 newLocalTransform = modifEntities[i].originalTransform * moveModification;
 
-		if(snapToLandscape)
-		{
+        if (snapToLandscape)
+        {
 			newLocalTransform = newLocalTransform * SnapToLandscape(newLocalTransform.GetTranslationVector(), modifEntities[i].originalParentWorldTransform);
 		}
 
@@ -709,8 +695,8 @@ DAVA::float32 EntityModificationSystem::Rotate(const DAVA::Vector2 &newPos2d)
 		rotateModification.Identity();
 		rotateModification.CreateRotation(rotateAround * modifEntities[i].inversedParentWorldTransform, rotateForce);
 
-		switch(modifPivotPoint)
-		{
+        switch (modifPivotPoint)
+        {
 		case ST_PIVOT_ENTITY_CENTER:
 			// move to zero, rotate, move back to original center point
 			rotateModification = (modifEntities[i].moveToZeroPos * rotateModification) * modifEntities[i].moveFromZeroPos;
@@ -737,16 +723,16 @@ DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2 &newPos2d)
 
 	scaleForce = 1.0f - (scaleDir.y / 70.0f);
 
-	if(scaleForce >= 0)
-	{
+    if (scaleForce >= 0)
+    {
 		for (size_t i = 0; i < modifEntities.size(); ++i)
 		{
 			DAVA::Matrix4 scaleModification;
 			scaleModification.Identity();
 			scaleModification.CreateScale(DAVA::Vector3(scaleForce, scaleForce, scaleForce) * modifEntities[i].inversedParentWorldTransform);
 
-			switch(modifPivotPoint)
-			{
+            switch (modifPivotPoint)
+            {
 			case ST_PIVOT_ENTITY_CENTER:
 				// move to zero, rotate, move back to original center point
 				scaleModification = (modifEntities[i].moveToZeroPos * scaleModification) * modifEntities[i].moveFromZeroPos;
@@ -759,8 +745,8 @@ DAVA::float32 EntityModificationSystem::Scale(const DAVA::Vector2 &newPos2d)
 				scaleModification.Identity();
 				break;
 			}
-			
-			modifEntities[i].entity->SetLocalTransform(modifEntities[i].originalTransform * scaleModification);
+
+            modifEntities[i].entity->SetLocalTransform(modifEntities[i].originalTransform * scaleModification);
 		}
 	}
 
@@ -773,15 +759,15 @@ DAVA::Matrix4 EntityModificationSystem::SnapToLandscape(const DAVA::Vector3 &poi
 	ret.Identity();
 
 	DAVA::Landscape *landscape = collisionSystem->GetLandscape();
-	if(NULL != landscape)
-	{
+    if (NULL != landscape)
+    {
 		DAVA::Vector3 resPoint;
 		DAVA::Vector3 realPoint = point * originalParentTransform;
 
         if (landscape->PlacePoint(realPoint, resPoint))
-		{
+        {
             resPoint = resPoint - realPoint;
-			ret.SetTranslationVector(resPoint);
+            ret.SetTranslationVector(resPoint);
 		}
 	}
 
@@ -792,12 +778,12 @@ bool EntityModificationSystem::IsEntityContainRecursive(const DAVA::Entity *enti
 {
 	bool ret = false;
 
-	if(NULL != entity && NULL != child)
-	{
-		for(int i = 0; !ret && i < entity->GetChildrenCount(); ++i)
-		{
-			if(child == entity->GetChild(i))
-			{
+    if (NULL != entity && NULL != child)
+    {
+        for (int i = 0; !ret && i < entity->GetChildrenCount(); ++i)
+        {
+            if (child == entity->GetChild(i))
+            {
 				ret = true;
 			}
 			else
@@ -828,22 +814,21 @@ void EntityModificationSystem::CloneBegin()
                 break;
             }
         }
-        
     }
 
-	if(modifEntities.size() > 0)
-	{
+    if (modifEntities.size() > 0)
+    {
         clonedEntities.reserve(modifEntities.size());
-		for(size_t i = 0; i < modifEntities.size(); ++i)
-		{
-            DAVA::Entity *origEntity = modifEntities[i].entity;
-            
+        for (size_t i = 0; i < modifEntities.size(); ++i)
+        {
+            DAVA::Entity* origEntity = modifEntities[i].entity;
+
             for (auto delegate : delegates)
             {
                 delegate->WillClone(origEntity);
             }
 
-			DAVA::Entity *newEntity = origEntity->Clone();
+            DAVA::Entity *newEntity = origEntity->Clone();
 
             for (auto delegate : delegates)
             {
@@ -852,16 +837,16 @@ void EntityModificationSystem::CloneBegin()
 
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
-            Scene *scene = origEntity->GetScene();
-            if(scene)
+            Scene* scene = origEntity->GetScene();
+            if (scene)
             {
-                StaticOcclusionSystem *sosystem = scene->staticOcclusionSystem;
+                StaticOcclusionSystem* sosystem = scene->staticOcclusionSystem;
                 DVASSERT(sosystem);
-                
+
                 sosystem->InvalidateOcclusionIndicesRecursively(newEntity);
             }
 
-			origEntity->GetParent()->AddNode(newEntity);
+            origEntity->GetParent()->AddNode(newEntity);
 
 			clonedEntities.push_back(newEntity);
 		}
@@ -870,25 +855,25 @@ void EntityModificationSystem::CloneBegin()
 
 void EntityModificationSystem::CloneEnd()
 {
-	if(modifEntities.size() > 0 && clonedEntities.size() == modifEntities.size())
-	{
-		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
-		SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
+    if (modifEntities.size() > 0 && clonedEntities.size() == modifEntities.size())
+    {
+        SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
+        SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
 
 		sceneEditor->BeginBatch("Clone");
 
 		// we just moved original objects. Now we should return them back
 		// to there original positions and move cloned object to the new positions
 		// and only after that perform "add cloned entities to scene" commands
-		for(size_t i = 0; i < modifEntities.size(); ++i)
-		{
+        for (size_t i = 0; i < modifEntities.size(); ++i)
+        {
 			// remember new transform
 			Matrix4 newLocalTransform = modifEntities[i].entity->GetLocalTransform();
 
 			// return original entity to original pos
 			modifEntities[i].entity->SetLocalTransform(modifEntities[i].originalTransform);
-			
-			// move cloned entity to new pos
+
+            // move cloned entity to new pos
 			clonedEntities[i]->SetLocalTransform(newLocalTransform);
 
 			// remove entity from scene
@@ -902,7 +887,7 @@ void EntityModificationSystem::CloneEnd()
                 sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
             }
 
-			// make cloned entiti selected
+            // make cloned entiti selected
 			SafeRelease(clonedEntities[i]);
 		}
 
@@ -918,14 +903,14 @@ void EntityModificationSystem::RemoveEntity(DAVA::Entity * entity)
 	{
 		SetLandscapeSnap(false);
 
-		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
-		SceneSignals::Instance()->EmitSnapToLandscapeChanged(sceneEditor, false);
+        SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
+        SceneSignals::Instance()->EmitSnapToLandscapeChanged(sceneEditor, false);
 	}
 }
 
 void EntityModificationSystem::MovePivotZero(const EntityGroup &entities)
 {
-    if(ModifCanStart(entities))
+    if (ModifCanStart(entities))
     {
         BakeGeometry(entities, BAKE_ZERO_PIVOT);
     }
@@ -933,7 +918,7 @@ void EntityModificationSystem::MovePivotZero(const EntityGroup &entities)
 
 void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
 {
-    if(ModifCanStart(entities))
+    if (ModifCanStart(entities))
     {
         BakeGeometry(entities, BAKE_CENTER_PIVOT);
     }
@@ -941,70 +926,60 @@ void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
 
 void EntityModificationSystem::LockTransform(const EntityGroup &entities, bool lock)
 {
-    SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
+    SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
     if (sceneEditor == nullptr)
     {
         return;
     }
 
-    bool isMultiple = (entities.Size() > 1);
-
-    if (isMultiple)
-    {
-        sceneEditor->BeginBatch("Lock entities");
-    }
-
+    sceneEditor->BeginBatch("Lock entities");
     for (const auto& item : entities.GetContent())
     {
         sceneEditor->Exec(new EntityLockCommand(item.first, lock));
     }
-
-    if (isMultiple)
-    {
-        sceneEditor->EndBatch();
-    }
+    sceneEditor->EndBatch();
 }
 
 void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMode mode)
 {
-	SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
+    SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
-	if(NULL != sceneEditor && entities.Size() == 1)
-	{
+    if (NULL != sceneEditor && entities.Size() == 1)
+    {
         DAVA::Entity* entity = entities.GetFirstEntity();
-        DAVA::RenderObject *ro = GetRenderObject(entity);
+        DAVA::RenderObject* ro = GetRenderObject(entity);
 
-        const char *commandMessage;
-        switch(mode)
+        const char* commandMessage;
+        switch (mode)
         {
-            case BAKE_ZERO_PIVOT:
-                commandMessage = "Move pivot point to zero";
-                break;
-            case BAKE_CENTER_PIVOT:
-                commandMessage = "Move pivot point to center";
-                break;
-            default:
-                DVASSERT(0 && "Unknown bake mode");
-                return;
+        case BAKE_ZERO_PIVOT:
+            commandMessage = "Move pivot point to zero";
+            break;
+        case BAKE_CENTER_PIVOT:
+            commandMessage = "Move pivot point to center";
+            break;
+        default:
+            DVASSERT(0 && "Unknown bake mode");
+            return;
         }
 
-        if(NULL != ro)
+        if (NULL != ro)
         {
-            DAVA::Set<DAVA::Entity *> entityList;
+            DAVA::Set<DAVA::Entity*> entityList;
             SearchEntitiesWithRenderObject(ro, sceneEditor, entityList);
 
-            if(entityList.size() > 0)
+            if (entityList.size() > 0)
             {
                 DAVA::Matrix4 bakeTransform;
 
-                switch(mode)
+                switch (mode)
                 {
-                    case BAKE_ZERO_PIVOT:
-                        bakeTransform = entity->GetLocalTransform();
-                        break;
-                    case BAKE_CENTER_PIVOT:
-                        bakeTransform.SetTranslationVector(-ro->GetBoundingBox().GetCenter());
-                        break;
+                case BAKE_ZERO_PIVOT:
+                    bakeTransform = entity->GetLocalTransform();
+                    break;
+                case BAKE_CENTER_PIVOT:
+                    bakeTransform.SetTranslationVector(-ro->GetBoundingBox().GetCenter());
+                    break;
                 }
 
                 sceneEditor->BeginBatch(commandMessage);
@@ -1019,20 +994,20 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                 // for entities with same render object set new transform
                 // to make them match their previous position
-                DAVA::Set<DAVA::Entity *>::iterator it;
-		        for (it = entityList.begin(); it != entityList.end(); ++it)
+                DAVA::Set<DAVA::Entity*>::iterator it;
+                for (it = entityList.begin(); it != entityList.end(); ++it)
                 {
-                    DAVA::Entity *en = *it;
+                    DAVA::Entity* en = *it;
                     DAVA::Matrix4 origTransform = en->GetLocalTransform();
                     DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
-                    
+
                     sceneEditor->Exec(new TransformCommand(en, origTransform, newTransform));
 
                     // also modify childs transform to make them be at
                     // right position after parent entity changed
-                    for(size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
+                    for (size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
                     {
-                        DAVA::Entity *childEntity = en->GetChild(i);
+                        DAVA::Entity* childEntity = en->GetChild(i);
 
                         DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
                         DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
@@ -1041,26 +1016,26 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
                     }
                 }
 
-		        sceneEditor->EndBatch();
+                sceneEditor->EndBatch();
             }
         }
         // just modify child entities
         else
         {
-            if(entity->GetChildrenCount() > 0)
+            if (entity->GetChildrenCount() > 0)
             {
                 DAVA::Vector3 newPivotPos;
                 DAVA::Matrix4 transform;
-                SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
+                SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
 
-                switch(mode)
+                switch (mode)
                 {
-                    case BAKE_ZERO_PIVOT:
-                        newPivotPos = DAVA::Vector3(0, 0, 0);
-                        break;
-                    case BAKE_CENTER_PIVOT:
-                        newPivotPos = selectionSystem->GetSelectionAABox(entity).GetCenter();
-                        break;
+                case BAKE_ZERO_PIVOT:
+                    newPivotPos = DAVA::Vector3(0, 0, 0);
+                    break;
+                case BAKE_CENTER_PIVOT:
+                    newPivotPos = selectionSystem->GetSelectionAABox(entity).GetCenter();
+                    break;
                 }
 
                 sceneEditor->BeginBatch(commandMessage);
@@ -1071,42 +1046,42 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
-                for(size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
+                for (size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
                 {
-                    DAVA::Entity *childEntity = entity->GetChild(i);
+                    DAVA::Entity* childEntity = entity->GetChild(i);
                     sceneEditor->Exec(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
                 }
 
-		        sceneEditor->EndBatch();
+                sceneEditor->EndBatch();
             }
         }
-	}
+    }
 }
 
 void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject *ro, DAVA::Entity *root, DAVA::Set<DAVA::Entity *> &result)
 {
-    if(NULL != root)
+    if (NULL != root)
     {
         DAVA::int32 count = root->GetChildrenCount();
-        for(DAVA::int32 i = 0; i < count; ++i)
+        for (DAVA::int32 i = 0; i < count; ++i)
         {
-            DAVA::Entity *en = root->GetChild(i);
-            DAVA::RenderObject *enRenderObject = GetRenderObject(en);
+            DAVA::Entity* en = root->GetChild(i);
+            DAVA::RenderObject* enRenderObject = GetRenderObject(en);
 
             bool isSame = false;
-            if(NULL != enRenderObject && ro->GetRenderBatchCount() == enRenderObject->GetRenderBatchCount())
+            if (NULL != enRenderObject && ro->GetRenderBatchCount() == enRenderObject->GetRenderBatchCount())
             {
                 // if renderObjects has same number of render batches we also should
                 // check if polygon groups used inside that render batches are completely identical
-                // but we should deal with the fact, that polygon groups order can differ 
-                for(size_t j = 0; j < enRenderObject->GetRenderBatchCount(); ++j)
+                // but we should deal with the fact, that polygon groups order can differ
+                for (size_t j = 0; j < enRenderObject->GetRenderBatchCount(); ++j)
                 {
                     bool found = false;
-                    DAVA::PolygonGroup *pg = enRenderObject->GetRenderBatch(j)->GetPolygonGroup();
+                    DAVA::PolygonGroup* pg = enRenderObject->GetRenderBatch(j)->GetPolygonGroup();
 
-                    for(size_t k = 0; k < ro->GetRenderBatchCount(); ++k)
+                    for (size_t k = 0; k < ro->GetRenderBatchCount(); ++k)
                     {
-                        if(ro->GetRenderBatch(k)->GetPolygonGroup() == pg)
+                        if (ro->GetRenderBatch(k)->GetPolygonGroup() == pg)
                         {
                             found = true;
                             break;
@@ -1114,18 +1089,18 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
                     }
 
                     isSame = found;
-                    if(!found)
+                    if (!found)
                     {
                         break;
                     }
                 }
             }
 
-            if(isSame)
+            if (isSame)
             {
                 result.insert(en);
             }
-            else if(en->GetChildrenCount() > 0)
+            else if (en->GetChildrenCount() > 0)
             {
                 SearchEntitiesWithRenderObject(ro, en, result);
             }
@@ -1136,43 +1111,31 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
 void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values)
 {
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    if (selection.Size() > 1)
-    {
-        sceneEditor->BeginBatch("Multiple move");
-    }
+    sceneEditor->BeginBatch("Multiple move");
 
     for (const auto& item : selection.GetContent())
     {
         DAVA::Matrix4 origMatrix = item.first->GetLocalTransform();
         DAVA::Vector3 newPos = origMatrix.GetTranslationVector();
 
-        switch (axis)
+        if (axis & ST_AXIS_X)
         {
-        case ST_AXIS_X:
             newPos.x = values.x;
-            break;
-        case ST_AXIS_Y:
-            newPos.y = values.y;
-            break;
-        case ST_AXIS_Z:
-            if (!snapToLandscape)
-            {
-                newPos.z = values.z;
-            }
-            break;
-        default:
-            break;
+        }
+        if (axis & ST_AXIS_Y)
+        {
+            newPos.x = values.y;
+        }
+        if ((axis & ST_AXIS_Z) && !snapToLandscape)
+        {
+            newPos.x = values.z;
         }
 
         DAVA::Matrix4 newMatrix = origMatrix;
         newMatrix.SetTranslationVector(newPos);
         sceneEditor->Exec(new TransformCommand(item.first, origMatrix, newMatrix));
     }
-
-    if (selection.Size() > 1)
-    {
-        sceneEditor->EndBatch();
-    }
+    sceneEditor->EndBatch();
 }
 
 void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
@@ -1182,10 +1145,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
     DAVA::float32 z = DAVA::DegToRad(values.z);
 
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    if (selection.Size() > 1)
-    {
-        sceneEditor->BeginBatch("Multiple rotate");
-    }
+    sceneEditor->BeginBatch("Multiple rotate");
 
     for (const auto& item : selection.GetContent())
     {
@@ -1218,6 +1178,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
                 rotationMatrix.CreateRotation(DAVA::Vector3(0, 0, 1), z - rotate.z);
                 break;
             default:
+                DVASSERT_MSG(0, "Unable to rotate around several axis at once");
                 break;
             }
 
@@ -1228,10 +1189,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
         }
     }
 
-    if (selection.Size() > 1)
-    {
-        sceneEditor->EndBatch();
-    }
+    sceneEditor->EndBatch();
 }
 
 void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
@@ -1250,14 +1208,12 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup&
         scaleValue = values.z;
         break;
     default:
+        DVASSERT_MSG(0, "Scaling must be uniform, unable to scale via several axis");
         break;
     }
 
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    if (selection.Size() > 1)
-    {
-        sceneEditor->BeginBatch("Multiple scale");
-    }
+    sceneEditor->BeginBatch("Multiple scale");
 
     for (const auto& item : selection.GetContent())
     {
@@ -1288,8 +1244,5 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup&
         }
     }
 
-    if (selection.Size() > 1)
-    {
-        sceneEditor->EndBatch();
-    }
+    sceneEditor->EndBatch();
 }

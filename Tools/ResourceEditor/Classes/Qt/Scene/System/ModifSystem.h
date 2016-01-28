@@ -94,7 +94,7 @@ public:
 
     void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values);
     void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
-    void ApplyScaleValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
 protected:
 	SceneCollisionSystem *collisionSystem;

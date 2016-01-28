@@ -59,13 +59,13 @@ public:
 	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
 	QModelIndex indexFromItem(QtPropertyData *data) const;
 
-    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>> && properties, const QModelIndex& parent = QModelIndex());
-    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
-    void MergeProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
-    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex());
+    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
+    void MergeProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent = QModelIndex());
 
-	bool GetEditTracking();
-	void SetEditTracking(bool enabled);
+    bool GetEditTracking();
+    void SetEditTracking(bool enabled);
 
 	void RemoveProperty(const QModelIndex &index);
 	void RemovePropertyAll();
@@ -84,14 +84,14 @@ protected:
 
     friend class QtPropertyData;
 
-	QtPropertyData *root;
-	bool trackEdit;
+    QtPropertyData* root;
+    bool trackEdit;
     bool needRefresh;
 
     class InsertionGuard
     {
     public:
-        InsertionGuard(QtPropertyModel* model_, QtPropertyData * parent, int first, int last);
+        InsertionGuard(QtPropertyModel* model_, QtPropertyData* parent, int first, int last);
         ~InsertionGuard();
 
     private:
@@ -101,16 +101,16 @@ protected:
     class DeletionGuard
     {
     public:
-        DeletionGuard(QtPropertyModel * model_, QtPropertyData * parent, int first, int last);
+        DeletionGuard(QtPropertyModel* model_, QtPropertyData* parent, int first, int last);
         ~DeletionGuard();
 
     private:
-        QtPropertyModel * model;
+        QtPropertyModel* model;
     };
 
-	QtPropertyData *itemFromIndexInternal(const QModelIndex & index) const;
+    QtPropertyData* itemFromIndexInternal(const QModelIndex& index) const;
 
-	void DataChanged(QtPropertyData *data, int reason);
+    void DataChanged(QtPropertyData *data, int reason);
 	void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
 	void DataAdded();
 	void DataAboutToBeRemoved(QtPropertyData *parent, int first, int last);

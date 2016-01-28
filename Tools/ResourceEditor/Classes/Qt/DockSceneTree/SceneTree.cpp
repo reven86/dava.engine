@@ -481,9 +481,9 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             {
                 lockAction->setDisabled(true);
             }
- 			else
- 			{
- 				unlockAction->setDisabled(true);
+            else
+            {
+                unlockAction->setDisabled(true);
  			}
 			
 			// show save as/reload/edit for regular entity
@@ -495,9 +495,9 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             if (NULL != customProp)
             {
                 DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-				if(!ownerRef.IsEmpty())
-				{
-					if(selectionSize == 1)
+                if (!ownerRef.IsEmpty())
+                {
+                    if(selectionSize == 1)
 					{
                         contextMenu.addAction("Edit Model", this, SLOT(EditModel()));
 					}
@@ -935,10 +935,10 @@ void SceneTree::SyncSelectionFromTree()
         SceneEditor2* curScene = treeModel->GetScene();
         if (NULL != curScene)
         {
-			// select items in scene
-			EntityGroup group;
+            // select items in scene
+            EntityGroup group;
 
-			QModelIndexList indexList = selectionModel()->selection().indexes();
+            QModelIndexList indexList = selectionModel()->selection().indexes();
 			for (int i = 0; i < indexList.size(); ++i)
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
@@ -956,8 +956,8 @@ void SceneTree::SyncSelectionFromTree()
             // this should be done until we are inSync mode, to prevent unnecessary updates
             // when signals from selection system will be emitted on next frame
             curScene->selectionSystem->ForceEmitSignals();
-		}
-	}
+        }
+    }
 }
 
 void SceneTree::EmitParticleSignals(const QItemSelection & selected)

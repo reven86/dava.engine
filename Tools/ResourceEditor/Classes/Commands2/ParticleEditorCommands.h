@@ -295,10 +295,10 @@ protected:
     int32 particleOrientation;
     RefPtr<PropertyLine<float32>> life;
     RefPtr<PropertyLine<float32>> lifeVariation;
-    RefPtr< PropertyLine<float32> > number;
-	RefPtr< PropertyLine<float32> > numberVariation;
-	RefPtr< PropertyLine<Vector2> > size;
-	RefPtr< PropertyLine<Vector2> > sizeVariation;
+    RefPtr<PropertyLine<float32>> number;
+    RefPtr<PropertyLine<float32>> numberVariation;
+    RefPtr<PropertyLine<Vector2>> size;
+    RefPtr< PropertyLine<Vector2> > sizeVariation;
 	RefPtr< PropertyLine<Vector2> > sizeOverLife;
 	RefPtr< PropertyLine<float32> > velocity;
 	RefPtr< PropertyLine<float32> > velocityVariation;

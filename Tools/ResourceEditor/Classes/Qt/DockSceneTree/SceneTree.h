@@ -155,11 +155,11 @@ private:
     ParticleLayer* selectedLayer;
     ParticleForce* selectedForce;
 
-    QPointer< SceneTreeModel > treeModel;
-	QPointer< SceneTreeFilteringModel > filteringProxyModel;
-	SceneTreeDelegate *treeDelegate;
+    QPointer<SceneTreeModel> treeModel;
+    QPointer<SceneTreeFilteringModel> filteringProxyModel;
+    SceneTreeDelegate* treeDelegate;
 
-	bool isInSync;
+    bool isInSync;
 
 	LazyUpdater *treeUpdater;
 };

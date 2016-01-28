@@ -180,9 +180,9 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
             {
                 UpdateToolImage();
                 StoreOriginalState();
-                    editingIsEnabled = true;
-				}
-				break;
+                editingIsEnabled = true;
+            }
+            break;
 
         case UIEvent::Phase::DRAG:
             break;

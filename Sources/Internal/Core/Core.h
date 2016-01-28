@@ -235,15 +235,15 @@ public:
 		This function performs message on main thread 
 		\param[in] message message to be performed
 	 */
-	//void PerformMessageOnMainThread(const Message & message, bool waitUntilDone = true);
-	
-	/*
+    //void PerformMessageOnMainThread(const Message & message, bool waitUntilDone = true);
+
+    /*
 		* FOR INTERNAL FRAMEWORK USAGE ONLY * 
 		MUST BE CALLED FROM templates on different OS
 	 */
-	
-	void SystemAppStarted();
-	void SystemProcessFrame();
+
+    void SystemAppStarted();
+    void SystemProcessFrame();
 	void SystemAppFinished();
 
     inline bool IsActive();

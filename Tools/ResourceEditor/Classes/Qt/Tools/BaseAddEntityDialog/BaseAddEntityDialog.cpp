@@ -100,22 +100,22 @@ void BaseAddEntityDialog::PerformResize()
 QtPropertyData* BaseAddEntityDialog::AddInspMemberToEditor(void *object, const DAVA::InspMember * member)
 {
     QtPropertyData* propData = QtPropertyDataIntrospection::CreateMemberData(member->Name(), object, member);
-	propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
-	return propData;
+    propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
+    return propData;
 }
 
 QtPropertyData* BaseAddEntityDialog::AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName)
 {
-    QtPropertyData*  propData = new QtPropertyKeyedArchiveMember(DAVA::FastName(rowName), _archive, _key);
-	propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
-	return propData;
+    QtPropertyData* propData = new QtPropertyKeyedArchiveMember(DAVA::FastName(rowName), _archive, _key);
+    propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
+    return propData;
 }
 
 QtPropertyData* BaseAddEntityDialog::AddMetaObject(void *_object, const DAVA::MetaInfo *_meta, const String& rowName)
 {
-    QtPropertyData*  propData = new QtPropertyDataMetaObject(DAVA::FastName(rowName), _object, _meta);
-	propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
-	return propData;
+    QtPropertyData* propData = new QtPropertyDataMetaObject(DAVA::FastName(rowName), _object, _meta);
+    propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
+    return propData;
 }
 
 void BaseAddEntityDialog::SetEntity(DAVA::Entity* _entity)

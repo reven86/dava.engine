@@ -74,9 +74,9 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
         {
             DAVA::AABBox3 wordBox;
             DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
-            collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
-			// Get sphere radius (size) of debug effect
-			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
+            collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);
+            // Get sphere radius (size) of debug effect
+            DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
         }
     }
@@ -109,9 +109,9 @@ void EditorParticlesSystem::Draw()
         {
         case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
         case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
-			{
-				DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
-			}
+        {
+            DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
+            }
 			break;
 		case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
 			{
@@ -296,12 +296,12 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
         {
             const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
             SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
-																	castedCmd->GetLayer(),
-																	castedCmd->GetForceIndex());
-			break;
-		}
+                                                                    castedCmd->GetLayer(),
+                                                                    castedCmd->GetForceIndex());
+            break;
+        }
 
-		case CMDID_PARTICLE_EFFECT_START_STOP:
+        case CMDID_PARTICLE_EFFECT_START_STOP:
 		{
 			const CommandStartStopParticleEffect* castedCmd = static_cast<const CommandStartStopParticleEffect*>(command);
 			SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,

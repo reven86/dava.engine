@@ -44,11 +44,11 @@
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(const DAVA::FastName & name, DAVA::KeyedArchive *_archive)
+QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* _archive)
     : QtPropertyData(name)
     , archive(_archive)
-	, lastCommand(NULL)
-	, lastAddedType(DAVA::VariantType::TYPE_STRING)
+    , lastCommand(NULL)
+    , lastAddedType(DAVA::VariantType::TYPE_STRING)
 {
 	if(NULL != archive)
 	{
@@ -101,12 +101,12 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 		// at first step of sync we mark (placing to vector) items to remove
 		for(int i = 0; i < ChildCount(); ++i)
 		{
-			QtPropertyData * child = ChildGet(i);
+            QtPropertyData* child = ChildGet(i);
             DVASSERT(child != nullptr);
             dataToRemove.insert(child);
-		}
+        }
 
-		// as second step we go through keyed archive and add new data items,
+        // as second step we go through keyed archive and add new data items,
 		// and remove deleting mark from items that are still in archive
 		if(NULL != archive)
 		{
@@ -119,17 +119,17 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
                 QtPropertyData* childData = ChildGet(fieldName);
 
                 // this key already in items list
-				if(childData != nullptr)
+                if (childData != nullptr)
+                {
+                    // remove deleting mark
+                    dataToRemove.remove(childData);
+                }
+                // create new child data
+                else
 				{
-					// remove deleting mark
-					dataToRemove.remove(childData);
-				}
-				// create new child data
-				else
-				{
-					ChildCreate(fieldName, i->second);
-				}
-			}
+                    ChildCreate(fieldName, i->second);
+                }
+            }
 		}
 
 		// delete all marked items
@@ -143,39 +143,38 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 	return false;
 }
 
-void QtPropertyDataDavaKeyedArcive::ChildCreate(const DAVA::FastName& name, DAVA::VariantType *value)
+void QtPropertyDataDavaKeyedArcive::ChildCreate(const DAVA::FastName& name, DAVA::VariantType* value)
 {
-	QtPropertyData * childData = NULL;
+    QtPropertyData* childData = NULL;
 
-	if(value->type == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
-	{
-		childData = new QtPropertyDataDavaKeyedArcive(name, value->AsKeyedArchive());
-	}
-	else
+    if (value->type == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
+    {
+        childData = new QtPropertyDataDavaKeyedArcive(name, value->AsKeyedArchive());
+    }
+    else
 	{
         childData = new QtPropertyKeyedArchiveMember(name, archive, name.c_str());
-	}
+    }
 
-	ChildAdd(std::unique_ptr<QtPropertyData>(childData));
+    ChildAdd(std::unique_ptr<QtPropertyData>(childData));
 
-	// add optional widget (button) to remove this key
-	QToolButton *remButton = childData->AddButton();
+    // add optional widget (button) to remove this key
+    QToolButton *remButton = childData->AddButton();
     remButton->setIcon(SharedIcon(":/QtIcons/keyminus.png"));
     remButton->setToolTip("Remove keyed archive member");
 	remButton->setIconSize(QSize(12, 12));
 
-    connections.AddConnection(remButton, &QToolButton::clicked, [this, remButton]()
-    {
+    connections.AddConnection(remButton, &QToolButton::clicked, [this, remButton]() {
         RemKeyedArchiveField(remButton);
     });
 }
 
-void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField(QToolButton * button)
+void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField(QToolButton* button)
 {
     DVASSERT(button != nullptr);
-	if(archive != nullptr)
-	{
-		KeyedArchiveItemWidget *w = new KeyedArchiveItemWidget(archive, lastAddedType, GetOWViewport());
+    if (archive != nullptr)
+    {
+        KeyedArchiveItemWidget *w = new KeyedArchiveItemWidget(archive, lastAddedType, GetOWViewport());
         connections.AddConnection(w, &KeyedArchiveItemWidget::ValueReady, [this](const DAVA::String& key, const DAVA::VariantType& value) {
             ForeachMergedItem([&key, &value](QtPropertyData* item) {
                 DVASSERT(dynamic_cast<QtPropertyDataDavaKeyedArcive*>(item) != nullptr);
@@ -191,28 +190,28 @@ void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField(QToolButton * button)
         QRect bRect = button->geometry();
         QPoint bPos = button->mapToGlobal(button->mapFromParent(bRect.topLeft()));
 
-		QRect wRect = w->geometry();
-		QPoint wPos = QPoint(bPos.x() - wRect.width() + bRect.width(), bPos.y() + bRect.height());
+        QRect wRect = w->geometry();
+        QPoint wPos = QPoint(bPos.x() - wRect.width() + bRect.width(), bPos.y() + bRect.height());
 
 		w->move(wPos);
 	}
 }
 
-void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton * button)
+void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton* button)
 {
     DVASSERT(button != nullptr);
-	if(archive != nullptr)
-	{
-		// search for child data with such button
+    if (archive != nullptr)
+    {
+        // search for child data with such button
 		for(int i = 0; i < ChildCount(); ++i)
 		{
 			QtPropertyData *childData = ChildGet(i);
             DVASSERT(childData != nullptr);
-			// search btn thought this child optional widgets
-			for (int j = 0; j < childData->GetButtonsCount(); j++)
-			{
+            // search btn thought this child optional widgets
+            for (int j = 0; j < childData->GetButtonsCount(); j++)
+            {
                 if (button == childData->GetButton(j))
-				{
+                {
                     DAVA::FastName key = childData->GetName();
                     ForeachMergedItem([&key](QtPropertyData* item) {
                         DVASSERT(dynamic_cast<QtPropertyDataDavaKeyedArcive*>(item) != nullptr);
@@ -223,8 +222,8 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton * button)
                     RemKeyedArchiveField(key);
                     break;
                 }
-			}
-		}
+            }
+        }
 	}
 }
 
@@ -262,9 +261,9 @@ void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String
 		}
 
 		lastCommand = new KeyedArchiveAddValueCommand(archive, key, value);
-		ChildCreate(DAVA::FastName(key.c_str()), archive->GetVariant(key));
-		EmitDataChanged(QtPropertyData::VALUE_EDITED);
-	}
+        ChildCreate(DAVA::FastName(key.c_str()), archive->GetVariant(key));
+        EmitDataChanged(QtPropertyData::VALUE_EDITED);
+    }
 }
 
 void* QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
@@ -289,12 +288,11 @@ void* QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
 void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()
 {
     // add optional widget (button) to add new key
-    QToolButton *addButton = AddButton();
+    QToolButton* addButton = AddButton();
     addButton->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
     addButton->setToolTip("Add keyed archive member");
     addButton->setIconSize(QSize(12, 12));
-    connections.AddConnection(addButton, &QToolButton::clicked, [this, addButton]()
-    {
+    connections.AddConnection(addButton, &QToolButton::clicked, [this, addButton]() {
         AddKeyedArchiveField(addButton);
     });
 
@@ -303,10 +301,10 @@ void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()
     QtPropertyData::FinishTreeCreation();
 }
 
-KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive *_arch, int defaultType, QWidget *parent /* = NULL */)
-	: QWidget(parent)
-	, arch(_arch)
-	, presetWidget(NULL)
+KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive* _arch, int defaultType, QWidget* parent /* = NULL */)
+    : QWidget(parent)
+    , arch(_arch)
+    , presetWidget(NULL)
 {
 	QGridLayout *grLayout = new QGridLayout();
 	int delautTypeIndex = 0;

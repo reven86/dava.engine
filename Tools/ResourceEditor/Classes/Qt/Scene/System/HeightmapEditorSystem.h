@@ -91,9 +91,9 @@ protected:
     float32 averageStrength;
     bool inverseDrawingEnabled;
     FilePath toolImagePath;
-	int32 toolImageIndex;
+    int32 toolImageIndex;
 
-	float32 curHeight;
+    float32 curHeight;
 	Vector2 copyPasteFrom;
 	Vector2 copyPasteTo;
 	
@@ -113,9 +113,9 @@ protected:
     Rect GetHeightmapUpdatedRect();
 
     void StoreOriginalHeightmap();
-	void CreateHeightmapUndo();
+    void CreateHeightmapUndo();
 
-	void FinishEditing();
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

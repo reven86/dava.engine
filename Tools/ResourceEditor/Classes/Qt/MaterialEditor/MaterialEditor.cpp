@@ -909,18 +909,18 @@ void MaterialEditor::OnAddRemoveButton()
 void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
 {
     QtPropertyEditor *editor = dynamic_cast<QtPropertyEditor *>(QObject::sender());
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (editor != nullptr && curScene != nullptr)
     {
         QtPropertyData *propData = editor->GetProperty(index);
 
         if (nullptr != propData)
         {
-            DAVA::Vector<Command2 *> commands;
+            DAVA::Vector<Command2*> commands;
             commands.reserve(propData->GetMergedItemCount());
 
             auto commandsAccumulateFn = [&commands](QtPropertyData* item) {
-                Command2 *command = reinterpret_cast<Command2 *>(item->CreateLastCommand());
+                Command2* command = reinterpret_cast<Command2*>(item->CreateLastCommand());
                 if (command != nullptr)
                 {
                     commands.push_back(command);
@@ -935,19 +935,19 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
             bool useBatch = commands.size() > 1;
             if (useBatch)
             {
-                QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
+                QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
                 curScene->BeginBatch("Property multiedit");
             }
 
-            for (Command2 * cmd : commands)
+            for (Command2* cmd : commands)
             {
                 curScene->Exec(cmd);
             }
-            
+
             if (useBatch)
             {
                 curScene->EndBatch();
-                QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
+                QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
 
                 // emulate that only one signal was emited, after batch of commands executed
                 commandExecuted(curScene, commands.back(), true);
