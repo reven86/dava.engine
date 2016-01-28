@@ -2505,17 +2505,18 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
     {
         ui->actionForceFirstLODonLandscape->setChecked(false);
         return;
-	}
+    }
 
     auto landscape = FindLandscape(scene);
     if (landscape == nullptr)
     {
-            return;
-        }
+        ui->actionForceFirstLODonLandscape->setChecked(false);
+        return;
+    }
 
-        landscape->SetForceFirstLod(enabled);
-        scene->visibilityCheckSystem->Recalculate();
-        }
+    landscape->SetForceFirstLod(enabled);
+    scene->visibilityCheckSystem->Recalculate();
+}
 
 void QtMainWindow::OnNotPassableTerrain()
 {
