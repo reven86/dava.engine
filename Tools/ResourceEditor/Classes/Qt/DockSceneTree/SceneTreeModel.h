@@ -132,7 +132,7 @@ class SceneTreeFilteringModel : public QSortFilterProxyModel
 {
 public:
     SceneTreeFilteringModel(SceneTreeModel* treeModel, QObject* parent = NULL);
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
 protected:

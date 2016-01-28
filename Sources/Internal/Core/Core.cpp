@@ -886,4 +886,14 @@ float32 Core::GetScreenScaleFactor() const
 {
     return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
-};
+
+void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
+{
+}
+
+Vector2 Core::GetWindowMinimumSize() const
+{
+    return Vector2();
+}
+
+} // namespace DAVA

@@ -29,13 +29,13 @@
 
 #include "ParticleEffectPropertiesWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QLineEdit>
 #include <QEvent>
 #include <QMenu>
 #include <QPushButton>
 #include <QSpinBox>
-
 
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 
@@ -64,28 +64,28 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
 	mainLayout->addWidget(effectPlaybackSpeed);
 	
 	QHBoxLayout *playerBox = new QHBoxLayout();
-	playBtn = new QPushButton(QIcon(":/QtIcons/play.png"), "");	
-	playBtn->setToolTip("Play");
-	playerBox->addWidget(playBtn);
-	stopBtn = new QPushButton(QIcon(":/QtIcons/stop.png"), "");	
-	stopBtn->setToolTip("Stop");
-	playerBox->addWidget(stopBtn);
-	stopAndDeleteBtn = new QPushButton(QIcon(":/QtIcons/stop_clear.png"), "");	
-	stopAndDeleteBtn->setToolTip("Stop and delete particles");
-	playerBox->addWidget(stopAndDeleteBtn);
-	pauseBtn = new QPushButton(QIcon(":/QtIcons/pause.png"), "");	
-	pauseBtn->setToolTip("Pause");
-	playerBox->addWidget(pauseBtn);
-	restartBtn = new QPushButton(QIcon(":/QtIcons/restart.png"), "");	
-	restartBtn->setToolTip("Restart");
-	playerBox->addWidget(restartBtn);	
-	stepForwardBtn = new QPushButton(QIcon(":/QtIcons/step_forward.png"), "");	
-	stepForwardBtn->setToolTip("Step forward");
-	playerBox->addWidget(stepForwardBtn);	
-	stepForwardFPSSpin = new QSpinBox(this);
-	stepForwardFPSSpin->setMinimum(1);
-	stepForwardFPSSpin->setMaximum(100);
-	stepForwardFPSSpin->setValue(30);
+    playBtn = new QPushButton(SharedIcon(":/QtIcons/play.png"), "");
+    playBtn->setToolTip("Play");
+    playerBox->addWidget(playBtn);
+    stopBtn = new QPushButton(SharedIcon(":/QtIcons/stop.png"), "");
+    stopBtn->setToolTip("Stop");
+    playerBox->addWidget(stopBtn);
+    stopAndDeleteBtn = new QPushButton(SharedIcon(":/QtIcons/stop_clear.png"), "");
+    stopAndDeleteBtn->setToolTip("Stop and delete particles");
+    playerBox->addWidget(stopAndDeleteBtn);
+    pauseBtn = new QPushButton(SharedIcon(":/QtIcons/pause.png"), "");
+    pauseBtn->setToolTip("Pause");
+    playerBox->addWidget(pauseBtn);
+    restartBtn = new QPushButton(SharedIcon(":/QtIcons/restart.png"), "");
+    restartBtn->setToolTip("Restart");
+    playerBox->addWidget(restartBtn);
+    stepForwardBtn = new QPushButton(SharedIcon(":/QtIcons/step_forward.png"), "");
+    stepForwardBtn->setToolTip("Step forward");
+    playerBox->addWidget(stepForwardBtn);
+    stepForwardFPSSpin = new QSpinBox(this);
+    stepForwardFPSSpin->setMinimum(1);
+    stepForwardFPSSpin->setMaximum(100);
+    stepForwardFPSSpin->setValue(30);
 	playerBox->addWidget(stepForwardFPSSpin);
 	playerBox->addWidget(new QLabel("step FPS"));
 	playerBox->addStretch();
@@ -106,17 +106,17 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
 	effectTree->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(effectTree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenuForEffectTree(const QPoint&)));
 	connect(effectTree, SIGNAL(itemDoubleClicked (QTreeWidgetItem*, int)), this, SLOT(OnTreeItemDoubleClck(QTreeWidgetItem*, int)));
-	iconEmitter = QIcon(":/QtIcons/emitter_particle.png");
-	iconLayer = QIcon(":/QtIcons/layer_particle.png");
-	iconForce = QIcon(":/QtIcons/force.png");
-	iconExternal = QIcon(":/QtIcons/external.png");
+    iconEmitter = SharedIcon(":/QtIcons/emitter_particle.png");
+    iconLayer = SharedIcon(":/QtIcons/layer_particle.png");
+    iconForce = SharedIcon(":/QtIcons/force.png");
+    iconExternal = SharedIcon(":/QtIcons/external.png");
 
-	mainLayout->addWidget(new QLabel("Effect Variables"));
-	effectVariables = new QTableWidget(this);
-	effectVariables->setColumnCount(2);
-	effectVariables->setRowCount(0);
-	effectEditDelegate = new VariableEditDelegate(effectVariables, effectVariables);
-	effectVariables->setItemDelegate(effectEditDelegate);
+    mainLayout->addWidget(new QLabel("Effect Variables"));
+    effectVariables = new QTableWidget(this);
+    effectVariables->setColumnCount(2);
+    effectVariables->setRowCount(0);
+    effectEditDelegate = new VariableEditDelegate(effectVariables, effectVariables);
+    effectVariables->setItemDelegate(effectEditDelegate);
 	mainLayout->addWidget(effectVariables);
 	connect(effectVariables, SIGNAL(cellChanged(int, int)), this, SLOT(OnVariableValueChanged(int, int)));
 

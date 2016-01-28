@@ -32,7 +32,6 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Commands2/VisibilityToolActions.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
@@ -42,6 +41,7 @@
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 // framework
+#include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -50,8 +50,8 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
-#include "Scene3D/Entity.h"
 #include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 
 
 #include <QShortcut>
@@ -114,9 +114,6 @@ SceneEditor2::SceneEditor2()
     customColorsSystem = new CustomColorsSystem(this);
     AddSystem(customColorsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-    visibilityToolSystem = new VisibilityToolSystem(this);
-    AddSystem(visibilityToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
-
     rulerToolSystem = new RulerToolSystem(this);
     AddSystem(rulerToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
@@ -159,6 +156,9 @@ SceneEditor2::SceneEditor2()
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
+    visibilityCheckSystem = new VisibilityCheckSystem(this);
+    AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+
     float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
     clearColor[3] = 1.f;
@@ -181,9 +181,12 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
     
     if(ret)
     {
+        for (int32 i = 0, e = GetScene()->GetChildrenCount(); i < e; ++i)
+        {
+            structureSystem->CheckAndMarkSolid(GetScene()->GetChild(i));
+        }
         curScenePath = path;
 		isLoaded = true;
-        
 		commandStack.SetClean(true);
     }
 
@@ -210,13 +213,13 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
     }
 
     DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
-    if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
-	{
-		curScenePath = path;
-		isLoaded = true;
+    if (DAVA::SceneFileV2::ERROR_NO_ERROR == err)
+    {
+        curScenePath = path;
+        isLoaded = true;
 
-		// mark current position in command stack as clean
-		wasChanged = false;
+        // mark current position in command stack as clean
+        wasChanged = false;
 		commandStack.SetClean(true);
 	}
 
@@ -413,13 +416,13 @@ void SceneEditor2::Draw()
         if (collisionSystem)
             collisionSystem->Draw();
 
-		modifSystem->Draw();
+        modifSystem->Draw();
 
-		if(structureSystem)
-			structureSystem->Draw();
-	}
- 
-	tilemaskEditorSystem->Draw();
+        if (structureSystem)
+            structureSystem->Draw();
+    }
+
+    tilemaskEditorSystem->Draw();
     //VI: restore 3d camera state
     Setup3DDrawing();
 
@@ -429,12 +432,13 @@ void SceneEditor2::Draw()
 		debugDrawSystem->Draw();
         wayEditSystem->Draw();
         pathSystem->Draw();
+        visibilityCheckSystem->Draw();
 
-		// should be last
-		selectionSystem->Draw();
-		hoodSystem->Draw();
-		textDrawSystem->Draw();
-	}
+        // should be last
+        selectionSystem->Draw();
+        hoodSystem->Draw();
+        textDrawSystem->Draw();
+    }
 }
 
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
@@ -513,18 +517,13 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 	{
 		Exec(new ActionDisableCustomColors(this, saveChanges));
 	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
-	{
-		Exec(new ActionDisableVisibilityTool(this));
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
-	{
-		Exec(new ActionDisableHeightmapEditor(this));
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+
+    if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+    {
+        Exec(new ActionDisableHeightmapEditor(this));
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
 	{
 		Exec(new ActionDisableTilemaskEditor(this));
 	}
@@ -548,18 +547,13 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 	{
 		res |= customColorsSystem->IsLandscapeEditingEnabled();
 	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
-	{
-		res |= visibilityToolSystem->IsLandscapeEditingEnabled();
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
-	{
-		res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
-	}
-	
-	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+
+    if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+    {
+        res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
 	{
 		res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
 	}
@@ -584,11 +578,6 @@ int32 SceneEditor2::GetEnabledTools()
 	if (customColorsSystem->IsLandscapeEditingEnabled())
 	{
 		toolFlags |= LANDSCAPE_TOOL_CUSTOM_COLOR;
-	}
-	
-	if (visibilityToolSystem->IsLandscapeEditingEnabled())
-	{
-		toolFlags |= LANDSCAPE_TOOL_VISIBILITY;
 	}
 	
 	if (heightmapEditorSystem->IsLandscapeEditingEnabled())
@@ -680,7 +669,12 @@ void SceneEditor2::RemoveSystems()
         RemoveSystem(materialSystem);
         SafeDelete(materialSystem);
     }
-	
+
+    if (visibilityCheckSystem)
+    {
+        RemoveSystem(visibilityCheckSystem);
+        SafeDelete(visibilityCheckSystem);
+    }
 }
 
 void SceneEditor2::MarkAsChanged()

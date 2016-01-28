@@ -33,7 +33,6 @@
 
 #include "LandscapeEditorPanels/CustomColorsPanel.h"
 #include "LandscapeEditorPanels/RulerToolPanel.h"
-#include "LandscapeEditorPanels/VisibilityToolPanel.h"
 #include "LandscapeEditorPanels/TilemaskEditorPanel.h"
 #include "LandscapeEditorPanels/HeightmapEditorPanel.h"
 
@@ -47,7 +46,6 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 ,	currentPanel(nullptr)
 ,   customColorsPanel(nullptr)
 ,   rulerToolPanel(nullptr)
-,   visibilityToolPanel(nullptr)
 ,   tilemaskEditorPanel(nullptr)
 ,   heightmapEditorPanel(nullptr)
 {
@@ -58,11 +56,10 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 
 void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 {
-    DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel);
+    DVASSERT(!customColorsPanel && !rulerToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel);
 
     customColorsPanel = new CustomColorsPanel();
     rulerToolPanel = new RulerToolPanel();
-    visibilityToolPanel = new VisibilityToolPanel();
     tilemaskEditorPanel = new TilemaskEditorPanel();
     heightmapEditorPanel = new HeightmapEditorPanel();
 }
@@ -71,7 +68,6 @@ LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
 {
 	SafeDelete(customColorsPanel);
 	SafeDelete(rulerToolPanel);
-	SafeDelete(visibilityToolPanel);
 	SafeDelete(tilemaskEditorPanel);
 	SafeDelete(heightmapEditorPanel);
 }
@@ -89,8 +85,6 @@ void LandscapeEditorControlsPlaceholder::ConnectToSignals()
 	connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
 	connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
 
-	connect(SceneSignals::Instance(), SIGNAL(VisibilityToolToggled(SceneEditor2*)),
-			this, SLOT(EditorToggled(SceneEditor2*)));
 	connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)),
 			this, SLOT(EditorToggled(SceneEditor2*)));
 	connect(SceneSignals::Instance(), SIGNAL(HeightmapEditorToggled(SceneEditor2*)),
@@ -176,10 +170,6 @@ void LandscapeEditorControlsPlaceholder::UpdatePanels()
 	else if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
 	{
 		SetPanel(tilemaskEditorPanel);
-	}
-	else if (tools & SceneEditor2::LANDSCAPE_TOOL_VISIBILITY)
-	{
-		SetPanel(visibilityToolPanel);
 	}
 }
 

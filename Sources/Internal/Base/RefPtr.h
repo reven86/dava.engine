@@ -73,12 +73,12 @@ public:
     template <class Other>
     RefPtr(const RefPtr<Other>& rp)
     {
-		_ptr = rp.Get();
-		
-		SafeRetain(_ptr);
-	}
-	
-	T * Get() const
+        _ptr = rp.Get();
+
+        SafeRetain(_ptr);
+    }
+
+    T * Get() const
 	{
 		return _ptr;
 	}

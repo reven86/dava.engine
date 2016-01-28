@@ -74,8 +74,8 @@ public:
     void SetDrawingType(eHeightmapDrawType type);
     eHeightmapDrawType GetDrawingType();
 
-	void SetDropperHeight(float32 height);
-	float32 GetDropperHeight();
+    void SetDropperHeight(float32 height);
+    float32 GetDropperHeight();
 
 protected:
     
@@ -88,12 +88,12 @@ protected:
 
     eHeightmapDrawType drawingType;
     float32 strength;
-	float32 averageStrength;
-	bool inverseDrawingEnabled;
-	FilePath toolImagePath;
-	int32 toolImageIndex;
+    float32 averageStrength;
+    bool inverseDrawingEnabled;
+    FilePath toolImagePath;
+    int32 toolImageIndex;
 
-	float32 curHeight;
+    float32 curHeight;
 	Vector2 copyPasteFrom;
 	Vector2 copyPasteTo;
 	
@@ -109,13 +109,13 @@ protected:
     void UpdateBrushTool(float32 timeElapsed);
 
     void AddRectToAccumulator(Rect& accumulator, const Rect& rect);
-	void ResetAccumulatorRect(Rect& accumulator);
-	Rect GetHeightmapUpdatedRect();
-	
-	void StoreOriginalHeightmap();
-	void CreateHeightmapUndo();
+    void ResetAccumulatorRect(Rect& accumulator);
+    Rect GetHeightmapUpdatedRect();
 
-	void FinishEditing();
+    void StoreOriginalHeightmap();
+    void CreateHeightmapUndo();
+
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */
