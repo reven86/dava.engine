@@ -40,8 +40,12 @@ public:
     LandscapeToolsToggleCommand(int identifier, SceneEditor2* sceneEditor);
     DAVA::Entity* GetEntity() const override;
 
+    void SaveEnabledToolsState();
+    void ApplySavedState();
+
 protected:
     SceneEditor2* sceneEditor = nullptr;
+    DAVA::int32 enabledTools = 0;
 };
 
 template <typename ForwardCommand>

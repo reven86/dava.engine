@@ -28,9 +28,81 @@
 
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Scene/SceneEditor2.h"
-#include "Main/QtUtils.h"
 #include "Qt/Scene/SceneSignals.h"
+#include "Qt/Scene/System/LandscapeEditorDrawSystem/CustomColorsProxy.h"
+#include "Main/QtUtils.h"
 
+namespace LTTCLocal
+{
+template <typename System, typename CheckFunction, typename EnableFunction>
+bool TryEnableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system, DAVA::uint32 disableFlags,
+                            CheckFunction check, EnableFunction enable)
+{
+    if (editor == nullptr)
+        return false;
+
+    if (((editor->*system)->*check)())
+        return false;
+
+    editor->DisableToolsInstantly(disableFlags);
+    if (editor->IsToolsEnabled(disableFlags))
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+        return false;
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = ((editor->*system)->*enable)();
+    if (enablingError == LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        editor->foliageSystem->SetFoliageVisible(false);
+    }
+    else
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+        return false;
+    }
+
+    return true;
+}
+
+template <typename System, typename CheckFunction, typename DisableFunction, typename... Arg>
+bool TryDisableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system, const String& error, CheckFunction check, DisableFunction disable, Arg... arg)
+{
+    if (editor == nullptr)
+        return false;
+
+    if (((editor->*system)->*check)())
+    {
+        if (((editor->*system)->*disable)(arg...))
+        {
+            editor->foliageSystem->SetFoliageVisible(true);
+        }
+        else
+        {
+            ShowErrorDialog(error);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+template <class System>
+bool TryEnable(SceneEditor2* editor, System* SceneEditor2::*system, DAVA::uint32 disableFlags)
+{
+    return TryEnableWithFunctions(editor, system, disableFlags, &System::IsLandscapeEditingEnabled, &System::EnableLandscapeEditing);
+}
+
+template <class System, typename... Arg>
+bool TryDisable(SceneEditor2* editor, System* SceneEditor2::*system, const String& error, Arg... arg)
+{
+    return TryDisableWithFunctions(editor, system, error, &System::IsLandscapeEditingEnabled, &System::DisableLandscapeEdititing, arg...);
+}
+}
+
+/*
+ * Common
+ */
 LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEditor2* _sceneEditor)
     : Command2(identifier)
     , sceneEditor(_sceneEditor)
@@ -40,6 +112,19 @@ LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEd
 DAVA::Entity* LandscapeToolsToggleCommand::GetEntity() const
 {
     return sceneEditor;
+}
+
+void LandscapeToolsToggleCommand::SaveEnabledToolsState()
+{
+    if (sceneEditor != nullptr)
+    {
+        enabledTools = sceneEditor->GetEnabledTools();
+    }
+}
+
+void LandscapeToolsToggleCommand::ApplySavedState()
+{
+    sceneEditor->EnableToolsInstantly(enabledTools);
 }
 
 /*
@@ -52,63 +137,16 @@ EnableRulerToolCommand::EnableRulerToolCommand(SceneEditor2* forSceneEditor)
 
 void EnableRulerToolCommand::Redo()
 {
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool enabled = sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->rulerToolSystem->EnableLandscapeEditing();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-
-    if (success && (LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError))
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
-    }
+    SaveEnabledToolsState();
+    LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::rulerToolSystem, SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
     SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
 }
 
 void EnableRulerToolCommand::Undo()
 {
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool disabled = !sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled();
-    if (disabled)
-    {
-        return;
-    }
-
-    disabled = sceneEditor->rulerToolSystem->DisableLandscapeEdititing();
-    if (!disabled)
-    {
-        ShowErrorDialog(ResourceEditor::RULER_TOOL_DISABLE_ERROR);
-    }
-
-    if (disabled)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(true);
-    }
+    LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::rulerToolSystem, ResourceEditor::RULER_TOOL_DISABLE_ERROR);
+    ApplySavedState();
 
     SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
 }
@@ -123,124 +161,18 @@ EnableTilemaskEditorCommand::EnableTilemaskEditorCommand(SceneEditor2* forSceneE
 
 void EnableTilemaskEditorCommand::Redo()
 {
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool enabled = sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    bool toolEnabled = sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-    if (toolEnabled)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->tilemaskEditorSystem->EnableLandscapeEditing();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-
-    if (!toolEnabled && (LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError))
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
-    }
+    SaveEnabledToolsState();
+    LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::tilemaskEditorSystem, SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
     SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
 }
 
 void EnableTilemaskEditorCommand::Undo()
 {
-    if ((sceneEditor == nullptr) || !sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
-    {
-        return;
-    }
-
-    if (sceneEditor->tilemaskEditorSystem->DisableLandscapeEdititing())
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(true);
-    }
-    else
-    {
-        ShowErrorDialog(ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
-    }
+    LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::tilemaskEditorSystem, ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
+    ApplySavedState();
 
     SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
-}
-
-/*
- * Not passable
- */
-
-EnableNotPassableCommand::EnableNotPassableCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_NOT_PASSABLE_TERRAIN_ENABLE, forSceneEditor)
-{
-}
-
-void EnableNotPassableCommand::Redo()
-{
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool enabled = sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR);
-
-    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL &
-                                                ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR);
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->landscapeEditorDrawSystem->EnableNotPassableTerrain();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-
-    if (success &&
-        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
-    }
-
-    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
-}
-
-void EnableNotPassableCommand::Undo()
-{
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool disabled = !sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
-    if (disabled)
-    {
-        return;
-    }
-
-    sceneEditor->landscapeEditorDrawSystem->DisableNotPassableTerrain();
-    if (!disabled && !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(true);
-    }
-
-    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
 }
 
 /*
@@ -253,69 +185,19 @@ EnableHeightmapEditorCommand::EnableHeightmapEditorCommand(SceneEditor2* forScen
 
 void EnableHeightmapEditorCommand::Redo()
 {
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool enabled = sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
-
-    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
-
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->heightmapEditorSystem->EnableLandscapeEditing();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-
-    if (success &&
-        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
-    }
-
+    SaveEnabledToolsState();
+    LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::heightmapEditorSystem,
+                         SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
     SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
 }
 
 void EnableHeightmapEditorCommand::Undo()
 {
-    if (sceneEditor == nullptr)
+    if (LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::heightmapEditorSystem, ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR))
     {
-        return;
-    }
-
-    bool disabled = !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
-    if (disabled)
-    {
-        return;
-    }
-
-    disabled = sceneEditor->heightmapEditorSystem->DisableLandscapeEdititing();
-    if (!disabled)
-    {
-        ShowErrorDialog(ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR);
-    }
-
-    if (disabled)
-    {
-        if (!sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
-        {
-            sceneEditor->foliageSystem->SetFoliageVisible(true);
-        }
-
         sceneEditor->foliageSystem->SyncFoliageWithLandscape();
     }
+    ApplySavedState();
 
     SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
 }
@@ -332,42 +214,14 @@ EnableCustomColorsCommand::EnableCustomColorsCommand(SceneEditor2* forSceneEdito
 
 void EnableCustomColorsCommand::Redo()
 {
-    if (sceneEditor == nullptr)
+    SaveEnabledToolsState();
+    if (LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::customColorsSystem, SceneEditor2::LANDSCAPE_TOOLS_ALL))
     {
-        return;
-    }
-
-    bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
-    if (enabled)
-    {
-        return;
-    }
-
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-    }
-
-    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->customColorsSystem->EnableLandscapeEditing();
-    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-    {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-    }
-    else
-    {
-        if (!sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->IsTextureLoaded())
+        auto drawSystem = sceneEditor->landscapeEditorDrawSystem;
+        if (drawSystem->GetCustomColorsProxy()->IsTextureLoaded() == false)
         {
             ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
-            sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->ResetLoadedState();
-        }
-
-        if (success &&
-            LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
-        {
-            sceneEditor->foliageSystem->SetFoliageVisible(false);
+            drawSystem->GetCustomColorsProxy()->ResetLoadedState();
         }
     }
 
@@ -376,27 +230,39 @@ void EnableCustomColorsCommand::Redo()
 
 void EnableCustomColorsCommand::Undo()
 {
-    if (sceneEditor == nullptr)
-    {
-        return;
-    }
-
-    bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
-    if (disabled)
-    {
-        return;
-    }
-
-    bool success = sceneEditor->customColorsSystem->DisableLandscapeEdititing(saveChanges);
-    if (!success)
-    {
-        ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
-    }
-
-    if (success)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(true);
-    }
+    LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::customColorsSystem, ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR, false);
+    ApplySavedState();
 
     SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
+}
+
+/*
+ * Not passable - special case
+ */
+
+EnableNotPassableCommand::EnableNotPassableCommand(SceneEditor2* forSceneEditor)
+    : LandscapeToolsToggleCommand(CMDID_NOT_PASSABLE_TERRAIN_ENABLE, forSceneEditor)
+{
+}
+
+void EnableNotPassableCommand::Redo()
+{
+    SaveEnabledToolsState();
+    LTTCLocal::TryEnableWithFunctions(sceneEditor, &SceneEditor2::landscapeEditorDrawSystem,
+                                      SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR,
+                                      &LandscapeEditorDrawSystem::IsNotPassableTerrainEnabled,
+                                      &LandscapeEditorDrawSystem::EnableNotPassableTerrain);
+
+    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
+}
+
+void EnableNotPassableCommand::Undo()
+{
+    LTTCLocal::TryDisableWithFunctions(sceneEditor, &SceneEditor2::landscapeEditorDrawSystem,
+                                       ResourceEditor::NOT_PASSABLE_TERRAIN_DISABLE_ERROR,
+                                       &LandscapeEditorDrawSystem::IsNotPassableTerrainEnabled,
+                                       &LandscapeEditorDrawSystem::DisableNotPassableTerrain);
+    ApplySavedState();
+
+    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
 }

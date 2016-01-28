@@ -165,7 +165,8 @@ public:
 
     const RenderStats& GetRenderStats() const;
 
-    void DisableTools(int32 toolFlags, bool saveChanges = true);
+    void EnableToolsInstantly(int32 toolFlags);
+    void DisableToolsInstantly(int32 toolFlags, bool saveChanges = true);
     bool IsToolsEnabled(int32 toolFlags);
     int32 GetEnabledTools();
 

@@ -510,7 +510,35 @@ const RenderStats& SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
-void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
+void SceneEditor2::EnableToolsInstantly(int32 toolFlags)
+{
+    if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
+        EnableCustomColorsCommand(this, true).Redo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+    {
+        EnableHeightmapEditorCommand(this).Redo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+    {
+        EnableTilemaskEditorCommand(this).Redo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_RULER)
+    {
+        EnableRulerToolCommand(this).Redo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+    {
+        EnableNotPassableCommand(this).Redo();
+    }
+}
+
+void SceneEditor2::DisableToolsInstantly(int32 toolFlags, bool saveChanges /*= true*/)
 {
 	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR )
 	{
