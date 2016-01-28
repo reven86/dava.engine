@@ -37,8 +37,7 @@
 
 #include "Qt/Main/mainwindow.h"
 #include "Project/ProjectManager.h"
-#include "Commands2/PaintHeightDelta.h"
-
+#include "Tools/HeightDeltaTool/PaintHeightDelta.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageFormatInterface.h"

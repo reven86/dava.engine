@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __PAINT_HEIGHT_DELTA_ACTION_H__
-#define __PAINT_HEIGHT_DELTA_ACTION_H__
+#ifndef __PAINT_HEIGHT_DELTA_H__
+#define __PAINT_HEIGHT_DELTA_H__
 
 #include "DAVAEngine.h"
 

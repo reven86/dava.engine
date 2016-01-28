@@ -26,7 +26,7 @@
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	=====================================================================================*/
 
-#include "Commands2/PaintHeightDelta.h"
+#include "Classes/Qt/Tools/HeightDeltaTool/PaintHeightDelta.h"
 
 namespace PaintHeightDelta
 {
