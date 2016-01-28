@@ -42,6 +42,35 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 
+/*
+     +-----------+                +------+
+     |ObjCWrapper+----------------+IField|
+     +-----+-----+                +----+-+
+           |                 +-----^   ^
+           |                 |         |
+           |                 |         |
+           |                 |         |
+           |         +-------+------+  |                    +-----------------+
+           |         |MultilineField+-----------------------+MultilineDelegate|
+           |         +--------------+  |                    +-----------------+
+           |                           |
+           |                           |
+           |                           |
+           |         +-----------------+-------+              +---------------------------------+
+           |         |SingleLineOrPasswordField+--------------+CustomTextField,                 |
+           |         +-------------------------+              |CustomDelegate,                  |
+           |                                                  |CustomTextFieldFormatter,        |
+           |                                                  |RSVerticallyCenteredTextFieldCell|
+           |                                                  +---------------------------------+
+           |
+           |
+           |
++----------+----------+
+|TextFieldPlatformImpl|
++---------------------+
+
+*/
+
 // objective C declaration may appeared only in global scope
 @interface MultilineDelegate : NSObject<NSTextViewDelegate>
 {
@@ -250,6 +279,7 @@ public:
             delegate->OnKeyboardShown(emptyRect);
         }
     }
+
     void CloseKeyboard() override
     {
         [nsTextView resignFirstResponder];
@@ -262,6 +292,7 @@ public:
         size_t strSize = std::strlen(cstr);
         UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
     }
+
     void SetText(const WideString& string) override
     {
         NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
@@ -269,6 +300,7 @@ public:
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextView setString:text];
     }
+
     void UpdateRect(const Rect& rectSrc) override
     {
         if (currentRect != rectSrc)
@@ -294,6 +326,7 @@ public:
 
         [nsTextView setInsertionPointColor:nsColor];
     }
+
     void SetFontSize(float virtualFontSize) override
     {
         currentFontSize = virtualFontSize;
@@ -340,15 +373,18 @@ public:
             [nsTextView setAlignment:NSNaturalTextAlignment];
         }
     }
+
     DAVA::int32 GetTextAlign() override
     {
         return alignment;
     }
+
     void SetTextUseRtlAlign(bool useRtlAlign_) override
     {
         useRtlAlign = useRtlAlign_;
         SetTextAlign(alignment);
     }
+
     bool GetTextUseRtlAlign() const override
     {
         return useRtlAlign;
@@ -358,6 +394,7 @@ public:
     {
         [nsScrollView setHidden:!value];
     }
+
     void ShowField() override
     {
         // we always on screen
@@ -377,10 +414,12 @@ public:
     {
         // not supported implement on client in delegate
     }
+
     void SetAutoCorrectionType(DAVA::int32 value) override
     {
         // not supported implement on client in delegate
     }
+
     void SetSpellCheckingType(DAVA::int32 value) override
     {
         // not supported for NSTextField
@@ -388,18 +427,22 @@ public:
         // setContinuousSpellCheckingEnabled:YES
         // but does we really need it?
     }
+
     void SetKeyboardAppearanceType(DAVA::int32 value) override
     {
         // not aplicable on mac os with hardware keyboard
     }
+
     void SetKeyboardType(DAVA::int32 value) override
     {
         // not aplicable on mac os with hardware keyboard
     }
+
     void SetReturnKeyType(DAVA::int32 value) override
     {
         // not aplicable on mac os with hardware keyboard
     }
+
     void SetEnableReturnKeyAutomatically(bool value) override
     {
         // not aplicable on mac os with hardware keyboard
@@ -411,6 +454,7 @@ public:
         NSInteger insertionPoint = [[[nsTextView selectedRanges] objectAtIndex:0] rangeValue].location;
         return insertionPoint;
     }
+
     void SetCursorPos(uint32 pos) override
     {
         [nsTextView setSelectedRange:NSMakeRange(pos, 0)];
@@ -421,6 +465,7 @@ public:
         multiline = value;
         DVASSERT(multiline);
     }
+
     bool IsMultiline() const override
     {
         return multiline;
@@ -431,6 +476,7 @@ public:
         DVASSERT(!value);
         password = value;
     }
+
     bool IsPassword() const
     {
         return password;
@@ -451,6 +497,7 @@ public:
             Logger::FrameworkDebug("UITextField::SetRenderTotexture not implemented on macos");
         }
     }
+
     bool IsRenderToTexture() const override
     {
         return false;
@@ -534,6 +581,7 @@ public:
             delegate->OnKeyboardShown(emptyRect);
         }
     }
+
     void CloseKeyboard() override
     {
         [nsTextField resignFirstResponder];
@@ -546,6 +594,7 @@ public:
         size_t strSize = std::strlen(cstr);
         UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
     }
+
     void SetText(const WideString& string) override
     {
         NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
@@ -553,6 +602,7 @@ public:
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
     }
+
     void UpdateRect(const Rect& rectSrc) override
     {
         if (currentRect != rectSrc)
@@ -580,6 +630,7 @@ public:
                                                                      forObject:nsTextField];
         fieldEditor.insertionPointColor = nsColor;
     }
+
     void SetFontSize(float virtualFontSize) override
     {
         currentFontSize = virtualFontSize;
@@ -626,15 +677,18 @@ public:
             [nsTextField setAlignment:NSNaturalTextAlignment];
         }
     }
+
     DAVA::int32 GetTextAlign() override
     {
         return alignment;
     }
+
     void SetTextUseRtlAlign(bool useRtlAlign_) override
     {
         useRtlAlign = useRtlAlign_;
         SetTextAlign(alignment);
     }
+
     bool GetTextUseRtlAlign() const override
     {
         return useRtlAlign;
@@ -644,10 +698,12 @@ public:
     {
         [nsTextField setHidden:!value];
     }
+
     void ShowField() override
     {
         // we always on screen
     }
+
     void HideField() override
     {
         // we always on screen
@@ -663,10 +719,12 @@ public:
     {
         // not supported implement on client in delegate
     }
+
     void SetAutoCorrectionType(DAVA::int32 value) override
     {
         // not supported implement on client in delegate
     }
+
     void SetSpellCheckingType(DAVA::int32 value) override
     {
         // not supported for NSTextField
@@ -674,6 +732,7 @@ public:
         // setContinuousSpellCheckingEnabled:YES
         // but does we really need it?
     }
+
     void SetKeyboardAppearanceType(DAVA::int32 value) override
     {
         // not aplicable on mac os with hardware keyboard
@@ -682,10 +741,12 @@ public:
     {
         // not aplicable on mac os with hardware keyboard
     }
+
     void SetReturnKeyType(DAVA::int32 value) override
     {
         // not aplicable on mac os with hardware keyboard
     }
+
     void SetEnableReturnKeyAutomatically(bool value) override
     {
         // not aplicable on mac os with hardware keyboard
@@ -703,6 +764,7 @@ public:
         }
         return cursorPos;
     }
+
     void SetCursorPos(uint32 pos) override
     {
         if ([nsTextField isEditable])
@@ -721,6 +783,7 @@ public:
         [nsTextField.cell setWraps:(!multiline)];
         [nsTextField.cell setScrollable:(!multiline)];
     }
+
     bool IsMultiline() const override
     {
         return multiline;
@@ -775,6 +838,7 @@ public:
             password = value;
         }
     }
+
     bool IsPassword() const
     {
         return password;
@@ -795,6 +859,7 @@ public:
             Logger::FrameworkDebug("UITextField::SetRenderTotexture not implemented on macos");
         }
     }
+
     bool IsRenderToTexture() const override
     {
         return false;
@@ -861,6 +926,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
     : objcWrapper{ *(new ObjCWrapper(tf)) }
 {
 }
+
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
     ObjCWrapper* ptr = &objcWrapper;
@@ -872,18 +938,22 @@ void TextFieldPlatformImpl::OpenKeyboard()
 {
     objcWrapper->OpenKeyboard();
 }
+
 void TextFieldPlatformImpl::CloseKeyboard()
 {
     objcWrapper->CloseKeyboard();
 }
+
 void TextFieldPlatformImpl::GetText(WideString& string) const
 {
     objcWrapper->GetText(string);
 }
+
 void TextFieldPlatformImpl::SetText(const WideString& string)
 {
     objcWrapper->SetText(string);
 }
+
 void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
     objcWrapper->UpdateRect(rect);
@@ -893,6 +963,7 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 {
     objcWrapper->SetTextColor(color);
 }
+
 void TextFieldPlatformImpl::SetFontSize(float size)
 {
     objcWrapper->SetFontSize(size);
@@ -902,26 +973,32 @@ void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
 {
     objcWrapper->SetTextAlign(align);
 }
+
 DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
 {
     return objcWrapper->GetTextAlign();
 }
+
 void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 {
     objcWrapper->SetTextUseRtlAlign(useRtlAlign);
 }
+
 bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
     return objcWrapper->GetTextUseRtlAlign();
 }
+
 void TextFieldPlatformImpl::SetVisible(bool value)
 {
     objcWrapper->SetVisible(value);
 }
+
 void TextFieldPlatformImpl::TextFieldPlatformImpl::ShowField()
 {
     objcWrapper->ShowField();
 }
+
 void TextFieldPlatformImpl::HideField()
 {
     objcWrapper->HideField();
@@ -942,26 +1019,32 @@ void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
 {
     objcWrapper->SetAutoCapitalizationType(value);
 }
+
 void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
 {
     objcWrapper->SetAutoCorrectionType(value);
 }
+
 void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
 {
     objcWrapper->SetSpellCheckingType(value);
 }
+
 void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 {
     objcWrapper->SetKeyboardAppearanceType(value);
 }
+
 void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
 {
     objcWrapper->SetKeyboardType(value);
 }
+
 void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
 {
     objcWrapper->SetReturnKeyType(value);
 }
+
 void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 {
     objcWrapper->SetEnableReturnKeyAutomatically(value);
@@ -972,17 +1055,21 @@ uint32 TextFieldPlatformImpl::GetCursorPos()
 {
     return objcWrapper->GetCursorPos();
 }
+
 void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 {
     objcWrapper->SetCursorPos(pos);
 }
+
 // Max text length.
 void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 {
     objcWrapper->SetMaxLength(maxLength);
 }
+
 void TextFieldPlatformImpl::SetMultiline(bool multiline)
 {
+    // here use (.) to change internal state, not to transit call to internal IField
     objcWrapper.SetMultiline(multiline);
 }
 
@@ -990,10 +1077,12 @@ void TextFieldPlatformImpl::SetRenderToTexture(bool value)
 {
     objcWrapper->SetRenderToTexture(value);
 }
+
 bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     return objcWrapper->IsRenderToTexture();
 }
+
 } // end namespace DAVA
 
 @implementation CustomDelegate
