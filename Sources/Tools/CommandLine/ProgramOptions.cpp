@@ -148,7 +148,7 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
 
                     if (opt.multipleValuesSuported)
                     {
-                        Split(valueStr, ",", tokens, true, false);
+                        Split(valueStr, ",", tokens, false, false);
                     }
                     else
                     {

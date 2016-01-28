@@ -232,6 +232,7 @@ void TextureDescriptor::SetDefaultValues()
     }
 
     exportedAsGpuFamily = GPU_ORIGIN;
+    isCompressedFile = false;
 }
 
 void TextureDescriptor::SetQualityGroup(const FastName &group)

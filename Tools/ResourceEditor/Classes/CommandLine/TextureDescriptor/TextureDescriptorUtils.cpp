@@ -87,6 +87,7 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
     if (false == FileSystem::Instance()->Exists(descriptorPath))
     {
         descriptor.reset(new TextureDescriptor());
+        descriptor->pathname = descriptorPath;
         descriptor->dataSettings.sourceFileFormat = sourceFormat;
         descriptor->dataSettings.sourceFileExtension = sourceExtension;
         descriptorChanged = true;
@@ -211,7 +212,6 @@ void SetCompressionParams(const FilePath& descriptorPath, const DAVA::Map<DAVA::
 
     DVASSERT(descriptor->compression);
 
-    auto endIt = compressionParams.end();
     for (const auto& compressionParam : compressionParams)
     {
         eGPUFamily gpu = compressionParam.first;
