@@ -40,6 +40,7 @@ namespace rhi
 ID3D11Device* _D3D11_Device = nullptr;
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
+ID3D11Texture2D* _D3D11_SwapChainBufferCopy = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
 ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
 ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
@@ -49,6 +50,8 @@ ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
 DAVA::Mutex _D3D11_SecondaryContextSync;
 ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
+ScreenShotCallback _D3D11_PendingScreenshotCallback = nullptr;
+DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 InitParam _DX11_InitParam;
 }
@@ -168,6 +171,20 @@ DX11_TextureFormat(TextureFormat format)
         return DXGI_FORMAT_D16_UNORM;
     case TEXTURE_FORMAT_D24S8:
         return DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+    case TEXTURE_FORMAT_R16F:
+        return DXGI_FORMAT_R16_FLOAT;
+    case TEXTURE_FORMAT_RG16F:
+        return DXGI_FORMAT_R16G16_FLOAT;
+    case TEXTURE_FORMAT_RGBA16F:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+    case TEXTURE_FORMAT_R32F:
+        return DXGI_FORMAT_R32_FLOAT;
+    case TEXTURE_FORMAT_RG32F:
+        return DXGI_FORMAT_R32G32_FLOAT;
+    case TEXTURE_FORMAT_RGBA32F:
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
     }
 
     return DXGI_FORMAT_UNKNOWN;
