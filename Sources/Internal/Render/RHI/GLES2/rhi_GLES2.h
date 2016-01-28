@@ -65,6 +65,10 @@ void SetupDispatch(Dispatch* dispatch);
 void BeginQuery(Handle buf, uint32 objectIndex);
 void EndQuery(Handle buf, uint32 objectIndex);
 }
+namespace PerfQuerySetGLES2
+{
+void SetupDispatch(Dispatch* dispatch);
+}
 
 namespace TextureGLES2
 {
@@ -166,6 +170,7 @@ GLCommand
         TEX_IMAGE2D,
         GENERATE_MIPMAP,
         READ_PIXELS,
+        PIXEL_STORE_I,
 
         CREATE_PROGRAM,
         CREATE_SHADER,

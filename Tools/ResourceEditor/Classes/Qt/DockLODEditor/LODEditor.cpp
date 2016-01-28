@@ -30,13 +30,17 @@
 #include "LODEditor.h"
 #include "ui_LODEditor.h"
 
-#include "Scene/System/EditorLODSystem.h"
 #include "DistanceSlider.h"
-
+#include "Scene/System/EditorLODSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Classes/Qt/Scene/SceneSignals.h"
 #include "Classes/Qt/PlaneLODDialog/PlaneLODDialog.h"
 #include "Classes/Qt/Main/mainwindow.h"
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QLabel>
 #include <QWidget>
@@ -45,10 +49,6 @@
 #include <QFrame>
 #include <QPushButton>
 
-#include "Commands2/AddComponentCommand.h"
-#include "Commands2/RemoveComponentCommand.h"
-
-#include "Tools/LazyUpdater/LazyUpdater.h"
 
 using namespace DAVA;
 
@@ -372,11 +372,11 @@ void LODEditor::CreateForceLayerValues(int layersCount)
     ui->forceLayer->clear();
 
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
     for (DAVA::int32 i = 0; i < layersCount; ++i)
     {
         ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
     }
+    ui->forceLayer->addItem("Last", DAVA::LodComponent::LAST_LOD_LAYER);
 
     ui->forceLayer->setCurrentIndex(0);
 }
@@ -412,7 +412,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
     bool visible = frame->isVisible();
     frame->setVisible(!visible);
 
-    QIcon icon = (frame->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+    QIcon icon = (frame->isVisible()) ? SharedIcon(":/QtIcons/advanced.png") : SharedIcon(":/QtIcons/play.png");
     frameButton->setIcon(icon);
 }
 
@@ -430,12 +430,11 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     }
     else
     {
-        QIcon viewIcon = (frameViewVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-        ui->viewLODButton->setIcon(viewIcon);
+        const auto& advIcon = SharedIcon(":/QtIcons/advanced.png");
+        const auto& playIcon = SharedIcon(":/QtIcons/play.png");
+        ui->viewLODButton->setIcon(frameViewVisible ? advIcon : playIcon);
+        ui->editLODButton->setIcon(frameEditVisible ? advIcon : playIcon);
         ui->frameViewLOD->setVisible(frameViewVisible);
-
-        QIcon editIcon = (frameEditVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-        ui->editLODButton->setIcon(editIcon);
         ui->frameEditLOD->setVisible(frameEditVisible);
     }
 }

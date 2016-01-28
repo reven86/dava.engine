@@ -67,9 +67,9 @@ public:
 private:
     void OnAppMinimizedRestored(bool minimized);
     SigConnectionID appMinimizedRestoredConnectionId;
-    
-	// Pointer to MacOS video player helper.
-	void* moviePlayerHelper;
+
+    // Pointer to MacOS video player helper.
+    void* moviePlayerHelper;
 };
 	
 };

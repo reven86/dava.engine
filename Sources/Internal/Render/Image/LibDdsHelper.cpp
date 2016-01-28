@@ -518,8 +518,6 @@ bool NvttHelper::GetInfo(nvtt::Decompressor& dec, DDSInfo& info)
     return retVal;
 }
 
-
-
 uint32 NvttHelper::GetDataSize(nvtt::Decompressor& dec)
 {
     DDSInfo info;
@@ -966,7 +964,6 @@ bool LibDdsHelper::DecompressImageToRGBA(const Image& image, Vector<Image*>& ima
     SafeDeleteArray(compressedImageBuffer);
     return retValue;
 }
-
 
 bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat)
 {
