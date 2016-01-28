@@ -474,6 +474,14 @@ void MaterialEditor::showEvent(QShowEvent* event)
     sceneActivated(QtMainWindow::Instance()->GetCurrentScene());
 }
 
+void MaterialEditor::closeEvent(QCloseEvent* event)
+{
+    curMaterials.clear();
+    RefreshMaterialProperties();
+    sceneActivated(nullptr);
+    QDialog::closeEvent(event);
+}
+
 void MaterialEditor::FillBase()
 {
     baseRoot->ChildRemoveAll();

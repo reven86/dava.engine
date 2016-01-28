@@ -84,9 +84,10 @@ protected slots:
     void OnMaterialPropertyEditorContextMenuRequest(const QPoint& pos);
 
 protected:
-    virtual void showEvent(QShowEvent* event);
+    void showEvent(QShowEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
-    void SetCurMaterial(const QList<DAVA::NMaterial*>& materials);
+    void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
 
     void FillBase();
     void FillDynamic(QtPropertyData* root, const FastName& dynamicName);
