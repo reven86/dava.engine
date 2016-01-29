@@ -514,34 +514,48 @@ public:
     explicit SingleLineOrPasswordField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : IField(davaText_, wrapper_)
     {
+        Logger::Info("start SingleLineOrPasswordField");
         [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
-
+        Logger::Info("start SingleLineOrPasswordField 2");
         nsTextField = [[CustomTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        Logger::Info("start SingleLineOrPasswordField 3");
         [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
-
+        Logger::Info("start SingleLineOrPasswordField 4");
         formatter = [[CustomTextFieldFormatter alloc] init];
+        Logger::Info("start SingleLineOrPasswordField 5");
         formatter->text = wrapper;
+        Logger::Info("start SingleLineOrPasswordField 6");
         [nsTextField setFormatter:formatter];
-
+        Logger::Info("start SingleLineOrPasswordField 7");
         objcDelegate = [[CustomDelegate alloc] init];
+        Logger::Info("start SingleLineOrPasswordField 8");
         objcDelegate->text = wrapper;
+        Logger::Info("start SingleLineOrPasswordField 9");
 
         [nsTextField setDelegate:objcDelegate];
+        Logger::Info("start SingleLineOrPasswordField 10");
 
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        Logger::Info("start SingleLineOrPasswordField 11");
         [openGLView addSubview:nsTextField];
+        Logger::Info("start SingleLineOrPasswordField 12");
 
         [nsTextField setEditable:YES];
+        Logger::Info("start SingleLineOrPasswordField 13");
         [nsTextField setEnabled:YES];
-
+        Logger::Info("start SingleLineOrPasswordField 14");
         // make control border and background transparent
         nsTextField.drawsBackground = NO;
+        Logger::Info("start SingleLineOrPasswordField 15");
         nsTextField.bezeled = NO;
+        Logger::Info("start SingleLineOrPasswordField 16");
 
         CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        Logger::Info("start SingleLineOrPasswordField 17");
         signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &SingleLineOrPasswordField::OnAppMinimazedResored);
-
+        Logger::Info("start SingleLineOrPasswordField 18");
         SetMultiline(false);
+        Logger::Info("start SingleLineOrPasswordField 19");
     }
 
     ~SingleLineOrPasswordField()
