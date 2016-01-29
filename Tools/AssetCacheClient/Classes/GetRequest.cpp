@@ -67,7 +67,7 @@ int GetRequest::CheckOptionsInternal() const
     return AssetCacheClientConstants::EXIT_OK;
 }
 
-void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value)
+void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value)
 {
     requestResult.recieved = true;
     requestResult.succeed = (value.IsEmpty() == false);

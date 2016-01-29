@@ -44,7 +44,7 @@ public:
     void OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::char8* message) override;
 
     //ClientNetProxyListener
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value) override;
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value) override;
 
     void Update();
 

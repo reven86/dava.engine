@@ -33,7 +33,7 @@
 #include "Constants.h"
 
 class CacheRequest;
-class AssetCacheClient
+class AssetCacheClient final
 {
 public:
     AssetCacheClient();

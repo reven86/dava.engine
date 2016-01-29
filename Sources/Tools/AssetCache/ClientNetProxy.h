@@ -46,9 +46,11 @@ class CachedItemValue;
 class ClientNetProxyListener
 {
 public:
+    virtual ~ClientNetProxyListener() = default;
+
     virtual void OnAssetClientStateChanged(){};
     virtual void OnAddedToCache(const CacheItemKey& key, bool added){};
-    virtual void OnReceivedFromCache(const CacheItemKey& key, CachedItemValue&& value){};
+    virtual void OnReceivedFromCache(const CacheItemKey& key, const CachedItemValue& value){};
 };
 
 class ClientNetProxy : public DAVA::Net::IChannelListener

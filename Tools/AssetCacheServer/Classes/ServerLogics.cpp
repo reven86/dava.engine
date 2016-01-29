@@ -119,7 +119,7 @@ void ServerLogics::OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::cha
     }
 }
 
-void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value)
+void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value)
 {
     if (nullptr != dataBase && !value.IsEmpty())
     {
