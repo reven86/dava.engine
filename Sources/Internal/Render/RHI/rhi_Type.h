@@ -52,6 +52,8 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = (uint32)(-2);
 
+typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
+
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
@@ -346,7 +348,15 @@ enum TextureFormat
     TEXTURE_FORMAT_EAC_R11G11_SIGNED,
 
     TEXTURE_FORMAT_D16,
-    TEXTURE_FORMAT_D24S8
+    TEXTURE_FORMAT_D24S8,
+
+    TEXTURE_FORMAT_R16F,
+    TEXTURE_FORMAT_RG16F,
+    TEXTURE_FORMAT_RGBA16F,
+
+    TEXTURE_FORMAT_R32F,
+    TEXTURE_FORMAT_RG32F,
+    TEXTURE_FORMAT_RGBA32F,
 };
 
 enum TextureFace

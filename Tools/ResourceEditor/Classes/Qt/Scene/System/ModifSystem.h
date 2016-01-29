@@ -81,10 +81,12 @@ public:
 	bool InModifState() const;
 	bool InCloneState() const;
     bool InCloneDoneState() const;
-	bool ModifCanStart(const EntityGroup &selectedEntities) const;
 
-	void RemoveEntity(DAVA::Entity * entity) override;
-	void Process(DAVA::float32 timeElapsed) override;
+    bool ModifCanStart(const EntityGroup& selectedEntities) const;
+    bool ModifCanStartByMouse(const EntityGroup& selectedEntities) const;
+
+    void RemoveEntity(DAVA::Entity* entity) override;
+    void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
     void AddDelegate(EntityModificationSystemDelegate *delegate);
@@ -161,7 +163,6 @@ protected:
 	void CloneEnd();
 
 	void ApplyModification();
-	bool ModifCanStartByMouse(const EntityGroup &selectedEntities) const;
 
 	DAVA::Vector3 CamCursorPosToModifPos(DAVA::Camera *camera, DAVA::Vector2 pos);
 	DAVA::Vector2 Cam2dProjection(const DAVA::Vector3 &from, const DAVA::Vector3 &to);

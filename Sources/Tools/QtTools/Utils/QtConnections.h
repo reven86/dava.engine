@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,54 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QTTOOLS_QTCONNECTIONS_H__
+#define __QTTOOLS_QTCONNECTIONS_H__
 
-#include "VisibilityToolProxy.h"
+#include "Base/BaseTypes.h"
 
-VisibilityToolProxy::VisibilityToolProxy(int32 size)
-    : size(size)
-    , visibilityPoint(Vector2(-1.f, -1.f))
-    , isVisibilityPointSet(false)
+#include <QMetaObject>
+#include <QPointer>
+
+class QtConnections
 {
-    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+public:
+    ~QtConnections()
+    {
+        for (QMetaObject::Connection& connection : connections)
+        {
+            QObject::disconnect(connection);
+        }
 
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)size;
-    viewport.height = (uint32)size;
-    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
-}
+        connections.clear();
+    }
 
-VisibilityToolProxy::~VisibilityToolProxy()
-{
-	SafeRelease(visibilityToolTexture);
-}
+    template <typename Func1, typename Func2>
+    void AddConnection(const typename QtPrivate::FunctionPointer<Func1>::Object* sender, Func1 signal, Func2 slot)
+    {
+        connections.push_back(QObject::connect(sender, signal, slot));
+    }
 
-int32 VisibilityToolProxy::GetSize()
-{
-	return size;
-}
+private:
+    DAVA::Vector<QMetaObject::Connection> connections;
+};
 
-Texture* VisibilityToolProxy::GetTexture()
-{
-	return visibilityToolTexture;
-}
-
-void VisibilityToolProxy::SetVisibilityPoint(const Vector2& visibilityPoint)
-{
-	this->visibilityPoint = visibilityPoint;
-}
-
-Vector2 VisibilityToolProxy::GetVisibilityPoint()
-{
-	return visibilityPoint;
-}
-
-bool VisibilityToolProxy::IsVisibilityPointSet()
-{
-	return isVisibilityPointSet;
-}
-
-void VisibilityToolProxy::UpdateVisibilityPointSet(bool visibilityPointSet)
-{
-	isVisibilityPointSet = visibilityPointSet;
-}
+#endif // __QTTOOLS_QTCONNECTIONS_H__

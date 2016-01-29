@@ -65,7 +65,7 @@ public:
 	void SetScene(SceneEditor2 * scene);
     SceneEditor2* GetScene();
     void SetSelection(const EntityGroup* group);
-    DAVA::NMaterial * GetMaterial(const QModelIndex & index) const;
+    DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
     QModelIndex GetIndex(DAVA::NMaterial* material, const QModelIndex& parent = QModelIndex()) const;
 
     bool dropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);

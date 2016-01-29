@@ -34,10 +34,6 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
-
-#include "Scene/System/VisibilityToolSystem.h"
-
-// framework
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
 
@@ -94,12 +90,10 @@ signals:
     void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
-    void VisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state);
     void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
 
-    void VisibilityToolToggled(SceneEditor2* scene);
     void CustomColorsToggled(SceneEditor2* scene);
     void HeightmapEditorToggled(SceneEditor2* scene);
     void TilemaskEditorToggled(SceneEditor2* scene);
@@ -126,7 +120,6 @@ public:
 
     void EmitModifyStatusChanged(SceneEditor2 *scene, bool modified) { emit ModifyStatusChanged(scene, modified); }
 
-    void EmitVisibilityToolToggled(SceneEditor2* scene) { emit VisibilityToolToggled(scene); }
     void EmitCustomColorsToggled(SceneEditor2* scene) { emit CustomColorsToggled(scene); }
     void EmitHeightmapEditorToggled(SceneEditor2* scene) { emit HeightmapEditorToggled(scene); }
     void EmitTilemaskEditorToggled(SceneEditor2* scene) { emit TilemaskEditorToggled(scene); }
@@ -134,10 +127,7 @@ public:
     void EmitNotPassableTerrainToggled(SceneEditor2* scene) { emit NotPassableTerrainToggled(scene); }
 
     void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height) { emit DropperHeightChanged(scene, (double)height); };
-    void EmitVisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state)
-    {
-        emit VisibilityToolStateChanged(scene, state);
-    };
+
     void EmitCustomColorsTextureShouldBeSaved(SceneEditor2* scene) { emit CustomColorsTextureShouldBeSaved(scene); };
     void EmitRulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength)
     {
@@ -210,7 +200,6 @@ public:
     {
         emit SnapToLandscapeChanged(scene, isSpanToLandscape);
     }
-
 };
 
 #endif // __SCENE_MANAGER_H__

@@ -133,6 +133,9 @@ public:
 
     const Vector<int32> & GetStringSizes() const;
 
+    inline bool IsForceBiDiSupportEnabled() const { return textBlock->IsForceBiDiSupportEnabled(); }
+    void SetForceBiDiSupportEnabled(bool value);
+
 protected:
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
@@ -186,6 +189,7 @@ public:
                          PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT)
                          );
 
 };

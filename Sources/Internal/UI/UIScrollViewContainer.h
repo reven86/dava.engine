@@ -62,7 +62,6 @@ public:
     void SetTouchTreshold(int32 holdDelta);
     int32 GetTouchTreshold();
 
-
 protected:
 
 	enum

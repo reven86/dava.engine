@@ -125,14 +125,14 @@ void ModificationWidget::ReloadValues()
 
 	if (nullptr != curScene)
 	{
-		auto selection = curScene->selectionSystem->GetSelection();
-		if(selection.Size() > 0 && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
-		{
-			xAxisModify->setEnabled(true);
-			yAxisModify->setEnabled(true);
-			zAxisModify->setEnabled(true);
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+        if (!selection.IsEmpty() && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
+        {
+            xAxisModify->setEnabled(true);
+            yAxisModify->setEnabled(true);
+            zAxisModify->setEnabled(true);
 
-			xAxisModify->showButtons(true);
+            xAxisModify->showButtons(true);
 			yAxisModify->showButtons(true);
 			zAxisModify->showButtons(true);
 
@@ -169,13 +169,12 @@ void ModificationWidget::ReloadValues()
 				}
 				else
 				{
-					DAVA::Entity *singleEntity = selection.GetEntity(0);
-					if(NULL != singleEntity)
-					{
-
-						DAVA::float32 x = 0;
-						DAVA::float32 y = 0;
-						DAVA::float32 z = 0;
+                    DAVA::Entity* singleEntity = selection.GetFirstEntity();
+                    if (NULL != singleEntity)
+                    {
+                        DAVA::float32 x = 0;
+                        DAVA::float32 y = 0;
+                        DAVA::float32 z = 0;
 
 						DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
 						switch (modifMode)
@@ -268,7 +267,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 
 	if(NULL != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
         const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
 
 		if(selection.Size() > 1)
@@ -276,15 +275,15 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 			curScene->BeginBatch("Multiple transform");
 		}
 
-		for (size_t i = 0; i < selection.Size(); ++i)
-		{
-			DAVA::Entity *entity = selection.GetEntity(i);
-			DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
-			DAVA::Vector3 origPos = origMatrix.GetTranslationVector();
-			DAVA::Vector3 newPos = origPos;
+        for (const auto& item : selection.GetContent())
+        {
+            DAVA::Entity* entity = item.first;
+            DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
+            DAVA::Vector3 origPos = origMatrix.GetTranslationVector();
+            DAVA::Vector3 newPos = origPos;
 
-			if(pivotMode == PivotAbsolute)
-			{
+            if (pivotMode == PivotAbsolute)
+            {
 				switch (axis)
 				{
 				case ST_AXIS_X:
@@ -345,22 +344,22 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
 
 	if(NULL != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
 
-		if(selection.Size() > 1)
-		{
-			curScene->BeginBatch("Multiple transform");
-		}
+        if (selection.Size() > 1)
+        {
+            curScene->BeginBatch("Multiple transform");
+        }
 
-		for (size_t i = 0; i < selection.Size(); ++i)
-		{
-			DAVA::Entity *entity = selection.GetEntity(i);
-			DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
+        for (const auto& item : selection.GetContent())
+        {
+            DAVA::Entity* entity = item.first;
+            DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
 
-			DAVA::Vector3 pos, scale, rotate;
-			if(origMatrix.Decomposition(pos, scale, rotate))
-			{
-				DAVA::Matrix4 newMatrix;
+            DAVA::Vector3 pos, scale, rotate;
+            if (origMatrix.Decomposition(pos, scale, rotate))
+            {
+                DAVA::Matrix4 newMatrix;
 				DAVA::Matrix4 rotationMatrix;
 				DAVA::Matrix4 transformMatrix;
 
@@ -440,22 +439,22 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
 
 	if(NULL != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
 
-		if(selection.Size() > 1)
-		{
-			curScene->BeginBatch("Multiple transform");
-		}
+        if (selection.Size() > 1)
+        {
+            curScene->BeginBatch("Multiple transform");
+        }
 
-		for (size_t i = 0; i < selection.Size(); ++i)
-		{
-			DAVA::Entity *entity = selection.GetEntity(i);
-			DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
+        for (const auto& item : selection.GetContent())
+        {
+            DAVA::Entity* entity = item.first;
+            DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
 
-			DAVA::Vector3 pos, scale, rotate;
-			if(origMatrix.Decomposition(pos, scale, rotate))
-			{
-				DAVA::Matrix4 newMatrix;
+            DAVA::Vector3 pos, scale, rotate;
+            if (origMatrix.Decomposition(pos, scale, rotate))
+            {
+                DAVA::Matrix4 newMatrix;
 				DAVA::Matrix4 scaleMatrix;
 				DAVA::Matrix4 transformMatrix;
 
@@ -525,8 +524,8 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if ( curScene == nullptr )
         return;
 
-    auto selection = curScene->selectionSystem->GetSelection();
-    if ( selection.Size() == 0 )
+    const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+    if (selection.IsEmpty())
         return;
 
     const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();

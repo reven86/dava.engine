@@ -151,12 +151,12 @@ private:
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
     ParticleEffectComponent* selectedEffect;
-    ParticleEmitter *selectedEmitter;
-	ParticleLayer* selectedLayer;
-	ParticleForce* selectedForce;
+    ParticleEmitter* selectedEmitter;
+    ParticleLayer* selectedLayer;
+    ParticleForce* selectedForce;
 
-	QPointer< SceneTreeModel > treeModel;
-	QPointer< SceneTreeFilteringModel > filteringProxyModel;
+    QPointer<SceneTreeModel> treeModel;
+    QPointer< SceneTreeFilteringModel > filteringProxyModel;
 	SceneTreeDelegate *treeDelegate;
 
 	bool isInSync;

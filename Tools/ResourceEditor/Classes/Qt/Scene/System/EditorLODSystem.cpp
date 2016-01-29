@@ -123,24 +123,22 @@ void EditorLODSystem::SceneSelectionChanged(const EntityGroup *selected, const E
 {
     if (!allSceneModeEnabled)
     {
-        size_t deselectedSize = deselected->Size();
-        for (size_t i = 0; i < deselectedSize; ++i)
+        for (const auto& item : deselected->GetContent())
         {
-            ResetForceState(deselected->GetEntity(i));
+            ResetForceState(item.first);
         }
     }
     selectedLODs.clear();
-    size_t selectedSize = selected->Size();
-
-    if (selectedSize == 0)
+    const auto& selectedItems = selected->GetContent();
+    if (selectedItems.empty())
     {
         forceDistance = LodComponent::INVALID_DISTANCE;
         forceLayer = LodComponent::INVALID_LOD_LAYER;
     }
 
-    for (size_t i = 0; i < selectedSize; ++i)
+    for (const auto& item : selectedItems)
     {
-        AddSelectedLODsRecursive(selected->GetEntity(i));
+        AddSelectedLODsRecursive(item.first);
     }
 
     if (allSceneModeEnabled)
@@ -275,9 +273,9 @@ bool EditorLODSystem::CheckSelectedContainsEntity(const DAVA::Entity *arg) const
 {
     DVASSERT(arg);
     const EntityGroup &selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
-    for (size_t i = 0;  i < selection.Size();  ++i)
+    for (const auto& item : selection.GetContent())
     {
-        if (selection.GetEntity(i) == arg)
+        if (item.first == arg)
         {
             return true;
         }

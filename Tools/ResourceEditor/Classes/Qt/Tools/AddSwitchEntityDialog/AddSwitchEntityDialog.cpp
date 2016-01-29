@@ -64,12 +64,12 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
     SelectEntityPathWidget* thirdWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(), "");
 
     AddControlToUserContainer(firstWidget, "First Entity:");
-	AddControlToUserContainer(secondWidget, "Second Entity:");
-	AddControlToUserContainer(thirdWidget, "Third Entity:");
+    AddControlToUserContainer(secondWidget, "Second Entity:");
+    AddControlToUserContainer(thirdWidget, "Third Entity:");
 
-	pathWidgets.push_back(firstWidget);
-	pathWidgets.push_back(secondWidget);
-	pathWidgets.push_back(thirdWidget);
+    pathWidgets.push_back(firstWidget);
+    pathWidgets.push_back(secondWidget);
+    pathWidgets.push_back(thirdWidget);
 
 	propEditor->setVisible(false);
 	propEditor->setMinimumHeight(0);
