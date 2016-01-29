@@ -793,9 +793,13 @@ public:
         DVASSERT(!value);
 
         multiline = value;
+        Logger::Info("start SingleLineOrPasswordField 18.1");
         [nsTextField setUsesSingleLineMode:(!multiline)];
+        Logger::Info("start SingleLineOrPasswordField 18.2");
         [nsTextField.cell setWraps:(!multiline)];
+        Logger::Info("start SingleLineOrPasswordField 18.3");
         [nsTextField.cell setScrollable:(!multiline)];
+        Logger::Info("start SingleLineOrPasswordField 18.4");
     }
 
     bool IsMultiline() const override
