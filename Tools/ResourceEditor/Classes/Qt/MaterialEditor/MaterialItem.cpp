@@ -37,6 +37,7 @@
 #include "MaterialModel.h"
 #include "Main/QtUtils.h"
 #include "TextureBrowser/TextureCache.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace MaterialItemLocal
 {
@@ -50,10 +51,6 @@ MaterialItem::MaterialItem(DAVA::NMaterial* _material, bool dragEnabled, bool dr
 {
 	DVASSERT(material);
 
-	static QIcon materialIcon(QString::fromUtf8(":/QtIcons/sphere.png"));
-	static QIcon instanceIcon(QString::fromUtf8(":/QtIcons/3d.png"));
-    static QIcon globalIcon(QString::fromUtf8(":/QtIcons/global.png"));
-	
 	setEditable(false);
     setData(QVariant::fromValue<DAVA::NMaterial *>(material));
     setDragEnabled(dragEnabled);

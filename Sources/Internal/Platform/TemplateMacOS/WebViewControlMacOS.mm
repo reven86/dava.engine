@@ -160,8 +160,8 @@ using namespace DAVA;
     }
 }
 
-- (void)setDelegate:(IUIWebViewDelegate *)d
-         andWebView:(UIWebView *)w
+- (void)setDelegate:(IUIWebViewDelegate*)d
+         andWebView:(UIWebView*)w
 {
 	if (d && w)
 	{
@@ -192,11 +192,11 @@ using namespace DAVA;
 
 @end
 
-WebViewControl::WebViewControl(UIWebView& ptr) :
-    webImageCachePtr(0),
-    uiWebViewControl(ptr),
-    isRenderToTexture(false),
-    isVisible(true)
+WebViewControl::WebViewControl(UIWebView& ptr)
+    : webImageCachePtr(0)
+    , uiWebViewControl(ptr)
+    , isRenderToTexture(false)
+    , isVisible(true)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
 	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
@@ -224,16 +224,16 @@ WebViewControl::WebViewControl(UIWebView& ptr) :
 
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
-    
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 }
 
 WebViewControl::~WebViewControl()
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
-    
+
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
    [imageRep release];
     webImageCachePtr = 0;
@@ -256,7 +256,7 @@ WebViewControl::~WebViewControl()
     webViewDelegatePtr = 0;
 }
 
-void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
+void WebViewControl::SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView)
 {
 	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
 	[w setDelegate:delegate andWebView:webView];
@@ -311,17 +311,17 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 void WebViewControl::SetRect(const Rect& srcRect)
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-    
+
     // 1. map virtual to physical
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
     rect += coordSystem->GetPhysicalDrawOffset();
     rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-    
+
     // 2. map physical to window
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
     [(WebView*)webViewPtr setFrame:controlRect];
-    
+
     if (isRenderToTexture)
     {
         RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebViewControl);
@@ -364,7 +364,7 @@ void WebViewControl::SetRenderToTexture(bool value)
 }
 
 void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-                                        UIWebView& uiWebViewControl)
+UIWebView& uiWebViewControl)
 {
     bool recreateImageRep = true;
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
@@ -399,10 +399,10 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
 
     NSSize imageRepSize = [imageRep size];
     NSRect imageRect = NSMakeRect(0.f, 0.f, imageRepSize.width, imageRepSize.height);
-    
+
     // render web view into bitmap image
     [nativeWebView cacheDisplayInRect:imageRect toBitmapImageRep:imageRep];
-    
+
     const uint8* rawData = [imageRep bitmapData];
     const int w = [imageRep pixelsWide];
     const int h = [imageRep pixelsHigh];
@@ -486,7 +486,7 @@ void* WebViewControl::GetImageCache() const
 void WebViewControl::SetNativeVisible(bool visible)
 {
     WebView* view = static_cast<WebView*>(webViewPtr);
-    [view setHidden: !visible];
+    [view setHidden:!visible];
 }
 
 void WebViewControl::OnAppMinimizedRestored(bool minimized)

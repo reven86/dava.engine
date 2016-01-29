@@ -32,56 +32,90 @@
 
 #include "Scene3D/Entity.h"
 
-struct EntityGroupItem 
-{
-	EntityGroupItem() : entity(NULL)
-	{ }
-
-	EntityGroupItem(DAVA::Entity *_entity, DAVA::AABBox3 _bbox) 
-		: entity(_entity), bbox(_bbox)
-	{ }
-
-	DAVA::Entity *entity;
-	DAVA::AABBox3 bbox;
-};
-
 class EntityGroup
 {
 public:
-	EntityGroup();
-	EntityGroup(const EntityGroup &ss);
-	~EntityGroup();
+    using EntityWithBbox = std::pair<DAVA::Entity*, DAVA::AABBox3>;
 
-	void Add(DAVA::Entity *entity, DAVA::AABBox3 entityBbox = DAVA::AABBox3());
-	void Add(const EntityGroupItem &groupItem);
-	void Rem(DAVA::Entity *entity);
-	void Clear();
+    using EntityMap = DAVA::Map<EntityWithBbox::first_type, EntityWithBbox::second_type>;
+    using EntityVector = DAVA::Vector<EntityWithBbox>;
 
-	size_t Size() const;
-	DAVA::Entity* GetEntity(size_t i) const;
+    static DAVA::AABBox3 TransformItemBoundingBox(const EntityWithBbox& item);
 
-	EntityGroupItem* GetItem(size_t i) const;
+public:
+    EntityGroup() = default;
+    EntityGroup(const EntityVector& ss);
+    EntityGroup(EntityGroup&&);
+    EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
 
-	DAVA::AABBox3 GetBbox(size_t i) const;
-	void SetBbox(size_t i, const DAVA::AABBox3 &entityBbox);
+    void Add(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
+    void Remove(DAVA::Entity* entity);
+    void Clear();
 
-    DAVA::AABBox3 GetCommonBbox() const;
+    EntityMap& GetMutableContent();
+    const EntityMap& GetContent() const;
 
-	DAVA::Vector3 GetZeroPos(size_t i) const;
-	DAVA::Vector3 GetCommonZeroPos() const;
+    const DAVA::AABBox3& GetCommonBbox() const;
+    const DAVA::AABBox3& GetBoundingBoxForEntity(DAVA::Entity*) const;
 
-	bool ContainsEntity(DAVA::Entity *entity) const;
-	bool Index(DAVA::Entity *entity, size_t &index) const;
+    DAVA::Vector3 GetAnyEntityTranslationVector() const;
+    DAVA::Vector3 GetCommonTranslationVector() const;
 
-	DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
+    bool IsEmpty() const;
+    bool ContainsEntity(DAVA::Entity* entity) const;
 
-	EntityGroup& operator=(const EntityGroup &ss);
-	bool operator==(const EntityGroup &ss) const;
-    bool operator!=(const EntityGroup &ss) const;
+    size_t Size() const;
 
-protected:
-	DAVA::Vector<EntityGroupItem> entities;
-	DAVA::AABBox3 entitiesBbox;
+    DAVA::Entity* IntersectedEntity(const EntityGroup* group) const;
+    DAVA::Entity* IntersectedEntity(const EntityVector& group) const;
+
+    EntityGroup& operator=(const EntityGroup&);
+    bool operator==(const EntityGroup& ss) const;
+    bool operator!=(const EntityGroup& ss) const;
+
+    DAVA::Entity* GetFirstEntity() const;
+    EntityVector CopyContentToVector() const;
+
+    void Join(const EntityGroup&);
+    void Exclude(const EntityGroup&);
+    void RebuildBoundingBox();
+
+private:
+    EntityGroup(const EntityGroup&) = delete;
+
+private:
+    EntityMap entities;
+    DAVA::AABBox3 entitiesBbox;
 };
+
+inline const DAVA::AABBox3& EntityGroup::GetCommonBbox() const
+{
+    return entitiesBbox;
+}
+
+inline bool EntityGroup::ContainsEntity(DAVA::Entity* entity) const
+{
+    return entities.count(entity) > 0;
+}
+
+inline EntityGroup::EntityMap& EntityGroup::GetMutableContent()
+{
+    return entities;
+}
+
+inline const EntityGroup::EntityMap& EntityGroup::GetContent() const
+{
+    return entities;
+}
+
+inline bool EntityGroup::IsEmpty() const
+{
+    return entities.empty();
+}
+
+inline size_t EntityGroup::Size() const
+{
+    return entities.size();
+}
 
 #endif // __ENTITY_GROUP_H__

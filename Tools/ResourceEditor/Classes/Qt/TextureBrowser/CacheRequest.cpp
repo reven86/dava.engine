@@ -57,15 +57,15 @@ void CacheRequest::invoke(const QList<QImage>& images)
 {
     for (ObserverMap::iterator i = observers.begin(); i != observers.end(); i++)
     {
-		QObject *obj = i.key();
-		const SlotList& slotList = i.value();
+        QObject* obj = i.key();
+        const SlotList& slotList = i.value();
         foreach (const SlotWithArg& slotInfo, slotList)
         {
-			const std::string methodName = slotInfo.first.toStdString();
+            const std::string methodName = slotInfo.first.toStdString();
             QMetaObject::invokeMethod(obj, methodName.c_str(), Qt::QueuedConnection,
                                       Q_ARG(const QList<QImage>&, images), Q_ARG(QVariant, slotInfo.second));
         }
-	}
+    }
 }
 
 void CacheRequest::onObserverDestroyed()

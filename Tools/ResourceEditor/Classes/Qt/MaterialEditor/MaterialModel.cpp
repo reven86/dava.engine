@@ -249,10 +249,10 @@ bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* grou
         return false;
     }
 
-    DAVA::NMaterial *material = item->GetMaterial();
-	DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
+    DAVA::NMaterial* material = item->GetMaterial();
+    DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
 
-	entity = curScene->selectionSystem->GetSelectableEntity(entity);
+    entity = curScene->selectionSystem->GetSelectableEntity(entity);
     bool shouldSelect = group->ContainsEntity(entity);
     item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelect);
 

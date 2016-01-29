@@ -59,16 +59,16 @@ void ParticleEmitterMoveCommand::Undo()
 
         if (nullptr != oldEffect)
         {
-            if(-1 != oldIndex)
-			{
+            if (-1 != oldIndex)
+            {
                 oldEffect->InsertEmitterDataAt(emitterData, oldIndex);
             }
             else
-			{
+            {
                 oldEffect->AddEmitterData(emitterData);
             }
         }
-	}
+    }
 }
 
 void ParticleEmitterMoveCommand::Redo()
@@ -80,12 +80,12 @@ void ParticleEmitterMoveCommand::Redo()
             oldEffect->RemoveEmitterData(emitterData);
         }
 
-        if(-1 != newIndex)
-		{
+        if (-1 != newIndex)
+        {
             newEffect->InsertEmitterDataAt(emitterData, newIndex);
         }
         else
-		{
+        {
             newEffect->AddEmitterData(emitterData);
         }
     }
