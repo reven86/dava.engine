@@ -85,6 +85,11 @@
 }
 @end
 
+@interface CustomTextView : NSTextView
+{
+}
+@end
+
 @interface CustomDelegate : NSObject<NSTextFieldDelegate>
 {
 @public
@@ -224,7 +229,7 @@ public:
         [nsScrollView setAutoresizingMask:NSViewWidthSizable |
                       NSViewHeightSizable];
 
-        nsTextView = [[NSTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        nsTextView = [[CustomTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
         [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
 
         objcDelegate = [[MultilineDelegate alloc] init];
@@ -269,7 +274,8 @@ public:
 
     void OpenKeyboard() override
     {
-        [nsTextView becomeFirstResponder];
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView.window makeFirstResponder:nsTextView];
 
         UITextFieldDelegate* delegate = davaText->GetDelegate();
 
@@ -282,7 +288,7 @@ public:
 
     void CloseKeyboard() override
     {
-        [nsTextView resignFirstResponder];
+        //TODO crush??? [nsTextView resignFirstResponder];
     }
 
     void GetText(WideString& string) const override
@@ -560,7 +566,8 @@ public:
 
     void OpenKeyboard() override
     {
-        [nsTextField becomeFirstResponder];
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView.window makeFirstResponder:nsTextField];
 
         if ([[nsTextField stringValue] length] > 0)
         {
@@ -1104,7 +1111,6 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 
 - (void)controlTextDidChange:(NSNotification*)aNotification
 {
-    DAVA::Logger::Info("text change:");
 }
 
 // https://developer.apple.com/library/mac/qa/qa1454/_index.html
@@ -1220,6 +1226,16 @@ doCommandBySelector:(SEL)commandSelector
     }
 
     return self;
+}
+
+- (BOOL)textShouldBeginEditing:(NSText*)textObject
+{
+    DAVA::UITextField* textField = (*text).ctrl->davaText;
+    if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+    {
+        DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+    }
+    return YES;
 }
 
 - (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
@@ -1391,6 +1407,23 @@ doCommandBySelector:(SEL)commandSelector
     // pass event to DAVA input for selection and focus work
     NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
     [openGLView mouseDown:theEvent];
+}
+@end
+
+@implementation CustomTextView
+
+// make click event pass throu to dava input system, and select
+// from dava set focused control
+//- (NSView*)hitTest:(NSPoint)aPoint
+//{
+//    return nil;
+//}
+- (void)mouseDown:(NSEvent*)theEvent
+{
+    // pass event to DAVA input for selection and focus work
+    //    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
+    //    [openGLView mouseDown:theEvent];
+    [super mouseDown:theEvent];
 }
 
 @end

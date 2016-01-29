@@ -201,7 +201,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 
         event.physPoint.x = p.x;
         event.physPoint.y = [glview frame].size.height - p.y;
-        event.tapCount = curEvent.clickCount;
     }
 
     if (DAVA::UIEvent::Phase::WHEEL == phase)
