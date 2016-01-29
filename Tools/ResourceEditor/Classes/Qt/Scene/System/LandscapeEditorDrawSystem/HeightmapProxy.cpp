@@ -51,18 +51,12 @@ void HeightmapProxy::ResetHeightmapChanged()
 	heightmapChanged = false;
 }
 
-bool HeightmapProxy::IsHeightmapChanged()
+bool HeightmapProxy::IsHeightmapChanged() const
 {
 	return heightmapChanged;
 }
 
-bool HeightmapProxy::GetChangedRect(Rect& rect)
+const Rect& HeightmapProxy::GetChangedRect() const
 {
-	if (IsHeightmapChanged())
-	{
-        rect = changedRect;
-        return true;
-    }
-
-    return false;
+    return changedRect;
 }

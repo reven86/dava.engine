@@ -41,11 +41,10 @@ public:
 	HeightmapProxy(Heightmap* heightmap);
 	
 	void UpdateRect(const Rect& rect);
-	
 	void ResetHeightmapChanged();
-	bool IsHeightmapChanged();
 
-    bool GetChangedRect(Rect& rect);
+    bool IsHeightmapChanged() const;
+    const Rect& GetChangedRect() const;
 
 private:
 	Rect changedRect;

@@ -83,7 +83,7 @@ public:
     void SetCursorSize(float32 cursorSize);
     void SetCursorPosition(const Vector2& cursorPos);
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
 
     void ProcessCommand(const Command2 *command, bool redo);
 
@@ -121,7 +121,7 @@ public:
 
     static String GetDescriptionByError(eErrorType error);
 
-protected:
+private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
     
@@ -132,6 +132,7 @@ protected:
     
     bool UpdateTilemaskPathname();
 
+private:
     Entity* landscapeNode = nullptr;
     Landscape* baseLandscape = nullptr;
     LandscapeProxy* landscapeProxy = nullptr;
@@ -139,10 +140,11 @@ protected:
     NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
     CustomColorsProxy* customColorsProxy = nullptr;
     RulerToolProxy* rulerToolProxy = nullptr;
-
-    uint32 customDrawRequestCount;
-
+    uint32 customDrawRequestCount = 0;
     FilePath sourceTilemaskPath;
 };
+
+
+
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */
