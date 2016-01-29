@@ -199,7 +199,7 @@ void EntityGroup::FilterChildrenComponents()
     {
         if (ContainsEntity(i->first->GetParent()))
         {
-            entities.erase(i++);
+            i = entities.erase(i);
         }
         else
         {
