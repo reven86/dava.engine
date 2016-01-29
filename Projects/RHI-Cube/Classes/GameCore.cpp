@@ -94,7 +94,7 @@ void GameCore::SetupTriangle()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos = VP_IN_POSITION;"
+    "    float3 in_pos = VP_IN_POSITION.xyz;"
     "    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
     "\n"
     "VPROG_END\n");
@@ -281,7 +281,7 @@ void GameCore::SetupCube()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float4 in_pos      = VP_IN_POSITION;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
@@ -480,7 +480,7 @@ void GameCore::SetupRT()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
     "    float4x4 World = float4x4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
@@ -784,6 +784,9 @@ void GameCore::OnAppStarted()
     //    SetupTank();
     SetupRT();
 
+    perfQuerySet = rhi::CreatePerfQuerySet(16);
+    perfQuerySetFired = false;
+
     //    sceneRenderTest.reset(new SceneRenderTestV3());
 
     /*
@@ -846,7 +849,7 @@ void GameCore::OnAppStarted()
     ""
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
@@ -883,7 +886,7 @@ void GameCore::OnAppStarted()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
@@ -926,6 +929,7 @@ void GameCore::OnAppStarted()
     Logger::Info( "\n\n====================" );
     fp.Dump();
 */
+
     inited = true;
 }
 
@@ -967,7 +971,26 @@ void GameCore::OnForeground()
 
 void GameCore::Update(float32 timeElapsed)
 {
+    static float screenshot_ttw = 5.0f;
+
+    screenshot_ttw -= timeElapsed;
+    if (screenshot_ttw < 0)
+    {
+        rhi::TakeScreenshot(&ScreenShotCallback);
+        screenshot_ttw = 5.0f;
+    }
+
     //    sceneRenderTest->Update(timeElapsed);
+
+    static bool old_s_pressed = false;
+    bool new_s_pressed = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::KEY_S);
+
+    if (!old_s_pressed && new_s_pressed)
+    {
+        DAVA::Logger::Info("taking screenshot...");
+        rhi::TakeScreenshot(&GameCore::ScreenShotCallback);
+    }
+    old_s_pressed = new_s_pressed;
 
     static std::vector<profiler::CounterInfo> counter;
 
@@ -1254,6 +1277,36 @@ void GameCore::manticoreDraw()
     rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 1, pl);
     #endif
 
+    if (perfQuerySetFired)
+    {
+        bool ready = false;
+        bool valid = false;
+
+        rhi::GetPerfQuerySetStatus(perfQuerySet, &ready, &valid);
+
+        if (ready && valid)
+        {
+            uint64 freq = 0;
+            uint64 t0, t1;
+
+            rhi::GetPerfQuerySetFreq(perfQuerySet, &freq);
+            //            Logger::Info("perf-query:  freq= %u",uint32(freq));
+
+            rhi::GetPerfQuerySetFrameTimestamps(perfQuerySet, &t0, &t1);
+
+            Logger::Info("GPU frame = %.3f ms", float(t1 - t0) / float(freq / 1000));
+
+            perfQuerySetFired = false;
+        }
+    }
+
+    if (!perfQuerySetFired)
+    {
+        rhi::ResetPerfQuerySet(perfQuerySet);
+        rhi::SetFramePerfQuerySet(perfQuerySet);
+        perfQuerySetFired = true;
+    }
+
     rhi::RenderPass::Begin(pass);
     rhi::BeginPacketList(pl[0]);
 
@@ -1322,7 +1375,7 @@ void GameCore::manticoreDraw()
 
     #if USE_SECOND_CB
     {
-        packet.options |= rhi::Packet::OPT_WIREFRAME;
+        //        packet.options |= rhi::Packet::OPT_WIREFRAME;
         const unsigned row_cnt = 200;
         const unsigned col_cnt = 12;
         //const unsigned  row_cnt = 1;
@@ -1713,4 +1766,14 @@ void GameCore::EndFrame()
             DbgDraw::Text2D(x1, y, clr, "= %u", StatSet::StatValue(id[i]));
         }
     }
+}
+
+void GameCore::ScreenShotCallback(uint32 width, uint32 height, const void* rgba)
+{
+    DAVA::Logger::Info("saving screenshot");
+
+    DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, (const uint8*)rgba);
+
+    if (img)
+        img->Save("~doc:/screenshot.png");
 }

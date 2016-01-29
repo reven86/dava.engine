@@ -295,13 +295,13 @@ void ParticleEffectComponent::RebuildEffectModifiables()
         emitterDatas[i].emitter->GetModifableLines(modifiables);
     }
 
-    for (List<ModifiablePropertyLineBase *>::iterator it = modifiables.begin(), e=modifiables.end(); it!=e; ++it)
-	{
-		externalModifiables.insert(std::make_pair((*it)->GetValueName(), (*it)));
-		Map<String, float32>::iterator itName = externalValues.find((*it)->GetValueName());
-		if (itName!=externalValues.end())
-			(*it)->SetModifier((*itName).second);
-	}	
+    for (List<ModifiablePropertyLineBase *>::iterator it = modifiables.begin(), e = modifiables.end(); it != e; ++it)
+    {
+        externalModifiables.insert(std::make_pair((*it)->GetValueName(), (*it)));
+        Map<String, float32>::iterator itName = externalValues.find((*it)->GetValueName());
+        if (itName != externalValues.end())
+            (*it)->SetModifier((*itName).second);
+    }	
 }
 
 	
@@ -334,9 +334,9 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
         emitterArch->SetVector3("emitter.position", emitterData.spawnPosition);
         emittersArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), emitterArch);
         emitterArch->Release();
-	} 
-	archive->SetArchive("pe.emitters", emittersArch);
-    
+    }
+    archive->SetArchive("pe.emitters", emittersArch);
+
     archive->SetUInt32("ro.flags", effectRenderObject->GetFlags() & PARTICLE_FLAGS_SERIALIZATION_CRITERIA);
 	emittersArch->Release();
 }
@@ -357,7 +357,7 @@ void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationCo
 		KeyedArchive *emittersArch = archive->GetArchive("pe.emitters");
         emitterDatas.resize(emittersCount);
         for (uint32 i = 0; i < emittersCount; ++i)
-        {		
+        {
             KeyedArchive *emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
 			String filename = emitterArch->GetString("emitter.filename");
             if (!filename.empty())
@@ -428,12 +428,12 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
         emitterDatas.push_back(emitterData);
         if (!lodDefined)
         {
-			LodComponent *lodComponent = static_cast<LodComponent *>(child->GetComponent(Component::LOD_COMPONENT));
-			if (lodComponent)
-			{
-				entity->AddComponent(lodComponent->Clone(entity));
-				lodDefined = true;
-			}
+            LodComponent* lodComponent = static_cast<LodComponent*>(child->GetComponent(Component::LOD_COMPONENT));
+            if (lodComponent)
+            {
+                entity->AddComponent(lodComponent->Clone(entity));
+                lodDefined = true;
+            }
 		}
 	}
 

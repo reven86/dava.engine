@@ -189,13 +189,13 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
             drawer->DrawArrow(center + direction, center, direction.Length() / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
-        else if(light->GetType() == Light::TYPE_POINT)
-		{
+        else if (light->GetType() == Light::TYPE_POINT)
+        {
             drawer->DrawIcosahedron(worldBox.GetCenter(), worldBox.GetSize().x / 2, DAVA::Color(1.0f, 1.0f, 0, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             drawer->DrawIcosahedron(worldBox.GetCenter(), worldBox.GetSize().x / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
         else
-		{
+        {
             drawer->DrawAABox(worldBox, DAVA::Color(1.0f, 1.0f, 0, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             drawer->DrawAABox(worldBox, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
@@ -213,7 +213,8 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
     if(sc)
     {
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+        Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor();
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, ClampToUnityRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
     }
 }
 
@@ -242,8 +243,10 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
             SoundEvent * sEvent = sc->GetSoundEvent(i);
             float32 distance = sEvent->GetMaxDistance();
 
+            Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor();
+
             sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(position, distance,
-                                                                              settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+                                                                              ClampToUnityRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
 
             sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i,
                                                   sEvent->GetEventName(), Color::White, TextDrawSystem::Align::Center);
