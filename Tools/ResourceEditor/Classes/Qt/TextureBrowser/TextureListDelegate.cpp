@@ -44,7 +44,7 @@
 #include "Main/QtUtils.h"
 
 #include "Project/ProjectManager.h"
-#include "Preset/Preset.h"
+#include "Preset.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
