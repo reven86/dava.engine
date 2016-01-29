@@ -794,7 +794,10 @@ public:
 
         multiline = value;
         Logger::Info("start SingleLineOrPasswordField 18.1");
-        [nsTextField setUsesSingleLineMode:(!multiline)];
+        if ([nsTextField respondsToSelector:@selector(setUsesSingleLineMode:)])
+        {
+            [nsTextField setUsesSingleLineMode:(!multiline)];
+        }
         Logger::Info("start SingleLineOrPasswordField 18.2");
         [nsTextField.cell setWraps:(!multiline)];
         Logger::Info("start SingleLineOrPasswordField 18.3");
