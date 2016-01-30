@@ -56,9 +56,6 @@ public:
 
 protected:
     void UnpackHelp();
-
-private:
-    Cursor * cursor;
 };
 
 }

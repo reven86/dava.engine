@@ -29,11 +29,11 @@
 
 #include "QtPropertyDataMetaObject.h"
 
-QtPropertyDataMetaObject::QtPropertyDataMetaObject(void *_object, const DAVA::MetaInfo *_meta)
-	: QtPropertyDataDavaVariant(DAVA::VariantType::LoadData(_object, _meta))
-	, object(_object)
-	, meta(_meta)
-	, lastCommand(NULL)
+QtPropertyDataMetaObject::QtPropertyDataMetaObject(const DAVA::FastName& name, void* _object, const DAVA::MetaInfo* _meta)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType::LoadData(_object, _meta))
+    , object(_object)
+    , meta(_meta)
+    , lastCommand(NULL)
 { }
 
 QtPropertyDataMetaObject::~QtPropertyDataMetaObject()

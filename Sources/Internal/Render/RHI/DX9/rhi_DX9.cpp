@@ -351,6 +351,7 @@ void dx9_Initialize(const InitParam& param)
     VertexBufferDX9::SetupDispatch(&DispatchDX9);
     IndexBufferDX9::SetupDispatch(&DispatchDX9);
     QueryBufferDX9::SetupDispatch(&DispatchDX9);
+    PerfQuerySetDX9::SetupDispatch(&DispatchDX9);
     TextureDX9::SetupDispatch(&DispatchDX9);
     PipelineStateDX9::SetupDispatch(&DispatchDX9);
     ConstBufferDX9::SetupDispatch(&DispatchDX9);

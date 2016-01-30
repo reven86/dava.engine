@@ -141,9 +141,9 @@ public:
     void SetReturnKeyType(DAVA::int32 value);
     void SetEnableReturnKeyAutomatically(bool value);
     uint32 GetCursorPos();
-	void SetCursorPos(uint32 pos);
-	void SetMaxLength(DAVA::int32 value);
-	void SetMultiline(bool value);
+    void SetCursorPos(uint32 pos);
+    void SetMaxLength(DAVA::int32 value);
+    void SetMultiline(bool value);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);

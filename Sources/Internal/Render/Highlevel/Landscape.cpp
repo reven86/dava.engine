@@ -354,77 +354,65 @@ Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
     return res;
 };
 
-bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal) const
+bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-	if (point.x > bbox.max.x ||
-		point.x < bbox.min.x ||
-		point.y > bbox.max.y ||
-		point.y < bbox.min.y)
-	{
-		return false;
-	}
-
-    if (heightmap->Data() == NULL)
+    if ((point.x > bbox.max.x) || (point.x < bbox.min.x) || (point.y > bbox.max.y) || (point.y < bbox.min.y))
     {
-        Logger::Error("[Landscape::PlacePoint] Trying to place point on empty heightmap data!");
         return false;
     }
 
-    float32 kW = (float32)(heightmap->Size() - 1) / (bbox.max.x - bbox.min.x);
+    const auto hmData = heightmap->Data();
+    if (hmData == nullptr)
+    {
+        Logger::Error("[Landscape::GetHeightAtPoint] Trying to get height at point using empty heightmap data!");
+        return false;
+    }
 
-    float32 x = (point.x - bbox.min.x) * kW;
-    float32 y = (point.y - bbox.min.y) * kW;
+    auto hmSize = heightmap->Size();
+    float32 fx = static_cast<float>(hmSize - 1) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+    float32 fy = static_cast<float>(hmSize - 1) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+    int32 x = static_cast<int32>(fx);
+    int32 y = static_cast<int32>(fy);
+    int nextX = DAVA::Min(x + 1, hmSize - 1);
+    int nextY = DAVA::Min(y + 1, hmSize - 1);
+    int i00 = x + y * hmSize;
+    int i01 = nextX + y * hmSize;
+    int i10 = x + nextY * hmSize;
+    int i11 = nextX + nextY * hmSize;
+    float h00 = static_cast<float>(hmData[i00]);
+    float h01 = static_cast<float>(hmData[i01]);
+    float h10 = static_cast<float>(hmData[i10]);
+    float h11 = static_cast<float>(hmData[i11]);
+    float dx = fx - static_cast<float>(x);
+    float dy = fy - static_cast<float>(y);
+    float h0 = h00 * (1.0f - dx) + h01 * dx;
+    float h1 = h10 * (1.0f - dx) + h11 * dx;
+    value = (h0 * (1.0f - dy) + h1 * dy) * GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
 
-    float32 x1 = floor(x);
-    float32 y1 = floor(y);
+    return true;
+}
 
-    float32 x2 = ceil(x);
-    float32 y2 = ceil(y);
+bool Landscape::PlacePoint(const Vector3& worldPoint, Vector3& result, Vector3* normal) const
+{
+    result = worldPoint;
 
-    if (x1 == x2)
-        x2 += 1.0f;
+    if (GetHeightAtPoint(worldPoint, result.z) == false)
+    {
+        return false;
+    }
 
-    if (y1 == y2)
-        y2 += 1.0f;
+    if (normal != nullptr)
+    {
+        const float32 normalDelta = 0.01f;
+        Vector3 dx = result + Vector3(normalDelta, 0.0f, 0.0f);
+        Vector3 dy = result + Vector3(0.0f, normalDelta, 0.0f);
+        GetHeightAtPoint(dx, dx.z);
+        GetHeightAtPoint(dy, dy.z);
+        *normal = (dx - result).CrossProduct(dy - result);
+        normal->Normalize();
+    }
 
-    uint16* data = heightmap->Data();
-    int32 imW = heightmap->Size();
-
-    Vector3 p1(x1, y1, 0);
-    p1.z = data[(int32)p1.y * imW + (int32)p1.x];
-
-    Vector3 p2(x2, y2, 0);
-    p2.z = data[(int32)p2.y * imW + (int32)p2.x];
-
-    Vector3 p3;
-    if (x - x1 >= y - y1)
-        p3 = Vector3(x2, y1, 0);
-    else
-		p3 = Vector3(x1, y2, 0);
-	p3.z = data[(int32)p3.y * imW + (int32)p3.x];
-
-	//http://algolist.manual.ru/maths/geom/equation/plane.php
-	float32 A = p1.y * (p2.z - p3.z) + p2.y * (p3.z - p1.z) + p3.y * (p1.z - p2.z); 
-	float32 B = p1.z * (p2.x - p3.x) + p2.z * (p3.x - p1.x) + p3.z * (p1.x - p2.x);
-	float32 C = p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
-	float32 D = p1.x * (p2.y * p3.z - p3.y * p2.z) + p2.x * (p3.y * p1.z - p1.y * p3.z) + p3.x * (p1.y * p2.z - p2.y * p1.z);
-
-	result.x = point.x;
-	result.y = point.y;
-
-	result.z = (D - B * y - A * x) / C;
-	result.z = bbox.min.z + result.z / ((float32)Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z);
-
-	if (normal != 0)
-	{
-		normal->x = A;
-		normal->y = B;
-		normal->z = C;
-		normal->Normalize();
-	}
-	return true;
+    return true;
 };
 
 void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels)

@@ -80,6 +80,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
+    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
     QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
@@ -362,8 +363,18 @@ void EditorCore::UpdateLanguage()
 
 void EditorCore::OnRtlChanged(bool isRtl)
 {
-    UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
+    UIControlSystem::Instance()->SetRtl(isRtl);
     for(auto &document : documents)
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void EditorCore::OnBiDiSupportChanged(bool support)
+{
+    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
+    for (auto &document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();

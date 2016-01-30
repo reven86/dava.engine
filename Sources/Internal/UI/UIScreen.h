@@ -100,7 +100,6 @@ private:
 	static List<UIScreen*>	appScreens;
 	static int32			groupIdCounter;
 	eFillBorderOrder fillBorderOrder;
-    Rect fullScreenRect;
 };
 
 	
