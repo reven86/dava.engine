@@ -165,6 +165,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
 {
     setupUi(this);
+    filterLine->setEnabled(false);
     packageModel = new PackageModel(this);
     filteredPackageModel = new FilteredPackageModel(this);
 
@@ -179,7 +180,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &PackageWidget::OnCurrentIndexChanged);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 
-    connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
+    connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::OnFilterTextChanged);
     CreateActions();
     PlaceActions();
 }
@@ -195,6 +196,7 @@ void PackageWidget::OnDocumentChanged(Document* arg)
     treeView->setUpdatesEnabled(false);
 
     SaveContext();
+    filterLine->clear(); //invalidate filter line state
     document = arg;
     std::weak_ptr<PackageNode> package;
     std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
@@ -209,6 +211,7 @@ void PackageWidget::OnDocumentChanged(Document* arg)
 
     treeView->setColumnWidth(0, treeView->size().width());
     treeView->setUpdatesEnabled(isUpdatesEnabled);
+    filterLine->setEnabled(document != nullptr);
 }
 
 void PackageWidget::CreateActions()
@@ -324,8 +327,14 @@ void PackageWidget::SaveContext()
         return;
     }
     PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
-    context->expandedIndexes = GetExpandedIndexes();
-    context->filterString = filterLine->text();
+    if(filterLine->text().isEmpty())
+    {
+        context->expandedIndexes = GetExpandedIndexes();
+    }
+    else
+    {
+        context->filterString = filterLine->text();
+    }
 }
 
 void PackageWidget::RefreshActions()
@@ -657,26 +666,28 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
     }
 }
 
-void PackageWidget::filterTextChanged(const QString &filterText)
+void PackageWidget::OnFilterTextChanged(const QString &filterText)
 {
     if (!document.isNull())
     {
-        if (lastFilterText.isEmpty())
+        if (lastFilterTextEmpty)
         {
-            expandedIndexes = GetExpandedIndexes();
+            PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
+            context->expandedIndexes = GetExpandedIndexes();
         }
         filteredPackageModel->setFilterFixedString(filterText);
 
         if (filterText.isEmpty())
         {
+            PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
             treeView->collapseAll();
-            RestoreExpandedIndexes(expandedIndexes);
+            RestoreExpandedIndexes(context->expandedIndexes);
         }
         else
         {
             treeView->expandAll();
         }
-        lastFilterText = filterText;
+        lastFilterTextEmpty = filterText.isEmpty();
     }
 }
 
