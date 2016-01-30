@@ -55,6 +55,7 @@ Document::~Document()
     {
         delete context.second;
     }
+    SafeRelease(package);
 }
 
 const FilePath& Document::GetPackageFilePath() const
@@ -69,7 +70,7 @@ QString Document::GetPackageAbsolutePath() const
 
 QUndoStack* Document::GetUndoStack() const
 {
-    return undoStack;
+    return undoStack.get();
 }
 
 PackageNode *Document::GetPackage() const
@@ -79,7 +80,7 @@ PackageNode *Document::GetPackage() const
 
 QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
 {
-    return commandExecutor;
+    return commandExecutor.get();
 }
 
 WidgetContext* Document::GetContext(void* requester) const
