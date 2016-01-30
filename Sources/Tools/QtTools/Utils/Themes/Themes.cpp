@@ -51,7 +51,7 @@ QStringList themesNames = {"classic", "dark"};
     
 void SetupClassicTheme();
 void SetupDarkTheme();
-
+    
 void InitFromQApplication()
 {
     themesInitialized = true;
@@ -60,14 +60,22 @@ void InitFromQApplication()
     qAddPostRoutine([](){
         QSettings settings(QApplication::organizationName(), QApplication::applicationName());
         settings.beginGroup(Themes_namespace::themeSettingsGroup);
-        settings.setValue(Themes_namespace::themeSettingsKey, currentTheme);
+        settings.setValue(Themes_namespace::themeSettingsKey, static_cast<int>(currentTheme));
         settings.endGroup();
+        settings.sync();
     });
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.beginGroup(Themes_namespace::themeSettingsGroup);
     auto value = settings.value(Themes_namespace::themeSettingsKey);
-    currentTheme = value.canConvert<eTheme>() ? value.value<eTheme>() : Classic;
     settings.endGroup();
+    if(value.canConvert<int>())
+    {
+        currentTheme = static_cast<eTheme>(value.value<int>());
+    }
+    else
+    {
+        currentTheme = Classic;
+    }
     SetCurrentTheme(currentTheme);
 }
 
@@ -123,15 +131,16 @@ void SetupDarkTheme()
     qApp->setStyle(QStyleFactory::create("Fusion"));
     
     QPalette darkPalette;
+    QColor textColor(0xf2, 0xf2, 0xf2);
     darkPalette.setColor(QPalette::Window, QColor(53,53,53));
-    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::WindowText, textColor);
     darkPalette.setColor(QPalette::Base, QColor(25,25,25));
     darkPalette.setColor(QPalette::AlternateBase, QColor(53,53,53));
-    darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
-    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::ToolTipBase, textColor);
+    darkPalette.setColor(QPalette::ToolTipText, textColor);
+    darkPalette.setColor(QPalette::Text, textColor);
     darkPalette.setColor(QPalette::Button, QColor(53,53,53));
-    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::ButtonText, textColor);
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
     
@@ -140,7 +149,7 @@ void SetupDarkTheme()
     
     qApp->setPalette(darkPalette);
     
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+    qApp->setStyleSheet("QToolTip { color: #f2f2f2; background-color: #2a82da; border: 1px solid white; }");
 }
 
 

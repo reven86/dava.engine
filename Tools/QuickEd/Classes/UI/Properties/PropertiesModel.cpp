@@ -52,6 +52,7 @@
 #include "UI/UIControl.h"
 
 #include "QtTools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include <chrono>
 
@@ -191,7 +192,10 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             break;
 
         case Qt::BackgroundRole:
-            return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
+            if(property->GetType() == AbstractProperty::TYPE_HEADER)
+            {
+                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : "indigo";
+            }
             
         case Qt::FontRole:
             {
@@ -214,10 +218,14 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                 {
                     bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
                     if (setByStyle)
-                        return QColor(Qt::darkGreen);
+                        return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::darkGreen) : "light green";
                 }
             }
-            return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+            if(flags & AbstractProperty::EF_INHERITED)
+            {
+                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
+            }
+            return QVariant();
         }
 
     }

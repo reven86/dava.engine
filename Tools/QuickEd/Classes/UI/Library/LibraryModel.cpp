@@ -47,6 +47,7 @@
 
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 using namespace DAVA;
 
@@ -93,7 +94,6 @@ LibraryModel::LibraryModel(QObject* parent)
     }
 
     defaultControlsRootItem = new QStandardItem(tr("Default controls"));
-    defaultControlsRootItem->setBackground(QBrush(Qt::lightGray));
     invisibleRootItem()->appendRow(defaultControlsRootItem);
     for (ControlNode* defaultControl : defaultControls)
     {
@@ -207,6 +207,19 @@ void LibraryModel::SetPackageNode(PackageNode *package_)
     }
 }
 
+QVariant LibraryModel::data(const QModelIndex &index, int role) const
+{
+    if(role == Qt::BackgroundRole)
+    {
+        QStandardItem *item = itemFromIndex(index);
+        if(item->parent() == nullptr)
+        {
+            return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : "indigo";
+        }
+    }
+    return QStandardItemModel::data(index, role);
+}
+
 QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *item) const
 {
     DVASSERT(nullptr != node);
@@ -299,7 +312,6 @@ void LibraryModel::CreateControlsRootItem()
     {
         controlsRootItem = new QStandardItem(tr("Package controls"));
         controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(package->GetPackageControlsNode())), POINTER_DATA);
-        controlsRootItem->setBackground(QBrush(Qt::lightGray));
         invisibleRootItem()->insertRow(1, controlsRootItem);
     }
 }
@@ -312,7 +324,6 @@ void LibraryModel::CreateImportPackagesRootItem()
     {
         importedPackageRootItem = new QStandardItem(tr("Importred controls"));
         importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(package->GetImportedPackagesNode())), POINTER_DATA);
-        importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
         invisibleRootItem()->appendRow(importedPackageRootItem);
     }
 }

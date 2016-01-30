@@ -49,6 +49,4 @@ namespace Themes
     eTheme GetCurrentTheme();
 };
 
-Q_DECLARE_METATYPE(Themes::eTheme);
-
 #endif // __QT_TOOLS_THEMES_H__
