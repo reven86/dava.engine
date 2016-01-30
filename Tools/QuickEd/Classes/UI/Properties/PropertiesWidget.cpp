@@ -106,21 +106,20 @@ void PropertiesWidget::OnDocumentChanged(Document* document)
     }
     else
     {
-        commandExecutor.reset();
+        commandExecutor = nullptr;
     }
     UpdateModel(nullptr); //SelectionChanged will invoke by Queued Connection, so selectedNode have invalid value
 }
 
 void PropertiesWidget::OnAddComponent(QAction *action)
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr != commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
         uint32 componentType = action->data().toUInt();
         if (componentType < UIComponent::COMPONENT_COUNT)
         {
-            commandExecutorPtr->AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
+            commandExecutor->AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
         }
         else
         {
@@ -131,9 +130,8 @@ void PropertiesWidget::OnAddComponent(QAction *action)
 
 void PropertiesWidget::OnRemove()
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr != commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
         QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
         if (!indices.empty())
@@ -146,14 +144,14 @@ void PropertiesWidget::OnRemove()
                 ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
                 if (section)
                 {
-                    commandExecutorPtr->RemoveComponent(DynamicTypeCheck<ControlNode*>(selectedNode), section->GetComponentType(), section->GetComponentIndex());
+                    commandExecutor->RemoveComponent(DynamicTypeCheck<ControlNode*>(selectedNode), section->GetComponentType(), section->GetComponentIndex());
                 }
                 else
                 {
                     StyleSheetProperty *styleProperty = dynamic_cast<StyleSheetProperty*>(property);
                     if (styleProperty)
                     {
-                        commandExecutorPtr->RemoveStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), styleProperty->GetPropertyIndex());
+                        commandExecutor->RemoveStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), styleProperty->GetPropertyIndex());
                     }
                     else
                     {
@@ -163,7 +161,7 @@ void PropertiesWidget::OnRemove()
                             int32 index = property->GetParent()->GetIndex(selectorProperty);
                             if (index != -1)
                             {
-                                commandExecutorPtr->RemoveStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode), index);
+                                commandExecutor->RemoveStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode), index);
                             }
                         }
                     }
@@ -176,14 +174,13 @@ void PropertiesWidget::OnRemove()
 
 void PropertiesWidget::OnAddStyleProperty(QAction *action)
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr != commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
         uint32 propertyIndex = action->data().toUInt();
         if (propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT)
         {
-            commandExecutorPtr->AddStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), propertyIndex);
+            commandExecutor->AddStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), propertyIndex);
         }
         else
         {
@@ -195,11 +192,10 @@ void PropertiesWidget::OnAddStyleProperty(QAction *action)
 
 void PropertiesWidget::OnAddStyleSelector()
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr != commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
-        commandExecutorPtr->AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
+        commandExecutor->AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
     }
 }
 

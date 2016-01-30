@@ -74,7 +74,7 @@ public slots:
 
 private slots:
     void OnSelectionChangedFromView(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
-    void filterTextChanged(const QString&);
+    void OnFilterTextChanged(const QString&);
     void OnRename();
     void OnAddStyle();
     void OnMoveUp();
@@ -123,11 +123,10 @@ private:
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
 
-    QString lastFilterText;
-    ExpandedIndexes expandedIndexes;
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
     QStack<QPersistentModelIndex> currentIndexes;
+    bool lastFilterTextEmpty = true;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

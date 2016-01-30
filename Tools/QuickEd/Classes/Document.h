@@ -62,14 +62,14 @@ class Document final : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(std::shared_ptr<PackageNode> package, QObject* parent = nullptr);
+    explicit Document(const DAVA::RefPtr<PackageNode> &package, QObject* parent = nullptr);
     ~Document();
 
     const DAVA::FilePath &GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack() const;
-    std::shared_ptr<PackageNode> GetPackage() const;
-    std::shared_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
+    PackageNode *GetPackage() const;
+    QtModelPackageCommandExecutor *GetCommandExecutor() const;
     WidgetContext* GetContext(void* requester) const;
 
     void SetContext(void* requester, WidgetContext* widgetContext);
@@ -83,9 +83,9 @@ public slots:
 private:
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
-    std::shared_ptr<PackageNode> package;
-    std::shared_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    QUndoStack* undoStack = nullptr;
+    PackageNode *package;
+    std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
+    std::unique_ptr<QUndoStack> undoStack;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

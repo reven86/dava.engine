@@ -62,24 +62,18 @@ PackageModel::PackageModel(QObject* parent)
 {
 }
 
-void PackageModel::Reset(std::weak_ptr<PackageNode> package_, std::weak_ptr<QtModelPackageCommandExecutor> executor_)
+void PackageModel::Reset(PackageNode *package_, QtModelPackageCommandExecutor *executor_)
 {
     beginResetModel();
+    if(nullptr != package)
     {
-        auto packagePtr = package.lock();
-        if (nullptr != packagePtr)
-        {
-            packagePtr->RemoveListener(this);
-        }
+        package->RemoveListener(this);
     }
     package = package_;
     commandExecutor = executor_;
+    if(nullptr != package)
     {
-        auto packagePtr = package.lock();
-        if (nullptr != packagePtr)
-        {
-            packagePtr->AddListener(this);
-        }
+        package->AddListener(this);
     }
     endResetModel();
 }
@@ -102,11 +96,10 @@ QModelIndex PackageModel::index(int row, int column, const QModelIndex &parent) 
     }
     if (!parent.isValid())
     {
-        auto packagePtr = package.lock();
-        DVASSERT(packagePtr != nullptr);
-        if (packagePtr != nullptr)
+        DVASSERT(nullptr != package);
+        if(nullptr != package)
         {
-            return createIndex(row, column, packagePtr->Get(row));
+            return createIndex(row, column, package->Get(row));
         }
         return QModelIndex();
     }
@@ -124,12 +117,11 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(child.internalPointer());
     PackageBaseNode *parent = node->GetParent();
-    auto packagePtr = package.lock();
-    DVASSERT(packagePtr != nullptr);
-    if (packagePtr != nullptr)
+    DVASSERT(package != nullptr);
+    if (package != nullptr)
     {
         DVASSERT(nullptr != parent);
-        if (nullptr == parent || parent == packagePtr.get())
+        if (nullptr == parent || parent == package)
         {
             return QModelIndex();
         }
@@ -143,10 +135,9 @@ int PackageModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
     {
-        auto packagePtr = package.lock();
-        if (packagePtr != nullptr)
+        if (package != nullptr)
         {
-            return packagePtr->GetCount();
+            return package->GetCount();
         }
         return 0;
     }
@@ -304,9 +295,8 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
     }
     if(role == Qt::EditRole)
     {
-        auto commandExecutorPtr = commandExecutor.lock();
-        DVASSERT(nullptr != commandExecutorPtr);
-        if (nullptr != commandExecutorPtr)
+        DVASSERT(nullptr != commandExecutor);
+        if (nullptr != commandExecutor)
         {
             ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
             DVASSERT(controlNode);
@@ -314,7 +304,7 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
             const auto& newName = value.toString().toStdString();
             if (newName != node->GetName())
             {
-                commandExecutorPtr->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
+                commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
                 return true;
             }
         }
@@ -363,9 +353,8 @@ QStringList PackageModel::mimeTypes() const
 
 QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
 {
-    auto packagePtr = package.lock();
-    DVASSERT(nullptr != packagePtr);
-    if (nullptr == packagePtr)
+    DVASSERT(nullptr != package);
+    if (nullptr == package)
     {
         return nullptr;
     }
@@ -398,7 +387,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     }
     
     YamlPackageSerializer serializer;
-    serializer.SerializePackageNodes(packagePtr.get(), mimeData->GetControls(), mimeData->GetStyles());
+    serializer.SerializePackageNodes(package, mimeData->GetControls(), mimeData->GetStyles());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -416,16 +405,14 @@ int PackageModel::GetRowIndex(int row, const QModelIndex& parent) const
 
 bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr == commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr == commandExecutor)
     {
         return false;
     }
 
-    auto packagePtr = package.lock();
-    DVASSERT(nullptr != packagePtr);
-    if (nullptr == packagePtr)
+    DVASSERT(nullptr != package);
+    if (nullptr == package)
     {
         return false;
     }
@@ -456,17 +443,17 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         }
         if (action == Qt::CopyAction)
         {
-            commandExecutorPtr->CopyControls(srcControls, destControlContainer, rowIndex);
+            commandExecutor->CopyControls(srcControls, destControlContainer, rowIndex);
         }
         else if (action == Qt::MoveAction)
         {
             emit BeforeNodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
-            commandExecutorPtr->MoveControls(srcControls, destControlContainer, rowIndex);
+            commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
             emit NodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
         }
         else if (action == Qt::LinkAction)
         {
-            commandExecutorPtr->InsertInstances(srcControls, destControlContainer, rowIndex);
+            commandExecutor->InsertInstances(srcControls, destControlContainer, rowIndex);
         }
         else
         {
@@ -488,12 +475,12 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         }
         if (action == Qt::CopyAction)
         {
-            commandExecutorPtr->CopyStyles(srcStyles, destStylesContainer, rowIndex);
+            commandExecutor->CopyStyles(srcStyles, destStylesContainer, rowIndex);
         }
         else if (action == Qt::MoveAction)
         {
             emit BeforeNodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
-            commandExecutorPtr->MoveStyles(srcStyles, destStylesContainer, rowIndex);
+            commandExecutor->MoveStyles(srcStyles, destStylesContainer, rowIndex);
             emit NodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
         }
         else
@@ -516,13 +503,13 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         }
         if (!packages.empty())
         {
-            commandExecutorPtr->AddImportedPackagesIntoPackage(packages, packagePtr.get());
+            commandExecutor->AddImportedPackagesIntoPackage(packages, package);
         }
     }
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        commandExecutorPtr->Paste(packagePtr.get(), destNode, rowIndex, string);
+        commandExecutor->Paste(package, destNode, rowIndex, string);
         return true;
     }
 

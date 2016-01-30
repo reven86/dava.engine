@@ -59,7 +59,7 @@ public:
     };
     PropertiesModel(QObject* parent = nullptr);
     virtual ~PropertiesModel();
-    void Reset(PackageBaseNode* node_, std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor_);
+    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor *commandExecutor_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
@@ -108,7 +108,7 @@ private:
     ControlNode *controlNode = nullptr;
     StyleSheetNode *styleSheet = nullptr;
     AbstractProperty *rootProperty = nullptr;
-    std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
+    QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
     LazyUpdater *lazyUpdater = nullptr;
 };

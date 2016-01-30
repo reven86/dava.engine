@@ -92,7 +92,7 @@ namespace
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
     : document(_document)
-    , packageNode(document->GetPackage().get())
+    , packageNode(document->GetPackage())
 {
 }
 
@@ -163,12 +163,12 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash)
+void QtModelPackageCommandExecutor::ChangeProperty(const Vector<ChangePropertyAction>& propertyActions, size_t hash)
 {
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
-    for (const auto& property : properties)
+    Vector<ChangePropertyAction> propertiesToChange;
+    for (const auto& property : propertyActions)
     {
-        if (!std::get<1>(property)->IsReadOnly())
+        if (!property.property->IsReadOnly())
         {
             propertiesToChange.emplace_back(property);
         }

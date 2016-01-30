@@ -91,6 +91,16 @@ struct MagnetLineInfo
     const DAVA::Vector2::eAxis axis;
 };
 
+struct ChangePropertyAction
+{
+    ChangePropertyAction(ControlNode *node_, AbstractProperty *property_, const DAVA::VariantType &value_)
+    : node(node_), property(property_), value(value_)
+    { }
+    ControlNode* node = nullptr;
+    AbstractProperty* property = nullptr;
+    DAVA::VariantType value;
+};
+
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
@@ -120,14 +130,14 @@ public:
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
+    DAVA::Signal<const DAVA::Vector<ChangePropertyAction>& /*propertyActions*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
     DAVA::Signal<> SelectAllControls;
     DAVA::Signal<const DAVA::Vector2 &/*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
-    DAVA::Signal<const std::weak_ptr<PackageNode> &/*node*/> PackageNodeChanged;
+    DAVA::Signal<PackageNode */*node*/> PackageNodeChanged;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
@@ -138,7 +148,7 @@ private:
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(const std::weak_ptr<PackageNode> &node);
+    void OnPackageNodeChanged(PackageNode *node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);
@@ -149,12 +159,11 @@ private:
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    std::weak_ptr<PackageNode> package;
+    PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
-    DAVA::TrackedObject signalsTracker;
 };
 
 template <class OutIt, class Predicate>

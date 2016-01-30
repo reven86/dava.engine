@@ -540,11 +540,8 @@ void EditorCore::CloseDocument(int index)
     delete detached; //some widgets hold this document inside :(
 }
 
-int EditorCore::CreateDocument(int index, RefPtr<PackageNode> packageRef)
-{
-    PackageNode *packagePtr = SafeRetain(packageRef.Get());
-    std::shared_ptr<PackageNode> package = std::shared_ptr<PackageNode>(packagePtr, [](BaseObject* obj) { obj->Release(); });
-    
+int EditorCore::CreateDocument(int index, const RefPtr<PackageNode> &package)
+{    
     Document *document = new Document(package, this);
     documents.insert(index, document);
     documentGroup->InsertDocument(index, document);
@@ -567,8 +564,7 @@ void EditorCore::SaveDocument(Document *document)
     }
     QString path = document->GetPackageAbsolutePath();
     fileSystemWatcher->removePath(path);
-    auto package = document->GetPackage().get();
-    DVVERIFY(project->SavePackage(package)); //TODO:log here
+    DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
     document->GetUndoStack()->setClean();
     if (!fileSystemWatcher->addPath(path))
     {
