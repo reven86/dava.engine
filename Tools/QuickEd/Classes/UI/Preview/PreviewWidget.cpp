@@ -549,11 +549,11 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
     emit SelectionChanged(selected, deselected);
 }
 
-void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
+void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
 {
     DVASSERT(!document.isNull());
     auto commandExecutor = document->GetCommandExecutor();
-    commandExecutor->ChangeProperty(properties, hash);
+    commandExecutor->ChangeProperty(propertyActions, hash);
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const

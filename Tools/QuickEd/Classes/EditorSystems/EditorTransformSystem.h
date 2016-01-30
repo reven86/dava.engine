@@ -41,6 +41,7 @@ namespace DAVA
 class UIGeometricData;
 class UIControl;
 }
+
 class EditorTransformSystem final : public BaseEditorSystem
 {
 public:

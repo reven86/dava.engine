@@ -32,6 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "Base/Result.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
 #include <QString>
 
@@ -55,12 +56,10 @@ public:
     QtModelPackageCommandExecutor(Document *_document);
     virtual ~QtModelPackageCommandExecutor();
     
-public:
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode *package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
-public:
-    void ChangeProperty(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash = 0);
+    void ChangeProperty(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash = 0);
     void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value, size_t hash = 0);
     void ResetProperty(ControlNode *node, AbstractProperty *property);
 
