@@ -73,22 +73,16 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SelectionSystem::OnPackageNodeChanged(const std::weak_ptr<PackageNode> &packageNode_)
+void SelectionSystem::OnPackageNodeChanged(PackageNode *packageNode_)
 {
+    if (nullptr != packageNode)
     {
-        auto packageNodePtr = packageNode.lock();
-        if (nullptr != packageNodePtr)
-        {
-            packageNodePtr->RemoveListener(this);
-        }
+        packageNode->RemoveListener(this);
     }
     packageNode = packageNode_;
+    if (nullptr != packageNode)
     {
-        auto packageNodePtr = packageNode.lock();
-        if (nullptr != packageNodePtr)
-        {
-            packageNodePtr->AddListener(this);
-        }
+        packageNode->AddListener(this);
     }
 }
 

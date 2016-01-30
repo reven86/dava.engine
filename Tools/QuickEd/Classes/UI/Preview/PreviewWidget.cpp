@@ -229,12 +229,11 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     document = arg;
     if (document.isNull())
     {
-        systemsManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
+        systemsManager->PackageNodeChanged.Emit(nullptr);
     }
     else
     {
-        std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
-        systemsManager->PackageNodeChanged.Emit(packagePtr);
+        systemsManager->PackageNodeChanged.Emit(document->GetPackage());
         LoadContext();
     }
 }

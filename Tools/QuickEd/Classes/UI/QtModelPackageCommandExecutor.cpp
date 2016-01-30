@@ -92,7 +92,7 @@ namespace
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
     : document(_document)
-    , packageNode(document->GetPackage().get())
+    , packageNode(document->GetPackage())
 {
 }
 
