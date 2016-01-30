@@ -164,13 +164,43 @@ public:
     virtual void SetInputEnabled(bool value) = 0;
 
     // Keyboard traits.
-    virtual void SetAutoCapitalizationType(DAVA::int32 value) = 0;
-    virtual void SetAutoCorrectionType(DAVA::int32 value) = 0;
-    virtual void SetSpellCheckingType(DAVA::int32 value) = 0;
-    virtual void SetKeyboardAppearanceType(DAVA::int32 value) = 0;
-    virtual void SetKeyboardType(DAVA::int32 value) = 0;
-    virtual void SetReturnKeyType(DAVA::int32 value) = 0;
-    virtual void SetEnableReturnKeyAutomatically(bool value) = 0;
+    void SetAutoCapitalizationType(DAVA::int32 value)
+    {
+        // not supported implement on client in delegate
+    }
+
+    void SetAutoCorrectionType(DAVA::int32 value)
+    {
+        // not supported implement on client in delegate
+    }
+
+    void SetSpellCheckingType(DAVA::int32 value)
+    {
+        // not supported for NSTextField
+        // we can implement it in NSTextView with property
+        // setContinuousSpellCheckingEnabled:YES
+        // but does we really need it?
+    }
+
+    void SetKeyboardAppearanceType(DAVA::int32 value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    void SetKeyboardType(DAVA::int32 value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    void SetReturnKeyType(DAVA::int32 value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    void SetEnableReturnKeyAutomatically(bool value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
 
     // Cursor pos.
     virtual uint32 GetCursorPos() = 0;
@@ -288,7 +318,9 @@ public:
 
     void CloseKeyboard() override
     {
-        //TODO crush??? [nsTextView resignFirstResponder];
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [[NSApp keyWindow] makeFirstResponder:openGLView];
     }
 
     void GetText(WideString& string) const override
@@ -415,45 +447,6 @@ public:
         [nsTextView setEditable:value];
     }
 
-    // Keyboard traits.
-    void SetAutoCapitalizationType(DAVA::int32 value) override
-    {
-        // not supported implement on client in delegate
-    }
-
-    void SetAutoCorrectionType(DAVA::int32 value) override
-    {
-        // not supported implement on client in delegate
-    }
-
-    void SetSpellCheckingType(DAVA::int32 value) override
-    {
-        // not supported for NSTextField
-        // we can implement it in NSTextView with property
-        // setContinuousSpellCheckingEnabled:YES
-        // but does we really need it?
-    }
-
-    void SetKeyboardAppearanceType(DAVA::int32 value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-
-    void SetKeyboardType(DAVA::int32 value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-
-    void SetReturnKeyType(DAVA::int32 value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-
-    void SetEnableReturnKeyAutomatically(bool value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-
     // Cursor pos.
     uint32 GetCursorPos() override
     {
@@ -566,6 +559,8 @@ public:
 
     void OpenKeyboard() override
     {
+        nsTextField.enabled = YES;
+
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [openGLView.window makeFirstResponder:nsTextField];
 
@@ -586,7 +581,9 @@ public:
 
     void CloseKeyboard() override
     {
-        [nsTextField resignFirstResponder];
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [[NSApp keyWindow] makeFirstResponder:openGLView];
     }
 
     void GetText(WideString& string) const override
@@ -714,44 +711,6 @@ public:
     void SetInputEnabled(bool value) override
     {
         [nsTextField setEditable:value];
-    }
-
-    // Keyboard traits.
-    void SetAutoCapitalizationType(DAVA::int32 value) override
-    {
-        // not supported implement on client in delegate
-    }
-
-    void SetAutoCorrectionType(DAVA::int32 value) override
-    {
-        // not supported implement on client in delegate
-    }
-
-    void SetSpellCheckingType(DAVA::int32 value) override
-    {
-        // not supported for NSTextField
-        // we can implement it in NSTextView with property
-        // setContinuousSpellCheckingEnabled:YES
-        // but does we really need it?
-    }
-
-    void SetKeyboardAppearanceType(DAVA::int32 value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-    void SetKeyboardType(DAVA::int32 value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-
-    void SetReturnKeyType(DAVA::int32 value) override
-    {
-        // not aplicable on mac os with hardware keyboard
-    }
-
-    void SetEnableReturnKeyAutomatically(bool value) override
-    {
-        // not aplicable on mac os with hardware keyboard
     }
 
     // Cursor pos.
@@ -894,7 +853,7 @@ public:
         return ctrl;
     }
 
-    void SetMultiline(bool value)
+    void ChangeMultilineProperty(bool value)
     {
         if (ctrl->IsMultiline() != value)
         {
@@ -1076,7 +1035,7 @@ void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 void TextFieldPlatformImpl::SetMultiline(bool multiline)
 {
     // here use (.) to change internal state, not to transit call to internal IField
-    objcWrapper.SetMultiline(multiline);
+    objcWrapper.ChangeMultilineProperty(multiline);
 }
 
 void TextFieldPlatformImpl::SetRenderToTexture(bool value)
@@ -1411,20 +1370,6 @@ doCommandBySelector:(SEL)commandSelector
 @end
 
 @implementation CustomTextView
-
-// make click event pass throu to dava input system, and select
-// from dava set focused control
-//- (NSView*)hitTest:(NSPoint)aPoint
-//{
-//    return nil;
-//}
-- (void)mouseDown:(NSEvent*)theEvent
-{
-    // pass event to DAVA input for selection and focus work
-    //    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
-    //    [openGLView mouseDown:theEvent];
-    [super mouseDown:theEvent];
-}
 
 @end
 

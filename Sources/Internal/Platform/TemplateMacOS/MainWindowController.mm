@@ -81,6 +81,11 @@
         }
     }
 
+    // HACK first part if any textfield(native) is focused send keyUp and keyDown events to
+    // openGLView manualy but only if current event not change focus control
+    // need for client battle chat work and other textfield without modifications
+    DAVA::UIControl* focusedCtrl = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+
     // http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
     [super sendEvent:theEvent];
     if (theEvent.modifierFlags & NSCommandKeyMask)
@@ -88,6 +93,21 @@
         if (theEvent.type == NSKeyUp)
         {
             [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKeyUp" object:theEvent];
+        }
+    }
+
+    // HACK second part
+    DAVA::UIControl* focusedAfterCtrl = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+
+    if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
+    {
+        DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
+        if (tf)
+        {
+            if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
+            {
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKey" object:theEvent];
+            }
         }
     }
 }
@@ -150,6 +170,7 @@ namespace DAVA
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
+- (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification;
 
 - (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
@@ -191,12 +212,17 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
                                                    object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(OnKeyDuringTextFieldInFocus:)
+                                                     name:@"DavaKey"
+                                                   object:nil];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
@@ -326,6 +352,20 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
 {
     [self keyUp:(NSEvent*)[notification object]];
+}
+
+- (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification
+{
+    NSEvent* theEvent = (NSEvent*)[notification object];
+
+    if (theEvent.type == NSKeyDown)
+    {
+        [self keyDown:theEvent];
+    }
+    else if (theEvent.type == NSKeyUp)
+    {
+        [self keyUp:theEvent];
+    }
 }
 
 -(bool) isFullScreen
