@@ -222,12 +222,12 @@ void UISlider::Input(UIEvent *currentInput)
     {
         return;
     }
-	
-	const Rect & absRect = GetGeometricData().GetUnrotatedRect();
-	//absTouchPoint = currentInput->point;
-	
-	relTouchPoint = currentInput->point;
-	relTouchPoint -= absRect.GetPosition();
+
+    const Rect& absRect = GetGeometricData().GetUnrotatedRect();
+    //absTouchPoint = currentInput->point;
+
+    relTouchPoint = currentInput->point;
+    relTouchPoint -= absRect.GetPosition();
 	
 	
 	float oldVal = currentValue;

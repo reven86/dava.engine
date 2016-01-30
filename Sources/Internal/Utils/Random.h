@@ -138,12 +138,14 @@ public:
 	float64 RandDblExc();					// real number in (0,1)
 	float64 RandDblExc(const float64 n);	// real number in (0,n)
 	float64 operator()();					// same as rand()
-	
-	// Access to 53-bit random numbers (capacity of IEEE float64 precision)
-	float64 Rand53();  // real number in [0,1)
-	
-	// Access to nonuniform random number distributions
-	float64 RandNorm(const float64 mean = 0.0, const float64 stddev = 1.0);
+
+    float32 RandFloat32InBounds(const float32 lower, const float32 upper);
+
+    // Access to 53-bit random numbers (capacity of IEEE float64 precision)
+    float64 Rand53(); // real number in [0,1)
+
+    // Access to nonuniform random number distributions
+    float64 RandNorm(const float64 mean = 0.0, const float64 stddev = 1.0);
 	
 	// Re-seeding functions with same behavior as initializers
 	void Seed(const uint32 oneSeed);
@@ -403,6 +405,11 @@ inline float64 Random::RandNorm( const float64 mean, const float64 stddev )
 inline float64 Random::operator()()
 {
 	return RandFloat();
+}
+
+inline float32 Random::RandFloat32InBounds(DAVA::float32 lower, DAVA::float32 upper)
+{
+    return lower + (upper - lower) * float32(RandFloat());
 }
 
 //inline void Random::Save( uint32* saveArray ) const

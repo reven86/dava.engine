@@ -144,23 +144,17 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::OnPackageNodeChanged(const std::weak_ptr<PackageNode>& package_)
+void EditorSystemsManager::OnPackageNodeChanged(PackageNode *package_)
 {
+    if(nullptr != package)
     {
-        auto lastNode = package.lock();
-        if (nullptr != lastNode)
-        {
-            lastNode->RemoveListener(this);
-        }
+        package->RemoveListener(this);
     }
     package = package_;
     SetPreviewMode(true);
+    if(nullptr != package)
     {
-        auto newNode = package.lock();
-        if (nullptr != newNode)
-        {
-            newNode->AddListener(this);
-        }
+        package->AddListener(this);
     }
 }
 
@@ -184,11 +178,10 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 {
     if (previewMode)
     {
-        auto packagePtr = package.lock();
-        DVASSERT(nullptr != packagePtr);
-        if (nullptr != packagePtr)
+        DVASSERT(nullptr != package);
+        if (nullptr != package)
         {
-            PackageControlsNode* packageControlsNode = packagePtr->GetPackageControlsNode();
+            PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
             if (destination == packageControlsNode)
             {
                 editingRootControls.insert(node);
@@ -210,10 +203,9 @@ void EditorSystemsManager::RefreshRootControls()
 
     if (previewMode)
     {
-        auto packagePtr = package.lock();
-        if (nullptr != packagePtr)
+        if (nullptr != package)
         {
-            PackageControlsNode* controlsNode = packagePtr->GetPackageControlsNode();
+            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
             {
                 newRootControls.insert(controlsNode->Get(index));

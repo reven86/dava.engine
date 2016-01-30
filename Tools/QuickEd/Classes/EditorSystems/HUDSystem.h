@@ -39,8 +39,6 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
-    bool OnInput(DAVA::UIEvent* currentInput) override;
-
 private:
     enum eSearchOrder
     {
@@ -48,7 +46,8 @@ private:
         SEARCH_BACKWARD
     };
     struct HUD;
-
+    
+    bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);

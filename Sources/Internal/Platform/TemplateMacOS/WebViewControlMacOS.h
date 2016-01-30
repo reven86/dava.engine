@@ -34,6 +34,7 @@
 #if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
 
 #include "UI/IWebViewControl.h"
+#include "Functional/SignalBase.h"
 
 namespace DAVA {
 
@@ -64,25 +65,28 @@ public:
     void SetRect(const Rect& rect) override;
     void SetVisible(bool isVisible, bool hierarchic) override;
 
-	void SetDelegate(DAVA::IUIWebViewDelegate *delegate,
-                     DAVA::UIWebView* webView) override;
-	void SetBackgroundTransparency(bool enabled) override;
-    
+    void SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView) override;
+    void SetBackgroundTransparency(bool enabled) override;
+
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override {return isRenderToTexture;}
     
     void SetImageCache(void* ptr);
     void* GetImageCache() const;
 
-    void RenderToTextureAndSetAsBackgroundSpriteToControl(DAVA::UIWebView&
-                                                          uiWebViewControl);
+    void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl);
+
 private:
-    
-	//A pointer to MacOS WebView.
-	void* webViewPtr;
-	
-	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
+    void SetNativeVisible(bool visible);
+
+    void OnAppMinimizedRestored(bool minimized);
+    SigConnectionID appMinimizedRestoredConnectionId;
+
+    //A pointer to MacOS WebView.
+    void* webViewPtr;
+
+    // A pointer to the WebView delegate.
+    void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;
     // A pointer to NSBitmapImageRep cached image of web view to texture

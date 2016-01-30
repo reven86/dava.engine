@@ -227,15 +227,14 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     DVASSERT(nullptr != systemsManager);
     SaveContext();
     document = arg;
-    if (!document.isNull())
+    if (document.isNull())
     {
-        std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
-        systemsManager->PackageNodeChanged.Emit(packagePtr);
-        LoadContext();
+        systemsManager->PackageNodeChanged.Emit(nullptr);
     }
     else
     {
-        systemsManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
+        systemsManager->PackageNodeChanged.Emit(document->GetPackage());
+        LoadContext();
     }
 }
 
@@ -549,12 +548,11 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
     emit SelectionChanged(selected, deselected);
 }
 
-void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
+void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
 {
     DVASSERT(!document.isNull());
-    auto commandExecutor = document->GetCommandExecutor().lock();
-    DVASSERT(nullptr != commandExecutor);
-    commandExecutor->ChangeProperty(properties, hash);
+    auto commandExecutor = document->GetCommandExecutor();
+    commandExecutor->ChangeProperty(propertyActions, hash);
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const

@@ -87,13 +87,9 @@ void DetachCurrentThreadFromJVM()
 	}
 }
 
-Rect V2P(const Rect& srcRect)
+Rect V2I(const Rect& srcRect)
 {
-    Vector2 offset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(srcRect);
-
-    rect += offset;
-    return rect;
+    return VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(srcRect);
 }
 
 DAVA::String ToString(const jstring jniString)

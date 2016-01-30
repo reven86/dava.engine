@@ -33,6 +33,7 @@
 #include <QWidget>
 #include <QPointer>
 #include "ui_PreviewWidget.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
 #include <UI/UIControl.h>
 
@@ -110,7 +111,7 @@ private:
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
+    void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
 
     QPoint lastMousePos;
     QPointer<Document> document;

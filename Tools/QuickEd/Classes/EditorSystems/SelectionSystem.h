@@ -51,10 +51,9 @@ public:
     SelectionSystem(EditorSystemsManager* doc);
     ~SelectionSystem() override;
 
-    bool OnInput(DAVA::UIEvent* currentInput) override;
-
 private:
-    void OnPackageNodeChanged(const std::weak_ptr<PackageNode>& packageNode);
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+    void OnPackageNodeChanged( PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
     void SelectAllControls();
@@ -67,7 +66,7 @@ private:
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;
-    std::weak_ptr<PackageNode> packageNode;
+    PackageNode *packageNode = nullptr;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

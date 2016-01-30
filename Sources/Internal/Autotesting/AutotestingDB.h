@@ -67,13 +67,13 @@ namespace DAVA
 
         KeyedArchive* FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String& testId);
         KeyedArchive* FindOrInsertStepArchive(KeyedArchive* testArchive, const String& stepId);
-        KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
+        KeyedArchive* FindOrInsertTestStepLogEntryArchive(KeyedArchive* testStepArchive, const String& logId);
 
-		// Getting and Setting data from/in DB
-		bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
+        // Getting and Setting data from/in DB
+        bool SaveToDB(MongodbUpdateObject* dbUpdateObject);
 
-		void WriteLogHeader();
-		void WriteLog(const char8 *text, ...);
+        void WriteLogHeader();
+        void WriteLog(const char8 *text, ...);
 		void Log(const String &level, const String &message);
 
 		String GetStringTestParameter(const String &deviceName, const String &parameter);

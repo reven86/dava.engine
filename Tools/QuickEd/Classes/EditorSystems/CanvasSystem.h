@@ -48,7 +48,7 @@ public:
 
 private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_);
-    void OnPackageNodeChanged(const std::weak_ptr<PackageNode>& node);
+    void OnPackageNodeChanged(PackageNode *node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -59,8 +59,7 @@ private:
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 
     DAVA::Set<PackageBaseNode*> rootControls;
-    std::weak_ptr<PackageNode> package;
-    DAVA::TrackedObject signalsTracker;
+    PackageNode* package = nullptr;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

@@ -71,7 +71,7 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
 {
     QVariant ret;
 
-    if(index.column() == 0)
+    if (index.column() == 0)
     {
         MaterialItem* item = itemFromIndex(index);
         DVASSERT(item);
@@ -79,98 +79,96 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
         switch (role)
         {
         case Qt::BackgroundRole:
+        {
+            if (item->GetFlag(MaterialItem::IS_MARK_FOR_DELETE))
             {
-                const bool toDel = item->GetFlag(MaterialItem::IS_MARK_FOR_DELETE);
-                if (toDel)
-                    ret = QBrush(QColor(255, 0, 0, 20));
+                ret = QBrush(QColor(255, 0, 0, 20));
             }
-            break;
+        }
+        break;
         case Qt::FontRole:
+        {
+            ret = QStandardItemModel::data(index, role);
+            if (item->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
             {
-                const bool isSelection = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
-                ret = QStandardItemModel::data(index, role);
-                if (isSelection)
-                {
-                    QFont font = ret.value<QFont>();
-                    font.setBold(true);
-                    ret = font;
-                }
+                QFont font = ret.value<QFont>();
+                font.setBold(true);
+                ret = font;
             }
-            break;
+        }
+        break;
         default:
             ret = QStandardItemModel::data(index, role);
             break;
         }
     }
     // LOD
-    else if(index.isValid() && index.column() < columnCount())
+    else if (index.isValid() && index.column() < columnCount())
     {
-        MaterialItem *item = itemFromIndex(index.sibling(index.row(), 0));
-        if(NULL != item)
+        MaterialItem* item = itemFromIndex(index.sibling(index.row(), 0));
+        if (NULL != item)
         {
             int lodIndex = item->GetLodIndex();
             int switchIndex = item->GetSwitchIndex();
 
-            if(index.column() == 1)
+            if (index.column() == 1)
             {
-                switch(role)
+                switch (role)
                 {
-                    case Qt::DisplayRole:
-                        {
-                            if(-1 != lodIndex)
-                            {
-                                ret = lodIndex;
-                            }
-                        }
-                        break;
-                    
-                    case Qt::TextAlignmentRole:
-                        ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
-                        break;
+                case Qt::DisplayRole:
+                {
+                    if (-1 != lodIndex)
+                    {
+                        ret = lodIndex;
+                    }
+                }
+                break;
 
-                    case Qt::BackgroundRole:
-                        if(lodIndex >= 0 && lodIndex < supportedLodColorsCount)
-                        {
-                            ret = lodColors[lodIndex];
-                        }
-                        break;
-                    default:
-                        break;
+                case Qt::TextAlignmentRole:
+                    ret = (int)(Qt::AlignCenter | Qt::AlignVCenter);
+                    break;
+
+                case Qt::BackgroundRole:
+                    if (lodIndex >= 0 && lodIndex < supportedLodColorsCount)
+                    {
+                        ret = lodColors[lodIndex];
+                    }
+                    break;
+                default:
+                    break;
                 }
             }
             // Switch
-            else if(index.column() == 2)
+            else if (index.column() == 2)
             {
-                switch(role)
+                switch (role)
                 {
-                    case Qt::DisplayRole:
-                        {
-                            if(-1 != switchIndex)
-                            {
-                                ret = switchIndex;
-                            }
-                        }
-                        break;
+                case Qt::DisplayRole:
+                {
+                    if (-1 != switchIndex)
+                    {
+                        ret = switchIndex;
+                    }
+                }
+                break;
 
-                    case Qt::TextAlignmentRole:
-                        ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
-                        break;
+                case Qt::TextAlignmentRole:
+                    ret = (int)(Qt::AlignCenter | Qt::AlignVCenter);
+                    break;
 
-                    case Qt::BackgroundRole:
-                        if(switchIndex >= 0 && switchIndex < supportedSwColorsCount)
-                        {
-                            ret = switchColors[switchIndex];
-                        }
-                        break;
+                case Qt::BackgroundRole:
+                    if (switchIndex >= 0 && switchIndex < supportedSwColorsCount)
+                    {
+                        ret = switchColors[switchIndex];
+                    }
+                    break;
 
-                    default:
-                        break;
+                default:
+                    break;
                 }
             }
-
         }
     }
-    
 
     return ret;
 }
@@ -219,37 +217,46 @@ DAVA::NMaterial* MaterialModel::GetGlobalMaterial() const
 void MaterialModel::SetSelection(const EntityGroup *group)
 {
 	QStandardItem *root = invisibleRootItem();
-	for(int i = 0; i < root->rowCount(); ++i)
-	{
-		MaterialItem *topItem = (MaterialItem *) root->child(i);
+    for (int i = 0; i < root->rowCount(); ++i)
+    {
+        MaterialItem* topItem = static_cast<MaterialItem*>(root->child(i));
 
-        bool hasSelectedItems = false;
-		for(int j = 0; j < topItem->rowCount(); ++j)
-		{
-			MaterialItem *childItem = (MaterialItem *) topItem->child(j);
-            if ( SetItemSelection( childItem, group ) )
-                hasSelectedItems = true;
-		}
-        topItem->SetFlag( MaterialItem::IS_PART_OF_SELECTION, hasSelectedItems );
-	}
+        bool shouldSelectTop = false;
+        for (int j = 0; j < topItem->rowCount(); ++j)
+        {
+            MaterialItem* childItem = static_cast<MaterialItem*>(topItem->child(j));
+            shouldSelectTop |= SetItemSelection(childItem, group);
+        }
+
+        if (shouldSelectTop)
+        {
+            topItem->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelectTop);
+        }
+        else
+        {
+            // attempt to select top item
+            // if it was not selected before via its' children
+            SetItemSelection(topItem, group);
+        }
+    }
 }
 
-bool MaterialModel::SetItemSelection( MaterialItem *item, const EntityGroup *group )
+bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* group)
 {
-    if ( group == NULL )
+    if (group == nullptr)
     {
-        item->SetFlag( MaterialItem::IS_PART_OF_SELECTION, false );
+        item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, false);
         return false;
     }
 
-	DAVA::NMaterial *material = item->GetMaterial();
-	DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
+    DAVA::NMaterial* material = item->GetMaterial();
+    DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
 
-	entity = curScene->selectionSystem->GetSelectableEntity(entity);
-    const bool select = group->ContainsEntity(entity);
-	item->SetFlag( MaterialItem::IS_PART_OF_SELECTION, select );
-    
-    return select;
+    entity = curScene->selectionSystem->GetSelectableEntity(entity);
+    bool shouldSelect = group->ContainsEntity(entity);
+    item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelect);
+
+    return shouldSelect;
 }
 
 void MaterialModel::Sync()
@@ -376,7 +383,8 @@ void MaterialModel::Sync(MaterialItem* item)
         const DAVA::RenderObject* ro = rb->GetRenderObject();
         for (DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
         {
-            int lodIndex, swIndex;
+            DAVA::int32 lodIndex = -1;
+            DAVA::int32 swIndex = -1;
             DAVA::RenderBatch* batch = ro->GetRenderBatch(k, lodIndex, swIndex);
             if (rb == batch)
             {

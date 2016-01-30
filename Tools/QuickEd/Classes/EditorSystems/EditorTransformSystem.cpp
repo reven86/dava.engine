@@ -279,7 +279,7 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
 
 void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
     if (canAdjust)
@@ -534,7 +534,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     deltaPosition *= control->GetScale();
     deltaPosition = RotateVector(deltaPosition, control->GetAngle());
 
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
 
     if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
     {
@@ -682,7 +682,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
 
 void EditorTransformSystem::MovePivot(Vector2 delta)
 {
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
@@ -799,7 +799,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
     systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
     return true;
@@ -914,7 +914,7 @@ void EditorTransformSystem::ClampAngle()
         angle += angle > 0.0f ? TRANSFORM_EPSILON : -TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
     systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }

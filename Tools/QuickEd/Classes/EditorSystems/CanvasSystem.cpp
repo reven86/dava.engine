@@ -274,22 +274,16 @@ CanvasSystem::~CanvasSystem()
     systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
-void CanvasSystem::OnPackageNodeChanged(const std::weak_ptr<PackageNode>& package_)
+void CanvasSystem::OnPackageNodeChanged(PackageNode *package_)
 {
+    if(nullptr != package)
     {
-        auto lastNode = package.lock();
-        if (nullptr != lastNode)
-        {
-            lastNode->RemoveListener(this);
-        }
+        package->RemoveListener(this);
     }
     package = package_;
+    if (nullptr != package)
     {
-        auto newNode = package.lock();
-        if (nullptr != newNode)
-        {
-            newNode->AddListener(this);
-        }
+        package->AddListener(this);
     }
 }
 

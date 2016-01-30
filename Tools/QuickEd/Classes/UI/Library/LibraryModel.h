@@ -56,7 +56,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
-    void SetPackageNode(std::weak_ptr<PackageNode> package);
+    void SetPackageNode(PackageNode *package);
 
 private:
     QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
@@ -73,7 +73,7 @@ private:
     void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
     void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
 
-    std::weak_ptr<PackageNode> package;
+    PackageNode *package = nullptr;
     QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
     DAVA::Vector<ControlNode*> defaultControls;
 };

@@ -65,11 +65,15 @@ private slots:
     void UpdateLanguage();
    
     void OnRtlChanged(bool isRtl);
+    void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
 private:
+    void ApplyFileChanges();
+    Document* GetDocument(const QString& path) const;
     void OpenProject(const QString &path);
     bool CloseProject();
+    int CreateDocument(int index, const DAVA::RefPtr<PackageNode> &package);
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;

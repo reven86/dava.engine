@@ -45,7 +45,7 @@ public:
 
     static SigConnectionID GetUniqueConnectionID()
     {
-        static Atomic<SigConnectionID> counter = { static_cast<SigConnectionID>(0) };
+        static Atomic<SigConnectionID> counter = { 0 };
         return ++counter;
     }
 };
@@ -53,15 +53,6 @@ public:
 class TrackedObject
 {
 public:
-    ~TrackedObject()
-    {
-        while (!trackedSignals.empty())
-        {
-            auto it = trackedSignals.begin();
-            (*it)->Disconnect(this);
-        }
-    }
-
     void Track(SignalBase *signal)
     {
         trackedSignals.insert(signal);
@@ -81,8 +72,17 @@ public:
 protected:
     Set<SignalBase*> trackedSignals;
 
-    template <bool is_derived_from_tracked_obj>
+    template<bool is_derived_from_tracked_obj>
     struct Detail;
+
+    ~TrackedObject()
+    {
+        while (trackedSignals.size() > 0)
+        {
+            auto it = trackedSignals.begin();
+            (*it)->Disconnect(this);
+        }
+    }
 };
     
 template<>

@@ -37,6 +37,7 @@
 #include <QKeyEvent>
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace
 {
@@ -166,7 +167,7 @@ void FilePathBrowser::InitButtons()
 
     QAction *browse = new QAction(this);
     browse->setToolTip("Browse...");
-    browse->setIcon(QIcon(":/QtIcons/openscene.png"));
+    browse->setIcon(SharedIcon(":/QtIcons/openscene.png"));
     connect( browse, SIGNAL( triggered() ), SLOT( OnBrowse() ) );
     addAction(browse);
 }

@@ -69,7 +69,7 @@ PropertiesModel::~PropertiesModel()
     CleanUp();
 }
 
-void PropertiesModel::Reset(PackageBaseNode* node_, std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor_)
+void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor *commandExecutor_)
 {
     beginResetModel();
     CleanUp();
@@ -385,19 +385,18 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection *sectio
 
 void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value)
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr != commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
         if (nullptr != controlNode)
         {
             microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
             size_t usCount = static_cast<size_t>(us.count());
-            commandExecutorPtr->ChangeProperty(controlNode, property, value, usCount);
+            commandExecutor->ChangeProperty(controlNode, property, value, usCount);
         }
         else if (styleSheet)
         {
-            commandExecutorPtr->ChangeProperty(styleSheet, property, value);
+            commandExecutor->ChangeProperty(styleSheet, property, value);
         }
         else
         {
@@ -408,13 +407,12 @@ void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::Var
 
 void PropertiesModel::ResetProperty(AbstractProperty *property)
 {
-    auto commandExecutorPtr = commandExecutor.lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr != commandExecutorPtr)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
         if (nullptr != controlNode)
         {
-            commandExecutorPtr->ResetProperty(controlNode, property);
+            commandExecutor->ResetProperty(controlNode, property);
         }
         else
         {

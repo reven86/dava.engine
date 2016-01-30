@@ -40,9 +40,9 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(std::shared_ptr<PackageNode> package_, QObject* parent)
+Document::Document(const RefPtr<PackageNode> &package_, QObject* parent)
     : QObject(parent)
-    , package(package_)
+    , package(SafeRetain(package_.Get()))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
     , fileSystemWatcher(new QFileSystemWatcher(this))
@@ -63,6 +63,7 @@ Document::~Document()
     {
         delete context.second;
     }
+    SafeRelease(package);
 }
 
 const FilePath& Document::GetPackageFilePath() const
@@ -77,17 +78,17 @@ QString Document::GetPackageAbsolutePath() const
 
 QUndoStack* Document::GetUndoStack() const
 {
-    return undoStack;
+    return undoStack.get();
 }
 
-std::weak_ptr<PackageNode> Document::GetPackage() const
+PackageNode *Document::GetPackage() const
 {
     return package;
 }
 
-std::weak_ptr<QtModelPackageCommandExecutor> Document::GetCommandExecutor() const
+QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
 {
-    return commandExecutor;
+    return commandExecutor.get();
 }
 
 WidgetContext* Document::GetContext(void* requester) const

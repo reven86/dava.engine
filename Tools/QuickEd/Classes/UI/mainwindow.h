@@ -76,6 +76,7 @@ signals:
     void OpenPackageFile(QString path);
     void CloseRequested();
     void RtlChanged(bool isRtl);
+    void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
     void EmulationModeChanged(bool emulationMode);
@@ -95,6 +96,7 @@ private slots:
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
+    void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
 
@@ -102,6 +104,7 @@ private:
     void InitLanguageBox();
     void FillComboboxLanguages(const Project* core);
     void InitRtlBox();
+    void InitBiDiSupportBox();
     void InitGlobalClasses();
     void InitEmulationMode();
     void InitMenu();

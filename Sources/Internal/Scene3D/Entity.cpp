@@ -159,8 +159,8 @@ void Entity::SetScene(Scene * _scene)
     scene = _scene;
 
     if (scene)
-	{
-		scene->RegisterEntity(this);
+    {
+        scene->RegisterEntity(this);
         for (auto component : components)
         {
             GlobalEventSystem::Instance()->PerformAllEventsFromCache(component);
