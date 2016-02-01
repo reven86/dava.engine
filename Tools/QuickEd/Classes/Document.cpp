@@ -40,9 +40,9 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(const RefPtr<PackageNode> &package_, QObject* parent)
+Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
-    , package(SafeRetain(package_.Get()))
+    , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
 {
@@ -55,7 +55,6 @@ Document::~Document()
     {
         delete context.second;
     }
-    SafeRelease(package);
 }
 
 const FilePath& Document::GetPackageFilePath() const
@@ -75,7 +74,7 @@ QUndoStack* Document::GetUndoStack() const
 
 PackageNode *Document::GetPackage() const
 {
-    return package;
+    return package.Get();
 }
 
 QtModelPackageCommandExecutor *Document::GetCommandExecutor() const

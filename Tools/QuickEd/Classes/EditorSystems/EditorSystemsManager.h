@@ -196,6 +196,4 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
     }
 }
 
-extern DAVA::Vector2 RotateVector(const DAVA::Vector2& in, DAVA::float32 angle);
-
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

@@ -83,7 +83,7 @@ public slots:
 private:
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
-    PackageNode *package;
+    DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     std::unique_ptr<QUndoStack> undoStack;
 };

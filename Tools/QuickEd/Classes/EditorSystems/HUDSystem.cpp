@@ -286,10 +286,10 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         auto linePos = line.rect.GetPosition();
         auto lineSize = line.rect.GetSize();
 
-        linePos = RotateVector(linePos, gd->angle);
+        linePos = ::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
         lineSize *= gd->scale;
-        Vector2 gdPos = gd->position - RotateVector(gd->pivotPoint * gd->scale, gd->angle);
+        Vector2 gdPos = gd->position - ::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
         MagnetLineControl* lineControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
@@ -302,7 +302,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos = line.targetRect.GetPosition();
         lineSize = line.targetRect.GetSize();
 
-        linePos = RotateVector(linePos, gd->angle);
+        linePos = ::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
         lineSize *= gd->scale;
 

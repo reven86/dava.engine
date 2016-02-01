@@ -42,13 +42,6 @@
 
 using namespace DAVA;
 
-Vector2 RotateVector(const Vector2& in, float32 angle)
-{
-    DAVA::Matrix3 rotateMatrix;
-    rotateMatrix.BuildRotation(angle);
-    return in * rotateMatrix;
-}
-
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](DAVA::UIControl* ) {return false;};
 
 class EditorSystemsManager::RootControl : public UIControl
