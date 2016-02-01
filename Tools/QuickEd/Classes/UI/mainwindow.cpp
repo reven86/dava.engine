@@ -422,7 +422,7 @@ void MainWindow::SetupBackgroundMenu()
 
     actionGroup->addAction(defaultBackgroundColorAction);
     connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
-        EditorSettings::Instance()->SetGridType(toggled);
+        EditorSettings::Instance()->SetGridType(!toggled);
     });
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
