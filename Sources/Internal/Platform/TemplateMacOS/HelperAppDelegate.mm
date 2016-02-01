@@ -63,7 +63,6 @@ extern void FrameworkWillTerminate();
 
 - (BOOL)application:(NSApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    applicationCore = DAVA::Core::GetApplicationCore();
     return YES;
 }
 
@@ -75,14 +74,8 @@ extern void FrameworkWillTerminate();
 - (void)applicationDidBecomeActive:(NSNotification*)aNotification
 {
     DAVA::Logger::FrameworkDebug("[CoreMacOSPlatform] Application did become active");
-    if (applicationCore)
-    {
-        applicationCore->OnResume();
-    }
-    else
-    {
-        DAVA::Core::Instance()->SetIsActive(true);
-    }
+
+    [mainWindowController OnResume];
 }
 
 - (void)applicationDidResignActive:(NSNotification*)aNotification
@@ -99,14 +92,7 @@ extern void FrameworkWillTerminate();
 
 - (void)applicationWillResignActive:(NSApplication*)application
 {
-    if (applicationCore)
-    {
-        applicationCore->OnSuspend();
-    }
-    else
-    {
-        DAVA::Core::Instance()->SetIsActive(false);
-    }
+    [mainWindowController OnSuspend];
 }
 
 - (void)applicationDidEnterBackground:(NSApplication*)application

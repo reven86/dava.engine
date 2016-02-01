@@ -41,7 +41,7 @@
 
 @interface HelperAppDelegate : NSObject<NSApplicationDelegate>
 {
-    DAVA::ApplicationCore* applicationCore;
+@private
     MainWindowController* mainWindowController;
 }
 
