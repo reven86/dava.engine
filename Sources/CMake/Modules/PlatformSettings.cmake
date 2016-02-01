@@ -1,6 +1,24 @@
 
 #compiller flags
 
+if( APPLE )
+    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES} AdHoc" CACHE STRING
+        "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
+        FORCE)
+     
+    set(CMAKE_C_FLAGS_ADHOC             ${CMAKE_C_FLAGS_RELEASE} )
+    set(CMAKE_CXX_FLAGS_ADHOC           ${CMAKE_CXX_FLAGS_RELEASE} )
+    set(CMAKE_EXE_LINKER_FLAGS_ADHOC    ${CMAKE_EXE_LINKER_FLAGS_RELEASE} )
+    set(CMAKE_SHARED_LINKER_FLAGS_ADHOC ${CMAKE_SHARED_LINKER_FLAGS_RELEASE} )
+    set(CMAKE_MODULE_LINKER_FLAGS_ADHOC ${CMAKE_MODULE_LINKER_FLAGS_RELEASE} )
+     
+    mark_as_advanced(   CMAKE_C_FLAGS_ADHOC 
+                        CMAKE_CXX_FLAGS_ADHOC
+                        CMAKE_EXE_LINKER_FLAGS_ADHOC 
+                        CMAKE_SHARED_LINKER_FLAGS_ADHOC 
+                        CMAKE_MODULE_LINKER_FLAGS_ADHOC  )
+endif()
+
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
@@ -34,22 +52,6 @@ elseif ( IOS     )
     set( MACOSX_BUNDLE_GUI_IDENTIFIER  ${IOS_BUNDLE_IDENTIFIER} )
     set( CMAKE_MACOSX_BUNDLE YES )
     set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
-
-    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES} AdHoc" CACHE STRING
-        "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
-        FORCE)
-     
-    set(CMAKE_C_FLAGS_ADHOC             ${CMAKE_C_FLAGS_RELEASE} )
-    set(CMAKE_CXX_FLAGS_ADHOC           ${CMAKE_CXX_FLAGS_RELEASE} )
-    set(CMAKE_EXE_LINKER_FLAGS_ADHOC    ${CMAKE_EXE_LINKER_FLAGS_RELEASE} )
-    set(CMAKE_SHARED_LINKER_FLAGS_ADHOC ${CMAKE_SHARED_LINKER_FLAGS_RELEASE} )
-    set(CMAKE_MODULE_LINKER_FLAGS_ADHOC ${CMAKE_MODULE_LINKER_FLAGS_RELEASE} )
-     
-    mark_as_advanced(   CMAKE_C_FLAGS_ADHOC 
-                        CMAKE_CXX_FLAGS_ADHOC
-                        CMAKE_EXE_LINKER_FLAGS_ADHOC 
-                        CMAKE_SHARED_LINKER_FLAGS_ADHOC 
-                        CMAKE_MODULE_LINKER_FLAGS_ADHOC  )
 
 elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "" )
