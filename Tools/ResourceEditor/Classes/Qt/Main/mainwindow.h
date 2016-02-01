@@ -190,7 +190,7 @@ public slots:
     void OnHeightmapEditor();
     void OnRulerTool();
     void OnTilemaskEditor();
-	void OnNotPassableTerrain();
+    void OnNotPassableTerrain();
     void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);

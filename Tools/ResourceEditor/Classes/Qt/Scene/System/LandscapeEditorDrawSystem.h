@@ -68,7 +68,7 @@ public:
     RulerToolProxy* GetRulerToolProxy();
 
     eErrorType EnableCustomDraw();
-	void DisableCustomDraw();
+    void DisableCustomDraw();
 
 	eErrorType EnableTilemaskEditing();
 	void DisableTilemaskEditing();

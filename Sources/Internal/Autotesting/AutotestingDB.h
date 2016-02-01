@@ -73,8 +73,8 @@ namespace DAVA
         bool SaveToDB(MongodbUpdateObject* dbUpdateObject);
 
         void WriteLogHeader();
-        void WriteLog(const char8 *text, ...);
-		void Log(const String &level, const String &message);
+        void WriteLog(const char8* text, ...);
+        void Log(const String &level, const String &message);
 
 		String GetStringTestParameter(const String &deviceName, const String &parameter);
 		int32 GetIntTestParameter(const String &deviceName, const String &parameter);

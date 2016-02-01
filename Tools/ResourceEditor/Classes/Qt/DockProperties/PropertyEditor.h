@@ -84,8 +84,8 @@ public:
     bool IsFavorite(QtPropertyData* data) const;
     void SetFavorite(QtPropertyData* data, bool favorite);
 
-    void LoadScheme(const DAVA::FilePath &path);
-	void SaveScheme(const DAVA::FilePath &path);
+    void LoadScheme(const DAVA::FilePath& path);
+    void SaveScheme(const DAVA::FilePath &path);
 
 public slots:
 	void sceneActivated(SceneEditor2 *scene);
@@ -137,7 +137,7 @@ protected:
     QtPropertyData* CreateInsp(const DAVA::FastName& name, void* object, const DAVA::InspInfo* info);
     QtPropertyData* CreateInspMember(const DAVA::FastName& name, void* object, const DAVA::InspMember* member);
     QtPropertyData* CreateInspCollection(const DAVA::FastName& name, void* object, const DAVA::InspColl* collection);
-    QtPropertyData* CreateClone(QtPropertyData *original);
+    QtPropertyData* CreateClone(QtPropertyData* original);
 
     void ClearCurrentNodes();
     void ApplyModeFilter(QtPropertyData* parent);
@@ -150,9 +150,9 @@ protected:
     void AddFavoriteChilds(QtPropertyData* parent);
     void RemFavoriteChilds(QtPropertyData* parent);
 
-    bool IsInspViewAllowed(const DAVA::InspInfo *info) const;
+    bool IsInspViewAllowed(const DAVA::InspInfo* info) const;
 
-	virtual void OnItemEdited(const QModelIndex &index);
+    virtual void OnItemEdited(const QModelIndex &index);
 	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 

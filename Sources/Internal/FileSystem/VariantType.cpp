@@ -449,8 +449,8 @@ void VariantType::SetVariant(const VariantType& var)
             SetVector2(var.AsVector2());
         }
         break;
-    case TYPE_VECTOR3:
-		{
+        case TYPE_VECTOR3:
+        {
 			SetVector3(var.AsVector3());
 		}
 		break;
@@ -1701,7 +1701,7 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
             *((DAVA::Matrix3*)dst) = val.AsMatrix3();
             break;
         case TYPE_MATRIX4:
-			*((DAVA::Matrix4 *) dst) = val.AsMatrix4();
+            *((DAVA::Matrix4 *) dst) = val.AsMatrix4();
 			break;
 		case TYPE_COLOR:
 			*((DAVA::Color *) dst) = val.AsColor();
@@ -1793,7 +1793,7 @@ VariantType VariantType::FromType(int type)
         v.SetMatrix3(Matrix3());
         break;
     case TYPE_MATRIX4:
-		v.SetMatrix4(Matrix4());
+        v.SetMatrix4(Matrix4());
 		break;
 	case TYPE_COLOR:
 		v.SetColor(Color());

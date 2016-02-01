@@ -106,14 +106,14 @@ public:
     QtPropertyData(const DAVA::FastName& name, const QVariant& value);
     virtual ~QtPropertyData();
 
-	QVariant data(int role) const;
+    QVariant data(int role) const;
 	bool setData(const QVariant & value, int role);
 
     const DAVA::FastName& GetName() const;
 
     QString GetPath() const;
 
-	QVariant GetValue() const;
+    QVariant GetValue() const;
 	void SetValue(const QVariant &value, ValueChangeReason reason = QtPropertyData::VALUE_SET);
 	bool UpdateValue(bool force = false);
 
@@ -143,7 +143,7 @@ public:
     virtual const DAVA::MetaInfo* MetaInfo() const;
 
     // reset background/foreground/font settings
-	void ResetStyle();
+    void ResetStyle();
 
 	void SetCheckable(bool checkable);
 	bool IsCheckable() const;
@@ -186,7 +186,7 @@ public:
     int GetButtonsCount() const;
     QtPropertyToolButton* GetButton(int index = 0);
     QtPropertyToolButton* AddButton(QtPropertyToolButton::StateVariant stateVariant = QtPropertyToolButton::ACTIVE_ALWAYS);
-	void RemButton(QtPropertyToolButton *button);
+    void RemButton(QtPropertyToolButton *button);
 
 	void EmitDataChanged(ValueChangeReason reason);
 
