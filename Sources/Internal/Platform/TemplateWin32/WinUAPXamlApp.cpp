@@ -67,6 +67,7 @@ using namespace ::Windows::ApplicationModel::Core;
 using namespace ::Windows::UI::Xaml::Media;
 using namespace ::Windows::System::Threading;
 using namespace ::Windows::Phone::UI::Input;
+using namespace ::Windows::UI::Xaml::Markup;
 
 namespace DAVA
 {
@@ -305,7 +306,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
-        TrackWindowMinimumSize();
+        LoadWindowMinimumSizeSettings();
 
         float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
         float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
@@ -315,10 +316,8 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     });
 
     core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
-    core->rendererParams.width = viewWidth;
-    core->rendererParams.height = viewHeight;
-    core->rendererParams.scaleX = viewScaleX;
-    core->rendererParams.scaleY = viewScaleY;
+    core->rendererParams.width = physicalWidth;
+    core->rendererParams.height = physicalHeight;
 
     InitCoordinatesSystem();
 
@@ -371,14 +370,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
@@ -771,7 +770,7 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
     SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED2);
 }
 
-void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
+void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ args)
 {
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
 
@@ -882,10 +881,12 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
-    using Windows::UI::Xaml::Markup::XamlReader;
+    // workaround for Surface, otherwise we lost MouseMoved event  
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
-    webview->Visibility = Visibility::Collapsed;
+    // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
+    obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
+    TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
@@ -893,6 +894,7 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     Window::Current->Content = swapChainPanel;
 
     AddUIElement(webview);
+    AddUIElement(textBox);
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -961,7 +963,7 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
-void WinUAPXamlApp::TrackWindowMinimumSize()
+void WinUAPXamlApp::LoadWindowMinimumSizeSettings()
 {
     if (!isPhoneApiDetected)
     {
@@ -970,12 +972,7 @@ void WinUAPXamlApp::TrackWindowMinimumSize()
         int32 minHeight = options->GetInt32("min-height", 0);
         if (minWidth > 0 && minHeight > 0)
         {
-            // Note: the largest allowed minimum size is 500 x 500 effective pixels
-            // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
-            Size size(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
-            ApplicationView::GetForCurrentView()->SetPreferredMinSize(size);
-
-            deferredSizeScaleEvents->TrackWindowMinimumSize(minWidth, minHeight);
+            SetWindowMinimumSize(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
         }
     }
 }
@@ -998,10 +995,8 @@ void WinUAPXamlApp::ResetScreen()
 void WinUAPXamlApp::ResetRender()
 {
     rhi::ResetParam params;
-    params.width = viewWidth;
-    params.height = viewHeight;
-    params.scaleX = viewScaleX;
-    params.scaleY = viewScaleY;
+    params.width = physicalWidth;
+    params.height = physicalHeight;
     Renderer::Reset(params);
 }
 
@@ -1129,6 +1124,25 @@ void WinUAPXamlApp::SendBackKeyEvents()
     });
 }
 
+void WinUAPXamlApp::SetWindowMinimumSize(float32 width, float32 height)
+{
+    DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+    if (!isPhoneApiDetected)
+    {
+        core->RunOnUIThread([this, width, height]() {
+            // Note: the largest allowed minimum size is 500 x 500 effective pixels
+            // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
+            ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(width, height));
+            deferredSizeScaleEvents->SetWindowMinimumSize(width, height);
+        });
+    }
+}
+
+Vector2 WinUAPXamlApp::GetWindowMinimumSize() const
+{
+    return deferredSizeScaleEvents->GetWindowMinimumSize();
+}
+
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
@@ -1223,10 +1237,17 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 )";
 
 const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
-<WebView x:Name="xamlWebView"
+<WebView x:Name="xamlWebView" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
+)";
+
+const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
+<TextBox x:Name="xamlTextBox" Visibility="Collapsed"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</TextBox>
 )";
 
 }   // namespace DAVA

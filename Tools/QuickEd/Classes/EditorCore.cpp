@@ -80,6 +80,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
+    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
     connect(mainWindow.get(), &MainWindow::EmulationModeChanbed, documentGroup, &DocumentGroup::SetEmulationMode);
     connect(mainWindow.get(), &MainWindow::PixelizationChanged, documentGroup, &DocumentGroup::SetPixelization);
@@ -381,8 +382,18 @@ void EditorCore::UpdateLanguage()
 
 void EditorCore::OnRtlChanged(bool isRtl)
 {
-    UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
+    UIControlSystem::Instance()->SetRtl(isRtl);
     for(auto &document : documents)
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void EditorCore::OnBiDiSupportChanged(bool support)
+{
+    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
+    for (auto &document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -523,16 +534,16 @@ void EditorCore::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
-    Document *activeDocument = documentGroup->GetActiveDocument();
+    Document* activeDocument = documentGroup->GetActiveDocument();
     int newIndex = mainWindow->CloseTab(index);
     DVASSERT(activeDocument != nullptr);
     Document *detached = documents.takeAt(index);
-    Document *nextDocument = nullptr;
-    if(detached != activeDocument)
+    Document* nextDocument = nullptr;
+    if (detached != activeDocument)
     {
         nextDocument = activeDocument;
     }
-    else if(newIndex != -1)
+    else if (newIndex != -1)
     {
         nextDocument = documents.at(newIndex);
     }

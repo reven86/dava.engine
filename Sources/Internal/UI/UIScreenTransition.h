@@ -68,7 +68,6 @@ protected:
     UIScreen* prevScreen;
     UIScreen* nextScreen;
     UIScreenshoter* shooter;
-
 };
 
 };

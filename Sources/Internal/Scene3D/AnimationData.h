@@ -64,10 +64,10 @@ public:
     void BakeTransform(const Matrix4& transform);
 
     float32 duration;
-	
-	DAVA::Vector< SceneNodeAnimationKey > keys;
 
-	Matrix4 invPose;
+    DAVA::Vector<SceneNodeAnimationKey> keys;
+
+    Matrix4 invPose;
 };
 	
 inline float32 AnimationData::GetDuration() const
