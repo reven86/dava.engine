@@ -51,6 +51,7 @@ public:
         , uid(0)
         , is_32bit(false)
         , isMapped(false)
+        , isUPBuffer(false)
     {
     }
 
@@ -64,6 +65,7 @@ public:
     uint32 is_32bit : 1;
     uint32 isMapped : 1;
     uint32 updatePending : 1;
+    uint32 isUPBuffer : 1;
 };
 RHI_IMPL_RESOURCE(IndexBufferGLES2_t, IndexBuffer::Descriptor);
 
@@ -79,52 +81,69 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
     DVASSERT(desc.size);
     if (desc.size)
     {
-        GLuint b = 0;
-        GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, (uint64)(&b) } };
+        isUPBuffer = (desc.usage == USAGE_DYNAMICDRAW) && _GLES2_UseUserProvidedIndices;
 
-        ExecGL(&cmd1, 1, force_immediate);
-
-        if (cmd1.status == GL_NO_ERROR)
+        switch (desc.usage)
         {
-            switch (desc.usage)
+        case USAGE_DEFAULT:
+            usage = GL_DYNAMIC_DRAW;
+            break;
+        case USAGE_STATICDRAW:
+            usage = GL_STATIC_DRAW;
+            break;
+        case USAGE_DYNAMICDRAW:
+            usage = GL_DYNAMIC_DRAW;
+            break;
+        }
+
+        GLuint b = 0;
+        if (isUPBuffer)
+        {
+            mappedData = ::malloc(desc.size);
+
+            if (desc.initialData)
+                memcpy(mappedData, desc.initialData, desc.size);
+
+            success = true;
+        }
+        else
+        {
+            GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, (uint64)(&b) } };
+
+            ExecGL(&cmd1, 1, force_immediate);
+
+            if (cmd1.status == GL_NO_ERROR)
             {
-            case USAGE_DEFAULT:
-                usage = GL_DYNAMIC_DRAW;
-                break;
-            case USAGE_STATICDRAW:
-                usage = GL_STATIC_DRAW;
-                break;
-            case USAGE_DYNAMICDRAW:
-                usage = GL_DYNAMIC_DRAW;
-                break;
+                GLCommand cmd2[] =
+                {
+                  { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
+                  { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
+                  { GLCommand::RESTORE_INDEX_BUFFER, {} }
+                };
+
+                if (!desc.initialData)
+                {
+                    DVASSERT(desc.usage != USAGE_STATICDRAW);
+                    cmd2[1].func = GLCommand::NOP;
+                }
+
+                ExecGL(cmd2, countof(cmd2), force_immediate);
+
+                if (cmd2[0].status == GL_NO_ERROR)
+                {
+                    success = true;
+                    mappedData = nullptr;
+                }
             }
+        }
 
-            GLCommand cmd2[] =
-            {
-              { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
-              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
-              { GLCommand::RESTORE_INDEX_BUFFER, {} }
-            };
-
-            if (!desc.initialData)
-            {
-                DVASSERT(desc.usage != USAGE_STATICDRAW);
-                cmd2[1].func = GLCommand::NOP;
-            }
-
-            ExecGL(cmd2, countof(cmd2), force_immediate);
-
-            if (cmd2[0].status == GL_NO_ERROR)
-            {
-                mappedData = nullptr;
-                size = desc.size;
-                uid = b;
-                is_32bit = desc.indexSize == INDEX_SIZE_32BIT;
-                isMapped = false;
-                updatePending = false;
-
-                success = true;
-            }
+        if (success)
+        {
+            size = desc.size;
+            uid = b;
+            is_32bit = desc.indexSize == INDEX_SIZE_32BIT;
+            isMapped = false;
+            updatePending = false;
         }
     }
 
@@ -135,8 +154,13 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
 
 void IndexBufferGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
-    ExecGL(&cmd, 1, force_immediate);
+    if (uid)
+    {
+        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+        ExecGL(&cmd, 1, force_immediate);
+
+        uid = 0;
+    }
 
     if (mappedData)
     {
@@ -145,7 +169,6 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
     }
 
     size = 0;
-    uid = 0;
 }
 
 //==============================================================================
@@ -191,20 +214,30 @@ gles2_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
     bool success = false;
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get(ib);
 
-    DVASSERT(self->usage != GL_STATIC_DRAW);
     DVASSERT(!self->isMapped);
+    DVASSERT(self->usage != GL_STATIC_DRAW);
 
     if (offset + size <= self->size)
     {
-        GLCommand cmd[] =
+        if (self->isUPBuffer)
         {
-          { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
-          { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(data), self->usage } },
-          { GLCommand::RESTORE_INDEX_BUFFER, {} }
-        };
+            DVASSERT(self->mappedData);
+            memcpy((uint8*)self->mappedData + offset, (uint8*)data + offset, size);
 
-        ExecGL(cmd, countof(cmd));
-        success = cmd[1].status == GL_NO_ERROR;
+            success = true;
+        }
+        else
+        {
+            GLCommand cmd[] =
+            {
+              { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
+              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(data), self->usage } },
+              { GLCommand::RESTORE_INDEX_BUFFER, {} }
+            };
+
+            ExecGL(cmd, countof(cmd));
+            success = cmd[1].status == GL_NO_ERROR;
+        }
         self->MarkRestored();
     }
 
@@ -244,7 +277,12 @@ gles2_IndexBuffer_Unmap(Handle ib)
     DVASSERT(self->usage != GL_STATIC_DRAW);
     DVASSERT(self->isMapped);
 
-    if (self->usage == GL_DYNAMIC_DRAW)
+    if (self->isUPBuffer)
+    {
+        self->isMapped = false;
+        self->MarkRestored();
+    }
+    else if (self->usage == GL_DYNAMIC_DRAW)
     {
         self->isMapped = false;
         self->updatePending = true;
@@ -303,14 +341,28 @@ SetToRHI(Handle ib)
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get(ib);
 
     DVASSERT(!self->isMapped);
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->uid));
-    _GLES2_LastSetIB = self->uid;
 
-    if (self->updatePending)
+    if (self->isUPBuffer)
     {
         DVASSERT(self->mappedData);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, self->size, self->mappedData, self->usage);
-        self->updatePending = false;
+
+        _GLES2_LastSetIndices = static_cast<uint8*>(self->mappedData);
+
+        GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+        _GLES2_LastSetIB = 0;
+    }
+    else
+    {
+        GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->uid));
+        _GLES2_LastSetIB = self->uid;
+        _GLES2_LastSetIndices = nullptr;
+
+        if (self->updatePending)
+        {
+            DVASSERT(self->mappedData);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, self->size, self->mappedData, self->usage);
+            self->updatePending = false;
+        }
     }
 
     return (self->is_32bit) ? INDEX_SIZE_32BIT : INDEX_SIZE_16BIT;
