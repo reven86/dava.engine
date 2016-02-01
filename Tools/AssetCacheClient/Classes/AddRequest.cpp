@@ -27,10 +27,11 @@
 =====================================================================================*/
 
 #include "AddRequest.h"
-#include "Constants.h"
 
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
@@ -40,7 +41,7 @@ AddRequest::AddRequest()
     options.AddOption("-f", VariantType(String("")), "Files list to send files to server", true);
 }
 
-int AddRequest::SendRequest()
+DAVA::AssetCache::ErrorCodes AddRequest::SendRequest(AssetCacheClient* cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
@@ -67,34 +68,21 @@ int AddRequest::SendRequest()
         else
         {
             Logger::Error("[AddRequest::%s] Cannot read file(%s)", __FUNCTION__, path.GetStringValue().c_str());
-            return AssetCacheClientConstants::EXIT_READ_FILES;
+            return AssetCache::ERROR_READ_FILES;
         }
     }
 
-    auto requestSent = client.AddToCache(key, value);
-    if (!requestSent)
-    {
-        Logger::Error("[AddRequest::%s] Cannot send files to server", __FUNCTION__);
-        return AssetCacheClientConstants::EXIT_CANNOT_CONNECT;
-    }
-
-    return AssetCacheClientConstants::EXIT_OK;
+    return cacheClient->AddToCacheBlocked(key, value);
 }
 
-int AddRequest::CheckOptionsInternal() const
+DAVA::AssetCache::ErrorCodes AddRequest::CheckOptionsInternal() const
 {
     const String filepath = options.GetOption("-f").AsString();
     if (filepath.empty())
     {
         Logger::Error("[AddRequest::%s] Empty file list", __FUNCTION__);
-        return AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;
+        return AssetCache::ERROR_WRONG_COMMAND_LINE;
     }
 
-    return AssetCacheClientConstants::EXIT_OK;
-}
-
-void AddRequest::OnAddedToCache(const AssetCache::CacheItemKey& key, bool added)
-{
-    requestResult.recieved = true;
-    requestResult.succeed = added;
+    return AssetCache::ERROR_OK;
 }

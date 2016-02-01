@@ -31,7 +31,8 @@
 
 #include "CacheRequest.h"
 
-class GetRequest : public CacheRequest
+class AssetCacheClient;
+class GetRequest : public CacheRequest, DAVA::AssetCache::ClientNetProxyListener
 {
 public:
     GetRequest();
@@ -39,8 +40,8 @@ public:
     void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value) override;
 
 protected:
-    int SendRequest() override;
-    int CheckOptionsInternal() const override;
+    DAVA::AssetCache::ErrorCodes SendRequest(AssetCacheClient* cacheClient) override;
+    DAVA::AssetCache::ErrorCodes CheckOptionsInternal() const override;
 };
 
 #endif //__GET_REQUEST_H__

@@ -27,10 +27,11 @@
 =====================================================================================*/
 
 #include "GetRequest.h"
-#include "Constants.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Platform/SystemTimer.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
@@ -40,39 +41,30 @@ GetRequest::GetRequest()
     options.AddOption("-f", VariantType(String("")), "Folder to save files from server");
 }
 
-int GetRequest::SendRequest()
+AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient* cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
 
-    auto requestSent = client.RequestFromCache(key);
-    if (!requestSent)
-    {
-        Logger::Error("[GetRequest::%s] Cannot request files from server", __FUNCTION__);
-        return AssetCacheClientConstants::EXIT_CANNOT_CONNECT;
-    }
-
-    return AssetCacheClientConstants::EXIT_OK;
+    cacheClient->AddListener(this);
+    return cacheClient->RequestFromCacheBlocked(key);
 }
 
-int GetRequest::CheckOptionsInternal() const
+AssetCache::ErrorCodes GetRequest::CheckOptionsInternal() const
 {
     const String folderpath = options.GetOption("-f").AsString();
     if (folderpath.empty())
     {
         Logger::Error("[GetRequest::%s] Empty folderpath", __FUNCTION__);
-        return AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;
+        return AssetCache::ERROR_WRONG_COMMAND_LINE;
     }
 
-    return AssetCacheClientConstants::EXIT_OK;
+    return AssetCache::ERROR_OK;
 }
 
-void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value)
+void GetRequest::OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
-    requestResult.recieved = true;
-    requestResult.succeed = (value.IsEmpty() == false);
-
-    if (requestResult.succeed)
+    if (!value.IsEmpty())
     {
         FilePath folder = options.GetOption("-f").AsString();
         folder.MakeDirectoryPathname();

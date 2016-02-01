@@ -26,36 +26,80 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ASSET_CACHE_CLIENT_H__
-#define __ASSET_CACHE_CLIENT_H__
+#include "ClientApplication.h"
 
-#include "Base/BaseTypes.h"
-#include "Constants.h"
+#include "AddRequest.h"
+#include "GetRequest.h"
 
-class CacheRequest;
-class AssetCacheClient final
+ClientApplication::ClientApplication()
+    : cacheClient(new AssetCacheClient())
 {
-public:
-    AssetCacheClient();
-    ~AssetCacheClient();
+    requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
+    requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
+}
 
-    bool ParseCommandLine(int argc, char* argv[]);
+ClientApplication::~ClientApplication()
+{
+    activeRequest = nullptr;
+}
 
-    int GetExitCode() const
+bool ClientApplication::ParseCommandLine(int argc, char* argv[])
+{
+    if (argc > 1)
     {
-        return exitCode;
-    };
+        for (auto& r : requests)
+        {
+            auto commandLineIsOk = r->options.Parse(argc, argv);
+            if (commandLineIsOk)
+            {
+                activeRequest = r.get();
+                exitCode = activeRequest->CheckOptions();
+                break;
+            }
+        }
 
-    void Process();
+        if (exitCode != DAVA::AssetCache::ERROR_OK)
+        {
+            PrintUsage();
+            return false;
+        }
+        return true;
+    }
+    else
+    {
+        PrintUsage();
+        exitCode = DAVA::AssetCache::ERROR_WRONG_COMMAND_LINE;
+    }
+    return false;
+}
 
-private:
-    void PrintUsage() const;
+void ClientApplication::PrintUsage() const
+{
+    printf("\nUsage: AssetCacheClient <command>\n");
+    printf("\n Commands: ");
 
-private:
-    int exitCode = AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;
+    auto count = requests.size();
+    for (auto& r : requests)
+    {
+        printf("%s", r->options.GetCommand().c_str());
+        if (count != 1)
+        {
+            printf(", ");
+        }
+        --count;
+    }
 
-    DAVA::List<std::unique_ptr<CacheRequest>> requests;
-    CacheRequest* activeRequest = nullptr;
-};
+    printf("\n\n");
+    for (auto& r : requests)
+    {
+        r->options.PrintUsage();
+        printf("\n");
+    }
+}
 
-#endif //__ASSET_CACHE_CLIENT_H__
+void ClientApplication::Process()
+{
+    DVASSERT(activeRequest != nullptr);
+
+    exitCode = activeRequest->Process(cacheClient.get());
+}

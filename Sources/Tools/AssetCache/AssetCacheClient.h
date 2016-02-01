@@ -26,13 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ASSET_CACHE_CLIENT_API_H__
-#define __ASSET_CACHE_CLIENT_API_H__
+#ifndef __ASSET_CACHE_CLIENT_H__
+#define __ASSET_CACHE_CLIENT_H__
 
 #include "AssetCache/AssetCache.h"
-#include "Constants.h"  //TODO: move it into ASSET_CACHE_ERRORRS_ENUM
 
-class AssetCacheClientAPI : public DAVA::AssetCache::ClientNetProxyListener
+class AssetCacheClient : public DAVA::AssetCache::ClientNetProxyListener
 {
     struct ResultOfRequest
     {
@@ -42,22 +41,30 @@ class AssetCacheClientAPI : public DAVA::AssetCache::ClientNetProxyListener
     };
 
 public:
+    struct ConnectionParams
+    {
+        DAVA::String ip = "127.0.0.1";
+        DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
+        DAVA::uint64 timeoutms = 60u * 1000u;
+    };
 
-    AssetCacheClientAPI();
+    AssetCacheClient();
 
-    AssetCacheClientConstants::ExitCodes ConnectBlocked(const DAVA::String &ip, DAVA::uint16 port, DAVA::uint64 timeoutms = 60u * 1000u);
+    DAVA::AssetCache::ErrorCodes ConnectBlocked(const ConnectionParams& connectionParams);
     void Disconnect();
 
-    AssetCacheClientConstants::ExitCodes AddToCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value);
-    AssetCacheClientConstants::ExitCodes RequestFromCacheBlocked(const DAVA::AssetCache::CacheItemKey& key);
+    DAVA::AssetCache::ErrorCodes AddToCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value);
+    DAVA::AssetCache::ErrorCodes RequestFromCacheBlocked(const DAVA::AssetCache::CacheItemKey& key);
+
+    void AddListener(DAVA::AssetCache::ClientNetProxyListener* listener);
+    void RemoveListener(DAVA::AssetCache::ClientNetProxyListener* listener);
 
 private:
-
-    AssetCacheClientConstants::ExitCodes WaitRequest();
+    DAVA::AssetCache::ErrorCodes WaitRequest();
 
     //ClientNetProxyListener
     void OnAddedToCache(const DAVA::AssetCache::CacheItemKey& key, bool added) override;
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value) override;
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value) override;
 
 private:
     DAVA::AssetCache::ClientNetProxy client;
@@ -66,5 +73,4 @@ private:
     ResultOfRequest requestResult;
 };
 
-#endif //__ASSET_CACHE_CLIENT_API_H__
-
+#endif //__ASSET_CACHE_CLIENT_H__

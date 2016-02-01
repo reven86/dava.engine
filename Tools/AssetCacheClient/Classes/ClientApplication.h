@@ -26,26 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ASSET_CACHE_CLIENT_CONSTANTS_H__
-#define __ASSET_CACHE_CLIENT_CONSTANTS_H__
+#ifndef __CLIENT_APPLICATION_H__
+#define __CLIENT_APPLICATION_H__
 
 #include "Base/BaseTypes.h"
 
-namespace AssetCacheClientConstants
+#include "AssetCache/AssetCacheClient.h"
+
+class CacheRequest;
+class ClientApplication final
 {
-enum ExitCodes : int
-{
-    EXIT_OK = 0,
-    EXIT_WRONG_COMMAND_LINE,
-    EXIT_WRONG_IP,
-    EXIT_TIMEOUT,
-    EXIT_CANNOT_CONNECT,
-    EXIT_SERVER_ERROR,
-    EXIT_READ_FILES,
-    EXIT_ADDRESS_RESOLVER_FAILED,
-    EXIT_CANNOT_SEND_REQUEST_ADD,
-    EXIT_CANNOT_SEND_REQUEST_GET,
-};
+public:
+    ClientApplication();
+    ~ClientApplication();
+
+    bool ParseCommandLine(int argc, char* argv[]);
+
+    DAVA::AssetCache::ErrorCodes GetExitCode() const
+    {
+        return exitCode;
+    };
+
+    void Process();
+
+private:
+    void PrintUsage() const;
+
+private:
+    DAVA::AssetCache::ErrorCodes exitCode = DAVA::AssetCache::ERROR_WRONG_COMMAND_LINE;
+
+    DAVA::List<std::unique_ptr<CacheRequest>> requests;
+    CacheRequest* activeRequest = nullptr;
+
+    std::unique_ptr<AssetCacheClient> cacheClient;
 };
 
-#endif //__ASSET_CACHE_CLIENT_CONSTANTS_H__
+#endif //__CLIENT_APPLICATION_H__

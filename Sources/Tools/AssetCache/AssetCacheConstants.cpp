@@ -26,45 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
-#define __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
-
-#include "Base/BaseTypes.h"
+#include "AssetCache/AssetCacheConstants.h"
+#include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
 namespace AssetCache
 {
-static const uint32 NET_SERVICE_ID = 0xACCA;
-static const uint16 ASSET_SERVER_PORT = 0xACCA;
-
-enum ePacketID : uint8
-{
-    PACKET_UNKNOWN = 0,
-    PACKET_ADD_REQUEST,
-    PACKET_ADD_RESPONSE,
-    PACKET_GET_REQUEST,
-    PACKET_GET_RESPONSE,
-    PACKET_WARMING_UP_REQUEST,
-    //    PACKET_WARMING_UP_RESPONSE, // We don't need send response right now. Left it in code for better reading
-    PACKET_COUNT
-};
-
-enum ErrorCodes : int32
-{
-    ERROR_OK = 0,
-    ERROR_WRONG_COMMAND_LINE,
-    ERROR_WRONG_IP,
-    ERROR_TIMEOUT,
-    ERROR_CANNOT_CONNECT,
-    ERROR_SERVER_ERROR,
-    ERROR_READ_FILES,
-    ERROR_ADDRESS_RESOLVER_FAILED,
-    ERROR_CANNOT_SEND_REQUEST_ADD,
-    ERROR_CANNOT_SEND_REQUEST_GET
-};
-
 } // end of namespace AssetCache
 } // end of namespace DAVA
 
-#endif // __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
+ENUM_DECLARE(DAVA::AssetCache::ErrorCodes)
+{
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_OK, "OK");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_WRONG_COMMAND_LINE, "WRONG_COMMAND_LINE");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_WRONG_IP, "WRONG_IP");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_TIMEOUT, "TIMEOUT");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CANNOT_CONNECT, "CANNOT_CONNECT");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_SERVER_ERROR, "SERVER_ERROR");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_READ_FILES, "READ_FILES");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_ADDRESS_RESOLVER_FAILED, "ADDRESS_RESOLVER_FAILED");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CANNOT_SEND_REQUEST_ADD, "CANNOT_SEND_REQUEST_ADD");
+    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CANNOT_SEND_REQUEST_GET, "CANNOT_SEND_REQUEST_GET");
+}

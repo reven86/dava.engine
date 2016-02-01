@@ -45,41 +45,15 @@
 #include "AssetCache/AssetCache.h"
 #include "Platform/Process.h"
 
+#include "AssetCache/AssetCacheClient.h"
+
 namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-
-enum AssetClientCode : int
+String GetErrorAsString(AssetCache::ErrorCodes code)
 {
-    OK = 0,
-    WRONG_COMMAND_LINE = 1,
-    WRONG_IP = 2,
-    TIMEOUT = 3,
-    CANNOT_CONNECT = 4,
-    SERVER_ERROR = 5,
-    CANNOT_READ_FILES = 6
-};
-
-const String& GetCodeAsString(AssetClientCode code)
-{
-    static Array<String, 7> codeStrings = { { "OK",
-                                              "WRONG_COMMAND_LINE",
-                                              "WRONG_IP",
-                                              "TIMEOUT",
-                                              "CANNOT_CONNECT",
-                                              "SERVER_ERROR",
-                                              "CANNOT_READ_FILES" } };
-    static String codeUnknown("CODE_UNKNOWN");
-
-    if (code >= 0 && code < static_cast<int>(codeStrings.size()))
-    {
-        return codeStrings[code];
-    }
-    else
-    {
-        return codeUnknown;
-    }
+    return GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(code);
 }
 
 String ResourcePacker2D::GetProcessFolderName()
@@ -610,91 +584,71 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
 }
 
+void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_)
+{
+    cacheClient = cacheClient_;
+}
+
+class RequestedFilesSaver final : public AssetCache::ClientNetProxyListener
+{
+public:
+    RequestedFilesSaver(AssetCacheClient* cacheClient_, const FilePath& outputFolder_)
+        : cacheClient(cacheClient_)
+        , outputFolder(outputFolder_)
+    {
+        DVASSERT(outputFolder.IsDirectoryPathname());
+        cacheClient->AddListener(this);
+    }
+
+    ~RequestedFilesSaver()
+    {
+        cacheClient->RemoveListener(this);
+    }
+
+    void OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value) override
+    {
+        if (!value.IsEmpty())
+        {
+            FileSystem::Instance()->CreateDirectory(outputFolder, true);
+            value.Export(outputFolder);
+        }
+    }
+
+private:
+    AssetCacheClient* cacheClient = nullptr;
+    FilePath outputFolder;
+};
+
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
     //no cache client in win uap
     return false;
 #else
+
     if (!IsUsingCache())
     {
         return false;
     }
 
-    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-    SCOPE_EXIT
+    RequestedFilesSaver saver(cacheClient, outputPath);
+    AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(key);
+    if (requested == AssetCache::ERROR_OK)
     {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
-    };
-
-    Vector<String> arguments;
-    arguments.push_back("get");
-
-    arguments.push_back("-h");
-    arguments.push_back(AssetCache::KeyToString(key));
-
-    arguments.push_back("-f");
-    arguments.push_back(outputPath.GetAbsolutePathname());
-
-    if (!cacheClientIp.empty())
-    {
-        arguments.push_back("-ip");
-        arguments.push_back(cacheClientIp);
-    }
-
-    if (!cacheClientPort.empty())
-    {
-        arguments.push_back("-p");
-        arguments.push_back(cacheClientPort);
-    }
-
-    if (!cacheClientTimeout.empty())
-    {
-        arguments.push_back("-t");
-        arguments.push_back(cacheClientTimeout);
-    }
-
-    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-    Process cacheClient(cacheClientTool, arguments);
-    if (cacheClient.Run(false))
-    {
-        cacheClient.Wait();
-
-        auto exitCode = cacheClient.GetExitCode();
-        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-        if (exitCode == AssetClientCode::OK)
-        {
-            Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
-            return true;
-        }
-        else
-        {
-            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
-                         inputPath.GetAbsolutePathname().c_str(),
-                         (float64)(getTime) / 1000.0f,
-                         exitCode,
-                         GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
-            const String& procOutput = cacheClient.GetOutput();
-            if (!procOutput.empty())
-            {
-                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-            }
-
-            if (exitCode == AssetClientCode::TIMEOUT)
-            {
-                isUsingCache = false;
-            }
-
-            return false;
-        }
+        Logger::Info("GOT FROM CACHE - %s", inputPath.GetAbsolutePathname().c_str());
+        return true;
     }
     else
     {
-        Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-        return false;
+        if (requested == AssetCache::ERROR_TIMEOUT)
+        {
+            //            cacheClient = nullptr;
+        }
+
+        Logger::Info("%s - attempted to retrieve from cache, result code %d (%s)", inputPath.GetAbsolutePathname().c_str(), requested, GetErrorAsString(requested).c_str());
     }
+
+    return false;
 #endif
 }
 
@@ -709,107 +663,60 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         return false;
     }
 
-    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
-    };
+    AssetCache::CachedItemValue value;
 
-    String fileListString;
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
     for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
-            if (fileListString.empty() == false)
+            const FilePath& path = outFilesList->GetPathname(fi);
+            ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+            if (file)
             {
-                fileListString += String(",");
-            }
+                std::shared_ptr<Vector<uint8>> data = std::make_shared<Vector<uint8>>();
 
-            fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
-        }
-    }
+                auto dataSize = file->GetSize();
+                data.get()->resize(dataSize);
 
-    if (fileListString.empty() == false)
-    {
-        Vector<String> arguments;
-        arguments.push_back("add");
+                auto read = file->Read(data.get()->data(), dataSize);
+                DVVERIFY(read == dataSize);
 
-        arguments.push_back("-h");
-        arguments.push_back(AssetCache::KeyToString(key));
-
-        arguments.push_back("-f");
-        arguments.push_back(fileListString);
-
-        if (!cacheClientIp.empty())
-        {
-            arguments.push_back("-ip");
-            arguments.push_back(cacheClientIp);
-        }
-
-        if (!cacheClientPort.empty())
-        {
-            arguments.push_back("-p");
-            arguments.push_back(cacheClientPort);
-        }
-
-        if (!cacheClientTimeout.empty())
-        {
-            arguments.push_back("-t");
-            arguments.push_back(cacheClientTimeout);
-        }
-        else if (outFilesList->GetFileCount() > 20)
-        {
-            arguments.push_back("-t");
-            arguments.push_back("5"); //enlarge default timeout
-        }
-
-        uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-        Process cacheClient(cacheClientTool, arguments);
-        if (cacheClient.Run(false))
-        {
-            cacheClient.Wait();
-
-            auto exitCode = cacheClient.GetExitCode();
-            getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-            if (exitCode == AssetClientCode::OK)
-            {
-                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
-                return true;
+                value.Add(path.GetFilename(), data);
             }
             else
             {
-                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)", inputPath.GetAbsolutePathname().c_str(),
-                             (float64)(getTime) / 1000.0f,
-                             exitCode,
-                             GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
-                const String& procOutput = cacheClient.GetOutput();
-                if (!procOutput.empty())
-                {
-                    Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-                }
-
-                if (exitCode == AssetClientCode::TIMEOUT)
-                {
-                    isUsingCache = false;
-                }
-
+                Logger::Error("[ResourcePacker2D::%s] Cannot read file(%s)", __FUNCTION__, path.GetStringValue().c_str());
                 return false;
             }
         }
+    }
+
+    if (!value.IsEmpty())
+    {
+        AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(key, value);
+        if (added == AssetCache::ERROR_OK)
+        {
+            Logger::Info("%s - ADDED TO CACHE (%lld)", inputPath.GetAbsolutePathname().c_str(), value.GetSize());
+            return true;
+        }
         else
         {
-            Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-            return false;
+            if (added == AssetCache::ERROR_TIMEOUT)
+            {
+                //                cacheClient = nullptr;
+            }
+
+            Logger::Info("%s - attempted to add to cache, result code %d (%s) (%lld)", inputPath.GetAbsolutePathname().c_str(), added, GetErrorAsString(added).c_str(), value.GetSize());
         }
     }
     else
     {
-        Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath.GetAbsolutePathname().c_str());
-        return false;
+        Logger::Info("%s - empty folder", inputPath.GetAbsolutePathname().c_str());
     }
+
+    return false;
+
 #endif
 }
 
@@ -824,21 +731,4 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     errors.insert(errorMsg);
 }
 
-void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath& path, const String& ip, const String& port, const String& timeout)
-{
-    cacheClientTool = path;
-    cacheClientIp = ip;
-    cacheClientPort = port;
-    cacheClientTimeout = timeout;
-    isUsingCache = !cacheClientTool.IsEmpty();
-}
-
-void ResourcePacker2D::ClearCacheClientTool()
-{
-    cacheClientTool = "";
-    cacheClientIp.clear();
-    cacheClientPort.clear();
-    cacheClientTimeout.clear();
-    isUsingCache = false;
-}
 };

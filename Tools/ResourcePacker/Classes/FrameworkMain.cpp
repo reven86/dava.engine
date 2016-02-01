@@ -38,6 +38,8 @@
 #include "Render/PixelFormatDescriptor.h"
 #include "TeamcityOutput/TeamcityOutput.h"
 
+#include "AssetCache/AssetCacheClient.h"
+
 using namespace DAVA;
  
 void PrintUsage()
@@ -131,18 +133,31 @@ void ProcessRecourcePacker()
 		}
     }
 
+    AssetCacheClient cacheClient;
+    bool shouldDisconnect = false;
     if (CommandLineParser::CommandIsFound(String("-useCache")))
     {
         Logger::FrameworkDebug("Using asset cache");
-        String ip = CommandLineParser::GetCommandParam("-ip");
-        String port = CommandLineParser::GetCommandParam("-p");
-        String timeout = CommandLineParser::GetCommandParam("-t");
-        resourcePacker.SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
+
+        String ipStr = CommandLineParser::GetCommandParam("-ip");
+        String portStr = CommandLineParser::GetCommandParam("-p");
+        String timeoutStr = CommandLineParser::GetCommandParam("-t");
+
+        AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? "127.0.0.1" : ipStr);
+        params.port = (portStr.empty()) ? AssetCache::ASSET_SERVER_PORT : atoi(portStr.c_str());
+        params.timeoutms = (timeoutStr.empty() ? 1000 : atoi(timeoutStr.c_str()) * 1000); //in ms
+
+        AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
+        if (connected == AssetCache::ERROR_OK)
+        {
+            shouldDisconnect = true;
+            resourcePacker.SetCacheClient(&cacheClient);
+        }
     }
     else
     {
         Logger::FrameworkDebug("Asset cache will not be used");
-        resourcePacker.ClearCacheClientTool();
     }
 
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
@@ -153,6 +168,12 @@ void ProcessRecourcePacker()
     {
         resourcePacker.PackResources(exportForGPU);
     }
+
+    if (shouldDisconnect)
+    {
+        cacheClient.Disconnect();
+    }
+
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
     Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
 }

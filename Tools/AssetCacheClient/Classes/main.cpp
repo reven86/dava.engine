@@ -38,7 +38,7 @@
     #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #endif //PLATFORMS
 
-#include "AssetCacheClient.h"
+#include "ClientApplication.h"
 
 void FrameworkDidLaunched()
 {
@@ -51,9 +51,9 @@ void FrameworkWillTerminate()
 void CreateDAVA()
 {
 #if defined(__DAVAENGINE_MACOS__)
-    DAVA::Core* core = new DAVA::CoreMacOSPlatform();
+    new DAVA::CoreMacOSPlatform();
 #elif defined(__DAVAENGINE_WIN32__)
-    DAVA::Core* core = new DAVA::CoreWin32Platform();
+    new DAVA::CoreWin32Platform();
 #else // PLATFORMS
     static_assert(false, "Need create Core object");
 #endif //PLATFORMS
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 {
     CreateDAVA();
 
-    AssetCacheClient cacheClient;
+    ClientApplication cacheClient;
     bool parsed = cacheClient.ParseCommandLine(argc, argv);
     if (parsed)
     {

@@ -38,6 +38,7 @@
 
 #include "AssetCache/CacheItemKey.h"
 
+class AssetCacheClient;
 namespace DAVA
 {
 
@@ -59,8 +60,7 @@ public:
     void SetRunning(bool arg);
     bool IsRunning() const;
 
-    void SetCacheClientTool(const FilePath& path, const String& ip, const String& port, const String& timeout);
-    void ClearCacheClientTool();
+    void SetCacheClient(AssetCacheClient* cacheClient);
 
     void PackResources(eGPUFamily forGPU);
 
@@ -101,11 +101,7 @@ public:
     TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
 
 private:
-    FilePath cacheClientTool;
-    String cacheClientIp;
-    String cacheClientPort;
-    String cacheClientTimeout;
-    bool isUsingCache = false;
+    AssetCacheClient* cacheClient = nullptr;
 
     Set<String> errors;
 
@@ -118,7 +114,7 @@ inline bool ResourcePacker2D::IsUsingCache() const
     //no cache in win uap
     return false;
 #else
-    return isUsingCache;
+    return (cacheClient != nullptr);
 #endif
 }
 

@@ -26,76 +26,87 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "AssetCacheClientAPI.h"
+#include "AssetCacheClient.h"
 
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 
 using namespace DAVA;
 
-AssetCacheClientAPI::AssetCacheClientAPI()
+AssetCacheClient::AssetCacheClient()
 {
     client.AddListener(this);
 }
 
-
-AssetCacheClientConstants::ExitCodes AssetCacheClientAPI::ConnectBlocked(const DAVA::String &ip, DAVA::uint16 port, DAVA::uint64 timeoutms_)
+AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& connectionParams)
 {
-    timeoutms = timeoutms_;
+    timeoutms = connectionParams.timeoutms;
 
-    bool connectCalled = client.Connect(ip, port);
+    bool connectCalled = client.Connect(connectionParams.ip, connectionParams.port);
     if (!connectCalled)
     {
-        return AssetCacheClientConstants::EXIT_ADDRESS_RESOLVER_FAILED;
+        return AssetCache::ERROR_ADDRESS_RESOLVER_FAILED;
     }
 
-    DAVA::uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     while (client.ChannelIsOpened() == false)
     {
         Net::NetCore::Instance()->Poll();
 
-        DAVA::uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
         {
-            Logger::Error("[AssetCacheClientAPI::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, ip.c_str(), port, timeoutms);
-            return AssetCacheClientConstants::EXIT_TIMEOUT;
+            Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+            return AssetCache::ERROR_TIMEOUT;
         }
     }
 
-    return AssetCacheClientConstants::EXIT_OK;
+    return AssetCache::ERROR_OK;
 }
 
-void AssetCacheClientAPI::Disconnect()
+void AssetCacheClient::Disconnect()
 {
     client.Disconnect();
 }
 
-AssetCacheClientConstants::ExitCodes AssetCacheClientAPI::AddToCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value)
+AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
+    requestResult.recieved = false;
+    requestResult.succeed = false;
+    requestResult.requestID = AssetCache::PACKET_ADD_REQUEST;
+
+    if (value.GetSize() == 1613818)
+    {
+        int a = 0;
+    }
+
     bool requestSent = client.AddToCache(key, value);
     if (requestSent)
     {
         return WaitRequest();
     }
 
-    return AssetCacheClientConstants::EXIT_CANNOT_SEND_REQUEST_ADD;
+    return AssetCache::ERROR_CANNOT_SEND_REQUEST_ADD;
 }
 
-AssetCacheClientConstants::ExitCodes AssetCacheClientAPI::RequestFromCacheBlocked(const DAVA::AssetCache::CacheItemKey& key)
+AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCache::CacheItemKey& key)
 {
+    requestResult.recieved = false;
+    requestResult.succeed = false;
+    requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
+
     bool requestSent = client.RequestFromCache(key);
     if (requestSent)
     {
         return WaitRequest();
     }
 
-    return AssetCacheClientConstants::EXIT_CANNOT_SEND_REQUEST_GET;
+    return AssetCache::ERROR_CANNOT_SEND_REQUEST_GET;
 }
 
-
-AssetCacheClientConstants::ExitCodes AssetCacheClientAPI::WaitRequest()
+AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
 {
-    DAVA::uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     while (requestResult.recieved == false)
     {
         Net::NetCore::Instance()->Poll();
@@ -103,44 +114,52 @@ AssetCacheClientConstants::ExitCodes AssetCacheClientAPI::WaitRequest()
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (((timeoutms > 0) && (deltaTime > timeoutms)) && (requestResult.recieved == false))
         {
-            Logger::Error("[AssetCacheClientAPI::%s] Sending files refused by timeout (%lld sec)", __FUNCTION__, timeoutms);
-            return AssetCacheClientConstants::EXIT_TIMEOUT;
+            Logger::Error("[AssetCacheClient::%s] Sending files refused by timeout (%lld ms)", __FUNCTION__, timeoutms);
+            return AssetCache::ERROR_TIMEOUT;
         }
     }
 
     if (requestResult.succeed == false)
     {
-        Logger::Error("[AssetCacheClientAPI::%s] Request (%d) failed by server", __FUNCTION__, requestResult.requestID);
-        return AssetCacheClientConstants::EXIT_SERVER_ERROR;
+        Logger::Error("[AssetCacheClient::%s] Request (%d) failed by server", __FUNCTION__, requestResult.requestID);
+        return AssetCache::ERROR_SERVER_ERROR;
     }
 
-    return AssetCacheClientConstants::EXIT_OK;
+    return AssetCache::ERROR_OK;
 }
 
-
-void AssetCacheClientAPI::OnAddedToCache(const DAVA::AssetCache::CacheItemKey& key, bool added)
+void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool added)
 {
-    if (requestResult.requestID == DAVA::AssetCache::PACKET_ADD_REQUEST)
+    if (requestResult.requestID == AssetCache::PACKET_ADD_REQUEST)
     {
         requestResult.recieved = true;
         requestResult.succeed = added;
     }
     else
     {
-        DAVA::Logger::Error("[AssetCacheClientAPI::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
+        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
     }
 }
 
-void AssetCacheClientAPI::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value)
+void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
-    if (requestResult.requestID == DAVA::AssetCache::PACKET_GET_REQUEST)
+    if (requestResult.requestID == AssetCache::PACKET_GET_REQUEST)
     {
         requestResult.recieved = true;
         requestResult.succeed = (value.IsEmpty() == false);
     }
     else
     {
-        DAVA::Logger::Error("[AssetCacheClientAPI::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
+        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
     }
 }
 
+void AssetCacheClient::AddListener(AssetCache::ClientNetProxyListener* listener)
+{
+    client.AddListener(listener);
+}
+
+void AssetCacheClient::RemoveListener(AssetCache::ClientNetProxyListener* listener)
+{
+    client.RemoveListener(listener);
+}
