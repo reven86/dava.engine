@@ -42,7 +42,7 @@ extern void FrameworkWillTerminate();
 #include "Core/Core.h"
 #include "UI/UIScreenManager.h"
 
-- (void)SetWindowController:(MainWindowController*)ctrlr
+- (void)setWindowController:(MainWindowController*)ctrlr
 {
     mainWindowController = ctrlr;
 }

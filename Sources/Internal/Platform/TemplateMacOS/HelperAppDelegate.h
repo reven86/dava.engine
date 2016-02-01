@@ -45,9 +45,9 @@
     MainWindowController* mainWindowController;
 }
 
-- (void)SetWindowController:(MainWindowController*)ctrlr;
+- (void)setWindowController:(MainWindowController*)ctrlr;
 
 @end
 
-#endif //__DAVAENGINE_IPHONE__
-#endif //__DAVAENGINE_HELPER_APP_DELEGATE_H__
+#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__

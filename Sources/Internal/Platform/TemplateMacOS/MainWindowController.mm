@@ -68,21 +68,21 @@ namespace DAVA
         core->CreateSingletons();
 
         // try to create delegate from client code
-        Class delaegateClass = NSClassFromString(@"MacOSHelperAppDelegate");
-        if (nullptr == delaegateClass)
+        Class delegateClass = NSClassFromString(@"MacOSHelperAppDelegate");
+        if (nullptr == delegateClass)
         {
             // have no delegate in client code - create byself
-            delaegateClass = NSClassFromString(@"HelperAppDelegate");
+            delegateClass = NSClassFromString(@"HelperAppDelegate");
         }
 
-        DVASSERT_MSG(nullptr != delaegateClass, "Cannot find NSApplicationDelegate class!");
+        DVASSERT_MSG(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
 
-        HelperAppDelegate* appDelegate = [[[delaegateClass alloc] init] autorelease];
+        HelperAppDelegate* appDelegate = [[[delegateClass alloc] init] autorelease];
 
         MainWindowController* mainWindowController = [[[MainWindowController alloc] init] autorelease];
 
         // window controller used from app delegate
-        [appDelegate SetWindowController:mainWindowController];
+        [appDelegate setWindowController:mainWindowController];
 
         [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 
@@ -180,18 +180,18 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 -(void)createWindows
 {
-    core = DAVA::Core::GetApplicationCore();
+    core = Core::GetApplicationCore();
 
     FrameworkDidLaunched();
 
-    DAVA::String title;
-    DAVA::int32 width = 800;
-    DAVA::int32 height = 600;
+    String title;
+    int32 width = 800;
+    int32 height = 600;
     bool isFull = false;
 
-    DAVA::float32 minWidth = 0.0f;
-    DAVA::float32 minHeight = 0.0f;
-    DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
+    float32 minWidth = 0.0f;
+    float32 minHeight = 0.0f;
+    KeyedArchive* options = Core::Instance()->GetOptions();
     if(nullptr != options)
     {
         title = options->GetString("title", "[set application title using core options property 'title']");
@@ -202,8 +202,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         }
 
         isFull = (0 != options->GetInt32("fullscreen", 0));
-        minWidth = static_cast<DAVA::float32>(options->GetInt32("min-width", 0));
-        minHeight = static_cast<DAVA::float32>(options->GetInt32("min-height", 0));
+        minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
+        minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
@@ -222,13 +222,13 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     {
         // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
         // Such a strange way due to my little knowledge of Objective-C
-        DAVA::Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
+        Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    DAVA::Core::Instance()->SetNativeView(openGLView);
+    Core::Instance()->SetNativeView(openGLView);
 
     // start animation
-    currFPS = DAVA::Renderer::GetDesiredFPS();
+    currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
 
     // make window main
@@ -264,7 +264,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
     else
     {
-        DAVA::Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
+        Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
     }
 
     NSSize windowSize = [openGLView frame].size;
@@ -284,7 +284,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
 }
 
-- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+- (void)setMinimumWindowSize:(float32)width height:(float32)height
 {
     const float32 MIN_WIDTH = 64.0f;
     const float32 MIN_HEIGHT = 64.0f;
