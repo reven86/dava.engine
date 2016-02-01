@@ -345,7 +345,7 @@ void Scene::CreateSystems()
     if(SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG & systemsMask)
     {
         speedTreeUpdateSystem = new SpeedTreeUpdateSystem(this);
-        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_WIND_UPDATE_FLAG & systemsMask)
@@ -616,9 +616,9 @@ void Scene::AddCamera(Camera * camera)
 	}
 }
 
-bool Scene::RemoveCamera(Camera *c)
+bool Scene::RemoveCamera(Camera* c)
 {
-    const auto &it = std::find(cameras.begin(), cameras.end(), c);
+    const auto& it = std::find(cameras.begin(), cameras.end(), c);
     if (it != cameras.end())
     {
         SafeRelease(*it);

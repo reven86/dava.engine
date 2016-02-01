@@ -128,9 +128,16 @@ Camera* LodSystem::GetCamera() const
 inline void LodSystem::SetEntityLod(Entity * entity, int32 currentLod)
 {
     RenderObject * ro = GetRenderObject(entity);
-    if(ro)
+    if (ro)
     {
-        ro->SetLodIndex(currentLod);
+        if (currentLod == LodComponent::LAST_LOD_LAYER)
+        {
+            ro->SetLodIndex(ro->GetMaxLodIndex());
+        }
+        else
+        {
+            ro->SetLodIndex(currentLod);
+        }
     }
 }
 	

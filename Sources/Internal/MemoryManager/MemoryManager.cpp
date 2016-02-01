@@ -35,6 +35,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
+#elif defined(__DAVAENGINE_WIN_UAP__)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
 #include <dlfcn.h>
@@ -162,6 +163,8 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_RHI_INDEX_MAP, "rhi index map");
     RegisterAllocPoolName(ALLOC_POOL_RHI_TEXTURE_MAP, "rhi texture map");
     RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
+
+    RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -217,7 +220,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         block->bktraceHash = 0;
         if (0 == block->allocTotal)
-            block->allocTotal = totalSize;
+            block->allocTotal = static_cast<uint32>(totalSize);
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -286,7 +289,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         block->bktraceHash = 0;
         if (0 == block->allocTotal)
-            block->allocTotal = totalSize;
+            block->allocTotal = static_cast<uint32>(totalSize);
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -400,7 +403,7 @@ void* MemoryManager::InternalAllocate(size_t size)
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block));
         if (0 == block->allocTotal)
-            block->allocTotal = totalSize;
+            block->allocTotal = static_cast<uint32>(totalSize);
 
         // Update stat
         {

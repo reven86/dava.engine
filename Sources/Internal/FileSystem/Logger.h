@@ -125,6 +125,8 @@ public:
     void EnableConsoleMode();
 
     const char8 * GetLogLevelString(eLogLevel ll) const;
+    //TODO: insert Optional
+    eLogLevel GetLogLevelFromString(const char8* ll) const;
 
 private:
     void PlatformLog(eLogLevel ll, const char8* text) const;

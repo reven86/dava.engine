@@ -32,8 +32,6 @@
 #include "GetRequest.h"
 
 AssetCacheClient::AssetCacheClient()
-    : exitCode(AssetCacheClientConstants::EXIT_OK)
-    , activeRequest(nullptr)
 {
     requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
     requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
@@ -48,18 +46,14 @@ bool AssetCacheClient::ParseCommandLine(int argc, char* argv[])
 {
     if (argc > 1)
     {
-        const char* command = argv[1];
         for (auto& r : requests)
         {
-            if (r->options.GetCommand() == command)
+            auto commandLineIsOk = r->options.Parse(argc, argv);
+            if (commandLineIsOk)
             {
                 activeRequest = r.get();
-                auto commandLineIsOk = r->options.Parse(argc, argv);
-                if (commandLineIsOk)
-                {
-                    exitCode = activeRequest->CheckOptions();
-                    break;
-                }
+                exitCode = activeRequest->CheckOptions();
+                break;
             }
         }
 
@@ -80,7 +74,7 @@ bool AssetCacheClient::ParseCommandLine(int argc, char* argv[])
 
 void AssetCacheClient::PrintUsage() const
 {
-    printf("Usage: AssetCacheClient <command>\n");
+    printf("\nUsage: AssetCacheClient <command>\n");
     printf("\n Commands: ");
 
     auto count = requests.size();

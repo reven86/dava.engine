@@ -45,6 +45,7 @@
 
 #include "Project/ProjectManager.h"
 #include "Preset/Preset.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -339,15 +340,13 @@ void TextureListDelegate::drawPreviewSmall(QPainter *painter, const QStyleOption
 
 int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const
 {
-	static QIcon errorIcon = QIcon(":/QtIcons/error.png");
+    int ret = 0;
+    QRect r = rect;
 
-	int ret = 0;
-	QRect r = rect;
-
-	if(nullptr != descriptor && nullptr != texture)
-	{
-		r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
-		r.setX(rect.x() + rect.width());
+    if (nullptr != descriptor && nullptr != texture)
+    {
+        r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
+        r.setX(rect.x() + rect.width());
 		r.setWidth(FORMAT_INFO_WIDTH);
 
 		QColor gpuInfoColors[DAVA::GPU_DEVICE_COUNT];
@@ -368,24 +367,24 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
                 QColor c = gpuInfoColors[i];
 
                 painter->setPen(Qt::NoPen);
-				painter->setBrush(c);
-				painter->drawRect(r);
-			}
+                painter->setBrush(c);
+                painter->drawRect(r);
+            }
 
-			r.moveLeft(r.x() - FORMAT_INFO_SPACING);
-		}
+            r.moveLeft(r.x() - FORMAT_INFO_SPACING);
+        }
 
-		// error icon
-		if(texture->width != texture->height)
+        // error icon
+        if(texture->width != texture->height)
 		{
 			r.moveLeft(r.x() - 16);
-			errorIcon.paint(painter, r.x(), r.y(), 16, 16);
-		}
+            SharedIcon(":/QtIcons/error.png").paint(painter, r.x(), r.y(), 16, 16);
+        }
 
-		ret = rect.width() - (r.x() - rect.x());
-	}
+        ret = rect.width() - (r.x() - rect.x());
+    }
 
-	return ret;
+    return ret;
 }
 
 bool TextureListDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
