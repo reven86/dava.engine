@@ -147,7 +147,7 @@ public:
 
     bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString& text);
     void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);
-	void TextFieldShouldReturn();
+    void TextFieldShouldReturn();
 	void TextFieldKeyboardShown(const Rect& rect);
 	void TextFieldKeyboardHidden();
 	void TextFieldFocusChanged(bool hasFocus);

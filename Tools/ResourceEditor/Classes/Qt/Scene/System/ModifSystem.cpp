@@ -205,8 +205,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                             SetModifAxis(hoodSystem->GetPassingAxis());
                         }
 
-						// set entities to be modified
-						BeginModification(selectedEntities);
+                        // set entities to be modified
+                        BeginModification(selectedEntities);
 
 						// init some values, needed for modifications
 						modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
@@ -240,9 +240,9 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                 {
                 case ST_MODIF_MOVE:
                 {
-                        DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
-						moveOffset = Move(newPos3d);
-						modified = true;
+                    DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
+                    moveOffset = Move(newPos3d);
+                        modified = true;
 					}
 					break;
 				case ST_MODIF_ROTATE:
@@ -291,8 +291,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                             CloneEnd();
                         }
                         else
-						{
-							ApplyModification();
+                        {
+                            ApplyModification();
 						}
 					}
 
@@ -383,9 +383,9 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
         moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
 
         // remember axis vector we are rotating around
-        switch(curAxis)
-		{
-		case ST_AXIS_X:
+        switch (curAxis)
+        {
+        case ST_AXIS_X:
 		case ST_AXIS_YZ:
 			rotateAround = DAVA::Vector3(1, 0, 0);
 			break;

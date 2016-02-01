@@ -186,7 +186,7 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
         }
         else if (IsDescriptorPathname(pathname))
         {
-			SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
+            SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
 		}
 	}
 }
@@ -210,8 +210,8 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
         {
             descriptor->compression[gpu] = it->second;
 
-            if(convertionEnabled)
-			{
+            if (convertionEnabled)
+            {
 				ImageTools::ConvertImage(descriptor, gpu, (PixelFormat)descriptor->compression[gpu].format, quality);
 			}
 		}

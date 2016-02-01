@@ -90,9 +90,9 @@ void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
         mspace_free(ud, ptr);
         return nullptr;
     }
-        else
-		{
-			void* mem = mspace_realloc(ud, ptr, nsize);
+    else
+    {
+            void* mem = mspace_realloc(ud, ptr, nsize);
 			DVASSERT(mem);
 			return mem;
 		}
@@ -117,8 +117,8 @@ AutotestingSystemLua::~AutotestingSystemLua()
     {
         return;
     }
-        lua_close(luaState);
-		luaState = nullptr;
+    lua_close(luaState);
+    luaState = nullptr;
     
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
         destroy_mspace(memorySpace);
@@ -133,9 +133,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
 
 void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 {
-        if (luaState)
-		{
-			Logger::Debug("AutotestingSystemLua::Has initialised already.");
+    if (luaState)
+    {
+            Logger::Debug("AutotestingSystemLua::Has initialised already.");
 			return;
 		}
 
@@ -158,8 +158,8 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 
         if (!LoadWrappedLuaObjects())
         {
-			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
-		}
+            AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
+        }
         String automationAPIStrPath = AutotestingSystem::ResolvePathToAutomation("/Autotesting/Scripts/autotesting_api.lua");
 		if (automationAPIStrPath.empty() || !RunScriptFromFile(automationAPIStrPath))
 		{
@@ -320,8 +320,8 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
         if (DeviceInfo::GetPlatformString() == "Android")
         {
             deviceName = DeviceInfo::GetModel();
-		}
-		else
+        }
+        else
 		{
 			deviceName = WStringToString(DeviceInfo::GetName());
 		}

@@ -231,8 +231,8 @@ void UISlider::Input(UIEvent *currentInput)
 
     float oldVal = currentValue;
     currentValue = Interpolation::Linear(minValue, maxValue, (float32)leftInactivePart, relTouchPoint.x, size.x - (float32)rightInactivePart);
-	
-	if(currentValue < minValue)
+
+    if(currentValue < minValue)
 	{
 		currentValue = minValue;
 	}
