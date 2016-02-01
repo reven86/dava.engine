@@ -47,7 +47,6 @@ UIScreen::UIScreen(const Rect &rect)
 	groupIdCounter --;
 	isLoaded = false;
 	fillBorderOrder = FILL_BORDER_AFTER_DRAW;
-    fullScreenRect = rect;
 }
 	
 UIScreen::~UIScreen()
@@ -65,23 +64,28 @@ UIScreen::~UIScreen()
     
 void UIScreen::SystemWillAppear()
 {
+    bool needNotify = false;
+    const Rect& virtualRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    if (GetSize() != virtualRect.GetSize())
+    {
+        SetSize(virtualRect.GetSize());
+        needNotify = true;
+    }
+
     UIControl::SystemWillAppear();
 
-    if (fullScreenRect.dx != VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx
-        || fullScreenRect.dy != VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy)
+    if (needNotify)
     {
-        SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+        SystemScreenSizeDidChanged(virtualRect);
     }
 }
 
 void UIScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenRect)
 {
-    fullScreenRect = newFullScreenRect;
-    UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
     SetSize(newFullScreenRect.GetSize());
+    UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
 }
 
-	
 void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
 {
 	fillBorderOrder = fillOrder;
