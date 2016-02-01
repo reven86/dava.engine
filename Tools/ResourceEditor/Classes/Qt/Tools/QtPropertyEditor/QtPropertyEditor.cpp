@@ -64,35 +64,41 @@ QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 QtPropertyEditor::~QtPropertyEditor()
 { }
 
-QModelIndex QtPropertyEditor::AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent)
+void QtPropertyEditor::AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent /*= QModelIndex()*/)
 {
-	return curModel->AppendProperty(name, data, parent);
+    curModel->AppendProperties(std::move(properties), parent);
 }
 
-void QtPropertyEditor::MergeProperty(QtPropertyData* data, QModelIndex const& parent)
+QModelIndex QtPropertyEditor::AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent)
 {
-    curModel->MergeProperty(data, parent);
+    return curModel->AppendProperty(std::move(data), parent);
 }
 
-QModelIndex QtPropertyEditor::InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent)
+void QtPropertyEditor::MergeProperty(std::unique_ptr<QtPropertyData>&& data, QModelIndex const& parent)
 {
-	return curModel->InsertProperty(name, data, row, parent);
+    curModel->MergeProperty(std::move(data), parent);
+}
+
+QModelIndex QtPropertyEditor::InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent)
+{
+    return curModel->InsertProperty(std::move(data), row, parent);
 }
 
 QModelIndex QtPropertyEditor::AppendHeader(const QString &text)
 {
-	QModelIndex propHeader = AppendProperty(text, new QtPropertyData(""));
+    QtPropertyData* propHeader = new QtPropertyData(DAVA::FastName(text.toStdString()));
+    QModelIndex result = AppendProperty(std::unique_ptr<QtPropertyData>(propHeader));
 
-	ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
-	return propHeader;
+    ApplyStyle(propHeader, HEADER_STYLE);
+    return result;
 }
 
 QModelIndex QtPropertyEditor::InsertHeader(const QString &text, int row)
 {
-	QModelIndex propHeader = InsertProperty(text, new QtPropertyData(""), row);
+    QModelIndex propHeader = InsertProperty(std::unique_ptr<QtPropertyData>(new QtPropertyData(DAVA::FastName(text.toStdString()))), row);
 
-	ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
-	return propHeader;
+    ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
+    return propHeader;
 }
 
 QtPropertyData* QtPropertyEditor::GetProperty(const QModelIndex &index) const
@@ -103,6 +109,11 @@ QtPropertyData* QtPropertyEditor::GetProperty(const QModelIndex &index) const
 QtPropertyData * QtPropertyEditor::GetRootProperty() const
 {
 	return curModel->rootItem();
+}
+
+void QtPropertyEditor::FinishTreeCreation()
+{
+    curModel->FinishTreeCreation();
 }
 
 void QtPropertyEditor::RemoveProperty(const QModelIndex &index)

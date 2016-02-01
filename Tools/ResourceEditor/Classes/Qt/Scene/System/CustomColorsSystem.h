@@ -82,14 +82,14 @@ protected:
 
     void AddRectToAccumulator(const Rect& rect);
     void ResetAccumulatorRect();
-	Rect GetUpdatedRect();
-	
-	void StoreOriginalState();
-	void CreateUndoPoint();
+    Rect GetUpdatedRect();
 
-	void StoreSaveFileName(const FilePath& filePath);
+    void StoreOriginalState();
+    void CreateUndoPoint();
 
-	FilePath GetScenePath();
+    void StoreSaveFileName(const FilePath& filePath);
+
+    FilePath GetScenePath();
 	String GetRelativePathToScenePath(const FilePath& absolutePath);
 	FilePath GetAbsolutePathFromScenePath(const String& relativePath);
 	String GetRelativePathToProjectPath(const FilePath& absolutePath);

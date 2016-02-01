@@ -204,10 +204,20 @@ static const char* _ShaderHeader_Metal =
 "using namespace metal;\n\n"
 
 "#define min10float  half\n"
+"#define min10float1 half\n"
+"#define min10float2 half2\n"
+"#define min10float3 half3\n"
+"#define min10float4 half4\n"
+
+"#define half1 half\n"
+"#define half2 half2\n"
+"#define half3 half3\n"
+"#define half4 half4\n"
 
 "#define float1 float\n"
-"#define half1 half\n"
-"#define min10float1 half\n"
+"#define float2 vector_float2\n"
+"#define float3 vector_float3\n"
+"#define float4 vector_float4\n"
 
 "float4 mul( float4 v, float4x4 m );\n"
 "float4 mul( float4 v, float4x4 m ) { return m*v; }\n"

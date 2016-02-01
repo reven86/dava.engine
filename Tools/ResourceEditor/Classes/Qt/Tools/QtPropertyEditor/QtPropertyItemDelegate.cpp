@@ -42,7 +42,6 @@
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
 	, model(_model)
-	, lastHoverData(nullptr)
     , view(_view)
     , editorDataWasSet(false)
 {
@@ -63,7 +62,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
         drawOptionalButtons(painter, opt, index);
     }
 
-    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    auto* data = dynamic_cast<QtPropertyDataDavaVariant*>(model->itemFromIndex(index));
     if (
         (data != nullptr) &&
         (data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING) &&
@@ -81,7 +80,7 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
     static const int baseText = 17;
     static const int extra = 5;
 
-    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    auto* data = dynamic_cast<QtPropertyDataDavaVariant*>(model->itemFromIndex(index));
     if ( data != nullptr )
     {
         if ( data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING )
@@ -185,12 +184,12 @@ bool QtPropertyItemDelegate::eventFilter(QObject* obj, QEvent* event)
         switch (event->type())
         {
         case QEvent::MouseMove:
-	        {
+        {
                 QMouseEvent *me = static_cast<QMouseEvent *>(event);
                 QModelIndex index = view->indexAt(me->pos());
-		        QtPropertyData* data = model->itemFromIndex(index);
-		        showButtons(data);
-	        }
+                QtPropertyData* data = model->itemFromIndex(index);
+                showButtons(data);
+        }
             break;
         default:
             break;
@@ -303,15 +302,9 @@ void QtPropertyItemDelegate::DrawButton(QPainter* painter, QStyleOptionViewItem&
     }
 
     int owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
-    if(btn->isVisible())
-    {
-        btn->move(opt.rect.left(), owYPos);
-    }
-    else
-    {
-        QPixmap pix = btn->grab();
-        painter->drawPixmap(opt.rect.left(), owYPos, pix);
-    }
+    QPixmap pix = btn->grab();
+    painter->drawPixmap(opt.rect.left(), owYPos, pix);
+    btn->move(opt.rect.left(), owYPos);
     int padding = buttonSpacing + btn->width();
     opt.rect.adjust(padding, 0, 0, 0);
 }
@@ -351,37 +344,44 @@ void QtPropertyItemDelegate::showButtons(QtPropertyData *data)
 {
 	if(data != lastHoverData)
 	{
-	    showOptionalButtons(lastHoverData, false);
-	    showOptionalButtons(data, true);
+        hideButtons();
+        showOptionalButtons(data);
 
-	    lastHoverData = data;
-	}
+        lastHoverData = data;
+    }
 }
 
-void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data, bool show)
+void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData* data)
 {
-	if(nullptr != data)
-	{
-		for(int i = 0; i < data->GetButtonsCount(); ++i)
-		{
-			if(show)
-			{
-				data->GetButton(i)->show();
-			}
-			else
-			{
-				data->GetButton(i)->hide();
-			}
-		}
-	}
+    DVASSERT(visibleButtons.empty());
+    if (nullptr != data)
+    {
+        int buttonCount = data->GetButtonsCount();
+        visibleButtons.reserve(buttonCount);
+
+        for (int i = 0; i < buttonCount; ++i)
+        {
+            QPointer<QtPropertyToolButton> button = data->GetButton(i);
+            visibleButtons.push_back(button);
+            button->show();
+        }
+    }
+}
+
+void QtPropertyItemDelegate::hideButtons()
+{
+    for (size_t i = 0; i < visibleButtons.size(); ++i)
+    {
+        QPointer<QtPropertyToolButton>& button = visibleButtons[i];
+        if (button != nullptr)
+            button->hide();
+    }
+
+    visibleButtons.clear();
 }
 
 void QtPropertyItemDelegate::invalidateButtons()
 {
-	if(nullptr != lastHoverData)
-	{
-		showOptionalButtons(lastHoverData, false);
-		lastHoverData = nullptr;
-	}
+    hideButtons();
 }
 

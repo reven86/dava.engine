@@ -73,6 +73,8 @@ public:
     virtual void Draw();
     virtual void EndFrame();
 
+    void OnKeyUp(UIEvent* evt);
+
 protected:
     void SetupTriangle();
     void SetupCube();
@@ -88,6 +90,8 @@ protected:
     void rhiDraw();
     void rtDraw();
     void visibilityTestDraw();
+
+    static void ScreenShotCallback(uint32 width, uint32 height, const void* rgba);
 
     bool inited;
 
@@ -164,6 +168,16 @@ protected:
     };
 
     Tank tank;
+
+    /*
+    rhi::HPerfQuerySet  perfQuerySet[3];
+    bool                perfQuerySetUsed[3];
+    bool                perfQuerySetReady[3];
+    unsigned            curPerfQuerySet;
+    unsigned            firedPerfQuerySet;
+*/
+    rhi::HPerfQuerySet perfQuerySet;
+    bool perfQuerySetFired;
 
     //    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;
 };

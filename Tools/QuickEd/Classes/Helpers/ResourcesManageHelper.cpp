@@ -151,7 +151,7 @@ QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
         }
     }
 
-	return QString();
+    return QString();
 }
 
 QString ResourcesManageHelper::GetDefaultSpritesPath(const QString& currentSpritePath)

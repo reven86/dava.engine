@@ -47,11 +47,10 @@ InitParam
 {
     uint32 width;
     uint32 height;
-    float32 scaleX;
-    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
+    uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
     DAVA::Mutex* FrameCommandExecutionSync;
 
@@ -76,11 +75,10 @@ InitParam
     InitParam()
         : width(0)
         , height(0)
-        , scaleX(1.0f)
-        , scaleY(1.0f)
         , window(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
+        , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
         , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
@@ -106,17 +104,15 @@ ResetParam
 {
     uint32 width;
     uint32 height;
-    float32 scaleX;
-    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
+    uint32 vsyncEnabled : 1;
 
     ResetParam()
         : width(0)
         , height(0)
-        , scaleX(1.0f)
-        , scaleY(1.0f)
         , fullScreen(false)
+        , vsyncEnabled(true)
         , window(nullptr)
     {
     }
@@ -151,6 +147,8 @@ void SuspendRendering();
 void ResumeRendering();
 
 void InvalidateCache();
+
+void TakeScreenshot(ScreenShotCallback callback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
@@ -227,6 +225,22 @@ void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
 
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
 int QueryValue(HQueryBuffer buf, uint32 objectIndex);
+
+////////////////////////////////////////////////////////////////////////////////
+// perfquery-set
+
+typedef ResourceHandle<RESOURCE_PERFQUERY_SET> HPerfQuerySet;
+
+HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount);
+void DeletePerfQuerySet(HPerfQuerySet hset, bool forceImmediate = false);
+
+void ResetPerfQuerySet(HPerfQuerySet hset);
+void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid);
+
+bool PerfQuerySetIsValid(HPerfQuerySet hset);
+bool GetPerfQuerySetFreq(HPerfQuerySet hset, uint64* freq);
+bool GetPerfQuerySetTimestamp(HPerfQuerySet hset, uint32 timestampIndex, uint64* timestamp);
+bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1);
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pipeline state & const-buffers
@@ -317,6 +331,8 @@ HSyncObject GetCurrentFrameSyncObject();
 
 typedef ResourceHandle<RESOURCE_RENDER_PASS> HRenderPass;
 typedef ResourceHandle<RESOURCE_PACKET_LIST> HPacketList;
+
+void SetFramePerfQuerySet(HPerfQuerySet hset);
 
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);

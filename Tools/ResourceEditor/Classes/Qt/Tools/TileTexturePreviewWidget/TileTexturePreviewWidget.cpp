@@ -85,13 +85,13 @@ void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& co
     bool blocked = signalsBlocked();
     blockSignals(true);
 
-	images.push_back(SafeRetain(previewTexture));
+    images.push_back(SafeRetain(previewTexture));
 
-	QTreeWidgetItem* item = new QTreeWidgetItem();
-	item->setCheckState(0, Qt::Unchecked);
-	addTopLevelItem(item);
+    QTreeWidgetItem* item = new QTreeWidgetItem();
+    item->setCheckState(0, Qt::Unchecked);
+    addTopLevelItem(item);
 
-	if (mode == MODE_WITHOUT_COLORS)
+    if (mode == MODE_WITHOUT_COLORS)
 	{
 		item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
 	}
@@ -207,9 +207,7 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 	}
 
 	QImage previewImage = qimg.copy(0, 0, size.width(), size.height());
-	QIcon icon = QIcon(QPixmap::fromImage(previewImage));
-
-	item->setIcon(0, icon);
+    item->setIcon(0, QIcon(QPixmap::fromImage(previewImage)));
 }
 
 void TileTexturePreviewWidget::UpdateColor(int32 number)
@@ -225,13 +223,13 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
 
     QPalette palette = labels[number]->palette();
     palette.setColor(labels[number]->backgroundRole(), color);
-	labels[number]->setPalette(palette);
+    labels[number]->setPalette(palette);
 
-	QString str;
-	str.sprintf("#%02x%02x%02x", color.red(), color.green(), color.blue());
-	item->setText(0, str);
+    QString str;
+    str.sprintf("#%02x%02x%02x", color.red(), color.green(), color.blue());
+    item->setText(0, str);
 
-	UpdateImage(number);
+    UpdateImage(number);
     
     blockSignals(blocked);
 }

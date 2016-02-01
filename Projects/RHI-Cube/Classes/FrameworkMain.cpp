@@ -57,8 +57,8 @@ void FrameworkDidLaunched()
     KeyedArchive* appOptions = new KeyedArchive();
 #if defined(__DAVAENGINE_WIN32__)
     //    appOptions->SetInt32("renderer", rhi::RHI_DX9);
-    //    appOptions->SetInt32("renderer", rhi::RHI_DX11);
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    //appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
     appOptions->SetInt32("rhi_threaded_frame_count", 0);
 #elif defined(__DAVAENGINE_WIN_UAP__)
     appOptions->SetInt32("renderer", rhi::RHI_DX11);

@@ -51,6 +51,7 @@ Dispatch
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
+    void (*impl_TakeScreenshot)(ScreenShotCallback);
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
 
@@ -73,6 +74,16 @@ Dispatch
     void (*impl_QueryBuffer_Delete)(Handle buf);
     bool (*impl_QueryBuffer_IsReady)(Handle buf, uint32 objectIndex);
     int (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
+
+    Handle (*impl_PerfQuerySet_Create)(uint32 maxQueryCount);
+    void (*impl_PerfQuerySet_Delete)(Handle set);
+    void (*impl_PerfQuerySet_Reset)(Handle set);
+    void (*impl_PerfQuerySet_SetCurrent)(Handle set);
+    void (*impl_PerfQuerySet_GetStatus)(Handle set, bool* isReady, bool* isValid);
+    bool (*impl_PerfQuerySet_IsValid)(Handle handle);
+    bool (*impl_PerfQuerySet_GetFreq)(Handle set, uint64* freq);
+    bool (*impl_PerfQuerySet_GetTimestamp)(Handle set, uint32 timestampIndex, uint64* time);
+    bool (*impl_PerfQuerySet_GetFrameTimestamps)(Handle set, uint64* t0, uint64* t1);
 
     Handle (*impl_Texture_Create)(const Texture::Descriptor& desc);
     void (*impl_Texture_Delete)(Handle);
@@ -124,6 +135,7 @@ Dispatch
     void (*impl_CommandBuffer_SetIndices)(Handle, Handle);
     void (*impl_CommandBuffer_SetQueryIndex)(Handle, uint32);
     void (*impl_CommandBuffer_SetQueryBuffer)(Handle, Handle);
+    void (*impl_CommandBuffer_IssueTimestampQuery)(Handle, Handle, uint32);
     void (*impl_CommandBuffer_SetFragmentConstBuffer)(Handle, uint32, Handle);
     void (*impl_CommandBuffer_SetFragmentTexture)(Handle, uint32, Handle);
     void (*impl_CommandBuffer_SetDepthStencilState)(Handle, Handle);

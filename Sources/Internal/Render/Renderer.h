@@ -58,6 +58,9 @@ bool IsDeviceLost();
 void SetDesiredFPS(int32 fps);
 int32 GetDesiredFPS();
 
+void SetVSyncEnabled(bool enable);
+bool IsVSyncEnabled();
+
 //frame management
 void BeginFrame();
 void EndFrame();

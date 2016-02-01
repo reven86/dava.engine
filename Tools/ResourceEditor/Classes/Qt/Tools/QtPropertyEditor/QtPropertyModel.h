@@ -30,19 +30,15 @@
 #ifndef __QT_PROPERTY_MODEL_H__
 #define __QT_PROPERTY_MODEL_H__
 
-#include <QPair>
-#include <QEvent>
-#include <QStandardItemModel>
-#include <QSortFilterProxyModel>
-
 #include "Base/Introspection.h"
+#include "QtPropertyData.h"
 
-class QtPropertyData;
+#include <QAbstractItemModel>
+#include <QEvent>
+
 class QtPropertyModel : public QAbstractItemModel
 {
 	Q_OBJECT
-
-	friend class QtPropertyData;
 
 public:
 	QtPropertyModel(QWidget *_viewport, QObject* parent = 0);
@@ -63,17 +59,19 @@ public:
 	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
 	QModelIndex indexFromItem(QtPropertyData *data) const;
 
-	QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
-    void MergeProperty(QtPropertyData* data, const QModelIndex &parent = QModelIndex());
-	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex());
+    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
+    void MergeProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent = QModelIndex());
 
-	bool GetEditTracking();
-	void SetEditTracking(bool enabled);
+    bool GetEditTracking();
+    void SetEditTracking(bool enabled);
 
 	void RemoveProperty(const QModelIndex &index);
 	void RemovePropertyAll();
 
 	void UpdateStructure(const QModelIndex &parent = QModelIndex());
+    void FinishTreeCreation();
 
 signals:
 	void PropertyEdited(const QModelIndex &index);
@@ -81,16 +79,38 @@ signals:
 protected:
     enum
     {
-        DataRefreshRequared = QEvent::User + 1
+        DataRefreshRequired = QEvent::User + 1
     };
 
-	QtPropertyData *root;
-	bool trackEdit;
+    friend class QtPropertyData;
+
+    QtPropertyData* root;
+    bool trackEdit;
     bool needRefresh;
 
-	QtPropertyData *itemFromIndexInternal(const QModelIndex & index) const;
+    class InsertionGuard
+    {
+    public:
+        InsertionGuard(QtPropertyModel* model_, QtPropertyData* parent, int first, int last);
+        ~InsertionGuard();
 
-	void DataChanged(QtPropertyData *data, int reason);
+    private:
+        QtPropertyModel* model;
+    };
+
+    class DeletionGuard
+    {
+    public:
+        DeletionGuard(QtPropertyModel* model_, QtPropertyData* parent, int first, int last);
+        ~DeletionGuard();
+
+    private:
+        QtPropertyModel* model;
+    };
+
+    QtPropertyData* itemFromIndexInternal(const QModelIndex& index) const;
+
+    void DataChanged(QtPropertyData *data, int reason);
 	void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
 	void DataAdded();
 	void DataAboutToBeRemoved(QtPropertyData *parent, int first, int last);

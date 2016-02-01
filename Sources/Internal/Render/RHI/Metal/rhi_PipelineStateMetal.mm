@@ -501,7 +501,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     // compile vprog
 
     NSString* vp_src = [NSString stringWithUTF8String:(const char*)(&vprog_bin[0])];
-    MTLCompileOptions* vp_opt = [MTLCompileOptions alloc];
+    MTLCompileOptions* vp_opt = [[MTLCompileOptions alloc] init];
     NSError* vp_err = nil;
     id<MTLLibrary> vp_lib = [_Metal_Device newLibraryWithSource:vp_src options:vp_opt error:&vp_err];
     id<MTLFunction> vp_func = nil;
@@ -528,7 +528,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     // compile fprog
 
     NSString* fp_src = [NSString stringWithUTF8String:(const char*)(&fprog_bin[0])];
-    MTLCompileOptions* fp_opt = [MTLCompileOptions alloc];
+    MTLCompileOptions* fp_opt = [[MTLCompileOptions alloc] init];
     NSError* fp_err = nil;
     id<MTLLibrary> fp_lib = [_Metal_Device newLibraryWithSource:fp_src options:fp_opt error:&fp_err];
     id<MTLFunction> fp_func = nil;
