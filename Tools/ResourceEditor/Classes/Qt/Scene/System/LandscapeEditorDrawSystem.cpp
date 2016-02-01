@@ -423,12 +423,12 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
         heightmapProxy = new HeightmapProxy(clonedHeightmap);
     }
 
-    if (customColorsProxy = nullptr)
+    if (customColorsProxy == nullptr)
     {
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
 
-    if (rulerToolProxy = nullptr)
+    if (rulerToolProxy == nullptr)
     {
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
