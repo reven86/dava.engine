@@ -40,41 +40,41 @@
     #endif
 
 
-#define __T(x) x
-inline const char* _tcsinc(const char* cur)
+#define _REGEX_STRING(x) x
+inline const char* _regex_tcsinc(const char* cur)
 {
     return cur + 1;
 }
-inline char* _tcsinc(char* cur)
+inline char* _regex_tcsinc(char* cur)
 {
     return cur + 1;
 }
-inline char* _tcsdec(char* start, char* cur)
+inline char* _regex_tcsdec(char* start, char* cur)
 {
     return (cur > start) ? cur - 1 : NULL;
 }
-inline const char* _tcsdec(const char* start, const char* cur)
+inline const char* _regex_tcsdec(const char* start, const char* cur)
 {
     return (cur > start) ? cur - 1 : NULL;
 }
-inline char _tcsnextc(const char* str)
+inline char _regex_tcsnextc(const char* str)
 {
     return *str;
 }
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#define _tcsdup strdup
+#define _regex_tcsdup strdup
 #else
-#define _tcsdup _strdup
+#define _regex_tcsdup _strdup
 #endif
-#define _tcscpy strcpy
-#define _tcscpy strcpy
-#define _tcslen strlen
-#define _tcschr strchr
-#define _totupper toupper
-#define _totlower tolower
-#define _istalpha isalpha
-#define _istdigit isdigit
-#define _istlower islower
+#define _regex_tcscpy strcpy
+#define _regex_tcscpy strcpy
+#define _regex_tcslen strlen
+#define _regex_tcschr strchr
+#define _regex_totupper toupper
+#define _regex_totlower tolower
+#define _regex_istalpha isalpha
+#define _regex_istdigit isdigit
+#define _regex_istlower islower
 
 //==============================================================================
 //
@@ -96,12 +96,15 @@ inline char _tcsnextc(const char* str)
 struct
 RegExp::RegBuffer
 {
-    unsigned char* data;
-    unsigned offset;
-    unsigned size;
+    unsigned char* data = nullptr;
+    unsigned offset = 0;
+    unsigned size = 0;
 
-    RegBuffer();
+    RegBuffer() = default;
     ~RegBuffer();
+
+    RegBuffer(const RegBuffer&) = delete;
+    RegBuffer& operator=(const RegBuffer&) = delete;
 
     void reserve(unsigned nbytes);
     void write(const void* data, unsigned nbytes);
@@ -182,7 +185,7 @@ RegExp::~RegExp()
     if (pmatch != &_match)
         free(pmatch); //lint !e424 Inappropriate deallocation
 
-    memset(this, 0, sizeof(RegExp));
+    free(_program);
 }
 
 //------------------------------------------------------------------------------
@@ -194,14 +197,14 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     // false, if failed.
 
     if (!attributes)
-        attributes = __T("");
+        attributes = _REGEX_STRING("");
     //    wprintf(L"RegExp::compile('%s', '%s', %d)\n", pattern, attributes, _is_ref);
     this->_attributes = 0;
     if (attributes)
     {
         const char* p = attributes;
 
-        for (; *p; p = _tcsinc(p))
+        for (; *p; p = _regex_tcsinc(p))
         {
             unsigned att;
 
@@ -229,18 +232,19 @@ bool RegExp::compile(const char* pattern, const char* attributes)
 
     if (!this->_is_ref)
         free(this->_pattern);
-    this->_pattern = _tcsdup(pattern);
+    this->_pattern = _regex_tcsdup(pattern);
 
     // warning : assigning field to itself
     // this->_is_ref = _is_ref;
-    _tcscpy(flags, attributes);
+    _regex_tcscpy(flags, attributes);
 
     unsigned oldre_nsub = re_nsub;
     re_nsub = 0;
     _error_count = 0;
 
-    _buf = new RegBuffer();
-    _buf->reserve(_tcslen(pattern) * 8);
+    RegBuffer regBuffer;
+    _buf = &regBuffer;
+    _buf->reserve((unsigned)_regex_tcslen(pattern) * 8);
     _parser_pos = this->_pattern;
     _parse_regexp();
     if (*_parser_pos)
@@ -249,8 +253,8 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     }
     _optimize();
     _program = (char*)_buf->data;
-    _buf->data = NULL;
-    delete _buf;
+    _buf->data = nullptr;
+    _buf = nullptr;
 
     if (re_nsub > oldre_nsub)
     {
@@ -286,7 +290,7 @@ bool RegExp::test(const char* string, int startindex)
     pmatch[0].begin = 0;
     pmatch[0].end = 0;
     _input = string;
-    if (startindex < 0 || startindex > int(_tcslen(string)))
+    if (startindex < 0 || startindex > int(_regex_tcslen(string)))
     {
         return false; // fail
     }
@@ -303,12 +307,12 @@ bool RegExp::test(const char* string, int startindex)
             firstc = 0;
     }
 
-    for (s = sstart;; s = _tcsinc(s))
+    for (s = sstart;; s = _regex_tcsinc(s))
     {
-        if (firstc && _tcsnextc(s) != (char)firstc)
+        if (firstc && _regex_tcsnextc(s) != (char)firstc)
         {
-            s = _tcsinc(s);
-            s = _tcschr(s, firstc);
+            s = _regex_tcsinc(s);
+            s = _regex_tcschr(s, firstc);
             if (!s)
                 break;
         }
@@ -316,8 +320,8 @@ bool RegExp::test(const char* string, int startindex)
         _src_start = _src = s;
         if (_try_match(_program, NULL))
         {
-            pmatch[0].begin = _src_start - _input;
-            pmatch[0].end = _src - _input;
+            pmatch[0].begin = static_cast<int>(_src_start - _input);
+            pmatch[0].end = static_cast<int>(_src - _input);
             return true;
         }
         // If possible _match must start at beginning, we are done
@@ -326,7 +330,7 @@ bool RegExp::test(const char* string, int startindex)
             if (_attributes & attrMultiline)
             {
                 // Scan for the next \n
-                s = _tcschr(s, '\n');
+                s = _regex_tcschr(s, '\n');
                 if (!s)
                     break;
             }
@@ -560,48 +564,48 @@ int RegExp::_try_match(char* prog, char* progend)
         switch (*prog)
         {
         case REchar:
-            if (*(unsigned char*)(prog + 1) != _tcsnextc(_src))
+            if (*(unsigned char*)(prog + 1) != _regex_tcsnextc(_src))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + sizeof(char);
             break;
 
         case REichar:
             c1 = *(unsigned char*)(prog + 1);
-            c2 = _tcsnextc(_src);
+            c2 = _regex_tcsnextc(_src);
             if (c1 != c2)
             {
-                if (_istlower((char)c2))
-                    c2 = _totupper((char)c2);
+                if (_regex_istlower((char)c2))
+                    c2 = _regex_totupper((char)c2);
                 else
                     goto Lnomatch;
                 if (c1 != c2)
                     goto Lnomatch;
             }
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + sizeof(char);
             break;
 
         case REwchar:
-            if (*(wchar_t*)(prog + 1) != _tcsnextc(_src))
+            if (*(wchar_t*)(prog + 1) != _regex_tcsnextc(_src))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + sizeof(wchar_t);
             break;
 
         case REiwchar:
             c1 = *(wchar_t*)(prog + 1);
-            c2 = _tcsnextc(_src);
+            c2 = _regex_tcsnextc(_src);
             if (c1 != c2)
             {
-                if (_istlower((char)c2))
-                    c2 = _totupper((char)c2);
+                if (_regex_istlower((char)c2))
+                    c2 = _regex_totupper((char)c2);
                 else
                     goto Lnomatch;
                 if (c1 != c2)
                     goto Lnomatch;
             }
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + sizeof(wchar_t);
             break;
 
@@ -610,7 +614,7 @@ int RegExp::_try_match(char* prog, char* progend)
                 goto Lnomatch;
             if (!(_attributes & attrDotMatchLF) && *_src == '\n')
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
@@ -626,7 +630,7 @@ int RegExp::_try_match(char* prog, char* progend)
 
         case REtestbit:
             len = ((unsigned short*)(prog + 1))[1];
-            c1 = _tcsnextc(_src);
+            c1 = _regex_tcsnextc(_src);
             //printf("[x%02x]=x%02x, x%02x\n", c1 >> 3, ((prog + 1 + 4)[c1 >> 3] ), (1 << (c1 & 7)));
             if (c1 <= ((unsigned short*)(prog + 1))[0] &&
                 !((prog + 1 + 4)[c1 >> 3] & (1 << (c1 & 7))))
@@ -636,40 +640,40 @@ int RegExp::_try_match(char* prog, char* progend)
 
         case REbit:
             len = ((unsigned short*)(prog + 1))[1];
-            c1 = _tcsnextc(_src);
+            c1 = _regex_tcsnextc(_src);
             if (c1 > ((unsigned short*)(prog + 1))[0])
                 goto Lnomatch;
             if (!((prog + 1 + 4)[c1 >> 3] & (1 << (c1 & 7))))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + 2 * sizeof(unsigned short) + len;
             break;
 
         case REnotbit:
             len = ((unsigned short*)(prog + 1))[1];
-            c1 = _tcsnextc(_src);
+            c1 = _regex_tcsnextc(_src);
             if (c1 <= ((unsigned short*)(prog + 1))[0] &&
                 ((prog + 1 + 4)[c1 >> 3] & (1 << (c1 & 7))))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + 2 * sizeof(unsigned short) + len;
             break;
 
         case RErange:
             // BUG: attrIgnoreCase?
             len = *(unsigned*)(prog + 1);
-            if (memchr(prog + 1 + sizeof(unsigned), _tcsnextc(_src), len) == NULL)
+            if (memchr(prog + 1 + sizeof(unsigned), _regex_tcsnextc(_src), len) == NULL)
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + sizeof(unsigned) + len;
             break;
 
         case REnotrange:
             // BUG: attrIgnoreCase?
             len = *(unsigned*)(prog + 1);
-            if (memchr(prog + 1 + sizeof(unsigned), _tcsnextc(_src), len) != NULL)
+            if (memchr(prog + 1 + sizeof(unsigned), _regex_tcsnextc(_src), len) != NULL)
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog += 1 + sizeof(unsigned) + len;
             break;
 
@@ -680,8 +684,8 @@ int RegExp::_try_match(char* prog, char* progend)
             {
                 char* p;
 
-                p = (char*)_tcsdec(_input, _src);
-                if (_tcsnextc(p) != '\n')
+                p = (char*)_regex_tcsdec(_input, _src);
+                if (_regex_tcsnextc(p) != '\n')
                     goto Lnomatch;
             }
             else
@@ -693,7 +697,7 @@ int RegExp::_try_match(char* prog, char* progend)
             if (*_src == 0)
                 ;
             else if (_attributes & attrMultiline && *_src == '\n')
-                _src = _tcsinc(_src);
+                _src = _regex_tcsinc(_src);
             else
                 goto Lnomatch;
             prog++;
@@ -752,7 +756,7 @@ int RegExp::_try_match(char* prog, char* progend)
                     break;
                 if (!(_attributes & attrDotMatchLF) && *_src == '\n')
                     break;
-                _src = _tcsinc(_src);
+                _src = _regex_tcsinc(_src);
                 s2 = _src;
 
                 // If no _match after consumption, but it
@@ -866,8 +870,8 @@ int RegExp::_try_match(char* prog, char* progend)
             ss = _src;
             if (!_try_match(pop, pop + len))
                 goto Lnomatch;
-            pmatch[n + 1].begin = ss - _input;
-            pmatch[n + 1].end = _src - _input;
+            pmatch[n + 1].begin = static_cast<int>(ss - _input);
+            pmatch[n + 1].end = static_cast<int>(_src - _input);
             prog = pop + len;
             break;
 
@@ -877,8 +881,8 @@ int RegExp::_try_match(char* prog, char* progend)
         case REwordboundary:
             if (_src != _input)
             {
-                c1 = _tcsnextc(_tcsdec(_input, _src));
-                c2 = _tcsnextc(_src);
+                c1 = _regex_tcsnextc(_regex_tcsdec(_input, _src));
+                c2 = _regex_tcsnextc(_src);
                 if (!(
                     (isword((char)c1) && !isword((char)c2)) ||
                     (!isword((char)c1) && isword((char)c2))))
@@ -890,8 +894,8 @@ int RegExp::_try_match(char* prog, char* progend)
         case REnotwordboundary:
             if (_src == _input)
                 goto Lnomatch;
-            c1 = _tcsnextc(_tcsdec(_input, _src));
-            c2 = _tcsnextc(_src);
+            c1 = _regex_tcsnextc(_regex_tcsdec(_input, _src));
+            c2 = _regex_tcsnextc(_src);
             if (
             (isword((char)c1) && !isword((char)c2)) ||
             (!isword((char)c1) && isword((char)c2)))
@@ -900,47 +904,47 @@ int RegExp::_try_match(char* prog, char* progend)
             break;
 
         case REdigit:
-            if (!_istdigit(_tcsnextc(_src)))
+            if (!_regex_istdigit(_regex_tcsnextc(_src)))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
         case REnotdigit:
-            c1 = _tcsnextc(_src);
-            if (!c1 || _istdigit((char)c1))
+            c1 = _regex_tcsnextc(_src);
+            if (!c1 || _regex_istdigit((char)c1))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
         case REspace:
-            if (!isspace(_tcsnextc(_src)))
+            if (!isspace(_regex_tcsnextc(_src)))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
         case REnotspace:
-            c1 = _tcsnextc(_src);
+            c1 = _regex_tcsnextc(_src);
             if (!c1 || isspace(c1))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
         case REword:
-            if (!isword(_tcsnextc(_src)))
+            if (!isword(_regex_tcsnextc(_src)))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
         case REnotword:
-            c1 = _tcsnextc(_src);
+            c1 = _regex_tcsnextc(_src);
             if (!c1 || isword((char)c1))
                 goto Lnomatch;
-            _src = _tcsinc(_src);
+            _src = _regex_tcsinc(_src);
             prog++;
             break;
 
@@ -1058,7 +1062,7 @@ int RegExp::_parse_piece()
 
     case '{': // {n} {n,} {n,m}
         _parser_pos++;
-        if (!_istdigit(*_parser_pos))
+        if (!_regex_istdigit(*_parser_pos))
             goto Lerr;
         n = 0;
         do
@@ -1066,7 +1070,7 @@ int RegExp::_parse_piece()
             // BUG: handle overflow
             n = n * 10 + *_parser_pos - '0';
             _parser_pos++;
-        } while (_istdigit(*_parser_pos));
+        } while (_regex_istdigit(*_parser_pos));
         if (*_parser_pos == '}') // {n}
         {
             m = n;
@@ -1080,7 +1084,7 @@ int RegExp::_parse_piece()
             m = inf;
             goto Lnm;
         }
-        if (!_istdigit(*_parser_pos))
+        if (!_regex_istdigit(*_parser_pos))
             goto Lerr;
         m = 0; // {n,m}
         do
@@ -1088,7 +1092,7 @@ int RegExp::_parse_piece()
             // BUG: handle overflow
             m = m * 10 + *_parser_pos - '0';
             _parser_pos++;
-        } while (_istdigit(*_parser_pos));
+        } while (_regex_istdigit(*_parser_pos));
         if (*_parser_pos != '}')
             goto Lerr;
         goto Lnm;
@@ -1104,9 +1108,11 @@ int RegExp::_parse_piece()
         len = _buf->offset - offset;
         _buf->spread(offset, 1 + sizeof(unsigned) * 3);
         _buf->data[offset] = op;
-        ((unsigned*)(_buf->data + offset + 1))[0] = len;
-        ((unsigned*)(_buf->data + offset + 1))[1] = n;
-        ((unsigned*)(_buf->data + offset + 1))[2] = m;
+
+        // we are using temporary buffer + memcpy to prevent
+        // unaligned memory access on ARM devices
+        unsigned localBuffer[3] = { len, n, m };
+        memcpy(_buf->data + offset + 1, localBuffer, sizeof(localBuffer));
         break;
     }
     return 1;
@@ -1249,23 +1255,23 @@ int RegExp::_parse_atom()
             break;
 
         default:
-            c = _tcsnextc(_parser_pos);
-            _parser_pos = _tcsinc(_parser_pos);
+            c = _regex_tcsnextc(_parser_pos);
+            _parser_pos = _regex_tcsinc(_parser_pos);
             goto Lbyte;
         }
         break;
 
     default:
-        c = _tcsnextc(_parser_pos);
-        _parser_pos = _tcsinc(_parser_pos);
+        c = _regex_tcsnextc(_parser_pos);
+        _parser_pos = _regex_tcsinc(_parser_pos);
     Lbyte:
         op = REchar;
         if (_attributes & attrIgnoreCase)
         {
-            if (_istalpha((char)c))
+            if (_regex_istalpha((char)c))
             {
                 op = REichar;
-                c = _totupper((char)c);
+                c = _regex_totupper((char)c);
             }
         }
         if (op == REchar && c <= 0xFF)
@@ -1275,9 +1281,9 @@ int RegExp::_parse_atom()
             char* q;
             int len;
 
-            for (q = _parser_pos;; q = _tcsinc(q))
+            for (q = _parser_pos;; q = _regex_tcsinc(q))
             {
-                char qc = (char)_tcsnextc(q);
+                char qc = (char)_regex_tcsnextc(q);
 
                 switch (qc)
                 {
@@ -1308,7 +1314,7 @@ int RegExp::_parse_atom()
                 }
                 break;
             }
-            len = q - _parser_pos;
+            len = static_cast<int>(q - _parser_pos);
             if (len > 0)
             {
                 _buf->reserve(5 + (1 + len) * sizeof(char));
@@ -1369,7 +1375,7 @@ RegExp::Range
             {
                 unsigned uu;
 
-                uu = base - buf->data;
+                uu = static_cast<unsigned>(base - buf->data);
                 buf->fill0(b - maxb + 1);
                 base = buf->data + uu;
                 maxb = b + 1;
@@ -1431,7 +1437,7 @@ int RegExp::_parse_range()
     case ']':
     case '-':
         c = *_parser_pos;
-        _parser_pos = _tcsinc(_parser_pos);
+        _parser_pos = _regex_tcsinc(_parser_pos);
         r.setbit2(c);
         break;
     }
@@ -1542,8 +1548,8 @@ int RegExp::_parse_range()
             return 0;
 
         default:
-            c2 = _tcsnextc(_parser_pos);
-            _parser_pos = _tcsinc(_parser_pos);
+            c2 = _regex_tcsnextc(_parser_pos);
+            _parser_pos = _regex_tcsinc(_parser_pos);
         Lrange:
             switch (rs)
             {
@@ -1592,7 +1598,7 @@ int RegExp::_parse_range()
 void RegExp::_error(const char* msg)
 {
     (void)msg; // satisfy /W4
-    _parser_pos += _tcslen(_parser_pos); // advance to terminating 0
+    _parser_pos += _regex_tcslen(_parser_pos); // advance to terminating 0
     _error_count++;
 }
 
@@ -1630,8 +1636,8 @@ int RegExp::_escape()
     // BUG: Perl does \a and \e too, should we?
 
     case 'c':
-        _parser_pos = _tcsinc(_parser_pos);
-        c = _tcsnextc(_parser_pos);
+        _parser_pos = _regex_tcsinc(_parser_pos);
+        c = _regex_tcsnextc(_parser_pos);
         // Note: we are deliberately not allowing Unicode letters
         if (!(('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')))
         {
@@ -1711,8 +1717,8 @@ int RegExp::_escape()
         break;
 
     default:
-        c = _tcsnextc(_parser_pos);
-        _parser_pos = _tcsinc(_parser_pos);
+        c = _regex_tcsnextc(_parser_pos);
+        _parser_pos = _regex_tcsinc(_parser_pos);
         return c;
     }
     _parser_pos++;
@@ -1772,7 +1778,7 @@ void RegExp::_optimize()
             unsigned offset;
             Range r(&bitbuf);
 
-            offset = prog - (char*)_buf->data;
+            offset = static_cast<unsigned>(prog - (char*)_buf->data);
             if (_start_chars(&r, prog, NULL))
             {
                 _buf->spread(offset, 1 + 4 + r.maxb);
@@ -1824,7 +1830,7 @@ int RegExp::_start_chars(Range* r, char* prog, char* progend)
             if (c <= 0x7F)
             {
                 r->setbit2(c);
-                r->setbit2(_totlower((char)c));
+                r->setbit2(_regex_totlower((char)c));
             }
             return 1;
 
@@ -1979,10 +1985,10 @@ char* RegExp::replace(char* format)
     char* result;
     unsigned c;
 
-    buf.reserve((_tcslen(format) + 1) * sizeof(char));
-    for (;; format = _tcsinc(format))
+    buf.reserve(static_cast<unsigned>((_regex_tcslen(format) + 1) * sizeof(char)));
+    for (;; format = _regex_tcsinc(format))
     {
-        c = _tcsnextc(format);
+        c = _regex_tcsnextc(format);
         switch (c)
         {
         case 0:
@@ -1993,8 +1999,8 @@ char* RegExp::replace(char* format)
             continue;
 
         case '\\':
-            format = _tcsinc(format);
-            c = _tcsnextc(format);
+            format = _regex_tcsinc(format);
+            c = _regex_tcsnextc(format);
             if (c >= '1' && c <= '9')
             {
                 unsigned i;
@@ -2057,10 +2063,10 @@ char* RegExp::replace3(char* format, char* input, unsigned re_nsub, Match* pmatc
     int rm_eo;
     int i;
 
-    buf.reserve((_tcslen(format) + 1) * sizeof(char));
-    for (;; format = _tcsinc(format))
+    buf.reserve(static_cast<unsigned>((_regex_tcslen(format) + 1) * sizeof(char)));
+    for (;; format = _regex_tcsinc(format))
     {
-        c = _tcsnextc(format);
+        c = _regex_tcsnextc(format);
     L1:
         if (c == 0)
             break;
@@ -2069,8 +2075,8 @@ char* RegExp::replace3(char* format, char* input, unsigned re_nsub, Match* pmatc
             buf.writechar(c);
             continue;
         }
-        format = _tcsinc(format);
-        c = _tcsnextc(format);
+        format = _regex_tcsinc(format);
+        c = _regex_tcsnextc(format);
         switch (c)
         {
         case 0:
@@ -2089,7 +2095,7 @@ char* RegExp::replace3(char* format, char* input, unsigned re_nsub, Match* pmatc
 
         case '\'':
             rm_so = pmatch[0].end;
-            rm_eo = _tcslen(input);
+            rm_eo = static_cast<int>(_regex_tcslen(input));
             goto Lstring;
 
         Lstring:
@@ -2111,7 +2117,7 @@ char* RegExp::replace3(char* format, char* input, unsigned re_nsub, Match* pmatc
             if (c2 >= '0' && c2 <= '9')
             {
                 i = (c - '0') * 10 + (c2 - '0');
-                format = _tcsinc(format);
+                format = _regex_tcsinc(format);
             }
             else
                 i = c - '0';
@@ -2154,8 +2160,8 @@ char* RegExp::replace4(char* input, Match* match, char* replacement)
     int result_len;
     char* result;
 
-    input_len = _tcslen(input);
-    replacement_len = _tcslen(replacement);
+    input_len = static_cast<int>(_regex_tcslen(input));
+    replacement_len = static_cast<int>(_regex_tcslen(replacement));
     result_len = input_len - (match->end - match->begin) + replacement_len;
     result = (char*)malloc((result_len + 1) * sizeof(char));
     memcpy(result, input, match->begin * sizeof(char));
@@ -2165,15 +2171,6 @@ char* RegExp::replace4(char* input, Match* match, char* replacement)
            (input_len - match->end) * sizeof(char));
     result[result_len] = 0;
     return result;
-}
-
-//------------------------------------------------------------------------------
-
-RegExp::RegBuffer::RegBuffer()
-{
-    data = NULL;
-    offset = 0;
-    size = 0;
 }
 
 //------------------------------------------------------------------------------

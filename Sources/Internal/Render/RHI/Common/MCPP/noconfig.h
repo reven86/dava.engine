@@ -6,6 +6,10 @@
  *      must edit this file here and there.
  */
 
+#ifndef _MCPP_NOCONFIG_H
+#define _MCPP_NOCONFIG_H
+
+
 #define TRUE 1
 #define FALSE 0
 
@@ -53,16 +57,49 @@
  * Names of the SYSTEM (i.e. target operating system).  This is needed so that
  * cpp can use appropriate filename conventions.
  */
+#ifdef WIN32
+#include <OAIdl.h>
+#endif
+
+#ifndef SYS_UNKNOWN
 #define SYS_UNKNOWN 0
+#endif
+
+#ifndef SYS_UNIX
 #define SYS_UNIX 0x1000
+#endif
+
+#ifndef SYS_LINUX
 #define SYS_LINUX 0x1800 /* (SYS_LINUX & 0xF000) == SYS_UNIX     */
+#endif
+
+#ifndef SYS_FREEBSD
 #define SYS_FREEBSD 0x1A00 /* (SYS_FREEBSD & 0xF000) == SYS_UNIX   */
+#endif
+
+#ifndef SYS_CYGWIN
 #define SYS_CYGWIN 0x1C00 /* (SYS_CYGWIN & 0xF000) == SYS_UNIX    */
+#endif
+
+#ifndef SYS_MAC
 #define SYS_MAC 0x1E00 /* (SYS_MAC & 0xF000) == SYS_UNIX       */
+#endif
+
+#ifndef SYS_WIN
 #define SYS_WIN 0x7000
+#endif
+
+#ifndef SYS_WIN32
 #define SYS_WIN32 0x7400 /* (SYS_WIN32 & 0xF000) == SYS_WIN      */
+#endif
+
+#ifndef SYS_WIN64
 #define SYS_WIN64 0x7800 /* (SYS_WIN64 & 0xF000) == SYS_WIN      */
+#endif
+
+#ifndef SYS_MINGW
 #define SYS_MINGW 0x7C00 /* (SYS_MINGW & 0xF000) == SYS_WIN      */
+#endif
 
 /* COMPILER */
 #define COMPILER_UNKNOWN 0
@@ -608,3 +645,5 @@
 #if KMMALLOC && _MEM_DEBUG
 #include "xalloc.h"
 #endif
+
+#endif /* _MCPP_NOCONFIG_H */

@@ -78,6 +78,7 @@ public:
     void Update(float32 timeElapsed);
     void Suspend();
     void Resume();
+    void Mute(bool value);
 
     void SetCurrentLocale(const String & langID);
     String GetCurrentLocale() const;
@@ -89,6 +90,9 @@ public:
     float32 GetGroupVolume(const FastName & groupName);
 
     void InitFromQualitySettings();
+
+    void SetDebugMode(bool debug = true);
+    bool IsDebugModeOn() const;
 
 protected:
     void ParseSFXConfig(const FilePath & configPath);

@@ -67,6 +67,9 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+
 #include "Sound/SoundSystem.h"
 
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
@@ -342,7 +345,7 @@ void Scene::CreateSystems()
     if(SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG & systemsMask)
     {
         speedTreeUpdateSystem = new SpeedTreeUpdateSystem(this);
-        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_WIND_UPDATE_FLAG & systemsMask)
@@ -370,18 +373,18 @@ Scene::~Scene()
 
     for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
     {
-		AnimatedMesh * obj = *t;
-		obj->Release();
-	}
-	animatedMeshes.clear();
-	
-	for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
-	{
-		Camera * obj = *t;
-		obj->Release();
-	}
-	cameras.clear();
-    
+        AnimatedMesh* obj = *t;
+        obj->Release();
+    }
+    animatedMeshes.clear();
+
+    for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
+    {
+        Camera* obj = *t;
+        obj->Release();
+    }
+    cameras.clear();
+
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);
 
@@ -613,6 +616,18 @@ void Scene::AddCamera(Camera * camera)
 	}
 }
 
+bool Scene::RemoveCamera(Camera* c)
+{
+    const auto& it = std::find(cameras.begin(), cameras.end(), c);
+    if (it != cameras.end())
+    {
+        SafeRelease(*it);
+        cameras.erase(it);
+        return true;
+    }
+    return false;
+}
+
 Camera * Scene::GetCamera(int32 n)
 {
 	if (n >= 0 && n < (int32)cameras.size())
@@ -676,6 +691,8 @@ void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -721,11 +738,15 @@ void Scene::Update(float timeElapsed)
     // 	}
 
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
 }
 
 void Scene::Draw()
 {
 	TIME_PROFILE("Scene::Draw");
+
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 
     //TODO: remove this crap with shadow color
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
@@ -746,6 +767,8 @@ void Scene::Draw()
     //foliageSystem->DebugDrawVegetation();
     
 	drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 }
     
 void Scene::SceneDidLoaded()
@@ -1038,7 +1061,7 @@ void Scene::ImportShadowColor(Entity * rootNode)
                 sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
                 props->DeleteKey("ShadowColor");
             }
-		}
+        }
     }
 }
 

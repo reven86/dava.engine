@@ -81,7 +81,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     FilePath filePath = GetCurrentSaveFileName();
     if (!filePath.IsEmpty())
-	{
+    {
         const bool isTextureLoaded = LoadTexture(filePath, false);
         drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
 	}
@@ -103,7 +103,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     }
 
     enabled = true;
-	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool CustomColorsSystem::ChangesPresent()
@@ -157,7 +157,7 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
             UpdateBrushTool();
             prevCursorPos = cursorPosition;
         }
-	}
+    }
 }
 
 void CustomColorsSystem::Input(DAVA::UIEvent *event)
@@ -168,30 +168,30 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 	}
 	
 	UpdateCursorPosition();
-	
-	if (event->tid == UIEvent::BUTTON_1)
-	{
-		Vector3 point;
-		
-		switch(event->phase)
-		{
+
+    if (event->mouseButton == UIEvent::MouseButton::LEFT)
+    {
+        Vector3 point;
+
+        switch (event->phase)
+        {
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)
-                {
-					UpdateToolImage();
-					StoreOriginalState();
-					editingIsEnabled = true;
-				}
-				break;
+            {
+                UpdateToolImage();
+                StoreOriginalState();
+                editingIsEnabled = true;
+            }
+                break;
 
         case UIEvent::Phase::DRAG:
             break;
 
         case UIEvent::Phase::ENDED:
             FinishEditing();
-                break;
-		}
-	}
+            break;
+        }
+    }
 }
 
 void CustomColorsSystem::FinishEditing()
@@ -235,7 +235,11 @@ void CustomColorsSystem::UpdateBrushTool()
     AddRectToAccumulator(updatedRect);
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
-    RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = colorTexture;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
@@ -267,9 +271,9 @@ void CustomColorsSystem::SetBrushSize(int32 brushSize, bool updateDrawSystem /*=
         cursorSize = (float32)brushSize / landscapeSize;
         if (updateDrawSystem)
         {
-			drawSystem->SetCursorSize(cursorSize);
-		}
-	}
+            drawSystem->SetCursorSize(cursorSize);
+        }
+    }
 }
 
 void CustomColorsSystem::SetColor(int32 colorIndex)
@@ -356,7 +360,11 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
-            RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
+            RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.target = target;
+            desc.shouldClear = false;
+            desc.shouldTransformVirtualToPhysical = false;
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
@@ -467,15 +475,15 @@ String CustomColorsSystem::GetRelativePathToProjectPath(const FilePath& absolute
 	if(absolutePath.IsEmpty())
 		return String();
 
-	return absolutePath.GetRelativePathname(ProjectManager::Instance()->CurProjectPath());
+    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
 }
 
 FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relativePath)
 {
 	if(relativePath.empty())
 		return FilePath();
-	
-	return ProjectManager::Instance()->CurProjectPath() + relativePath;
+
+    return ProjectManager::Instance()->GetProjectPath() + relativePath;
 }
 
 int32 CustomColorsSystem::GetBrushSize()

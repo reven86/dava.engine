@@ -139,30 +139,29 @@ void StatusBar::UpdateByTimer()
 	UpdateDistanceToCamera();
 }
 
-void StatusBar::OnSceneGeometryChaged(int width, int height, int dpr)
+void StatusBar::OnSceneGeometryChaged(int width, int height)
 {
 	sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
 }
 
 void StatusBar::UpdateSelectionBoxSize(SceneEditor2 *scene)
 {
-    EntityGroup selection;
-    if(scene)
+    if (scene == nullptr)
     {
-        selection = scene->selectionSystem->GetSelection();
+        return;
     }
 
-    if(selection.Size())
-    {
-        DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
-        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
-
-        selectionBoxSize->setVisible(true);
-    }
-    else
+    const EntityGroup& selection = scene->selectionSystem->GetSelection();
+    if (selection.IsEmpty())
     {
         selectionBoxSize->setText("");
         selectionBoxSize->setVisible(false);
+    }
+    else
+    {
+        DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
+        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+        selectionBoxSize->setVisible(true);
     }
 }
 

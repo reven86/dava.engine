@@ -37,6 +37,8 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
+#if !(TARGET_IPHONE_SIMULATOR == 1)
+
 namespace rhi
 {
 //==============================================================================
@@ -132,8 +134,62 @@ MetalTextureFormat(TextureFormat format)
     case TEXTURE_FORMAT_D16:
         return MTLPixelFormatDepth32Float;
 
+    case TEXTURE_FORMAT_R16F:
+        return MTLPixelFormatR16Float;
+    case TEXTURE_FORMAT_R32F:
+        return MTLPixelFormatR32Float;
+    case TEXTURE_FORMAT_RG16F:
+        return MTLPixelFormatRG16Float;
+    case TEXTURE_FORMAT_RG32F:
+        return MTLPixelFormatRG32Float;
+    case TEXTURE_FORMAT_RGBA16F:
+        return MTLPixelFormatRGBA16Float;
+    case TEXTURE_FORMAT_RGBA32F:
+        return MTLPixelFormatRGBA32Float;
+
     default:
         return MTLPixelFormatInvalid;
+    }
+}
+
+static MTLPixelFormat
+MetalRenderableTextureFormat(TextureFormat format)
+{
+    switch (format)
+    {
+    case TEXTURE_FORMAT_R8G8B8A8:
+        return MTLPixelFormatRGBA8Unorm;
+    case TEXTURE_FORMAT_R8:
+        return MTLPixelFormatR8Unorm;
+    case TEXTURE_FORMAT_R16:
+        return MTLPixelFormatR16Unorm;
+    case TEXTURE_FORMAT_R5G6B5:
+        return MTLPixelFormatB5G6R5Unorm;
+    case TEXTURE_FORMAT_R5G5B5A1:
+        return MTLPixelFormatA1BGR5Unorm;
+    case TEXTURE_FORMAT_R4G4B4A4:
+        return MTLPixelFormatABGR4Unorm;
+    case TEXTURE_FORMAT_D16:
+        return MTLPixelFormatDepth32Float;
+    case TEXTURE_FORMAT_R16F:
+        return MTLPixelFormatR16Float;
+    case TEXTURE_FORMAT_R32F:
+        return MTLPixelFormatR32Float;
+    case TEXTURE_FORMAT_RG16F:
+        return MTLPixelFormatRG16Float;
+    case TEXTURE_FORMAT_RG32F:
+        return MTLPixelFormatRG32Float;
+    case TEXTURE_FORMAT_RGBA16F:
+        return MTLPixelFormatRGBA16Float;
+    case TEXTURE_FORMAT_RGBA32F:
+        return MTLPixelFormatRGBA32Float;
+    case TEXTURE_FORMAT_D24S8:
+        return MTLPixelFormatDepth32Float;
+    default:
+    {
+        DAVA::Logger::Error("Invalid or unsupported renderable format requested: %u", static_cast<DAVA::uint32>(format));
+        return MTLPixelFormatRGBA8Unorm;
+    }
     }
 }
 
@@ -145,9 +201,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     DVASSERT(texDesc.levelCount);
 
     Handle handle = InvalidHandle;
-    MTLPixelFormat pf = (texDesc.isRenderTarget) ? MTLPixelFormatBGRA8Unorm // CRAP: enforced render-target format
-                                                   :
-                                                   MetalTextureFormat(texDesc.format);
+    MTLPixelFormat pf = (texDesc.isRenderTarget) ? MetalRenderableTextureFormat(texDesc.format) : MetalTextureFormat(texDesc.format);
     MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
 
     desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE) ? MTLTextureTypeCube : MTLTextureType2D;
@@ -195,6 +249,12 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                         _FlipRGBA4_ABGR4(texDesc.initialData[m], sz);
                     else if (texDesc.format == TEXTURE_FORMAT_R5G5B5A1)
                         _ABGR1555toRGBA5551(texDesc.initialData[m], sz);
+
+                    if ((texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA) || (texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA))
+                    {
+                        stride = 0;
+                        sz = 0;
+                    }
 
                     [uid replaceRegion:rgn mipmapLevel:m slice:0 withBytes:data bytesPerRow:stride bytesPerImage:sz];
                 }
@@ -468,3 +528,5 @@ void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 
 //==============================================================================
 } // namespace rhi
+
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)

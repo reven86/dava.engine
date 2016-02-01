@@ -43,6 +43,10 @@ if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
+if( DAVA_DISABLE_AUTOTESTS )
+    add_definitions ( -DDISABLE_AUTOTESTS )
+endif()
+
 if( MACOS_DATA )
     set( APP_DATA ${MACOS_DATA} )
 
@@ -121,6 +125,21 @@ elseif ( WINDOWS_UAP )
     endif ()
     configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
     load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    
+    #package languages settings
+    #TODO: remove default value setting for this variable after supporting of this feature by client
+    if ( NOT WINDOWS_UAP_PACKAGE_LANGUAGES )
+        set ( WINDOWS_UAP_PACKAGE_LANGUAGES "x-generate" )
+    else ()
+        string ( REPLACE "|" ";" WINDOWS_UAP_PACKAGE_LANGUAGES ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
+    endif ()
+    
+    #build xml tags list
+    set ( WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS "\n" )
+    foreach ( LANGUAGE ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
+        set ( WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS 
+              "${WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS}  <qualifier name=\"Language\" value=\"${LANGUAGE}\" />\n" )
+    endforeach ()
 
     set ( APP_MANIFEST_NAME "Package.appxmanifest" )
     set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )
@@ -140,7 +159,7 @@ elseif ( WINDOWS_UAP )
     file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
 
     #copy priconfig files
-    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    configure_file ( "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" "${CMAKE_CURRENT_BINARY_DIR}/UWPPriConfigDefault.xml" )
     file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigPackaging.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
     set(CONTENT_FILES ${CONTENT_FILES}
@@ -211,7 +230,7 @@ if( DAVA_FOUND )
             set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/Qt5  ${DAVA_PLATFORM_SRC}/Qt5/MacOS )
             list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.mm )
             list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.h   )
-
+            list( APPEND UNIFIED_IGNORE_LIST_APPLE "Qt5/MacOS/CoreMacOSPlatformQt.cpp" )
         endif()
 
         include_directories( ${PLATFORM_INCLUDES_DIR} )
@@ -234,6 +253,12 @@ if( DAVA_FOUND )
 endif()
 
 ###
+
+list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
+generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
+                                                IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
+                                                IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                               )
 
 if( ANDROID )
     set( POSTFIX 0  )
@@ -279,7 +304,7 @@ if( ANDROID )
 
     endif()
 
-    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
+    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${REMAINING_LIST} )
 
 else()
     if (BUILD_AS_PLUGIN)
@@ -292,8 +317,6 @@ else()
         endif()
 
         add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
-            ${ADDED_SRC}
-            ${PLATFORM_ADDED_SRC}
             ${PROJECT_SOURCE_FILES}
             ${RESOURCES_LIST}
         )

@@ -235,8 +235,6 @@ void PolygonGroup::CreateBaseVertexArray()
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     aabbox = AABBox3(); // reset bbox
     
     Matrix4 normalMatrix4;
@@ -313,36 +311,29 @@ uint32 PolygonGroup::ReleaseGeometryData()
 
 void PolygonGroup::BuildBuffers()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);
 
     if (indexBuffer.IsValid())
         rhi::DeleteIndexBuffer(indexBuffer);
 
-#if 1
     rhi::VertexBuffer::Descriptor vbDesc;
     rhi::IndexBuffer::Descriptor ibDesc;
 
     vbDesc.size = vertexStride * vertexCount;
     vbDesc.initialData = meshData;
+    vbDesc.usage = rhi::USAGE_STATICDRAW;
 
     ibDesc.size = indexCount * INDEX_FORMAT_SIZE[indexFormat];
     ibDesc.initialData = indexArray;
+    ibDesc.usage = rhi::USAGE_STATICDRAW;
 
     vertexBuffer = rhi::CreateVertexBuffer(vbDesc);
+    DVASSERT(vertexBuffer);
     indexBuffer = rhi::CreateIndexBuffer(ibDesc);
-
-#else
-    uint32 vertexDataSize = vertexStride * vertexCount;
-    vertexBuffer = rhi::CreateVertexBuffer(vertexDataSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, meshData, 0, vertexDataSize);
-
-    if (indexBuffer.IsValid())
-        rhi::DeleteIndexBuffer(indexBuffer);
-    uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];
-    indexBuffer = rhi::CreateIndexBuffer(indexDataSize);
-    rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);    
-#endif
+    DVASSERT(indexBuffer);
 };
 
 void PolygonGroup::RestoreBuffers()
@@ -418,7 +409,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
         if (vertexFormat != resFormat) //not all streams in data are required or present - smart copy
         {
             if ((~vertexFormat) & resFormat)
-                Logger::Debug("expanding polygon group vertex format for %d vertices!", vertexCount);
+                Logger::FrameworkDebug("expanding polygon group vertex format for %d vertices!", vertexCount);
             int32 newVertexStride = GetVertexSize(resFormat);
             SafeDeleteArray(meshData);
             meshData = new uint8[vertexCount * newVertexStride];
@@ -483,8 +474,7 @@ void PolygonGroup::RecalcAABBox()
     }
 }
 
-
-void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
+void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 

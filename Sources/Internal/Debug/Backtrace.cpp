@@ -26,317 +26,221 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+// clang-format off
 #include "Debug/Backtrace.h"
-#   include "FileSystem/Logger.h"
-#if defined(__DAVAENGINE_APPLE__)
-#   include <execinfo.h>
-#   include <cxxabi.h>
-#   include <stdlib.h>
-#elif defined(__DAVAENGINE_WINDOWS__)
-#   include <DbgHelp.h>
-#   pragma comment(lib, "Dbghelp.lib")
-#elif defined(__DAVAENGINE_ANDROID__)
-#   include "Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
-#   include <cxxabi.h>
-#endif
+#include "Utils/StringFormat.h"
 
-#include <cstdlib>
-#include <cassert>
+#if defined(__DAVAENGINE_WIN32__)
+#   include "Concurrency/Atomic.h"
+#   include "Concurrency/Mutex.h"
+#   include "Concurrency/LockGuard.h"
+#   include <dbghelp.h>
+#elif defined(__DAVAENGINE_APPLE__)
+#   include <execinfo.h>
+#   include <dlfcn.h>
+#   include <cxxabi.h>
+#elif defined(__DAVAENGINE_ANDROID__)
+#   include <dlfcn.h>
+#   include <cxxabi.h>
+#   include <unwind.h>
+#include <android/log.h>
+#endif
 
 namespace DAVA
 {
-//namespace Backtrace 
-//{
-
-class BacktraceTree
+namespace Debug
 {
-public:
-    class BacktraceTreeNode
-    {
-    public:
-        BacktraceTreeNode(void * _pointer, BacktraceTreeNode *parent)
-        {
-            pointer = _pointer;
-        }
-        ~BacktraceTreeNode()
-        {
-            for (uint32 k = 0; k < children.size(); ++k)
-            {
-                delete children[k];
-                children[k] = 0;
-            }
-            children.clear();
-        }
 
-        void Insert(void * ptr)
-        {
-            BacktraceTreeNode * newNode = new BacktraceTreeNode(ptr, this);
-            children.push_back(newNode);
-            std::sort(children.begin(), children.end());
-        }
-        BacktraceTreeNode * parent;
-        void * pointer;
-        Vector<BacktraceTreeNode*> children;
-    };
-
-    BacktraceTreeNode * head;
-
-    BacktraceTree()
-    {
-        head = new BacktraceTreeNode(0, 0);
-    }
-
-    ~BacktraceTree()
-    {
-        delete head;
-        head = 0;
-    }
-
-    void Insert(Backtrace * backtrace)
-    {
-        Insert(head, backtrace, backtrace->size - 1);
-    }
-
-    void Insert(BacktraceTreeNode * head, Backtrace * backtrace, uint32 depth)
-    {
-        assert(false && "old not working code");
-        // remove old infinite recursion
-//        uint32 size = (uint32)head->children.size();
-//        for (uint32 k = 0; k < size; ++k)
-//        {
-//        	if (head->children[k]->pointer == backtrace->array[depth])
-//        	{
-//        		Insert(head->children[k], backtrace, depth - 1);
-//        	}
-//        }
-//
-//        head->Insert(backtrace->array[depth]);
-//        Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
-    }
-
-    Backtrace* GetBacktraceByTreeNode(BacktraceTreeNode * node)
-    {
-        Backtrace * backtrace = (Backtrace*)malloc(sizeof(Backtrace));
-
-        backtrace->size = 0;
-        while (1)
-        {
-            backtrace->array[backtrace->size] = node->pointer;
-            backtrace->size++;
-            node = node->parent;
-            if (node->pointer == 0)break;
-        }
-        return 0;
-    }
-};
-
-
-
-
-Backtrace * CreateBacktrace()
+namespace
 {
-    Backtrace * bt = (Backtrace*)malloc(sizeof(Backtrace));
-    //GetBacktrace(bt);
-    return bt;
+
+#if defined(__DAVAENGINE_WIN32__)
+void InitSymbols()
+{
+    static Atomic<bool> symbolsInited = false;
+    if (!symbolsInited)
+    {
+        // All DbgHelp functions are single threaded
+        static Mutex initMutex;
+        LockGuard<Mutex> lock(initMutex);
+        if (!symbolsInited)
+        {
+            SymInitialize(GetCurrentProcess(), nullptr, TRUE);
+            // Do not regard return value of SymInitialize: if this call failed then next call will likely fail too
+            symbolsInited = true;
+        }
+    }
 }
-
-void GetBacktrace(Backtrace * bt)
-{
-#if defined(__DAVAENGINE_APPLE__)
-    bt->size = backtrace(bt->array, MAX_BACKTRACE_DEPTH);
-#elif defined(__DAVAENGINE_WINDOWS__)
-    bt->size = CaptureStackBackTrace(0, MAX_BACKTRACE_DEPTH, bt->array, nullptr);
-#else
-	bt->size = 0;
-    Logger::Instance()->Log(Logger::LEVEL_WARNING, "GetBacktrace is not supported for current platform");
 #endif
-    pointer_size hash = 0;
-    for (uint32 k = 0; k < bt->size; ++k)
-    {
-        hash += (k + 1) * (pointer_size)bt->array[k];
-    }
-    bt->hash = hash;
-}
-
-void ReleaseBacktrace(Backtrace * backtrace)
-{
-    free(backtrace);
-}
-
-#if defined(__DAVAENGINE_APPLE__)
-
-void CreateBacktraceLogApple(Backtrace * backtrace, BacktraceLog * log)
-{
-    char **strings = backtrace_symbols(backtrace->array, backtrace->size);
-
-    // allocate string which will be filled with the demangled function name
-    size_t funcnamesize = 0;
-
-    // iterate over the returned symbol lines. skip the first, it is the
-    // address of this function.
-    for (uint32 i = 0; i < backtrace->size; i++)
-    {
-        log->strings[i] = (char*)malloc(512);
-
-        size_t len = strlen(strings[i]);
-        char * temp = (char*)malloc(sizeof(char) * len + 100);
-        strcpy(temp, strings[i]);
-
-        char * tokens[100];
-        int32 tokenCount = 0;
-        tokens[tokenCount++] = strtok(temp, " \t");
-        while (tokens[tokenCount - 1] != nullptr)
-        {
-            //Logger::FrameworkDebug("%s\n",tokens[tokenCount]);
-            tokens[tokenCount++] = strtok(nullptr, " \t");
-            if (tokenCount > 5)break;
-        }
-
-        if (tokenCount >= 4)
-        {
-            int status = -2;
-            char* ret = abi::__cxa_demangle(tokens[3],
-                nullptr, &funcnamesize, &status);
-            if (status == 0)
-            {
-                //funcname = ret; // use possibly realloc()-ed string
-
-                snprintf(log->strings[i], 512, "%s(%s)",
-                    strings[i], ret);
-            }
-            else {
-                snprintf(log->strings[i], 512, "%s(%s)", strings[i], tokens[3]);
-            }
-
-            free(ret);
-        }
-        else
-        {
-            snprintf(log->strings[i], 512, "%s", strings[i]);
-        }
-        free(temp);
-    }
-    free(strings);
-}
-
-#elif defined(__DAVAENGINE_WIN32__)
-
-void CreateBacktraceLogWinDesktop(Backtrace * backtrace, BacktraceLog * log)
-{
-    SYMBOL_INFO  * symbol;
-    HANDLE         process;
-
-    process = GetCurrentProcess();
-
-    SymInitialize(process, nullptr, TRUE);
-
-    symbol = (SYMBOL_INFO *)calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
-    symbol->MaxNameLen = 255;
-    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-    for (uint32 i = 0; i < backtrace->size; i++)
-    {
-        SymFromAddr(process, (DWORD64)(backtrace->array[i]), 0, symbol);
-        log->strings[i] = (char*)malloc(512);
-        _snprintf(log->strings[i], 512, "%i: %s - 0x%0X\n", backtrace->size - i - 1, symbol->Name, symbol->Address);
-        //printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
-    }
-
-    free(symbol);
-    SymCleanup(process);
-}
-
-#endif
-    
-void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
-{
-    log->strings = (char**)malloc(sizeof(char*) * backtrace->size); 
-    log->size = backtrace->size;
-
-#if defined(__DAVAENGINE_APPLE__)
-    CreateBacktraceLogApple(backtrace, log);
-#elif defined(__DAVAENGINE_WIN32__)
-    CreateBacktraceLogWinDesktop(backtrace, log);
-#else
-    Logger::Instance()->Log(Logger::LEVEL_WARNING, "CreateBacktraceLog is not supported for current platform");
-#endif
-}
-    
-void ReleaseBacktraceLog(BacktraceLog * log)
-{
-    for (uint32 k = 0; k < log->size; ++k)
-        free(log->strings[k]);
-    free(log->strings);
-}
 
 #if defined(__DAVAENGINE_ANDROID__)
-	void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
-	{
-#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
-        DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
-        const char * libName = nullptr;
-        pointer_size relAddres = 0;
-        backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
-        
-    int     status;
-    char   * realname = nullptr;
 
-    //returns allocated string with malloc
-    realname = abi::__cxa_demangle(functName, 0, 0, &status);
-        if (realname)
-        {
-            Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
-        }
-        free(realname);
-#endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
-}
-#endif
-
-void PrintBackTraceToLog(Logger::eLogLevel logLevel )
+struct StackCrawlState
 {
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-#define BACKTRACE_SIZ 100
-    void    *array[BACKTRACE_SIZ];
-    int32  size, i;
-    char    **strings;
-        
-    size = backtrace(array, BACKTRACE_SIZ);
-    strings = backtrace_symbols(array, size);
-        
-    for (i = 0; i < size; ++i) {
-        Logger::Instance()->Log(logLevel,"%p : %s\n", array[i], strings[i]);
-    }
-    free(strings);
+    size_t count;
+    void** frames;
+};
 
-#elif defined(__DAVAENGINE_WINDOWS__)
-// Check out this function http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx
-/* Should be able to do the same stuff on windows. 
-        USHORT WINAPI CaptureStackBackTrace(
-        __in       ULONG FramesToSkip,
-        __in       ULONG FramesToCapture,
-        __out      PVOID *BackTrace,
-        __out_opt  PULONG BackTraceHash
-        );        
-    */
+_Unwind_Reason_Code TraceFunction(struct _Unwind_Context* context, void* arg)
+{
+    StackCrawlState* state = static_cast<StackCrawlState*>(arg);
+    if (state->count > 0)
+    {
+        uintptr_t pc = _Unwind_GetIP(context);
+        if (pc != 0)
+        {
+            *state->frames = reinterpret_cast<void*>(pc);
+            state->frames += 1;
+            state->count -= 1;
+            return _URC_NO_REASON;
+        }
+    }
+    return _URC_END_OF_STACK;
+}
 #endif
-       
+} // anonymous namespace
 
-#if defined(__DAVAENGINE_ANDROID__) && defined(CRASH_HANDLER_CUSTOMSIGNALS)
-    BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
-       
-    if(backtraceProvider != nullptr)
+DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture)
+{
+    size_t nframes = 0;
+#if defined(__DAVAENGINE_WINDOWS__)
+    // CaptureStackBackTrace is supported either on Win32 and WinUAP
+    nframes = CaptureStackBackTrace(0, static_cast<DWORD>(framesToCapture), frames, nullptr);
+#elif defined(__DAVAENGINE_APPLE__)
+    nframes = backtrace(frames, static_cast<int>(framesToCapture));
+#elif defined(__DAVAENGINE_ANDROID__)
+    StackCrawlState state;
+    state.count = framesToCapture;
+    state.frames = frames;
+    _Unwind_Backtrace(&TraceFunction, &state);
+    nframes = framesToCapture - state.count;
+#endif
+    return nframes;
+}
+
+String DemangleSymbol(const char8* symbol)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    // On Win32 SymFromAddr returns already undecorated name
+    return String(symbol);
+#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+    String result;
+    char* demangled = abi::__cxa_demangle(symbol, nullptr, nullptr, nullptr);
+    if (demangled != nullptr)
     {
-        Function<void (Logger::eLogLevel,pointer_size,const char * )> onStackFrame = &OnStackFrame;
-        Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-        backtraceProvider->PrintableBacktrace(Bind(onStackFrame, logLevel, _1, _2),nullptr,0);
+        result = demangled;
+        free(demangled);
     }
-    else
-    {
-        Logger::FrameworkDebug("DAVA BACKTRACE NO BACKTRACE INTERFACE PROVIDER!");
-    }
+    return result;
 #endif
 }
 
-//}
-};
+String GetSymbolFromAddr(void* addr, bool demangle)
+{
+    String result;
+#if defined(__DAVAENGINE_WIN32__)
+    const size_t NAME_BUFFER_SIZE = MAX_SYM_NAME + sizeof(SYMBOL_INFO);
+    char8 nameBuffer[NAME_BUFFER_SIZE];
+
+    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(nameBuffer);
+    symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symInfo->MaxNameLen = NAME_BUFFER_SIZE - sizeof(SYMBOL_INFO);
+
+    {
+        InitSymbols();
+
+        // All DbgHelp functions are single threaded
+        static Mutex mutex;
+        LockGuard<Mutex> lock(mutex);
+        if (SymFromAddr(GetCurrentProcess(), reinterpret_cast<DWORD64>(addr), nullptr, symInfo))
+            result = symInfo->Name;
+    }
+
+#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+    Dl_info dlinfo;
+    if (dladdr(addr, &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
+    {
+        if (demangle)
+            result = DemangleSymbol(dlinfo.dli_sname);
+        if (result.empty())
+            result = dlinfo.dli_sname;
+    }
+#endif
+    return result;
+}
+
+DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture)
+{
+    const size_t DEFAULT_SKIP_COUNT = 2;    // skip this function and GetStackFrames function
+    const size_t MAX_BACKTRACE_COUNT = 64;
+
+    framesToCapture = std::min(framesToCapture, MAX_BACKTRACE_COUNT);
+
+    void* frames[MAX_BACKTRACE_COUNT + DEFAULT_SKIP_COUNT];
+    size_t nframes = GetStackFrames(frames, framesToCapture + DEFAULT_SKIP_COUNT);
+
+    Vector<StackFrame> backtrace;
+    if (nframes > DEFAULT_SKIP_COUNT)
+    {
+        backtrace.reserve(nframes);
+        
+        // Skip irrelevant GetStackFrames and GetBacktrace functions by name as different compilers
+        // can include or exclude GetStackFrames function depending on compiler wish
+        // TODO: find the way to tell ios compiler not inlining GetStackFrames function (DAVA_NOINLINE does not help)
+        size_t usefulFramesStart = 0;
+        for (;usefulFramesStart < DEFAULT_SKIP_COUNT;++usefulFramesStart)
+        {
+            String s = GetSymbolFromAddr(frames[usefulFramesStart]);
+            if (s.find("DAVA::Debug::GetStackFrames") == String::npos && s.find("DAVA::Debug::GetBacktrace") == String::npos)
+            {
+                backtrace.emplace_back(frames[usefulFramesStart], std::move(s));
+                usefulFramesStart += 1;
+                break;
+            }
+        }
+        
+        for (size_t i = usefulFramesStart;i < nframes;++i)
+        {
+            backtrace.emplace_back(frames[i], GetSymbolFromAddr(frames[i]));
+        }
+    }
+    return backtrace;
+}
+
+String BacktraceToString(const Vector<StackFrame>& backtrace, size_t nframes)
+{
+    String result;
+    size_t n = std::min(nframes, backtrace.size());
+    for (size_t i = 0;i != n;++i)
+    {
+        result += Format("    #%u: %s [%p]\n", static_cast<uint32>(i), backtrace[i].function.c_str(), backtrace[i].addr);
+    }
+    return result;
+}
+
+String BacktraceToString(size_t framesToCapture)
+{
+    return BacktraceToString(GetBacktrace(framesToCapture));
+}
+
+void BacktraceToLog(const Vector<StackFrame>& backtrace, Logger::eLogLevel ll)
+{
+    Logger* logger = Logger::Instance();
+    if (logger != nullptr)
+    {
+        logger->Log(ll, "==== callstack ====");
+        for (size_t i = 0, n = backtrace.size();i != n;++i)
+        {
+            logger->Log(ll, "    #%u: %s [%p]", static_cast<uint32>(i), backtrace[i].function.c_str(), backtrace[i].addr);
+        }
+        logger->Log(ll, "==== callstack end ====");
+    }
+}
+
+void BacktraceToLog(size_t framesToCapture, Logger::eLogLevel ll)
+{
+    BacktraceToLog(GetBacktrace(framesToCapture), ll);
+}
+
+} // namespace Debug
+} // namespace DAVA

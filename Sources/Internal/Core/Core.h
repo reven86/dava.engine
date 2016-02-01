@@ -130,6 +130,7 @@ public:
     // Should be called after framework did launched to initialize proper render manager
     void CreateRenderer();
     // Should be called after full release
+    void ReleaseRenderer();
     void ReleaseSingletons();
 
     const Vector<String> & GetCommandLine(); 
@@ -171,35 +172,41 @@ public:
 	*/
     virtual DisplayMode GetCurrentDisplayMode();
 
-	/**
+    /**
 		\brief Quit from application & release all subsystems
 	*/
-	virtual void Quit();
+    virtual void Quit();
 
-	/**
+    /**
 		\brief Set icon for application's window.
 		Windows: First of all, you should create icon resource through Project->Add Resource->Icon.
 		param[in] iconId resource id for icon from resource.h file. For example, 101 for #define IDI_ICON1 101
 	 */
-	virtual void SetIcon(int32 iconId);
+    virtual void SetIcon(int32 iconId);
+
+    virtual float32 GetScreenScaleMultiplier() const;
+    virtual void SetScreenScaleMultiplier(float32 multiplier);
 
     virtual float32 GetScreenScaleFactor() const;
 
     virtual Core::eScreenOrientation GetScreenOrientation();
 
     virtual uint32 GetScreenDPI();
-	
-	/*
+
+    // Set application's window minimum size, to remove minimume size limit pass zeros as arguments
+    virtual void SetWindowMinimumSize(float32 width, float32 height);
+    virtual Vector2 GetWindowMinimumSize() const;
+
+    /*
 		\brief Mouse cursor for the platforms where it make sense (Win32, MacOS X) 
 	 */
 
-	
-	/* This code disabled for now and left for the future
+    /* This code disabled for now and left for the future
 	MacOS X Version: it works right (commented in MainWindowController.mm) but it require convertaton to virtual coordinates
 	For Win32 function not implemented yet, and I do not have time to implement it right now, so left that for the future.
      
      */
-	/*
+    /*
 		\brief Function that return number of frame from the launch of the application
 		
 		This function supposed for such situations when you do not want to recompute something during one frame more than 
@@ -222,20 +229,20 @@ public:
 		
 		\returns global frame index from the launch of your application
 	 */
-	uint32 GetGlobalFrameIndex();
-	
-	/*
+    uint32 GetGlobalFrameIndex();
+
+    /*
 		This function performs message on main thread 
 		\param[in] message message to be performed
 	 */
-	//void PerformMessageOnMainThread(const Message & message, bool waitUntilDone = true);
-	
-	/*
+    //void PerformMessageOnMainThread(const Message & message, bool waitUntilDone = true);
+
+    /*
 		* FOR INTERNAL FRAMEWORK USAGE ONLY * 
 		MUST BE CALLED FROM templates on different OS
 	 */
-	
-	void SystemAppStarted();
+
+    void SystemAppStarted();
 	void SystemProcessFrame();
 	void SystemAppFinished();
 

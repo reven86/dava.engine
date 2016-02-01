@@ -569,7 +569,7 @@ void UITextField::Input(UIEvent *currentInput)
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        if (currentInput->tid == DVKEY_BACKSPACE)
+        if (currentInput->key == Key::BACKSPACE)
         {
             WideString str;
             int32 length = static_cast<int32>(GetText().length() - 1);
@@ -578,11 +578,11 @@ void UITextField::Input(UIEvent *currentInput)
                 SetText(GetAppliedChanges(length, 1, str));
             }
         }
-        else if (currentInput->tid == DVKEY_ENTER)
+        else if (currentInput->key == Key::ENTER)
         {
             delegate->TextFieldShouldReturn(this);
         }
-        else if (currentInput->tid == DVKEY_ESCAPE)
+        else if (currentInput->key == Key::ESCAPE)
         {
             delegate->TextFieldShouldCancel(this);
         }
@@ -590,7 +590,19 @@ void UITextField::Input(UIEvent *currentInput)
     else if (currentInput->phase == UIEvent::Phase::CHAR ||
              currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
-        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b')
+        if ('\r' == currentInput->keyChar)
+        {
+            if (IsMultiline())
+            {
+                currentInput->keyChar = '\n';
+            }
+            else
+            {
+                currentInput->keyChar = '\0';
+            }
+        }
+        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b' && currentInput->keyChar != 0x7f // 0x7f del key (on mac backspace)
+            && currentInput->keyChar != 0xf728) // on mac fn+backspace
         {
             WideString str;
             str += currentInput->keyChar;

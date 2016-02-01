@@ -56,11 +56,6 @@ namespace DAVA
             
     }
 
-    void UIListCell::WillDisappear()
-    {
-            currentIndex = -1;
-    }
-    
     const String & UIListCell::GetIdentifier() const
     {
         return identifier;

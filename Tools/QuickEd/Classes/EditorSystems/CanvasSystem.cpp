@@ -76,10 +76,12 @@ public:
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
     void UpdateCounterpoise();
     void AdjustToNestedControl();
-    Signal<> ContentSizeChanged;
+
+    DAVA::Signal<> ContentSizeChanged;
+    DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
 
 private:
-    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
+    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
     void FitGridIfParentIsNested(PackageBaseNode* node);
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
@@ -177,10 +179,11 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
     } //unnamed namespace
 
-void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition)
+    void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
+
     gd.position.SetZero();
     UIControl* scalableControl = gridControl->GetParent()->GetParent();
     DVASSERT_MSG(nullptr != scalableControl, "grid update without being attached to screen");
@@ -205,6 +208,7 @@ void BackgroundController::AdjustToNestedControl()
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
     ContentSizeChanged.Emit();
+    RootControlPosChanged.Emit(pos);
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -331,6 +335,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
+    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<DAVA::Vector2>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
@@ -380,6 +385,7 @@ void CanvasSystem::LayoutCanvas()
     }
     Vector2 size(maxWidth, totalHeight);
     systemManager->GetScalableControl()->SetSize(size);
+    systemManager->GetRootControl()->SetSize(size);
     systemManager->CanvasSizeChanged.Emit();
 }
 

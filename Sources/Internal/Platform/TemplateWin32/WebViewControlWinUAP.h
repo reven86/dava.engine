@@ -31,7 +31,7 @@
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #include "UI/IWebViewControl.h"
 
@@ -77,11 +77,13 @@ public:
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
 
+    void Update() override;
+
 private:
     std::shared_ptr<PrivateWebViewWinUAP> privateImpl;
 };
 
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__ && !__DISABLE_NATIVE_WEBVIEW__
 #endif  // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__

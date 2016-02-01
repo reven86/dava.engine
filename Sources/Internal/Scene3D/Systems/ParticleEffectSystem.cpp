@@ -42,6 +42,7 @@
 #include "Debug/Stats.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -60,9 +61,9 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
     Map<uint64, NMaterial*>::iterator it = materialMap.find(materialKey);
     if (it != materialMap.end()) //return existing
     {
-		return (*it).second;  
-	}
-	else //create new
+        return (*it).second;
+    }
+    else //create new
     {
         NMaterial* material = new NMaterial();
         material->SetParent(particleBaseMaterial);
@@ -106,20 +107,41 @@ ParticleEffectSystem::~ParticleEffectSystem()
     for (Map<uint64, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it != e; ++it)
     {
         SafeRelease(it->second);
-	}
+    }
     SafeRelease(particleBaseMaterial);
 }
 
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
     particleBaseMaterial->SetParent(material);
+
+    //RHI_COMPLETE pre-cache all configs for regularly used blending modes
+    const static uint32 FRAME_BLEND_MASK = 1;
+    const static uint32 FOG_MASK = 2;
+    const static uint32 BLEND_SHIFT = 2;
+    for (uint32 i = 0; i < 12; i++)
+    {
+        bool enableFrameBlend = (i & FRAME_BLEND_MASK) == FRAME_BLEND_MASK;
+        bool enableFog = (i & FOG_MASK) == FOG_MASK;
+        uint32 blending = (i >> BLEND_SHIFT) + 1;
+
+        ScopedPtr<NMaterial> material(new NMaterial());
+        material->SetParent(particleBaseMaterial);
+
+        if (enableFrameBlend)
+            material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);
+        if (!enableFog) //inverse logic to suspend vertex fog inherited from global material
+            material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
+        material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
+        material->PreCacheFX();
+    }
 }
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
-    for (auto emitter : component->emitters)
+    for (auto& emitter : component->emitterDatas)
     {
-        for (auto layer : emitter->layers)
+        for (auto layer : emitter.emitter->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
                 GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
@@ -151,12 +173,17 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
         else
             group.material = NULL;
 
-		effect->effectData.groups.push_back(group);			
-	}
+        effect->effectData.groups.push_back(group);
+    }
 }
 
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
-{	
+{
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
     Scene *scene = GetScene();
     
     if (scene)
@@ -167,17 +194,22 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 	if (effect->effectData.groups.empty()) //clean position sources
 		effect->effectData.infoSources.resize(1);
 	//create particle groups
-	for (size_t emitterId = 0, emittersCount = effect->emitters.size(); emitterId<emittersCount; ++emitterId)
-	{
-		RunEmitter(effect, effect->emitters[emitterId], effect->spawnPositions[emitterId]);		
-	}
-		
-	effect->state = ParticleEffectComponent::STATE_PLAYING;
-	effect->time = 0;
+    for (size_t emitterId = 0, emittersCount = effect->emitterDatas.size(); emitterId < emittersCount; ++emitterId)
+    {
+        RunEmitter(effect, effect->emitterDatas[emitterId].emitter.Get(), effect->emitterDatas[emitterId].spawnPosition);
+    }
+
+    effect->state = ParticleEffectComponent::STATE_PLAYING;
+    effect->time = 0;
 }
 
 void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 {
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
     if (effect->state==ParticleEffectComponent::STATE_STOPPED)
     {
         //add to active effects and to render
@@ -199,10 +231,15 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
 {
-	Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
-	DVASSERT(it!=activeComponents.end());
-	activeComponents.erase(it);	
-	effect->state = ParticleEffectComponent::STATE_STOPPED;	
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
+    Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
+    DVASSERT(it != activeComponents.end());
+    activeComponents.erase(it);
+    effect->state = ParticleEffectComponent::STATE_STOPPED;
     Scene *scene = GetScene();
     if (scene)
         scene->GetRenderSystem()->RemoveFromRender(effect->effectRenderObject);
@@ -256,16 +293,16 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS))
         return;
     /*shortEffectTime*/
-	float32 currFps = 1.0f/timeElapsed;
-	float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
-	currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
-	float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
-	float32 shortEffectTime = timeElapsed*speedMult;
-	
-	size_t componentsCount = activeComponents.size();
-	for(size_t i=0; i<componentsCount; i++)
-	{
-		ParticleEffectComponent * effect = activeComponents[i];
+    float32 currFps = 1.0f / timeElapsed;
+    float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS()) / (PerformanceSettings::Instance()->GetPsPerformanceMaxFPS() - PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
+    currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
+    float32 speedMult = 1.0f + (PerformanceSettings::Instance()->GetPsPerformanceSpeedMult() - 1.0f) * (1 - currPSValue);
+    float32 shortEffectTime = timeElapsed * speedMult;
+
+    size_t componentsCount = activeComponents.size();
+    for (size_t i = 0; i < componentsCount; i++)
+    {
+        ParticleEffectComponent* effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)
             UpdateActiveLod(effect);
         if (effect->state == ParticleEffectComponent::STATE_STARTING)  

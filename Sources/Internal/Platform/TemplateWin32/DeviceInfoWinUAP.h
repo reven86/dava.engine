@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Platform/DeviceInfoPrivateBase.h"
+#include "Concurrency/ConcurrentObject.h"
 
 namespace DAVA
 {
@@ -74,7 +75,8 @@ private:
         GAMEPAD = 0x05,
         KEYBOARD = 0x06,
         KEYPAD = 0x07,
-        SYSTEM_CONTROL = 0x80
+        SYSTEM_CONTROL = 0x80,
+        TOUCH = 0xFF
     };
     const uint16 USAGE_PAGE = 0x01;
     using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
@@ -87,33 +89,30 @@ private:
       { GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE },
       { KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
       { KEYPAD, DeviceInfo::HID_KEYPAD_TYPE },
-      { SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE }
+      { SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE },
+      { TOUCH, DeviceInfo::HID_TOUCH_TYPE }
     };
 
     Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
     void CreateAndStartHIDWatcher();
     void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);
     void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
+    void OnDeviceUpdated(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
     bool IsEnabled(NativeHIDType type);
     void NotifyAllClients(NativeHIDType type, bool isConnected);
     eGPUFamily GPUFamily();
 
     bool isTouchPresent = false;
+    bool isMousePresent = false;
+    bool isKeyboardPresent = false;
     bool isMobileMode = false;
-    Map<NativeHIDType, uint16> hids =
-    {
-      { UNKNOWN, 0 },
-      { POINTER, 0 },
-      { MOUSE, 0 },
-      { JOYSTICK, 0 },
-      { GAMEPAD, 0 },
-      { KEYBOARD, 0 },
-      { KEYPAD, 0 },
-      { SYSTEM_CONTROL, 0 }
-    };
+    bool watchersCreated = false;
+
+    ConcurrentObject<Map<NativeHIDType, Set<String>>> hids;
+
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
-    DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
+    DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN_VALUE;
     DeviceInfo::ScreenInfo screenInfo;
     eGPUFamily gpu = GPU_INVALID;
     String platformString;

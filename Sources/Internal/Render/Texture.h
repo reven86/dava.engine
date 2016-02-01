@@ -77,6 +77,18 @@ public:
 
     static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
 
+    struct
+    FBODescriptor
+    {
+        uint32 width;
+        uint32 height;
+        PixelFormat format;
+        rhi::TextureType textureType = rhi::TEXTURE_TYPE_2D;
+        bool needDepth = false;
+        bool needPixelReadback = false;
+        bool ensurePowerOf2 = true;
+    };
+
     // Main constructors
     /**
         \brief Create texture from data arrray
@@ -88,7 +100,7 @@ public:
         \param[in] height height of new texture
         \param[in] generateMipMaps generate mipmaps or not
      */
-    static Texture * CreateFromData(PixelFormat format, const uint8 *data, uint32 width, uint32 height, bool generateMipMaps);
+    static Texture* CreateFromData(PixelFormat format, const uint8* data, uint32 width, uint32 height, bool generateMipMaps);
 
     /**
         \brief Create texture from data arrray stored at Image
@@ -127,7 +139,10 @@ public:
 
     static Texture* CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
 
-    static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
+    static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false,
+                              rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool ensurePowerOf2 = true);
+
+    static Texture* CreateFBO(const FBODescriptor& desc);
 
     /**
         \brief Get texture from cache.
@@ -216,8 +231,8 @@ protected:
     void GenerateMipmapsInternal();
 
     Texture();
-	virtual ~Texture();
-    
+    virtual ~Texture();
+
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);

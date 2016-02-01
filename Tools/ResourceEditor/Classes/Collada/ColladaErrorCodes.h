@@ -40,5 +40,3 @@ enum eColladaErrorCodes
 
 
 #endif // __COLLADAERRORCODES_H__
-
-

@@ -60,7 +60,7 @@ public:
     void AppStarted();
     void AppFinished();
 
-	void Resize(int32 width, int32 height);
+    void Resize(int32 width, int32 height, float64 dpr);
     void ProcessFrame();
 
     void * CreateAutoreleasePool();
@@ -70,9 +70,9 @@ public:
     void SetDelegate(QtLayerDelegate *delegate);
 
     bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
-    
-    void KeyPressed(char16 key, int32 count, uint64 timestamp);
-    void KeyReleased(char16 key);
+
+    void KeyPressed(Key key, int32 count, uint64 timestamp);
+    void KeyReleased(Key key);
 
     void MouseEvent(const UIEvent & event);
 
@@ -80,13 +80,9 @@ public:
     static void MakeAppForeground( bool foreground = true );
     static void RestoreMenuBar();
 #endif
-    
-protected:
-    void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);
-    void MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches);
-    
+
+private:
     QtLayerDelegate *delegate;
-    Vector<UIEvent> allEvents;
     bool isDAVAEngineEnabled;
 };
 

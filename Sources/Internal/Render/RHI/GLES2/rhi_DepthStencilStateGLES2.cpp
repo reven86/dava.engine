@@ -67,7 +67,7 @@ RHI_IMPL_POOL(DepthStencilStateGLES2_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStenci
 //------------------------------------------------------------------------------
 
 static GLenum
-_CmpFunc(CmpFunc func)
+_CmpFuncGLES2(CmpFunc func)
 {
     GLenum f = GL_ALWAYS;
 
@@ -105,7 +105,7 @@ _CmpFunc(CmpFunc func)
 //------------------------------------------------------------------------------
 
 static GLenum
-_StencilOp(StencilOperation op)
+_StencilOpGLES2(StencilOperation op)
 {
     GLenum s = GL_KEEP;
 
@@ -150,23 +150,23 @@ gles2_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
 
     state->depthTestEnabled = desc.depthTestEnabled;
     state->depthMask = (desc.depthWriteEnabled) ? GL_TRUE : GL_FALSE;
-    state->depthFunc = _CmpFunc(CmpFunc(desc.depthFunc));
+    state->depthFunc = _CmpFuncGLES2(CmpFunc(desc.depthFunc));
 
     state->stencilEnabled = desc.stencilEnabled;
     state->stencilSeparate = desc.stencilTwoSided;
 
-    state->stencilFront.failOp = _StencilOp(StencilOperation(desc.stencilFront.failOperation));
-    state->stencilFront.depthFailOp = _StencilOp(StencilOperation(desc.stencilFront.depthFailOperation));
-    state->stencilFront.depthStencilPassOp = _StencilOp(StencilOperation(desc.stencilFront.depthStencilPassOperation));
-    state->stencilFront.func = _CmpFunc(CmpFunc(desc.stencilFront.func));
+    state->stencilFront.failOp = _StencilOpGLES2(StencilOperation(desc.stencilFront.failOperation));
+    state->stencilFront.depthFailOp = _StencilOpGLES2(StencilOperation(desc.stencilFront.depthFailOperation));
+    state->stencilFront.depthStencilPassOp = _StencilOpGLES2(StencilOperation(desc.stencilFront.depthStencilPassOperation));
+    state->stencilFront.func = _CmpFuncGLES2(CmpFunc(desc.stencilFront.func));
     state->stencilFront.readMask = desc.stencilFront.readMask;
     state->stencilFront.writeMask = desc.stencilFront.writeMask;
     state->stencilFront.refValue = desc.stencilFront.refValue;
 
-    state->stencilBack.failOp = _StencilOp(StencilOperation(desc.stencilBack.failOperation));
-    state->stencilBack.depthFailOp = _StencilOp(StencilOperation(desc.stencilBack.depthFailOperation));
-    state->stencilBack.depthStencilPassOp = _StencilOp(StencilOperation(desc.stencilBack.depthStencilPassOperation));
-    state->stencilBack.func = _CmpFunc(CmpFunc(desc.stencilBack.func));
+    state->stencilBack.failOp = _StencilOpGLES2(StencilOperation(desc.stencilBack.failOperation));
+    state->stencilBack.depthFailOp = _StencilOpGLES2(StencilOperation(desc.stencilBack.depthFailOperation));
+    state->stencilBack.depthStencilPassOp = _StencilOpGLES2(StencilOperation(desc.stencilBack.depthStencilPassOperation));
+    state->stencilBack.func = _CmpFuncGLES2(CmpFunc(desc.stencilBack.func));
     state->stencilBack.readMask = desc.stencilBack.readMask;
     state->stencilBack.writeMask = desc.stencilBack.writeMask;
     state->stencilBack.refValue = desc.stencilBack.refValue;
@@ -189,6 +189,11 @@ int _GLES2_depthTestEnabled = -1;
 int _GLES2_stencilEnabled = -1;
 int _GLES2_depthMask = -1;
 GLenum _GLES2_depthFunc = 0;
+
+void Init(uint32 maxCount)
+{
+    DepthStencilStateGLES2Pool::Reserve(maxCount);
+}
 
 void SetupDispatch(Dispatch* dispatch)
 {

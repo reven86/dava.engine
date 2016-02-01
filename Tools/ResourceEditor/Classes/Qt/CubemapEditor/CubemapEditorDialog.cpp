@@ -101,7 +101,7 @@ void CubemapEditorDialog::ConnectSignals()
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 {
     FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastFaceDir",
-                                                            ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
+                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
 
     QString fileName = FileDialog::getOpenFileName(this,
                                                      tr("Open Cubemap Face Image"),
@@ -360,7 +360,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 
     std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
     bool descriptorReady = false;
-    if (filePath.Exists())
+    if (FileSystem::Instance()->Exists(filePath))
     {
         descriptorReady = descriptor->Load(filePath);
     }

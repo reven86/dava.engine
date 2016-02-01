@@ -44,6 +44,12 @@ namespace DAVA
 UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)
+    , drawToFrameBuffer(false)
+    , needUpdateFrameBuffer(false)
+    , frameBuffer(nullptr)
+    , fbScaleFactor(1.f)
+    , fbRenderSize()
+    , fbTexSize()
     , registeredInUIControlSystem(false)
 {
 
@@ -51,6 +57,7 @@ UI3DView::UI3DView(const Rect& rect)
 
 UI3DView::~UI3DView()
 {
+    SafeRelease(frameBuffer);
     SafeRelease(scene);
 }
 
@@ -68,6 +75,7 @@ void UI3DView::SetScene(Scene * _scene)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
+        needUpdateFrameBuffer = true;
     }
 }
 
@@ -92,22 +100,39 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 {
     if (!scene)
         return;
-    RenderSystem2D::Instance()->Flush();
 
-	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
+    Rect viewportRect = geometricData.GetUnrotatedRect();
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
 
-	if (uiDrawQueryWasOpen)
+    if (drawToFrameBuffer)
+    {
+        // Calculate viewport for frame buffer
+        viewportRc.x = 0.f;
+        viewportRc.y = 0.f;
+        viewportRc.dx *= fbScaleFactor;
+        viewportRc.dy *= fbScaleFactor;
+    }
+    else
+    {
+        viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+        RenderSystem2D::Instance()->Flush();
+    }
+
+    bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
+    if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
-    const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
-    viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    PrepareFrameBufferIfNeed();
     scene->SetMainPassViewport(viewportRc);
-
     scene->Draw();
 
     if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
+
+    if (drawToFrameBuffer)
+    {
+        RenderSystem2D::Instance()->DrawTexture(frameBuffer, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, geometricData.GetUnrotatedRect(), Rect(Vector2(), fbTexSize));
+    }
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)
@@ -121,6 +146,7 @@ void UI3DView::SetSize(const DAVA::Vector2 &newSize)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
+        needUpdateFrameBuffer = true;
     }
 }
 
@@ -130,7 +156,22 @@ UI3DView* UI3DView::Clone()
     ui3DView->CopyDataFrom(this);
     return ui3DView;
 }
-    
+
+void UI3DView::CopyDataFrom(UIControl* srcControl)
+{
+    UIControl::CopyDataFrom(srcControl);
+
+    UI3DView* srcView = DynamicTypeCheck<UI3DView*>(srcControl);
+    drawToFrameBuffer = srcView->drawToFrameBuffer;
+    fbScaleFactor = srcView->fbScaleFactor;
+    fbRenderSize = srcView->fbRenderSize;
+    fbTexSize = srcView->fbTexSize;
+    needUpdateFrameBuffer = srcView->needUpdateFrameBuffer;
+
+    // Create FBO on first draw if need
+    needUpdateFrameBuffer = true;
+}
+
 void UI3DView::Input(UIEvent *currentInput)
 {
     if(scene)
@@ -140,6 +181,58 @@ void UI3DView::Input(UIEvent *currentInput)
     
     UIControl::Input(currentInput);
 }
-    
 
+void UI3DView::SetDrawToFrameBuffer(bool enable)
+{
+    if (drawToFrameBuffer != enable)
+    {
+        drawToFrameBuffer = enable;
+        needUpdateFrameBuffer = true;
+    }
+}
+
+void UI3DView::SetFrameBufferScaleFactor(float32 scale)
+{
+    if (!FLOAT_EQUAL(scale, fbScaleFactor))
+    {
+        fbScaleFactor = scale;
+        needUpdateFrameBuffer = true;
+    }
+}
+
+void UI3DView::PrepareFrameBuffer()
+{
+    DVASSERT(scene);
+
+    if (drawToFrameBuffer)
+    {
+        fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
+
+        if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
+        {
+            SafeRelease(frameBuffer);
+            frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
+        }
+
+        Vector2 fbSize = Vector2(static_cast<float32>(frameBuffer->GetWidth()), static_cast<float32>(frameBuffer->GetHeight()));
+
+        fbTexSize = fbRenderSize / fbSize;
+
+        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+        config.colorBuffer[0].texture = frameBuffer->handle;
+        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
+        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
+        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+    }
+    else if (frameBuffer != nullptr)
+    {
+        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+        config.colorBuffer[0].texture = rhi::InvalidHandle;
+        config.depthStencilBuffer.texture = rhi::InvalidHandle;
+        SafeRelease(frameBuffer);
+    }
+}
 }

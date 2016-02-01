@@ -41,10 +41,10 @@ public:
     virtual ~NotPassableTerrainProxy();
 
     bool Enable();
-	bool Disable();
-	bool IsEnabled() const;
-	
-	Texture* GetTexture();
+    bool Disable();
+    bool IsEnabled() const;
+
+    Texture* GetTexture();
     void UpdateTexture(DAVA::Heightmap* heightmap,
                        const AABBox3& landscapeBoundingBox,
                        const DAVA::Rect2i& forRect);

@@ -49,7 +49,7 @@ namespace rhi
 
 Dispatch DispatchDX9 = { 0 };
 
-static RenderDeviceCaps _DeviceCaps = {};
+static RenderDeviceCaps _DeviceCapsDX9 = {};
 
 //==============================================================================
 
@@ -77,7 +77,7 @@ dx9_HostApi()
 static const RenderDeviceCaps&
 dx9_DeviceCaps()
 {
-    return _DeviceCaps;
+    return _DeviceCapsDX9;
 }
 
 //------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ dx9_TextureFormatSupported(TextureFormat format)
 //------------------------------------------------------------------------------
 
 static bool
-_IsValidIntelCard(unsigned vendor_id, unsigned device_id)
+_IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -200,7 +200,7 @@ void _InitDX9()
 
                 if (SUCCEEDED(hr)) // if GetAdapterIdentifier SUCCEEDED
                 {
-                    if (_IsValidIntelCard(info.VendorId, info.DeviceId))
+                    if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
                     {
                         vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
                     }
@@ -219,7 +219,7 @@ void _InitDX9()
         {
             Logger::Error("failed to get device caps:\n%s\n", D3D9ErrorText(hr));
 
-            if (_IsValidIntelCard(info.VendorId, info.DeviceId))
+            if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
                 vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
         }
 
@@ -351,6 +351,7 @@ void dx9_Initialize(const InitParam& param)
     VertexBufferDX9::SetupDispatch(&DispatchDX9);
     IndexBufferDX9::SetupDispatch(&DispatchDX9);
     QueryBufferDX9::SetupDispatch(&DispatchDX9);
+    PerfQuerySetDX9::SetupDispatch(&DispatchDX9);
     TextureDX9::SetupDispatch(&DispatchDX9);
     PipelineStateDX9::SetupDispatch(&DispatchDX9);
     ConstBufferDX9::SetupDispatch(&DispatchDX9);
@@ -388,12 +389,12 @@ void dx9_Initialize(const InitParam& param)
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
 
-    _DeviceCaps.is32BitIndicesSupported = true;
-    _DeviceCaps.isFramebufferFetchSupported = true;
-    _DeviceCaps.isVertexTextureUnitsSupported = true;
-    _DeviceCaps.isUpperLeftRTOrigin = true;
-    _DeviceCaps.isZeroBaseClipRange = true;
-    _DeviceCaps.isCenterPixelMapping = true;
+    _DeviceCapsDX9.is32BitIndicesSupported = true;
+    _DeviceCapsDX9.isFramebufferFetchSupported = true;
+    _DeviceCapsDX9.isVertexTextureUnitsSupported = true;
+    _DeviceCapsDX9.isUpperLeftRTOrigin = true;
+    _DeviceCapsDX9.isZeroBaseClipRange = true;
+    _DeviceCapsDX9.isCenterPixelMapping = true;
 }
 
 //==============================================================================

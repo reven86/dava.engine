@@ -33,6 +33,7 @@
     #include "rhi_DX11.h"
 
     #include "Debug/DVAssert.h"
+    #include "Debug/Profiler.h"
     #include "FileSystem/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
@@ -54,7 +55,7 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
-    uint32 elemCount = 0;
+    DAVA::uint32 elemCount = 0;
 
     //Logger::Info("create-dx11-layout");
     DVASSERT(layout.ElementCount() < countof(elem));
@@ -168,7 +169,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
-    uint32 elemCount = 0;
+    DAVA::uint32 elemCount = 0;
 
     //Logger::Info("create-compatible-dx11-layout");
     DVASSERT(vbLayout.ElementCount() < countof(elem));
@@ -176,7 +177,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
     {
         DVASSERT(vprogLayout.ElementSemantics(i) != VS_PAD);
 
-        unsigned vb_elem_i = InvalidIndex;
+        unsigned vb_elem_i = DAVA::InvalidIndex;
 
         for (unsigned k = 0; k != vbLayout.ElementCount(); ++k)
         {
@@ -187,7 +188,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
             }
         }
 
-        if (vb_elem_i != InvalidIndex)
+        if (vb_elem_i != DAVA::InvalidIndex)
         {
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
@@ -333,7 +334,11 @@ public:
 
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
-    void SetToRHI(ID3D11DeviceContext* context) const;
+    void SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    void SetToRHI(const void* instData) const;
+    const void* Instance() const;
+#endif
 
 private:
     void _EnsureMapped();
@@ -341,18 +346,27 @@ private:
     ProgType progType;
     ID3D11Buffer* buf;
     mutable float* value;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    mutable float* inst;
+    mutable unsigned frame;
+#endif
     unsigned buf_i;
     unsigned regCount;
+    mutable uint32 updatePending : 1;
 };
 
 static RingBuffer _DefConstRingBuf;
+static uint32 _CurFrame = 0;
 
 //------------------------------------------------------------------------------
 
 ConstBufDX11::ConstBufDX11()
     : buf(nullptr)
     , value(nullptr)
-    , buf_i(InvalidIndex)
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    , inst(nullptr)
+#endif
+    , buf_i(DAVA::InvalidIndex)
     , regCount(0)
 {
 }
@@ -400,7 +414,7 @@ _BlendOpDX11(BlendOp op)
 void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
 {
     DVASSERT(!value);
-    DVASSERT(bufIndex != InvalidIndex);
+    DVASSERT(bufIndex != DAVA::InvalidIndex);
     DVASSERT(regCnt);
 
     D3D11_BUFFER_DESC desc = { 0 };
@@ -419,6 +433,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
         value = (float*)(malloc(regCnt * 4 * sizeof(float)));
         buf_i = bufIndex;
         regCount = regCnt;
+        updatePending = true;
     }
     else
     {
@@ -442,7 +457,7 @@ void ConstBufDX11::Destroy()
         }
 
         value = nullptr;
-        buf_i = InvalidIndex;
+        buf_i = DAVA::InvalidIndex;
         regCount = 0;
     }
 }
@@ -464,6 +479,11 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     if (const_i + const_count <= regCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+        updatePending = true;
+#else
+        inst = nullptr;
+#endif
         success = true;
     }
 
@@ -479,6 +499,11 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     if (const_i <= regCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+        updatePending = true;
+#else
+        inst = nullptr;
+#endif
         success = true;
     }
 
@@ -487,17 +512,49 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
 
 //------------------------------------------------------------------------------
 
-void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context) const
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const
 {
-    context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+    if (updatePending)
+    {
+        context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+        updatePending = false;
+    }
+
+    buffer[buf_i] = buf;
+}
+
+#else
+
+void ConstBufDX11::SetToRHI(const void* instData) const
+{
+    _D3D11_ImmediateContext->UpdateSubresource(buf, 0, NULL, instData, regCount * 4 * sizeof(float), 0);
 
     ID3D11Buffer* cb[1] = { buf };
 
     if (progType == PROG_VERTEX)
-        context->VSSetConstantBuffers(buf_i, 1, &buf);
+        _D3D11_ImmediateContext->VSSetConstantBuffers(buf_i, 1, &buf);
     else
-        context->PSSetConstantBuffers(buf_i, 1, &buf);
+        _D3D11_ImmediateContext->PSSetConstantBuffers(buf_i, 1, &buf);
 }
+const void* ConstBufDX11::Instance() const
+{
+    if (frame != _CurFrame)
+    {
+        inst = nullptr;
+    }
+
+    if (!inst)
+    {
+        //SCOPED_NAMED_TIMING("gl.cb-inst");
+        inst = _DefConstRingBuf.Alloc(regCount * 4 * sizeof(float));
+        memcpy(inst, value, 4 * regCount * sizeof(float));
+        frame = _CurFrame;
+    }
+
+    return inst;
+}
+#endif
 
 //==============================================================================
 
@@ -616,6 +673,7 @@ PipelineStateDX11_t::CreateConstBuffer(ProgType type, unsigned buf_i)
 static Handle
 dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
 {
+    bool success = false;
     Handle handle = PipelineStateDX11Pool::Alloc();
     PipelineStateDX11_t* ps = PipelineStateDX11Pool::Get(handle);
     HRESULT hr;
@@ -626,10 +684,12 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     ID3D10Blob* fp_code = nullptr;
     ID3D10Blob* fp_err = nullptr;
 
+#if 0
     Logger::Info("create PS");
     Logger::Info("  vprog= %s", desc.vprogUid.c_str());
     Logger::Info("  fprog= %s", desc.vprogUid.c_str());
     desc.vertexLayout.Dump();
+#endif
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
@@ -641,11 +701,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "vp_main",
-        #if RHI__FORCE_DX11_91
-    "vs_4_0_level_9_1",
-        #else
-    "vs_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &vp_code,
@@ -691,6 +747,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         else
         {
             Logger::Error("FAILED to create vertex-shader:\n%s\n", D3D11ErrorText(hr));
+            ps->vertexShader = nullptr;
         }
     }
     else
@@ -702,7 +759,9 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         Logger::Error("shader-uid : %s", desc.vprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&vprog_bin[0]), vprog_bin.size());
+        DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
+        ps->vertexShader = nullptr;
+        DVASSERT_MSG(ps->vertexShader, desc.vprogUid.c_str());
     }
 
     // create fragment-shader
@@ -713,11 +772,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "fp_main",
-        #if RHI__FORCE_DX11_91
-    "ps_4_0_level_9_1",
-        #else
-    "ps_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &fp_code,
@@ -763,6 +818,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         else
         {
             Logger::Error("FAILED to create pixel-shader:\n%s\n", D3D11ErrorText(hr));
+            ps->pixelShader = nullptr;
+            DVASSERT_MSG(ps->pixelShader, desc.fprogUid.c_str());
         }
     }
     else
@@ -774,46 +831,63 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&fprog_bin[0]), fprog_bin.size());
+        DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
+        ps->pixelShader = nullptr;
     }
 
-    // create input-layout
-    ps->vpCode = vp_code;
-    ps->inputLayout = _CreateInputLayout(desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize());
-    ps->vertexLayout = desc.vertexLayout;
-    DVASSERT(ps->inputLayout);
+    if (ps->vertexShader && ps->pixelShader)
+    {
+        // create input-layout
+        ps->vpCode = vp_code;
+        ps->inputLayout = _CreateInputLayout(desc.vertexLayout, vp_code->GetBufferPointer(), static_cast<unsigned>(vp_code->GetBufferSize()));
+        ps->vertexLayout = desc.vertexLayout;
+        DVASSERT(ps->inputLayout);
 
-    ps->dbgVertexSrc = vprog_bin;
-    ps->dbgPixelSrc = fprog_bin;
+        if (ps->inputLayout)
+        {
+            ps->dbgVertexSrc = vprog_bin;
+            ps->dbgPixelSrc = fprog_bin;
 
-    // create blend-state
+            // create blend-state
 
-    D3D11_BLEND_DESC bs_desc;
-    UINT8 mask = 0;
+            D3D11_BLEND_DESC bs_desc;
+            UINT8 mask = 0;
 
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_R)
-        mask |= D3D11_COLOR_WRITE_ENABLE_RED;
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_G)
-        mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_B)
-        mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_A)
-        mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_R)
+                mask |= D3D11_COLOR_WRITE_ENABLE_RED;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_G)
+                mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_B)
+                mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_A)
+                mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
-    bs_desc.AlphaToCoverageEnable = FALSE;
-    bs_desc.IndependentBlendEnable = FALSE;
-    bs_desc.RenderTarget[0].BlendEnable = desc.blending.rtBlend[0].blendEnabled;
-    bs_desc.RenderTarget[0].RenderTargetWriteMask = mask;
-    bs_desc.RenderTarget[0].SrcBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorSrc));
-    bs_desc.RenderTarget[0].DestBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorDst));
-    bs_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    bs_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    bs_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+            bs_desc.AlphaToCoverageEnable = FALSE;
+            bs_desc.IndependentBlendEnable = FALSE;
+            bs_desc.RenderTarget[0].BlendEnable = desc.blending.rtBlend[0].blendEnabled;
+            bs_desc.RenderTarget[0].RenderTargetWriteMask = mask;
+            bs_desc.RenderTarget[0].SrcBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorSrc));
+            bs_desc.RenderTarget[0].DestBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorDst));
+            bs_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+            bs_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+            bs_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+            bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
-    hr = _D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState));
+            hr = _D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState));
 
-    ps->desc = desc;
+            if (SUCCEEDED(hr))
+            {
+                ps->desc = desc;
+                success = true;
+            }
+        }
+    }
+
+    if (!success)
+    {
+        PipelineStateDX11Pool::Free(handle);
+        handle = InvalidHandle;
+    }
 
     return handle;
 }
@@ -920,7 +994,7 @@ vbLayout->Dump();
 Logger::Info("vprog-layout:");
 ps11->vertexLayout.Dump();
 */
-            layout11 = _CreateCompatibleInputLayout(*vbLayout, ps11->vertexLayout, ps11->vpCode->GetBufferPointer(), ps11->vpCode->GetBufferSize());
+            layout11 = _CreateCompatibleInputLayout(*vbLayout, ps11->vertexLayout, ps11->vpCode->GetBufferPointer(), static_cast<unsigned>(ps11->vpCode->GetBufferSize()));
 
             if (layout11)
             {
@@ -953,6 +1027,14 @@ VertexLayoutStride(Handle ps)
     return ps11->vertexLayout.Stride();
 }
 
+void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount)
+{
+    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
+
+    *vertexBufCount = ps11->vertexBufCount;
+    *fragmentBufCount = ps11->fragmentBufCount;
+}
+
 } // namespace PipelineStateDX11
 
 namespace ConstBufferDX11
@@ -969,17 +1051,39 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_Delete = &dx11_ConstBuffer_Delete;
 }
 
-void SetToRHI(Handle cb, ID3D11DeviceContext* context)
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+
+void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
 
-    cb11->SetToRHI(context);
+    cb11->SetToRHI(context, buffer);
+}
+
+#else
+
+void SetToRHI(Handle cb, const void* instData)
+{
+    ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
+
+    cb11->SetToRHI(instData);
+}
+const void* Instance(Handle cb)
+{
+    ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
+
+    return cb11->Instance();
+}
+void InvalidateAllInstances()
+{
+    ++_CurFrame;
 }
 
 void InitializeRingBuffer(uint32 size)
 {
-    _DefConstRingBuf.Initialize(size);
+    _DefConstRingBuf.Initialize((size) ? size : 4 * 1024 * 1024);
 }
+#endif
 }
 
 } // namespace rhi

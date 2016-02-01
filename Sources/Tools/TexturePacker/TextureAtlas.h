@@ -34,12 +34,14 @@
 
 namespace DAVA
 {
-struct PackedInfo
+struct ImageCell
 {
     Rect2i rect;
-    bool isTwoSideMargin = false;
-    uint32 topMargin = 0;
-    uint32 leftMargin = 0;
+    Rect2i imageRect;
+    uint32 leftEdgePixel = 0;
+    uint32 rightEdgePixel = 0;
+    uint32 topEdgePixel = 0;
+    uint32 bottomEdgePixel = 0;
     uint32 rightMargin = 0;
     uint32 bottomMargin = 0;
 };
@@ -49,48 +51,33 @@ class TextureAtlas
 {
 public:
     TextureAtlas(const Rect2i& _rect, bool _useTwoSideMargin, int32 _texturesMargin);
-    ~TextureAtlas();
-
-    void Release();
 
     bool AddImage(const Size2i& imageSize, void* searchPtr);
-    PackedInfo* SearchRectForPtr(void* searchPtr);
+    ImageCell* GetImageCell(void* searchPtr);
 
     Rect2i& GetRect()
     {
-        return rect;
+        return rootNode->cell.rect;
     };
-
-public:
-    bool useTwoSideMargin;
-    int32 texturesMargin;
 
 private:
-    Rect2i rect;
+    struct AtlasNode;
+    using AtlasNodePtr = std::unique_ptr<AtlasNode>;
 
-    struct PackNode
+    struct AtlasNode
     {
-        PackNode(const TextureAtlas& _packer)
-            : atlas(_packer)
-        {
-            child[0] = nullptr;
-            child[1] = nullptr;
-        }
-        const TextureAtlas& atlas;
-        bool isImageSet = false;
-        bool isLeaf = true;
-        PackNode* child[2];
-        void* searchPtr = nullptr;
-        bool touchesRightBorder = false;
-        bool touchesBottomBorder = false;
-        PackedInfo packCell;
-
-        PackNode* Insert(const Size2i& frameSize);
-        PackNode* SearchRectForPtr(void* searchPtr);
-        void Release();
+        AtlasNodePtr child[2];
+        ImageCell cell;
+        void* imagePtr = nullptr;
     };
 
-    PackNode* root;
+    AtlasNode* Insert(const AtlasNodePtr& node, const Size2i& imageSize, void* imagePtr);
+    AtlasNode* SearchRectForPtr(const AtlasNodePtr& node, void* imagePtr);
+
+    const int32 edgePixel;
+    const int32 texturesMargin;
+    const int32 splitter;
+    AtlasNodePtr rootNode;
 };
 
 using TextureAtlasPtr = std::unique_ptr<TextureAtlas>;

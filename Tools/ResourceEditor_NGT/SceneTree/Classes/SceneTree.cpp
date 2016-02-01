@@ -100,11 +100,6 @@ public:
         return children.size();
     }
 
-    int columnCount() const override
-    {
-        return 1;
-    }
-
     const char* getDisplayText(int column) const override
     {
         if (entity)

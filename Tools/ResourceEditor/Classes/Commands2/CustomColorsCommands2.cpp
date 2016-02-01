@@ -50,13 +50,13 @@ void ActionEnableCustomColors::Redo()
 
     bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
     if (enabled)
-	{
-		return;
-	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+    {
+        return;
+    }
 
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 	if (!success )
 	{
 		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
@@ -101,12 +101,12 @@ void ActionDisableCustomColors::Redo()
 
     bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
     if (disabled)
-	{
-		return;
-	}
-	
-	bool success = sceneEditor->customColorsSystem->DisableLandscapeEdititing(textureSavingNeeded);
-	if (!success)
+    {
+        return;
+    }
+
+    bool success = sceneEditor->customColorsSystem->DisableLandscapeEdititing(textureSavingNeeded);
+    if (!success)
 	{
 		ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
 	}
@@ -164,7 +164,11 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
     texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
                                       image->GetWidth(), image->GetHeight(), false);
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = customColorsTarget;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(texture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 

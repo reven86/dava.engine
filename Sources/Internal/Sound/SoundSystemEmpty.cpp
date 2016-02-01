@@ -78,7 +78,11 @@ namespace DAVA
     void SoundSystem::Resume()
     {
     }
-    
+
+    void SoundSystem::Mute(bool value)
+    {
+    }
+
     void SoundSystem::SetCurrentLocale(const String &langID)
     {
     }
@@ -108,7 +112,16 @@ namespace DAVA
     void SoundSystem::InitFromQualitySettings()
     {
     }
-    
+
+    void SoundSystem::SetDebugMode(bool debug)
+    {
+    }
+
+    bool SoundSystem::IsDebugModeOn() const
+    {
+        return false;
+    }
+
     void SoundSystem::ParseSFXConfig(const FilePath & configPath)
     {
     }

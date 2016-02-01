@@ -76,8 +76,8 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
-    SelectionContainer selectionContainer;
     bool hudVisible = false;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

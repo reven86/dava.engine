@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+// clang-format off
+
 #ifndef __DAVAENGINE_WINUAPFRAME_H__
 #define __DAVAENGINE_WINUAPFRAME_H__
 
@@ -41,6 +43,7 @@
 
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -76,14 +79,18 @@ public:
     bool SetCursorVisible(bool isVisible);
 
     bool IsPhoneApiDetected();
+    void ResetScreen();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
+    Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
-bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+    void SetWindowMinimumSize(float32 width, float32 height);
+    Vector2 GetWindowMinimumSize() const;
 
 public:
     void SetQuitFlag();
@@ -94,14 +101,13 @@ public:
     void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
     void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
-    void NativeControlGotFocus(Windows::UI::Xaml::Controls::Control ^ control);
-    void NativeControlLostFocus(Windows::UI::Xaml::Controls::Control ^ control);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
+    void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args) override;
 
 private:
-    void Run();
+    void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
 
     // App state handlers
     void OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
@@ -125,22 +131,15 @@ private:
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
 
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
+    void OnBackRequested(Platform::Object ^ sender, Windows::UI::Core::BackRequestedEventArgs ^ args);
 
     // Keyboard handlers
-    void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
-    void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+    void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
     void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
 
-    struct MouseButtonState
-    {
-        UIEvent::eButtonID button = UIEvent::BUTTON_NONE;
-        bool isPressed = false;
-    };
-
-    MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
-
+    void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
     void SetupEventHandlers();
@@ -148,6 +147,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
+    void LoadWindowMinimumSizeSettings();
 
     void ResetRender();
 
@@ -159,7 +159,10 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
-    void HideAsyncTaskBar();
+    void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
+    void AllowDisplaySleep(bool sleep);
+    void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
+    void SendBackKeyEvents();
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -169,11 +172,10 @@ private:
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
     Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
-    Windows::UI::Xaml::Controls::Control ^ currentFocusedControl = nullptr;
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
+    bool mainLoopThreadStarted = false;
 
     volatile bool quitFlag = false;
 
@@ -196,9 +198,22 @@ private:
 
     InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
-    bool isRightButtonPressed = false;
-    bool isLeftButtonPressed = false;
-    bool isMiddleButtonPressed = false;
+
+    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
+
+    struct MouseButtonChange
+    {
+        UIEvent::Phase beginOrEnd;
+        UIEvent::MouseButton button;
+    };
+
+    void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties, Vector<MouseButtonChange>& out);
+
+    Vector<MouseButtonChange> mouseButtonChanges;
+
+    bool GetMouseButtonState(UIEvent::MouseButton button);
+
+    void SetMouseButtonState(UIEvent::MouseButton button, bool value);
 
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
@@ -208,14 +223,30 @@ private:
     int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    DeferredScreenMetricEvents* deferredSizeScaleEvents;
+    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    static const wchar_t* xamlWebView;
+    Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
+    Windows::Foundation::EventRegistrationToken token;
 };
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool WinUAPXamlApp::GetMouseButtonState(UIEvent::MouseButton button)
+{
+    unsigned index = static_cast<unsigned>(button) - 1;
+    return mouseButtonsState[index];
+}
+
+inline void WinUAPXamlApp::SetMouseButtonState(UIEvent::MouseButton button, bool value)
+{
+    unsigned index = static_cast<unsigned>(button) - 1;
+    mouseButtonsState[index] = value;
+}
+
 inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
 {
     return uiThreadDispatcher;

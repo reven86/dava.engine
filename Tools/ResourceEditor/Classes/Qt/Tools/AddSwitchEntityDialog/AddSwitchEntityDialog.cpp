@@ -47,31 +47,31 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
 {
 	setAcceptDrops(true);
 	setAttribute( Qt::WA_DeleteOnClose, true );
-	FilePath defaultPath(ProjectManager::Instance()->CurProjectDataSourcePath());
-	
-	SceneEditor2 *scene = QtMainWindow::Instance()->GetCurrentScene();
-	if(scene)
-	{
-		FilePath scenePath = scene->GetScenePath();
-		if(scenePath.Exists())
-		{
-			defaultPath = scenePath.GetDirectory();
-		}
-	}
-	
-	SelectEntityPathWidget* firstWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
-	SelectEntityPathWidget* secondWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
-	SelectEntityPathWidget* thirdWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
+    FilePath defaultPath(ProjectManager::Instance()->GetDataSourcePath());
 
-	AddControlToUserContainer(firstWidget, "First Entity:");
-	AddControlToUserContainer(secondWidget, "Second Entity:");
-	AddControlToUserContainer(thirdWidget, "Third Entity:");
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    if (scene)
+    {
+        FilePath scenePath = scene->GetScenePath();
+        if (scenePath.Exists())
+        {
+            defaultPath = scenePath.GetDirectory();
+        }
+    }
 
-	pathWidgets.push_back(firstWidget);
-	pathWidgets.push_back(secondWidget);
-	pathWidgets.push_back(thirdWidget);
+    SelectEntityPathWidget* firstWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(), "");
+    SelectEntityPathWidget* secondWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(), "");
+    SelectEntityPathWidget* thirdWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(), "");
 
-	propEditor->setVisible(false);
+    AddControlToUserContainer(firstWidget, "First Entity:");
+    AddControlToUserContainer(secondWidget, "Second Entity:");
+    AddControlToUserContainer(thirdWidget, "Third Entity:");
+
+    pathWidgets.push_back(firstWidget);
+    pathWidgets.push_back(secondWidget);
+    pathWidgets.push_back(thirdWidget);
+
+    propEditor->setVisible(false);
 	propEditor->setMinimumHeight(0);
 	propEditor->setMaximumSize(propEditor->maximumWidth(), 0);
 }

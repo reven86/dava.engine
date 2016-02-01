@@ -63,9 +63,9 @@ ParticleEditorWidget::ParticleEditorWidget(QWidget* parent /* = 0*/)
             this,
             SLOT(OnLayerSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEffectComponent*, DAVA::ParticleEmitter*, DAVA::ParticleLayer*, bool)));
     connect(SceneSignals::Instance(),
-            SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, int)),
+            SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)),
             this,
-            SLOT(OnForceSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, int)));
+            SLOT(OnForceSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)));
 
     // Get the notification about changes in Particle Editor items.
     connect(SceneSignals::Instance(),
@@ -264,7 +264,7 @@ void ParticleEditorWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAV
     SwitchEditorToLayerMode(scene, effect, emitter, layer);
 }
 
-void ParticleEditorWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, int forceIndex)
+void ParticleEditorWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
 {
     if (MODE_FORCE == widgetMode &&
         layerForceWidget->GetLayer() == layer &&
@@ -286,6 +286,7 @@ void ParticleEditorWidget::OnParticleLayerValueChanged(SceneEditor2* /*scene*/, 
     // Notify the Emitter Layer widget about its inner layer value is changed and
     // the widget needs to be resynchronized with its values.
     emitterLayerWidget->OnLayerValueChanged();
+    emitterLayerWidget->Update(false);
 }
 
 void ParticleEditorWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)

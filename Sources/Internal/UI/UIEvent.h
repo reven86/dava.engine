@@ -30,8 +30,9 @@
 #ifndef __DAVAENGINE_UI_EVENT_H__
 #define __DAVAENGINE_UI_EVENT_H__
 
-#include "Base/BaseTypes.h"
 #include "Math/Vector.h"
+#include "Input/KeyboardDevice.h"
+#include "Input/GamepadDevice.h"
 
 namespace DAVA
 {
@@ -59,7 +60,8 @@ public:
         KEY_DOWN,
         KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
         KEY_UP,
-        JOYSTICK
+        JOYSTICK,
+        GESTURE, // mac os touch pad gestures only for now
     };
 
     /**
@@ -84,26 +86,16 @@ public:
 
     friend class UIControlSystem;
 
-    enum eButtonID : int32
+    enum class MouseButton : uint32
     {
-        BUTTON_NONE = 0,
-        BUTTON_1,
-        BUTTON_2,
-        BUTTON_3
-    };
+        NONE = 0,
+        LEFT = 1,
+        RIGHT = 2,
+        MIDDLE = 3,
+        EXTENDED1 = 4,
+        EXTENDED2 = 5,
 
-    enum eJoystickAxisID : int32
-    {
-        JOYSTICK_AXIS_X = 0,
-        JOYSTICK_AXIS_Y,
-        JOYSTICK_AXIS_Z,
-        JOYSTICK_AXIS_RX,
-        JOYSTICK_AXIS_RY,
-        JOYSTICK_AXIS_RZ,
-        JOYSTICK_AXIS_LTRIGGER,
-        JOYSTICK_AXIS_RTRIGGER,
-        JOYSTICK_AXIS_HAT_X,
-        JOYSTICK_AXIS_HAT_Y
+        NUM_BUTTONS = EXTENDED2
     };
 
     enum class Device : uint32
@@ -113,7 +105,8 @@ public:
         MOUSE,
         KEYBOARD,
         GAMEPAD,
-        PEN
+        PEN,
+        TOUCH_PAD,
     };
 
     UIEvent() = default;
@@ -130,15 +123,32 @@ public:
     eInputHandledType GetInputHandledType() { return inputHandledType; };
     void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
-    uint32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
+    union {
+        uint32 touchId;
+        Key key;
+        char32_t keyChar; // unicode utf32 char
+        MouseButton mouseButton;
+        GamepadDevice::eDavaGamepadElement element;
+        struct
+        {
+            float32 x;
+            float32 y;
+        } wheelDelta; // scroll delta in mouse wheel clicks (or lines)
+        struct
+        {
+            float32 magnification; // delta -1..1
+            float32 rotation; // delta angle in degrees -cw +ccw
+            float32 dx; // -1..1 (-1 left)
+            float32 dy; // -1..1 (-1 top)
+        } gesture; // pinch/rotate/swipe
+    };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
     float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
-    Phase phase = Phase::BEGAN; // began, ended, moved. See Phase
+    Phase phase = Phase::ERROR; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
-    char16 keyChar = 0; // (TODO make char32_t) unicode/translated character produced by key using current language, caps etc. Used only with CHAR.
     Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };

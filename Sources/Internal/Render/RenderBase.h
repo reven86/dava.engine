@@ -110,6 +110,15 @@ enum PixelFormat : uint8
     FORMAT_BGR888, // windows BMP format
     FORMAT_BGRA8888, // android web view format only for ImageConvert
 
+    FORMAT_R16F,
+    FORMAT_RG16F,
+    FORMAT_RGB16F,
+    FORMAT_RGBA16F,
+    FORMAT_R32F,
+    FORMAT_RG32F,
+    FORMAT_RGB32F,
+    FORMAT_RGBA32F,
+
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
@@ -157,6 +166,9 @@ enum eDefaultPassPriority
 
     PRIORITY_SERVICE_3D = 30,
     PRIORITY_SERVICE_2D = 40,
+
+    PRIORITY_SCREENSHOT_2D = 50,
+    PRIORITY_SCREENSHOT_3D = 60
 };
 
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them
@@ -278,6 +290,20 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
 rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
+
+enum eBasePerfQuery
+{
+    PERFQUERY__2D_PASS_T0 = 0,
+    PERFQUERY__2D_PASS_T1,
+
+    PERFQUERY__CLEAR_PASS_T0,
+    PERFQUERY__CLEAR_PASS_T1,
+
+    PERFQUERY__MAIN_PASS_T0,
+    PERFQUERY__MAIN_PASS_T1,
+
+    PERFQUERY__USER
+};
 };
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

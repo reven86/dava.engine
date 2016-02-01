@@ -33,6 +33,7 @@
 #include "Base/StaticSingleton.h"
 #include "Base/FastNameMap.h"
 #include "Math/Vector.h"
+#include "Scene3D/Systems/ParticlesQualitySettings.h"
 
 namespace DAVA
 {
@@ -58,6 +59,13 @@ public:
     static const FastName QUALITY_OPTION_VEGETATION_ANIMATION;
     static const FastName QUALITY_OPTION_STENCIL_SHADOW;
     static const FastName QUALITY_OPTION_WATER_DECORATIONS;
+    static const FastName QUALITY_OPTION_DISABLE_EFFECTS;
+    static const FastName QUALITY_OPTION_LOD0_EFFECTS;
+
+    static const FastName QUALITY_OPTION_DISABLE_FOG;
+    static const FastName QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION;
+    static const FastName QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING;
+    static const FastName QUALITY_OPTION_DISABLE_FOG_HALF_SPACE;
 
     QualitySettingsSystem();
 
@@ -93,6 +101,9 @@ public:
 
     FilePath GetSFXQualityConfigPath(const FastName &name) const;
     FilePath GetSFXQualityConfigPath(size_t index) const;
+
+    const ParticlesQualitySettings& GetParticlesQualitySettings() const;
+    ParticlesQualitySettings& GetParticlesQualitySettings();
 
     // ------------------------------------------
 
@@ -147,6 +158,8 @@ protected:
     Vector<SFXQ> soundQualities;
 
 	FastNameMap<bool> qualityOptions;
+
+    ParticlesQualitySettings particlesQualitySettings;
 
     bool cutUnusedVertexStreams;
 

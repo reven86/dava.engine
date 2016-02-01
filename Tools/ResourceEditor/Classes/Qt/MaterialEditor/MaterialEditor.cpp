@@ -62,19 +62,20 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace UIName
 {
-static const QString Template = "Template";
+const DAVA::FastName Template("Template");
 
-static const QString Name = "Name";
-static const QString Group = "Group";
+const DAVA::FastName Name("Name");
+const DAVA::FastName Group("Group");
 
-static const QString Base = "Base";
-static const QString Flags = "Flags";
-static const QString Illumination = "Illumination";
-static const QString Properties = "Properties";
-static const QString Textures = "Textures";
+const DAVA::FastName Base("Base");
+const DAVA::FastName Flags("Flags");
+const DAVA::FastName Illumination("Illumination");
+const DAVA::FastName Properties("Properties");
+const DAVA::FastName Textures("Textures");
 }
 
 namespace NMaterialSectionName
@@ -167,10 +168,10 @@ MaterialEditor::~MaterialEditor()
     posSaver.SaveValue("lastLoadState", DAVA::VariantType(lastCheckState));
 }
 
-QtPropertyData* MaterialEditor::AddSection(const QString& sectionName)
+QtPropertyData* MaterialEditor::AddSection(const DAVA::FastName& sectionName)
 {
-    QtPropertyData* section = new QtPropertyData();
-    ui->materialProperty->AppendProperty(sectionName, section);
+    QtPropertyData* section = new QtPropertyData(sectionName);
+    ui->materialProperty->AppendProperty(std::unique_ptr<QtPropertyData>(section));
     ui->materialProperty->ApplyStyle(section, QtPropertyEditor::HEADER_STYLE);
     return section;
 }
@@ -277,6 +278,7 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
     FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
     FillTemplates(materials);
+    FinishCreation();
 
     // Restore back the tree view state from the shared storage.
     if (!treeStateHelper->IsTreeStateStorageEmpty())
@@ -487,16 +489,15 @@ void MaterialEditor::FillBase()
         const DAVA::InspMember* nameMember = info->Member(DAVA::FastName("materialName"));
         if (nullptr != nameMember)
         {
-            QtPropertyDataInspMember *name = new QtPropertyDataInspMember(material, nameMember);
-            baseRoot->MergeChild(name, UIName::Name);
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(new QtPropertyDataInspMember(UIName::Name, material, nameMember)));
         }
 
         // fill material group, only for material type
         const DAVA::InspMember* groupMember = info->Member(DAVA::FastName("qualityGroup"));
         if ((nullptr != groupMember) && (globalMaterial != material))
         {
-            QtPropertyDataInspMember* group = new QtPropertyDataInspMember(material, groupMember);
-            baseRoot->MergeChild(group, UIName::Group);
+            QtPropertyDataInspMember* group = new QtPropertyDataInspMember(UIName::Group, material, groupMember);
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(group));
 
             // Add unknown value:
             group->AddAllowedValue(VariantType(String()), "Unknown");
@@ -606,7 +607,7 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData* root, DAVA::InspInfoDyna
 
 void MaterialEditor::FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName)
 {
-    QtPropertyDataInspDynamic* dynamicData = new QtPropertyDataInspDynamic(dynamic, ddata, memberName);
+    QtPropertyDataInspDynamic* dynamicData = new QtPropertyDataInspDynamic(memberName, dynamic, ddata);
 
     // for all textures we should add texture path validator
     if (root == texturesRoot)
@@ -618,22 +619,22 @@ void MaterialEditor::FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspI
     UpdateAddRemoveButtonState(dynamicData);
 
     // merge created dynamic data into specified root
-    root->MergeChild(dynamicData, memberName.c_str());
+    root->MergeChild(std::unique_ptr<QtPropertyData>(dynamicData));
 }
 
 void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
 {
-    QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-    FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
 
     // calculate appropriate default path
-    if (dataSourcePath.Exists())
+    if (FileSystem::Instance()->Exists(dataSourcePath))
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
 
     SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-    if ((nullptr != editor) && editor->GetScenePath().Exists())
+    if ((nullptr != editor) && FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
@@ -689,7 +690,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         if (memberFlags & DAVA::I_EDIT)
         {
             editEnabled = true;
-            addRemoveButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
             addRemoveButton->setToolTip("Remove property");
 
             // isn't set in parent or shader
@@ -703,7 +704,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         {
             editEnabled = false;
             bgColor = QBrush(QColor(0, 0, 0, 25));
-            addRemoveButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
             addRemoveButton->setToolTip("Add property");
         }
 
@@ -750,10 +751,11 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             ui->templateBox->setCurrentIndex(-1);
             ui->templateBox->setEnabled(false);
             ui->templateButton->setEnabled(false);
-            ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+            ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
         }
         else
         {
+            bool isAssignableFx = true;
             { //set fx name to fx template box
                 int rowToSelect = -1;
                 const DAVA::FastName fxName = material->GetEffectiveFXName();
@@ -774,6 +776,8 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     if (-1 == rowToSelect)
                     {
                         setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                        rowToSelect = 0;
+                        isAssignableFx = false;
                     }
                 }
 
@@ -793,14 +797,14 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 
                 if (hasLocalFxName)
                 {
-                    ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+                    ui->templateButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
                 }
                 else
                 {
-                    ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+                    ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
                 }
 
-                if (parentMaterial == nullptr || parentMaterial == globalMaterial)
+                if (parentMaterial == nullptr || parentMaterial == globalMaterial || isAssignableFx == false)
                 {
                     ui->templateButton->setEnabled(false);
                 }
@@ -809,7 +813,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                     ui->templateButton->setEnabled(true);
                 }
 
-                ui->templateBox->setEnabled(hasLocalFxName);
+                ui->templateBox->setEnabled(hasLocalFxName && isAssignableFx);
             }
         }
     }
@@ -818,7 +822,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
         ui->templateBox->setCurrentIndex(-1);
         ui->templateBox->setEnabled(false);
         ui->templateButton->setEnabled(false);
-        ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+        ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
     }
 }
 
@@ -905,52 +909,48 @@ void MaterialEditor::OnAddRemoveButton()
 void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
 {
     QtPropertyEditor *editor = dynamic_cast<QtPropertyEditor *>(QObject::sender());
-    if (nullptr != editor)
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (editor != nullptr && curScene != nullptr)
     {
         QtPropertyData *propData = editor->GetProperty(index);
 
         if (nullptr != propData)
         {
-            QList<QtPropertyData *> propDatList; //propData->GetMergedData();
-            propDatList.reserve(propData->GetMergedCount() + 1);
-            for (int i = 0; i < propData->GetMergedCount(); i++)
-                propDatList << propData->GetMergedData(i);
-            propDatList << propData;
+            DAVA::Vector<Command2*> commands;
+            commands.reserve(propData->GetMergedItemCount());
 
-            QList<Command2 *> commands;
-            foreach (QtPropertyData* data, propDatList)
-            {
-                Command2 *command = (Command2 *) data->CreateLastCommand();
-                if (command)
+            auto commandsAccumulateFn = [&commands](QtPropertyData* item) {
+                Command2* command = reinterpret_cast<Command2*>(item->CreateLastCommand());
+                if (command != nullptr)
                 {
-                    commands << command;
+                    commands.push_back(command);
                 }
+
+                return true;
+            };
+
+            propData->ForeachMergedItem(commandsAccumulateFn);
+            commandsAccumulateFn(propData);
+
+            bool useBatch = commands.size() > 1;
+            if (useBatch)
+            {
+                QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
+                curScene->BeginBatch("Property multiedit");
             }
-            const bool usebatch = (commands.count() > 1);
 
-            SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-            if (curScene)
+            for (Command2* cmd : commands)
             {
-                if (usebatch)
-                {
-                    QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
-                    curScene->BeginBatch("Property multiedit");
-                }
+                curScene->Exec(cmd);
+            }
 
-                for (int i = 0; i < commands.size(); i++)
-                {
-                    Command2* cmd = commands.at(i);
-                    curScene->Exec(cmd);
-                }
+            if (useBatch)
+            {
+                curScene->EndBatch();
+                QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
 
-                if (usebatch)
-                {
-                    curScene->EndBatch();
-                    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
-
-                    // emulate that only one signal was emited, after batch of commands executed
-                    commandExecuted(curScene, commands.last(), true);
-                }
+                // emulate that only one signal was emited, after batch of commands executed
+                commandExecuted(curScene, commands.back(), true);
             }
         }
     }
@@ -1045,7 +1045,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
 
             DAVA::SerializationContext materialContext;
             materialContext.SetScene(curScene);
-            materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
+            materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
             materialContext.SetVersion(VersionInfo::Instance()->GetCurrentVersion().version);
 
             ScopedPtr<DAVA::KeyedArchive> materialArchive(new DAVA::KeyedArchive());
@@ -1087,7 +1087,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);
                 DAVA::SerializationContext materialContext;
                 materialContext.SetScene(curScene);
-                materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
+                materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
                 materialContext.SetVersion(VersionInfo::Instance()->GetCurrentVersion().version);
                 UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
                 materialContext.ResolveMaterialBindings();
@@ -1140,10 +1140,10 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     QGroupBox *groupbox = new QGroupBox("Load parameters", dlg);
     dlgLayout->addWidget(groupbox);
 
-    QCheckBox* templateChBox = new QCheckBox(UIName::Template, groupbox);
-    QCheckBox* groupChBox = new QCheckBox(UIName::Group, groupbox);
-    QCheckBox* propertiesChBox = new QCheckBox(UIName::Properties, groupbox);
-    QCheckBox* texturesChBox = new QCheckBox(UIName::Textures, groupbox);
+    QCheckBox* templateChBox = new QCheckBox(QString(UIName::Template.c_str()), groupbox);
+    QCheckBox* groupChBox = new QCheckBox(QString(UIName::Group.c_str()), groupbox);
+    QCheckBox* propertiesChBox = new QCheckBox(QString(UIName::Properties.c_str()), groupbox);
+    QCheckBox* texturesChBox = new QCheckBox(QString(UIName::Textures.c_str()), groupbox);
 
     templateChBox->setChecked((bool) (initialState & CHECKED_TEMPLATE));
     groupChBox->setChecked((bool) (initialState & CHECKED_GROUP));
@@ -1379,4 +1379,13 @@ void MaterialEditor::RefreshMaterialProperties()
 {
     SetCurMaterial(curMaterials);
     UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+}
+
+void MaterialEditor::FinishCreation()
+{
+    baseRoot->FinishTreeCreation();
+    flagsRoot->FinishTreeCreation();
+    illuminationRoot->FinishTreeCreation();
+    propertiesRoot->FinishTreeCreation();
+    texturesRoot->FinishTreeCreation();
 }

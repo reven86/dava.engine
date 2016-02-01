@@ -34,11 +34,13 @@
 #ifndef __DAVAENGINE_CONFIG_H__
 #define __DAVAENGINE_CONFIG_H__
 
+#ifndef DISABLE_AUTOTESTS
 #ifndef __DAVAENGINE_AUTOTESTING__
 #   define __DAVAENGINE_AUTOTESTING__
 #endif
 #ifndef AUTOTESTING_LUA
 #   define AUTOTESTING_LUA
+#endif
 #endif
 
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
@@ -77,8 +79,6 @@
 #else //#ifdef USE_FILEPATH_IN_MAP
 #   define FILEPATH_MAP_KEY(key) key.GetAbsolutePathname()
 #endif //#ifdef USE_FILEPATH_IN_MAP
-
-#define REBUILD_TANGENT_SPACE_ON_IMPORT
 
 //Uncomment this define to using C++11 concurrency instead native
 //#define USE_CPP11_CONCURRENCY

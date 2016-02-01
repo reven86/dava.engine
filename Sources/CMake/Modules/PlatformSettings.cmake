@@ -1,9 +1,5 @@
 
 #compiller flags
-if( NOT DISABLE_DEBUG )
-    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
-
-endif  ()
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
@@ -19,6 +15,8 @@ elseif ( IOS     )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
+    set( CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE No )
+    set( CMAKE_EXE_LINKER_FLAGS "-ObjC" )
 
     set( CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" )
 
@@ -58,6 +56,8 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+    set( OTHER_CODE_SIGN_FLAGS "--deep")
 
 elseif ( WIN32 )
     #dynamic runtime on windows store
@@ -84,9 +84,11 @@ elseif ( WIN32 )
         set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /delayload:d3dcompiler_47.dll" )
     endif ()
 
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" )
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" )
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od /bigobj" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /bigobj" ) 
+    set ( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} /Zi" )
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup /INCREMENTAL:NO" )
+    set ( CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG" )
 
     if ( DEBUG_INFO )
         set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi" ) 
@@ -96,10 +98,23 @@ elseif ( WIN32 )
     add_definitions ( -DNOMINMAX )
 endif  ()
 
+if( NOT DISABLE_DEBUG )
+    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
+
+endif  ()
 
 ##
+if( WARNING_DISABLE)
 
-if( WARNINGS_AS_ERRORS )
+    if( WIN32 )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0" )
+    elseif( APPLE )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w" )
+    endif()
+
+
+elseif( WARNINGS_AS_ERRORS )
+
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
 -Werror \
@@ -156,7 +171,14 @@ if( WARNINGS_AS_ERRORS )
 -Wno-old-style-cast \
 -Wno-unknown-warning-option \
 -Wno-unreachable-code-return \
--Wno-unreachable-code-break")
+-Wno-unreachable-code-break \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-inconsistent-missing-override \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
 
 
     if( ANDROID )

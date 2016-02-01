@@ -30,13 +30,17 @@
 #include "LODEditor.h"
 #include "ui_LODEditor.h"
 
-#include "Scene/System/EditorLODSystem.h"
 #include "DistanceSlider.h"
-
+#include "Scene/System/EditorLODSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Classes/Qt/Scene/SceneSignals.h"
 #include "Classes/Qt/PlaneLODDialog/PlaneLODDialog.h"
 #include "Classes/Qt/Main/mainwindow.h"
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QLabel>
 #include <QWidget>
@@ -45,6 +49,67 @@
 #include <QFrame>
 #include <QPushButton>
 
+using namespace DAVA;
+
+namespace LODEditorInternal
+{
+bool NeedUpdateLodInfo(const Command2* command)
+{
+    const int32 commandID = static_cast<int32>(command->GetId());
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        Command2* firstCommand = batch->GetCommand(0);
+
+        return NeedUpdateLodInfo(firstCommand);
+    }
+    else
+    {
+        switch (commandID)
+        {
+        case CMDID_COMPONENT_ADD:
+        {
+            const AddComponentCommand* cmd = static_cast<const AddComponentCommand*>(command);
+            const Component* component = cmd->GetComponent();
+            const auto componentType = component->GetType();
+            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
+        }
+        case CMDID_COMPONENT_REMOVE:
+        {
+            const RemoveComponentCommand* cmd = static_cast<const RemoveComponentCommand*>(command);
+            const Component* component = cmd->GetComponent();
+            const auto componentType = component->GetType();
+            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
+        }
+
+        case CMDID_ENTITY_ADD:
+        case CMDID_ENTITY_REMOVE:
+        case CMDID_ENTITY_CHANGE_PARENT: //may be
+        {
+            const DAVA::Entity* entity = command->GetEntity();
+            if (entity != nullptr)
+            {
+                LodComponent* lc = GetLodComponent(entity);
+                ParticleEffectComponent* effect = GetEffectComponent(entity);
+                return (lc != nullptr) || (effect != nullptr);
+            }
+            break;
+        }
+
+        case CMDID_LOD_DISTANCE_CHANGE:
+        case CMDID_LOD_COPY_LAST_LOD:
+        case CMDID_LOD_DELETE:
+        case CMDID_LOD_CREATE_PLANE:
+            return true;
+
+        default:
+            break;
+        }
+    }
+
+    return false;
+}
+}
 
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
@@ -53,6 +118,9 @@ LODEditor::LODEditor(QWidget* parent)
     , frameEditVisible(true)
 {
     ui->setupUi(this);
+
+    DAVA::Function<void()> fn(this, &LODEditor::UpdateUI);
+    uiUpdater = new LazyUpdater(fn, this);
 
     bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
     ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
@@ -122,26 +190,21 @@ void LODEditor::SetupSceneSignals()
 
 void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-    if (command->GetId() == CMDID_BATCH)
+    bool needUpdate = LODEditorInternal::NeedUpdateLodInfo(command);
+    if (needUpdate)
     {
-        CommandBatch *batch = (CommandBatch *)command;
-        Command2 *firstCommand = batch->GetCommand(0);
-        if (nullptr != firstCommand)
-        {
-            switch (firstCommand->GetId())
-            {
-            case CMDID_LOD_DISTANCE_CHANGE:
-            case CMDID_LOD_COPY_LAST_LOD:
-            case CMDID_LOD_DELETE:
-            case CMDID_LOD_CREATE_PLANE:
-                scene->editorLODSystem->CollectLODDataFromScene();
-                LODDataChanged(scene);
-                break;
-            default:
-                break;
-            }
-        }
+        uiUpdater->Update();
     }
+}
+
+void LODEditor::UpdateUI()
+{
+    DVASSERT(QtMainWindow::Instance());
+    DVASSERT(QtMainWindow::Instance()->GetCurrentScene());
+
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    scene->editorLODSystem->CollectLODDataFromScene();
+    LODDataChanged(scene);
 }
 
 void LODEditor::ForceDistanceStateChanged(bool checked)
@@ -308,11 +371,11 @@ void LODEditor::CreateForceLayerValues(int layersCount)
     ui->forceLayer->clear();
 
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
     for (DAVA::int32 i = 0; i < layersCount; ++i)
     {
         ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
     }
+    ui->forceLayer->addItem("Last", DAVA::LodComponent::LAST_LOD_LAYER);
 
     ui->forceLayer->setCurrentIndex(0);
 }
@@ -348,7 +411,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
     bool visible = frame->isVisible();
     frame->setVisible(!visible);
 
-    QIcon icon = (frame->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+    QIcon icon = (frame->isVisible()) ? SharedIcon(":/QtIcons/advanced.png") : SharedIcon(":/QtIcons/play.png");
     frameButton->setIcon(icon);
 }
 
@@ -366,12 +429,11 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     }
     else
     {
-        QIcon viewIcon = (frameViewVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-        ui->viewLODButton->setIcon(viewIcon);
+        const auto& advIcon = SharedIcon(":/QtIcons/advanced.png");
+        const auto& playIcon = SharedIcon(":/QtIcons/play.png");
+        ui->viewLODButton->setIcon(frameViewVisible ? advIcon : playIcon);
+        ui->editLODButton->setIcon(frameEditVisible ? advIcon : playIcon);
         ui->frameViewLOD->setVisible(frameViewVisible);
-
-        QIcon editIcon = (frameEditVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-        ui->editLODButton->setIcon(editIcon);
         ui->frameEditLOD->setVisible(frameEditVisible);
     }
 }

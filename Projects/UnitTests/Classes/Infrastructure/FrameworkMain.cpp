@@ -60,7 +60,11 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width",    1024);
     appOptions->SetInt32("height", 768);
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#else
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);

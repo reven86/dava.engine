@@ -33,9 +33,6 @@
 
 #if defined(__DAVAENGINE_MACOS__) 
 
-#if defined(__DAVAENGINE_NPAPI__)
-#include "NPAPIOpenGLLayerMacOS.h"
-#endif
 
 #if defined(Q_OS_MAC)
 #include "Platform/Qt/MacOS/CorePlatformMacOS.h"
@@ -46,63 +43,6 @@
 
 namespace DAVA
 {
-Cursor * Cursor::Create(const FilePath & cursorPathname, const Vector2 & hotSpot)
-{
-	const String realPath = cursorPathname.GetAbsolutePathname();
-	NSImage * image = [[NSImage alloc] initByReferencingFile:[NSString stringWithFormat:@"%s", realPath.c_str()]];
-	if (!image)
-	{
-		Logger::Error("Can't open cursor image");
-		return 0;
-	}
-	
-	/*if ((image.size.width != 32) && (image.size.height != 32))
-	{
-		Logger::Error("You are trying to create cursor image with size different from 32x32 pixels");
-		return 0;
-	}*/
-	
-	NSCursor * macOSXCursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(hotSpot.x, hotSpot.y)];
-	[macOSXCursor setOnMouseEntered: YES];
-	
-	[image release];
-	image = 0;
-	
-	if (macOSXCursor)
-	{
-		Cursor * cursor = new Cursor();
-		cursor->macOSXCursor = macOSXCursor;
-		return cursor;
-	}
-	return 0;
-}
-
-Cursor::Cursor()
-{
-    
-}
-
-Cursor::~Cursor()
-{
-	NSCursor * macOSXCursorX = (NSCursor *) this->macOSXCursor;
-	[macOSXCursorX release];
-	this->macOSXCursor = 0;
-}
-
-void * Cursor::GetMacOSXCursor()
-{
-	return macOSXCursor;
-}
-
-void Cursor::HardwareSet()
-{
-	// Do nothing here in MacOS version. Everything is in OpenGLView 
-}
-    
-DAVA::Vector2 Cursor::GetPosition()
-{
-    return static_cast<CoreMacOSPlatform *>(CoreMacOSPlatform::Instance())->GetMousePosition();
-}
 
 static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
 
@@ -161,23 +101,6 @@ bool Cursor::GetSystemCursorVisibility()
 {
     return systemCursorVisibility;
 }
-    
-void Cursor::Show(bool _show)
-{
-    show = _show;
-    SetSystemCursorVisibility(show);
-}
-    
-bool Cursor::IsShow()
-{
-    return show;
-}
-    
-/*void Cursor::MacOSX_Set()
-{
-	NSCursor * macOSXCursorX = (NSCursor *)this->macOSXCursor;
-	[macOSXCursorX set];
-}*/
 	
 };
 

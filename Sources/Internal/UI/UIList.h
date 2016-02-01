@@ -230,6 +230,8 @@ public:
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
 
+    bool GetNeedRefresh();
+
 protected:
     void InitAfterYaml();
     virtual ~UIList();
@@ -246,6 +248,8 @@ protected:
 
     void OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData);
 
+    void RemoveCell(UIListCell* cell);
+    void RemoveAllCells();
 
     UIListDelegate *delegate;
     eListOrientation orientation;
@@ -258,6 +262,8 @@ protected:
     float32 addPos;
     float32 oldPos;
     float32 newPos;
+    float32 oldScroll = 0.f;
+    float32 newScroll = 0.f;
 
     int32 touchHoldSize;
 
@@ -274,5 +280,10 @@ public:
         PROPERTY("aggregatorPath", "Aggregator Path", GetAggregatorPath, SetAggregatorPath, I_SAVE | I_VIEW | I_EDIT)
         );
 };
+
+inline bool UIList::GetNeedRefresh()
+{
+    return needRefresh;
+}
 };
 #endif

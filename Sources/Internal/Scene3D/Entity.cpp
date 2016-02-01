@@ -155,21 +155,22 @@ void Entity::SetScene(Scene * _scene)
 	{
 		scene->UnregisterEntity(this);
 	}
-	scene = _scene;
-	if (scene)
-	{
-		scene->RegisterEntity(this);
-        for(auto & it : components)
+
+    scene = _scene;
+
+    if (scene)
+    {
+        scene->RegisterEntity(this);
+        for (auto component : components)
         {
-            GlobalEventSystem::Instance()->PerformAllEventsFromCache(it);
+            GlobalEventSystem::Instance()->PerformAllEventsFromCache(component);
         }
 	}
 
-	const Vector<Entity*>::iterator & childrenEnd = children.end();
-	for (Vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
-	{
-		(*t)->SetScene(_scene);
-	}
+    for (auto child : children)
+    {
+        child->SetScene(scene);
+    }
 }
 	
 void Entity::SetParent(Entity * _parent)
@@ -395,8 +396,8 @@ void Entity::BakeTransforms()
 
     for (uint32 c = 0; c < size; ++c)
     {
-		children[c]->BakeTransforms();
-	}
+        children[c]->BakeTransforms();
+    }
 }
 	
 void Entity::PropagateBoolProperty(String name, bool value)

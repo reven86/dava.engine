@@ -32,6 +32,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Platform/DeviceInfo.h"
+#include "Core/Core.h"
 
 #import <UIKit/UIKit.h>
 #import "HelperAppDelegate.h"
@@ -41,38 +42,76 @@ extern  void FrameworkDidLaunched();
 
 static RenderView* renderView = nil;
 
+class CoreIOS : public DAVA::Core
+{
+public:
+    void SetScreenScaleMultiplier(DAVA::float32 multiplier) override
+    {
+        if (fabsf(GetScreenScaleMultiplier() - multiplier) >= DAVA::EPSILON)
+        {
+            Core::SetScreenScaleMultiplier(multiplier);
+
+            if (renderView)
+            {
+                ProcessResize();
+
+                rhi::ResetParam params;
+                params.width = rendererParams.width;
+                params.height = rendererParams.height;
+                params.window = [renderView layer];
+
+                DAVA::Renderer::Reset(params);
+            }
+        }
+    }
+
+    void ProcessResize()
+    {
+        DAVA::float32 screenScale = GetScreenScaleFactor();
+
+        [renderView setContentScaleFactor:screenScale];
+
+        //detecting physical screen size and initing core system with this size
+        const DAVA::DeviceInfo::ScreenInfo& screenInfo = DAVA::DeviceInfo::GetScreenInfo();
+        DAVA::int32 width = screenInfo.width;
+        DAVA::int32 height = screenInfo.height;
+
+        eScreenOrientation orientation = GetScreenOrientation();
+        if ((orientation == SCREEN_ORIENTATION_LANDSCAPE_LEFT) ||
+            (orientation == SCREEN_ORIENTATION_LANDSCAPE_RIGHT) ||
+            (orientation == SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
+        {
+            width = screenInfo.height;
+            height = screenInfo.width;
+        }
+
+        DAVA::int32 physicalWidth = width * screenScale;
+        DAVA::int32 physicalHeight = height * screenScale;
+
+        DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+        DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+
+        rendererParams.window = [renderView layer];
+        rendererParams.width = physicalWidth;
+        rendererParams.height = physicalHeight;
+    }
+};
+
 int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	DAVA::Core * core = new DAVA::Core();
+    CoreIOS* core = new CoreIOS();
     core->SetCommandLine(argc, argv);
 	core->CreateSingletons();
 	
     FrameworkDidLaunched();
-    
-	//detecting physical screen size and initing core system with this size
-    const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
-    int32 width = screenInfo.width;
-    int32 height = screenInfo.height;
-    
-	eScreenOrientation orientation = Instance()->GetScreenOrientation();
-	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
-		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
-		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
-	{
-        width = screenInfo.height;
-        height = screenInfo.width;
-	}
-		
-    float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
-		
-	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
-		
-	int retVal = UIApplicationMain(argc, argv, nil, nil);
-	
-	[pool release];
-	return retVal;
+
+    core->ProcessResize();
+
+    int retVal = UIApplicationMain(argc, argv, nil, @"iOSAppDelegate");
+
+    [pool release];
+    return retVal;
 }
 
 DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
@@ -112,11 +151,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
         renderView = [renderViewController createMetalView];
     }
 
-    DAVA::Core::Instance()->rendererParams.window = [renderView layer];
-
-    DAVA::Size2i screenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
-    DAVA::Core::Instance()->rendererParams.width = screenSize.dx;
-    DAVA::Core::Instance()->rendererParams.height = screenSize.dy;
+    ((CoreIOS*)DAVA::Core::Instance())->ProcessResize();
 
     DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, renderViewController);
     DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);

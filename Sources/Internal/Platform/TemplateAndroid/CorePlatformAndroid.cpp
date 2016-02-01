@@ -73,16 +73,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 }
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
-    : Core()
 {
-    wasCreated = false;
-    renderIsActive = false;
-    width = 0;
-    height = 0;
-    screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
-
-    foreground = false;
-
     SetCommandLine(cmdLine);
 }
 
@@ -98,8 +89,6 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
 void CorePlatformAndroid::Quit()
 {
     Logger::Debug("[CorePlatformAndroid::Quit]");
-    QuitAction();
-
     renderIsActive = false;
     // finish java activity
     JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
@@ -109,7 +98,7 @@ void CorePlatformAndroid::Quit()
 
 void CorePlatformAndroid::QuitAction()
 {
-    Logger::Debug("[CorePlatformAndroid::QuitAction]");
+    Logger::Debug("[CorePlatformAndroid::QuitAction] in");
 
     if (Core::Instance())
     {
@@ -119,56 +108,37 @@ void CorePlatformAndroid::QuitAction()
 
     FrameworkWillTerminate();
 
-    Logger::Debug("[CorePlatformAndroid::QuitAction] done");
+    Logger::Debug("[CorePlatformAndroid::QuitAction] out");
 }
 
 void CorePlatformAndroid::ProcessFrame()
 {
     if (renderIsActive)
     {
-        auto sysTimer = SystemTimer::Instance();
-        //  Control FPS
+        if (viewSizeChanged)
         {
-            // we count full frame time once per cycle
-            // C++->Java->C++(frame ended)
-            static uint64 startTime = sysTimer->AbsoluteMS();
-
-            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
-            int32 fpsLimit = Renderer::GetDesiredFPS();
-            if (fpsLimit > 0)
-            {
-                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
-                if (averageFrameTime > elapsedTime)
-                {
-                    uint64 sleepMs = averageFrameTime - elapsedTime;
-                    Thread::Sleep(static_cast<uint32>(sleepMs));
-                }
-            }
-            startTime = sysTimer->AbsoluteMS();
+            ApplyPendingViewSize();
         }
 
         Core::SystemProcessFrame();
     }
 }
 
-void CorePlatformAndroid::ResizeView(int32 w, int32 h)
+void CorePlatformAndroid::ApplyPendingViewSize()
 {
-    width = w;
-    height = h;
+    Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] in");
+    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", pendingWidth, pendingHeight);
+
+    viewSizeChanged = false;
+
     DeviceInfo::InitializeScreenInfo();
 
-    UpdateScreenMode();
-}
-
-void CorePlatformAndroid::UpdateScreenMode()
-{
-    Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(pendingWidth, pendingHeight);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(pendingWidth, pendingHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
-    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", width, height);
-    Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
+    Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] out");
+    Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] done");
 }
 
 void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char8* docPathIn, const char8* assets, const char8* logTag, AndroidSystemDelegate* sysDelegate)
@@ -190,13 +160,18 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     renderIsActive = true;
 
+    pendingWidth = w;
+    pendingHeight = h;
+    backbufferWidth = int32(w * GetScreenScaleFactor());
+    backbufferHeight = int32(h * GetScreenScaleFactor());
+
+    viewSizeChanged = true;
+
     if (wasCreated)
     {
-        ResizeView(w, h);
-
         rhi::ResetParam params;
-        params.width = (uint32)width;
-        params.height = (uint32)height;
+        params.width = (uint32)backbufferWidth;
+        params.height = (uint32)backbufferHeight;
         params.window = rendererParams.window;
         Renderer::Reset(params);
     }
@@ -204,18 +179,15 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
     {
         wasCreated = true;
 
-        ResizeView(w, h);
-        rendererParams.width = (uint32)width;
-        rendererParams.height = (uint32)height;
+        ApplyPendingViewSize();
+        rendererParams.width = (uint32)backbufferWidth;
+        rendererParams.height = (uint32)backbufferHeight;
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();
-
         FileSystem::Instance()->Init();
 
-        //////////////////////////////////////////////////////////////////////////
         Core::Instance()->SystemAppStarted();
-
         StartForeground();
     }
 
@@ -225,14 +197,16 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 void CorePlatformAndroid::OnCreateActivity()
 {
     DAVA::Thread::InitMainThread();
-    //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 }
 
 void CorePlatformAndroid::OnDestroyActivity()
 {
-    //		Logger::Debug("[CorePlatformAndroid::OnDestroyActivity]");
+    Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
 
     renderIsActive = false;
+    wasCreated = false;
+
+    QuitAction();
 }
 
 void CorePlatformAndroid::StartVisible()
@@ -247,7 +221,7 @@ void CorePlatformAndroid::StopVisible()
 
 void CorePlatformAndroid::StartForeground()
 {
-    Logger::Debug("[CorePlatformAndroid::StartForeground] start");
+    Logger::Debug("[CorePlatformAndroid::StartForeground] in");
 
     if (wasCreated)
     {
@@ -267,12 +241,12 @@ void CorePlatformAndroid::StartForeground()
 
         foreground = true;
     }
-    Logger::Debug("[CorePlatformAndroid::StartForeground] end");
+    Logger::Debug("[CorePlatformAndroid::StartForeground] out");
 }
 
 void CorePlatformAndroid::StopForeground(bool isLock)
 {
-    Logger::Debug("[CorePlatformAndroid::StopForeground]");
+    Logger::Debug("[CorePlatformAndroid::StopForeground] in");
 
     DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
     if (core)
@@ -289,6 +263,8 @@ void CorePlatformAndroid::StopForeground(bool isLock)
         rhi::SuspendRendering();
 
     foreground = false;
+
+    Logger::Debug("[CorePlatformAndroid::StopForeground] out");
 }
 
 void CorePlatformAndroid::KeyUp(int32 keyCode)
@@ -299,11 +275,11 @@ void CorePlatformAndroid::KeyUp(int32 keyCode)
     UIEvent keyEvent;
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
-    keyEvent.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnSystemKeyUnpressed(keyCode);
+    keyboard.OnKeyUnpressed(static_cast<DAVA::Key>(keyCode));
 }
 
 void CorePlatformAndroid::KeyDown(int32 keyCode)
@@ -314,31 +290,39 @@ void CorePlatformAndroid::KeyDown(int32 keyCode)
     UIEvent keyEvent;
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
-    keyEvent.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnSystemKeyPressed(keyCode);
+    keyboard.OnKeyPressed(static_cast<DAVA::Key>(keyCode));
 }
 
 void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
 {
     GamepadDevice& gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
 
-    int32 davaKey = GamepadDevice::INVALID_DAVAKEY;
+    uint32 davaKey = GamepadDevice::INVALID_DAVAKEY;
     if (isKeycode)
+    {
         davaKey = gamepadDevice.GetDavaEventIdForSystemKeycode(elementKey);
+    }
     else
+    {
         davaKey = gamepadDevice.GetDavaEventIdForSystemAxis(elementKey);
+    }
 
     if (davaKey == GamepadDevice::INVALID_DAVAKEY)
+    {
+        Logger::Debug("unknown gamepad element code: 0x%H", elementKey);
         return;
+    }
 
     UIEvent newEvent;
-    newEvent.tid = davaKey;
+    newEvent.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
+    newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
@@ -390,6 +374,16 @@ AndroidSystemDelegate* CorePlatformAndroid::GetAndroidSystemDelegate() const
 void CorePlatformAndroid::SetNativeWindow(void* nativeWindow)
 {
     rendererParams.window = nativeWindow;
+}
+
+int32 CorePlatformAndroid::GetViewWidth() const
+{
+    return pendingWidth;
+}
+
+int32 CorePlatformAndroid::GetViewHeight() const
+{
+    return pendingHeight;
 }
 }
 #endif // #if defined(__DAVAENGINE_ANDROID__)

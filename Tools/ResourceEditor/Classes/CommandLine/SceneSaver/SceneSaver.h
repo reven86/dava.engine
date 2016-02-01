@@ -51,8 +51,7 @@ public:
 
     void ResaveYamlFilesRecursive(const DAVA::FilePath & folder, DAVA::Set<DAVA::String> &errorLog) const;
 
-    
-protected:
+private:
     void ReleaseTextures();
 
     void CopyTextures(Scene *scene);
@@ -60,11 +59,13 @@ protected:
 
 	void CopyReferencedObject(Entity *node);
 	void CopyEffects(Entity *node);
-	void CopyEmitter(ParticleEmitter *emitter);
+    void CopyAllParticlesEmitters(const ParticleEmitterData& emitterData);
+    void CopyEmitterByPath(const FilePath& emitterConfigPath);
+    void CopyEmitter(ParticleEmitter* emitter);
+    Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;
 
-	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
+    void CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog);
 
-protected:
     SceneUtils sceneUtils;
     TexturesMap texturesForSave;
     DAVA::Set<DAVA::FilePath> effectFolders;

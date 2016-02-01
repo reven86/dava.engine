@@ -32,8 +32,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Platform/DPIHelper.h"
-
 #include "Sound/SoundSystem.h"
 
 #include "Input/InputSystem.h"
@@ -104,130 +102,59 @@ void QtLayer::ProcessFrame()
     rhi::InvalidateCache(); //as QT itself can break gl states
     Core::Instance()->SystemProcessFrame();
 }
-    
 
-void QtLayer::Resize(int32 width, int32 height)
+void QtLayer::Resize(int32 width, int32 height, float64 dpr)
 {
+    int32 realWidth = static_cast<int32>(width * dpr);
+    int32 realHeight = static_cast<int32>(height * dpr);
     rhi::ResetParam resetParams;
-    resetParams.width = width;
-    resetParams.height = height;
+    resetParams.width = realWidth;
+    resetParams.height = realHeight;
     Renderer::Reset(resetParams);
 
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
-    if(vcs)
-    {
-        vcs->SetInputScreenAreaSize(width, height);
-        
-        vcs->UnregisterAllAvailableResourceSizes();
-        vcs->RegisterAvailableResourceSize(width, height, "Gfx");
-        
-        float64 screenScale = DPIHelper::GetDpiScaleFactor(0);
-        if (screenScale != 1.0f)
-        {
-            vcs->RegisterAvailableResourceSize((int32)(width*screenScale), (int32)(height*screenScale), "Gfx2");
-        }
-        
-        vcs->SetPhysicalScreenSize(width, height);
-        vcs->SetVirtualScreenSize(width, height);
-        vcs->ScreenSizeChanged();
-    }
+    DVASSERT(nullptr != vcs)
+
+    vcs->SetInputScreenAreaSize(realWidth, realHeight);
+
+    vcs->UnregisterAllAvailableResourceSizes();
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
+
+    vcs->SetPhysicalScreenSize(realWidth, realHeight);
+    vcs->SetVirtualScreenSize(width, height);
+    vcs->ScreenSizeChanged();
 }
 
-    
-void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
+void QtLayer::KeyPressed(Key key, int32 count, uint64 timestamp)
 {
     UIEvent ev;
     ev.phase = UIEvent::Phase::KEY_DOWN;
     ev.timestamp = static_cast<float64>(timestamp);
     ev.device = UIEvent::Device::KEYBOARD;
-    ev.tid = key;
+    ev.key = key;
 
     UIControlSystem::Instance()->OnInput(&ev);
 
     InputSystem::Instance()->GetKeyboard().OnKeyPressed(key);
 }
 
-
-void QtLayer::KeyReleased(char16 key)
+void QtLayer::KeyReleased(Key key)
 {
     UIEvent ev;
     ev.phase = UIEvent::Phase::KEY_UP;
     ev.device = UIEvent::Device::KEYBOARD;
-    ev.tid = key;
+    ev.key = key;
 
     UIControlSystem::Instance()->OnInput(&ev);
 
     InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(key);
 }
-    
-    
-void QtLayer::CopyEvents(DAVA::UIEvent &newEvent, const DAVA::UIEvent &sourceEvent)
-{
-    newEvent.tapCount = sourceEvent.tapCount;
-    newEvent.point = sourceEvent.point;
-    newEvent.physPoint = sourceEvent.physPoint;
-    newEvent.timestamp = sourceEvent.timestamp;
-    newEvent.phase = sourceEvent.phase;
-    newEvent.device = sourceEvent.device;
-}
-    
-void QtLayer::MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches)
-{
-    if (event.phase == UIEvent::Phase::DRAG)
-    {
-        for (Vector<DAVA::UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
-        {
-            CopyEvents(*it, event);
-        }
-    }
-    
-    bool isFind = false;
-    for (Vector<UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
-    {
-        if(it->tid == event.tid)
-        {
-            isFind = true;
-            
-            CopyEvents(*it, event);
-            break;
-        }
-    }
-    
-    if(!isFind)
-    {
-        allEvents.push_back(event);
-    }
 
-    for (Vector<UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
-    {
-        outTouches.push_back(*it);
-    }
-
-    if (event.phase == UIEvent::Phase::ENDED || event.phase == UIEvent::Phase::MOVE)
-    {
-        for (Vector<DAVA::UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
-        {
-            if(it->tid == event.tid)
-            {
-                allEvents.erase(it);
-                break;
-            }
-        }
-    }
-}
-    
-    
 void QtLayer::MouseEvent(const UIEvent & event)
 {
-    Vector<UIEvent> touches;
-
-    MoveTouchsToVector(event, touches);
-
-    for (auto& touch : touches)
-    {
-        UIControlSystem::Instance()->OnInput(&touch);
-    }
-    touches.clear();
+    UIEvent evCopy(event);
+    UIControlSystem::Instance()->OnInput(&evCopy);
 }
 
     

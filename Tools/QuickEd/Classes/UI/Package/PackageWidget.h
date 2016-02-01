@@ -30,11 +30,12 @@
 #ifndef __UI_EDITOR_UI_PACKAGE_WIDGET__
 #define __UI_EDITOR_UI_PACKAGE_WIDGET__
 
-#include <QWidget>
-#include <QDockWidget>
 #include "EditorSystems/SelectionContainer.h"
 #include "Base/BaseTypes.h"
 #include "ui_PackageWidget.h"
+#include <QWidget>
+#include <QDockWidget>
+#include <QModelIndex>
 
 class Document;
 class ControlNode;
@@ -60,39 +61,43 @@ signals:
 public slots:
     void OnDocumentChanged(Document* context);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
-
-private slots:
-    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
-    void filterTextChanged(const QString&);
-    void OnImport();
     void OnCopy();
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnImport();
+
+private slots:
+    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
+    void filterTextChanged(const QString&);
     void OnRename();
     void OnAddStyle();
+    void OnMoveUp();
+    void OnMoveDown();
+    void OnMoveLeft();
+    void OnMoveRight();
+    void OnBeforeNodesMoved(const SelectedNodes& nodes);
+    void OnNodesMoved(const SelectedNodes& nodes);
 
 private:
+    void CollectExpandedIndexes(PackageBaseNode* node);
+    void MoveNodeUpDown(bool up);
+    void MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex);
+    void CreateActions();
+    void PlaceActions();
     void LoadContext();
     void SaveContext();
     void RefreshActions();
 
-    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
-
-    void RefreshAction(QAction *action, bool enabled, bool visible);
+    void SelectNodeImpl(PackageBaseNode* node);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
     void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
 
-    template <typename NodeType>
-    void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
-
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
 
-private:
-    QAction *CreateSeparator();
     Document* document = nullptr;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
@@ -102,13 +107,18 @@ private:
     QAction* renameAction = nullptr;
     QAction* addStyleAction = nullptr;
 
+    QAction* moveUpAction = nullptr;
+    QAction* moveDownAction = nullptr;
+    QAction* moveLeftAction = nullptr;
+    QAction* moveRightAction = nullptr;
+
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
 
     QString lastFilterText;
     ExpandedIndexes expandedIndexes;
-
     SelectionContainer selectionContainer;
+    SelectedNodes expandedNodes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

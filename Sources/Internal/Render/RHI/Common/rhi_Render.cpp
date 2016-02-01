@@ -32,7 +32,9 @@
 
     #include "Core/Core.h"
 using DAVA::Logger;
-    #include "Debug/Profiler.h"
+
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
 
 namespace rhi
 {
@@ -52,6 +54,11 @@ TextureSet_t
 
 typedef ResourcePool<TextureSet_t, RESOURCE_TEXTURE_SET, TextureSet_t::Desc, false> TextureSetPool;
 RHI_IMPL_POOL(TextureSet_t, RESOURCE_TEXTURE_SET, TextureSet_t::Desc, false);
+
+void InitTextreSetPool(uint32 maxCount)
+{
+    TextureSetPool::Reserve(maxCount);
+}
 
 struct
 TextureSetInfo
@@ -91,6 +98,8 @@ static uint32 currFrameSyncId = 0;
 static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
 static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
 DAVA::Mutex sheduledDeleteMutex;
+
+static Handle CurFramePerfQuerySet = InvalidHandle;
 
 inline void AddSheduletDeleteResource(Handle handle, ResourceType resourceType)
 {
@@ -134,6 +143,11 @@ PacketList_t
 
 typedef ResourcePool<PacketList_t, RESOURCE_PACKET_LIST, PacketList_t::Desc, false> PacketListPool;
 RHI_IMPL_POOL(PacketList_t, RESOURCE_PACKET_LIST, PacketList_t::Desc, false);
+
+void InitPacketListPool(uint32 maxCount)
+{
+    PacketListPool::Reserve(maxCount);
+}
 
 //------------------------------------------------------------------------------
 
@@ -264,6 +278,37 @@ bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex)
 int QueryValue(HQueryBuffer buf, uint32 objectIndex)
 {
     return QueryBuffer::Value(buf, objectIndex);
+}
+HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount)
+{
+    return HPerfQuerySet(PerfQuerySet::Create(maxTimestampCount));
+}
+void ResetPerfQuerySet(HPerfQuerySet set)
+{
+    PerfQuerySet::Reset(set);
+}
+void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid)
+{
+    PerfQuerySet::GetStatus(hset, isReady, isValid);
+}
+void DeletePerfQuerySet(HPerfQuerySet set, bool forceImmediate)
+{
+    if (forceImmediate)
+        PerfQuerySet::Delete(set);
+    else
+        AddSheduletDeleteResource(set, RESOURCE_PERFQUERY_SET);
+}
+bool GetPerfQuerySetFreq(HPerfQuerySet set, uint64* freq)
+{
+    return PerfQuerySet::GetFreq(set, freq);
+}
+bool GetPerfQuerySetTimestamp(HPerfQuerySet set, uint32 timestampIndex, uint64* timestamp)
+{
+    return PerfQuerySet::GetTimestamp(set, timestampIndex, timestamp);
+}
+bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
+{
+    return PerfQuerySet::GetFrameTimestamps(hset, t0, t1);
 }
 
 //------------------------------------------------------------------------------
@@ -690,6 +735,11 @@ bool SyncObjectSignaled(HSyncObject obj)
 {
     return SyncObject::IsSygnaled(obj);
 }
+void SetFramePerfQuerySet(HPerfQuerySet hset)
+{
+    CurFramePerfQuerySet = hset;
+    PerfQuerySet::SetCurrent(hset);
+}
 
 //------------------------------------------------------------------------------
 
@@ -816,10 +866,12 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         Handle dsState = (p->depthStencilState != rhi::InvalidHandle) ? p->depthStencilState : pl->defDepthStencilState;
         Handle sState = (p->samplerState != rhi::InvalidHandle) ? p->samplerState : pl->defSamplerState;
 
+        #if 0
         if (p->debugMarker)
         {
-            rhi::CommandBuffer::SetMarker(cmdBuf, p->debugMarker);
+            ///            rhi::CommandBuffer::SetMarker( cmdBuf, p->debugMarker );
         }
+        #endif
 
         if (p->renderPipelineState != pl->curPipelineState || p->vertexLayoutUID != pl->curVertexLayout)
         {
@@ -936,7 +988,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
             }
         }
 
-        //        if( p->queryIndex != InvalidIndex )
+        //        if( p->queryIndex != DAVA::InvalidIndex )
         {
             rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
         }
@@ -1027,7 +1079,10 @@ void Present()
         frameSyncObjects[currFrameSyncId] = HSyncObject();
     }
 
+    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
     ProcessScheduledDelete();
+    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
+
     sheduledDeleteMutex.Unlock();
 }
 

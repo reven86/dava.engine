@@ -34,34 +34,36 @@
 #include "ScenePreviewControl.h"
 
 ScenePreviewDialog::ScenePreviewDialog()
-    :   ExtendedDialog()
+    : ExtendedDialog()
+    , preview(nullptr)
+    , errorMessage(nullptr)
+    , clickableBackgound(nullptr)
 {
     UpdateSize();
-    
-    //fontLight = ControlsFactory::GetFontLight();
-    //fontDark = ControlsFactory::GetFontDark();
-    
-    preview = new ScenePreviewControl(Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT));
+    GetBackground()->color = Color(2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 1.0f);
+
+    clickableBackgound.reset(new UIControl());
+    clickableBackgound->SetInputEnabled(true, true);
+    clickableBackgound->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
+
+    preview.reset(new ScenePreviewControl(Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT)));
     preview->SetDebugDraw(true);
-    
-    errorMessage = new UIStaticText(preview->GetRect());
+
+    errorMessage.reset(new UIStaticText(preview->GetRect()));
     errorMessage->SetMultiline(true);
     errorMessage->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 	errorMessage->SetTextColor(ControlsFactory::GetColorError());
     errorMessage->SetFont(ControlsFactory::GetFont20());
-    
-    UIButton *b = ControlsFactory::CreateButton(Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
-                                                     ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
-                                                LocalizedString(L"dialog.close"));
-    b->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
-    draggableDialog->AddControl(b);
-    SafeRelease(b);
+
+    ScopedPtr<UIButton> button(ControlsFactory::CreateButton(Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
+                                                                  ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
+                                                             LocalizedString(L"dialog.close")));
+    button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
+    draggableDialog->AddControl(button);
 }
     
 ScenePreviewDialog::~ScenePreviewDialog()
 {
-    SafeRelease(errorMessage);
-    SafeRelease(preview);
 }
 
 
@@ -74,7 +76,12 @@ void ScenePreviewDialog::Show(const FilePath &scenePathname)
     if(!GetParent())
     {
         UIScreen *screen = UIScreenManager::Instance()->GetScreen();
+        clickableBackgound->SetSize(screen->GetSize());
+        clickableBackgound->SetPosition(Vector2(0, 0));
+        screen->AddControl(clickableBackgound);
         screen->AddControl(this);
+
+        screen->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
     }
     
     //show preview
@@ -143,6 +150,12 @@ void ScenePreviewDialog::OnClose(BaseObject *, void *, void *)
 
 void ScenePreviewDialog::Close()
 {
+    UIControl* backgourndParent = clickableBackgound->GetParent();
+    if (backgourndParent != nullptr)
+    {
+        backgourndParent->RemoveControl(clickableBackgound);
+    }
+
     preview->ReleaseScene();
     preview->RecreateScene();
 

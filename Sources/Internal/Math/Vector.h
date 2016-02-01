@@ -99,14 +99,13 @@ public:
     inline const Vector2& operator-=(const Vector2& _v);
     inline const Vector2& operator*=(const Vector2& _v);
     inline const Vector2& operator/=(const Vector2& _v);
-    inline const Vector2 & operator *= (float32 f);
-	inline const Vector2 & operator /= (float32 f);
-	inline Vector2 operator -() const;
+    inline const Vector2& operator*=(float32 f);
+    inline const Vector2& operator/=(float32 f);
+    inline Vector2 operator-() const;
 
-	//! Comparison operators
-	inline bool operator == (const Vector2 & _v) const;
-	inline bool operator != (const Vector2 & _v) const;
-	
+    //! Comparison operators
+    inline bool operator==(const Vector2& _v) const;
+    inline bool operator!=(const Vector2& _v) const;
 };
 //! operators
 inline Vector2 operator - (const Vector2 & _v1, const Vector2 & _v2);
@@ -184,9 +183,9 @@ public:
 
     //! Additional functions
     inline Vector3 CrossProduct(const Vector3& _v) const;
-    inline void     CrossProduct(const Vector3& v1, const Vector3& v2);
-	inline float32	DotProduct(const Vector3 & _v) const;
-	inline void		Lerp(const Vector3 & _v1, const Vector3 & _v2, float32 t);
+    inline void CrossProduct(const Vector3& v1, const Vector3& v2);
+    inline float32 DotProduct(const Vector3& _v) const;
+    inline void Lerp(const Vector3& _v1, const Vector3& _v2, float32 t);
 
     inline float32 Yaw() const { return atan2f(x, y); }
     inline float32 Pitch() const { return -atan2f(z, sqrtf(x*x + y*y)); }
@@ -217,7 +216,6 @@ public:
 	//! Comparison operators
 	inline bool operator == (const Vector3 & _v) const;
 	inline bool operator != (const Vector3 & _v) const;	
-
 };
 
 //! operators
@@ -276,9 +274,10 @@ public:
 	inline Vector4();
 	inline Vector4(float32 _x, float32 _y, float32 _z, float32 _w);
 	inline Vector4(const float32 *_data);
-	explicit inline Vector4(const Vector3 & v);
-	inline Vector4 & operator =(const Vector4 & _v);
-	inline Vector4 & operator =(const Vector3 & _v);
+    inline Vector4(const Vector3& xyz, float32 _w);
+    explicit inline Vector4(const Vector3& v);
+    inline Vector4& operator=(const Vector4& _v);
+    inline Vector4& operator=(const Vector3& _v);
 
     //! Get operators
     float32& operator[](eAxis axis);
@@ -289,25 +288,28 @@ public:
 
     //! Additional functions
     inline Vector4 CrossProduct(const Vector4& _v) const;
-    inline float32	DotProduct(const Vector4 & _v) const;
-	inline void		Lerp(const Vector4 & _v1, const Vector4 & _v2, float32 t);
+    inline float32 DotProduct(const Vector4& _v) const;
+    inline void Lerp(const Vector4& _v1, const Vector4& _v2, float32 t);
 
-	//! On functions
-	inline float32 SquareLength();
-	inline float32 Length();
-	inline void Normalize();
-	inline void Clamp(float32 min, float32 max);
+    //! On functions
+    inline float32 SquareLength();
+    inline float32 Length();
+    inline void Normalize();
+    inline void Clamp(float32 min, float32 max);
 
-	//! On operations
-	inline const Vector4 & operator += (const Vector4 & _v);
-	inline const Vector4 & operator -= (const Vector4 & _v);
-	inline const Vector4 & operator *= (float32 f);
-	inline const Vector4 & operator /= (float32 f);
-	inline Vector4 operator -() const;
+    //! On operations
+    inline const Vector4& operator+=(const Vector4& _v);
+    inline const Vector4& operator-=(const Vector4& _v);
+    inline const Vector4& operator*=(float32 f);
+    inline const Vector4& operator/=(float32 f);
+    inline Vector4 operator-() const;
 
-	//! Comparison operators
-	inline bool operator == (const Vector4 & _v) const;
-	inline bool operator != (const Vector4 & _v) const;	
+    //! Comparison operators
+    inline bool operator==(const Vector4& _v) const;
+    inline bool operator!=(const Vector4& _v) const;
+
+    inline Vector3& GetVector3();
+    inline const Vector3& GetVector3() const;
 };
 
 //! operators
@@ -896,7 +898,15 @@ inline Vector4::Vector4(const float32 *_data)
 	data[2] = _data[2];
 	data[3] = _data[3];
 }
-	
+
+inline Vector4::Vector4(const Vector3& xyz, float32 _w)
+    : x(xyz.x)
+    , y(xyz.y)
+    , z(xyz.z)
+    , w(_w)
+{
+}
+
 inline Vector4::Vector4(const Vector3 & v)
 {
 	x = v.x;
@@ -1047,6 +1057,15 @@ inline bool Vector4::operator != (const Vector4 & _v) const
 	return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
 }
 
+inline const Vector3& Vector4::GetVector3() const
+{
+    return *(reinterpret_cast<const Vector3*>(data));
+}
+
+inline Vector3& Vector4::GetVector3()
+{
+    return *(reinterpret_cast<Vector3*>(data));
+}
 
 //! operators
 inline Vector4 operator - (const Vector4 & _v1, const Vector4 & _v2)

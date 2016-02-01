@@ -43,11 +43,6 @@
     #include <vector>
 
 
-//==============================================================================
-
-const unsigned  InvalidIndex = (unsigned)(-1);
-
-
 
 //==============================================================================
 
@@ -87,15 +82,15 @@ class
 Counter
 {
 public:
-                Counter()
-                  : t0(0),
-                    t(0),
-                    count(0),
-                    id(0),
-                    parentId(InvalidIndex),
-                    name(0),
-                    used(false),
-                    useCount(0)
+    Counter()
+        : t0(0)
+        , t(0)
+        , count(0)
+        , id(0)
+        , parentId(DAVA::InvalidIndex)
+        , name(0)
+        , used(false)
+        , useCount(0)
                 {
                 }
 
@@ -109,8 +104,8 @@ public:
                     count     = 0; 
                     used      = false;
                     useCount  = 0;
-                    parentId  = InvalidIndex;
-                                                    
+                    parentId = DAVA::InvalidIndex;
+
                     counterSync.Unlock();
                 }
     void        Start()
@@ -122,7 +117,7 @@ public:
                         if( activeCounterCount )
                             parentId = activeCounter[activeCounterCount-1]->id;
                         else
-                            parentId = InvalidIndex;
+                            parentId = DAVA::InvalidIndex;
 
                         activeCounter[activeCounterCount] = this;
                         ++activeCounterCount;
@@ -161,9 +156,10 @@ public:
     uint32      GetId() const                   { return id; }
     uint32      GetParentId() const             { return parentId; }
     bool        IsUsed() const                  { return (used)  ? true  : false; }
-    uint32      NestingLevel() const            { return (parentId != InvalidIndex)  ? GetCounter(parentId)->NestingLevel()+1  : 0; }
-
-
+    uint32 NestingLevel() const
+    {
+        return (parentId != DAVA::InvalidIndex) ? GetCounter(parentId)->NestingLevel() + 1 : 0;
+    }
 
 private :
 friend void Init( uint32, uint32 );
@@ -220,7 +216,7 @@ Init( uint32 _maxCounterCount, uint32 _historyCount )
         for( Counter* c=counter,*c_end=counter+maxCounterCount; c!=c_end; ++c )
         {        
             c->id        = static_cast<uint32>(c - counter);
-            c->parentId  = InvalidIndex;
+            c->parentId = DAVA::InvalidIndex;
             c->used      = false;
         }
 
@@ -399,7 +395,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
         uint32  indent  = 0;
         size_t  len     = 0;
 
-        while( pi != InvalidIndex )
+        while (pi != DAVA::InvalidIndex)
         {
             pi = result[pi].parentIndex;
             ++indent;
@@ -421,7 +417,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
         uint32  indent      = 0;
         char    text[256];  memset( text, ' ', sizeof(text) );
 
-        while( pi != InvalidIndex )
+        while (pi != DAVA::InvalidIndex)
         {
             pi = result[pi].parentIndex;
             ++indent;
@@ -442,7 +438,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
             float               pg  = (totalTime)  
                                       ? 100.0f*float(result[i].timeUs)/float(totalTime)
                                       : 0;
-            const CounterInfo*  pc  = (result[i].parentIndex != InvalidIndex)  ? &(result[0]) + result[i].parentIndex  : 0;
+            const CounterInfo* pc = (result[i].parentIndex != DAVA::InvalidIndex) ? &(result[0]) + result[i].parentIndex : 0;
             float               pl  = (pc  &&  pc->timeUs)  
                                       ? 100.0f*float(result[i].timeUs)/float(pc->timeUs)
                                       : 0;
@@ -527,7 +523,7 @@ CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
 
         bool    do_add = true;
 
-        if( c->GetParentId() == InvalidIndex )
+        if (c->GetParentId() == DAVA::InvalidIndex)
         {
             for( size_t i=0,i_end=top.size(); i!=i_end; ++i )
             {
@@ -571,8 +567,8 @@ GetCounters( std::vector<CounterInfo>* info )
         (*info)[i].name         = result[i]->GetName();
         (*info)[i].count        = result[i]->GetCount();
         (*info)[i].timeUs       = result[i]->GetTimeUs();
-        (*info)[i].parentIndex  = InvalidIndex;
-        
+        (*info)[i].parentIndex = DAVA::InvalidIndex;
+
         for( size_t k=0,k_end=info->size(); k!=k_end; ++k )
         {
             if( result[i]->GetParentId() == result[k]->GetId() )
@@ -637,8 +633,8 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             (*info)[i].name         = result[i]->GetName();
             (*info)[i].count        = result[i]->GetCount();
             (*info)[i].timeUs       = result[i]->GetTimeUs();
-            (*info)[i].parentIndex  = InvalidIndex;
-        
+            (*info)[i].parentIndex = DAVA::InvalidIndex;
+
             for( size_t k=0,k_end=info->size(); k!=k_end; ++k )
             {
                 if( result[i]->GetParentId() == result[k]->GetId() )
@@ -677,9 +673,28 @@ Event
 
 static std::vector<Event> _Event;
 static DAVA::Mutex _EventSync;
+static bool traceEventsStarted = false;
+
+void StartTraceEvents()
+{
+#if defined TRACER_ENABLED
+    traceEventsStarted = true;
+    _Event.reserve(2 * 1024 * 1024);
+#endif
+}
+
+void StopTraceEvents()
+{
+#if defined TRACER_ENABLED
+    traceEventsStarted = false;
+#endif
+}
 
 void BeginEvent(unsigned tid, const char* category, const char* name)
 {
+    if (!traceEventsStarted)
+        return;
+
     Event evt;
 
     evt.pid = 1;
@@ -698,6 +713,9 @@ void BeginEvent(unsigned tid, const char* category, const char* name)
 
 void EndEvent(unsigned tid, const char* category, const char* name)
 {
+    if (!traceEventsStarted)
+        return;
+
     Event evt;
 
     evt.pid = 1;
@@ -716,6 +734,9 @@ void EndEvent(unsigned tid, const char* category, const char* name)
 
 void InstantEvent(unsigned tid, const char* category, const char* name)
 {
+    if (!traceEventsStarted)
+        return;
+
     Event evt;
 
     evt.pid = 1;
@@ -764,8 +785,9 @@ void DumpEvents()
 void SaveEvents(const char* fileName)
 {
     File* json = File::Create(fileName, File::CREATE | File::WRITE);
-
     json->WriteLine("{ \"traceEvents\": [ ");
+
+    _EventSync.Lock();
     for (std::vector<Event>::const_iterator e = _Event.begin(), e_end = _Event.end(); e != e_end; ++e)
     {
         char buf[1024];
@@ -790,8 +812,9 @@ void SaveEvents(const char* fileName)
         (e != _Event.end() - 1) ? ", " : "");
         json->WriteLine(buf);
     }
-    json->WriteLine("] }");
+    _EventSync.Unlock();
 
+    json->WriteLine("] }");
     json->Release();
 }
 

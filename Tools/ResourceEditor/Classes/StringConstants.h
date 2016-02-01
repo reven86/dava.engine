@@ -108,21 +108,21 @@ namespace ResourceEditor
 	static const String CUSTOM_COLORS_ENABLE_ERROR			= "Error enabling Custom Colors editor. Make sure there is valid landscape at the scene.";
 	static const String CUSTOM_COLORS_DISABLE_ERROR			= "Error disabling Custom Colors editor.";
 
-	static const String VISIBILITY_TOOL_AREA_SIZE_CAPTION	= "Visibility Area Size:";
-	static const String VISIBILITY_TOOL_AREA_SIZE_MIN		= "visibility-tool.area-size.min";
-	static const String VISIBILITY_TOOL_AREA_SIZE_MAX		= "visibility-tool.area-size.max";
-	static const String VISIBILITY_TOOL_ENABLE_ERROR		= "Error enabling Visibility Check Tool. Make sure there is valid landscape at the scene.";
-	static const String VISIBILITY_TOOL_DISABLE_ERROR		= "Error disabling Visibility Check Tool";
-	static const String VISIBILITY_TOOL_SAVE_CAPTION		= "Save visibility tool texture";
-	static const String VISIBILITY_TOOL_SET_AREA_CAPTION	= "Set Visibility Area";
-	static const String VISIBILITY_TOOL_SET_POINT_CAPTION	= "Set Visibility Point";
-	static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION= "Save Texture";
+    static const String VISIBILITY_TOOL_AREA_SIZE_CAPTION = "Visibility Area Size:";
+    static const String VISIBILITY_TOOL_AREA_SIZE_MIN = "visibility-tool.area-size.min";
+    static const String VISIBILITY_TOOL_AREA_SIZE_MAX = "visibility-tool.area-size.max";
+    static const String VISIBILITY_TOOL_ENABLE_ERROR = "Error enabling Visibility Check Tool. Make sure there is valid landscape at the scene.";
+    static const String VISIBILITY_TOOL_DISABLE_ERROR = "Error disabling Visibility Check Tool";
+    static const String VISIBILITY_TOOL_SAVE_CAPTION = "Save visibility tool texture";
+    static const String VISIBILITY_TOOL_ADD_POINT_CAPTION = "Add Visibility Point";
+    static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION = "Save Texture";
+    static const String VISIBILITY_TOOL_COMPUTE_VISIBILITY_CAPTION = "Compute Visibility";
 
-	static const String RULER_TOOL_LENGTH_CAPTION			= "Length:";
-	static const String RULER_TOOL_PREVIEW_LENGTH_CAPTION	= "Preview length:";
-	static const String RULER_TOOL_ENABLE_ERROR				= "Error enabling Ruler Tool. Make sure there is valid landscape at the scene.";
-	static const String RULER_TOOL_DISABLE_ERROR			= "Error disabling Ruler Tool";
-	static const String LANDSCAPE_DIALOG_WRONG_PNG_ERROR	= "PNG file should be in format A8 or A16.";
+    static const String RULER_TOOL_LENGTH_CAPTION = "Length:";
+    static const String RULER_TOOL_PREVIEW_LENGTH_CAPTION = "Preview length:";
+    static const String RULER_TOOL_ENABLE_ERROR = "Error enabling Ruler Tool. Make sure there is valid landscape at the scene.";
+    static const String RULER_TOOL_DISABLE_ERROR = "Error disabling Ruler Tool";
+    static const String LANDSCAPE_DIALOG_WRONG_PNG_ERROR	= "PNG file should be in format A8 or A16.";
 
 	static const String HEIGHTMAP_EDITOR_BRUSH_SIZE_CAPTION			= "Brush\nsize:";
 	static const String HEIGHTMAP_EDITOR_STRENGTH_CAPTION			= "Strength:";
@@ -190,12 +190,10 @@ namespace ResourceEditor
 	static const String LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS			= "Error: All another landscape editors should be disabled";
 	static const String LANDSCAPE_EDITOR_SYSTEM_LANDSCAPE_ENTITY_ABSENT	= "Error: landscape entity is absent.";
 	static const String LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSETN	= "Error: tile mask texture is absent.";
-	static const String LANDSCAPE_EDITOR_SYSTEM_FULL_TILED_TEXTURE_ABSETN= "Error: full tiled texture is absent.";
-	static const String LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_ABSENT	= "Error: tile texture 0 is absent.";
-	static const String LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE1_ABSENT	= "Error: tile texture 1 is absent.";
-	static const String LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE2_ABSENT	= "Error: tile texture 2 is absent.";
-	static const String LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE3_ABSENT	= "Error: tile texture 3 is absent.";
-	static const String LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT		= "Error: heightmap is absent.";
+    static const String LANDSCAPE_EDITOR_SYSTEM_FULLTILED_TEXTURE_ABSETN = "Error: full tiled texture is absent.";
+    static const String LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE_ABSENT = "Error: tile texture is absent.";
+    static const String LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT = "Error: color texture is absent.";
+    static const String LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT = "Error: heightmap is absent.";
     static const String LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT     = "Warning: custom color texture is absent. Default texture will be created.";
 
 	static const String ADD_SWITCH_NODE_DIALOG_NO_CHILDREN			= "Error: switch node must be created with state nodes.";

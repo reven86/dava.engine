@@ -34,10 +34,14 @@
     #include "rhi_GLES2.h"
     
     #include "FileSystem/Logger.h"
+    #include "FileSystem/File.h"
+    #include "FileSystem/FileSystem.h"
 using DAVA::Logger;
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
+
+#define SAVE_GLES_SHADERS 0
 
 namespace rhi
 {
@@ -161,7 +165,7 @@ VertexDeclGLES2
 
             elem[elemCount].count = layout.ElementDataCount(i);
             elem[elemCount].offset = (void*)(uint64(layout.ElementOffset(i)));
-            elem[elemCount].index = InvalidIndex;
+            elem[elemCount].index = DAVA::InvalidIndex;
 
             ++elemCount;
         }
@@ -218,7 +222,7 @@ VertexDeclGLES2
         {
             unsigned idx = elem[i].index;
 
-            if (idx != InvalidIndex)
+            if (idx != DAVA::InvalidIndex)
                 attr_used[idx] = 1;
         }
 
@@ -239,7 +243,7 @@ VertexDeclGLES2
         {
             unsigned idx = elem[i].index;
 
-            if (idx != InvalidIndex)
+            if (idx != DAVA::InvalidIndex)
             {
                 //Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
                 if (!vattr[idx].enabled)
@@ -446,6 +450,39 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         }
     }
 
+#if SAVE_GLES_SHADERS
+
+    static uint32 progIndex = 0;
+
+    if (doAdd)
+    {
+        DAVA::FileSystem::Instance()->CreateDirectory("~doc:/ShaderSources");
+
+        DAVA::File* vfile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/prog%d.vsh", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
+        if (vfile)
+        {
+            vfile->Write("//", 2);
+            vfile->WriteLine(desc.vprogUid.c_str());
+            vfile->WriteLine("");
+            vfile->Write((const char*)(&vprog_bin[0]), strlen((const char*)(&vprog_bin[0])));
+            SafeRelease(vfile);
+        }
+
+        DAVA::File* ffile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/prog%d.fsh", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
+        if (ffile)
+        {
+            ffile->Write("//", 2);
+            ffile->WriteLine(desc.fprogUid.c_str());
+            ffile->WriteLine("");
+            ffile->Write((const char*)(&fprog_bin[0]), strlen((const char*)(&fprog_bin[0])));
+            SafeRelease(ffile);
+        }
+    }
+
+    progIndex++;
+
+#endif
+
     if (doAdd)
     {
         ProgramEntry entry;
@@ -639,6 +676,11 @@ gles2_PipelineState_CreateFragmentConstBuffer(Handle ps, unsigned bufIndex)
 
 namespace PipelineStateGLES2
 {
+void Init(uint32 maxCount)
+{
+    PipelineStateGLES2Pool::Reserve(maxCount);
+}
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_PipelineState_Create = &gles2_PipelineState_Create;

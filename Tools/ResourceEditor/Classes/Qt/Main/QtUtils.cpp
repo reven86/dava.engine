@@ -111,14 +111,14 @@ DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
     return image;
 }
 
-void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
+void ShowErrorDialog(const DAVA::Set<DAVA::String>& errors, const DAVA::String& title /* = "" */)
 {
     if (errors.empty()) return;
 
 	const uint32 maxErrorsPerDialog = 6;
 	uint32 totalErrors = errors.size();
 
-    const String dialogTitle = Format("%u error(s)", totalErrors);
+    const String dialogTitle = title + Format(" %u error(s) occured.", totalErrors);
     const String errorDivideLine("\n--------------------\n");
 
     String errorMessage;
@@ -152,14 +152,14 @@ void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title
     }
 }
 
-bool IsKeyModificatorPressed(int32 key)
+bool IsKeyModificatorPressed(Key key)
 {
 	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()
 {
-	return (IsKeyModificatorPressed(DVKEY_SHIFT) || IsKeyModificatorPressed(DVKEY_CTRL) || IsKeyModificatorPressed(DVKEY_ALT));
+    return (IsKeyModificatorPressed(Key::LSHIFT) || IsKeyModificatorPressed(Key::LCTRL) || IsKeyModificatorPressed(Key::LALT));
 }
 
 QColor ColorToQColor(const DAVA::Color& color)
@@ -190,7 +190,7 @@ void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
     if (NULL != toolbar && NULL != action)
     {
-        QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
+        QToolButton* toolBnt = dynamic_cast<QToolButton*>(toolbar->widgetForAction(action));
         if (NULL != toolBnt)
         {
             toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
@@ -204,11 +204,11 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
     if (pos != String::npos)
     {
         String newString = sourceString;
-		newString = newString.replace(pos, what.length(), on);
-		return newString;
-	}
+        newString = newString.replace(pos, what.length(), on);
+        return newString;
+    }
 
-	return sourceString;
+    return sourceString;
 }
 
 void ShowFileInExplorer(const QString& path)
@@ -256,6 +256,3 @@ void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
 {
     DAVA::ImageSystem::Instance()->Save(path, image);
 }
-
-
-

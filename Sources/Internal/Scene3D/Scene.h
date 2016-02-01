@@ -219,8 +219,9 @@ public:
 	
 	Camera * GetCamera(int32 n);
 	void AddCamera(Camera * c);
-	inline int32	GetCameraCount();
-    
+    bool RemoveCamera(Camera* c);
+    inline int32 GetCameraCount();
+
     void SetCurrentCamera(Camera * camera);
     Camera * GetCurrentCamera() const;
     
@@ -237,9 +238,9 @@ public:
     void CreateComponents();
     void CreateSystems();
 
-	EventSystem * GetEventSystem() const;
-	RenderSystem * GetRenderSystem() const;
-    AnimationSystem * GetAnimationSystem() const;
+    EventSystem* GetEventSystem() const;
+    RenderSystem* GetRenderSystem() const;
+    AnimationSystem* GetAnimationSystem() const;
 
     SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);
 	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);

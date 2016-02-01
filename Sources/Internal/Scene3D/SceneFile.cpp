@@ -326,20 +326,20 @@ bool SceneFile::ReadMaterial()
 	
 bool SceneFile::ReadStaticMesh()
 {
-
     bool rebuildTangentSpace = false;
     #ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
     rebuildTangentSpace = true;
     #endif
 
-	uint32 polyGroupCount;
-	sceneFP->Read(&polyGroupCount, sizeof(uint32));
-	if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
-	
-	StaticMesh * mesh = new StaticMesh(scene);
-    
-	for (uint32 polyGroupIndex = 0; polyGroupIndex < polyGroupCount; polyGroupIndex++)
-	{
+    uint32 polyGroupCount;
+    sceneFP->Read(&polyGroupCount, sizeof(uint32));
+    if (debugLogEnabled)
+        Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
+
+    StaticMesh* mesh = new StaticMesh(scene);
+
+    for (uint32 polyGroupIndex = 0; polyGroupIndex < polyGroupCount; polyGroupIndex++)
+    {
         PolygonGroup * polygonGroup = new PolygonGroup();
         mesh->AddNode(polygonGroup);
         
@@ -406,7 +406,7 @@ bool SceneFile::ReadStaticMesh()
         delete [] indices;
 
         const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
-        if (rebuildTangentSpace&&((polygonGroup->GetFormat()&prerequiredFormat) == prerequiredFormat))
+        if (rebuildTangentSpace && ((polygonGroup->GetFormat() & prerequiredFormat) == prerequiredFormat))
             MeshUtils::RebuildMeshTangentSpace(polygonGroup, true);
         else
             polygonGroup->BuildBuffers();
@@ -612,16 +612,17 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
                 Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
 
             if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
-			{
-				StaticMesh * staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
-				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
-			}else
-			{
-				// add animated mesh
-				AnimatedMesh * animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
-				meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, material);
-			}
-		}
+            {
+                StaticMesh* staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
+                meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
+            }
+            else
+            {
+                // add animated mesh
+                AnimatedMesh* animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
+                meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, material);
+            }
+        }
         if (parentNode != scene) 
         {
             parentNode->AddNode(node);

@@ -63,13 +63,13 @@ FrameDX9
     uint32 readyToExecute : 1;
 };
 
-static std::vector<FrameDX9> _Frame;
-static bool _FrameStarted = false;
-static unsigned _FrameNumber = 1;
-//static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex _FrameSync;
+static std::vector<FrameDX9> _DX9_Frame;
+static bool _DX9_FrameStarted = false;
+static unsigned _DX9_FrameNumber = 1;
+//static DAVA::Spinlock       _DX9_FrameSync;
+static DAVA::Mutex _DX9_FrameSync;
 
-static void _ExecuteQueuedCommands();
+static void _DX9_ExecuteQueuedCommands();
 
 static DAVA::Thread* _DX9_RenderThread = nullptr;
 static unsigned _DX9_RenderThreadFrameCount = 0;
@@ -161,9 +161,9 @@ SyncObjectDX9_t
     uint32 is_used : 1;
 };
 
-typedef ResourcePool<CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false> CommandBufferPool;
-typedef ResourcePool<RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false> RenderPassPool;
-typedef ResourcePool<SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false> SyncObjectPool;
+typedef ResourcePool<CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false> CommandBufferPoolDX9;
+typedef ResourcePool<RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false> RenderPassPoolDX9;
+typedef ResourcePool<SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false> SyncObjectPoolDX9;
 
 RHI_IMPL_POOL(CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false);
 RHI_IMPL_POOL(RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
@@ -176,16 +176,16 @@ dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Ha
 {
     DVASSERT(cmdBufCount);
 
-    Handle handle = RenderPassPool::Alloc();
-    RenderPassDX9_t* pass = RenderPassPool::Get(handle);
+    Handle handle = RenderPassPoolDX9::Alloc();
+    RenderPassDX9_t* pass = RenderPassPoolDX9::Get(handle);
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passDesc.priority;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
     {
-        Handle h = CommandBufferPool::Alloc();
-        CommandBufferDX9_t* cb = CommandBufferPool::Get(h);
+        Handle h = CommandBufferPoolDX9::Alloc();
+        CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(h);
 
         cb->passCfg = passDesc;
         cb->isFirstInPass = i == 0;
@@ -203,24 +203,23 @@ dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Ha
 static void
 dx9_RenderPass_Begin(Handle pass)
 {
-    _FrameSync.Lock();
+    _DX9_FrameSync.Lock();
 
-    if (!_FrameStarted)
+    if (!_DX9_FrameStarted)
     {
-        _Frame.push_back(FrameDX9());
-        _Frame.back().number = _FrameNumber;
-        _Frame.back().sync = rhi::InvalidHandle;
-        _Frame.back().readyToExecute = false;
+        _DX9_Frame.push_back(FrameDX9());
+        _DX9_Frame.back().number = _DX9_FrameNumber;
+        _DX9_Frame.back().sync = rhi::InvalidHandle;
+        _DX9_Frame.back().readyToExecute = false;
 
-        Trace("\n\n-------------------------------\nframe %u started\n", _FrameNumber);
-        _FrameStarted = true;
-        ++_FrameNumber;
+        Trace("\n\n-------------------------------\nframe %u started\n", _DX9_FrameNumber);
+        _DX9_FrameStarted = true;
+        ++_DX9_FrameNumber;
     }
 
-    _Frame.back().pass.push_back(pass);
+    _DX9_Frame.back().pass.push_back(pass);
 
-    _FrameSync.Unlock();
-    //-    _CmdQueue.push_back( pass );
+    _DX9_FrameSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -245,7 +244,7 @@ void SetupDispatch(Dispatch* dispatch)
 static void
 dx9_CommandBuffer_Begin(Handle cmdBuf)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__BEGIN);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__BEGIN);
 }
 
 //------------------------------------------------------------------------------
@@ -253,7 +252,7 @@ dx9_CommandBuffer_Begin(Handle cmdBuf)
 static void
 dx9_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__END, syncObject);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__END, syncObject);
 }
 
 //------------------------------------------------------------------------------
@@ -261,7 +260,7 @@ dx9_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 static void
 dx9_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_PIPELINE_STATE, ps, vdecl);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_PIPELINE_STATE, ps, vdecl);
 }
 
 //------------------------------------------------------------------------------
@@ -269,7 +268,7 @@ dx9_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 static void
 dx9_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_CULL_MODE, mode);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_CULL_MODE, mode);
 }
 
 //------------------------------------------------------------------------------
@@ -277,7 +276,7 @@ dx9_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 static void
 dx9_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
 }
 
 //------------------------------------------------------------------------------
@@ -285,7 +284,7 @@ dx9_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 static void
 dx9_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
 }
 
 //------------------------------------------------------------------------------
@@ -293,7 +292,7 @@ dx9_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 static void
 dx9_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_FILLMODE, mode);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_FILLMODE, mode);
 }
 
 //------------------------------------------------------------------------------
@@ -301,7 +300,7 @@ dx9_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 static void
 dx9_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_VERTEX_DATA, vb, streamIndex);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_VERTEX_DATA, vb, streamIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -312,8 +311,8 @@ dx9_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle bu
     //    L_ASSERT(buffer);
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
-    if (buffer != InvalidIndex)
-        CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)));
+    if (buffer != DAVA::InvalidIndex)
+        CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)));
 }
 
 //------------------------------------------------------------------------------
@@ -321,7 +320,7 @@ dx9_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle bu
 static void
 dx9_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_TEXTURE, D3DDMAPSAMPLER + 1 + unitIndex, (uint64)(tex));
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_TEXTURE, D3DDMAPSAMPLER + 1 + unitIndex, (uint64)(tex));
 }
 
 //------------------------------------------------------------------------------
@@ -329,7 +328,7 @@ dx9_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 static void
 dx9_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_INDICES, ib);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_INDICES, ib);
 }
 
 //------------------------------------------------------------------------------
@@ -337,7 +336,7 @@ dx9_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 static void
 dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_QUERY_INDEX, objectIndex);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_QUERY_INDEX, objectIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -345,7 +344,7 @@ dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 static void
 dx9_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_QUERY_BUFFER, queryBuf);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_QUERY_BUFFER, queryBuf);
 }
 
 //------------------------------------------------------------------------------
@@ -356,8 +355,8 @@ dx9_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle 
     //    L_ASSERT(buffer);
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
-    if (buffer != InvalidIndex)
-        CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)));
+    if (buffer != DAVA::InvalidIndex)
+        CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)));
 }
 
 //------------------------------------------------------------------------------
@@ -365,7 +364,7 @@ dx9_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle 
 static void
 dx9_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_TEXTURE, unitIndex, (uint64)(tex));
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_TEXTURE, unitIndex, (uint64)(tex));
 }
 
 //------------------------------------------------------------------------------
@@ -373,7 +372,7 @@ dx9_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex
 static void
 dx9_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_DEPTHSTENCIL_STATE, depthStencilState);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_DEPTHSTENCIL_STATE, depthStencilState);
 }
 
 //------------------------------------------------------------------------------
@@ -381,7 +380,7 @@ dx9_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 static void
 dx9_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__SET_SAMPLER_STATE, samplerState);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_SAMPLER_STATE, samplerState);
 }
 
 //------------------------------------------------------------------------------
@@ -406,7 +405,7 @@ dx9_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
         break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__DRAW_PRIMITIVE, type9, count);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_PRIMITIVE, type9, count);
 }
 
 //------------------------------------------------------------------------------
@@ -432,7 +431,7 @@ dx9_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32
         break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->Command(DX9__DRAW_INDEXED_PRIMITIVE, type9, count, vertexCount, firstVertex, startIndex);
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_INDEXED_PRIMITIVE, type9, count, vertexCount, firstVertex, startIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -440,7 +439,7 @@ dx9_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32
 static void
 dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
-    CommandBufferDX9_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
 
     if (!cb->text)
     {
@@ -462,8 +461,8 @@ dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 dx9_SyncObject_Create()
 {
-    Handle handle = SyncObjectPool::Alloc();
-    SyncObjectDX9_t* sync = SyncObjectPool::Get(handle);
+    Handle handle = SyncObjectPoolDX9::Alloc();
+    SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(handle);
 
     sync->is_signaled = false;
     sync->is_used = false;
@@ -476,7 +475,7 @@ dx9_SyncObject_Create()
 static void
 dx9_SyncObject_Delete(Handle obj)
 {
-    SyncObjectPool::Free(obj);
+    SyncObjectPoolDX9::Free(obj);
 }
 
 //------------------------------------------------------------------------------
@@ -485,7 +484,7 @@ static bool
 dx9_SyncObject_IsSignaled(Handle obj)
 {
     bool signaled = false;
-    SyncObjectDX9_t* sync = SyncObjectPool::Get(obj);
+    SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(obj);
 
     if (sync)
         signaled = sync->is_signaled;
@@ -624,7 +623,7 @@ void CommandBufferDX9_t::Execute()
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_stride = 0;
     Handle cur_query_buf = InvalidHandle;
-    uint32 cur_query_i = InvalidIndex;
+    uint32 cur_query_i = DAVA::InvalidIndex;
     D3DVIEWPORT9 def_viewport;
 
     _D3D9_Device->GetViewport(&def_viewport);
@@ -919,7 +918,7 @@ void CommandBufferDX9_t::Execute()
 
         case DX9__DRAW_PRIMITIVE:
         {
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
 
             DX9_CALL(_D3D9_Device->DrawPrimitive((D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/ 0, UINT(arg[1])), "DrawPrimitive");
@@ -942,7 +941,7 @@ void CommandBufferDX9_t::Execute()
                 break;
             }
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
 
             c += 2;
@@ -957,12 +956,12 @@ void CommandBufferDX9_t::Execute()
             uint32 firstVertex = uint32(arg[3]);
             uint32 startIndex = uint32(arg[4]);
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
 
             DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(type, firstVertex, 0, vertexCount, startIndex, primCount), "DrawIndexedPrimitive");
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
 
             StatSet::IncStat(stat_DIP, 1);
@@ -1013,40 +1012,38 @@ dx9_Present(Handle sync)
     if (_DX9_RenderThreadFrameCount)
     {
         Trace("rhi-dx9.present\n");
-        _FrameSync.Lock();
+        _DX9_FrameSync.Lock();
         {
-            if (_Frame.size())
+            if (_DX9_Frame.size())
             {
-                _Frame.back().readyToExecute = true;
-                _Frame.back().sync = sync;
-                _FrameStarted = false;
-                Trace("\n\n-------------------------------\nframe %u generated\n", _Frame.back().number);
+                _DX9_Frame.back().readyToExecute = true;
+                _DX9_Frame.back().sync = sync;
+                _DX9_FrameStarted = false;
+                Trace("\n\n-------------------------------\nframe %u generated\n", _DX9_Frame.back().number);
             }
-
-            //        _FrameStarted = false;
         }
-        _FrameSync.Unlock();
+        _DX9_FrameSync.Unlock();
 
         unsigned frame_cnt = 0;
 
         do
         {
-            _FrameSync.Lock();
-            frame_cnt = _Frame.size();
+            _DX9_FrameSync.Lock();
+            frame_cnt = _DX9_Frame.size();
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-            _FrameSync.Unlock();
+            _DX9_FrameSync.Unlock();
         } while (frame_cnt >= _DX9_RenderThreadFrameCount);
     }
     else
     {
-        if (_Frame.size())
+        if (_DX9_Frame.size())
         {
-            _Frame.back().readyToExecute = true;
-            _Frame.back().sync = sync;
-            _FrameStarted = false;
+            _DX9_Frame.back().readyToExecute = true;
+            _DX9_Frame.back().sync = sync;
+            _DX9_FrameStarted = false;
         }
 
-        _ExecuteQueuedCommands();
+        _DX9_ExecuteQueuedCommands();
     }
 
     ConstBufferDX9::InvalidateAllConstBufferInstances();
@@ -1057,37 +1054,37 @@ dx9_Present(Handle sync)
 static void
 _RejectAllFrames()
 {
-    _FrameSync.Lock();
-    for (std::vector<FrameDX9>::iterator f = _Frame.begin(); f != _Frame.end();)
+    _DX9_FrameSync.Lock();
+    for (std::vector<FrameDX9>::iterator f = _DX9_Frame.begin(); f != _DX9_Frame.end();)
     {
         if (f->readyToExecute)
         {
             if (f->sync != InvalidHandle)
             {
-                SyncObjectDX9_t* s = SyncObjectPool::Get(f->sync);
+                SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(f->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
             for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
             {
-                RenderPassDX9_t* pp = RenderPassPool::Get(*p);
+                RenderPassDX9_t* pp = RenderPassPoolDX9::Get(*p);
 
                 for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
                 {
-                    CommandBufferDX9_t* cc = CommandBufferPool::Get(*c);
+                    CommandBufferDX9_t* cc = CommandBufferPoolDX9::Get(*c);
                     if (cc->sync != InvalidHandle)
                     {
-                        SyncObjectDX9_t* s = SyncObjectPool::Get(cc->sync);
+                        SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(cc->sync);
                         s->is_signaled = true;
                         s->is_used = true;
                     }
                     cc->_cmd.clear();
-                    CommandBufferPool::Free(*c);
+                    CommandBufferPoolDX9::Free(*c);
                 }
 
-                RenderPassPool::Free(*p);
+                RenderPassPoolDX9::Free(*p);
             }
-            f = _Frame.erase(f);
+            f = _DX9_Frame.erase(f);
         }
         else
         {
@@ -1095,13 +1092,13 @@ _RejectAllFrames()
         }
     }
 
-    _FrameSync.Unlock();
+    _DX9_FrameSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
 
 static void
-_ExecuteQueuedCommands()
+_DX9_ExecuteQueuedCommands()
 {
     Trace("rhi-dx9.exec-queued-cmd\n");
 
@@ -1113,12 +1110,12 @@ _ExecuteQueuedCommands()
     if (_ResetPending || NeedRestoreResources())
         _RejectAllFrames();
 
-    _FrameSync.Lock();
-    if (_Frame.size())
+    _DX9_FrameSync.Lock();
+    if (_DX9_Frame.size())
     {
-        for (std::vector<Handle>::iterator p = _Frame.begin()->pass.begin(), p_end = _Frame.begin()->pass.end(); p != p_end; ++p)
+        for (std::vector<Handle>::iterator p = _DX9_Frame.begin()->pass.begin(), p_end = _DX9_Frame.begin()->pass.end(); p != p_end; ++p)
         {
-            RenderPassDX9_t* pp = RenderPassPool::Get(*p);
+            RenderPassDX9_t* pp = RenderPassPoolDX9::Get(*p);
             bool do_add = true;
 
             for (unsigned i = 0; i != pass.size(); ++i)
@@ -1135,23 +1132,23 @@ _ExecuteQueuedCommands()
                 pass.push_back(pp);
         }
 
-        pass_h = _Frame.begin()->pass;
-        frame_n = _Frame.begin()->number;
+        pass_h = _DX9_Frame.begin()->pass;
+        frame_n = _DX9_Frame.begin()->number;
     }
     else
     {
         do_render = false;
     }
 
-    if (_Frame.size() && _Frame.begin()->sync != InvalidHandle)
+    if (_DX9_Frame.size() && _DX9_Frame.begin()->sync != InvalidHandle)
     {
-        SyncObjectDX9_t* sync = SyncObjectPool::Get(_Frame.begin()->sync);
+        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
 
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
-    _FrameSync.Unlock();
+    _DX9_FrameSync.Unlock();
 
     if (do_render)
     {
@@ -1163,34 +1160,34 @@ _ExecuteQueuedCommands()
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
                 Handle cb_h = pp->cmdBuf[b];
-                CommandBufferDX9_t* cb = CommandBufferPool::Get(cb_h);
+                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
 
                 cb->Execute();
 
                 if (cb->sync != InvalidHandle)
                 {
-                    SyncObjectDX9_t* sync = SyncObjectPool::Get(cb->sync);
+                    SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(cb->sync);
 
                     sync->frame = frame_n;
                     sync->is_signaled = false;
                     sync->is_used = true;
                 }
 
-                CommandBufferPool::Free(cb_h);
+                CommandBufferPoolDX9::Free(cb_h);
             }
 
             //        RenderPassPool::Free( *p );
         }
 
-        _FrameSync.Lock();
+        _DX9_FrameSync.Lock();
         {
             Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-            _Frame.erase(_Frame.begin());
+            _DX9_Frame.erase(_DX9_Frame.begin());
 
             for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-                RenderPassPool::Free(*p);
+                RenderPassPoolDX9::Free(*p);
         }
-        _FrameSync.Unlock();
+        _DX9_FrameSync.Unlock();
     }
 
     // do flip, reset/restore device if necessary
@@ -1250,7 +1247,7 @@ _ExecuteQueuedCommands()
 
     // update sync-objects
 
-    for (SyncObjectPool::Iterator s = SyncObjectPool::Begin(), s_end = SyncObjectPool::End(); s != s_end; ++s)
+    for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
@@ -1619,18 +1616,15 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
             }
             _DX9_PendingImmediateCmdSync.Unlock();
 
-            //            _CmdQueueSync.Lock();
-            //            cnt = _RenderQueue.size();
-            //            _CmdQueueSync.Unlock();
-            _FrameSync.Lock();
-            do_wait = !(_Frame.size() && _Frame.begin()->readyToExecute);
-            _FrameSync.Unlock();
+            _DX9_FrameSync.Lock();
+            do_wait = !(_DX9_Frame.size() && _DX9_Frame.begin()->readyToExecute);
+            _DX9_FrameSync.Unlock();
         } while (do_wait);
 
         if (do_exit)
             break;
 
-        _ExecuteQueuedCommands();
+        _DX9_ExecuteQueuedCommands();
     }
 
     Trace("RHI render-thread stopped\n");

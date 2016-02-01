@@ -603,28 +603,35 @@
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-	if (!cppTextField || !cppTextField->GetDelegate())
-	{
-		return;
-	}
+    if (nullptr == cppTextField)
+    {
+        return;
+    }
 
-	// convert own frame to window coordinates, frame is in superview's coordinates
-	CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
+    auto* delegate = cppTextField->GetDelegate();
 
-	// calculate the area of own frame that is covered by keyboard
-	CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);
+    if (nullptr == delegate)
+    {
+        return;
+    }
 
-	// now this might be rotated, so convert it back
-	keyboardFrame = [textCtrl.window convertRect:keyboardFrame toView:textCtrl.superview];
+    // convert own frame to window coordinates, frame is in superview's coordinates
+    CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
 
-	// Recalculate to virtual coordinates.
-	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
+    // calculate the area of own frame that is covered by keyboard
+    CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);
+
+    // now this might be rotated, so convert it back
+    keyboardFrame = [textCtrl.window convertRect:keyboardFrame toView:textCtrl.superview];
+
+    // Recalculate to virtual coordinates.
+    DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
     keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 	
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

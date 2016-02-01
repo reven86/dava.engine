@@ -58,19 +58,58 @@ public:
         return m_argv;
     }
 
-    const char* pluginConfigPath() const override
+    const std::wstring& pluginConfigPath() const
     {
-        return configPath.c_str();
-    }
-
-    const wchar_t* pluginConfigPathW() const override
-    {
-        return configWPath.c_str();
+        return configPath;
     }
 
     std::wstring const& GetPluginsBasePath() const
     {
         return pluginsBasePath;
+    }
+
+    bool getFlag(const char* arg) const override
+    {
+        size_t argLen = ::strlen(arg);
+        for (int i = 0; i < m_argc; ++i)
+        {
+            if (::strlen(m_argv[i]) == argLen &&
+                ::strncmp(m_argv[i], arg, argLen) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const char* getParam(const char* arg) const override
+    {
+        size_t argLen = ::strlen(arg);
+        for (int i = 0; i < m_argc - 1; ++i)
+        {
+            if (::strlen(m_argv[i]) == argLen &&
+                ::strncmp(m_argv[i], arg, argLen) == 0)
+            {
+                return m_argv[i + 1];
+            }
+        }
+        return nullptr;
+    }
+
+    std::string getParamStr(const char* arg) const override
+    {
+        auto param = getParam(arg);
+        if (param != nullptr)
+        {
+            return param;
+        }
+        return "";
+    }
+
+    std::wstring getParamStrW(const char* arg) const override
+    {
+        assert(false); // Not implemented
+        return L"";
     }
 
 private:
@@ -87,15 +126,13 @@ private:
 #endif
 
         pluginsBasePath = pluginsBasePath_.toStdWString();
-        configPath = pluginsPathDesc_.toStdString();
-        configWPath = pluginsPathDesc_.toStdWString();
+        configPath = pluginsPathDesc_.toStdWString();
     }
 
 private:
     int m_argc;
     char** m_argv;
-    std::string configPath;
-    std::wstring configWPath;
+    std::wstring configPath;
     std::wstring pluginsBasePath;
 };
 
@@ -105,7 +142,7 @@ int main(int argc, char** argv)
 
     int result = 1;
     std::vector<std::wstring> plugins;
-    if (!ConfigPluginLoader::getPlugins(plugins, cmdParser.pluginConfigPathW()))
+    if (!ConfigPluginLoader::getPlugins(plugins, cmdParser.pluginConfigPath()))
     {
         return result;
     }

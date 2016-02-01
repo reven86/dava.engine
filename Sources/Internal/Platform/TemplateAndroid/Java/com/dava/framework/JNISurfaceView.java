@@ -6,8 +6,6 @@ import java.util.Set;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.os.Build;
-import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
@@ -22,9 +20,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import com.bda.controller.ControllerListener;
-import com.bda.controller.StateEvent;
-
 public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callback
 {
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
@@ -35,17 +30,18 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 
 	private native void nativeSurfaceCreated(Surface surface);
-	private native void nativeSurfaceChanged(int width, int height);
+	private native void nativeSurfaceChanged(Surface surface, int width, int height);
 	private native void nativeSurfaceDestroyed();
 
-    private native void nativeReset(int w, int h);
     private native void nativeProcessFrame();
-    private native void nativeOnPause(boolean isLocked);
-    private native void nativeOnResume();
-	
-	private Surface surface = null;
+
+    // Make surface member as static due to JNISurfaceView's lifecycle
+    // System can create new JNISurfaceView instance before deleting previous instance
+    // So use surface as current surface
+    // TODO: work with surface in SDL way 
+	static private Surface surface = null;
 	private int surfaceWidth = 0, surfaceHeight = 0;
-	
+
 	private boolean isMultitouchEnabled = true;
 	
 	private Integer[] gamepadAxises = null;
@@ -53,21 +49,9 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
 	
 	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
-	
-	private static volatile boolean isPaused = false;
-	
-	MOGAListener mogaListener = null;
-	
-	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
+	private volatile boolean mEventQueueReady = true;
 
 	public int lastDoubleActionIdx = -1;
-	
-	private int frameCounter = 0;
-	
-	public static boolean isPaused()
-	{
-	    return isPaused;
-	}
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
 		JNISurfaceView surfaceView;
@@ -101,9 +85,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
 	private void Init()
 	{
-		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-		
-		mogaListener = new MOGAListener(this);
+		getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
 
@@ -115,35 +97,47 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         getHolder().addCallback(this);
 	}
 	
-	public void ProcessQueueEvents()
+	public void ProcessQueuedEvents()
 	{
 		ArrayList<Runnable> queueCopy = null;
-		synchronized (mEventQueue) 
-		{
+
+		synchronized (mEventQueue) {
 			queueCopy = new ArrayList<Runnable>(mEventQueue);
 			mEventQueue.clear();
 		}
 		
-		for(Runnable r : queueCopy)
-    	{
+		for(Runnable r : queueCopy) {
     		r.run();
     	}
+
+    	synchronized(mEventQueue) {
+    		mEventQueueReady = true;
+    		mEventQueue.notify();
+    	}
 	}
-	
+
+	public void WaitQueuedEvents()
+	{
+    	synchronized(mEventQueue)
+    	{
+            if(!mEventQueue.isEmpty()) {
+    		    mEventQueueReady = false;
+    		    while(!mEventQueueReady) {
+                    try {
+	    			    mEventQueue.wait();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+    		    }
+            }
+		}		
+	}
+
 	public void ProcessFrame()
 	{
         if (!JNIAssert.waitUserInputOnAssertDialog)
         {
             nativeProcessFrame();
-            
-            ++frameCounter;
-            // Workaround wait 5 frames for render static text field to textures
-            // and transition from one screen to another during lock/unlock
-            // skip bad print screen texture
-            if (5 == frameCounter)
-            {
-                JNIActivity.GetActivity().HideSplashScreenView();
-            }
         }
 	}
 	
@@ -180,62 +174,20 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) 
 	{
-		//YZ rewrite size parameter from fill parent to fixed size
-		LayoutParams params = getLayoutParams();
-		params.height = h;
-		params.width = w;
+        // On some devices (e.g. Samsung SM-G900F with Android 5) when
+        // starting app from notification label on lock screen
+        // method onSizeChanged is called with dimension like
+        // in portrait mode despite of landscape orientation in AndroidManifest.xml.
+		// So tell superclass of our expected and desired width and height, hehe
+        // See also method surfaceChanged
+		if (w < h)
+		{
+			int temp = w;
+			w = h;
+			h = temp;
+		}
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
-
-    public void onPause() 
-    {
-        isPaused = true;
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause");
-        queueEvent(new Runnable() {
-        	
-            @SuppressWarnings("deprecation")
-			public void run()
-            {
-                PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
-                boolean isScreenLocked = false;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
-                	isScreenLocked = !pm.isInteractive();
-                else
-                	isScreenLocked = !pm.isScreenOn();
-                
-                nativeOnPause(isScreenLocked);
-            }
-        });
-    }
-
-    public void onResume() 
-    {
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onResume");
-        
-        JNIActivity activity = JNIActivity.GetActivity();
-
-        Runnable action = new Runnable()
-        {
-        	@Override
-            public void run() {
-                nativeOnResume();
-            }
-        };
-        
-        if (activity.hasWindowFocus())
-        {
-            queueEvent(action);
-        } 
-        else 
-        {
-            // we have to resume game later on some devices
-            // to resolve deadlock
-            activity.setResumeGLActionOnWindowReady(action);
-        }
-        isPaused = false;
-
-        frameCounter = 0;
-    }
 	
 	public class InputRunnable implements Runnable
 	{
@@ -277,86 +229,64 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			return pointerId + 1;
 		}
 
-		public InputRunnable(final android.view.MotionEvent event, final int tapCount)
-		{
+		public InputRunnable(final android.view.MotionEvent event, final int tapCount) {
 			allEvents = new ArrayList<InputEvent>();
 
 			action = event.getActionMasked();
 			source = event.getSource();
 			groupSize = 1;
 
-			final int historySize = event.getHistorySize();
 			final int pointerCount = event.getPointerCount();
 
-			for (int historyStep = 0; historyStep < historySize; historyStep++) {
-				for (int i = 0; i < pointerCount; i++) {
-					if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+			if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+
+				final int historySize = event.getHistorySize();
+
+				for (int historyStep = 0; historyStep < historySize; historyStep++) {
+					for (int i = 0; i < pointerCount; i++) {
 						for (int a = 0; a < gamepadAxises.length; ++a) {
-							InputEvent ev = new InputEvent(gamepadAxises[a], event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
+							InputEvent ev = new InputEvent(gamepadAxises[a],
+									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount,
+									event.getHistoricalEventTime(historyStep));
 
 							allEvents.add(ev);
 						}
 					}
 				}
+
+				for (int i = 0; i < pointerCount; i++) {
+					for (int a = 0; a < gamepadAxises.length; ++a) {
+						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0,
+								tapCount, event.getEventTime());
+						allEvents.add(ev);
+					}
+				}
+			} else if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
+				int actionIndex = event.getActionIndex();
+				int pointerId = event.getPointerId(actionIndex);
+				if (android.view.MotionEvent.ACTION_MOVE == action
+						|| android.view.MotionEvent.ACTION_CANCEL == action) {
+
+					groupSize = pointerCount;
+
+					for (int i = 0; i < pointerCount; i++) {
+						pointerId = event.getPointerId(i);
+						if (isMultitouchEnabled) {
+							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i),
+									tapCount, event.getEventTime());
+							allEvents.add(ev);
+						}
+					}
+				} else {
+					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIndex),
+							event.getY(actionIndex), tapCount, event.getEventTime());
+					allEvents.add(ev);
+				}
+			} else
+			{
+				Log.d(JNIConst.LOG_TAG, "unsupported moution input source: " + source);
 			}
-
-			int actionIndex = event.getActionIndex();
-			int pointerId = event.getPointerId(actionIndex);
-            if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0
-                && 
-                (android.view.MotionEvent.ACTION_MOVE == action
-                || android.view.MotionEvent.ACTION_CANCEL == action)) {
-
-                groupSize = pointerCount;
-                
-                for (int i = 0; i < pointerCount; i++) {
-                    pointerId = event.getPointerId(i);
-                    if (isMultitouchEnabled) {
-                        InputEvent ev = new InputEvent(
-                                touchIdForPointerId(pointerId), event.getX(i),
-                                event.getY(i), tapCount, event.getEventTime());
-                        allEvents.add(ev);
-                    }
-                }
-            } else
-            {
-                InputEvent ev = new InputEvent(
-                        touchIdForPointerId(pointerId),
-                        event.getX(actionIndex), event.getY(actionIndex), tapCount,
-                        event.getEventTime());
-                allEvents.add(ev);
-            }
-            
-            for (int i = 0; i < pointerCount; i++) {
-                if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
-                    for (int a = 0; a < gamepadAxises.length; ++a) {
-                        InputEvent ev = new InputEvent(gamepadAxises[a],
-                                event.getAxisValue(gamepadAxises[a], i), 0,
-                                tapCount, event.getEventTime());
-                        allEvents.add(ev);
-                    }
-                }
-            }
-    	}
-    	public InputRunnable(final com.bda.controller.MotionEvent event)
-    	{
-    		action = MotionEvent.ACTION_MOVE;
-    		allEvents = new ArrayList<InputEvent>();
-    		source = InputDevice.SOURCE_CLASS_JOYSTICK;
-        	int pointerCount = event.getPointerCount();
-	    	for (int i = 0; i < pointerCount; ++i)
-	    	{
-	    		//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-	        	allEvents.add(new InputEvent(1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(3, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(8, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, event.getEventTime()));
-    		}
-    		activeEvents = allEvents;
-    		groupSize = event.getPointerCount();
-    	}
+		}
 
 		@Override
 		public void run() 
@@ -369,7 +299,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 					{
 						nativeOnGamepadElement(event.tid, -event.x, false);
 					} 
-					else 
+					else
 					{
 						nativeOnGamepadElement(event.tid, event.x, false);
 					}
@@ -395,33 +325,40 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	
     class KeyInputRunnable implements Runnable {
     	int keyCode;
-    	public KeyInputRunnable(int keyCode) {
+    	boolean isDown;
+    	
+    	public KeyInputRunnable(int keyCode, boolean isDown) {
     		this.keyCode = keyCode;
+    		this.isDown = isDown;
     	}
     	
     	@Override
     	public void run() {
     		if(IsGamepadButton(keyCode))
     		{
-    			nativeOnGamepadElement(keyCode, 1.f, true);
+    			nativeOnGamepadElement(keyCode, isDown ? 1 : 0, true);
     		}
     		else
     		{
-    			nativeOnKeyDown(keyCode);
+    			if (isDown)
+    			{
+    				nativeOnKeyDown(keyCode);
+    			} else
+    			{
+    				nativeOnKeyUp(keyCode);
+    			}
     		}
     	}
     }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+    	if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
     	{
     		return super.onKeyDown(keyCode, event);
     	}
     	
-    	if(pressedKeys[keyCode] == false)
-    		queueEvent(new KeyInputRunnable(keyCode));
-    	pressedKeys[keyCode] = true;
+    	queueEvent(new KeyInputRunnable(keyCode, true));
     	
     	if (event.isSystem())
     		return super.onKeyDown(keyCode, event);
@@ -436,16 +373,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     		return super.onKeyUp(keyCode, event);
     	}
     	
-    	pressedKeys[keyCode] = false;
-    	
-    	if(IsGamepadButton(keyCode))
-    	{
-    		nativeOnGamepadElement(keyCode, 0.f, true);
-    	}
-    	else
-    	{
-    		nativeOnKeyUp(keyCode);
-    	}
+    	queueEvent(new KeyInputRunnable(keyCode, false));
     	
     	return super.onKeyUp(keyCode, event);
     }
@@ -483,18 +411,43 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceCreated(SurfaceHolder holder)
     {
+    	if (surface != null)
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated: previous surface is alive, call nativeSurfaceDestroyed");
+    		queueEvent(new Runnable() {
+    			public void run() {
+                    Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in: call nativeSurfaceDestroyed");
+    		    	nativeSurfaceDestroyed();
+                    Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out: call nativeSurfaceDestroyed");
+    			}
+    		});
+    	}
+    	
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated in");
     	surface = holder.getSurface();
     	surfaceWidth = surfaceHeight = 0;
     	
     	queueEvent(new Runnable() {
 			public void run() {
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in");
 		    	nativeSurfaceCreated(surface);
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out");
 			}
 		});
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated out");
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
+    	if (surface != holder.getSurface())
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged for previous object! Do nothing");
+    		return;
+    	}
+    	
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
+
         // while we always in landscape mode, but some devices
         // call this method on lock screen with portrait w and h
         // then call this method second time with correct portrait w and h
@@ -508,7 +461,19 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         // on nexus 5 w == h == 1080
         // if you have any trouble here you should first check
         // res/layout/activity_main.xml and root layout is FrameLayout!
-        if (width > height)
+        
+        // On some devices (e.g. Samsung SM-G900F with Android 5) when
+        // starting app from notification label on lock screen
+        // method surfaceChanged is called only once with dimension like
+        // in portrait mode despite of landscape orientation in AndroidManifest.xml.
+        // See also method onSizeChanged
+        if (width < height)
+        {
+            int temp = width;
+            width = height;
+            height = temp;
+        }
+        
         {
             if (width != surfaceWidth || height != surfaceHeight)
             {
@@ -517,10 +482,12 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
             	queueEvent(new Runnable() {
         			public void run() {
-        		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+                        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
+        		    	nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
+                        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
         			}
         		});
-                
+
                 // Workaround! we have to initialize keyboard after glView(OpenGL)
                 // initialization for some devices like
                 // HTC One (adreno 320, os 4.3)
@@ -531,57 +498,38 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                         activity.InitKeyboardLayout();
                     }
                 });
+
+        		WaitQueuedEvents();
             }
         }
+
+        JNIActivity.GetActivity().isSurfaceReady = true;
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
     
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-    	queueEvent(new Runnable() {
-			public void run() {
-		    	nativeSurfaceDestroyed();
-			}
-		});
-    }
-    
-    class MOGAListener implements ControllerListener
-    {
-    	JNISurfaceView parent = null;
-    	
-    	MOGAListener(JNISurfaceView parent)
+    	if (surface != holder.getSurface())
     	{
-    		this.parent = parent;
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed for previous object! Do nothing");
+    		return;
     	}
     	
-		@Override
-		public void onKeyEvent(com.bda.controller.KeyEvent event)
-		{
-			int keyCode = event.getKeyCode();
-            if(keyCode >= MAX_KEYS) // Ignore too big keycodes
-            {
-                return;
-            }
-			if(event.getAction() == com.bda.controller.KeyEvent.ACTION_DOWN)
-			{
-		    	if(pressedKeys[keyCode] == false)
-		    		parent.queueEvent(new KeyInputRunnable(keyCode));
-		    	pressedKeys[keyCode] = true;
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed in");
+    	queueEvent(new Runnable() {
+			public void run() {
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable in");
+		    	nativeSurfaceDestroyed();
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable out");
 			}
-			else if(event.getAction() == com.bda.controller.KeyEvent.ACTION_UP)
-			{
-		    	pressedKeys[keyCode] = false;
-		        nativeOnGamepadElement(keyCode, 0.f, true);
-			}
-		}
-		@Override
-		public void onMotionEvent(com.bda.controller.MotionEvent event)
-		{
-			parent.queueEvent(new InputRunnable(event));
-		}
-		@Override
-		public void onStateEvent(StateEvent event)
-		{
-			
-		}
+		});
+
+		WaitQueuedEvents();
+
+		JNIActivity.GetActivity().isSurfaceReady = false;
+
+        surface = null;
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
     }
 }

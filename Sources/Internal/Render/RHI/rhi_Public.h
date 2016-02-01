@@ -47,11 +47,10 @@ InitParam
 {
     uint32 width;
     uint32 height;
-    float32 scaleX;
-    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
+    uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
     DAVA::Mutex* FrameCommandExecutionSync;
 
@@ -59,6 +58,14 @@ InitParam
     uint32 maxVertexBufferCount;
     uint32 maxConstBufferCount;
     uint32 maxTextureCount;
+
+    uint32 maxTextureSetCount; //+gl+
+    uint32 maxSamplerStateCount; //+gl+
+    uint32 maxPipelineStateCount; //+gl+
+    uint32 maxDepthStencilStateCount; // +gl+
+    uint32 maxRenderPassCount; //+gl+
+    uint32 maxCommandBuffer; //+gl
+    uint32 maxPacketListCount; //+gl
 
     uint32 shaderConstRingBufferSize;
 
@@ -68,17 +75,23 @@ InitParam
     InitParam()
         : width(0)
         , height(0)
-        , scaleX(1.0f)
-        , scaleY(1.0f)
         , window(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
+        , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
         , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
         , maxVertexBufferCount(0)
         , maxConstBufferCount(0)
         , maxTextureCount(0)
+        , maxTextureSetCount(0)
+        , maxSamplerStateCount(0)
+        , maxPipelineStateCount(0)
+        , maxDepthStencilStateCount(0)
+        , maxRenderPassCount(0)
+        , maxCommandBuffer(0)
+        , maxPacketListCount(0)
         , shaderConstRingBufferSize(0)
         , acquireContextFunc(nullptr)
         , releaseContextFunc(nullptr)
@@ -91,17 +104,15 @@ ResetParam
 {
     uint32 width;
     uint32 height;
-    float32 scaleX;
-    float32 scaleY;
     void* window;
     uint32 fullScreen : 1;
+    uint32 vsyncEnabled : 1;
 
     ResetParam()
         : width(0)
         , height(0)
-        , scaleX(1.0f)
-        , scaleY(1.0f)
         , fullScreen(false)
+        , vsyncEnabled(true)
         , window(nullptr)
     {
     }
@@ -134,6 +145,8 @@ void SuspendRendering();
 void ResumeRendering();
 
 void InvalidateCache();
+
+void TakeScreenshot(ScreenShotCallback callback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
@@ -210,6 +223,22 @@ void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
 
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
 int QueryValue(HQueryBuffer buf, uint32 objectIndex);
+
+////////////////////////////////////////////////////////////////////////////////
+// perfquery-set
+
+typedef ResourceHandle<RESOURCE_PERFQUERY_SET> HPerfQuerySet;
+
+HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount);
+void DeletePerfQuerySet(HPerfQuerySet hset, bool forceImmediate = false);
+
+void ResetPerfQuerySet(HPerfQuerySet hset);
+void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid);
+
+bool PerfQuerySetIsValid(HPerfQuerySet hset);
+bool GetPerfQuerySetFreq(HPerfQuerySet hset, uint64* freq);
+bool GetPerfQuerySetTimestamp(HPerfQuerySet hset, uint32 timestampIndex, uint64* timestamp);
+bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1);
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pipeline state & const-buffers
@@ -301,6 +330,8 @@ HSyncObject GetCurrentFrameSyncObject();
 typedef ResourceHandle<RESOURCE_RENDER_PASS> HRenderPass;
 typedef ResourceHandle<RESOURCE_PACKET_LIST> HPacketList;
 
+void SetFramePerfQuerySet(HPerfQuerySet hset);
+
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
@@ -352,7 +383,7 @@ Packet
         , vertexConstCount(0)
         , fragmentConstCount(0)
         , primitiveCount(0)
-        , queryIndex(InvalidIndex)
+        , queryIndex(DAVA::InvalidIndex)
         , options(0)
         , debugMarker(nullptr)
     {
@@ -365,4 +396,5 @@ void AddPacket(HPacketList packetList, const Packet& packet);
 void EndPacketList(HPacketList packetList, HSyncObject syncObject = HSyncObject(InvalidHandle)); // 'packetList' handle invalid after this, no explicit "release" needed
 
 } // namespace rhi
+
 #endif // __RHI_PUBLIC_H__

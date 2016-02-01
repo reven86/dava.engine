@@ -42,7 +42,7 @@ function (get_ngt_modules LIB_LIST_VAR PLG_LIST_VAR QTLIBS_LIST_VAR)
                                                core_logging core_logging_system core_qt_common core_qt_script core_reflection
                                                core_reflection_utils core_serialization core_string_utils core_ui_framework core_variant)
 
-    list(APPEND NGT_PLUGINS  plg_alert_ui plg_reflection plg_variant plg_command_system plg_copy_paste
+    list(APPEND NGT_PLUGINS  plg_reflection plg_variant plg_command_system plg_copy_paste
                                                        plg_serialization plg_file_system plg_qt_common plg_editor_interaction plg_history_ui
                                                        plg_macros_ui plg_panel_manager plg_qt_app)
     list(APPEND QT_LIBS Core Gui Widgets Concurrent Qml Network Quick QuickWidgets UiTools Xml)

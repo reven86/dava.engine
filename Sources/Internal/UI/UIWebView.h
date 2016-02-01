@@ -34,7 +34,6 @@
 #include "IWebViewControl.h"
 
 namespace DAVA {
-	
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
 class UIWebView : public UIControl
 {
@@ -91,6 +90,10 @@ public:
     
     void SystemDraw(const UIGeometricData &geometricData) override;
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+    void Update(float32 timeElapsed) override;
+#endif
+
 protected:
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
@@ -127,6 +130,7 @@ protected:
 private:
     bool isNativeControlVisible;
     int32 dataDetectorTypes;
+
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
                          PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT));

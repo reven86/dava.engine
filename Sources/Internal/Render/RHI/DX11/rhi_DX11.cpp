@@ -50,7 +50,7 @@ namespace rhi
 
 static Dispatch DispatchDX11 = { 0 };
 
-static RenderDeviceCaps _DeviceCaps = {};
+static RenderDeviceCaps _DeviceCapsDX11 = {};
 
 //------------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ dx11_HostApi()
 static const RenderDeviceCaps&
 dx11_DeviceCaps()
 {
-    return _DeviceCaps;
+    return _DeviceCapsDX11;
 }
 
 //------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ dx11_TextureFormatSupported(TextureFormat format)
 //------------------------------------------------------------------------------
 
 static bool
-_IsValidIntelCard(unsigned vendor_id, unsigned device_id)
+_IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -151,11 +151,22 @@ dx11_Reset(const ResetParam& param)
     else
     {
 #if defined(__DAVAENGINE_WIN_UAP__)
-        resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
+        resize_swapchain(param.width, param.height);
 #else
 //Not implemented
 #endif
     }
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_TakeScreenshot(ScreenShotCallback callback)
+{
+    _D3D11_ScreenshotCallbackSync.Lock();
+    DVASSERT(!_D3D11_PendingScreenshotCallback);
+    _D3D11_PendingScreenshotCallback = callback;
+    _D3D11_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -171,12 +182,64 @@ void _InitDX11()
 
     HRESULT hr;
     DWORD flags = 0;
-    #if RHI__FORCE_DX11_91
+    #if RHI_DX11__FORCE_9X_PROFILE
     D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
     #else
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
     #endif
     DXGI_SWAP_CHAIN_DESC swapchain_desc = { 0 };
+    IDXGIAdapter* defAdapter = NULL;
+
+    // enumerate adapters
+    {
+        IDXGIFactory* factory = NULL;
+        std::vector<IDXGIAdapter*> adapter;
+        const uint32 preferredVendorID[] =
+        {
+          0x10DE, // nVIDIA
+          0x1002 // ATI
+        };
+
+        if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&factory)))
+        {
+            IDXGIAdapter* a = NULL;
+
+            for (UINT i = 0; factory->EnumAdapters(i, &a) != DXGI_ERROR_NOT_FOUND; ++i)
+            {
+                adapter.push_back(a);
+            }
+        }
+
+        Logger::Info("detected GPUs (%u) :", adapter.size());
+        for (unsigned i = 0; i != adapter.size(); ++i)
+        {
+            DXGI_ADAPTER_DESC desc = { 0 };
+
+            if (SUCCEEDED(adapter[i]->GetDesc(&desc)))
+            {
+                char info[128];
+
+                ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+                Logger::Info("  adapter[%u]  \"%s\"  vendor= %04X  device= %04X", i, info, desc.VendorId, desc.DeviceId);
+
+                if (!defAdapter)
+                {
+                    for (unsigned k = 0; k != countof(preferredVendorID); ++k)
+                    {
+                        if (desc.VendorId == preferredVendorID[k])
+                        {
+                            defAdapter = adapter[i];
+                            break;
+                        }
+                    }
+                }
+                //if( desc.VendorId == 0x8086 )
+                //    defAdapter = adapter[i];
+            }
+        }
+    }
+
 
     #if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -204,9 +267,18 @@ void _InitDX11()
     swapchain_desc.Flags = 0;
 
     hr = D3D11CreateDeviceAndSwapChain(
-    NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
+    defAdapter, (defAdapter) ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, NULL,
     flags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
     &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
+
+    if (FAILED(hr))
+    {
+        // fall back to 'default' adapter
+        hr = D3D11CreateDeviceAndSwapChain(
+        NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
+        flags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
+        &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
+    }
 
     if (SUCCEEDED(hr))
     {
@@ -214,6 +286,26 @@ void _InitDX11()
 
         if (SUCCEEDED(hr))
         {
+            IDXGIDevice* dxgiDevice = NULL;
+            IDXGIAdapter* dxgiAdapter = NULL;
+
+            if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
+            {
+                if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
+                {
+                    DXGI_ADAPTER_DESC desc = { 0 };
+
+                    if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
+                    {
+                        char info[128];
+
+                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
+                    }
+                }
+            }
+
             hr = _D3D11_Device->QueryInterface(__uuidof(ID3D11Debug), (void**)(&_D3D11_Debug));
 
             hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
@@ -242,6 +334,10 @@ void _InitDX11()
     }
 
 #endif
+
+    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -254,6 +350,7 @@ void dx11_Initialize(const InitParam& param)
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
     QueryBufferDX11::SetupDispatch(&DispatchDX11);
+    PerfQuerySetDX11::SetupDispatch(&DispatchDX11);
     TextureDX11::SetupDispatch(&DispatchDX11);
     PipelineStateDX11::SetupDispatch(&DispatchDX11);
     ConstBufferDX11::SetupDispatch(&DispatchDX11);
@@ -268,6 +365,7 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
+    DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
 
     SetDispatchTable(DispatchDX11);
 
@@ -293,12 +391,12 @@ void dx11_Initialize(const InitParam& param)
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
-    _DeviceCaps.is32BitIndicesSupported = true;
-    _DeviceCaps.isFramebufferFetchSupported = true;
-    _DeviceCaps.isVertexTextureUnitsSupported = true;
-    _DeviceCaps.isUpperLeftRTOrigin = true;
-    _DeviceCaps.isZeroBaseClipRange = true;
-    _DeviceCaps.isCenterPixelMapping = false;
+    _DeviceCapsDX11.is32BitIndicesSupported = true;
+    _DeviceCapsDX11.isFramebufferFetchSupported = true;
+    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
+    _DeviceCapsDX11.isUpperLeftRTOrigin = true;
+    _DeviceCapsDX11.isZeroBaseClipRange = true;
+    _DeviceCapsDX11.isCenterPixelMapping = false;
 }
 
 //==============================================================================

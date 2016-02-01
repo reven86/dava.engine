@@ -133,7 +133,7 @@ public class JNITextField {
 
         @Override
         public void run() {
-            if(!JNISurfaceView.isPaused())
+            if(!JNIActivity.GetActivity().GetIsPausing())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
 
@@ -237,7 +237,13 @@ public class JNITextField {
         public boolean onKeyPreIme(int keyCode, KeyEvent event) {
             // Clear focus on BACK key, DON'T close keyboard itself
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                clearFocus();
+            	if (event.getAction() == KeyEvent.ACTION_DOWN)
+            	{
+            		// skip down event
+            	} else
+            	{
+            		clearFocus();	
+            	}
                 return true;
             }
             return super.onKeyPreIme(keyCode, event);

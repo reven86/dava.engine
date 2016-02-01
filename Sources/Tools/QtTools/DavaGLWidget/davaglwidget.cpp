@@ -29,14 +29,18 @@
 #include "DAVAEngine.h"
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Davaglwidget.h"
-#include "ControlMapper.h"
 #include "DavaRenderer.h"
+#include "Davaglwidget.h"
+
+#include "ControlMapper.h"
 
 #include <QKeyEvent>
 #include <QScreen>
 #include <QTimer>
 #include <QBoxLayout>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QAction>
 
 namespace
 {
@@ -48,7 +52,7 @@ DavaGLView::DavaGLView()
     , controlMapper(new ControlMapper(this))
 {
     setSurfaceType(QWindow::OpenGLSurface);
-    
+
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
 
@@ -116,6 +120,7 @@ void DavaGLView::mouseMoveEvent(QMouseEvent* e)
 
 void DavaGLView::mousePressEvent(QMouseEvent* e)
 {
+    requestActivate();
     controlMapper->mousePressEvent(e);
 }
 
@@ -132,12 +137,14 @@ void DavaGLView::mouseDoubleClickEvent(QMouseEvent* e)
 void DavaGLView::wheelEvent(QWheelEvent* e)
 {
     if ( e->phase() != Qt::ScrollUpdate )
+    {
         return;
+    }
 
     controlMapper->wheelEvent(e);
     if ( e->orientation() == Qt::Vertical )
     {
-        emit mouseScrolled( e->delta() );
+        emit mouseScrolled(e->angleDelta().y());
     }
 }
 
@@ -145,7 +152,6 @@ void DavaGLView::handleDragMoveEvent(QDragMoveEvent* e)
 {
     controlMapper->dragMoveEvent(e);
 }
-
 
 ///=======================
 DavaGLWidget::DavaGLWidget(QWidget *parent)
@@ -165,10 +171,21 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setMinimumSize(cMinSize);
 
     davaGLView = new DavaGLView();
+
+    connect(qApp, &QApplication::focusWindowChanged, [this](QWindow* now) //fix bug with actions focus scope
+            {
+                bool isActive = (now == davaGLView);
+                for (auto& action : actions())
+                {
+                    action->setEnabled(isActive);
+                }
+            });
+
     davaGLView->setClearBeforeRendering(false);
     QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &DavaGLWidget::UpdateView);
+    connect(timer, &QTimer::timeout, davaGLView, &DavaGLView::update);
     timer->start(16); //62.5 fps :)
+
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
     connect(davaGLView, &QQuickWindow::beforeRendering, this, &DavaGLWidget::OnPaint, Qt::DirectConnection);
@@ -188,7 +205,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     
 #if defined(Q_OS_MAC)
     DAVA::Core::Instance()->SetNativeView((void*)davaGLView->winId());
-#endif //Q_OS_MAC / Q_OS_WIN
+#endif //Q_OS_MAC
 }
 
 void DavaGLWidget::MakeInvisible()
@@ -202,11 +219,6 @@ void DavaGLWidget::MakeInvisible()
     move( 0, 0 );
 }
 
-qreal DavaGLWidget::GetDevicePixelRatio() const
-{
-    return davaGLView->devicePixelRatio();
-}
-
 QQuickWindow* DavaGLWidget::GetGLView()
 {
     return davaGLView;
@@ -216,16 +228,36 @@ void DavaGLWidget::OnResize()
 {
     if (nullptr != renderer)
     {
-        int currentDPR = davaGLView->devicePixelRatio();
-        DAVA::QtLayer::Instance()->Resize(width() * currentDPR, height() * currentDPR);
-        emit Resized(width(), height(), currentDPR);
+        auto dpr = davaGLView->devicePixelRatio();
+        DAVA::QtLayer::Instance()->Resize(width(), height(), dpr);
+        emit Resized(width(), height());
     }
 }
+
+namespace DAVAGLWidget_namespace
+{
+//there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
+void Kostil_ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
+{
+    auto desktop = qApp->desktop();
+    int screenNumber = desktop->screenNumber(davaGLWidget);
+    DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
+
+    QWindow* parent = davaGLWidget->GetGLView();
+    while (parent->parent() != nullptr)
+    {
+        parent = parent->parent();
+    }
+    parent->setScreen(qApp->screens().at(screenNumber));
+}
+} //unnamed namespace
 
 void DavaGLWidget::OnPaint()
 {
     if (renderer == nullptr)
     {
+        DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
+
         renderer = new DavaRenderer(davaGLView, davaGLView->openglContext());
         emit Initialized();
         OnResize();
@@ -246,12 +278,4 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 void DavaGLWidget::OnCleanup()
 {
     DAVA::SafeDelete(renderer);
-}
-
-void DavaGLWidget::UpdateView()
-{
-    if (!DAVA::DVAssertMessage::IsMessageDisplayed())
-    {
-        davaGLView->update();
-    }
 }

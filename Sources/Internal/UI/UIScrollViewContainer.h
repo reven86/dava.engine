@@ -55,11 +55,12 @@ public:
     virtual void SetSize(const Vector2& size);
     virtual void WillDisappear();
 
+    // Set container relative position and enable*Scroll properties based on self and parent size
+    void ApplySizeChanges();
 
-	// The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
-	void SetTouchTreshold(int32 holdDelta);
-	int32 GetTouchTreshold();
-
+    // The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
+    void SetTouchTreshold(int32 holdDelta);
+    int32 GetTouchTreshold();
 
 protected:
 
@@ -81,6 +82,9 @@ protected:
 	
 	Vector2 	oldPos;
 	Vector2		newPos;
+
+    float32 oldScroll = 0.f;
+    float32 newScroll = 0.f;
 
     ScrollHelper *currentScroll;
 

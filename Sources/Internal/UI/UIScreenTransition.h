@@ -58,19 +58,16 @@ protected:
     UI3DView* FindFirst3dView(UIControl* control);
 
     static Sprite* renderTargetPrevScreen;
-    static Sprite * renderTargetNextScreen;
-	
-	Interpolation::Func interpolationFunc;
-	float32 currentTime;
-	float32 duration;
-	float32 normalizedTime;
-	
-	UIScreen * prevScreen;
-	UIScreen * nextScreen;
-    UIScreenshoter* shooter;
+    static Sprite* renderTargetNextScreen;
 
-private:
-    void OnPrevScreenScreenshotComplete(Texture* texture);
+    Interpolation::Func interpolationFunc;
+    float32 currentTime;
+    float32 duration;
+    float32 normalizedTime;
+
+    UIScreen* prevScreen;
+    UIScreen* nextScreen;
+    UIScreenshoter* shooter;
 };
 
 };

@@ -307,16 +307,16 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 void SceneCameraSystem::OnKeyboardInput( DAVA::UIEvent* event )
 {
     const auto isModificatorPressed =
-        DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_CTRL ) ||
-        DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_ALT ) ||
-        DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_SHIFT );
+    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LCTRL) ||
+    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) ||
+    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LSHIFT);
     if ( isModificatorPressed )
         return;
 
-    switch ( event->tid )
+    switch (event->key)
     {
-    case DVKEY_ADD:
-    case DVKEY_EQUALS:
+    case Key::ADD:
+    case Key::EQUALS:
         {
             auto entity = GetEntityWithEditorCamera();
             auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
@@ -328,8 +328,8 @@ void SceneCameraSystem::OnKeyboardInput( DAVA::UIEvent* event )
             }
         }
         break;
-    case DVKEY_SUBTRACT:
-    case DVKEY_MINUS:
+        case Key::SUBTRACT:
+        case Key::MINUS:
         {
             auto entity = GetEntityWithEditorCamera();
             auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
@@ -342,20 +342,20 @@ void SceneCameraSystem::OnKeyboardInput( DAVA::UIEvent* event )
         }
         break;
 
-    case DVKEY_T:
+        case Key::KEY_T:
         MoveTo( Vector3( 0, 0, 200 ), Vector3( 1, 0, 0 ) );
         break;
 
-    case DVKEY_1:
+        case Key::KEY_1:
         SetMoveSpeedArrayIndex( 0 );
         break;
-    case DVKEY_2:
+        case Key::KEY_2:
         SetMoveSpeedArrayIndex( 1 );
         break;
-    case DVKEY_3:
+        case Key::KEY_3:
         SetMoveSpeedArrayIndex( 2 );
         break;
-    case DVKEY_4:
+        case Key::KEY_4:
         SetMoveSpeedArrayIndex( 3 );
         break;
 
@@ -391,8 +391,8 @@ void SceneCameraSystem::Draw()
                     sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
                 }
             }
-		}
-	}
+        }
+    }
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -644,8 +644,8 @@ void SceneCameraSystem::MoveToSelection()
     if ( sceneEditor == nullptr )
         return;
 
-    auto selection = sceneEditor->selectionSystem->GetSelection();
-    if ( selection.Size() > 0 )
+    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    if (!selection.IsEmpty())
     {
         sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
     }

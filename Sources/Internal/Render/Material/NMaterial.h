@@ -39,6 +39,8 @@
 #include "Render/Shader.h"
 #include "Scene3D/DataNode.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {
 struct MaterialBufferBinding;
@@ -99,6 +101,8 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicPropertiesInsp;
     friend class NMaterialStateDynamicTexturesInsp;
 
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_NMATERIAL)
+
 public:
     NMaterial();
     ~NMaterial();
@@ -143,6 +147,7 @@ public:
     Texture* GetLocalTexture(const FastName& slotName);
     Texture* GetEffectiveTexture(const FastName& slotName);
     void CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const;
+    bool ContainsTexture(Texture* texture) const;
 
     // flags
     void AddFlag(const FastName& flagName, int32 value);
@@ -167,6 +172,12 @@ public:
     // if material doesn't support pass active variant will be not changed
     // later add engine flags here
     bool PreBuildMaterial(const FastName& passName);
+
+    // RHI_COMPLETE - it's temporary solution to avoid FX loading and shaders compilation after loading
+    void PreCacheFX();
+    void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
+
+    static const float32 DEFAULT_LIGHTMAP_SIZE;
 
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);

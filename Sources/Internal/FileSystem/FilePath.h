@@ -102,9 +102,27 @@ public:
         \brief Function to retrieve pathname
         \returns pathname value
 	 */
-    const String GetAbsolutePathname() const;
+    String GetAbsolutePathname() const;
 
-	/**
+#ifdef __DAVAENGINE_WINDOWS__
+    using NativeStringType = WideString;
+#else
+    using NativeStringType = String;
+#endif // __DAVAENGINE_WINDOWS__
+
+    /**
+        \brief Function to retrieve pathname
+        \returns pathname value in native string type
+	 */
+    NativeStringType GetNativeAbsolutePathname() const;
+
+    /**
+        \brief Function to create an object from native string
+        \returns FilePath object
+	 */
+    static FilePath FromNativeString(const NativeStringType& path);
+
+    /**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
         \returns filename value
 	 */
@@ -154,10 +172,9 @@ public:
         \brief Function to retrieve string path value as URL for Web Browser
         \returns path as URL
      */
-    const String AsURL() const;
-    
-    
-	/**
+    String AsURL() const;
+
+    /**
         \brief Function for replacement of original filename
         \param[in] filename is new filename
 	 */
@@ -263,12 +280,11 @@ public:
 	static void AddResourcesFolder(const FilePath & folder);
 	static void AddTopResourcesFolder(const FilePath & folder);
     static void RemoveResourcesFolder(const FilePath & folder);
-    static const List<FilePath> GetResourcesFolders();
-    
-    
-    bool Exists() const;
-    
-	int32 Compare(const FilePath &right) const;
+    static const List<FilePath>& GetResourcesFolders();
+
+    DAVA_DEPRECATED(bool Exists() const);
+
+    int32 Compare(const FilePath& right) const;
 
 protected:
     

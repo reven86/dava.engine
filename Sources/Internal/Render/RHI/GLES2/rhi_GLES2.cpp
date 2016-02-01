@@ -40,6 +40,20 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_ARB)
+#define GL_RGBA32F GL_RGBA32F_ARB
+#endif
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_EXT)
+#define GL_RGBA32F GL_RGBA32F_EXT
+#endif
+
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_ARB)
+#define GL_RGBA16F GL_RGBA16F_ARB
+#endif
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_EXT)
+#define GL_RGBA16F GL_RGBA16F_EXT
+#endif
+
 GLuint _GLES2_Binded_FrameBuffer = 0;
 GLuint _GLES2_Default_FrameBuffer = 0;
 void* _GLES2_Native_Window = nullptr;
@@ -49,10 +63,16 @@ void (*_GLES2_ReleaseContext)() = nullptr;
 int _GLES2_DefaultFrameBuffer_Width = 0;
 int _GLES2_DefaultFrameBuffer_Height = 0;
 GLuint _GLES2_LastSetIB = 0;
+DAVA::uint8* _GLES2_LastSetIndices = nullptr;
 GLuint _GLES2_LastSetVB = 0;
 GLuint _GLES2_LastSetTex0 = 0;
 GLenum _GLES2_LastSetTex0Target = GL_TEXTURE_2D;
 int _GLES2_LastActiveTexture = -1;
+bool _GLES2_IsGlDepth24Stencil8Supported = true;
+bool _GLES2_IsGlDepthNvNonLinearSupported = false;
+bool _GLES2_UseUserProvidedIndices = false;
+rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
+DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC _GLES2_WindowDC = 0;
@@ -71,8 +91,13 @@ static bool PVRTC2_Supported = false;
 static bool ETC1_Supported = false;
 static bool ETC2_Supported = false;
 static bool EAC_Supported = false;
+static bool DXT_Supported = false;
 static bool Float_Supported = false;
 static bool Half_Supported = false;
+static bool RG16F_Supported = false;
+static bool RGBA16F_Supported = false;
+static bool RG32F_Supported = false;
+static bool RGBA32F_Supported = false;
 
 static RenderDeviceCaps _GLES2_DeviceCaps = {};
 
@@ -107,10 +132,13 @@ gles2_TextureFormatSupported(TextureFormat format)
     case TEXTURE_FORMAT_R4G4B4A4:
     case TEXTURE_FORMAT_R8:
     case TEXTURE_FORMAT_R16:
+        supported = true;
+        break;
+
     case TEXTURE_FORMAT_DXT1:
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
-        supported = true;
+        supported = DXT_Supported;
         break;
 
     case TEXTURE_FORMAT_A16R16G16B16:
@@ -176,35 +204,78 @@ gles_check_GL_extensions()
         ETC1_Supported = strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture") != nullptr;
         ETC2_Supported = strstr(ext, "GL_OES_compressed_ETC2_RGB8_texture") != nullptr;
         EAC_Supported = ETC2_Supported;
+        DXT_Supported = (strstr(ext, "GL_EXT_texture_compression_s3tc") != nullptr) || (strstr(ext, "GL_NV_texture_compression_s3tc") != nullptr);
         Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
+
+        RGBA16F_Supported = strstr(ext, "OES_texture_half_float") != nullptr;
+        RGBA32F_Supported = (strstr(ext, "OES_texture_float") != nullptr) || (strstr(ext, "ARB_texture_float") != nullptr);
+
+        bool hasARBTextureRG = (strstr(ext, "GL_ARB_texture_rg") != nullptr);
+        bool hasEXTTextureRG = (strstr(ext, "EXT_texture_rg") != nullptr);
+        RG16F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA16F_Supported;
+        RG32F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA32F_Supported;
 
         _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
         _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
+
+#if defined(__DAVAENGINE_ANDROID__)
+        _GLES2_IsGlDepth24Stencil8Supported = (strstr(ext, "GL_DEPTH24_STENCIL8") != nullptr) || (strstr(ext, "GL_OES_packed_depth_stencil") != nullptr) || (strstr(ext, "GL_EXT_packed_depth_stencil") != nullptr);
+#else
+        _GLES2_IsGlDepth24Stencil8Supported = true;
+#endif
+
+        _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
     }
 
     const char* version = (const char*)glGetString(GL_VERSION);
     if (!IsEmptyString(version))
     {
+        int majorVersion = 2;
+        const char* dotChar = strchr(version, '.');
+        if (dotChar && dotChar != version)
+        {
+            majorVersion = atoi(dotChar - 1);
+        }
+
         if (strstr(version, "OpenGL ES"))
         {
-            const char* dotChar = strchr(version, '.');
-            if (dotChar && dotChar != version)
+            if (majorVersion >= 3)
             {
-                int majorVersion = atoi(dotChar - 1);
-                if (majorVersion >= 3)
-                {
-                    _GLES2_DeviceCaps.is32BitIndicesSupported = true;
-                    _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
-                }
+                _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+                _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             }
         }
         else
         {
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
-            _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
+            _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
+
+#if defined(GL_R16F) && defined(GL_RG16F)
+            RG16F_Supported = majorVersion >= 3;
+#endif
+#if defined(GL_RGBA16F)
+            RGBA16F_Supported = majorVersion >= 3;
+#endif
+#if defined(GL_R32F) && defined(GL_RG32F)
+            RG32F_Supported = majorVersion >= 3;
+#endif
+#if defined(GL_RGBA32F)
+            RGBA32F_Supported = majorVersion >= 3;
+#endif
+        }
+    }
+
+    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    if (!IsEmptyString(renderer))
+    {
+        if (strstr(renderer, "Mali"))
+        {
+            // drawing from memory is worst case scenario,
+            // unless running on some buggy piece of shit
+            _GLES2_UseUserProvidedIndices = true;
         }
     }
 }
@@ -277,6 +348,10 @@ gles2_Reset(const ResetParam& param)
     _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
     android_gl_reset(param.window);
+#elif defined(__DAVAENGINE_IPHONE__)
+    ios_gl_reset(param.window);
+#elif defined(__DAVAENGINE_MACOS__)
+    macos_gl_reset(param);
 #endif
 }
 
@@ -288,6 +363,17 @@ gles2_InvalidateCache()
     PipelineStateGLES2::InvalidateCache();
     DepthStencilStateGLES2::InvalidateCache();
     TextureGLES2::InvalidateCache();
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_TakeScreenshot(ScreenShotCallback callback)
+{
+    _GLES2_ScreenshotCallbackSync.Lock();
+    DVASSERT(!_GLES2_PendingScreenshotCallback);
+    _GLES2_PendingScreenshotCallback = callback;
+    _GLES2_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -422,6 +508,7 @@ void gles2_Initialize(const InitParam& param)
         VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
         IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
         QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+        PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
         TextureGLES2::SetupDispatch(&DispatchGLES2);
         PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
         ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -439,6 +526,7 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
         DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+        DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -452,6 +540,21 @@ void gles2_Initialize(const InitParam& param)
             ConstBufferGLES2::Init(param.maxConstBufferCount);
         if (param.maxTextureCount)
             TextureGLES2::Init(param.maxTextureCount);
+
+        if (param.maxTextureSetCount)
+            InitTextreSetPool(param.maxTextureSetCount);
+        if (param.maxSamplerStateCount)
+            SamplerStateGLES2::Init(param.maxSamplerStateCount);
+        if (param.maxPipelineStateCount)
+            PipelineStateGLES2::Init(param.maxPipelineStateCount);
+        if (param.maxDepthStencilStateCount)
+            DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+        if (param.maxRenderPassCount)
+            RenderPassGLES2::Init(param.maxRenderPassCount);
+        if (param.maxCommandBuffer)
+            CommandBufferGLES2::Init(param.maxCommandBuffer);
+        if (param.maxPacketListCount)
+            InitPacketListPool(param.maxPacketListCount);
 
         uint32 ringBufferSize = 4 * 1024 * 1024;
         if (param.shaderConstRingBufferSize)
@@ -468,7 +571,10 @@ void gles2_Initialize(const InitParam& param)
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
         glDebugMessageCallback(&_OGLErrorCallback, 0);
+
 #endif
+
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -500,7 +606,10 @@ void gles2_Initialize(const InitParam& param)
 
 void gles2_Initialize(const InitParam& param)
 {
-    macos_gl_init(param.window);
+    macos_gl_init(param);
+
+    _GLES2_DefaultFrameBuffer_Width = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
 
     _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &macos_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;
@@ -513,6 +622,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
@@ -530,6 +654,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -547,6 +672,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -559,6 +685,8 @@ void gles2_Initialize(const InitParam& param)
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
+
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -591,6 +719,21 @@ void gles2_Initialize(const InitParam& param)
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
 
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
+
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
@@ -607,6 +750,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -624,6 +768,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -671,6 +816,21 @@ void gles2_Initialize(const InitParam& param)
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
 
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
+
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
@@ -687,6 +847,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -704,6 +865,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -815,8 +977,8 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         break;
 
     case TEXTURE_FORMAT_DXT1:
-        *internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-        *format = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        *internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        *format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
@@ -900,6 +1062,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
         *internalFormat = GL_COMPRESSED_R11_EAC;
@@ -907,6 +1070,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11_SIGNED:
         *internalFormat = GL_COMPRESSED_SIGNED_R11_EAC;
@@ -914,6 +1078,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED:
         *internalFormat = GL_COMPRESSED_RG11_EAC;
@@ -921,6 +1086,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11G11_SIGNED:
         *internalFormat = GL_COMPRESSED_SIGNED_RG11_EAC;
@@ -954,8 +1120,69 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         success = true;
         break;
 
+#if defined(GL_R16F)
+    case TEXTURE_FORMAT_R16F:
+        *internalFormat = GL_R16F;
+        *format = GL_RED;
+        *type = GL_HALF_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RG16F)
+    case TEXTURE_FORMAT_RG16F:
+        *internalFormat = GL_RG16F;
+        *format = GL_RG;
+        *type = GL_HALF_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RGBA16F)
+    case TEXTURE_FORMAT_RGBA16F:
+        *internalFormat = GL_RGBA16F;
+        *format = GL_RGBA;
+        *type = GL_HALF_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_R32F)
+    case TEXTURE_FORMAT_R32F:
+        *internalFormat = GL_R32F;
+        *format = GL_RED;
+        *type = GL_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RG32F)
+    case TEXTURE_FORMAT_RG32F:
+        *internalFormat = GL_RG32F;
+        *format = GL_RG;
+        *type = GL_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
+#if defined(GL_RGBA32F)
+    case TEXTURE_FORMAT_RGBA32F:
+        *internalFormat = GL_RGBA32F;
+        *format = GL_RGBA;
+        *type = GL_FLOAT;
+        *compressed = false;
+        success = true;
+        break;
+#endif
+
     default:
         success = false;
+        DVASSERT_MSG(0, "Unsupported or unknown texture format specified");
     }
 
     return success;

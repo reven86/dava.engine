@@ -153,8 +153,6 @@ ParticleLayer::ParticleLayer()
 
 ParticleLayer::~ParticleLayer()
 {
-	
-	SafeRelease(sprite);
 	SafeRelease(innerEmitter);
 	
 	CleanupForces();
@@ -247,37 +245,35 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->inheritPosition = inheritPosition;
     dstLayer->startTime = startTime;
     dstLayer->endTime = endTime;
-	
-	
-	dstLayer->isLooped = isLooped;
-	dstLayer->deltaTime = deltaTime;
-	dstLayer->deltaVariation = deltaVariation;
-	dstLayer->loopVariation = loopVariation;
-	dstLayer->loopEndTime = loopEndTime;
-	
-	dstLayer->isDisabled = isDisabled;
 
-	dstLayer->type = type;
+    dstLayer->isLooped = isLooped;
+    dstLayer->deltaTime = deltaTime;
+    dstLayer->deltaVariation = deltaVariation;
+    dstLayer->loopVariation = loopVariation;
+    dstLayer->loopEndTime = loopEndTime;
+
+    dstLayer->isDisabled = isDisabled;
+
+    dstLayer->type = type;
     dstLayer->degradeStrategy = degradeStrategy;
-	SafeRelease(dstLayer->sprite);
-	dstLayer->sprite = SafeRetain(sprite);
-	dstLayer->layerPivotPoint = layerPivotPoint;	
-	dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
+    dstLayer->sprite = sprite;
+    dstLayer->layerPivotPoint = layerPivotPoint;
+    dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
 
-	dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
-	dstLayer->frameOverLifeFPS = frameOverLifeFPS;
-	dstLayer->randomFrameOnStart = randomFrameOnStart;
-	dstLayer->loopSpriteAnimation = loopSpriteAnimation;
-	dstLayer->particleOrientation = particleOrientation;
+    dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
+    dstLayer->frameOverLifeFPS = frameOverLifeFPS;
+    dstLayer->randomFrameOnStart = randomFrameOnStart;
+    dstLayer->loopSpriteAnimation = loopSpriteAnimation;
+    dstLayer->particleOrientation = particleOrientation;
 
-	dstLayer->scaleVelocityBase = scaleVelocityBase;
-	dstLayer->scaleVelocityFactor = scaleVelocityFactor;
-    
-	dstLayer->spritePath = spritePath;
-	dstLayer->activeLODS = activeLODS;
-	dstLayer->isLong = isLong;
+    dstLayer->scaleVelocityBase = scaleVelocityBase;
+    dstLayer->scaleVelocityFactor = scaleVelocityFactor;
 
-	return dstLayer;
+    dstLayer->spritePath = spritePath;
+    dstLayer->activeLODS = activeLODS;
+    dstLayer->isLong = isLong;
+
+    return dstLayer;
 }
 
 bool ParticleLayer::IsLodActive(int32 lod)
@@ -378,17 +374,14 @@ void ParticleLayer::UpdateLayerTime(float32 startTime, float32 endTime)
 	UpdatePropertyLineKeys(PropertyLineHelper::GetValueLine(angleVariation).Get(), startTime, translateTime, endTime);
 }
 
+void ParticleLayer::SetSprite(const FilePath& path)
+{
+    spritePath = path;
 
-
-void ParticleLayer::SetSprite(Sprite * _sprite)
-{    
-	SafeRelease(sprite);
-	sprite = SafeRetain(_sprite);
-
-	if(sprite)
-	{
-		spritePath = sprite->GetRelativePathname();
-	}
+    if (type != TYPE_SUPEREMITTER_PARTICLES)
+    {
+        sprite.reset(Sprite::Create(spritePath));
+    }
 }
 
 void ParticleLayer::SetPivotPoint(Vector2 pivot)
@@ -437,46 +430,37 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	const YamlNode * pivotPointNode = node->Get("pivotPoint");
 	
-    SetSprite(NULL);
 	const YamlNode * spriteNode = node->Get("sprite");
 	if (spriteNode && !spriteNode->AsString().empty())
 	{
 		// Store the absolute path to sprite.
-		spritePath = FilePath(configPath.GetDirectory(), spriteNode->AsString());
-
-        if (type != TYPE_SUPEREMITTER_PARTICLES)
+        FilePath spritePath = configPath.GetDirectory() + spriteNode->AsString();
+        SetSprite(spritePath);
+    }
+    if (pivotPointNode)
+    {
+        Vector2 _pivot = pivotPointNode->AsPoint();
+        if ((format == 0) && sprite)
         {
-		    Sprite * _sprite = Sprite::Create(spritePath);
-		    SetSprite(_sprite);
-            SafeRelease(_sprite);
+            float32 ny = -_pivot.x / sprite->GetWidth() * 2;
+            float32 nx = -_pivot.y / sprite->GetHeight() * 2;
+            _pivot.Set(nx, ny);
         }
-	}	
-	if(pivotPointNode)
-	{
-		Vector2 _pivot = pivotPointNode->AsPoint();
-		if ((format == 0)&&sprite)
-		{
-			
-			float32 ny=-_pivot.x/sprite->GetWidth()*2;
-			float32 nx=-_pivot.y/sprite->GetHeight()*2;
-			_pivot.Set(nx, ny);
-		}
 
-		SetPivotPoint(_pivot);
-	}
+        SetPivotPoint(_pivot);
+    }
 
-	const YamlNode *lodsNode = node->Get("activeLODS");
-	if (lodsNode)
-	{
-		const Vector<YamlNode*> & vec = lodsNode->AsVector();
-		for (uint32 i=0; i<(uint32)vec.size(); ++i)
-			SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
-	}
+    const YamlNode* lodsNode = node->Get("activeLODS");
+    if (lodsNode)
+    {
+        const Vector<YamlNode*>& vec = lodsNode->AsVector();
+        for (uint32 i = 0; i < (uint32)vec.size(); ++i)
+            SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
+    }
 
-
-	colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
-	colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
-	alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
+    colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
+    colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
+    alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
 	
 	const YamlNode* frameOverLifeEnabledNode = node->Get("frameOverLifeEnabled");
 	if (frameOverLifeEnabledNode)
@@ -647,9 +631,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         enableFog = fogNode->AsBool();
     }
 
-	const YamlNode * frameBlendNode = node->Get("enableFrameBlend");	
-	if (frameBlendNode)
-	{
+    const YamlNode* frameBlendNode = node->Get("enableFrameBlend");
+    if (frameBlendNode)
+    {
         enableFrameBlend = frameBlendNode->AsBool();
     }
 
@@ -657,40 +641,40 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     endTime = 100000000.0f;
     const YamlNode* startTimeNode = node->Get("startTime");
     if (startTimeNode)
-		startTime = startTimeNode->AsFloat();
+        startTime = startTimeNode->AsFloat();
 
-	const YamlNode * endTimeNode = node->Get("endTime");
-	if (endTimeNode)
-		endTime = endTimeNode->AsFloat();
-		
-	isLooped = false;	
-	deltaTime = 0.0f;
-	deltaVariation = 0.0f;
-	loopVariation = 0.0f;
-	
-	const YamlNode * isLoopedNode = node->Get("isLooped");
-	if (isLoopedNode)
-		isLooped = isLoopedNode->AsBool();
-		
-	const YamlNode * deltaTimeNode = node->Get("deltaTime");
-	if (deltaTimeNode)
-		deltaTime = deltaTimeNode->AsFloat();
-		
-	const YamlNode * deltaVariationNode = node->Get("deltaVariation");
-	if (deltaVariationNode)
-		deltaVariation = deltaVariationNode->AsFloat();
-		
-	const YamlNode * loopVariationNode = node->Get("loopVariation");
-	if (loopVariationNode)
-		loopVariation = loopVariationNode->AsFloat();
-		
-	const YamlNode * loopEndTimeNode = node->Get("loopEndTime");
-	if (loopEndTimeNode)
-		loopEndTime = loopEndTimeNode->AsFloat();				
+    const YamlNode* endTimeNode = node->Get("endTime");
+    if (endTimeNode)
+        endTime = endTimeNode->AsFloat();
 
-	/*validate all time depended property lines*/	
-	UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
-	UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
+    isLooped = false;
+    deltaTime = 0.0f;
+    deltaVariation = 0.0f;
+    loopVariation = 0.0f;
+
+    const YamlNode* isLoopedNode = node->Get("isLooped");
+    if (isLoopedNode)
+        isLooped = isLoopedNode->AsBool();
+
+    const YamlNode* deltaTimeNode = node->Get("deltaTime");
+    if (deltaTimeNode)
+        deltaTime = deltaTimeNode->AsFloat();
+
+    const YamlNode* deltaVariationNode = node->Get("deltaVariation");
+    if (deltaVariationNode)
+        deltaVariation = deltaVariationNode->AsFloat();
+
+    const YamlNode* loopVariationNode = node->Get("loopVariation");
+    if (loopVariationNode)
+        loopVariation = loopVariationNode->AsFloat();
+
+    const YamlNode* loopEndTimeNode = node->Get("loopEndTime");
+    if (loopEndTimeNode)
+        loopEndTime = loopEndTimeNode->AsFloat();
+
+    /*validate all time depended property lines*/
+    UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
+    UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(numberVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(size.Get(), startTime, endTime);

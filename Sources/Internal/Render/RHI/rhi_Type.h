@@ -52,11 +52,14 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = (uint32)(-2);
 
+typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
+
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
+    RESOURCE_PERFQUERY_SET = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -345,7 +348,15 @@ enum TextureFormat
     TEXTURE_FORMAT_EAC_R11G11_SIGNED,
 
     TEXTURE_FORMAT_D16,
-    TEXTURE_FORMAT_D24S8
+    TEXTURE_FORMAT_D24S8,
+
+    TEXTURE_FORMAT_R16F,
+    TEXTURE_FORMAT_RG16F,
+    TEXTURE_FORMAT_RGBA16F,
+
+    TEXTURE_FORMAT_R32F,
+    TEXTURE_FORMAT_RG32F,
+    TEXTURE_FORMAT_RGBA32F,
 };
 
 enum TextureFace
@@ -470,6 +481,8 @@ Descriptor
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;
     uint32 needRestore : 1;
+    uint32 cpuAccessRead : 1;
+    uint32 cpuAccessWrite : 1;
 
     Descriptor(uint32 w, uint32 h, TextureFormat fmt)
         : type(TEXTURE_TYPE_2D)
@@ -480,6 +493,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -492,6 +507,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -629,8 +646,7 @@ enum CmpFunc
 
 namespace DepthStencilState
 {
-struct
-Descriptor
+struct Descriptor
 {
     uint32 depthTestEnabled : 1;
     uint32 depthWriteEnabled : 1;
@@ -638,15 +654,19 @@ Descriptor
 
     uint32 stencilEnabled : 1;
     uint32 stencilTwoSided : 1;
+    uint32 pad : 25;
+
     struct
     {
         uint8 readMask;
         uint8 writeMask;
         uint8 refValue;
+        uint8 pad8;
         uint32 func : 3;
         uint32 failOperation : 3;
         uint32 depthFailOperation : 3;
         uint32 depthStencilPassOperation : 3;
+        uint32 pad32 : 20;
     } stencilFront, stencilBack;
 
     Descriptor()
@@ -655,6 +675,7 @@ Descriptor
         , depthFunc(CMP_LESSEQUAL)
         , stencilEnabled(false)
         , stencilTwoSided(false)
+        , pad(0)
     {
         stencilFront.readMask = 0xFF;
         stencilFront.writeMask = 0xFF;
@@ -663,6 +684,8 @@ Descriptor
         stencilFront.failOperation = STENCILOP_KEEP;
         stencilFront.depthFailOperation = STENCILOP_KEEP;
         stencilFront.depthStencilPassOperation = STENCILOP_KEEP;
+        stencilFront.pad8 = 0;
+        stencilFront.pad32 = 0;
 
         stencilBack.readMask = 0xFF;
         stencilBack.writeMask = 0xFF;
@@ -671,6 +694,8 @@ Descriptor
         stencilBack.failOperation = STENCILOP_KEEP;
         stencilBack.depthFailOperation = STENCILOP_KEEP;
         stencilBack.depthStencilPassOperation = STENCILOP_KEEP;
+        stencilBack.pad8 = 0;
+        stencilBack.pad32 = 0;
     }
 };
 }
@@ -726,12 +751,16 @@ RenderPassConfig
     ColorBuffer
     {
         Handle texture;
+        TextureFace textureFace;
+        uint32 textureLevel;
         LoadAction loadAction;
         StoreAction storeAction;
         float clearColor[4];
 
         ColorBuffer()
             : texture(InvalidHandle)
+            , textureFace(TEXTURE_FACE_NEGATIVE_X)
+            , textureLevel(0)
             , loadAction(LOADACTION_CLEAR)
             , storeAction(STOREACTION_NONE)
         {
@@ -765,6 +794,8 @@ RenderPassConfig
     DepthStencilBuffer depthStencilBuffer;
 
     Handle queryBuffer;
+    uint32 PerfQueryIndex0;
+    uint32 PerfQueryIndex1;
     Viewport viewport;
 
     int priority;
@@ -774,6 +805,8 @@ RenderPassConfig
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
+        , PerfQueryIndex0(DAVA::InvalidIndex)
+        , PerfQueryIndex1(DAVA::InvalidIndex)
     {
     }
 };
@@ -859,8 +892,6 @@ nonaliased_cast(src x)
 
     return tmp.d;
 }
-
-const unsigned InvalidIndex = (unsigned)(-1);
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define L_ALIGNED_SIZE(size, align) (((size) + ((align)-1)) & (~((align)-1)))

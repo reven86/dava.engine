@@ -38,10 +38,10 @@
 #include "_mcpp.h"
 
 #if PREPROCESSED
-#include "mcpp.H"
+#include "mcpp.h"
 #else
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #endif
 
 static int do_if(int hash, const char* directive_name);
@@ -1516,7 +1516,7 @@ int* cmp /* Result of comparison */
 
     for (hash = 0, np = name; *np != EOS;)
         hash += *np++;
-    hash += s_name = (size_t)(np - name);
+    hash += (int)(s_name = (size_t)(np - name));
     s_name++;
     prevp = &symtab[hash & SBMASK];
     *cmp = -1; /* Initialize           */

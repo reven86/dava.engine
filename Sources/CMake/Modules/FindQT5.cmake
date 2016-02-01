@@ -24,6 +24,9 @@ macro ( qt_deploy )
             COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
             "${QT5_PATH_WIN}/bin/"
             $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
             --dir  "${DEPLOY_DIR}/"
             "${QML_SCAN_FLAG}" "$<TARGET_FILE:${PROJECT_NAME}>"
             ${QT_ITEMS_LIST}
@@ -92,10 +95,11 @@ foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     endif()
 
     ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")
+    LIST(APPEND DEPLOY_LIST "Qt5${COMPONENT}")
     LIST(APPEND LINKAGE_LIST "Qt5::${COMPONENT}")
 endforeach()
 
-append_qt5_deploy(QT5_FIND_COMPONENTS)
+append_qt5_deploy(DEPLOY_LIST)
 set_linkage_qt5_modules(LINKAGE_LIST)
 set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 

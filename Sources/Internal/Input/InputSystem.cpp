@@ -33,68 +33,72 @@
 #include "UI/UIControlSystem.h"
 #include "Render/Cursor.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-InputSystem::InputSystem() :
-keyboard(0),
-gamepad(0),
-isMultitouchEnabled(true)
+InputSystem::InputSystem()
+    : keyboard(0)
+    , gamepad(0)
+    , isMultitouchEnabled(true)
 {
     keyboard = new KeyboardDevice();
     gamepad = new GamepadDevice();
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
-    
+
 InputSystem::~InputSystem()
 {
     SafeRelease(gamepad);
     SafeRelease(keyboard);
 }
 
-void InputSystem::ProcessInputEvent(UIEvent * event)
+void InputSystem::ProcessInputEvent(UIEvent* event)
 {
-	for(Vector<InputCallback>::iterator it = callbacks.begin(); it != callbacks.end(); it++)
-	{
-        if (event->phase == UIEvent::Phase::CHAR && ((*it).devices & INPUT_DEVICE_KEYBOARD))
-            (*it)(event);
-        else if (event->phase == UIEvent::Phase::JOYSTICK && ((*it).devices & INPUT_DEVICE_JOYSTICK))
-            (*it)(event);
-        else if (((*it).devices & INPUT_DEVICE_TOUCH))
-            (*it)(event);
-	}
+    for (InputCallback& iCallBack : callbacks)
+    {
+        if (event->device == UIEvent::Device::KEYBOARD && (iCallBack.devices & INPUT_DEVICE_KEYBOARD))
+        {
+            iCallBack(event);
+        }
+        else if (event->device == UIEvent::Device::GAMEPAD && (iCallBack.devices & INPUT_DEVICE_JOYSTICK))
+        {
+            iCallBack(event);
+        }
+        else if ((event->device == UIEvent::Device::TOUCH_SURFACE || event->device == UIEvent::Device::MOUSE) && (iCallBack.devices & INPUT_DEVICE_TOUCH))
+        {
+            iCallBack(event);
+        }
+    }
 }
 
 void InputSystem::AddInputCallback(const InputCallback& inputCallback)
 {
-	callbacks.push_back(inputCallback);
+    callbacks.push_back(inputCallback);
 }
 
 bool InputSystem::RemoveInputCallback(const InputCallback& inputCallback)
 {
-	Vector<InputCallback>::iterator it = find(callbacks.begin(), callbacks.end(), inputCallback);
-	if(it != callbacks.end())
-		callbacks.erase(it);
-	else
-		return false;
+    Vector<InputCallback>::iterator it = find(callbacks.begin(), callbacks.end(), inputCallback);
+    if (it != callbacks.end())
+        callbacks.erase(it);
+    else
+        return false;
 
-	return true;
+    return true;
 }
 
 void InputSystem::RemoveAllInputCallbacks()
 {
-	callbacks.clear();
+    callbacks.clear();
 }
 
 void InputSystem::OnBeforeUpdate()
 {
-    keyboard->OnBeforeUpdate();
 }
-    
+
 void InputSystem::OnAfterUpdate()
 {
-    keyboard->OnAfterUpdate();
+    keyboard->OnFinishFrame();
 }
 
 InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()
@@ -114,6 +118,4 @@ bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
     return mode == eMouseCaptureMode::OFF;
 #endif
 }
-
-
 };

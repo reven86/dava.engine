@@ -65,11 +65,11 @@ static const char* vp__dbg_ptc =
 "\n"
 "VPROG_BEGIN\n"
 "\n"
-"    float3  in_position = VP_IN_POSITION;\n"
+"    float3  in_position = VP_IN_POSITION.xyz;\n"
 "    float2  in_texcoord = VP_IN_TEXCOORD;\n"
 "    float4  in_color    = VP_IN_COLOR;\n"
 "\n"
-"    VP_OUT_POSITION     = mul( XForm, float4(in_position.xyz,1.0) );\n"
+"    VP_OUT_POSITION     = mul( XForm, float4(in_position, 1.0) );\n"
 "    VP_OUT(texcoord)    = in_texcoord;\n"
 "    VP_OUT(color)       = in_color;\n"
 "\n"
@@ -111,10 +111,10 @@ static const char* vp__dbg_pc =
 "\n"
 "VPROG_BEGIN\n"
 "\n"
-"    float3  in_position = VP_IN_POSITION;\n"
+"    float3  in_position = VP_IN_POSITION.xyz;\n"
 "    float4  in_color    = VP_IN_COLOR;\n"
 "\n"
-"    VP_OUT_POSITION     = mul( XForm, float4(in_position.xyz,1.0) );\n"
+"    VP_OUT_POSITION     = mul( XForm, float4(in_position,1.0) );\n"
 "    VP_OUT(color)       = in_color;\n"
 "\n"
 "VPROG_END\n";
@@ -411,7 +411,7 @@ template <typename Vertex,rhi::PrimitiveType Prim>
 inline void
 DbgDraw::Buffer<Vertex,Prim>::flush_2d( rhi::Handle cmd_buf )
 {
-    if( _vb[_cur_vb_i] != InvalidIndex )
+    if( _vb[_cur_vb_i] != DAVA::InvalidIndex )
     {    
         if( _cur_v )
             rhi::VertexBuffer_Unmap( _vb[_cur_vb_i] );
@@ -441,7 +441,7 @@ template <typename Vertex, rhi::PrimitiveType Prim>
 inline void
 DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
 {
-    if (_vb[_cur_vb_i] != InvalidIndex)
+    if (_vb[_cur_vb_i] != DAVA::InvalidIndex)
     {
         if (_cur_v)
             rhi::UnmapVertexBuffer(_vb[_cur_vb_i]);

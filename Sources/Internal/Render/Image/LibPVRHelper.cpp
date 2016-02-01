@@ -126,7 +126,7 @@ LibPVRHelper::LibPVRHelper()
     supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::IsMyImage(DAVA::File *file) const
+bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
 {
     bool isPvrFile = false;
 

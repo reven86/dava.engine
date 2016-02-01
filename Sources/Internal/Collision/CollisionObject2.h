@@ -70,24 +70,24 @@ public:
     eType type;
 
     Vector2 position; //	Position of the collision object pivot
-    Vector2 pivot;			//	Shift of the object inside the sprite
-	Vector2 scale;			//  Current scale
-	float32 angle;			//  Current angle
+    Vector2 pivot; //	Shift of the object inside the sprite
+    Vector2 scale; //  Current scale
+    float32 angle; //  Current angle
 
-	Circle circle;			// circle in case if it's circle collision object
-	//float32 basePolygonRadius;	//	Square radius of the rotated object
-	Vector2 basePolygonCenter;	// real center of the collision polygon
+    Circle circle; // circle in case if it's circle collision object
+    //float32 basePolygonRadius;	//	Square radius of the rotated object
+    Vector2 basePolygonCenter; // real center of the collision polygon
 
-	//Vector2 updatedCenter;		// real center of the collision polygon
-	ContactManifold2 manifold;
-	
-	Polygon2 * basePolygon;
-	Polygon2 polygon;
-	AABBox2 bbox;
-	
-	uint32 updateFrameIndex;
-	bool collisionOnLastFrame;
-    
+    //Vector2 updatedCenter;		// real center of the collision polygon
+    ContactManifold2 manifold;
+
+    Polygon2* basePolygon;
+    Polygon2 polygon;
+    AABBox2 bbox;
+
+    uint32 updateFrameIndex;
+    bool collisionOnLastFrame;
+
     bool forceUpdate;
 	
 /*	int pointsCount;

@@ -279,12 +279,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.h">
-      <Filter>Internal\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h">
-      <Filter>Internal\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\DisplayMode.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
@@ -319,9 +313,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
@@ -559,15 +550,6 @@
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManager.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhone.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhoneImpl.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenTransition.h">
@@ -1174,9 +1156,6 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h">
       <Filter>Internal\DLC\Patcher</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>
@@ -1292,9 +1271,6 @@
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
-      <Filter>Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
       <Filter>Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
@@ -1729,6 +1705,18 @@
     <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.h">
       <Filter>Internal\Render\RHI\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
+      <Filter>Internal\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1786,15 +1774,6 @@
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\Core.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp">
@@ -1987,9 +1966,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreen.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenTransition.cpp">
@@ -2668,9 +2644,6 @@
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
       <Filter>Internal</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
-      <Filter>Internal</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
       <Filter>Internal\DataStorage\Windows</Filter>
     </ClCompile>
@@ -3081,6 +3054,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_VertexBufferDX11.cpp">
       <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp">
+      <Filter>Internal\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PerfQuerySetDX11.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PerfQuerySetDX9.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

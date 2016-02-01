@@ -49,11 +49,6 @@ class BaseModel : public IListModel
         {
         }
 
-        int columnCount() const override
-        {
-            return 1;
-        }
-
         const char* getDisplayText(int /*column*/) const override
         {
             return nullptr;
@@ -147,6 +142,11 @@ public:
     size_t size() const override
     {
         return items.size();
+    }
+
+    int columnCount() const override
+    {
+        return 1;
     }
 
 protected:
