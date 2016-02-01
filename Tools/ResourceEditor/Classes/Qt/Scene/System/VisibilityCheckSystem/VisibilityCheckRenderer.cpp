@@ -140,8 +140,7 @@ void VisibilityCheckRenderer::SetDelegate(VisibilityCheckRendererDelegate* de)
     renderDelegate = de;
 }
 
-void VisibilityCheckRenderer::RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
-                                                       const DAVA::Vector3& point, DAVA::Texture* cubemapTarget)
+void VisibilityCheckRenderer::RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, const DAVA::Vector3& point, DAVA::Texture* cubemapTarget)
 {
     renderTargetConfig.colorBuffer[0].texture = cubemapTarget->handle;
     renderTargetConfig.depthStencilBuffer.texture = cubemapTarget->handleDepthStencil;
@@ -152,7 +151,7 @@ void VisibilityCheckRenderer::RenderToCubemapFromPoint(DAVA::RenderSystem* rende
     for (DAVA::uint32 i = 0; i < 6; ++i)
     {
         SetupCameraToRenderFromPointToFaceIndex(point, i);
-        RenderWithCurrentSettings(renderSystem, fromCamera);
+        RenderWithCurrentSettings(renderSystem);
     }
 }
 
@@ -202,8 +201,7 @@ bool VisibilityCheckRenderer::ShouldRenderBatch(DAVA::RenderBatch* batch)
     return batch->GetMaterial()->GetEffectiveFXName() != DAVA::NMaterialName::SKYOBJECT;
 }
 
-void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
-                                                   DAVA::Camera* lodCamera, DAVA::Vector<DAVA::RenderBatch*>& batches)
+void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Vector<DAVA::RenderBatch*>& batches)
 {
     DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
     fromCamera->SetupDynamicParameters(false, nullptr);
@@ -245,7 +243,7 @@ void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSys
 void VisibilityCheckRenderer::PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
-    CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+    CollectRenderBatches(renderSystem, fromCamera, renderBatches);
 
     prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
@@ -262,10 +260,10 @@ void VisibilityCheckRenderer::PreRenderScene(DAVA::RenderSystem* renderSystem, D
     }
 }
 
-void VisibilityCheckRenderer::RenderWithCurrentSettings(DAVA::RenderSystem* renderSystem, DAVA::Camera* sceneCamera)
+void VisibilityCheckRenderer::RenderWithCurrentSettings(DAVA::RenderSystem* renderSystem)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
-    CollectRenderBatches(renderSystem, cubemapCamera, sceneCamera, renderBatches);
+    CollectRenderBatches(renderSystem, cubemapCamera, renderBatches);
 
     distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
@@ -300,12 +298,15 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
-void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* cubemap, const VisbilityPoint& vp)
+void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* batchesCamera,
+                                                        DAVA::Camera* fromCamera, DAVA::Texture* cubemap, const VisbilityPoint& vp)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     UpdateVisibilityMaterialProperties(cubemap, vp);
-    CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+    CollectRenderBatches(renderSystem, batchesCamera, renderBatches);
 
+    DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
+    fromCamera->SetupDynamicParameters(false, nullptr);
     visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
     visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
 
@@ -418,7 +419,7 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
 void VisibilityCheckRenderer::RenderToDistanceMapFromCamera(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
-    CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+    CollectRenderBatches(renderSystem, fromCamera, renderBatches);
 
     distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
@@ -469,7 +470,7 @@ void VisibilityCheckRenderer::RenderProgress(float ratio, const DAVA::Color& clr
 void VisibilityCheckRenderer::RenderWithReprojection(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
-    CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+    CollectRenderBatches(renderSystem, fromCamera, renderBatches);
 
     DAVA::Vector2 vpSize(static_cast<float>(reprojectionTexture->GetWidth()), static_cast<float>(reprojectionTexture->GetHeight()));
     reprojectionMaterial->SetPropertyValue(MaterialParamOrigin, fixedFrameCameraPosition.data);

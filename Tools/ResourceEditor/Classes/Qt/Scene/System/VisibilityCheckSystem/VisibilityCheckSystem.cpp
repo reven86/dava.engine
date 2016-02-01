@@ -66,8 +66,16 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
     renderer.SetDelegate(this);
 }
 
-VisibilityCheckSystem::~VisibilityCheckSystem()
+VisibilityCheckSystem::~VisibilityCheckSystem() = default;
+
+DAVA::Camera* VisibilityCheckSystem::GetFinalGatherCamera() const
 {
+    return GetScene()->GetDrawCamera();
+}
+
+DAVA::Camera* VisibilityCheckSystem::GetRenderCamera() const
+{
+    return GetScene()->GetCurrentCamera();
 }
 
 void VisibilityCheckSystem::ReleaseCubemapRenderTargets()
@@ -226,16 +234,14 @@ void VisibilityCheckSystem::Draw()
         dbg->DrawLine(point.point, point.point + 2.0f * point.normal, DAVA::Color(0.25f, 1.0f, 0.25f, 1.0f));
     }
 
-    auto fromCamera = GetScene()->GetCurrentCamera();
-
     DAVA::uint32 previousPointIndex = currentPointIndex;
     for (DAVA::uint32 cm = 0; (cm < VCSInternal::CUBEMAPS_POOL_SIZE) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
         const auto& point = controlPoints[pointIndex];
         auto cubemap = VCSInternal::CubemapRenderTargetAtIndex(cm);
-        renderer.RenderToCubemapFromPoint(rs, fromCamera, point.point, cubemap);
-        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemap, point);
+        renderer.RenderToCubemapFromPoint(rs, point.point, cubemap);
+        renderer.RenderVisibilityToTexture(rs, GetRenderCamera(), GetFinalGatherCamera(), cubemap, point);
     }
 
     if (shouldFixFrame && (currentPointIndex == controlPoints.size()) && (previousPointIndex < controlPoints.size()))
@@ -248,7 +254,7 @@ void VisibilityCheckSystem::Draw()
     {
         if ((currentPointIndex == controlPoints.size()) || renderer.FrameFixed())
         {
-            renderer.RenderCurrentOverlayTexture(rs, fromCamera);
+            renderer.RenderCurrentOverlayTexture(rs, GetFinalGatherCamera());
         }
 
         if (currentPointIndex < controlPoints.size())
@@ -307,7 +313,7 @@ void VisibilityCheckSystem::UpdatePointSet()
 void VisibilityCheckSystem::Prerender()
 {
     renderer.CreateOrUpdateRenderTarget(stateCache.viewportSize);
-    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera());
+    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetFinalGatherCamera());
 
     currentPointIndex = 0;
     shouldPrerender = false;
@@ -319,7 +325,7 @@ bool VisibilityCheckSystem::CacheIsValid()
     if (vpSize != stateCache.viewportSize)
         return false;
 
-    auto cam = GetScene()->GetCurrentCamera();
+    auto cam = GetFinalGatherCamera();
     if (cam != stateCache.camera)
         return false;
 
@@ -332,7 +338,7 @@ bool VisibilityCheckSystem::CacheIsValid()
 
 void VisibilityCheckSystem::BuildCache()
 {
-    stateCache.camera = GetScene()->GetCurrentCamera();
+    stateCache.camera = GetFinalGatherCamera();
     DVASSERT(stateCache.camera != nullptr)
 
     stateCache.viewportSize = DAVA::Size2i(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
