@@ -157,7 +157,7 @@ private:
 
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
-    SceneTreeDelegate* treeDelegate;
+    SceneTreeDelegate *treeDelegate;
 
     bool isInSync;
 

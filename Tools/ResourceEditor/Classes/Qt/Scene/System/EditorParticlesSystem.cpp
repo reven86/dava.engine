@@ -110,8 +110,8 @@ void EditorParticlesSystem::Draw()
         case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
         case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
         {
-            DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
-            }
+                DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
+			}
 			break;
 		case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
 			{

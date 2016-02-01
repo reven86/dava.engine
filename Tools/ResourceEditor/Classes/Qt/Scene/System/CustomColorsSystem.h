@@ -90,7 +90,7 @@ protected:
     void StoreSaveFileName(const FilePath& filePath);
 
     FilePath GetScenePath();
-    String GetRelativePathToScenePath(const FilePath& absolutePath);
+	String GetRelativePathToScenePath(const FilePath& absolutePath);
 	FilePath GetAbsolutePathFromScenePath(const String& relativePath);
 	String GetRelativePathToProjectPath(const FilePath& absolutePath);
 	FilePath GetAbsolutePathFromProjectPath(const String& relativePath);

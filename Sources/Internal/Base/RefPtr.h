@@ -78,9 +78,9 @@ public:
         SafeRetain(_ptr);
     }
 
-    T* Get() const
-    {
-        return _ptr;
+    T * Get() const
+	{
+		return _ptr;
 	}
 	
 	bool Valid() const

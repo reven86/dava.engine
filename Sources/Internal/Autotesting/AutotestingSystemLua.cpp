@@ -91,9 +91,9 @@ void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
         return nullptr;
     }
     else
-    {
-        void* mem = mspace_realloc(ud, ptr, nsize);
-            DVASSERT(mem);
+        {
+			void* mem = mspace_realloc(ud, ptr, nsize);
+			DVASSERT(mem);
 			return mem;
 		}
 	}
@@ -118,7 +118,7 @@ AutotestingSystemLua::~AutotestingSystemLua()
         return;
     }
     lua_close(luaState);
-    luaState = nullptr;
+        luaState = nullptr;
     
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     destroy_mspace(memorySpace);
@@ -134,9 +134,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
 void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 {
     if (luaState)
-    {
-        Logger::Debug("AutotestingSystemLua::Has initialised already.");
-            return;
+        {
+			Logger::Debug("AutotestingSystemLua::Has initialised already.");
+			return;
 		}
 
 		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
@@ -159,7 +159,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
         if (!LoadWrappedLuaObjects())
         {
             AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
-        }
+		}
         String automationAPIStrPath = AutotestingSystem::ResolvePathToAutomation("/Autotesting/Scripts/autotesting_api.lua");
 		if (automationAPIStrPath.empty() || !RunScriptFromFile(automationAPIStrPath))
 		{
@@ -256,8 +256,8 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
     }
 
     void AutotestingSystemLua::StackDump(lua_State* L)
-    {
-        Logger::FrameworkDebug("*** Stack Dump ***");
+	{
+		Logger::FrameworkDebug("*** Stack Dump ***");
 		int i;
 		int top = lua_gettop(L);
 
@@ -321,8 +321,8 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
         {
             deviceName = DeviceInfo::GetModel();
         }
-        else
-        {
+		else
+		{
 			deviceName = WStringToString(DeviceInfo::GetName());
 		}
 		replace(deviceName.begin(), deviceName.end(), ' ', '_');
@@ -570,7 +570,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
             {
                 break;
             }
-            WideString str;
+			WideString str;
             str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
             {
@@ -583,8 +583,8 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 
     String AutotestingSystemLua::GetText(UIControl* control)
     {
-        UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
-        if (uiStaticText)
+		UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
+		if (uiStaticText)
 		{
 			return UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
 		}
@@ -807,8 +807,8 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
         if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
         {
             Logger::Error("AutotestingSystemLua::LoadScript Error: unable to load %s", luaScript.c_str());
-            return false;
-        }
+			return false;
+		}
 		return true;
 	}
 

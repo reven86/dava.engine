@@ -64,7 +64,7 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 
     moveHood.colorX = DAVA::Color(1, 0, 0, 1);
     moveHood.colorY = DAVA::Color(0, 1, 0, 1);
-    moveHood.colorZ = DAVA::Color(0, 0, 1, 1);
+	moveHood.colorZ = DAVA::Color(0, 0, 1, 1);
 	moveHood.colorS = DAVA::Color(1, 1, 0, 1);
 
 	rotateHood.colorX = DAVA::Color(1, 0, 0, 1);

@@ -68,7 +68,7 @@ void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath &fold
         {
             CopyCompressionParamsForFolder(pathname);
         }
-        else if (IsDescriptorPathname(pathname))
+        else if(IsDescriptorPathname(pathname))
         {
             CopyCompressionParams(pathname);
         }
@@ -184,9 +184,9 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
         {
             SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
         }
-        else if (IsDescriptorPathname(pathname))
-        {
-            SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
+        else if(IsDescriptorPathname(pathname))
+		{
+			SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
 		}
 	}
 }

@@ -62,6 +62,7 @@ private:
 
 public:
     bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name = NULL);
+    bool UnRegister(uint32 serviceId);
     void UnregisterAll();
     bool IsRegistered(uint32 serviceId) const;
 

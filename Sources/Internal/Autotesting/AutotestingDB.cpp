@@ -65,8 +65,8 @@ namespace DAVA
         dbClient = MongodbClient::Create(dbHost, dbPort);
         if (dbClient)
         {
-            dbClient->SetDatabaseName(dbName);
-            dbClient->SetCollectionName(collection);
+			dbClient->SetDatabaseName(dbName);
+			dbClient->SetCollectionName(collection);
 		}
 		return (nullptr != dbClient);
 	}
@@ -305,7 +305,7 @@ namespace DAVA
         {
             autoSys->ForceQuit(Format("Couldn't find archive autotesting_system device"));
         }
-        KeyedArchive* deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName, nullptr);
+        KeyedArchive *deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName, nullptr);
 
         if (!deviceArchive)
         {

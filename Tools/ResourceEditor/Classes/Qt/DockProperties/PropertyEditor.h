@@ -85,7 +85,7 @@ public:
     void SetFavorite(QtPropertyData* data, bool favorite);
 
     void LoadScheme(const DAVA::FilePath& path);
-    void SaveScheme(const DAVA::FilePath& path);
+    void SaveScheme(const DAVA::FilePath &path);
 
 public slots:
 	void sceneActivated(SceneEditor2 *scene);
@@ -152,8 +152,8 @@ protected:
 
     bool IsInspViewAllowed(const DAVA::InspInfo* info) const;
 
-    virtual void OnItemEdited(const QModelIndex& index);
-    virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
+    virtual void OnItemEdited(const QModelIndex &index);
+	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 
     bool IsParentFavorite(const QtPropertyData* data) const;

@@ -220,7 +220,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack.SetClean(true);
+		commandStack.SetClean(true);
 	}
 
     if (needToRestoreTilemask)
@@ -524,7 +524,7 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
     }
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
-    {
+	{
 		Exec(new ActionDisableTilemaskEditor(this));
 	}
 	
@@ -554,7 +554,7 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
     }
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
-    {
+	{
 		res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
 	}
 	
