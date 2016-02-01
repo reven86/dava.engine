@@ -68,7 +68,7 @@ public:
         RegisterGrapEditorTypes(*defMng);
         editor = defMng->create<GraphEditor>(false);
 
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, ObjectHandle(editor));
+        view = uiFramework->createView("GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, ObjectHandle(editor));
         uiapplication->addView(*view);
     }
 

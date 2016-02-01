@@ -38,6 +38,8 @@ BW_SET_TEST_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_ASSET_PIPELINE_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_EXECUTABLE_DST_DIR(${TOOL_OUTPUT_DIR})
 
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
+
 # NGT build system use this variable on Mac to resolve path where plugins must be copyed
 set( BW_BUNDLE_NAME "NGT")
 
@@ -55,5 +57,4 @@ endforeach()
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ResourceEditorDLL ResourceEditorDLL)
 
 set(ADDITIONAL_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/ResourceEditorDLL")
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SceneTree SceneTree)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/GraphEditor GraphEditor)

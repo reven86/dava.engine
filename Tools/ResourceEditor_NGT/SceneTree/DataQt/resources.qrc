@@ -1,5 +1,0 @@
-<RCC>
-  <qresource prefix="SC">
-    <file>SceneTree.qml</file>
-  </qresource>
-</RCC>

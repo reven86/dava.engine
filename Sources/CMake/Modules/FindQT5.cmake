@@ -24,9 +24,6 @@ macro ( qt_deploy )
             COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
             "${QT5_PATH_WIN}/bin/"
             $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
             --dir  "${DEPLOY_DIR}/"
             "${QML_SCAN_FLAG}" "$<TARGET_FILE:${PROJECT_NAME}>"
             ${QT_ITEMS_LIST}
@@ -76,6 +73,7 @@ macro(resolve_qt_pathes)
 
     endif()
 endmacro()
+
 
 #################################################################
 

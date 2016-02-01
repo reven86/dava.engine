@@ -28,7 +28,6 @@ include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/Extern
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )

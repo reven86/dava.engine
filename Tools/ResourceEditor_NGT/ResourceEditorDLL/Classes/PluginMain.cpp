@@ -26,9 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SceneEnumerator.h"
-#include "SceneObserver.h"
-
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Project/ProjectManager.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
@@ -101,10 +98,6 @@ void UnpackHelpDoc()
 
 class ResourceEditorPlugin : public PluginMain
 {
-    std::vector<IInterface*> typesId;
-    std::unique_ptr<SceneObserver> observer;
-    std::unique_ptr<SceneEnumerator> enumerator;
-
 public:
     ResourceEditorPlugin(IComponentContext& contextManager)
     {
@@ -112,10 +105,6 @@ public:
 
     bool PostLoad(IComponentContext& context) override
     {
-        observer.reset(new SceneObserver());
-        enumerator.reset(new SceneEnumerator());
-        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneObserver, 0, 0)>(observer.get(), false));
-        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneEnumerator, 0, 0)>(enumerator.get(), false));
         return true;
     }
 
@@ -140,7 +129,6 @@ public:
 
     void Unload(IComponentContext& context) override
     {
-        std::for_each(typesId.begin(), typesId.end(), [&context](IInterface* typeId) { context.deregisterInterface(typeId); });
     }
 
 private:
@@ -186,9 +174,6 @@ private:
         if (!runGuard.tryToRun())
             return;
 
-        //a.setAttribute(Qt::AA_UseHighDpiPixmaps);
-        //a.setAttribute(Qt::AA_ShareOpenGLContexts);
-
         Q_INIT_RESOURCE(QtToolsResources);
         Q_INIT_RESOURCE(QtIcons);
 
@@ -215,7 +200,7 @@ private:
         mainWindow->EnableGlobalTimeout(true);
         glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
-        ProjectManager::Instance()->ProjectOpenLast();
+        ProjectManager::Instance()->OpenLastProject();
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
