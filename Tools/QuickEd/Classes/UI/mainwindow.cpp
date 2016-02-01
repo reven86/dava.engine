@@ -57,6 +57,8 @@ namespace MainWindow_namespace
     }
 }
 
+enum eBackgroundType : int64;
+
 using namespace DAVA;
 
 struct MainWindow::TabState

@@ -155,16 +155,14 @@ void EditorSettings::SetGrigColor(const Color& color)
     GridColorChanged.Emit(color);
 }
 
-eBackgroundType EditorSettings::GetGridType() const
+int64 EditorSettings::GetGridType() const
 {
-    bool value = settings->GetBool("editor.gridType");
-    return static_cast<eBackgroundType>(value);
+    return settings->GetInt64("editor.gridType");
 }
 
-void EditorSettings::SetGridType(eBackgroundType type)
+void EditorSettings::SetGridType(int64 type)
 {
-    bool value = static_cast<eBackgroundType>(type);
-    settings->SetBool("editor.gridType", value);
+    settings->SetInt64("editor.gridType", type);
     GridTypeChanged.Emit(type);
 }
 

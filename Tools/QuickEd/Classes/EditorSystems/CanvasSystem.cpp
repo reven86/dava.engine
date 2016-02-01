@@ -37,7 +37,7 @@
 
 using namespace DAVA;
 
-enum eBackgroundType : bool
+enum eBackgroundType : int64
 {
     BackgroundTexture,
     BackgroundColor
@@ -52,7 +52,7 @@ public:
     ~GridControl() override = default;
 
 private:
-    void OnBackgroundTypeChanged(eBackgroundType type);
+    void OnBackgroundTypeChanged(int64 type);
     void Draw(const UIGeometricData& geometricData) override;
     eBackgroundType coloredBackground = BackgroundTexture;
 };
@@ -66,7 +66,7 @@ GridControl::GridControl()
     settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
 }
 
-void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
+void GridControl::OnBackgroundTypeChanged(int64 type)
 {
     coloredBackground = static_cast<eBackgroundType>(type);
     switch (coloredBackground)
