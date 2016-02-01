@@ -140,7 +140,7 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
                                           it->first.GetAbsolutePathname().c_str(),
                                           it->second.GetAbsolutePathname().c_str())));
         }
-	}
+    }
 }
 
 void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)

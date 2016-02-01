@@ -53,7 +53,6 @@
 #include <QMessageBox>
 #include <QProgressBar>
 
-
 QColor TextureBrowser::gpuColor_PVR_ISO = QColor(0, 200, 0, 255);
 QColor TextureBrowser::gpuColor_PVR_Android = QColor(0, 0, 200, 255);
 QColor TextureBrowser::gpuColor_Tegra = QColor(0, 200, 200, 255);
@@ -103,13 +102,13 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     resetTextureInfo();
 
     // let textures list show images-view by default
-	ui->actionViewImagesList->trigger();
+    ui->actionViewImagesList->trigger();
 
-	// let textures view show border by default
-	// ui->actionShowBorder->trigger();
+    // let textures view show border by default
+    // ui->actionShowBorder->trigger();
 
-	// set initial empty texture
-	setTexture(curTexture, curDescriptor);
+    // set initial empty texture
+    setTexture(curTexture, curDescriptor);
     setTextureView(curTextureView, getConvertMode());
 
     // ui->splitter->setSizes(QList<int>() << 60 << 0 << 40);
@@ -378,7 +377,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
     else
     {
         ui->labelOriginalFormat->setText("");
-	}
+    }
 }
 
 void TextureBrowser::updateInfoConverted()
@@ -855,11 +854,11 @@ void TextureBrowser::textureZoomFit(bool checked)
             if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
             {
                 QSize size = ui->textureAreaOriginal->getContentSize();
-				w = size.width();
-				h = size.height();
-			}
-			else
-			{
+                w = size.width();
+                h = size.height();
+            }
+            else
+            {
 				w = curTexture->width;
 				h = curTexture->height;
 			}

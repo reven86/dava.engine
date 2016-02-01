@@ -253,14 +253,14 @@ void HeightmapEditorPanel::RestoreState()
     HeightmapEditorSystem::eHeightmapDrawType drawingType = sceneEditor->heightmapEditorSystem->GetDrawingType();
     float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
 
-	int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
-	int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
-	int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
-	int32 avStrRangeMin = DEF_AVERAGE_STRENGTH_MIN_VALUE;
-	int32 avStrRangeMax = DEF_AVERAGE_STRENGTH_MAX_VALUE;
+    int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
+    int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
+    int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
+    int32 avStrRangeMin = DEF_AVERAGE_STRENGTH_MIN_VALUE;
+    int32 avStrRangeMax = DEF_AVERAGE_STRENGTH_MAX_VALUE;
 
-	KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
-	if (customProperties)
+    KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
+    if (customProperties)
 	{
 		brushRangeMin = customProperties->GetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,
 												   DEF_BRUSH_MIN_SIZE);
