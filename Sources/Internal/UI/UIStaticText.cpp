@@ -143,6 +143,7 @@ void UIStaticText::SetFont(Font * _font)
     {
         textBlock->SetRectSize(size);
         textBlock->SetFont(_font);
+        textBg->SetAlign(textBlock->GetVisualAlign());
         PrepareSprite();
         SetLayoutDirty();
     }
@@ -589,6 +590,11 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
     return textBlock->GetStringSizes();
 }
     
+void UIStaticText::SetForceBiDiSupportEnabled(bool value)
+{
+    textBlock->SetForceBiDiSupportEnabled(value);
+}
+
 void UIStaticText::PrepareSprite()
 {
     if (textBlock->IsSpriteReady())
