@@ -1108,7 +1108,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
     }
 }
 
-void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values)
+void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
     sceneEditor->BeginBatch("Multiple move");
@@ -1120,15 +1120,17 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& 
 
         if (axis & ST_AXIS_X)
         {
-            newPos.x = values.x;
+            newPos.x = absoluteTransform ? values.x : newPos.x + values.x;
         }
+
         if (axis & ST_AXIS_Y)
         {
-            newPos.x = values.y;
+            newPos.y = absoluteTransform ? values.y : newPos.y + values.y;
         }
+
         if ((axis & ST_AXIS_Z) && !snapToLandscape)
         {
-            newPos.x = values.z;
+            newPos.z = absoluteTransform ? values.z : newPos.z + values.z;
         }
 
         DAVA::Matrix4 newMatrix = origMatrix;

@@ -248,7 +248,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     {
     case ST_MODIF_MOVE:
     {
-        curScene->modifSystem->ApplyMoveValues(axis, selection, values);
+        curScene->modifSystem->ApplyMoveValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
     }
 
