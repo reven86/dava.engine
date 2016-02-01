@@ -57,8 +57,6 @@ namespace MainWindow_namespace
     }
 }
 
-enum eBackgroundType : int64;
-
 using namespace DAVA;
 
 struct MainWindow::TabState
@@ -424,8 +422,7 @@ void MainWindow::SetupBackgroundMenu()
 
     actionGroup->addAction(defaultBackgroundColorAction);
     connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
-        eBackgroundType type = static_cast<eBackgroundType>(!toggled);
-        EditorSettings::Instance()->SetGridType(type);
+        EditorSettings::Instance()->SetGridType(toggled);
     });
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
