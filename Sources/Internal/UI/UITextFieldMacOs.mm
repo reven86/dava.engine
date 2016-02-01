@@ -228,6 +228,9 @@ public:
     bool useRtlAlign = false;
     bool multiline = false;
     bool password = false;
+
+    bool isKeyboardOpened = false; // HACK to prevent endless recursion
+    bool insideTextShouldReturn = false; // HACK mark what happened
 };
 
 static NSRect ConvertToNativeWindowRect(Rect rectSrc)
@@ -306,11 +309,13 @@ public:
     {
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [openGLView.window makeFirstResponder:nsTextView];
+        //[[NSApp keyWindow] makeFirstResponder:NSTextField];
 
         UITextFieldDelegate* delegate = davaText->GetDelegate();
 
-        if (delegate)
+        if (delegate && !isKeyboardOpened)
         {
+            isKeyboardOpened = true;
             Rect emptyRect;
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
             delegate->OnKeyboardShown(emptyRect);
@@ -319,6 +324,13 @@ public:
 
     void CloseKeyboard() override
     {
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (delegate && isKeyboardOpened)
+        {
+            isKeyboardOpened = false;
+            delegate->OnKeyboardHidden();
+        }
+
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [[NSApp keyWindow] makeFirstResponder:openGLView];
@@ -562,8 +574,8 @@ public:
     {
         nsTextField.enabled = YES;
 
-        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-        [openGLView.window makeFirstResponder:nsTextField];
+        //NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [[NSApp keyWindow] makeFirstResponder:nsTextField];
 
         if ([[nsTextField stringValue] length] > 0)
         {
@@ -573,8 +585,9 @@ public:
 
         UITextFieldDelegate* delegate = davaText->GetDelegate();
 
-        if (delegate)
+        if (delegate && !isKeyboardOpened)
         {
+            isKeyboardOpened = true;
             Rect emptyRect;
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
             delegate->OnKeyboardShown(emptyRect);
@@ -583,6 +596,14 @@ public:
 
     void CloseKeyboard() override
     {
+        // prevent recursion
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (delegate && isKeyboardOpened)
+        {
+            isKeyboardOpened = false;
+            delegate->OnKeyboardHidden();
+        }
+
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [[NSApp keyWindow] makeFirstResponder:openGLView];
@@ -598,10 +619,31 @@ public:
 
     void SetText(const WideString& string) override
     {
+        WideString oldText;
+        GetText(oldText);
+
+        if (oldText == string)
+        {
+            return;
+        }
+
         NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (delegate != nullptr)
+        {
+            delegate->TextFieldOnTextChanged(davaText, string, oldText);
+        }
+
+        // HACK if user click cleartext button and current
+        // native control not in focus - remove focus from dava control too
+        if (string.empty() && [[NSApp keyWindow] firstResponder] != nsTextField && !insideTextShouldReturn)
+        {
+            UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
+        }
     }
 
     void UpdateRect(const Rect& rectSrc) override
@@ -1081,6 +1123,8 @@ doCommandBySelector:(SEL)commandSelector
 {
     BOOL result = NO;
 
+    text->ctrl->insideTextShouldReturn = true;
+
     if (commandSelector == @selector(insertNewline:))
     {
         if (text->ctrl->IsMultiline())
@@ -1088,13 +1132,28 @@ doCommandBySelector:(SEL)commandSelector
             // new line action:
             // always insert a line-break character and dont cause the receiver to end editing
             [textView insertNewlineIgnoringFieldEditor:self];
-            result = YES;
         }
         else
         {
             text->ctrl->davaText->GetDelegate()->TextFieldShouldReturn(text->ctrl->davaText);
         }
+        result = YES;
     }
+    else if (commandSelector == @selector(cancelOperation:))
+    {
+        text->ctrl->davaText->GetDelegate()->TextFieldShouldCancel(text->ctrl->davaText);
+        result = YES;
+    }
+    else if (commandSelector == @selector(insertTab:))
+    {
+        // do nothing on TAB key
+        if (!text->ctrl->IsMultiline())
+        {
+            result = YES;
+        }
+    }
+
+    text->ctrl->insideTextShouldReturn = false;
 
     return result;
 }
@@ -1132,7 +1191,7 @@ doCommandBySelector:(SEL)commandSelector
        originalSelectedRange:(NSRange)origSelRange
             errorDescription:(NSString**)error
 {
-    if ([*partialStringPtr length] > maxLength)
+    if ([*partialStringPtr length] >= maxLength)
     {
         return NO;
     }
@@ -1140,6 +1199,14 @@ doCommandBySelector:(SEL)commandSelector
     if (text != nullptr)
     {
         DAVA::UITextField* davaCtrl = text->ctrl->davaText;
+
+        // if user paste text with gesture in native control
+        // we need make dava control in sync with focus
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl, false);
+        }
+
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
         if (delegate != nullptr)
         {
