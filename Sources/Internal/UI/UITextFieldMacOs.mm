@@ -230,7 +230,7 @@ public:
     bool password = false;
 };
 
-static NSRect ConvertDavaRectToNSRect(Rect rectSrc)
+static NSRect ConvertToNativeWindowRect(Rect rectSrc)
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
@@ -345,7 +345,7 @@ public:
         if (currentRect != rectSrc)
         {
             currentRect = rectSrc;
-            NSRect controlRect = ConvertDavaRectToNSRect(rectSrc);
+            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
             [nsScrollView setFrame:controlRect];
             [nsTextView setFrame:controlRect];
@@ -609,7 +609,7 @@ public:
         if (currentRect != rectSrc)
         {
             currentRect = rectSrc;
-            NSRect controlRect = ConvertDavaRectToNSRect(rectSrc);
+            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
             [nsTextField setFrame:controlRect];
         }
