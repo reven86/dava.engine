@@ -162,7 +162,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 
     eErrorType enableCustomDrawError = EnableCustomDraw();
     if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
+    {
 		return enableCustomDrawError;
 	}
 
@@ -239,8 +239,8 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 
         heightmapProxy->ResetHeightmapChanged();
     }
-	
-	if (customColorsProxy && customColorsProxy->IsTargetChanged())
+
+    if (customColorsProxy && customColorsProxy->IsTargetChanged())
 	{
 		customColorsProxy->ResetTargetChanged();
 	}

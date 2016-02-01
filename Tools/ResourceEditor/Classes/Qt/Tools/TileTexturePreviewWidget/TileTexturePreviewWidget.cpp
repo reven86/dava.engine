@@ -91,7 +91,7 @@ void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& co
     item->setCheckState(0, Qt::Unchecked);
     addTopLevelItem(item);
 
-	if (mode == MODE_WITHOUT_COLORS)
+    if (mode == MODE_WITHOUT_COLORS)
 	{
 		item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
 	}
@@ -229,7 +229,7 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
     str.sprintf("#%02x%02x%02x", color.red(), color.green(), color.blue());
     item->setText(0, str);
 
-	UpdateImage(number);
+    UpdateImage(number);
     
     blockSignals(blocked);
 }

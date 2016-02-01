@@ -70,6 +70,17 @@ public:
     };
     
     static void ScreenResolutionChanged();
+    /**
+    * \brief Sets BiDi transformation support enabled.
+    * \param value true to enable BiDi support.
+    */
+    static void SetBiDiSupportEnabled(bool value);
+
+    /**
+    * \brief Is BiDi transformations support enabled.
+    * \return true if BiDi transformations supported.
+    */
+    static bool IsBiDiSupportEnabled();
     
     static TextBlock * Create(const Vector2 & size);
     
@@ -133,23 +144,18 @@ public:
 	bool IsVisualTextCroped();
 #endif
 
-    /**
-     * \brief Sets BiDi transformation support enabled.
-     * \param value true to enable BiDi support.
-     */
-    static void SetBiDiSupportEnabled(bool value);
-
-    /**
-     * \brief Is BiDi transformations support enabled.
-     * \return true if BiDi transformations supported.
-     */
-    static bool IsBiDiSupportEnabled();
     TextBlockRender* GetRenderer(){ return textBlockRender; }
+
+    bool IsForceBiDiSupportEnabled() const { return forceBiDiSupport; }
+    void SetForceBiDiSupportEnabled(bool value);
 
     void SetAngle(const float32 _angle);
     void SetPivot(const Vector2& _pivot);
 
-protected:
+private:
+    static void RegisterTextBlock(TextBlock *textBlock);
+    static void UnregisterTextBlock(TextBlock *textBlock);
+    static void InvalidateAllTextBlocks();
 
 	TextBlock();
     TextBlock(const TextBlock& src);
@@ -203,8 +209,11 @@ protected:
 	bool needPrepareInternal:1;
     bool isRtl : 1;
     bool needCalculateCacheParams : 1;
+    bool forceBiDiSupport : 1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static Set<TextBlock*> registredTextBlocks;
+    static Mutex textblockListMutex;
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
@@ -277,11 +286,6 @@ inline int32 TextBlock::GetAlign()
 inline bool TextBlock::IsSpriteReady()
 {
     return (GetSprite() != nullptr);
-}
-
-inline void TextBlock::SetBiDiSupportEnabled(bool value)
-{
-    isBiDiSupportEnabled = value;
 }
 
 inline bool TextBlock::IsBiDiSupportEnabled()

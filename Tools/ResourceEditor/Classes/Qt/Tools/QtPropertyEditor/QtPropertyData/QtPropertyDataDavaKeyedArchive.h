@@ -47,7 +47,7 @@ public:
     QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* archive);
     virtual ~QtPropertyDataDavaKeyedArcive();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
+    virtual const DAVA::MetaInfo * MetaInfo() const;
 	virtual void* CreateLastCommand() const;
 
     void FinishTreeCreation() override;
@@ -61,7 +61,7 @@ protected:
     QtConnections connections;
 
     virtual QVariant GetValueInternal() const;
-	virtual bool UpdateValueInternal();
+    virtual bool UpdateValueInternal();
 
 private:
     void ChildCreate(const DAVA::FastName& key, DAVA::VariantType* value);
@@ -69,7 +69,7 @@ private:
 private:
     void AddKeyedArchiveField(QToolButton* button);
     void RemKeyedArchiveField(QToolButton* button);
-    void NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value);
+    void NewKeyedArchiveFieldReady(const DAVA::String& key, const DAVA::VariantType& value);
     void RemKeyedArchiveField(const DAVA::FastName& key);
 };
 

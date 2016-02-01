@@ -155,7 +155,7 @@ void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realVal
     if (allowedButton == nullptr)
     {
         allowedButton = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
-		allowedButton->setArrowType(Qt::DownArrow);
+        allowedButton->setArrowType(Qt::DownArrow);
 		allowedButton->setAutoRaise(true);
 		allowedButton->eventsPassThrought = true;
 		allowedButton->overlayed = true;
@@ -398,8 +398,8 @@ void QtPropertyDataDavaVariant::SubValueAdd(const DAVA::FastName& key, const DAV
 void QtPropertyDataDavaVariant::SubValueSetToMe(const DAVA::FastName& key, const QVariant& subvalue)
 {
     QtPropertyDataDavaVariantSubValue* child = (QtPropertyDataDavaVariantSubValue*)ChildGet(key);
-    if(NULL != child)
-	{
+    if (NULL != child)
+    {
 		child->trackParent = false;
 		child->SetValue(subvalue);
 	}
@@ -408,8 +408,8 @@ void QtPropertyDataDavaVariant::SubValueSetToMe(const DAVA::FastName& key, const
 void QtPropertyDataDavaVariant::SubValueSetFromMe(const DAVA::FastName& key, const QVariant& subvalue)
 {
     QtPropertyDataDavaVariantSubValue* child = (QtPropertyDataDavaVariantSubValue*)ChildGet(key);
-    if(NULL != child)
-	{
+    if (NULL != child)
+    {
 		child->trackParent = false;
 		child->SetValueInternal(subvalue);
 	}
@@ -438,7 +438,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
             SubValueAdd(DAVA::FastName("X"), DAVA::VariantType(vec.x));
             SubValueAdd(DAVA::FastName("Y"), DAVA::VariantType(vec.y));
         }
-		break;
+        break;
 	case DAVA::VariantType::TYPE_VECTOR3:
 		{
 			DAVA::Vector3 vec = curVariantValue.AsVector3();
@@ -446,7 +446,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
             SubValueAdd(DAVA::FastName("Y"), DAVA::VariantType(vec.y));
             SubValueAdd(DAVA::FastName("Z"), DAVA::VariantType(vec.z));
         }
-		break;
+        break;
 	case DAVA::VariantType::TYPE_VECTOR4:
 		{
 			DAVA::Vector4 vec = curVariantValue.AsVector4();
@@ -455,7 +455,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
             SubValueAdd(DAVA::FastName("Z"), DAVA::VariantType(vec.z));
             SubValueAdd(DAVA::FastName("W"), DAVA::VariantType(vec.w));
         }
-		break;
+        break;
 	case DAVA::VariantType::TYPE_COLOR:
 		{
 			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
@@ -485,7 +485,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
             SubValueAdd(DAVA::FastName("max Y"), DAVA::VariantType(box.max.y));
             SubValueAdd(DAVA::FastName("max Z"), DAVA::VariantType(box.max.z));
         }
-		break;
+        break;
 	case DAVA::VariantType::TYPE_FILEPATH:
 		{
 			QToolButton *filePathBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
@@ -496,7 +496,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
                 FilePathOWPressed();
             });
         }
-		break;
+        break;
     case DAVA::VariantType::TYPE_STRING:
         {
             QToolButton *editMultiline = AddButton( QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED );
@@ -530,7 +530,7 @@ void QtPropertyDataDavaVariant::ChildsSetFromMe()
                 SubValueSetFromMe(DAVA::FastName("X"), vec.x);
                 SubValueSetFromMe(DAVA::FastName("Y"), vec.y);
             }
-		    break;
+            break;
 	    case DAVA::VariantType::TYPE_VECTOR3:
 		    {
 			    DAVA::Vector3 vec = curVariantValue.AsVector3();
@@ -538,7 +538,7 @@ void QtPropertyDataDavaVariant::ChildsSetFromMe()
                 SubValueSetFromMe(DAVA::FastName("Y"), vec.y);
                 SubValueSetFromMe(DAVA::FastName("Z"), vec.z);
             }
-		    break;
+            break;
 	    case DAVA::VariantType::TYPE_VECTOR4:
 		    {
 			    DAVA::Vector4 vec = curVariantValue.AsVector4();
@@ -547,7 +547,7 @@ void QtPropertyDataDavaVariant::ChildsSetFromMe()
                 SubValueSetFromMe(DAVA::FastName("Z"), vec.z);
                 SubValueSetFromMe(DAVA::FastName("W"), vec.w);
             }
-		    break;
+            break;
 	    case DAVA::VariantType::TYPE_AABBOX3:
             {
                 DAVA::AABBox3 box = curVariantValue.AsAABBox3();
@@ -590,8 +590,8 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             vec.x = SubValueGet(DAVA::FastName("X")).toFloat();
             vec.y = SubValueGet(DAVA::FastName("Y")).toFloat();
 
-            if(curVariantValue.AsVector2() != vec)
-			{
+            if (curVariantValue.AsVector2() != vec)
+            {
 				curVariantValue.SetVector2(vec);
 				SetValue(FromVector2(vec), QtPropertyData::VALUE_EDITED);
 			}
@@ -604,8 +604,8 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             vec.y = SubValueGet(DAVA::FastName("Y")).toFloat();
             vec.z = SubValueGet(DAVA::FastName("Z")).toFloat();
 
-            if(curVariantValue.AsVector3() != vec)
-			{
+            if (curVariantValue.AsVector3() != vec)
+            {
 				curVariantValue.SetVector3(vec);
 				SetValue(FromVector3(vec), QtPropertyData::VALUE_EDITED);
 			}
@@ -619,8 +619,8 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             vec.z = SubValueGet(DAVA::FastName("Z")).toFloat();
             vec.w = SubValueGet(DAVA::FastName("W")).toFloat();
 
-            if(curVariantValue.AsVector4() != vec)
-			{
+            if (curVariantValue.AsVector4() != vec)
+            {
 				curVariantValue.SetVector4(vec);
 				SetValue(FromVector4(vec), QtPropertyData::VALUE_EDITED);
 			}
@@ -653,8 +653,8 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             box.max.y = SubValueGet(DAVA::FastName("max Y")).toFloat();
             box.max.z = SubValueGet(DAVA::FastName("max Z")).toFloat();
 
-            if(curVariantValue.AsAABBox3().min != box.min || curVariantValue.AsAABBox3().max != box.max)
-			{
+            if (curVariantValue.AsAABBox3().min != box.min || curVariantValue.AsAABBox3().max != box.max)
+            {
 				curVariantValue.SetAABBox3(box);
 				SetValue(FromAABBox3(box), QtPropertyData::VALUE_EDITED);
 			}
@@ -1200,7 +1200,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget *parent) c
         });
     }
 
-	return allowedWidget;
+    return allowedWidget;
 }
 
 QWidget* QtPropertyDataDavaVariant::CreateAllowedFlagsEditor(QWidget *parent) const

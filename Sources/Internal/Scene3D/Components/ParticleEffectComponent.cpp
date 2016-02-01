@@ -301,7 +301,7 @@ void ParticleEffectComponent::RebuildEffectModifiables()
         Map<String, float32>::iterator itName = externalValues.find((*it)->GetValueName());
         if (itName != externalValues.end())
             (*it)->SetModifier((*itName).second);
-    }	
+    }
 }
 
 	
@@ -434,7 +434,7 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
                 entity->AddComponent(lodComponent->Clone(entity));
                 lodDefined = true;
             }
-		}
+        }
 	}
 
 	entity->RemoveAllChildren();	

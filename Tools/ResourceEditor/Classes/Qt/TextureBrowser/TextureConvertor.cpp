@@ -161,8 +161,8 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
             DAVA::TexturesMap::iterator begin = allTextures.begin();
             DAVA::TexturesMap::iterator end = allTextures.end();
 
-            for(; begin != end; begin++)
-			{
+            for (; begin != end; begin++)
+            {
 				DAVA::TextureDescriptor *descriptor = begin->second->GetDescriptor();
 
 				if(NULL != descriptor)
