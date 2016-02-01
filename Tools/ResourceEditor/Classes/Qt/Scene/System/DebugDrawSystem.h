@@ -80,11 +80,11 @@ private:
     using RenderBatchWithTransform = std::pair<DAVA::RenderBatch*, DAVA::Matrix4>;
     using RenderBatchesWithTransforms = DAVA::Vector<RenderBatchWithTransform>;
 
-    void CollectRenderBatchesRecursively(DAVA::Entity* entity, RenderBatchesWithTransforms& batches);
-    DAVA::float32 GetMinimalZ(const RenderBatchesWithTransforms& batches);
-    void GetLowestVertexes(const RenderBatchesWithTransforms& batches, DAVA::Vector<DAVA::Vector3>& vertexes);
-    DAVA::Vector3 GetLandscapePointAtCoordinates(const DAVA::Vector2& centerXY);
-    bool IsObjectHanging(DAVA::Entity* entity);
+    void CollectRenderBatchesRecursively(DAVA::Entity* entity, RenderBatchesWithTransforms& batches) const;
+    DAVA::float32 GetMinimalZ(const RenderBatchesWithTransforms& batches) const;
+    void GetLowestVertexes(const RenderBatchesWithTransforms& batches, DAVA::Vector<DAVA::Vector3>& vertexes) const;
+    DAVA::Vector3 GetLandscapePointAtCoordinates(const DAVA::Vector2& centerXY) const;
+    bool IsObjectHanging(DAVA::Entity* entity) const;
 
 private:
     SceneCollisionSystem* collSystem = nullptr;

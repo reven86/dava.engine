@@ -278,7 +278,7 @@ void DebugDrawSystem::DrawHangingObjects(DAVA::Entity* entity)
     }
 }
 
-void DebugDrawSystem::CollectRenderBatchesRecursively(Entity* entity, RenderBatchesWithTransforms& batches)
+void DebugDrawSystem::CollectRenderBatchesRecursively(Entity* entity, RenderBatchesWithTransforms& batches) const
 {
     auto ro = GetRenderObject(entity);
     if (ro != nullptr)
@@ -308,7 +308,7 @@ void DebugDrawSystem::CollectRenderBatchesRecursively(Entity* entity, RenderBatc
     }
 }
 
-DAVA::float32 DebugDrawSystem::GetMinimalZ(const RenderBatchesWithTransforms& batches)
+DAVA::float32 DebugDrawSystem::GetMinimalZ(const RenderBatchesWithTransforms& batches) const
 {
 	float32 minZ = AABBOX_INFINITY;
     for (auto batch : batches)
@@ -324,7 +324,7 @@ DAVA::float32 DebugDrawSystem::GetMinimalZ(const RenderBatchesWithTransforms& ba
     return minZ;
 }
 
-void DebugDrawSystem::GetLowestVertexes(const RenderBatchesWithTransforms& batches, DAVA::Vector<DAVA::Vector3>& vertexes)
+void DebugDrawSystem::GetLowestVertexes(const RenderBatchesWithTransforms& batches, DAVA::Vector<DAVA::Vector3>& vertexes) const
 {
     const float32 minZ = GetMinimalZ(batches);
     for (auto batch : batches)
@@ -343,7 +343,7 @@ void DebugDrawSystem::GetLowestVertexes(const RenderBatchesWithTransforms& batch
 	}
 }
 
-bool DebugDrawSystem::IsObjectHanging(Entity* entity)
+bool DebugDrawSystem::IsObjectHanging(Entity* entity) const
 {
     Vector<Vector3> lowestVertexes;
     RenderBatchesWithTransforms batches;
@@ -362,7 +362,7 @@ bool DebugDrawSystem::IsObjectHanging(Entity* entity)
     return false;
 }
 
-Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2 & centerXY)
+Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2& centerXY) const
 {
 	LandscapeEditorDrawSystem *landSystem = ((SceneEditor2 *)GetScene())->landscapeEditorDrawSystem;
 	LandscapeProxy* landscape = landSystem->GetLandscapeProxy();
