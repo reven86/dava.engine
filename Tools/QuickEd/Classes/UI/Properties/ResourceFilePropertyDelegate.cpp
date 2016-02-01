@@ -150,14 +150,20 @@ void ResourceFilePropertyDelegate::clearFileClicked()
 void ResourceFilePropertyDelegate::OnEditingFinished()
 {
     DVASSERT(!lineEdit.isNull());
+    if (!lineEdit->isModified())
+    {
+        return;
+    }
     QWidget *editor = lineEdit->parentWidget();
     DVASSERT(editor != nullptr);
-    if (!IsPathValid(lineEdit->text()))
+    const QString& text = lineEdit->text();
+    if (!text.isEmpty() && !IsPathValid(text))
     {
         return;
     }
     BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
+    lineEdit->setModified(false);
 }
 
 void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
