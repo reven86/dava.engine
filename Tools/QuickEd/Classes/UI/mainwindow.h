@@ -37,7 +37,7 @@
 #include "EditorSettings.h"
 #include <QtGui>
 #include <QtWidgets>
-
+#include <QQueue>
 
 class PackageWidget;
 class PropertiesWidget;
@@ -135,6 +135,7 @@ private:
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox* comboboxLanguage = nullptr;
+    QQueue<QAction*> previousBackgroundColorActions; //need to store it to undo custom color action
 };
 
 #endif // MAINWINDOW_H

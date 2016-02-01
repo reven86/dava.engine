@@ -422,7 +422,10 @@ void MainWindow::SetupBackgroundMenu()
 
     actionGroup->addAction(defaultBackgroundColorAction);
     connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
-        EditorSettings::Instance()->SetGridType(!toggled);
+        if (toggled)
+        {
+            EditorSettings::Instance()->SetGridType(0);
+        }
     });
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
@@ -450,24 +453,32 @@ void MainWindow::SetupBackgroundMenu()
         connect(colorAction, &QAction::toggled, [color](bool toggled) {
             if (toggled)
             {
+                EditorSettings::Instance()->SetGridType(1);
                 EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
             }
         });
     }
     QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
-    actionGroup->addAction(backgroundCustomColorAction);
     backgroundColorMenu->addAction(backgroundCustomColorAction);
+    actionGroup->addAction(backgroundCustomColorAction);
     connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
 
     for (auto& action : actionGroup->actions())
     {
         action->setCheckable(true);
     }
+    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
+        previousBackgroundColorActions.enqueue(action);
+        if (previousBackgroundColorActions.size() > 2)
+        {
+            previousBackgroundColorActions.dequeue();
+        }
+    });
 
     auto editorSettings = EditorSettings::Instance();
     if (!editorSettings->GetGridType())
     {
-        defaultBackgroundColorAction->setChecked(true);
+        defaultBackgroundColorAction->trigger();
     }
     else
     {
@@ -476,13 +487,13 @@ void MainWindow::SetupBackgroundMenu()
         {
             if (action->data().value<QColor>() == color)
             {
-                action->setChecked(true);
+                action->trigger();
             }
         }
         if (actionGroup->checkedAction() == nullptr)
         {
             MainWindow_namespace::SetColoredIconToAction(backgroundCustomColorAction, color);
-            backgroundCustomColorAction->setChecked(true);
+            backgroundCustomColorAction->trigger();
         }
     }
 }
@@ -523,9 +534,11 @@ void MainWindow::OnBackgroundCustomColorClicked()
     QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
     if (!color.isValid())
     {
+        previousBackgroundColorActions.head()->trigger();
         return;
     }
     MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
+    EditorSettings::Instance()->SetGridType(1);
     EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
