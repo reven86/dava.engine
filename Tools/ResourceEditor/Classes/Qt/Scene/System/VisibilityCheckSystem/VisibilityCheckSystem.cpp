@@ -112,6 +112,7 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
     auto requiredComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
     if (requiredComponent != nullptr)
     {
+        (static_cast<DAVA::VisibilityCheckComponent*>(requiredComponent))->Invalidate();
         entitiesWithVisibilityComponent.insert({ entity, DAVA::Vector<DAVA::Vector3>() });
         shouldPrerender = true;
         forceRebuildPoints = true;
@@ -166,9 +167,9 @@ void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
     for (auto& mapItem : entitiesWithVisibilityComponent)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(mapItem.first->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
-        if (!visibilityComponent->IsValid())
+        if (!visibilityComponent->IsValid() || forceRebuildPoints)
         {
-            if (visibilityComponent->ShouldRebuildPoints())
+            if (visibilityComponent->ShouldRebuildPoints() || forceRebuildPoints)
             {
                 BuildPointSetForEntity(mapItem);
                 shouldRebuildIndices = true;
@@ -278,20 +279,18 @@ void VisibilityCheckSystem::UpdatePointSet()
             DAVA::Vector3 position = worldTransform.GetTranslationVector();
             DAVA::Vector3 normal = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
             normal.Normalize();
-            float upAngle = std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetUpAngle()));
-            float dnAngle = -std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetDownAngle()));
-            float maxDist = visibilityComponent->GetMaximumDistance();
-
-            bool shouldSnap = (landscape != nullptr) && visibilityComponent->ShouldPlaceOnLandscape();
-            float snapHeight = visibilityComponent->GetHeightAboveLandscape();
+            DAVA::float32 upAngle = std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetUpAngle()));
+            DAVA::float32 dnAngle = -std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetDownAngle()));
+            DAVA::float32 maxDist = visibilityComponent->GetMaximumDistance();
+            DAVA::float32 snapHeight = visibilityComponent->GetHeightAboveLandscape();
 
             for (const auto& pt : mapItem.second)
             {
                 DAVA::Vector3 placedPoint;
                 DAVA::Vector3 transformedPoint = position + MultiplyVectorMat3x3(pt, worldTransform);
-                if (landscape->PlacePoint(transformedPoint, placedPoint, &normal))
+                if ((landscape != nullptr) && landscape->PlacePoint(transformedPoint, placedPoint, &normal))
                 {
-                    if (shouldSnap)
+                    if (visibilityComponent->ShouldPlaceOnLandscape())
                     {
                         transformedPoint.z = placedPoint.z + snapHeight;
                     }
