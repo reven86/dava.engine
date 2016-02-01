@@ -75,10 +75,16 @@ bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractIt
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
     DVASSERT(!lineEdit.isNull());
-    DAVA::FilePath absoluteFilePath = QStringToString(lineEdit->text());
-    DAVA::FilePath frameworkFilePath = absoluteFilePath.GetFrameworkPath();
-    variantType.SetFilePath(frameworkFilePath);
-
+    if (!lineEdit->text().isEmpty())
+    {
+        DAVA::FilePath absoluteFilePath = QStringToString(lineEdit->text());
+        DAVA::FilePath frameworkFilePath = absoluteFilePath.GetFrameworkPath();
+        variantType.SetFilePath(frameworkFilePath);
+    }
+    else
+    {
+        variantType.SetFilePath(DAVA::FilePath());
+    }
     QVariant variant;
     variant.setValue<DAVA::VariantType>(variantType);
 
