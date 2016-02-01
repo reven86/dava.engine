@@ -167,8 +167,8 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
                 if (drawingType == HEIGHTMAP_COPY_PASTE)
                 {
                     int32 curKeyModifiers = QApplication::keyboardModifiers();
-                        if (curKeyModifiers & Qt::AltModifier)
-						{
+                    if (curKeyModifiers & Qt::AltModifier)
+                        {
 							copyPasteFrom = GetHeightmapPositionFromCursor();
 							copyPasteTo = Vector2(-1.f, -1.f);
 							return;
@@ -259,8 +259,8 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
         case HEIGHTMAP_DRAW_RELATIVE:
         {
             float32 koef = (strength * timeElapsed);
-                if(inverseDrawingEnabled)
-				{
+            if (inverseDrawingEnabled)
+                {
 					koef = -koef;
 				}
 
@@ -303,7 +303,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
                 if (copyPasteFrom == Vector2(-1.f, -1.f) || copyPasteTo == Vector2(-1.f, -1.f))
                 {
                     return;
-				}
+                }
 
 				Vector2 posTo = pos;
 				
@@ -323,8 +323,8 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
             }
 
             Rect rect(pos.x, pos.y, (float32)scaleSize, (float32)scaleSize);
-        drawSystem->GetHeightmapProxy()->UpdateRect(rect);
-		AddRectToAccumulator(heightmapUpdatedRect, rect);
+            drawSystem->GetHeightmapProxy()->UpdateRect(rect);
+        AddRectToAccumulator(heightmapUpdatedRect, rect);
 	}
 }
 

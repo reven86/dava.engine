@@ -132,7 +132,7 @@ Component * Component::CreateByType(uint32 componentType)
     default:
         DVASSERT(0);
         return 0;
-	}
+    }
 
 }
 

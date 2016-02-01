@@ -545,7 +545,7 @@ void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyD
         if (NULL != propData)
         {
             propData->SetValue(value);
-		}
+        }
 	}
 }
 

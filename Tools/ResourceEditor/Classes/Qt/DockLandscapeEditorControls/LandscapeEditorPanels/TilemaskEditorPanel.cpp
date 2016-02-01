@@ -287,7 +287,7 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
     for (int32 i = 0; i < CHANNELS_COUNT; ++i)
     {
         images[i] = Image::Create(width, height, FORMAT_RGBA8888);
-	}
+    }
 
 	int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
 	for(int32 i = 0; i < size; ++i)

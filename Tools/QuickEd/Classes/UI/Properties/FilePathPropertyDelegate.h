@@ -44,6 +44,11 @@ public:
     virtual bool setModelData ( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const override;
 private slots:
     void OnEditingFinished();
+    void OnTextChanged(const QString& text);
+
+private:
+    bool IsPathValid(const QString& path) const;
+    QPointer<QLineEdit> lineEdit = nullptr;
 };
 
 

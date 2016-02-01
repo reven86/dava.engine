@@ -128,8 +128,8 @@ void ModificationWidget::ReloadValues()
             yAxisModify->setEnabled(true);
             zAxisModify->setEnabled(true);
 
-			xAxisModify->showButtons(true);
-			yAxisModify->showButtons(true);
+            xAxisModify->showButtons(true);
+            yAxisModify->showButtons(true);
 			zAxisModify->showButtons(true);
 
 			if(selection.Size() > 1)
@@ -170,9 +170,9 @@ void ModificationWidget::ReloadValues()
                     {
                         DAVA::float32 x = 0;
                         DAVA::float32 y = 0;
-						DAVA::float32 z = 0;
+                        DAVA::float32 z = 0;
 
-						DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
+                        DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
 						switch (modifMode)
 						{
 						case ST_MODIF_MOVE:

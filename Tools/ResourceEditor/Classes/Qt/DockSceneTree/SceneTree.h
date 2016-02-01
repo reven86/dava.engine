@@ -161,7 +161,7 @@ private:
 
     bool isInSync;
 
-	LazyUpdater *treeUpdater;
+    LazyUpdater *treeUpdater;
 };
 
 #endif // __QT_SCENE_TREE_H__

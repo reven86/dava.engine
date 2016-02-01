@@ -80,7 +80,7 @@ public:
 
     T* Get() const
     {
-		return _ptr;
+        return _ptr;
 	}
 	
 	bool Valid() const

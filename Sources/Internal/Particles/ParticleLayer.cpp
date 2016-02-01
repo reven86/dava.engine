@@ -463,7 +463,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
 
     const YamlNode* frameOverLifeEnabledNode = node->Get("frameOverLifeEnabled");
-	if (frameOverLifeEnabledNode)
+    if (frameOverLifeEnabledNode)
 	{
 		frameOverLifeEnabled = frameOverLifeEnabledNode->AsBool();
 	}
@@ -676,7 +676,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
     UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
     UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);
-	UpdatePropertyLineOnLoad(numberVariation.Get(), startTime, endTime);
+    UpdatePropertyLineOnLoad(numberVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(size.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(sizeVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(velocity.Get(), startTime, endTime);

@@ -112,7 +112,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
     emitterType->addItem("Point");
     emitterType->addItem("Box");
     emitterType->addItem("Circle - Volume");
-	emitterType->addItem("Circle - Edges");
+    emitterType->addItem("Circle - Edges");
 	emitterType->addItem("Shockwave");
 	emitterTypeHBox->addWidget(emitterType);
 	mainLayout->addLayout(emitterTypeHBox);
@@ -309,7 +309,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
     float minTimeLimit = 0.f;
 
     float maxTime = emitterLifeTime;
-    float maxTimeLimit	= emitterLifeTime;
+    float maxTimeLimit = emitterLifeTime;
     QString originalYamlPath;
     bool isInnerEmitter = ParticleEmitterPropertiesWidget_namespace::IsInnerEmitter(effect, emitter);
     if (isInnerEmitter)
