@@ -41,17 +41,10 @@
 
 namespace DAVA
 {
+// we have to create this wrapper inside DAVA namespace for friend keyworkd works on private keyboard field
 class DavaQtKeyboard
 {
 public:
-    static void OnKeyPressed(Key k)
-    {
-        InputSystem::Instance()->GetKeyboard().OnKeyPressed(k);
-    }
-    static void OnKeyUnpressed(Key k)
-    {
-        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(k);
-    }
     static Key GetDavaKeyForSystemKey(uint32 virtualKey)
     {
         return InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(virtualKey);
@@ -70,37 +63,7 @@ ControlMapper::ControlMapper( QWindow *w )
 
 void ControlMapper::keyPressEvent(QKeyEvent *e)
 {
-    using namespace DAVA;
-    switch (e->key())
-    {
-        case Qt::Key_Alt:
-            DavaQtKeyboard::OnKeyPressed(Key::LALT);
-            return;
-        case Qt::Key_Control:
-            DavaQtKeyboard::OnKeyPressed(Key::LCTRL);
-            return;
-        case Qt::Key_Shift:
-            DavaQtKeyboard::OnKeyPressed(Key::LSHIFT);
-            return;
-        case Qt::Key_CapsLock:
-            DavaQtKeyboard::OnKeyPressed(Key::CAPSLOCK);
-            return;
-        case Qt::Key_Meta:
-            // Ignore Win key on windows, Ctrl key on OSX
-            return;
-        default:
-            break;
-    }
-    
-#ifdef Q_OS_MAC
-    // OS X doesn't send keyReleaseEvent for hotkeys with Cmd modifier
-    // Temporary disable such keys
-    if ( e->modifiers() & Qt::Modifier::CTRL )
-    {
-        return;
-    }
-#endif
-    
+    using namespace DAVA;   
 #ifdef Q_OS_WIN
     uint32 nativeModif = e->nativeModifiers();
     uint32 nativeScanCode = e->nativeScanCode();
@@ -120,34 +83,13 @@ void ControlMapper::keyPressEvent(QKeyEvent *e)
 
     if (davaKey != Key::UNKNOWN)
     {
-        QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
+        QtLayer::Instance()->KeyPressed(davaKey, e->timestamp());
     }
 }
 
 void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 {
     using namespace DAVA;
-    switch (e->key())
-    {
-        case Qt::Key_Alt:
-            DavaQtKeyboard::OnKeyUnpressed(Key::LALT);
-            return;
-        case Qt::Key_Control:
-            DavaQtKeyboard::OnKeyUnpressed(Key::LCTRL);
-            return;
-        case Qt::Key_Shift:
-            DavaQtKeyboard::OnKeyUnpressed(Key::LSHIFT);
-            return;
-        case Qt::Key_CapsLock:
-            DavaQtKeyboard::OnKeyUnpressed(Key::CAPSLOCK);
-            return;
-        case Qt::Key_Meta:
-            // Ignore Win key on windows, Ctrl key on OSX
-            return;
-        default:
-            break;
-    }
-
 #ifdef Q_OS_WIN
     uint32 nativeModif = e->nativeModifiers();
     uint32 nativeScanCode = e->nativeScanCode();
@@ -166,7 +108,7 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 #endif
     if (davaKey != Key::UNKNOWN)
     {
-        DavaQtKeyboard::OnKeyUnpressed(davaKey);
+        QtLayer::Instance()->KeyReleased(davaKey, e->timestamp());
     }
 }
 

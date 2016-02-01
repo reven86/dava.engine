@@ -44,10 +44,9 @@ extern void FrameworkDidLaunched();
 
 namespace DAVA
 {
-    
 QtLayer::QtLayer()
-    :   delegate(NULL)
-    ,   isDAVAEngineEnabled(true)
+    : delegate(nullptr)
+    , isDAVAEngineEnabled(true)
 {
 }
     
@@ -126,7 +125,7 @@ void QtLayer::Resize(int32 width, int32 height, float64 dpr)
     vcs->ScreenSizeChanged();
 }
 
-void QtLayer::KeyPressed(Key key, int32 count, uint64 timestamp)
+void QtLayer::KeyPressed(Key key, uint64 timestamp)
 {
     UIEvent ev;
     ev.phase = UIEvent::Phase::KEY_DOWN;
@@ -139,11 +138,12 @@ void QtLayer::KeyPressed(Key key, int32 count, uint64 timestamp)
     InputSystem::Instance()->GetKeyboard().OnKeyPressed(key);
 }
 
-void QtLayer::KeyReleased(Key key)
+void QtLayer::KeyReleased(Key key, uint64 timestamp)
 {
     UIEvent ev;
     ev.phase = UIEvent::Phase::KEY_UP;
     ev.device = UIEvent::Device::KEYBOARD;
+    ev.timestamp = static_cast<float64>(timestamp);
     ev.key = key;
 
     UIControlSystem::Instance()->OnInput(&ev);
