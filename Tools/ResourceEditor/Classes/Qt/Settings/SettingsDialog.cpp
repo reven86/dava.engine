@@ -89,14 +89,14 @@ void SettingsDialog::InitProperties()
             keys.emplace_back(key);
         }
 
-        if( keys.empty() == false && keys[0] != Settings::InternalGroup) // skip internal settings
+        if (keys.empty() == false && keys[0] != Settings::InternalGroup) // skip internal settings
         {
             // go deep into tree to find penultimate propertyData
             QtPropertyData *parent = editor->GetRootProperty();
-            for(size_t i = 0; i < keys.size() - 1; ++i)
+            for (size_t i = 0; i < keys.size() - 1; ++i)
             {
-                const DAVA::FastName & currentKey = keys[i];
-                QtPropertyData * prop = parent->ChildGet(currentKey);
+                const DAVA::FastName& currentKey = keys[i];
+                QtPropertyData* prop = parent->ChildGet(currentKey);
                 if(NULL == prop)
                 {
                     prop = new QtPropertyData(currentKey);
@@ -138,7 +138,7 @@ void SettingsDialog::OnResetPressed()
 QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(const DAVA::FastName& path, const DAVA::FastName& name)
     : QtPropertyDataDavaVariant(name, DAVA::VariantType())
     , settingPath(path)
-{ 
+{
     SetVariantValue(SettingsManager::GetValue(settingPath));
 }
 

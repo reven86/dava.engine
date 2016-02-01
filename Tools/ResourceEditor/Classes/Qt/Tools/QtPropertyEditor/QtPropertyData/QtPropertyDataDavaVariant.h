@@ -52,10 +52,10 @@ public:
     };
 
 public:
-	QtPropertyDataDavaVariant(const DAVA::FastName & name, const DAVA::VariantType &value);
-	virtual ~QtPropertyDataDavaVariant();
+    QtPropertyDataDavaVariant(const DAVA::FastName& name, const DAVA::VariantType& value);
+    virtual ~QtPropertyDataDavaVariant();
 
-	const DAVA::VariantType& GetVariantValue() const;
+    const DAVA::VariantType& GetVariantValue() const;
 	void SetVariantValue(const DAVA::VariantType& value);
 
 	void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
@@ -90,7 +90,7 @@ protected slots:
     void MultilineEditClicked();
 	void ColorOWPressed();
 	void FilePathOWPressed();
-    void OnColorChanging(ColorPicker * colorPicker);
+    void OnColorChanging(ColorPicker* colorPicker);
 
 protected:
 	struct AllowedValue
@@ -129,12 +129,12 @@ protected:
 	void ToAABBox3(const QVariant &value);
 	int ParseFloatList(const QString &str, int maxCount, DAVA::float32 *dest);
 
-	void SubValueAdd(const DAVA::FastName &key, const DAVA::VariantType &subvalue);
-    void SubValueSetToMe(const DAVA::FastName &key, const QVariant &subvalue);
-    void SubValueSetFromMe(const DAVA::FastName &key, const QVariant &subvalue);
-    QVariant SubValueGet(const DAVA::FastName &key);
+    void SubValueAdd(const DAVA::FastName& key, const DAVA::VariantType& subvalue);
+    void SubValueSetToMe(const DAVA::FastName& key, const QVariant& subvalue);
+    void SubValueSetFromMe(const DAVA::FastName& key, const QVariant& subvalue);
+    QVariant SubValueGet(const DAVA::FastName& key);
 
-	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
+    QWidget* CreateAllowedValuesEditor(QWidget* parent) const;
     QWidget* CreateAllowedFlagsEditor(QWidget *parent) const;
 	void SetAllowedValueEditorData(QWidget *editorWidget);
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
@@ -157,7 +157,7 @@ class QtPropertyDataDavaVariantSubValue
     : public QtPropertyDataDavaVariant
 {
 public:
-    QtPropertyDataDavaVariantSubValue(const DAVA::FastName & name, QtPropertyDataDavaVariant* parent, const DAVA::VariantType& subvalue);
+    QtPropertyDataDavaVariantSubValue(const DAVA::FastName& name, QtPropertyDataDavaVariant* parent, const DAVA::VariantType& subvalue);
 
     QtPropertyDataDavaVariant *parentVariant;
 	bool trackParent;

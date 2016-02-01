@@ -50,14 +50,14 @@ public:
     static const float32 MIN_LOD_DISTANCE;
     static const float32 MAX_LOD_DISTANCE;
     static const float32 INVALID_DISTANCE;
-    
-	enum eFlags
-	{
-		NEED_UPDATE_AFTER_LOAD = 1 << 0,
-        RECURSIVE_UPDATE = 1 << 1
-	};
 
-	struct LodDistance
+    enum eFlags
+    {
+        NEED_UPDATE_AFTER_LOAD = 1 << 0,
+        RECURSIVE_UPDATE = 1 << 1
+    };
+
+    struct LodDistance
 	{
 		float32 distance;
 		float32 nearDistanceSq;

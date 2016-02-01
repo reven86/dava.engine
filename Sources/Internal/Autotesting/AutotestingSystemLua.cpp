@@ -87,11 +87,11 @@ void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
 {
     if (nsize == 0)
     {
-            mspace_free(ud, ptr);
-			return nullptr;
-		}
-		else
-		{
+        mspace_free(ud, ptr);
+        return nullptr;
+    }
+    else
+        {
 			void* mem = mspace_realloc(ud, ptr, nsize);
 			DVASSERT(mem);
 			return mem;
@@ -114,11 +114,11 @@ AutotestingSystemLua::AutotestingSystemLua()
 AutotestingSystemLua::~AutotestingSystemLua()
 {
     if (!luaState)
-        {
-			return;
-		}
-		lua_close(luaState);
-		luaState = nullptr;
+    {
+        return;
+    }
+    lua_close(luaState);
+        luaState = nullptr;
     
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
         destroy_mspace(memorySpace);
@@ -129,12 +129,12 @@ AutotestingSystemLua::~AutotestingSystemLua()
 void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
 {
     delegate = _delegate;
-    }
+}
 
-	void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
-	{
-		if (luaState)
-		{
+void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
+{
+    if (luaState)
+        {
 			Logger::Debug("AutotestingSystemLua::Has initialised already.");
 			return;
 		}
@@ -154,11 +154,11 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         lua_setglobal(luaState, "print");
 
         lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
-		lua_setglobal(luaState, "require");
+        lua_setglobal(luaState, "require");
 
-		if (!LoadWrappedLuaObjects())
-		{
-			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
+        if (!LoadWrappedLuaObjects())
+        {
+            AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
 		}
         String automationAPIStrPath = AutotestingSystem::ResolvePathToAutomation("/Autotesting/Scripts/autotesting_api.lua");
 		if (automationAPIStrPath.empty() || !RunScriptFromFile(automationAPIStrPath))
@@ -253,9 +253,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
         lua_pushstring(L, path.GetBasename().c_str());
         return 2;
-	}
+    }
 
-	void AutotestingSystemLua::StackDump(lua_State* L)
+    void AutotestingSystemLua::StackDump(lua_State* L)
 	{
 		Logger::FrameworkDebug("*** Stack Dump ***");
 		int i;
@@ -317,10 +317,10 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
     String AutotestingSystemLua::GetDeviceName()
     {
         String deviceName;
-		if (DeviceInfo::GetPlatformString() == "Android")
-		{
-			deviceName = DeviceInfo::GetModel();
-		}
+        if (DeviceInfo::GetPlatformString() == "Android")
+        {
+            deviceName = DeviceInfo::GetModel();
+        }
 		else
 		{
 			deviceName = WStringToString(DeviceInfo::GetName());
@@ -568,8 +568,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         {
             if (keyPress.keyChar == 0)
             {
-				break;
-			}
+                break;
+            }
 			WideString str;
             str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
@@ -581,8 +581,8 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         }
     }
 
-	String AutotestingSystemLua::GetText(UIControl *control)
-	{
+    String AutotestingSystemLua::GetText(UIControl* control)
+    {
 		UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)
 		{
@@ -804,9 +804,9 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
         {
             return false;
         }
-		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
-		{
-			Logger::Error("AutotestingSystemLua::LoadScript Error: unable to load %s", luaScript.c_str());
+        if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
+        {
+            Logger::Error("AutotestingSystemLua::LoadScript Error: unable to load %s", luaScript.c_str());
 			return false;
 		}
 		return true;

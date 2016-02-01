@@ -48,9 +48,9 @@ public:
     virtual const DAVA::MetaInfo* MetaInfo() const;
     virtual void* CreateLastCommand() const;
 
-    DAVA::InspInfoDynamic* GetDynamicInfo() const 
-	{ 
-		return dynamicInfo; 
+    DAVA::InspInfoDynamic* GetDynamicInfo() const
+    {
+        return dynamicInfo; 
 	}
 
 	DAVA::VariantType GetVariant() const

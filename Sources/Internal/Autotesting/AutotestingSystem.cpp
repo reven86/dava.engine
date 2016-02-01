@@ -95,9 +95,9 @@ AutotestingSystem::~AutotestingSystem()
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 {
-        Logger::Info("AutotestingSystem::InitLua");
-		DVASSERT(nullptr == luaSystem);
-		luaSystem = new AutotestingSystemLua();
+    Logger::Info("AutotestingSystem::InitLua");
+    DVASSERT(nullptr == luaSystem);
+        luaSystem = new AutotestingSystemLua();
 		luaSystem->SetDelegate(_delegate);
 	}
 
@@ -188,8 +188,8 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         branchRev = option->GetString("BranchRev");
         frameworkRev = option->GetString("FrameworkRev");
 
-		// Check is build fol local debugging.  By default: use DB.
-		bool isLocalBuild = option->GetBool("LocalBuild", false);
+        // Check is build fol local debugging.  By default: use DB.
+        bool isLocalBuild = option->GetBool("LocalBuild", false);
 		if (isLocalBuild)
 		{
 			groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
@@ -286,9 +286,9 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
         if (isDB)
             AutotestingDB::Instance()->SetTestStarted();
-	}
+    }
 
-	void AutotestingSystem::OnStepStart(const String &stepName)
+    void AutotestingSystem::OnStepStart(const String &stepName)
 	{
 		Logger::Info("AutotestingSystem::OnStepStart %s", stepName.c_str());
 
@@ -385,8 +385,8 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     {
         Logger::Info("AutotestingSystem::MakeScreenShot");
         String currentDateTime = GetCurrentTimeString();
-		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+        screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
+        Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
         Renderer::RequestGLScreenShot(this);
     }
 
@@ -526,8 +526,8 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
             return;
         }
         isRunning = false;
-		isWaiting = false;
-		needExitApp = true;
+        isWaiting = false;
+        needExitApp = true;
 		timeBeforeExit = 1.0f;
 	}
 

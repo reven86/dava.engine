@@ -89,8 +89,8 @@ public:
     ~SceneEditor2();
 
     // editor systems
-	SceneCameraSystem *cameraSystem;
-	SceneCollisionSystem *collisionSystem;
+    SceneCameraSystem* cameraSystem;
+    SceneCollisionSystem *collisionSystem;
 	SceneGridSystem *gridSystem;
 	HoodSystem *hoodSystem;
 	SceneSelectionSystem *selectionSystem;
@@ -114,10 +114,10 @@ public:
 
     DAVA::WASDControllerSystem* wasdSystem;
     DAVA::RotationControllerSystem* rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
 
-	WayEditSystem *wayEditSystem;
-	PathSystem *pathSystem;
+    WayEditSystem* wayEditSystem;
+    PathSystem *pathSystem;
     
 	// save/load
 	bool Load(const DAVA::FilePath &path);

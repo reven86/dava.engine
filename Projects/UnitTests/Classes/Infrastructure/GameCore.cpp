@@ -34,6 +34,11 @@
 
 #include "Infrastructure/GameCore.h"
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+#include "Network/NetConfig.h"
+#include "Platform/TemplateWin32/UAPNetworkHelper.h"
+#endif
+
 using namespace DAVA;
 
 namespace
@@ -73,6 +78,9 @@ void GameCore::ProcessCommandLine()
 void GameCore::OnAppStarted()
 {
     ProcessCommandLine();
+#if defined (__DAVAENGINE_WIN_UAP__)
+    InitNetwork();
+#endif
 
     if (teamcityOutputEnabled)
     {
@@ -108,6 +116,10 @@ void GameCore::OnAppFinished()
     {
         DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
     }
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+    UnInitNetwork();
+#endif
 }
 
 void GameCore::OnSuspend()
@@ -133,6 +145,10 @@ void GameCore::Update(float32 timeElapsed)
 {
     ProcessTests(timeElapsed);
     ApplicationCore::Update(timeElapsed);
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+    FlushLogs();
+#endif
 }
 
 void GameCore::OnError()
@@ -207,3 +223,50 @@ void GameCore::FinishTests()
     Logger::Debug("Finish all tests.");
     Core::Instance()->Quit();
 }
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+void GameCore::InitNetwork()
+{
+    using namespace Net;
+
+    auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
+        if (!loggerInUse)
+        {
+            loggerInUse = true;
+            return &netLogger;
+        }
+        return nullptr;
+    };
+
+    NetCore::Instance()->RegisterService(
+        NetCore::SERVICE_LOG, 
+        loggerCreate,
+        [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+
+    eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
+    Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
+
+    NetConfig config(role);
+    config.AddTransport(TRANSPORT_TCP, endpoint);
+    config.AddService(NetCore::SERVICE_LOG);
+
+    netController = NetCore::Instance()->CreateController(config, nullptr);
+}
+
+void GameCore::UnInitNetwork()
+{
+    netLogger.Uninstall();
+    FlushLogs();
+
+    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
+}
+
+void GameCore::FlushLogs()
+{
+    while (netLogger.IsChannelOpen() && netLogger.GetMessageQueueSize() != 0)
+    {
+        Net::NetCore::Instance()->Poll();
+    }
+}
+
+#endif

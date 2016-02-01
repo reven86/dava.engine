@@ -857,8 +857,8 @@ void TextureBrowser::textureZoomFit(bool checked)
                 w = size.width();
                 h = size.height();
             }
-			else
-			{
+            else
+            {
 				w = curTexture->width;
 				h = curTexture->height;
 			}

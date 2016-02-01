@@ -36,6 +36,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <detours/detours.h>
+#elif defined(__DAVAENGINE_WIN_UAP__)
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <malloc.h>
 #include <dlfcn.h>
@@ -130,6 +131,8 @@ size_t MallocHook::MallocSize(void* ptr)
 {
 #if defined(__DAVAENGINE_WIN32__)
     return _msize(ptr);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return _msize(ptr);
 #elif defined(__DAVAENGINE_APPLE__)
     return malloc_size(ptr);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -178,6 +181,10 @@ void MallocHook::Install()
     detours(reinterpret_cast<PVOID*>(&realStrdup), reinterpret_cast<PVOID>(&HookedStrdup));
     detours(reinterpret_cast<PVOID*>(&RealFree), reinterpret_cast<PVOID>(&HookedFree));
 
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    RealMalloc = &malloc;
+    RealRealloc = &realloc;
+    RealFree = &free;
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     void* fptr = nullptr;
 

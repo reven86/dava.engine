@@ -227,10 +227,9 @@ void UISlider::Input(UIEvent *currentInput)
     //absTouchPoint = currentInput->point;
 
     relTouchPoint = currentInput->point;
-	relTouchPoint -= absRect.GetPosition();
-	
-	
-	float oldVal = currentValue;
+    relTouchPoint -= absRect.GetPosition();
+
+    float oldVal = currentValue;
 	currentValue = Interpolation::Linear(minValue, maxValue, (float32)leftInactivePart, relTouchPoint.x, size.x - (float32)rightInactivePart);
 	
 	if(currentValue < minValue)

@@ -76,9 +76,9 @@ public:
         _ptr = rp.Get();
 
         SafeRetain(_ptr);
-	}
-	
-	T * Get() const
+    }
+
+    T * Get() const
 	{
 		return _ptr;
 	}

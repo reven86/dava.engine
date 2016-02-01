@@ -208,7 +208,7 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
         return newString;
     }
 
-	return sourceString;
+    return sourceString;
 }
 
 void ShowFileInExplorer(const QString& path)

@@ -84,8 +84,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     {
         if (0 == modifRotate)
         {
-			DAVA::Polygon3 poly;
-			poly.AddPoint(curPos);
+            DAVA::Polygon3 poly;
+            poly.AddPoint(curPos);
 			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
 			{
 				poly.AddPoint(axisXc[i]->curFrom);
@@ -97,8 +97,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         else
         {
             DAVA::float32 step = modifRotate / 24;
-			DAVA::Color modifColor = colorX;
-			modifColor.a = 0.3f;
+            DAVA::Color modifColor = colorX;
+            modifColor.a = 0.3f;
 
 			DAVA::Polygon3 poly;
 			DAVA::float32 y;
@@ -134,8 +134,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     {
         if (0 == modifRotate)
         {
-			DAVA::Polygon3 poly;
-			poly.AddPoint(curPos);
+            DAVA::Polygon3 poly;
+            poly.AddPoint(curPos);
 			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
 			{
 				poly.AddPoint(axisYc[i]->curFrom);
@@ -147,8 +147,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         else
         {
             DAVA::float32 step = modifRotate / 24;
-			DAVA::Color modifColor = colorY;
-			modifColor.a = 0.3f;
+            DAVA::Color modifColor = colorY;
+            modifColor.a = 0.3f;
 
 			DAVA::Polygon3 poly;
 			DAVA::float32 x;
@@ -184,8 +184,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     {
         if (0 == modifRotate)
         {
-			DAVA::Polygon3 poly;
-			poly.AddPoint(curPos);
+            DAVA::Polygon3 poly;
+            poly.AddPoint(curPos);
 			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
 			{
 				poly.AddPoint(axisZc[i]->curFrom);
@@ -197,8 +197,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         else
         {
             DAVA::float32 step = modifRotate / 24;
-			DAVA::Color modifColor = colorZ;
-			modifColor.a = 0.3f;
+            DAVA::Color modifColor = colorZ;
+            modifColor.a = 0.3f;
 
 			DAVA::Polygon3 poly;
 			DAVA::float32 x;
@@ -242,8 +242,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         char tmp[255];
         tmp[0] = 0;
 
-		if(selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ)
-		{
+        if (selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ)
+        {
 			sprintf(tmp, "[%.2f, 0.00, 0.00]", DAVA::RadToDeg(modifRotate));
 		}
 		if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ)

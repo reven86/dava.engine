@@ -60,6 +60,19 @@ bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, Servic
     return false;
 }
 
+bool ServiceRegistrar::UnRegister(uint32 serviceId)
+{
+    if (!IsRegistered(serviceId))
+    {
+        return false;
+    }
+
+    auto iter = std::remove(registrar.begin(), registrar.end(), serviceId);
+    registrar.erase(iter);
+
+    return true;
+}
+
 void ServiceRegistrar::UnregisterAll()
 {
     registrar.clear();

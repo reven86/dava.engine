@@ -54,8 +54,8 @@ public:
     void setEditorData(QWidget *editor, const QModelIndex &index) const;
 	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 	void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const;
-    
-    void showButtons(QtPropertyData *data);
+
+    void showButtons(QtPropertyData* data);
     void invalidateButtons();
 
 public slots:
@@ -64,12 +64,12 @@ public slots:
 private:
     bool eventFilter(QObject *obj, QEvent *event);
 	void drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &option, const QModelIndex &index) const;
-	void showOptionalButtons(QtPropertyData *data);
+    void showOptionalButtons(QtPropertyData* data);
     void hideButtons();
     void DrawButton(QPainter* painter, QStyleOptionViewItem& opt, QtPropertyToolButton* btn) const;
 
-	QtPropertyModel *model = nullptr;
-    QtPropertyData * lastHoverData = nullptr;
+    QtPropertyModel* model = nullptr;
+    QtPropertyData* lastHoverData = nullptr;
     DAVA::Vector<QPointer<QtPropertyToolButton>> visibleButtons;
     QPointer<QAbstractItemView> view;
     mutable QPointer<QWidget> activeEditor;

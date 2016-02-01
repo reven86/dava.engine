@@ -819,8 +819,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
     QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
     QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
-	QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
-	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
+    QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
+    QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
@@ -1668,7 +1668,7 @@ void QtMainWindow::OnTextureBrowser()
 
     TextureBrowser::Instance()->show();
     TextureBrowser::Instance()->sceneActivated(sceneEditor);
-    TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr); 
+    TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr);
 }
 
 void QtMainWindow::OnSceneLightMode()
@@ -2083,10 +2083,10 @@ void QtMainWindow::OnSaveTiledTexture()
 
     LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
     if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
-		return;
-	}
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(varifLandscapeError));
+        return;
+    }
 
     Landscape* landscape = FindLandscape(scene);
     if (nullptr != landscape)
@@ -2308,22 +2308,22 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
-		ui->actionHeightMapEditor->setChecked(true);
+        ui->actionHeightMapEditor->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
     {
-		ui->actionRulerTool->setChecked(true);
+        ui->actionRulerTool->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
-		ui->actionTileMapEditor->setChecked(true);
+        ui->actionTileMapEditor->setChecked(true);
         shouldEnableFirstLod = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
     {
-		ui->actionShowNotPassableLandscape->setChecked(true);
+        ui->actionShowNotPassableLandscape->setChecked(true);
         shouldEnableFirstLod = true;
     }
 

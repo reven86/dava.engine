@@ -49,9 +49,9 @@ struct RotateHood : public HoodObject
 
     HoodCollObject* axisXc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
     HoodCollObject* axisYc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
-	HoodCollObject* axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
+    HoodCollObject* axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
 
-	DAVA::float32 modifRotate;
+    DAVA::float32 modifRotate;
 
 private:
 	DAVA::float32 radius;

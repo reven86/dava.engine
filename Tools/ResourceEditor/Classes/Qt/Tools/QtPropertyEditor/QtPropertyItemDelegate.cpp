@@ -62,7 +62,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
         drawOptionalButtons(painter, opt, index);
     }
 
-    auto *data = dynamic_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    auto* data = dynamic_cast<QtPropertyDataDavaVariant*>(model->itemFromIndex(index));
     if (
         (data != nullptr) &&
         (data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING) &&
@@ -80,7 +80,7 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
     static const int baseText = 17;
     static const int extra = 5;
 
-    auto *data = dynamic_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    auto* data = dynamic_cast<QtPropertyDataDavaVariant*>(model->itemFromIndex(index));
     if ( data != nullptr )
     {
         if ( data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING )
@@ -345,13 +345,13 @@ void QtPropertyItemDelegate::showButtons(QtPropertyData *data)
 	if(data != lastHoverData)
 	{
         hideButtons();
-	    showOptionalButtons(data);
+        showOptionalButtons(data);
 
         lastHoverData = data;
-	}
+    }
 }
 
-void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data)
+void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData* data)
 {
     DVASSERT(visibleButtons.empty());
     if (nullptr != data)
