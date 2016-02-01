@@ -312,6 +312,7 @@ public:
         if (delegate)
         {
             Rect emptyRect;
+            emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
             delegate->OnKeyboardShown(emptyRect);
         }
     }
@@ -575,6 +576,7 @@ public:
         if (delegate)
         {
             Rect emptyRect;
+            emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
             delegate->OnKeyboardShown(emptyRect);
         }
     }
