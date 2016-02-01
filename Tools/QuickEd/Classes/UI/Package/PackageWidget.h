@@ -90,6 +90,7 @@ private:
     void CollectExpandedIndexes(PackageBaseNode* node);
     void MoveNodeUpDown(bool up);
     void MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex);
+    QAction* CreateAction(const QString& name, void (PackageWidget::*callback)(void), const QKeySequence& sequence = QKeySequence());
     void CreateActions();
     void PlaceActions();
     void LoadContext();

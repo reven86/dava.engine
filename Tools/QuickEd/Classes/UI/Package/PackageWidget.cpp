@@ -183,10 +183,6 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::OnFilterTextChanged);
     CreateActions();
     PlaceActions();
-    for (auto& action : treeView->actions())
-    {
-        action->setEnabled(false);
-    }
 }
 
 PackageWidget::~PackageWidget()
@@ -218,59 +214,32 @@ void PackageWidget::OnDocumentChanged(Document* arg)
     filterLine->setEnabled(document != nullptr);
 }
 
+QAction* PackageWidget::CreateAction(const QString& name, void (PackageWidget::*callback)(void), const QKeySequence& keySequence)
+{
+    QAction* action = new QAction(name, this);
+    action->setEnabled(false);
+    action->setShortcut(keySequence);
+    action->setShortcutContext(Qt::WidgetShortcut);
+    connect(action, &QAction::triggered, this, callback);
+    return action;
+}
+
 void PackageWidget::CreateActions()
 {
-    addStyleAction = new QAction(tr("Add Style"), this);
-    connect(addStyleAction, &QAction::triggered, this, &PackageWidget::OnAddStyle);
+    addStyleAction = CreateAction(tr("Add Style"), &PackageWidget::OnAddStyle);
+    importPackageAction = CreateAction(tr("Import package"), &PackageWidget::OnImport, QKeySequence::New);
 
-    importPackageAction = new QAction(tr("Import package"), this);
-    importPackageAction->setShortcut(QKeySequence::New);
-    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
+    cutAction = CreateAction(tr("Cut"), &PackageWidget::OnCut, QKeySequence::Cut);
+    copyAction = CreateAction(tr("Copy"), &PackageWidget::OnCopy, QKeySequence::Copy);
+    pasteAction = CreateAction(tr("Paste"), &PackageWidget::OnPaste, QKeySequence::Paste);
+    delAction = CreateAction(tr("Delete"), &PackageWidget::OnDelete, QKeySequence::Delete);
 
-    cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(cutAction, &QAction::triggered, this, &PackageWidget::OnCut);
+    renameAction = CreateAction(tr("Rename"), &PackageWidget::OnRename);
 
-    copyAction = new QAction(tr("Copy"), this);
-    copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(copyAction, &QAction::triggered, this, &PackageWidget::OnCopy);
-
-    pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(QKeySequence::Paste);
-    pasteAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(pasteAction, &QAction::triggered, this, &PackageWidget::OnPaste);
-
-    renameAction = new QAction(tr("Rename"), this);
-    renameAction->setEnabled(false);
-    connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
-    
-    delAction = new QAction(tr("Delete"), this);
-    delAction->setShortcut(QKeySequence::Delete);
-    delAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
-
-    moveUpAction = new QAction(tr("Move up"), this);
-    moveUpAction->setShortcut(Qt::ControlModifier + Qt::Key_Up);
-    moveUpAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(moveUpAction, &QAction::triggered, this, &PackageWidget::OnMoveUp);
-
-    moveDownAction = new QAction(tr("Move down"), this);
-    moveDownAction->setShortcut(Qt::ControlModifier + Qt::Key_Down);
-    moveDownAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(moveDownAction, &QAction::triggered, this, &PackageWidget::OnMoveDown);
-
-    moveLeftAction = new QAction(tr("Move left"), this);
-    moveLeftAction->setShortcut(Qt::ControlModifier + Qt::Key_Left);
-    moveLeftAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(moveLeftAction, &QAction::triggered, this, &PackageWidget::OnMoveLeft);
-
-    moveRightAction = new QAction(tr("Move right"), this);
-    moveRightAction->setShortcut(Qt::ControlModifier + Qt::Key_Right);
-    moveRightAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(moveRightAction, &QAction::triggered, this, &PackageWidget::OnMoveRight);
+    moveUpAction = CreateAction(tr("Move up"), &PackageWidget::OnMoveUp, Qt::ControlModifier + Qt::Key_Up);
+    moveDownAction = CreateAction(tr("Move down"), &PackageWidget::OnMoveDown, Qt::ControlModifier + Qt::Key_Down);
+    moveLeftAction = CreateAction(tr("Move left"), &PackageWidget::OnMoveLeft, Qt::ControlModifier + Qt::Key_Left);
+    moveRightAction = CreateAction(tr("Move right"), &PackageWidget::OnMoveRight, Qt::ControlModifier + Qt::Key_Right);
 }
 
 void PackageWidget::PlaceActions()

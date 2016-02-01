@@ -403,19 +403,14 @@ int PackageModel::GetRowIndex(int row, const QModelIndex& parent) const
     return rowCount(parent);
 }
 
-bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int /*column*/, const QModelIndex& parent)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr == commandExecutor)
+    DVASSERT(nullptr != commandExecutor && nullptr != package);
+    if (nullptr == commandExecutor || nullptr == package)
     {
         return false;
     }
 
-    DVASSERT(nullptr != package);
-    if (nullptr == package)
-    {
-        return false;
-    }
     if (action == Qt::IgnoreAction)
     {
         return true;

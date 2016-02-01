@@ -41,10 +41,10 @@ const Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
 
 const Vector4 Vector4::Zero(0.0f, 0.0f, 0.0f, 0.0f);
 
-Vector2 Rotate(const Vector2& in, float32 angle)
+Vector2 Rotate(const Vector2& in, float32 angleRad)
 {
     DAVA::Matrix3 rotateMatrix;
-    rotateMatrix.BuildRotation(angle);
+    rotateMatrix.BuildRotation(angleRad);
     return in * rotateMatrix;
 }
 }

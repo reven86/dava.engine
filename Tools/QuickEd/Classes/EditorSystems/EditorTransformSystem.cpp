@@ -285,7 +285,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     if (canAdjust)
     {
         Vector2 scaledDelta = delta / parentGeometricData.scale;
-        Vector2 deltaPosition(::Rotate(scaledDelta, -parentGeometricData.angle));
+        Vector2 deltaPosition(DAVA::Rotate(scaledDelta, -parentGeometricData.angle));
         Vector2 adjustedPosition(deltaPosition);
         adjustedPosition += extraDelta;
         extraDelta.SetZero();
@@ -306,7 +306,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         }
         const UIGeometricData* gd = nodeToMove->parentGD;
         Vector2 scaledDelta = delta / gd->scale;
-        Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
+        Vector2 deltaPosition(DAVA::Rotate(scaledDelta, -gd->angle));
         AbstractProperty* property = nodeToMove->positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
@@ -687,7 +687,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
-    Vector2 rotatedDeltaPosition(::Rotate(scaledDelta, -parentGeometricData.angle));
+    Vector2 rotatedDeltaPosition(DAVA::Rotate(scaledDelta, -parentGeometricData.angle));
     Vector2 originalPos(positionProperty->GetValue().AsVector2());
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
@@ -720,7 +720,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
     DVASSERT(controlSize.x > 0.0f && controlSize.y > 0.0f);
-    const Vector2 rotatedDeltaPivot(::Rotate(delta, -controlGeometricData.angle));
+    const Vector2 rotatedDeltaPivot(DAVA::Rotate(delta, -controlGeometricData.angle));
     Vector2 deltaPivot(rotatedDeltaPivot / controlSize);
 
     const Vector2 range(magnetRange / controlSize); //range in pivot coordinates

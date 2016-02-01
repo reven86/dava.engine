@@ -137,7 +137,7 @@ public:
     DAVA::Signal<const DAVA::Vector2 &/*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
-    DAVA::Signal<PackageNode */*node*/> PackageNodeChanged;
+    DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
