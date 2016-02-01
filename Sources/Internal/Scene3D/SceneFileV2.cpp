@@ -130,7 +130,7 @@ SceneFileV2::eError SceneFileV2::GetError()
 
 SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, DAVA::Scene* scene, SceneFileV2::eFileType fileType)
 {
-    File* file = File::Create(filename, File::CREATE | File::WRITE);
+    ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
     if (!file)
     {
         Logger::Error("SceneFileV2::SaveScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
@@ -287,12 +287,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, DAVA::Scene
         if (!SaveHierarchy(scene->GetChild(ci), file, 1))
         {
             Logger::Error("SceneFileV2::SaveScene failed to save hierarchy file: %s", filename.GetAbsolutePathname().c_str());
-            SafeRelease(file);
             return GetError();
         }
     }
 
-    SafeRelease(file);
     return GetError();
 }
 
@@ -346,7 +344,7 @@ bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File* fil
 
 VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath& filename)
 {
-    File* file = File::Create(filename, File::OPEN | File::READ);
+    ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
         Logger::Error("SceneFileV2::LoadSceneVersion failed to open file: %s", filename.GetAbsolutePathname().c_str());
@@ -372,13 +370,12 @@ VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath& filename
         return version;
     }
 
-    SafeRelease(file);
     return version;
 }
 
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scene)
 {
-    File* file = File::Create(filename, File::OPEN | File::READ);
+    ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
         Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
@@ -390,7 +387,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     if (!headerValid)
     {
-        SafeRelease(file);
         Logger::Error("SceneFileV2::LoadScene: scene header is not valid in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
@@ -398,7 +394,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
     {
-        SafeRelease(file);
         Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d. File: %s", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION, filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
@@ -410,7 +405,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     if (!versionValid)
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong in file: ", filename.GetAbsolutePathname().c_str());
-        SafeRelease(file);
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
@@ -433,7 +427,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     {
         const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(scene->version);
         Logger::Error("SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
-        SafeRelease(file);
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
@@ -514,7 +507,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         scene->OnSceneReady(scene);
     }
 
-    SafeRelease(file);
     return GetError();
 }
 
@@ -559,7 +551,7 @@ void SceneFileV2::ApplyFogQuality()
 SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
 {
     SceneArchive* res = nullptr;
-    File* file = File::Create(filename, File::OPEN | File::READ);
+    ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
         Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
@@ -571,14 +563,12 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     if (!headerValid)
     {
         Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
-        SafeRelease(file);
         return res;
     }
 
     if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
     {
         Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
-        SafeRelease(file);
         return res;
     }
 
@@ -589,7 +579,6 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     if (!versionValid)
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong");
-        SafeRelease(file);
         return res;
     }
 
@@ -611,7 +600,6 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     {
         const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(version);
         Logger::Error("SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
-        SafeRelease(file);
         return res;
     }
     default:
@@ -639,7 +627,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         child->LoadHierarchy(file);
         res->children.push_back(child);
     }
-    SafeRelease(file);
+
     return res;
 }
 
