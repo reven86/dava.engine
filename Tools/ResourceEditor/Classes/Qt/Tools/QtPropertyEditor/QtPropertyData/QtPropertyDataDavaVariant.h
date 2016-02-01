@@ -55,7 +55,7 @@ public:
     QtPropertyDataDavaVariant(const DAVA::FastName& name, const DAVA::VariantType& value);
     virtual ~QtPropertyDataDavaVariant();
 
-	const DAVA::VariantType& GetVariantValue() const;
+    const DAVA::VariantType& GetVariantValue() const;
 	void SetVariantValue(const DAVA::VariantType& value);
 
 	void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
@@ -134,7 +134,7 @@ protected:
     void SubValueSetFromMe(const DAVA::FastName& key, const QVariant& subvalue);
     QVariant SubValueGet(const DAVA::FastName& key);
 
-    QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
+    QWidget* CreateAllowedValuesEditor(QWidget* parent) const;
     QWidget* CreateAllowedFlagsEditor(QWidget *parent) const;
 	void SetAllowedValueEditorData(QWidget *editorWidget);
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);

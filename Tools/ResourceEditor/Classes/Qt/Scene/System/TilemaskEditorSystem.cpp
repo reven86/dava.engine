@@ -250,8 +250,8 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                 if (drawingType == TILEMASK_DRAW_COPY_PASTE)
                 {
                     int32 curKeyModifiers = QApplication::keyboardModifiers();
-                        if (curKeyModifiers & Qt::AltModifier)
-						{
+                    if (curKeyModifiers & Qt::AltModifier)
+                        {
 							copyPasteFrom = cursorPosition;
                             copyPasteOffset = Vector2();
                             return;
@@ -260,7 +260,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                         {
                             if (copyPasteFrom == Vector2(-1.f, -1.f))
                             {
-								return;
+                                return;
 							}
                             copyPasteOffset = copyPasteFrom - cursorPosition;
                         }
@@ -269,8 +269,8 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                     ResetAccumulatorRect();
                     editingIsEnabled = true;
                     activeDrawingType = drawingType;
-                }
-				break;
+            }
+                break;
 
         case UIEvent::Phase::DRAG:
             break;

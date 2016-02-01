@@ -130,7 +130,7 @@ Component * Component::CreateByType(uint32 componentType)
     case SCRIPT_COMPONENT:
 
     default:
-		DVASSERT(0);
+        DVASSERT(0);
 		return 0;
 	}
 
