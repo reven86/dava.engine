@@ -484,6 +484,8 @@ void NMaterial::SetParent(NMaterial* _parent)
     }
 
     InvalidateRenderVariants();
+    InvalidateBufferBindings();
+    InvalidateTextureBindings();
 }
 
 NMaterial* NMaterial::GetParent()
