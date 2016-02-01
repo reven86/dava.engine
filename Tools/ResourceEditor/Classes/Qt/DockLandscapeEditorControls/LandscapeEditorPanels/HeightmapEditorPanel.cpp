@@ -209,10 +209,10 @@ void HeightmapEditorPanel::ConnectToSignals()
 {
 	connect(SceneSignals::Instance(), SIGNAL(DropperHeightChanged(SceneEditor2*, double)),
 			this, SLOT(SetDropperHeight(SceneEditor2*, double)));
-	connect(SceneSignals::Instance(), SIGNAL(HeightmapEditorToggled(SceneEditor2*)),
-			this, SLOT(EditorToggled(SceneEditor2*)));
+    connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
+            this, SLOT(EditorToggled(SceneEditor2*)));
 
-	connect(sliderWidgetBrushSize, SIGNAL(ValueChanged(int)), this, SLOT(SetBrushSize(int)));
+    connect(sliderWidgetBrushSize, SIGNAL(ValueChanged(int)), this, SLOT(SetBrushSize(int)));
 	connect(sliderWidgetStrength, SIGNAL(ValueChanged(int)), this, SLOT(SetStrength(int)));
 	connect(sliderWidgetAverageStrength, SIGNAL(ValueChanged(int)), this, SLOT(SetAverageStrength(int)));
 	connect(radioAbsolute, SIGNAL(clicked()), this, SLOT(SetAbsoluteDrawing()));

@@ -30,22 +30,41 @@
 #ifndef __LANDSCAPETOOLSTOGGLECOMMAND_H__
 #define __LANDSCAPETOOLSTOGGLECOMMAND_H__
 
+#include "Functional/Function.h"
 #include "Commands2/Command2.h"
+#include "Qt/Scene/System/LandscapeEditorDrawSystem.h"
 
 class SceneEditor2;
 
 class LandscapeToolsToggleCommand : public Command2
 {
 public:
-    LandscapeToolsToggleCommand(int identifier, SceneEditor2* sceneEditor);
+    LandscapeToolsToggleCommand(DAVA::int32 identifier, SceneEditor2* sceneEditor,
+                                DAVA::uint32 allowedTools, DAVA::String disablingError);
     DAVA::Entity* GetEntity() const override;
+
+    void Redo() override;
+    void Undo() override;
 
     void SaveEnabledToolsState();
     void ApplySavedState();
 
+    using IsEnabledFunction = DAVA::Function<bool()>;
+    using EnableFunction = DAVA::Function<LandscapeEditorDrawSystem::eErrorType()>;
+    using DisableFunction = DAVA::Function<bool()>;
+
+protected:
+    virtual void OnEnabled();
+    virtual void OnDisabled();
+
 protected:
     SceneEditor2* sceneEditor = nullptr;
+    DAVA::String disablingError;
+    DAVA::uint32 allowedTools = 0;
     DAVA::int32 enabledTools = 0;
+    IsEnabledFunction isEnabledFunction;
+    EnableFunction enableFunction;
+    DisableFunction disableFunction;
 };
 
 template <typename ForwardCommand>
@@ -72,14 +91,13 @@ public:
 /*
  * Concerete commands
  */
-
 class EnableHeightmapEditorCommand : public LandscapeToolsToggleCommand
 {
 public:
     EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor);
 
-    void Redo() override;
-    void Undo() override;
+private:
+    void OnDisabled() override;
 };
 using DisableHeightmapEditorCommand = LandscapeToolsReverseCommand<EnableHeightmapEditorCommand>;
 
@@ -87,9 +105,6 @@ class EnableNotPassableCommand : public LandscapeToolsToggleCommand
 {
 public:
     EnableNotPassableCommand(SceneEditor2* forSceneEditor);
-
-    void Redo() override;
-    void Undo() override;
 };
 using DisableNotPassableCommand = LandscapeToolsReverseCommand<EnableNotPassableCommand>;
 
@@ -97,9 +112,6 @@ class EnableRulerToolCommand : public LandscapeToolsToggleCommand
 {
 public:
     EnableRulerToolCommand(SceneEditor2* forSceneEditor);
-
-    void Redo() override;
-    void Undo() override;
 };
 using DisableRulerToolCommand = LandscapeToolsReverseCommand<EnableRulerToolCommand>;
 
@@ -107,9 +119,6 @@ class EnableTilemaskEditorCommand : public LandscapeToolsToggleCommand
 {
 public:
     EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor);
-
-    void Redo() override;
-    void Undo() override;
 };
 using DisableTilemaskEditorCommand = LandscapeToolsReverseCommand<EnableTilemaskEditorCommand>;
 
@@ -118,8 +127,8 @@ class EnableCustomColorsCommand : public LandscapeToolsToggleCommand
 public:
     EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool saveChanges);
 
-    void Redo() override;
-    void Undo() override;
+private:
+    void OnEnabled() override;
 
 private:
     bool saveChanges = false;

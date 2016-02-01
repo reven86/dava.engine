@@ -29,21 +29,21 @@
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Scene/SceneEditor2.h"
 #include "Qt/Scene/SceneSignals.h"
-#include "Qt/Scene/System/LandscapeEditorDrawSystem/CustomColorsProxy.h"
 #include "Main/QtUtils.h"
 
 namespace LTTCLocal
 {
-template <typename System, typename CheckFunction, typename EnableFunction>
-bool TryEnableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system, DAVA::uint32 disableFlags,
-                            CheckFunction check, EnableFunction enable)
+bool TryEnableWithFunctions(SceneEditor2* editor, DAVA::uint32 allowedTools,
+                            const LandscapeToolsToggleCommand::IsEnabledFunction& isEnabled,
+                            const LandscapeToolsToggleCommand::EnableFunction& enable)
 {
     if (editor == nullptr)
         return false;
 
-    if (((editor->*system)->*check)())
+    if (isEnabled())
         return false;
 
+    DAVA::uint32 disableFlags = SceneEditor2::LANDSCAPE_TOOLS_ALL & (~allowedTools);
     editor->DisableToolsInstantly(disableFlags);
     if (editor->IsToolsEnabled(disableFlags))
     {
@@ -51,7 +51,7 @@ bool TryEnableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system, 
         return false;
     }
 
-    LandscapeEditorDrawSystem::eErrorType enablingError = ((editor->*system)->*enable)();
+    LandscapeEditorDrawSystem::eErrorType enablingError = enable();
     if (enablingError == LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
     {
         editor->foliageSystem->SetFoliageVisible(false);
@@ -65,15 +65,16 @@ bool TryEnableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system, 
     return true;
 }
 
-template <typename System, typename CheckFunction, typename DisableFunction, typename... Arg>
-bool TryDisableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system, const String& error, CheckFunction check, DisableFunction disable, Arg... arg)
+bool TryDisableWithFunctions(SceneEditor2* editor, const String& error,
+                             const LandscapeToolsToggleCommand::IsEnabledFunction& isEnabled,
+                             const LandscapeToolsToggleCommand::DisableFunction& disable)
 {
     if (editor == nullptr)
         return false;
 
-    if (((editor->*system)->*check)())
+    if (isEnabled())
     {
-        if (((editor->*system)->*disable)(arg...))
+        if (disable())
         {
             editor->foliageSystem->SetFoliageVisible(true);
         }
@@ -87,25 +88,17 @@ bool TryDisableWithFunctions(SceneEditor2* editor, System SceneEditor2::*system,
     return true;
 }
 
-template <class System>
-bool TryEnable(SceneEditor2* editor, System* SceneEditor2::*system, DAVA::uint32 disableFlags)
-{
-    return TryEnableWithFunctions(editor, system, disableFlags, &System::IsLandscapeEditingEnabled, &System::EnableLandscapeEditing);
-}
-
-template <class System, typename... Arg>
-bool TryDisable(SceneEditor2* editor, System* SceneEditor2::*system, const String& error, Arg... arg)
-{
-    return TryDisableWithFunctions(editor, system, error, &System::IsLandscapeEditingEnabled, &System::DisableLandscapeEdititing, arg...);
-}
 }
 
 /*
  * Common
  */
-LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEditor2* _sceneEditor)
+LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEditor2* _sceneEditor,
+                                                         DAVA::uint32 _allowedTools, DAVA::String _disablingError)
     : Command2(identifier)
     , sceneEditor(_sceneEditor)
+    , allowedTools(_allowedTools)
+    , disablingError(_disablingError)
 {
 }
 
@@ -130,142 +123,105 @@ void LandscapeToolsToggleCommand::ApplySavedState()
     }
 }
 
+void LandscapeToolsToggleCommand::Redo()
+{
+    SaveEnabledToolsState();
+    if (LTTCLocal::TryEnableWithFunctions(sceneEditor, allowedTools, isEnabledFunction, enableFunction))
+    {
+        OnEnabled();
+    }
+    SceneSignals::Instance()->EmitLandscapeEditorToggled(sceneEditor);
+}
+
+void LandscapeToolsToggleCommand::Undo()
+{
+    if (LTTCLocal::TryDisableWithFunctions(sceneEditor, disablingError, isEnabledFunction, disableFunction))
+    {
+        OnDisabled();
+        ApplySavedState();
+    }
+    SceneSignals::Instance()->EmitLandscapeEditorToggled(sceneEditor);
+}
+
+void LandscapeToolsToggleCommand::OnEnabled()
+{
+}
+
+void LandscapeToolsToggleCommand::OnDisabled()
+{
+}
+
 /*
  * Ruler
  */
 EnableRulerToolCommand::EnableRulerToolCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_RULER_TOOL_ENABLE, forSceneEditor)
+    : LandscapeToolsToggleCommand(CMDID_RULER_TOOL_ENABLE, forSceneEditor, 0, ResourceEditor::RULER_TOOL_DISABLE_ERROR)
 {
-}
-
-void EnableRulerToolCommand::Redo()
-{
-    SaveEnabledToolsState();
-    LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::rulerToolSystem, SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
-}
-
-void EnableRulerToolCommand::Undo()
-{
-    LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::rulerToolSystem, ResourceEditor::RULER_TOOL_DISABLE_ERROR);
-    ApplySavedState();
-
-    SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
+    isEnabledFunction = DAVA::MakeFunction(sceneEditor->rulerToolSystem, &RulerToolSystem::IsLandscapeEditingEnabled);
+    enableFunction = DAVA::MakeFunction(sceneEditor->rulerToolSystem, &RulerToolSystem::EnableLandscapeEditing);
+    disableFunction = DAVA::MakeFunction(sceneEditor->rulerToolSystem, &RulerToolSystem::DisableLandscapeEdititing);
 }
 
 /*
  * Tilemask
  */
 EnableTilemaskEditorCommand::EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_TILEMASK_EDITOR_ENABLE, forSceneEditor)
+    : LandscapeToolsToggleCommand(CMDID_TILEMASK_EDITOR_ENABLE, forSceneEditor, 0, ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR)
 {
-}
-
-void EnableTilemaskEditorCommand::Redo()
-{
-    SaveEnabledToolsState();
-    LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::tilemaskEditorSystem, SceneEditor2::LANDSCAPE_TOOLS_ALL);
-
-    SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
-}
-
-void EnableTilemaskEditorCommand::Undo()
-{
-    LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::tilemaskEditorSystem, ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
-    ApplySavedState();
-
-    SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
+    isEnabledFunction = DAVA::MakeFunction(sceneEditor->tilemaskEditorSystem, &TilemaskEditorSystem::IsLandscapeEditingEnabled);
+    enableFunction = DAVA::MakeFunction(sceneEditor->tilemaskEditorSystem, &TilemaskEditorSystem::EnableLandscapeEditing);
+    disableFunction = DAVA::MakeFunction(sceneEditor->tilemaskEditorSystem, &TilemaskEditorSystem::DisableLandscapeEdititing);
 }
 
 /*
  * Heightmap editor
  */
 EnableHeightmapEditorCommand::EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_HEIGHTMAP_EDITOR_ENABLE, forSceneEditor)
+    : LandscapeToolsToggleCommand(CMDID_HEIGHTMAP_EDITOR_ENABLE, forSceneEditor,
+                                  SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN,
+                                  ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR)
 {
+    isEnabledFunction = DAVA::MakeFunction(sceneEditor->heightmapEditorSystem, &HeightmapEditorSystem::IsLandscapeEditingEnabled);
+    enableFunction = DAVA::MakeFunction(sceneEditor->heightmapEditorSystem, &HeightmapEditorSystem::EnableLandscapeEditing);
+    disableFunction = DAVA::MakeFunction(sceneEditor->heightmapEditorSystem, &HeightmapEditorSystem::DisableLandscapeEdititing);
 }
 
-void EnableHeightmapEditorCommand::Redo()
+void EnableHeightmapEditorCommand::OnDisabled()
 {
-    SaveEnabledToolsState();
-    LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::heightmapEditorSystem,
-                         SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
-    SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
-}
-
-void EnableHeightmapEditorCommand::Undo()
-{
-    if (LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::heightmapEditorSystem, ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR))
-    {
-        sceneEditor->foliageSystem->SyncFoliageWithLandscape();
-    }
-    ApplySavedState();
-
-    SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
+    sceneEditor->foliageSystem->SyncFoliageWithLandscape();
 }
 
 /*
  * Custom colors
  */
-
 EnableCustomColorsCommand::EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool _saveChanges)
-    : LandscapeToolsToggleCommand(CMDID_CUSTOM_COLORS_ENABLE, forSceneEditor)
+    : LandscapeToolsToggleCommand(CMDID_CUSTOM_COLORS_ENABLE, forSceneEditor, 0, ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR)
     , saveChanges(_saveChanges)
 {
+    isEnabledFunction = DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::IsLandscapeEditingEnabled);
+    enableFunction = DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::EnableLandscapeEditing);
+    disableFunction = Bind(DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::DisableLandscapeEdititing), false);
 }
 
-void EnableCustomColorsCommand::Redo()
+void EnableCustomColorsCommand::OnEnabled()
 {
-    SaveEnabledToolsState();
-    if (LTTCLocal::TryEnable(sceneEditor, &SceneEditor2::customColorsSystem, SceneEditor2::LANDSCAPE_TOOLS_ALL))
+    auto drawSystem = sceneEditor->landscapeEditorDrawSystem;
+    if (drawSystem->GetCustomColorsProxy()->IsTextureLoaded() == false)
     {
-        auto drawSystem = sceneEditor->landscapeEditorDrawSystem;
-        if (drawSystem->GetCustomColorsProxy()->IsTextureLoaded() == false)
-        {
-            ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
-            drawSystem->GetCustomColorsProxy()->ResetLoadedState();
-        }
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
+        drawSystem->GetCustomColorsProxy()->ResetLoadedState();
     }
-
-    SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
-}
-
-void EnableCustomColorsCommand::Undo()
-{
-    LTTCLocal::TryDisable(sceneEditor, &SceneEditor2::customColorsSystem, ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR, false);
-    ApplySavedState();
-
-    SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
 
 /*
  * Not passable - special case
  */
-
 EnableNotPassableCommand::EnableNotPassableCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_NOT_PASSABLE_TERRAIN_ENABLE, forSceneEditor)
+    : LandscapeToolsToggleCommand(CMDID_NOT_PASSABLE_TERRAIN_ENABLE, forSceneEditor,
+                                  SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR,
+                                  ResourceEditor::NOT_PASSABLE_TERRAIN_DISABLE_ERROR)
 {
-}
-
-void EnableNotPassableCommand::Redo()
-{
-    SaveEnabledToolsState();
-    LTTCLocal::TryEnableWithFunctions(sceneEditor, &SceneEditor2::landscapeEditorDrawSystem,
-                                      SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR,
-                                      &LandscapeEditorDrawSystem::IsNotPassableTerrainEnabled,
-                                      &LandscapeEditorDrawSystem::EnableNotPassableTerrain);
-
-    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
-}
-
-void EnableNotPassableCommand::Undo()
-{
-    LTTCLocal::TryDisableWithFunctions(sceneEditor, &SceneEditor2::landscapeEditorDrawSystem,
-                                       ResourceEditor::NOT_PASSABLE_TERRAIN_DISABLE_ERROR,
-                                       &LandscapeEditorDrawSystem::IsNotPassableTerrainEnabled,
-                                       &LandscapeEditorDrawSystem::DisableNotPassableTerrain);
-    ApplySavedState();
-
-    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
+    isEnabledFunction = DAVA::MakeFunction(sceneEditor->landscapeEditorDrawSystem, &LandscapeEditorDrawSystem::IsNotPassableTerrainEnabled);
+    enableFunction = DAVA::MakeFunction(sceneEditor->landscapeEditorDrawSystem, &LandscapeEditorDrawSystem::EnableNotPassableTerrain);
+    disableFunction = DAVA::MakeFunction(sceneEditor->landscapeEditorDrawSystem, &LandscapeEditorDrawSystem::DisableNotPassableTerrain);
 }

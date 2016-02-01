@@ -94,11 +94,7 @@ signals:
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
 
-    void CustomColorsToggled(SceneEditor2* scene);
-    void HeightmapEditorToggled(SceneEditor2* scene);
-    void TilemaskEditorToggled(SceneEditor2* scene);
-    void RulerToolToggled(SceneEditor2* scene);
-    void NotPassableTerrainToggled(SceneEditor2* scene);
+    void LandscapeEditorToggled(SceneEditor2* scene);
 
     void EditorLightEnabled(bool enabled);
 
@@ -120,11 +116,10 @@ public:
 
     void EmitModifyStatusChanged(SceneEditor2 *scene, bool modified) { emit ModifyStatusChanged(scene, modified); }
 
-    void EmitCustomColorsToggled(SceneEditor2* scene) { emit CustomColorsToggled(scene); }
-    void EmitHeightmapEditorToggled(SceneEditor2* scene) { emit HeightmapEditorToggled(scene); }
-    void EmitTilemaskEditorToggled(SceneEditor2* scene) { emit TilemaskEditorToggled(scene); }
-    void EmitRulerToolToggled(SceneEditor2* scene) { emit RulerToolToggled(scene); }
-    void EmitNotPassableTerrainToggled(SceneEditor2* scene) { emit NotPassableTerrainToggled(scene); }
+    void EmitLandscapeEditorToggled(SceneEditor2* scene)
+    {
+        emit LandscapeEditorToggled(scene);
+    }
 
     void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height) { emit DropperHeightChanged(scene, (double)height); };
 
