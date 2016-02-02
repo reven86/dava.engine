@@ -32,6 +32,12 @@
 
 #include "DAVAEngine.h"
 
+enum eBackgroundType : DAVA::int64
+{
+    BackgroundTexture,
+    BackgroundColor
+};
+
 class EditorSettings: public DAVA::Singleton<EditorSettings>
 {
 
@@ -66,9 +72,9 @@ public:
     void SetGrigColor(const DAVA::Color& color);
     DAVA::Signal<const DAVA::Color&> GridColorChanged;
 
-    DAVA::int64 GetGridType() const;
-    void SetGridType(DAVA::int64 type);
-    DAVA::Signal<DAVA::int64> GridTypeChanged;
+    eBackgroundType GetGridType() const;
+    void SetGridType(eBackgroundType type);
+    DAVA::Signal<eBackgroundType> GridTypeChanged;
 
     bool IsUsingAssetCache() const;
     DAVA::String GetAssetCacheIp() const;

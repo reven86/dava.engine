@@ -424,7 +424,7 @@ void MainWindow::SetupBackgroundMenu()
     connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
         if (toggled)
         {
-            EditorSettings::Instance()->SetGridType(0);
+            EditorSettings::Instance()->SetGridType(BackgroundTexture);
         }
     });
 
@@ -453,7 +453,7 @@ void MainWindow::SetupBackgroundMenu()
         connect(colorAction, &QAction::toggled, [color](bool toggled) {
             if (toggled)
             {
-                EditorSettings::Instance()->SetGridType(1);
+                EditorSettings::Instance()->SetGridType(BackgroundColor);
                 EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
             }
         });
@@ -538,7 +538,7 @@ void MainWindow::OnBackgroundCustomColorClicked()
         return;
     }
     MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
-    EditorSettings::Instance()->SetGridType(1);
+    EditorSettings::Instance()->SetGridType(BackgroundColor);
     EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 

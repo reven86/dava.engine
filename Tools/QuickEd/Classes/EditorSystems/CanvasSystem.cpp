@@ -37,12 +37,6 @@
 
 using namespace DAVA;
 
-enum eBackgroundType : int64
-{
-    BackgroundTexture,
-    BackgroundColor
-};
-
 namespace CanvasSystem_namespace
 {
 class GridControl : public UIControl, public TrackedObject 
@@ -52,7 +46,7 @@ public:
     ~GridControl() override = default;
 
 private:
-    void OnBackgroundTypeChanged(int64 type);
+    void OnBackgroundTypeChanged(eBackgroundType type);
     void Draw(const UIGeometricData& geometricData) override;
     eBackgroundType coloredBackground = BackgroundTexture;
 };
@@ -66,9 +60,9 @@ GridControl::GridControl()
     settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
 }
 
-void GridControl::OnBackgroundTypeChanged(int64 type)
+void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
 {
-    coloredBackground = static_cast<eBackgroundType>(type);
+    coloredBackground = type;
     switch (coloredBackground)
     {
     case BackgroundColor:
