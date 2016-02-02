@@ -32,7 +32,7 @@
 
 using namespace DAVA;
 
-SvcHelper::SvcHelper(const String &name)
+SvcHelper::SvcHelper(const WideString& name)
     : serviceName(name)
 {
     serviceControlManager = ::OpenSCManager(0, 0, 0);
@@ -53,14 +53,14 @@ SvcHelper::~SvcHelper()
         ::CloseServiceHandle(serviceControlManager);
 }
 
-String SvcHelper::ServiceName() const
+WideString SvcHelper::ServiceName() const
 {
     return serviceName;
 }
 
-String SvcHelper::ServiceDescription() const
+WideString SvcHelper::ServiceDescription() const
 {
-    Array<char, 8 * 1024> data;
+    Array<wchar_t, 8 * 1024> data;
     DWORD bytesNeeded;
 
     BOOL res = ::QueryServiceConfig2(service, 
@@ -68,10 +68,10 @@ String SvcHelper::ServiceDescription() const
 
     if (!res)
     {
-        return "";
+        return L"";
     }
 
-    return String(data.data());
+    return WideString(data.data());
 }
 
 bool SvcHelper::IsInstalled() const

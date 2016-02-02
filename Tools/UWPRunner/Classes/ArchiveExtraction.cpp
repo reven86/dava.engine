@@ -57,7 +57,7 @@ bool RunPythonScript(const String& script)
 
 bool ExtractFileFromArchive(const String& zipFile, const String& file, const String& outFile)
 {
-    FileSystem::Instance()->DeleteFileA(outFile);
+    FileSystem::Instance()->DeleteFile(outFile);
     String outPath = FilePath(outFile).GetDirectory().GetAbsolutePathname();
     String unzippedFile = (FilePath(outPath) + file).GetAbsolutePathname();
 
