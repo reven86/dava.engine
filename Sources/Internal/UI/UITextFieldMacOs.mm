@@ -575,12 +575,6 @@ public:
     {
         nsTextField.enabled = YES;
 
-        if ([[nsTextField stringValue] length] > 0)
-        {
-            NSRange range = [[nsTextField currentEditor] selectedRange];
-            [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
-        }
-
         UITextFieldDelegate* delegate = davaText->GetDelegate();
 
         if (delegate && !isKeyboardOpened)
@@ -591,8 +585,12 @@ public:
             delegate->OnKeyboardShown(emptyRect);
         }
 
-        //NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [[NSApp keyWindow] makeFirstResponder:nsTextField];
+        if ([[nsTextField stringValue] length] > 0)
+        {
+            NSRange range = [[nsTextField currentEditor] selectedRange];
+            [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+        }
     }
 
     void CloseKeyboard() override
