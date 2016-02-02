@@ -44,33 +44,30 @@ FilePathPropertyDelegate::~FilePathPropertyDelegate()
 
 }
 
-QWidget* FilePathPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* FilePathPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
 {
-    QLineEdit *lineEdit = new QLineEdit(parent);
+    lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
-
+    connect(lineEdit, &QLineEdit::editingFinished, this, &FilePathPropertyDelegate::OnEditingFinished);
+    connect(lineEdit, &QLineEdit::textChanged, this, &FilePathPropertyDelegate::OnTextChanged);
     return lineEdit;
 }
 
-void FilePathPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelIndex & index ) const 
+void FilePathPropertyDelegate::setEditorData(QWidget*, const QModelIndex& index) const
 {
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
-
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
     QString stringValue = StringToQString(variant.AsFilePath().GetStringValue());
-    editor->setText(stringValue);
+    DVASSERT(!lineEdit.isNull());
+    lineEdit->setText(stringValue);
 }
 
 bool FilePathPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index ) const 
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
-
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
-
+    DVASSERT(!lineEdit.isNull());
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    DAVA::String str = QStringToString(editor->text());
+    DAVA::String str = QStringToString(lineEdit->text());
     DAVA::FilePath filePath = str;
     variantType.SetFilePath(filePath);
 
@@ -82,14 +79,28 @@ bool FilePathPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemM
 
 void FilePathPropertyDelegate::OnEditingFinished()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
-    if (!lineEdit)
-        return;
-
+    DVASSERT(!lineEdit.isNull());
     QWidget *editor = lineEdit->parentWidget();
-    if (!editor)
+    DVASSERT(nullptr != editor);
+    if (!IsPathValid(lineEdit->text()))
+    {
         return;
-
+    }
     BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
+}
+
+void FilePathPropertyDelegate::OnTextChanged(const QString& text)
+{
+    QPalette palette(lineEdit->palette());
+    QString textCopy(text);
+
+    palette.setColor(QPalette::Text, IsPathValid(text) ? Qt::black : Qt::red);
+    lineEdit->setPalette(palette);
+}
+
+bool FilePathPropertyDelegate::IsPathValid(const QString& path) const 
+{
+    DAVA::FilePath filePath(QStringToString(path));
+    return DAVA::FileSystem::Instance()->Exists(filePath);
 }
