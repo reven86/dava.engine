@@ -35,17 +35,15 @@ property float4x4 worldViewMatrix              : dynamic,a : ;
 property float3   cameraPosition               : dynamic,a : ;
 #endif
 #if VERTEX_FOG && FOG_ATMOSPHERE
-property float4x4 worldViewInvTransposeMatrix  : dynamic,a : ;
 property float4   lightPosition0               : dynamic,a : ;
 #endif
 
 #include "vp-fog-props.cgh"
 
 
-
 VPROG_BEGIN
 
-    float3 in_pos      = VP_IN_POSITION;
+    float3 in_pos      = VP_IN_POSITION.xyz;
     float2 in_texcoord = VP_IN_TEXCOORD;
     
     VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
@@ -55,48 +53,28 @@ VPROG_BEGIN
     #if TILEMASK
         VP_OUT(texCoordTiled) = in_texcoord * float2(textureTiling.x, textureTiling.y);
     #endif
-
-
+	
 #if VERTEX_FOG
-
-    FogParam    fog_param;
-
-    fog_param.color     = fogColor.rgb;
-    fog_param.limit     = fogLimit;
-    #if FOG_LINEAR
-    fog_param.start     = fogStart;
-    fog_param.end       = fogEnd;
-    #else
-    fog_param.density   = fogDensity;
-    #endif
-    #if FOG_HALFSPACE
-    fog_param.halfspace_height  = fogHalfspaceHeight;
-    fog_param.halfspace_falloff = fogHalfspaceFalloff;
-    fog_param.halfspace_density = fogHalfspaceDensity;
-    fog_param.halfspace_limit   = fogHalfspaceLimit;
-    #endif
-
-    float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
-    
-    #if FOG_ATMOSPHERE
-    fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-
-    fog_param.atmosphere_distance = fogAtmosphereDistance;
-    #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
-    fog_param.atmosphere_scattering = fogAtmosphereScattering;
-    #endif
-    
-    #endif
-    
-    fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
-    fog_param.eye_position   = cameraPosition;
-    
-    VP_OUT(varFog) = CalculateVertexFog( fog_param );
-
+	
+	float3 view_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewMatrix ).xyz;
+	#define FOG_view_position view_position
+	
+#if FOG_ATMOSPHERE
+	float3 tolight_dir = lightPosition0.xyz - view_position * lightPosition0.w;
+    #define FOG_to_light_dir tolight_dir
+#endif
+	
+#if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
+	float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
+	#define FOG_world_position world_position
 #endif
 
+    #define FOG_eye_position cameraPosition
+
+	#include "vp-fog-math.cgh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
+	
+	VP_OUT(varFog) = FOG_result;
+	
+#endif
     
 VPROG_END

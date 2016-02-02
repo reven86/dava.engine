@@ -27,7 +27,8 @@
 =====================================================================================*/
 
 
-#include "SettingsManager.h"
+#include "Settings/SettingsManager.h"
+
 #include "Scene/System/EditorMaterialSystem.h"
 #include "TextureCompression/TextureConverter.h"
 
@@ -80,6 +81,7 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
     CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
+    CreateValue(Settings::General_AutoConvertation, DAVA::VariantType(true));
 
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
     CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
@@ -93,6 +95,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(2.0f));
     CreateValue(Settings::Scene_CameraHeightOnLandscapeStep, DAVA::VariantType(0.5f));
     CreateValue(Settings::Scene_SelectionSequent, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_SelectionOnClick, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SelectionDrawMode, DAVA::VariantType(static_cast<DAVA::int32>(SS_DRAW_DEFAULT)), DAVA::InspDesc("Selection draw modes", GlobalEnumMap<SelectionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_CollisionDrawMode, DAVA::VariantType(static_cast<DAVA::int32>(CS_DRAW_DEFAULT)), DAVA::InspDesc("Collision draw modes", GlobalEnumMap<CollisionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_ModificationByGizmoOnly, DAVA::VariantType(false));

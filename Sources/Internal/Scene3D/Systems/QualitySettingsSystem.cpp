@@ -29,8 +29,10 @@
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -41,6 +43,13 @@ namespace DAVA
 const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("Vegetation Animation");
 const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Shadows");
 const FastName QualitySettingsSystem::QUALITY_OPTION_WATER_DECORATIONS("Water Decorations");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS("Disable effects");
+const FastName QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS("Lod0 effects");
+
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG("Disable fog");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION("Disable fog attenuation");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING("Disable fog scattering");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE("Disable half-space fog");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
@@ -59,7 +68,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
 {
     Logger::FrameworkDebug("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
-    if(path.Exists())
+    if (FileSystem::Instance()->Exists(path))
     {
         YamlParser *parser = YamlParser::Create(path);
         YamlNode *rootNode = parser->GetRootNode();
@@ -208,6 +217,12 @@ void QualitySettingsSystem::Load(const FilePath &path)
                     }
 
                 }
+            }
+            // particles
+            const YamlNode* particlesNode = rootNode->Get("particles");
+            if (nullptr != particlesNode)
+            {
+                particlesQualitySettings.LoadFromYaml(particlesNode);
             }
         }
 
@@ -433,7 +448,15 @@ const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName 
     return ret;
 }
 
+const ParticlesQualitySettings& QualitySettingsSystem::GetParticlesQualitySettings() const
+{
+    return particlesQualitySettings;
+}
 
+ParticlesQualitySettings& QualitySettingsSystem::GetParticlesQualitySettings()
+{
+    return particlesQualitySettings;
+}
 
 void QualitySettingsSystem::EnableOption( const FastName & option, bool enabled )
 {
@@ -522,6 +545,4 @@ void QualitySettingsSystem::UpdateEntityVisibilityRecursively(Entity *e, bool qu
     for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
         UpdateEntityVisibilityRecursively(e->GetChild(i), qualityVisible);
 }
-
-
 }

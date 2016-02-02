@@ -143,7 +143,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
     modifSystem->SetLocked(true);
 
     landscapeSize = drawSystem->GetTextureSize(textureLevel);
-	copyPasteFrom = Vector2(-1.f, -1.f);
+    copyPasteFrom = Vector2(-1.f, -1.f);
 
     drawSystem->EnableCursor();
     drawSystem->EnableCustomDraw();
@@ -208,9 +208,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
             Vector2 toolSize = Vector2((float32)curToolSize, (float32)curToolSize);
             Vector2 toolPos = cursorPosition * landscapeSize - toolSize / 2.f;
-            Rect toolRect(toolPos, toolSize);
+            Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
-            RenderSystem2D::Instance()->BeginRenderTargetPass(toolTexture);
+            RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.target = toolTexture;
+            desc.shouldTransformVirtualToPhysical = false;
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
 
@@ -223,7 +226,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
             AddRectToAccumulator(toolRect);
         }
-	}
+    }
 }
 
 void TilemaskEditorSystem::Input(UIEvent* event)
@@ -234,49 +237,49 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 	}
 	
 	UpdateCursorPosition();
-	
-	if (event->tid == UIEvent::BUTTON_1)
-	{
-		Vector3 point;
 
-		switch(event->phase)
-		{
+    if (event->mouseButton == UIEvent::MouseButton::LEFT)
+    {
+        Vector3 point;
+
+        switch (event->phase)
+        {
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape && !needCreateUndo)
+            {
+                if (drawingType == TILEMASK_DRAW_COPY_PASTE)
                 {
-					if (drawingType == TILEMASK_DRAW_COPY_PASTE)
-					{
-						int32 curKeyModifiers = QApplication::keyboardModifiers();
-						if (curKeyModifiers & Qt::AltModifier)
-						{
+                    int32 curKeyModifiers = QApplication::keyboardModifiers();
+                    if (curKeyModifiers & Qt::AltModifier)
+                        {
 							copyPasteFrom = cursorPosition;
                             copyPasteOffset = Vector2();
                             return;
                         }
-						else
-						{
-							if (copyPasteFrom == Vector2(-1.f, -1.f))
-							{
-								return;
+                        else
+                        {
+                            if (copyPasteFrom == Vector2(-1.f, -1.f))
+                            {
+                                return;
 							}
                             copyPasteOffset = copyPasteFrom - cursorPosition;
                         }
                     }
 
-					ResetAccumulatorRect();
-					editingIsEnabled = true;
-					activeDrawingType = drawingType;
-				}
-				break;
+                    ResetAccumulatorRect();
+                    editingIsEnabled = true;
+                    activeDrawingType = drawingType;
+            }
+                break;
 
         case UIEvent::Phase::DRAG:
             break;
 
         case UIEvent::Phase::ENDED:
             FinishEditing();
-                break;
-		}
-	}
+            break;
+        }
+    }
 }
 
 void TilemaskEditorSystem::FinishEditing()
@@ -437,7 +440,7 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
 
     if (curColor != color)
     {
-		SceneEditor2* scene = (SceneEditor2*)(GetScene());
+        SceneEditor2* scene = (SceneEditor2*)(GetScene());
         scene->Exec(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
     }
 }
@@ -451,7 +454,10 @@ void TilemaskEditorSystem::CreateMaskTexture()
     {
         landscapeTilemaskTexture = SafeRetain(tilemask);
 
-        RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
+        RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.target = srcTexture;
+        desc.shouldTransformVirtualToPhysical = false;
+        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
         RenderSystem2D::Instance()->EndRenderTargetPass();
 

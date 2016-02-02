@@ -40,26 +40,26 @@ namespace DAVA
 class DefinitionFile 
 {
 public:
-	bool Load(const FilePath & filename, bool useTwoSideMargin, uint32 marginInPixels);
-	bool LoadPNGDef(const FilePath & filename, const FilePath & pathToProcess, bool useTwoSideMargin, uint32 marginInPixels);
-	
-	DefinitionFile();
-	~DefinitionFile();
-	
-	void ClearPackedFrames();
-	void LoadPNG(const FilePath & fullname, const FilePath & processDirectoryPath);
+    bool Load(const FilePath& filename);
+    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
 
-	Size2i GetFrameSize(int frame) const;
-	int GetFrameWidth(int frame) const;
-	int GetFrameHeight(int frame) const;
+    DefinitionFile();
+    ~DefinitionFile();
 
-	FilePath    filename;
-	int			frameCount;
-	int			spriteWidth;
-	int			spriteHeight;
-	Rect2i		* frameRects;
+    void ClearPackedFrames();
+    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
 
-	Vector<String> pathsInfo;
+    Size2i GetFrameSize(int frame) const;
+    int GetFrameWidth(int frame) const;
+    int GetFrameHeight(int frame) const;
+
+    FilePath filename;
+    int frameCount;
+    int spriteWidth;
+    int spriteHeight;
+    Rect2i* frameRects;
+
+    Vector<String> pathsInfo;
     Vector<String> frameNames;
 };
 

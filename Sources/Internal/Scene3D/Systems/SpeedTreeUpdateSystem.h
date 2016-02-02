@@ -53,6 +53,8 @@ public:
     
 	virtual void HandleEvent(Observable * observable);
 
+    virtual void SceneDidLoaded() override;
+
 protected:
     void UpdateAnimationFlag(Entity * entity);
 

@@ -32,6 +32,7 @@
 
     #include "../rhi_Type.h"
     #include "FileSystem/Logger.h"
+    #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
 {
@@ -75,6 +76,8 @@ inline RingBuffer::RingBuffer()
 inline void
 RingBuffer::Initialize(unsigned sz)
 {
+    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFER);
+
     size = sz;
     dataPtr = (uint8*)::malloc(sz);
     ownData = true;
@@ -118,7 +121,7 @@ RingBuffer::Alloc(unsigned cnt, unsigned align)
 {
     DVASSERT(cur);
 
-    unsigned sz = L_ALIGNED_SIZE(cnt * sizeof(float), align);
+    unsigned sz = L_ALIGNED_SIZE(static_cast<unsigned>(cnt * sizeof(float)), align);
     uint8* buf = cur + sz;
     uint8* p = cur;
 

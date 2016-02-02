@@ -50,6 +50,7 @@ AddressResolver::~AddressResolver()
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(loop != nullptr);
     DVASSERT(handle == nullptr);
 
@@ -78,28 +79,36 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
         Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
         return false;
     }
+#else
+    return false;
+#endif
 }
 
 void AddressResolver::Cancel()
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     if (nullptr != handle)
     {
         uv_cancel(reinterpret_cast<uv_req_t*>(handle));
         handle = nullptr;
     }
+#endif
 }
 
 void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, struct addrinfo* response)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
     if (nullptr != resolver)
     {
         resolver->GotAddrInfo(status, response);
+        resolver->handle = nullptr;
     }
 
     SafeDelete(handle);
 
     uv_freeaddrinfo(response);
+#endif
 }
 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)

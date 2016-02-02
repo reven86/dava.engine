@@ -51,6 +51,10 @@ public:
     unsigned size;
     Usage usage;
     ID3D11Buffer* buffer;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    void* mappedData;
+    uint32 updatePending : 1;
+#endif
     uint32 isMapped : 1;
 };
 
@@ -61,6 +65,10 @@ RHI_IMPL_POOL(VertexBufferDX11_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descript
 VertexBufferDX11_t::VertexBufferDX11_t()
     : size(0)
     , buffer(nullptr)
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    , mappedData(nullptr)
+    , updatePending(false)
+#endif
     , isMapped(false)
 {
 }
@@ -89,7 +97,7 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 
         desc11.ByteWidth = desc.size;
         desc11.Usage = D3D11_USAGE_DYNAMIC;
-        desc11.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        desc11.CPUAccessFlags = 0;
         desc11.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         desc11.MiscFlags = 0;
 
@@ -97,6 +105,7 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
         {
         case USAGE_DEFAULT:
             desc11.Usage = D3D11_USAGE_DYNAMIC;
+            desc11.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
             break;
 
         case USAGE_STATICDRAW:
@@ -151,6 +160,14 @@ dx11_VertexBuffer_Delete(Handle vb)
             self->buffer->Release();
             self->buffer = nullptr;
         }
+
+        #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+        if (self->mappedData)
+        {
+            ::free(self->mappedData);
+            self->mappedData = nullptr;
+        }
+        #endif
 
         self->size = 0;
 
@@ -209,6 +226,7 @@ dx11_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
         D3D11_MAPPED_SUBRESOURCE rc = { 0 };
         HRESULT hr;
 
+        #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_SecondaryContextSync.Lock();
         hr = _D3D11_SecondaryContext->Map(self->buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &rc);
         _D3D11_SecondaryContextSync.Unlock();
@@ -218,6 +236,13 @@ dx11_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
             self->isMapped = true;
             ptr = rc.pData;
         }
+        #else
+        if (!self->mappedData)
+            self->mappedData = ::malloc(self->size);
+
+        self->isMapped = true;
+        ptr = ((uint8*)self->mappedData) + offset;
+        #endif
     }
     else
     {
@@ -250,9 +275,13 @@ dx11_VertexBuffer_Unmap(Handle vb)
 
     if (self->usage == USAGE_DYNAMICDRAW)
     {
+        #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_SecondaryContextSync.Lock();
         _D3D11_SecondaryContext->Unmap(self->buffer, 0);
         _D3D11_SecondaryContextSync.Unlock();
+        #else
+        self->updatePending = true;
+        #endif
         self->isMapped = false;
     }
     else
@@ -289,6 +318,21 @@ void SetToRHI(Handle vbh, unsigned stream_i, unsigned offset, unsigned stride, I
     UINT vb_offset[1] = { offset };
     UINT vb_stride[1] = { stride };
 
+    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    if (self->updatePending)
+    {
+        D3D11_MAPPED_SUBRESOURCE rc = { 0 };
+        HRESULT hr;
+
+        hr = context->Map(self->buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &rc);
+        if (SUCCEEDED(hr) && rc.pData)
+        {
+            memcpy(rc.pData, self->mappedData, self->size);
+            context->Unmap(self->buffer, 0);
+        }
+        self->updatePending = true;
+    }
+    #endif
     ///    DVASSERT(!self->isMapped);
     context->IASetVertexBuffers(stream_i, 1, vb, vb_stride, vb_offset);
 }

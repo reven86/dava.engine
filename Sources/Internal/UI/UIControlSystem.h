@@ -71,10 +71,10 @@ extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
-	friend void Core::CreateSingletons();
-	
-	int frameSkip;
-	int transitionType;
+    friend void Core::CreateSingletons();
+
+    int frameSkip;
+    int transitionType;
 
     Vector<UIEvent> touchEvents;
 
@@ -293,11 +293,15 @@ public:
     
     bool IsRtl() const;
     void SetRtl(bool rtl);
+
+    bool IsBiDiSupportEnabled() const;
+    void SetBiDiSupportEnabled(bool support);
     UILayoutSystem *GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
     void SetClearColor(const Color& clearColor);
+    void SetUseClearPass(bool use);
 
 private:
 	/**
@@ -320,15 +324,15 @@ private:
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
 
-    UIScreen * currentScreen;
-	UIScreen * nextScreen;
-	UIScreen * prevScreen;
+    UIScreen* currentScreen;
+    UIScreen* nextScreen;
+    UIScreen* prevScreen;
 
-	int32 screenLockCount;
+    int32 screenLockCount;
 
-	bool removeCurrentScreen;
-	
-	UIControl *exclusiveInputLocker;
+    bool removeCurrentScreen;
+
+    UIControl* exclusiveInputLocker;
     UIControl *hovered;
     
     UIControl *focusedControl;
@@ -342,6 +346,7 @@ private:
 	
 	UIGeometricData baseGeometricData;
 
+    bool useClearPass = true;
     Color clearColor;
 
     friend class UIScreenTransition;

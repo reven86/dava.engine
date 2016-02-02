@@ -78,10 +78,10 @@ public:
     static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;
     static const FastName VERTEXLIT_ALPHATEST;
     static const FastName PIXELLIT_SPECULAR_ALPHATEST;
-	static const FastName TEXTURE_LIGHTMAP_ALPHATEST;
-	static const FastName VERTEXLIT_OPAQUE;
-	static const FastName PIXELLIT_SPECULAR_OPAQUE;
-	static const FastName TEXTURE_LIGHTMAP_OPAQUE;
+    static const FastName TEXTURE_LIGHTMAP_ALPHATEST;
+    static const FastName VERTEXLIT_OPAQUE;
+    static const FastName PIXELLIT_SPECULAR_OPAQUE;
+    static const FastName TEXTURE_LIGHTMAP_OPAQUE;
     static const FastName GRASS;
 	
 	static const FastName PARTICLES;
@@ -160,6 +160,8 @@ public:
     static const FastName FLAG_FOG_HALFSPACE;
     static const FastName FLAG_FOG_HALFSPACE_LINEAR;
     static const FastName FLAG_FOG_ATMOSPHERE;
+    static const FastName FLAG_FOG_ATMOSPHERE_NO_SCATTERING;
+    static const FastName FLAG_FOG_ATMOSPHERE_NO_ATTENUATION;
     static const FastName FLAG_TEXTURESHIFT;
     static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
     static const FastName FLAG_WAVE_ANIMATION;

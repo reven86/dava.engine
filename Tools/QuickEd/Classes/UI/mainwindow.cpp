@@ -28,18 +28,17 @@
 
 
 #include "mainwindow.h"
+#include "Project/Project.h"
 #include "Document.h"
-//////////////////////////////////////////////////////////////////////////
-#include "fontmanagerdialog.h"
+
 #include "Helpers/ResourcesManageHelper.h"
-#include "Dialogs/LocalizationEditorDialog.h"
-//////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "DebugTools/DebugTools.h"
 
@@ -53,30 +52,44 @@ namespace
 
 using namespace DAVA;
 
-MainWindow::MainWindow(QWidget *parent)
+struct MainWindow::TabState
+{
+    TabState(Document* document_, const QString& tabText_)
+        : document(document_)
+        , tabText(tabText_)
+    {
+        DVASSERT(document != nullptr);
+    }
+    Document* document = nullptr;
+    QString tabText;
+};
+
+Q_DECLARE_METATYPE(MainWindow::TabState*);
+
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
-    , localizationEditorDialog(new LocalizationEditorDialog(this))
-    , dialogReloadSprites(new DialogReloadSprites(this))
+    , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
+
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
 
     // Reload Sprites
-    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
-    actionLocalizationManager->setEnabled(false);
     toolBarPlugins->addSeparator();
     InitLanguageBox();
     toolBarPlugins->addSeparator();
+    InitGlobalClasses();
+    toolBarPlugins->addSeparator();
     InitRtlBox();
     toolBarPlugins->addSeparator();
-    InitGlobalClasses();
+    InitBiDiSupportBox();
     toolBarPlugins->addSeparator();
     InitEmulationMode();
 
@@ -86,27 +99,19 @@ MainWindow::MainWindow(QWidget *parent)
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &MainWindow::TabClosed);
-    connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::OnCurrentIndexChanged);
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
-
-    connect(actionFontManager, &QAction::triggered, this, &MainWindow::OnOpenFontManager);
-    connect(actionLocalizationManager, &QAction::triggered, localizationEditorDialog, &LocalizationEditorDialog::exec);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
 
-    fileSystemDockWidget->setEnabled(false);
-
     RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
-}
 
-MainWindow::~MainWindow()
-{
-    SaveMainWindowState();
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
+    OnDocumentChanged(nullptr);
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
@@ -126,14 +131,35 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
-    fileSystemDockWidget->setEnabled(arg);
     this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
 void MainWindow::OnCountChanged(int count)
 {
     actionSaveAllDocuments->setEnabled(count > 0);
-    OnCurrentIndexChanged(tabBar->currentIndex());
+}
+
+void MainWindow::OnDocumentChanged(Document* document)
+{
+    bool enabled = (document != nullptr);
+    packageWidget->setEnabled(enabled);
+    propertiesWidget->setEnabled(enabled);
+    previewWidget->setEnabled(enabled);
+    libraryWidget->setEnabled(enabled);
+
+    actionSaveDocument->setEnabled(nullptr != document && !document->GetUndoStack()->isClean());
+
+    for (int index = 0, count = tabBar->count(); index < count; ++index)
+    {
+        QVariant var = tabBar->tabData(index);
+        DVASSERT(var.canConvert<TabState*>());
+        TabState* tabState = var.value<TabState*>();
+        if (tabState->document == document)
+        {
+            tabBar->setCurrentIndex(index);
+            return;
+        }
+    }
 }
 
 int MainWindow::CloseTab(int index)
@@ -177,50 +203,56 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
+QComboBox* MainWindow::GetComboBoxLanguage()
 {
-    return dialogReloadSprites;
+    return comboboxLanguage;
 }
 
-QCheckBox* MainWindow::GetCheckboxEmulation()
+void MainWindow::OnCleanChanged(bool isClean)
 {
-    return emulationBox;
-}
-
-void MainWindow::OnCurrentIndexChanged(int arg)
-{
-    bool enabled = arg >= 0;
-    packageWidget->setEnabled(enabled);
-    propertiesWidget->setEnabled(enabled);
-    previewWidget->setEnabled(enabled);
-    libraryWidget->setEnabled(enabled);
-    TabState *tabState = tabBar->tabData(arg).value<TabState*>();
-    actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified); //set action enabled if new documend still modified
-}
-
-void MainWindow::OnCleanChanged(int index, bool val)
-{
-    DVASSERT(index >= 0);
-    TabState *tabState = tabBar->tabData(index).value<TabState*>();
-    tabState->isModified = !val;
-
-    QString tabText = tabState->tabText;
-    if (!val)
+    QUndoStack* undoStack = qobject_cast<QUndoStack*>(sender());
+    DVASSERT(nullptr != undoStack);
+    Document* document = qobject_cast<Document*>(undoStack->parent());
+    if (nullptr == document)
     {
-        tabText.append('*');
+        return; //undostack emit clear when destroyed
     }
-    tabBar->setTabText(index, tabText);
-
-    if (index == tabBar->currentIndex())
+    for (int index = 0, count = tabBar->count(); index < count; ++index)
     {
-        actionSaveDocument->setEnabled(tabState->isModified);
+        QVariant var = tabBar->tabData(index);
+        DVASSERT(var.canConvert<TabState*>());
+        TabState* tabState = var.value<TabState*>();
+        if (tabState->document == document)
+        {
+            QString tabText = tabState->tabText;
+            if (!isClean)
+            {
+                tabText += "*";
+            }
+            tabBar->setTabText(index, tabText);
+            actionSaveDocument->setEnabled(!isClean);
+        }
     }
 }
 
-void MainWindow::OnOpenFontManager()
+bool MainWindow::IsInEmulationMode() const
 {
-    FontManagerDialog fontManagerDialog(false, QString(), this);
-    fontManagerDialog.exec();
+    return emulationBox->isChecked();
+}
+
+bool MainWindow::isPixelized() const
+{
+    return actionPixelized->isChecked();
+}
+
+void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
+{
+    DVASSERT(nullptr != packer);
+    auto lastFlags = acceptableLoggerFlags;
+    acceptableLoggerFlags = (1 << Logger::LEVEL_ERROR) | (1 << Logger::LEVEL_WARNING);
+    DialogReloadSprites dialogReloadSprites(packer, this);
+    dialogReloadSprites.exec();
+    acceptableLoggerFlags = lastFlags;
 }
 
 void MainWindow::OnShowHelp()
@@ -232,7 +264,7 @@ void MainWindow::OnShowHelp()
 
 void MainWindow::InitLanguageBox()
 {
-    QComboBox *comboboxLanguage = new QComboBox();
+    comboboxLanguage = new QComboBox();
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     QLabel *label = new QLabel(tr("language"));
     label->setBuddy(comboboxLanguage);
@@ -243,10 +275,16 @@ void MainWindow::InitLanguageBox()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
-    comboboxLanguage->setModel(localizationEditorDialog->currentLocaleComboBox->model());
-    connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
-    connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
-    comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+}
+
+void MainWindow::FillComboboxLanguages(const Project* project)
+{
+    QString currentText = project->GetEditorLocalizationSystem()->GetCurrentLocale();
+    bool wasBlocked = comboboxLanguage->blockSignals(true); //performace fix
+    comboboxLanguage->clear();
+    comboboxLanguage->addItems(project->GetEditorLocalizationSystem()->GetAvailableLocaleNames());
+    comboboxLanguage->setCurrentText(currentText);
+    comboboxLanguage->blockSignals(wasBlocked);
 }
 
 void MainWindow::InitRtlBox()
@@ -263,6 +301,22 @@ void MainWindow::InitRtlBox()
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
+}
+
+void MainWindow::InitBiDiSupportBox()
+{
+    QCheckBox* bidiSupportBox = new QCheckBox();
+    bidiSupportBox->setCheckState(Qt::Unchecked);
+    QLabel* label = new QLabel(tr("BiDi Support"));
+    label->setBuddy(bidiSupportBox);
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(bidiSupportBox);
+    QWidget* wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
 void MainWindow::InitGlobalClasses()
@@ -409,7 +463,6 @@ void MainWindow::DisableActions()
     actionSaveDocument->setEnabled(false);
 
     actionClose_project->setEnabled(false);
-    actionFontManager->setEnabled(false);
 }
 
 void MainWindow::RebuildRecentMenu()
@@ -433,36 +486,41 @@ void MainWindow::RebuildRecentMenu()
     menuRecent->setEnabled(projectCount > 0);
 }
 
-int MainWindow::AddTab(const FilePath &scenePath)
+int MainWindow::AddTab(Document* document, int index)
 {
-    QString tabText(scenePath.GetFilename().c_str());
-    int index = tabBar->addTab(tabText);
-    tabBar->setTabToolTip(index, scenePath.GetAbsolutePathname().c_str());
-    TabState* tabState = new TabState(tabText);
-    tabBar->setTabData(index, QVariant::fromValue<TabState*>(tabState));
+    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &MainWindow::OnCleanChanged);
+
+    QFileInfo fileInfo(document->GetPackageAbsolutePath());
+    QString tabText(fileInfo.fileName());
+    bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged
+    int insertedIndex = tabBar->insertTab(index, tabText);
+    tabBar->blockSignals(blockSignals);
+    tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
+    TabState* tabState = new TabState(document, tabText);
+    tabBar->setTabData(insertedIndex, QVariant::fromValue<TabState*>(tabState));
     OnCountChanged(tabBar->count());
-    return index;
+    return insertedIndex;
 }
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+    SaveMainWindowState();
     emit CloseRequested();
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPath)
+void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    actionLocalizationManager->setEnabled(resultList);
-    fileSystemDockWidget->setEnabled(resultList);
+    QString projectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
-        localizationEditorDialog->FillLocaleComboBox();
+        FillComboboxLanguages(project);
     }
     else
     {
@@ -511,7 +569,7 @@ void MainWindow::OnPixelizationStateChanged()
     bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    Texture::SetPixelization(isPixelized);
+    emit PixelizationChanged(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)
@@ -519,9 +577,22 @@ void MainWindow::OnRtlChanged(int arg)
     emit RtlChanged(arg == Qt::Checked);
 }
 
+void MainWindow::OnBiDiSupportChanged(int arg)
+{
+    emit BiDiSupportChanged(arg == Qt::Checked);
+}
+
 void MainWindow::OnGlobalClassesChanged(const QString &str)
 {
     emit GlobalStyleClassesChanged(str);
+}
+
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
+{
+    if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
+    {
+        logWidget->AddMessage(logLevel, output);
+    }
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
@@ -572,33 +643,4 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
-}
-
-void MainWindow::OnSetupCacheSettingsForPacker()
-{
-    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
-    DVASSERT(nullptr != spritesPacker);
-
-    if (EditorSettings::Instance()->IsUsingAssetCache())
-    {
-        spritesPacker->SetCacheTool(
-        EditorSettings::Instance()->GetAssetCacheIp(),
-        EditorSettings::Instance()->GetAssetCachePort(),
-        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
-    }
-    else
-    {
-        spritesPacker->ClearCacheTool();
-    }
-}
-
-void MainWindow::OnDocumentChanged(Document* doc)
-{
-    if (nullptr != doc)
-    {
-        doc->SetEmulationMode(emulationBox->isChecked());
-
-        const bool isPixelized = EditorSettings::Instance()->IsPixelized();
-        Texture::SetPixelization(isPixelized);
-    }
 }

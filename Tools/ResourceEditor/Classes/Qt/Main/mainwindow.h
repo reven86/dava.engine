@@ -94,7 +94,9 @@ public:
 	bool BeastWaitCanceled();
 
 	void EnableGlobalTimeout(bool enable);
-    
+
+    void RestartParticleEffects();
+
 // qt actions slots
 public slots:
 	void OnProjectOpen();
@@ -117,7 +119,11 @@ public slots:
     void OnViewLightmapCanvas(bool show);
 	void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
-    
+    void OnEnableVisibilitySystemToggle(bool enabled);
+    void OnRefreshVisibilitySystem();
+    void OnFixVisibilityFrame();
+    void OnReleaseVisibilityFrame();
+
     void OnEnableDisableShadows(bool enable);
 
 	void OnReloadTextures();
@@ -171,21 +177,20 @@ public slots:
 
     void OnConvertModifiedTextures();
 
-    void OnCloseTabRequest(int tabIndex, Request *closeRequest);
+    void OnCloseTabRequest(int tabIndex, Request* closeRequest);
 
-	void OnBeastAndSave();
-    
+    void OnBeastAndSave();
+
     void OnBuildStaticOcclusion();
-    void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
-	void OnCustomColorsEditor();
-	void OnHeightmapEditor();
-	void OnRulerTool();
-	void OnTilemaskEditor();
-	void OnVisibilityTool();
-	void OnNotPassableTerrain();
+    void OnForceFirstLod(bool);
+    void OnCustomColorsEditor();
+    void OnHeightmapEditor();
+    void OnRulerTool();
+    void OnTilemaskEditor();
+    void OnNotPassableTerrain();
     void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);

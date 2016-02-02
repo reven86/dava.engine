@@ -31,6 +31,15 @@ typedef intptr_t ssize_t;
 
 #include <winsock2.h>
 
+/* Detection of Universal Windows Platform,
+   after winsock2.h which includes windows.h */
+#if defined(WINAPI_FAMILY_PARTITION)
+# if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && \
+                !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#  define UV__UNIVERSAL_WINDOWS_PLATFORM 1
+# endif
+#endif
+
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 typedef struct pollfd {
   SOCKET fd;
@@ -43,16 +52,6 @@ typedef struct pollfd {
 # define LOCALE_INVARIANT 0x007f
 #endif
 
-#ifndef _malloca
-# if defined(_DEBUG)
-#  define _malloca(size) malloc(size)
-#  define _freea(ptr) free(ptr)
-# else
-#  define _malloca(size) alloca(size)
-#  define _freea(ptr)
-# endif
-#endif
-
 #include <mswsock.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -60,6 +59,10 @@ typedef struct pollfd {
 #include <process.h>
 #include <signal.h>
 #include <sys/stat.h>
+
+#if defined(UV__UNIVERSAL_WINDOWS_PLATFORM)
+# include "uv-winuap-hack.h"
+#endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1600
 # include "stdint-msvc2008.h"
@@ -256,14 +259,20 @@ typedef union {
 } uv_cond_t;
 
 typedef union {
-  /* srwlock_ has type SRWLOCK, but not all toolchains define this type in */
-  /* windows.h. */
-  SRWLOCK srwlock_;
   struct {
-    uv_mutex_t read_mutex_;
-    uv_mutex_t write_mutex_;
     unsigned int num_readers_;
-  } fallback_;
+    CRITICAL_SECTION num_readers_lock_;
+    HANDLE write_semaphore_;
+  } state_;
+  /* TODO: remove me in v2.x. */
+  struct {
+    SRWLOCK unused_;
+  } unused1_;
+  /* TODO: remove me in v2.x. */
+  struct {
+    uv_mutex_t unused1_;
+    uv_mutex_t unused2_;
+  } unused2_;
 } uv_rwlock_t;
 
 typedef struct {
@@ -294,6 +303,7 @@ typedef struct uv__dirent_s {
   char d_name[1];
 } uv__dirent_t;
 
+#define HAVE_DIRENT_TYPES
 #define UV__DT_DIR     UV_DIRENT_DIR
 #define UV__DT_FILE    UV_DIRENT_FILE
 #define UV__DT_LINK    UV_DIRENT_LINK
@@ -316,8 +326,6 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   HANDLE iocp;                                                                \
   /* The current time according to the event loop. in msecs. */               \
   uint64_t time;                                                              \
-  /* GetTickCount() result when the event loop time was last updated. */      \
-  DWORD last_tick_count;                                                      \
   /* Tail of a single-linked circular queue of pending reqs. If the queue */  \
   /* is empty, tail_ is NULL. If there is only one item, */                   \
   /* tail_->next_req == tail_ */                                              \
@@ -367,8 +375,8 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
     struct {                                                                  \
       OVERLAPPED overlapped;                                                  \
       size_t queued_bytes;                                                    \
-    };                                                                        \
-  };                                                                          \
+    } io;                                                                     \
+  } u;                                                                        \
   struct uv_req_s* next_req;
 
 #define UV_WRITE_PRIVATE_FIELDS                                               \
@@ -420,9 +428,9 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   int activecnt;                                                              \
   uv_read_t read_req;                                                         \
   union {                                                                     \
-    struct { uv_stream_connection_fields };                                   \
-    struct { uv_stream_server_fields     };                                   \
-  };
+    struct { uv_stream_connection_fields } conn;                              \
+    struct { uv_stream_server_fields     } serv;                              \
+  } stream;
 
 #define uv_tcp_server_fields                                                  \
   uv_tcp_accept_t* accept_reqs;                                               \
@@ -438,9 +446,9 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   SOCKET socket;                                                              \
   int delayed_error;                                                          \
   union {                                                                     \
-    struct { uv_tcp_server_fields };                                          \
-    struct { uv_tcp_connection_fields };                                      \
-  };
+    struct { uv_tcp_server_fields } serv;                                     \
+    struct { uv_tcp_connection_fields } conn;                                 \
+  } tcp;
 
 #define UV_UDP_PRIVATE_FIELDS                                                 \
   SOCKET socket;                                                              \
@@ -477,9 +485,9 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   HANDLE handle;                                                              \
   WCHAR* name;                                                                \
   union {                                                                     \
-    struct { uv_pipe_server_fields };                                         \
-    struct { uv_pipe_connection_fields };                                     \
-  };
+    struct { uv_pipe_server_fields } serv;                                    \
+    struct { uv_pipe_connection_fields } conn;                                \
+  } pipe;
 
 /* TODO: put the parser states in an union - TTY handles are always */
 /* half-duplex so read-state can safely overlap write-state. */
@@ -497,7 +505,7 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
       unsigned char last_key_len;                                             \
       WCHAR last_utf16_high_surrogate;                                        \
       INPUT_RECORD last_input_record;                                         \
-    };                                                                        \
+    } rd;                                                                     \
     struct {                                                                  \
       /* Used for writable TTY handles */                                     \
       /* utf8-to-utf16 conversion state */                                    \
@@ -511,8 +519,8 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
       unsigned short ansi_csi_argv[4];                                        \
       COORD saved_position;                                                   \
       WORD saved_attributes;                                                  \
-    };                                                                        \
-  };
+    } wr;                                                                     \
+  } tty;
 
 #define UV_POLL_PRIVATE_FIELDS                                                \
   SOCKET socket;                                                              \
@@ -567,8 +575,11 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
   void* alloc;                                                                \
   WCHAR* node;                                                                \
   WCHAR* service;                                                             \
-  struct addrinfoW* hints;                                                    \
-  struct addrinfoW* res;                                                      \
+  /* The addrinfoW field is used to store a pointer to the hints, and    */   \
+  /* later on to store the result of GetAddrInfoW. The final result will */   \
+  /* be converted to struct addrinfo* and stored in the addrinfo field.  */   \
+  struct addrinfoW* addrinfow;                                                \
+  struct addrinfo* addrinfo;                                                  \
   int retcode;
 
 #define UV_GETNAMEINFO_PRIVATE_FIELDS                                         \
@@ -598,7 +609,7 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
     /* TODO: remove me in 0.9. */                                             \
     WCHAR* pathw;                                                             \
     int fd;                                                                   \
-  };                                                                          \
+  } file;                                                                     \
   union {                                                                     \
     struct {                                                                  \
       int mode;                                                               \
@@ -609,12 +620,12 @@ RB_HEAD(uv_timer_tree_s, uv_timer_s);
       uv_buf_t* bufs;                                                         \
       int64_t offset;                                                         \
       uv_buf_t bufsml[4];                                                     \
-    };                                                                        \
+    } info;                                                                   \
     struct {                                                                  \
       double atime;                                                           \
       double mtime;                                                           \
-    };                                                                        \
-  };
+    } time;                                                                   \
+  } fs;
 
 #define UV_WORK_PRIVATE_FIELDS                                                \
   struct uv__work work_req;
@@ -641,3 +652,15 @@ int uv_utf16_to_utf8(const WCHAR* utf16Buffer, size_t utf16Size,
 int uv_utf8_to_utf16(const char* utf8Buffer, WCHAR* utf16Buffer,
     size_t utf16Size);
 
+#ifndef F_OK
+#define F_OK 0
+#endif
+#ifndef R_OK
+#define R_OK 4
+#endif
+#ifndef W_OK
+#define W_OK 2
+#endif
+#ifndef X_OK
+#define X_OK 1
+#endif

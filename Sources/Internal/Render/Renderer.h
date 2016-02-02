@@ -47,6 +47,7 @@ namespace Renderer
 //init
 void Initialize(rhi::Api api, rhi::InitParam& params);
 void Uninitialize();
+bool IsInitialized();
 
 void Reset(const rhi::ResetParam& params);
 
@@ -56,6 +57,9 @@ bool IsDeviceLost();
 
 void SetDesiredFPS(int32 fps);
 int32 GetDesiredFPS();
+
+void SetVSyncEnabled(bool enable);
+bool IsVSyncEnabled();
 
 //frame management
 void BeginFrame();

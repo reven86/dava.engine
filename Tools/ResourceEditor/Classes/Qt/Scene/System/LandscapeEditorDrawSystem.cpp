@@ -32,7 +32,6 @@
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/CustomColorsProxy.h"
-#include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "LandscapeEditorDrawSystem/NotPassableTerrainProxy.h"
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
 
@@ -46,17 +45,16 @@
 #include "Scene/SceneHelper.h"
 
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
-:	SceneSystem(scene)
-,	landscapeNode(nullptr)
-,	baseLandscape(nullptr)
-,	landscapeProxy(nullptr)
-,	heightmapProxy(nullptr)
-,	notPassableTerrainProxy(nullptr)
-,	customColorsProxy(nullptr)
-,	visibilityToolProxy(nullptr)
-,	rulerToolProxy(nullptr)
-,	customDrawRequestCount(0)
-,   sourceTilemaskPath("")
+    : SceneSystem(scene)
+    , landscapeNode(nullptr)
+    , baseLandscape(nullptr)
+    , landscapeProxy(nullptr)
+    , heightmapProxy(nullptr)
+    , notPassableTerrainProxy(nullptr)
+    , customColorsProxy(nullptr)
+    , rulerToolProxy(nullptr)
+    , customDrawRequestCount(0)
+    , sourceTilemaskPath("")
 {
 }
 
@@ -66,7 +64,6 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(landscapeProxy);
 	SafeRelease(heightmapProxy);
 	SafeRelease(customColorsProxy);
-	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
 
     SafeDelete(notPassableTerrainProxy);
@@ -85,11 +82,6 @@ HeightmapProxy* LandscapeEditorDrawSystem::GetHeightmapProxy()
 CustomColorsProxy* LandscapeEditorDrawSystem::GetCustomColorsProxy()
 {
 	return customColorsProxy;
-}
-
-VisibilityToolProxy* LandscapeEditorDrawSystem::GetVisibilityToolProxy()
-{
-	return visibilityToolProxy;
 }
 
 RulerToolProxy* LandscapeEditorDrawSystem::GetRulerToolProxy()
@@ -164,13 +156,13 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     }
 
     if (notPassableTerrainProxy->IsEnabled())
-	{
-		return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
+    {
+        return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    }
 
-	eErrorType enableCustomDrawError = EnableCustomDraw();
-	if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
+    eErrorType enableCustomDrawError = EnableCustomDraw();
+    if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
 		return enableCustomDrawError;
 	}
 
@@ -241,14 +233,14 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         }
 
         if (customDrawRequestCount == 0)
-		{
-			UpdateBaseLandscapeHeightmap();
-		}
-		
-		heightmapProxy->ResetHeightmapChanged();
-	}
-	
-	if (customColorsProxy && customColorsProxy->IsTargetChanged())
+        {
+            UpdateBaseLandscapeHeightmap();
+        }
+
+        heightmapProxy->ResetHeightmapChanged();
+    }
+
+    if (customColorsProxy && customColorsProxy->IsTargetChanged())
 	{
 		customColorsProxy->ResetTargetChanged();
 	}
@@ -272,9 +264,9 @@ float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
     Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
     if (texture)
     {
-		size = (float32)texture->GetWidth();
-	}
-	return size;
+        size = (float32)texture->GetWidth();
+    }
+    return size;
 }
 
 Vector3 LandscapeEditorDrawSystem::GetLandscapeSize()
@@ -422,22 +414,19 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	if (!heightmapProxy)
 	{
 		Heightmap* heightmap = baseLandscape->GetHeightmap();
-		if (heightmap == NULL || heightmap->Size() == 0)
-		{
-			return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
-		}
-		heightmapProxy = new HeightmapProxy(baseLandscape->GetHeightmap()->Clone(NULL));
-	}
-	if (!customColorsProxy)
-	{
+        if (heightmap == nullptr || heightmap->Size() == 0)
+        {
+            return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
+        }
+        ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+        heightmapProxy = new HeightmapProxy(clonedHeightmap);
+    }
+    if (!customColorsProxy)
+    {
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
-    if (!visibilityToolProxy)
-	{
-        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
-    }
     if (!rulerToolProxy)
-	{
+    {
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
 
@@ -599,32 +588,25 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
 		return LANDSCAPE_EDITOR_SYSTEM_LANDSCAPE_ENTITY_ABSENT;
 	}
 
-//	Texture* t = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_FULL);
-//	if (t == NULL || t->IsPinkPlaceholder())
-//	{
-//		landscapeProxy->UpdateFullTiledTexture(true);
-//	}
-
     Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
-    if (tileMask == NULL || tileMask->IsPinkPlaceholder())
+    if (tileMask == nullptr || tileMask->IsPinkPlaceholder())
     {
-		return LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT;
-	}
-	
-//	Texture* fullTiled = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_FULL);
-//	if (fullTiled == NULL || fullTiled->IsPinkPlaceholder())
-//	{
-//		return LANDSCAPE_EDITOR_SYSTEM_FULL_TILED_TEXTURE_ABSENT;
-//	}
-
-    Texture* texTile0 = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILE);
-
-    if ((texTile0 == NULL || texTile0->IsPinkPlaceholder()))
-    {
-		return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_TEXTURE_ABSENT;
+        return LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT;
     }
 
-	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    Texture* texTile = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILE);
+    if ((texTile == nullptr || texTile->IsPinkPlaceholder()))
+    {
+        return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE_ABSENT;
+    }
+
+    Texture* texColor = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_COLOR);
+    if ((texColor == nullptr || texColor->IsPinkPlaceholder()))
+    {
+        return LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT;
+    }
+
+    return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 Landscape * LandscapeEditorDrawSystem::GetBaseLandscape() const
@@ -643,35 +625,30 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 		case LANDSCAPE_EDITOR_SYSTEM_LANDSCAPE_ENTITY_ABSENT:
 			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_LANDSCAPE_ENTITY_ABSENT;
 			break;
-		case LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSETN;
-			break;
-		case LANDSCAPE_EDITOR_SYSTEM_FULL_TILED_TEXTURE_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_FULL_TILED_TEXTURE_ABSETN;
-			break;
-		case LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_TEXTURE_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_ABSENT;
-			break;
-		case LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE1_TEXTURE_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE1_ABSENT;
-			break;
-		case LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE2_TEXTURE_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE2_ABSENT;
-			break;
-		case LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE3_TEXTURE_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE3_ABSENT;
-			break;
-		case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
-			break;
+        case LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSETN;
+            break;
+        case LANDSCAPE_EDITOR_SYSTEM_FULLTILED_TEXTURE_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_FULLTILED_TEXTURE_ABSETN;
+            break;
+        case LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE_ABSENT;
+            break;
+        case LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT;
+            break;
+        case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
+            break;
         case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
             break;
 			
 		default:
-			break;
-	}
-	return ret;
+            DVASSERT(false && "Unknown error");
+            break;
+        }
+        return ret;
 }
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)

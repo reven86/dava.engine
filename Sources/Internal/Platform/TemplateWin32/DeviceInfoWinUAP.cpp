@@ -32,6 +32,7 @@
 
 #include <Iphlpapi.h>
 #include <winsock2.h>
+#include <collection.h>
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
@@ -44,6 +45,8 @@
 
 __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+const wchar_t* KOSTIL_SURFACE_MOUSE = L"NTRG0001";
+const wchar_t* KOSTIL_SURFACE_KEYBOARD = L"MSHW0029";
 
 using namespace ::Windows::UI::Core;
 using namespace ::Windows::Graphics::Display;
@@ -62,11 +65,22 @@ using namespace ::Windows::Globalization;
 
 namespace DAVA
 {
+// MSDN:: https://msdn.microsoft.com/en-us/library/windows/hardware/ff541364(v=vs.85).aspx
+const wchar_t* GUID_DEVINTERFACE_MOUSE = L"System.Devices.InterfaceClassGuid:=\"{378DE44C-56EF-11D1-BC8C-00A0C91405DD}\"";
+const wchar_t* GUID_DEVINTERFACE_KEYBOARD = L"System.Devices.InterfaceClassGuid:=\"{884b96c3-56ef-11d1-bc8c-00a0c91405dd}\"";
+const wchar_t* GUID_DEVINTERFACE_TOUCH = L"System.Devices.InterfaceClassGuid:=\"{4D1E55B2-F16F-11CF-88CB-001111000030}\"";
+const char* DEFAULT_TOUCH_ID = "touchId";
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
+    if (isTouchPresent)
+    {
+        auto hidsAccessor(hids.GetAccessor());
+        Set<String>& setIdDevices = (*(hidsAccessor))[TOUCH];
+        setIdDevices.emplace(DEFAULT_TOUCH_ID);
+    }
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
 
@@ -88,7 +102,16 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     modelName = RTStringToString(deviceInfo.SystemSku);
     deviceName = WideString(deviceInfo.FriendlyName->Data());
     gpu = GPUFamily();
-    uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+
+    try
+    {
+        uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+    }
+    catch (Platform::Exception ^ e)
+    {
+        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
+        uDID = "";
+    }
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -222,7 +245,11 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     };
     core->RunOnUIThreadBlocked(func);
     // start device watchers, after creation main thread dispatcher
-    CreateAndStartHIDWatcher();
+    if (!watchersCreated)
+    {
+        CreateAndStartHIDWatcher();
+        watchersCreated = true;
+    }
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -267,7 +294,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String^ path = removableStorages->GetAt(i)->Path;
-        storage.path = WStringToString(path->Data());
+        storage.path = FilePath::FromNativeString(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
             result.push_back(storage);
@@ -314,16 +341,42 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
-    DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(USAGE_PAGE, type));
+    hids.GetAccessor()->emplace(type, Set<String>());
+    DeviceWatcher ^ watcher = nullptr;
+    Platform::Collections::Vector<Platform::String ^> ^ requestedProperties = ref new Platform::Collections::Vector<Platform::String ^>();
+    requestedProperties->Append("System.Devices.InterfaceClassGuid");
+    requestedProperties->Append("System.ItemNameDisplay");
+    if (MOUSE == type)
+    {
+        watcher = DeviceInformation::CreateWatcher(ref new Platform::String(GUID_DEVINTERFACE_MOUSE), requestedProperties);
+    }
+    else if (KEYBOARD == type)
+    {
+        watcher = DeviceInformation::CreateWatcher(ref new Platform::String(GUID_DEVINTERFACE_KEYBOARD), requestedProperties);
+    }
+    else if (TOUCH == type)
+    {
+        watcher = DeviceInformation::CreateWatcher(ref new Platform::String(GUID_DEVINTERFACE_TOUCH), requestedProperties);
+    }
+    else
+    {
+        watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(USAGE_PAGE, type));
+    }
     auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, type](DeviceWatcher^ watcher, DeviceInformation^ information) {
         OnDeviceAdded(type, information);
     });
     auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, type](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
         OnDeviceRemoved(type, information);
     });
-
-    watcher->Added += added;
-    watcher->Removed += removed;
+    auto updated = ref new TypedEventHandler<DeviceWatcher ^, DeviceInformationUpdate ^>([this, type](DeviceWatcher ^ watcher, DeviceInformationUpdate ^ information) {
+        OnDeviceUpdated(type, information);
+    });
+    if (TOUCH != type)
+    {
+        watcher->Added += added;
+        watcher->Removed += removed;
+    }
+    watcher->Updated += updated;
     watcher->Start();
     return watcher;
 }
@@ -337,40 +390,122 @@ void DeviceInfoPrivate::CreateAndStartHIDWatcher()
     watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
     watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
     watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
+    watchers.emplace_back(CreateDeviceWatcher(TOUCH));
 }
 
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)
 {
-    if (isTouchPresent)
+    if (!information->IsEnabled)
     {
-        // skip because Windows touch mimics under mouse and keyboard
-        if (modelName.compare(RTStringToString(information->Name)) == 0)
+        return;
+    }
+    //TODO: delete it, kostil for surface mouse
+    if (MOUSE == type)
+    {
+        if (wcsstr(information->Id->Data(), KOSTIL_SURFACE_MOUSE) != nullptr)
         {
             return;
         }
     }
-    
-    auto it = hids.find(type);
-    if (it != hids.end())
+    //TODO: delete it, kostil for surface keyboard
+    if (KEYBOARD == type)
     {
-        it->second++;
+        if (wcsstr(information->Id->Data(), KOSTIL_SURFACE_KEYBOARD) != nullptr)
+        {
+            return;
+        }
+    }
+    auto hidsAccessor(hids.GetAccessor());
+    String id = RTStringToString(information->Id);
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
+    auto idIter = setIdDevices.find(id);
+    if (idIter == setIdDevices.end())
+    {
+        setIdDevices.emplace(std::move(id));
         NotifyAllClients(type, true);
     }
 }
 
 void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate^ information)
 {
-    auto it = hids.find(type);
-    if (it != hids.end())
+    String id = RTStringToString(information->Id);
+    auto hidsAccessor(hids.GetAccessor());
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
+    auto idIter = setIdDevices.find(id);
+    if (idIter != setIdDevices.end())
     {
-        it->second--;
+        setIdDevices.erase(idIter);
         NotifyAllClients(type, false);
+    }
+}
+
+void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpdate ^ information)
+{
+    auto hidsAccessor(hids.GetAccessor());
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
+    if (TOUCH == type)
+    {
+        TouchCapabilities touchCapabilities;
+        bool newState = (1 == touchCapabilities.TouchPresent);
+        if (isTouchPresent != newState)
+        {
+            isTouchPresent = newState;
+            if (isTouchPresent)
+            {
+                setIdDevices.emplace(DEFAULT_TOUCH_ID);
+            }
+            else
+            {
+                setIdDevices.erase(DEFAULT_TOUCH_ID);
+            }
+            NotifyAllClients(type, isTouchPresent);
+        }
+    }
+    else
+    {
+        bool isEnabled = false;
+        Windows::Foundation::Collections::IMapView<Platform::String ^, Platform::Object ^> ^ properties = information->Properties;
+        if (properties->HasKey(L"System.Devices.InterfaceEnabled"))
+        {
+            try
+            {
+                isEnabled = safe_cast<bool>(properties->Lookup(L"System.Devices.InterfaceEnabled"));
+            }
+            catch (Platform::InvalidCastException ^ e)
+            {
+                Logger::FrameworkDebug("DeviceInfoPrivate::OnDeviceUpdated. Can't cast System.Devices.InterfaceEnabled.");
+            }
+            catch (Platform::OutOfBoundsException ^ e)
+            {
+                Logger::FrameworkDebug("DeviceInfoPrivate::OnDeviceUpdated. OutOfBoundsException.");
+            }
+        }
+        String id = RTStringToString(information->Id);
+        auto iterId = setIdDevices.find(id);
+        if (isEnabled)
+        {
+            if (iterId == setIdDevices.end())
+            {
+                setIdDevices.emplace(std::move(id));
+                NotifyAllClients(type, isEnabled);
+            }
+        }
+        else
+        {
+            if (iterId != setIdDevices.end())
+            {
+                setIdDevices.erase(id);
+                NotifyAllClients(type, isEnabled);
+            }
+        }
     }
 }
 
 bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 {
-    return (hids[type] > 0);
+    auto hidsAccessor(hids.GetAccessor());
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
+    return (setIdDevices.size() > 0);
 }
 
 }

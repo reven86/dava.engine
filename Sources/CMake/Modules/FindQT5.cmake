@@ -74,6 +74,7 @@ macro(resolve_qt_pathes)
     endif()
 endmacro()
 
+
 #################################################################
 
 # Find includes in corresponding build directories
@@ -92,10 +93,11 @@ foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     endif()
 
     ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")
+    LIST(APPEND DEPLOY_LIST "Qt5${COMPONENT}")
     LIST(APPEND LINKAGE_LIST "Qt5::${COMPONENT}")
 endforeach()
 
-append_qt5_deploy(QT5_FIND_COMPONENTS)
+append_qt5_deploy(DEPLOY_LIST)
 set_linkage_qt5_modules(LINKAGE_LIST)
 set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 

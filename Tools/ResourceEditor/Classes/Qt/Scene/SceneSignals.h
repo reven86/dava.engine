@@ -34,10 +34,6 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
-
-#include "Scene/System/VisibilityToolSystem.h"
-
-// framework
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
 
@@ -94,12 +90,10 @@ signals:
     void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
-    void VisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state);
     void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
 
-    void VisibilityToolToggled(SceneEditor2* scene);
     void CustomColorsToggled(SceneEditor2* scene);
     void HeightmapEditorToggled(SceneEditor2* scene);
     void TilemaskEditorToggled(SceneEditor2* scene);
@@ -159,10 +153,6 @@ public:
         emit ModifyStatusChanged(scene, modified);
     }
 
-    void EmitVisibilityToolToggled(SceneEditor2* scene)
-    {
-        emit VisibilityToolToggled(scene);
-    }
     void EmitCustomColorsToggled(SceneEditor2* scene)
     {
         emit CustomColorsToggled(scene);
@@ -188,10 +178,7 @@ public:
     {
         emit DropperHeightChanged(scene, (double)height);
     };
-    void EmitVisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state)
-    {
-        emit VisibilityToolStateChanged(scene, state);
-    };
+
     void EmitCustomColorsTextureShouldBeSaved(SceneEditor2* scene)
     {
         emit CustomColorsTextureShouldBeSaved(scene);
@@ -227,9 +214,9 @@ public:
     {
         emit LayerSelected(scene, effect, emitter, layer, forceRefresh);
     };
-    void EmitForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, int forceIndex)
+    void EmitForceSelected(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
     {
-        emit ForceSelected(scene, layer, forceIndex);
+        emit ForceSelected(scene, layer, static_cast<int>(forceIndex));
     };
 
     // Particle Editor Value Changed signals.

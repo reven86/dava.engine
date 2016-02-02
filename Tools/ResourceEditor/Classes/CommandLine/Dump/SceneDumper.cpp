@@ -39,8 +39,8 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
-#include "Qt/Main/QtUtils.h"
-#include "CommandLine/CommandLineTool.h"
+#include "Main/QtUtils.h"
+#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 
@@ -114,7 +114,7 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLink
     String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
     if (!pathname.empty())
     {
-        FilePath projectPath = CommandLineTool::CreateProjectPathFromPath(scenePathname);
+        FilePath projectPath = ProjectManager::CreateProjectPathFromPath(scenePathname);
         links.emplace(projectPath + pathname);
     }
 }
@@ -127,11 +127,11 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
     switch (renderObject->GetType())
     {
-		case RenderObject::TYPE_LANDSCAPE:
-		{
-			Landscape *landscape = static_cast<Landscape *> (renderObject);
-			links.insert(landscape->GetHeightmapPathname());
-			break;
+    case RenderObject::TYPE_LANDSCAPE:
+    {
+        Landscape* landscape = static_cast<Landscape*>(renderObject);
+        links.insert(landscape->GetHeightmapPathname());
+            break;
 		}
 		case RenderObject::TYPE_VEGETATION:
 		{
@@ -143,24 +143,24 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
             break;
         }
 
-		default:
-			break;
-	}
+        default:
+            break;
+        }
 
     //Enumerate textures from materials
     Set<MaterialTextureInfo*> materialTextures;
     const uint32 count = renderObject->GetRenderBatchCount();
     for (uint32 rb = 0; rb < count; ++rb)
-	{
-		auto renderBatch = renderObject->GetRenderBatch(rb);
-		auto material = renderBatch->GetMaterial();
+    {
+        auto renderBatch = renderObject->GetRenderBatch(rb);
+        auto material = renderBatch->GetMaterial();
 
-		while (nullptr != material)
-		{
+        while (nullptr != material)
+        {
             material->CollectLocalTextures(materialTextures);
             material = material->GetParent();
         }
-	}
+    }
 
     // enumerate drscriptor pathnames
     for (const auto& matTex : materialTextures)
@@ -178,25 +178,33 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
         std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPath));
         if (descriptor)
         {
-            bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
-            if (descriptor->IsCubeMap() && !isCompressedSource)
+            if (descriptor->IsCompressedFile())
             {
-                Vector<FilePath> faceNames;
-                descriptor->GetFacePathnames(faceNames);
-
-                links.insert(faceNames.cbegin(), faceNames.cend());
+                FilePath compressedTexureName = descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily));
+                links.insert(compressedTexureName);
             }
             else
             {
-                links.insert(descriptor->GetSourceTexturePathname());
-            }
-
-            for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
-            {
-                const auto& compression = descriptor->compression[gpu];
-                if (compression.format != FORMAT_INVALID)
+                bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
+                if (descriptor->IsCubeMap() && !isCompressedSource)
                 {
-                    links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                    Vector<FilePath> faceNames;
+                    descriptor->GetFacePathnames(faceNames);
+
+                    links.insert(faceNames.cbegin(), faceNames.cend());
+                }
+                else
+                {
+                    links.insert(descriptor->GetSourceTexturePathname());
+                }
+
+                for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+                {
+                    const auto& compression = descriptor->compression[gpu];
+                    if (compression.format != FORMAT_INVALID)
+                    {
+                        links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                    }
                 }
             }
         }
@@ -221,11 +229,11 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
 	for (auto & folder : gfxFolders)
 	{
 		FilePath flagsTXT = folder + "flags.txt";
-		if (flagsTXT.Exists())
-		{
-			links.insert(flagsTXT);
-		}
-	}
+        if (FileSystem::Instance()->Exists(flagsTXT))
+        {
+            links.insert(flagsTXT);
+        }
+    }
 }
 
 void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const

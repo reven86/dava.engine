@@ -55,55 +55,47 @@ namespace DAVA
 
 		bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
 		void CloseConnection();
+        void FailOnLocalBuild();
 
-		// Work with log object in DB
-		KeyedArchive *FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
-		KeyedArchive *FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
+        // Work with log object in DB
+        KeyedArchive* FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
+        KeyedArchive* FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
 
-		KeyedArchive *FindOrInsertGroupArchive(KeyedArchive *buildArchive, const String &groupId);
-		KeyedArchive *InsertTestArchive(KeyedArchive *currentGroupArchive, const String &testId);
-		KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
+        KeyedArchive* FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String& groupId);
+        KeyedArchive* InsertTestArchive(KeyedArchive* currentGroupArchive, const String& testId);
+        KeyedArchive* InsertStepArchive(KeyedArchive* testArchive, const String& stepId, const String& description);
 
-		KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
-		KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
-		KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
+        KeyedArchive* FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String& testId);
+        KeyedArchive* FindOrInsertStepArchive(KeyedArchive* testArchive, const String& stepId);
+        KeyedArchive* FindOrInsertTestStepLogEntryArchive(KeyedArchive* testStepArchive, const String& logId);
 
-		// Getting and Setting data from/in DB
-		bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
+        // Getting and Setting data from/in DB
+        bool SaveToDB(MongodbUpdateObject* dbUpdateObject);
 
-		void WriteLogHeader();
-		void WriteLog(const char8 *text, ...);
-		void Log(const String &level, const String &message);
+        void WriteLogHeader();
+        void WriteLog(const char8* text, ...);
+        void Log(const String &level, const String &message);
 
 		String GetStringTestParameter(const String &deviceName, const String &parameter);
 		int32 GetIntTestParameter(const String &deviceName, const String &parameter);
-
-		String ReadString(const String &name);
-		void WriteString(const String &name, const String &text);
 
 		bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive);
 
 		void UploadScreenshot(const String &name, Image *image);
 
 		// multiplayer api
-		void WriteState(const String &device, const String &state);
-		void WriteCommand(const String &device, const String &state);
+        String ReadState(const String& device, const String& param);
+        void WriteState(const String& device, const String& param, const String& state);
 
-		String ReadState(const String &device);
-		String ReadCommand(const String &device);
+        void SetTestStarted();
 
-		void SetTestStarted();
+        FilePath logsFolder;
 
-		FilePath logsFolder;
-
-	protected:
-		MongodbClient *dbClient;
-		FilePath logFilePath;
-		AutotestingSystem *autoSys;
-
-	};
-
-
+    protected:
+        MongodbClient* dbClient;
+        FilePath logFilePath;
+        AutotestingSystem* autoSys;
+    };
 }
 
 #endif //__DAVAENGINE_AUTOTESTING__

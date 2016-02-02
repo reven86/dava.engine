@@ -41,6 +41,39 @@ class CorePlatformWinUAP;
 
 class PrivateWebViewWinUAP : public std::enable_shared_from_this<PrivateWebViewWinUAP>
 {
+    struct WebViewProperties
+    {
+        enum
+        {
+            NAVIGATE_NONE = 0,
+            NAVIGATE_OPEN_URL,
+            NAVIGATE_LOAD_HTML,
+            NAVIGATE_OPEN_BUFFER
+        };
+
+        WebViewProperties();
+        void ClearChangedFlags();
+
+        Rect rect;
+        Rect rectInWindowSpace;
+        bool visible = false;
+        bool renderToTexture = false;
+        bool backgroundTransparency = false;
+        WideString htmlString; // for LoadHtmlString
+        String urlOrHtml; // for OpenURL or OpenFromBuffer
+        FilePath basePath; // for OpenFromBuffer
+        String jsScript; // for ExecuteJScript
+
+        bool createNew : 1;
+        bool anyPropertyChanged : 1;
+        bool rectChanged : 1;
+        bool visibleChanged : 1;
+        bool renderToTextureChanged : 1;
+        bool backgroundTransparencyChanged : 1;
+        bool execJavaScript : 1;
+        uint32 navigateTo : 2;
+    };
+
 public:
     PrivateWebViewWinUAP(UIWebView* UIWebView);
     ~PrivateWebViewWinUAP();
@@ -65,26 +98,43 @@ public:
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
 
+    void Update();
+
 private:
+    void CreateNativeControl();
     void InstallEventHandlers();
-    void PositionWebView(const Rect& rectInVirtualCoordinates, bool offScreen);
+
+    void ProcessProperties(const WebViewProperties& props);
+    void ApplyChangedProperties(const WebViewProperties& props);
+
+    void SetNativePositionAndSize(const Rect& rect, bool offScreen);
+    void SetNativeBackgroundTransparency(bool enabled);
+    void NativeNavigateTo(const WebViewProperties& props);
+    void NativeExecuteJavaScript(const String& jsScript);
+
+    Rect VirtualToWindow(const Rect& srcRect) const;
 
     void RenderToTexture();
-    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
+    Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
 
 private:    // WebView event handlers
     void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
 
 private:
+    // clang-format off
     CorePlatformWinUAP* core;
     UIWebView* uiWebView = nullptr;
     IUIWebViewDelegate* webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
-    Windows::UI::Color defaultBkgndColor;
-    bool visible = true;
+    Windows::UI::Color defaultBkgndColor;   // Original WebView's background color used on transparency turned off
+
     bool renderToTexture = false;
-    Rect originalRect;
+    bool visible = false;                   // Native control initially is invisible
+    Rect rectInWindowSpace;
+
+    WebViewProperties properties;
+    // clang-format on
 };
 
 }   // namespace DAVA

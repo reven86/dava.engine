@@ -10,7 +10,7 @@ VPROG_IN_END
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(texCoord,2)
-    VPROG_OUT_COLOR0(vegetationColor,3)
+    VPROG_OUT_COLOR0_LOW(vegetationColor,3)
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
     #endif
@@ -18,7 +18,6 @@ VPROG_OUT_END
 
 DECL_VP_SAMPLER2D(heightmap)
 DECL_VP_SAMPLER2D(vegetationmap)
-
 
 #if VERTEX_FOG
 property float4x4 worldViewMatrix : dynamic,a : ;
@@ -38,7 +37,6 @@ property float4x4 worldMatrix : dynamic,instance : ;
 
 #include "vp-fog-props.cgh"
 
-
 property float4x4 worldViewProjMatrix : dynamic,instance : ;
 property float3 tilePos : static,instance : ;
 property float3 worldSize : static,instance : ;
@@ -50,7 +48,7 @@ property float4 vegWaveOffsety : static,instance : ;
 
 VPROG_BEGIN
 
-    float3 inPosition = VP_IN_POSITION;
+    float3 inPosition = VP_IN_POSITION.xyz;
     float2 inTexCoord0 = VP_IN_TEXCOORD0;
     float3 inTexCoord1 = VP_IN_TEXCOORD1;
     float3 inTexCoord2 = VP_IN_TEXCOORD2;
@@ -96,47 +94,28 @@ VPROG_BEGIN
     pos = lerp(clusterCenter, pos, vegetationMask.a * clusterScale);
     VP_OUT_POSITION = mul( float4(pos, 1.0), worldViewProjMatrix );
 
-
 #if VERTEX_FOG
+	
+    float3 eyeCoordsPosition = mul( float4( pos, 1.0 ), worldViewMatrix ).xyz;
+	#define FOG_view_position eyeCoordsPosition
+	
+#if FOG_ATMOSPHERE
+	float3 tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+    #define FOG_to_light_dir tolight_dir
+#endif
+	
+#if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
+	float3 world_position = mul( float4( pos, 1.0 ), worldMatrix ).xyz;
+	#define FOG_world_position world_position
+#endif
 
-    FogParam    fog_param;
+    #define FOG_eye_position cameraPosition
 
-    fog_param.color     = fogColor.rgb;
-    fog_param.limit     = fogLimit;
-    #if FOG_LINEAR
-    fog_param.start     = fogStart;
-    fog_param.end       = fogEnd;
-    #else
-    fog_param.density   = fogDensity;
-    #endif
-    #if FOG_HALFSPACE
-    fog_param.halfspace_height  = fogHalfspaceHeight;
-    fog_param.halfspace_falloff = fogHalfspaceFalloff;
-    fog_param.halfspace_density = fogHalfspaceDensity;
-    fog_param.halfspace_limit   = fogHalfspaceLimit;
-    #endif
-
-    float3 eyeCoordsPosition = mul( float4( pos, 1.0 ), worldViewMatrix ).xyz; 
-    
-    #if FOG_ATMOSPHERE
-    fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-
-    fog_param.atmosphere_distance = fogAtmosphereDistance;
-    #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
-    fog_param.atmosphere_scattering = fogAtmosphereScattering;
-    #endif
-    
-    #endif
-    
-    fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul( float4( pos, 1.0 ), worldMatrix ).xyz;
-    fog_param.eye_position   = cameraPosition;
-    
-    VP_OUT(varFog) = CalculateVertexFog( fog_param );
-
-#endif // VERTEX_FOG
+	#include "vp-fog-math.cgh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
+	
+	VP_OUT(varFog) = FOG_result;
+	
+#endif
 
 
 VPROG_END

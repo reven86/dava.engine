@@ -41,7 +41,6 @@ add_definitions       (
 -DQT_HAVE_SSE2
 -DQT_THREAD_SUPPORT
 -DDAVA_QT
--DNGT_INTEGRATION
 )
 
 if (WIN32)

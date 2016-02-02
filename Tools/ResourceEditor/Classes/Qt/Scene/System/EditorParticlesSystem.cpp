@@ -33,6 +33,8 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneTabWidget.h"
+#include "Main/mainwindow.h"
 
 // framework
 #include "Base/BaseTypes.h"
@@ -42,6 +44,7 @@
 
 // particles-related commands
 #include "Commands2/ParticleEditorCommands.h"
+#include "Commands2/ParticleLayerCommands.h"
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
@@ -69,11 +72,11 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
     {
         if (NULL != effectEntity)
         {
-			DAVA::AABBox3 wordBox;
-			DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
-			collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
-			// Get sphere radius (size) of debug effect
-			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
+            DAVA::AABBox3 wordBox;
+            DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
+            collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);
+            // Get sphere radius (size) of debug effect
+            DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
         }
     }
@@ -103,11 +106,11 @@ void EditorParticlesSystem::Draw()
         DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
         switch (selectedEmitter->emitterType)
-		{
-		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
-		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
-			{
-				DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
+        {
+        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
+        case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
+        {
+                DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
 			}
 			break;
 		case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
@@ -232,6 +235,19 @@ void EditorParticlesSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
+void EditorParticlesSystem::RestartParticleEffects()
+{
+    for (Entity* entity : entities)
+    {
+        ParticleEffectComponent* effectComponent = GetEffectComponent(entity);
+        DVASSERT(effectComponent);
+        if (!effectComponent->IsStopped())
+        {
+            effectComponent->Restart();
+        }
+    }
+}
+
 void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if (!command)
@@ -251,24 +267,39 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 			break;
 		}
 
-		case CMDID_PARTICLE_LAYER_UPDATE:
-		case CMDID_PARTILCE_LAYER_UPDATE_TIME:
-		case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
-		{
-			const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
-			SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-																	  castedCmd->GetLayer());
-			break;
-		}
+        case CMDID_PARTICLE_LAYER_UPDATE:
+        {
+            const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
+                                                                    castedCmd->GetLayer());
+            break;
+        }
+        case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:
+        {
+            QtMainWindow::Instance()->RestartParticleEffects();
 
-		case CMDID_PARTICLE_FORCE_UPDATE:
-		{
-			const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
-			SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
-																	castedCmd->GetLayer(),
-																	castedCmd->GetForceIndex());
-			break;
-		}
+            const CommandChangeLayerMaterialProperties* cmd = static_cast<const CommandChangeLayerMaterialProperties*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, cmd->GetLayer());
+            break;
+        }
+
+        case CMDID_PARTILCE_LAYER_UPDATE_TIME:
+        case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
+        {
+            const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
+                                                                    castedCmd->GetLayer());
+            break;
+        }
+
+        case CMDID_PARTICLE_FORCE_UPDATE:
+        {
+            const CommandUpdateParticleForce* castedCmd = static_cast<const CommandUpdateParticleForce*>(command);
+            SceneSignals::Instance()->EmitParticleForceValueChanged(activeScene,
+                                                                    castedCmd->GetLayer(),
+                                                                    castedCmd->GetForceIndex());
+            break;
+        }
 
 		case CMDID_PARTICLE_EFFECT_START_STOP:
 		{
@@ -307,12 +338,26 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 			break;
 		}
 
-		case CMDID_PARTICLE_EMITTER_LAYER_ADD:
-		{
-			const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
-			SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
-			break;
-		}
+        case CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML:
+        {
+            const CommandLoadInnerParticleEmitterFromYaml* castedCmd = static_cast<const CommandLoadInnerParticleEmitterFromYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterLoaded(activeScene, castedCmd->GetEmitter());
+            break;
+        }
+
+        case CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML:
+        {
+            const CommandSaveInnerParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveInnerParticleEmitterToYaml*>(command);
+            SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+            break;
+        }
+
+        case CMDID_PARTICLE_EMITTER_LAYER_ADD:
+        {
+            const CommandAddParticleEmitterLayer* castedCmd = static_cast<const CommandAddParticleEmitterLayer*>(command);
+            SceneSignals::Instance()->EmitParticleLayerAdded(activeScene, castedCmd->GetParentEmitter(), castedCmd->GetCreatedLayer());
+            break;
+        }
 // Return to this code when implementing Layer popup menus.
 /*
 		case CMDID_REMOVE_PARTICLE_EMITTER_LAYER:

@@ -189,6 +189,8 @@ cmake_minimum_required( VERSION 2.6.3 )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
 include               ( GlobalVariables )
 
+find_package( PythonInterp   )
+
 if( NOT ANDROID_TOOLCHAIN_NAME )
     set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6 )
 endif()
@@ -1613,6 +1615,10 @@ if( NOT _CMAKE_IN_TRY_COMPILE )
  unset( __toolchain_config )
 endif()
 
+
+set( APPLE )
+set( MACOS )
+
 # force cmake to produce / instead of \ in build commands for Ninja generator
 if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )
  # it is a bad hack after all
@@ -1625,6 +1631,8 @@ if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )
  unset( MINGW )
 endif()
 
+set( APPLE )
+set( MACOS )
 
 # Variables controlling behavior or set by cmake toolchain:
 #   ANDROID_ABI : "armeabi-v7a" (default), "armeabi", "armeabi-v7a with NEON", "armeabi-v7a with VFPV3", "armeabi-v6 with VFP", "x86", "mips", "arm64-v8a", "x86_64", "mips64"

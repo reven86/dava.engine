@@ -35,12 +35,10 @@
 #include <QLabel>
 #include <QTimer>
 
-#include <DAVAEngine.h>
+#include "DAVAEngine.h"
 #include "ScrollZoomWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
 #include "Scene/SceneEditor2.h"
-
-using namespace DAVA;
 
 #define LEFT_INDENT 20
 #define TOP_INDENT 14
@@ -64,14 +62,14 @@ public:
     explicit ParticleTimeLineWidget(QWidget* parent = 0);
     ~ParticleTimeLineWidget();
 
-    void Init(float32 minTime, float32 maxTime);
+    void Init(DAVA::float32 minTime, DAVA::float32 maxTime);
 
     struct LINE
     {
-        float32 startTime;
-        float32 endTime;
-        float32 deltaTime;
-        float32 loopEndTime;
+        DAVA::float32 startTime;
+        DAVA::float32 endTime;
+        DAVA::float32 deltaTime;
+        DAVA::float32 loopEndTime;
         bool isLooped;
         bool hasLoopVariation;
         QColor color;
@@ -119,13 +117,13 @@ protected:
 
 private:
     bool GetLineRect(uint32 id, QRect& startPoint, QRect& endPoint) const;
-    bool GetLoopedLineRect(uint32 id, QRect& startPoint, QRect& endPoint, float32 startTime, float32 endTime) const;
+    bool GetLoopedLineRect(uint32 id, QRect& startPoint, QRect& endPoint, DAVA::float32 startTime, DAVA::float32 endTime) const;
     QRect GetGraphRect() const;
     QPoint GetPoint(const QPoint&) const;
 
-    void AddLayerLine(uint32 layerLineID, float32 minTime, float32 maxTime,
+    void AddLayerLine(uint32 layerLineID, DAVA::float32 minTime, DAVA::float32 maxTime,
                       const QColor& layerColor, ParticleLayer* layer);
-    void AddLine(uint32 lineId, float32 startTime, float32 endTime, float32 deltaTime, float32 loopEndTime, bool isLooped,
+    void AddLine(uint32 lineId, DAVA::float32 startTime, DAVA::float32 endTime, DAVA::float32 deltaTime, DAVA::float32 loopEndTime, bool isLooped,
                  bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer);
 
     void OnValueChanged(int lineId);
@@ -181,9 +179,9 @@ private:
         //Q_OBJECT
 
     public:
-        explicit SetPointValueDlg(float32 value, float32 minValue, float32 maxValue, QWidget* parent = 0);
+        explicit SetPointValueDlg(DAVA::float32 value, DAVA::float32 minValue, DAVA::float32 maxValue, QWidget* parent = 0);
 
-        float32 GetValue() const;
+        DAVA::float32 GetValue() const;
 
     private:
         EventFilterDoubleSpinBox* valueSpin;

@@ -425,32 +425,32 @@ void VariantType::SetVariant(const VariantType& var)
         break;
         case TYPE_BYTE_ARRAY:
         {
-            Vector<uint8> *ar = (Vector<uint8>*) var.pointerValue;
-			SetByteArray(ar->data(), static_cast<int32>(ar->size()));
-		}
-		break;
-	case TYPE_KEYED_ARCHIVE:
-		{
-			SetKeyedArchive(var.AsKeyedArchive());
-		}
-		break;
-	case TYPE_INT64:
-		{
-			SetInt64(var.AsInt64());
-		}
-		break;
-	case TYPE_UINT64:
-		{
-			SetUInt64(var.AsUInt64());
-		}
-		break;
-	case TYPE_VECTOR2:
-		{
-			SetVector2(var.AsVector2());
-		}
-		break;
-	case TYPE_VECTOR3:
-		{
+            Vector<uint8>* ar = (Vector<uint8>*)var.pointerValue;
+            SetByteArray(ar->data(), static_cast<int32>(ar->size()));
+        }
+        break;
+        case TYPE_KEYED_ARCHIVE:
+        {
+            SetKeyedArchive(var.AsKeyedArchive());
+        }
+        break;
+        case TYPE_INT64:
+        {
+            SetInt64(var.AsInt64());
+        }
+        break;
+        case TYPE_UINT64:
+        {
+            SetUInt64(var.AsUInt64());
+        }
+        break;
+        case TYPE_VECTOR2:
+        {
+            SetVector2(var.AsVector2());
+        }
+        break;
+        case TYPE_VECTOR3:
+        {
 			SetVector3(var.AsVector3());
 		}
 		break;
@@ -1332,12 +1332,12 @@ bool VariantType::operator==(const VariantType& other) const
                     {
                         isEqual = true;
                         if(keyedArchive != otherKeyedArchive)
-                        {                                
-                            const Map<String, VariantType*> &data = keyedArchive->GetArchieveData();
-                            const Map<String, VariantType*> &otherData = otherKeyedArchive->GetArchieveData();
+                        {
+                            const KeyedArchive::UnderlyingMap& data = keyedArchive->GetArchieveData();
+                            const KeyedArchive::UnderlyingMap& otherData = otherKeyedArchive->GetArchieveData();
                             for(const auto &obj : data)
                             {
-                                Map<String, VariantType*>::const_iterator findIt = otherData.find(obj.first);
+                                KeyedArchive::UnderlyingMap::const_iterator findIt = otherData.find(obj.first);
                                 if(findIt != otherData.end())
                                 {
                                     if(obj.second != findIt->second)
@@ -1482,22 +1482,22 @@ void* VariantType::MetaObject()
     case TYPE_MATRIX2:
     case TYPE_MATRIX3:
     case TYPE_MATRIX4:
-	case TYPE_COLOR:
-	case TYPE_FASTNAME:
-	case TYPE_AABBOX3:
-	case TYPE_FILEPATH:
-		ret = pointerValue;
-		break;
-	case TYPE_KEYED_ARCHIVE:
-		ret = &pointerValue;
-		break;
-	default:
-		{
-			//DVASSERT(0 && "Something went wrong with VariantType");
-		}
-	}
+    case TYPE_COLOR:
+    case TYPE_FASTNAME:
+    case TYPE_AABBOX3:
+    case TYPE_FILEPATH:
+        ret = pointerValue;
+        break;
+    case TYPE_KEYED_ARCHIVE:
+        ret = &pointerValue;
+        break;
+    default:
+    {
+        //DVASSERT(0 && "Something went wrong with VariantType");
+    }
+    }
 
-	return (void *) ret;
+    return (void*)ret;
 }
 
 VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
@@ -1546,30 +1546,30 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
     case TYPE_KEYED_ARCHIVE:
         v.SetKeyedArchive(*((DAVA::KeyedArchive**)src));
         break;
-	case TYPE_INT64:
-		v.SetInt64(*((DAVA::int64 *) src));
-		break;
-	case TYPE_UINT64:
-		v.SetUInt64(*((DAVA::uint64 *) src));
-		break;
-	case TYPE_VECTOR2:
-		v.SetVector2(*((DAVA::Vector2 *) src));
-		break;
-	case TYPE_VECTOR3:
-		v.SetVector3(*((DAVA::Vector3 *) src));
-		break;
-	case TYPE_VECTOR4:
-		v.SetVector4(*((DAVA::Vector4 *) src));
-		break;
-	case TYPE_MATRIX2:
-		v.SetMatrix2(*((DAVA::Matrix2 *) src));
-		break;
-	case TYPE_MATRIX3:
-		v.SetMatrix3(*((DAVA::Matrix3 *) src));
-		break;
-	case TYPE_MATRIX4:
-		v.SetMatrix4(*((DAVA::Matrix4 *) src));
-		break;
+    case TYPE_INT64:
+        v.SetInt64(*((DAVA::int64*)src));
+        break;
+    case TYPE_UINT64:
+        v.SetUInt64(*((DAVA::uint64*)src));
+        break;
+    case TYPE_VECTOR2:
+        v.SetVector2(*((DAVA::Vector2*)src));
+        break;
+    case TYPE_VECTOR3:
+        v.SetVector3(*((DAVA::Vector3*)src));
+        break;
+    case TYPE_VECTOR4:
+        v.SetVector4(*((DAVA::Vector4*)src));
+        break;
+    case TYPE_MATRIX2:
+        v.SetMatrix2(*((DAVA::Matrix2*)src));
+        break;
+    case TYPE_MATRIX3:
+        v.SetMatrix3(*((DAVA::Matrix3*)src));
+        break;
+    case TYPE_MATRIX4:
+        v.SetMatrix4(*((DAVA::Matrix4*)src));
+        break;
     case TYPE_COLOR:
         v.SetColor(*((DAVA::Color *) src));
         break;
@@ -1668,40 +1668,40 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         //	break;
         case TYPE_KEYED_ARCHIVE:
         {
-                DAVA::KeyedArchive *dstArchive = *((DAVA::KeyedArchive **) dst);
-				if(nullptr != dstArchive)
-				{
-					dstArchive->DeleteAllKeys();
-                    for(const auto &obj : val.AsKeyedArchive()->GetArchieveData())
-                    {
-                        dstArchive->SetVariant(obj.first, *obj.second);
-                    }
-				}
-			}
-			break;
-		case TYPE_INT64:
-			*((DAVA::int64 *) dst) = val.AsInt64();
-			break;
-		case TYPE_UINT64:
-			*((DAVA::uint64 *) dst) = val.AsUInt64();
-			break;
-		case TYPE_VECTOR2:
-			*((DAVA::Vector2 *) dst) = val.AsVector2();
-			break;
-		case TYPE_VECTOR3:
-			*((DAVA::Vector3 *) dst) = val.AsVector3();
-			break;
-		case TYPE_VECTOR4:
-			*((DAVA::Vector4 *) dst) = val.AsVector4();
-			break;
-		case TYPE_MATRIX2:
-			*((DAVA::Matrix2 *) dst) = val.AsMatrix2();
-			break;
-		case TYPE_MATRIX3:
-			*((DAVA::Matrix3 *) dst) = val.AsMatrix3();
-			break;
-		case TYPE_MATRIX4:
-			*((DAVA::Matrix4 *) dst) = val.AsMatrix4();
+            DAVA::KeyedArchive* dstArchive = *((DAVA::KeyedArchive**)dst);
+            if (nullptr != dstArchive)
+            {
+                dstArchive->DeleteAllKeys();
+                for (const auto& obj : val.AsKeyedArchive()->GetArchieveData())
+                {
+                    dstArchive->SetVariant(obj.first, *obj.second);
+                }
+            }
+            break;
+        }
+        case TYPE_INT64:
+            *((DAVA::int64*)dst) = val.AsInt64();
+            break;
+        case TYPE_UINT64:
+            *((DAVA::uint64*)dst) = val.AsUInt64();
+            break;
+        case TYPE_VECTOR2:
+            *((DAVA::Vector2*)dst) = val.AsVector2();
+            break;
+        case TYPE_VECTOR3:
+            *((DAVA::Vector3*)dst) = val.AsVector3();
+            break;
+        case TYPE_VECTOR4:
+            *((DAVA::Vector4*)dst) = val.AsVector4();
+            break;
+        case TYPE_MATRIX2:
+            *((DAVA::Matrix2*)dst) = val.AsMatrix2();
+            break;
+        case TYPE_MATRIX3:
+            *((DAVA::Matrix3*)dst) = val.AsMatrix3();
+            break;
+        case TYPE_MATRIX4:
+            *((DAVA::Matrix4 *) dst) = val.AsMatrix4();
 			break;
 		case TYPE_COLOR:
 			*((DAVA::Color *) dst) = val.AsColor();
@@ -1765,35 +1765,35 @@ VariantType VariantType::FromType(int type)
         v.SetByteArray(nullptr, 0);
         break;
     case TYPE_KEYED_ARCHIVE:
-		{
-			KeyedArchive *ka = new KeyedArchive();
-			v.SetKeyedArchive(ka);
-			ka->Release();
-		}
-		break;
-	case TYPE_INT64:
-		v.SetInt64(0);
-		break;
-	case TYPE_UINT64:
-		v.SetUInt64(0);
-		break;
-	case TYPE_VECTOR2:
-		v.SetVector2(Vector2());
-		break;
-	case TYPE_VECTOR3:
-		v.SetVector3(Vector3());
-		break;
-	case TYPE_VECTOR4:
-		v.SetVector4(Vector4());
-		break;
-	case TYPE_MATRIX2:
-		v.SetMatrix2(Matrix2());
-		break;
-	case TYPE_MATRIX3:
-		v.SetMatrix3(Matrix3());
-		break;
-	case TYPE_MATRIX4:
-		v.SetMatrix4(Matrix4());
+    {
+        KeyedArchive* ka = new KeyedArchive();
+        v.SetKeyedArchive(ka);
+        ka->Release();
+    }
+    break;
+    case TYPE_INT64:
+        v.SetInt64(0);
+        break;
+    case TYPE_UINT64:
+        v.SetUInt64(0);
+        break;
+    case TYPE_VECTOR2:
+        v.SetVector2(Vector2());
+        break;
+    case TYPE_VECTOR3:
+        v.SetVector3(Vector3());
+        break;
+    case TYPE_VECTOR4:
+        v.SetVector4(Vector4());
+        break;
+    case TYPE_MATRIX2:
+        v.SetMatrix2(Matrix2());
+        break;
+    case TYPE_MATRIX3:
+        v.SetMatrix3(Matrix3());
+        break;
+    case TYPE_MATRIX4:
+        v.SetMatrix4(Matrix4());
 		break;
 	case TYPE_COLOR:
 		v.SetColor(Color());

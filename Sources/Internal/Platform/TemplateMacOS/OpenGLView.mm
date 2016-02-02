@@ -76,25 +76,13 @@ extern void FrameworkMain(int argc, char *argv[]);
     NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", (unsigned)rendererID);
 	
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-	if (self)
-	{
-
-	}
 	trackingArea = nil;
 	[self enableTrackingArea];
 	isFirstDraw = true;
-
-	// enable vsync
-	GLint swapInt = 1;
-    [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-	
-#if RHI_COMPLETE
-    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-#endif
-
-    activeCursor = 0;
-
     willQuit = false;
+
+    // enable retina resolution
+    [self setWantsBestResolutionOpenGLSurface:YES];
 
     return self;
 }
@@ -113,8 +101,11 @@ extern void FrameworkMain(int argc, char *argv[]);
 		depth = 16;
 	else if(CFStringCompare(pixEnc, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
 		depth = 8;
-    
-	return depth;
+
+    CGDisplayModeRelease(mode);
+    CFRelease(pixEnc);
+
+    return depth;
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
@@ -145,43 +136,36 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 - (void)reshape
 {
-	NSRect rect = self.frame;
-#if RHI_COMPLETE
-    DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-#endif
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    if (Renderer::IsInitialized())
+    {
+        NSSize windowSize = [self frame].size;
+        float32 backingScale = Core::Instance()->GetScreenScaleFactor();
 
-    sizeChanged = YES;
+        GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
+        CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+        CGLUpdateContext([[self openGLContext] CGLContextObj]);
+
+        rhi::ResetParam params;
+        params.window = self;
+        params.width = backingSize[0];
+        params.height = backingSize[1];
+        Renderer::Reset(params);
+
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
+        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        UIScreenManager::Instance()->ScreenSizeChanged();
+    }
+
     [super reshape];
 }
 
-- (void)userFireTimer: (id)timer
-{
-	[self setNeedsDisplay:YES];
-}
-	
 - (void)drawRect:(NSRect)theRect
 {
     if(willQuit)
         return;
 
     DAVA::Core::Instance()->SystemProcessFrame();
-}
-
-- (void) resetCursorRects
-{
-	if (activeCursor)
-	{
-		NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-		[self addCursorRect: [self bounds] cursor: cursor];
-	}else {
-		[super resetCursorRects];
-	}
-}
-
--(void)cursorUpdate:(NSEvent *)theEvent
-{
 }
 
 - (BOOL)acceptsFirstResponder
@@ -201,31 +185,55 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 static Vector<DAVA::UIEvent> activeTouches;
 
-void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
+void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
-    NSPoint p = [curEvent locationInWindow];
+    event.timestamp = [curEvent timestamp];
+    event.phase = phase;
 
-    if (phase == UIEvent::Phase::WHEEL)
-    {
-        event.physPoint.x = [curEvent scrollingDeltaX];
-        event.physPoint.y = [curEvent scrollingDeltaY];
-    }
-    else if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
-        
-        event.tapCount = curEvent.clickCount;
     }
     else
     {
+        NSPoint p = [curEvent locationInWindow];
+
         event.physPoint.x = p.x;
-        event.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
-        
-        event.tapCount = curEvent.clickCount;
+        event.physPoint.y = [glview frame].size.height - p.y;
     }
-    event.timestamp = curEvent.timestamp;
-    event.phase = phase;
+
+    if (DAVA::UIEvent::Phase::WHEEL == phase)
+    {
+        event.device = DAVA::UIEvent::Device::MOUSE;
+
+        const uint32 rawScrollCoefficient = 10;
+        DAVA::float32 rawScrollDelta([curEvent scrollingDeltaY]);
+
+        if (YES == [curEvent hasPreciseScrollingDeltas])
+        {
+            // touchpad or other precise device
+            // sends integer values (-3, -1, 0, 1, 40 etc)
+            event.wheelDelta.y = rawScrollDelta / rawScrollCoefficient;
+        }
+        else
+        {
+            // simple mouse - sends float values from 0.1 for one wheel tick
+            event.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
+        }
+    }
+    else
+    {
+        @try
+        {
+            event.tapCount = [curEvent clickCount];
+        }
+        @catch (NSException* exception)
+        {
+            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
+            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
+        }
+    }
 }
 
 - (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
@@ -266,17 +274,17 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     {
         for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            ConvertNSEventToUIEvent(curEvent, (*it), phase);
+            ConvertNSEventToUIEvent(self, curEvent, (*it), phase);
         }
     }
 
     bool isFind = false;
     for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
-        if (it->tid == button)
+        if (it->mouseButton == static_cast<UIEvent::MouseButton>(button))
         {
             isFind = true;
-            ConvertNSEventToUIEvent(curEvent, (*it), phase);
+            ConvertNSEventToUIEvent(self, curEvent, (*it), phase);
 
             break;
         }
@@ -285,10 +293,10 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     if (!isFind)
     {
         UIEvent newTouch;
-        newTouch.tid = button;
+        newTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
         newTouch.device = UIEvent::Device::MOUSE;
 
-        ConvertNSEventToUIEvent(curEvent, newTouch, phase);
+        ConvertNSEventToUIEvent(self, curEvent, newTouch, phase);
 
         allTouches.push_back(newTouch);
     }
@@ -302,7 +310,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     {
         for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            if (it->tid == button)
+            if (it->mouseButton == static_cast<UIEvent::MouseButton>(button))
             {
                 allTouches.erase(it);
                 break;
@@ -333,9 +341,52 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 {
     DAVA::UIEvent ev;
 
-    ev.phase = DAVA::UIEvent::Phase::WHEEL;
-    ev.device = DAVA::UIEvent::Device::MOUSE;
-    ev.physPoint.y = [theEvent scrollingDeltaY];
+    ConvertNSEventToUIEvent(self, theEvent, ev, DAVA::UIEvent::Phase::WHEEL);
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)magnifyWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = [event magnification];
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)rotateWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = 0.f;
+    ev.gesture.dy = 0.f;
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = [event rotation];
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+}
+
+- (void)swipeWithEvent:(NSEvent*)event
+{
+    DAVA::UIEvent ev;
+
+    ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
+    ev.timestamp = [event timestamp];
+    ev.gesture.dx = [event deltaX] * (-1.f);
+    ev.gesture.dy = [event deltaY] * (-1.f);
+    ev.gesture.magnification = 0.f;
+    ev.gesture.rotation = 0.f;
+    ev.phase = DAVA::UIEvent::Phase::GESTURE;
 
     UIControlSystem::Instance()->OnInput(&ev);
 }
@@ -354,24 +405,12 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
-- (void)mouseEntered:(NSEvent *)theEvent
-{
-    NSLog(@"mouse ENTERED");
-#if RHI_COMPLETE
-    if(RenderManager::Instance()->GetCursor())
-    {
-        if(RenderManager::Instance()->GetCursor()->IsShow())
-            [NSCursor unhide];
-        else
-            [NSCursor hide];
-    }
-#endif
-    //	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
-}
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
     [NSCursor unhide];
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
@@ -406,9 +445,27 @@ static int32 oldModifersFlags = 0;
 
     NSString* chars = [event characters];
     bool isRepeat = [event isARepeat];
-    int32 keyCode = [event keyCode];
+    uint32 keyCode = [event keyCode];
+    DAVA::Key davaKey = keyboard.GetDavaKeyForSystemKey(keyCode);
     uint32 charsLength = [chars length];
 
+    // first key_down event to send
+    {
+        DAVA::UIEvent ev;
+        if (isRepeat)
+        {
+            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN_REPEAT;
+        }
+        else
+        {
+            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+        }
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.key = davaKey;
+
+        UIControlSystem::Instance()->OnInput(&ev);
+    }
+    // not send char event to be consistent with Windows
     for (uint32 i = 0; i < charsLength; ++i)
     {
         uint32 ch = [chars characterAtIndex:i];
@@ -427,24 +484,7 @@ static int32 oldModifersFlags = 0;
 
         UIControlSystem::Instance()->OnInput(&ev);
     }
-
-    {
-        DAVA::UIEvent ev;
-        if (isRepeat)
-        {
-            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN_REPEAT;
-        }
-        else
-        {
-            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
-        }
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
-
-        UIControlSystem::Instance()->OnInput(&ev);
-    }
-
-    keyboard.OnSystemKeyPressed(keyCode);
+    keyboard.OnKeyPressed(davaKey);
 }
 
 - (void) keyUp:(NSEvent *)event
@@ -456,44 +496,80 @@ static int32 oldModifersFlags = 0;
     DAVA::UIEvent ev;
 
     ev.phase = DAVA::UIEvent::Phase::KEY_UP;
-    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    ev.key = keyboard.GetDavaKeyForSystemKey(keyCode);
     ev.device = UIEvent::Device::KEYBOARD;
 
     UIControlSystem::Instance()->OnInput(&ev);
 
-    keyboard.OnSystemKeyUnpressed(keyCode);
+    keyboard.OnKeyUnpressed(ev.key);
 }
 
 - (void) flagsChanged :(NSEvent *)event
 {
+    // TODO add support for simultanious keys presed or released
     int32 newModifers = [event modifierFlags];
     static int32 masks[] = {NSAlphaShiftKeyMask, NSShiftKeyMask, NSControlKeyMask, NSAlternateKeyMask, NSCommandKeyMask};
-    static int32 keyCodes[] = { DVKEY_CAPSLOCK, DVKEY_SHIFT, DVKEY_CTRL, DVKEY_ALT, DVKEY_LWIN };
+    static Key keyCodes[] = { Key::CAPSLOCK, Key::LSHIFT, Key::LCTRL, Key::LALT, Key::LWIN };
 
-    for (int i = 0; i < 5; i++) 
+    InputSystem* input = InputSystem::Instance();
+    KeyboardDevice& keyboard = input->GetKeyboard();
+
+    for (unsigned i = 0; i < 5; i++)
     {
         if ((oldModifersFlags & masks[i]) != (newModifers & masks[i]))
         {
             DAVA::UIEvent ev;
             ev.device = UIEvent::Device::KEYBOARD;
 
+            ev.key = keyCodes[i];
+            if (ev.key != Key::CAPSLOCK)
+            {
+                // determine right or left button
+                if (ev.key == Key::LSHIFT)
+                {
+                    if ((newModifers & NX_DEVICERSHIFTKEYMASK) || (oldModifersFlags & NX_DEVICERSHIFTKEYMASK))
+                    {
+                        ev.key = Key::RSHIFT;
+                    }
+                }
+                else if (ev.key == Key::LCTRL)
+                {
+                    if ((newModifers & NX_DEVICERCTLKEYMASK) || (oldModifersFlags & NX_DEVICERCTLKEYMASK))
+                    {
+                        ev.key = Key::RCTRL;
+                    }
+                }
+                else if (ev.key == Key::LALT)
+                {
+                    if ((newModifers & NX_DEVICERALTKEYMASK) || (oldModifersFlags & NX_DEVICERALTKEYMASK))
+                    {
+                        ev.key = Key::RALT;
+                    }
+                }
+                else if (ev.key == Key::LWIN)
+                {
+                    if ((newModifers & NX_DEVICERCMDKEYMASK) || (oldModifersFlags & NX_DEVICERCMDKEYMASK))
+                    {
+                        ev.key = Key::RWIN;
+                    }
+                }
+            }
+
             if (newModifers & masks[i])
             {
-                ev.tid = keyCodes[i];
                 ev.phase = UIEvent::Phase::KEY_DOWN;
 
                 UIControlSystem::Instance()->OnInput(&ev);
 
-                InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
+                keyboard.OnKeyPressed(ev.key);
             }
             else 
             {
-                ev.tid = keyCodes[i];
                 ev.phase = UIEvent::Phase::KEY_UP;
 
                 UIControlSystem::Instance()->OnInput(&ev);
 
-                InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
+                keyboard.OnKeyUnpressed(ev.key);
             }
         }
     }

@@ -7,13 +7,13 @@ VPROG_IN_END
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(uv,2)
-    VPROG_OUT_COLOR0(color,4)
+    VPROG_OUT_COLOR0_LOW(color,4)
 VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix : dynamic,instance : ;
 
 VPROG_BEGIN
-    float3 in_pos      = VP_IN_POSITION;
+    float3 in_pos      = VP_IN_POSITION.xyz;
     float2 in_texcoord = VP_IN_TEXCOORD;
     float4 in_color    = VP_IN_COLOR0;
 

@@ -33,8 +33,6 @@
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
 
-extern void FixPositionForScroll(DAVA::UIControl* controlInHud);
-
 class ControlContainer : public DAVA::UIControl
 {
 public:
@@ -43,8 +41,8 @@ public:
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
 
 protected:
-    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
     ~ControlContainer() = default;
+    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
 };
 
 class HUDContainer : public ControlContainer

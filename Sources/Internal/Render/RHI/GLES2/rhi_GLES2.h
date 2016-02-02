@@ -65,13 +65,17 @@ void SetupDispatch(Dispatch* dispatch);
 void BeginQuery(Handle buf, uint32 objectIndex);
 void EndQuery(Handle buf, uint32 objectIndex);
 }
+namespace PerfQuerySetGLES2
+{
+void SetupDispatch(Dispatch* dispatch);
+}
 
 namespace TextureGLES2
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = InvalidIndex);
-void SetAsRenderTarget(Handle tex, Handle depth);
+void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = DAVA::InvalidIndex);
+void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned level);
 Size2i Size(Handle tex);
 void ReCreateAll();
 unsigned NeedRestoreCount();
@@ -80,12 +84,14 @@ void InvalidateCache();
 
 namespace SamplerStateGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle hstate);
 }
 
 namespace PipelineStateGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle ps, uint32 vdeclUID);
 void SetVertexDeclToRHI(Handle ps, uint32 vdeclUID, uint32 firstVertex = 0);
@@ -97,6 +103,7 @@ void InvalidateVattrCache();
 
 namespace DepthStencilStateGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle hstate);
 void InvalidateCache();
@@ -113,11 +120,13 @@ const void* Instance(Handle cb);
 
 namespace RenderPassGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
@@ -163,6 +172,7 @@ GLCommand
         TEX_IMAGE2D,
         GENERATE_MIPMAP,
         READ_PIXELS,
+        PIXEL_STORE_I,
 
         CREATE_PROGRAM,
         CREATE_SHADER,

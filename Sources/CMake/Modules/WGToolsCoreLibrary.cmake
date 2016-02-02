@@ -1,3 +1,1 @@
-ADD_DEFINITIONS(
-  -D_LIB
-)
+include( WGToolsLibrary )

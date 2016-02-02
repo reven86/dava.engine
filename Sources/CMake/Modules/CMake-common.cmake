@@ -41,7 +41,8 @@ include ( FileTreeCheck        )
 include ( DavaTemplate         )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
-include ( DavaDynamicLib )
+include ( DavaDynamicLib       )
+include ( UnityBuild           )
 
 
 set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
@@ -100,14 +101,19 @@ macro (define_source_files)
         set (ARG_GLOB_H_PATTERNS *.h *.hpp)
     endif ()
 
-    file (GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
-    file (GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
+    set ( CPP_FILES )
+    set ( H_FILES )
 
-    list (APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES})
-    list (APPEND H_FILES ${ARG_EXTRA_H_FILES})
-    set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+    file( GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
+    file( GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
 
-    # Optionally enable PCH
+    list( APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES} )
+    list( APPEND H_FILES ${ARG_EXTRA_H_FILES} )
+    set ( SOURCE_FILES ${CPP_FILES} ${H_FILES} )
+    
+    source_group( "" FILES ${SOURCE_FILES} )
+
+    # Optionally enable PCH                                                                                                                                                 
     if (ARG_PCH)
         enable_pch ()
     endif ()
@@ -171,6 +177,7 @@ macro (define_source_folders )
     IF( ARG_SRC_ROOT )
 
         FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
+            get_filename_component ( FOLDER_ITEM ${FOLDER_ITEM} REALPATH ) 
 
             set ( CPP_PATTERNS ${FOLDER_ITEM}/*.c ${FOLDER_ITEM}/*.cpp )
             if( APPLE )
@@ -400,8 +407,11 @@ macro ( add_content_win_uap_single CONTENT_DIR )
         set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
         
         #all resources deploys in specified location
-        #set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
-        set ( DEPLOYMENT_LOCATION "${ITEM_GROUP}" )
+        if ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION )
+            set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        else ()
+            set ( DEPLOYMENT_LOCATION "${ITEM_GROUP}" )
+        endif ()
         set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${DEPLOYMENT_LOCATION} )
         
     ENDFOREACH()

@@ -9,8 +9,6 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR})
 include_directories   ( "Classes" )
 include_directories   (${ADDITIONAL_INCLUDES})
 
-add_definitions       (-DNGT_INTEGRATION)
-
 file(GLOB_RECURSE META_LIST "Classes/*.mpp")
 file ( GLOB QML_LIST "DataQt/*.qml" )
 file ( GLOB UI_LIST "DataQt/*.ui" )

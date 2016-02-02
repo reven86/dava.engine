@@ -40,6 +40,8 @@
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
+#include "Debug/Profiler.h"
+#include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
@@ -334,15 +336,20 @@ void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
+
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
 
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)Renderer::GetFramebufferWidth();
-    viewport.height = (uint32)Renderer::GetFramebufferHeight();
-    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+    if (useClearPass)
+    {
+        rhi::Viewport viewport;
+        viewport.x = viewport.y = 0U;
+        viewport.width = (uint32)Renderer::GetFramebufferWidth();
+        viewport.height = (uint32)Renderer::GetFramebufferHeight();
+        RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+    }
 
     if (currentScreen)
     {
@@ -360,13 +367,15 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetControl)
 {
     for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
     {
-        if ((*it).tid == eventID)
+        if ((*it).touchId == eventID)
         {
             CancelInput(&(*it));
 
@@ -420,10 +429,10 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 
         UIEvent* eventToHandle = nullptr;
 
-        if (newEvent->phase >= UIEvent::Phase::BEGAN && newEvent->phase <= UIEvent::Phase::ENDED)
+        if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
         {
             auto it = std::find_if(begin(touchEvents), end(touchEvents), [newEvent](const UIEvent& ev) {
-                return ev.tid == newEvent->tid;
+                return ev.touchId == newEvent->touchId;
             });
             if (it == end(touchEvents))
             {
@@ -455,17 +464,15 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             }
         }
 
-        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [](const UIEvent& ev) {
-            return ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED;
-        });
-
-        if (startRemoveIt != end(touchEvents))
-        {
-            std::for_each(startRemoveIt, end(touchEvents), [this](UIEvent& ev) {
+        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [this](UIEvent& ev) {
+            bool shouldRemove = (ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED);
+            if (shouldRemove)
+            {
                 CancelInput(&ev);
-            });
-            touchEvents.erase(startRemoveIt, end(touchEvents));
-        }
+            }
+            return shouldRemove;
+        });
+        touchEvents.erase(startRemoveIt, end(touchEvents));
     } // end if frameSkip <= 0
 }
 
@@ -555,7 +562,7 @@ void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, int32 lockEvent
     {
         for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
         {
-            if (it->tid != lockEventId && it->touchLocker != locker)
+            if (it->touchId != lockEventId && it->touchLocker != locker)
             { //cancel all inputs excepts current input and inputs what allready handles by this locker.
                 CancelInput(&(*it));
             }
@@ -696,6 +703,16 @@ void UIControlSystem::SetRtl(bool rtl)
     layoutSystem->SetRtl(rtl);
 }
 
+bool UIControlSystem::IsBiDiSupportEnabled() const
+{
+    return TextBlock::IsBiDiSupportEnabled();
+}
+
+void UIControlSystem::SetBiDiSupportEnabled(bool support)
+{
+    TextBlock::SetBiDiSupportEnabled(support);
+}
+
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const
 {
     return layoutSystem;
@@ -714,5 +731,10 @@ UIScreenshoter* UIControlSystem::GetScreenshoter()
 void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
 {
     clearColor = _clearColor;
+}
+
+void UIControlSystem::SetUseClearPass(bool use)
+{
+    useClearPass = use;
 }
 };

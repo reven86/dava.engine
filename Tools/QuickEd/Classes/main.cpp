@@ -56,8 +56,12 @@ int main(int argc, char *argv[])
     QApplication::setQuitOnLastWindowClosed(false);
 
     DAVA::Core::Run( argc, argv );
-    new DAVA::QtLayer();
+    auto qtLayer = new DAVA::QtLayer(); //will be deleted with DavaRenderer. Sorry about that.
+    QObject::connect(&a, &QApplication::applicationStateChanged, [qtLayer](Qt::ApplicationState state) {
+        state == Qt::ApplicationActive ? qtLayer->OnResume() : qtLayer->OnSuspend();
+    });
     InitPVRTexTool();
+    DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
 
     // Editor Settings might be used by any singleton below during initialization, so
     // initialize it before any other one.

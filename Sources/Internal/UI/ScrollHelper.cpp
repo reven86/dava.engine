@@ -78,31 +78,52 @@ namespace DAVA
         position = Max(position, -elementSize);
         scrollToTopSpeed = 0.f;
 	}
-	void ScrollHelper::SetElementSize(float32 newSize)
-	{
-		elementSize = newSize;
-		virtualViewSize = viewSize;
-		if(viewSize > elementSize)
-		{
-			virtualViewSize = elementSize;
-		}
-	}
-	
-	float ScrollHelper::GetPosition() const
-	{
-		return position;
-	}
-	
-	void ScrollHelper::SetViewSize(float32 size)
-	{
-		viewSize = size;
-		virtualViewSize = viewSize;
-		if(viewSize > elementSize)
-		{
-			virtualViewSize = elementSize;
-		}
-	}
-    
+
+    void ScrollHelper::ScrollWithoutAnimation(float32 scrollDelta, float32 size, float32* pos)
+    {
+        float32 currentPos = *pos;
+        if (elementSize > size)
+        {
+            currentPos += scrollDelta;
+            if (size - currentPos >= elementSize)
+            {
+                currentPos = size - elementSize;
+            }
+            else if (currentPos + scrollDelta > 0)
+            {
+                currentPos = 0;
+            }
+
+            SetPosition(currentPos);
+            *pos = currentPos;
+        }
+    }
+
+    void ScrollHelper::SetElementSize(float32 newSize)
+    {
+        elementSize = newSize;
+        virtualViewSize = viewSize;
+        if (viewSize > elementSize)
+        {
+            virtualViewSize = elementSize;
+        }
+    }
+
+    float ScrollHelper::GetPosition() const
+    {
+        return position;
+    }
+
+    void ScrollHelper::SetViewSize(float32 size)
+    {
+        viewSize = size;
+        virtualViewSize = viewSize;
+        if (viewSize > elementSize)
+        {
+            virtualViewSize = elementSize;
+        }
+    }
+
     float32 ScrollHelper::GetViewSize() const
     {
         return viewSize;

@@ -90,24 +90,7 @@ bool DAVA::Cursor::GetSystemCursorVisibility()
 bool DAVA::Cursor::SetSystemCursorVisibility(bool show)
 {
     int32 showCount = 0;
-    CURSORINFO ci = { sizeof( ci ), 0 };
-    if ( GetCursorInfo( &ci ) != 0 )
-    {
-        const auto isVisible = ( ci.flags & CURSOR_SHOWING ) == CURSOR_SHOWING; // In Windows 8 will be added other flags
-        if ( show != isVisible )
-        {
-            showCount = ShowCursor(show);
-        }
-        else
-        {
-            // Nothing to change -> accept
-            return true;
-        }
-    }
-    else
-    {
-        showCount = ShowCursor(show); // No cursor info available, just call
-    }
+    showCount = ShowCursor(show); // No cursor info available, just call
 
     if (show && showCount >= 0)
     {

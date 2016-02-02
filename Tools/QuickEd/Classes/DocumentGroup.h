@@ -45,7 +45,7 @@ public:
     explicit DocumentGroup(QObject *parent = nullptr);
     ~DocumentGroup();
 
-    void AddDocument(Document*);
+    void InsertDocument(int index, Document*);
     void RemoveDocument(Document*);
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
@@ -53,16 +53,27 @@ public:
 
 signals:
     void ActiveDocumentChanged(Document*);
+    void DocumentActivated(Document*);
+    void DocumentDeactivated(Document*);
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
+    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void SetActiveDocument(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SetEmulationMode(bool emulationMode);
+    void SetPixelization(bool hasPixelization);
     void SetScale(float scale);
+    void OnSelectAllRequested();
+    void FocusNextChild();
+    void FocusPreviousChild();
 
 protected:
+    bool emulationMode = false;
+    bool hasPixalization = false;
+    float scale = 100.0f;
+
     Document *active;
     QList<Document*> documentList;
     QUndoGroup *undoGroup;

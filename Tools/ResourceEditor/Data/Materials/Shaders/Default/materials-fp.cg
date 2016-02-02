@@ -10,14 +10,14 @@ FPROG_IN_BEGIN
     #if MATERIAL_TEXTURE
         
         #if TEXTURE0_ANIMATION_SHIFT
-        FPROG_IN_TEXCOORD0(varTexCoord0,2) // highp
+        FPROG_IN_TEXCOORD0(varTexCoord0,2)
         #else
-        FPROG_IN_TEXCOORD0(varTexCoord0,2) // mediump
+        FPROG_IN_TEXCOORD0(varTexCoord0,2)
         #endif
 
     #elif MATERIAL_SKYBOX
         
-        FPROG_IN_TEXCOORD0(varTexCoord0,3) // mediump
+        FPROG_IN_TEXCOORD0(varTexCoord0,3)
 
     #endif
 
@@ -26,52 +26,46 @@ FPROG_IN_BEGIN
     #endif
 
     #if MATERIAL_DETAIL
-        FPROG_IN_TEXCOORD1(varTexCoord1,2) // mediump
+        FPROG_IN_TEXCOORD1(varTexCoord1,2)
     #endif
 
     #if TILED_DECAL_MASK
          FPROG_IN_TEXCOORD2(varDecalTileTexCoord,2)
     #endif
     #if MATERIAL_DETAIL
-        FPROG_IN_TEXCOORD2(varDetailTexCoord,2)
+        FPROG_IN_TEXCOORD2_HALF(varDetailTexCoord,2)
     #endif
 
     #if VERTEX_LIT
 
-        FPROG_IN_COLOR0(varDiffuseColor,1)
+        FPROG_IN_COLOR0_LOW(varDiffuseColor,1)
 
         #if BLINN_PHONG
-            //varying lowp float varSpecularColor;
-            FPROG_IN_TEXCOORD4(varSpecularColor,1) // lowp
+            FPROG_IN_TEXCOORD4_LOW(varSpecularColor,1) // lowp
         #elif NORMALIZED_BLINN_PHONG
-            FPROG_IN_TEXCOORD4(varSpecularColor,4) // lowp
-            //varying lowp float3 varSpecularColor;
-            //varying lowp float varNdotH;
+            FPROG_IN_TEXCOORD4_LOW(varSpecularColor,4) // lowp
         #endif
 
     #elif PIXEL_LIT
         
         #if FAST_NORMALIZATION
-        FPROG_IN_COLOR0(varHalfVec,3)
+        FPROG_IN_COLOR0_LOW(varHalfVec,3)
         #endif
-        FPROG_IN_COLOR1(varToLightVec,3)
-        #if DISTANCE_ATTENUATION
-        FPROG_IN_TEXCOORD6(varPerPixelAttenuation,1)
-        #endif
+        FPROG_IN_COLOR1_LOW(varToLightVec,3)        
         FPROG_IN_TEXCOORD7(varToCameraVec,3) 
         
     #endif
     
     #if VERTEX_COLOR || SPHERICAL_LIT
-        FPROG_IN_COLOR1(varVertexColor,4)
+        FPROG_IN_COLOR1_LOW(varVertexColor,4)
     #endif
 
     #if VERTEX_FOG
-        FPROG_IN_TEXCOORD5(varFog,4)
+        FPROG_IN_TEXCOORD5_LOW(varFog,4)
     #endif           
 
     #if FRAME_BLEND
-        FPROG_IN_TEXCOORD3(varTime, 1)
+        FPROG_IN_TEXCOORD3_LOW(varTime, 1)
     #endif
 
 
@@ -116,11 +110,10 @@ FPROG_OUT_END
 #endif
 
 #if PIXEL_LIT
-    DECL_FP_SAMPLER2D(normalmap)    
-    property float  lightIntensity0             : static,a : ;
-    property float  inSpecularity               : static,a : ;    
-    property float3 metalFresnelReflectance     : static,a : ;
-    property float  normalScale                 : static,a : ;
+    DECL_FP_SAMPLER2D(normalmap)        
+    property float  inSpecularity               : static,a : def_value=1.0;    
+    property float3 metalFresnelReflectance     : static,a : def_value=0.5,0.5,0.5;
+    property float  normalScale                 : static,a : def_value=1.0;
 #endif
 
 
@@ -135,7 +128,7 @@ FPROG_OUT_END
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
     #if NORMALIZED_BLINN_PHONG && VIEW_SPECULAR
-        property float inGlossiness : static,a : ;
+        property float inGlossiness : static,a : def_value=0.5;
     #endif
 #endif
 
@@ -183,23 +176,23 @@ FPROG_BEGIN
     #if MATERIAL_TEXTURE
     
         #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
-            float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );
+            min10float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );
             #if ALPHA_MASK 
-                textureColor0.a *= FP_TEXTURE2D( alphamask, FP_IN(varTexCoord1) ).a;
+                textureColor0.a *= FP_A8(FP_TEXTURE2D( alphamask, FP_IN(varTexCoord1) ));
             #endif
         #else
-            float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
+            min10float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
         #endif
             
         #if FRAME_BLEND
-            float4 blendFrameColor = FP_TEXTURE2D( albedo, FP_IN(varTexCoord1) );
-            float varTime = FP_IN(varTime);
+            min10float4 blendFrameColor = FP_TEXTURE2D( albedo, FP_IN(varTexCoord1) );
+            min10float varTime = FP_IN(varTime);
             textureColor0 = lerp( textureColor0, blendFrameColor, varTime );
         #endif
     
     #elif MATERIAL_SKYBOX
     
-        float4 textureColor0 = FP_TEXTURECUBE( cubemap, FP_IN(varTexCoord0) );
+        min10float4 textureColor0 = FP_TEXTURECUBE( cubemap, FP_IN(varTexCoord0) );
     
     #endif
 
@@ -220,24 +213,24 @@ FPROG_BEGIN
 
     
     #if MATERIAL_DECAL
-        float3 textureColor1 = FP_TEXTURE2D( decal, FP_IN(varTexCoord1) ).rgb;
+        min10float3 textureColor1 = FP_TEXTURE2D( decal, FP_IN(varTexCoord1) ).rgb;
     #endif
     
     
     #if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
-        float3 textureColor1 = FP_TEXTURE2D( lightmap, FP_IN(varTexCoord1) ).rgb;
+        min10float3 textureColor1 = FP_TEXTURE2D( lightmap, FP_IN(varTexCoord1) ).rgb;
     #endif
     
     
     #if MATERIAL_DETAIL
-        float3 detailTextureColor = FP_TEXTURE2D( detail, FP_IN(varDetailTexCoord) ).rgb;
+        min10float3 detailTextureColor = FP_TEXTURE2D( detail, FP_IN(varDetailTexCoord) ).rgb;
     #endif
 
 
     #if MATERIAL_DECAL || MATERIAL_LIGHTMAP
         #if SETUP_LIGHTMAP
-            float3 lightGray = float3(0.75,0.75,0.75);
-            float3 darkGray = float3(0.25,0.25,0.25);
+            min10float3 lightGray = float3(0.75,0.75,0.75);
+            min10float3 darkGray = float3(0.25,0.25,0.25);
     
             bool isXodd;
             bool isYodd;            
@@ -278,7 +271,7 @@ FPROG_BEGIN
     
         #if BLINN_PHONG
             
-            float3 color = float3(0.0,0.0,0.0);
+            min10float3 color = float3(0.0,0.0,0.0);
             #if VIEW_AMBIENT
                 color += lightAmbientColor0;
             #endif
@@ -289,8 +282,8 @@ FPROG_BEGIN
 
             #if VIEW_ALBEDO
                 #if TILED_DECAL_MASK
-                    float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
-                    float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
+                    min10float maskSample = FP_A8(FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
+                    min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
                 #else
                     color *= textureColor0.rgb;
@@ -303,7 +296,7 @@ FPROG_BEGIN
     
         #elif NORMALIZED_BLINN_PHONG
    
-            float3 color = float3(0.0,0.0,0.0);
+            min10float3 color = float3(0.0,0.0,0.0);
             
             #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
                 color += lightAmbientColor0;
@@ -311,7 +304,12 @@ FPROG_BEGIN
         
             #if VIEW_DIFFUSE
                 #if MATERIAL_LIGHTMAP
-                    color = textureColor1.rgb * 2.0;
+					#if VIEW_ALBEDO
+						color = textureColor1.rgb * 2.0;
+					#else
+						//do not scale lightmap in view diffuse only case. artist request
+						color = textureColor1.rgb; 
+					#endif
                 #else
                     color += FP_IN(varDiffuseColor) * lightColor0;
                 #endif
@@ -319,8 +317,8 @@ FPROG_BEGIN
         
             #if VIEW_ALBEDO
                 #if TILED_DECAL_MASK
-                    float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
-                    float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
+                    min10float maskSample = FP_A8(FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
+                    min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
                 #else
                     color *= textureColor0.rgb;
@@ -347,15 +345,7 @@ FPROG_BEGIN
         // lookup normal from normal map, move from [0, 1] to  [-1, 1] range, normalize
         float3 normal = 2.0 * FP_TEXTURE2D( normalmap, FP_IN(varTexCoord0) ).rgb - 1.0;
         normal.xy *= normalScale;
-        normal = normalize (normal);
-        //normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
-        //normal = vec3(0.0, 0.0, 1.0);
-    
-        float attenuation = lightIntensity0;
-        
-        #if DISTANCE_ATTENUATION
-            attenuation /= (FP_IN(varPerPixelAttenuation) * FP_IN(varPerPixelAttenuation));
-        #endif
+        normal = normalize (normal);        
     
         #if !FAST_NORMALIZATION
             float3 toLightNormalized = normalize(FP_IN(varToLightVec).xyz);
@@ -438,7 +428,7 @@ FPROG_BEGIN
         
         #endif
     
-        float3 color = float3(0.0,0.0,0.0);
+        min10float3 color = float3(0.0,0.0,0.0);
     
         #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
             color += lightAmbientColor0;
@@ -446,7 +436,12 @@ FPROG_BEGIN
     
         #if VIEW_DIFFUSE
             #if MATERIAL_LIGHTMAP
-                color = textureColor1.rgb * 2.0;
+                #if VIEW_ALBEDO
+					color = textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color = textureColor1.rgb; 
+				#endif
             #else
                 color += diffuse * lightColor0;
             #endif
@@ -454,8 +449,8 @@ FPROG_BEGIN
     
         #if VIEW_ALBEDO
             #if TILED_DECAL_MASK
-                float maskSample = FP_A8( FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
-                float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
+                min10float maskSample = FP_A8( FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
+                min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                 color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
             #else
                 color *= textureColor0.rgb;
@@ -483,7 +478,12 @@ FPROG_BEGIN
 			#endif
 
 			#if VIEW_DIFFUSE
-				color *= textureColor1.rgb * 2.0;
+				#if VIEW_ALBEDO
+					color *= textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color *= textureColor1.rgb; 
+				#endif				
 			#endif
 
 		#elif MATERIAL_TEXTURE
@@ -501,8 +501,8 @@ FPROG_BEGIN
 		#endif
 		
         #if TILED_DECAL_MASK
-            float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
-            float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
+            min10float maskSample = FP_A8(FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
+            min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
             color.rgb += (tileColor.rgb - color.rgb) * tileColor.a * maskSample;
         #endif
 		

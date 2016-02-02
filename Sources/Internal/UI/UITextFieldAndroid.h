@@ -111,41 +111,41 @@ public:
     void OpenKeyboard();
     void CloseKeyboard();
     void GetText(WideString& string) const;
-    void SetText(const WideString & string);
-	void UpdateRect(const Rect & rect);
+    void SetText(const WideString& string);
+    void UpdateRect(const Rect& rect);
 
-	void SetTextColor(const DAVA::Color &color);
-	void SetFontSize(float size);
+    void SetTextColor(const DAVA::Color& color);
+    void SetFontSize(float size);
 
-	void SetTextAlign(DAVA::int32 align);
-	DAVA::int32 GetTextAlign();
+    void SetTextAlign(DAVA::int32 align);
+    DAVA::int32 GetTextAlign();
 
-	void SetTextUseRtlAlign(bool useRtlAlign);
-	bool GetTextUseRtlAlign() const;
+    void SetTextUseRtlAlign(bool useRtlAlign);
+    bool GetTextUseRtlAlign() const;
 
-	void SetVisible(bool isVisible);
+    void SetVisible(bool isVisible);
 
-	void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
 
-	void SetInputEnabled(bool value);
+    void SetInputEnabled(bool value);
 
-	void SetRenderToTexture(bool value);
-	bool IsRenderToTexture() const;
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
 
-	// Keyboard traits.
-	void SetAutoCapitalizationType(DAVA::int32 value);
-	void SetAutoCorrectionType(DAVA::int32 value);
-	void SetSpellCheckingType(DAVA::int32 value);
-	void SetKeyboardAppearanceType(DAVA::int32 value);
-	void SetKeyboardType(DAVA::int32 value);
-	void SetReturnKeyType(DAVA::int32 value);
-	void SetEnableReturnKeyAutomatically(bool value);
-	uint32 GetCursorPos();
-	void SetCursorPos(uint32 pos);
-	void SetMaxLength(DAVA::int32 value);
-	void SetMultiline(bool value);
+    // Keyboard traits.
+    void SetAutoCapitalizationType(DAVA::int32 value);
+    void SetAutoCorrectionType(DAVA::int32 value);
+    void SetSpellCheckingType(DAVA::int32 value);
+    void SetKeyboardAppearanceType(DAVA::int32 value);
+    void SetKeyboardType(DAVA::int32 value);
+    void SetReturnKeyType(DAVA::int32 value);
+    void SetEnableReturnKeyAutomatically(bool value);
+    uint32 GetCursorPos();
+    void SetCursorPos(uint32 pos);
+    void SetMaxLength(DAVA::int32 value);
+    void SetMultiline(bool value);
 
-	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
+    bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);
 	void TextFieldShouldReturn();
 	void TextFieldKeyboardShown(const Rect& rect);

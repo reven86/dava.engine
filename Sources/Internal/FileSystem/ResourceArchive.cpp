@@ -363,31 +363,31 @@ int32 ResourceArchive::LoadResource(const uint32 resourceIndex, void * data)
 int32	ResourceArchive::LoadResource(const FilePath & pathName, void * data)
 {	
 	if (!withPaths)return -1;
-	
-	uint32 resourceIndex;
-	if (lastResourceIndex != -1)
-	{
-		if (pathName == lastResourceName)
-		{
-			resourceIndex = lastResourceIndex;
-		}
-	}
-	
-	if (pathName != lastResourceName)
-	{
-		Map<String,uint32>::iterator it = nodeMap.find(pathName.GetAbsolutePathname());
-		if ( it != nodeMap.end())
-		{
-			resourceIndex = nodeMap.find(pathName.GetAbsolutePathname())->second;//FindPathnameIndex(pathName);
-			lastResourceIndex = resourceIndex;
-			lastResourceName = pathName;
-		}
-		else
-		{
-			resourceIndex = header.fileCount;
-		}
-	}
-	return LoadResource(resourceIndex, data);
+
+    uint32 resourceIndex = static_cast<uint32>(-1);
+    if (lastResourceIndex != -1)
+    {
+        if (pathName == lastResourceName)
+        {
+            resourceIndex = lastResourceIndex;
+        }
+    }
+
+    if (pathName != lastResourceName)
+    {
+        Map<String, uint32>::iterator it = nodeMap.find(pathName.GetAbsolutePathname());
+        if (it != nodeMap.end())
+        {
+            resourceIndex = nodeMap.find(pathName.GetAbsolutePathname())->second; //FindPathnameIndex(pathName);
+            lastResourceIndex = resourceIndex;
+            lastResourceName = pathName;
+        }
+        else
+        {
+            resourceIndex = header.fileCount;
+        }
+    }
+    return LoadResource(resourceIndex, data);
 }
 
 void    ResourceArchive::UnpackToFolder(const FilePath & dirPath)
@@ -406,6 +406,10 @@ void    ResourceArchive::UnpackToFolder(const FilePath & dirPath)
                 if(file)
                     file->Write(fileData, fileSize);
                 SafeRelease(file);
+            }
+            else
+            {
+                DVASSERT_MSG(false, Format("Failed to load resource at index %d", i).c_str());
             }
             SafeDeleteArray(fileData);
         }

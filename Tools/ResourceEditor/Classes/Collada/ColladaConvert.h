@@ -34,6 +34,6 @@
 #include "FileSystem/FilePath.h"
 #include "ColladaErrorCodes.h"
 
-eColladaErrorCodes ConvertDaeToSce(const DAVA::FilePath & pathToFile);
+eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath& pathToFile);
 
 #endif // __COLLADA_CONVERT_H__

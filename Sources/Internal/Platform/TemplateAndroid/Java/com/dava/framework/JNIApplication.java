@@ -23,6 +23,7 @@ public class JNIApplication extends Application
 	private Locale launchLocale;
 	private boolean firstLaunch = true;
 	private final String TAG = "JNIApplication";
+	public static Thread mainCPPThread;
 
 	/**
 	 * Initialize native framework core in first time.
@@ -124,7 +125,6 @@ public class JNIApplication extends Application
 	}
 	
 	static {
-		System.loadLibrary("gnustl_shared");
 		System.loadLibrary("fmodex");
 		System.loadLibrary("fmodevent");
 	}

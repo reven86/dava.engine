@@ -105,16 +105,18 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
     const Matrix4& mv = camera->GetMatrix();
     basisVectors[0] = Vector3(mv._00, mv._10, mv._20);
     basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
-	basisVectors[0].Normalize();
-	basisVectors[1].Normalize();	
-	Vector3 ex(worldTransform->_00, worldTransform->_01, worldTransform->_02);
-	Vector3 ey(worldTransform->_10, worldTransform->_11, worldTransform->_12);
-	Vector3 ez(worldTransform->_20, worldTransform->_21, worldTransform->_22);
-	ex.Normalize();
-	ey.Normalize();
-	ez.Normalize();
-	basisVectors[2] = ey; basisVectors[3] = ez;
-	basisVectors[4] = ex; basisVectors[5] = ez;
+    basisVectors[0].Normalize();
+    basisVectors[1].Normalize();
+    Vector3 ex(worldTransform->_00, worldTransform->_01, worldTransform->_02);
+    Vector3 ey(worldTransform->_10, worldTransform->_11, worldTransform->_12);
+    Vector3 ez(worldTransform->_20, worldTransform->_21, worldTransform->_22);
+    ex.Normalize();
+    ey.Normalize();
+    ez.Normalize();
+    basisVectors[2] = ey;
+    basisVectors[3] = ez;
+    basisVectors[4] = ex;
+    basisVectors[5] = ez;
     basisVectors[6] = ey;
     basisVectors[7] = ex;
 

@@ -29,6 +29,7 @@
 
 #include "Tests/NotificationTest.h"
 #include "Base/Message.h"
+#include "UI/UISlider.h"
 
 using namespace DAVA;
 
@@ -36,11 +37,12 @@ NotificationScreen::NotificationScreen()
     : BaseScreen("NotificationScreen")
     , showNotificationText(nullptr)
     , showNotificationTextDelayed(nullptr)
-	, showNotificationProgress(nullptr)
-	, hideNotificationProgress(nullptr)
-	, notificationProgress(nullptr)
-	, notificationText(nullptr)
-	, progress(0)
+    , cancelDelayedNotifications(nullptr)
+    , showNotificationProgress(nullptr)
+    , hideNotificationProgress(nullptr)
+    , notificationProgress(nullptr)
+    , notificationText(nullptr)
+    , progress(0)
 {
 }
 
@@ -52,15 +54,19 @@ void NotificationScreen::LoadResources()
 
 	font->SetSize(30);
 
-	showNotificationText = new UIButton(Rect(10, 10, 450, 60));
-	showNotificationText->SetStateFont(0xFF, font);
-	showNotificationText->SetStateFontColor(0xFF, Color::White);
-	showNotificationText->SetStateText(0xFF, L"Notify text");
+    UISlider* slide = new UISlider(Rect(50, 400, 300, 50));
+    slide->SetDebugDraw(true);
+    AddControl(slide);
 
-	showNotificationText->SetDebugDraw(true);
-	showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
-	AddControl(showNotificationText);
-    
+    showNotificationText = new UIButton(Rect(10, 10, 450, 60));
+    showNotificationText->SetStateFont(0xFF, font);
+    showNotificationText->SetStateFontColor(0xFF, Color::White);
+    showNotificationText->SetStateText(0xFF, L"Notify text");
+
+    showNotificationText->SetDebugDraw(true);
+    showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
+    AddControl(showNotificationText);
+
     showNotificationTextDelayed = new UIButton(Rect(10, 100, 450, 60));
     showNotificationTextDelayed->SetStateFont(0xFF, font);
     showNotificationTextDelayed->SetStateFontColor(0xFF, Color::White);
@@ -70,34 +76,43 @@ void NotificationScreen::LoadResources()
     showNotificationTextDelayed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyTextDelayed));
     AddControl(showNotificationTextDelayed);
 
-	hideNotificationText = new UIButton(Rect(10, 200, 450, 60));
-	hideNotificationText->SetStateFont(0xFF, font);
-	hideNotificationText->SetStateFontColor(0xFF, Color::White);
-	hideNotificationText->SetStateText(0xFF, L"Hide text");
+    cancelDelayedNotifications = new UIButton(Rect(10, 200, 450, 60));
+    cancelDelayedNotifications->SetStateFont(0xFF, font);
+    cancelDelayedNotifications->SetStateFontColor(0xFF, Color::White);
+    cancelDelayedNotifications->SetStateText(0xFF, L"Cancel all delayed notifications");
 
-	hideNotificationText->SetDebugDraw(false);
-	hideNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideText));
-	AddControl(hideNotificationText);
+    cancelDelayedNotifications->SetDebugDraw(true);
+    cancelDelayedNotifications->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyCancelDelayed));
+    AddControl(cancelDelayedNotifications);
 
-	showNotificationProgress = new UIButton(Rect(500, 10, 450, 60));
-	showNotificationProgress->SetStateFont(0xFF, font);
-	showNotificationProgress->SetStateFontColor(0xFF, Color::White);
-	showNotificationProgress->SetStateText(0xFF, L"Notify progress");
+    hideNotificationText = new UIButton(Rect(10, 300, 450, 60));
+    hideNotificationText->SetStateFont(0xFF, font);
+    hideNotificationText->SetStateFontColor(0xFF, Color::White);
+    hideNotificationText->SetStateText(0xFF, L"Hide text");
 
-	showNotificationProgress->SetDebugDraw(true);
-	showNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyProgress));
-	AddControl(showNotificationProgress);
+    hideNotificationText->SetDebugDraw(false);
+    hideNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideText));
+    AddControl(hideNotificationText);
 
-	hideNotificationProgress = new UIButton(Rect(500, 100, 450, 60));
-	hideNotificationProgress->SetStateFont(0xFF, font);
-	hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
-	hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
+    showNotificationProgress = new UIButton(Rect(500, 10, 450, 60));
+    showNotificationProgress->SetStateFont(0xFF, font);
+    showNotificationProgress->SetStateFontColor(0xFF, Color::White);
+    showNotificationProgress->SetStateText(0xFF, L"Notify progress");
 
-	hideNotificationProgress->SetDebugDraw(false);
-	hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
-	AddControl(hideNotificationProgress);
+    showNotificationProgress->SetDebugDraw(true);
+    showNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyProgress));
+    AddControl(showNotificationProgress);
 
-	SafeRelease(font);
+    hideNotificationProgress = new UIButton(Rect(500, 100, 450, 60));
+    hideNotificationProgress->SetStateFont(0xFF, font);
+    hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
+    hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
+
+    hideNotificationProgress->SetDebugDraw(false);
+    hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
+    AddControl(hideNotificationProgress);
+
+    SafeRelease(font);
 }
 
 void NotificationScreen::UnloadResources()
@@ -176,6 +191,10 @@ void NotificationScreen::OnNotifyTextDelayed(BaseObject *obj, void *data, void *
     LocalNotificationController::Instance()->PostDelayedNotification(L"Test Delayed notification Title", L"Some text", 5);
 }
 
+void NotificationScreen::OnNotifyCancelDelayed(BaseObject* obj, void* data, void* callerData)
+{
+    LocalNotificationController::Instance()->RemoveAllDelayedNotifications();
+}
 
 void NotificationScreen::OnHideText(BaseObject *obj, void *data, void *callerData)
 {

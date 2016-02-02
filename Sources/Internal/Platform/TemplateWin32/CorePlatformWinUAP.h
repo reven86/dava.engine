@@ -60,9 +60,14 @@ public:
     bool SetScreenMode(eScreenMode screenMode) override;
     DisplayMode GetCurrentDisplayMode() override;
 
+    void SetScreenScaleMultiplier(float32 multiplier) override;
+
     bool GetCursorVisibility();
     InputSystem::eMouseCaptureMode GetMouseCaptureMode();
     bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+
+    void SetWindowMinimumSize(float32 width, float32 height) override;
+    Vector2 GetWindowMinimumSize() const override;
 
     // Win10 specific member functions
 

@@ -113,47 +113,41 @@ UDPSocketTemplate<T>::~UDPSocketTemplate()
 template <typename T>
 int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int> (endpoint.Size());
     return uv_udp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
     return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_JOIN_GROUP);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
     return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
@@ -161,6 +155,8 @@ int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
     if (0 == error)
         error = uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
     return error;
+#else
+    return -1;
 #endif
 }
 
@@ -179,10 +175,7 @@ bool UDPSocketTemplate<T>::IsClosing() const
 template <typename T>
 int32 UDPSocketTemplate<T>::DoOpen()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isOpen && false == isClosing);
     int32 error = uv_udp_init(loop->Handle(), &uvhandle);
     if (0 == error)
@@ -192,16 +185,15 @@ int32 UDPSocketTemplate<T>::DoOpen()
         uvsend.data = this;
     }
     return error;
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::DoStartReceive()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
@@ -209,16 +201,15 @@ int32 UDPSocketTemplate<T>::DoStartReceive()
     if (0 == error)
         error = uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
     return error;
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, const Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
     DVASSERT(0 == sendBufferCount);    // Next send is allowed only after previous send completion
@@ -231,15 +222,15 @@ int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, co
     }
 
     return uv_udp_send(&uvsend, &uvhandle, sendBuffers, static_cast<uint32>(sendBufferCount), endpoint.CastToSockaddr(), &HandleSendThunk);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 void UDPSocketTemplate<T>::DoClose()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;

@@ -107,7 +107,7 @@ TextureAtlasPtr TexturePacker::TryToPack(const Rect2i& textureRect)
     // Packing of sorted by size images
     for (int i = 0; i < (int)sortVector.size(); ++i)
     {
-		DefinitionFile * defFile = sortVector[i].defFile;
+        DefinitionFile * defFile = sortVector[i].defFile;
 		int frame = sortVector[i].frameIndex;
 
         if (!atlas->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
@@ -135,7 +135,7 @@ float TexturePacker::TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas,
         {
             weight += (defFile->GetFrameWidth(frame) * defFile->GetFrameHeight(frame)); // * weightCoeff;
             tempSortVector.erase(tempSortVector.begin() + i);
-			i--;
+            i--;
 		}
 	}
 	return weight;
@@ -158,7 +158,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const Lis
         sortVector.clear();
 
         for (int frame = 0; frame < defFile->frameCount; ++frame)
-		{
+        {
 			SizeSortItem sortItem;
 			sortItem.imageSize = defFile->GetFrameWidth(frame) * defFile->GetFrameHeight(frame);
 			sortItem.defFile = defFile;
@@ -190,7 +190,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const Lis
                         bestResolution = currentResolution;
                         bestXResolution = xResolution;
                         bestYResolution = yResolution;
-						break;
+                        break;
 					}
 				}
 				else
@@ -215,13 +215,13 @@ void TexturePacker::PackToTexturesSeparate(const FilePath& outputPath, const Lis
 			// Writing 
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
-                PackedInfo* destRect = lastSuccessfullAtlas->SearchRectForPtr(&defFile->frameRects[frame]);
+                ImageCell* destRect = lastSuccessfullAtlas->GetImageCell(&defFile->frameRects[frame]);
                 if (!destRect)
                 {
                     AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s.",
-									frame,
-									fileName.c_str()));
-				}
+                                    frame,
+                                    fileName.c_str()));
+                }
 				else
 				{
 					FilePath withoutExt(defFile->filename);
@@ -257,7 +257,7 @@ void TexturePacker::PackToTextures(const FilePath& outputPath, const List<Defini
     {
         for (int frame = 0; frame < defFile->frameCount; ++frame)
         {
-			SizeSortItem sortItem;
+            SizeSortItem sortItem;
 			sortItem.imageSize = defFile->GetFrameWidth(frame) * defFile->GetFrameHeight(frame);
 			sortItem.defFile = defFile;
 			sortItem.frameIndex = frame;
@@ -321,14 +321,14 @@ void TexturePacker::PackToTextures(const FilePath& outputPath, const List<Defini
             String fileName = defFile->filename.GetFilename();
 
             for (int frame = 0; frame < defFile->frameCount; ++frame)
-			{
-                auto* destRect = lastSuccessfullAtlas->SearchRectForPtr(&defFile->frameRects[frame]);
+            {
+                auto* destRect = lastSuccessfullAtlas->GetImageCell(&defFile->frameRects[frame]);
                 if (!destRect)
                 {
                     AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s. ",
-									frame,
-									fileName.c_str()));
-				}
+                                    frame,
+                                    fileName.c_str()));
+                }
 				else
 				{
 					FilePath withoutExt(defFile->filename);
@@ -344,7 +344,7 @@ void TexturePacker::PackToTextures(const FilePath& outputPath, const List<Defini
             {
                 AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
             }
-		}
+        }
 
         ExportImage(finalImage, imageExportKeys, textureName);
     }
@@ -423,13 +423,13 @@ void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const cha
     {
         for (int frame = 0; frame < defFile->frameCount; ++frame)
         {
-            PackedInfo* packedInfo = nullptr;
+            ImageCell* packedInfo = nullptr;
             uint32 atlasIndex = 0;
             FilePath imagePath;
 
             for (atlasIndex = 0; atlasIndex < usedAtlases.size(); ++atlasIndex)
             {
-                packedInfo = usedAtlases[atlasIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+                packedInfo = usedAtlases[atlasIndex]->GetImageCell(&defFile->frameRects[frame]);
 
                 if (packedInfo)
                 {
@@ -455,7 +455,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const cha
     {
         char temp[256];
         sprintf(temp, "%s%d", basename, imageNum);
-		FilePath textureName = outputPath + temp;
+        FilePath textureName = outputPath + temp;
         ExportImage(finalImages[imageNum], imageExportKeys, textureName);
     }
 
@@ -469,17 +469,6 @@ void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const cha
             AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
         }
     }
-}
-
-
-Rect2i TexturePacker::GetOriginalSizeRect(const PackedInfo& _input)
-{
-    Rect2i r = _input.rect;
-    r.x += _input.leftMargin;
-    r.y += _input.topMargin;
-    r.dx -= (_input.leftMargin + _input.rightMargin);
-    r.dy -= (_input.topMargin + _input.bottomMargin);
-    return r;
 }
 
 bool TexturePacker::WriteDefinition(const TextureAtlasPtr& atlas, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile)
@@ -500,17 +489,17 @@ bool TexturePacker::WriteDefinition(const TextureAtlasPtr& atlas, const FilePath
 	fprintf(fp, "%d\n", defFile->frameCount); 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-        PackedInfo* packedInfo = atlas->SearchRectForPtr(&defFile->frameRects[frame]);
-        if (!packedInfo)
+        ImageCell* packedCell = atlas->GetImageCell(&defFile->frameRects[frame]);
+        if (!packedCell)
         {
             AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s. ",
-				frame,
-				fileName.c_str()));
-		}
+                            frame,
+                            fileName.c_str()));
+        }
 		else
 		{
 			Rect2i origRect = defFile->frameRects[frame];
-			Rect2i imageRect = GetOriginalSizeRect(*packedInfo);
+            Rect2i& imageRect = packedCell->imageRect;
             String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
 			WriteDefinitionString(fp, imageRect, origRect, 0, frameName);
 
@@ -550,11 +539,11 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedA
     // find used texture indexes for this sprite
     for (int frame = 0; frame < defFile->frameCount; ++frame)
     {
-		PackedInfo* packedInfo = 0;
+        ImageCell* packedInfo = 0;
         uint32 atlasIndex = 0;
         for (; atlasIndex < usedAtlases.size(); ++atlasIndex)
         {
-            packedInfo = usedAtlases[atlasIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+            packedInfo = usedAtlases[atlasIndex]->GetImageCell(&defFile->frameRects[frame]);
             if (packedInfo)
                 break;
         }
@@ -581,21 +570,21 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedA
     }
 
     fprintf(fp, "%d %d\n", defFile->spriteWidth, defFile->spriteHeight);
-	fprintf(fp, "%d\n", defFile->frameCount); 
+    fprintf(fp, "%d\n", defFile->frameCount); 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-        PackedInfo* packedInfo = nullptr;
+        ImageCell* packedCell = nullptr;
         for (const TextureAtlasPtr& atlas : usedAtlases)
         {
-            packedInfo = atlas->SearchRectForPtr(&defFile->frameRects[frame]);
-            if (packedInfo)
+            packedCell = atlas->GetImageCell(&defFile->frameRects[frame]);
+            if (packedCell)
                 break;
         }
         int packerIndex = atlasIndexToFileIndex[packerIndexArray[frame]]; // here get real index in file for our used texture
-        if (packedInfo)
+        if (packedCell)
         {
             Rect2i origRect = defFile->frameRects[frame];
-            Rect2i writeRect = GetOriginalSizeRect(*packedInfo);
+            Rect2i& writeRect = packedCell->imageRect;
             String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
 			WriteDefinitionString(fp, writeRect, origRect, packerIndex, frameName);
 
@@ -873,7 +862,7 @@ rhi::TextureAddrMode TexturePacker::GetDescriptorWrapMode()
         return rhi::TEXADDR_CLAMP;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--wrapRepeat"))
-	{
+    {
         return rhi::TEXADDR_WRAP;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--wrapMirror"))
@@ -895,34 +884,34 @@ TexturePacker::FilterItem TexturePacker::GetDescriptorFilter(bool generateMipMap
         filterItem.magFilter = rhi::TEXFILTER_NEAREST;
     }
     if (CommandLineParser::Instance()->IsFlagSet("--magFilterLinear"))
-	{
+    {
         filterItem.magFilter = rhi::TEXFILTER_LINEAR;
     }
     if (CommandLineParser::Instance()->IsFlagSet("--minFilterNearest"))
-	{
+    {
         filterItem.minFilter = rhi::TEXFILTER_NEAREST;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--minFilterLinear"))
-	{
+    {
         filterItem.minFilter = rhi::TEXFILTER_LINEAR;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--minFilterNearestMipmapNearest"))
-	{
+    {
         filterItem.minFilter = rhi::TEXFILTER_NEAREST;
         filterItem.mipFilter = rhi::TEXMIPFILTER_NEAREST;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--minFilterLinearMipmapNearest"))
-	{
+    {
         filterItem.minFilter = rhi::TEXFILTER_LINEAR;
         filterItem.mipFilter = rhi::TEXMIPFILTER_NEAREST;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--minFilterNearestMipmapLinear"))
-	{
+    {
         filterItem.minFilter = rhi::TEXFILTER_NEAREST;
         filterItem.mipFilter = rhi::TEXMIPFILTER_LINEAR;
     }
     else if (CommandLineParser::Instance()->IsFlagSet("--minFilterLinearMipmapLinear"))
-	{
+    {
         filterItem.minFilter = rhi::TEXFILTER_LINEAR;
         filterItem.mipFilter = rhi::TEXMIPFILTER_LINEAR;
     }
@@ -943,14 +932,14 @@ bool TexturePacker::CheckFrameSize(const Size2i &spriteSize, const Size2i &frame
     return isSizeCorrect;
 }
 
-void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & drawedImage, const PackedInfo& drawRect, const Rect2i &alphaOffsetRect )
+void TexturePacker::DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const ImageCell& packedCell, const Rect2i& alphaOffsetRect)
 {
-	finalImage.DrawImage(drawRect, alphaOffsetRect, &drawedImage);
+    finalImage.DrawImage(packedCell, alphaOffsetRect, &drawedImage);
 
-	if (CommandLineParser::Instance()->IsFlagSet("--debug"))
-	{
-		finalImage.DrawRect(drawRect.rect, 0xFF0000FF);
-	}
+    if (CommandLineParser::Instance()->IsFlagSet("--debug"))
+    {
+        finalImage.DrawRect(packedCell.rect, 0xFF0000FF);
+    }
 }
 
 void TexturePacker::WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName)

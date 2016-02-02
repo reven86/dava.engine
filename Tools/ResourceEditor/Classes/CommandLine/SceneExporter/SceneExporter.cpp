@@ -26,19 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "SceneExporter.h"
+#include "CommandLine/SceneExporter/SceneExporter.h"
 #include "Deprecated/SceneValidator.h"
 
 #include "TextureCompression/TextureConverter.h"
 
 #include "Render/TextureDescriptor.h"
-#include "Qt/Scene/SceneHelper.h"
 #include "Render/GPUFamilyDescriptor.h"
 
-#include "../StringConstants.h"
+#include "StringConstants.h"
 
-#include "../Qt/Main/QtUtils.h"
+#include "Qt/Scene/SceneHelper.h"
+#include "Qt/Main/QtUtils.h"
 
 using namespace DAVA;
 
@@ -74,8 +73,8 @@ void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &err
 {
     FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
     folderPathname.MakeDirectoryPathname();
-    
-	FileList * fileList = new FileList(folderPathname);
+
+    ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 i = 0; i < fileList->GetCount(); ++i)
 	{
         FilePath pathname = fileList->GetPathname(i);
@@ -103,19 +102,16 @@ void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &err
             }
         }
     }
-    
-    SafeRelease(fileList);
 }
 
 
 void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLog)
 {
-    Logger::FrameworkDebug("[SceneExporter::ExportFile] %s", fileName.c_str());
-    
     FilePath filePath = sceneUtils.dataSourceFolder + fileName;
-    
+    Logger::Info("Export of %s", filePath.GetStringValue().c_str());
+
     //Load scene from *.sc2
-    Scene *scene = new Scene();
+    ScopedPtr<Scene> scene(new Scene());
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
         ExportScene(scene, filePath, errorLog);
@@ -125,7 +121,6 @@ void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLo
         errorLog.insert(Format("[SceneExporter::ExportFile] Can't open file %s", filePath.GetAbsolutePathname().c_str()));
     }
 
-    SafeRelease(scene);
     RenderObjectsFlusher::Flush();
 }
 
@@ -133,8 +128,8 @@ void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &e
 {
     FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
     folderPathname.MakeDirectoryPathname();
-    
-	FileList * fileList = new FileList(folderPathname);
+
+    ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 i = 0; i < fileList->GetCount(); ++i)
 	{
         FilePath pathname = fileList->GetPathname(i);
@@ -155,15 +150,14 @@ void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &e
             }
         }
     }
-    SafeRelease(fileList);
 }
 
 
 void SceneExporter::ExportTextureFile(const String &fileName, Set<String> &errorLog)
 {
-    Logger::FrameworkDebug("[SceneExporter::ExportTextureFile] %s", fileName.c_str());
-    
     FilePath filePath = sceneUtils.dataSourceFolder + fileName;
+    Logger::Info("Export of %s", filePath.GetStringValue().c_str());
+
     ExportTextureDescriptor(filePath, errorLog);
 }
 
@@ -236,19 +230,20 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
 
 void SceneExporter::RemoveEditorNodes(DAVA::Entity *rootNode)
 {
+    DVASSERT(rootNode != nullptr);
+
     //Remove scene nodes
     Vector<Entity *> scenenodes;
     rootNode->GetChildNodes(scenenodes);
         
     //remove nodes from hierarhy
-    Vector<Entity *>::reverse_iterator endItDeletion = scenenodes.rend();
-    for (Vector<Entity *>::reverse_iterator it = scenenodes.rbegin(); it != endItDeletion; ++it)
+    for (auto& entity : scenenodes)
     {
-        Entity * node = *it;
-		String::size_type pos = node->GetName().find(ResourceEditor::EDITOR_BASE);
+        String::size_type pos = entity->GetName().find(ResourceEditor::EDITOR_BASE);
         if(String::npos != pos)
         {
-            node->GetParent()->RemoveNode(node);
+            DVASSERT(entity->GetParent() != nullptr);
+            entity->GetParent()->RemoveNode(entity);
         }
     }
 }
@@ -285,8 +280,8 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
         KeyedArchive *props = GetCustomPropertiesArchieve(node);
         if(props)
         {
-            const Map<String, VariantType*> propsMap = props->GetArchieveData();
-            
+            const KeyedArchive::UnderlyingMap propsMap = props->GetArchieveData();
+
             auto endIt = propsMap.end();
             for(auto it = propsMap.begin(); it != endIt; ++it)
             {

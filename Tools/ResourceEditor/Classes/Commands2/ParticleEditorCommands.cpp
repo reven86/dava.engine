@@ -142,10 +142,6 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
                                       float32 scaleVelocityBase,
                                       float32 scaleVelocityFactor,
                                       bool isLooped,
-                                      Sprite* sprite,
-                                      eBlending blending,
-                                      bool enableFog,
-                                      bool enableFrameBlending,
                                       int32 particleOrientation,
                                       RefPtr<PropertyLine<float32>> life,
                                       RefPtr<PropertyLine<float32>> lifeVariation,
@@ -192,10 +188,6 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
     this->isLong = isLong;
     this->scaleVelocityBase = scaleVelocityBase;
     this->scaleVelocityFactor = scaleVelocityFactor;
-    this->sprite = sprite;
-    this->blending = blending;
-    this->enableFog = enableFog;
-    this->enableFrameBlending = enableFrameBlending;
     this->life = life;
     this->lifeVariation = lifeVariation;
     this->number = number;
@@ -244,9 +236,6 @@ void CommandUpdateParticleLayer::Redo()
     layer->scaleVelocityBase = scaleVelocityBase;
     layer->scaleVelocityFactor = scaleVelocityFactor;
     layer->isLooped = isLooped;
-    layer->blending = blending;
-    layer->enableFog = enableFog;
-    layer->enableFrameBlend = enableFrameBlending;
     PropertyLineHelper::SetValueLine(layer->life, life);
     PropertyLineHelper::SetValueLine(layer->lifeVariation, lifeVariation);
     PropertyLineHelper::SetValueLine(layer->number, number);
@@ -283,14 +272,6 @@ void CommandUpdateParticleLayer::Redo()
     layer->loopVariation = loopVariation;
 
     layer->SetPivotPoint(Vector2(pivotPointX, pivotPointY));
-
-    // This code must be after layer->frameOverlife set call, since setSprite
-    // may change the frames.
-    if (layer->sprite != sprite)
-    {
-        layer->SetSprite(sprite);
-        //TODO: restart effect
-    }
 
     // The same is for emitter type.
     if (layer->type != layerType)
@@ -404,7 +385,9 @@ void CommandAddParticleEmitter::Redo()
     ParticleEffectComponent* effectComponent = cast_if_equal<ParticleEffectComponent*>(effectEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     DVASSERT(effectComponent);
 
-    effectComponent->AddEmitter(new ParticleEmitter());
+    ParticleEmitterData emitterData;
+    emitterData.emitter.Set(new ParticleEmitter());
+    effectComponent->AddEmitterData(emitterData);
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart)
@@ -576,14 +559,71 @@ void CommandRemoveParticleEmitterForce::Redo()
     selectedLayer->RemoveForce(selectedForce);
 }
 
-CommandLoadParticleEmitterFromYaml::CommandLoadParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path)
+CommandLoadParticleEmitterFromYaml::CommandLoadParticleEmitterFromYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path)
     : CommandAction(CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML)
+{
+    selectedEffect = effect;
+    selectedEmitter = emitter;
+    filePath = path;
+}
+
+void CommandLoadParticleEmitterFromYaml::Redo()
+{
+    if (!selectedEmitter || !selectedEffect)
+    {
+        return;
+    }
+
+    int32 emitterIndex = selectedEffect->GetEmitterId(selectedEmitter.Get());
+    if (emitterIndex == -1)
+    {
+        return;
+    }
+
+    //TODO: restart effect
+    const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
+    FilePath qualityFilepath = filePath;
+    if (filepathSelector)
+    {
+        qualityFilepath = filepathSelector->SelectFilepath(filePath);
+    }
+    selectedEmitter->LoadFromYaml(qualityFilepath);
+    selectedEffect->SetOriginalConfigPath(emitterIndex, filePath);
+}
+
+CommandSaveParticleEmitterToYaml::CommandSaveParticleEmitterToYaml(ParticleEffectComponent* effect, ParticleEmitter* emitter, const FilePath& path)
+    : CommandAction(CMDID_PARTICLE_EMITTER_SAVE_TO_YAML)
+{
+    selectedEffect = effect;
+    selectedEmitter = emitter;
+    filePath = path;
+}
+
+void CommandSaveParticleEmitterToYaml::Redo()
+{
+    if (!selectedEmitter || !selectedEffect)
+    {
+        return;
+    }
+
+    int32 emitterIndex = selectedEffect->GetEmitterId(selectedEmitter.Get());
+    if (emitterIndex == -1)
+    {
+        return;
+    }
+
+    selectedEmitter->SaveToYaml(filePath);
+    //selectedEffect->SetOriginalConfigPath(emitterIndex, filePath);
+}
+
+CommandLoadInnerParticleEmitterFromYaml::CommandLoadInnerParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path)
+    : CommandAction(CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML)
 {
     this->selectedEmitter = emitter;
     this->filePath = path;
 }
 
-void CommandLoadParticleEmitterFromYaml::Redo()
+void CommandLoadInnerParticleEmitterFromYaml::Redo()
 {
     if (!selectedEmitter)
     {
@@ -594,14 +634,14 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     selectedEmitter->LoadFromYaml(filePath);
 }
 
-CommandSaveParticleEmitterToYaml::CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path)
-    : CommandAction(CMDID_PARTICLE_EMITTER_SAVE_TO_YAML)
+CommandSaveInnerParticleEmitterToYaml::CommandSaveInnerParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path)
+    : CommandAction(CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML)
 {
     this->selectedEmitter = emitter;
     this->filePath = path;
 }
 
-void CommandSaveParticleEmitterToYaml::Redo()
+void CommandSaveInnerParticleEmitterToYaml::Redo()
 {
     if (!selectedEmitter)
     {
