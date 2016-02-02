@@ -54,23 +54,29 @@ public:
     void Disconnect();
 
     DAVA::AssetCache::ErrorCodes AddToCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value);
-    DAVA::AssetCache::ErrorCodes RequestFromCacheBlocked(const DAVA::AssetCache::CacheItemKey& key);
+    DAVA::AssetCache::ErrorCodes RequestFromCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& outFolder);
 
     void AddListener(DAVA::AssetCache::ClientNetProxyListener* listener);
     void RemoveListener(DAVA::AssetCache::ClientNetProxyListener* listener);
 
 private:
+    void ProcessNetwork();
+
     DAVA::AssetCache::ErrorCodes WaitRequest();
 
     //ClientNetProxyListener
     void OnAddedToCache(const DAVA::AssetCache::CacheItemKey& key, bool added) override;
     void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value) override;
+    void OnAssetClientStateChanged() override;
 
 private:
     DAVA::AssetCache::ClientNetProxy client;
 
     DAVA::uint64 timeoutms = 60u * 1000u;
     ResultOfRequest requestResult;
+
+    DAVA::UnorderedMap<DAVA::AssetCache::CacheItemKey, DAVA::FilePath> requests;
+    bool isActive = false;
 };
 
 #endif //__ASSET_CACHE_CLIENT_H__

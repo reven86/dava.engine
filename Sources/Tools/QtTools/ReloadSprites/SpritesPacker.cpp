@@ -45,16 +45,6 @@ SpritesPacker::~SpritesPacker()
 {
 }
 
-void SpritesPacker::SetCacheTool(const String& ip, const String& port, const String& timeout)
-{
-    resourcePacker2D.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
-}
-
-void SpritesPacker::ClearCacheTool()
-{
-    resourcePacker2D.ClearCacheClientTool();
-}
-
 void SpritesPacker::AddTask(const QDir &inputDir, const QDir &outputDir)
 {
     tasks.push_back(qMakePair(inputDir, outputDir));

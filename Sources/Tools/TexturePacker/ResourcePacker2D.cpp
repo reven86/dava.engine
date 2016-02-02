@@ -398,6 +398,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     {
         if (!fileList->IsDirectory(fi))
         {
+            String fileName = fileList->GetFilename(fi);
+            if (fileName == ".DS_Store")
+            {
+                continue;
+            }
+
             inputDirHasFiles = true;
             break;
         }
@@ -589,35 +595,6 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_)
     cacheClient = cacheClient_;
 }
 
-class RequestedFilesSaver final : public AssetCache::ClientNetProxyListener
-{
-public:
-    RequestedFilesSaver(AssetCacheClient* cacheClient_, const FilePath& outputFolder_)
-        : cacheClient(cacheClient_)
-        , outputFolder(outputFolder_)
-    {
-        DVASSERT(outputFolder.IsDirectoryPathname());
-        cacheClient->AddListener(this);
-    }
-
-    ~RequestedFilesSaver()
-    {
-        cacheClient->RemoveListener(this);
-    }
-
-    void OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value) override
-    {
-        if (!value.IsEmpty())
-        {
-            FileSystem::Instance()->CreateDirectory(outputFolder, true);
-            value.Export(outputFolder);
-        }
-    }
-
-private:
-    AssetCacheClient* cacheClient = nullptr;
-    FilePath outputFolder;
-};
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {
@@ -631,8 +608,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         return false;
     }
 
-    RequestedFilesSaver saver(cacheClient, outputPath);
-    AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(key);
+    AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(key, outputPath);
     if (requested == AssetCache::ERROR_OK)
     {
         Logger::Info("GOT FROM CACHE - %s", inputPath.GetAbsolutePathname().c_str());

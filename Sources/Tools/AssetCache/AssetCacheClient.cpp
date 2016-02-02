@@ -28,13 +28,17 @@
 
 #include "AssetCacheClient.h"
 
+#include "FileSystem/FileSystem.h"
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
+#include "Job/JobManager.h"
 
 using namespace DAVA;
 
 AssetCacheClient::AssetCacheClient()
 {
+    DVASSERT(JobManager::Instance() != nullptr);
+
     client.AddListener(this);
 }
 
@@ -48,15 +52,17 @@ AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& 
         return AssetCache::ERROR_ADDRESS_RESOLVER_FAILED;
     }
 
+    isActive = true;
+    JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
+
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     while (client.ChannelIsOpened() == false)
     {
-        Net::NetCore::Instance()->Poll();
-
         uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
         {
             Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+            isActive = false;
             return AssetCache::ERROR_TIMEOUT;
         }
     }
@@ -66,6 +72,7 @@ AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& 
 
 void AssetCacheClient::Disconnect()
 {
+    isActive = false;
     client.Disconnect();
 }
 
@@ -74,11 +81,6 @@ AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::Cac
     requestResult.recieved = false;
     requestResult.succeed = false;
     requestResult.requestID = AssetCache::PACKET_ADD_REQUEST;
-
-    if (value.GetSize() == 1613818)
-    {
-        int a = 0;
-    }
 
     bool requestSent = client.AddToCache(key, value);
     if (requestSent)
@@ -89,16 +91,22 @@ AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::Cac
     return AssetCache::ERROR_CANNOT_SEND_REQUEST_ADD;
 }
 
-AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCache::CacheItemKey& key)
+AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
 {
     requestResult.recieved = false;
     requestResult.succeed = false;
     requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
 
+    requests[key] = outputFolder;
+
     bool requestSent = client.RequestFromCache(key);
     if (requestSent)
     {
         return WaitRequest();
+    }
+    else
+    {
+        requests.erase(key);
     }
 
     return AssetCache::ERROR_CANNOT_SEND_REQUEST_GET;
@@ -109,8 +117,6 @@ AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     while (requestResult.recieved == false)
     {
-        Net::NetCore::Instance()->Poll();
-
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (((timeoutms > 0) && (deltaTime > timeoutms)) && (requestResult.recieved == false))
         {
@@ -147,11 +153,20 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
     {
         requestResult.recieved = true;
         requestResult.succeed = (value.IsEmpty() == false);
+        if (requestResult.succeed)
+        {
+            const FilePath& outputFolder = requests[key];
+
+            FileSystem::Instance()->CreateDirectory(outputFolder, true);
+            value.Export(outputFolder);
+        }
     }
     else
     {
         Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
     }
+
+    requests.erase(key);
 }
 
 void AssetCacheClient::AddListener(AssetCache::ClientNetProxyListener* listener)
@@ -162,4 +177,20 @@ void AssetCacheClient::AddListener(AssetCache::ClientNetProxyListener* listener)
 void AssetCacheClient::RemoveListener(AssetCache::ClientNetProxyListener* listener)
 {
     client.RemoveListener(listener);
+}
+
+void AssetCacheClient::ProcessNetwork()
+{
+    while (isActive)
+    {
+        Net::NetCore::Instance()->Poll();
+    }
+}
+
+void AssetCacheClient::OnAssetClientStateChanged()
+{
+    if (client.ChannelIsOpened() == false)
+    {
+        isActive = false;
+    }
 }

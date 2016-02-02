@@ -49,9 +49,6 @@ public:
     SpritesPacker(QObject *parent = nullptr);
     ~SpritesPacker();
 
-    void SetCacheTool(const DAVA::String& ip, const DAVA::String& port, const DAVA::String& timeout);
-    void ClearCacheTool();
-
     void AddTask(const QDir &inputDir, const QDir &outputDir);
     void ClearTasks();
     Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
