@@ -90,13 +90,13 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
 {
     container->SetName("Container for HUD controls of node " + node_->GetName());
     DAVA::Vector<HUDAreaInfo::eArea> areas;
-    int begin = HUDAreaInfo::AREAS_BEGIN;
     if (node->GetParent() != nullptr && node->GetParent()->GetControl() != nullptr)
     {
-        areas.resize(HUDAreaInfo::AREAS_COUNT);
-        std::generate(areas.begin(), areas.end(), [begin]() mutable {
-            return static_cast<HUDAreaInfo::eArea>(begin++);
-        });
+        areas.reserve(HUDAreaInfo::AREAS_COUNT);
+        for (int area = HUDAreaInfo::AREAS_BEGIN; area != HUDAreaInfo::AREAS_COUNT; ++area)
+        {
+            areas.push_back(static_cast<HUDAreaInfo::eArea>(area));
+        }
     }
     else
     {
