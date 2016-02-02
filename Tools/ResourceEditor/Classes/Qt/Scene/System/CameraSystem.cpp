@@ -640,14 +640,14 @@ bool SceneCameraSystem::IsEditorCameraSnappedToLandscape() const
 
 void SceneCameraSystem::MoveToSelection()
 {
-    auto sceneEditor = dynamic_cast<SceneEditor2*>( GetScene() );
-    if ( sceneEditor == nullptr )
+    auto sceneEditor = dynamic_cast<SceneEditor2*>(GetScene());
+    if (sceneEditor == nullptr)
         return;
 
     const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
-        sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
+        LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
     }
 }
 

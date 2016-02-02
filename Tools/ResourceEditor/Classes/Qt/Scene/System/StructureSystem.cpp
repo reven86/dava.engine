@@ -549,7 +549,7 @@ void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) c
                 auto needAddEntity = ((CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo));
                 if(needAddEntity)
                 {
-                    selectionSystem->AddSelection(cmd->GetEntity());
+                    selectionSystem->AddEntityToSelection(cmd->GetEntity());
                 }
             }
         }
@@ -561,7 +561,7 @@ void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) c
         auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
         if(needAddEntity)
         {
-            selectionSystem->AddSelection(command->GetEntity());
+            selectionSystem->AddEntityToSelection(command->GetEntity());
         }
     }
 }

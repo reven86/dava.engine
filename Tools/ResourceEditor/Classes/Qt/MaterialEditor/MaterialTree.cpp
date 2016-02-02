@@ -112,7 +112,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
             if (nullptr != entity)
             {
-                curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+                curScene->selectionSystem->AddEntityToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
             const Vector<NMaterial*>& children = material->GetChildren();
             for (auto child : children)
