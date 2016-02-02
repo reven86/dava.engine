@@ -231,6 +231,7 @@ public:
 
     bool isKeyboardOpened = false; // HACK to prevent endless recursion
     bool insideTextShouldReturn = false; // HACK mark what happened
+    NSRect nativeControlRect = NSMakeRect(0, 0, 0, 0);
 };
 
 static NSRect ConvertToNativeWindowRect(Rect rectSrc)
@@ -686,11 +687,12 @@ public:
             }
         }
 
-        if (currentRect != rectSrc)
-        {
-            currentRect = rectSrc;
-            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+        // we have to convert coord every time
+        // if user change window/fullscreen mode
+        NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
+        if (!NSEqualRects(nativeControlRect, controlRect))
+        {
             [nsTextField setFrame:controlRect];
         }
     }
