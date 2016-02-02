@@ -97,6 +97,7 @@ AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCach
     requestResult.succeed = false;
     requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
 
+    DVASSERT(requests.count(key) == 0);
     requests[key] = outputFolder;
 
     bool requestSent = client.RequestFromCache(key);
@@ -138,8 +139,8 @@ void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool 
 {
     if (requestResult.requestID == AssetCache::PACKET_ADD_REQUEST)
     {
-        requestResult.recieved = true;
         requestResult.succeed = added;
+        requestResult.recieved = true;
     }
     else
     {
@@ -151,8 +152,8 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
 {
     if (requestResult.requestID == AssetCache::PACKET_GET_REQUEST)
     {
-        requestResult.recieved = true;
         requestResult.succeed = (value.IsEmpty() == false);
+        requestResult.recieved = true;
         if (requestResult.succeed)
         {
             const FilePath& outputFolder = requests[key];

@@ -639,6 +639,8 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         return false;
     }
 
+    Logger::Info("[%s] in (%s), out(%s)", __FUNCTION__, inputPath.GetAbsolutePathname().c_str(), outputPath.GetAbsolutePathname().c_str());
+
     AssetCache::CachedItemValue value;
 
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
