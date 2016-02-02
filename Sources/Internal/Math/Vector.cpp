@@ -28,6 +28,7 @@
 
 
 #include "Vector.h"
+#include "Matrix3.h"
 
 namespace DAVA 
 {
