@@ -35,7 +35,7 @@ using namespace DAVA;
 SvcHelper::SvcHelper(const WideString& name)
     : serviceName(name)
 {
-    serviceControlManager = ::OpenSCManagerW(0, 0, 0);
+    serviceControlManager = ::OpenSCManagerW(nullptr, nullptr, 0);
     if (!serviceControlManager)
     {
         return;
@@ -61,10 +61,12 @@ WideString SvcHelper::ServiceName() const
 WideString SvcHelper::ServiceDescription() const
 {
     Array<wchar_t, 8 * 1024> data;
+    LPBYTE infoData = reinterpret_cast<LPBYTE>(data.data());
+    DWORD infoSize = static_cast<DWORD>(data.size());
     DWORD bytesNeeded;
 
     BOOL res = ::QueryServiceConfig2W(service,
-                                      SERVICE_CONFIG_DESCRIPTION, (LPBYTE)data.data(), data.size(), &bytesNeeded);
+                                      SERVICE_CONFIG_DESCRIPTION, infoData, infoSize, &bytesNeeded);
 
     if (!res)
     {
