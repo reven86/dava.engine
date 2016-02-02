@@ -91,9 +91,9 @@ DAVA::WideString NGTBaseApplication::GetPluginsFolder() const
 {
     QFileInfo appFileInfo(commandLineParser.argv()[0]);
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
     QString pluginsBasePath_ = appFileInfo.absolutePath() + "/plugins/";
-#elif Q_OS_MAC
+#elif defined(Q_OS_OSX)
     QString pluginsBasePath_ = appFileInfo.absolutePath() + "/../PlugIns/plugins/";
 #endif
 
