@@ -152,7 +152,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
             break;
         case DAVA::InputSystem::eMouseCaptureMode::PINING:
             mouseCaptureMode = newMode;
-            core->RunOnUIThread([this] { RestoreCursorVisible(); });
             break;
         default:
             DVASSERT("Incorrect cursor capture mode");
@@ -403,7 +402,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
     if (needProcess)
     {
         bool isFocused = isWindowFocused;
-        core->RunOnMainThread([this, isFocused]() {
+        core->RunOnMainThread([this, isFocused] {
             if (isFocused)
             {
                 if (isPhoneApiDetected)
@@ -543,8 +542,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING &&
-            isMouseCursorShown)
+        //enter after focusing - only hide cursor
+        if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING && isMouseCursorShown)
         {
             SetCursorVisible(false);
         }
@@ -646,11 +645,10 @@ void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/
 {
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type && 
-        mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING &&
-        isWindowFocused)
+    if (PointerDeviceType::Mouse == type &&
+        mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
     {
-        SetCursorVisible(false);
+        SetCursorVisible(!isWindowFocused);
     }
 }
 
@@ -1158,14 +1156,6 @@ void WinUAPXamlApp::SendBackKeyEvents()
         UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(Key::BACK);
     });
-}
-
-void WinUAPXamlApp::RestoreCursorVisible()
-{
-    if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
-    {
-        SetCursorVisible(isWindowFocused);
-    }
 }
 
 void WinUAPXamlApp::SetWindowMinimumSize(float32 width, float32 height)
