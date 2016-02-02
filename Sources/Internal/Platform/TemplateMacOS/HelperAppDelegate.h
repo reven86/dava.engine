@@ -27,38 +27,27 @@
 =====================================================================================*/
 
 
-#import <Cocoa/Cocoa.h>
-#import "OpenGLView.h"
-#import "AppDelegate.h"
+#ifndef __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
+#define __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
 
-@interface MainWindowController : NSWindowController <NSWindowDelegate, NSFileManagerDelegate>
+
+#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_MACOS__)
+
+#include "Core/ApplicationCore.h"
+#import "Platform/TemplateMacOS/MainWindowController.h"
+
+#import <AppKit/AppKit.h>
+
+@interface HelperAppDelegate : NSObject<NSApplicationDelegate>
 {
-@public
-	float32	currFPS;
-	OpenGLView * openGLView;
-	NSWindow * mainWindow;
-	NSTimer * animationTimer;
-	
-	ApplicationCore * core;
-    bool fullScreen;
+@private
+    MainWindowController* mainWindowController;
 }
 
-- (void)createWindows;
-
-- (bool)isFullScreen;
-- (bool)setFullScreen:(bool)_fullScreen;
-
-- (void)windowWillMiniaturize:(NSNotification *)notification;
-- (void)windowDidDeminiaturize:(NSNotification *)notification;
-
-- (void)windowDidEnterFullScreen:(NSNotification *)notification;
-- (void)windowDidExitFullScreen:(NSNotification *)notification;
-
-- (void)windowDidBecomeKey:(NSNotification*)notification;
-- (void)windowDidResignKey:(NSNotification*)notification;
-
-- (void)OnSuspend;
-- (void)OnResume;
-
+- (void)setWindowController:(MainWindowController*)ctrlr;
 
 @end
+
+#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
