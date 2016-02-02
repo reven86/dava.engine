@@ -574,9 +574,6 @@ public:
     {
         nsTextField.enabled = YES;
 
-        //NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-        [[NSApp keyWindow] makeFirstResponder:nsTextField];
-
         if ([[nsTextField stringValue] length] > 0)
         {
             NSRange range = [[nsTextField currentEditor] selectedRange];
@@ -592,6 +589,9 @@ public:
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
             delegate->OnKeyboardShown(emptyRect);
         }
+
+        //NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [[NSApp keyWindow] makeFirstResponder:nsTextField];
     }
 
     void CloseKeyboard() override
@@ -648,6 +648,44 @@ public:
 
     void UpdateRect(const Rect& rectSrc) override
     {
+        // HACK for battle screen
+        // check if focus not synced
+        if (UIControlSystem::Instance()->GetFocusedControl() == davaText)
+        {
+            NSWindow* window = [NSApp keyWindow];
+            NSResponder* currentResponder = [window firstResponder];
+            if (currentResponder == nil)
+            {
+                // no focus in window at all
+            }
+            else
+            {
+                BOOL isNSText = [currentResponder isKindOfClass:[NSText class]];
+                if (isNSText && [(id)currentResponder delegate] == (id)nsTextField)
+                {
+                    // we still has focus do nothing
+                }
+                else
+                {
+                    if (isKeyboardOpened)
+                    {
+                        UITextFieldDelegate* delegate = davaText->GetDelegate();
+                        if (delegate && !delegate->IsTextFieldCanLostFocus(davaText))
+                        {
+                            // select text field
+                            [window makeFirstResponder:nsTextField];
+                            // remove selection to caret at end
+                            if ([[nsTextField stringValue] length] > 0)
+                            {
+                                NSRange range = [[nsTextField currentEditor] selectedRange];
+                                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if (currentRect != rectSrc)
         {
             currentRect = rectSrc;
