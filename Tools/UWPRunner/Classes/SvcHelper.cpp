@@ -35,13 +35,13 @@ using namespace DAVA;
 SvcHelper::SvcHelper(const WideString& name)
     : serviceName(name)
 {
-    serviceControlManager = ::OpenSCManager(0, 0, 0);
+    serviceControlManager = ::OpenSCManagerW(0, 0, 0);
     if (!serviceControlManager)
     {
         return;
     }
 
-    service = ::OpenService(serviceControlManager, name.c_str(), SC_MANAGER_ALL_ACCESS);
+    service = ::OpenServiceW(serviceControlManager, name.c_str(), SC_MANAGER_ALL_ACCESS);
 }
 
 SvcHelper::~SvcHelper()
@@ -63,8 +63,8 @@ WideString SvcHelper::ServiceDescription() const
     Array<wchar_t, 8 * 1024> data;
     DWORD bytesNeeded;
 
-    BOOL res = ::QueryServiceConfig2(service, 
-        SERVICE_CONFIG_DESCRIPTION, (LPBYTE)data.data(), data.size(), &bytesNeeded);
+    BOOL res = ::QueryServiceConfig2W(service,
+                                      SERVICE_CONFIG_DESCRIPTION, (LPBYTE)data.data(), data.size(), &bytesNeeded);
 
     if (!res)
     {
@@ -92,7 +92,7 @@ bool SvcHelper::IsRunning() const
 
 bool SvcHelper::Start()
 {
-    if (::StartService(service, 0, nullptr) != TRUE)
+    if (::StartServiceW(service, 0, nullptr) != TRUE)
     {
         return false;
     }
