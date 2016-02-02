@@ -37,8 +37,6 @@ class GetRequest : public CacheRequest, DAVA::AssetCache::ClientNetProxyListener
 public:
     GetRequest();
 
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value) override;
-
 protected:
     DAVA::AssetCache::ErrorCodes SendRequest(AssetCacheClient* cacheClient) override;
     DAVA::AssetCache::ErrorCodes CheckOptionsInternal() const override;

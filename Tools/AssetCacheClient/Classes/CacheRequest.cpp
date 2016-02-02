@@ -72,8 +72,8 @@ AssetCache::ErrorCodes CacheRequest::Process(AssetCacheClient* cacheClient)
     if (AssetCache::ERROR_OK == exitCode)
     {
         exitCode = SendRequest(cacheClient);
-        cacheClient->Disconnect();
     }
+    cacheClient->Disconnect();
 
     return exitCode;
 }

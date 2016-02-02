@@ -46,8 +46,10 @@ AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient* cacheClient)
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
 
-    cacheClient->AddListener(this);
-    return cacheClient->RequestFromCacheBlocked(key);
+    FilePath folder = options.GetOption("-f").AsString();
+    folder.MakeDirectoryPathname();
+
+    return cacheClient->RequestFromCacheBlocked(key, folder);
 }
 
 AssetCache::ErrorCodes GetRequest::CheckOptionsInternal() const
@@ -60,16 +62,4 @@ AssetCache::ErrorCodes GetRequest::CheckOptionsInternal() const
     }
 
     return AssetCache::ERROR_OK;
-}
-
-void GetRequest::OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
-{
-    if (!value.IsEmpty())
-    {
-        FilePath folder = options.GetOption("-f").AsString();
-        folder.MakeDirectoryPathname();
-
-        FileSystem::Instance()->CreateDirectory(folder, true);
-        value.Export(folder);
-    }
 }

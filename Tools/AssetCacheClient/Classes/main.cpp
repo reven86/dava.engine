@@ -30,6 +30,7 @@
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/Logger.h"
+#include "Job/JobManager.h"
 #include "Network/NetCore.h"
 #include "Platform/SystemTimer.h"
 #if defined(__DAVAENGINE_MACOS__)
@@ -62,6 +63,7 @@ void CreateDAVA()
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
     DAVA::Logger::Instance()->EnableConsoleMode();
 
+    new DAVA::JobManager();
     new DAVA::FileSystem();
     DAVA::FilePath::InitializeBundleName();
 
@@ -77,12 +79,16 @@ void CreateDAVA()
 
 void ReleaseDAVA()
 {
+    DAVA::JobManager::Instance()->WaitWorkerJobs();
+
     DAVA::Net::NetCore::Instance()->Finish(true);
     DAVA::Net::NetCore::Instance()->Release();
 
     DAVA::SystemTimer::Instance()->Release();
 
     DAVA::FileSystem::Instance()->Release();
+    DAVA::JobManager::Instance()->Release();
+
     DAVA::Logger::Instance()->Release();
 
     DAVA::Core::Instance()->Release();
