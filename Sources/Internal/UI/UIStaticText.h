@@ -133,7 +133,10 @@ public:
 
     const Vector<int32> & GetStringSizes() const;
 
-    inline bool IsForceBiDiSupportEnabled() const { return textBlock->IsForceBiDiSupportEnabled(); }
+    inline bool IsForceBiDiSupportEnabled() const
+    {
+        return textBlock->IsForceBiDiSupportEnabled();
+    }
     void SetForceBiDiSupportEnabled(bool value);
 
 protected:
@@ -173,7 +176,7 @@ public:
 
     Vector4 GetMarginsAsVector4() const;
     void SetMarginsAsVector4(const Vector4 &margins);
-    
+
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
@@ -189,9 +192,7 @@ public:
                          PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         );
-
+                         PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT));
 };
 
 };

@@ -27,36 +27,27 @@
 =====================================================================================*/
 
 
-#include "HeightmapProxy.h"
+#ifndef __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
+#define __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
 
-HeightmapProxy::HeightmapProxy(Heightmap* heightmap)
-:	EditorHeightmap(heightmap)
+
+#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_MACOS__)
+
+#include "Core/ApplicationCore.h"
+#import "Platform/TemplateMacOS/MainWindowController.h"
+
+#import <AppKit/AppKit.h>
+
+@interface HelperAppDelegate : NSObject<NSApplicationDelegate>
 {
+@private
+    MainWindowController* mainWindowController;
 }
 
-void HeightmapProxy::UpdateRect(const DAVA::Rect &rect)
-{
-	int32 size = Size();
+- (void)setWindowController:(MainWindowController*)ctrlr;
 
-	Rect bounds(0.f, 0.f, (float32)size, (float32)size);
+@end
 
-	changedRect = rect;
-	bounds.ClampToRect(changedRect);
-
-	heightmapChanged = true;
-}
-
-void HeightmapProxy::ResetHeightmapChanged()
-{
-	heightmapChanged = false;
-}
-
-bool HeightmapProxy::IsHeightmapChanged() const
-{
-	return heightmapChanged;
-}
-
-const Rect& HeightmapProxy::GetChangedRect() const
-{
-    return changedRect;
-}
+#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__

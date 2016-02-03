@@ -884,11 +884,11 @@ void SceneTree::SyncSelectionToTree()
         }
     }
 
-    if (toSelect.empty())
-        return;
-
     QItemSelectionModel* selectModel = selectionModel();
     selectModel->clear();
+
+    if (toSelect.empty())
+        return;
 
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {

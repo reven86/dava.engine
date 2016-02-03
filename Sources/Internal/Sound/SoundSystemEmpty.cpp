@@ -82,7 +82,7 @@ namespace DAVA
     void SoundSystem::Mute(bool value)
     {
     }
-    
+
     void SoundSystem::SetCurrentLocale(const String &langID)
     {
     }
