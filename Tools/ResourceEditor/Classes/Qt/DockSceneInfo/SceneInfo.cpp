@@ -519,7 +519,7 @@ QtPropertyData * SceneInfo::GetInfoHeader(const QString &key)
 	{
         header = root->ChildGet(DAVA::FastName(key.toStdString()));
     }
-	return header;
+    return header;
 }
 
 void SceneInfo::AddChild(const QString & key, QtPropertyData *parent)
@@ -542,9 +542,9 @@ void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyD
 	if(NULL != parent)
 	{
         QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
-        if(NULL != propData)
-		{
-			propData->SetValue(value);
+        if (NULL != propData)
+        {
+            propData->SetValue(value);
 		}
 	}
 }
@@ -556,8 +556,8 @@ bool SceneInfo::HasChild(const QString & key, QtPropertyData *parent)
 	{
         QtPropertyData* propData = parent->ChildGet(DAVA::FastName(key.toStdString()));
         hasChild = (propData != NULL);
-	}
-    
+    }
+
     return hasChild;
 }
 

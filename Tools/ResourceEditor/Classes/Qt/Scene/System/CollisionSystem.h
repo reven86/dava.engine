@@ -85,7 +85,7 @@ public:
     DAVA::Landscape* GetLandscape() const;
 
     void UpdateCollisionObject(DAVA::Entity* entity);
-    void RemoveCollisionObject(DAVA::Entity *entity);
+    void RemoveCollisionObject(DAVA::Entity* entity);
 
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
@@ -109,8 +109,8 @@ private:
     DAVA::Vector2 lastMousePos;
     DAVA::Vector3 lastLandRayFrom;
     DAVA::Vector3 lastLandRayTo;
-	DAVA::Vector3 lastLandCollision;
-	DAVA::Set<DAVA::Entity*> entitiesToAdd;
+    DAVA::Vector3 lastLandCollision;
+    DAVA::Set<DAVA::Entity*> entitiesToAdd;
 	DAVA::Set<DAVA::Entity*> entitiesToRemove;
     DAVA::Map<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
     DAVA::Map<btCollisionObject*, DAVA::Entity*> collisionToEntity;

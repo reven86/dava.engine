@@ -304,8 +304,8 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
                 if (!pathToReload.IsEmpty())
                 {
                     refsToReload.insert(pathToReload);
-				}
-			}
+                }
+            }
 		}
 
 		DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();

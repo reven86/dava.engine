@@ -106,15 +106,15 @@ public:
     QtPropertyData(const DAVA::FastName& name, const QVariant& value);
     virtual ~QtPropertyData();
 
-	QVariant data(int role) const;
-	bool setData(const QVariant & value, int role);
+    QVariant data(int role) const;
+    bool setData(const QVariant & value, int role);
 
     const DAVA::FastName& GetName() const;
 
     QString GetPath() const;
 
-	QVariant GetValue() const;
-	void SetValue(const QVariant &value, ValueChangeReason reason = QtPropertyData::VALUE_SET);
+    QVariant GetValue() const;
+    void SetValue(const QVariant &value, ValueChangeReason reason = QtPropertyData::VALUE_SET);
 	bool UpdateValue(bool force = false);
 
 	QVariant GetAlias() const;
@@ -143,9 +143,9 @@ public:
     virtual const DAVA::MetaInfo* MetaInfo() const;
 
     // reset background/foreground/font settings
-	void ResetStyle();
+    void ResetStyle();
 
-	void SetCheckable(bool checkable);
+    void SetCheckable(bool checkable);
 	bool IsCheckable() const;
 	void SetChecked(bool checked);
 	bool IsChecked() const;

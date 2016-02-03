@@ -241,9 +241,9 @@ public:
 		* FOR INTERNAL FRAMEWORK USAGE ONLY * 
 		MUST BE CALLED FROM templates on different OS
 	 */
-	
-	void SystemAppStarted();
-	void SystemProcessFrame();
+
+    void SystemAppStarted();
+    void SystemProcessFrame();
 	void SystemAppFinished();
 
     inline bool IsActive();

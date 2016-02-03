@@ -159,9 +159,9 @@ struct ParticleLayer : public BaseObject
     RefPtr<PropertyLine<float32>> animSpeedOverLife;
 
     float32 startTime;
-    float32		endTime;
-	// Layer loop paremeters
-	float32		deltaTime;
+    float32 endTime;
+    // Layer loop paremeters
+    float32		deltaTime;
 	float32 	deltaVariation;
 	float32 	loopVariation;
 	float32 	loopEndTime;		

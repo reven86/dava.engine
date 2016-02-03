@@ -2985,6 +2985,8 @@
 		C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */; };
 		C7FBCFC116CD2060006F1B3F /* liblua_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7FBCFC016CD2060006F1B3F /* liblua_macos.a */; };
 		D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		D729A39F1C5B7B6F000AE64F /* HelperAppDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */; };
+		D729A3A01C5B7B6F000AE64F /* HelperAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */; };
 		D7660D3E1C4E483300E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */; };
 		D7660D3F1C4E483300E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */; };
 		D7660D401C4E483300E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */; };
@@ -4050,6 +4052,8 @@
 		CCE2CA18197950A600D8086F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelperAppDelegate.h; sourceTree = "<group>"; };
+		D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelperAppDelegate.mm; sourceTree = "<group>"; };
 		D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
 		D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
@@ -4783,6 +4787,8 @@
 		028C0A681BD66A5E00B2266F /* TemplateMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */,
+				D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */,
 				028C0A691BD66A5E00B2266F /* AppDelegate.h */,
 				028C0A6A1BD66A5E00B2266F /* AppDelegate.mm */,
 				028C0A6B1BD66A5E00B2266F /* CoreMacOSPlatformBase.cpp */,
@@ -6405,6 +6411,7 @@
 				028C0E081BD66A6000B2266F /* FixedSizePoolAllocator.h in Headers */,
 				028C0E5C1BD66A6000B2266F /* Radix.h in Headers */,
 				028C1A6B1BD66A6100B2266F /* UIJoypad.h in Headers */,
+				D729A39F1C5B7B6F000AE64F /* HelperAppDelegate.h in Headers */,
 				028C115F1BD66A6000B2266F /* UDPSocketTemplate.h in Headers */,
 				028C178F1BD66A6000B2266F /* RotationControllerComponent.h in Headers */,
 				028C0E261BD66A6000B2266F /* IntrospectionCollection.h in Headers */,
@@ -7951,6 +7958,7 @@
 				028C117D1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBB1BD66A6000B2266F /* FileList.cpp in Sources */,
 				028C124C1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
+				D729A3A01C5B7B6F000AE64F /* HelperAppDelegate.mm in Sources */,
 				028C18611BD66A6000B2266F /* SceneAnimationMixer.cpp in Sources */,
 				028C0D841BD66A6000B2266F /* dlmalloc.c in Sources */,
 				028C16061BD66A6000B2266F /* dbg_FontNormal.cxx in Sources */,
@@ -9016,7 +9024,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -9054,7 +9062,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = macosx;
 			};
 			name = Release;

@@ -124,7 +124,7 @@ CollisionRenderObject::~CollisionRenderObject()
         DAVA::SafeDelete(btObject);
         DAVA::SafeDelete(btShape);
         DAVA::SafeDelete(btTriangles);
-	}
+    }
 }
 
 struct ClassifyTrianglesToSinglePlaneCallback : public btInternalTriangleIndexCallback

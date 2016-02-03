@@ -305,15 +305,15 @@ void MainWindow::InitRtlBox()
 
 void MainWindow::InitBiDiSupportBox()
 {
-    QCheckBox *bidiSupportBox = new QCheckBox();
+    QCheckBox* bidiSupportBox = new QCheckBox();
     bidiSupportBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("BiDi Support"));
+    QLabel* label = new QLabel(tr("BiDi Support"));
     label->setBuddy(bidiSupportBox);
-    QHBoxLayout *layout = new QHBoxLayout();
+    QHBoxLayout* layout = new QHBoxLayout();
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(bidiSupportBox);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);

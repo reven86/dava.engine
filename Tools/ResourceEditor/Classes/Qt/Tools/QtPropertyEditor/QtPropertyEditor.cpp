@@ -98,7 +98,7 @@ QModelIndex QtPropertyEditor::InsertHeader(const QString &text, int row)
     QModelIndex propHeader = InsertProperty(std::unique_ptr<QtPropertyData>(new QtPropertyData(DAVA::FastName(text.toStdString()))), row);
 
     ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
-	return propHeader;
+    return propHeader;
 }
 
 QtPropertyData* QtPropertyEditor::GetProperty(const QModelIndex &index) const

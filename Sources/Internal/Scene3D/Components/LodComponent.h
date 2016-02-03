@@ -52,13 +52,13 @@ public:
     static const float32 INVALID_DISTANCE;
 
     enum eFlags
-	{
-		NEED_UPDATE_AFTER_LOAD = 1 << 0,
+    {
+        NEED_UPDATE_AFTER_LOAD = 1 << 0,
         RECURSIVE_UPDATE = 1 << 1
-	};
+    };
 
-	struct LodDistance
-	{
+    struct LodDistance
+    {
 		float32 distance;
 		float32 nearDistanceSq;
 		float32 farDistanceSq;
