@@ -176,6 +176,14 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
     }
     int depthLeft = CalculateDepth(left);
     int depthRight = CalculateDepth(right);
+    if (depthLeft == 0)
+    {
+        return false;
+    }
+    else if (depthRight == 0)
+    {
+        return true;
+    }
 
     PackageBaseNode* leftParent = left;
     PackageBaseNode* rightParent = right;
@@ -203,14 +211,8 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
     {
         leftParent = left->GetParent();
         rightParent = right->GetParent();
-        if (nullptr == leftParent) //parent can be nullptr if we remove package and than remove it imported package
-        {
-            return false;
-        }
-        else if (nullptr == rightParent)
-        {
-            return true;
-        }
+        DVASSERT(nullptr != leftParent);
+        DVASSERT(nullptr != rightParent);
 
         if (leftParent == rightParent)
         {
