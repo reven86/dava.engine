@@ -263,10 +263,17 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
     {
-        // we can select only if mouse isn't over hood axis
+		// do not performing selection, if SHIFT key is pressed
+		const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+		if (keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT))
+		{
+			applyOnPhaseEnd = false;
+			return;
+		}
+
+		// we can select only if mouse isn't over hood axis
 		// or if hood is invisible now
 		// or if current mode is NORMAL (no modification)
-
         auto modifSystem = ((SceneEditor2*)GetScene())->modifSystem;
         bool modificationAllowed = (modifSystem->GetModifMode() != ST_ModifMode::ST_MODIF_OFF) && modifSystem->ModifCanStartByMouse(curSelections);
         bool selectionAllowed = !hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis());

@@ -253,9 +253,9 @@ void WayEditSystem::ProcessSelection()
 
 void WayEditSystem::Input(DAVA::UIEvent *event)
 {
-    if (isEnabled)
+    if (isEnabled && (DAVA::UIEvent::MouseButton::LEFT == event->mouseButton))
     {
-        if ((DAVA::UIEvent::MouseButton::LEFT == event->mouseButton) && (DAVA::UIEvent::Phase::MOVE == event->phase))
+        if (DAVA::UIEvent::Phase::MOVE == event->phase)
         {
             underCursorPathEntity = nullptr;
             const EntityGroup::EntityVector& collObjects = collisionSystem->ObjectsRayTestFromCamera();
@@ -268,13 +268,11 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                 }
             }
         }
-
-        if ((DAVA::UIEvent::MouseButton::LEFT == event->mouseButton) && (DAVA::UIEvent::Phase::BEGAN == event->phase))
+		else if (DAVA::UIEvent::Phase::BEGAN == event->phase)
         {
             inCloneState = sceneEditor->modifSystem->InCloneState();
         }
-
-        if ((DAVA::UIEvent::Phase::ENDED == event->phase) && (DAVA::UIEvent::MouseButton::LEFT == event->mouseButton))
+		else if (DAVA::UIEvent::Phase::ENDED == event->phase)
         {
             bool cloneJustDone = false;
             if (inCloneState && !sceneEditor->modifSystem->InCloneState())
@@ -283,21 +281,22 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                 cloneJustDone = true;
             }
 
+			const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+			bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
 
-            int curKeyModifiers = QApplication::keyboardModifiers();
-            if(0 == (curKeyModifiers & Qt::ShiftModifier))
-            {   //we need use shift key to add waypoint or edge
-                return;
-            }
+			if (!shiftPressed)
+			{
+				// we need to use shift key to add waypoint or edge
+				return;
+			}
 
-            Entity * currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
-            if(!currentWayParent)
-            {   // we need have entity with path component
-                return;
-            }
-
-            
-            ProcessSelection();
+			ProcessSelection();
+			Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
+			if (currentWayParent == nullptr)
+			{
+				// we need to have entity with path component
+				return;
+			}
 
             if (!selectedWaypoints.IsEmpty())
             {
@@ -341,18 +340,20 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                         }
                     }
 
-                    sceneEditor->BeginBatch("Add Waypoint");
-
                     Entity *newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
-                    sceneEditor->Exec(new EntityAddCommand(newWaypoint, currentWayParent));
 
-                    if (!validPrevPoints.IsEmpty())
-                    {
-                        AddEdges(validPrevPoints, newWaypoint);
-                    }
-                    
+					sceneEditor->selectionSystem->SetLocked(true);
+                    sceneEditor->BeginBatch("Add Waypoint");
+                    sceneEditor->Exec(new EntityAddCommand(newWaypoint, currentWayParent));
                     sceneEditor->EndBatch();
 
+					if (!validPrevPoints.IsEmpty())
+					{
+						AddEdges(validPrevPoints, newWaypoint);
+					}
+
+					prevSelectedWaypoints = EntityGroup(newWaypoint, sceneEditor->selectionSystem->GetSelectionAABox(newWaypoint));
+					sceneEditor->selectionSystem->SetLocked(false);
                     newWaypoint->Release();
                 }
             }
