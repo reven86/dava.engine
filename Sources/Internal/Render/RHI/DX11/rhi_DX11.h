@@ -79,7 +79,8 @@ void ObtainResults(Handle handle);
 namespace PipelineStateDX11
 {
 void SetupDispatch(Dispatch* dispatch);
-unsigned VertexLayoutStride(Handle ps);
+unsigned VertexLayoutStride(Handle ps, unsigned stream_i);
+unsigned VertexLayoutStreamCount(Handle ps);
 void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount);
 void SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context);
 }
