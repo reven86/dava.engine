@@ -356,12 +356,12 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
                 tv.joint[jointi] = vertexWeightArray[vertexIndex].jointArray[jointi];
                 tv.weight[jointi] = vertexWeightArray[vertexIndex].weightArray[jointi];
             }
-            //printf("ind: %d, ", vertexIndex);
         }
 
         if ((vertexIndex != normalIndex || vertexIndex != tex0Index || vertexIndex != tex1Index))
         {
-            printf("Error:: fucking Max!!!!");
+			// printf("Error:: fucking Max!!!!");
+			// TODO : what we should do?
         }
 
         unoptimizedVerteces[v] = tv;
