@@ -29,8 +29,6 @@
 
 #include "DAVAEngine.h"
 
-#if !defined(__DAVAENGINE_NGT_PLUGIN__)
-
 #include <QApplication>
 #include <QCryptographicHash>
 #include <QFont>
@@ -52,6 +50,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
+#include "QtTools/NGTUtils/NGTApplication.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -72,6 +71,27 @@ void FixOSXFonts();
 
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine );
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine );
+
+class REApplication : public NGTBaseApplication
+{
+public:
+    REApplication(int argc, char** argv)
+        : NGTBaseApplication(argc, argv)
+    {
+    }
+
+protected:
+    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
+    {
+        names.push_back(L"plg_reflection");
+        names.push_back(L"plg_variant");
+        names.push_back(L"plg_command_system");
+        names.push_back(L"plg_serialization");
+        names.push_back(L"plg_file_system");
+        names.push_back(L"plg_qt_app");
+        names.push_back(L"plg_qt_common");
+    }
+};
 
 int main(int argc, char *argv[])
 {
@@ -142,11 +162,11 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 #endif
     glWidget->hide();
 
-        //Trick for correct loading of sprites.
-        VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
+    //Trick for correct loading of sprites.
+    VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
-        cmdLineManager.Process();
+    cmdLineManager.Process();
 
     SceneValidator::Instance()->Release();
     EditorConfig::Instance()->Release();
@@ -164,17 +184,15 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
- 
-    QApplication a( argc, argv );
+
+    REApplication a(argc, argv);
+    a.LoadPlugins();
 
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
     const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
     RunGuard runGuard( appUidPath );
     if ( !runGuard.tryToRun() )
         return;
-
-    a.setAttribute( Qt::AA_UseHighDpiPixmaps );
-    a.setAttribute( Qt::AA_ShareOpenGLContexts );
 
     Q_INIT_RESOURCE( QtToolsResources );
 
@@ -195,32 +213,26 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
     QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
 #endif
-    
-    DavaGLWidget *glWidget = nullptr;
-    QtMainWindow *mainWindow = nullptr;
 
-    QTimer::singleShot(0, [&]
-    {
-        // create and init UI
-        mainWindow = new QtMainWindow();
+    // create and init UI
+    QtMainWindow* mainWindow = new QtMainWindow();
 
-        mainWindow->EnableGlobalTimeout( true );
-        glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
+    mainWindow->EnableGlobalTimeout(true);
+    DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
-        ProjectManager::Instance()->OpenLastProject();
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
+    ProjectManager::Instance()->OpenLastProject();
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
-        mainWindow->show();
+    mainWindow->show();
 
-        DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-    } );
+    DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // start app
-    QApplication::exec();
- 
+    a.StartApplication(mainWindow);
+
     glWidget->setParent( nullptr );
     mainWindow->Release();
 
@@ -265,5 +277,3 @@ void FixOSXFonts()
     }
 #endif
 }
-
-#endif

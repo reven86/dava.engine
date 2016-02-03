@@ -26,72 +26,34 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GRAPHEDITOR_GRAPHNODE_H__
-#define __GRAPHEDITOR_GRAPHNODE_H__
+#ifndef __QTTOOLS_NGTAPPLICATION_H__
+#define __QTTOOLS_NGTAPPLICATION_H__
 
-#include <core_common/signal.hpp>
-#include <core_data_model/i_list_model.hpp>
-#include <core_reflection/reflected_object.hpp>
-#include <core_reflection/object_handle.hpp>
+#include "CommandLineParser.h"
 
-#include <string>
-#include <QPointF>
+#include "Base/BaseTypes.h"
 
-class ConnectionSlot;
-class GraphNode final
+#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
+
+class QMainWindow;
+class NGTBaseApplication
 {
-    DECLARE_REFLECTED
 public:
-    GraphNode();
-    ~GraphNode();
+    NGTBaseApplication(int argc, char** argv);
+    virtual ~NGTBaseApplication() = default;
 
-    struct Params
-    {
-        using TSlotPtr = ObjectHandleT<ConnectionSlot>;
-        using TSlotCollection = std::vector<TSlotPtr>;
+    void LoadPlugins();
+    int StartApplication(QMainWindow* appMainWindow);
 
-        TSlotCollection inputSlots;
-        TSlotCollection outputSlots;
-        std::string typeId;
-    };
-
-    void Init(Params&& params);
-
-    float GetPosX() const;
-    void SetPosX(float posX);
-    float GetPosY() const;
-    void SetPosY(float posY);
-
-    std::string const& GetTitle() const;
-    void SetTitle(std::string const& title);
-
-    size_t GetUID() const;
-    std::string const& GetType() const
-    {
-        return typeId;
-    }
-
-    void Shift(float modelShiftX, float modelShiftY);
-    void ShiftImpl(float modelShiftX, float modelShiftY);
-
-    Signal<void(float x, float y)> MoveNodes;
-    Signal<void(GraphNode*)> Changed;
+protected:
+    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
 
 private:
-    IListModel* GetInputSlots() const;
-    IListModel* GetOutputSlots() const;
-
-    /// we need this method to call it through NGT reflection system and signal qml that value changed
-    void PosXChanged(const float& x);
-    void PosYChanged(const float& y);
+    DAVA::WideString GetPluginsFolder() const;
 
 private:
-    std::string title;
-    float modelX = 0.0f, modelY = 0.0f;
-
-    std::unique_ptr<IListModel> inputSlots;
-    std::unique_ptr<IListModel> outputSlots;
-    std::string typeId;
+    GenericPluginManager pluginManager;
+    CommandLineParser commandLineParser;
 };
 
-#endif // __GRAPHEDITOR_GRAPHNODE_H__
+#endif // __QTTOOLS_NGTAPPLICATION_H__

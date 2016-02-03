@@ -26,36 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "ConnectionSlot.h"
+#include "CommandLineParser.h"
 
-#include "Metadata/ConnectionSlot.mpp"
+#include <locale>
+#include <codecvt>
 
-#include "GraphNode.h"
-
-void ConnectionSlot::Init(Params&& params)
+CommandLineParser::CommandLineParser(int argc_, char** argv_)
+    : m_argc(argc_)
+    , m_argv(argv_)
 {
-    title = std::move(params.title);
-    icon = std::move(params.icon);
-    parent = params.parent;
 }
 
-const std::string& ConnectionSlot::GetTitle() const
+int CommandLineParser::argc() const
 {
-    return title;
+    return m_argc;
 }
 
-const std::string& ConnectionSlot::GetIcon() const
+char** CommandLineParser::argv() const
 {
-    return icon;
+    return m_argv;
 }
 
-size_t ConnectionSlot::GetUID() const
+bool CommandLineParser::getFlag(const char* arg) const
 {
-    return reinterpret_cast<size_t>(this);
+    size_t argLen = ::strlen(arg);
+    for (int i = 0; i < m_argc; ++i)
+    {
+        if (::strlen(m_argv[i]) == argLen &&
+            ::strncmp(m_argv[i], arg, argLen) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
-ObjectHandleT<GraphNode> ConnectionSlot::GetParentNode() const
+const char* CommandLineParser::getParam(const char* arg) const
 {
-    assert(parent != nullptr);
-    return parent;
+    size_t argLen = ::strlen(arg);
+    for (int i = 0; i < m_argc - 1; ++i)
+    {
+        if (::strlen(m_argv[i]) == argLen &&
+            ::strncmp(m_argv[i], arg, argLen) == 0)
+        {
+            return m_argv[i + 1];
+        }
+    }
+    return nullptr;
+}
+
+std::string CommandLineParser::getParamStr(const char* arg) const
+{
+    auto param = getParam(arg);
+    if (param != nullptr)
+    {
+        return param;
+    }
+    return "";
+}
+
+std::wstring CommandLineParser::getParamStrW(const char* arg) const
+{
+    auto param = getParam(arg);
+    if (param != nullptr)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+        return conv.from_bytes(param);
+    }
+    return L"";
 }

@@ -26,56 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Connector.h"
-#include "Metadata/Connector.mpp"
+#ifndef __QTTOOLS_COMMANDLINEPARSER_H__
+#define __QTTOOLS_COMMANDLINEPARSER_H__
 
-#include "GraphNode.h"
-#include "ConnectionSlot.h"
-#include "ConnectionManager.h"
+#include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
+#include "core_dependency_system/i_interface.hpp"
 
-#include <core_reflection/i_definition_manager.hpp>
-#include <core_dependency_system/i_interface.hpp>
-
-#include <assert.h>
-
-Connector::Connector()
+class CommandLineParser
+: public Implements<ICommandLineParser>
 {
-}
+public:
+    CommandLineParser(int argc_, char** argv_);
 
-Connector::~Connector()
-{
-}
+    int argc() const override;
+    char** argv() const override;
 
-void Connector::Init(size_t outputSlotID_, size_t intputSlotID_)
-{
-    outputSlotID = outputSlotID_;
-    intputSlotID = intputSlotID_;
-}
+    bool getFlag(const char* arg) const override;
+    const char* getParam(const char* arg) const override;
+    std::string getParamStr(const char* arg) const override;
+    std::wstring getParamStrW(const char* arg) const override;
 
-ObjectHandleT<ConnectionSlot> Connector::GetOutputSlot() const
-{
-    assert(ConnectionManager::Instance().GetSlot(outputSlotID) != nullptr);
-    return ConnectionManager::Instance().GetSlot(outputSlotID);
-}
+private:
+    int m_argc;
+    char** m_argv;
+};
 
-ObjectHandleT<ConnectionSlot> Connector::GetInputSlot() const
-{
-    assert(ConnectionManager::Instance().GetSlot(intputSlotID) != nullptr);
-    return ConnectionManager::Instance().GetSlot(intputSlotID);
-}
-
-size_t Connector::GetInputSlotId() const
-{
-    return intputSlotID;
-}
-
-size_t Connector::GetOutputSlotId() const
-{
-    return outputSlotID;
-}
-
-size_t Connector::GetUID() const
-{
-    size_t uid = reinterpret_cast<size_t>(this);
-    return uid;
-}
+#endif // __QTTOOLS_COMMANDLINEPARSER_H__
