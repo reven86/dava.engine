@@ -542,12 +542,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        //enter after focusing - only hide cursor
-        if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING && isMouseCursorShown)
-        {
-            SetCursorVisible(false);
-        }
-
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
         for (auto& change : mouseButtonChanges)
         {
