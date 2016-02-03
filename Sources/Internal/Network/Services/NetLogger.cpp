@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 NetLogger::NetLogger(bool selfInstallFlag, size_t queueSize)
     : selfInstall(selfInstallFlag)
     , isInstalled(false)
@@ -70,6 +69,12 @@ void NetLogger::Uninstall()
         isInstalled = false;
         Logger::RemoveCustomOutput(this);
     }
+}
+
+size_t NetLogger::GetMessageQueueSize() const
+{
+    LockGuard<Mutex> lock(mutex);
+    return recordQueue.size();
 }
 
 void NetLogger::ChannelOpen()

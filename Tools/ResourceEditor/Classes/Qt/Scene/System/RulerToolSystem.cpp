@@ -84,7 +84,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 
     SendUpdatedLength();
 
-	enabled = true;
+    enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
@@ -221,7 +221,7 @@ void RulerToolSystem::RemoveLastPoint()
         lengths.erase(lengthsIter);
 
         SendUpdatedLength();
-	}
+    }
 }
 
 void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
@@ -241,7 +241,7 @@ void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
     }
     else if (!isIntersectsLandscape)
     {
-		previewLength = -1.f;
+        previewLength = -1.f;
 	}
 	SendUpdatedLength();
 }
@@ -289,7 +289,7 @@ void RulerToolSystem::DrawPoints()
     {
         points.push_back(previewPoint);
     }
-    
+
     const uint32 pointsCount = points.size();
 	if(pointsCount > 1)
 	{

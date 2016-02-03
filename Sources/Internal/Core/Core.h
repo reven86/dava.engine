@@ -241,8 +241,8 @@ public:
 		* FOR INTERNAL FRAMEWORK USAGE ONLY * 
 		MUST BE CALLED FROM templates on different OS
 	 */
-	
-	void SystemAppStarted();
+
+    void SystemAppStarted();
 	void SystemProcessFrame();
 	void SystemAppFinished();
 

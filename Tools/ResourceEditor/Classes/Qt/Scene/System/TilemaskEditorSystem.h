@@ -124,7 +124,7 @@ protected:
 
     void CreateUndoPoint();
 
-	void InitSprites();
+    void InitSprites();
 
 	void FinishEditing();
 };

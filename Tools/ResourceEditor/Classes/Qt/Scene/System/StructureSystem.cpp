@@ -304,7 +304,7 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
                 if (!pathToReload.IsEmpty())
                 {
                     refsToReload.insert(pathToReload);
-				}
+                }
 			}
 		}
 
