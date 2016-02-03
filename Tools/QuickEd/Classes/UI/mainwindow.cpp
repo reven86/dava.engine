@@ -493,7 +493,7 @@ void MainWindow::SetupBackgroundMenu()
         if (actionGroup->checkedAction() == nullptr)
         {
             MainWindow_namespace::SetColoredIconToAction(backgroundCustomColorAction, color);
-            backgroundCustomColorAction->trigger();
+            backgroundCustomColorAction->setChecked(true);
         }
     }
 }
