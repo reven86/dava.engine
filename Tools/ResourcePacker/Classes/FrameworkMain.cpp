@@ -175,7 +175,7 @@ void ProcessRecourcePacker()
     }
 
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
-    Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
+    Logger::Info("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
 }
 
 void FrameworkDidLaunched()

@@ -30,12 +30,14 @@
 
 #include "FileSystem/FileSystem.h"
 #include "Platform/SystemTimer.h"
+#include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Job/JobManager.h"
 
 using namespace DAVA;
 
 AssetCacheClient::AssetCacheClient()
+    : isActive(false)
 {
     DVASSERT(JobManager::Instance() != nullptr);
 
@@ -78,9 +80,12 @@ void AssetCacheClient::Disconnect()
 
 AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
-    requestResult.recieved = false;
-    requestResult.succeed = false;
-    requestResult.requestID = AssetCache::PACKET_ADD_REQUEST;
+    {
+        LockGuard<Mutex> guard(requestLocker);
+        requestResult.recieved = false;
+        requestResult.succeed = false;
+        requestResult.requestID = AssetCache::PACKET_ADD_REQUEST;
+    }
 
     bool requestSent = client.AddToCache(key, value);
     if (requestSent)
@@ -93,12 +98,15 @@ AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::Cac
 
 AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
 {
-    requestResult.recieved = false;
-    requestResult.succeed = false;
-    requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
+    {
+        LockGuard<Mutex> guard(requestLocker);
+        requestResult.recieved = false;
+        requestResult.succeed = false;
+        requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
 
-    DVASSERT(requests.count(key) == 0);
-    requests[key] = outputFolder;
+        DVASSERT(requests.count(key) == 0);
+        requests[key] = outputFolder;
+    }
 
     bool requestSent = client.RequestFromCache(key);
     if (requestSent)
@@ -107,6 +115,7 @@ AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCach
     }
     else
     {
+        LockGuard<Mutex> guard(requestLocker);
         requests.erase(key);
     }
 
@@ -116,20 +125,30 @@ AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCach
 AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-    while (requestResult.recieved == false)
+
+    ResultOfRequest currentRequestResult;
     {
-        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (requestResult.recieved == false))
+        LockGuard<Mutex> guard(requestLocker);
+        currentRequestResult = requestResult;
+    }
+
+    while (currentRequestResult.recieved == false)
+    {
         {
-            Logger::Error("[AssetCacheClient::%s] Sending files refused by timeout (%lld ms)", __FUNCTION__, timeoutms);
+            LockGuard<Mutex> guard(requestLocker);
+            currentRequestResult = requestResult;
+        }
+
+        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequestResult.recieved == false))
+        {
             return AssetCache::ERROR_OPERATION_TIMEOUT;
         }
     }
 
-    if (requestResult.succeed == false)
+    if (currentRequestResult.succeed == false)
     {
-        Logger::Error("[AssetCacheClient::%s] Request (%d) failed by server", __FUNCTION__, requestResult.requestID);
-        return AssetCache::ERROR_SERVER_ERROR;
+        return (currentRequestResult.requestID == AssetCache::PACKET_GET_REQUEST) ? AssetCache::ERROR_NOT_FOUND_ON_SERVER : AssetCache::ERROR_SERVER_ERROR;
     }
 
     return AssetCache::ERROR_OK;
@@ -137,6 +156,7 @@ AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
 
 void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool added)
 {
+    LockGuard<Mutex> guard(requestLocker);
     if (requestResult.requestID == AssetCache::PACKET_ADD_REQUEST)
     {
         requestResult.succeed = added;
@@ -150,24 +170,33 @@ void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool 
 
 void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
-    if (requestResult.requestID == AssetCache::PACKET_GET_REQUEST)
+    FilePath outputFolder;
+    ResultOfRequest currentRequestResult;
     {
-        requestResult.succeed = (value.IsEmpty() == false);
-        requestResult.recieved = true;
-        if (requestResult.succeed)
-        {
-            const FilePath& outputFolder = requests[key];
+        LockGuard<Mutex> guard(requestLocker);
+        currentRequestResult = requestResult;
+        outputFolder = requests[key];
+        requests.erase(key);
+    }
 
+    if (currentRequestResult.requestID == AssetCache::PACKET_GET_REQUEST)
+    {
+        {
+            LockGuard<Mutex> guard(requestLocker);
+            requestResult.succeed = (value.IsEmpty() == false);
+            requestResult.recieved = true;
+        }
+
+        if (value.IsEmpty() == false)
+        {
             FileSystem::Instance()->CreateDirectory(outputFolder, true);
             value.Export(outputFolder);
         }
     }
     else
     {
-        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
+        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, currentRequestResult.requestID);
     }
-
-    requests.erase(key);
 }
 
 void AssetCacheClient::AddListener(AssetCache::ClientNetProxyListener* listener)

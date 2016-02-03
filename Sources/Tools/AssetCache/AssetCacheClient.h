@@ -30,6 +30,7 @@
 #define __ASSET_CACHE_CLIENT_H__
 
 #include "AssetCache/AssetCache.h"
+#include <atomic>
 
 class AssetCacheClient : public DAVA::AssetCache::ClientNetProxyListener
 {
@@ -73,10 +74,12 @@ private:
     DAVA::AssetCache::ClientNetProxy client;
 
     DAVA::uint64 timeoutms = 60u * 1000u;
+
+    DAVA::Mutex requestLocker;
     ResultOfRequest requestResult;
 
     DAVA::UnorderedMap<DAVA::AssetCache::CacheItemKey, DAVA::FilePath> requests;
-    bool isActive = false;
+    std::atomic<bool> isActive;
 };
 
 #endif //__ASSET_CACHE_CLIENT_H__

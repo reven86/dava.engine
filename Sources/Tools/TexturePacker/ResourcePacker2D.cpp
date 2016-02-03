@@ -400,7 +400,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         if (!fileList->IsDirectory(fi))
         {
             String fileName = fileList->GetFilename(fi);
-            if (fileName == ".DS_Store")
+            if (fileName == ".DS_Store" || fileName == "flags.txt")
             {
                 continue;
             }
@@ -612,7 +612,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(key, outputPath);
     if (requested == AssetCache::ERROR_OK)
     {
-        Logger::Info("GOT FROM CACHE - %s", inputPath.GetAbsolutePathname().c_str());
+        Logger::Info("[%s] - got from cache", inputPath.GetAbsolutePathname().c_str());
         return true;
     }
     else
@@ -622,7 +622,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
             //            cacheClient = nullptr;
         }
 
-        Logger::Info("%s - attempted to retrieve from cache, result code %d (%s)", inputPath.GetAbsolutePathname().c_str(), requested, GetErrorAsString(requested).c_str());
+        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), GetErrorAsString(requested).c_str());
     }
 
     return false;
@@ -639,8 +639,6 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     {
         return false;
     }
-
-    Logger::Info("[%s] in (%s), out(%s)", __FUNCTION__, inputPath.GetAbsolutePathname().c_str(), outputPath.GetAbsolutePathname().c_str());
 
     AssetCache::CachedItemValue value;
 
@@ -676,7 +674,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(key, value);
         if (added == AssetCache::ERROR_OK)
         {
-            Logger::Info("%s - ADDED TO CACHE (%lld)", inputPath.GetAbsolutePathname().c_str(), value.GetSize());
+            Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
             return true;
         }
         else
@@ -686,7 +684,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
                 //                cacheClient = nullptr;
             }
 
-            Logger::Info("%s - attempted to add to cache, result code %d (%s) (%lld)", inputPath.GetAbsolutePathname().c_str(), added, GetErrorAsString(added).c_str(), value.GetSize());
+            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), GetErrorAsString(added).c_str());
         }
     }
     else
