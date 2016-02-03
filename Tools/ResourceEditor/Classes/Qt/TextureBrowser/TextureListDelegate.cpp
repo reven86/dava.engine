@@ -184,7 +184,7 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 		}
 
 		// draw formats info
-		int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
+        int infoLen  = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
 
 		// draw text info
 		{
@@ -197,7 +197,6 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 			painter->drawText(textRect, textureName);
 
 			painter->setFont(origFont);
-			painter->setPen(INFO_TEXT_COLOR);
 			textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
             QString infoText = CreateInfoString(index);
