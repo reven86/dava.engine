@@ -534,7 +534,13 @@ void MainWindow::OnBackgroundCustomColorClicked()
     QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
     if (!color.isValid())
     {
-        previousBackgroundColorActions.head()->trigger();
+        DVASSERT(!previousBackgroundColorActions.isEmpty()); //can not be empty, last added action is sender();
+        QAction* previousAction = previousBackgroundColorActions.head();
+        DVASSERT(nullptr != previousAction);
+        if (previousAction != customColorAction) //if we launch app with custom color there is no other actions in queue
+        {
+            previousAction->trigger();
+        }
         return;
     }
     MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
