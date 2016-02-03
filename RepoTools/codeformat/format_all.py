@@ -39,7 +39,9 @@ for source in sources:
 					check_format(file)
 				else:
 					format(file)
-if formatOK:
-	print "##teamcity[message text=\'" + "format OK" + "\' errorDetails=\'\' status=\'" + "NORMAL" + "\']\n"
-else:
-	exit("not all files formatted")
+					
+if args.teamcity_notify:
+	if formatOK:
+		print "##teamcity[message text=\'" + "format OK" + "\' errorDetails=\'\' status=\'" + "NORMAL" + "\']\n"
+	else:
+		exit("not all files formatted")
