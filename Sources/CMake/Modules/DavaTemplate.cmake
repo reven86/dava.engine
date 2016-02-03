@@ -241,6 +241,20 @@ if( DAVA_FOUND )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp
                                     ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
+        elseif( MACOS )
+        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
+                        )
+
+
+
         endif()
 
     endif()
