@@ -17,7 +17,7 @@ elseif( APPLE )
     else()
         set( ADDED_CPP_PATTERNS *.mm *.m TemplateMacOS/*.cpp TemplateMacOS/*.mm TemplateMacOS/*.m  )
     	set( ADDED_H_PATTERNS TemplateMacOS/*.h  )
-        list( APPEND ERASE_FILES     )
+        list( APPEND ERASE_FILES     AppDelegate.h AppDelegate.mm HelperAppDelegate.h HelperAppDelegate.mm MainWindowController.h MainWindowController.mm OpenGLView.h OpenGLView.mm CoreMacOSPlatform.h )
 
         set(CMAKE_C_FLAGS  ${CMAKE_C_FLAGS} "-x objective-c")
         set(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-x objective-c++")
