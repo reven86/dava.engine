@@ -43,13 +43,13 @@ bool TextBlock::isBiDiSupportEnabled = false;
 Set<TextBlock*> TextBlock::registredTextBlocks;
 Mutex TextBlock::textblockListMutex;
 
-void TextBlock::RegisterTextBlock(TextBlock *textBlock)
+void TextBlock::RegisterTextBlock(TextBlock* textBlock)
 {
     LockGuard<Mutex> lock(textblockListMutex);
     registredTextBlocks.insert(textBlock);
 }
 
-void TextBlock::UnregisterTextBlock(TextBlock *textBlock)
+void TextBlock::UnregisterTextBlock(TextBlock* textBlock)
 {
     LockGuard<Mutex> lock(textblockListMutex);
     registredTextBlocks.erase(textBlock);
