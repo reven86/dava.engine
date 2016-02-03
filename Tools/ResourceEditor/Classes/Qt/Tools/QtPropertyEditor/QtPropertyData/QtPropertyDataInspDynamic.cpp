@@ -135,7 +135,7 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
         }
     }
 
-	return ret;
+    return ret;
 }
 
 bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget *editor)

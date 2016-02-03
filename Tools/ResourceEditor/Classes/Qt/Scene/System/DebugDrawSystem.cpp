@@ -89,11 +89,11 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
         bool isSelected = selSystem->GetSelection().ContainsEntity(entity);
 
         DrawObjectBoxesByType(entity);
-		DrawUserNode(entity);
+        DrawUserNode(entity);
 		DrawLightNode(entity);
         DrawHangingObjects(entity);
         DrawSwitchesWithDifferentLods(entity);
-		DrawWindNode(entity);
+        DrawWindNode(entity);
         DrawSwitchesWithDifferentLods(entity);
         DrawSoundNode(entity);
 
@@ -104,7 +104,7 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 
         for (int32 i = 0; i < entity->GetChildrenCount(); ++i)
         {
-			Draw(entity->GetChild(i));
+            Draw(entity->GetChild(i));
 		}
 	}
 }
@@ -133,7 +133,7 @@ void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
 
     if (drawBox)
     {
-		DrawEntityBox(entity, objectTypeColor);
+        DrawEntityBox(entity, objectTypeColor);
 	}
 }
 
@@ -172,7 +172,7 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
         if (light->GetType() == Light::TYPE_DIRECTIONAL)
         {
-			DAVA::Vector3 center = worldBox.GetCenter();
+            DAVA::Vector3 center = worldBox.GetCenter();
 			DAVA::Vector3 direction = -light->GetDirection();
 
 			direction.Normalize();
@@ -257,7 +257,7 @@ void DebugDrawSystem::DrawWindNode(DAVA::Entity *entity)
 	WindComponent * wind = GetWindComponent(entity);
     if (wind)
     {
-		const Matrix4 & worldMx = entity->GetWorldTransform();
+        const Matrix4 & worldMx = entity->GetWorldTransform();
 		Vector3 worldPosition = worldMx.GetTranslationVector();
 
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(worldPosition, worldPosition + wind->GetDirection() * 3.f, .75f, DAVA::Color(1.0f, 0.5f, 0.2f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
@@ -298,9 +298,9 @@ void DebugDrawSystem::CollectRenderBatchesRecursively(Entity* entity, RenderBatc
                         batches.emplace_back(batch, wt);
                     }
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 
     for (int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
     {
@@ -310,7 +310,7 @@ void DebugDrawSystem::CollectRenderBatchesRecursively(Entity* entity, RenderBatc
 
 DAVA::float32 DebugDrawSystem::GetMinimalZ(const RenderBatchesWithTransforms& batches) const
 {
-	float32 minZ = AABBOX_INFINITY;
+    float32 minZ = AABBOX_INFINITY;
     for (auto batch : batches)
     {
         PolygonGroup* polygonGroup = batch.first->GetPolygonGroup();
@@ -339,7 +339,7 @@ void DebugDrawSystem::GetLowestVertexes(const RenderBatchesWithTransforms& batch
             {
                 vertexes.push_back(pos * batch.second);
             }
-		}
+        }
 	}
 }
 
@@ -369,7 +369,7 @@ Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2& centerXY)
 
     if (landscape)
     {
-		return landscape->PlacePoint(Vector3(centerXY));
+        return landscape->PlacePoint(Vector3(centerXY));
 	}
 
 	return Vector3();

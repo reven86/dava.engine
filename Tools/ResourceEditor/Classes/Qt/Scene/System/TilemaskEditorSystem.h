@@ -126,7 +126,7 @@ protected:
 
     void InitSprites();
 
-	void FinishEditing();
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

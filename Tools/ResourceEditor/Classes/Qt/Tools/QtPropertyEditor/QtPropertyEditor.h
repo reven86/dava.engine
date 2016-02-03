@@ -58,9 +58,9 @@ public:
     void MergeProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
     QModelIndex InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent = QModelIndex());
     QModelIndex AppendHeader(const QString& text);
-    QModelIndex InsertHeader(const QString &text, int row);
+    QModelIndex InsertHeader(const QString& text, int row);
 
-	QtPropertyData * GetProperty(const QModelIndex &index) const;
+    QtPropertyData * GetProperty(const QModelIndex &index) const;
 	QtPropertyData * GetRootProperty() const;
 
     void FinishTreeCreation();
@@ -68,7 +68,7 @@ public:
     bool GetEditTracking() const;
     void SetEditTracking(bool enabled);
 
-	void RemoveProperty(const QModelIndex &index);
+    void RemoveProperty(const QModelIndex &index);
 	void RemoveProperty(QtPropertyData* data);
 	void RemovePropertyAll();
 

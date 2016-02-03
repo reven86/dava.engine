@@ -61,9 +61,11 @@ public:
     }
 
     bool GetEditTracking()
-    { return propModel->GetEditTracking(); }
+    {
+        return propModel->GetEditTracking();
+    }
 
-	void SetEditTracking(bool enabled)
+    void SetEditTracking(bool enabled)
 	{ propModel->SetEditTracking(enabled); }
 
 	void RemoveProperty(const QModelIndex &index)

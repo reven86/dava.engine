@@ -1803,8 +1803,8 @@ void CommandBufferGLES2_t::Execute()
             DVASSERT(baseInst == 0) // it's not supported in GLES
             GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-//            DVASSERT(baseInst == 0)
-//            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+            //            DVASSERT(baseInst == 0)
+            //            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
             GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
             #else
             //            if( baseInst )

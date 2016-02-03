@@ -54,7 +54,8 @@ public:
     AppxEnginePrivate()
     {
         HRESULT hr = CoInitialize(NULL);
-        if (FAILED(hr)) {
+        if (FAILED(hr))
+        {
             qCWarning(lcWinRtRunner) << "Failed to initialize COM:" << qt_error_string(hr);
             hasFatalError = true;
         }
@@ -67,7 +68,7 @@ public:
         CoUninitialize();
     }
 
-    Runner *runner;
+    Runner* runner;
     bool hasFatalError;
 
     QString app;
@@ -88,7 +89,7 @@ public:
 };
 
 #define wchar(str) reinterpret_cast<LPCWSTR>(str.utf16())
-#define hStringFromQString(str) HStringReference(reinterpret_cast<const wchar_t *>(str.utf16())).Get()
+#define hStringFromQString(str) HStringReference(reinterpret_cast<const wchar_t*>(str.utf16())).Get()
 #define QStringFromHString(hstr) QString::fromWCharArray(WindowsGetStringRawBuffer(hstr, Q_NULLPTR))
 
 #define RETURN_IF_FAILED(msg, ret) \
@@ -101,6 +102,6 @@ public:
 #define RETURN_HR_IF_FAILED(msg) RETURN_IF_FAILED(msg, return hr)
 #define RETURN_OK_IF_FAILED(msg) RETURN_IF_FAILED(msg, return S_OK)
 #define RETURN_FALSE_IF_FAILED(msg) RETURN_IF_FAILED(msg, return false)
-#define RETURN_VOID_IF_FAILED(msg) RETURN_IF_FAILED(msg, return)
+#define RETURN_VOID_IF_FAILED(msg) RETURN_IF_FAILED(msg, return )
 
 #endif // APPXENGINE_P_H

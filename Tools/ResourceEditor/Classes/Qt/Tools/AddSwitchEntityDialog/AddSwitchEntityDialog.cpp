@@ -72,7 +72,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
     pathWidgets.push_back(thirdWidget);
 
     propEditor->setVisible(false);
-	propEditor->setMinimumHeight(0);
+    propEditor->setMinimumHeight(0);
 	propEditor->setMaximumSize(propEditor->maximumWidth(), 0);
 }
 

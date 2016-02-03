@@ -70,7 +70,7 @@ public:
     eErrorType EnableCustomDraw();
     void DisableCustomDraw();
 
-	eErrorType EnableTilemaskEditing();
+    eErrorType EnableTilemaskEditing();
 	void DisableTilemaskEditing();
 
 	bool IsNotPassableTerrainEnabled();
