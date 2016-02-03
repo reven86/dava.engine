@@ -34,66 +34,15 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
-#include "Scene3D/Entity.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/RenderObject.h"
-
 #include "FileSystem/FilePath.h"
-
-#include "Scene3D/SceneFile/SerializationContext.h"
-
 #include "MemoryManager/MemoryProfiler.h"
 
 //#define LANDSCAPE_SPECULAR_LIT 1
 
 namespace DAVA
 {
-class Scene;
-class Image;
-class Texture;
-class Shader;
-class SceneFileV2;
-class Heightmap;
-class NMaterial;
-
-template <class T>
-class LandQuadTreeNode
-{
-public:
-    LandQuadTreeNode()
-    {
-        children = 0;
-        parent = 0;
-        for (int32 k = 0; k < 4; ++k)
-            neighbours[k] = 0;
-    }
-    ~LandQuadTreeNode()
-    {
-        ReleaseChildren();
-    }
-
-    void AllocChildren()
-    {
-        ReleaseChildren();
-        children = new LandQuadTreeNode[4];
-    }
-
-    void ReleaseChildren()
-    {
-        SafeDeleteArray(children);
-    }
-
-    LandQuadTreeNode* children; // It's array of 4 child nodes
-    LandQuadTreeNode* parent;
-    LandQuadTreeNode* neighbours[4];
-    T data;
-};
-
-template <class T>
-class LinearQuadTree
-{
-public:
-};
 
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
@@ -104,20 +53,26 @@ public:
 
 class FoliageSystem;
 class NMaterial;
+class SerializationContext;
+class Heightmap;
+
 class Landscape : public RenderObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_LANDSCAPE)
 
 public:
-    enum
-    {
-        LEFT = 0,
-        RIGHT = 1,
-        TOP = 2,
-        BOTTOM = 3,
-    };
     Landscape();
     virtual ~Landscape();
+
+    static const int32 PATCH_VERTEX_COUNT = 17;
+    static const int32 PATCH_QUAD_COUNT = (PATCH_VERTEX_COUNT - 1);
+    static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
+    static const int32 MAX_QUAD_COUNT_IN_VBO = 128;
+    static const int32 RENDER_QUAD_WIDTH = 129;
+    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+
+    static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
+    static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;
@@ -130,12 +85,8 @@ public:
     const static FastName TEXTURE_TILEMASK;
     const static FastName TEXTURE_SPECULAR;
 
-    /**
-        \brief Set lod coefficients for dynamic roam landscape
-        Default values: (60, 120, 240, 480)
-        Every next value should be almost twice higher than previous to avoid gaps between levels
-     */
-    void SetLods(const Vector4& lods);
+    const static FastName LANDSCAPE_QUALITY_NAME;
+    const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
@@ -144,22 +95,20 @@ public:
     virtual void BuildLandscapeFromHeightmapImage(const FilePath& heightmapPathname, const AABBox3& landscapeBox);
 
     //TODO: think about how to switch normal generation for landscape on/off
-    //ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
+    //ideally it should be runtime option and normal generation should happen when material that requires landscape has been set
     class LandscapeVertex
     {
     public:
         Vector3 position;
         Vector2 texCoord;
-#ifdef LANDSCAPE_SPECULAR_LIT
         Vector3 normal;
         Vector3 tangent;
-#endif
     };
 
     struct LanscapeBufferData
     {
         rhi::HVertexBuffer buffer;
-        LandscapeVertex* data;
+        uint8* data;
         uint32 dataSize;
     };
 
@@ -216,37 +165,61 @@ public:
     void SetForceFirstLod(bool force);
 
 protected:
-    static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
-    static const int32 RENDER_QUAD_WIDTH = 129;
-    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
-
-    struct LandscapeQuad
+    struct PatchQuadInfo
     {
+        uint32 rdoQuad;
         AABBox3 bbox;
-        int16 x = 0;
-        int16 y = 0;
-        int16 size = 0;
-        int16 rdoQuad = -1;
-        uint32 frame = 0;
-        uint8 startClipPlane = 0;
-        int8 lod = 0;
+        Vector3 positionOfMaxError;
+        float32 maxError;
     };
 
-    //RHI_COMPLETE need remove this
-    void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad>* currentNode, int16 nodeSize,
-                               Vector<LandQuadTreeNode<LandscapeQuad>*>& nodes);
+    struct SubdivisionPatchInfo
+    {
+        enum
+        {
+            CLIPPED = 1,
+            SUBDIVIDED = 2,
+            TERMINATED = 3,
+        };
 
-    void RecursiveBuild(LandQuadTreeNode<LandscapeQuad>* currentNode, int32 level, int32 maxLevels);
-    LandQuadTreeNode<LandscapeQuad>* FindNodeWithXY(LandQuadTreeNode<LandscapeQuad>* currentNode, int16 quadX, int16 quadY, int16 quadSize);
-    void FindNeighbours(LandQuadTreeNode<LandscapeQuad>* currentNode);
-    void MarkFrames(LandQuadTreeNode<LandscapeQuad>* currentNode, int32& depth);
+        SubdivisionPatchInfo()
+        {
+            subdivisionState = CLIPPED;
+            startClipPlane = 0;
+        }
 
-    void GenLods(LandQuadTreeNode<LandscapeQuad>* currentNode, uint8 clippingFlags, Camera* camera);
-    void GenQuad(LandQuadTreeNode<LandscapeQuad>* currentNode, int8 lod);
-    void GenFans();
+        uint32 lastSubdividedSize;
+        uint32 subdivisionState;
+        uint8 startClipPlane;
+    };
 
-    int16 AllocateQuadVertexBuffer(LandscapeQuad* quad);
+    struct SubdivisionLevelInfo
+    {
+        uint32 offset;
+        uint32 size;
+    };
+
+    uint32 subdivLevelCount;
+    uint32 subdivPatchCount;
+    uint32 quadsInWidth;
+
+    SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
+    PatchQuadInfo* patchQuadArray = nullptr;
+    SubdivisionPatchInfo* subdivPatchArray = nullptr;
+    Vector<SubdivisionPatchInfo*> drawPatchArray;
+
+    SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
+    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
+    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
+    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
+
+    void DrawPatch(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+    void AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y);
+    void DrawLandscape();
+
+    inline uint16 GetVertexIndex(uint16 x, uint16 y);
+
+    int16 AllocateQuadVertexBuffer(uint32 x, uint32 y, uint32 size);
     void AllocateGeometryData();
     void ReleaseGeometryData();
 
@@ -256,23 +229,14 @@ protected:
 
     void FlushQueue();
     void ClearQueue();
+
     bool BuildHeightmap();
     void BuildLandscape();
 
-    void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
-    void UnregisterCreateTextureCallback();
-
-    void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
-
     void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
 
-private:
     void AllocateRenderBatch();
 
-    LandQuadTreeNode<LandscapeQuad> quadTreeHead;
-    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
-    Vector<LandQuadTreeNode<LandscapeQuad>*> lod0quads;
-    Vector<LandQuadTreeNode<LandscapeQuad>*> lodNot0quads;
     Vector<rhi::HVertexBuffer> vertexBuffers;
     Vector<LanscapeBufferData> bufferRestoreData;
     FilePath heightmapPath;
@@ -283,24 +247,59 @@ private:
     FoliageSystem* foliageSystem = nullptr;
 
     std::vector<uint16> indices;
-    float32 lodSqDistance[8];
 
-    uint32 vertexLayoutUID = 0;
+    uint32 vertexLayoutUID = rhi::VertexLayout::InvalidUID;
     int32 lodLevelsCount = 0;
-    int32 allocatedMemoryForQuads = 0;
     int32 queueIndexCount = 0;
     int32 flushQueueCounter = 0;
     uint32 drawIndices = 0;
     int16 queueRdoQuad = 0;
     bool forceFirstLod = false;
     bool updatable = false;
+    bool isDebugDraw = false;
+
+    Vector3 cameraPos;
+    float32 fovCorrection;
+
+    float32 defaultFov;
+
+    float32 solidAngleError;
+    float32 geometryAngleError;
+    float32 absHeightError;
+
+    float32 zoomSolidAngleError;
+    float32 zoomGeometryAngleError;
+    float32 zoomAbsHeightError;
+
+    float32 fovSolidAngleError;
+    float32 fovGeometryAngleError;
+    float32 fovAbsHeightError;
+
+    float32 zoomFov;
+    float32 normalFov;
+
+    bool isRequireTangentBasis = false;
 
 public:
     INTROSPECTION_EXTEND(Landscape, RenderObject,
                          PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
-                         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT));
+                         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
+                         MEMBER(solidAngleError, "solidAngleError", I_VIEW | I_EDIT)
+                         MEMBER(geometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
+                         MEMBER(absHeightError, "absHeightError", I_VIEW | I_EDIT)
+
+                         MEMBER(zoomSolidAngleError, "solidAngleError", I_VIEW | I_EDIT)
+                         MEMBER(zoomGeometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
+                         MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT)
+                         MEMBER(isDebugDraw, "isDebugDraw", I_VIEW | I_EDIT));
 };
+
+// Inline functions
+inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
+{
+    return x + y * RENDER_QUAD_WIDTH;
+}
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__
