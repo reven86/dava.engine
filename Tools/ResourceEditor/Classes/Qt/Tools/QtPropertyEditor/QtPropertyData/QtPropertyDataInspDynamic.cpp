@@ -31,11 +31,11 @@
 
 #include <QDebug>
 
-QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata, DAVA::FastName _name)
-    : QtPropertyDataDavaVariant(DAVA::VariantType())
+QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(const DAVA::FastName& name_, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata)
+    : QtPropertyDataDavaVariant(name_, DAVA::VariantType())
     , dynamicInfo(_dynamicInfo)
     , ddata(_ddata)
-    , name(_name)
+    , name(name_)
     , inspFlags(0)
     , lastCommand(NULL)
 {
@@ -128,14 +128,14 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
 
         // if current variant value not equal to the real member value
         // we should update current variant value
-        if(v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
-		{
-			QtPropertyDataDavaVariant::SetVariantValue(v);
-			ret = true;
-		}
-	}
+        if (v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
+        {
+            QtPropertyDataDavaVariant::SetVariantValue(v);
+            ret = true;
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget *editor)

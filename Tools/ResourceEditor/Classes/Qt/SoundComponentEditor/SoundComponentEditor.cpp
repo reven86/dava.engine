@@ -38,6 +38,8 @@
 #include <QSlider>
 #include <QToolTip>
 
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
 SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent) :
     QDialog(parent),
     component(0),
@@ -47,8 +49,8 @@ SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
 
-    ui->playButton->setIcon(QIcon(":/QtIcons/play.png"));
-    ui->stopButton->setIcon(QIcon(":/QtIcons/stop.png"));
+    ui->playButton->setIcon(SharedIcon(":/QtIcons/play.png"));
+    ui->stopButton->setIcon(SharedIcon(":/QtIcons/stop.png"));
 
     ui->playButton->setDisabled(true);
     ui->stopButton->setDisabled(true);

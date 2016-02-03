@@ -453,17 +453,16 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     const YamlNode* lodsNode = node->Get("activeLODS");
     if (lodsNode)
     {
-		const Vector<YamlNode*> & vec = lodsNode->AsVector();
-		for (uint32 i=0; i<(uint32)vec.size(); ++i)
-			SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
-	}
+        const Vector<YamlNode*>& vec = lodsNode->AsVector();
+        for (uint32 i = 0; i < (uint32)vec.size(); ++i)
+            SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
+    }
 
+    colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
+    colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
+    alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
 
-	colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
-	colorRandom = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorRandom"));
-	alphaOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get("alphaOverLife"));
-	
-	const YamlNode* frameOverLifeEnabledNode = node->Get("frameOverLifeEnabled");
+    const YamlNode* frameOverLifeEnabledNode = node->Get("frameOverLifeEnabled");
 	if (frameOverLifeEnabledNode)
 	{
 		frameOverLifeEnabled = frameOverLifeEnabledNode->AsBool();
@@ -667,16 +666,16 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     const YamlNode* loopVariationNode = node->Get("loopVariation");
     if (loopVariationNode)
-		loopVariation = loopVariationNode->AsFloat();
-		
-	const YamlNode * loopEndTimeNode = node->Get("loopEndTime");
-	if (loopEndTimeNode)
-		loopEndTime = loopEndTimeNode->AsFloat();				
+        loopVariation = loopVariationNode->AsFloat();
 
-	/*validate all time depended property lines*/	
-	UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
-	UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
-	UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);
+    const YamlNode* loopEndTimeNode = node->Get("loopEndTime");
+    if (loopEndTimeNode)
+        loopEndTime = loopEndTimeNode->AsFloat();
+
+    /*validate all time depended property lines*/
+    UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
+    UpdatePropertyLineOnLoad(lifeVariation.Get(), startTime, endTime);
+    UpdatePropertyLineOnLoad(number.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(numberVariation.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(size.Get(), startTime, endTime);
 	UpdatePropertyLineOnLoad(sizeVariation.Get(), startTime, endTime);

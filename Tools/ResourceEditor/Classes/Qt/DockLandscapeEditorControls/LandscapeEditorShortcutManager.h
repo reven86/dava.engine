@@ -60,8 +60,6 @@ public:
 	
 	void SetAvgStrengthShortcutsEnabled(bool enabled);
 	
-	void SetVisibilityToolShortcutsEnabled(bool enabled);
-
 private:
 	Map<String, QShortcut*> shortcutsMap;
 

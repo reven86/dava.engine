@@ -66,6 +66,9 @@ public:
     InputSystem::eMouseCaptureMode GetMouseCaptureMode();
     bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 
+    void SetWindowMinimumSize(float32 width, float32 height) override;
+    Vector2 GetWindowMinimumSize() const override;
+
     // Win10 specific member functions
 
     // Get pointer to underlying XAML application object

@@ -39,7 +39,6 @@ class LandscapeProxy;
 class HeightmapProxy;
 class NotPassableTerrainProxy;
 class CustomColorsProxy;
-class VisibilityToolProxy;
 class RulerToolProxy;
 class Command2;
 
@@ -62,17 +61,16 @@ public:
 
     LandscapeEditorDrawSystem(Scene* scene);
     virtual ~LandscapeEditorDrawSystem();
-	
-	LandscapeProxy* GetLandscapeProxy();
-	HeightmapProxy* GetHeightmapProxy();
-	CustomColorsProxy* GetCustomColorsProxy();
-	VisibilityToolProxy* GetVisibilityToolProxy();
-	RulerToolProxy* GetRulerToolProxy();
 
-	eErrorType EnableCustomDraw();
-	void DisableCustomDraw();
+    LandscapeProxy* GetLandscapeProxy();
+    HeightmapProxy* GetHeightmapProxy();
+    CustomColorsProxy* GetCustomColorsProxy();
+    RulerToolProxy* GetRulerToolProxy();
 
-	eErrorType EnableTilemaskEditing();
+    eErrorType EnableCustomDraw();
+    void DisableCustomDraw();
+
+    eErrorType EnableTilemaskEditing();
 	void DisableTilemaskEditing();
 
 	bool IsNotPassableTerrainEnabled();
@@ -85,7 +83,7 @@ public:
     void SetCursorSize(float32 cursorSize);
     void SetCursorPosition(const Vector2& cursorPos);
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
 
     void ProcessCommand(const Command2 *command, bool redo);
 
@@ -105,8 +103,8 @@ public:
     void ClampToTexture(const FastName& level, Rect& rect);
     void ClampToHeightmap(Rect& rect);
 
-    void AddEntity(DAVA::Entity * entity) override;
-	void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     Rect GetTextureRect(const FastName& level);
     Rect GetHeightmapRect();
@@ -123,7 +121,7 @@ public:
 
     static String GetDescriptionByError(eErrorType error);
 
-protected:
+private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
     
@@ -134,18 +132,19 @@ protected:
     
     bool UpdateTilemaskPathname();
 
+private:
     Entity* landscapeNode = nullptr;
     Landscape* baseLandscape = nullptr;
     LandscapeProxy* landscapeProxy = nullptr;
     HeightmapProxy* heightmapProxy = nullptr;
     NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
     CustomColorsProxy* customColorsProxy = nullptr;
-    VisibilityToolProxy* visibilityToolProxy = nullptr;
     RulerToolProxy* rulerToolProxy = nullptr;
-
-    uint32 customDrawRequestCount;
-
+    uint32 customDrawRequestCount = 0;
     FilePath sourceTilemaskPath;
 };
+
+
+
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

@@ -278,7 +278,7 @@ void CustomColorsPanel::LoadTexture()
     if (!selectedPathname.IsEmpty())
     {
         sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
-	}
+    }
 }
 
 void CustomColorsPanel::SaveTextureIfNeeded(SceneEditor2* scene)

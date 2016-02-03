@@ -95,6 +95,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(2.0f));
     CreateValue(Settings::Scene_CameraHeightOnLandscapeStep, DAVA::VariantType(0.5f));
     CreateValue(Settings::Scene_SelectionSequent, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_SelectionOnClick, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SelectionDrawMode, DAVA::VariantType(static_cast<DAVA::int32>(SS_DRAW_DEFAULT)), DAVA::InspDesc("Selection draw modes", GlobalEnumMap<SelectionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_CollisionDrawMode, DAVA::VariantType(static_cast<DAVA::int32>(CS_DRAW_DEFAULT)), DAVA::InspDesc("Collision draw modes", GlobalEnumMap<CollisionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_ModificationByGizmoOnly, DAVA::VariantType(false));

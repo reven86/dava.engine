@@ -44,6 +44,8 @@
 
 namespace DAVA
 {
+const float32 NMaterial::DEFAULT_LIGHTMAP_SIZE = 16.0f;
+
 struct MaterialPropertyBinding
 {
     rhi::ShaderProp::Type type;
@@ -848,6 +850,7 @@ NMaterial* NMaterial::Clone()
     NMaterial* clonedMaterial = new NMaterial();
     clonedMaterial->materialName = materialName;
     clonedMaterial->fxName = fxName;
+    clonedMaterial->qualityGroup = qualityGroup;
 
     for (auto prop : localProperties)
         clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
@@ -1200,7 +1203,6 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
         AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, false); // need for material editor
     }
 
-    static const float32 DEFAULT_LIGHTMAP_SIZE = 128.f;
     if (archive->IsKeyExists("illumination.lightmapSize"))
     {
         float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize", static_cast<int32>(DEFAULT_LIGHTMAP_SIZE));

@@ -35,37 +35,42 @@
 #include "../QtPropertyData.h"
 #include "Commands2/KeyedArchiveCommand.h"
 
+#include "QtTools/Utils/QtConnections.h"
+
 #include <QLineEdit>
 #include <QComboBox>
 #include <QPushButton>
 
 class QtPropertyDataDavaKeyedArcive : public QtPropertyData
 {
-	Q_OBJECT;
-
 public:
-	QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive *archive);
-	virtual ~QtPropertyDataDavaKeyedArcive();
+    QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* archive);
+    virtual ~QtPropertyDataDavaKeyedArcive();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
-	virtual void* CreateLastCommand() const;
+    virtual const DAVA::MetaInfo* MetaInfo() const;
+    virtual void* CreateLastCommand() const;
 
-	DAVA::KeyedArchive* archive;
+    void FinishTreeCreation() override;
+
+    DAVA::KeyedArchive* archive;
 
 protected:
 	mutable Command2 *lastCommand;
 	int lastAddedType;
 
-	virtual QVariant GetValueInternal() const;
-	virtual bool UpdateValueInternal();
+    QtConnections connections;
+
+    virtual QVariant GetValueInternal() const;
+    virtual bool UpdateValueInternal();
 
 private:
-	void ChildCreate(const QString &key, DAVA::VariantType *value);
+    void ChildCreate(const DAVA::FastName& key, DAVA::VariantType* value);
 
-protected slots:
-	void AddKeyedArchiveField();
-	void RemKeyedArchiveField();
-	void NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value);
+private:
+    void AddKeyedArchiveField(QToolButton* button);
+    void RemKeyedArchiveField(QToolButton* button);
+    void NewKeyedArchiveFieldReady(const DAVA::String& key, const DAVA::VariantType& value);
+    void RemKeyedArchiveField(const DAVA::FastName& key);
 };
 
 class KeyedArchiveItemWidget : public QWidget

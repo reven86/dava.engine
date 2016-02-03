@@ -135,20 +135,19 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
 			sceneEditor->BeginBatch("Multiple transform");
 		}
 
-		for (size_t i = 0; i < entities.Size(); ++i)
-		{
-			DAVA::Entity *entity = entities.GetEntity(i);
-			if(NULL != entity)
-			{
-				sceneEditor->Exec(new TransformCommand(entity,	entity->GetLocalTransform(), zeroTransform));
-			}
-		}
+        for (const auto& item : entities.GetContent())
+        {
+            if (item.first != nullptr)
+            {
+                sceneEditor->Exec(new TransformCommand(item.first, item.first->GetLocalTransform(), zeroTransform));
+            }
+        }
 
-		if(isMultiple)
-		{
-			sceneEditor->EndBatch();
-		}
-	}
+        if (isMultiple)
+        {
+            sceneEditor->EndBatch();
+        }
+    }
 }
 
 bool EntityModificationSystem::InModifState() const
@@ -180,7 +179,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 	{
 		// current selected entities
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-		EntityGroup selectedEntities = selectionSystem->GetSelection();
+        const EntityGroup& selectedEntities = selectionSystem->GetSelection();
 
         DAVA::Camera *camera = cameraSystem->GetCurCamera();
 
@@ -197,16 +196,16 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                 {
                     if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
                     {
-						// go to modification state
-						inModifState = true;
+                        // go to modification state
+                        inModifState = true;
 
-						// select current hood axis as active
-						if(curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
-						{
-							SetModifAxis(hoodSystem->GetPassingAxis());
-						}
+                        // select current hood axis as active
+                        if (curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
+                        {
+                            SetModifAxis(hoodSystem->GetPassingAxis());
+                        }
 
-						// set entities to be modified
+                        // set entities to be modified
 						BeginModification(selectedEntities);
 
 						// init some values, needed for modifications
@@ -234,15 +233,15 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
             if (event->phase == DAVA::UIEvent::Phase::DRAG)
             {
                 DAVA::Vector3 moveOffset;
-				DAVA::float32 rotateAngle;
-				DAVA::float32 scaleForce;
+                DAVA::float32 rotateAngle;
+                DAVA::float32 scaleForce;
 
-				switch (curMode)
-				{
-				case ST_MODIF_MOVE:
-					{
-						DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
-						moveOffset = Move(newPos3d);
+                switch (curMode)
+                {
+                case ST_MODIF_MOVE:
+                {
+                    DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
+                        moveOffset = Move(newPos3d);
 						modified = true;
 					}
 					break;
@@ -271,28 +270,28 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 					}
 
 					// say to selection system, that selected items were modified
-					selectionSystem->SelectedItemsWereModified();
+                    selectionSystem->CancelSelection();
 
-					// lock hood, so it wont process ui events, wont calc. scale depending on it current position
-					hoodSystem->LockScale(true);
-					hoodSystem->SetModifOffset(moveOffset);
-					hoodSystem->SetModifRotate(rotateAngle);
-					hoodSystem->SetModifScale(scaleForce);
-				}
-			}
+                    // lock hood, so it wont process ui events, wont calc. scale depending on it current position
+                    hoodSystem->LockScale(true);
+                    hoodSystem->SetModifOffset(moveOffset);
+                    hoodSystem->SetModifRotate(rotateAngle);
+                    hoodSystem->SetModifScale(scaleForce);
+                }
+            }
 			// phase ended
             else if (event->phase == DAVA::UIEvent::Phase::ENDED)
             {
                 if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
                 {
-					if(modified)
-					{
-						if(cloneState == CLONE_DONE)
-						{
-							CloneEnd();
-						}
-						else
-						{
+                    if (modified)
+                    {
+                        if (cloneState == CLONE_DONE)
+                        {
+                            CloneEnd();
+                        }
+                        else
+                        {
 							ApplyModification();
 						}
 					}
@@ -335,19 +334,20 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 	// clear any priv. selection
 	EndModification();
 
-	if(entities.Size() > 0)
-	{
+    const auto& entitiesContent = entities.GetContent();
+    if (!entitiesContent.empty())
+    {
         modifEntities.reserve(entities.Size());
-		for(size_t i = 0; i < entities.Size(); ++i)
-		{
-			DAVA::Entity *en = entities.GetEntity(i);
-			if(NULL != en)
-			{
-				EntityToModify etm;
-				etm.entity = en;
-				etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
-				etm.originalTransform = en->GetLocalTransform();
-				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
+        for (const auto& item : entitiesContent)
+        {
+            DAVA::Entity* en = item.first;
+            if (NULL != en)
+            {
+                EntityToModify etm;
+                etm.entity = en;
+                etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
+                etm.originalTransform = en->GetLocalTransform();
+                etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
 				etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
 
 				// inverse parent world transform, and remember it
@@ -376,15 +376,15 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 		modifPivotPoint = selectionSystem->GetPivotPoint();
 
 		// center of this bbox will modification center, common for all entities
-		modifEntitiesCenter = entities.GetCommonZeroPos();
+        modifEntitiesCenter = entities.GetCommonTranslationVector();
 
-		// prepare translation matrix's, used before and after rotation
-		moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
-		moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
+        // prepare translation matrix's, used before and after rotation
+        moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
+        moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
 
-		// remember axis vector we are rotating around
-		switch(curAxis)
-		{
+        // remember axis vector we are rotating around
+        switch (curAxis)
+        {
 		case ST_AXIS_X:
 		case ST_AXIS_YZ:
 			rotateAround = DAVA::Vector3(1, 0, 0);
@@ -445,19 +445,19 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
 {
 	bool modifCanStart = false;
 
-	if(selectedEntities.Size() > 0)
-	{
-		bool hasLocked = false;
+    if (!selectedEntities.IsEmpty())
+    {
+        bool hasLocked = false;
 
-		// check if we have some locked items in selection
-		for(size_t i = 0; i < selectedEntities.Size(); ++i)
-		{
-			if(selectedEntities.GetEntity(i)->GetLocked())
-			{
-				hasLocked = true;
-				break;
-			}
-		}
+        // check if we have some locked items in selection
+        for (const auto& item : selectedEntities.GetContent())
+        {
+            if (item.first->GetLocked())
+            {
+                hasLocked = true;
+                break;
+            }
+        }
 
         modifCanStart = !hasLocked;
     }
@@ -484,38 +484,41 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 		else if(!modificationByGizmoOnly)
 		{
 			// send this ray to collision system and get collision objects
-			const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+            const EntityGroup::EntityVector& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 
-			// check if one of got collision objects is intersected with selected items
-			// if so - we can start modification
-			if(collisionEntities->Size() > 0)
-			{
-				for(size_t i = 0; !modifCanStart && i < collisionEntities->Size(); ++i)
-				{
-					DAVA::Entity *collisionedEntity = collisionEntities->GetEntity(i);
+            // check if one of got collision objects is intersected with selected items
+            // if so - we can start modification
+            if (!collisionEntities.empty())
+            {
+                for (const auto& collisionItem : collisionEntities)
+                {
+                    for (const auto& selectedItem : selectedEntities.GetContent())
+                    {
+                        if (selectedItem.first == collisionItem.first)
+                        {
+                            modifCanStart = true;
+                        }
+                        else if (selectedItem.first->GetSolid())
+                        {
+                            modifCanStart = IsEntityContainRecursive(selectedItem.first, collisionItem.first);
+                        }
 
-					for(size_t j = 0; !modifCanStart && j < selectedEntities.Size(); ++j)
-					{
-						DAVA::Entity *selectedEntity = selectedEntities.GetEntity(j);
+                        if (modifCanStart)
+                        {
+                            break;
+                        }
+                    }
 
-						if(selectedEntity == collisionedEntity)
-						{
-							modifCanStart = true;
-						}
-						else
-						{
-							if(selectedEntity->GetSolid())
-							{
-								modifCanStart = IsEntityContainRecursive(selectedEntity, collisionedEntity);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+                    if (modifCanStart)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-	return modifCanStart;
+    return modifCanStart;
 }
 
 void EntityModificationSystem::ApplyModification()
@@ -938,24 +941,26 @@ void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
 void EntityModificationSystem::LockTransform(const EntityGroup &entities, bool lock)
 {
     SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
-	if(NULL != sceneEditor)
-	{
-		bool isMultiple = (entities.Size() > 1);
+    if (sceneEditor == nullptr)
+    {
+        return;
+    }
 
-        if(isMultiple)
-		{
-			sceneEditor->BeginBatch("Lock entities");
-		}
+    bool isMultiple = (entities.Size() > 1);
 
- 	    for(size_t i = 0; i < entities.Size(); ++i)
- 	    {
-            sceneEditor->Exec(new EntityLockCommand(entities.GetEntity(i), lock));
- 	    }
+    if (isMultiple)
+    {
+        sceneEditor->BeginBatch("Lock entities");
+    }
 
-        if(isMultiple)
-		{
-			sceneEditor->EndBatch();
-		}
+    for (const auto& item : entities.GetContent())
+    {
+        sceneEditor->Exec(new EntityLockCommand(item.first, lock));
+    }
+
+    if (isMultiple)
+    {
+        sceneEditor->EndBatch();
     }
 }
 
@@ -965,7 +970,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
 	if(NULL != sceneEditor && entities.Size() == 1)
 	{
-        DAVA::Entity *entity = entities.GetEntity(0);
+        DAVA::Entity* entity = entities.GetFirstEntity();
         DAVA::RenderObject *ro = GetRenderObject(entity);
 
         const char *commandMessage;

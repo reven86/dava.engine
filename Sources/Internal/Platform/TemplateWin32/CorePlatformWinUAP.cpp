@@ -143,6 +143,16 @@ bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode
     return GetMouseCaptureMode() == mode;
 }
 
+void CorePlatformWinUAP::SetWindowMinimumSize(float32 width, float32 height)
+{
+    xamlApp->SetWindowMinimumSize(width, height);
+}
+
+Vector2 CorePlatformWinUAP::GetWindowMinimumSize() const
+{
+    return xamlApp->GetWindowMinimumSize();
+}
+
 bool CorePlatformWinUAP::IsUIThread() const
 {
     return xamlApp->UIThreadDispatcher()->HasThreadAccess;

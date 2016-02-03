@@ -71,7 +71,8 @@ void DockProperties::Init()
     addComponentMenu->addAction(ui->actionAddRotationComponent);
     addComponentMenu->addAction(ui->actionAddSnapToLandscapeComponent);
     addComponentMenu->addAction(ui->actionAddWASDComponent);
-    
+    addComponentMenu->addAction(ui->actionAddVisibilityComponent);
+
     connect(ui->actionAddNewComponent, SIGNAL(triggered()), SLOT(OnAddAction()));
 }
 

@@ -48,9 +48,13 @@
 #include "Tests/ClipTest.h"
 #include "Tests/InputTest.h"
 #include "Tests/DlcTest.h"
+#include "Tests/CoreTest.h"
+#include "Tests/FormatsTest.h"
 //$UNITTEST_INCLUDE
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
+#endif
 
 void GameCore::RunOnlyThisTest()
 {
@@ -80,11 +84,10 @@ void GameCore::RegisterTests()
     new UIBackgroundTest();
     new ClipTest();
     new InputTest();
+    new CoreTest();
+    new FormatsTest();
     //$UNITTEST_CTOR
 }
-
-#include <fstream>
-#include <algorithm>
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -223,8 +226,12 @@ void GameCore::InitNetwork()
     NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, memprofCreate,
                                          [this](IChannelListener* obj, void*) -> void { memprofInUse = false; });
 #endif
-    NetConfig config(SERVER_ROLE);
-    config.AddTransport(TRANSPORT_TCP, Net::Endpoint(NetCore::DEFAULT_TCP_PORT));
+
+    eNetworkRole role = SERVER_ROLE;
+    Net::Endpoint endpoint = Net::Endpoint(NetCore::DEFAULT_TCP_PORT);
+
+    NetConfig config(role);
+    config.AddTransport(TRANSPORT_TCP, endpoint);
     config.AddService(NetCore::SERVICE_LOG);
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     config.AddService(NetCore::SERVICE_MEMPROF);

@@ -95,7 +95,8 @@ subject to the following restrictions:
 #endif
 
 #if (DBVT_SELECT_IMPL == DBVT_IMPL_SSE) || \
-(DBVT_MERGE_IMPL == DBVT_IMPL_SSE) ||      \
+(DBVT_MERGE_IMPL == DBVT_IMPL_SSE) || \
+\
 (DBVT_INT0_IMPL == DBVT_IMPL_SSE)
 #include <emmintrin.h>
 #endif

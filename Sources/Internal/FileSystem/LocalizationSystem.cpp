@@ -37,8 +37,8 @@
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
-#if defined(__DAVAENGINE_IPHONE__)
-#include "FileSystem/LocalizationIPhone.h"
+#if defined(__DAVAENGINE_APPLE__)
+#include "FileSystem/LocalizationApple.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -91,8 +91,8 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(dirPath.IsDirectoryPathname());
     directoryPath = dirPath;
-#if defined(__DAVAENGINE_IPHONE__)
-	LocalizationIPhone::SelectPreferedLocalizationForPath(directoryPath);
+#if defined(__DAVAENGINE_APPLE__)
+    LocalizationApple::SelectPreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -110,8 +110,8 @@ void LocalizationSystem::Init()
 
 String LocalizationSystem::GetDeviceLocale() const
 {
-#if defined(__DAVAENGINE_IPHONE__)
-	return String(LocalizationIPhone::GetDeviceLang());
+#if defined(__DAVAENGINE_APPLE__)
+    return String(LocalizationApple::GetDeviceLang());
 #elif defined(__DAVAENGINE_ANDROID__)
     return LocalizationAndroid::GetDeviceLang();
 #elif defined(__DAVAENGINE_WIN_UAP__)

@@ -311,14 +311,7 @@ void Landscape::AllocateGeometryData()
 
     for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
-        ScopedPtr<RenderBatch> batch(new RenderBatch());
-        AddRenderBatch(batch);
-
-        batch->SetMaterial(landscapeMaterial);
-        batch->SetSortingKey(10);
-
-        batch->vertexLayoutId = vertexLayoutUID;
-        batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+        AllocateRenderBatch();
     }
 }
 
@@ -361,77 +354,65 @@ Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
     return res;
 };
 
-bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal) const
+bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-	if (point.x > bbox.max.x ||
-		point.x < bbox.min.x ||
-		point.y > bbox.max.y ||
-		point.y < bbox.min.y)
-	{
-		return false;
-	}
-
-    if (heightmap->Data() == NULL)
+    if ((point.x > bbox.max.x) || (point.x < bbox.min.x) || (point.y > bbox.max.y) || (point.y < bbox.min.y))
     {
-        Logger::Error("[Landscape::PlacePoint] Trying to place point on empty heightmap data!");
         return false;
     }
 
-    float32 kW = (float32)(heightmap->Size() - 1) / (bbox.max.x - bbox.min.x);
+    const auto hmData = heightmap->Data();
+    if (hmData == nullptr)
+    {
+        Logger::Error("[Landscape::GetHeightAtPoint] Trying to get height at point using empty heightmap data!");
+        return false;
+    }
 
-    float32 x = (point.x - bbox.min.x) * kW;
-    float32 y = (point.y - bbox.min.y) * kW;
+    auto hmSize = heightmap->Size();
+    float32 fx = static_cast<float>(hmSize - 1) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+    float32 fy = static_cast<float>(hmSize - 1) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+    int32 x = static_cast<int32>(fx);
+    int32 y = static_cast<int32>(fy);
+    int nextX = DAVA::Min(x + 1, hmSize - 1);
+    int nextY = DAVA::Min(y + 1, hmSize - 1);
+    int i00 = x + y * hmSize;
+    int i01 = nextX + y * hmSize;
+    int i10 = x + nextY * hmSize;
+    int i11 = nextX + nextY * hmSize;
+    float h00 = static_cast<float>(hmData[i00]);
+    float h01 = static_cast<float>(hmData[i01]);
+    float h10 = static_cast<float>(hmData[i10]);
+    float h11 = static_cast<float>(hmData[i11]);
+    float dx = fx - static_cast<float>(x);
+    float dy = fy - static_cast<float>(y);
+    float h0 = h00 * (1.0f - dx) + h01 * dx;
+    float h1 = h10 * (1.0f - dx) + h11 * dx;
+    value = (h0 * (1.0f - dy) + h1 * dy) * GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
 
-    float32 x1 = floor(x);
-    float32 y1 = floor(y);
+    return true;
+}
 
-    float32 x2 = ceil(x);
-    float32 y2 = ceil(y);
+bool Landscape::PlacePoint(const Vector3& worldPoint, Vector3& result, Vector3* normal) const
+{
+    result = worldPoint;
 
-    if (x1 == x2)
-        x2 += 1.0f;
+    if (GetHeightAtPoint(worldPoint, result.z) == false)
+    {
+        return false;
+    }
 
-    if (y1 == y2)
-        y2 += 1.0f;
+    if (normal != nullptr)
+    {
+        const float32 normalDelta = 0.01f;
+        Vector3 dx = result + Vector3(normalDelta, 0.0f, 0.0f);
+        Vector3 dy = result + Vector3(0.0f, normalDelta, 0.0f);
+        GetHeightAtPoint(dx, dx.z);
+        GetHeightAtPoint(dy, dy.z);
+        *normal = (dx - result).CrossProduct(dy - result);
+        normal->Normalize();
+    }
 
-    uint16* data = heightmap->Data();
-    int32 imW = heightmap->Size();
-
-    Vector3 p1(x1, y1, 0);
-    p1.z = data[(int32)p1.y * imW + (int32)p1.x];
-
-    Vector3 p2(x2, y2, 0);
-    p2.z = data[(int32)p2.y * imW + (int32)p2.x];
-
-    Vector3 p3;
-    if (x - x1 >= y - y1)
-        p3 = Vector3(x2, y1, 0);
-	else
-		p3 = Vector3(x1, y2, 0);
-	p3.z = data[(int32)p3.y * imW + (int32)p3.x];
-
-	//http://algolist.manual.ru/maths/geom/equation/plane.php
-	float32 A = p1.y * (p2.z - p3.z) + p2.y * (p3.z - p1.z) + p3.y * (p1.z - p2.z); 
-	float32 B = p1.z * (p2.x - p3.x) + p2.z * (p3.x - p1.x) + p3.z * (p1.x - p2.x);
-	float32 C = p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
-	float32 D = p1.x * (p2.y * p3.z - p3.y * p2.z) + p2.x * (p3.y * p1.z - p1.y * p3.z) + p3.x * (p1.y * p2.z - p2.y * p1.z);
-
-	result.x = point.x;
-	result.y = point.y;
-
-	result.z = (D - B * y - A * x) / C;
-	result.z = bbox.min.z + result.z / ((float32)Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z);
-
-	if (normal != 0)
-	{
-		normal->x = A;
-		normal->y = B;
-		normal->z = C;
-		normal->Normalize();
-	}
-	return true;
+    return true;
 };
 
 void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels)
@@ -619,7 +600,12 @@ void Landscape::FlushQueue()
     if (queueIndexCount == 0)
         return;
 
-    DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
+    DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
+    if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
+    {
+        AllocateRenderBatch();
+    }
+
     DVASSERT(queueRdoQuad != -1);
 
     DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
@@ -910,7 +896,7 @@ void Landscape::PrepareToRender(Camera* camera)
     FlushQueue();
 }
 
-bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
+bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     if (heightmap->Data() == nullptr)
@@ -918,44 +904,35 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
         return false;
     }
 
-	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
-	const LandscapeQuad * quad = &currentNode->data;
-	
-	landscapeVertices.resize((quad->size + 1) * (quad->size + 1));
-
-	int32 index = 0;
-	for (int32 y = quad->y; y < quad->y + quad->size + 1; ++y)
-	{
-		for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
-		{
-			landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-
-            landscapeVertices[index].texCoord = Vector2(
-            (float32)x / (float32)(heightmap->Size() - 1),
-            1.0f - (float32)y / (float32)(heightmap->Size() - 1));
-
+    uint32 gridWidth = heightmap->Size();
+    uint32 gridHeight = heightmap->Size();
+    vertices.resize(gridWidth * gridHeight);
+    for (uint32 y = 0, index = 0; y < gridHeight; ++y)
+    {
+        uint32 row = y * heightmap->Size();
+        float32 ny = static_cast<float32>(y) / static_cast<float32>(gridHeight - 1);
+        for (uint32 x = 0; x < gridWidth; ++x)
+        {
+            float32 nx = static_cast<float32>(x) / static_cast<float32>(gridWidth - 1);
+            vertices[index].position = GetPoint(x, y, heightmap->Data()[row + x]);
+            vertices[index].texCoord = Vector2(nx, ny);
             index++;
         }
     }
 
-    indices.resize(heightmap->Size() * heightmap->Size() * 6);
-    int32 step = 1;
-    int32 indexIndex = 0;
-    int32 quadWidth = heightmap->Size();
-    for (int32 y = 0; y < currentNode->data.size - 1; y += step)
+    indices.resize((gridWidth - 1) * (gridHeight - 1) * 6);
+    for (uint32 y = 0, index = 0; y < gridHeight - 1; ++y)
     {
-        for (int32 x = 0; x < currentNode->data.size - 1; x += step)
+        for (uint32 x = 0; x < gridWidth - 1; ++x)
         {
-            indices[indexIndex++] = x + y * quadWidth;
-            indices[indexIndex++] = (x + step) + y * quadWidth;
-            indices[indexIndex++] = x + (y + step) * quadWidth;
-
-            indices[indexIndex++] = (x + step) + y * quadWidth;
-            indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
-            indices[indexIndex++] = x + (y + step) * quadWidth;
+            indices[index++] = x + y * gridWidth;
+            indices[index++] = (x + 1) + y * gridWidth;
+            indices[index++] = x + (y + 1) * gridWidth;
+            indices[index++] = (x + 1) + y * gridWidth;
+            indices[index++] = (x + 1) + (y + 1) * gridWidth;
+            indices[index++] = x + (y + 1) * gridWidth;
         }
     }
-
     return true;
 }
 
@@ -1279,6 +1256,18 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
     }
 };
 
+void Landscape::AllocateRenderBatch()
+{
+    ScopedPtr<RenderBatch> batch(new RenderBatch());
+    AddRenderBatch(batch);
+
+    batch->SetMaterial(landscapeMaterial);
+    batch->SetSortingKey(10);
+
+    batch->vertexLayoutId = vertexLayoutUID;
+    batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+}
+
 void Landscape::SetForceFirstLod(bool force)
 {
     forceFirstLod = force;
@@ -1291,5 +1280,10 @@ void Landscape::SetUpdatable(bool isUpdatable)
         updatable = isUpdatable;
         BuildLandscape();
     }
+}
+
+bool Landscape::IsUpdatable() const
+{
+    return updatable;
 }
 }

@@ -170,7 +170,6 @@ void TextureCache::setThumbnail(const DAVA::TextureDescriptor *descriptor, const
 		TextureInfo info;
 		info.dataSize = images.dataSize;
 		info.fileSize = images.fileSize;
-
         info.images.reserve(images.images.size());
 		for(int i = 0; i < images.images.size(); ++i)
 		{
@@ -178,15 +177,12 @@ void TextureCache::setThumbnail(const DAVA::TextureDescriptor *descriptor, const
             img.fill(QColor(Qt::white));
             
             QPainter painter(&img);
-            
             QSize imageSize = images.images[i].rect().size();
             imageSize.scale(THUMBNAIL_SIZE, THUMBNAIL_SIZE, Qt::KeepAspectRatio);
             int x = (THUMBNAIL_SIZE - imageSize.width()) / 2;
             int y = (THUMBNAIL_SIZE - imageSize.height()) / 2;
             painter.drawImage(QRect(QPoint(x, y), imageSize), images.images[i]);
-            
             painter.end();
-
             info.images.push_back(img);
 		}
         

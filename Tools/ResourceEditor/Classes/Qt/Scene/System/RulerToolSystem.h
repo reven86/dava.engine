@@ -71,9 +71,9 @@ protected:
     float32 GetLength(const Vector2& startPoint, const Vector2& endPoint);
     void DrawPoints();
     void DisablePreview();
-	void SendUpdatedLength();
+    void SendUpdatedLength();
 
-	void Clear();
+    void Clear();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__RULERTOOLSYSTEM__) */

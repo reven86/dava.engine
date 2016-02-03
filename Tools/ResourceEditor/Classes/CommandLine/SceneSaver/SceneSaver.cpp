@@ -99,11 +99,11 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
         scene->SaveScene(sc2Filename, false);
     }
     else
-	{
-		errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
-	}
+    {
+        errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
+    }
 
-	SafeRelease(scene);
+    SafeRelease(scene);
     RenderObjectsFlusher::Flush();
 }
 
@@ -258,14 +258,16 @@ void SceneSaver::CopyEffects(Entity *node)
 	if(effect)
 	{
 		for (int32 i=0, sz=effect->GetEmittersCount(); i<sz; ++i)
-			CopyEmitter(effect->GetEmitter(i));
-	}
+        {
+            CopyAllParticlesEmitters(effect->GetEmitterData(i));
+        }
+    }
 
-	for (int i = 0; i < node->GetChildrenCount(); ++i)
-	{
-		CopyEffects(node->GetChild(i));
-	}
-    
+    for (int i = 0; i < node->GetChildrenCount(); ++i)
+    {
+        CopyEffects(node->GetChild(i));
+    }
+
     for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
     {
         FilePath flagsTXT = *it + "flags.txt";
@@ -279,7 +281,30 @@ void SceneSaver::CopyEffects(Entity *node)
     effectFolders.clear();
 }
 
-void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
+void SceneSaver::CopyAllParticlesEmitters(const ParticleEmitterData& emitterData)
+{
+    const Set<FilePath>& paths = EnumAlternativeEmittersFilepaths(emitterData.originalFilepath);
+    for (const FilePath& alternativeFilepath : paths)
+    {
+        if (alternativeFilepath == emitterData.emitter->configPath)
+        {
+            CopyEmitter(emitterData.emitter.Get());
+        }
+        else
+        {
+            CopyEmitterByPath(alternativeFilepath);
+        }
+    }
+}
+
+void SceneSaver::CopyEmitterByPath(const FilePath& emitterConfigPath)
+{
+    RefPtr<ParticleEmitter> emitter(ParticleEmitter::LoadEmitter(emitterConfigPath));
+
+    CopyEmitter(emitter.Get());
+}
+
+void SceneSaver::CopyEmitter(ParticleEmitter* emitter)
 {
     if(emitter->configPath.IsEmpty() == false)
     {
@@ -311,6 +336,28 @@ void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
             effectFolders.insert(psdPath.GetDirectory());
 		}
 	}
+}
+
+Set<FilePath> SceneSaver::EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const
+{
+    Set<FilePath> qualityFilepaths;
+    const ParticlesQualitySettings& particlesSettings = QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+
+    for (const ParticlesQualitySettings::QualitySheet& qualitySheet : particlesSettings.GetQualitySheets())
+    {
+        FilePath alternativeFilepath;
+        if (qualitySheet.Apply(originalFilepath, alternativeFilepath))
+        {
+            if (FileSystem::Instance()->Exists(alternativeFilepath))
+            {
+                qualityFilepaths.insert(alternativeFilepath);
+            }
+        }
+    }
+
+    qualityFilepaths.insert(originalFilepath);
+
+    return qualityFilepaths;
 }
 
 void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog)

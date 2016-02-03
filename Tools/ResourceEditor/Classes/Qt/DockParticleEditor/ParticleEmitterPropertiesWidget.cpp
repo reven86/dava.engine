@@ -36,6 +36,32 @@
 #define EMISSION_RANGE_MIN_LIMIT_DEGREES 0.0f
 #define EMISSION_RANGE_MAX_LIMIT_DEGREES 180.0f
 
+namespace ParticleEmitterPropertiesWidget_namespace
+{
+bool IsInnerEmitter(const DAVA::ParticleEffectComponent* effectComponent, const DAVA::ParticleEmitter* emitterToCheck)
+{
+    if (effectComponent->GetEmitterId(emitterToCheck) != -1)
+        return false;
+
+    for (int32 index = 0, size = effectComponent->GetEmittersCount(); index < size; ++index)
+    {
+        ParticleEmitter* emitter = effectComponent->GetEmitter(index);
+        if (emitter)
+        {
+            for (const ParticleLayer* layer : emitter->layers)
+            {
+                if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES && layer->innerEmitter == emitterToCheck)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+}
+
 ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent) :
 	QWidget(parent),
 	BaseParticleEditorContentWidget()
@@ -47,21 +73,45 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	mainLayout->addWidget(emitterNameLineEdit);
 	connect(emitterNameLineEdit, SIGNAL(editingFinished()),this, SLOT(OnValueChanged()));
 
-	emitterYamlPath = new QLineEdit(this);
-	emitterYamlPath->setReadOnly(true);
-	mainLayout->addWidget(emitterYamlPath);
-	connect(emitterYamlPath, SIGNAL(textChanged(const QString&)), this, SLOT(OnEmitterYamlPathChanged(const QString&)));
+    {
+        QWidget* group = new QWidget(this);
+        QHBoxLayout* layout = new QHBoxLayout(group);
+        group->setLayout(layout);
+        QLabel* label = new QLabel("Original path: ", this);
 
-	shortEffectCheckBox = new QCheckBox("Short effect");
-	mainLayout->addWidget(shortEffectCheckBox);
-	connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+        originalEmitterYamlPath = new QLineEdit(this);
+        originalEmitterYamlPath->setReadOnly(true);
+        layout->addWidget(label);
+        layout->addWidget(originalEmitterYamlPath);
+        layout->setMargin(0);
+        mainLayout->addWidget(group);
+    }
 
-	QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
-	emitterTypeHBox->addWidget(new QLabel("type"));
-	emitterType = new QComboBox(this);
-	emitterType->addItem("Point");
-	emitterType->addItem("Box");
-	emitterType->addItem("Circle - Volume");
+    {
+        QWidget* group = new QWidget(this);
+        QHBoxLayout* layout = new QHBoxLayout(group);
+        group->setLayout(layout);
+        QLabel* label = new QLabel("Current path: ", this);
+
+        emitterYamlPath = new QLineEdit(this);
+        emitterYamlPath->setReadOnly(true);
+        layout->addWidget(label);
+        layout->addWidget(emitterYamlPath);
+        layout->setMargin(0);
+        mainLayout->addWidget(group);
+        connect(emitterYamlPath, SIGNAL(textChanged(const QString&)), this, SLOT(OnEmitterYamlPathChanged(const QString&)));
+    }
+
+    shortEffectCheckBox = new QCheckBox("Short effect");
+    mainLayout->addWidget(shortEffectCheckBox);
+    connect(shortEffectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+
+    QHBoxLayout* emitterTypeHBox = new QHBoxLayout();
+    emitterTypeHBox->addWidget(new QLabel("type"));
+    emitterType = new QComboBox(this);
+    emitterType->addItem("Point");
+    emitterType->addItem("Box");
+    emitterType->addItem("Circle - Volume");
 	emitterType->addItem("Circle - Edges");
 	emitterType->addItem("Shockwave");
 	emitterTypeHBox->addWidget(emitterType);
@@ -246,25 +296,38 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 	DVASSERT(emitter != 0);
 	this->emitter = emitter;
     this->effect = effect;
-	SetActiveScene(scene);
+    SetActiveScene(scene);
 
-	blockSignals = true;
+    blockSignals = true;
 
-	emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
-	shortEffectCheckBox->setChecked(emitter->shortEffect);
+    emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
+    shortEffectCheckBox->setChecked(emitter->shortEffect);
 
-	float32 emitterLifeTime = emitter->lifeTime;
+    float32 emitterLifeTime = emitter->lifeTime;
 
-    
-	float minTime		= 0.f;
-	float minTimeLimit	= 0.f;
-    
-	float maxTime		= emitterLifeTime;
-	float maxTimeLimit	= emitterLifeTime;
-	emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
-	emitterType->setCurrentIndex(emitter->emitterType);
+    float minTime = 0.f;
+    float minTimeLimit = 0.f;
 
-    int32 emitterId = effect->GetEmitterId(emitter);    
+    float maxTime = emitterLifeTime;
+    float maxTimeLimit	= emitterLifeTime;
+    QString originalYamlPath;
+    bool isInnerEmitter = ParticleEmitterPropertiesWidget_namespace::IsInnerEmitter(effect, emitter);
+    if (isInnerEmitter)
+    {
+        originalYamlPath = QString::fromStdString(emitter->configPath.GetAbsolutePathname());
+    }
+    else
+    {
+        int32 emitterId = effect->GetEmitterId(emitter);
+        originalYamlPath = QString::fromStdString(effect->GetEmitterData(emitterId).originalFilepath.GetAbsolutePathname());
+    }
+
+    originalEmitterYamlPath->setText(originalYamlPath);
+
+    emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
+    emitterType->setCurrentIndex(emitter->emitterType);
+
+    int32 emitterId = effect->GetEmitterId(emitter);
     Vector3 position = (emitterId==-1)?Vector3(0,0,0):effect->GetSpawnPosition(emitterId);
 	positionXSpinBox->setValue((double)position.x);
 	positionYSpinBox->setValue((double)position.y);

@@ -37,7 +37,6 @@
 
 class CustomColorsPanel;
 class RulerToolPanel;
-class VisibilityToolPanel;
 class TilemaskEditorPanel;
 class HeightmapEditorPanel;
 
@@ -68,7 +67,6 @@ private:
 
 	CustomColorsPanel* customColorsPanel;
 	RulerToolPanel* rulerToolPanel;
-	VisibilityToolPanel* visibilityToolPanel;
 	TilemaskEditorPanel* tilemaskEditorPanel;
 	HeightmapEditorPanel* heightmapEditorPanel;
 

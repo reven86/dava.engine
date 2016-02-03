@@ -129,21 +129,21 @@ void UIList::ScrollTo(float delta)
 
 void UIList::SetRect(const Rect &rect)
 {
-    if(orientation == ORIENTATION_HORIZONTAL)
-    {
-        scroll->SetViewSize(rect.dx);
-    }
-    else
-    {
-        scroll->SetViewSize(rect.dy);
-    }
-
     UIControl::SetRect(rect);
     scrollContainer->SetRect(rect);
 }
     
 void UIList::SetSize(const Vector2 &newSize)
 {
+    if (orientation == ORIENTATION_HORIZONTAL)
+    {
+        scroll->SetViewSize(newSize.dx);
+    }
+    else
+    {
+        scroll->SetViewSize(newSize.dy);
+    }
+
     UIControl::SetSize(newSize);
     scrollContainer->SetSize(newSize);
 }

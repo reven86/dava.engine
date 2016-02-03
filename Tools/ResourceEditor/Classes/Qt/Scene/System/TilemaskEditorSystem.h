@@ -75,8 +75,8 @@ public:
     Color GetTileColor(int32 index);
     void SetTileColor(int32 index, const Color& color);
 
-	void SetDrawingType(eTilemaskDrawType type);
-	eTilemaskDrawType GetDrawingType();
+    void SetDrawingType(eTilemaskDrawType type);
+    eTilemaskDrawType GetDrawingType();
 
 protected:
 	uint32 curToolSize;
@@ -90,9 +90,9 @@ protected:
 
     eTilemaskDrawType drawingType;
     eTilemaskDrawType activeDrawingType;
-	float32 strength;
-	FilePath toolImagePath;
-	int32 toolImageIndex;
+    float32 strength;
+    FilePath toolImagePath;
+    int32 toolImageIndex;
 
     rhi::HVertexBuffer quadBuffer;
     rhi::Packet quadPacket;
@@ -104,11 +104,11 @@ protected:
     Rect updatedRectAccumulator;
 
     bool editingIsEnabled;
-	
-	Texture * toolTexture;
-	bool toolSpriteUpdated;
-    
-	bool needCreateUndo;
+
+    Texture* toolTexture;
+    bool toolSpriteUpdated;
+
+    bool needCreateUndo;
 
     const FastName& textureLevel;
 
@@ -117,16 +117,16 @@ protected:
 
     void AddRectToAccumulator(const Rect& rect);
     void ResetAccumulatorRect();
-	Rect GetUpdatedRect();
-	
-	void CreateMaskTexture();
-	void CreateMaskFromTexture(Texture* texture);
+    Rect GetUpdatedRect();
 
-	void CreateUndoPoint();
+    void CreateMaskTexture();
+    void CreateMaskFromTexture(Texture* texture);
 
-	void InitSprites();
+    void CreateUndoPoint();
 
-	void FinishEditing();
+    void InitSprites();
+
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

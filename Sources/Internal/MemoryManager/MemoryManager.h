@@ -66,7 +66,7 @@ class MemoryManager final
     static const uint32 BACKTRACE_DEPTH = 32;
 
 public:
-    static const uint32 MAX_ALLOC_POOL_COUNT = 24;
+    static const uint32 MAX_ALLOC_POOL_COUNT = 32;
     static const uint32 MAX_TAG_COUNT = 32;
     static const uint32 UNTAGGED = MAX_TAG_COUNT - 1;
 

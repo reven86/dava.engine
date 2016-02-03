@@ -113,6 +113,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     image->width = bitstream->width;
     image->height = bitstream->height;
     image->data = newData;
+    image->customDeleter = ::free;
     image->dataSize = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
 
     imageSet.push_back(image);

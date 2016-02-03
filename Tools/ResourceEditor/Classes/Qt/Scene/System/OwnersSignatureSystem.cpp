@@ -61,12 +61,12 @@ bool OwnersSignatureSystem::IsCommandIdValid(int _id)
 {
     for (size_t i = 0; i < COUNT_OF(validIDs); ++i)
     {
-        if(validIDs[i] == _id)
-		{
-			return true;
-		}
-	}
-	return false;
+        if (validIDs[i] == _id)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 DAVA::String OwnersSignatureSystem::GetCurrentTime()

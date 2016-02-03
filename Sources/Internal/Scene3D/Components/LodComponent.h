@@ -46,18 +46,19 @@ public:
 
 	static const int32 MAX_LOD_LAYERS = 4;
 	static const int32 INVALID_LOD_LAYER = -1;
-	static const float32 MIN_LOD_DISTANCE;
-	static const float32 MAX_LOD_DISTANCE;
-	static const float32 INVALID_DISTANCE;
-    
-	enum eFlags
-	{
-		NEED_UPDATE_AFTER_LOAD = 1 << 0,
-        RECURSIVE_UPDATE = 1 << 1
-	};
+    static const int32 LAST_LOD_LAYER = 0x7fffffff;
+    static const float32 MIN_LOD_DISTANCE;
+    static const float32 MAX_LOD_DISTANCE;
+    static const float32 INVALID_DISTANCE;
 
-	struct LodDistance
-	{
+    enum eFlags
+    {
+        NEED_UPDATE_AFTER_LOAD = 1 << 0,
+        RECURSIVE_UPDATE = 1 << 1
+    };
+
+    struct LodDistance
+    {
 		float32 distance;
 		float32 nearDistanceSq;
 		float32 farDistanceSq;

@@ -333,12 +333,13 @@ bool SceneFile::ReadStaticMesh()
 
     uint32 polyGroupCount;
     sceneFP->Read(&polyGroupCount, sizeof(uint32));
-	if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
-	
-	StaticMesh * mesh = new StaticMesh(scene);
-    
-	for (uint32 polyGroupIndex = 0; polyGroupIndex < polyGroupCount; polyGroupIndex++)
-	{
+    if (debugLogEnabled)
+        Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
+
+    StaticMesh* mesh = new StaticMesh(scene);
+
+    for (uint32 polyGroupIndex = 0; polyGroupIndex < polyGroupCount; polyGroupIndex++)
+    {
         PolygonGroup * polygonGroup = new PolygonGroup();
         mesh->AddNode(polygonGroup);
         

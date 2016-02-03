@@ -29,11 +29,11 @@
 
 #include "QtPropertyDataInspMember.h"
 
-QtPropertyDataInspMember::QtPropertyDataInspMember(void *_object, const DAVA::InspMember *_member)
-	: QtPropertyDataDavaVariant(DAVA::VariantType())
-	, object(_object)
-	, member(_member)
-	, lastCommand(NULL)
+QtPropertyDataInspMember::QtPropertyDataInspMember(const DAVA::FastName& name, void* _object, const DAVA::InspMember* _member)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , object(_object)
+    , member(_member)
+    , lastCommand(NULL)
 {
 	if(NULL != member)
 	{
@@ -70,7 +70,6 @@ void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
 		member->SetValue(object, newValue);
 	}
 }
-
 
 void QtPropertyDataInspMember::SetTempValueInternal(const QVariant& value)
 {

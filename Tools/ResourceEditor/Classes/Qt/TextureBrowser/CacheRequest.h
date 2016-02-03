@@ -57,7 +57,7 @@ public:
 	void registerObserver( QObject *object, const QString& slot, const QVariant& userData = QVariant() );
 
 public slots:
-    void invoke( QList< QImage > images );
+    void invoke(const QList<QImage>& images);
 
 private:
 	const DAVA::FilePath key;

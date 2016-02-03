@@ -50,7 +50,7 @@ JniMovieViewControl::JniMovieViewControl(uint32 id)
 
 void JniMovieViewControl::Initialize(const Rect& _rect)
 {
-    Rect rect = JNI::V2P(_rect);
+    Rect rect = JNI::V2I(_rect);
     initialize(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
@@ -61,7 +61,7 @@ void JniMovieViewControl::Uninitialize()
 
 void JniMovieViewControl::SetRect(const Rect& _rect)
 {
-    Rect rect = JNI::V2P(_rect);
+    Rect rect = JNI::V2I(_rect);
     setRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 

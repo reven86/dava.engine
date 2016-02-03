@@ -32,7 +32,6 @@
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/CustomColorsProxy.h"
-#include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "LandscapeEditorDrawSystem/NotPassableTerrainProxy.h"
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
 
@@ -46,17 +45,7 @@
 #include "Scene/SceneHelper.h"
 
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
-:	SceneSystem(scene)
-,	landscapeNode(nullptr)
-,	baseLandscape(nullptr)
-,	landscapeProxy(nullptr)
-,	heightmapProxy(nullptr)
-,	notPassableTerrainProxy(nullptr)
-,	customColorsProxy(nullptr)
-,	visibilityToolProxy(nullptr)
-,	rulerToolProxy(nullptr)
-,	customDrawRequestCount(0)
-,   sourceTilemaskPath("")
+    : SceneSystem(scene)
 {
 }
 
@@ -66,9 +55,7 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(landscapeProxy);
 	SafeRelease(heightmapProxy);
 	SafeRelease(customColorsProxy);
-	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
-
     SafeDelete(notPassableTerrainProxy);
 }
 
@@ -85,11 +72,6 @@ HeightmapProxy* LandscapeEditorDrawSystem::GetHeightmapProxy()
 CustomColorsProxy* LandscapeEditorDrawSystem::GetCustomColorsProxy()
 {
 	return customColorsProxy;
-}
-
-VisibilityToolProxy* LandscapeEditorDrawSystem::GetVisibilityToolProxy()
-{
-	return visibilityToolProxy;
 }
 
 RulerToolProxy* LandscapeEditorDrawSystem::GetRulerToolProxy()
@@ -164,14 +146,14 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     }
 
     if (notPassableTerrainProxy->IsEnabled())
-	{
-		return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
+    {
+        return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    }
 
-	eErrorType enableCustomDrawError = EnableCustomDraw();
-	if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return enableCustomDrawError;
+    eErrorType enableCustomDrawError = EnableCustomDraw();
+    if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return enableCustomDrawError;
 	}
 
     Rect2i updateRect = Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
@@ -231,25 +213,35 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (heightmapProxy && heightmapProxy->IsHeightmapChanged())
 	{
-		Rect changedRect = heightmapProxy->GetChangedRect();
+        const Rect& changedRect = heightmapProxy->GetChangedRect();
         Rect2i updateRect = Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy);
-        baseLandscape->UpdatePart(heightmapProxy, updateRect);
+
+        if (customDrawRequestCount == 0)
+        {
+            UpdateBaseLandscapeHeightmap();
+        }
+        else
+        {
+            if (baseLandscape->IsUpdatable())
+            {
+                baseLandscape->UpdatePart(heightmapProxy, updateRect);
+            }
+            else
+            {
+                UpdateBaseLandscapeHeightmap();
+            }
+        }
 
         if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
         {
             notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
         }
 
-        if (customDrawRequestCount == 0)
-		{
-			UpdateBaseLandscapeHeightmap();
-		}
-		
-		heightmapProxy->ResetHeightmapChanged();
-	}
-	
-	if (customColorsProxy && customColorsProxy->IsTargetChanged())
-	{
+        heightmapProxy->ResetHeightmapChanged();
+    }
+
+    if (customColorsProxy && customColorsProxy->IsTargetChanged())
+    {
 		customColorsProxy->ResetTargetChanged();
 	}
 }
@@ -272,9 +264,9 @@ float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
     Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
     if (texture)
     {
-		size = (float32)texture->GetWidth();
-	}
-	return size;
+        size = (float32)texture->GetWidth();
+    }
+    return size;
 }
 
 Vector3 LandscapeEditorDrawSystem::GetLandscapeSize()
@@ -415,30 +407,29 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableTilemaskE
 }
 
 void LandscapeEditorDrawSystem::DisableTilemaskEditing()
-{}
+{
+}
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 {
-	if (!heightmapProxy)
-	{
-		Heightmap* heightmap = baseLandscape->GetHeightmap();
-        if (heightmap == nullptr || heightmap->Size() == 0)
+    if (heightmapProxy == nullptr)
+    {
+        Heightmap* heightmap = baseLandscape->GetHeightmap();
+        if ((heightmap == nullptr) || (heightmap->Size() == 0))
         {
             return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
         }
         ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
         heightmapProxy = new HeightmapProxy(clonedHeightmap);
     }
-    if (!customColorsProxy)
+
+    if (customColorsProxy == nullptr)
     {
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
-    if (!visibilityToolProxy)
-	{
-        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
-    }
-    if (!rulerToolProxy)
-	{
+
+    if (rulerToolProxy == nullptr)
+    {
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
 
@@ -650,8 +641,8 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT;
             break;
         case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
-			break;
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
+            break;
         case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
             break;
@@ -659,8 +650,8 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 		default:
             DVASSERT(false && "Unknown error");
             break;
-    }
-	return ret;
+        }
+        return ret;
 }
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -677,9 +668,12 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
 			if (String("heightmapPath") == cmd->member->Name().c_str())
             {
-                if (heightmapProxy)
+                Heightmap* heightmap = baseLandscape->GetHeightmap();
+                if ((heightmap != nullptr) && (heightmap->Size() > 0))
                 {
-                    baseLandscape->GetHeightmap()->Clone(heightmapProxy);
+                    ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+                    heightmapProxy = new HeightmapProxy(clonedHeightmap);
+
                     int32 size = heightmapProxy->Size();
                     heightmapProxy->UpdateRect(Rect(0.f, 0.f, (float32)size, (float32)size));
                 }

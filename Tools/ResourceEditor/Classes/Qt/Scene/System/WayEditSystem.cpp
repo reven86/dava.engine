@@ -232,7 +232,7 @@ void WayEditSystem::ResetSelection()
 
 void WayEditSystem::ProcessSelection()
 {
-    const EntityGroup selection = selectionSystem->GetSelection();
+    const EntityGroup& selection = selectionSystem->GetSelection();
     if (currentSelection != selection)
     {
         currentSelection = selection;
@@ -240,13 +240,12 @@ void WayEditSystem::ProcessSelection()
 
         selectedWaypoints.Clear();
 
-        const size_t count = currentSelection.Size();
-        for(size_t i = 0; i < count; ++i)
+        for (const auto& item : currentSelection.GetContent())
         {
-            Entity * entity = currentSelection.GetEntity(i);
+            Entity* entity = item.first;
             if(GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
-                selectedWaypoints.Add(entity);
+                selectedWaypoints.Add(entity, selectionSystem->GetSelectionAABox(entity));
             }
         }
     }
@@ -259,10 +258,10 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
         if ((DAVA::UIEvent::MouseButton::LEFT == event->mouseButton) && (DAVA::UIEvent::Phase::MOVE == event->phase))
         {
             underCursorPathEntity = nullptr;
-            const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
-            if (NULL != collObjects && collObjects->Size() > 0)
+            const EntityGroup::EntityVector& collObjects = collisionSystem->ObjectsRayTestFromCamera();
+            if (!collObjects.empty())
             {
-                DAVA::Entity *underEntity = collObjects->GetEntity(0);
+                DAVA::Entity* underEntity = collObjects.front().first;
                 if (GetWaypointComponent(underEntity) && GetPathComponent(underEntity->GetParent()))
                 {
                     underCursorPathEntity = underEntity;
@@ -300,11 +299,11 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
             
             ProcessSelection();
 
-            if(selectedWaypoints.Size() != 0)
+            if (!selectedWaypoints.IsEmpty())
             {
                 if(selectedWaypoints.Size() == 1 && !cloneJustDone)
                 {
-                    Entity *nextWaypoint = selectedWaypoints.GetEntity(0);
+                    Entity* nextWaypoint = selectedWaypoints.GetFirstEntity();
 
                     EntityGroup entitiesToAddEdge;
                     EntityGroup entitiesToRemoveEdge;
@@ -331,8 +330,9 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                 // add new waypoint on the landscape
                 if (lanscapeIntersected)
                 {
-                    EntityGroup validPrevPoints = FilterPrevSelection(currentWayParent);
-                    if (!validPrevPoints.Size())
+                    EntityGroup validPrevPoints;
+                    FilterPrevSelection(currentWayParent, validPrevPoints);
+                    if (validPrevPoints.IsEmpty())
                     {
                         if (currentWayParent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT) > 0)
                         {
@@ -345,8 +345,8 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 
                     Entity *newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
                     sceneEditor->Exec(new EntityAddCommand(newWaypoint, currentWayParent));
-                    
-                    if(validPrevPoints.Size())
+
+                    if (!validPrevPoints.IsEmpty())
                     {
                         AddEdges(validPrevPoints, newWaypoint);
                     }
@@ -360,29 +360,22 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
     }
 }
 
-EntityGroup WayEditSystem::FilterPrevSelection(DAVA::Entity *parentEntity)
+void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& ret)
 {
-    EntityGroup ret;
-
-    const size_t count = prevSelectedWaypoints.Size();
-    for (size_t i = 0; i < count; ++i)
+    for (const auto& item : prevSelectedWaypoints.GetContent())
     {
-        Entity * entity = prevSelectedWaypoints.GetEntity(i);
-        if (parentEntity == entity->GetParent())
+        if (parentEntity == item.first->GetParent())
         {
-            ret.Add(entity);
+            ret.Add(item.first, selectionSystem->GetSelectionAABox(item.first));
         }
     }
-
-    return ret;
 }
 
 void WayEditSystem::DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge)
 {
-    const size_t count = srcPoints.Size();
-    for(size_t i = 0; i < count; ++i)
+    for (const auto& item : srcPoints.GetContent())
     {
-        Entity * srcPoint = srcPoints.GetEntity(i);
+        Entity* srcPoint = item.first;
         if(dstPoint->GetParent() != srcPoint->GetParent())
         {
             //we don't allow connect different pathes
@@ -391,11 +384,11 @@ void WayEditSystem::DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::E
 
         if (FindEdgeComponent(srcPoint, dstPoint))
         {
-            toRemoveEdge.Add(srcPoint);
+            toRemoveEdge.Add(srcPoint, selectionSystem->GetSelectionAABox(srcPoint));
         }
         else
         {
-            toAddEdge.Add(srcPoint);
+            toAddEdge.Add(srcPoint, selectionSystem->GetSelectionAABox(srcPoint));
         }
     }
 }
@@ -404,28 +397,22 @@ void WayEditSystem::DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::E
 void WayEditSystem::AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity)
 {
     DVASSERT(nextEntity);
-    
-    const size_t count = group.Size();
-    for(size_t i = 0; i < count; ++i)
-    {
-        Entity * entity = group.GetEntity(i);
 
+    for (const auto& item : group.GetContent())
+    {
         DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
         edge->SetNextEntity(nextEntity);
-        
-        sceneEditor->Exec(new AddComponentCommand(entity, edge));
+        sceneEditor->Exec(new AddComponentCommand(item.first, edge));
     }
 }
 
 void WayEditSystem::RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEntity)
 {
-    const size_t count = group.Size();
-    for (size_t i = 0; i < count; ++i)
+    for (const auto& item : group.GetContent())
     {
-        Entity * srcEntity = group.GetEntity(i);
-        EdgeComponent* edgeToNextEntity = FindEdgeComponent(srcEntity, nextEntity);
+        EdgeComponent* edgeToNextEntity = FindEdgeComponent(item.first, nextEntity);
         DVASSERT(edgeToNextEntity);
-        RemoveEdge(srcEntity, edgeToNextEntity);
+        RemoveEdge(item.first, edgeToNextEntity);
     }
 }
 
@@ -473,7 +460,7 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void WayEditSystem::Draw()
 {
-    const EntityGroup & selectionGroup = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
+    const EntityGroup& selectionGroup = (currentSelection.IsEmpty()) ? prevSelectedWaypoints : currentSelection;
 
     const uint32 count = waypointEntities.size();
     for(uint32 i = 0; i < count; ++i)

@@ -150,6 +150,18 @@ const char8 * Logger::GetLogLevelString(eLogLevel ll) const
     return logLevelString[ll];
 }
 
+Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll) const
+{
+    for (size_t i = 0; i < logLevelString.size(); ++i)
+    {
+        if (strcmp(ll, logLevelString[i]) == 0)
+        {
+            return static_cast<eLogLevel>(i);
+        }
+    }
+    return LEVEL__DISABLE;
+}
+
 void Logger::SetLogLevel(eLogLevel ll)
 {
     logLevel = ll;
@@ -242,8 +254,7 @@ void Logger::SetLogFilename(const String & filename)
     }
     else
     {
-        logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory()
-                + filename;
+        logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory() + filename;
     }
 }
 

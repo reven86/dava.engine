@@ -127,12 +127,12 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
     switch (renderObject->GetType())
     {
-		case RenderObject::TYPE_LANDSCAPE:
-		{
-			Landscape *landscape = static_cast<Landscape *> (renderObject);
-			links.insert(landscape->GetHeightmapPathname());
-			break;
-		}
+    case RenderObject::TYPE_LANDSCAPE:
+    {
+        Landscape* landscape = static_cast<Landscape*>(renderObject);
+        links.insert(landscape->GetHeightmapPathname());
+        break;
+        }
 		case RenderObject::TYPE_VEGETATION:
 		{
             VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(renderObject);
@@ -143,24 +143,24 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
             break;
         }
 
-		default:
-			break;
-	}
+        default:
+            break;
+        }
 
     //Enumerate textures from materials
     Set<MaterialTextureInfo*> materialTextures;
     const uint32 count = renderObject->GetRenderBatchCount();
     for (uint32 rb = 0; rb < count; ++rb)
-	{
-		auto renderBatch = renderObject->GetRenderBatch(rb);
-		auto material = renderBatch->GetMaterial();
+    {
+        auto renderBatch = renderObject->GetRenderBatch(rb);
+        auto material = renderBatch->GetMaterial();
 
-		while (nullptr != material)
-		{
+        while (nullptr != material)
+        {
             material->CollectLocalTextures(materialTextures);
             material = material->GetParent();
         }
-	}
+    }
 
     // enumerate drscriptor pathnames
     for (const auto& matTex : materialTextures)

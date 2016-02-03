@@ -37,17 +37,16 @@ namespace DAVA
 
 namespace DefaultValues
 {
-static Vector3 defaultVec3;
-static Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
-static float32 defaultFloat05 = 0.5f;
-static float32 defaultFloat10 = 1.0f;
-static Vector2 defaultVec2;
-static Vector2 defaultVec2I(1.f, 1.f);
-static float32 defaultLightmapSize = 16.0f;
-static float32 defaultFogStart = 0.0f;
-static float32 defaultFogEnd = 500.0f;
-static float32 defaultFogHeight = 50.0f;
-static float32 defaultFogDensity = 0.005f;
+const Vector3 defaultVec3;
+const Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
+const float32 defaultFloat05 = 0.5f;
+const float32 defaultFloat10 = 1.0f;
+const Vector2 defaultVec2;
+const Vector2 defaultVec2I(1.f, 1.f);
+const float32 defaultFogStart = 0.0f;
+const float32 defaultFogEnd = 500.0f;
+const float32 defaultFogHeight = 50.0f;
+const float32 defaultFogDensity = 0.005f;
 };
 
 void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMaterial* material, FastNameMap<PropData>& propsMap) const
@@ -100,7 +99,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     { //TODO: not shader properties need to be added to material
         static const Map<FastName, NMaterialStateDynamicPropertiesInsp::PropData> NOT_SHADER_PROPS =
         {
-          { NMaterialParamName::PARAM_LIGHTMAP_SIZE, { 1, rhi::ShaderProp::TYPE_FLOAT1, &DefaultValues::defaultLightmapSize } },
+          { NMaterialParamName::PARAM_LIGHTMAP_SIZE, { 1, rhi::ShaderProp::TYPE_FLOAT1, &NMaterial::DEFAULT_LIGHTMAP_SIZE } },
         };
 
         for (auto& prop : NOT_SHADER_PROPS)
@@ -391,11 +390,11 @@ void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* 
     checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_SCATTERING, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
     checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_DISTANCE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogEnd);
 
+    checkAndAdd(NMaterialParamName::PARAM_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1, &NMaterial::DEFAULT_LIGHTMAP_SIZE);
     checkAndAdd(NMaterialParamName::PARAM_FLAT_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
     checkAndAdd(NMaterialParamName::PARAM_TEXTURE0_SHIFT, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::PARAM_UV_OFFSET, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::PARAM_UV_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::PARAM_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultLightmapSize);
     checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, Color::White.color);
     checkAndAdd(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);

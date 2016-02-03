@@ -111,11 +111,11 @@ private:
     DAVA::Net::NetLogger netLogger;
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     DAVA::Net::MMNetServer memprofServer;
+    bool memprofInUse = false;
 #endif
     DAVA::Net::PeerDescription peerDescr;
 
     bool loggerInUse = false;
-    bool memprofInUse = false;
 };
 
 

@@ -44,7 +44,7 @@ class RawTimer
 {
 public:
     /* 
-       \brief Starts time calculation. Now GetElapsed() should return nut 0
+       \brief Starts time calculation. Now GetElapsed() should return not 0
      */
     void Start();
     /*

@@ -83,9 +83,10 @@ public:
         uint32 width;
         uint32 height;
         PixelFormat format;
+        rhi::TextureType textureType = rhi::TEXTURE_TYPE_2D;
         bool needDepth = false;
         bool needPixelReadback = false;
-        rhi::TextureType textureType = rhi::TEXTURE_TYPE_2D;
+        bool ensurePowerOf2 = true;
     };
 
     // Main constructors
@@ -138,7 +139,9 @@ public:
 
     static Texture* CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
 
-    static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
+    static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false,
+                              rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool ensurePowerOf2 = true);
+
     static Texture* CreateFBO(const FBODescriptor& desc);
 
     /**

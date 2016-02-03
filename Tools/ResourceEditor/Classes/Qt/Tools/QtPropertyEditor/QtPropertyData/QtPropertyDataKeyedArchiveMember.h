@@ -38,11 +38,11 @@
 class QtPropertyKeyedArchiveMember : public QtPropertyDataDavaVariant
 {
 public:
-	QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key);
-	virtual ~QtPropertyKeyedArchiveMember();
+    QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive, const DAVA::String& key);
+    virtual ~QtPropertyKeyedArchiveMember();
 
-	DAVA::KeyedArchive* archive;
-	DAVA::String key;
+    DAVA::KeyedArchive* archive;
+    DAVA::String key;
 
 protected:
 	KeyeadArchiveSetValueCommand* lastCommand;

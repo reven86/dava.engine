@@ -127,6 +127,7 @@ public:
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
@@ -276,7 +277,10 @@ public:
     */
     void DrawPolygonTransformed(const Polygon2& polygon, bool closed, const Matrix3& transform, const Color& color);
 
-    void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+    void DrawTexture(Texture* texture, NMaterial* material, const Color& color,
+                     const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+
+    void DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect, const Rect& srcRect);
 
 private:
     void SetVirtualToPhysicalTransformEnabled(bool);

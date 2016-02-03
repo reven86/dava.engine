@@ -246,6 +246,7 @@ inline Color operator / (float32 _f, const Color & _v)
 	return Color(_f / _v.r, _f / _v.g , _f / _v.b, _f / _v.a);
 }
 
+Color ClampToUnityRange(Color color);
 };
 
 

@@ -38,7 +38,7 @@ JointTransformTangent( float3 inVec, float4 jointQuaternion )
 
 VPROG_BEGIN
 
-    float3 in_pos      = VP_IN_POSITION;
+    float3 in_pos      = VP_IN_POSITION.xyz;
     float3 in_normal   = VP_IN_NORMAL;
     
 #if SKINNING

@@ -81,32 +81,32 @@ void SettingsDialog::InitProperties()
         SettingsNode *node = SettingsManager::GetSettingsNode(name);
 
         DAVA::String key;
-        QVector<QString> keys;
+        DAVA::Vector<DAVA::FastName> keys;
 
         std::stringstream ss(name.c_str());
         while(std::getline(ss, key, Settings::Delimiter))
         {
-            keys.push_back(key.c_str());
+            keys.emplace_back(key);
         }
 
-        if( keys.size() > 0 && 
-            keys[0] != QString(Settings::InternalGroup.c_str())) // skip internal settings
+        if (keys.empty() == false && keys[0] != Settings::InternalGroup) // skip internal settings
         {
             // go deep into tree to find penultimate propertyData
             QtPropertyData *parent = editor->GetRootProperty();
-            for(int i = 0; i < keys.size() - 1; ++i)
+            for (size_t i = 0; i < keys.size() - 1; ++i)
             {
-                QtPropertyData *prop = parent->ChildGet(keys[i]);
+                const DAVA::FastName& currentKey = keys[i];
+                QtPropertyData* prop = parent->ChildGet(currentKey);
                 if(NULL == prop)
                 {
-                    prop = new QtPropertyData();
+                    prop = new QtPropertyData(currentKey);
                     QFont boldFont = prop->GetFont();
 				    boldFont.setBold(true);
                     prop->SetFont(boldFont);
 				    prop->SetBackground(QBrush(QColor(Qt::lightGray)));
                     prop->SetEnabled(false);
 
-                    parent->ChildAdd(keys[i], prop);
+                    parent->ChildAdd(std::unique_ptr<QtPropertyData>(prop));
                 }
 
                 parent = prop;
@@ -114,14 +114,15 @@ void SettingsDialog::InitProperties()
 
             if(NULL != parent)
             {
-                QtPropertyDataSettingsNode *settingProp = new QtPropertyDataSettingsNode(name);
+                QtPropertyDataSettingsNode* settingProp = new QtPropertyDataSettingsNode(name, keys.back());
                 settingProp->SetInspDescription(node->desc);
 
-                parent->ChildAdd(keys.last(), settingProp);
+                parent->ChildAdd(std::unique_ptr<QtPropertyData>(settingProp));
             }
         }
     }
 
+    editor->GetRootProperty()->FinishTreeCreation();
     editor->expandToDepth(0);
 }
 
@@ -134,11 +135,11 @@ void SettingsDialog::OnResetPressed()
     }
 }
 
-QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(DAVA::FastName path)
-: QtPropertyDataDavaVariant(DAVA::VariantType())
-, settingPath(path)
-{ 
-    SetVariantValue(SettingsManager::GetValue(path));
+QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(const DAVA::FastName& path, const DAVA::FastName& name)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , settingPath(path)
+{
+    SetVariantValue(SettingsManager::GetValue(settingPath));
 }
 
 QtPropertyDataSettingsNode::~QtPropertyDataSettingsNode()

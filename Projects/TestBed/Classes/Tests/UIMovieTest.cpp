@@ -54,7 +54,7 @@ void UIMovieTest::LoadResources()
     buttonScale0 = CreateUIButton(font, Rect(10, 660, 100, 20), "None", &UIMovieTest::ScaleButtonPressed);
     buttonScale1 = CreateUIButton(font, Rect(120, 660, 100, 20), "Aspect fit", &UIMovieTest::ScaleButtonPressed);
     buttonScale2 = CreateUIButton(font, Rect(10, 690, 100, 20), "Aspect fill", &UIMovieTest::ScaleButtonPressed);
-    buttonScale2 = CreateUIButton(font, Rect(120, 690, 100, 20), "Fill", &UIMovieTest::ScaleButtonPressed);
+    buttonScale3 = CreateUIButton(font, Rect(120, 690, 100, 20), "Fill", &UIMovieTest::ScaleButtonPressed);
 
     playerStateText = new UIStaticText(Rect(470, 620, 100, 20));
     playerStateText->SetFont(font);

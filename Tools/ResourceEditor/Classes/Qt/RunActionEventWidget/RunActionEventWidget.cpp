@@ -106,12 +106,14 @@ void RunActionEventWidget::OnInvoke()
     const FastName name(ui->name->currentText().toStdString().c_str());
 
     const EntityGroup& selection = editor->selectionSystem->GetSelection();
-    for (size_t i = 0; i < selection.Size(); i++)
+    for (const auto& item : selection.GetContent())
     {
-        Entity* entity = selection.GetEntity(i);
-        ActionComponent *component = static_cast<ActionComponent *>(entity->GetComponent(Component::ACTION_COMPONENT));
-        if (!component)
+        ActionComponent* component = static_cast<ActionComponent*>(item.first->GetComponent(Component::ACTION_COMPONENT));
+        if (component == nullptr)
+        {
             continue;
+        }
+
         const uint32 nEvents = component->GetCount();
         for (uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
         {
@@ -169,10 +171,9 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2 *_scene, const Ent
     QSet< QString > nameSet;
 
     const EntityGroup& selection = scene->selectionSystem->GetSelection();
-    for (size_t i = 0; i < selection.Size(); i++)
+    for (const auto& item : selection.GetContent())
     {
-        Entity* entity = selection.GetEntity(i);
-        ActionComponent *component = static_cast<ActionComponent *>(entity->GetComponent(Component::ACTION_COMPONENT));
+        ActionComponent* component = static_cast<ActionComponent*>(item.first->GetComponent(Component::ACTION_COMPONENT));
         if (!component)
             continue;
         const uint32 nEvents = component->GetCount();
@@ -186,9 +187,6 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2 *_scene, const Ent
         }
     }
 
-    const QStringList& nameList = nameSet.toList();
-    autocompleteModel->setStringList(nameList);
-
-    const bool enable = selection.Size() > 0;
-    setEnabled(enable);
+    autocompleteModel->setStringList(nameSet.toList());
+    setEnabled(!selection.IsEmpty());
 }

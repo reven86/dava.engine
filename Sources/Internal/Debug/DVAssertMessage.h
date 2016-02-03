@@ -47,7 +47,7 @@ enum eModalType
 };
 
 bool ShowMessage(eModalType modalType, const char8* text, ...);
-bool IsMessageDisplayed();
+bool IsHidden();
 
     // return true if user click Break
 bool InnerShow(eModalType modalType, const char* content);

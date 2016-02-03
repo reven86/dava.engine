@@ -1,9 +1,5 @@
 
 #compiller flags
-if( NOT DISABLE_DEBUG )
-    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
-
-endif  ()
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
@@ -61,6 +57,8 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+    set( OTHER_CODE_SIGN_FLAGS "--deep")
+    set( CMAKE_EXE_LINKER_FLAGS "-ObjC" )
 
 elseif ( WIN32 )
     #dynamic runtime on windows store
@@ -96,6 +94,10 @@ elseif ( WIN32 )
     add_definitions ( -DNOMINMAX )
 endif  ()
 
+if( NOT DISABLE_DEBUG )
+    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
+
+endif  ()
 
 ##
 if( WARNING_DISABLE)

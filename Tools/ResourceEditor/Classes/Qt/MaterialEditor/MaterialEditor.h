@@ -91,6 +91,7 @@ protected:
     void FillDynamic(QtPropertyData *root, const FastName& dynamicName);
     void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial *>& materials);
+    void FinishCreation();
 
     void FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const FastName& memberName);
     void FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName);
@@ -147,7 +148,7 @@ private:
     void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
                                           const DAVA::FilePath& scenePath);
 
-    QtPropertyData* AddSection(const QString& sectionName);
+    QtPropertyData* AddSection(const DAVA::FastName& sectionName);
 
     void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
     bool HasMaterialProperty(NMaterial* material, const FastName& paramName);

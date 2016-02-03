@@ -32,8 +32,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Platform/DPIHelper.h"
-
 #include "Sound/SoundSystem.h"
 
 #include "Input/InputSystem.h"
@@ -105,11 +103,10 @@ void QtLayer::ProcessFrame()
     Core::Instance()->SystemProcessFrame();
 }
 
-void QtLayer::Resize(int32 width, int32 height, int32 currentScreen)
+void QtLayer::Resize(int32 width, int32 height, float64 dpr)
 {
-    float64 screenScale = DPIHelper::GetDpiScaleFactor(currentScreen);
-    int32 realWidth = static_cast<int32>(width * screenScale);
-    int32 realHeight = static_cast<int32>(height * screenScale);
+    int32 realWidth = static_cast<int32>(width * dpr);
+    int32 realHeight = static_cast<int32>(height * dpr);
     rhi::ResetParam resetParams;
     resetParams.width = realWidth;
     resetParams.height = realHeight;

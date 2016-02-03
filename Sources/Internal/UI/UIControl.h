@@ -394,7 +394,7 @@ public:
         geometric data received with GetGeometricData().
      \returns control rect.
      */
-    Rect GetAbsoluteRect();
+    Rect GetAbsoluteRect() const;
 
     /**
      \brief Sets the untransformed control rect.
@@ -422,7 +422,7 @@ public:
         geometric data received with GetGeometricData().
      \returns control absolute position.
      */
-    Vector2 GetAbsolutePosition();
+    Vector2 GetAbsolutePosition() const;
 
     /**
      \brief Sets the untransformed control position.

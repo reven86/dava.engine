@@ -102,7 +102,16 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     modelName = RTStringToString(deviceInfo.SystemSku);
     deviceName = WideString(deviceInfo.FriendlyName->Data());
     gpu = GPUFamily();
-    uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+
+    try
+    {
+        uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+    }
+    catch (Platform::Exception ^ e)
+    {
+        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
+        uDID = "";
+    }
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()

@@ -26,8 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <DAVAEngine.h>
-#include <Network/NetCore.h>
+#include "Base/Platform.h"
+#include "Concurrency/Thread.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/Logger.h"
+#include "Network/NetCore.h"
+#include "Platform/SystemTimer.h"
+#if defined(__DAVAENGINE_MACOS__)
+    #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
+#elif defined(__DAVAENGINE_WIN32__)
+    #include "Platform/TemplateWin32/CorePlatformWin32.h"
+#endif //PLATFORMS
 
 #include "AssetCacheClient.h"
 
@@ -41,7 +50,18 @@ void FrameworkWillTerminate()
 
 void CreateDAVA()
 {
+#if defined(__DAVAENGINE_MACOS__)
+    DAVA::Core* core = new DAVA::CoreMacOSPlatform();
+#elif defined(__DAVAENGINE_WIN32__)
+    DAVA::Core* core = new DAVA::CoreWin32Platform();
+#else // PLATFORMS
+    static_assert(false, "Need create Core object");
+#endif //PLATFORMS
+
     new DAVA::Logger();
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
+    DAVA::Logger::Instance()->EnableConsoleMode();
+
     new DAVA::FileSystem();
     DAVA::FilePath::InitializeBundleName();
 
@@ -64,6 +84,8 @@ void ReleaseDAVA()
 
     DAVA::FileSystem::Instance()->Release();
     DAVA::Logger::Instance()->Release();
+
+    DAVA::Core::Instance()->Release();
 }
 
 int main(int argc, char* argv[])
@@ -74,12 +96,9 @@ int main(int argc, char* argv[])
     bool parsed = cacheClient.ParseCommandLine(argc, argv);
     if (parsed)
     {
-        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
         cacheClient.Process();
     }
 
-    int exitCode = cacheClient.GetExitCode();
-
     ReleaseDAVA();
-    return exitCode;
+    return cacheClient.GetExitCode();
 }

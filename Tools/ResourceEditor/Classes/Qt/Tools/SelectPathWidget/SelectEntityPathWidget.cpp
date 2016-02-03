@@ -137,11 +137,11 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
         if (NULL != entity)
         {
             retList.push_back(entity);
-		}
-	}
-	// for just created entities no need to increase refCouner
-	// it will be released in ~SelectEntityPathWidget()
-	SetEntities(retList, false);
+        }
+    }
+    // for just created entities no need to increase refCouner
+    // it will be released in ~SelectEntityPathWidget()
+    SetEntities(retList, false);
 }
 
 void SelectEntityPathWidget::SetEntities(const DAVA::List<DAVA::Entity*>& list, bool perfromRertain)

@@ -101,8 +101,8 @@ public:
 	
 	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
 
-    int32 GetViewWidth() const { return width; };
-    int32 GetViewHeight() const { return height; };
+    int32 GetViewWidth() const;
+    int32 GetViewHeight() const;
 
     void SetNativeWindow(void* nativeWindow);
 
@@ -111,21 +111,21 @@ private:
 	void QuitAction();
 	void ProcessWithoutDrawing();
 
-	void UpdateScreenMode();
-
-    void ProcessResizeView();
+    void ApplyPendingViewSize();
 
 private:
-	int32 width;
-	int32 height;
+    int32 pendingWidth = 0;
+    int32 pendingHeight = 0;
+    int32 backbufferWidth = 0;
+    int32 backbufferHeight = 0;
 
-	bool wasCreated;
-	bool renderIsActive;
-    bool viewSizeChanged;
+    bool wasCreated = false;
+    bool renderIsActive = false;
+    bool viewSizeChanged = false;
 
-    bool foreground;
+    bool foreground = false;
 
-    AndroidSystemDelegate* androidDelegate;
+    AndroidSystemDelegate* androidDelegate = nullptr;
 
     String externalStorage;
     String internalStorage;

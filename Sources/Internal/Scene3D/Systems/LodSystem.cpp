@@ -245,8 +245,11 @@ void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 p
 		}
         
         int32 layerNum = lodComponent->currentLod;
-        DVASSERT(0 <= layerNum && layerNum < LodComponent::MAX_LOD_LAYERS);
-        
+        if (layerNum != LodComponent::LAST_LOD_LAYER)
+        {
+            DVASSERT(0 <= layerNum && layerNum < LodComponent::MAX_LOD_LAYERS);
+        }
+
         if(lodComponent->IsRecursiveUpdate())
         {
             SetEntityLodRecursive(entity, layerNum);
@@ -260,12 +263,8 @@ void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 p
     
 void LodSystem::SetEntityLodRecursive(Entity * entity, int32 currentLod)
 {
-    RenderObject * ro = GetRenderObject(entity);
-    if(ro)
-    {
-        ro->SetLodIndex(currentLod);
-    }
-    
+    SetEntityLod(entity, currentLod);
+
     int32 count = entity->GetChildrenCount();
     for(int32 i = 0; i < count; ++i)
     {

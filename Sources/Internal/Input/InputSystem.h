@@ -36,10 +36,6 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "InputCallback.h"
-//#include "UI/UIControl.h"
-//#include "UI/UIScreenTransition.h"
-//#include "UI/UILoadingTransition.h"
-//#include "UI/UIPopup.h"
 
 /**
 	\defgroup inputsystem	Input System

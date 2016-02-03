@@ -48,7 +48,6 @@
 using namespace DAVA;
 
 GameCore::GameCore()
-    : cursor(nullptr)
 {
     new GridVisualizer();
 
@@ -77,13 +76,11 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-    cursor = nullptr;
     Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
 {
-	SafeRelease(cursor);
 }
 
 void GameCore::OnSuspend()
@@ -128,8 +125,8 @@ void GameCore::UnpackHelp()
         {
             FileSystem::Instance()->DeleteDirectory(docsPath);
             FileSystem::Instance()->CreateDirectory(docsPath, true);
-		
-			helpRA->UnpackToFolder(docsPath);
+
+            helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 

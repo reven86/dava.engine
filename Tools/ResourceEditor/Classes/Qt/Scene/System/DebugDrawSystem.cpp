@@ -1,29 +1,29 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
@@ -31,20 +31,15 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "Deprecated/EditorConfig.h"
-#include "Scene3D/Components/ComponentHelpers.h"
-
 #include "Deprecated/SceneValidator.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 using namespace DAVA;
 
-float32 DebugDrawSystem::HANGING_OBJECTS_HEIGHT = 0.001f;
+DAVA::float32 DebugDrawSystem::HANGING_OBJECTS_HEIGHT = 0.001f;
 
 DebugDrawSystem::DebugDrawSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-	, objectType(ResourceEditor::ESOT_NONE)
-    , objectTypeColor(Color::White)
-	, hangingObjectsModeEnabled(false)
-    , switchesWithDifferentLodsEnabled(false)
 {
 	SceneEditor2 *sc = (SceneEditor2 *)GetScene();
 
@@ -55,7 +50,6 @@ DebugDrawSystem::DebugDrawSystem(DAVA::Scene * scene)
     DVASSERT(NULL != selSystem);
 }
 
-
 DebugDrawSystem::~DebugDrawSystem()
 { }
 
@@ -63,10 +57,10 @@ void DebugDrawSystem::SetRequestedObjectType(ResourceEditor::eSceneObjectType _o
 {
 	objectType = _objectType;
 
-	if(ResourceEditor::ESOT_NONE != objectType)
-	{
-        const Vector<Color> & colors = EditorConfig::Instance()->GetColorPropertyValues("CollisionTypeColor");
-        if((uint32)objectType < (uint32)colors.size())
+    if (ResourceEditor::ESOT_NONE != objectType)
+    {
+        const Vector<Color>& colors = EditorConfig::Instance()->GetColorPropertyValues("CollisionTypeColor");
+        if ((uint32)objectType < (uint32)colors.size())
         {
             objectTypeColor = colors[objectType];
         }
@@ -74,7 +68,7 @@ void DebugDrawSystem::SetRequestedObjectType(ResourceEditor::eSceneObjectType _o
         {
             objectTypeColor = Color(1.f, 0, 0, 1.f);
         }
-	}
+    }
 }
 
 
@@ -85,33 +79,32 @@ ResourceEditor::eSceneObjectType DebugDrawSystem::GetRequestedObjectType() const
 
 void DebugDrawSystem::Draw()
 {
-	
-	Draw(GetScene());
+    Draw(GetScene());
 }
 
 void DebugDrawSystem::Draw(DAVA::Entity *entity)
 {
-	if(NULL != entity)
-	{
+    if (NULL != entity)
+    {
         bool isSelected = selSystem->GetSelection().ContainsEntity(entity);
 
-		DrawObjectBoxesByType(entity);
-		DrawUserNode(entity);
+        DrawObjectBoxesByType(entity);
+        DrawUserNode(entity);
 		DrawLightNode(entity);
-		DrawHangingObjects(entity);        
-		DrawSwitchesWithDifferentLods(entity);
-		DrawWindNode(entity);
+        DrawHangingObjects(entity);
+        DrawSwitchesWithDifferentLods(entity);
+        DrawWindNode(entity);
         DrawSwitchesWithDifferentLods(entity);
         DrawSoundNode(entity);
 
-        if(isSelected)
+        if (isSelected)
         {
-            DrawSelectedSoundNode(entity);         
+            DrawSelectedSoundNode(entity);
         }
 
-		for(int32 i = 0; i < entity->GetChildrenCount(); ++i)
-		{
-			Draw(entity->GetChild(i));
+        for (int32 i = 0; i < entity->GetChildrenCount(); ++i)
+        {
+            Draw(entity->GetChild(i));
 		}
 	}
 }
@@ -121,13 +114,13 @@ void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
 	bool drawBox = false;
 
 	KeyedArchive * customProperties = GetCustomPropertiesArchieve(entity);
-    if ( customProperties )
+    if (customProperties)
     {
-        if ( customProperties->IsKeyExists( "CollisionType" ) )
+        if (customProperties->IsKeyExists("CollisionType"))
         {
-            drawBox = customProperties->GetInt32( "CollisionType", 0 ) == objectType;
+            drawBox = customProperties->GetInt32("CollisionType", 0) == objectType;
         }
-        else if ( objectType == ResourceEditor::ESOT_UNDEFINED_COLLISION && entity->GetParent() == GetScene() )
+        else if (objectType == ResourceEditor::ESOT_UNDEFINED_COLLISION && entity->GetParent() == GetScene())
         {
             const bool skip =
             GetLight(entity) == NULL &&
@@ -138,16 +131,16 @@ void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
         }
     }
 
-    if ( drawBox )
-	{
-		DrawEntityBox(entity, objectTypeColor);
+    if (drawBox)
+    {
+        DrawEntityBox(entity, objectTypeColor);
 	}
 }
 
 void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
 {
-	if(NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
-	{
+    if (NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
+    {
         RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity);
@@ -171,15 +164,15 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
 void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 {
 	DAVA::Light *light = GetLight(entity);
-	if(NULL != light)
-	{
+    if (NULL != light)
+    {
         RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
 
-		if(light->GetType() == Light::TYPE_DIRECTIONAL)
-		{
-			DAVA::Vector3 center = worldBox.GetCenter();
+        if (light->GetType() == Light::TYPE_DIRECTIONAL)
+        {
+            DAVA::Vector3 center = worldBox.GetCenter();
 			DAVA::Vector3 direction = -light->GetDirection();
 
 			direction.Normalize();
@@ -189,13 +182,13 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
             drawer->DrawArrow(center + direction, center, direction.Length() / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
-        else if(light->GetType() == Light::TYPE_POINT)
-		{
+        else if (light->GetType() == Light::TYPE_POINT)
+        {
             drawer->DrawIcosahedron(worldBox.GetCenter(), worldBox.GetSize().x / 2, DAVA::Color(1.0f, 1.0f, 0, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             drawer->DrawIcosahedron(worldBox.GetCenter(), worldBox.GetSize().x / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
         else
-		{
+        {
             drawer->DrawAABox(worldBox, DAVA::Color(1.0f, 1.0f, 0, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             drawer->DrawAABox(worldBox, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
@@ -204,51 +197,54 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
 void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
 {
-    SettingsManager * settings = SettingsManager::Instance();
+    SettingsManager* settings = SettingsManager::Instance();
 
-    if(!settings->GetValue(Settings::Scene_Sound_SoundObjectDraw).AsBool())
+    if (!settings->GetValue(Settings::Scene_Sound_SoundObjectDraw).AsBool())
         return;
 
-    DAVA::SoundComponent * sc = GetSoundComponent(entity);
-    if(sc)
+    DAVA::SoundComponent* sc = GetSoundComponent(entity);
+    if (sc)
     {
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+        Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor();
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, ClampToUnityRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
     }
 }
 
 void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
 {
-    SettingsManager * settings = SettingsManager::Instance();
+    SettingsManager* settings = SettingsManager::Instance();
 
-    if(!settings->GetValue(Settings::Scene_Sound_SoundObjectDraw).AsBool())
+    if (!settings->GetValue(Settings::Scene_Sound_SoundObjectDraw).AsBool())
         return;
 
-    DAVA::SoundComponent * sc = GetSoundComponent(entity);
-    if(sc)
+    DAVA::SoundComponent* sc = GetSoundComponent(entity);
+    if (sc)
     {
-        SceneEditor2 * sceneEditor = ((SceneEditor2 *)GetScene());
+        SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
         Vector3 position = entity->GetWorldTransform().GetTranslationVector();
 
         uint32 fontHeight = 0;
         GraphicFont* debugTextFont = sceneEditor->textDrawSystem->GetFont();
-        if(debugTextFont)
+        if (debugTextFont)
             fontHeight = debugTextFont->GetFontHeight();
 
         uint32 eventsCount = sc->GetEventsCount();
-        for(uint32 i = 0; i < eventsCount; ++i)
+        for (uint32 i = 0; i < eventsCount; ++i)
         {
-            SoundEvent * sEvent = sc->GetSoundEvent(i);
+            SoundEvent* sEvent = sc->GetSoundEvent(i);
             float32 distance = sEvent->GetMaxDistance();
 
+            Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor();
+
             sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(position, distance,
-                                                                              settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+                                                                              ClampToUnityRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
 
             sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i,
                                                   sEvent->GetEventName(), Color::White, TextDrawSystem::Align::Center);
 
-            if(sEvent->IsDirectional())
+            if (sEvent->IsDirectional())
             {
                 sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawArrow(position, sc->GetLocalDirection(i), .25f, DAVA::Color(0.0f, 1.0f, 0.3f, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
             }
@@ -259,156 +255,132 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
 void DebugDrawSystem::DrawWindNode(DAVA::Entity *entity)
 {
 	WindComponent * wind = GetWindComponent(entity);
-	if(wind)
-	{
-		const Matrix4 & worldMx = entity->GetWorldTransform();
+    if (wind)
+    {
+        const Matrix4 & worldMx = entity->GetWorldTransform();
 		Vector3 worldPosition = worldMx.GetTranslationVector();
 
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(worldPosition, worldPosition + wind->GetDirection() * 3.f, .75f, DAVA::Color(1.0f, 0.5f, 0.2f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 
-void DebugDrawSystem::DrawEntityBox( DAVA::Entity *entity, const DAVA::Color &color )
+void DebugDrawSystem::DrawEntityBox(DAVA::Entity* entity, const DAVA::Color& color)
 {
     AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
 }
 
-
-void DebugDrawSystem::DrawHangingObjects( DAVA::Entity *entity )
+void DebugDrawSystem::DrawHangingObjects(DAVA::Entity* entity)
 {
-	if(!hangingObjectsModeEnabled)
-	{
-        return;
-    }
-
-    if (entity->GetParent() != GetScene())
+    if (hangingObjectsModeEnabled && (entity->GetParent() == GetScene()) && IsObjectHanging(entity))
     {
-		return;
+        DrawEntityBox(entity, Color(1.0f, 0.0f, 0.0f, 1.0f));
     }
-    
-	if(IsObjectHanging(entity))
-	{
-		DrawEntityBox(entity, Color(1.f, 0.f, 0.f, 1.f));
-	}
 }
 
-
-bool DebugDrawSystem::IsObjectHanging(Entity * entity)
+void DebugDrawSystem::CollectRenderBatchesRecursively(Entity* entity, RenderBatchesWithTransforms& batches) const
 {
-	RenderObject *ro = GetRenderObject(entity);
-	if(!ro || (ro->GetType() != RenderObject::TYPE_MESH && ro->GetType() != RenderObject::TYPE_RENDEROBJECT && ro->GetType() != RenderObject::TYPE_SPEED_TREE))
-		return false;
+    auto ro = GetRenderObject(entity);
+    if (ro != nullptr)
+    {
+        auto roType = ro->GetType();
+        if ((roType == RenderObject::TYPE_MESH) || (roType == RenderObject::TYPE_RENDEROBJECT) || (roType == RenderObject::TYPE_SPEED_TREE))
+        {
+            const Matrix4& wt = entity->GetWorldTransform();
+            for (uint32 i = 0, e = ro->GetActiveRenderBatchCount(); i < e; ++i)
+            {
+                RenderBatch* batch = ro->GetActiveRenderBatch(i);
+                if (batch != nullptr)
+                {
+                    PolygonGroup* pg = batch->GetPolygonGroup();
+                    if (pg != nullptr)
+                    {
+                        batches.emplace_back(batch, wt);
+                    }
+                }
+            }
+        }
+    }
 
-	const AABBox3 & worldBox = ro->GetWorldBoundingBox();
-	if(worldBox.IsEmpty() && worldBox.min.x == worldBox.max.x && worldBox.min.y == worldBox.max.y && worldBox.min.z == worldBox.max.z)
-		return false;
-
-	const Matrix4 & wt = entity->GetWorldTransform();
-	Vector3 position, scale, orientation;
-	wt.Decomposition(position, scale, orientation);
-
-	Vector<Vector3> lowestVertexes;
-	GetLowestVertexes(ro, lowestVertexes, scale);
-
-	const uint32 count = lowestVertexes.size();
-	if(count == 0) return false; // we can be in state when selected lod had been set less than lodLayerNumber
-
-	bool isAllVertextesUnderLandscape = true;
-	for(uint32 i = 0; i < count && isAllVertextesUnderLandscape; ++i)
-	{
-		Vector3 pos = lowestVertexes[i];
-		pos = pos * wt;
-
-		const Vector3 landscapePoint = GetLandscapePointAtCoordinates(Vector2(pos.x, pos.y));
-
-		bool isVertexUnderLandscape = ((pos.z - landscapePoint.z) < DAVA::EPSILON);
-		isAllVertextesUnderLandscape &= isVertexUnderLandscape;
-	}
-
-	return !isAllVertextesUnderLandscape;
+    for (int32 i = 0, e = entity->GetChildrenCount(); i < e; ++i)
+    {
+        CollectRenderBatchesRecursively(entity->GetChild(i), batches);
+    }
 }
 
-void DebugDrawSystem::GetLowestVertexes(const DAVA::RenderObject *ro, DAVA::Vector<DAVA::Vector3> &vertexes, const DAVA::Vector3 & scale)
+DAVA::float32 DebugDrawSystem::GetMinimalZ(const RenderBatchesWithTransforms& batches) const
 {
-	const float32 minZ = GetMinimalZ(ro);
-	const float32 vertexDelta = HANGING_OBJECTS_HEIGHT / scale.z;
-
-	uint32 count = ro->GetActiveRenderBatchCount();
-	for(uint32 i = 0; i < count; ++i)
-	{
-		RenderBatch *batch = ro->GetActiveRenderBatch(i);
-		DVASSERT(batch);
-
-		PolygonGroup *pg = batch->GetPolygonGroup();
-		if(pg)
-		{
-			uint32 vertexCount = pg->GetVertexCount();
-			for(uint32 v = 0; v < vertexCount; ++v)
-			{
-				Vector3 pos;
-				pg->GetCoord(v, pos);
-
-				if((pos.z - minZ) <= vertexDelta)   //accuracy of finding of lowest vertexes
-				{
-					vertexes.push_back(pos);
-				}
-			}
-		}
-	}
+    float32 minZ = AABBOX_INFINITY;
+    for (auto batch : batches)
+    {
+        PolygonGroup* polygonGroup = batch.first->GetPolygonGroup();
+        for (uint32 v = 0, e = polygonGroup->GetVertexCount(); v < e; ++v)
+        {
+            Vector3 pos;
+            polygonGroup->GetCoord(v, pos);
+            minZ = DAVA::Min(minZ, pos.z);
+        }
+    }
+    return minZ;
 }
 
-float32 DebugDrawSystem::GetMinimalZ(const DAVA::RenderObject *ro)
+void DebugDrawSystem::GetLowestVertexes(const RenderBatchesWithTransforms& batches, DAVA::Vector<DAVA::Vector3>& vertexes) const
 {
-	float32 minZ = AABBOX_INFINITY;
-	
-	uint32 count = ro->GetActiveRenderBatchCount();
-	for(uint32 i = 0; i < count; ++i)
-	{
-		RenderBatch *batch = ro->GetActiveRenderBatch(i);
-		DVASSERT(batch);
-
-		PolygonGroup *pg = batch->GetPolygonGroup();
-		if(pg)
-		{
-			uint32 vertexCount = pg->GetVertexCount();
-			for(uint32 v = 0; v < vertexCount; ++v)
-			{
-				Vector3 pos;
-				pg->GetCoord(v, pos);
-
-				if(pos.z < minZ)
-				{
-					minZ = pos.z;
-				}
-			}
-		}
+    const float32 minZ = GetMinimalZ(batches);
+    for (auto batch : batches)
+    {
+        float32 scale = std::sqrt(batch.second._20 * batch.second._20 + batch.second._21 * batch.second._21 + batch.second._22 * batch.second._22);
+        PolygonGroup* polygonGroup = batch.first->GetPolygonGroup();
+        for (uint32 v = 0, e = polygonGroup->GetVertexCount(); v < e; ++v)
+        {
+            Vector3 pos;
+            polygonGroup->GetCoord(v, pos);
+            if (scale * (pos.z - minZ) <= HANGING_OBJECTS_HEIGHT)
+            {
+                vertexes.push_back(pos * batch.second);
+            }
+        }
 	}
-
-	return minZ;
 }
 
+bool DebugDrawSystem::IsObjectHanging(Entity* entity) const
+{
+    Vector<Vector3> lowestVertexes;
+    RenderBatchesWithTransforms batches;
+    CollectRenderBatchesRecursively(entity, batches);
+    GetLowestVertexes(batches, lowestVertexes);
 
+    for (const auto& vertex : lowestVertexes)
+    {
+        Vector3 landscapePoint = GetLandscapePointAtCoordinates(Vector2(vertex.x, vertex.y));
+        if ((vertex.z - landscapePoint.z) > DAVA::EPSILON)
+        {
+            return true;
+        }
+    }
 
+    return false;
+}
 
-Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2 & centerXY)
+Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2& centerXY) const
 {
 	LandscapeEditorDrawSystem *landSystem = ((SceneEditor2 *)GetScene())->landscapeEditorDrawSystem;
 	LandscapeProxy* landscape = landSystem->GetLandscapeProxy();
 
-	if(landscape)
-	{
-		return landscape->PlacePoint(Vector3(centerXY));
+    if (landscape)
+    {
+        return landscape->PlacePoint(Vector3(centerXY));
 	}
 
 	return Vector3();
 }
 
-void DebugDrawSystem::DrawSwitchesWithDifferentLods( DAVA::Entity *entity )
+void DebugDrawSystem::DrawSwitchesWithDifferentLods(DAVA::Entity* entity)
 {
-    if(!switchesWithDifferentLodsEnabled) return;
+    if (!switchesWithDifferentLodsEnabled)
+        return;
 
-    if(SceneValidator::IsEntityHasDifferentLODsCount(entity))
+    if (SceneValidator::IsEntityHasDifferentLODsCount(entity))
     {
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
 

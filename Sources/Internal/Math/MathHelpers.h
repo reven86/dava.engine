@@ -223,6 +223,11 @@ inline float32 Round(float32 value)
 	return (value > 0.0f) ? floor(value + 0.5f) : ceil(value - 0.5f);
 }
 
+inline Vector3 Polar(DAVA::float32 angle, DAVA::float32 distance)
+{
+    return DAVA::Vector3(std::cos(angle) * distance, std::sin(angle) * distance, 0.0f);
+};
+
 } // end of namespace DAVA
 
 #endif 

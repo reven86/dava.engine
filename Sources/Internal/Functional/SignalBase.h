@@ -30,6 +30,7 @@
 #define __DAVA_SIGNAL_BASE_H__
 
 #include "Base/BaseTypes.h"
+#include "Concurrency/Atomic.h"
 
 namespace DAVA {
 

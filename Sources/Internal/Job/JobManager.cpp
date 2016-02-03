@@ -55,6 +55,14 @@ JobManager::JobManager()
 
 JobManager::~JobManager()
 {
+    {
+        LockGuard<Mutex> guard(mainQueueMutex);
+        mainJobs.clear();
+    }
+    mainJobLastExecutedID = mainJobIDCounter;
+    mainJobIDCounter = 0;
+    mainCV.NotifyAll();
+
     for(uint32 i = 0; i < workerThreads.size(); ++i)
     {
         SafeDelete(workerThreads[i]);
@@ -125,7 +133,7 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
     {
         fn();
     }
-    else
+    else if (mainJobIDCounter > 0)
     {
         // reserve job ID
         jobID = ++mainJobIDCounter;

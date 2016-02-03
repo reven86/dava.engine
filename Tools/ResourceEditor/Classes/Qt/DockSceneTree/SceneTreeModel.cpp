@@ -45,7 +45,7 @@
 
 //mime data
 #include "Tools/MimeData/MimeDataHelper2.h"
-
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	: QStandardItemModel(parent)
@@ -146,30 +146,27 @@ bool SceneTreeModel::GetLocked(const QModelIndex &index) const
 
 QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
 {
-	static QIcon lockedIcon = QIcon(":/QtIcons/locked.png");
-	static QIcon eyeIcon = QIcon(":/QtIcons/eye.png");
+    QVector<QIcon> ret;
+    SceneTreeItem* item = GetItem(index);
 
-	QVector<QIcon> ret;
-	SceneTreeItem *item = GetItem(index);
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
+    if (NULL != entity)
+    {
+        if (entity->GetLocked())
+        {
+            ret.push_back(SharedIcon(":/QtIcons/locked.png"));
+        }
 
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
-	if(NULL != entity)
-	{
-		if(entity->GetLocked())
-		{
-			ret.push_back(lockedIcon);
-		}
+        if (NULL != GetCamera(entity))
+        {
+            if (curScene->GetCurrentCamera() == GetCamera(entity))
+            {
+                ret.push_back(SharedIcon(":/QtIcons/eye.png"));
+            }
+        }
+    }
 
-		if(NULL != GetCamera(entity))
-		{
-			if(curScene->GetCurrentCamera() == GetCamera(entity))
-			{
-				ret.push_back(eyeIcon);
-			}
-		}
-	}
-
-	return ret;
+    return ret;
 }
 
 int SceneTreeModel::GetCustomFlags(const QModelIndex &index) const
@@ -349,14 +346,14 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
 				EntityGroup entityGroup;
 				for (int i = 0; i < entitiesV.size(); ++i)
 				{
-					entityGroup.Add((DAVA::Entity*) entitiesV[i]);
-				}
+                    entityGroup.Add((DAVA::Entity*)entitiesV[i], DAVA::AABBox3());
+                }
 
-				curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
-				ret = true;
-			}
-		}
-		break;
+                curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
+                ret = true;
+            }
+        }
+        break;
 
     case DropingEmitter:
         {
@@ -690,9 +687,8 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
     if (!item->IsAcceptedByFilter())
     {
         const bool match = (text.isEmpty() || name.contains(text, Qt::CaseInsensitive) || text == QString::number(id));
-        const bool isChild = _index.parent().isValid();
 
-        item->SetAcceptByFilter(isChild || match);
+        item->SetAcceptByFilter(match);
         item->SetHighlight(match);
         
         if (match)
@@ -895,7 +891,7 @@ SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QOb
 
 bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-	if (!treeModel->IsFilterSet())
+    if (!treeModel->IsFilterSet())
         return true;
 
     const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);
