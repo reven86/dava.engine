@@ -89,11 +89,11 @@ public:
     
     static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
 	static void ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality);
-    
-    static bool SplitImage(const DAVA::FilePath &pathname, DAVA::Set<DAVA::String> &errorLog);
-    
-    static bool MergeImages(const DAVA::FilePath &folder, DAVA::Set<DAVA::String> &errorLog);
-    
+
+    static bool SplitImage(const DAVA::FilePath& pathname);
+
+    static bool MergeImages(const DAVA::FilePath& folder);
+
     static Channels CreateSplittedImages(DAVA::Image* originalImage);
     
     static DAVA::Image* CreateMergedImage(const Channels& channes);

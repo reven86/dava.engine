@@ -244,8 +244,6 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 
     if (nullptr != particleEffectSystem)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
-
-    ImportShadowColor(this);
 }
 
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
@@ -1037,37 +1035,12 @@ void Scene::OptimizeBeforeExport()
         }
     }
 
-    ImportShadowColor(this);
-
     Entity::OptimizeBeforeExport();
 }
 
-void Scene::ImportShadowColor(Entity * rootNode)
-{
-    if(nullptr != sceneGlobalMaterial)
-    {
-		Entity * landscapeNode = FindLandscapeEntity(rootNode);
-		if(nullptr != landscapeNode)
-		{
-			// try to get shadow color for landscape
-			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
-			if (props->IsKeyExists("ShadowColor"))
-			{
-                //RHI_COMPLETE TODO: check if shadow color from landscape is used, fix it and remove this crap
-                if (sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
-                    sceneGlobalMaterial->RemoveProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-
-                Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
-                props->DeleteKey("ShadowColor");
-            }
-        }
-    }
-}
 
 void Scene::OnSceneReady(Entity * rootNode)
 {
-    ImportShadowColor(rootNode);
 }
 
     

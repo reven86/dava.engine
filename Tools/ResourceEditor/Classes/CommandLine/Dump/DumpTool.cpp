@@ -62,26 +62,26 @@ bool DumpTool::InitializeInternal()
 {
     if(inFolder.IsEmpty())
     {
-        AddError("Input folder was not selected");
+        Logger::Error("Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
     
     if(filename.empty())
     {
-        AddError("Filename was not selected");
+        Logger::Error("Filename was not selected");
         return false;
     }
 
     if (outFile.IsEmpty())
     {
-        AddError("Out file was not selected");
+        Logger::Error("Out file was not selected");
         return false;
     }
 
     if (commandAction == ACTION_NONE)
     {
-        AddError("Target for dumping was not selected");
+        Logger::Error("Target for dumping was not selected");
         return false;
     }
 
@@ -92,7 +92,7 @@ void DumpTool::ProcessInternal()
 {
     if(commandAction == ACTION_DUMP_LINKS)
     {
-		auto links = SceneDumper::DumpLinks(inFolder + filename, errors);
+        auto links = SceneDumper::DumpLinks(inFolder + filename);
 
         FileSystem::Instance()->CreateDirectory(outFile.GetDirectory(), true);
 		ScopedPtr<File> file(File::Create(outFile, File::WRITE | File::CREATE));

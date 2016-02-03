@@ -39,6 +39,7 @@
 #include "Commands2/LandscapeEditorDrawSystemActions.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 
 // framework
 #include "Scene3D/Entity.h"
@@ -274,28 +275,44 @@ SceneFileV2::eError SceneEditor2::Save()
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
-	SceneExporter exporter;
-
-    FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
-
-    exporter.SetInFolder(projectPath + String("DataSource/3d/"));
-    exporter.SetOutFolder(projectPath + String("Data/3d/"));
-	exporter.SetGPUForExporting(newGPU);
+    const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
+    const DAVA::FilePath dataFolder = projectPath + "Data/3d/";
+    const DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
 
 	DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-	exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
+    DAVA::TextureConverter::eConvertQuality qualityValue = static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32());
 
     ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
     {
-        Set<String> errorLog;
-        exporter.ExportScene(clonedScene, GetScenePath(), errorLog);
+        LoggerErrorHandler handler;
+        Logger::AddCustomOutput(&handler);
+
+        SceneExporter exporter;
+        exporter.SetFolders(dataFolder, dataSourceFolder);
+        exporter.SetCompressionParams(newGPU, qualityValue);
+        exporter.EnableOptimizations(newGPU != GPU_ORIGIN);
+
+        const DAVA::FilePath& scenePathname = GetScenePath();
+        const DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);
+        FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
+
+        SceneExporter::ExportedObjectCollection exportedObjects;
+        exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
+        exporter.ExportObjects(exportedObjects);
+
+        Logger::RemoveCustomOutput(&handler);
+        if (handler.HasErrors())
+        {
+            const auto& errorLog = handler.GetErrors();
         for (auto& error : errorLog)
         {
             Logger::Error("Export error: %s", error.c_str());
         }
+            return false;
+        }
 
-        return errorLog.empty();
+        return true;
     }
     return false;
 }

@@ -38,7 +38,7 @@ class CommandLineManager
 {    
 public:
     CommandLineManager(int argc, char* argv[]);
-    ~CommandLineManager() = default;
+    ~CommandLineManager();
 
     bool IsEnabled()
     {

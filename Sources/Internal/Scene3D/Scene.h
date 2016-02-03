@@ -287,7 +287,6 @@ protected:
 	Vector<Camera*> cameras;
     
     NMaterial* sceneGlobalMaterial;
-    void ImportShadowColor(Entity * rootNode);
 
     Camera * mainCamera;
     Camera * drawCamera;

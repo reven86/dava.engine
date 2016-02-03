@@ -75,7 +75,7 @@ bool SceneSaverTool::InitializeInternal()
 {
     if (inFolder.IsEmpty())
     {
-        AddError("Input folder was not selected");
+        Logger::Error("Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
@@ -84,20 +84,20 @@ bool SceneSaverTool::InitializeInternal()
     {
         if (outFolder.IsEmpty())
         {
-            AddError("Output folder was not selected");
+            Logger::Error("Output folder was not selected");
             return false;
         }
         outFolder.MakeDirectoryPathname();
     }
     else if (commandAction == ACTION_NONE)
     {
-        AddError("Wrong action was selected");
+        Logger::Error("Wrong action was selected");
         return false;
     }
 
     if (filename.empty() && (commandAction != eAction::ACTION_RESAVE_YAML))
     {
-        AddError("Filename was not selected");
+        Logger::Error("Filename was not selected");
         return false;
     }
     
@@ -114,7 +114,7 @@ void SceneSaverTool::ProcessInternal()
         saver.SetInFolder(inFolder);
         saver.SetOutFolder(outFolder);
         saver.EnableCopyConverted(copyConverted);
-        saver.SaveFile(filename, errors);
+        saver.SaveFile(filename);
 
         break;
     }
@@ -122,13 +122,13 @@ void SceneSaverTool::ProcessInternal()
     {
         SceneSaver saver;
         saver.SetInFolder(inFolder);
-        saver.ResaveFile(filename, errors);
+        saver.ResaveFile(filename);
         break;
     }
     case SceneSaverTool::eAction::ACTION_RESAVE_YAML:
     {
         SceneSaver saver;
-        saver.ResaveYamlFilesRecursive(inFolder, errors);
+        saver.ResaveYamlFilesRecursive(inFolder);
         break;
     }
 

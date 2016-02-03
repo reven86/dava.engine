@@ -29,6 +29,13 @@
 
 #include "SceneUtils.h"
 
+#include "FileSystem/FileSystem.h"
+#include "Utils/StringFormat.h"
+
+#include "Render/RHI/rhi_Public.h"
+#include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
+
 using namespace DAVA;
 
 SceneUtils::SceneUtils()
@@ -39,7 +46,7 @@ SceneUtils::~SceneUtils()
 {
 }
 
-void SceneUtils::CleanFolder(const FilePath &folderPathname, Set<String> &errorLog)
+void SceneUtils::CleanFolder(const FilePath& folderPathname)
 {
     bool ret = FileSystem::Instance()->DeleteDirectory(folderPathname);
     if(!ret)
@@ -47,7 +54,7 @@ void SceneUtils::CleanFolder(const FilePath &folderPathname, Set<String> &errorL
         bool folderExists = FileSystem::Instance()->IsDirectory(folderPathname);
         if(folderExists)
         {
-            errorLog.insert(String(Format("[CleanFolder] ret = %d, folder = %s", ret, folderPathname.GetAbsolutePathname().c_str())));
+            Logger::Error("[CleanFolder] ret = %d, folder = %s", ret, folderPathname.GetAbsolutePathname().c_str());
         }
     }
 }
@@ -64,26 +71,25 @@ void SceneUtils::SetOutFolder(const FilePath &folderPathname)
     dataFolder = folderPathname;
 }
 
-
-bool SceneUtils::CopyFile(const FilePath &filePathname, Set<String> &errorLog)
+bool SceneUtils::CopyFile(const FilePath& filePathname)
 {
 	String workingPathname = filePathname.GetRelativePathname(dataSourceFolder);
 
-	PrepareFolderForCopyFile(workingPathname, errorLog);
-    
+    PrepareFolderForCopyFile(workingPathname);
+
     bool retCopy = FileSystem::Instance()->CopyFile(dataSourceFolder + workingPathname, dataFolder + workingPathname);
     if(!retCopy)
     {
-        errorLog.insert(String(Format("Can't copy %s from %s to %s",
+        Logger::Error("Can't copy %s from %s to %s",
                                       workingPathname.c_str(),
                                       dataSourceFolder.GetAbsolutePathname().c_str(),
-                                      dataFolder.GetAbsolutePathname().c_str())));
+                      dataFolder.GetAbsolutePathname().c_str());
     }
     
     return retCopy;
 }
 
-void SceneUtils::PrepareFolderForCopyFile(const String &filename, Set<String> &errorLog)
+void SceneUtils::PrepareFolderForCopyFile(const String& filename)
 {
     FilePath newFolderPath = (dataFolder + filename).GetDirectory();
     
@@ -92,7 +98,7 @@ void SceneUtils::PrepareFolderForCopyFile(const String &filename, Set<String> &e
         FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory(newFolderPath, true);
         if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
         {
-            errorLog.insert(String(Format("Can't create folder %s", newFolderPath.GetAbsolutePathname().c_str())));
+            Logger::Error("Can't create folder %s", newFolderPath.GetAbsolutePathname().c_str());
         }
     }
     
@@ -119,10 +125,10 @@ void SceneUtils::AddFile(const DAVA::FilePath &sourcePath)
     }
 }
 
-void SceneUtils::CopyFiles(Set<String> &errorLog)
+void SceneUtils::CopyFiles()
 {
-    PrepareDestination(errorLog);
-    
+    PrepareDestination();
+
     auto endIt = filesForCopy.end();
     for(auto it = filesForCopy.begin(); it != endIt; ++it)
     {
@@ -136,14 +142,14 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
 
         if (!retCopy)
         {
-            errorLog.insert(String(Format("Can't copy %s to %s",
+            Logger::Error("Can't copy %s to %s",
                                           it->first.GetAbsolutePathname().c_str(),
-                                          it->second.GetAbsolutePathname().c_str())));
+                          it->second.GetAbsolutePathname().c_str());
         }
     }
 }
 
-void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
+void SceneUtils::PrepareDestination()
 {
     DAVA::Set<DAVA::FilePath> folders;
 
@@ -161,7 +167,7 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
             FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory((*it), true);
             if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
             {
-                errorLog.insert(String(Format("Can't create folder %s", (*it).GetAbsolutePathname().c_str())));
+                Logger::Error("Can't create folder %s", (*it).GetAbsolutePathname().c_str());
             }
         }
     }

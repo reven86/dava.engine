@@ -31,6 +31,7 @@
 #include "CommandLine/OptionName.h"
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/GPUFamilyDescriptor.h"
 
 using namespace DAVA;
 
@@ -117,7 +118,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
 
                     if (compression.compressToWidth < 0 || compression.compressToHeight < 0)
                     {
-                        AddError(Format("Wrong size parameters for gpu: %s", optionName.c_str()));
+                        Logger::Error("Wrong size parameters for gpu: %s", optionName.c_str());
                         compression.compressToWidth = compression.compressToHeight = 0;
                     }
                 }
@@ -132,7 +133,7 @@ bool TextureDescriptorTool::InitializeInternal()
 {
     if (commandAction == ACTION_NONE)
     {
-        AddError("Wrong action was selected");
+        Logger::Error("Wrong action was selected");
         return false;
     }
 
@@ -140,13 +141,13 @@ bool TextureDescriptorTool::InitializeInternal()
     {
         if (filePathname.IsEmpty())
         {
-            AddError("Descriptor pathname was not selected");
+            Logger::Error("Descriptor pathname was not selected");
             return false;
         }
     }
     else if (folderPathname.IsEmpty())
     {
-        AddError("Folder pathname was not selected");
+        Logger::Error("Folder pathname was not selected");
         return false;
     }
     else

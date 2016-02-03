@@ -32,8 +32,10 @@
 
 #include "CommandLine/CommandLineTool.h"
 #include "TextureCompression/TextureConverter.h"
+#include "AssetCache/AssetCache.h"
 
-class SceneExporter;
+#include "CommandLine/SceneExporter/SceneExporter.h"
+
 class SceneExporterTool: public CommandLineTool
 {
     enum eAction : DAVA::int8
@@ -43,14 +45,6 @@ class SceneExporterTool: public CommandLineTool
         ACTION_EXPORT_FILE,
         ACTION_EXPORT_FOLDER,
         ACTION_EXPORT_FILELIST
-    };
-
-    enum eObject : DAVA::int32
-    {
-        OBJECT_NONE = -1,
-
-        OBJECT_SCENE = 0,
-        OBJECT_TEXTURE
     };
 
 public:
@@ -63,12 +57,8 @@ private:
     void ProcessInternal() override;
     DAVA::FilePath GetQualityConfigPath() const override;
 
-    void ExportFolder(SceneExporter& exporter);
-    void ExportFile(SceneExporter& exporter);
-    void ExportFileList(SceneExporter& exporter);
-
     eAction commandAction = ACTION_NONE;
-    eObject commandObject = OBJECT_NONE;
+    SceneExporter::eExportedObjectType commandObject = SceneExporter::OBJECT_NONE;
 
     DAVA::String filename;
     DAVA::String foldername;
@@ -81,7 +71,10 @@ private:
     DAVA::eGPUFamily requestedGPU = DAVA::GPU_ORIGIN;
     bool optimizeOnExport = true;
 
+    SceneExporter::ClientConnectionParams clientConnectionParams;
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
+
+    SceneExporter::ExportedObjectCollection exportedObjects;
 };
 
 

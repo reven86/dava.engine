@@ -43,6 +43,7 @@
 #include "IMagickHelper.h"
 
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
 
 #include "AssetCache/AssetCacheClient.h"
@@ -616,7 +617,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     }
     else
     {
-        if (requested == AssetCache::ERROR_TIMEOUT)
+        if (requested == AssetCache::ERROR_OPERATION_TIMEOUT)
         {
             //            cacheClient = nullptr;
         }
@@ -680,7 +681,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         }
         else
         {
-            if (added == AssetCache::ERROR_TIMEOUT)
+            if (added == AssetCache::ERROR_OPERATION_TIMEOUT)
             {
                 //                cacheClient = nullptr;
             }

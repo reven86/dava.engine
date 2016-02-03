@@ -41,6 +41,7 @@
 #include "Render/3D/MeshUtils.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/Image/ImageSystem.h"
 #include "Collada/ColladaPolygonGroup.h"
 #include "Collada/ColladaMeshInstance.h"
 #include "Collada/ColladaSceneNode.h"

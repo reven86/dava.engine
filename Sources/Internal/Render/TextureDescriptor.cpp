@@ -250,7 +250,7 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
     const uint32 sourceCRC = ReadSourceCRC();
     const uint32 convertedCRC = GetConvertedCRC(forGPU);
 
-    const bool crcIsEqual = ((compressionForGPU->sourceFileCrc == sourceCRC) && (compressionForGPU->convertedFileCrc == convertedCRC));
+    const bool crcIsEqual = ((compressionForGPU->sourceFileCrc == sourceCRC) && (compressionForGPU->convertedFileCrc == convertedCRC)) && (convertedCRC != 0);
     if (crcIsEqual)
     {
         //this code need until using of convertation params in crc
@@ -934,13 +934,23 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         return 0;
 #else
         LibPVRHelper helper;
-        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC(forGPU);
+        uint32 convertedCRC = helper.GetCRCFromFile(filePath);
+        if (convertedCRC != 0)
+        {
+            convertedCRC += GenerateDescriptorCRC(forGPU);
+        }
+        return convertedCRC;
 #endif
 	}
     else if (imageFormat == IMAGE_FORMAT_DDS)
     {
         LibDdsHelper helper;
-        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC(forGPU);
+        uint32 convertedCRC = helper.GetCRCFromFile(filePath);
+        if (convertedCRC != 0)
+        {
+            convertedCRC += GenerateDescriptorCRC(forGPU);
+        }
+        return convertedCRC;
     }
     else
     {

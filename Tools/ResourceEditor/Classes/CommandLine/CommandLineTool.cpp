@@ -76,19 +76,6 @@ void CommandLineTool::PrintUsage() const
     options.PrintUsage();
 }
 
-void CommandLineTool::PrintResults() const
-{
-    if (!errors.empty())
-    {
-        Logger::Error("Errors count is %d:", errors.size());
-
-        int32 errorIndex = 0;
-        for (auto& error : errors)
-        {
-            Logger::Error("[%d] %s", errorIndex++, error.c_str());
-        }
-    }
-}
 
 void CommandLineTool::Process()
 {
@@ -96,21 +83,21 @@ void CommandLineTool::Process()
     if (printUsage)
     {
         PrintUsage();
-        return;
-    }
-
-    PrepareEnvironment();
-
-    bool initialized = Initialize();
-    if (initialized)
-    {
-        PrepareQualitySystem();
-        ProcessInternal();
-        PrintResults();
     }
     else
     {
-        PrintUsage();
+        PrepareEnvironment();
+
+        bool initialized = Initialize();
+        if (initialized)
+        {
+            PrepareQualitySystem();
+            ProcessInternal();
+        }
+        else
+        {
+            PrintUsage();
+        }
     }
 }
 
@@ -136,11 +123,6 @@ DAVA::FilePath CommandLineTool::GetQualityConfigPath() const
     return DAVA::FilePath();
 };
 
-void CommandLineTool::AddError(const DAVA::String& errorMessage)
-{
-    errors.insert(errorMessage);
-    Logger::Error(errorMessage.c_str());
-}
 
 void CommandLineTool::PrepareQualitySystem() const
 {

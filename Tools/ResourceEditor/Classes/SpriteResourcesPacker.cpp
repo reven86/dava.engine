@@ -73,7 +73,8 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         auto ip = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
         auto port = SettingsManager::GetValue(Settings::General_AssetCache_Port).AsString();
         auto timeout = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsString();
-        resourcePacker.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
+//        resourcePacker.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
+        DVASSERT(false);
     }
 
     resourcePacker.PackResources(gpu);

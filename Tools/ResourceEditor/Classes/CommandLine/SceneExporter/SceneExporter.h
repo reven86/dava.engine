@@ -30,52 +30,97 @@
 #ifndef __SCENE_EXPORTER_H__
 #define __SCENE_EXPORTER_H__
 
+#include "Utils/StringFormat.h"
+
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
+#include "AssetCache/AssetCache.h"
 
-using namespace DAVA;
+namespace DAVA
+{
+class TextureDescriptor;
+class Scene;
+}
 
-class SceneExporter
+class SceneExporter final
 {
 public:
+    enum eExportedObjectType : DAVA::int32
+    {
+        OBJECT_NONE = -1,
 
-	SceneExporter();
-	virtual ~SceneExporter();
-    
-    void SetGPUForExporting(const eGPUFamily newGPU);
-    
-	void SetCompressionQuality(TextureConverter::eConvertQuality quality);
+        OBJECT_SCENE = 0,
+        OBJECT_TEXTURE,
+        OBJECT_HEIGHTMAP,
 
-    void SetInFolder(const FilePath &folderPathname);
-    void SetOutFolder(const FilePath &folderPathname);
-    
-	void EnableOptimizations( bool enable );
+        OBJECT_COUNT
+    };
 
-    void ExportSceneFile(const String &fileName, Set<String> &errorLog);
-    void ExportTextureFile(const String &fileName, Set<String> &errorLog);
-    
-    void ExportSceneFolder(const String &folderName, Set<String> &errorLog);
-    void ExportTextureFolder(const String &folderName, Set<String> &errorLog);
-    
-    void ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
+    struct ExportedObject
+    {
+        ExportedObject(eExportedObjectType type_, DAVA::String path)
+            : type(type_)
+            , relativePathname(std::move(path))
+        {
+        }
+
+        eExportedObjectType type = OBJECT_NONE;
+        DAVA::String relativePathname;
+    };
+
+    struct ClientConnectionParams
+    {
+        ClientConnectionParams()
+        {
+            SetPort(DAVA::AssetCache::ASSET_SERVER_PORT);
+        }
+
+        void SetPort(DAVA::uint16 port_)
+        {
+            port = DAVA::Format("%hu", port_);
+        }
+
+        DAVA::String ip = "127.0.0.1";
+        DAVA::String port;
+        DAVA::uint32 timeout = 1;
+        bool enabled = false;
+    };
+
+    SceneExporter() = default;
+    ~SceneExporter();
+
+    using ExportedObjectCollection = DAVA::Vector<ExportedObject>;
+
+    void SetFolders(const DAVA::FilePath& dataFolder, const DAVA::FilePath& dataSourceFolder);
+    void SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality);
+    void SetConnectionParams(const ClientConnectionParams& clientConnectionParams);
+    void EnableOptimizations(bool enable);
+
+    bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
+    void ExportObjects(const ExportedObjectCollection& exportedObjects);
 
 private:
-    void RemoveEditorNodes(Entity *rootNode);
-    void RemoveEditorCustomProperties(Entity *rootNode);
-    
-    bool ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog);
-    bool ExportTextureDescriptor(const FilePath &pathname, Set<String> &errorLog);
-    bool ExportTexture(const TextureDescriptor * descriptor, Set<String> &errorLog);
-    void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
+    void ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
+    void ExportTextureFile(const DAVA::FilePath& descriptorPathname, const DAVA::String& descriptorLink);
+    void ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink);
 
-    bool ExportLandscape(Scene *scene, Set<String> &errorLog);
+    void ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
 
-    SceneUtils sceneUtils;
-    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
-    TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
+    DAVA::FilePath CompressTexture(DAVA::TextureDescriptor& descriptor) const;
+    void CopySourceTexture(DAVA::TextureDescriptor& descriptor) const;
+
+    bool CopyFile(const DAVA::FilePath& filePath) const;
+    bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;
+
+    DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
+    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
     bool optimizeOnExport = false;
-};
 
+    DAVA::FilePath dataFolder;
+    DAVA::FilePath dataSourceFolder;
+
+    ClientConnectionParams clientConnectionParams;
+};
 
 
 #endif // __SCENE_EXPORTER_H__

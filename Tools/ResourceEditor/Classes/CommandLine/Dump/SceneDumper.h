@@ -49,11 +49,10 @@ public:
 
 	using SceneLinks = DAVA::Set < DAVA::FilePath >;
 
-	static SceneLinks DumpLinks(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+    static SceneLinks DumpLinks(const DAVA::FilePath& scenePath);
 
 private:
-
-	SceneDumper(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+    SceneDumper(const DAVA::FilePath& scenePath);
 	~SceneDumper();
 
 	void DumpLinksRecursive(DAVA::Entity *entity, SceneLinks &links) const;

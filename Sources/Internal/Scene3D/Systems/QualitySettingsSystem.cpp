@@ -66,7 +66,7 @@ QualitySettingsSystem::QualitySettingsSystem()
 
 void QualitySettingsSystem::Load(const FilePath &path)
 {
-    Logger::FrameworkDebug("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
+    //    Logger::FrameworkDebug("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if (FileSystem::Instance()->Exists(path))
     {
@@ -229,7 +229,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
         parser->Release();
     }
 
-    Logger::FrameworkDebug("Done. TxQualities: %u, MaGrQualities: %u", textureQualities.size(), materialGroups.size());
+    //    Logger::FrameworkDebug("Done. TxQualities: %u, MaGrQualities: %u", textureQualities.size(), materialGroups.size());
 }
 
 size_t QualitySettingsSystem::GetTextureQualityCount() const

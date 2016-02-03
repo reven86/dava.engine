@@ -63,7 +63,7 @@ AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& 
         {
             Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
             isActive = false;
-            return AssetCache::ERROR_TIMEOUT;
+            return AssetCache::ERROR_OPERATION_TIMEOUT;
         }
     }
 
@@ -122,7 +122,7 @@ AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
         if (((timeoutms > 0) && (deltaTime > timeoutms)) && (requestResult.recieved == false))
         {
             Logger::Error("[AssetCacheClient::%s] Sending files refused by timeout (%lld ms)", __FUNCTION__, timeoutms);
-            return AssetCache::ERROR_TIMEOUT;
+            return AssetCache::ERROR_OPERATION_TIMEOUT;
         }
     }
 

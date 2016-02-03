@@ -55,8 +55,12 @@
 //#define __DAVAENGINE_DIRECTX9__
 #define __DAVAENGINE_OPENGL__
 
-// This flag allow to enable profiling stats 
+// This flag allow to enable profiling stats
 //#define __DAVAENGINE_ENABLE_DEBUG_STATS__
+#if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
+//    #define __DAVAENGINE_ENABLE_FRAMEWORK_STATS__
+//    #define __DAVAENGINE_ENABLE_TOOLS_STATS__
+#endif //__DAVAENGINE_ENABLE_DEBUG_STATS__
 
 //suppress 'deprecated' warning
 #define DAVAENGINE_HIDE_DEPRECATED

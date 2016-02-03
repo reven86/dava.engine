@@ -30,7 +30,8 @@
 #ifndef __SCENE_UTILS_H__
 #define __SCENE_UTILS_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
 class SceneUtils
 {
@@ -38,23 +39,22 @@ public:
 
 	SceneUtils();
     ~SceneUtils();
-    
-    void CleanFolder(const DAVA::FilePath &folderPathname, DAVA::Set<DAVA::String> &errorLog);
-    
+
+    void CleanFolder(const DAVA::FilePath& folderPathname);
+
     void SetInFolder(const DAVA::FilePath &folderPathname);
     void SetOutFolder(const DAVA::FilePath &folderPathname);
-    
-    bool CopyFile(const DAVA::FilePath &filePathname, DAVA::Set<DAVA::String> &errorLog);
-    void PrepareFolderForCopyFile(const DAVA::String &filename, DAVA::Set<DAVA::String> &errorLog);
 
+    bool CopyFile(const DAVA::FilePath& filePathname);
+    void PrepareFolderForCopyFile(const DAVA::String& filename);
 
     DAVA::FilePath GetNewFilePath(const DAVA::FilePath &oldPathname) const;
     
     void AddFile(const DAVA::FilePath &sourcePath);
-    void CopyFiles(DAVA::Set<DAVA::String> &errorLog);
+    void CopyFiles();
 
 private:
-    void PrepareDestination(DAVA::Set<DAVA::String> &errorLog);
+    void PrepareDestination();
 
 public:
 

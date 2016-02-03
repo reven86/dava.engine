@@ -26,8 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "FileSystem/FileList.h"
+#include "Render/Image/ImageSystem.h"
 
+#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "ImageTools/ImageTools.h"
 #include "Settings/SettingsManager.h"
 

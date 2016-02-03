@@ -98,17 +98,22 @@ int main(int argc, char *argv[])
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
+    int exitCode = 0;
     CommandLineManager cmdLine(argc, argv);
     if (cmdLine.IsEnabled())
     {
         RunConsole( argc, argv, cmdLine );
 	}
-    else
+    else if (argc == 1)
     {
         RunGui( argc, argv, cmdLine );
     }
+    else
+    {
+        exitCode = 1; //wrong commandLine
+    }
 
-    return 0;
+    return exitCode;
 }
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
@@ -121,7 +126,7 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 
     Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->EnableConsoleMode();
-    DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
     QApplication a( argc, argv );
 
@@ -130,7 +135,7 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     auto glWidget = new DavaGLWidget();
     glWidget->MakeInvisible();
 
-    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+    DAVA::Logger::FrameworkDebug(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // Delayed initialization throught event loop
     glWidget->show();
@@ -212,8 +217,8 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
         mainWindow->show();
-        
-        DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
+        DAVA::Logger::FrameworkDebug(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
     } );
     
     

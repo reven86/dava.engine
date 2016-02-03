@@ -78,6 +78,11 @@ public:
     static const DAVA::String CopyCompression;
     static const DAVA::String SetCompression;
 
+    static const DAVA::String UseAssetCache;
+    static const DAVA::String AssetCacheIP;
+    static const DAVA::String AssetCachePort;
+    static const DAVA::String AssetCacheTimeout;
+
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };
 
