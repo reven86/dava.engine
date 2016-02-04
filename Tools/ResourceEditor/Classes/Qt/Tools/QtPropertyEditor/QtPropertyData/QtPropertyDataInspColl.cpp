@@ -46,8 +46,8 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(const DAVA::FastName& name, void*
             DAVA::FastName childName(std::to_string(index));
             if (NULL != valueType->GetIntrospection())
             {
-				void * itemObject = collection->ItemData(i);
-				const DAVA::InspInfo *itemInfo = valueType->GetIntrospection(itemObject);
+                void* itemObject = collection->ItemData(i);
+                const DAVA::InspInfo *itemInfo = valueType->GetIntrospection(itemObject);
 
 				if(NULL != itemInfo && NULL != itemObject)
 				{
@@ -55,22 +55,22 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(const DAVA::FastName& name, void*
                     ChildAdd(std::move(childData));
                 }
                 else
-				{
-					QString s;
+                {
+                    QString s;
                     std::unique_ptr<QtPropertyData> childData(new QtPropertyData(childName, s.sprintf("[%p] Pointer", itemObject)));
                     childData->SetEnabled(false);
                     ChildAdd(std::move(childData));
                 }
             }
-			else
-			{
+            else
+            {
 				if(!valueType->IsPointer())
 				{
                     std::unique_ptr<QtPropertyData> childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
                     ChildAdd(std::move(childData));
                 }
                 else
-				{
+                {
                     DAVA::FastName localChildName = childName;
                     if (collection->ItemKeyType() == DAVA::MetaInfo::Instance<DAVA::FastName>())
                     {
@@ -84,8 +84,8 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(const DAVA::FastName& name, void*
                 }
             }
 
-			index++;
-			i = collection->Next(i);
+            index++;
+            i = collection->Next(i);
 		}
 	}
 

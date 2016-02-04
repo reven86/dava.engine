@@ -293,6 +293,9 @@ public:
     
     bool IsRtl() const;
     void SetRtl(bool rtl);
+
+    bool IsBiDiSupportEnabled() const;
+    void SetBiDiSupportEnabled(bool support);
     UILayoutSystem *GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();

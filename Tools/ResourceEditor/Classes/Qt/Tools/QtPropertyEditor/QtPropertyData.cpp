@@ -319,9 +319,9 @@ QString QtPropertyData::GetPath() const
     QString path = name.c_str();
 
     // search top level parent
-    const QtPropertyData *parent = this;
-	while(NULL != parent->Parent())
-	{
+    const QtPropertyData* parent = this;
+    while (NULL != parent->Parent())
+    {
 		parent = parent->Parent();
         path = QString(parent->name.c_str()) + "/" + path;
     }

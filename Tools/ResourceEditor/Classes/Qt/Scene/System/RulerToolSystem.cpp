@@ -85,7 +85,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
     SendUpdatedLength();
 
     enabled = true;
-	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool RulerToolSystem::DisableLandscapeEdititing()
@@ -242,8 +242,8 @@ void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
     else if (!isIntersectsLandscape)
     {
         previewLength = -1.f;
-	}
-	SendUpdatedLength();
+    }
+    SendUpdatedLength();
 }
 
 DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector2& startPoint, const DAVA::Vector2& endPoint)

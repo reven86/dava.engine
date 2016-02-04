@@ -203,8 +203,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     pivotPointXSpinBoxLabel = new QLabel("X:", this);
     pivotPointInnerLayout->addWidget(pivotPointXSpinBoxLabel);
-	pivotPointXSpinBox = new EventFilterDoubleSpinBox(this);
-	pivotPointXSpinBox->setMinimum(-99);
+    pivotPointXSpinBox = new EventFilterDoubleSpinBox(this);
+    pivotPointXSpinBox->setMinimum(-99);
 	pivotPointXSpinBox->setMaximum(99);
 	pivotPointXSpinBox->setSingleStep(0.1);
 	pivotPointXSpinBox->setDecimals(3);
@@ -244,8 +244,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
     xFacingCheckBox = new QCheckBox("X-Facing");
-	facingLayout->addWidget(xFacingCheckBox);
-	connect(xFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    facingLayout->addWidget(xFacingCheckBox);
+    connect(xFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 	yFacingCheckBox = new QCheckBox("Y-Facing");
 	facingLayout->addWidget(yFacingCheckBox);
 	connect(yFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
@@ -295,8 +295,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     InitWidget(sizeTimeLine);
     sizeVariationTimeLine = new TimeLineWidget(this);
     InitWidget(sizeVariationTimeLine);
-	sizeOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeOverLifeTimeLine);
+    sizeOverLifeTimeLine = new TimeLineWidget(this);
+    InitWidget(sizeOverLifeTimeLine);
 	velocityTimeLine = new TimeLineWidget(this);
 	InitWidget(velocityTimeLine);
 	velocityOverLifeTimeLine = new TimeLineWidget(this);
@@ -667,7 +667,7 @@ void EmitterLayerWidget::OnValueChanged()
     if (zFacingCheckBox->isChecked())
         particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
     if (worldAlignCheckBox->isChecked())
-        particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
@@ -1091,8 +1091,8 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
 
     // The Pivot Point must be hidden for Superemitter mode.
-	pivotPointLabel->setVisible(!isSuperemitter);
-	pivotPointXSpinBox->setVisible(!isSuperemitter);
+    pivotPointLabel->setVisible(!isSuperemitter);
+    pivotPointXSpinBox->setVisible(!isSuperemitter);
 	pivotPointXSpinBoxLabel->setVisible(!isSuperemitter);
 	pivotPointYSpinBox->setVisible(!isSuperemitter);
 	pivotPointYSpinBoxLabel->setVisible(!isSuperemitter);

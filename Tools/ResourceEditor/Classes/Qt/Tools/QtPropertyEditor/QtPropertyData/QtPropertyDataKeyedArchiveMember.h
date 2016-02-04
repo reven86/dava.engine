@@ -42,7 +42,7 @@ public:
     virtual ~QtPropertyKeyedArchiveMember();
 
     DAVA::KeyedArchive* archive;
-	DAVA::String key;
+    DAVA::String key;
 
 protected:
 	KeyeadArchiveSetValueCommand* lastCommand;

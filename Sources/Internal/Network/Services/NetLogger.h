@@ -70,7 +70,9 @@ public:
 
     void Install();
     void Uninstall();
+    size_t GetMessageQueueSize() const;
 
+private:
     // IChannelListener
     void OnPacketSent(IChannel* channel, const void* buffer, size_t length) override;
     void OnPacketDelivered(IChannel* channel, uint32 packetId) override;
@@ -80,7 +82,6 @@ public:
 
     void ChannelOpen() override;
 
-private:
     void DoOutput(Logger::eLogLevel ll, const char8* text);
     void SendNextRecord();
 
@@ -90,11 +91,10 @@ private:
     
     String TimestampToString(time_t timestamp) const;
 
-private:
     bool selfInstall;
     bool isInstalled;
     size_t maxQueueSize;
-    Mutex mutex;
+    mutable Mutex mutex;
     Deque<LogRecord> recordQueue;
 };
 

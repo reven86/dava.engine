@@ -43,6 +43,8 @@
     bool fullScreen;
 }
 
+- (void)createWindows;
+
 - (bool)isFullScreen;
 - (bool)setFullScreen:(bool)_fullScreen;
 

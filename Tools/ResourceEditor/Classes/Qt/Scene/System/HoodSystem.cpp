@@ -64,8 +64,8 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 
     moveHood.colorX = DAVA::Color(1, 0, 0, 1);
     moveHood.colorY = DAVA::Color(0, 1, 0, 1);
-	moveHood.colorZ = DAVA::Color(0, 0, 1, 1);
-	moveHood.colorS = DAVA::Color(1, 1, 0, 1);
+    moveHood.colorZ = DAVA::Color(0, 0, 1, 1);
+    moveHood.colorS = DAVA::Color(1, 1, 0, 1);
 
 	rotateHood.colorX = DAVA::Color(1, 0, 0, 1);
 	rotateHood.colorY = DAVA::Color(0, 1, 0, 1);
@@ -350,8 +350,8 @@ void HoodSystem::Draw()
         {
             ST_Axis showAsSelected = curAxis;
 
-			if(curMode != ST_MODIF_OFF)
-			{
+            if (curMode != ST_MODIF_OFF)
+            {
 				if(ST_AXIS_NONE != moseOverAxis)
 				{
 					showAsSelected = moseOverAxis;

@@ -2933,6 +2933,12 @@
 		15373F251C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */; };
 		15373F261C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */; };
 		15373F271C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */; };
+		03ED179F1C56779300BBF165 /* UITextFieldMacOs.h in Headers */ = {isa = PBXBuildFile; fileRef = 03ED179D1C56779300BBF165 /* UITextFieldMacOs.h */; };
+		03ED17A01C56779300BBF165 /* UITextFieldMacOs.h in Headers */ = {isa = PBXBuildFile; fileRef = 03ED179D1C56779300BBF165 /* UITextFieldMacOs.h */; };
+		03ED17A11C56779300BBF165 /* UITextFieldMacOs.h in Headers */ = {isa = PBXBuildFile; fileRef = 03ED179D1C56779300BBF165 /* UITextFieldMacOs.h */; };
+		03ED17A21C56779300BBF165 /* UITextFieldMacOs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03ED179E1C56779300BBF165 /* UITextFieldMacOs.mm */; };
+		03ED17A31C56779300BBF165 /* UITextFieldMacOs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03ED179E1C56779300BBF165 /* UITextFieldMacOs.mm */; };
+		03ED17A41C56779300BBF165 /* UITextFieldMacOs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 03ED179E1C56779300BBF165 /* UITextFieldMacOs.mm */; };
 		176DE930174B5561007A983B /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1D16BD24E400732C04 /* DAVAConfig.h */; };
 		176DE931174B5561007A983B /* DAVAEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1F16BD24E400732C04 /* DAVAEngine.h */; };
 		176DE93C174B5561007A983B /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B3516BD24E400732C04 /* DoxygenDocumenation.h */; };
@@ -2979,6 +2985,8 @@
 		C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */; };
 		C7FBCFC116CD2060006F1B3F /* liblua_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7FBCFC016CD2060006F1B3F /* liblua_macos.a */; };
 		D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		D729A39F1C5B7B6F000AE64F /* HelperAppDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */; };
+		D729A3A01C5B7B6F000AE64F /* HelperAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */; };
 		D7660D3E1C4E483300E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */; };
 		D7660D3F1C4E483300E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */; };
 		D7660D401C4E483300E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */; };
@@ -4014,6 +4022,8 @@
 		03C12A921C4FD827002D4636 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		03C12A931C4FD827002D4636 /* Reachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Reachability.mm; sourceTree = "<group>"; };
 		03C12A9A1C4FD8D3002D4636 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		03ED179D1C56779300BBF165 /* UITextFieldMacOs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldMacOs.h; sourceTree = "<group>"; };
+		03ED179E1C56779300BBF165 /* UITextFieldMacOs.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldMacOs.mm; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -4042,6 +4052,8 @@
 		CCE2CA18197950A600D8086F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelperAppDelegate.h; sourceTree = "<group>"; };
+		D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelperAppDelegate.mm; sourceTree = "<group>"; };
 		D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
 		D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
@@ -4775,6 +4787,8 @@
 		028C0A681BD66A5E00B2266F /* TemplateMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */,
+				D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */,
 				028C0A691BD66A5E00B2266F /* AppDelegate.h */,
 				028C0A6A1BD66A5E00B2266F /* AppDelegate.mm */,
 				028C0A6B1BD66A5E00B2266F /* CoreMacOSPlatformBase.cpp */,
@@ -5380,6 +5394,8 @@
 		028C0C7B1BD66A5F00B2266F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				03ED179D1C56779300BBF165 /* UITextFieldMacOs.h */,
+				03ED179E1C56779300BBF165 /* UITextFieldMacOs.mm */,
 				028C0C7C1BD66A5F00B2266F /* AbstractUIPackageBuilder.cpp */,
 				028C0C7D1BD66A5F00B2266F /* AbstractUIPackageBuilder.h */,
 				028C0C7F1BD66A5F00B2266F /* Components */,
@@ -5767,6 +5783,7 @@
 				028C147C1BD66A6000B2266F /* TextBlockSoftwareRender.h in Headers */,
 				028C16111BD66A6000B2266F /* dbg_StatSet.h in Headers */,
 				028C139E1BD66A6000B2266F /* DeviceInfoMacOS.h in Headers */,
+				03ED17A11C56779300BBF165 /* UITextFieldMacOs.h in Headers */,
 				028C1AAF1BD66A6100B2266F /* UIScreen.h in Headers */,
 				028C11641BD66A6000B2266F /* IChannel.h in Headers */,
 				028C171C1BD66A6000B2266F /* rhi_ShaderCache.h in Headers */,
@@ -6394,6 +6411,7 @@
 				028C0E081BD66A6000B2266F /* FixedSizePoolAllocator.h in Headers */,
 				028C0E5C1BD66A6000B2266F /* Radix.h in Headers */,
 				028C1A6B1BD66A6100B2266F /* UIJoypad.h in Headers */,
+				D729A39F1C5B7B6F000AE64F /* HelperAppDelegate.h in Headers */,
 				028C115F1BD66A6000B2266F /* UDPSocketTemplate.h in Headers */,
 				028C178F1BD66A6000B2266F /* RotationControllerComponent.h in Headers */,
 				028C0E261BD66A6000B2266F /* IntrospectionCollection.h in Headers */,
@@ -6673,6 +6691,7 @@
 				028C0EB61BD66A6000B2266F /* Spinlock.h in Headers */,
 				028C1AAD1BD66A6100B2266F /* UIScreen.h in Headers */,
 				028C190C1BD66A6000B2266F /* SpeedTreeUpdateSystem.h in Headers */,
+				03ED179F1C56779300BBF165 /* UITextFieldMacOs.h in Headers */,
 				028C151C1BD66A6000B2266F /* ShadowVolume.h in Headers */,
 				028C194E1BD66A6000B2266F /* FMODUtils.h in Headers */,
 				028C19DB1BD66A6000B2266F /* UIPriorityStyleSheet.h in Headers */,
@@ -6835,6 +6854,7 @@
 				028C19A61BD66A6000B2266F /* SizeMeasuringAlgorithm.h in Headers */,
 				028C147B1BD66A6000B2266F /* TextBlockSoftwareRender.h in Headers */,
 				028C16101BD66A6000B2266F /* dbg_StatSet.h in Headers */,
+				03ED17A01C56779300BBF165 /* UITextFieldMacOs.h in Headers */,
 				028C139D1BD66A6000B2266F /* DeviceInfoMacOS.h in Headers */,
 				028C1AAE1BD66A6100B2266F /* UIScreen.h in Headers */,
 				028C11631BD66A6000B2266F /* IChannel.h in Headers */,
@@ -7738,6 +7758,7 @@
 				028C152D1BD66A6000B2266F /* SpatialTree.cpp in Sources */,
 				028C19981BD66A6000B2266F /* LayoutHelpers.cpp in Sources */,
 				028C10A11BD66A6000B2266F /* Math2D.cpp in Sources */,
+				03ED17A41C56779300BBF165 /* UITextFieldMacOs.mm in Sources */,
 				028C0F8D1BD66A6000B2266F /* PatchFile.cpp in Sources */,
 				028C12601BD66A6000B2266F /* Process.cpp in Sources */,
 				028C0FCC1BD66A6000B2266F /* FileSystem.cpp in Sources */,
@@ -7937,6 +7958,7 @@
 				028C117D1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBB1BD66A6000B2266F /* FileList.cpp in Sources */,
 				028C124C1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
+				D729A3A01C5B7B6F000AE64F /* HelperAppDelegate.mm in Sources */,
 				028C18611BD66A6000B2266F /* SceneAnimationMixer.cpp in Sources */,
 				028C0D841BD66A6000B2266F /* dlmalloc.c in Sources */,
 				028C16061BD66A6000B2266F /* dbg_FontNormal.cxx in Sources */,
@@ -7987,6 +8009,7 @@
 				87464EF91C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */,
 				028C18FD1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
 				028C10721BD66A6000B2266F /* JobManager.cpp in Sources */,
+				03ED17A21C56779300BBF165 /* UITextFieldMacOs.mm in Sources */,
 				028C19031BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,
 				028C14951BD66A6000B2266F /* PolygonGroup.cpp in Sources */,
 				028C0E831BD66A6000B2266F /* CollisionPolygons.cpp in Sources */,
@@ -8668,6 +8691,7 @@
 				028C152C1BD66A6000B2266F /* SpatialTree.cpp in Sources */,
 				028C19971BD66A6000B2266F /* LayoutHelpers.cpp in Sources */,
 				028C10A01BD66A6000B2266F /* Math2D.cpp in Sources */,
+				03ED17A31C56779300BBF165 /* UITextFieldMacOs.mm in Sources */,
 				028C0F8C1BD66A6000B2266F /* PatchFile.cpp in Sources */,
 				028C125F1BD66A6000B2266F /* Process.cpp in Sources */,
 				028C0FCB1BD66A6000B2266F /* FileSystem.cpp in Sources */,
@@ -9000,7 +9024,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -9038,7 +9062,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = macosx;
 			};
 			name = Release;

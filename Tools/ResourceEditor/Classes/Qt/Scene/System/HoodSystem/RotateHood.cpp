@@ -86,8 +86,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         {
             DAVA::Polygon3 poly;
             poly.AddPoint(curPos);
-			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
-			{
+            for (int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+            {
 				poly.AddPoint(axisXc[i]->curFrom);
 			}
 			poly.AddPoint(axisXc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
@@ -100,8 +100,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
             DAVA::Color modifColor = colorX;
             modifColor.a = 0.3f;
 
-			DAVA::Polygon3 poly;
-			DAVA::float32 y;
+            DAVA::Polygon3 poly;
+            DAVA::float32 y;
 			DAVA::float32 z;
 
 			poly.AddPoint(curPos);
@@ -136,8 +136,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         {
             DAVA::Polygon3 poly;
             poly.AddPoint(curPos);
-			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
-			{
+            for (int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+            {
 				poly.AddPoint(axisYc[i]->curFrom);
 			}
 			poly.AddPoint(axisYc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
@@ -150,8 +150,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
             DAVA::Color modifColor = colorY;
             modifColor.a = 0.3f;
 
-			DAVA::Polygon3 poly;
-			DAVA::float32 x;
+            DAVA::Polygon3 poly;
+            DAVA::float32 x;
 			DAVA::float32 z;
 
 			poly.AddPoint(curPos);
@@ -186,8 +186,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
         {
             DAVA::Polygon3 poly;
             poly.AddPoint(curPos);
-			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
-			{
+            for (int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+            {
 				poly.AddPoint(axisZc[i]->curFrom);
 			}
 			poly.AddPoint(axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
@@ -200,8 +200,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
             DAVA::Color modifColor = colorZ;
             modifColor.a = 0.3f;
 
-			DAVA::Polygon3 poly;
-			DAVA::float32 x;
+            DAVA::Polygon3 poly;
+            DAVA::float32 x;
 			DAVA::float32 y;
 
 			poly.AddPoint(curPos);
@@ -244,8 +244,8 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 
         if (selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ)
         {
-			sprintf(tmp, "[%.2f, 0.00, 0.00]", DAVA::RadToDeg(modifRotate));
-		}
+            sprintf(tmp, "[%.2f, 0.00, 0.00]", DAVA::RadToDeg(modifRotate));
+        }
 		if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ)
 		{
 			sprintf(tmp, "[0.00, %.2f, 0.00]", DAVA::RadToDeg(modifRotate));

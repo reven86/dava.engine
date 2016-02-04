@@ -375,8 +375,8 @@ void SceneCollisionSystem::Draw()
                     objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));
                 }
             }
-		}
-	}
+        }
+    }
 }
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
