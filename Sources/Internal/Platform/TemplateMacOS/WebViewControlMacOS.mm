@@ -104,8 +104,8 @@ using namespace DAVA;
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
 	BOOL process = YES;
-	
-	if (delegate && self->webView)
+
+    if (delegate && self->webView)
 	{
 		NSString* url = [[request URL] absoluteString];
 		
@@ -198,8 +198,8 @@ WebViewControl::WebViewControl(UIWebView& ptr)
     , isRenderToTexture(false)
     , isVisible(true)
 {
-	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
-	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
+    NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);
+    webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
                                       groupName:nil];
 
 	WebView* localWebView = (WebView*)webViewPtr;
@@ -224,6 +224,8 @@ WebViewControl::WebViewControl(UIWebView& ptr)
 
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
+
+    SetBackgroundTransparency(true);
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
