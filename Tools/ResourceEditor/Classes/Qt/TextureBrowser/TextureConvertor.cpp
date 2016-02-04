@@ -163,9 +163,9 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
 
             for (; begin != end; begin++)
             {
-                DAVA::TextureDescriptor *descriptor = begin->second->GetDescriptor();
+                DAVA::TextureDescriptor* descriptor = begin->second->GetDescriptor();
 
-				if(NULL != descriptor)
+                if(NULL != descriptor)
 				{
 					DVASSERT(descriptor->compression);
 					for(int gpu = 0; gpu < DAVA::GPU_DEVICE_COUNT; ++gpu)

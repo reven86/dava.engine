@@ -66,7 +66,7 @@ public:
     }
 
     void SetEditTracking(bool enabled)
-	{ propModel->SetEditTracking(enabled); }
+    { propModel->SetEditTracking(enabled); }
 
 	void RemoveProperty(const QModelIndex &index)
 	{ propModel->RemoveProperty(mapToSource(index)); }

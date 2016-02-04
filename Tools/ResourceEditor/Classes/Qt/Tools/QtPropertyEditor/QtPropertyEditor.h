@@ -60,16 +60,16 @@ public:
     QModelIndex AppendHeader(const QString& text);
     QModelIndex InsertHeader(const QString& text, int row);
 
-    QtPropertyData * GetProperty(const QModelIndex &index) const;
-	QtPropertyData * GetRootProperty() const;
+    QtPropertyData* GetProperty(const QModelIndex& index) const;
+    QtPropertyData * GetRootProperty() const;
 
     void FinishTreeCreation();
 
     bool GetEditTracking() const;
     void SetEditTracking(bool enabled);
 
-    void RemoveProperty(const QModelIndex &index);
-	void RemoveProperty(QtPropertyData* data);
+    void RemoveProperty(const QModelIndex& index);
+    void RemoveProperty(QtPropertyData* data);
 	void RemovePropertyAll();
 
 	void SetUpdateTimeout(int ms);

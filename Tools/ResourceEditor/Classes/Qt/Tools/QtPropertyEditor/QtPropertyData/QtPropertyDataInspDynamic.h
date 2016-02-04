@@ -53,7 +53,7 @@ public:
         return dynamicInfo;
     }
 
-	DAVA::VariantType GetVariant() const
+    DAVA::VariantType GetVariant() const
 	{
         return dynamicInfo->MemberValueGet(ddata, name);
     }

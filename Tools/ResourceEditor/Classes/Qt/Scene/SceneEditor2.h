@@ -91,8 +91,8 @@ public:
     // editor systems
     SceneCameraSystem* cameraSystem;
     SceneCollisionSystem* collisionSystem;
-    SceneGridSystem *gridSystem;
-	HoodSystem *hoodSystem;
+    SceneGridSystem* gridSystem;
+    HoodSystem *hoodSystem;
 	SceneSelectionSystem *selectionSystem;
 	EntityModificationSystem *modifSystem;
 	LandscapeEditorDrawSystem* landscapeEditorDrawSystem;
@@ -120,7 +120,7 @@ public:
     PathSystem* pathSystem;
 
     // save/load
-	bool Load(const DAVA::FilePath &path);
+    bool Load(const DAVA::FilePath &path);
     virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
 	SceneFileV2::eError Save();
 	bool Export(const DAVA::eGPUFamily newGPU);

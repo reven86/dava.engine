@@ -83,7 +83,7 @@ void TextureProperties::setTextureDescriptor(DAVA::TextureDescriptor *descriptor
     }
     else
     {
-		// no texture - disable this widget
+        // no texture - disable this widget
 		setEnabled(false);
 		RemovePropertyAll();
 	}
@@ -372,7 +372,7 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
     {
         SaveCurSizeFromProp();
 
-		if(!skipPropSizeChanged)
+        if(!skipPropSizeChanged)
 		{
 			emit PropertyChanged(PROP_SIZE);
 		}

@@ -325,7 +325,7 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData* parent)
             // show only editable items and favorites
             if (viewMode == VIEW_NORMAL)
             {
-				if(!data->IsEditable())
+                if(!data->IsEditable())
 				{
 					toBeRemove = true;
 				}
@@ -360,8 +360,8 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData* parent)
                 }
             }
 
-            if(toBeRemove)
-			{
+            if (toBeRemove)
+            {
 				parent->ChildRemove(data);
 				i--;
 			}
@@ -593,7 +593,7 @@ QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void* obj
         // and if we allow to view such introspection type
         if (hasMembers && IsInspViewAllowed(info))
         {
-			while(NULL != baseInfo)
+            while(NULL != baseInfo)
 			{
 				for(int i = 0; i < baseInfo->MembersCount(); ++i)
 				{
@@ -605,7 +605,7 @@ QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void* obj
 
                 baseInfo = baseInfo->BaseInfo();
             }
-		}
+        }
     }
 
 	return ret;
@@ -627,7 +627,7 @@ QtPropertyData* PropertyEditor::CreateInspMember(const DAVA::FastName& name, voi
         }
         else
         {
-			if(member->Collection() && !isKeyedArchive)
+            if(member->Collection() && !isKeyedArchive)
 			{
                 ret = CreateInspCollection(name, momberObject, member->Collection());
             }
@@ -638,7 +638,7 @@ QtPropertyData* PropertyEditor::CreateInspMember(const DAVA::FastName& name, voi
         }
     }
 
-	return ret;
+    return ret;
 }
 
 QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name, void* object, const DAVA::InspColl* collection)
@@ -648,22 +648,22 @@ QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name,
     if (NULL != collection && collection->Size(object) > 0)
     {
         int index = 0;
-		DAVA::MetaInfo *valueType = collection->ItemType();
+        DAVA::MetaInfo *valueType = collection->ItemType();
 		DAVA::InspColl::Iterator i = collection->Begin(object);
 		while(NULL != i)
 		{
             DAVA::FastName childName(std::to_string(index));
             if (NULL != valueType->GetIntrospection())
             {
-                void * itemObject = collection->ItemData(i);
-				const DAVA::InspInfo *itemInfo = valueType->GetIntrospection(itemObject);
+                void* itemObject = collection->ItemData(i);
+                const DAVA::InspInfo *itemInfo = valueType->GetIntrospection(itemObject);
 
                 std::unique_ptr<QtPropertyData> inspData(CreateInsp(childName, itemObject, itemInfo));
                 ret->ChildAdd(std::move(inspData));
             }
             else
             {
-				if(!valueType->IsPointer())
+                if(!valueType->IsPointer())
 				{
                     std::unique_ptr<QtPropertyData> childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
                     ret->ChildAdd(std::move(childData));
@@ -683,7 +683,7 @@ QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name,
             }
 
             index++;
-			i = collection->Next(i);
+            i = collection->Next(i);
 		}
 	}
 
@@ -699,14 +699,14 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
     }
 
     QtPropertyDataInspMember* memberData = dynamic_cast<QtPropertyDataInspMember*>(original);
-    if(NULL != memberData)
-	{
+    if (NULL != memberData)
+    {
         return CreateInspMember(original->GetName(), memberData->object, memberData->member);
     }
 
     QtPropertyDataInspDynamic* memberDymanic = dynamic_cast<QtPropertyDataInspDynamic*>(original);
-    if(NULL != memberData)
-	{
+    if (NULL != memberData)
+    {
         return CreateInspMember(original->GetName(), memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
@@ -723,14 +723,14 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
     }
 
     QtPropertyDataDavaKeyedArcive* memberArch = dynamic_cast<QtPropertyDataDavaKeyedArcive*>(original);
-    if(NULL != memberArch)
-	{
+    if (NULL != memberArch)
+    {
         return new QtPropertyDataDavaKeyedArcive(original->GetName(), memberArch->archive);
     }
 
     QtPropertyKeyedArchiveMember* memberArchMem = dynamic_cast<QtPropertyKeyedArchiveMember*>(original);
-    if(NULL != memberArchMem)
-	{
+    if (NULL != memberArchMem)
+    {
         return new QtPropertyKeyedArchiveMember(original->GetName(), memberArchMem->archive, memberArchMem->key);
     }
 
@@ -882,7 +882,7 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
         QtPropertyData* data = GetProperty(index);
         if (NULL != data)
         {
-			if(!IsParentFavorite(data))
+            if(!IsParentFavorite(data))
 			{
 				if(IsFavorite(data))
 				{
@@ -1169,7 +1169,7 @@ void PropertyEditor::SetFavorite(QtPropertyData *data, bool favorite)
                             PropEditorUserData* favUserData = new PropEditorUserData(PropEditorUserData::COPY, data, true);
                             favorite->SetUserData(favUserData);
 
-							favUserData->realPath = data->GetPath();
+                            favUserData->realPath = data->GetPath();
 							scheme.insert(data->GetPath());
 							RemFavoriteChilds(data);
 						}
@@ -1226,7 +1226,7 @@ void PropertyEditor::AddFavoriteChilds(QtPropertyData *data)
             if (scheme.contains(child->GetPath()))
             {
                 SetFavorite(child, true);
-			}
+            }
 			else
 			{
 				AddFavoriteChilds(child);
@@ -1248,7 +1248,7 @@ void PropertyEditor::RemFavoriteChilds(QtPropertyData *data)
                 PropEditorUserData* userData = GetUserData(child);
                 if (NULL != userData->associatedData)
                 {
-					favoriteGroup->ChildRemove(userData->associatedData);
+                    favoriteGroup->ChildRemove(userData->associatedData);
 
 					userData->associatedData = NULL;
 					userData->isFavorite = false;
@@ -1268,7 +1268,7 @@ PropEditorUserData* PropertyEditor::GetUserData(QtPropertyData* data) const
     if (NULL == userData)
     {
         userData = new PropEditorUserData(PropEditorUserData::ORIGINAL);
-		data->SetUserData(userData);
+        data->SetUserData(userData);
 	}
 
 	return userData;

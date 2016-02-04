@@ -132,8 +132,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
         Landscape* landscape = static_cast<Landscape*>(renderObject);
         links.insert(landscape->GetHeightmapPathname());
         break;
-        }
-		case RenderObject::TYPE_VEGETATION:
+    }
+        case RenderObject::TYPE_VEGETATION:
 		{
             VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(renderObject);
             links.insert(vegetation->GetHeightmapPath());

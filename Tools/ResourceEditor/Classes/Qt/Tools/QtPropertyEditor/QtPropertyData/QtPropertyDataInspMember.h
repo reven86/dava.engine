@@ -45,7 +45,7 @@ public:
 
     virtual void* CreateLastCommand() const;
 
-	void *object;
+    void *object;
 	const DAVA::InspMember *member;
 
 protected:

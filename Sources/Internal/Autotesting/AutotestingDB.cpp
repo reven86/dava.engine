@@ -66,7 +66,7 @@ namespace DAVA
         if (dbClient)
         {
             dbClient->SetDatabaseName(dbName);
-			dbClient->SetCollectionName(collection);
+            dbClient->SetCollectionName(collection);
 		}
 		return (nullptr != dbClient);
 	}
@@ -308,7 +308,7 @@ namespace DAVA
         KeyedArchive* deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName, nullptr);
 
         if (!deviceArchive)
-		{
+        {
 			autoSys->ForceQuit(Format("Couldn't find archive for %s device", autoSys->deviceName.c_str()));
 		}
 		deviceArchive->SetString("Started", "1");

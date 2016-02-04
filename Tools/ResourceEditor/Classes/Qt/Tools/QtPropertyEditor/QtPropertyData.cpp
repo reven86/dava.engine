@@ -320,8 +320,8 @@ QString QtPropertyData::GetPath() const
 
     // search top level parent
     const QtPropertyData* parent = this;
-    while(NULL != parent->Parent())
-	{
+    while (NULL != parent->Parent())
+    {
 		parent = parent->Parent();
         path = QString(parent->name.c_str()) + "/" + path;
     }
