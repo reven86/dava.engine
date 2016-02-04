@@ -53,8 +53,7 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     nameFont("Courier", 12, QFont::Normal)
 #endif
 {
-    backgroundBrush.setColor(Qt::white);
-    backgroundBrush.setStyle(Qt::SolidPattern);
+    backgroundBrush = palette().window();
 
     gridStyle = GRID_STYLE_LIMITS;
 
