@@ -40,7 +40,7 @@ public:
     NotPassableTerrainProxy(int32 heightmapSize);
     virtual ~NotPassableTerrainProxy();
 
-    void setEnabled(bool enabled);
+    void SetEnabled(bool enabled);
     bool IsEnabled() const;
 
     Texture* GetTexture();
