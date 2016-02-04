@@ -119,16 +119,9 @@ bool NotPassableTerrainProxy::PickColor(float32 tan, Color& color) const
 	return false;
 }
 
-bool NotPassableTerrainProxy::Enable()
+void NotPassableTerrainProxy::setEnabled(bool _enabled)
 {
-	enabled = true;
-	return true;
-}
-
-bool NotPassableTerrainProxy::Disable()
-{
-	enabled = false;
-	return true;
+    enabled = _enabled;
 }
 
 bool NotPassableTerrainProxy::IsEnabled() const
