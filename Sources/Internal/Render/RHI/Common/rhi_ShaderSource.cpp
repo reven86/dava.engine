@@ -751,6 +751,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
             if (strstr(line, "VPROG_IN_BEGIN"))
                 vdecl.Clear();
+            if (strstr(line, "VPROG_IN_STREAM_VERTEX"))
+                vdecl.AddStream(VDF_PER_VERTEX);
+            if (strstr(line, "VPROG_IN_STREAM_INSTANCE"))
+                vdecl.AddStream(VDF_PER_INSTANCE);
             if (strstr(line, "VPROG_IN_POSITION"))
                 vdecl.AddElement(VS_POSITION, 0, VDT_FLOAT, 3);
             if (strstr(line, "VPROG_IN_NORMAL"))
@@ -1388,7 +1392,7 @@ void ShaderSource::Dump() const
 //==============================================================================
 
 std::vector<ShaderSourceCache::entry_t> ShaderSourceCache::Entry;
-const uint32 ShaderSourceCache::FormatVersion = 2;
+const uint32 ShaderSourceCache::FormatVersion = 3;
 
 const ShaderSource*
 ShaderSourceCache::Get(FastName uid, uint32 srcHash)

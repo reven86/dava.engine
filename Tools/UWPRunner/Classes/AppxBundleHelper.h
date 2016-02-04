@@ -44,16 +44,16 @@ public:
         DAVA::FilePath path;
     };
 
-    AppxBundleHelper(const DAVA::FilePath &fileName);
+    AppxBundleHelper(const DAVA::FilePath& fileName);
     ~AppxBundleHelper();
 
     void RemoveFiles();
 
-    static bool IsBundle(const DAVA::FilePath &fileName);
+    static bool IsBundle(const DAVA::FilePath& fileName);
     const DAVA::Vector<PackageInfo>& GetPackages() const;
     DAVA::Vector<PackageInfo> GetApplications() const;
     DAVA::Vector<PackageInfo> GetResources() const;
-    
+
     DAVA::FilePath GetApplication(const DAVA::String& name);
     DAVA::FilePath GetApplicationForArchitecture(const DAVA::String& name);
     DAVA::FilePath GetResource(const DAVA::String& name);
@@ -65,4 +65,4 @@ private:
     DAVA::Vector<PackageInfo> storedPackages;
 };
 
-#endif  // APPX_BUNDLE_HELPER_H
+#endif // APPX_BUNDLE_HELPER_H

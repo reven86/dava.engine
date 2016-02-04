@@ -42,7 +42,7 @@ public:
     virtual ~QtPropertyDataMetaObject();
 
     virtual const DAVA::MetaInfo* MetaInfo() const;
-	virtual void* CreateLastCommand() const;
+    virtual void* CreateLastCommand() const;
 
 	void *object;
 	const DAVA::MetaInfo *meta;

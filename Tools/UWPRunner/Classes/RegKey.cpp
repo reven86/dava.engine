@@ -38,7 +38,7 @@ RegKey::RegKey(HKEY scope, const char* keyName, bool createIfNotExist)
     if (res != ERROR_SUCCESS && createIfNotExist)
     {
         res = ::RegCreateKeyEx(
-            scope, keyName, 0, 0, 0, KEY_WRITE | KEY_WOW64_64KEY, 0, &key, 0);
+        scope, keyName, 0, 0, 0, KEY_WRITE | KEY_WOW64_64KEY, 0, &key, 0);
         isCreated = res == ERROR_SUCCESS;
     }
 
@@ -64,7 +64,7 @@ String RegKey::QueryString(const char* valueName) const
 bool RegKey::SetValue(const String& valName, const String& val)
 {
     long res = ::RegSetValueEx(key, valName.c_str(), 0, REG_SZ,
-        (LPBYTE)val.c_str(), val.size() + 1);
+                               (LPBYTE)val.c_str(), val.size() + 1);
     return res == ERROR_SUCCESS;
 }
 
@@ -87,6 +87,6 @@ DWORD RegKey::QueryDWORD(const char* valueName) const
 bool RegKey::SetValue(const String& valName, DWORD val)
 {
     long res = ::RegSetValueEx(key, valName.c_str(), 0, REG_DWORD,
-        (LPBYTE)&val, sizeof(DWORD));
+                               (LPBYTE)&val, sizeof(DWORD));
     return res == ERROR_SUCCESS;
 }

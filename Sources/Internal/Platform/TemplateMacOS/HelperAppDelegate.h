@@ -27,64 +27,27 @@
 =====================================================================================*/
 
 
-#ifndef UWP_RUNNER_H
-#define UWP_RUNNER_H
+#ifndef __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
+#define __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
+
 
 #include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Network/NetCore.h"
+#if defined(__DAVAENGINE_MACOS__)
 
-#include "UWPLogConsumer.h"
+#include "Core/ApplicationCore.h"
+#import "Platform/TemplateMacOS/MainWindowController.h"
 
-struct PackageOptions
+#import <AppKit/AppKit.h>
+
+@interface HelperAppDelegate : NSObject<NSApplicationDelegate>
 {
-    //TODO: replace on Optional
-    DAVA::String mainPackage;
-    DAVA::String packageToInstall;
-    DAVA::String architecture;
-    DAVA::String profile;
-    DAVA::String dependencies;
-    DAVA::Vector<DAVA::String> resources;
-    bool useTeamCityTestOutput = false;
-    bool installOnly = false;
-    bool runOnly = false;
-};
-PackageOptions ParseCommandLine();
-bool CheckOptions(const PackageOptions& options);
+@private
+    MainWindowController* mainWindowController;
+}
 
-class Runner;
-class RegKey;
+- (void)setWindowController:(MainWindowController*)ctrlr;
 
-class UWPRunner
-{
-public:
-    UWPRunner(const PackageOptions& opt);
-    ~UWPRunner();
-    void Run();
+@end
 
-private:
-    void Run(Runner& runner);
-    void WaitApp();
-
-    void ProcessPackageOptions();
-    void ProcessBundlePackage();
-    void ProcessProfileInfo();
-    void InitializeNetwork(bool isMobileDevice);
-    void UnInitializeNetwork();
-
-    bool UpdateIpOverUsbConfig(RegKey& key);
-    bool ConfigureIpOverUsb();
-    bool RestartIpOverUsb();
-
-    void NetLogOutput(const DAVA::String& logString);
-
-    PackageOptions options;
-    DAVA::Signal<> cleanNeeded;
-    std::unique_ptr<AppxBundleHelper> bundleHelper;
-    UWPLogConsumer logConsumer;
-    DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
-    DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
-    DAVA::String qtProfile;
-};
-
-#endif // UWP_RUNNER_H
+#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__

@@ -78,7 +78,7 @@ void GameCore::ProcessCommandLine()
 void GameCore::OnAppStarted()
 {
     ProcessCommandLine();
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     InitNetwork();
 #endif
 
@@ -117,7 +117,7 @@ void GameCore::OnAppFinished()
         DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
     }
 
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     UnInitNetwork();
 #endif
 }
@@ -146,7 +146,7 @@ void GameCore::Update(float32 timeElapsed)
     ProcessTests(timeElapsed);
     ApplicationCore::Update(timeElapsed);
 
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     FlushLogs();
 #endif
 }
@@ -224,7 +224,7 @@ void GameCore::FinishTests()
     Core::Instance()->Quit();
 }
 
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 void GameCore::InitNetwork()
 {
     using namespace Net;
@@ -239,9 +239,9 @@ void GameCore::InitNetwork()
     };
 
     NetCore::Instance()->RegisterService(
-        NetCore::SERVICE_LOG, 
-        loggerCreate,
-        [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+    NetCore::SERVICE_LOG,
+    loggerCreate,
+    [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
 
     eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
     Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();

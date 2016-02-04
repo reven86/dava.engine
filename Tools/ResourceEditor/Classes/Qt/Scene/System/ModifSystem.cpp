@@ -278,7 +278,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     hoodSystem->SetModifRotate(rotateAngle);
                     hoodSystem->SetModifScale(scaleForce);
                 }
-			}
+            }
 			// phase ended
             else if (event->phase == DAVA::UIEvent::Phase::ENDED)
             {
@@ -347,7 +347,7 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
                 etm.entity = en;
                 etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
                 etm.originalTransform = en->GetLocalTransform();
-				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
+                etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
 				etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
 
 				// inverse parent world transform, and remember it

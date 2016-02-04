@@ -134,7 +134,7 @@ void ModificationWidget::ReloadValues()
 
             xAxisModify->showButtons(true);
             yAxisModify->showButtons(true);
-			zAxisModify->showButtons(true);
+            zAxisModify->showButtons(true);
 
 			if(selection.Size() > 1)
 			{
@@ -177,7 +177,7 @@ void ModificationWidget::ReloadValues()
                         DAVA::float32 z = 0;
 
                         DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
-						switch (modifMode)
+                        switch (modifMode)
 						{
 						case ST_MODIF_MOVE:
 							{
@@ -285,7 +285,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
             if (pivotMode == PivotAbsolute)
             {
                 switch (axis)
-				{
+                {
 				case ST_AXIS_X:
 					newPos.x = x;
 					break;
@@ -361,7 +361,7 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
             {
                 DAVA::Matrix4 newMatrix;
                 DAVA::Matrix4 rotationMatrix;
-				DAVA::Matrix4 transformMatrix;
+                DAVA::Matrix4 transformMatrix;
 
 				DAVA::Matrix4 moveToZeroPos;
 				DAVA::Matrix4 moveFromZeroPos;
@@ -456,7 +456,7 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
             {
                 DAVA::Matrix4 newMatrix;
                 DAVA::Matrix4 scaleMatrix;
-				DAVA::Matrix4 transformMatrix;
+                DAVA::Matrix4 transformMatrix;
 
 				DAVA::Matrix4 moveToZeroPos;
 				DAVA::Matrix4 moveFromZeroPos;

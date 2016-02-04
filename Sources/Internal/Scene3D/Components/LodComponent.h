@@ -58,7 +58,7 @@ public:
     };
 
     struct LodDistance
-	{
+    {
 		float32 distance;
 		float32 nearDistanceSq;
 		float32 farDistanceSq;

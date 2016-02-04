@@ -67,32 +67,33 @@ using namespace ABI::Windows::ApplicationModel;
 using namespace ABI::Windows::System;
 
 // From Microsoft.Phone.Tools.Deploy assembly
-namespace PhoneTools {
-    enum DeploymentOptions
-    {
-        None = 0,
-        PA = 1,
-        Debug = 2,
-        Infused = 4,
-        Lightup = 8,
-        Enterprise = 16,
-        Sideload = 32,
-        TypeMask = 255,
-        UninstallDisabled = 256,
-        SkipUpdateAppInForeground = 512,
-        DeleteXap = 1024,
-        InstallOnSD = 65536,
-        OptOutSD = 131072
-    };
-    enum PackageType
-    {
-        UnknownAppx = 0,
-        Main = 1,
-        Framework = 2,
-        Resource = 4,
-        Bundle = 8,
-        Xap = 0
-    };
+namespace PhoneTools
+{
+enum DeploymentOptions
+{
+    None = 0,
+    PA = 1,
+    Debug = 2,
+    Infused = 4,
+    Lightup = 8,
+    Enterprise = 16,
+    Sideload = 32,
+    TypeMask = 255,
+    UninstallDisabled = 256,
+    SkipUpdateAppInForeground = 512,
+    DeleteXap = 1024,
+    InstallOnSD = 65536,
+    OptOutSD = 131072
+};
+enum PackageType
+{
+    UnknownAppx = 0,
+    Main = 1,
+    Framework = 2,
+    Resource = 4,
+    Bundle = 8,
+    Xap = 0
+};
 }
 
 QT_USE_NAMESPACE
@@ -116,11 +117,11 @@ public:
     QString mainPackage;
 
     ComPtr<ICcConnection> connection;
-    CoreConDevice *device;
+    CoreConDevice* device;
     QSet<QString> dependencies;
 };
 
-static bool getPhoneProductId(IStream *manifestStream, QString *productId)
+static bool getPhoneProductId(IStream* manifestStream, QString* productId)
 {
     // Read out the phone product ID (not supported by AppxManifestReader)
     ComPtr<IXmlReader> xmlReader;
@@ -130,19 +131,23 @@ static bool getPhoneProductId(IStream *manifestStream, QString *productId)
     hr = xmlReader->SetInput(manifestStream);
     RETURN_FALSE_IF_FAILED("Failed to set manifest as input");
 
-    while (!xmlReader->IsEOF()) {
+    while (!xmlReader->IsEOF())
+    {
         XmlNodeType nodeType;
         hr = xmlReader->Read(&nodeType);
         RETURN_FALSE_IF_FAILED("Failed to read next node in manifest");
-        if (nodeType == XmlNodeType_Element) {
+        if (nodeType == XmlNodeType_Element)
+        {
             PCWSTR uri;
             hr = xmlReader->GetNamespaceUri(&uri, NULL);
             RETURN_FALSE_IF_FAILED("Failed to read namespace URI of current node");
-            if (wcscmp(uri, L"http://schemas.microsoft.com/appx/2014/phone/manifest") == 0) {
+            if (wcscmp(uri, L"http://schemas.microsoft.com/appx/2014/phone/manifest") == 0)
+            {
                 PCWSTR localName;
                 hr = xmlReader->GetLocalName(&localName, NULL);
                 RETURN_FALSE_IF_FAILED("Failed to get local name of current node");
-                if (wcscmp(localName, L"PhoneIdentity") == 0) {
+                if (wcscmp(localName, L"PhoneIdentity") == 0)
+                {
                     hr = xmlReader->MoveToAttributeByName(L"PhoneProductId", NULL);
                     if (hr == S_FALSE)
                         continue;
@@ -160,12 +165,12 @@ static bool getPhoneProductId(IStream *manifestStream, QString *productId)
     return false;
 }
 
-bool AppxPhoneEngine::canHandle(Runner *runner)
+bool AppxPhoneEngine::canHandle(Runner* runner)
 {
     return !runner->manifest().isEmpty();
 }
 
-RunnerEngine *AppxPhoneEngine::create(Runner *runner)
+RunnerEngine* AppxPhoneEngine::create(Runner* runner)
 {
     QScopedPointer<AppxPhoneEngine> engine(new AppxPhoneEngine(runner));
     if (engine->d_ptr->hasFatalError)
@@ -177,12 +182,12 @@ RunnerEngine *AppxPhoneEngine::create(Runner *runner)
 QStringList AppxPhoneEngine::deviceNames()
 {
     QStringList deviceNames;
-    foreach (const CoreConDevice *device, coreConServer->devices())
+    foreach (const CoreConDevice* device, coreConServer->devices())
         deviceNames.append(device->name());
     return deviceNames;
 }
 
-AppxPhoneEngine::AppxPhoneEngine(Runner *runner)
+AppxPhoneEngine::AppxPhoneEngine(Runner* runner)
     : AppxEngine(runner, new AppxPhoneEnginePrivate)
 {
     Q_D(AppxPhoneEngine);
@@ -196,19 +201,22 @@ AppxPhoneEngine::AppxPhoneEngine(Runner *runner)
     HRESULT hr = SHCreateStreamOnFileW(wchar(d->manifest), STGM_READ, &manifestStream);
     RETURN_VOID_IF_FAILED("Failed to open manifest stream");
 
-    if (!getPhoneProductId(manifestStream.Get(), &d->productId)) {
+    if (!getPhoneProductId(manifestStream.Get(), &d->productId))
+    {
         qCWarning(lcWinRtRunner) << "Failed to read phone product ID from the manifest.";
         return;
     }
 
-    if (!coreConServer->initialize()) {
+    if (!coreConServer->initialize())
+    {
         while (!coreConServer.exists())
             Sleep(1);
     }
 
     // Get the device
     d->device = coreConServer->devices().value(d->runner->deviceIndex());
-    if (!d->device || !d->device->handle()) {
+    if (!d->device || !d->device->handle())
+    {
         d->hasFatalError = true;
         qCWarning(lcWinRtRunner) << "Invalid device specified:" << d->runner->deviceIndex();
         return;
@@ -217,9 +225,11 @@ AppxPhoneEngine::AppxPhoneEngine(Runner *runner)
     d->hasFatalError = false;
 }
 
-AppxPhoneEngine::~AppxPhoneEngine() {}
+AppxPhoneEngine::~AppxPhoneEngine()
+{
+}
 
-bool AppxPhoneEngine::installPackage(IAppxManifestReader *reader, const QString &filePath)
+bool AppxPhoneEngine::installPackage(IAppxManifestReader* reader, const QString& filePath)
 {
     Q_D(AppxPhoneEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__ << filePath;
@@ -234,7 +244,8 @@ bool AppxPhoneEngine::installPackage(IAppxManifestReader *reader, const QString 
     RETURN_FALSE_IF_FAILED("Failed to get manifest stream from reader");
 
     QString productIdString;
-    if (!getPhoneProductId(manifestStream.Get(), &productIdString)) {
+    if (!getPhoneProductId(manifestStream.Get(), &productIdString))
+    {
         qCWarning(lcWinRtRunner) << "Failed to get phone product ID from manifest reader.";
         return false;
     }
@@ -243,7 +254,8 @@ bool AppxPhoneEngine::installPackage(IAppxManifestReader *reader, const QString 
     VARIANT_BOOL isInstalled;
     hr = connection->IsApplicationInstalled(productId, &isInstalled);
     RETURN_FALSE_IF_FAILED("Failed to determine if package is installed");
-    if (isInstalled) {
+    if (isInstalled)
+    {
         qCDebug(lcWinRtRunner) << "Package" << productIdString << "is already installed";
         return true;
     }
@@ -275,10 +287,10 @@ bool AppxPhoneEngine::connect()
     qCDebug(lcWinRtRunner) << __FUNCTION__;
 
     HRESULT hr;
-    if (!d->connection) {
+    if (!d->connection)
+    {
         _bstr_t connectionName;
-        hr = static_cast<ICcServer *>(coreConServer->handle())->GetConnection(
-                    static_cast<ICcDevice *>(d->device->handle()), 5000, NULL, connectionName.GetAddress(), &d->connection);
+        hr = static_cast<ICcServer*>(coreConServer->handle())->GetConnection(static_cast<ICcDevice*>(d->device->handle()), 5000, NULL, connectionName.GetAddress(), &d->connection);
         RETURN_FALSE_IF_FAILED("Failed to connect to device");
     }
 
@@ -310,7 +322,8 @@ bool AppxPhoneEngine::install(bool removeFirst)
     VARIANT_BOOL isInstalled;
     hr = connection->IsApplicationInstalled(productId, &isInstalled);
     RETURN_FALSE_IF_FAILED("Failed to obtain the installation status");
-    if (isInstalled) {
+    if (isInstalled)
+    {
         if (!removeFirst)
             return true;
         if (!remove())
@@ -389,7 +402,7 @@ bool AppxPhoneEngine::start()
     return true;
 }
 
-bool AppxPhoneEngine::enableDebugging(const QString &debuggerExecutable, const QString &debuggerArguments)
+bool AppxPhoneEngine::enableDebugging(const QString& debuggerExecutable, const QString& debuggerArguments)
 {
     qCDebug(lcWinRtRunner) << __FUNCTION__;
     Q_UNUSED(debuggerExecutable);
@@ -433,16 +446,15 @@ bool AppxPhoneEngine::stop()
 #endif
 }
 
-QString AppxPhoneEngine::devicePath(const QString &relativePath) const
+QString AppxPhoneEngine::devicePath(const QString& relativePath) const
 {
     Q_D(const AppxPhoneEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__;
 
-    return QStringLiteral("%FOLDERID_APPID_ISOROOT%\\") + d->productId
-            + QStringLiteral("\\%LOCL%\\") + relativePath;
+    return QStringLiteral("%FOLDERID_APPID_ISOROOT%\\") + d->productId + QStringLiteral("\\%LOCL%\\") + relativePath;
 }
 
-bool AppxPhoneEngine::sendFile(const QString &localFile, const QString &deviceFile)
+bool AppxPhoneEngine::sendFile(const QString& localFile, const QString& deviceFile)
 {
     Q_D(const AppxPhoneEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__;
@@ -454,7 +466,7 @@ bool AppxPhoneEngine::sendFile(const QString &localFile, const QString &deviceFi
     return true;
 }
 
-bool AppxPhoneEngine::receiveFile(const QString &deviceFile, const QString &localFile)
+bool AppxPhoneEngine::receiveFile(const QString& deviceFile, const QString& localFile)
 {
     Q_D(const AppxPhoneEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__;
