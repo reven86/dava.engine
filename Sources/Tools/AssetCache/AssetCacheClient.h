@@ -32,11 +32,13 @@
 #include "AssetCache/AssetCache.h"
 #include <atomic>
 
-class AssetCacheClient : public DAVA::AssetCache::ClientNetProxyListener
+namespace DAVA
+{
+class AssetCacheClient : public AssetCache::ClientNetProxyListener
 {
     struct ResultOfRequest
     {
-        DAVA::int32 requestID = DAVA::AssetCache::PACKET_UNKNOWN;
+        int32 requestID = AssetCache::PACKET_UNKNOWN;
         bool recieved = false;
         bool succeed = false;
     };
@@ -44,42 +46,46 @@ class AssetCacheClient : public DAVA::AssetCache::ClientNetProxyListener
 public:
     struct ConnectionParams
     {
-        DAVA::String ip = "127.0.0.1";
-        DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
-        DAVA::uint64 timeoutms = 60u * 1000u;
+        String ip = "127.0.0.1";
+        uint16 port = AssetCache::ASSET_SERVER_PORT;
+        uint64 timeoutms = 60u * 1000u;
     };
 
-    AssetCacheClient();
+    AssetCacheClient(bool emulateNetworkLoop);
 
-    DAVA::AssetCache::ErrorCodes ConnectBlocked(const ConnectionParams& connectionParams);
+    AssetCache::ErrorCodes ConnectBlocked(const ConnectionParams& connectionParams);
     void Disconnect();
 
-    DAVA::AssetCache::ErrorCodes AddToCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value);
-    DAVA::AssetCache::ErrorCodes RequestFromCacheBlocked(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& outFolder);
+    AssetCache::ErrorCodes AddToCacheBlocked(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
+    AssetCache::ErrorCodes RequestFromCacheBlocked(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
 
-    void AddListener(DAVA::AssetCache::ClientNetProxyListener* listener);
-    void RemoveListener(DAVA::AssetCache::ClientNetProxyListener* listener);
+    bool IsConnected() const;
 
 private:
     void ProcessNetwork();
 
-    DAVA::AssetCache::ErrorCodes WaitRequest();
+    AssetCache::ErrorCodes WaitRequest();
 
     //ClientNetProxyListener
-    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey& key, bool added) override;
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value) override;
+    void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;
+    void OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value) override;
     void OnAssetClientStateChanged() override;
 
 private:
-    DAVA::AssetCache::ClientNetProxy client;
+    AssetCache::ClientNetProxy client;
 
-    DAVA::uint64 timeoutms = 60u * 1000u;
+    uint64 timeoutms = 60u * 1000u;
 
-    DAVA::Mutex requestLocker;
+    Mutex requestLocker;
     ResultOfRequest requestResult;
 
-    DAVA::UnorderedMap<DAVA::AssetCache::CacheItemKey, DAVA::FilePath> requests;
+    UnorderedMap<AssetCache::CacheItemKey, FilePath> requests;
     std::atomic<bool> isActive;
+    std::atomic<bool> isJobStarted;
+
+    bool emulateNetworkLoop = false;
 };
+
+} //END of DAVA
 
 #endif //__ASSET_CACHE_CLIENT_H__

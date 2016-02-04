@@ -159,7 +159,7 @@ SceneExporterTool::SceneExporterTool()
 
     options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
     options.AddOption(OptionName::AssetCacheIP, VariantType(String("127.0.0.1")), "ip of adress of Asset Cache Server");
-    options.AddOption(OptionName::AssetCachePort, VariantType(Format("%hu", AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
+    options.AddOption(OptionName::AssetCachePort, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
 }
 
@@ -190,10 +190,13 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     const bool saveNormals = options.GetOption(OptionName::SaveNormals).AsBool();
     optimizeOnExport = !saveNormals;
 
-    clientConnectionParams.enabled = options.GetOption(OptionName::UseAssetCache).AsBool();
-    clientConnectionParams.ip = options.GetOption(OptionName::AssetCacheIP).AsString();
-    clientConnectionParams.port = options.GetOption(OptionName::AssetCachePort).AsString();
-    clientConnectionParams.timeout = options.GetOption(OptionName::AssetCacheTimeout).AsUInt32();
+    useAssetCache = options.GetOption(OptionName::UseAssetCache).AsBool();
+    if (useAssetCache)
+    {
+        connectionsParams.ip = options.GetOption(OptionName::AssetCacheIP).AsString();
+        connectionsParams.port = static_cast<uint16>(options.GetOption(OptionName::AssetCachePort).AsUInt32());
+        connectionsParams.timeoutms = options.GetOption(OptionName::AssetCacheTimeout).AsUInt32();
+    }
 }
 
 bool SceneExporterTool::InitializeInternal()
@@ -242,11 +245,25 @@ bool SceneExporterTool::InitializeInternal()
 
 void SceneExporterTool::ProcessInternal()
 {
+    AssetCacheClient cacheClient(true);
+
     SceneExporter exporter;
     exporter.SetFolders(outFolder, inFolder);
     exporter.SetCompressionParams(requestedGPU, quality);
-    exporter.SetConnectionParams(clientConnectionParams);
     exporter.EnableOptimizations(optimizeOnExport);
+
+    if (useAssetCache)
+    {
+        AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(connectionsParams);
+        if (connected == AssetCache::ERROR_OK)
+        {
+            exporter.SetCacheClient(&cacheClient);
+        }
+        else
+        {
+            useAssetCache = false;
+        }
+    }
 
     if (commandAction == ACTION_EXPORT_FILE)
     {
@@ -276,6 +293,11 @@ void SceneExporterTool::ProcessInternal()
     }
 
     exporter.ExportObjects(exportedObjects);
+
+    if (useAssetCache)
+    {
+        cacheClient.Disconnect();
+    }
 }
 
 

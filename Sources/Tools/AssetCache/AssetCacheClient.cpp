@@ -34,10 +34,12 @@
 #include "Concurrency/Thread.h"
 #include "Job/JobManager.h"
 
-using namespace DAVA;
-
-AssetCacheClient::AssetCacheClient()
+namespace DAVA
+{
+AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
     : isActive(false)
+    , isJobStarted(false)
+    , emulateNetworkLoop(emulateNetworkLoop_)
 {
     DVASSERT(JobManager::Instance() != nullptr);
 
@@ -55,7 +57,10 @@ AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& 
     }
 
     isActive = true;
-    JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
+    if (emulateNetworkLoop)
+    {
+        JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
+    }
 
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     while (client.ChannelIsOpened() == false)
@@ -76,6 +81,11 @@ void AssetCacheClient::Disconnect()
 {
     isActive = false;
     client.Disconnect();
+
+    while (isJobStarted)
+    {
+        //wait for finishing of networking
+    }
 }
 
 AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
@@ -199,22 +209,17 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
     }
 }
 
-void AssetCacheClient::AddListener(AssetCache::ClientNetProxyListener* listener)
-{
-    client.AddListener(listener);
-}
-
-void AssetCacheClient::RemoveListener(AssetCache::ClientNetProxyListener* listener)
-{
-    client.RemoveListener(listener);
-}
 
 void AssetCacheClient::ProcessNetwork()
 {
+    isJobStarted = true;
+
     while (isActive)
     {
         Net::NetCore::Instance()->Poll();
     }
+
+    isJobStarted = false;
 }
 
 void AssetCacheClient::OnAssetClientStateChanged()
@@ -224,3 +229,10 @@ void AssetCacheClient::OnAssetClientStateChanged()
         isActive = false;
     }
 }
+
+bool AssetCacheClient::IsConnected() const
+{
+    return client.ChannelIsOpened();
+}
+
+} //END of DAVA

@@ -40,6 +40,7 @@ namespace DAVA
 {
 class TextureDescriptor;
 class Scene;
+class AssetCacheClient;
 }
 
 class SceneExporter final
@@ -68,23 +69,6 @@ public:
         DAVA::String relativePathname;
     };
 
-    struct ClientConnectionParams
-    {
-        ClientConnectionParams()
-        {
-            SetPort(DAVA::AssetCache::ASSET_SERVER_PORT);
-        }
-
-        void SetPort(DAVA::uint16 port_)
-        {
-            port = DAVA::Format("%hu", port_);
-        }
-
-        DAVA::String ip = "127.0.0.1";
-        DAVA::String port;
-        DAVA::uint32 timeout = 1;
-        bool enabled = false;
-    };
 
     SceneExporter() = default;
     ~SceneExporter();
@@ -93,11 +77,12 @@ public:
 
     void SetFolders(const DAVA::FilePath& dataFolder, const DAVA::FilePath& dataSourceFolder);
     void SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality);
-    void SetConnectionParams(const ClientConnectionParams& clientConnectionParams);
     void EnableOptimizations(bool enable);
 
     bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
     void ExportObjects(const ExportedObjectCollection& exportedObjects);
+
+    void SetCacheClient(DAVA::AssetCacheClient* cacheClient);
 
 private:
     void ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
@@ -119,7 +104,7 @@ private:
     DAVA::FilePath dataFolder;
     DAVA::FilePath dataSourceFolder;
 
-    ClientConnectionParams clientConnectionParams;
+    DAVA::AssetCacheClient* cacheClient = nullptr;
 };
 
 

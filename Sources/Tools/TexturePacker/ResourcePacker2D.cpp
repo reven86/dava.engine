@@ -52,10 +52,6 @@ namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-String GetErrorAsString(AssetCache::ErrorCodes code)
-{
-    return GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(code);
-}
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -617,12 +613,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     }
     else
     {
-        if (requested == AssetCache::ERROR_OPERATION_TIMEOUT)
-        {
-            //            cacheClient = nullptr;
-        }
-
-        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), GetErrorAsString(requested).c_str());
+        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(requested));
     }
 
     return false;
@@ -679,12 +670,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         }
         else
         {
-            if (added == AssetCache::ERROR_OPERATION_TIMEOUT)
-            {
-                //                cacheClient = nullptr;
-            }
-
-            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), GetErrorAsString(added).c_str());
+            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(added));
         }
     }
     else
@@ -708,4 +694,13 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     errors.insert(errorMsg);
 }
 
+bool ResourcePacker2D::IsUsingCache() const
+{
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache in win uap
+    return false;
+#else
+    return (cacheClient != nullptr) && cacheClient->IsConnected();
+#endif
+}
 };

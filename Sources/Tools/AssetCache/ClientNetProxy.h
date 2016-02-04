@@ -64,7 +64,7 @@ public:
     bool Connect(const String& ip, uint16 port);
     void Disconnect();
 
-    bool ChannelIsOpened();
+    bool ChannelIsOpened() const;
 
     bool AddToCache(const CacheItemKey& key, const CachedItemValue& value);
     bool RequestFromCache(const CacheItemKey& key);
@@ -96,7 +96,7 @@ private:
     Set<ClientNetProxyListener*> listeners;
 };
 
-inline bool ClientNetProxy::ChannelIsOpened()
+inline bool ClientNetProxy::ChannelIsOpened() const
 {
     return (openedChannel != nullptr);
 }

@@ -133,7 +133,7 @@ void ProcessRecourcePacker()
 		}
     }
 
-    AssetCacheClient cacheClient;
+    AssetCacheClient cacheClient(true);
     bool shouldDisconnect = false;
     if (CommandLineParser::CommandIsFound(String("-useCache")))
     {

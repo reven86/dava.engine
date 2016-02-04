@@ -33,6 +33,7 @@
 #include "CommandLine/CommandLineTool.h"
 #include "TextureCompression/TextureConverter.h"
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheClient.h"
 
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
@@ -71,10 +72,12 @@ private:
     DAVA::eGPUFamily requestedGPU = DAVA::GPU_ORIGIN;
     bool optimizeOnExport = true;
 
-    SceneExporter::ClientConnectionParams clientConnectionParams;
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
 
     SceneExporter::ExportedObjectCollection exportedObjects;
+
+    bool useAssetCache = false;
+    DAVA::AssetCacheClient::ConnectionParams connectionsParams;
 };
 
 

@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "FileSystem/FileSystem.h"
+#include "AssetCache/AssetCacheClient.h"
 
 #include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
@@ -62,6 +63,7 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
 {
     DAVA::FileSystem::Instance()->CreateDirectory(outputDir, true);
 
+    DAVA::AssetCacheClient cacheClient(true);
     DAVA::ResourcePacker2D resourcePacker;
 
     resourcePacker.forceRepack = true;
@@ -70,12 +72,22 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
 
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
-        auto ip = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
-        auto port = SettingsManager::GetValue(Settings::General_AssetCache_Port).AsString();
-        auto timeout = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsString();
-//        resourcePacker.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
-        DVASSERT(false);
+        String ipStr = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
+        uint16 port = static_cast<DAVA::uint16>(SettingsManager::GetValue(Settings::General_AssetCache_Port).AsUInt32());
+        uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
+
+        AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? "127.0.0.1" : ipStr);
+        params.port = port;
+        params.timeoutms = timeoutSec * 1000; //in ms
+
+        AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
+        if (connected == AssetCache::ERROR_OK)
+        {
+            resourcePacker.SetCacheClient(&cacheClient);
+        }
     }
 
     resourcePacker.PackResources(gpu);
+    cacheClient.Disconnect();
 }

@@ -38,12 +38,12 @@
 
 #include "AssetCache/CacheItemKey.h"
 
-class AssetCacheClient;
 namespace DAVA
 {
 
 class DefinitionFile;
 class YamlNode;
+class AssetCacheClient;
 
 class ResourcePacker2D
 {
@@ -108,15 +108,6 @@ private:
     std::atomic<bool> running;
 };
 
-inline bool ResourcePacker2D::IsUsingCache() const
-{
-#ifdef __DAVAENGINE_WIN_UAP__
-    //no cache in win uap
-    return false;
-#else
-    return (cacheClient != nullptr);
-#endif
-}
 
 inline bool ResourcePacker2D::IsRunning() const
 {

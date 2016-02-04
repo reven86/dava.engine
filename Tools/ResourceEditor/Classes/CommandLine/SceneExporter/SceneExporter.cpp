@@ -28,6 +28,7 @@
 
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
+#include "AssetCache/AssetCacheClient.h"
 #include "Debug/Stats.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
@@ -54,7 +55,7 @@ using namespace DAVA;
 
 namespace SceneExporterCache
 {
-using CachedFiles = List<FilePath>;
+//using CachedFiles = List<FilePath>;
 
 const uint32 EXPORTER_VERSION = 1;
 const uint32 LINKS_PARSER_VERSION = 1;
@@ -84,154 +85,6 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
     }
 }
 
-void AddConnectionParamsToParams(Vector<String>& arguments, const SceneExporter::ClientConnectionParams& assetCacheParams)
-{
-    arguments.push_back("-ip");
-    arguments.push_back(assetCacheParams.ip);
-
-    arguments.push_back("-p");
-    arguments.push_back(assetCacheParams.port);
-
-    arguments.push_back("-t");
-    arguments.push_back(Format("%u", assetCacheParams.timeout));
-}
-
-bool GetFromCache(const FilePath& outFolderPath, const AssetCache::CacheItemKey& key, const SceneExporter::ClientConnectionParams& assetCacheParams)
-{
-    DVASSERT(assetCacheParams.enabled);
-    DVASSERT(outFolderPath.IsDirectoryPathname());
-
-    Vector<String> arguments;
-    arguments.push_back("get");
-
-    arguments.push_back("-h");
-    arguments.push_back(AssetCache::KeyToString(key));
-
-    arguments.push_back("-f");
-    arguments.push_back(outFolderPath.GetAbsolutePathname());
-
-    AddConnectionParamsToParams(arguments, assetCacheParams);
-
-    FilePath cacheClientTool = "~res:/AssetCacheClient";
-    FilePath workingDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(workingDir);
-    };
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-
-    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-    Process cacheClient(cacheClientTool, arguments);
-    if (cacheClient.Run(false))
-    {
-        cacheClient.Wait();
-
-        int32 exitCode = cacheClient.GetExitCode();
-        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-        if (exitCode == AssetCache::ERROR_OK)
-        {
-            Logger::FrameworkDebug("[%s - %.2lf secs] - GOT FROM CACHE", outFolderPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
-            return true;
-        }
-        else
-        {
-//             Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
-//                          outFolderPath.GetAbsolutePathname().c_str(),
-//                          (float64)(getTime) / 1000.0f,
-//                          exitCode,
-//                          AssetCache::GetExitCodeString(exitCode).c_str());
-
-            const String& procOutput = cacheClient.GetOutput();
-            if (!procOutput.empty())
-            {
-                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-            }
-
-            return false;
-        }
-    }
-    else
-    {
-        Logger::Warning("Can't run process 'AssetCacheClient'", cacheClientTool.GetAbsolutePathname().c_str());
-        return false;
-    }
-
-    return false;
-}
-
-bool AddToCache(const CachedFiles& filesForCaching, const AssetCache::CacheItemKey& key, const SceneExporter::ClientConnectionParams& assetCacheParams)
-{
-    DVASSERT(assetCacheParams.enabled);
-    DVASSERT(filesForCaching.empty() == false);
-
-    Vector<String> arguments;
-    arguments.push_back("add");
-
-    arguments.push_back("-h");
-    arguments.push_back(AssetCache::KeyToString(key));
-
-    String fileListString;
-    for (const auto& path : filesForCaching)
-    {
-        fileListString += (path.GetAbsolutePathname() + ',');
-    }
-
-    if (!fileListString.empty())
-    {
-        fileListString.pop_back();
-    }
-
-    arguments.push_back("-f");
-    arguments.push_back(fileListString);
-
-    AddConnectionParamsToParams(arguments, assetCacheParams);
-
-    FilePath cacheClientTool = "~res:/AssetCacheClient";
-    FilePath workingDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->SetCurrentWorkingDirectory(workingDir);
-    };
-    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
-
-    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-    Process cacheClient(cacheClientTool, arguments);
-    if (cacheClient.Run(false))
-    {
-        cacheClient.Wait();
-
-        int32 exitCode = cacheClient.GetExitCode();
-        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-
-        if (exitCode == AssetCache::ERROR_OK)
-        {
-            Logger::FrameworkDebug("[%s - %.2lf secs] - ADDED TO CACHE", fileListString.c_str(), (float64)(getTime) / 1000.0f);
-            return true;
-        }
-        else
-        {
-//             Logger::Warning("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)", fileListString.c_str(),
-//                             (float64)(getTime) / 1000.0f,
-//                             exitCode,
-//                             AssetCache::GetExitCodeString(exitCode).c_str());
-            const String& procOutput = cacheClient.GetOutput();
-            if (!procOutput.empty())
-            {
-                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
-            }
-
-            return false;
-        }
-    }
-    else
-    {
-        Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
-        return false;
-    }
-
-    return false;
-}
 
 } //namespace SceneExporterCache
 
@@ -344,7 +197,7 @@ void RemoveEditorCustomProperties(Entity* entity)
 
         if (props->Count() == 0)
         {
-            entity->RemoveComponent(DAVA::Component::CUSTOM_PROPERTIES_COMPONENT);
+            entity->RemoveComponent(Component::CUSTOM_PROPERTIES_COMPONENT);
         }
     }
 }
@@ -389,8 +242,8 @@ void CollectTextureDescriptors(Scene* scene, const FilePath& dataSourceFolder, S
     exportedObjects.reserve(exportedObjects.size() + sceneTextures.size());
     for (const auto& scTex : sceneTextures)
     {
-        const DAVA::FilePath& path = scTex.first;
-        if (path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)
+        const FilePath& path = scTex.first;
+        if (path.GetType() == FilePath::PATH_IN_MEMORY)
         {
             continue;
         }
@@ -405,7 +258,7 @@ void CollectTextureDescriptors(Scene* scene, const FilePath& dataSourceFolder, S
 
 SceneExporter::~SceneExporter() = default;
 
-void SceneExporter::SetCompressionParams(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality_)
+void SceneExporter::SetCompressionParams(const eGPUFamily gpu, TextureConverter::eConvertQuality quality_)
 {
     exportForGPU = gpu;
     quality = quality_;
@@ -420,17 +273,17 @@ void SceneExporter::SetFolders(const FilePath& dataFolder_, const FilePath& data
     dataSourceFolder = dataSourceFolder_;
 }
 
-void SceneExporter::SetConnectionParams(const SceneExporter::ClientConnectionParams& clientConnectionParams_)
-{
-    clientConnectionParams = clientConnectionParams_;
-}
-
 void SceneExporter::EnableOptimizations(bool enable)
 {
     optimizeOnExport = enable;
 }
 
-void SceneExporter::ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink)
+void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_)
+{
+    cacheClient = cacheClient_;
+}
+
+void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String& sceneLink)
 {
     Logger::Info("Exporting of %s", sceneLink.c_str());
 
@@ -449,16 +302,21 @@ void SceneExporter::ExportSceneFile(const DAVA::FilePath& scenePathname, const D
     ExportedObjectCollection externalLinks;
 
     AssetCache::CacheItemKey cacheKey;
-    if (clientConnectionParams.enabled)
+    if (cacheClient != nullptr && cacheClient->IsConnected())
     { //request Scene from cache
         SceneExporterCache::CalculateSceneKey(scenePathname, sceneLink, cacheKey, static_cast<uint32>(optimizeOnExport));
 
-        bool gotFromCache = SceneExporterCache::GetFromCache(outScenePathname.GetDirectory(), cacheKey, clientConnectionParams);
-        if (gotFromCache)
+        AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(cacheKey, outScenePathname.GetDirectory());
+        if (requested == AssetCache::ERROR_OK)
         {
+            Logger::Info("[%s] - got from cache", scenePathname.GetAbsolutePathname().c_str());
             SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
             ExportObjects(externalLinks);
             return;
+        }
+        else
+        {
+            Logger::Info("%s - failed to retrieve from cache(%s)", scenePathname.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(requested));
         }
     }
 
@@ -467,14 +325,43 @@ void SceneExporter::ExportSceneFile(const DAVA::FilePath& scenePathname, const D
         ExportObjects(externalLinks);
     }
 
-    if (clientConnectionParams.enabled)
+    if (cacheClient != nullptr && cacheClient->IsConnected())
     { //place exported scene into cache
         SceneExporterInternal::SaveExportedObjects(linksPathname, externalLinks);
 
-        SceneExporterCache::CachedFiles cachedFiles;
-        cachedFiles.push_back(outScenePathname);
-        cachedFiles.push_back(linksPathname);
-        SceneExporterCache::AddToCache(cachedFiles, cacheKey, clientConnectionParams);
+        auto AddFileToValue = [](AssetCache::CachedItemValue& value, const FilePath& pathname) {
+            ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
+            if (file)
+            {
+                std::shared_ptr<Vector<uint8>> data = std::make_shared<Vector<uint8>>();
+
+                auto dataSize = file->GetSize();
+                data.get()->resize(dataSize);
+
+                auto read = file->Read(data.get()->data(), dataSize);
+                DVVERIFY(read == dataSize);
+
+                value.Add(pathname.GetFilename(), data);
+            }
+            else
+            {
+                Logger::Error("[%s] Cannot read file(%s)", __FUNCTION__, pathname.GetStringValue().c_str());
+            }
+        };
+
+        AssetCache::CachedItemValue value;
+        AddFileToValue(value, outScenePathname);
+        AddFileToValue(value, linksPathname);
+
+        AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(cacheKey, value);
+        if (added == AssetCache::ERROR_OK)
+        {
+            Logger::Info("%s - added to cache", scenePathname.GetAbsolutePathname().c_str());
+        }
+        else
+        {
+            Logger::Info("%s - failed to add to cache (%s)", scenePathname.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(added));
+        }
     }
 }
 
@@ -525,12 +412,12 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
     descriptor->Export(exportedDescriptorPath);
 }
 
-void SceneExporter::ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink)
+void SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const String& heightmapLink)
 {
     CopyFile(heightmapPathname, heightmapLink);
 }
 
-DAVA::FilePath SceneExporter::CompressTexture(DAVA::TextureDescriptor& descriptor) const
+FilePath SceneExporter::CompressTexture(TextureDescriptor& descriptor) const
 {
     DVASSERT(GPUFamilyDescriptor::IsGPUForDevice(exportForGPU));
 
@@ -546,7 +433,7 @@ DAVA::FilePath SceneExporter::CompressTexture(DAVA::TextureDescriptor& descripto
     return compressedTexureName;
 }
 
-void SceneExporter::CopySourceTexture(DAVA::TextureDescriptor& descriptor) const
+void SceneExporter::CopySourceTexture(TextureDescriptor& descriptor) const
 {
     if (descriptor.IsCubeMap())
     {
@@ -566,13 +453,13 @@ void SceneExporter::CopySourceTexture(DAVA::TextureDescriptor& descriptor) const
     }
 }
 
-bool SceneExporter::CopyFile(const DAVA::FilePath& filePath) const
+bool SceneExporter::CopyFile(const FilePath& filePath) const
 {
     String workingPathname = filePath.GetRelativePathname(dataSourceFolder);
     return CopyFile(filePath, workingPathname);
 }
 
-bool SceneExporter::CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const
+bool SceneExporter::CopyFile(const FilePath& filePath, const String& fileLink) const
 {
     FilePath newFilePath = dataFolder + fileLink;
 
@@ -638,11 +525,11 @@ void SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObject
         FileSystem::Instance()->CreateDirectory(outFolderString + folder, true);
     }
 
-    using ExporterFunction = DAVA::Function<void(const DAVA::FilePath&, const DAVA::String&)>;
+    using ExporterFunction = Function<void(const FilePath&, const String&)>;
     Array<ExporterFunction, OBJECT_COUNT> exporters =
-    { { DAVA::MakeFunction(this, &SceneExporter::ExportSceneFile),
-        DAVA::MakeFunction(this, &SceneExporter::ExportTextureFile),
-        DAVA::MakeFunction(this, &SceneExporter::ExportHeightmapFile) } };
+    { { MakeFunction(this, &SceneExporter::ExportSceneFile),
+        MakeFunction(this, &SceneExporter::ExportTextureFile),
+        MakeFunction(this, &SceneExporter::ExportHeightmapFile) } };
 
     for (const auto& object : exportedObjects)
     {
