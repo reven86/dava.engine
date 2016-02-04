@@ -76,6 +76,8 @@ public:
     void WillRemove(DAVA::Entity *removedEntity) override;
     void DidRemoved(DAVA::Entity *removedEntity) override;
 
+    bool CanChangeSelection();
+
 protected:
     void Draw();
 
@@ -96,23 +98,18 @@ protected:
     void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
 
 protected:
-    bool isEnabled;
-
     EntityGroup currentSelection;
     EntityGroup selectedWaypoints;
     EntityGroup prevSelectedWaypoints;
-
-    SceneEditor2 *sceneEditor;
-    SceneSelectionSystem *selectionSystem;
-    SceneCollisionSystem* collisionSystem;
-
-    DAVA::Vector<DAVA::Entity *> waypointEntities;
+    SceneEditor2* sceneEditor = nullptr;
+    SceneSelectionSystem* selectionSystem = nullptr;
+    SceneCollisionSystem* collisionSystem = nullptr;
+    DAVA::Vector<DAVA::Entity*> waypointEntities;
     DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
-
-    DAVA::Entity * underCursorPathEntity;
+    DAVA::Entity* underCursorPathEntity = nullptr;
+    DAVA::Entity* startPointForRemove = nullptr;
     bool inCloneState = false;
-
-    DAVA::Entity *startPointForRemove;
+    bool isEnabled = false;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__
