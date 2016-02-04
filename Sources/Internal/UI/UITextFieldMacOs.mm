@@ -141,9 +141,6 @@ public:
     {
         davaText = nullptr;
         wrapper = nullptr;
-
-        [imageRep release];
-        imageRep = nullptr;
     }
     virtual void OpenKeyboard() = 0;
     virtual void CloseKeyboard() = 0;
@@ -317,7 +314,6 @@ public:
     bool isKeyboardOpened = false; // HACK to prevent endless recursion
     bool insideTextShouldReturn = false; // HACK mark what happened
     NSRect nativeControlRect = NSMakeRect(0, 0, 0, 0);
-    NSBitmapImageRep* imageRep = nullptr;
 };
 
 static NSRect ConvertToNativeWindowRect(Rect rectSrc)
@@ -791,7 +787,7 @@ public:
             if (!updateViewState)
             {
                 // can hide native control
-                controlRect.origin.x += 10000;
+                controlRect.origin.x -= 10000;
             }
         }
         else
@@ -931,8 +927,6 @@ public:
 
     void SetCursorPos(uint32 pos) override
     {
-        updateViewState = true;
-
         if ([nsTextField isEditable])
         {
             NSText* text = [nsTextField currentEditor];
