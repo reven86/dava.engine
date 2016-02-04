@@ -374,8 +374,8 @@ void SceneCollisionSystem::Draw()
                 {
                     objectsCollWorld->debugDrawObject(cObj->btObject->getWorldTransform(), cObj->btObject->getCollisionShape(), btVector3(1.0f, 0.65f, 0.0f));
                 }
-			}
-		}
+            }
+        }
 	}
 }
 
@@ -545,7 +545,7 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 
         entityToCollision[entity] = cObj;
         collisionToEntity[cObj->btObject] = entity;
-	}
+    }
 
     if (isLandscape)
     {

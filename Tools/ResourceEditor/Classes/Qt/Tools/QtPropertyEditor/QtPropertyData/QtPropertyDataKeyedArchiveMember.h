@@ -41,8 +41,8 @@ public:
     QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive, const DAVA::String& key);
     virtual ~QtPropertyKeyedArchiveMember();
 
-	DAVA::KeyedArchive* archive;
-	DAVA::String key;
+    DAVA::KeyedArchive* archive;
+    DAVA::String key;
 
 protected:
 	KeyeadArchiveSetValueCommand* lastCommand;

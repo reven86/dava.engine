@@ -76,6 +76,7 @@ private slots:
     void UpdateLanguage();
    
     void OnRtlChanged(bool isRtl);
+    void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
     void OnApplicationStateChanged(Qt::ApplicationState state);

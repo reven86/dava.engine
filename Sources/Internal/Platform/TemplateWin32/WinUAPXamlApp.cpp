@@ -67,6 +67,7 @@ using namespace ::Windows::ApplicationModel::Core;
 using namespace ::Windows::UI::Xaml::Media;
 using namespace ::Windows::System::Threading;
 using namespace ::Windows::Phone::UI::Input;
+using namespace ::Windows::UI::Xaml::Markup;
 
 namespace DAVA
 {
@@ -369,14 +370,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
@@ -880,10 +881,12 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
-    using Windows::UI::Xaml::Markup::XamlReader;
+    // workaround for Surface, otherwise we lost MouseMoved event  
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
-    webview->Visibility = Visibility::Collapsed;
+    // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
+    obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
+    TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
@@ -891,6 +894,7 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     Window::Current->Content = swapChainPanel;
 
     AddUIElement(webview);
+    AddUIElement(textBox);
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -1233,10 +1237,17 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 )";
 
 const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
-<WebView x:Name="xamlWebView"
+<WebView x:Name="xamlWebView" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
+)";
+
+const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
+<TextBox x:Name="xamlTextBox" Visibility="Collapsed"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</TextBox>
 )";
 
 }   // namespace DAVA

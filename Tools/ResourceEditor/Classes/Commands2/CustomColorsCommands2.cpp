@@ -56,8 +56,8 @@ void ActionEnableCustomColors::Redo()
 
     sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	if (!success )
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+    if (!success )
 	{
 		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
 	}
@@ -106,8 +106,8 @@ void ActionDisableCustomColors::Redo()
     }
 
     bool success = sceneEditor->customColorsSystem->DisableLandscapeEdititing(textureSavingNeeded);
-	if (!success)
-	{
+    if (!success)
+    {
 		ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
 	}
     

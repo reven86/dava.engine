@@ -93,8 +93,8 @@ protected:
     FilePath toolImagePath;
     int32 toolImageIndex;
 
-	float32 curHeight;
-	Vector2 copyPasteFrom;
+    float32 curHeight;
+    Vector2 copyPasteFrom;
 	Vector2 copyPasteTo;
 	
 	Rect heightmapUpdatedRect;
@@ -115,7 +115,7 @@ protected:
     void StoreOriginalHeightmap();
     void CreateHeightmapUndo();
 
-	void FinishEditing();
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

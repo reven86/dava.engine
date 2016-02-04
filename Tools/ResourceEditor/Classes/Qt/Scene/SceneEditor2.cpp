@@ -223,8 +223,8 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
         isLoaded = true;
 
         // mark current position in command stack as clean
-		wasChanged = false;
-		commandStack.SetClean(true);
+        wasChanged = false;
+        commandStack.SetClean(true);
 	}
 
     if (needToRestoreTilemask)
@@ -425,8 +425,8 @@ void SceneEditor2::Draw()
         if (structureSystem)
             structureSystem->Draw();
     }
- 
-	tilemaskEditorSystem->Draw();
+
+    tilemaskEditorSystem->Draw();
     //VI: restore 3d camera state
     Setup3DDrawing();
 
@@ -528,9 +528,9 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
     {
         Exec(new ActionDisableHeightmapEditor(this));
     }
-	
-	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
-	{
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+    {
 		Exec(new ActionDisableTilemaskEditor(this));
 	}
 	
@@ -558,9 +558,9 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
     {
         res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
     }
-	
-	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
-	{
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+    {
 		res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
 	}
 	

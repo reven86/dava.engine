@@ -39,9 +39,9 @@ public:
     QtPropertyDataInspColl(const DAVA::FastName& name, void* _object, const DAVA::InspColl* _collection, bool autoAddChilds = true);
     virtual ~QtPropertyDataInspColl();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
+    virtual const DAVA::MetaInfo* MetaInfo() const;
 
-	void *object;
+    void *object;
 	const DAVA::InspColl *collection;
 
 protected:

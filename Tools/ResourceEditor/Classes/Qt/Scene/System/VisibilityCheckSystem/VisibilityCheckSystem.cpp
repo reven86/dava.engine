@@ -66,8 +66,16 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
     renderer.SetDelegate(this);
 }
 
-VisibilityCheckSystem::~VisibilityCheckSystem()
+VisibilityCheckSystem::~VisibilityCheckSystem() = default;
+
+DAVA::Camera* VisibilityCheckSystem::GetFinalGatherCamera() const
 {
+    return GetScene()->GetDrawCamera();
+}
+
+DAVA::Camera* VisibilityCheckSystem::GetRenderCamera() const
+{
+    return GetScene()->GetCurrentCamera();
 }
 
 void VisibilityCheckSystem::ReleaseCubemapRenderTargets()
@@ -112,6 +120,7 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
     auto requiredComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
     if (requiredComponent != nullptr)
     {
+        (static_cast<DAVA::VisibilityCheckComponent*>(requiredComponent))->Invalidate();
         entitiesWithVisibilityComponent.insert({ entity, DAVA::Vector<DAVA::Vector3>() });
         shouldPrerender = true;
         forceRebuildPoints = true;
@@ -166,9 +175,9 @@ void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
     for (auto& mapItem : entitiesWithVisibilityComponent)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(mapItem.first->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
-        if (!visibilityComponent->IsValid())
+        if (!visibilityComponent->IsValid() || forceRebuildPoints)
         {
-            if (visibilityComponent->ShouldRebuildPoints())
+            if (visibilityComponent->ShouldRebuildPoints() || forceRebuildPoints)
             {
                 BuildPointSetForEntity(mapItem);
                 shouldRebuildIndices = true;
@@ -226,16 +235,14 @@ void VisibilityCheckSystem::Draw()
         dbg->DrawLine(point.point, point.point + 2.0f * point.normal, DAVA::Color(0.25f, 1.0f, 0.25f, 1.0f));
     }
 
-    auto fromCamera = GetScene()->GetCurrentCamera();
-
     DAVA::uint32 previousPointIndex = currentPointIndex;
     for (DAVA::uint32 cm = 0; (cm < VCSInternal::CUBEMAPS_POOL_SIZE) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
         const auto& point = controlPoints[pointIndex];
         auto cubemap = VCSInternal::CubemapRenderTargetAtIndex(cm);
-        renderer.RenderToCubemapFromPoint(rs, fromCamera, point.point, cubemap);
-        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemap, point);
+        renderer.RenderToCubemapFromPoint(rs, point.point, cubemap);
+        renderer.RenderVisibilityToTexture(rs, GetRenderCamera(), GetFinalGatherCamera(), cubemap, point);
     }
 
     if (shouldFixFrame && (currentPointIndex == controlPoints.size()) && (previousPointIndex < controlPoints.size()))
@@ -248,7 +255,7 @@ void VisibilityCheckSystem::Draw()
     {
         if ((currentPointIndex == controlPoints.size()) || renderer.FrameFixed())
         {
-            renderer.RenderCurrentOverlayTexture(rs, fromCamera);
+            renderer.RenderCurrentOverlayTexture(rs, GetFinalGatherCamera());
         }
 
         if (currentPointIndex < controlPoints.size())
@@ -278,20 +285,18 @@ void VisibilityCheckSystem::UpdatePointSet()
             DAVA::Vector3 position = worldTransform.GetTranslationVector();
             DAVA::Vector3 normal = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
             normal.Normalize();
-            float upAngle = std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetUpAngle()));
-            float dnAngle = -std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetDownAngle()));
-            float maxDist = visibilityComponent->GetMaximumDistance();
-
-            bool shouldSnap = (landscape != nullptr) && visibilityComponent->ShouldPlaceOnLandscape();
-            float snapHeight = visibilityComponent->GetHeightAboveLandscape();
+            DAVA::float32 upAngle = std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetUpAngle()));
+            DAVA::float32 dnAngle = -std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetDownAngle()));
+            DAVA::float32 maxDist = visibilityComponent->GetMaximumDistance();
+            DAVA::float32 snapHeight = visibilityComponent->GetHeightAboveLandscape();
 
             for (const auto& pt : mapItem.second)
             {
                 DAVA::Vector3 placedPoint;
                 DAVA::Vector3 transformedPoint = position + MultiplyVectorMat3x3(pt, worldTransform);
-                if (landscape->PlacePoint(transformedPoint, placedPoint, &normal))
+                if ((landscape != nullptr) && landscape->PlacePoint(transformedPoint, placedPoint, &normal))
                 {
-                    if (shouldSnap)
+                    if (visibilityComponent->ShouldPlaceOnLandscape())
                     {
                         transformedPoint.z = placedPoint.z + snapHeight;
                     }
@@ -307,7 +312,7 @@ void VisibilityCheckSystem::UpdatePointSet()
 void VisibilityCheckSystem::Prerender()
 {
     renderer.CreateOrUpdateRenderTarget(stateCache.viewportSize);
-    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera());
+    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetFinalGatherCamera());
 
     currentPointIndex = 0;
     shouldPrerender = false;
@@ -319,7 +324,7 @@ bool VisibilityCheckSystem::CacheIsValid()
     if (vpSize != stateCache.viewportSize)
         return false;
 
-    auto cam = GetScene()->GetCurrentCamera();
+    auto cam = GetFinalGatherCamera();
     if (cam != stateCache.camera)
         return false;
 
@@ -332,7 +337,7 @@ bool VisibilityCheckSystem::CacheIsValid()
 
 void VisibilityCheckSystem::BuildCache()
 {
-    stateCache.camera = GetScene()->GetCurrentCamera();
+    stateCache.camera = GetFinalGatherCamera();
     DVASSERT(stateCache.camera != nullptr)
 
     stateCache.viewportSize = DAVA::Size2i(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());

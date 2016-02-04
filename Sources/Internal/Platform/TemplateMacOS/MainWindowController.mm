@@ -33,20 +33,82 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 #import <AppKit/NSApplication.h>
+#import "Platform/TemplateMacOS/HelperAppDelegate.h"
 
 @interface DavaApp : NSApplication
 @end
 
 @implementation DavaApp
-// http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
 - (void)sendEvent:(NSEvent*)theEvent
 {
+    // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
+    if ([theEvent type] == NSKeyDown)
+    {
+        if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+        {
+            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"x"])
+            {
+                if ([self sendAction:@selector(cut:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
+            {
+                if ([self sendAction:@selector(copy:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
+            {
+                if ([self sendAction:@selector(paste:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
+            {
+                if ([self sendAction:@selector(undo:) to:nil from:self])
+                    return;
+            }
+            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"a"])
+            {
+                if ([self sendAction:@selector(selectAll:) to:nil from:self])
+                    return;
+            }
+        }
+        else if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
+        {
+            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"Z"])
+            {
+                if ([self sendAction:@selector(redo:) to:nil from:self])
+                    return;
+            }
+        }
+    }
+
+    // HACK first part if any textfield(native) is focused send keyUp and keyDown events to
+    // openGLView manualy but only if current event not change focus control
+    // need for client battle chat work and other textfield without modifications
+    DAVA::UIControl* focusedCtrl = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+
+    // http://stackoverflow.com/questions/4001565/missing-keyup-events-on-meaningful-key-combinations-e-g-select-till-beginning?lq=1
     [super sendEvent:theEvent];
     if (theEvent.modifierFlags & NSCommandKeyMask)
     {
         if (theEvent.type == NSKeyUp)
         {
             [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKeyUp" object:theEvent];
+        }
+    }
+
+    // HACK second part
+    DAVA::UIControl* focusedAfterCtrl = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+
+    if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
+    {
+        DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
+        if (tf)
+        {
+            if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
+            {
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"DavaKey" object:theEvent];
+            }
         }
     }
 }
@@ -66,7 +128,24 @@ namespace DAVA
         core->SetCommandLine(argc, argv);
         core->CreateSingletons();
 
-        [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
+        // try to create delegate from client code
+        Class delegateClass = NSClassFromString(@"MacOSHelperAppDelegate");
+        if (nullptr == delegateClass)
+        {
+            // have no delegate in client code - create byself
+            delegateClass = NSClassFromString(@"HelperAppDelegate");
+        }
+
+        DVASSERT_MSG(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
+
+        HelperAppDelegate* appDelegate = [[[delegateClass alloc] init] autorelease];
+
+        MainWindowController* mainWindowController = [[[MainWindowController alloc] init] autorelease];
+
+        // window controller used from app delegate
+        [appDelegate setWindowController:mainWindowController];
+
+        [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
@@ -109,6 +188,7 @@ namespace DAVA
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
+- (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification;
 
 - (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
@@ -150,6 +230,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
                                                    object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(OnKeyDuringTextFieldInFocus:)
+                                                     name:@"DavaKey"
+                                                   object:nil];
     }
     return self;
 }
@@ -157,12 +241,13 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
 
 -(void)createWindows
 {
-    NSRect displayRect = [[NSScreen mainScreen] frame];
+    core = Core::GetApplicationCore();
 
     FrameworkDidLaunched();
 
@@ -189,17 +274,16 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
-    
+
+    NSRect displayRect = [[NSScreen mainScreen] frame];
     NSUInteger wStyle = NSTitledWindowMask + NSMiniaturizableWindowMask + NSClosableWindowMask + NSResizableWindowMask;
     NSRect wRect = NSMakeRect((displayRect.size.width - width) / 2, (displayRect.size.height - height) / 2, width, height);
     mainWindow = [[NSWindow alloc] initWithContentRect:wRect styleMask:wStyle backing:NSBackingStoreBuffered defer:FALSE];
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
-    [mainWindow setContentSize:NSMakeSize(width, height)];
     mainWindow.contentMinSize = NSMakeSize(width, height);
     [mainWindowController setMinimumWindowSize:0.0f height:0.0f];
-
     if (minWidth > 0 && minHeight > 0)
     {
         // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
@@ -207,10 +291,9 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
 
-// start animation
+    // start animation
     currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
 
@@ -223,9 +306,51 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     {
         [self setFullScreen:true];
     }
+
+    // OS X application has no way to detect when she is no longer in control,
+    // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
+    // And application has no chance to release mouse capture.
+
+    // Install mouse hook which determines whether Mission Control, Launchpad is active
+    // and temporary turns off mouse pinning
+    // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
+    CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
+                                             kCGTailAppendEventTap,
+                                             kCGEventTapOptionListenOnly,
+                                             NSAnyEventMask,
+                                             &EventTapCallback,
+                                             nullptr);
+
+    if (portRef != nullptr)
+    {
+        CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
+        CFRelease(portRef);
+        CFRelease(loopSourceRef);
+    }
+    else
+    {
+        Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
+    }
+
+    NSSize windowSize = [openGLView frame].size;
+    float32 backingScale = Core::Instance()->GetScreenScaleFactor();
+
+    GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
+    CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+    CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+    CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
+
+    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
+    rendererParams.window = mainWindowController->openGLView;
+    rendererParams.width = backingSize[0];
+    rendererParams.height = backingSize[1];
+
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
 }
 
-- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+- (void)setMinimumWindowSize:(float32)width height:(float32)height
 {
     const float32 MIN_WIDTH = 64.0f;
     const float32 MIN_HEIGHT = 64.0f;
@@ -286,6 +411,20 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
 {
     [self keyUp:(NSEvent*)[notification object]];
+}
+
+- (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification
+{
+    NSEvent* theEvent = (NSEvent*)[notification object];
+
+    if (theEvent.type == NSKeyDown)
+    {
+        [self keyDown:theEvent];
+    }
+    else if (theEvent.type == NSKeyUp)
+    {
+        [self keyUp:theEvent];
+    }
 }
 
 -(bool) isFullScreen
@@ -424,13 +563,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did finish launching");
-
-    [self OnResume];
-}
-
 static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
 {
     static bool restorePinning = false;
@@ -459,116 +591,6 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
     return event;
 }
 
-- (void)applicationWillFinishLaunching:(NSNotification *)aNotification
-{
-	[self createWindows];
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application will finish launching: %s", [[[NSBundle mainBundle] bundlePath] UTF8String]);
-
-    {
-        // OS X application has no way to detect when she is no longer in control,
-        // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
-        // And application has no chance to release mouse capture.
-
-        // Install mouse hook which determines whether Mission Control, Launchpad is active
-        // and temporary turns off mouse pinning
-        // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
-        CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
-                                                 kCGTailAppendEventTap,
-                                                 kCGEventTapOptionListenOnly,
-                                                 NSAnyEventMask,
-                                                 &EventTapCallback,
-                                                 nullptr);
-
-        if (portRef != nullptr)
-        {
-            CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
-            CFRelease(portRef);
-            CFRelease(loopSourceRef);
-        }
-        else
-        {
-            Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
-        }
-    }
-
-    NSSize windowSize = [openGLView frame].size;
-    float32 backingScale = Core::Instance()->GetScreenScaleFactor();
-
-    GLint backingSize[2] = { GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale) };
-    CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
-    CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
-    CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
-
-    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
-    rendererParams.window = mainWindowController->openGLView;
-    rendererParams.width = backingSize[0];
-    rendererParams.height = backingSize[1];
-
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-
-    Core::Instance()->SystemAppStarted();
-}
-
-- (void)applicationWillBecomeActive:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application will become active");
-}
-
-- (void)applicationDidBecomeActive:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did become active");
-
-    [self OnResume];
-}
-
-- (void)applicationDidResignActive:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did resign active");
-
-    [self OnSuspend];
-}
-
-- (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did change screen params");
-}
-
-- (void)applicationDidHide:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did hide");
-
-    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    xcore->signalAppMinimizedRestored.Emit(true);
-}
-
-- (void)applicationDidUnhide:(NSNotification *)aNotification
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application did unhide");
-
-    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    xcore->signalAppMinimizedRestored.Emit(false);
-}
-
-- (void)windowWillClose:(NSNotification *)notification
-{
-	[[NSApplication sharedApplication] terminate: nil];
-}
-
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatform] Application should terminate");
-
-    mainWindowController->openGLView.willQuit = true;
-    
-	Core::Instance()->SystemAppFinished();
-	FrameworkWillTerminate();
-    Core::Instance()->ReleaseSingletons();
-
-    NSLog(@"[CoreMacOSPlatform] Application has terminated");
-    return NSTerminateNow;
-}
 
 - (void)OnSuspend
 {

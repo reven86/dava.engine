@@ -41,9 +41,9 @@ public:
     QtPropertyDataInspMember(const DAVA::FastName& name, void* _object, const DAVA::InspMember* _member);
     virtual ~QtPropertyDataInspMember();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
+    virtual const DAVA::MetaInfo* MetaInfo() const;
 
-	virtual void* CreateLastCommand() const;
+    virtual void* CreateLastCommand() const;
 
 	void *object;
 	const DAVA::InspMember *member;

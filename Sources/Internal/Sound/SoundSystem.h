@@ -78,6 +78,7 @@ public:
     void Update(float32 timeElapsed);
     void Suspend();
     void Resume();
+    void Mute(bool value);
 
     void SetCurrentLocale(const String & langID);
     String GetCurrentLocale() const;

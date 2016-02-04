@@ -205,7 +205,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                             SetModifAxis(hoodSystem->GetPassingAxis());
                         }
 
-						// set entities to be modified
+                        // set entities to be modified
 						BeginModification(selectedEntities);
 
 						// init some values, needed for modifications
@@ -240,8 +240,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                 {
                 case ST_MODIF_MOVE:
                 {
-                        DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
-						moveOffset = Move(newPos3d);
+                    DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
+                        moveOffset = Move(newPos3d);
 						modified = true;
 					}
 					break;
@@ -277,8 +277,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                     hoodSystem->SetModifOffset(moveOffset);
                     hoodSystem->SetModifRotate(rotateAngle);
                     hoodSystem->SetModifScale(scaleForce);
-				}
-			}
+                }
+            }
 			// phase ended
             else if (event->phase == DAVA::UIEvent::Phase::ENDED)
             {
@@ -291,7 +291,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
                             CloneEnd();
                         }
                         else
-						{
+                        {
 							ApplyModification();
 						}
 					}
@@ -346,8 +346,8 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
                 EntityToModify etm;
                 etm.entity = en;
                 etm.originalCenter = en->GetLocalTransform().GetTranslationVector();
-				etm.originalTransform = en->GetLocalTransform();
-				etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
+                etm.originalTransform = en->GetLocalTransform();
+                etm.moveToZeroPos.CreateTranslation(-etm.originalCenter);
 				etm.moveFromZeroPos.CreateTranslation(etm.originalCenter);
 
 				// inverse parent world transform, and remember it
@@ -383,8 +383,8 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
         moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
 
         // remember axis vector we are rotating around
-        switch(curAxis)
-		{
+        switch (curAxis)
+        {
 		case ST_AXIS_X:
 		case ST_AXIS_YZ:
 			rotateAround = DAVA::Vector3(1, 0, 0);

@@ -92,8 +92,8 @@ public:
     void IncreaseTilemaskChanges();
     void DecreaseTilemaskChanges();
 
-	void InitTilemaskImageCopy();
-	Image* GetTilemaskImageCopy();
+    void InitTilemaskImageCopy();
+    Image* GetTilemaskImageCopy();
 
     void InitTilemaskDrawTextures();
     Texture* GetTilemaskDrawTexture(int32 number);

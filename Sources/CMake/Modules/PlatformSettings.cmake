@@ -58,6 +58,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set( OTHER_CODE_SIGN_FLAGS "--deep")
+    set( CMAKE_EXE_LINKER_FLAGS "-ObjC" )
 
 elseif ( WIN32 )
     #dynamic runtime on windows store

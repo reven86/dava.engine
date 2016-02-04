@@ -120,10 +120,10 @@ namespace ResourceEditor
     static const String RULER_TOOL_LENGTH_CAPTION = "Length:";
     static const String RULER_TOOL_PREVIEW_LENGTH_CAPTION = "Preview length:";
     static const String RULER_TOOL_ENABLE_ERROR = "Error enabling Ruler Tool. Make sure there is valid landscape at the scene.";
-    static const String RULER_TOOL_DISABLE_ERROR			= "Error disabling Ruler Tool";
-	static const String LANDSCAPE_DIALOG_WRONG_PNG_ERROR	= "PNG file should be in format A8 or A16.";
+    static const String RULER_TOOL_DISABLE_ERROR = "Error disabling Ruler Tool";
+    static const String LANDSCAPE_DIALOG_WRONG_PNG_ERROR = "PNG file should be in format A8 or A16.";
 
-	static const String HEIGHTMAP_EDITOR_BRUSH_SIZE_CAPTION			= "Brush\nsize:";
+    static const String HEIGHTMAP_EDITOR_BRUSH_SIZE_CAPTION			= "Brush\nsize:";
 	static const String HEIGHTMAP_EDITOR_STRENGTH_CAPTION			= "Strength:";
 	static const String HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_CAPTION	= "Average\nstrength:";
 	static const String HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN				= "heightmap-editor.brush-size.min";

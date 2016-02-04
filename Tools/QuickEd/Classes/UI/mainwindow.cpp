@@ -85,9 +85,11 @@ MainWindow::MainWindow(QWidget* parent)
     toolBarPlugins->addSeparator();
     InitLanguageBox();
     toolBarPlugins->addSeparator();
+    InitGlobalClasses();
+    toolBarPlugins->addSeparator();
     InitRtlBox();
     toolBarPlugins->addSeparator();
-    InitGlobalClasses();
+    InitBiDiSupportBox();
     toolBarPlugins->addSeparator();
     InitEmulationMode();
 
@@ -299,6 +301,22 @@ void MainWindow::InitRtlBox()
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
+}
+
+void MainWindow::InitBiDiSupportBox()
+{
+    QCheckBox* bidiSupportBox = new QCheckBox();
+    bidiSupportBox->setCheckState(Qt::Unchecked);
+    QLabel* label = new QLabel(tr("BiDi Support"));
+    label->setBuddy(bidiSupportBox);
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(bidiSupportBox);
+    QWidget* wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
 void MainWindow::InitGlobalClasses()
@@ -557,6 +575,11 @@ void MainWindow::OnPixelizationStateChanged()
 void MainWindow::OnRtlChanged(int arg)
 {
     emit RtlChanged(arg == Qt::Checked);
+}
+
+void MainWindow::OnBiDiSupportChanged(int arg)
+{
+    emit BiDiSupportChanged(arg == Qt::Checked);
 }
 
 void MainWindow::OnGlobalClassesChanged(const QString &str)

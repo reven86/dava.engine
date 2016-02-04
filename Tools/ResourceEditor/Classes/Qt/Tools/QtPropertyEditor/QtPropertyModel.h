@@ -65,9 +65,9 @@ public:
     QModelIndex InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent = QModelIndex());
 
     bool GetEditTracking();
-	void SetEditTracking(bool enabled);
+    void SetEditTracking(bool enabled);
 
-	void RemoveProperty(const QModelIndex &index);
+    void RemoveProperty(const QModelIndex &index);
 	void RemovePropertyAll();
 
 	void UpdateStructure(const QModelIndex &parent = QModelIndex());
@@ -84,8 +84,8 @@ protected:
 
     friend class QtPropertyData;
 
-    QtPropertyData *root;
-	bool trackEdit;
+    QtPropertyData* root;
+    bool trackEdit;
     bool needRefresh;
 
     class InsertionGuard
@@ -108,10 +108,10 @@ protected:
         QtPropertyModel* model;
     };
 
-    QtPropertyData *itemFromIndexInternal(const QModelIndex & index) const;
+    QtPropertyData* itemFromIndexInternal(const QModelIndex& index) const;
 
-	void DataChanged(QtPropertyData *data, int reason);
-	void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
+    void DataChanged(QtPropertyData* data, int reason);
+    void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
 	void DataAdded();
 	void DataAboutToBeRemoved(QtPropertyData *parent, int first, int last);
 	void DataRemoved();

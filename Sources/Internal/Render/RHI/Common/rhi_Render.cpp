@@ -917,7 +917,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         {
             //-            if( p->vertexStream[i] != pl->curVertexStream[i] )
             {
-                rhi::CommandBuffer::SetVertexData(cmdBuf, p->vertexStream[i]);
+                rhi::CommandBuffer::SetVertexData(cmdBuf, p->vertexStream[i], i);
                 pl->curVertexStream[i] = p->vertexStream[i];
             }
         }
@@ -993,14 +993,29 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
             rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
         }
 
-        if (p->indexBuffer != InvalidHandle)
+        if (p->instanceCount)
         {
-            DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
-            rhi::CommandBuffer::DrawIndexedPrimitive(cmdBuf, p->primitiveType, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex);
+            if (p->indexBuffer != InvalidHandle)
+            {
+                DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
+                rhi::CommandBuffer::DrawInstancedIndexedPrimitive(cmdBuf, p->primitiveType, p->instanceCount, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex, p->baseInstance);
+            }
+            else
+            {
+                rhi::CommandBuffer::DrawInstancedPrimitive(cmdBuf, p->primitiveType, p->instanceCount, p->primitiveCount);
+            }
         }
         else
         {
-            rhi::CommandBuffer::DrawPrimitive(cmdBuf, p->primitiveType, p->primitiveCount);
+            if (p->indexBuffer != InvalidHandle)
+            {
+                DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
+                rhi::CommandBuffer::DrawIndexedPrimitive(cmdBuf, p->primitiveType, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex);
+            }
+            else
+            {
+                rhi::CommandBuffer::DrawPrimitive(cmdBuf, p->primitiveType, p->primitiveCount);
+            }
         }
 
         ++pl->batchIndex;

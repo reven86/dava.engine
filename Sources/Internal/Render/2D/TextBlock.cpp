@@ -27,60 +27,55 @@
 =====================================================================================*/
 
 
-#include "Render/2D/Sprite.h"
-#include "Debug/DVAssert.h"
-#include "Utils/Utils.h"
-#include "Utils/StringFormat.h"
-#include "Platform/SystemTimer.h"
-#include "FileSystem/File.h"
 #include "Render/2D/TextBlock.h"
-#include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicRender.h"
-#include "Concurrency/Thread.h"
-#include "Utils/StringUtils.h"
+#include "Render/2D/TextLayout.h"
 #include "Concurrency/LockGuard.h"
-#include "fribidi/fribidi-bidi-types.h"
-#include "fribidi/fribidi-unicode.h"
-#include "TextLayout.h"
-
-
 #include "UI/UIControlSystem.h"
 
 namespace DAVA 
 {
-
-bool TextBlock::isBiDiSupportEnabled = true;    //!< Enable BiDi support by default
-
-struct TextBlockData
-{
-    TextBlockData(): font(NULL) { };
-    ~TextBlockData() { SafeRelease(font); };
-
-    Font *font;
-};
-
-static Set<TextBlock*> registredBlocks;
-
 #define NEW_RENDER 1
 
-void RegisterTextBlock(TextBlock *tbl)
+bool TextBlock::isBiDiSupportEnabled = false;
+Set<TextBlock*> TextBlock::registredTextBlocks;
+Mutex TextBlock::textblockListMutex;
+
+void TextBlock::RegisterTextBlock(TextBlock* textBlock)
 {
-	registredBlocks.insert(tbl);
+    LockGuard<Mutex> lock(textblockListMutex);
+    registredTextBlocks.insert(textBlock);
 }
 
-void UnregisterTextBlock(TextBlock *tbl)
+void TextBlock::UnregisterTextBlock(TextBlock* textBlock)
 {
-	registredBlocks.erase(tbl);
+    LockGuard<Mutex> lock(textblockListMutex);
+    registredTextBlocks.erase(textBlock);
+}
+
+void TextBlock::InvalidateAllTextBlocks()
+{
+    Logger::FrameworkDebug("Invalidate all text blocks");
+    LockGuard<Mutex> lock(textblockListMutex);
+    for (auto textBlock : registredTextBlocks)
+    {
+        textBlock->NeedPrepare();
+    }
 }
 
 void TextBlock::ScreenResolutionChanged()
 {
-	Logger::FrameworkDebug("Regenerate text blocks");
-    for (auto textBlock : registredBlocks)
+    InvalidateAllTextBlocks();
+}
+
+void TextBlock::SetBiDiSupportEnabled(bool value)
+{
+    if (isBiDiSupportEnabled != value)
     {
-        textBlock->NeedPrepare();
+        isBiDiSupportEnabled = value;
+        InvalidateAllTextBlocks();
     }
 }
 
@@ -103,6 +98,7 @@ TextBlock::TextBlock()
     , cacheOy(0)
     , angle(0.f)
     , needCalculateCacheParams(false)
+    , forceBiDiSupport(false)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -160,6 +156,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , treatMultilineAsSingleLine(src.treatMultilineAsSingleLine)
     , needCalculateCacheParams(src.needCalculateCacheParams)
     , needPrepareInternal(src.needPrepareInternal)
+    , forceBiDiSupport(src.forceBiDiSupport)
 #if defined(LOCALIZATION_DEBUG)
     , fittingTypeUsed(src.fittingTypeUsed)
     , visualTextCroped(src.visualTextCroped)
@@ -321,6 +318,15 @@ const Vector<int32>& TextBlock::GetStringSizes()
     return stringSizes;
 }
 
+void TextBlock::SetForceBiDiSupportEnabled(bool value)
+{
+    if (forceBiDiSupport != value)
+    {
+        forceBiDiSupport = value;
+        NeedPrepare();
+    }
+}
+
 const Vector2& TextBlock::GetSpriteOffset()
 {
     CalculateCacheParamsIfNeed();
@@ -458,7 +464,7 @@ void TextBlock::CalculateCacheParams()
     renderSize = originalFontSize * scale.y;
     font->SetSize(renderSize);
 
-    TextLayout textLayout(isBiDiSupportEnabled);
+    TextLayout textLayout(IsBiDiSupportEnabled() || IsForceBiDiSupportEnabled());
     textLayout.Reset(logicalText);
     isRtl = textLayout.IsRtlText();
     visualText = textLayout.GetVisualText(false);
@@ -943,6 +949,7 @@ TextBlock * TextBlock::Clone()
     block->SetAlign(align);
     block->SetFittingOption(fittingType);
     block->SetUseRtlAlign(useRtlAlign);
+    block->SetForceBiDiSupportEnabled(forceBiDiSupport);
 
     if (GetFont())
     {

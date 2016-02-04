@@ -133,9 +133,9 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
             QtPropertyDataDavaVariant::SetVariantValue(v);
             ret = true;
         }
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
 bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget *editor)
