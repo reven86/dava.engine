@@ -36,10 +36,8 @@
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Renderer.h"
 
-#if !defined(NGT_INTEGRATION)
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
-#endif
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
@@ -63,9 +61,7 @@
 #define DDS_MAGIC_NUMBER 0x20534444 // equivalent of 'D''D''S'' '
 #define METADATA_CRC_TAG 0x5f435243 // equivalent of 'C''R''C''_'
 
-#if !defined(NGT_INTEGRATION)
 using namespace nvtt;
-#endif
 
 namespace DAVA
 {
@@ -203,7 +199,6 @@ PixelFormat QualcommHelper::GetDavaFormat(int32 format)
     return FORMAT_INVALID;
 }
 
-#if !defined(NGT_INTEGRATION)
 class NvttHelper
 {
 public:
@@ -731,7 +726,6 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, Pixe
     return false;
 #endif //defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 }
-#endif
 
 LibDdsHelper::LibDdsHelper()
 {
@@ -812,7 +806,6 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
 
 ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
 {
-#if !defined(NGT_INTEGRATION)
     const DDSFile::FileHeader fileHeader = DDSFile::ReadHeader(infile);
 
     ImageInfo info;
@@ -831,9 +824,6 @@ ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
     info.mipmapsCount = fileHeader.formatHeader.mipMapCount;
 
     return info;
-#else
-    return ImageInfo();
-#endif
 }
 
 bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
@@ -919,7 +909,6 @@ eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, int32 ba
 {
     DVASSERT(file != nullptr);
 
-#if !defined(NGT_INTEGRATION)
     nvtt::Decompressor dec;
 
     if (!NvttHelper::InitDecompressor(dec, file))
@@ -928,14 +917,10 @@ eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, int32 ba
     }
 
     return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation) ? eErrorCode::SUCCESS : eErrorCode::ERROR_READ_FAIL;
-#else
-    return eErrorCode::ERROR_READ_FAIL;
-#endif
 }
 
 bool LibDdsHelper::DecompressImageToRGBA(const Image& image, Vector<Image*>& imageSet, bool forceSoftwareConvertation)
 {
-#if !defined(NGT_INTEGRATION)
     if (!(image.format >= FORMAT_DXT1 && image.format <= FORMAT_DXT5NM))
     {
         Logger::Error("[LibDdsHelper::DecompressImageToRGBA] Wrong copression format (%d).", image.format);
@@ -979,9 +964,6 @@ bool LibDdsHelper::DecompressImageToRGBA(const Image& image, Vector<Image*>& ima
 
     SafeDeleteArray(compressedImageBuffer);
     return retValue;
-#else
-    return false;
-#endif
 }
 
 bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat)
@@ -995,8 +977,6 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     return false;
 
 #else
-
-#if !defined(NGT_INTEGRATION)
 
     if (compressionFormat != FORMAT_ATC_RGB &&
         compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
@@ -1115,9 +1095,6 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     }
 
     return res;
-#else // NGT_INTEGRATION
-    return false;
-#endif // NGT_INTEGRATION
 
 #endif
 }
@@ -1135,7 +1112,6 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     
 #else
 
-#if !defined(NGT_INTEGRATION)
     if (!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM) || (compressionFormat == FORMAT_RGBA8888)))
     {
         Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
@@ -1262,9 +1238,7 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     }
 
     return ret;
-#else // NGT_INTEGRATION
-    return false;
-#endif // NGT_INTEGRATION
+
 #endif //__DAVAENGINE_IPHONE__
 }
 
@@ -1280,7 +1254,6 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     
 #else
 
-#if !defined(NGT_INTEGRATION)
     if (compressionFormat != FORMAT_ATC_RGB &&
         compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
         compressionFormat != FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
@@ -1416,9 +1389,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     }
 
     return res;
-#else // NGT_INTEGRATION
-    return false;
-#endif // NGT_INTEGRATION
+
 #endif
 }
 };
