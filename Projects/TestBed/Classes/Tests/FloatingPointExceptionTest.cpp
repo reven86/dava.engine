@@ -37,6 +37,7 @@ FloatingPointExceptionTest::FloatingPointExceptionTest ()
 }
 
 #ifdef _MSC_VER
+#pragma warning(push)
 #pragma warning(disable : 4723)
 #endif
 void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
@@ -112,3 +113,6 @@ void FloatingPointExceptionTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

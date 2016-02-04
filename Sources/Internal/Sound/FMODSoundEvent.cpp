@@ -86,8 +86,8 @@ bool FMODSoundEvent::Trigger()
         if(fmodEventInfo)
         {
             // http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c
-            DVASSERT(position == position);
-            DVASSERT(direction == direction);
+            DVASSERT(position == position && "position is NaN");
+            DVASSERT(direction == direction && "direction is NaN");
             if (isDirectional)
             {
                 DVASSERT(direction.Length() > 0.f);
