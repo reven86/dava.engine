@@ -50,4 +50,4 @@ void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t
 }
 
 }   // namespace Net
-}   // namespace DAVA
+} // namespace DAVA

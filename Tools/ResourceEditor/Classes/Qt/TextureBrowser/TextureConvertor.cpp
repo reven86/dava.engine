@@ -163,7 +163,7 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
 
             for (; begin != end; begin++)
             {
-				DAVA::TextureDescriptor *descriptor = begin->second->GetDescriptor();
+                DAVA::TextureDescriptor *descriptor = begin->second->GetDescriptor();
 
 				if(NULL != descriptor)
 				{

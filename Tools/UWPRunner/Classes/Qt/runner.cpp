@@ -91,13 +91,13 @@ QMap<QString, QStringList> Runner::deviceNames()
     return deviceNames;
 }
 
-Runner::Runner(const QString &mainPackage, 
-               const QString &app,
-               const QStringList &resources,
-               const QString &dependenciesDir,
-               const QStringList &arguments,
-               const QString &profile,
-               const QString &deviceName)
+Runner::Runner(const QString& mainPackage,
+               const QString& app,
+               const QStringList& resources,
+               const QString& dependenciesDir,
+               const QStringList& arguments,
+               const QString& profile,
+               const QString& deviceName)
     : d_ptr(new RunnerPrivate)
 {
     Q_D(Runner);
@@ -116,14 +116,16 @@ Runner::Runner(const QString &mainPackage,
     bool deviceIndexKnown;
     d->deviceIndex = deviceName.toInt(&deviceIndexKnown);
 #ifndef RTRUNNER_NO_APPXPHONE
-    if (!deviceIndexKnown) {
+    if (!deviceIndexKnown)
+    {
         d->deviceIndex = AppxPhoneEngine::deviceNames().indexOf(deviceName);
         if (d->deviceIndex < 0)
             d->deviceIndex = 0;
     }
-    if ((d->profile.isEmpty() || d->profile.toLower() == QStringLiteral("appxphone"))
-            && AppxPhoneEngine::canHandle(this)) {
-        if (RunnerEngine *engine = AppxPhoneEngine::create(this)) {
+    if ((d->profile.isEmpty() || d->profile.toLower() == QStringLiteral("appxphone")) && AppxPhoneEngine::canHandle(this))
+    {
+        if (RunnerEngine* engine = AppxPhoneEngine::create(this))
+        {
             d->engine.reset(engine);
             d->isValid = true;
             qCWarning(lcWinRtRunner) << "Using the AppxPhone profile.";
@@ -132,15 +134,17 @@ Runner::Runner(const QString &mainPackage,
     }
 #endif
 #ifndef RTRUNNER_NO_APPXLOCAL
-    if (!deviceIndexKnown) {
+    if (!deviceIndexKnown)
+    {
         d->deviceIndex = AppxLocalEngine::deviceNames().indexOf(deviceName);
         if (d->deviceIndex < 0)
             d->deviceIndex = 0;
     }
 
-    if ((d->profile.isEmpty() || d->profile.toLower() == QStringLiteral("appx"))
-            && AppxLocalEngine::canHandle(this)) {
-        if (RunnerEngine *engine = AppxLocalEngine::create(this)) {
+    if ((d->profile.isEmpty() || d->profile.toLower() == QStringLiteral("appx")) && AppxLocalEngine::canHandle(this))
+    {
+        if (RunnerEngine* engine = AppxLocalEngine::create(this))
+        {
             d->engine.reset(engine);
             d->isValid = true;
             qCWarning(lcWinRtRunner) << "Using the Appx profile.";
@@ -241,7 +245,7 @@ bool Runner::start()
     return d->engine->start();
 }
 
-bool Runner::enableDebugging(const QString &debuggerExecutable, const QString &debuggerArguments)
+bool Runner::enableDebugging(const QString& debuggerExecutable, const QString& debuggerArguments)
 {
     Q_D(Runner);
     Q_ASSERT(d->engine);
@@ -280,9 +284,12 @@ bool Runner::setupTest()
 
     // Fix-up output path
     int outputIndex = d->arguments.indexOf(QStringLiteral("-o")) + 1;
-    if (outputIndex > 0 && d->arguments.size() > outputIndex) {
+    if (outputIndex > 0 && d->arguments.size() > outputIndex)
+    {
         d->localOutputFile = d->arguments.at(outputIndex);
-    } else {
+    }
+    else
+    {
         if (outputIndex > 0)
             d->arguments.removeAt(outputIndex);
         d->localOutputFile = QFileInfo(d->engine->executable()).baseName() + QStringLiteral("_output.txt");
@@ -296,8 +303,10 @@ bool Runner::setupTest()
     // Write a qt.conf to the executable directory
     QDir executableDir = QFileInfo(d->engine->executable()).absoluteDir();
     QFile qtConf(executableDir.absoluteFilePath(QStringLiteral("qt.conf")));
-    if (!qtConf.exists()) {
-        if (!qtConf.open(QFile::WriteOnly)) {
+    if (!qtConf.exists())
+    {
+        if (!qtConf.open(QFile::WriteOnly))
+        {
             qCWarning(lcWinRtRunner) << "Could not open qt.conf for writing.";
             return false;
         }
@@ -313,15 +322,17 @@ bool Runner::collectTest()
     Q_ASSERT(d->engine);
 
     // Fetch test output
-    if (!d->engine->receiveFile(d->deviceOutputFile, d->localOutputFile)) {
+    if (!d->engine->receiveFile(d->deviceOutputFile, d->localOutputFile))
+    {
         qCWarning(lcWinRtRunner).nospace()
-                << "Unable to copy test output file \"" << d->deviceOutputFile
-                << "\" to local file \"" << d->localOutputFile << "\".";
+        << "Unable to copy test output file \"" << d->deviceOutputFile
+        << "\" to local file \"" << d->localOutputFile << "\".";
         return false;
     }
 
     QFile testResults(d->localOutputFile);
-    if (!testResults.open(QFile::ReadOnly)) {
+    if (!testResults.open(QFile::ReadOnly))
+    {
         qCWarning(lcWinRtRunner) << "Unable to read test results:" << testResults.errorString();
         return false;
     }

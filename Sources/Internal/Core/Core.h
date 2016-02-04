@@ -243,7 +243,7 @@ public:
 	 */
 
     void SystemAppStarted();
-	void SystemProcessFrame();
+    void SystemProcessFrame();
 	void SystemAppFinished();
 
     inline bool IsActive();
