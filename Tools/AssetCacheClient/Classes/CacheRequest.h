@@ -32,18 +32,22 @@
 #include "CommandLine/ProgramOptions.h"
 #include "AssetCache/AssetCache.h"
 
+namespace DAVA
+{
 class AssetCacheClient;
+}
+
 class CacheRequest
 {
 public:
     CacheRequest(const DAVA::String& commandLineOptionName);
     virtual ~CacheRequest() = default;
 
-    DAVA::AssetCache::ErrorCodes Process(AssetCacheClient* cacheClient);
+    DAVA::AssetCache::ErrorCodes Process(DAVA::AssetCacheClient* cacheClient);
     DAVA::AssetCache::ErrorCodes CheckOptions() const;
 
 protected:
-    virtual DAVA::AssetCache::ErrorCodes SendRequest(AssetCacheClient* cacheClient) = 0;
+    virtual DAVA::AssetCache::ErrorCodes SendRequest(DAVA::AssetCacheClient* cacheClient) = 0;
     virtual DAVA::AssetCache::ErrorCodes CheckOptionsInternal() const = 0;
 
 public:

@@ -32,7 +32,7 @@
 #include "GetRequest.h"
 
 ClientApplication::ClientApplication()
-    : cacheClient(new AssetCacheClient())
+    : cacheClient(new DAVA::AssetCacheClient(true))
 {
     requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
     requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
