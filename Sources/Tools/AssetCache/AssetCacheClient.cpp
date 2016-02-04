@@ -46,6 +46,14 @@ AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
     client.AddListener(this);
 }
 
+AssetCacheClient::~AssetCacheClient()
+{
+    if (requests.empty() == false)
+    {
+        Logger::Error("[AssetCacheClient::~AssetCacheClient] %d requests were not received", requests.size());
+    }
+}
+
 AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& connectionParams)
 {
     timeoutms = connectionParams.timeoutms;
@@ -94,6 +102,7 @@ AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::Cac
         LockGuard<Mutex> guard(requestLocker);
         requestResult.recieved = false;
         requestResult.succeed = false;
+        requestResult.processingRequest = false;
         requestResult.requestID = AssetCache::PACKET_ADD_REQUEST;
     }
 
@@ -112,6 +121,7 @@ AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCach
         LockGuard<Mutex> guard(requestLocker);
         requestResult.recieved = false;
         requestResult.succeed = false;
+        requestResult.processingRequest = false;
         requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
 
         DVASSERT(requests.count(key) == 0);
@@ -150,7 +160,7 @@ AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
         }
 
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequestResult.recieved == false))
+        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequestResult.recieved == false) && (currentRequestResult.processingRequest == false))
         {
             return AssetCache::ERROR_OPERATION_TIMEOUT;
         }
@@ -159,6 +169,12 @@ AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
     if (currentRequestResult.succeed == false)
     {
         return (currentRequestResult.requestID == AssetCache::PACKET_GET_REQUEST) ? AssetCache::ERROR_NOT_FOUND_ON_SERVER : AssetCache::ERROR_SERVER_ERROR;
+    }
+
+    while (currentRequestResult.processingRequest)
+    {
+        LockGuard<Mutex> guard(requestLocker);
+        currentRequestResult = requestResult;
     }
 
     return AssetCache::ERROR_OK;
@@ -171,6 +187,7 @@ void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool 
     {
         requestResult.succeed = added;
         requestResult.recieved = true;
+        requestResult.processingRequest = false;
     }
     else
     {
@@ -195,12 +212,18 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
             LockGuard<Mutex> guard(requestLocker);
             requestResult.succeed = (value.IsEmpty() == false);
             requestResult.recieved = true;
+            requestResult.processingRequest = true;
         }
 
         if (value.IsEmpty() == false)
         {
             FileSystem::Instance()->CreateDirectory(outputFolder, true);
             value.Export(outputFolder);
+        }
+
+        {
+            LockGuard<Mutex> guard(requestLocker);
+            requestResult.processingRequest = false;
         }
     }
     else

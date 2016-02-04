@@ -34,13 +34,14 @@
 
 namespace DAVA
 {
-class AssetCacheClient : public AssetCache::ClientNetProxyListener
+class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 {
     struct ResultOfRequest
     {
         int32 requestID = AssetCache::PACKET_UNKNOWN;
         bool recieved = false;
         bool succeed = false;
+        bool processingRequest = false;
     };
 
 public:
@@ -52,6 +53,7 @@ public:
     };
 
     AssetCacheClient(bool emulateNetworkLoop);
+    ~AssetCacheClient() override;
 
     AssetCache::ErrorCodes ConnectBlocked(const ConnectionParams& connectionParams);
     void Disconnect();

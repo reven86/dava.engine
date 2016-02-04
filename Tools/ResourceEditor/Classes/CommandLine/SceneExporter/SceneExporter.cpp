@@ -139,9 +139,9 @@ void LoadExportedObjects(const FilePath& linkPathname, SceneExporter::ExportedOb
                 exportedObjects.emplace_back(static_cast<SceneExporter::eExportedObjectType>(atoi(formatedString.substr(0, dividerPos).c_str())), formatedString.substr(dividerPos + 1));
             }
         }
-        else
+        else if (number != 1)
         {
-            Logger::Error("Cannot open read size value from file: %s", linkPathname.GetAbsolutePathname().c_str());
+            Logger::Error("Cannot read size value from file: %s", linkPathname.GetAbsolutePathname().c_str());
         }
     }
     else
@@ -503,6 +503,7 @@ void SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObject
 {
     UnorderedSet<String> folders;
     folders.reserve(exportedObjects.size());
+    folders.insert(""); // To create root directory for scene
 
     String inFolderString = dataSourceFolder.GetAbsolutePathname();
     String outFolderString = dataFolder.GetAbsolutePathname();

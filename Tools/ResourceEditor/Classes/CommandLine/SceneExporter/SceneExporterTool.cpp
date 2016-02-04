@@ -195,7 +195,7 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     {
         connectionsParams.ip = options.GetOption(OptionName::AssetCacheIP).AsString();
         connectionsParams.port = static_cast<uint16>(options.GetOption(OptionName::AssetCachePort).AsUInt32());
-        connectionsParams.timeoutms = options.GetOption(OptionName::AssetCacheTimeout).AsUInt32();
+        connectionsParams.timeoutms = options.GetOption(OptionName::AssetCacheTimeout).AsUInt32() * 1000; //ms
     }
 }
 
