@@ -104,25 +104,25 @@ inline void DavaDebugBreak()
 // end=assert=msg - used as marker on teamcity to fail build
 #define LogErrorFunction(assertType, expr, msg, file, line, backtrace)                         \
     {                                                                                          \
-        DAVA::Logger::Error(                         \
-        "========================================\n" \
-        "%s\n"                                       \
-        "%s\n"                                       \
-        "%s\n"                                       \
-        "at %s:%d\n"                                 \
-        "======================end=assert=msg====",  \
+        DAVA::Logger::Error(                                  \
+        "========================================\n"          \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "at %s:%d\n"                                          \
+        "======================end=assert=msg====",           \
         assertType, expr, msg, file, line); \
         DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_ERROR); \
     }
 #define LogWarningFunction(assertType, expr, msg, file, line, backtrace)                       \
     {                                                                                          \
-        DAVA::Logger::Warning(                       \
-        "========================================\n" \
-        "%s\n"                                       \
-        "%s\n"                                       \
-        "%s\n"                                       \
-        "at %s:%d\n"                                 \
-        "======================end=assert=msg====",  \
+        DAVA::Logger::Warning(                                \
+        "========================================\n"          \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "at %s:%d\n"                                          \
+        "======================end=assert=msg====",           \
         assertType, expr, msg, file, line); \
         DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_WARNING); \
     }

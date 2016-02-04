@@ -435,9 +435,9 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
                 lodDefined = true;
             }
         }
-	}
+    }
 
-	entity->RemoveAllChildren();	
+    entity->RemoveAllChildren();	
     RebuildEffectModifiables();
 }
 

@@ -68,6 +68,9 @@ private:
     void BuildIndexSet();
     DAVA::Color GetNormalizedColorForEntity(const EntityMap::value_type& item) const;
 
+    DAVA::Camera* GetRenderCamera() const;
+    DAVA::Camera* GetFinalGatherCamera() const;
+
     void UpdatePointSet();
     void Prerender();
     void CreateRenderTarget();

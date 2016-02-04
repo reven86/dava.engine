@@ -182,7 +182,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
                 StoreOriginalState();
                 editingIsEnabled = true;
             }
-                break;
+            break;
 
         case UIEvent::Phase::DRAG:
             break;

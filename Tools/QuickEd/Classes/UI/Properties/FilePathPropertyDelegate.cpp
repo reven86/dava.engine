@@ -99,7 +99,7 @@ void FilePathPropertyDelegate::OnTextChanged(const QString& text)
     lineEdit->setPalette(palette);
 }
 
-bool FilePathPropertyDelegate::IsPathValid(const QString& path) const 
+bool FilePathPropertyDelegate::IsPathValid(const QString& path) const
 {
     DAVA::FilePath filePath(QStringToString(path));
     return DAVA::FileSystem::Instance()->Exists(filePath);
