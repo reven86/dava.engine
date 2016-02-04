@@ -67,7 +67,7 @@ public:
     bool GetEditTracking();
     void SetEditTracking(bool enabled);
 
-	void RemoveProperty(const QModelIndex &index);
+    void RemoveProperty(const QModelIndex &index);
 	void RemovePropertyAll();
 
 	void UpdateStructure(const QModelIndex &parent = QModelIndex());
@@ -110,8 +110,8 @@ protected:
 
     QtPropertyData* itemFromIndexInternal(const QModelIndex& index) const;
 
-    void DataChanged(QtPropertyData *data, int reason);
-	void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
+    void DataChanged(QtPropertyData* data, int reason);
+    void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
 	void DataAdded();
 	void DataAboutToBeRemoved(QtPropertyData *parent, int first, int last);
 	void DataRemoved();

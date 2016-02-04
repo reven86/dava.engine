@@ -78,8 +78,8 @@ public:
         SafeRetain(_ptr);
     }
 
-    T * Get() const
-	{
+    T* Get() const
+    {
 		return _ptr;
 	}
 	

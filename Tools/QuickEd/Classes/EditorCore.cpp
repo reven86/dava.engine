@@ -393,7 +393,7 @@ void EditorCore::OnRtlChanged(bool isRtl)
 void EditorCore::OnBiDiSupportChanged(bool support)
 {
     UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
-    for (auto &document : documents)
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();

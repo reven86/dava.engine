@@ -256,7 +256,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
     }
 
     void AutotestingSystemLua::StackDump(lua_State* L)
-	{
+    {
 		Logger::FrameworkDebug("*** Stack Dump ***");
 		int i;
 		int top = lua_gettop(L);
@@ -570,7 +570,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
             {
                 break;
             }
-			WideString str;
+            WideString str;
             str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
             {
@@ -583,7 +583,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 
     String AutotestingSystemLua::GetText(UIControl* control)
     {
-		UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
+        UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)
 		{
 			return UTF8Utils::EncodeToUTF8(uiStaticText->GetText());

@@ -87,4 +87,4 @@ private:
     DAVA::String qtProfile;
 };
 
-#endif  // UWP_RUNNER_H
+#endif // UWP_RUNNER_H

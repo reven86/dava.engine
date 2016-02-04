@@ -178,7 +178,7 @@ void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
 bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
 {
     QString fullPath = path;
-    if(!fullPath.endsWith(resourceExtension))
+    if (!fullPath.endsWith(resourceExtension))
     {
         fullPath.append(resourceExtension);
     }

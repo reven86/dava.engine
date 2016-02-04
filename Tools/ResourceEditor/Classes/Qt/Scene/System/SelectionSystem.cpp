@@ -577,7 +577,7 @@ void SceneSelectionSystem::SetLocked(bool lock)
 
     if (!lock)
     {
-		UpdateHoodPos();
+        UpdateHoodPos();
 	}
 
     if (lockChanged)
@@ -614,7 +614,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
 
         switch (curPivotPoint)
         {
-		case ST_PIVOT_ENTITY_CENTER:
+        case ST_PIVOT_ENTITY_CENTER:
             p = curSelections.GetAnyEntityTranslationVector();
             break;
 
@@ -634,7 +634,7 @@ void SceneSelectionSystem::UpdateHoodPos() const
             }
         }
 
-		hoodSystem->LockModif(lockHoodModif);
+        hoodSystem->LockModif(lockHoodModif);
 		hoodSystem->SetPosition(p);
 		hoodSystem->SetVisible(true);
 	}
@@ -673,7 +673,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity, cons
 
         // add childs boxes into entity box
         for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)
-		{
+        {
 			DAVA::Entity *childEntity = entity->GetChild(i);
 			DAVA::AABBox3 childBox = GetSelectionAABox(childEntity, childEntity->GetLocalTransform());
 
