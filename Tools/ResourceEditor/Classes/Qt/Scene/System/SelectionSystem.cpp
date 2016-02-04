@@ -402,8 +402,6 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
     {
         if (IsEntitySelectable(item.first) && !curSelections.ContainsEntity(item.first))
         {
-            auto center = item.second.GetCenter();
-            Logger::Info("SEL %s (%f, %f, %f)", item.first->GetName().c_str(), center.x, center.z, center.y);
             curSelections.Add(item.first, item.second);
             selectionHasChanges = true;
         }
