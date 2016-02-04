@@ -304,8 +304,15 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
-    [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
+
+    // First escape base path to allow spaces and other similar symbols
+    NSString* basePathAsUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
+    NSString* escapedBasePath = [basePathAsUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    NSURL* baseUrl = [NSURL URLWithString:escapedBasePath];
+
+    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
+    [[nativeWebView mainFrame] loadHTMLString:dataToOpen baseURL:baseUrl];
 }
 
 void WebViewControl::SetRect(const Rect& srcRect)
@@ -363,8 +370,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     }
 }
 
-void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-UIWebView& uiWebViewControl)
+void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl)
 {
     bool recreateImageRep = true;
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
