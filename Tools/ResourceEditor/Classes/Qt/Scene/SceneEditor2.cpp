@@ -582,11 +582,6 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
-        res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
-    }
-
-    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
-    {
         res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
 	}
 	
