@@ -96,13 +96,23 @@ public:
 
     //TODO: think about how to switch normal generation for landscape on/off
     //ideally it should be runtime option and normal generation should happen when material that requires landscape has been set
-    class LandscapeVertex
+    struct LandscapeVertex
     {
-    public:
         Vector3 position;
         Vector2 texCoord;
         Vector3 normal;
         Vector3 tangent;
+    };
+
+    struct LandscapeVertexInstanced
+    {
+        Vector3 position;
+    };
+
+    struct InstanceData
+    {
+        Vector2 offset;
+        float32 scale;
     };
 
     struct LanscapeBufferData
@@ -111,6 +121,8 @@ public:
         uint8* data;
         uint32 dataSize;
     };
+
+    void BindDynamicParameters(Camera* camera) override;
 
     void PrepareToRender(Camera* camera) override;
 
@@ -167,7 +179,7 @@ public:
 protected:
     struct PatchQuadInfo
     {
-        uint32 rdoQuad;
+        uint32 vdoQuad;
         AABBox3 bbox;
         Vector3 positionOfMaxError;
         float32 maxError;
@@ -204,18 +216,21 @@ protected:
     uint32 quadsInWidth;
 
     SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
-    PatchQuadInfo* patchQuadArray = nullptr;
-    SubdivisionPatchInfo* subdivPatchArray = nullptr;
+    Vector<PatchQuadInfo> patchQuadArray;
+    Vector<SubdivisionPatchInfo> subdivPatchArray;
     Vector<SubdivisionPatchInfo*> drawPatchArray;
+
+    uint32 patchesToDraw = 0;
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
+    void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
-    void DrawPatch(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
-    void AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y);
     void DrawLandscape();
+    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
 
     inline uint16 GetVertexIndex(uint16 x, uint16 y);
 
@@ -237,9 +252,16 @@ protected:
 
     void AllocateRenderBatch();
 
+    Texture* CreateHeightTexture(Heightmap* heightmap);
+
     Vector<rhi::HVertexBuffer> vertexBuffers;
     Vector<LanscapeBufferData> bufferRestoreData;
     FilePath heightmapPath;
+
+    rhi::HVertexBuffer instancedPatchVBuffer;
+    rhi::HIndexBuffer instancedPatchIBuffer;
+    InstanceData* instanceDataPtr = nullptr;
+    CircularArray<rhi::HVertexBuffer, 9> instanceBuffers;
 
     Frustum* frustum = nullptr;
     Heightmap* heightmap = nullptr;
@@ -279,6 +301,7 @@ protected:
     float32 normalFov;
 
     bool isRequireTangentBasis = false;
+    bool isInstancingUsed = false;
 
 public:
     INTROSPECTION_EXTEND(Landscape, RenderObject,

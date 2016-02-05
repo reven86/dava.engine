@@ -42,19 +42,6 @@
 namespace DAVA
 {
 RenderBatch::RenderBatch()
-    : dataSource(0)
-    , material(0)
-    , renderObject(0)
-    , indexBuffer(rhi::InvalidHandle)
-    , startIndex(0)
-    , indexCount(0)
-    , vertexBuffer(rhi::InvalidHandle)
-    , vertexCount(0)
-    , vertexBase(0)
-    , primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
-    , vertexLayoutId(rhi::VertexLayout::InvalidUID)
-    , sortingKey(SORTING_KEY_DEF_VALUE)
-    , aabbox(Vector3(), Vector3())
 {
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     occlusionQuery = new OcclusionQuery();
