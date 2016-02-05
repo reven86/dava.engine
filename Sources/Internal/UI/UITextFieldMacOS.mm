@@ -1337,6 +1337,17 @@ doCommandBySelector:(SEL)commandSelector
     return YES;
 }
 
+- (BOOL)isPartialStringValid:(NSString*)partialString
+            newEditingString:(NSString**)newString
+            errorDescription:(NSString**)error
+{
+    if ([partialString length] >= maxLength)
+    {
+        return NO;
+    }
+    return YES;
+}
+
 - (BOOL)isPartialStringValid:(NSString**)partialStringPtr
        proposedSelectedRange:(NSRangePointer)proposedSelRangePtr
               originalString:(NSString*)origString
