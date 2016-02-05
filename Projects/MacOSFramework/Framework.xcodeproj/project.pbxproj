@@ -8942,6 +8942,7 @@
 				PRODUCT_NAME = Framework;
 				SKIP_INSTALL = YES;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Debug;
 		};
@@ -8985,6 +8986,7 @@
 				PRODUCT_NAME = Framework;
 				SKIP_INSTALL = YES;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Release;
 		};
