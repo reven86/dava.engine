@@ -385,49 +385,34 @@ void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ a
 void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args)
 {
     CoreWindowActivationState state = args->WindowActivationState;
-    bool needProcess = false;
 
     if (state == CoreWindowActivationState::CodeActivated ||
         state == CoreWindowActivationState::PointerActivated)
     {
         isWindowFocused = true;
-        needProcess = true;
     }
     else if (state == CoreWindowActivationState::Deactivated)
     {
         isWindowFocused = false;
-        needProcess = true;
     }
 
-    if (needProcess)
-    {
-        bool isFocused = isWindowFocused;
-        core->RunOnMainThread([this, isFocused] {
-            if (isFocused)
-            {
-                if (isPhoneApiDetected)
-                {
-                    Core::Instance()->SetIsActive(true);
-                }
-                else
-                {
-                    Core::Instance()->FocusReceived();
-                }
-            }
-            else
-            {
-                if (isPhoneApiDetected)
-                {
-                    Core::Instance()->SetIsActive(false);
-                }
-                else
-                {
-                    Core::Instance()->FocusLost();
-                }
-                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            }
-        });
-    }
+    core->RunOnMainThread([ this, isFocused = isWindowFocused ] {
+        if (isPhoneApiDetected)
+        {
+            Core::Instance()->SetIsActive(isFocused);
+            return;
+        }
+
+        if (isFocused)
+        {
+            Core::Instance()->FocusReceived();
+        }
+        else
+        {
+            Core::Instance()->FocusLost();
+            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+        }
+    });
 }
 
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
