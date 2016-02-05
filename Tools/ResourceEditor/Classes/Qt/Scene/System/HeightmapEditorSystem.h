@@ -95,7 +95,7 @@ protected:
 
     float32 curHeight;
     Vector2 copyPasteFrom;
-	Vector2 copyPasteTo;
+    Vector2 copyPasteTo;
 	
 	Rect heightmapUpdatedRect;
 

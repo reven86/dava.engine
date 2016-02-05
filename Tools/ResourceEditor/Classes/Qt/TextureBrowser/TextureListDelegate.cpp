@@ -349,7 +349,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
         r.setX(rect.x() + rect.width());
         r.setWidth(FORMAT_INFO_WIDTH);
 
-		QColor gpuInfoColors[DAVA::GPU_DEVICE_COUNT];
+        QColor gpuInfoColors[DAVA::GPU_DEVICE_COUNT];
 		gpuInfoColors[DAVA::GPU_POWERVR_IOS] = TextureBrowser::gpuColor_PVR_ISO;
 		gpuInfoColors[DAVA::GPU_POWERVR_ANDROID] = TextureBrowser::gpuColor_PVR_Android;
 		gpuInfoColors[DAVA::GPU_TEGRA] = TextureBrowser::gpuColor_Tegra;

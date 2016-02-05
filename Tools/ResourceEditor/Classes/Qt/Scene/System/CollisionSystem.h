@@ -111,7 +111,7 @@ private:
     DAVA::Vector3 lastLandRayTo;
     DAVA::Vector3 lastLandCollision;
     DAVA::Set<DAVA::Entity*> entitiesToAdd;
-	DAVA::Set<DAVA::Entity*> entitiesToRemove;
+    DAVA::Set<DAVA::Entity*> entitiesToRemove;
     DAVA::Map<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
     DAVA::Map<btCollisionObject*, DAVA::Entity*> collisionToEntity;
     DAVA::Entity* curLandscapeEntity = nullptr;

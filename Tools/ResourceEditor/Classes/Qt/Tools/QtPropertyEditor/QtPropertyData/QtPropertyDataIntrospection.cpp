@@ -87,7 +87,7 @@ QtPropertyData* QtPropertyDataIntrospection::CreateMemberData(const DAVA::FastNa
         retData = new QtPropertyDataDavaKeyedArcive(name, (DAVA::KeyedArchive*)memberObject);
     }
     // introspection
-    else if(NULL != memberObject && NULL != memberIntrospection)
+    else if (NULL != memberObject && NULL != memberIntrospection)
     {
         retData = new QtPropertyDataIntrospection(name, memberObject, memberIntrospection);
     }
@@ -116,8 +116,8 @@ QtPropertyData* QtPropertyDataIntrospection::CreateMemberData(const DAVA::FastNa
                 retData->SetEnabled(false);
 
                 DAVA::InspInfoDynamic* dynamicInfo = member->Dynamic()->GetDynamicInfo();
-                if(NULL != dynamicInfo)
-				{
+                if (NULL != dynamicInfo)
+                {
                     DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(_object);
                     DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); // this function can be slow
                     for (size_t i = 0; i < membersList.size(); ++i)
@@ -167,14 +167,14 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
         QtPropertyData* data = CreateMemberData(member->Name(), object, member);
         void* memberObject = member->Data(object);
         const DAVA::MetaInfo* memberMetaInfo = member->Type();
-        const DAVA::InspInfo *memberIntrospection = memberMetaInfo->GetIntrospection(memberObject);
+        const DAVA::InspInfo* memberIntrospection = memberMetaInfo->GetIntrospection(memberObject);
 
         ChildAdd(std::unique_ptr<QtPropertyData>(data));
         //condition for variant
         if ((!memberMetaInfo->IsPointer()) && (!member->Collection()) &&
             (NULL == memberIntrospection || (memberIntrospection->Type() != DAVA::MetaInfo::Instance<DAVA::KeyedArchive>())))
         {
-			QtPropertyDataInspMember *childData = dynamic_cast<QtPropertyDataInspMember *>(data);
+            QtPropertyDataInspMember *childData = dynamic_cast<QtPropertyDataInspMember *>(data);
 			if(NULL != childData)
 			{
 				childVariantMembers.insert(childData, member);

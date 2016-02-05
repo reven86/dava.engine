@@ -41,8 +41,8 @@ public:
 
     virtual const DAVA::MetaInfo* MetaInfo() const;
 
-    void *object;
-	const DAVA::InspColl *collection;
+    void* object;
+    const DAVA::InspColl *collection;
 
 protected:
 	virtual QVariant GetValueInternal() const;

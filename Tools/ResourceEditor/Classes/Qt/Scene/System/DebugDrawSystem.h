@@ -64,9 +64,9 @@ public:
 
 private:
     void Draw();
-    void Draw(DAVA::Entity *entity);
+    void Draw(DAVA::Entity* entity);
 
-	void DrawObjectBoxesByType(DAVA::Entity *entity);
+    void DrawObjectBoxesByType(DAVA::Entity *entity);
 	void DrawUserNode(DAVA::Entity *entity);
 	void DrawLightNode(DAVA::Entity *entity);
     void DrawSoundNode(DAVA::Entity* entity);
@@ -74,7 +74,7 @@ private:
     void DrawHangingObjects(DAVA::Entity* entity);
     void DrawEntityBox(DAVA::Entity* entity, const DAVA::Color& color);
     void DrawSwitchesWithDifferentLods(DAVA::Entity* entity);
-    void DrawWindNode(DAVA::Entity *entity);
+    void DrawWindNode(DAVA::Entity* entity);
 
     //hanging objects
     using RenderBatchWithTransform = std::pair<DAVA::RenderBatch*, DAVA::Matrix4>;

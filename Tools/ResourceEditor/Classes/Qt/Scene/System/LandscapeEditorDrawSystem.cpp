@@ -154,7 +154,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     if (enableCustomDrawError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
     {
         return enableCustomDrawError;
-	}
+    }
 
     Rect2i updateRect = Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
     notPassableTerrainProxy->Enable();
@@ -242,7 +242,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 
     if (customColorsProxy && customColorsProxy->IsTargetChanged())
     {
-		customColorsProxy->ResetTargetChanged();
+        customColorsProxy->ResetTargetChanged();
 	}
 }
 

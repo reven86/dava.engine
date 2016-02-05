@@ -93,7 +93,7 @@ void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& co
 
     if (mode == MODE_WITHOUT_COLORS)
     {
-		item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
+        item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
 	}
 	else
 	{

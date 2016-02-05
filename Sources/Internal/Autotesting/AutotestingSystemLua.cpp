@@ -257,7 +257,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 
     void AutotestingSystemLua::StackDump(lua_State* L)
     {
-		Logger::FrameworkDebug("*** Stack Dump ***");
+        Logger::FrameworkDebug("*** Stack Dump ***");
 		int i;
 		int top = lua_gettop(L);
 
@@ -584,7 +584,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
     String AutotestingSystemLua::GetText(UIControl* control)
     {
         UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
-		if (uiStaticText)
+        if (uiStaticText)
 		{
 			return UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
 		}

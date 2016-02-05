@@ -111,8 +111,8 @@ void EditorParticlesSystem::Draw()
         case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
         {
             DrawSizeCircle(selectedEffectEntity, selectedEmitter, center);
-            }
-			break;
+        }
+            break;
 		case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
 			{
 				DrawSizeCircleShockWave(selectedEffectEntity, selectedEmitter, center);
@@ -302,7 +302,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
         }
 
         case CMDID_PARTICLE_EFFECT_START_STOP:
-		{
+        {
 			const CommandStartStopParticleEffect* castedCmd = static_cast<const CommandStartStopParticleEffect*>(command);
 			SceneSignals::Instance()->EmitParticleEffectStateChanged(activeScene,
 																	 castedCmd->GetEntity(),

@@ -881,7 +881,7 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
-    // workaround for Surface, otherwise we lost MouseMoved event  
+    // workaround for Surface, otherwise we lost MouseMoved event
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
     // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox

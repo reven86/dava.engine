@@ -43,15 +43,27 @@ VirtualCoordinatesSystem::VirtualCoordinatesSystem()
     wasScreenResized = false;
     
     desirableIndex = 0;
-    
-    virtualToPhysical = 0.f;
-	physicalToVirtual = 0.f;
-    
+
+    virtualToPhysical = 1.f;
+    physicalToVirtual = 1.f;
+
     EnableReloadResourceOnResize(true);
 }
 
 void VirtualCoordinatesSystem::ScreenSizeChanged()
 {
+    // on android sometime we catch FPU devide by 0 and several
+    // calls to this method so here is simple shield
+    if (physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0)
+    {
+        Logger::Error("[VirtualCoordinatesSystem::ScreenSizeChanged] physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
+        return;
+    }
+    if (virtualScreenSize.dx == 0 || virtualScreenSize.dy == 0)
+    {
+        Logger::Error("[VirtualCoordinatesSystem::ScreenSizeChanged] physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
+        return;
+    }
     wasScreenResized = false;
     
     virtualScreenSize = requestedVirtualScreenSize;

@@ -91,7 +91,7 @@ protected:
 
     FilePath GetScenePath();
     String GetRelativePathToScenePath(const FilePath& absolutePath);
-	FilePath GetAbsolutePathFromScenePath(const String& relativePath);
+    FilePath GetAbsolutePathFromScenePath(const String& relativePath);
 	String GetRelativePathToProjectPath(const FilePath& absolutePath);
 	FilePath GetAbsolutePathFromProjectPath(const String& relativePath);
 

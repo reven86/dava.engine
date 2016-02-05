@@ -204,7 +204,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     pivotPointXSpinBoxLabel = new QLabel("X:", this);
     pivotPointInnerLayout->addWidget(pivotPointXSpinBoxLabel);
     pivotPointXSpinBox = new EventFilterDoubleSpinBox(this);
-	pivotPointXSpinBox->setMinimum(-99);
+    pivotPointXSpinBox->setMinimum(-99);
 	pivotPointXSpinBox->setMaximum(99);
 	pivotPointXSpinBox->setSingleStep(0.1);
 	pivotPointXSpinBox->setDecimals(3);
@@ -245,7 +245,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     xFacingCheckBox = new QCheckBox("X-Facing");
     facingLayout->addWidget(xFacingCheckBox);
-	connect(xFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    connect(xFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 	yFacingCheckBox = new QCheckBox("Y-Facing");
 	facingLayout->addWidget(yFacingCheckBox);
 	connect(yFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
@@ -296,7 +296,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     sizeVariationTimeLine = new TimeLineWidget(this);
     InitWidget(sizeVariationTimeLine);
     sizeOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeOverLifeTimeLine);
+    InitWidget(sizeOverLifeTimeLine);
 	velocityTimeLine = new TimeLineWidget(this);
 	InitWidget(velocityTimeLine);
 	velocityOverLifeTimeLine = new TimeLineWidget(this);
@@ -1092,7 +1092,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 
     // The Pivot Point must be hidden for Superemitter mode.
     pivotPointLabel->setVisible(!isSuperemitter);
-	pivotPointXSpinBox->setVisible(!isSuperemitter);
+    pivotPointXSpinBox->setVisible(!isSuperemitter);
 	pivotPointXSpinBoxLabel->setVisible(!isSuperemitter);
 	pivotPointYSpinBox->setVisible(!isSuperemitter);
 	pivotPointYSpinBoxLabel->setVisible(!isSuperemitter);
