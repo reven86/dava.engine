@@ -126,7 +126,7 @@ void DialogReloadSprites::OnStartClicked()
     workerThread.start();
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
-    QMetaObject::invokeMethod(spritesPacker, "ReloadSprites", Qt::QueuedConnection, Q_ARG(bool, ui->checkBox_clean->isChecked()), Q_ARG(DAVA::eGPUFamily, gpuType), Q_ARG(DAVA::TextureConverter::eConvertQuality, quality));
+    QMetaObject::invokeMethod(spritesPacker, "ReloadSprites", Qt::QueuedConnection, Q_ARG(bool, ui->checkBox_clean->isChecked()), Q_ARG(bool, true), Q_ARG(DAVA::eGPUFamily, gpuType), Q_ARG(DAVA::TextureConverter::eConvertQuality, quality));
 }
 
 void DialogReloadSprites::OnStopClicked()

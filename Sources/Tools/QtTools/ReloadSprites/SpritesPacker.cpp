@@ -91,7 +91,6 @@ void SpritesPacker::ReloadSprites(bool clearDirs, bool forceRepack, const eGPUFa
         {
             break;
         }
-
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     SetRunning(false);
