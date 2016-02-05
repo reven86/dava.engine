@@ -914,8 +914,7 @@ void TextureBrowser::textureConvertForAllGPU()
     if (curDescriptor == nullptr)
         return;
 
-    TextureCache * texCache = TextureCache::Instance();
-    for (DAVA::int32 i = DAVA::GPU_POWERVR_IOS; i < DAVA::GPU_FAMILY_COUNT; ++i)
+    for (DAVA::int32 i = DAVA::GPU_POWERVR_IOS; i < DAVA::GPU_ORIGIN; ++i)
     {
         DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(i);
         TextureCache::Instance()->clearConverted(curDescriptor, family);
