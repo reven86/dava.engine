@@ -54,7 +54,8 @@ public:
 
     void AddTask(const QDir &inputDir, const QDir &outputDir);
     void ClearTasks();
-    Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+    Q_INVOKABLE void ReloadSprites(bool clearDirs, bool forceRepack, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+    
 public slots:
     void Cancel();
 signals:

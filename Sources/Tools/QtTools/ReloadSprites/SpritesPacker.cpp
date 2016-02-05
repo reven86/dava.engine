@@ -65,7 +65,7 @@ void SpritesPacker::ClearTasks()
     tasks.clear();
 }
 
-void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
+void SpritesPacker::ReloadSprites(bool clearDirs, bool forceRepack, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     SetRunning(true);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
@@ -76,13 +76,13 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
         const auto &outputDir = task.second;
         if (!outputDir.exists())
         {
-            outputDir.mkdir(".");
+            outputDir.mkpath(".");
         }
 
         const FilePath inputFilePath = FilePath(inputDir.absolutePath().toStdString()).MakeDirectoryPathname();
         const FilePath outputFilePath = FilePath(outputDir.absolutePath().toStdString()).MakeDirectoryPathname();
 
-        resourcePacker2D.forceRepack = true;
+        resourcePacker2D.forceRepack = forceRepack;
         resourcePacker2D.clearOutputDirectory = clearDirs;
         resourcePacker2D.SetConvertQuality(quality);
         resourcePacker2D.InitFolders(inputFilePath, outputFilePath);
@@ -94,7 +94,6 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
 
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
-    Sprite::ReloadSprites();
     SetRunning(false);
 }
 

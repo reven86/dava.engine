@@ -253,6 +253,8 @@ void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
     DialogReloadSprites dialogReloadSprites(packer, this);
     dialogReloadSprites.exec();
     acceptableLoggerFlags = lastFlags;
+
+    Sprite::ReloadSprites();
 }
 
 void MainWindow::OnShowHelp()
