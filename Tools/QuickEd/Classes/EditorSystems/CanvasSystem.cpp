@@ -96,11 +96,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     , nestedControl(nestedControl_)
 {
     DVASSERT(nullptr != nestedControl);
-    String name = nestedControl->GetName();
+    String name = nestedControl->GetName().c_str();
     name = name.empty() ? "unnamed" : name;
-    gridControl->SetName("Grid control of " + name);
-    counterpoiseControl->SetName("counterpoise of " + name);
-    positionHolderControl->SetName("Position holder of " + name);
+    gridControl->SetName(FastName("Grid control of " + name));
+    counterpoiseControl->SetName(FastName("counterpoise of " + name));
+    positionHolderControl->SetName(FastName("Position holder of " + name));
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
@@ -264,7 +264,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 {
     systemManager->GetPackage()->AddListener(this);
 
-    controlsCanvas->SetName("controls canvas");
+    controlsCanvas->SetName(FastName("controls canvas"));
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
 }

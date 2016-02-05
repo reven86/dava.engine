@@ -38,7 +38,7 @@ namespace DAVA
 
 
 //use these names for children controls to define UIScrollBar in .yaml
-static const String UISCROLLBAR_SLIDER_NAME = "slider";
+static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 
 UIScrollBar::UIScrollBar(const Rect& rect, eScrollOrientation requiredOrientation)
     : UIControl(rect)

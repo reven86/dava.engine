@@ -35,7 +35,7 @@
 
 namespace DAVA 
 {
-static const String UIJOYPAD_STICK_NAME = "stick";
+static const FastName UIJOYPAD_STICK_NAME("stick");
 
 UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)

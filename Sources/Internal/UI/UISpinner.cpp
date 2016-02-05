@@ -35,9 +35,10 @@ namespace DAVA
 {
 
 //use these names for children buttons to define UISpinner in .yaml
-static const String UISPINNER_BUTTON_NEXT_NAME = "buttonNext";
-static const String UISPINNER_BUTTON_PREVIOUS_NAME = "buttonPrevious";
-static const String UISPINNER_CONTENT_NAME = "content";
+static const FastName UISPINNER_BUTTON_NEXT_NAME("buttonNext");
+static const FastName UISPINNER_BUTTON_PREVIOUS_NAME("buttonPrevious");
+static const FastName UISPINNER_CONTENT_NAME("content");
+
 static const float32 UISPINNER_ANIRMATION_TIME = 0.1f;
 static const int32 UISPINNER_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISPINNER_X_UNDEFINED = 10000;
@@ -391,7 +392,7 @@ void UISpinner::OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, boo
 
 void UISpinner::SetupInternalControls()
 {
-    content = FindByPath(UISPINNER_CONTENT_NAME);
+    content = FindByName(UISPINNER_CONTENT_NAME, false);
     content->SetInputEnabled(false);
     contentViewport->SetRect(content->GetRect());
     contentViewport->SetPivotPoint(content->GetPivotPoint());

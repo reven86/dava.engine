@@ -673,14 +673,14 @@ public:
         Later you can find control by this name.
      \param[in] _name new control name.
      */
-    void SetName(const String & _name);
+    void SetName(const String& name_);
+    void SetName(const FastName& name_);
 
     /**
      \brief Returns current name of the control.
      \returns control name.
      */
-    inline const String & GetName() const;
-    inline const FastName & GetFastName() const;
+    inline const FastName& GetName() const;
 
     /**
      \brief Sets the contol tag.
@@ -701,6 +701,7 @@ public:
      \returns first control with given name.
      */
     UIControl * FindByName(const String & name, bool recursive = true) const;
+    UIControl* FindByName(const FastName& name, bool recursive = true) const;
 
     UIControl * FindByPath(const String & path) const;
     
@@ -1219,9 +1220,9 @@ public:
     static void DumpControls(bool onlyOrphans);
 
 private:
-    String name;
-    FastName fastName;
+    FastName name;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
+
 protected:
     UIControl *parent;
     List<UIControl*> childs;
@@ -1364,6 +1365,8 @@ public:
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
+    UIControl* GetParentWithContext() const;
+
 private:
     UIStyleSheetClassSet classes;
     UIStyleSheetPropertySet localProperties;
@@ -1462,14 +1465,9 @@ float32 UIControl::GetAngleInDegrees() const
     return RadToDeg(angle);
 }
 
-const String & UIControl::GetName() const
+const FastName& UIControl::GetName() const
 {
     return name;
-}
-
-const FastName & UIControl::GetFastName() const
-{
-    return fastName;
 }
 
 int32 UIControl::GetTag() const

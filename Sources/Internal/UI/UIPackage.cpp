@@ -57,6 +57,11 @@ DAVA::int32 UIPackage::GetControlsCount() const
     
 UIControl * UIPackage::GetControl(const String &name) const
 {
+    return GetControl(FastName(name));
+}
+
+UIControl* UIPackage::GetControl(const FastName& name) const
+{
     for (UIControl *control : controls)
     {
         if (control->GetName() == name)

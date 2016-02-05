@@ -124,12 +124,12 @@ bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, Abstr
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
-        legacyControl->SetName(data->name);
+        legacyControl->SetName(FastName(data->name));
         builder->ProcessProperty(legacyControl->TypeInfo()->Member(UIPACKAGELOADER_PROPERTY_NAME_SIZE), VariantType(data->size));
     }
     else
     {
-        legacyControl->SetName("LegacyControl");
+        legacyControl->SetName(FastName("LegacyControl"));
     }
     builder->EndControlPropertiesSection();
 
@@ -192,7 +192,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
 
     if (control)
     {
-        control->SetName(name);
+        control->SetName(FastName(name));
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
         LoadInternalControlPropertiesFromYamlNode(control, node, builder);

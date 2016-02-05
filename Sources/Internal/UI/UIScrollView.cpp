@@ -36,9 +36,7 @@
 
 namespace DAVA 
 {
-	
-
-static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
+static const FastName UISCROLL_VIEW_CONTAINER_NAME("scrollContainerControl");
 
 UIScrollView::UIScrollView(const Rect& rect)
     : UIControl(rect)

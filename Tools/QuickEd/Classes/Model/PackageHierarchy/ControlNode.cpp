@@ -210,7 +210,7 @@ ControlNode *ControlNode::FindByName(const DAVA::String &name) const
 
 String ControlNode::GetName() const
 {
-    return control->GetName();
+    return control->GetName().c_str();
 }
 
 UIControl *ControlNode::GetControl() const

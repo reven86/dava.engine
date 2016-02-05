@@ -487,8 +487,8 @@ UIListCell *UIFileSystemDialog::CellAtIndex(UIList *forList, int32 index)
         c = new UIListCell(Rect(0, 0, (float32)forList->size.x, (float32)cellH), "File cell");
         UIStaticText *text = new UIStaticText(Rect(0, 0, (float32)forList->size.x, (float32)cellH));
         c->AddControl(text);
-        text->SetName("CellText");
-		text->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
+        text->SetName(FastName("CellText"));
+        text->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
         text->SetFittingOption(TextBlock::FITTING_REDUCE);
         text->SetAlign(ALIGN_LEFT|ALIGN_VCENTER);
 

@@ -90,7 +90,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     , hudControl(hudControl_)
     , container(new HUDContainer(control))
 {
-    container->SetName("Container for HUD controls of node " + node_->GetName());
+    container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
     uint32 begin = HUDAreaInfo::AREAS_BEGIN;
     uint32 end = HUDAreaInfo::AREAS_COUNT;
     if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
@@ -121,7 +121,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , sortedControlList(CompareByLCA)
 {
     hudControl->AddControl(selectionRectControl.Get());
-    hudControl->SetName("hudControl");
+    hudControl->SetName(FastName("hudControl"));
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);

@@ -35,9 +35,10 @@ namespace DAVA
 {
 
 //use these names for children controls to define UISwitch in .yaml
-static const String UISWITCH_BUTTON_LEFT_NAME = "buttonLeft";
-static const String UISWITCH_BUTTON_RIGHT_NAME = "buttonRight";
-static const String UISWITCH_BUTTON_TOGGLE_NAME = "buttonToggle";
+static const FastName UISWITCH_BUTTON_LEFT_NAME("buttonLeft");
+static const FastName UISWITCH_BUTTON_RIGHT_NAME("buttonRight");
+static const FastName UISWITCH_BUTTON_TOGGLE_NAME("buttonToggle");
+
 static const float32 UISWITCH_SWITCH_ANIMATION_TIME = 0.1f;
 static const int32 UISWITCH_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISWITCH_ANCHOR_UNDEFINED = 10000.f;
