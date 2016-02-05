@@ -72,15 +72,38 @@ void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
 }
-
+static float t = 0;
 void GameCore::Update(float32 timeElapsed)
 {
 	ApplicationCore::Update(timeElapsed);
+    t += timeElapsed;
 }
 
 void GameCore::Draw()
 {
-	ApplicationCore::Draw();
+    float s = fabs(sinf(t));
+    static Texture* rt = Texture::CreateFBO(2048, 2048, PixelFormat::FORMAT_RGBA8888, true);
+    RenderSystem2D::RenderTargetPassDescriptor descr;
+    descr.colorAttachment = rt->handle;
+    descr.depthAttachment = rt->handleDepthStencil;
+    descr.clearColor = Color(0.0f, 1.0f, 1.0f, 1.0f);
+    descr.priority = -100;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(descr);
+    ApplicationCore::Draw();
+
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(RenderSystem2D::RenderTargetPassDescriptor());
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)Renderer::GetFramebufferWidth();
+    viewport.height = (uint32)Renderer::GetFramebufferHeight();
+    RenderHelper::CreateClearPass(rhi::HTexture(), rhi::HTexture(), PRIORITY_CLEAR, Color::White, viewport);
+    RenderSystem2D::Instance()->BeginFrame();
+    Size2i sz = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    Vector2 of = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    float ss = 0.5f * sz.dx * s;
+    RenderSystem2D::Instance()->DrawTexture(rt, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(of.x + 0.5f * sz.dx - ss, of.y, 2 * ss, of.y + sz.dy), Rect(0, 0, float(sz.dx) / 2048.0f, float(sz.dy) / 2048.0f));
+    //RenderSystem2D::Instance()->DrawTexture(rt, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(of.x , of.y, sz.dx , sz.dy), Rect(0, 0, float(sz.dx) / 2048.0f, float(sz.dy) / 2048.0f));
+    RenderSystem2D::Instance()->EndFrame();
 }
 
 

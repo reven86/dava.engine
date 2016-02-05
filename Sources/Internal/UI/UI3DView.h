@@ -73,6 +73,9 @@ public:
     float32 GetFrameBufferScaleFactor() const;
     const Vector2& GetFrameBufferRenderSize() const;
 
+    int32 GetBasePriority();
+    void SetBasePriority(int32 priority);
+
 protected:
     Scene* scene;
     Rect viewportRc;
@@ -87,6 +90,8 @@ private:
     Vector2 fbRenderSize;
     Vector2 fbTexSize;
     Texture* frameBuffer;
+
+    int32 basePriority = PRIORITY_MAIN_3D;
 
 public:
     INTROSPECTION_EXTEND(UI3DView, UIControl,
@@ -109,6 +114,14 @@ inline const Vector2& UI3DView::GetFrameBufferRenderSize() const
     return fbRenderSize;
 }
 
+inline int32 UI3DView::GetBasePriority()
+{
+    return basePriority;
+}
+inline void UI3DView::SetBasePriority(int32 priority)
+{
+    basePriority = priority;
+}
 };
 
 #endif

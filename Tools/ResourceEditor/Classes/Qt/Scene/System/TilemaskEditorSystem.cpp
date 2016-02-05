@@ -215,7 +215,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             desc.depthAttachment = toolTexture->handleDepthStencil;
             desc.width = toolTexture->GetWidth();
             desc.height = toolTexture->GetHeight();
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -462,7 +462,7 @@ void TilemaskEditorSystem::CreateMaskTexture()
         desc.depthAttachment = srcTexture->handleDepthStencil;
         desc.width = srcTexture->GetWidth();
         desc.height = srcTexture->GetHeight();
-        desc.shouldTransformVirtualToPhysical = false;
+        desc.transformVirtualToPhysical = false;
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
         RenderSystem2D::Instance()->EndRenderTargetPass();

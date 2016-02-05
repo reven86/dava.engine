@@ -977,8 +977,8 @@ void EmitterLayerWidget::UpdateLayerSprite()
         desc.depthAttachment = dstTex->handleDepthStencil;
         desc.width = dstTex->GetWidth();
         desc.height = dstTex->GetHeight();
-        desc.shouldClear = true;
-        desc.shouldTransformVirtualToPhysical = false;
+        desc.clearTarget = true;
+        desc.transformVirtualToPhysical = false;
         desc.clearColor = Color::Clear;
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         {

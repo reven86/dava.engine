@@ -101,9 +101,15 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 
     RenderSystem2D::Instance()->Flush();
 
-    Rect viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+    const RenderSystem2D::RenderTargetPassDescriptor& currentTarget = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
+
+    Rect viewportRect = geometricData.GetUnrotatedRect();
+
+    if (currentTarget.transformVirtualToPhysical)
+        viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
+    else
+        viewportRc = viewportRect;
 
     if (drawToFrameBuffer)
     {
@@ -116,22 +122,22 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         PrepareFrameBuffer();
 
         rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+        config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
         config.colorBuffer[0].texture = frameBuffer->handle;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
         config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
         config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     }
     else
     {
-        viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-        const RenderSystem2D::RenderTargetPassDescriptor& currentTarget = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
+        if (currentTarget.transformVirtualToPhysical)
+            viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
 
         config.colorBuffer[0].texture = currentTarget.colorAttachment;
         config.depthStencilBuffer.texture = currentTarget.depthAttachment;
-        config.priority = currentTarget.priority + PRIORITY_MAIN_3D;
+        config.priority = currentTarget.priority + basePriority;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;

@@ -240,8 +240,8 @@ void CustomColorsSystem::UpdateBrushTool()
     desc.depthAttachment = colorTexture->handleDepthStencil;
     desc.width = colorTexture->GetWidth();
     desc.height = colorTexture->GetHeight();
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -368,8 +368,8 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             desc.depthAttachment = target->handleDepthStencil;
             desc.width = target->GetWidth();
             desc.height = target->GetHeight();
-            desc.shouldClear = false;
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.clearTarget = false;
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();

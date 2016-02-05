@@ -36,6 +36,7 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
@@ -57,7 +58,6 @@ UIControlSystem::~UIControlSystem()
 
 UIControlSystem::UIControlSystem()
     : layoutSystem(nullptr)
-    , clearColor(Color::Clear)
 {
     screenLockCount = 0;
     frameSkip = 0;
@@ -341,13 +341,16 @@ void UIControlSystem::Draw()
 
     drawCounter = 0;
 
-    if (useClearPass)
+    const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+
+    if (descr.clearTarget)
     {
         rhi::Viewport viewport;
         viewport.x = viewport.y = 0U;
-        viewport.width = (uint32)Renderer::GetFramebufferWidth();
-        viewport.height = (uint32)Renderer::GetFramebufferHeight();
-        RenderHelper::CreateClearPass(rhi::HTexture(), rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+        viewport.width = descr.width == 0 ? (uint32)Renderer::GetFramebufferWidth() : descr.width;
+        viewport.height = descr.height == 0 ? (uint32)Renderer::GetFramebufferHeight() : descr.height;
+        const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
+        RenderHelper::CreateClearPass(descr.colorAttachment, descr.depthAttachment, descr.priority + PRIORITY_CLEAR, descr.clearColor, viewport);
     }
 
     if (currentScreen)
@@ -717,13 +720,17 @@ UIScreenshoter* UIControlSystem::GetScreenshoter()
     return screenshoter;
 }
 
-void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
+void UIControlSystem::SetClearColor(const DAVA::Color& clearColor)
 {
-    clearColor = _clearColor;
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearColor = clearColor;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 }
 
-void UIControlSystem::SetUseClearPass(bool use)
+void UIControlSystem::SetUseClearPass(bool useClearPass)
 {
-    useClearPass = use;
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearTarget = useClearPass;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 }
 };

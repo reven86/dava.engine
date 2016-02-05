@@ -169,8 +169,8 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
     desc.depthAttachment = customColorsTarget->handleDepthStencil;
     desc.width = customColorsTarget->GetWidth();
     desc.height = customColorsTarget->GetHeight();
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(texture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();

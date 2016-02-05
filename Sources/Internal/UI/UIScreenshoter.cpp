@@ -131,8 +131,8 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.width = screenshot->GetWidth();
     desc.height = screenshot->GetHeight();
     desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = true;
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = true;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     control->SystemUpdate(0.0f);

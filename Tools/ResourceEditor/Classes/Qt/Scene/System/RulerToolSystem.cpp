@@ -281,7 +281,7 @@ void RulerToolSystem::DrawPoints()
     desc.depthAttachment = targetTexture->handleDepthStencil;
     desc.width = targetTexture->GetWidth();
     desc.height = targetTexture->GetHeight();
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
 
     Vector<Vector2> points;

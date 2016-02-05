@@ -180,8 +180,8 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, i
     desc.depthAttachment = dstTex->handleDepthStencil;
     desc.width = dstTex->GetWidth();
     desc.height = dstTex->GetHeight();
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], material, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();

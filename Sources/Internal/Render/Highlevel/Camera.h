@@ -388,6 +388,8 @@ public:
     Matrix4 invViewMatrix;
     Matrix4 invViewProjMatrix;
 
+    float32 projectionFlip;
+
     uint32 flags;
 
     // TODO: not necessary to be a pointer here.
