@@ -37,8 +37,7 @@
 
 namespace DebugTools
 {
-
-void ConnectToUI(Ui::MainWindow *ui)
+void ConnectToUI(Ui::MainWindow* ui)
 {
     QObject::connect(ui->actionDump_Controls, &QAction::triggered, [] {
         DAVA::UIControl::DumpControls(false);
@@ -48,8 +47,6 @@ void ConnectToUI(Ui::MainWindow *ui)
     ui->actionDump_Controls->setVisible(false);
 #endif //#if !defined(__DAVAENGINE_DEBUG__)
 
-
-
     QObject::connect(ui->actionDump_Textures, &QAction::triggered, [] {
         DAVA::Texture::DumpTextures();
     });
@@ -58,6 +55,4 @@ void ConnectToUI(Ui::MainWindow *ui)
         DAVA::Sprite::DumpSprites();
     });
 }
-
-
 }

@@ -23,18 +23,18 @@ extern "C" {
 #endif
 
 typedef MagickBooleanType
-  (*MagickCommand)(ImageInfo *,int,char **,char **,ExceptionInfo *);
+(*MagickCommand)(ImageInfo*, int, char**, char**, ExceptionInfo*);
 
 extern WandExport MagickBooleanType
-  MagickCommandGenesis(ImageInfo *,MagickCommand,int,char **,char **,
-    ExceptionInfo *),
-  MogrifyImage(ImageInfo *,const int,const char **,Image **,ExceptionInfo *),
-  MogrifyImageCommand(ImageInfo *,int,char **,char **,ExceptionInfo *),
-  MogrifyImageInfo(ImageInfo *,const int,const char **,ExceptionInfo *),
-  MogrifyImageList(ImageInfo *,const int,const char **,Image **,
-    ExceptionInfo *),
-  MogrifyImages(ImageInfo *,const MagickBooleanType,const int,const char **,
-    Image **,ExceptionInfo *);
+MagickCommandGenesis(ImageInfo *, MagickCommand, int, char **, char **,
+                     ExceptionInfo *),
+MogrifyImage(ImageInfo *, const int, const char **, Image **, ExceptionInfo *),
+MogrifyImageCommand(ImageInfo *, int, char **, char **, ExceptionInfo *),
+MogrifyImageInfo(ImageInfo *, const int, const char **, ExceptionInfo *),
+MogrifyImageList(ImageInfo *, const int, const char **, Image **,
+                 ExceptionInfo *),
+MogrifyImages(ImageInfo *, const MagickBooleanType, const int, const char **,
+              Image **, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

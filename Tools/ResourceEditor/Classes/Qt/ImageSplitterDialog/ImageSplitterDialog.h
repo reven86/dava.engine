@@ -35,8 +35,8 @@
 #include <QDialog>
 #include <QScopedPointer>
 
-
-namespace Ui {
+namespace Ui
+{
 class ImageSplitter;
 }
 
@@ -44,9 +44,9 @@ class ImageArea;
 class ImageSplitterDialog : public QDialog
 {
     Q_OBJECT
-    
+
 public:
-    explicit ImageSplitterDialog(QWidget *parent = nullptr);
+    explicit ImageSplitterDialog(QWidget* parent = nullptr);
     ~ImageSplitterDialog();
 
 private slots:
@@ -59,16 +59,16 @@ private slots:
     void OnFillBtnClicked();
     void OnReload();
     void OnReloadSpecularMap();
-    
+
 private:
     void ConnectSignals();
     void SetAcceptableImageSize(const DAVA::Vector2& newSize);
     void Save(const DAVA::FilePath& filePath, bool saveSplittedImagesSeparately);
     DAVA::String GetDefaultPath() const;
-    
+
     QScopedPointer<Ui::ImageSplitter> ui;
     DAVA::Vector2 acceptableSize;
-    DAVA::String  lastSelectedFile;
+    DAVA::String lastSelectedFile;
     DAVA::Vector<ImageArea*> rgbaControls;
 };
 

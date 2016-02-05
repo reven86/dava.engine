@@ -48,10 +48,10 @@ namespace StringUtils
 */
 enum eLineBreakType
 {
-    LB_MUSTBREAK = 0,   /**< Break is mandatory */
-    LB_ALLOWBREAK,      /**< Break is allowed */
-    LB_NOBREAK,         /**< No break is possible */
-    LB_INSIDECHAR       /**< A UTF-8/16 sequence is unfinished */
+    LB_MUSTBREAK = 0, /**< Break is mandatory */
+    LB_ALLOWBREAK, /**< Break is allowed */
+    LB_NOBREAK, /**< No break is possible */
+    LB_INSIDECHAR /**< A UTF-8/16 sequence is unfinished */
 };
 
 /**
@@ -106,7 +106,7 @@ inline bool IsWhitespace(char16 t)
     case 0x000B: // Line tab
     case 0x000C: // Form feed
     case 0x000D: // Carriage return
-        // Unicode characters in 'Separator, Space' category (Zs)
+    // Unicode characters in 'Separator, Space' category (Zs)
     case 0x0020: // Space
     case 0x00A0: // No-break space
     case 0x1680: // Ogham space mark
@@ -124,11 +124,11 @@ inline bool IsWhitespace(char16 t)
     case 0x202F: // Narrow No-break space
     case 0x205F: // Medium mathematical space
     case 0x3000: // Ideographic space
-        // Unicode characters in 'Separator, Line' category (Zl)
+    // Unicode characters in 'Separator, Line' category (Zl)
     case 0x2028:
-        // Unicode characters in 'Separator, Paragraph' category (Zp)
+    // Unicode characters in 'Separator, Paragraph' category (Zp)
     case 0x2029:
-        // Additional characters are treated as spaces
+    // Additional characters are treated as spaces
     case 0x200B: // Zero-width space
     case 0x200E: // Left-to-right zero-width character
     case 0x200F: // Right-to-left zero-width non-Arabic character
@@ -138,8 +138,7 @@ inline bool IsWhitespace(char16 t)
         return false;
     }
 }
-
 }
 }
 
-#endif 
+#endif

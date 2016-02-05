@@ -44,11 +44,12 @@ InspDynamicModifyCommand::InspDynamicModifyCommand(DAVA::InspInfoDynamic* _dynam
         {
             oldValue = dynamicInfo->MemberValueGet(ddata, key);
         }
-	}
+    }
 }
 
 InspDynamicModifyCommand::~InspDynamicModifyCommand()
-{ }
+{
+}
 
 void InspDynamicModifyCommand::Undo()
 {

@@ -38,16 +38,16 @@ class Dropper : public QWidget
     Q_OBJECT
 
 public:
-    explicit Dropper(QWidget *parent = 0);
+    explicit Dropper(QWidget* parent = 0);
     ~Dropper();
 
 private slots:
     void showCP();
 
-    void OnStarted( const QPointF& );
-    void OnChanging( const QPointF& );
-    void OnChanged( const QPointF& );
-    void OnOn( const QPointF& );
+    void OnStarted(const QPointF&);
+    void OnChanging(const QPointF&);
+    void OnChanged(const QPointF&);
+    void OnOn(const QPointF&);
 
 private:
     Ui::DropperClass ui;

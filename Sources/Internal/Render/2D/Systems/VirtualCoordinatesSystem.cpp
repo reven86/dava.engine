@@ -35,13 +35,12 @@
 
 namespace DAVA
 {
-
 VirtualCoordinatesSystem::VirtualCoordinatesSystem()
 {
     fixedProportions = true;
     enabledReloadResourceOnResize = false;
     wasScreenResized = false;
-    
+
     desirableIndex = 0;
 
     virtualToPhysical = 1.f;
@@ -65,15 +64,15 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         return;
     }
     wasScreenResized = false;
-    
+
     virtualScreenSize = requestedVirtualScreenSize;
-    
+
     float32 w, h;
     drawOffset = Vector2();
     w = (float32)virtualScreenSize.dx / (float32)physicalScreenSize.dx;
     h = (float32)virtualScreenSize.dy / (float32)physicalScreenSize.dy;
     float32 desD = 10000.0f;
-    if(w > h)
+    if (w > h)
     {
         physicalToVirtual = w;
         virtualToPhysical = (float32)physicalScreenSize.dx / (float32)virtualScreenSize.dx;
@@ -112,45 +111,45 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         {
             allowedSizes[i].toVirtual = (float32)virtualScreenSize.dy / (float32)allowedSizes[i].height;
             allowedSizes[i].toPhysical = (float32)physicalScreenSize.dy / (float32)allowedSizes[i].height;
-            if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD) 
+            if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD)
             {
                 desD = fabsf(allowedSizes[i].toPhysical - 1.0f);
                 desirableIndex = i;
             }
         }
     }
-    
+
     drawOffset.y = floorf(drawOffset.y);
     drawOffset.x = floorf(drawOffset.x);
-    
-    fullVirtualScreenRect = Rect(- Round(drawOffset.x * physicalToVirtual),
-                                 - Round(drawOffset.y * physicalToVirtual),
-                                   Round((float32)(physicalScreenSize.dx - 2.f * drawOffset.x) * physicalToVirtual),
-                                   Round((float32)(physicalScreenSize.dy - 2.f * drawOffset.y) * physicalToVirtual)
+
+    fullVirtualScreenRect = Rect(-Round(drawOffset.x * physicalToVirtual),
+                                 -Round(drawOffset.y * physicalToVirtual),
+                                 Round((float32)(physicalScreenSize.dx - 2.f * drawOffset.x) * physicalToVirtual),
+                                 Round((float32)(physicalScreenSize.dy - 2.f * drawOffset.y) * physicalToVirtual)
                                  );
-    
-	w = (float32)virtualScreenSize.dx / (float32)inputAreaSize.dx;
-	h = (float32)virtualScreenSize.dy / (float32)inputAreaSize.dy;
-	inputOffset.x = inputOffset.y = 0;
-	if(w > h)
-	{
-		inputScaleFactor = w;
-		inputOffset.y = 0.5f * ((float32)virtualScreenSize.dy - (float32)inputAreaSize.dy * inputScaleFactor);
-	}
-	else
-	{
-		inputScaleFactor = h;
-		inputOffset.x = 0.5f * ((float32)virtualScreenSize.dx - (float32)inputAreaSize.dx * inputScaleFactor);
-	}
+
+    w = (float32)virtualScreenSize.dx / (float32)inputAreaSize.dx;
+    h = (float32)virtualScreenSize.dy / (float32)inputAreaSize.dy;
+    inputOffset.x = inputOffset.y = 0;
+    if (w > h)
+    {
+        inputScaleFactor = w;
+        inputOffset.y = 0.5f * ((float32)virtualScreenSize.dy - (float32)inputAreaSize.dy * inputScaleFactor);
+    }
+    else
+    {
+        inputScaleFactor = h;
+        inputOffset.x = 0.5f * ((float32)virtualScreenSize.dx - (float32)inputAreaSize.dx * inputScaleFactor);
+    }
 
     virtualSizeChanged.Emit(virtualScreenSize);
 
-    if(enabledReloadResourceOnResize)
+    if (enabledReloadResourceOnResize)
     {
         Sprite::ValidateForSize();
         TextBlock::ScreenResolutionChanged();
     }
-    
+
     RenderSystem2D::Instance()->ScreenSizeChanged();
 }
 
@@ -175,7 +174,6 @@ void VirtualCoordinatesSystem::SetVirtualScreenSize(int32 width, int32 height)
     wasScreenResized = true;
 }
 
-	
 void VirtualCoordinatesSystem::SetInputScreenAreaSize(int32 width, int32 height)
 {
     inputAreaSize.dx = width;
@@ -184,20 +182,20 @@ void VirtualCoordinatesSystem::SetInputScreenAreaSize(int32 width, int32 height)
 
     inputAreaSizeChanged.Emit(inputAreaSize);
 }
-    
-void VirtualCoordinatesSystem::SetProportionsIsFixed( bool needFixed )
+
+void VirtualCoordinatesSystem::SetProportionsIsFixed(bool needFixed)
 {
     fixedProportions = needFixed;
     wasScreenResized = true;
 }
 
-void VirtualCoordinatesSystem::RegisterAvailableResourceSize(int32 width, int32 height, const String &resourcesFolderName)
+void VirtualCoordinatesSystem::RegisterAvailableResourceSize(int32 width, int32 height, const String& resourcesFolderName)
 {
     VirtualCoordinatesSystem::ResourceSpaceSize newSize;
     newSize.width = width;
     newSize.height = height;
     newSize.folderName = resourcesFolderName;
-    
+
     allowedSizes.push_back(newSize);
 }
 
@@ -205,5 +203,4 @@ void VirtualCoordinatesSystem::UnregisterAllAvailableResourceSizes()
 {
     allowedSizes.clear();
 }
-    
 };

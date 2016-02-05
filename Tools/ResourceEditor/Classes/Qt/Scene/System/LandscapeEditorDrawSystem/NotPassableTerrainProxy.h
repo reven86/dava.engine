@@ -50,24 +50,24 @@ public:
                        const DAVA::Rect2i& forRect);
 
 private:
-	static const DAVA::int32 NOT_PASSABLE_ANGLE = 23;
-	
-	struct TerrainColor
-	{
-		DAVA::Color color;
-		DAVA::Vector2 angleRange;
-		
-		TerrainColor(const DAVA::Vector2& angle, const DAVA::Color& color)
-		{
-			this->color = color;
-			this->angleRange = angle;
-		}
-	};
-	
-	bool enabled;
-	Texture * notPassableTexture;
-	DAVA::float32 notPassableAngleTan;
-	DAVA::Vector<TerrainColor> angleColor;
+    static const DAVA::int32 NOT_PASSABLE_ANGLE = 23;
+
+    struct TerrainColor
+    {
+        DAVA::Color color;
+        DAVA::Vector2 angleRange;
+
+        TerrainColor(const DAVA::Vector2& angle, const DAVA::Color& color)
+        {
+            this->color = color;
+            this->angleRange = angle;
+        }
+    };
+
+    bool enabled;
+    Texture* notPassableTexture;
+    DAVA::float32 notPassableAngleTan;
+    DAVA::Vector<TerrainColor> angleColor;
 
     Vector<rhi::HVertexBuffer> gridBuffers;
 

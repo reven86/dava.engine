@@ -42,10 +42,10 @@ public:
     virtual const DAVA::MetaInfo* MetaInfo() const;
 
     void* object;
-    const DAVA::InspColl *collection;
+    const DAVA::InspColl* collection;
 
 protected:
-	virtual QVariant GetValueInternal() const;
+    virtual QVariant GetValueInternal() const;
 };
 
 #endif // __QT_PROPERTY_DATA_INTRO_COLLECTION_H__

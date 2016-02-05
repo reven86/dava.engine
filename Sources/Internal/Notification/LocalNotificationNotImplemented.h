@@ -39,7 +39,6 @@
 
 namespace DAVA
 {
-    
 class LocalNotificationNotImplemented : public LocalNotificationImpl
 {
 public:
@@ -53,7 +52,6 @@ public:
     void PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound) override;
     void RemoveAllDelayedNotifications() override;
 };
-
 }
 
 #endif

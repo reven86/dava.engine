@@ -8,27 +8,26 @@
 
 namespace DAVA
 {
-
 class ColladaMeshInstance
 {
 public:
-	ColladaMeshInstance(bool _animated);
-	~ColladaMeshInstance();
-	
-	void Render();
-	void AddPolygonGroupInstance(ColladaPolygonGroupInstance * instance);
-	bool IsAnimated() { return animated; };
+    ColladaMeshInstance(bool _animated);
+    ~ColladaMeshInstance();
 
-	std::vector<ColladaPolygonGroupInstance*> polyGroupInstances;
-	
-	
-	FCDGeometryInstance * geometryInstance;
+    void Render();
+    void AddPolygonGroupInstance(ColladaPolygonGroupInstance* instance);
+    bool IsAnimated()
+    {
+        return animated;
+    };
+
+    std::vector<ColladaPolygonGroupInstance*> polyGroupInstances;
+
+    FCDGeometryInstance* geometryInstance;
+
 private:
-	bool animated;
+    bool animated;
 };
-
-	
-	
 };
 
 #endif // __COLLADALOADER_COLLADALIGHT_H__

@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode *aRoot, ControlNode *aNode, ComponentPropertiesSection *aDestSection, ComponentPropertiesSection *aPrototypeSection, QUndoCommand *parent)
+AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode* aRoot, ControlNode* aNode, ComponentPropertiesSection* aDestSection, ComponentPropertiesSection* aPrototypeSection, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(aRoot))
     , node(SafeRetain(aNode))

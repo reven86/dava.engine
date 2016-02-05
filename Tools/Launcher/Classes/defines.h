@@ -79,7 +79,7 @@
 /////////////////////
 
 template <class TYPE>
-void SafeDelete(TYPE * &d)
+void SafeDelete(TYPE*& d)
 {
     if (d)
     {

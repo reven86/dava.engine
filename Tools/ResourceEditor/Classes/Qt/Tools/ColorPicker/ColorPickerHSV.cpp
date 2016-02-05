@@ -34,7 +34,6 @@
 #include "PaletteHSV.h"
 #include "GradientSlider.h"
 
-
 ColorPickerHSV::ColorPickerHSV(QWidget* parent)
     : AbstractColorPicker(parent)
 {
@@ -65,19 +64,19 @@ ColorPickerHSV::ColorPickerHSV(QWidget* parent)
 
     QObject* editors[] = { pal, val, alpha };
 
-    for (size_t i = 0; i < sizeof( editors ) / sizeof( *editors ); i++)
+    for (size_t i = 0; i < sizeof(editors) / sizeof(*editors); i++)
     {
-        connect(editors[i], SIGNAL( started( const QPointF& ) ), SIGNAL( begin() ));
-        connect(editors[i], SIGNAL( started( const QPointF& ) ), SLOT( OnChanging() ));
-        connect(editors[i], SIGNAL( changing( const QPointF& ) ), SLOT( OnChanging() ));
-        connect(editors[i], SIGNAL( changed( const QPointF& ) ), SLOT( OnChanged() ));
-        connect(editors[i], SIGNAL( canceled() ), SIGNAL( canceled() ));
+        connect(editors[i], SIGNAL(started(const QPointF&)), SIGNAL(begin()));
+        connect(editors[i], SIGNAL(started(const QPointF&)), SLOT(OnChanging()));
+        connect(editors[i], SIGNAL(changing(const QPointF&)), SLOT(OnChanging()));
+        connect(editors[i], SIGNAL(changed(const QPointF&)), SLOT(OnChanged()));
+        connect(editors[i], SIGNAL(canceled()), SIGNAL(canceled()));
     }
 
-    connect(pal, SIGNAL( started( const QPointF& ) ), SLOT( OnHS() ));
-    connect(pal, SIGNAL( changing( const QPointF& ) ), SLOT( OnHS() ));
-    connect(val, SIGNAL( started( const QPointF& ) ), SLOT( OnVal() ));
-    connect(val, SIGNAL( changing( const QPointF& ) ), SLOT( OnVal() ));
+    connect(pal, SIGNAL(started(const QPointF&)), SLOT(OnHS()));
+    connect(pal, SIGNAL(changing(const QPointF&)), SLOT(OnHS()));
+    connect(val, SIGNAL(started(const QPointF&)), SLOT(OnVal()));
+    connect(val, SIGNAL(changing(const QPointF&)), SLOT(OnVal()));
 }
 
 ColorPickerHSV::~ColorPickerHSV()
@@ -170,16 +169,16 @@ void ColorPickerHSV::UpdateColor()
     qreal a = ao;
 
     // We should update only changed values to reduce rounding
-    if ( sender() == pal )
+    if (sender() == pal)
     {
         h = hn;
         s = sn;
     }
-    else if ( sender() == val )
+    else if (sender() == val)
     {
         v = vn;
     }
-    else if ( sender() == alpha )
+    else if (sender() == alpha)
     {
         a = an;
     }

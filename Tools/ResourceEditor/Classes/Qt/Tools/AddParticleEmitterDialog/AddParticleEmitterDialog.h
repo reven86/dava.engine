@@ -32,16 +32,15 @@
 
 #include <QDialog.h>
 
-class AddParticleEmitterDialog: public QDialog
+class AddParticleEmitterDialog : public QDialog
 {
-	Q_OBJECT
-    
+    Q_OBJECT
+
 public:
-	explicit AddParticleEmitterDialog(QWidget* parent = 0);
-	~AddParticleEmitterDialog();
-    
+    explicit AddParticleEmitterDialog(QWidget* parent = 0);
+    ~AddParticleEmitterDialog();
+
 protected:
-	
 };
 
 #endif // __ADD_PARTICLE_EMITTER_DIALOG__

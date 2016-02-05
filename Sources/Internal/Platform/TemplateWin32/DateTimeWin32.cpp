@@ -34,44 +34,44 @@
 
 namespace DAVA
 {
-	DAVA::WideString DateTime::AsWString(const wchar_t* format) const
-	{
-        String configLocale = LocalizationSystem::Instance()->GetCountryCode();
-		configLocale.replace(configLocale.find("_"), 1, "-");
-		
-        Timestamp timeWithTZ = innerTime + timeZoneOffset;
+DAVA::WideString DateTime::AsWString(const wchar_t* format) const
+{
+    String configLocale = LocalizationSystem::Instance()->GetCountryCode();
+    configLocale.replace(configLocale.find("_"), 1, "-");
 
-        tm timeinfo;
-        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
+    Timestamp timeWithTZ = innerTime + timeZoneOffset;
 
-        _locale_t loc = _create_locale(LC_ALL, configLocale.c_str());
-        DVASSERT(loc);
+    tm timeinfo;
+    GmTimeThreadSafe(&timeinfo, &timeWithTZ);
 
-        std::array<wchar_t, 256> buffer;
-        _wcsftime_l(&buffer[0], buffer.size(), format, &timeinfo, loc);
+    _locale_t loc = _create_locale(LC_ALL, configLocale.c_str());
+    DVASSERT(loc);
 
-        DAVA::WideString str(buffer.data());
-        _free_locale(loc);
-        return str;
-    }
+    std::array<wchar_t, 256> buffer;
+    _wcsftime_l(&buffer[0], buffer.size(), format, &timeinfo, loc);
 
-    int32 DateTime::GetLocalTimeZoneOffset()
-    {
-		TIME_ZONE_INFORMATION TimeZoneInfo;
-		GetTimeZoneInformation( &TimeZoneInfo );
-	
-		// TimeZoneInfo.Bias is the difference between local time
-		// and GMT in minutes.
-        return TimeZoneInfo.Bias*(-60);
-    }
+    DAVA::WideString str(buffer.data());
+    _free_locale(loc);
+    return str;
+}
 
-    WideString DateTime::GetLocalizedDate() const
-    {
-        return AsWString(L"%x");
-    }
+int32 DateTime::GetLocalTimeZoneOffset()
+{
+    TIME_ZONE_INFORMATION TimeZoneInfo;
+    GetTimeZoneInformation(&TimeZoneInfo);
 
-    WideString DateTime::GetLocalizedTime() const
-    {
-        return AsWString(L"%X");
-    }
+    // TimeZoneInfo.Bias is the difference between local time
+    // and GMT in minutes.
+    return TimeZoneInfo.Bias * (-60);
+}
+
+WideString DateTime::GetLocalizedDate() const
+{
+    return AsWString(L"%x");
+}
+
+WideString DateTime::GetLocalizedTime() const
+{
+    return AsWString(L"%X");
+}
 }

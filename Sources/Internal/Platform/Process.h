@@ -57,7 +57,7 @@ public:
 private:
     void CleanupHandles();
 
-#if defined (__DAVAENGINE_WIN32__) && defined(UNICODE)
+#if defined(__DAVAENGINE_WIN32__) && defined(UNICODE)
 
     void ConvertToWideChar(const String& str, wchar_t** outStr, size_t* outLength);
 
@@ -70,7 +70,7 @@ private:
     Vector<String> runArgs;
     bool running = false;
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
     HANDLE childProcIn[2];
     HANDLE childProcOut[2];
 #else

@@ -40,8 +40,8 @@ public:
     ~ResourceFilePropertyDelegate();
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
-    void setEditorData(QWidget * editor, const QModelIndex & index) const override;
-    bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
     void enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions) override;
 
 private slots:
