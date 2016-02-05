@@ -272,9 +272,14 @@ UIControl* UIControl::FindByName(const FastName& name, bool recursive) const
     return UIControlHelpers::FindChildControlByName(name, this, recursive);
 }
 
-UIControl* UIControl::FindByPath(const String& path) const
+const UIControl* UIControl::FindByPath(const String& path) const
 {
-    return UIControlHelpers::GetChildControlByPath(path, this);
+    return UIControlHelpers::FindControlByPath(path, this);
+}
+
+UIControl* UIControl::FindByPath(const String& path)
+{
+    return UIControlHelpers::FindControlByPath(path, this);
 }
 
 void UIControl::SetState(int32 state)

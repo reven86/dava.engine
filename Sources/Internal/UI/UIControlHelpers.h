@@ -47,14 +47,20 @@ public:
     static String GetPathToOtherControl(const UIControl* src, const UIControl* dst);
     static UIControl* FindChildControlByName(const String& controlName, const UIControl* rootControl, bool recursive);
     static UIControl* FindChildControlByName(const FastName& controlName, const UIControl* rootControl, bool recursive);
-    static UIControl* GetChildControlByPath(const String& controlPath, const UIControl* rootControl);
     static UIControl* FindControlByPath(const String& controlPath, UIControl* rootControl);
+    static const UIControl* FindControlByPath(const String& controlPath, const UIControl* rootControl);
 
     static void ScrollToControl(DAVA::UIControl* control, bool withAnimation = false);
 
 private:
-    static UIControl* FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, UIControl* rootControl);
-    static UIControl* FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, UIControl* rootControl);
+    template <typename ControlType>
+    static ControlType* FindControlByPathImpl(const String& controlPath, ControlType* rootControl);
+
+    template <typename ControlType>
+    static ControlType* FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl);
+
+    template <typename ControlType>
+    static ControlType* FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl);
 
     static void ScrollToRect(DAVA::UIControl* control, const Rect& rect, bool withAnimation);
     static float32 GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize);

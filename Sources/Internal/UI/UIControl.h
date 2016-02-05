@@ -703,10 +703,17 @@ public:
     UIControl * FindByName(const String & name, bool recursive = true) const;
     UIControl* FindByName(const FastName& name, bool recursive = true) const;
 
-    UIControl * FindByPath(const String & path) const;
-    
+    const UIControl* FindByPath(const String& path) const;
+    UIControl* FindByPath(const String& path);
+
     template<class C>
     C FindByPath(const String & path) const
+    {
+        return DynamicTypeCheck<C>(FindByPath(path));
+    }
+
+    template <class C>
+    C FindByPath(const String& path)
     {
         return DynamicTypeCheck<C>(FindByPath(path));
     }
