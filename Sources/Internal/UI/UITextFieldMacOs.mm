@@ -291,7 +291,6 @@ public:
                 }
             }
         }
-        [imageRep release];
         return true;
     }
 
