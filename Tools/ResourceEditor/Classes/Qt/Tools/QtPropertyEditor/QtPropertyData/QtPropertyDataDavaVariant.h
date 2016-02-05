@@ -58,7 +58,7 @@ public:
     const DAVA::VariantType& GetVariantValue() const;
     void SetVariantValue(const DAVA::VariantType& value);
 
-	void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
+    void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
 	void ClearAllowedValues();
     void SetAllowedValueType(AllowedValueType type);
     AllowedValueType GetAllowedValueType() const;

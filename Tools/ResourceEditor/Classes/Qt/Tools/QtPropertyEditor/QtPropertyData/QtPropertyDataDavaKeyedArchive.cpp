@@ -108,8 +108,8 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 
         // as second step we go through keyed archive and add new data items,
         // and remove deleting mark from items that are still in archive
-        if(NULL != archive)
-		{
+        if (NULL != archive)
+        {
             DAVA::KeyedArchive::UnderlyingMap data = archive->GetArchieveData();
             DAVA::KeyedArchive::UnderlyingMap::iterator i = data.begin();
 
@@ -132,7 +132,7 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
             }
         }
 
-		// delete all marked items
+        // delete all marked items
 		QSetIterator<QtPropertyData *> it(dataToRemove);
 		while(it.hasNext())
 		{
@@ -194,7 +194,7 @@ void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField(QToolButton* button)
         QPoint wPos = QPoint(bPos.x() - wRect.width() + bRect.width(), bPos.y() + bRect.height());
 
         w->move(wPos);
-	}
+    }
 }
 
 void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton* button)
@@ -203,8 +203,8 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton* button)
     if (archive != nullptr)
     {
         // search for child data with such button
-        for(int i = 0; i < ChildCount(); ++i)
-		{
+        for (int i = 0; i < ChildCount(); ++i)
+        {
 			QtPropertyData *childData = ChildGet(i);
             DVASSERT(childData != nullptr);
             // search btn thought this child optional widgets

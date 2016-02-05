@@ -306,7 +306,7 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
                     refsToReload.insert(pathToReload);
                 }
             }
-		}
+        }
 
 		DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
         DAVA::Map<Entity*, Entity*> groupMapping;

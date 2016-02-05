@@ -149,7 +149,7 @@ public:
 
     // Re-seeding functions with same behavior as initializers
     void Seed(const uint32 oneSeed);
-	//void Seed(uint32 *const bigSeed, const uint32 seedLength = N);
+    //void Seed(uint32 *const bigSeed, const uint32 seedLength = N);
 	void Seed();
 	
 	// Saving and loading generator state

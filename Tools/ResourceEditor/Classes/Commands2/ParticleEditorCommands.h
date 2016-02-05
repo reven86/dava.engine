@@ -298,8 +298,8 @@ protected:
     RefPtr<PropertyLine<float32>> number;
     RefPtr<PropertyLine<float32>> numberVariation;
     RefPtr<PropertyLine<Vector2>> size;
-    RefPtr< PropertyLine<Vector2> > sizeVariation;
-	RefPtr< PropertyLine<Vector2> > sizeOverLife;
+    RefPtr<PropertyLine<Vector2>> sizeVariation;
+    RefPtr< PropertyLine<Vector2> > sizeOverLife;
 	RefPtr< PropertyLine<float32> > velocity;
 	RefPtr< PropertyLine<float32> > velocityVariation;
 	RefPtr< PropertyLine<float32> > velocityOverLife;

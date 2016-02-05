@@ -73,7 +73,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
 
     propEditor->setVisible(false);
     propEditor->setMinimumHeight(0);
-	propEditor->setMaximumSize(propEditor->maximumWidth(), 0);
+    propEditor->setMaximumSize(propEditor->maximumWidth(), 0);
 }
 
 AddSwitchEntityDialog::~AddSwitchEntityDialog()

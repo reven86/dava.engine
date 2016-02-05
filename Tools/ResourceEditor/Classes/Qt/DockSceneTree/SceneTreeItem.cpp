@@ -234,8 +234,8 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
         }
 
         // remove items that are not in set
-        for(int i = 0; i < rootItem->rowCount(); ++i)
-		{
+        for (int i = 0; i < rootItem->rowCount(); ++i)
+        {
 			bool doRemove = true;
 			SceneTreeItem *childItem = (SceneTreeItem *) rootItem->child(i);
 
@@ -473,8 +473,8 @@ void SceneTreeItemParticleEmitter::DoSync(QStandardItem *rootItem, DAVA::Particl
             DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);
             rootItem->removeRow(i);
         }
-        for (DAVA::uint32 i=0; i<(DAVA::uint32)emitter->layers.size(); ++i)
-		{
+        for (DAVA::uint32 i = 0; i < (DAVA::uint32)emitter->layers.size(); ++i)
+        {
 			rootItem->appendRow(new SceneTreeItemParticleLayer(rootEmitterItem->effect, emitter, emitter->layers[i]));
 		}					
 	}
@@ -516,7 +516,7 @@ SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectCompo
         }
         else
         {
-			setCheckState(Qt::Checked);
+            setCheckState(Qt::Checked);
 		}
 		hasInnerEmmiter = (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES); //layer can still have inner emitter cached
 	}
@@ -568,7 +568,7 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleL
             bool keepItem = false;
             SceneTreeItem* item = (SceneTreeItem*)rootItem->child(i);
             if ((item)->ItemType() == SceneTreeItem::EIT_InnerEmitter)
-			{
+            {
 				hadInnerEmmiter = true;
 				if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
 				{

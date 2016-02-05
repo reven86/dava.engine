@@ -260,7 +260,7 @@ void HeightmapEditorPanel::RestoreState()
     int32 avStrRangeMax = DEF_AVERAGE_STRENGTH_MAX_VALUE;
 
     KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
-	if (customProperties)
+    if (customProperties)
 	{
 		brushRangeMin = customProperties->GetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,
 												   DEF_BRUSH_MIN_SIZE);

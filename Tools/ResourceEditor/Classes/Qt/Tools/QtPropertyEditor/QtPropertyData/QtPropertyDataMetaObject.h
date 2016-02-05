@@ -44,7 +44,7 @@ public:
     virtual const DAVA::MetaInfo* MetaInfo() const;
     virtual void* CreateLastCommand() const;
 
-	void *object;
+    void *object;
 	const DAVA::MetaInfo *meta;
 
 protected:

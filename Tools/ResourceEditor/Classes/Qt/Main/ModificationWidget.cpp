@@ -136,7 +136,7 @@ void ModificationWidget::ReloadValues()
             yAxisModify->showButtons(true);
             zAxisModify->showButtons(true);
 
-			if(selection.Size() > 1)
+            if(selection.Size() > 1)
 			{
 				groupMode = true;
 
@@ -178,7 +178,7 @@ void ModificationWidget::ReloadValues()
 
                         DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
                         switch (modifMode)
-						{
+                        {
 						case ST_MODIF_MOVE:
 							{
 								DAVA::Vector3 translation = localMatrix.GetTranslationVector();
@@ -286,7 +286,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
             {
                 switch (axis)
                 {
-				case ST_AXIS_X:
+                case ST_AXIS_X:
 					newPos.x = x;
 					break;
 				case ST_AXIS_Y:
@@ -363,7 +363,7 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
                 DAVA::Matrix4 rotationMatrix;
                 DAVA::Matrix4 transformMatrix;
 
-				DAVA::Matrix4 moveToZeroPos;
+                DAVA::Matrix4 moveToZeroPos;
 				DAVA::Matrix4 moveFromZeroPos;
 
 				moveToZeroPos.CreateTranslation(-origMatrix.GetTranslationVector());
@@ -458,7 +458,7 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
                 DAVA::Matrix4 scaleMatrix;
                 DAVA::Matrix4 transformMatrix;
 
-				DAVA::Matrix4 moveToZeroPos;
+                DAVA::Matrix4 moveToZeroPos;
 				DAVA::Matrix4 moveFromZeroPos;
 
 				moveToZeroPos.CreateTranslation(-origMatrix.GetTranslationVector());

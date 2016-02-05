@@ -243,7 +243,7 @@ void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
     {
         previewLength = -1.f;
     }
-	SendUpdatedLength();
+    SendUpdatedLength();
 }
 
 DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector2& startPoint, const DAVA::Vector2& endPoint)

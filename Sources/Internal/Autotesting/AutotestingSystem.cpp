@@ -98,8 +98,8 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     Logger::Info("AutotestingSystem::InitLua");
     DVASSERT(nullptr == luaSystem);
     luaSystem = new AutotestingSystemLua();
-        luaSystem->SetDelegate(_delegate);
-	}
+    luaSystem->SetDelegate(_delegate);
+    }
 
     String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
     {
@@ -191,7 +191,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         // Check is build fol local debugging.  By default: use DB.
         bool isLocalBuild = option->GetBool("LocalBuild", false);
         if (isLocalBuild)
-		{
+        {
 			groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
 			testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
 			isDB = false;
@@ -290,7 +290,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 
     void AutotestingSystem::OnStepStart(const String& stepName)
     {
-		Logger::Info("AutotestingSystem::OnStepStart %s", stepName.c_str());
+        Logger::Info("AutotestingSystem::OnStepStart %s", stepName.c_str());
 
 		OnStepFinished();
 
@@ -529,7 +529,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
         isWaiting = false;
         needExitApp = true;
         timeBeforeExit = 1.0f;
-	}
+    }
 
 	// Multiplayer API
 

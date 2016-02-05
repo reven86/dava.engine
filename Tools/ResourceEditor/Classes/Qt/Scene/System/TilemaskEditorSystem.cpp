@@ -252,7 +252,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
                     int32 curKeyModifiers = QApplication::keyboardModifiers();
                     if (curKeyModifiers & Qt::AltModifier)
                     {
-                            copyPasteFrom = cursorPosition;
+                        copyPasteFrom = cursorPosition;
                             copyPasteOffset = Vector2();
                             return;
                         }
