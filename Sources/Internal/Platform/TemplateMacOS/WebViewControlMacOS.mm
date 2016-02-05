@@ -104,8 +104,8 @@ using namespace DAVA;
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
 	BOOL process = YES;
-	
-	if (delegate && self->webView)
+
+    if (delegate && self->webView)
 	{
 		NSString* url = [[request URL] absoluteString];
 		
@@ -198,8 +198,8 @@ WebViewControl::WebViewControl(UIWebView& ptr)
     , isRenderToTexture(false)
     , isVisible(true)
 {
-	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
-	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
+    NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);
+    webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
                                       groupName:nil];
 
 	WebView* localWebView = (WebView*)webViewPtr;
@@ -224,6 +224,8 @@ WebViewControl::WebViewControl(UIWebView& ptr)
 
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
+
+    SetBackgroundTransparency(true);
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
@@ -304,8 +306,15 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
-    [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
+
+    // First escape base path to allow spaces and other similar symbols
+    NSString* basePathAsUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
+    NSString* escapedBasePath = [basePathAsUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    NSURL* baseUrl = [NSURL URLWithString:escapedBasePath];
+
+    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
+    [[nativeWebView mainFrame] loadHTMLString:dataToOpen baseURL:baseUrl];
 }
 
 void WebViewControl::SetRect(const Rect& srcRect)
@@ -363,8 +372,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     }
 }
 
-void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-UIWebView& uiWebViewControl)
+void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl)
 {
     bool recreateImageRep = true;
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
