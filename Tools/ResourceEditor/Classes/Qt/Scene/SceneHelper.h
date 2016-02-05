@@ -37,26 +37,26 @@
 
 namespace SceneHelper
 {
-    enum class TexturesEnumerateMode : DAVA::uint8
-    {
-        EXCLUDE_NULL = 0,
-        INCLUDE_NULL
-    };
+enum class TexturesEnumerateMode : DAVA::uint8
+{
+    EXCLUDE_NULL = 0,
+    INCLUDE_NULL
+};
 
-    void EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textures, TexturesEnumerateMode mode);
-    void EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode);
+void EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textures, TexturesEnumerateMode mode);
+void EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode);
 
-    // enumerates materials from render batches and their parents
-    void EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
+// enumerates materials from render batches and their parents
+void EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
 
-    // enumerates only materials from render batches
-    void EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
+// enumerates only materials from render batches
+void EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
 
-    DAVA::int32 EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures);
+DAVA::int32 EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures);
 
-    DAVA::Entity* CloneEntityWithMaterials(DAVA::Entity* fromNode);
+DAVA::Entity* CloneEntityWithMaterials(DAVA::Entity* fromNode);
 
-    void BuildMaterialList(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materialList, bool includeRuntime = true);
+void BuildMaterialList(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materialList, bool includeRuntime = true);
 };
 
 #endif // __SCENE_HELPER_H__

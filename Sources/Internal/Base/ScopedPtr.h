@@ -35,51 +35,50 @@
 
 namespace DAVA
 {
-
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 class ScopedPtr
 {
 public:
-	explicit ScopedPtr(BASE_OBJECT * p);
-	~ScopedPtr();
-	BASE_OBJECT & operator*() const;
-	BASE_OBJECT * operator->() const;
-	operator BASE_OBJECT*() const;
+    explicit ScopedPtr(BASE_OBJECT* p);
+    ~ScopedPtr();
+    BASE_OBJECT& operator*() const;
+    BASE_OBJECT* operator->() const;
+    operator BASE_OBJECT*() const;
     BASE_OBJECT* get() const;
     void reset(BASE_OBJECT* p = nullptr);
     explicit operator bool() const;
-	
-	//protection from 'delete ScopedObject'
-	operator void*() const;
-	
-	ScopedPtr(const ScopedPtr&);
-	const ScopedPtr& operator=(const ScopedPtr&);
+
+    //protection from 'delete ScopedObject'
+    operator void*() const;
+
+    ScopedPtr(const ScopedPtr&);
+    const ScopedPtr& operator=(const ScopedPtr&);
     const ScopedPtr& operator=(BASE_OBJECT* p);
 
 private:
-	BASE_OBJECT * object;
+    BASE_OBJECT* object;
 };
 
 //implementation
-template<typename BASE_OBJECT>
-ScopedPtr<BASE_OBJECT>::ScopedPtr(BASE_OBJECT * p)
-:	object(p)
+template <typename BASE_OBJECT>
+ScopedPtr<BASE_OBJECT>::ScopedPtr(BASE_OBJECT* p)
+    : object(p)
 {
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::ScopedPtr(const ScopedPtr& scopedPtr)
 {
     object = SafeRetain(scopedPtr.object);
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(const ScopedPtr& scopedPtr)
 {
-	if (this == &scopedPtr)
-	{
-		return *this;
-	}
+    if (this == &scopedPtr)
+    {
+        return *this;
+    }
 
     if (object != scopedPtr.object)
     {
@@ -90,7 +89,7 @@ const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(const ScopedPtr&
     return *this;
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(BASE_OBJECT* p)
 {
     if (p != object)
@@ -102,37 +101,37 @@ const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(BASE_OBJECT* p)
     return *this;
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::~ScopedPtr()
 {
-	SafeRelease(object);
+    SafeRelease(object);
 }
 
-template<typename BASE_OBJECT>
-BASE_OBJECT & ScopedPtr<BASE_OBJECT>::operator*() const
+template <typename BASE_OBJECT>
+BASE_OBJECT& ScopedPtr<BASE_OBJECT>::operator*() const
 {
-	return *object;
+    return *object;
 }
 
-template<typename BASE_OBJECT>
-BASE_OBJECT * ScopedPtr<BASE_OBJECT>::operator->() const
+template <typename BASE_OBJECT>
+BASE_OBJECT* ScopedPtr<BASE_OBJECT>::operator->() const
 {
-	return object;
+    return object;
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::operator BASE_OBJECT*() const
 {
-	return object;
+    return object;
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 BASE_OBJECT* ScopedPtr<BASE_OBJECT>::get() const
 {
     return object;
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 void ScopedPtr<BASE_OBJECT>::reset(BASE_OBJECT* p)
 {
     if (p != object)
@@ -142,18 +141,17 @@ void ScopedPtr<BASE_OBJECT>::reset(BASE_OBJECT* p)
     }
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::operator bool() const
 {
     return object != nullptr;
 }
 
-template<typename BASE_OBJECT>
+template <typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::operator void*() const
 {
-	return object;
+    return object;
 }
-
 };
 
 #endif //__DAVAENGINE_SCOPED_PTR_H__

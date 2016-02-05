@@ -44,16 +44,15 @@
 
 namespace DAVA
 {
-
-DebugRenderSystem::DebugRenderSystem(Scene * scene)
-:	SceneSystem(scene),
-	camera(0)
+DebugRenderSystem::DebugRenderSystem(Scene* scene)
+    : SceneSystem(scene)
+    ,
+    camera(0)
 {
 }
-    
+
 DebugRenderSystem::~DebugRenderSystem()
 {
-    
 }
 
 void DebugRenderSystem::Process(float32 timeElapsed)
@@ -199,45 +198,43 @@ void DebugRenderSystem::Process(float32 timeElapsed)
     }*/
 }
 
-void DebugRenderSystem::AddEntity(Entity * entity)
+void DebugRenderSystem::AddEntity(Entity* entity)
 {
-	entities.push_back(entity);
+    entities.push_back(entity);
 
     //DebugRenderComponent * debugRenderComponent = static_cast<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
-    RenderComponent * renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+    RenderComponent* renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
     if (renderComponent)
     {
         //renderComponent->renderObject->SetDebugFlags(debugRenderComponent->GetFlags());
     }
 }
 
-void DebugRenderSystem::RemoveEntity(Entity * entity)
+void DebugRenderSystem::RemoveEntity(Entity* entity)
 {
     //DebugRenderComponent * debugRenderComponent = static_cast<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
-    RenderComponent * renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+    RenderComponent* renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
     if (renderComponent)
     {
         //renderComponent->renderObject->SetDebugFlags(0);
     }
 
-	
     uint32 size = static_cast<uint32>(entities.size());
-	for(uint32 i = 0; i < size; ++i)
-	{
-		if(entities[i] == entity)
-		{
-			entities[i] = entities[size-1];
-			entities.pop_back();
-			return;
-		}
-	}
-	
-	DVASSERT(0);
+    for (uint32 i = 0; i < size; ++i)
+    {
+        if (entities[i] == entity)
+        {
+            entities[i] = entities[size - 1];
+            entities.pop_back();
+            return;
+        }
+    }
+
+    DVASSERT(0);
 }
-    
-void DebugRenderSystem::SetCamera(Camera * _camera)
+
+void DebugRenderSystem::SetCamera(Camera* _camera)
 {
     camera = _camera;
 }
-
 }

@@ -525,7 +525,6 @@ uint32 NvttHelper::GetDataSize(nvtt::Decompressor& dec)
     return info.dataSize;
 }
 
-
 uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 {
     uint32 faceId = Texture::INVALID_CUBEMAP_FACE;

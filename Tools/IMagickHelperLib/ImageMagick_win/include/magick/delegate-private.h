@@ -28,35 +28,35 @@ extern "C" {
 #endif
 
 #ifndef gs_main_instance_DEFINED
-# define gs_main_instance_DEFINED
+#define gs_main_instance_DEFINED
 typedef struct gs_main_instance_s
-  gs_main_instance;
+gs_main_instance;
 #endif
 
 #if !defined(MagickDLLCall)
-#  if defined(MAGICKCORE_WINDOWS_SUPPORT)
-#    define MagickDLLCall __stdcall
-#  else
-#    define MagickDLLCall
-#  endif
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#define MagickDLLCall __stdcall
+#else
+#define MagickDLLCall
+#endif
 #endif
 
 typedef struct _GhostInfo
 {
-  int
-    (MagickDLLCall *exit)(gs_main_instance *);
+    int
+    (MagickDLLCall* exit)(gs_main_instance*);
 
-  int
-    (MagickDLLCall *init_with_args)(gs_main_instance *,int,char **);
+    int
+    (MagickDLLCall* init_with_args)(gs_main_instance*, int, char**);
 
-  int
-    (MagickDLLCall *new_instance)(gs_main_instance **,void *);
+    int
+    (MagickDLLCall* new_instance)(gs_main_instance**, void*);
 
-  int
-    (MagickDLLCall *run_string)(gs_main_instance *,const char *,int,int *);
+    int
+    (MagickDLLCall* run_string)(gs_main_instance*, const char*, int, int*);
 
-  void
-    (MagickDLLCall *delete_instance)(gs_main_instance *);
+    void
+    (MagickDLLCall* delete_instance)(gs_main_instance*);
 } GhostInfo;
 
 #if defined(__cplusplus) || defined(c_plusplus)

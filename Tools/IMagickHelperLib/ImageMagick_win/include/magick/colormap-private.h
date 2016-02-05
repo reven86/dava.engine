@@ -26,14 +26,14 @@ extern "C" {
 #include <magick/color.h>
 #include <magick/exception-private.h>
 
-static inline IndexPacket ConstrainColormapIndex(Image *image,
-  const size_t index)
+static inline IndexPacket ConstrainColormapIndex(Image* image,
+                                                 const size_t index)
 {
-  if (index < image->colors)
-    return((IndexPacket) index);
-  (void) ThrowMagickException(&image->exception,GetMagickModule(),
-    CorruptImageError,"InvalidColormapIndex","`%s'",image->filename);
-  return((IndexPacket) 0);
+    if (index < image->colors)
+        return ((IndexPacket)index);
+    (void)ThrowMagickException(&image->exception, GetMagickModule(),
+                               CorruptImageError, "InvalidColormapIndex", "`%s'", image->filename);
+    return ((IndexPacket)0);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

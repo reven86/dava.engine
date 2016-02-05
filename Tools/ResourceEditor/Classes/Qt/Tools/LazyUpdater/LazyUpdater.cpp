@@ -31,27 +31,27 @@
 
 #include <QTimer>
 
-LazyUpdater::LazyUpdater(Updater _updater, QObject *parent /* = nullptr */)
-	: QObject(parent)
-	, updater(_updater)
+LazyUpdater::LazyUpdater(Updater _updater, QObject* parent /* = nullptr */)
+    : QObject(parent)
+    , updater(_updater)
 {
 }
 
 void LazyUpdater::Update()
 {
-	++counter;
-	QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
+    ++counter;
+    QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
 }
 
 void LazyUpdater::OnTimer()
 {
-	if (counter > 1)
-	{
-		--counter;
-		return;
-	}
+    if (counter > 1)
+    {
+        --counter;
+        return;
+    }
 
-	counter = 0;
+    counter = 0;
 
-	updater();
+    updater();
 }

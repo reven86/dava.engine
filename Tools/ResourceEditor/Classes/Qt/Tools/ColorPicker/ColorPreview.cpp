@@ -40,7 +40,6 @@
 #include "../Helpers/PaintingHelper.h"
 #include "../Helpers/MouseHelper.h"
 
-
 ColorPreview::ColorPreview(QWidget* parent)
     : QWidget(parent)
     , bgBrush(PaintingHelper::DrawGridBrush(QSize(7, 7)))
@@ -50,8 +49,8 @@ ColorPreview::ColorPreview(QWidget* parent)
     setMouseTracking(true);
     setCursor(Qt::OpenHandCursor);
 
-    connect(mouse, SIGNAL( mousePress( const QPoint& ) ), SLOT( OnMousePress( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseRelease( const QPoint& ) ), SLOT( OnMouseRelease( const QPoint& ) ));
+    connect(mouse, SIGNAL(mousePress(const QPoint&)), SLOT(OnMousePress(const QPoint&)));
+    connect(mouse, SIGNAL(mouseRelease(const QPoint&)), SLOT(OnMouseRelease(const QPoint&)));
 }
 
 ColorPreview::~ColorPreview()
@@ -77,8 +76,8 @@ void ColorPreview::SetColorNew(const QColor& c)
 
 void ColorPreview::OnMousePress(const QPoint& pos)
 {
-    QDrag *drag = new QDrag(this);
-    QMimeData *mime = new QMimeData();
+    QDrag* drag = new QDrag(this);
+    QMimeData* mime = new QMimeData();
 
     const QColor c = GetColorAt(pos);
     QPixmap pix(dragPreviewSize);
@@ -99,7 +98,7 @@ void ColorPreview::OnMouseRelease(const QPoint& pos)
 
 void ColorPreview::paintEvent(QPaintEvent* e)
 {
-    Q_UNUSED( e );
+    Q_UNUSED(e);
 
     QPainter p(this);
 
@@ -108,7 +107,7 @@ void ColorPreview::paintEvent(QPaintEvent* e)
     QColor cNewS(cNew);
     cNewS.setAlpha(255);
 
-    p.fillRect(0, 0, width() -1, height() - 1, bgBrush);
+    p.fillRect(0, 0, width() - 1, height() - 1, bgBrush);
     p.fillRect(OldColorSRect(), cOldS);
     p.fillRect(OldColorRect(), cOld);
     p.fillRect(NewColorSRect(), cNewS);

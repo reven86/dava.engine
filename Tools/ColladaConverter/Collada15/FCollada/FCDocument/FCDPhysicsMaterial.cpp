@@ -13,11 +13,12 @@
 
 ImplementObjectType(FCDPhysicsMaterial);
 
-FCDPhysicsMaterial::FCDPhysicsMaterial(FCDocument* document) : FCDEntity(document, "PhysicsMaterial")
+FCDPhysicsMaterial::FCDPhysicsMaterial(FCDocument* document)
+    : FCDEntity(document, "PhysicsMaterial")
 {
-	staticFriction = 0.f;
-	dynamicFriction = 0.f;
-	restitution = 0.f;
+    staticFriction = 0.f;
+    dynamicFriction = 0.f;
+    restitution = 0.f;
 }
 
 FCDPhysicsMaterial::~FCDPhysicsMaterial()
@@ -27,17 +28,19 @@ FCDPhysicsMaterial::~FCDPhysicsMaterial()
 // Cloning
 FCDEntity* FCDPhysicsMaterial::Clone(FCDEntity* _clone, bool cloneChildren) const
 {
-	FCDPhysicsMaterial* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDPhysicsMaterial(const_cast<FCDocument*>(GetDocument()));
-	else if (_clone->HasType(FCDPhysicsMaterial::GetClassType())) clone = (FCDPhysicsMaterial*) _clone;
-	
-	Parent::Clone(clone, cloneChildren);
+    FCDPhysicsMaterial* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDPhysicsMaterial(const_cast<FCDocument*>(GetDocument()));
+    else if (_clone->HasType(FCDPhysicsMaterial::GetClassType()))
+        clone = (FCDPhysicsMaterial*)_clone;
 
-	if (clone != NULL)
-	{
-		clone->SetStaticFriction(staticFriction);
-		clone->SetDynamicFriction(dynamicFriction);
-		clone->SetRestitution(restitution);
-	}
-	return _clone;
+    Parent::Clone(clone, cloneChildren);
+
+    if (clone != NULL)
+    {
+        clone->SetStaticFriction(staticFriction);
+        clone->SetDynamicFriction(dynamicFriction);
+        clone->SetRestitution(restitution);
+    }
+    return _clone;
 }

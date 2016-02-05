@@ -36,10 +36,9 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 
-BasePropertyDelegate::BasePropertyDelegate(PropertiesTreeItemDelegate *delegate)
+BasePropertyDelegate::BasePropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : AbstractPropertyDelegate(delegate)
 {
-
 }
 
 BasePropertyDelegate::~BasePropertyDelegate()
@@ -47,7 +46,7 @@ BasePropertyDelegate::~BasePropertyDelegate()
     itemDelegate = NULL;
 }
 
-bool BasePropertyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+bool BasePropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (!BasePropertyDelegate::IsValueModified(editor))
         return true;
@@ -64,15 +63,14 @@ bool BasePropertyDelegate::setModelData(QWidget *editor, QAbstractItemModel *mod
     }
 
     return false;
-
 }
 
 void BasePropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions)
 {
-    AbstractProperty *property = static_cast<AbstractProperty *>(index.internalPointer());
-    if (property && property->GetFlags() & AbstractProperty::EF_CAN_RESET )
+    AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+    if (property && property->GetFlags() & AbstractProperty::EF_CAN_RESET)
     {
-        QAction *resetAction = new QAction(QIcon(":/Icons/edit_undo.png"), tr("reset"), parent);
+        QAction* resetAction = new QAction(QIcon(":/Icons/edit_undo.png"), tr("reset"), parent);
         resetAction->setToolTip(tr("Reset property value to default"));
         actions.push_back(resetAction);
         connect(resetAction, SIGNAL(triggered(bool)), this, SLOT(resetClicked()));
@@ -81,11 +79,11 @@ void BasePropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex&
 
 void BasePropertyDelegate::resetClicked()
 {
-    QAction *resetAction = qobject_cast<QAction *>(sender());
+    QAction* resetAction = qobject_cast<QAction*>(sender());
     if (!resetAction)
         return;
 
-    QWidget *editor = resetAction->parentWidget();
+    QWidget* editor = resetAction->parentWidget();
     if (!editor)
         return;
 

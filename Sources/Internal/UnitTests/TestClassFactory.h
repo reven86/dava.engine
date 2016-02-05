@@ -35,7 +35,6 @@ namespace DAVA
 {
 namespace UnitTests
 {
-
 class TestClass;
 
 class TestClassFactoryBase
@@ -48,14 +47,17 @@ protected:
     TestClassFactoryBase() = default;
 };
 
-template<typename T>
+template <typename T>
 class TestClassFactoryImpl : public TestClassFactoryBase
 {
 public:
-    TestClass* CreateTestClass() override { return new T; }
+    TestClass* CreateTestClass() override
+    {
+        return new T;
+    }
 };
 
-}   // namespace UnitTests
-}   // namespace DAVA
+} // namespace UnitTests
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TESTCLASSFACTORY_H__
+#endif // __DAVAENGINE_TESTCLASSFACTORY_H__

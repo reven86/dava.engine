@@ -23,10 +23,10 @@ extern "C" {
 #endif
 
 extern MagickExport MagickBooleanType
-  GetImageDynamicThreshold(const Image *,const double,const double,
-    MagickPixelPacket *,ExceptionInfo *),
-  SegmentImage(Image *,const ColorspaceType,const MagickBooleanType,
-    const double,const double);
+GetImageDynamicThreshold(const Image *, const double, const double,
+                         MagickPixelPacket *, ExceptionInfo *),
+SegmentImage(Image *, const ColorspaceType, const MagickBooleanType,
+             const double, const double);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

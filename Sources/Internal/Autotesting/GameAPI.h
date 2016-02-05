@@ -38,13 +38,10 @@
 
 namespace DAVA
 {
-
 class GameAPI : public Singleton<GameAPI>
 {
 public:
-
 };
-
 }
 
 #endif //__DAVAENGINE_AUTOTESTING__

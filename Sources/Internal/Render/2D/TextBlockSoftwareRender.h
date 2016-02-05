@@ -35,11 +35,10 @@
 
 namespace DAVA
 {
-    
-class TextBlockSoftwareRender: public TextBlockRender
+class TextBlockSoftwareRender : public TextBlockRender
 {
 public:
-	TextBlockSoftwareRender(TextBlock*);
+    TextBlockSoftwareRender(TextBlock*);
     ~TextBlockSoftwareRender();
     void Prepare() override;
     
@@ -51,11 +50,11 @@ public:
     Vector2 getTextOffsetBR();
 #endif
 protected:
-	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
-	virtual Font::StringMetrics DrawTextML(const WideString& drawText,
-							  int32 x, int32 y, int32 w,
-							  int32 xOffset, uint32 yOffset,
-                              int32 lineSize);
+    virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
+    virtual Font::StringMetrics DrawTextML(const WideString& drawText,
+                                           int32 x, int32 y, int32 w,
+                                           int32 xOffset, uint32 yOffset,
+                                           int32 lineSize);
 
 #if defined(LOCALIZATION_DEBUG)
     void CalculateTextBBox();
@@ -70,9 +69,9 @@ private:
     int32 bufHeight, bufWidth;
 #endif
     int8* buf;
-	FTFont* ftFont;
+    FTFont* ftFont;
 };
-	
+
 }; //end of namespace
 
 #endif // __DAVAENGINE_TEXTBLOCK_SOFTWARE_RENDER_H__

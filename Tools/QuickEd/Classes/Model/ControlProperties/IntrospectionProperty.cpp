@@ -49,7 +49,7 @@ const FastName INTROSPECTION_PROPERTY_NAME_FONT("font");
 const FastName INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 }
 
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMember, const IntrospectionProperty *sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
     , object(SafeRetain(anObject))
     , member(aMember)
@@ -81,7 +81,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     static std::vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
     static std::vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
 
-    std::vector<String> *componentNames = nullptr;
+    std::vector<String>* componentNames = nullptr;
     std::vector<SubValueProperty*> children;
     VariantType defaultValue = GetDefaultValue();
     if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
@@ -98,7 +98,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     }
     else if (defaultValue.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
     {
-        const EnumMap *map = member->Desc().enumMap;
+        const EnumMap* map = member->Desc().enumMap;
         for (size_t i = 0; i < map->GetCount(); ++i)
         {
             int val = 0;
@@ -106,13 +106,12 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
             children.push_back(new SubValueProperty(i, map->ToString(val)));
         }
     }
-    
+
     if (componentNames != nullptr)
     {
         for (size_t i = 0; i < componentNames->size(); ++i)
             children.push_back(new SubValueProperty(i, componentNames->at(i)));
     }
-
 
     for (auto child : children)
     {
@@ -121,7 +120,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
         SafeRelease(child);
     }
     children.clear();
-    
+
     if (sourceProperty != nullptr)
         sourceValue = sourceProperty->sourceValue;
     else
@@ -133,7 +132,7 @@ IntrospectionProperty::~IntrospectionProperty()
     SafeRelease(object);
 }
 
-IntrospectionProperty *IntrospectionProperty::Create(UIControl *control, const InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType cloneType)
+IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
     if (member->Name() == INTROSPECTION_PROPERTY_NAME_TEXT)
     {
@@ -145,7 +144,8 @@ IntrospectionProperty *IntrospectionProperty::Create(UIControl *control, const I
     }
     else
     {
-        IntrospectionProperty *result = new IntrospectionProperty(control, member, sourceProperty, cloneType);;
+        IntrospectionProperty* result = new IntrospectionProperty(control, member, sourceProperty, cloneType);
+        ;
         if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
         {
             result->flags |= EF_DEPENDS_ON_LAYOUTS;
@@ -156,18 +156,17 @@ IntrospectionProperty *IntrospectionProperty::Create(UIControl *control, const I
         }
         return result;
     }
-
 }
 
 void IntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
 {
     ValueProperty::Refresh(refreshFlags);
-    
+
     if ((refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES) != 0 && (GetFlags() & EF_DEPENDS_ON_LAYOUTS) != 0)
         ApplyValue(sourceValue);
 }
 
-void IntrospectionProperty::Accept(PropertyVisitor *visitor)
+void IntrospectionProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitIntrospectionProperty(this);
 }
@@ -196,7 +195,7 @@ VariantType IntrospectionProperty::GetValue() const
     return member->Value(object);
 }
 
-const EnumMap *IntrospectionProperty::GetEnumMap() const
+const EnumMap* IntrospectionProperty::GetEnumMap() const
 {
     auto type = member->Desc().type;
 
@@ -207,7 +206,7 @@ const EnumMap *IntrospectionProperty::GetEnumMap() const
     return nullptr;
 }
 
-const DAVA::InspMember *IntrospectionProperty::GetMember() const
+const DAVA::InspMember* IntrospectionProperty::GetMember() const
 {
     return member;
 }
@@ -217,9 +216,8 @@ void IntrospectionProperty::DisableResetFeature()
     flags &= ~EF_CAN_RESET;
 }
 
-void IntrospectionProperty::ApplyValue(const DAVA::VariantType &value)
+void IntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
 {
     sourceValue = value;
     member->SetValue(object, value);
-
 }

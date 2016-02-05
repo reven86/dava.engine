@@ -38,10 +38,12 @@ GeneralStatModel::GeneralStatModel(QObject* parent)
     , profileSession(nullptr)
     , timestamp(0)
     , curValues()
-{}
+{
+}
 
 GeneralStatModel::~GeneralStatModel()
-{}
+{
+}
 
 int GeneralStatModel::rowCount(const QModelIndex& parent) const
 {
@@ -93,7 +95,7 @@ QVariant GeneralStatModel::data(const QModelIndex& index, int role) const
             case ROW_ALLOC_INTERNAL:
                 return FormatNumberWithDigitGroups(curValues.allocInternal).c_str();
             case ROW_ALLOC_INTERNAL_TOTAL:
-                    return FormatNumberWithDigitGroups(curValues.allocInternalTotal).c_str();
+                return FormatNumberWithDigitGroups(curValues.allocInternalTotal).c_str();
             case ROW_NBLOCKS_INTERNAL:
                 return FormatNumberWithDigitGroups(curValues.internalBlockCount).c_str();
             case ROW_ALLOC_GHOST:

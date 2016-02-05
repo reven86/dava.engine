@@ -37,8 +37,9 @@
 #include <QPointer>
 #include <QScopedPointer>
 
-namespace Ui {
-    class MemProfWidget;
+namespace Ui
+{
+class MemProfWidget;
 } // namespace Ui
 
 class QLabel;
@@ -50,9 +51,9 @@ class QCustomPlot;
 
 namespace DAVA
 {
-    struct MMStatConfig;
-    struct MMCurStat;
-}   // namespace DAVA
+struct MMStatConfig;
+struct MMCurStat;
+} // namespace DAVA
 
 class AllocPoolModel;
 class TagModel;
@@ -69,9 +70,9 @@ class MemProfWidget : public QWidget
 
 signals:
     void OnSnapshotButton();
-    
+
 public:
-    MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
+    MemProfWidget(ProfilingSession* profSession, QWidget* parent = nullptr);
     virtual ~MemProfWidget();
 
 public slots:

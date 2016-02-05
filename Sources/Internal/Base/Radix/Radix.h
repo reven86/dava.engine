@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Radix Sort Algorithm Taken From: Erik Gorset and integrated into engine. 
 
@@ -66,20 +65,19 @@ namespace DAVA
 //    struct SortItem
 //    {
 //        uint32 item;
-//        
+//
 //    };
-    
-    void RadixSort(int32 * array, int offset, int end, int shift);
-    void RadixSort(int64 * array, int offset, int end, int shift);
-    
-    inline void RadixSort(void * array, int offset, int end, int shift)
-    {
-        if (sizeof(void*) == 4)
-            RadixSort((int32*)array, offset, end, shift);
-        else
-            RadixSort((int64*)array, offset, end, shift);
-    }
-    
+
+void RadixSort(int32* array, int offset, int end, int shift);
+void RadixSort(int64* array, int offset, int end, int shift);
+
+inline void RadixSort(void* array, int offset, int end, int shift)
+{
+    if (sizeof(void*) == 4)
+        RadixSort((int32*)array, offset, end, shift);
+    else
+        RadixSort((int64*)array, offset, end, shift);
+}
 };
 
 #endif // __DAVAENGINE_BASE_RADIX_RADIX__

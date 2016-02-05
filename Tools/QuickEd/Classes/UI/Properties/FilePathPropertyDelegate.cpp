@@ -33,15 +33,13 @@
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesTreeItemDelegate.h"
 
-FilePathPropertyDelegate::FilePathPropertyDelegate(PropertiesTreeItemDelegate *delegate)
+FilePathPropertyDelegate::FilePathPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
-
 }
 
 FilePathPropertyDelegate::~FilePathPropertyDelegate()
 {
-
 }
 
 QWidget* FilePathPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
@@ -61,7 +59,7 @@ void FilePathPropertyDelegate::setEditorData(QWidget*, const QModelIndex& index)
     lineEdit->setText(stringValue);
 }
 
-bool FilePathPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index ) const 
+bool FilePathPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
@@ -80,7 +78,7 @@ bool FilePathPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemM
 void FilePathPropertyDelegate::OnEditingFinished()
 {
     DVASSERT(!lineEdit.isNull());
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     DVASSERT(nullptr != editor);
     if (!IsPathValid(lineEdit->text()))
     {

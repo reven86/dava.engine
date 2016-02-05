@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-class LandscapeProxy: public BaseObject
+class LandscapeProxy : public BaseObject
 {
 public:
     enum eTilemaskTextures
@@ -63,13 +63,14 @@ public:
     static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
 protected:
-	virtual ~LandscapeProxy();
+    virtual ~LandscapeProxy();
+
 public:
-	LandscapeProxy(Landscape* landscape, Entity* node);
+    LandscapeProxy(Landscape* landscape, Entity* node);
 
-	void SetMode(LandscapeProxy::eLandscapeMode mode);
+    void SetMode(LandscapeProxy::eLandscapeMode mode);
 
-	const AABBox3 & GetLandscapeBoundingBox();
+    const AABBox3& GetLandscapeBoundingBox();
     Texture* GetLandscapeTexture(const FastName& level);
     Color GetLandscapeTileColor(const FastName& level);
     void SetLandscapeTileColor(const FastName& level, const Color& color);

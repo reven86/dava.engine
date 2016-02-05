@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <numeric>
 
-FloatingPointExceptionTest::FloatingPointExceptionTest ()
+FloatingPointExceptionTest::FloatingPointExceptionTest()
     : BaseScreen("FloatingPointExceptionTest")
 {
 }
@@ -52,7 +52,8 @@ void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
     {
         float32 value = max_value / 0.f;
         Logger::Debug("value: max_value / 0.f == %f", value);
-    } catch (std::exception& ex)
+    }
+    catch (std::exception& ex)
     {
         Logger::Debug("catch floating point exception: %s", ex.what());
     }

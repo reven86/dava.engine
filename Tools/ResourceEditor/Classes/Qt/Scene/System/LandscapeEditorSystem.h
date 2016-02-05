@@ -37,13 +37,12 @@ class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
 
-
-class LandscapeEditorSystem: public DAVA::SceneSystem
+class LandscapeEditorSystem : public DAVA::SceneSystem
 {
 public:
-	LandscapeEditorSystem(DAVA::Scene* scene, const DAVA::FilePath & cursorPathname);
-	virtual ~LandscapeEditorSystem();
-	
+    LandscapeEditorSystem(DAVA::Scene* scene, const DAVA::FilePath& cursorPathname);
+    virtual ~LandscapeEditorSystem();
+
     bool IsLandscapeEditingEnabled() const;
 
 protected:
@@ -52,11 +51,11 @@ protected:
     void UpdateCursorPosition();
 
 protected:
-	SceneCollisionSystem *collisionSystem;
-	SceneSelectionSystem *selectionSystem;
-	EntityModificationSystem *modifSystem;
-    LandscapeEditorDrawSystem *drawSystem;
-	Vector2 cursorPosition;
+    SceneCollisionSystem* collisionSystem;
+    SceneSelectionSystem* selectionSystem;
+    EntityModificationSystem* modifSystem;
+    LandscapeEditorDrawSystem* drawSystem;
+    Vector2 cursorPosition;
     Vector2 prevCursorPos;
     Texture* cursorTexture = nullptr;
     float32 cursorSize = 0.0f;

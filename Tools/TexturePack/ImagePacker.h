@@ -37,58 +37,59 @@ namespace Log
 {
 namespace Render
 {
-
 //! helper class to simplify packing of many small 2D images to one big 2D image
 class ImagePacker
 {
 public:
-	//! \brief constructor
-	//! \param[in] size of this imagePacker
-	ImagePacker(const Math::Rect2i & _rect);
-	
-	//! \brief destructor
-	virtual ~ImagePacker();
+    //! \brief constructor
+    //! \param[in] size of this imagePacker
+    ImagePacker(const Math::Rect2i& _rect);
 
-	//! \brief release all data allocated by image packer and reset it internal state
-	void Release(); 
-	
-	//! \brief Add image to image packer & image packer must allocate position for this image
-	//! \param[in] imageSize image size of image we want to pack
-	//! \return rectangle with image position in current image topology
-	bool AddImage(const Math::Size2i & imageSize, void * searchPtr);
-	Math::Rect2i * SearchRectForPtr(void * searchPtr);
-	
-	Math::Rect2i & GetRect() { return rect; };
+    //! \brief destructor
+    virtual ~ImagePacker();
+
+    //! \brief release all data allocated by image packer and reset it internal state
+    void Release();
+
+    //! \brief Add image to image packer & image packer must allocate position for this image
+    //! \param[in] imageSize image size of image we want to pack
+    //! \return rectangle with image position in current image topology
+    bool AddImage(const Math::Size2i& imageSize, void* searchPtr);
+    Math::Rect2i* SearchRectForPtr(void* searchPtr);
+
+    Math::Rect2i& GetRect()
+    {
+        return rect;
+    };
+
 private:
-	// Implementation details
-	Math::Rect2i rect;
-	
-	struct PackNode
-	{
-		PackNode()
-		{
-			isLeaf = true;
-			child[0] = 0;
-			child[1] = 0;
-			isImageSet = false;
-			searchPtr = 0;
-		}
-	
-		bool			isImageSet;
-		Math::Rect2i	rect;
-		bool			isLeaf;
-		PackNode *		child[2];
-		void *			searchPtr;
+    // Implementation details
+    Math::Rect2i rect;
 
-		PackNode *	Insert(const Math::Size2i & imageSize);
-		Math::Rect2i * SearchRectForPtr(void * searchPtr);
-		void		Release();
-	};
-	
-	
-	PackNode * root;
+    struct PackNode
+    {
+        PackNode()
+        {
+            isLeaf = true;
+            child[0] = 0;
+            child[1] = 0;
+            isImageSet = false;
+            searchPtr = 0;
+        }
+
+        bool isImageSet;
+        Math::Rect2i rect;
+        bool isLeaf;
+        PackNode* child[2];
+        void* searchPtr;
+
+        PackNode* Insert(const Math::Size2i& imageSize);
+        Math::Rect2i* SearchRectForPtr(void* searchPtr);
+        void Release();
+    };
+
+    PackNode* root;
 };
-
 };
 };
 using namespace Log;

@@ -60,7 +60,6 @@ bool Cursor::SetSystemCursorVisibility(bool show)
     DVASSERT("Cursor::SetSystemCursorVisibility not implemented");
     return false;
 }
-
 };
 
 #endif //  (__DAVAENGINE_WIN_UAP__)
