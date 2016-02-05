@@ -92,8 +92,8 @@ void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& co
     addTopLevelItem(item);
 
     if (mode == MODE_WITHOUT_COLORS)
-	{
-		item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
+    {
+        item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
 	}
 	else
 	{
@@ -230,7 +230,7 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
     item->setText(0, str);
 
     UpdateImage(number);
-    
+
     blockSignals(blocked);
 }
 

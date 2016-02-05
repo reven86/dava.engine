@@ -50,10 +50,10 @@ public:
 
     DAVA::InspInfoDynamic* GetDynamicInfo() const
     {
-        return dynamicInfo; 
-	}
+        return dynamicInfo;
+    }
 
-	DAVA::VariantType GetVariant() const
+    DAVA::VariantType GetVariant() const
 	{
         return dynamicInfo->MemberValueGet(ddata, name);
     }

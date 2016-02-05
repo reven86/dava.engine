@@ -44,8 +44,8 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
 
             DAVA::float32 landWidth = landSize.x;
             DAVA::float32 landScaleW = landWidth / heightmap->Size();
-			DAVA::float32 landHeight = landSize.z;
-			DAVA::float32 landScaleH = landHeight / 65535.f;
+            DAVA::float32 landHeight = landSize.z;
+            DAVA::float32 landScaleH = landHeight / 65535.f;
 
 			DAVA::uint16 *heightData = heightmap->Data();
 			btHMap.resize(heightmap->Size() * heightmap->Size());
@@ -57,9 +57,9 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
                     DAVA::int32 heightIndex = x + y * heightmap->Size();
                     btHMap[heightIndex] = heightData[heightIndex] * landScaleH;
                 }
-			}
+            }
 
-			btTransform landTransform;
+            btTransform landTransform;
 			landTransform.setIdentity();
 			landTransform.setOrigin(btVector3(0, 0, landHeight / 2.0f));
 
@@ -72,7 +72,7 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
 
             boundingBox = landBox;
         }
-	}
+    }
 }
 
 CollisionLandscape::~CollisionLandscape()

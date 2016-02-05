@@ -157,6 +157,7 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
 
         if (!file.atEnd()) {
             qWarning("[ZipUnpacker::UnZipFile]: read all but not EOF");
+            emit OnError(UNZ_INTERNALERROR);
             return false;
         }
 

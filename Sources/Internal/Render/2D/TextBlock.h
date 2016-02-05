@@ -81,7 +81,7 @@ public:
     * \return true if BiDi transformations supported.
     */
     static bool IsBiDiSupportEnabled();
-    
+
     static TextBlock * Create(const Vector2 & size);
     
     virtual void SetFont(Font * font);
@@ -146,18 +146,21 @@ public:
 
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
-    bool IsForceBiDiSupportEnabled() const { return forceBiDiSupport; }
+    bool IsForceBiDiSupportEnabled() const
+    {
+        return forceBiDiSupport;
+    }
     void SetForceBiDiSupportEnabled(bool value);
 
     void SetAngle(const float32 _angle);
     void SetPivot(const Vector2& _pivot);
 
 private:
-    static void RegisterTextBlock(TextBlock *textBlock);
-    static void UnregisterTextBlock(TextBlock *textBlock);
+    static void RegisterTextBlock(TextBlock* textBlock);
+    static void UnregisterTextBlock(TextBlock* textBlock);
     static void InvalidateAllTextBlocks();
 
-	TextBlock();
+    TextBlock();
     TextBlock(const TextBlock& src);
     virtual ~TextBlock();
 

@@ -382,6 +382,6 @@ void QtPropertyItemDelegate::hideButtons()
 
 void QtPropertyItemDelegate::invalidateButtons()
 {
-    hideButtons();
+    showButtons(nullptr);
 }
 

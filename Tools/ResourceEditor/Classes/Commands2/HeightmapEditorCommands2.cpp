@@ -88,9 +88,9 @@ uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
         uint16* src = oldData + (yOffset + i) * size + xOffset;
         uint16* dst = newData + i * width;
         memcpy(dst, src, sizeof(uint16) * width);
-	}
-
-    return newData;
+    }
+	
+	return newData;
 }
 
 void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)

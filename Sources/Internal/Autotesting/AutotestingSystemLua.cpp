@@ -91,8 +91,8 @@ void* lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
         return nullptr;
     }
     else
-    {
-            void* mem = mspace_realloc(ud, ptr, nsize);
+        {
+			void* mem = mspace_realloc(ud, ptr, nsize);
 			DVASSERT(mem);
 			return mem;
 		}
@@ -257,7 +257,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
 
     void AutotestingSystemLua::StackDump(lua_State* L)
     {
-		Logger::FrameworkDebug("*** Stack Dump ***");
+        Logger::FrameworkDebug("*** Stack Dump ***");
 		int i;
 		int top = lua_gettop(L);
 
@@ -584,7 +584,7 @@ void AutotestingSystemLua::InitFromFile(const String& luaFilePath)
     String AutotestingSystemLua::GetText(UIControl* control)
     {
         UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
-		if (uiStaticText)
+        if (uiStaticText)
 		{
 			return UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
 		}

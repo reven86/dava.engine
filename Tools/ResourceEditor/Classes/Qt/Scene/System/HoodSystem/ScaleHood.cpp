@@ -97,7 +97,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
         DAVA::Polygon3 poly;
         poly.AddPoint(axisXY->curFrom);
         poly.AddPoint(axisXY->curTo);
-		poly.AddPoint(axisYZ->curTo);
+        poly.AddPoint(axisYZ->curTo);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
     }
 
