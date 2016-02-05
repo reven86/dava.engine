@@ -453,12 +453,17 @@ void TilemaskEditorSystem::CreateMaskTexture()
     if (tilemask != srcTexture)
     {
         landscapeTilemaskTexture = SafeRetain(tilemask);
+        
+        DAVA::Rect sourceRect(0.0f, 0.0f, landscapeTilemaskTexture->width, landscapeTilemaskTexture->height);
+        DAVA::Rect destRect(0.0f, 0.0f, srcTexture->width, srcTexture->height);
 
         RenderSystem2D::RenderTargetPassDescriptor desc;
         desc.target = srcTexture;
         desc.shouldTransformVirtualToPhysical = false;
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->DrawTextureWithoutAdjustingRects(landscapeTilemaskTexture,
+                                                                     RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL,
+                                                                     Color::White, destRect, sourceRect);
         RenderSystem2D::Instance()->EndRenderTargetPass();
 
         drawSystem->SetTileMaskTexture(srcTexture);
