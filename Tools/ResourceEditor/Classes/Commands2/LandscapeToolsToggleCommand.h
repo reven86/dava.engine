@@ -129,9 +129,6 @@ public:
 
 private:
     void OnEnabled() override;
-
-private:
-    bool saveChanges = false;
 };
 using DisableCustomColorsCommand = LandscapeToolsReverseCommand<EnableCustomColorsCommand>;
 

@@ -28,6 +28,7 @@
 
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Scene/SceneEditor2.h"
+#include "Scene/System/LandscapeEditorDrawSystem/CustomColorsProxy.h"
 #include "Qt/Scene/SceneSignals.h"
 #include "Main/QtUtils.h"
 
@@ -97,8 +98,8 @@ LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEd
                                                          DAVA::uint32 _allowedTools, DAVA::String _disablingError)
     : Command2(identifier)
     , sceneEditor(_sceneEditor)
-    , allowedTools(_allowedTools)
     , disablingError(_disablingError)
+    , allowedTools(_allowedTools)
 {
 }
 
@@ -196,11 +197,10 @@ void EnableHeightmapEditorCommand::OnDisabled()
  */
 EnableCustomColorsCommand::EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool _saveChanges)
     : LandscapeToolsToggleCommand(CMDID_CUSTOM_COLORS_ENABLE, forSceneEditor, 0, ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR)
-    , saveChanges(_saveChanges)
 {
     isEnabledFunction = DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::IsLandscapeEditingEnabled);
     enableFunction = DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::EnableLandscapeEditing);
-    disableFunction = Bind(DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::DisableLandscapeEdititing), false);
+    disableFunction = Bind(DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::DisableLandscapeEdititing), _saveChanges);
 }
 
 void EnableCustomColorsCommand::OnEnabled()
