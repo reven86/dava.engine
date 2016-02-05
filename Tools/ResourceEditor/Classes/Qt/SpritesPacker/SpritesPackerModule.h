@@ -27,21 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __SPRITE_PACKER_HELPER_H__
-#define __SPRITE_PACKER_HELPER_H__
+#ifndef __SPRITES_PACKER_MODULE_H__
+#define __SPRITES_PACKER_MODULE_H__
 
-#include "DAVAEngine.h"
-#include <QFutureWatcher>
+#include "Base/BaseTypes.h"
 
+<<<<<<< HEAD:Tools/ResourceEditor/Classes/Qt/SpritesPacker/SpritePackerHelper.h
 class SceneData;
 namespace DAVA
 {
 // Sprite Packer Helper for Particles Editor.
 class SpritePackerHelper : public QObject, public DAVA::StaticSingleton<SpritePackerHelper>
+=======
+#include <QObject>
+
+class SpritesPacker;
+class QAction;
+class SpritesPackerModule final : public QObject
+>>>>>>> [DF-2379] Added dialog for reloading of sprites:Tools/ResourceEditor/Classes/Qt/SpritesPacker/SpritesPackerModule.h
 {
     Q_OBJECT
 
 public:
+<<<<<<< HEAD:Tools/ResourceEditor/Classes/Qt/SpritesPacker/SpritePackerHelper.h
     SpritePackerHelper();
     void UpdateParticleSprites(DAVA::eGPUFamily gpu);
 
@@ -54,12 +62,70 @@ private:
 
     void Pack(DAVA::eGPUFamily gpu);
     void Reload();
+=======
+    SpritesPackerModule();
+    ~SpritesPackerModule() override;
 
-    QFuture<void>* future;
-    QFutureWatcher<void> watcher;
+    QAction* GetReloadAction() const;
+    void SetAction(QAction* reloadSpritesAction);
 
+    void RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
+
+signals:
+    void SpritesReloaded();
+
+private slots:
+
+    void RepackWithDialog();
+>>>>>>> [DF-2379] Added dialog for reloading of sprites:Tools/ResourceEditor/Classes/Qt/SpritesPacker/SpritesPackerModule.h
+
+private:
+    void SetupSpritesPacker(const DAVA::FilePath& projectPath);
+    void ShowPackerDialog();
+    void ReloadObjects();
+
+<<<<<<< HEAD:Tools/ResourceEditor/Classes/Qt/SpritesPacker/SpritePackerHelper.h
 private slots:
     void threadRepackAllFinished();
 };
+=======
+private:
+    std::unique_ptr<SpritesPacker> spritesPacker;
+    QAction* reloadSpritesAction = nullptr;
+
+    DAVA::uint32 acceptableLoggerFlags = 0xFFFFFFFF;
+>>>>>>> [DF-2379] Added dialog for reloading of sprites:Tools/ResourceEditor/Classes/Qt/SpritesPacker/SpritesPackerModule.h
 };
-#endif /* __SPRITE_PACKER_HELPER_H__ */
+
+//class SceneData;
+//namespace DAVA {
+//
+//// Sprite Packer Helper for Particles Editor.
+//class SpritePackerHelper : public QObject, public DAVA::StaticSingleton<SpritePackerHelper>
+//{
+//	Q_OBJECT
+//
+//public:
+//	SpritePackerHelper();
+//	void UpdateParticleSprites(DAVA::eGPUFamily gpu);
+//
+//signals:
+//	void readyAll();
+//
+//private:
+////    void EnumerateSpritesForReloading(Scene * scene, Map<String, Sprite *> &sprites);
+////    void EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite *> &sprites);
+//
+//	void Pack(DAVA::eGPUFamily gpu);
+//	void Reload();
+//
+//    QFuture<void>* future;
+//    QFutureWatcher<void> watcher;
+//
+//private slots:
+//    void threadRepackAllFinished();
+//
+//};
+//};
+
+#endif // __SPRITES_PACKER_MODULE_H__
