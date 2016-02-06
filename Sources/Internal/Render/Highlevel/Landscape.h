@@ -34,12 +34,9 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
-#include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "FileSystem/FilePath.h"
 #include "MemoryManager/MemoryProfiler.h"
-
-//#define LANDSCAPE_SPECULAR_LIT 1
 
 namespace DAVA
 {
@@ -55,6 +52,7 @@ class FoliageSystem;
 class NMaterial;
 class SerializationContext;
 class Heightmap;
+class Frustum;
 
 class Landscape : public RenderObject
 {
@@ -67,7 +65,7 @@ public:
     static const int32 PATCH_VERTEX_COUNT = 17;
     static const int32 PATCH_QUAD_COUNT = (PATCH_VERTEX_COUNT - 1);
     static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
-    static const int32 MAX_QUAD_COUNT_IN_VBO = 128;
+    static const int32 MAX_QUAD_COUNT_IN_VB = 128;
     static const int32 RENDER_QUAD_WIDTH = 129;
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
 
@@ -88,51 +86,26 @@ public:
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
+    //LandscapeVertex used in GetLevel0Geometry() only
+    struct LandscapeVertex 
+    {
+        Vector3 position;
+        Vector2 texCoord;
+    };
+
+    /**
+    \brief Get landscape mesh geometry.
+    Unoptimized lod0 mesh is returned.
+    \param[out] vertices landscape vertices
+    \param[out] indices landscape indices
+    */
+    bool GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const;
+
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
         \param[in] landscapeBox axial-aligned bounding box of the landscape block
      */
     virtual void BuildLandscapeFromHeightmapImage(const FilePath& heightmapPathname, const AABBox3& landscapeBox);
-
-    //TODO: think about how to switch normal generation for landscape on/off
-    //ideally it should be runtime option and normal generation should happen when material that requires landscape has been set
-    struct LandscapeVertex
-    {
-        Vector3 position;
-        Vector2 texCoord;
-        Vector3 normal;
-        Vector3 tangent;
-    };
-
-    struct LandscapeVertexInstanced
-    {
-        Vector3 position;
-    };
-
-    struct InstanceData
-    {
-        Vector2 offset;
-        float32 scale;
-    };
-
-    struct LanscapeBufferData
-    {
-        rhi::HVertexBuffer buffer;
-        uint8* data;
-        uint32 dataSize;
-    };
-
-    void BindDynamicParameters(Camera* camera) override;
-
-    void PrepareToRender(Camera* camera) override;
-
-    /**
-        \brief Get landscape mesh geometry.
-        Unoptimized lod0 mesh is returned.
-        \param[out] vertices landscape vertices
-        \param[out] indices landscape indices
-	 */
-    bool GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const;
 
     /**
         \brief Function to receive pathname of heightmap object
@@ -169,7 +142,10 @@ public:
 
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
-    // RHI_COMPLETE need remove this
+    void BindDynamicParameters(Camera* camera) override;
+    void PrepareToRender(Camera* camera) override;
+
+
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
     bool IsUpdatable() const;
@@ -177,9 +153,47 @@ public:
     void SetForceFirstLod(bool force);
 
 protected:
+
+    void AllocateGeometryData();
+    void ReleaseGeometryData();
+
+    void RestoreGeometry();
+
+    void SetLandscapeSize(const Vector3& newSize);
+
+    bool BuildHeightmap();
+    void BuildLandscape();
+
+    struct RestoreBufferData
+    {
+        rhi::HVertexBuffer buffer;
+        uint8* data;
+        uint32 dataSize;
+    };
+
+    Vector<RestoreBufferData> bufferRestoreData;
+
+    FilePath heightmapPath;
+
+    Frustum* frustum = nullptr;
+    Heightmap* heightmap = nullptr;
+    NMaterial* landscapeMaterial = nullptr;
+    FoliageSystem* foliageSystem = nullptr;
+
+    uint32 drawIndices = 0;
+
+    bool forceFirstLod = false;
+    bool updatable = false;
+    bool isDebugDraw = false;
+
+    bool isInstancingUsed = false;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Subdivision
+
     struct PatchQuadInfo
     {
-        uint32 vdoQuad;
+        uint32 vdoQuad; //TODO: remove this
         AABBox3 bbox;
         Vector3 positionOfMaxError;
         float32 maxError;
@@ -211,6 +225,12 @@ protected:
         uint32 size;
     };
 
+    SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
+    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
+    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
+    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
+    void AddPatchToRender(uint32 level, uint32 x, uint32 y);
+
     uint32 subdivLevelCount;
     uint32 subdivPatchCount;
     uint32 quadsInWidth;
@@ -218,68 +238,9 @@ protected:
     SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
     Vector<PatchQuadInfo> patchQuadArray;
     Vector<SubdivisionPatchInfo> subdivPatchArray;
-    Vector<SubdivisionPatchInfo*> drawPatchArray;
+    uint32 subdivPatchesDrawCount = 0;
 
-    uint32 patchesToDraw = 0;
-
-    SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
-    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
-    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
-    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
-    void AddPatchToRender(uint32 level, uint32 x, uint32 y);
-
-    void DrawLandscape();
-    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
-    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
-
-    inline uint16 GetVertexIndex(uint16 x, uint16 y);
-
-    int16 AllocateQuadVertexBuffer(uint32 x, uint32 y, uint32 size);
-    void AllocateGeometryData();
-    void ReleaseGeometryData();
-
-    void RestoreGeometry();
-
-    void SetLandscapeSize(const Vector3& newSize);
-
-    void FlushQueue();
-    void ClearQueue();
-
-    bool BuildHeightmap();
-    void BuildLandscape();
-
-    void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
-
-    void AllocateRenderBatch();
-
-    Texture* CreateHeightTexture(Heightmap* heightmap);
-
-    Vector<rhi::HVertexBuffer> vertexBuffers;
-    Vector<LanscapeBufferData> bufferRestoreData;
-    FilePath heightmapPath;
-
-    rhi::HVertexBuffer instancedPatchVBuffer;
-    rhi::HIndexBuffer instancedPatchIBuffer;
-    InstanceData* instanceDataPtr = nullptr;
-    CircularArray<rhi::HVertexBuffer, 9> instanceBuffers;
-
-    Frustum* frustum = nullptr;
-    Heightmap* heightmap = nullptr;
-    NMaterial* landscapeMaterial = nullptr;
-    FoliageSystem* foliageSystem = nullptr;
-
-    std::vector<uint16> indices;
-
-    uint32 vertexLayoutUID = rhi::VertexLayout::InvalidUID;
-    int32 lodLevelsCount = 0;
-    int32 queueIndexCount = 0;
-    int32 flushQueueCounter = 0;
-    uint32 drawIndices = 0;
-    int16 queueRdoQuad = 0;
-    bool forceFirstLod = false;
-    bool updatable = false;
-    bool isDebugDraw = false;
-
+//////Metrics
     Vector3 cameraPos;
     float32 fovCorrection;
 
@@ -300,8 +261,70 @@ protected:
     float32 zoomFov;
     float32 normalFov;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Non-instancing render
+
+    struct VertexNoInstancing
+    {
+        Vector3 position;
+        Vector2 texCoord;
+        Vector3 normal;
+        Vector3 tangent;
+    };
+
+    void AllocateGeometryDataNoInstancing();
+
+    void AllocateRenderBatch();
+    int16 AllocateQuadVertexBuffer(uint32 x, uint32 y, uint32 size);
+
+    void DrawLandscapeNoInstancing();
+    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+
+    void FlushQueue();
+    void ClearQueue();
+
+    inline uint16 GetVertexIndex(uint16 x, uint16 y);
+
+    void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
+
+    Vector<rhi::HVertexBuffer> vertexBuffers;
+    std::vector<uint16> indices;
+    
+    uint32 vLayoutUIDNoInstancing = rhi::VertexLayout::InvalidUID;
+
+    int32 queueIndexCount = 0;
+    int16 queuedQuadBuffer = 0;
+    int32 flushQueueCounter = 0;
+
     bool isRequireTangentBasis = false;
-    bool isInstancingUsed = false;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Instancing render
+
+    struct VertexInstancing
+    {
+        Vector3 position;
+    };
+
+    struct InstanceData
+    {
+        Vector2 offset;
+        float32 scale;
+    };
+
+    void AllocateGeometryDataInstancing();
+
+    Texture* CreateHeightTexture(Heightmap* heightmap);
+
+    void DrawLandscapeInstancing();
+    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+
+    rhi::HVertexBuffer patchVertexBuffer;
+    rhi::HIndexBuffer patchIndexBuffer;
+    InstanceData* instanceDataPtr = nullptr;
+    CircularArray<rhi::HVertexBuffer, 9> instanceDataBuffers;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public:
     INTROSPECTION_EXTEND(Landscape, RenderObject,

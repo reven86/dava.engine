@@ -106,104 +106,6 @@ Landscape::~Landscape()
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
 }
 
-int16 Landscape::AllocateQuadVertexBuffer(uint32 quadX, uint32 quadY, uint32 quadSize)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    uint32 verticesCount = (quadSize + 1) * (quadSize + 1);
-    uint32 vertexSize = sizeof(LandscapeVertex);
-    if (!isRequireTangentBasis)
-    {
-        vertexSize -= sizeof(Vector3); // (LandscapeVertex::normal);
-        vertexSize -= sizeof(Vector3); // (LandscapeVertex::tangent);
-    }
-
-    uint8* landscapeVertices = new uint8[verticesCount * vertexSize];
-    uint32 index = 0;
-    for (uint32 y = quadY; y < quadY + quadSize + 1; ++y)
-    {
-        for (uint32 x = quadX; x < quadX + quadSize + 1; ++x)
-        {
-            LandscapeVertex* vertex = reinterpret_cast<LandscapeVertex*>(&landscapeVertices[index * vertexSize]);
-            vertex->position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-
-            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
-            vertex->texCoord = texCoord;
-
-            if (isRequireTangentBasis)
-            {
-                //VI: calculate normal for the point.
-                uint32 xx = 0;
-                uint32 yy = 0;
-
-                xx = (x < uint32(heightmap->Size()) - 1) ? x + 1 : x;
-                Vector3 right = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
-
-                xx = (x > 0) ? x - 1 : x;
-                Vector3 left = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
-
-                yy = (y < uint32(heightmap->Size()) - 1) ? y + 1 : y;
-                Vector3 bottom = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
-                yy = (y > 0) ? y - 1 : y;
-                Vector3 top = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
-
-                Vector3 position = vertex->position;
-                Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
-                Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
-                Vector3 normal2 = (bottom != position && left != position) ? CrossProduct(bottom - position, left - position) : Vector3(0, 0, 0);
-                Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
-
-                Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
-                normalAverage.Normalize();
-                vertex->normal = normalAverage;
-                vertex->tangent = Normalize(right - position);
-
-                /*
-                VS: Algorithm
-                // # P.xy store the position for which we want to calculate the normals
-                // # height() here is a function that return the height at a point in the terrain
-
-                // read neighbor heights using an arbitrary small offset
-                vec3 off = vec3(1.0, 1.0, 0.0);
-                float hL = height(P.xy - off.xz);
-                float hR = height(P.xy + off.xz);
-                float hD = height(P.xy - off.zy);
-                float hU = height(P.xy + off.zy);
-
-                // deduce terrain normal
-                N.x = hL - hR;
-                N.y = hD - hU;
-                N.z = 2.0;
-                N = normalize(N);
-                */
-            }
-
-            index++;
-        }
-    }
-
-    uint32 vBufferSize = static_cast<uint32>(verticesCount * vertexSize);
-
-    rhi::VertexBuffer::Descriptor desc;
-    desc.size = vBufferSize;
-    desc.initialData = landscapeVertices;
-    if (updatable)
-        desc.usage = rhi::USAGE_DYNAMICDRAW;
-    else
-        desc.usage = rhi::USAGE_STATICDRAW;
-
-    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
-    vertexBuffers.push_back(vertexBuffer);
-    
-#if defined(__DAVAENGINE_IPHONE__)
-    SafeDeleteArray(landscapeVertices);  
-#else
-    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize });
-#endif
-
-    return (int16)(vertexBuffers.size() - 1);
-}
-
 void Landscape::RestoreGeometry()
 {
     for (auto& restoreData : bufferRestoreData)
@@ -217,23 +119,35 @@ void Landscape::ReleaseGeometryData()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+////General
     for (IndexedRenderBatch& batch : renderBatchArray)
         batch.renderBatch->Release();
     renderBatchArray.clear();
     activeRenderBatchArray.clear();
 
-    for (rhi::HVertexBuffer handle : vertexBuffers)
-        rhi::DeleteVertexBuffer(handle);
-    vertexBuffers.clear();
-
     for (auto& restoreData : bufferRestoreData)
         SafeDeleteArray(restoreData.data);
     bufferRestoreData.clear();
 
-    indices.clear();
-
     subdivPatchArray.clear();
     patchQuadArray.clear();
+
+////Non-instanced data
+    for (rhi::HVertexBuffer handle : vertexBuffers)
+        rhi::DeleteVertexBuffer(handle);
+    vertexBuffers.clear();
+
+    indices.clear();
+
+////Instanced data
+    if (patchVertexBuffer)
+        rhi::DeleteVertexBuffer(patchVertexBuffer);
+
+    if (patchIndexBuffer)
+        rhi::DeleteIndexBuffer(patchIndexBuffer);
+
+    for (rhi::HVertexBuffer & vb : instanceDataBuffers.elements)
+        rhi::DeleteVertexBuffer(vb);
 }
     
 void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & _box)
@@ -333,110 +247,24 @@ void Landscape::AllocateGeometryData()
     subdivPatchArray.resize(subdivPatchCount);
     patchQuadArray.resize(subdivPatchCount);
 
-    if (!isInstancingUsed)
+    if (isInstancingUsed)
     {
-        isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
-
-        for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
-        {
-            AllocateRenderBatch();
-        }
-
-        rhi::VertexLayout vLayout;
-        vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
-        vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-        if (isRequireTangentBasis)
-        {
-            vLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
-            vLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
-        }
-        vertexLayoutUID = rhi::VertexLayout::UniqueId(vLayout);
-
-        indices.resize(INITIAL_INDEX_BUFFER_CAPACITY);
-
-        const uint32 quadSize = RENDER_QUAD_WIDTH - 1;
-        quadsInWidth = heightmapSizeMinus1 / quadSize;
-        // For cases where landscape is very small allocate 1 VBO.
-        if (quadsInWidth == 0)
-            quadsInWidth = 1;
-
-        for (uint32 y = 0; y < quadsInWidth; ++y)
-        {
-            for (uint32 x = 0; x < quadsInWidth; ++x)
-            {
-                uint16 check = AllocateQuadVertexBuffer(x * quadSize, y * quadSize, quadSize);
-                DVASSERT(check == (uint16)(x + y * quadsInWidth));
-            }
-        }
+        AllocateGeometryDataInstancing();
     }
     else
     {
-        ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
-        landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
-
-        rhi::VertexBuffer::Descriptor instanceBufferDesc;
-        instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
-        instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
-        for (rhi::HVertexBuffer& buffer : instanceBuffers.elements)
-            buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
-
-        uint32 verticesCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
-        LandscapeVertexInstanced* patchVertices = new LandscapeVertexInstanced[verticesCount];
-        uint16* patchIndices = new uint16[(PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6];
-        uint16* indicesPtr = patchIndices;
-        for (uint32 y = 0; y < PATCH_VERTEX_COUNT; ++y)
-        {
-            for (uint32 x = 0; x < PATCH_VERTEX_COUNT; ++x)
-            {
-                patchVertices[y * PATCH_VERTEX_COUNT + x].position = Vector3(float32(x) / (PATCH_VERTEX_COUNT - 1), float32(y) / (PATCH_VERTEX_COUNT - 1), 0.f);
-
-                if (x < (PATCH_VERTEX_COUNT - 1) && y < (PATCH_VERTEX_COUNT - 1))
-                {
-                    *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 0);
-                    *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 1);
-                    *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
-
-                    *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 1);
-                    *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 1);
-                    *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
-                }
-            }
-        }
-
-        rhi::VertexBuffer::Descriptor desc;
-        desc.size = verticesCount * sizeof(LandscapeVertexInstanced);
-        desc.initialData = patchVertices;
-        desc.usage = rhi::USAGE_STATICDRAW;
-        instancedPatchVBuffer = rhi::CreateVertexBuffer(desc);
-
-        rhi::IndexBuffer::Descriptor idesc;
-        idesc.size = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6 * sizeof(uint16);
-        idesc.initialData = patchIndices;
-        idesc.usage = rhi::USAGE_STATICDRAW;
-        instancedPatchIBuffer = rhi::CreateIndexBuffer(idesc);
-
-        SafeDeleteArray(patchVertices);
-        SafeDeleteArray(patchIndices);
-
-        RenderBatch* batch = new RenderBatch();
-        batch->SetMaterial(landscapeMaterial);
-        batch->SetSortingKey(10);
-        batch->vertexBuffer = instancedPatchVBuffer;
-        batch->indexBuffer = instancedPatchIBuffer;
-        batch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-        batch->indexCount = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6;
-        batch->vertexCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
-
-        rhi::VertexLayout vLayout;
-        vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
-        vLayout.AddStream(rhi::VDF_PER_INSTANCE);
-        vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
-
-        batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
-
-        AddRenderBatch(batch);
-        SafeRelease(batch);
+        AllocateGeometryDataNoInstancing();
     }
+}
+
+void Landscape::BuildLandscape()
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    ReleaseGeometryData();
+    AllocateGeometryData();
+
+    UpdatePatchInfo(0, 0, 0);
 }
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
@@ -458,16 +286,6 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
     return tx;
-}
-
-void Landscape::BuildLandscape()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    ReleaseGeometryData();
-    AllocateGeometryData();
-
-    UpdatePatchInfo(0, 0, 0);
 }
 
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
@@ -624,14 +442,14 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
         }
     }
 
-    if (realQuadCountInPatch > MAX_QUAD_COUNT_IN_VBO)
+    if (realQuadCountInPatch > MAX_QUAD_COUNT_IN_VB)
     {
         patch->vdoQuad = -1;
     }
     else
     {
-        uint32 x = heightMapStartX / MAX_QUAD_COUNT_IN_VBO;
-        uint32 y = heightMapStartY / MAX_QUAD_COUNT_IN_VBO;
+        uint32 x = heightMapStartX / MAX_QUAD_COUNT_IN_VB;
+        uint32 y = heightMapStartY / MAX_QUAD_COUNT_IN_VB;
 
         patch->vdoQuad = y * quadsInWidth + x;
     }
@@ -673,7 +491,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     if (level == subdivLevelCount - 1)
     {
         TerminateSubdivision(level, x, y, levelInfo.size);
-        patchesToDraw++;
+        subdivPatchesDrawCount++;
         return;
     }
 
@@ -706,7 +524,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     {
         //DrawPatch(level, x, y, 0, 0, 0, 0);
         TerminateSubdivision(level, x, y, levelInfo.size);
-        patchesToDraw++;
+        subdivPatchesDrawCount++;
     }
 }
 
@@ -783,40 +601,169 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
     }
 }
 
-void Landscape::DrawLandscape()
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////Non-instancing render
+
+void Landscape::AllocateGeometryDataNoInstancing()
+{
+    isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
+
+    rhi::VertexLayout vLayout;
+    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    if (isRequireTangentBasis)
+    {
+        vLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
+        vLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
+    }
+    vLayoutUIDNoInstancing = rhi::VertexLayout::UniqueId(vLayout);
+
+    for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
+    {
+        AllocateRenderBatch();
+    }
+
+    indices.resize(INITIAL_INDEX_BUFFER_CAPACITY);
+
+    const uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
+    const uint32 quadSize = RENDER_QUAD_WIDTH - 1;
+
+    quadsInWidth = heightmapSizeMinus1 / quadSize;
+    // For cases where landscape is very small allocate 1 VBO.
+    if (quadsInWidth == 0)
+        quadsInWidth = 1;
+
+    for (uint32 y = 0; y < quadsInWidth; ++y)
+    {
+        for (uint32 x = 0; x < quadsInWidth; ++x)
+        {
+            uint16 check = AllocateQuadVertexBuffer(x * quadSize, y * quadSize, quadSize);
+            DVASSERT(check == (uint16)(x + y * quadsInWidth));
+        }
+    }
+}
+
+void Landscape::AllocateRenderBatch()
+{
+    ScopedPtr<RenderBatch> batch(new RenderBatch());
+    AddRenderBatch(batch);
+
+    batch->SetMaterial(landscapeMaterial);
+    batch->SetSortingKey(10);
+
+    batch->vertexLayoutId = vLayoutUIDNoInstancing;
+    batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+}
+
+int16 Landscape::AllocateQuadVertexBuffer(uint32 quadX, uint32 quadY, uint32 quadSize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    activeRenderBatchArray.clear();
-
-    rhi::HVertexBuffer instanceBuffer;
-    if (isInstancingUsed)
+    uint32 verticesCount = (quadSize + 1) * (quadSize + 1);
+    uint32 vertexSize = sizeof(VertexNoInstancing);
+    if (!isRequireTangentBasis)
     {
-        if (patchesToDraw)
+        vertexSize -= sizeof(Vector3); // (Vertex::normal);
+        vertexSize -= sizeof(Vector3); // (Vertex::tangent);
+    }
+
+    uint8* landscapeVertices = new uint8[verticesCount * vertexSize];
+    uint32 index = 0;
+    for (uint32 y = quadY; y < quadY + quadSize + 1; ++y)
+    {
+        for (uint32 x = quadX; x < quadX + quadSize + 1; ++x)
         {
-            instanceBuffer = instanceBuffers.Next();
-            renderBatchArray[0].renderBatch->instanceBuffer = instanceBuffer;
-            renderBatchArray[0].renderBatch->instanceCount = patchesToDraw;
-            instanceDataPtr = static_cast<InstanceData*>(rhi::MapVertexBuffer(instanceBuffer, 0, patchesToDraw * sizeof(InstanceData)));
-            activeRenderBatchArray.push_back(renderBatchArray[0].renderBatch);
+            VertexNoInstancing* vertex = reinterpret_cast<VertexNoInstancing*>(&landscapeVertices[index * vertexSize]);
+            vertex->position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
+
+            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
+            vertex->texCoord = texCoord;
+
+            if (isRequireTangentBasis)
+            {
+                //VI: calculate normal for the point.
+                uint32 xx = 0;
+                uint32 yy = 0;
+
+                xx = (x < uint32(heightmap->Size()) - 1) ? x + 1 : x;
+                Vector3 right = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
+
+                xx = (x > 0) ? x - 1 : x;
+                Vector3 left = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
+
+                yy = (y < uint32(heightmap->Size()) - 1) ? y + 1 : y;
+                Vector3 bottom = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
+                yy = (y > 0) ? y - 1 : y;
+                Vector3 top = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
+
+                Vector3 position = vertex->position;
+                Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
+                Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
+                Vector3 normal2 = (bottom != position && left != position) ? CrossProduct(bottom - position, left - position) : Vector3(0, 0, 0);
+                Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
+
+                Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
+                normalAverage.Normalize();
+                vertex->normal = normalAverage;
+                vertex->tangent = Normalize(right - position);
+
+                /*
+                VS: Algorithm
+                // # P.xy store the position for which we want to calculate the normals
+                // # height() here is a function that return the height at a point in the terrain
+
+                // read neighbor heights using an arbitrary small offset
+                vec3 off = vec3(1.0, 1.0, 0.0);
+                float hL = height(P.xy - off.xz);
+                float hR = height(P.xy + off.xz);
+                float hD = height(P.xy - off.zy);
+                float hU = height(P.xy + off.zy);
+
+                // deduce terrain normal
+                N.x = hL - hR;
+                N.y = hD - hU;
+                N.z = 2.0;
+                N = normalize(N);
+                */
+            }
+
+            index++;
         }
     }
-    else
-    {
-        ClearQueue();
-    }
 
+    uint32 vBufferSize = static_cast<uint32>(verticesCount * vertexSize);
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.size = vBufferSize;
+    desc.initialData = landscapeVertices;
+    if (updatable)
+        desc.usage = rhi::USAGE_DYNAMICDRAW;
+    else
+        desc.usage = rhi::USAGE_STATICDRAW;
+
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
+    vertexBuffers.push_back(vertexBuffer);
+
+#if defined(__DAVAENGINE_IPHONE__)
+    SafeDeleteArray(landscapeVertices);
+#else
+    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize });
+#endif
+
+    return (int16)(vertexBuffers.size() - 1);
+}
+
+void Landscape::DrawLandscapeNoInstancing()
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    drawIndices = 0;
+    flushQueueCounter = 0;
+    activeRenderBatchArray.clear();
+
+    ClearQueue();
     AddPatchToRender(0, 0, 0);
-
-    if (isInstancingUsed)
-    {
-        if (instanceBuffer.IsValid())
-            rhi::UnmapVertexBuffer(instanceBuffer);
-    }
-    else
-    {
-        FlushQueue();
-    }
+    FlushQueue();
 }
 
 void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
@@ -824,12 +771,12 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
 
-    if ((patch->vdoQuad != queueRdoQuad) && (queueRdoQuad != -1))
+    if ((patch->vdoQuad != queuedQuadBuffer) && (queuedQuadBuffer != -1))
     {
         FlushQueue();
     }
 
-    queueRdoQuad = patch->vdoQuad;
+    queuedQuadBuffer = patch->vdoQuad;
 
     // Draw Middle
     uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
@@ -915,16 +862,6 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
     }
 }
 
-void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
-{
-    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
-
-    instanceDataPtr->offset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
-    instanceDataPtr->scale = 1.f / levelInfo.size;
-    ++instanceDataPtr;
-}
-
 void Landscape::FlushQueue()
 {
     if (queueIndexCount == 0)
@@ -936,7 +873,7 @@ void Landscape::FlushQueue()
         AllocateRenderBatch();
     }
 
-    DVASSERT(queueRdoQuad != -1);
+    DVASSERT(queuedQuadBuffer != -1);
 
     DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
     DVASSERT(indexBuffer.allocatedindices == queueIndexCount);
@@ -946,7 +883,7 @@ void Landscape::FlushQueue()
     batch->indexBuffer = indexBuffer.buffer;
     batch->indexCount = queueIndexCount;
     batch->startIndex = indexBuffer.baseIndex;
-    batch->vertexBuffer = vertexBuffers[queueRdoQuad];
+    batch->vertexBuffer = vertexBuffers[queuedQuadBuffer];
 
     activeRenderBatchArray.push_back(batch);
     ClearQueue();
@@ -958,13 +895,121 @@ void Landscape::FlushQueue()
 void Landscape::ClearQueue()
 {
     queueIndexCount = 0;
-    queueRdoQuad = -1;
+    queuedQuadBuffer = -1;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////Instancing render
+
+void Landscape::AllocateGeometryDataInstancing()
+{
+    ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
+    landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
+
+    rhi::VertexBuffer::Descriptor instanceBufferDesc;
+    instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
+    instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+    for (rhi::HVertexBuffer& buffer : instanceDataBuffers.elements)
+        buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
+
+    uint32 verticesCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
+    VertexInstancing* patchVertices = new VertexInstancing[verticesCount];
+    uint16* patchIndices = new uint16[(PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6];
+    uint16* indicesPtr = patchIndices;
+    for (uint32 y = 0; y < PATCH_VERTEX_COUNT; ++y)
+    {
+        for (uint32 x = 0; x < PATCH_VERTEX_COUNT; ++x)
+        {
+            patchVertices[y * PATCH_VERTEX_COUNT + x].position = Vector3(float32(x) / (PATCH_VERTEX_COUNT - 1), float32(y) / (PATCH_VERTEX_COUNT - 1), 0.f);
+
+            if (x < (PATCH_VERTEX_COUNT - 1) && y < (PATCH_VERTEX_COUNT - 1))
+            {
+                *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 0);
+                *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
+
+                *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
+            }
+        }
+    }
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.size = verticesCount * sizeof(VertexInstancing);
+    desc.initialData = patchVertices;
+    desc.usage = rhi::USAGE_STATICDRAW;
+    patchVertexBuffer = rhi::CreateVertexBuffer(desc);
+
+    rhi::IndexBuffer::Descriptor idesc;
+    idesc.size = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6 * sizeof(uint16);
+    idesc.initialData = patchIndices;
+    idesc.usage = rhi::USAGE_STATICDRAW;
+    patchIndexBuffer = rhi::CreateIndexBuffer(idesc);
+
+    SafeDeleteArray(patchVertices);
+    SafeDeleteArray(patchIndices);
+
+    RenderBatch* batch = new RenderBatch();
+    batch->SetMaterial(landscapeMaterial);
+    batch->SetSortingKey(10);
+    batch->vertexBuffer = patchVertexBuffer;
+    batch->indexBuffer = patchIndexBuffer;
+    batch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    batch->indexCount = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6;
+    batch->vertexCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
+
+    rhi::VertexLayout vLayout;
+    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vLayout.AddStream(rhi::VDF_PER_INSTANCE);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
+
+    batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
+
+    AddRenderBatch(batch);
+    SafeRelease(batch);
+}
+
+void Landscape::DrawLandscapeInstancing()
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    
+    drawIndices = 0;
+    activeRenderBatchArray.clear();
+
+    if (subdivPatchesDrawCount)
+    {
+        rhi::HVertexBuffer instanceBuffer = instanceDataBuffers.Next();
+        renderBatchArray[0].renderBatch->instanceBuffer = instanceBuffer;
+        renderBatchArray[0].renderBatch->instanceCount = subdivPatchesDrawCount;
+        activeRenderBatchArray.push_back(renderBatchArray[0].renderBatch);
+
+        instanceDataPtr = static_cast<InstanceData*>(rhi::MapVertexBuffer(instanceBuffer, 0, subdivPatchesDrawCount * sizeof(InstanceData)));
+
+        AddPatchToRender(0, 0, 0);
+        
+        rhi::UnmapVertexBuffer(instanceBuffer);
+        instanceDataPtr = nullptr;
+
+        drawIndices = activeRenderBatchArray[0]->indexCount;
+    }
+}
+
+void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
+{
+    SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
+    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
+
+    instanceDataPtr->offset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
+    instanceDataPtr->scale = 1.f / levelInfo.size;
+    ++instanceDataPtr;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Landscape::BindDynamicParameters(Camera* camera)
 {
     RenderObject::BindDynamicParameters(camera);
-
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 }
 
@@ -976,34 +1021,30 @@ void Landscape::PrepareToRender(Camera* camera)
 
     TIME_PROFILE("Landscape.PrepareToRender");
 
-    drawIndices = 0;
-
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
+    if (!subdivLevelCount || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {
         return;
     }
-
-    if (!subdivLevelCount)
-        return;
-
-    flushQueueCounter = 0;
-    camera = GetRenderSystem()->GetMainCamera();
-    frustum = camera->GetFrustum();
-    cameraPos = camera->GetPosition();
-
-    float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.0f, 1.0f);
-    fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
-    fovGeometryAngleError = zoomGeometryAngleError + (geometryAngleError - zoomGeometryAngleError) * fovLerp;
-    fovAbsHeightError = zoomAbsHeightError + (absHeightError - zoomAbsHeightError) * fovLerp;
-
-    patchesToDraw = 0;
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
     {
+        camera = GetRenderSystem()->GetMainCamera();
+        frustum = camera->GetFrustum();
+        cameraPos = camera->GetPosition();
+
+        float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) / (normalFov - zoomFov), 0.0f, 1.0f);
+        fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
+        fovGeometryAngleError = zoomGeometryAngleError + (geometryAngleError - zoomGeometryAngleError) * fovLerp;
+        fovAbsHeightError = zoomAbsHeightError + (absHeightError - zoomAbsHeightError) * fovLerp;
+        subdivPatchesDrawCount = 0;
+
         SubdividePatch(0, 0, 0, 0x3f);
     }
 
-    DrawLandscape();
+    if (isInstancingUsed)
+        DrawLandscapeInstancing();
+    else
+        DrawLandscapeNoInstancing();
 }
 
 bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const
@@ -1274,18 +1315,6 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
     }
 };
 
-void Landscape::AllocateRenderBatch()
-{
-    ScopedPtr<RenderBatch> batch(new RenderBatch());
-    AddRenderBatch(batch);
-
-    batch->SetMaterial(landscapeMaterial);
-    batch->SetSortingKey(10);
-
-    batch->vertexLayoutId = vertexLayoutUID;
-    batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
-}
-
 void Landscape::SetForceFirstLod(bool force)
 {
     forceFirstLod = force;
@@ -1332,17 +1361,18 @@ void Landscape::UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<Landsc
 void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 {
     //TODO: refactor this!
+    DVASSERT(!isInstancingUsed);
 
     int32 heightmapSize = fromHeightmap->Size();
     DVASSERT(heightmap->Size() == heightmapSize);
 
     DVASSERT(!isRequireTangentBasis && "TODO: Landscape::UpdatePart() for HIGH Quality");
 
-    uint32 vertexSize = sizeof(LandscapeVertex);
+    uint32 vertexSize = sizeof(VertexNoInstancing);
     if (!isRequireTangentBasis)
     {
-        vertexSize -= sizeof(Vector3); // (LandscapeVertex::normal);
-        vertexSize -= sizeof(Vector3); // (LandscapeVertex::tangent);
+        vertexSize -= sizeof(Vector3); // (Vertex::normal);
+        vertexSize -= sizeof(Vector3); // (Vertex::tangent);
     }
 
     const uint32 quadSize = RENDER_QUAD_WIDTH - 1;
@@ -1368,7 +1398,7 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 
                     for (uint32 x = quadX * quadSize; x < quadX * quadSize + quadSize + 1; ++x)
                     {
-                        LandscapeVertex* vertex = reinterpret_cast<LandscapeVertex*>(&quadVertices[index * vertexSize]);
+                        VertexNoInstancing* vertex = reinterpret_cast<VertexNoInstancing*>(&quadVertices[index * vertexSize]);
 
                         auto texCoordU = (float32)(x) / (float32)(heightmapSize - 1);
 
