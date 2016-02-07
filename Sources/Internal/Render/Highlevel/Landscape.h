@@ -303,13 +303,16 @@ protected:
 
     struct VertexInstancing
     {
-        Vector3 position;
+        Vector2 position;
+        Vector2 morphDir;
+        Vector4 edgeMask;
     };
 
     struct InstanceData
     {
-        Vector2 offset;
-        float32 scale;
+        Vector2 patchOffset;
+        float32 patchScale;
+        Vector4 lodOffset; // per edge
     };
 
     void AllocateGeometryDataInstancing();

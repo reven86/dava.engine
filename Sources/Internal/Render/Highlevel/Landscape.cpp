@@ -920,7 +920,34 @@ void Landscape::AllocateGeometryDataInstancing()
     {
         for (uint32 x = 0; x < PATCH_VERTEX_COUNT; ++x)
         {
-            patchVertices[y * PATCH_VERTEX_COUNT + x].position = Vector3(float32(x) / (PATCH_VERTEX_COUNT - 1), float32(y) / (PATCH_VERTEX_COUNT - 1), 0.f);
+            VertexInstancing & vertex = patchVertices[y * PATCH_VERTEX_COUNT + x];
+            vertex.position = Vector2(float32(x) / (PATCH_VERTEX_COUNT - 1), float32(y) / (PATCH_VERTEX_COUNT - 1));
+
+            if (x == 0 && y != 0 && y != PATCH_QUAD_COUNT) //left side of patch without corners
+            {
+                vertex.edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
+                vertex.morphDir = Vector2(0.f, 1.f);
+            }
+            else if (x == PATCH_QUAD_COUNT && y != 0 && y != PATCH_QUAD_COUNT) //right side of patch without corners
+            {
+                vertex.edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
+                vertex.morphDir = Vector2(0.f, -1.f);
+            }
+            else if (y == 0 && x != 0 && x != PATCH_QUAD_COUNT) //bottom side of patch without corners
+            {
+                vertex.edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
+                vertex.morphDir = Vector2(1.f, 0.f);
+            }
+            else if (y == PATCH_QUAD_COUNT && x != 0 && x != PATCH_QUAD_COUNT) //top side of patch without corners
+            {
+                vertex.edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
+                vertex.morphDir = Vector2(-1.f, 0.f);
+            }
+            else //others vertices
+            {
+                vertex.edgeMask = Vector4();
+                vertex.morphDir = Vector2();
+            }
 
             if (x < (PATCH_VERTEX_COUNT - 1) && y < (PATCH_VERTEX_COUNT - 1))
             {
@@ -960,9 +987,11 @@ void Landscape::AllocateGeometryDataInstancing()
     batch->vertexCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
 
     rhi::VertexLayout vLayout;
-    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 4);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 4);
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4);
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 
@@ -1000,8 +1029,14 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 x
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
 
-    instanceDataPtr->offset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
-    instanceDataPtr->scale = 1.f / levelInfo.size;
+    instanceDataPtr->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
+    instanceDataPtr->patchScale = 1.f / levelInfo.size;
+    instanceDataPtr->lodOffset = Vector4(
+        float32(levelInfo.size / xNegSize),
+        float32(levelInfo.size / xPosSize),
+        float32(levelInfo.size / yNegSize),
+        float32(levelInfo.size / yPosSize));
+
     ++instanceDataPtr;
 }
 
