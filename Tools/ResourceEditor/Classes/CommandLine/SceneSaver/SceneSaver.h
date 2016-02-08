@@ -37,28 +37,28 @@ using namespace DAVA;
 class SceneSaver
 {
 public:
-	SceneSaver();
-	virtual ~SceneSaver();
-    
-    void SetInFolder(const FilePath &folderPathname);
-    void SetOutFolder(const FilePath &folderPathname);
-    
-    void SaveFile(const String &fileName, Set<String> &errorLog);
-	void ResaveFile(const String &fileName, Set<String> &errorLog);
-    void SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
-    
+    SceneSaver();
+    virtual ~SceneSaver();
+
+    void SetInFolder(const FilePath& folderPathname);
+    void SetOutFolder(const FilePath& folderPathname);
+
+    void SaveFile(const String& fileName, Set<String>& errorLog);
+    void ResaveFile(const String& fileName, Set<String>& errorLog);
+    void SaveScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
+
     void EnableCopyConverted(bool enabled);
 
-    void ResaveYamlFilesRecursive(const DAVA::FilePath & folder, DAVA::Set<DAVA::String> &errorLog) const;
+    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
 
 private:
     void ReleaseTextures();
 
-    void CopyTextures(Scene *scene);
-    void CopyTexture(const FilePath &texturePathname);
+    void CopyTextures(Scene* scene);
+    void CopyTexture(const FilePath& texturePathname);
 
-	void CopyReferencedObject(Entity *node);
-	void CopyEffects(Entity *node);
+    void CopyReferencedObject(Entity* node);
+    void CopyEffects(Entity* node);
     void CopyAllParticlesEmitters(const ParticleEmitterData& emitterData);
     void CopyEmitterByPath(const FilePath& emitterConfigPath);
     void CopyEmitter(ParticleEmitter* emitter);

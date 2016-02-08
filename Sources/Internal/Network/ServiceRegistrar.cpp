@@ -37,7 +37,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name)
 {
     DVASSERT(creator != nullptr && deleter != nullptr);
@@ -82,7 +81,8 @@ IChannelListener* ServiceRegistrar::Create(uint32 serviceId, void* context) cons
 {
     const Entry* entry = FindEntry(serviceId);
     return entry != NULL ? entry->creator(serviceId, context)
-                         : NULL;
+                           :
+                           NULL;
 }
 
 bool ServiceRegistrar::Delete(uint32 serviceId, IChannelListener* obj, void* context) const
@@ -100,7 +100,8 @@ const char8* ServiceRegistrar::Name(uint32 serviceId) const
 {
     const Entry* entry = FindEntry(serviceId);
     return entry != NULL ? entry->name
-                         : NULL;
+                           :
+                           NULL;
 }
 
 const ServiceRegistrar::Entry* ServiceRegistrar::FindEntry(uint32 serviceId) const
@@ -109,5 +110,5 @@ const ServiceRegistrar::Entry* ServiceRegistrar::FindEntry(uint32 serviceId) con
     return i != registrar.end() ? &*i : NULL;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

@@ -33,7 +33,6 @@
 
 namespace DAVA 
 {
-
 //use these names for children buttons to define UISpinner in .yaml
 static const FastName UISPINNER_BUTTON_NEXT_NAME("buttonNext");
 static const FastName UISPINNER_BUTTON_PREVIOUS_NAME("buttonPrevious");
@@ -402,5 +401,4 @@ void UISpinner::SetupInternalControls()
     newPivotPoint.x = content->size.dx;
     nextContent->SetPivotPoint(newPivotPoint);
 }
-
 }

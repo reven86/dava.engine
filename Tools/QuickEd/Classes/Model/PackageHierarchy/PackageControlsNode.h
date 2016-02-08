@@ -38,7 +38,7 @@
 
 namespace DAVA
 {
-    class UIPackage;
+class UIPackage;
 }
 
 class PackageNode;
@@ -46,28 +46,28 @@ class PackageNode;
 class PackageControlsNode : public ControlsContainerNode
 {
 public:
-    PackageControlsNode(PackageNode *parent);
+    PackageControlsNode(PackageNode* parent);
     virtual ~PackageControlsNode();
-    
-    void Add(ControlNode *node) override;
-    void InsertAtIndex(int index, ControlNode *node) override;
-    void Remove(ControlNode *node) override;
-    int GetCount() const override;
-    ControlNode *Get(int index) const override;
 
-    void Accept(PackageVisitor *visitor) override;
+    void Add(ControlNode* node) override;
+    void InsertAtIndex(int index, ControlNode* node) override;
+    void Remove(ControlNode* node) override;
+    int GetCount() const override;
+    ControlNode* Get(int index) const override;
+
+    void Accept(PackageVisitor* visitor) override;
 
     DAVA::String GetName() const override;
-    
+
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingControlsSupported() const override;
-    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
+    virtual bool CanInsertControl(ControlNode* node, DAVA::int32 pos) const override;
     virtual bool CanRemove() const override;
     virtual bool CanCopy() const override;
-    
+
     void RefreshControlProperties();
 
-    ControlNode *FindControlNodeByName(const DAVA::String &name) const;
+    ControlNode* FindControlNodeByName(const DAVA::String& name) const;
 
 private:
     DAVA::Vector<ControlNode*> nodes;

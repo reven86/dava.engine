@@ -34,8 +34,8 @@
 
 namespace DAVA
 {
-
-UIPackage::UIPackage() : 
+UIPackage::UIPackage()
+    :
     controlPackageContext(new UIControlPackageContext())
 {
 }
@@ -111,5 +111,4 @@ RefPtr<UIPackage> UIPackage::Clone() const
     });
     return package;
 }
-
 }

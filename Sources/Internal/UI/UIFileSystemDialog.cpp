@@ -41,7 +41,6 @@
 
 namespace DAVA
 {
-
 UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     : UIControl(Rect(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f,
                      VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.f,
@@ -59,7 +58,6 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     operationType = OPERATION_LOAD;
     delegate = NULL;
     extensionFilter.push_back(".*");
-    
     
     cellH = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 20.0f;
     cellH = Max(cellH, 32.0f);
@@ -92,7 +90,6 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     workingPath->SetText(L"c:");
     AddControl(workingPath);
     
-    
     float32 buttonW = cellH * 3.0f;
     positiveButton = new UIButton(Rect(size.x - border - buttonW, workingPath->relativePosition.y + halfBorder + cellH, buttonW, cellH));
     positiveButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
@@ -119,7 +116,6 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
 	negativeButton->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
 	negativeButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::ButtonPressed));
     AddControl(negativeButton);
-    
     
     historyPosition = 0;
     historyBackwardButton = new UIButton(Rect(border, positiveButton->relativePosition.y, cellH, cellH));
@@ -151,7 +147,6 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
 	historyForwardButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::HistoryButtonPressed));
     AddControl(historyForwardButton);
     
-
 //    textField = new UITextField(Rect((float32)border, (float32)positiveButton->relativePosition.y, (float32)negativeButton->relativePosition.x - border*2, (float32)cellH));
     float32 textFieldOffset = historyForwardButton->relativePosition.x + historyForwardButton->size.x + border;
     textField = new UITextField(Rect(textFieldOffset,
@@ -204,10 +199,7 @@ void UIFileSystemDialog::ButtonPressed(BaseObject *obj, void *data, void *caller
         {
             SaveFinishing();
         }
-            
-
     }
-
 }
 
 void UIFileSystemDialog::SaveFinishing()
@@ -227,7 +219,6 @@ void UIFileSystemDialog::SaveFinishing()
         GetParent()->RemoveControl(this);
     }
 }
-
 
 void UIFileSystemDialog::Show(UIControl *parentControl)
 {
@@ -257,7 +248,6 @@ void UIFileSystemDialog::SetTitle(const WideString& newTitle)
 
 void UIFileSystemDialog::SetCurrentDir(const FilePath &newDirPath, bool rebuildHistory /* = false*/)
 {
-
     //int32 ppos = newDirPath.rfind(".");
     //int32 spos = newDirPath.rfind("/");
     //if (ppos != newDirPath.npos && ppos > spos)
@@ -340,7 +330,6 @@ void UIFileSystemDialog::OnIndexSelected(int32 index)
         {
             SaveFinishing();
         }
-        
     }
 }
 
@@ -436,7 +425,6 @@ void UIFileSystemDialog::RefreshList()
                 }
             }
 
-            
             fileUnits.push_back(fu);
         }
         else if(outCnt >= 1 && files->GetFilename(i) == "..")
@@ -452,7 +440,6 @@ void UIFileSystemDialog::RefreshList()
     fileListView->ResetScrollPosition();
     fileListView->Refresh();
 }
-
 
 void UIFileSystemDialog::TextFieldShouldReturn(UITextField * textField)
 {
@@ -472,7 +459,6 @@ bool UIFileSystemDialog::TextFieldKeyPressed(UITextField * textField, int32 repl
 
     return true;
 }
-
 
 int32 UIFileSystemDialog::ElementsCount(UIList *forList)
 {
@@ -624,7 +610,4 @@ void UIFileSystemDialog::OnFileSelected(const FilePath &pathToFile)
         delegate->OnFileSelected(this, pathToFile);
     }
 }
-
-    
 };
-

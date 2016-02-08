@@ -34,11 +34,10 @@
 
 namespace DAVA
 {
-    
 //-----------------------------------------------------------------------------
 //Spinlock class - non-blocking sync primitive
-//Direct using of spinlock is inadvisable. 
-//Use LockGuard or ConcurrentObject instead 
+//Direct using of spinlock is inadvisable.
+//Use LockGuard or ConcurrentObject instead
 //-----------------------------------------------------------------------------
 class Spinlock
 {
@@ -56,9 +55,11 @@ private:
 //-----------------------------------------------------------------------------
 inline void Spinlock::Lock()
 {
-    while (!flag.CompareAndSwap(0, 1)) 
+    while (!flag.CompareAndSwap(0, 1))
     {
-        while (0 != flag.GetRelaxed()) {}
+        while (0 != flag.GetRelaxed())
+        {
+        }
     }
 }
 
@@ -71,7 +72,6 @@ inline void Spinlock::Unlock()
 {
     flag.Set(0);
 }
-
 }
 
 #endif //  __DAVAENGINE_SPINLOCK_H__

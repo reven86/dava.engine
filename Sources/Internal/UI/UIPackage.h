@@ -70,11 +70,11 @@ public:
     UIControlPackageContext* GetControlPackageContext();
 
     RefPtr<UIPackage> Clone() const;
+
 private:
     Vector<UIControl *> controls;
 
     UIControlPackageContext* controlPackageContext;
 };
-
 };
 #endif // __DAVAENGINE_UI_PACKAGE_H__

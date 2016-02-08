@@ -54,9 +54,9 @@ DialogConfigurePreset::DialogConfigurePreset(const QString& originalPresetNameAr
     initPreset();
 
     connect(comboBox_defaultFont, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnDefaultFontChanged);
-    connect(spinBox_defaultFontSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnDefaultFontSizeChanged);
+    connect(spinBox_defaultFontSize, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnDefaultFontSizeChanged);
     connect(comboBox_localizedFont, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnLocalizedFontChanged);
-    connect(spinBox_localizedFontSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnLocalizedFontSizeChanged);
+    connect(spinBox_localizedFontSize, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnLocalizedFontSizeChanged);
     connect(comboBox_locale, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnCurrentLocaleChanged);
     connect(pushButton_resetLocale, &QPushButton::clicked, this, &DialogConfigurePreset::OnResetLocale);
     connect(pushButton_applyDefaultToAllLocales, &QPushButton::clicked, this, &DialogConfigurePreset::OnApplyToAllLocales);
@@ -103,7 +103,7 @@ void DialogConfigurePreset::OnResetLocale()
 
 void DialogConfigurePreset::OnApplyToAllLocales()
 {
-    for (const auto &locale : GetEditorFontSystem()->GetAvailableFontLocales())
+    for (const auto& locale : GetEditorFontSystem()->GetAvailableFontLocales())
     {
         SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), locale);
         UpdateLocalizedFontWidgets();
@@ -126,11 +126,11 @@ void DialogConfigurePreset::UpdateDefaultFontWidgets()
 {
     spinBox_defaultFontSize->blockSignals(true);
     comboBox_defaultFont->blockSignals(true);
-    Font *font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), GetEditorFontSystem()->GetDefaultFontLocale());
+    Font* font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), GetEditorFontSystem()->GetDefaultFontLocale());
     spinBox_defaultFontSize->setValue(font->GetSize());
 
     DVASSERT(font->GetFontType() == Font::TYPE_FT);
-    FTFont *ftFont = static_cast<FTFont*>(font);
+    FTFont* ftFont = static_cast<FTFont*>(font);
     QFileInfo fileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
     comboBox_defaultFont->setCurrentText(fileInfo.fileName());
     spinBox_defaultFontSize->blockSignals(false);
@@ -141,11 +141,11 @@ void DialogConfigurePreset::UpdateLocalizedFontWidgets()
 {
     spinBox_localizedFontSize->blockSignals(true);
     comboBox_localizedFont->blockSignals(true);
-    Font *font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), comboBox_locale->currentText().toStdString());
+    Font* font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), comboBox_locale->currentText().toStdString());
     spinBox_localizedFontSize->setValue(font->GetSize());
 
     DVASSERT(font->GetFontType() == Font::TYPE_FT);
-    FTFont *ftFont = static_cast<FTFont*>(font);
+    FTFont* ftFont = static_cast<FTFont*>(font);
     QFileInfo fileInfo = QFileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
     comboBox_localizedFont->setCurrentText(fileInfo.fileName());
     spinBox_localizedFontSize->blockSignals(false);
@@ -156,11 +156,11 @@ void DialogConfigurePreset::SetFont(const QString& fontType, const int fontSize,
 {
     QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontType);
     Font* font = FTFont::Create(fontPath.toStdString());
-	if (nullptr == font)
-	{
-		QMessageBox::warning(this, tr("Font creation error"), tr("Can not create font from %1").arg(fontPath));
-		return;
-	}
+    if (nullptr == font)
+    {
+        QMessageBox::warning(this, tr("Font creation error"), tr("Can not create font from %1").arg(fontPath));
+        return;
+    }
     font->SetSize(fontSize);
     GetEditorFontSystem()->SetFont(lineEdit_currentFontPresetName->text().toStdString(), locale.toStdString(), font);
 }

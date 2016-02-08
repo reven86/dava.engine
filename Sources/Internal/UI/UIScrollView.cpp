@@ -159,7 +159,6 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 	return currentOffset;
 }
 
-
 Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSize, Vector2 parentOffset)
 {
 	// Initial content max size is actual control sizes

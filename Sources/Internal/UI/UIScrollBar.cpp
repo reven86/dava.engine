@@ -35,8 +35,6 @@
 
 namespace DAVA 
 {
-
-
 //use these names for children controls to define UIScrollBar in .yaml
 static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 
@@ -65,13 +63,13 @@ const String UIScrollBar::GetDelegatePath(const UIControl *rootControl) const
     if (delegate)
     {
         return delegate->GetDelegateControlPath(rootControl);
-    } else
+    }
+    else
     {
         return "";
     }
 }
     
-
 UIControl *UIScrollBar::GetSlider()
 {
     return slider;
@@ -181,13 +179,11 @@ YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
 	}
 	node->Set("orientation", stringValue);
 
-
     if (delegate)
     {
         UIControl* delegateControl = dynamic_cast<UIControl*>(delegate);
         node->Set("linkedScrollBarDelegate", UIControlHelpers::GetControlPath(delegateControl));
     }
-    
     
 	return node;
 }
@@ -214,7 +210,6 @@ void UIScrollBar::Input(UIEvent *currentInput)
 		{
 			float32 centerOffsetX = (currentInput->point.x - startPoint.x);
 			newPos = (startOffset.x + centerOffsetX) * (delegate->TotalAreaSize(this) / size.x);
-
 		}
 		else
 		{
@@ -374,5 +369,4 @@ float32 UIScrollBar::GetValidSliderSize(float32 size)
 {
 	return (size < MINIMUM_SLIDER_SIZE) ? MINIMUM_SLIDER_SIZE : size;
 }
-
 };

@@ -33,7 +33,6 @@
 
 namespace DAVA 
 {
-
 //use these names for children controls to define UISwitch in .yaml
 static const FastName UISWITCH_BUTTON_LEFT_NAME("buttonLeft");
 static const FastName UISWITCH_BUTTON_RIGHT_NAME("buttonRight");
@@ -51,6 +50,7 @@ protected:
     {
         SafeRelease(uiSwitch);
     }
+
 public:
     TogglePositionAnimation(bool _isCausedByTap, UISwitch * _uiSwitch, float32 * _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
         : LinearAnimation(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
@@ -317,5 +317,4 @@ void UISwitch::CheckToggleSideChange(UIEvent *inputEvent /*= NULL*/)
     float32 toggleSpaceCenter = (leftBound + rightBound) / 2;
     InternalSetIsLeftSelected(toggleCenter < toggleSpaceCenter, true, inputEvent);
 }
-
 }

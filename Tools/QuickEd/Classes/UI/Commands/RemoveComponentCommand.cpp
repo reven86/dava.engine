@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-RemoveComponentCommand::RemoveComponentCommand(PackageNode *_root, ControlNode *_node, ComponentPropertiesSection *_section, QUndoCommand *parent)
+RemoveComponentCommand::RemoveComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))

@@ -1742,7 +1742,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         }
         currentInput->touchLocker = NULL;
 
-
         InputCancelled(currentInput);
     }
 
@@ -1779,7 +1778,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::Update(float32 timeElapsed)
     {
-
     }
     void UIControl::Draw(const UIGeometricData &geometricData)
     {
@@ -1787,7 +1785,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     }
     void UIControl::DrawAfterChilds(const UIGeometricData &geometricData)
     {
-
     }
 
     void UIControl::SystemWillBecomeVisible()
@@ -2220,7 +2217,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         return animation;
     }
 
-
     Animation * UIControl::MoveAnimation(const Rect & rect, float time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x, rect.y + GetPivotPoint().y), &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
@@ -2244,7 +2240,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         animation->Start(track);
         return animation;
     }
-
 
     void UIControl::TouchableAnimationCallback(BaseObject * caller, void * param, void *callerData)
     {

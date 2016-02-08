@@ -303,7 +303,6 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 		AutotestingDB::Instance()->Log("INFO", "Success");
 	}
 
-
 	void AutotestingSystem::Update(float32 timeElapsed)
 	{
 		if (!isInit)
@@ -533,9 +532,7 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 
 	// Multiplayer API
 
-
 	// Working with DB api
-
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

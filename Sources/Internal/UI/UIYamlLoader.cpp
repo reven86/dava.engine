@@ -50,7 +50,8 @@
 
 namespace DAVA
 {
-UIYamlLoader::UIYamlLoader() :
+UIYamlLoader::UIYamlLoader()
+    :
     BaseObject()
 {
     // Default mode is to ASSERT if custom control isn't found.
@@ -67,15 +68,24 @@ int32 UIYamlLoader::GetDrawTypeFromNode(const YamlNode * drawTypeNode) const
 
     const String & type = drawTypeNode->AsString();
 
-    if("DRAW_ALIGNED" == type) ret = UIControlBackground::DRAW_ALIGNED;
-    if("DRAW_SCALE_TO_RECT" == type) ret = UIControlBackground::DRAW_SCALE_TO_RECT;
-    if("DRAW_SCALE_PROPORTIONAL" == type) ret = UIControlBackground::DRAW_SCALE_PROPORTIONAL;
-    if("DRAW_SCALE_PROPORTIONAL_ONE" == type) ret = UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
-    if("DRAW_FILL" == type) ret = UIControlBackground::DRAW_FILL;
-    if("DRAW_STRETCH_HORIZONTAL" == type) ret = UIControlBackground::DRAW_STRETCH_HORIZONTAL;
-    if("DRAW_STRETCH_VERTICAL" == type) ret = UIControlBackground::DRAW_STRETCH_VERTICAL;
-    if("DRAW_STRETCH_BOTH" == type) ret = UIControlBackground::DRAW_STRETCH_BOTH;
-    if("DRAW_TILED" == type) ret = UIControlBackground::DRAW_TILED;
+    if ("DRAW_ALIGNED" == type)
+        ret = UIControlBackground::DRAW_ALIGNED;
+    if ("DRAW_SCALE_TO_RECT" == type)
+        ret = UIControlBackground::DRAW_SCALE_TO_RECT;
+    if ("DRAW_SCALE_PROPORTIONAL" == type)
+        ret = UIControlBackground::DRAW_SCALE_PROPORTIONAL;
+    if ("DRAW_SCALE_PROPORTIONAL_ONE" == type)
+        ret = UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
+    if ("DRAW_FILL" == type)
+        ret = UIControlBackground::DRAW_FILL;
+    if ("DRAW_STRETCH_HORIZONTAL" == type)
+        ret = UIControlBackground::DRAW_STRETCH_HORIZONTAL;
+    if ("DRAW_STRETCH_VERTICAL" == type)
+        ret = UIControlBackground::DRAW_STRETCH_VERTICAL;
+    if ("DRAW_STRETCH_BOTH" == type)
+        ret = UIControlBackground::DRAW_STRETCH_BOTH;
+    if ("DRAW_TILED" == type)
+        ret = UIControlBackground::DRAW_TILED;
 
     return ret;
 }
@@ -83,7 +93,8 @@ int32 UIYamlLoader::GetDrawTypeFromNode(const YamlNode * drawTypeNode) const
 String UIYamlLoader::GetDrawTypeNodeValue(int32 drawType) const
 {
     String ret;
-    switch (drawType) {
+    switch (drawType)
+    {
         case UIControlBackground::DRAW_ALIGNED:
             ret = "DRAW_ALIGNED";
             break;
@@ -126,12 +137,18 @@ int32 UIYamlLoader::GetColorInheritTypeFromNode(const YamlNode * colorInheritNod
 
     const String & type = colorInheritNode->AsString();
 
-    if("COLOR_MULTIPLY_ON_PARENT" == type) ret = UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
-    if("COLOR_ADD_TO_PARENT" == type) ret = UIControlBackground::COLOR_ADD_TO_PARENT;
-    if("COLOR_REPLACE_TO_PARENT" == type) ret = UIControlBackground::COLOR_REPLACE_TO_PARENT;
-    if("COLOR_IGNORE_PARENT" == type) ret = UIControlBackground::COLOR_IGNORE_PARENT;
-    if("COLOR_MULTIPLY_ALPHA_ONLY" == type) ret = UIControlBackground::COLOR_MULTIPLY_ALPHA_ONLY;
-    if("COLOR_REPLACE_ALPHA_ONLY" == type) ret = UIControlBackground::COLOR_REPLACE_ALPHA_ONLY;
+    if ("COLOR_MULTIPLY_ON_PARENT" == type)
+        ret = UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
+    if ("COLOR_ADD_TO_PARENT" == type)
+        ret = UIControlBackground::COLOR_ADD_TO_PARENT;
+    if ("COLOR_REPLACE_TO_PARENT" == type)
+        ret = UIControlBackground::COLOR_REPLACE_TO_PARENT;
+    if ("COLOR_IGNORE_PARENT" == type)
+        ret = UIControlBackground::COLOR_IGNORE_PARENT;
+    if ("COLOR_MULTIPLY_ALPHA_ONLY" == type)
+        ret = UIControlBackground::COLOR_MULTIPLY_ALPHA_ONLY;
+    if ("COLOR_REPLACE_ALPHA_ONLY" == type)
+        ret = UIControlBackground::COLOR_REPLACE_ALPHA_ONLY;
 
     return ret;
 }
@@ -139,7 +156,8 @@ int32 UIYamlLoader::GetColorInheritTypeFromNode(const YamlNode * colorInheritNod
 String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType) const
 {
     String ret;
-    switch (colorInheritType) {
+    switch (colorInheritType)
+    {
         case UIControlBackground::COLOR_MULTIPLY_ON_PARENT:
             ret = "COLOR_MULTIPLY_ON_PARENT";
             break;
@@ -173,17 +191,21 @@ int32 UIYamlLoader::GetPerPixelAccuracyTypeFromNode(const YamlNode *perPixelAccu
 
 	const String & type = perPixelAccuracyNode->AsString();
 
-	if("PER_PIXEL_ACCURACY_DISABLED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
-	if("PER_PIXEL_ACCURACY_ENABLED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_ENABLED;
-	if("PER_PIXEL_ACCURACY_FORCED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_FORCED;
+    if ("PER_PIXEL_ACCURACY_DISABLED" == type)
+        ret = UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    if ("PER_PIXEL_ACCURACY_ENABLED" == type)
+        ret = UIControlBackground::PER_PIXEL_ACCURACY_ENABLED;
+    if ("PER_PIXEL_ACCURACY_FORCED" == type)
+        ret = UIControlBackground::PER_PIXEL_ACCURACY_FORCED;
 
-	return ret;
+    return ret;
 }
 
 String UIYamlLoader::GetPerPixelAccuracyTypeNodeValue(int32 perPixelAccuracyType) const
 {
 	String ret;
-    switch (perPixelAccuracyType) {
+    switch (perPixelAccuracyType)
+    {
         case UIControlBackground::PER_PIXEL_ACCURACY_DISABLED:
             ret = "PER_PIXEL_ACCURACY_DISABLED";
             break;
@@ -199,24 +221,33 @@ String UIYamlLoader::GetPerPixelAccuracyTypeNodeValue(int32 perPixelAccuracyType
 	
 int32 UIYamlLoader::GetAlignFromYamlNode(const YamlNode * alignNode) const
 {
-    if (!alignNode)return ALIGN_HCENTER | ALIGN_VCENTER;
+    if (!alignNode)
+        return ALIGN_HCENTER | ALIGN_VCENTER;
 
     const Vector<YamlNode*> & vec = alignNode->AsVector();
 
-    if (vec.size() == 1 && vec[0]->AsString() == "HJUSTIFY") return ALIGN_HJUSTIFY;
-    if (vec.size() != 2)return ALIGN_HCENTER | ALIGN_VCENTER;
+    if (vec.size() == 1 && vec[0]->AsString() == "HJUSTIFY")
+        return ALIGN_HJUSTIFY;
+    if (vec.size() != 2)
+        return ALIGN_HCENTER | ALIGN_VCENTER;
 
     const String & horzAlign = vec[0]->AsString();
     const String & vertAlign = vec[1]->AsString();
 
     int32 align = 0;
-    if (horzAlign == "LEFT")align |= ALIGN_LEFT;
-    else if (horzAlign == "HCENTER")align |= ALIGN_HCENTER;
-    else if (horzAlign == "RIGHT")align |= ALIGN_RIGHT;
+    if (horzAlign == "LEFT")
+        align |= ALIGN_LEFT;
+    else if (horzAlign == "HCENTER")
+        align |= ALIGN_HCENTER;
+    else if (horzAlign == "RIGHT")
+        align |= ALIGN_RIGHT;
 
-    if (vertAlign == "TOP")align |= ALIGN_TOP;
-    else if (vertAlign == "VCENTER")align |= ALIGN_VCENTER;
-    else if (vertAlign == "BOTTOM")align |= ALIGN_BOTTOM;
+    if (vertAlign == "TOP")
+        align |= ALIGN_TOP;
+    else if (vertAlign == "VCENTER")
+        align |= ALIGN_VCENTER;
+    else if (vertAlign == "BOTTOM")
+        align |= ALIGN_BOTTOM;
 
     return align;
 }
@@ -325,21 +356,28 @@ YamlNode * UIYamlLoader::GetFittingOptionNodeValue( int32 fitting ) const
 
 bool UIYamlLoader::GetBoolFromYamlNode(const YamlNode * node, bool defaultValue) const
 {
-    if (!node)return defaultValue;
+    if (!node)
+        return defaultValue;
 
     const String & value = node->AsString();
-    if (value == "yes")return true;
-    else if (value == "no")return false;
-    else if (value == "true")return true;
+    if (value == "yes")
+        return true;
+    else if (value == "no")
+        return false;
+    else if (value == "true")
+        return true;
 
     return false;
 }
 
 int32 HexCharToInt(char c)
 {
-    if ((c >= '0') && (c <= '9'))return c - '0';
-    else if ((c >= 'a') && (c <= 'f'))return c - 'a' + 10;
-    else if ((c >= 'A') && (c <= 'F'))return c - 'A' + 10;
+    if ((c >= '0') && (c <= '9'))
+        return c - '0';
+    else if ((c >= 'a') && (c <= 'f'))
+        return c - 'a' + 10;
+    else if ((c >= 'A') && (c <= 'F'))
+        return c - 'A' + 10;
     return 0;
 }
 
@@ -349,8 +387,10 @@ Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node) const
     {
         if (node->GetCount() == 4)
             return node->AsColor();
-        else return Color::White;
-    }else
+        else
+            return Color::White;
+    }
+    else
     {
         const String & color = node->AsString();
 
@@ -362,7 +402,6 @@ Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node) const
         return Color((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, (float)a / 255.0f);
     }
 }
-
 
 Font * UIYamlLoader::GetFontByName(const String & fontName) const
 {
@@ -622,8 +661,9 @@ void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * root
 		{
 			Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
 			continue;
-		}else
-		{
+        }
+        else
+        {
 			//Logger::FrameworkDebug("Create control with type:%s", type.c_str());
 		}
 
@@ -717,5 +757,4 @@ void UIYamlLoader::AddScrollBarToLink(UIScrollBar* scroll, const String& delegat
 {
     scrollsToLink.insert(std::pair<UIScrollBar*,String>(scroll,delegatePath));
 }
-
 }

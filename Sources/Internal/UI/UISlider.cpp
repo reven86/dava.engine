@@ -41,8 +41,6 @@
 
 namespace DAVA 
 {
-	
-	
 // Use these names for children buttons to define UISlider in .yaml
 static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
 static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
@@ -113,7 +111,6 @@ void UISlider::SetThumb(UIControl *newThumb)
 	
 	SetValue(currentValue);
 }
-    
     
 UISlider::~UISlider()
 {

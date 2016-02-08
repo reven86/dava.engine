@@ -26,10 +26,11 @@ extern "C" {
 #include "magick/xwindow-private.h"
 
 extern MagickExport Image
-  *XAnimateImages(Display *,XResourceInfo *,char **,const int,Image *);
+*
+XAnimateImages(Display*, XResourceInfo*, char**, const int, Image*);
 
 extern MagickExport void
-  XAnimateBackgroundImage(Display *,XResourceInfo *,Image *);
+XAnimateBackgroundImage(Display*, XResourceInfo*, Image*);
 #endif
 
 #if defined(__cplusplus) || defined(c_plusplus)

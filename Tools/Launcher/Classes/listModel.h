@@ -19,11 +19,12 @@ public:
         LIST_ITEM_SEPARATOR
     };
     static const int DAVA_WIDGET_ROLE = Qt::UserRole + 1;
-    ListModel(const ApplicationManager *appManager_, QObject *parent = nullptr);
+    ListModel(const ApplicationManager* appManager_, QObject* parent = nullptr);
     void clearItems();
-    void addItem(const QString &dataText, ListItemType type);
-    QVariant data(const QModelIndex &index, int role) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    void addItem(const QString& dataText, ListItemType type);
+    QVariant data(const QModelIndex& index, int role) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+
 private:
     struct Item
     {
@@ -34,7 +35,7 @@ private:
 
     QList<Item> items;
     QFont fontFavorites;
-    const ApplicationManager *appManager;
+    const ApplicationManager* appManager;
 };
 
 Q_DECLARE_METATYPE(ListModel::ListItemType);

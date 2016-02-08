@@ -32,7 +32,6 @@
 #include "FileSystem/Logger.h"
 #include "FileSystem/YamlNode.h"
 
-
 namespace DAVA 
 {
 static const FastName UIJOYPAD_STICK_NAME("stick");

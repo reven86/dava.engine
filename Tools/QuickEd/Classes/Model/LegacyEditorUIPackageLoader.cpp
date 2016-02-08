@@ -94,7 +94,6 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data
     legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
     legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
     legacyAlignsMap["bottomAnchor"] = "bottomAlign";
-
 }
 
 LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
@@ -189,7 +188,6 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     else
         control = builder->BeginControlWithClass(type->AsString());
     
-
     if (control)
     {
         control->SetName(FastName(name));
@@ -436,7 +434,9 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                         DVASSERT_MSG(false, Format("No convertion from string to flag value."
                                                    "\n Yaml property name: \"%s\""
                                                    "\n Introspection property name: \"%s\""
-                                                   "\n String value: \"%s\"", propertyName.c_str(), member->Name().c_str(), flagNode->AsString().c_str()).c_str());
+                                                   "\n String value: \"%s\"",
+                                                   propertyName.c_str(), member->Name().c_str(), flagNode->AsString().c_str())
+                                            .c_str());
                     }
                 }
                 return VariantType(val);
@@ -483,7 +483,9 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
 
         DVASSERT_MSG(false, Format("No legacy convertion for property."
                                    "\n Yaml property name: \"%s\""
-                                   "\n Introspection property name: \"%s\"", propertyName.c_str(), member->Name().c_str()).c_str());
+                                   "\n Introspection property name: \"%s\"",
+                                   propertyName.c_str(), member->Name().c_str())
+                            .c_str());
     }
     else
     {
@@ -500,11 +502,9 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     return VariantType(valueNode->AsRect().GetSize());
             }
         }
-        
     }
     return VariantType();
 }
-
 
 String LegacyEditorUIPackageLoader::GetOldPropertyName(const String &controlClassName, const String &name) const
 {

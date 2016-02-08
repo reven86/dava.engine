@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 namespace
 {
     const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
@@ -107,12 +106,10 @@ struct AnimatedPropertySetter
 
 UIStyleSheetSystem::UIStyleSheetSystem()
 {
-
 }
 
 UIStyleSheetSystem::~UIStyleSheetSystem()
 {
-
 }
 
 void UIStyleSheetSystem::ProcessControl(UIControl* control)
@@ -268,5 +265,4 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         break;
     }
 }
-
 }

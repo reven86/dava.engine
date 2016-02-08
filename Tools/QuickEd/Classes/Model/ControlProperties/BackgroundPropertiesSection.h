@@ -35,27 +35,29 @@
 
 namespace DAVA
 {
-    class UIControl;
-    class UIControlBackground;
+class UIControl;
+class UIControlBackground;
 }
 
 class BackgroundPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
-    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCloneType copyType);
+    BackgroundPropertiesSection(DAVA::UIControl* control, int bgNum, const BackgroundPropertiesSection* sourceSection, eCloneType copyType);
+
 protected:
     virtual ~BackgroundPropertiesSection();
+
 public:
-    DAVA::UIControlBackground *GetBg() const;
+    DAVA::UIControlBackground* GetBg() const;
     void CreateControlBackground();
 
     bool HasChanges() const override;
-    void Accept(PropertyVisitor *visitor) override;
+    void Accept(PropertyVisitor* visitor) override;
 
 private:
-    DAVA::UIControl *control;
-    DAVA::UIControlBackground *bg;
-    
+    DAVA::UIControl* control;
+    DAVA::UIControlBackground* bg;
+
     int bgNum;
 };
 

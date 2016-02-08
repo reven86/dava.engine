@@ -87,7 +87,6 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
         childCreationType = CREATED_FROM_PROTOTYPE_CHILD;
     }
     
-
     for (ControlNode *sourceChild : node->nodes)
     {
         ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, childCreationType));

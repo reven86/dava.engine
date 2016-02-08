@@ -46,26 +46,26 @@ class PathSystem : public DAVA::SceneSystem, public EntityModificationSystemDele
     friend class SceneEditor2;
 
 public:
-    PathSystem(DAVA::Scene * scene);
+    PathSystem(DAVA::Scene* scene);
     ~PathSystem() override;
 
     void EnablePathEdit(bool enable);
     bool IsPathEditEnabled() const;
 
-    void AddEntity(DAVA::Entity * entity) override;
-    void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    DAVA::Entity * GetCurrrentPath() const;
-    const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
+    DAVA::Entity* GetCurrrentPath() const;
+    const DAVA::Vector<DAVA::Entity*>& GetPathes() const;
 
     void AddPath(DAVA::Entity* pathEntity);
-    
+
     DAVA::PathComponent* CreatePathComponent();
 
-    void WillClone(DAVA::Entity *originalEntity) override;
-    void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
+    void WillClone(DAVA::Entity* originalEntity) override;
+    void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) override;
 
 protected:
     void Draw();
@@ -73,30 +73,30 @@ protected:
     void DrawInViewOnlyMode();
     void DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const DAVA::Color& color);
 
-    void ProcessCommand(const Command2 *command, bool redo);
+    void ProcessCommand(const Command2* command, bool redo);
 
     DAVA::FastName GeneratePathName() const;
-    const DAVA::Color & GetNextPathColor() const;
+    const DAVA::Color& GetNextPathColor() const;
 
     void ExpandPathEntity(const DAVA::Entity*);
     void CollapsePathEntity(const DAVA::Entity*);
 
     SceneEditor2* sceneEditor;
-    
-    DAVA::Vector<DAVA::Entity *> pathes;
-   
+
+    DAVA::Vector<DAVA::Entity*> pathes;
+
     EntityGroup currentSelection;
-    DAVA::Entity * currentPath;
+    DAVA::Entity* currentPath;
 
     bool isEditingEnabled;
 };
 
-inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
+inline const DAVA::Vector<DAVA::Entity*>& PathSystem::GetPathes() const
 {
     return pathes;
 }
 
-inline DAVA::Entity * PathSystem::GetCurrrentPath() const
+inline DAVA::Entity* PathSystem::GetCurrrentPath() const
 {
     return currentPath;
 }

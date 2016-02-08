@@ -140,35 +140,35 @@
 
 #define DAVA_TESTCLASS(classname)                                                                                                               \
     struct classname;                                                                                                                           \
-    static struct testclass_ ## classname ## _registrar                                                                                         \
+    static struct testclass_##classname##_registrar                                                                                         \
     {                                                                                                                                           \
-        testclass_ ## classname ## _registrar()                                                                                                 \
+        testclass_##classname##_registrar()                                                                                                 \
         {                                                                                                                                       \
             DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
         }                                                                                                                                       \
-    } testclass_ ## classname ## _registrar_instance;                                                                                           \
+    } testclass_##classname##_registrar_instance;                                                                                           \
     struct classname : public DAVA::UnitTests::TestClass, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
 #define DAVA_TESTCLASS_CUSTOM_BASE(classname, base_classname)                                                                                   \
     struct classname;                                                                                                                           \
-    static struct testclass_ ## classname ## _registrar                                                                                         \
+    static struct testclass_##classname##_registrar                                                                                         \
     {                                                                                                                                           \
-        testclass_ ## classname ## _registrar()                                                                                                 \
+        testclass_##classname##_registrar()                                                                                                 \
         {                                                                                                                                       \
             DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
         }                                                                                                                                       \
-    } testclass_ ## classname ## _registrar_instance;                                                                                           \
+    } testclass_##classname##_registrar_instance;                                                                                           \
     struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
 #define DAVA_TEST(testname)                                                                                             \
-    struct test_ ## testname ## _registrar {                                                                            \
-        test_ ## testname ## _registrar(DAVA::UnitTests::TestClass* testClass)                                          \
+    struct test_##testname##_registrar {                                                                            \
+        test_##testname##_registrar(DAVA::UnitTests::TestClass* testClass)                                          \
         {                                                                                                               \
-            testClass->RegisterTest(#testname, &test_ ## testname ## _call);                                            \
+            testClass->RegisterTest(#testname, &test_##testname##_call);                                            \
         }                                                                                                               \
     };                                                                                                                  \
-    test_ ## testname ## _registrar test_ ## testname ## _registrar_instance = test_ ## testname ## _registrar(this);   \
-    static void test_ ## testname ## _call(DAVA::UnitTests::TestClass* testClass)                                       \
+    test_##testname##_registrar test_##testname##_registrar_instance = test_##testname##_registrar(this);   \
+    static void test_##testname##_call(DAVA::UnitTests::TestClass* testClass)                                       \
     {                                                                                                                   \
         static_cast<TestClassType*>(testClass)->testname();                                                             \
     }                                                                                                                   \
@@ -180,7 +180,7 @@
         DAVA::UnitTests::TestCore::Instance()->TestFailed(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String(message)); \
     }
 
-#define TEST_VERIFY(condition)  TEST_VERIFY_WITH_MESSAGE(condition, DAVA::String())
+#define TEST_VERIFY(condition) TEST_VERIFY_WITH_MESSAGE(condition, DAVA::String())
 
 //////////////////////////////////////////////////////////////////////////
 // Macros that declare classes that are covered by unit test
@@ -206,11 +206,11 @@
 //
 // DEDUCE_COVERED_CLASS_FROM_TESTCLASS discards Test postfix of any and considers that
 // DateTimeTest covers class DateTime.
-// 
+//
 // This is test author's responsibility to specify valid and corresponding classes
 //
 // You can get and process classes covered by tests through call to DAVA::UnitTests::TestCore::Instance()->GetTestCoverage()
-// which returns Map<String, Vector<String>> where key is test class name and value is vector of covered classes 
+// which returns Map<String, Vector<String>> where key is test class name and value is vector of covered classes
 //
 
 #define BEGIN_CLASSES_COVERED_BY_TESTS() \
@@ -231,4 +231,4 @@
         return result; \
     }
 
-#endif  // __DAVAENGINE_UNITTESTS_H__
+#endif // __DAVAENGINE_UNITTESTS_H__
