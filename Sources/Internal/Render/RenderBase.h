@@ -162,6 +162,7 @@ enum eDefaultPassPriority
     PRIORITY_CLEAR = 15,
     PRIORITY_SERVICE_3D = 20,
     PRIORITY_SCREENSHOT = 50,
+    PRIORITY_SCREENSHOT_2D = PRIORITY_SCREENSHOT, //legacy
 
     PRIORITY_SERVICE_2D = 1000 //service 2d is most commonly used for system's draw to texture etc.
 };
