@@ -73,6 +73,18 @@
 
 #endif
 
+#if defined(__DAVAENGINE_ANDROID__)
+
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
+
+extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced_EXT;
+extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced_EXT;
+extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
+
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
@@ -211,6 +223,7 @@ extern int _GLES2_DefaultFrameBuffer_Width;
 extern int _GLES2_DefaultFrameBuffer_Height;
 
 extern GLuint _GLES2_LastSetIB;
+extern DAVA::uint8* _GLES2_LastSetIndices;
 extern GLuint _GLES2_LastSetVB;
 extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
@@ -224,5 +237,6 @@ extern HDC _GLES2_WindowDC;
 
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
+extern bool _GLES2_UseUserProvidedIndices;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

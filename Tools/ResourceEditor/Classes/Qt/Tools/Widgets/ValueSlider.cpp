@@ -40,16 +40,14 @@
 #include "../Helpers/MouseHelper.h"
 #include "../Helpers/PaintingHelper.h"
 
-
 namespace
 {
-    const QString editorQss =
-    "border: 1px solid black;\n"
-    "background: transparent;"
-    "padding: 0px;"
-    "margin: 0px;";
+const QString editorQss =
+"border: 1px solid black;\n"
+"background: transparent;"
+"padding: 0px;"
+"margin: 0px;";
 }
-
 
 ValueSlider::ValueSlider(QWidget* parent)
     : QWidget(parent)
@@ -60,10 +58,10 @@ ValueSlider::ValueSlider(QWidget* parent)
     , mouse(new MouseHelper(this))
     , clickVal(0)
 {
-    connect(mouse, SIGNAL( mousePress( const QPoint& ) ), SLOT( OnMousePress( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseMove( const QPoint& ) ), SLOT( OnMouseMove( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseRelease( const QPoint& ) ), SLOT( OnMouseRelease( const QPoint& ) ));
-    connect(mouse, SIGNAL( clicked() ), SLOT( OnMouseClick() ));
+    connect(mouse, SIGNAL(mousePress(const QPoint&)), SLOT(OnMousePress(const QPoint&)));
+    connect(mouse, SIGNAL(mouseMove(const QPoint&)), SLOT(OnMouseMove(const QPoint&)));
+    connect(mouse, SIGNAL(mouseRelease(const QPoint&)), SLOT(OnMouseRelease(const QPoint&)));
+    connect(mouse, SIGNAL(clicked()), SLOT(OnMouseClick()));
 }
 
 ValueSlider::~ValueSlider()
@@ -154,7 +152,7 @@ QRect ValueSlider::PosArea() const
 
 void ValueSlider::paintEvent(QPaintEvent* e)
 {
-    Q_UNUSED( e );
+    Q_UNUSED(e);
 
     QPainter p(this);
 
@@ -168,7 +166,7 @@ void ValueSlider::paintEvent(QPaintEvent* e)
 
 void ValueSlider::resizeEvent(QResizeEvent* e)
 {
-    Q_UNUSED( e );
+    Q_UNUSED(e);
 }
 
 bool ValueSlider::eventFilter(QObject* obj, QEvent* e)
@@ -178,23 +176,23 @@ bool ValueSlider::eventFilter(QObject* obj, QEvent* e)
         switch (e->type())
         {
         case QEvent::KeyPress:
+        {
+            QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+            switch (ke->key())
             {
-                QKeyEvent* ke = static_cast<QKeyEvent *>(e);
-                switch (ke->key())
-                {
-                case Qt::Key_Enter:
-                case Qt::Key_Return:
-                case Qt::Key_Escape:
-                case Qt::Key_Tab:
-                    acceptEditing();
-                    ke->accept();
-                    return true;
+            case Qt::Key_Enter:
+            case Qt::Key_Return:
+            case Qt::Key_Escape:
+            case Qt::Key_Tab:
+                acceptEditing();
+                ke->accept();
+                return true;
 
-                default:
-                    break;
-                }
+            default:
+                break;
             }
-            break;
+        }
+        break;
 
         case QEvent::FocusOut:
             acceptEditing();

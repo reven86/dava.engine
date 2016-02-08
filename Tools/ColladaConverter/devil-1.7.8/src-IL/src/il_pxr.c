@@ -22,13 +22,13 @@
 #endif
 typedef struct PIXHEAD
 {
-	ILushort	Signature;
-	ILubyte		Reserved1[413];
-	ILushort	Height;
-	ILushort	Width;
-	ILubyte		Reserved2[4];
-	ILubyte		BppInfo;
-	ILubyte		Reserved3[598];
+    ILushort Signature;
+    ILubyte Reserved1[413];
+    ILushort Height;
+    ILushort Width;
+    ILubyte Reserved2[4];
+    ILubyte BppInfo;
+    ILubyte Reserved3[598];
 } IL_PACKSTRUCT PIXHEAD;
 #ifdef _MSC_VER
 #pragma pack(pop, pxr_struct)
@@ -36,85 +36,82 @@ typedef struct PIXHEAD
 
 ILboolean iLoadPxrInternal(void);
 
-
 //! Reads a Pxr file
 ILboolean ilLoadPxr(ILconst_string FileName)
 {
-	ILHANDLE	PxrFile;
-	ILboolean	bPxr = IL_FALSE;
+    ILHANDLE PxrFile;
+    ILboolean bPxr = IL_FALSE;
 
-	PxrFile = iopenr(FileName);
-	if (PxrFile == NULL) {
-		ilSetError(IL_COULD_NOT_OPEN_FILE);
-		return bPxr;
-	}
+    PxrFile = iopenr(FileName);
+    if (PxrFile == NULL)
+    {
+        ilSetError(IL_COULD_NOT_OPEN_FILE);
+        return bPxr;
+    }
 
-	bPxr = ilLoadPxrF(PxrFile);
-	icloser(PxrFile);
+    bPxr = ilLoadPxrF(PxrFile);
+    icloser(PxrFile);
 
-	return bPxr;
+    return bPxr;
 }
-
 
 //! Reads an already-opened Pxr file
 ILboolean ilLoadPxrF(ILHANDLE File)
 {
-	ILuint		FirstPos;
-	ILboolean	bRet;
+    ILuint FirstPos;
+    ILboolean bRet;
 
-	iSetInputFile(File);
-	FirstPos = itell();
-	bRet = iLoadPxrInternal();
-	iseek(FirstPos, IL_SEEK_SET);
+    iSetInputFile(File);
+    FirstPos = itell();
+    bRet = iLoadPxrInternal();
+    iseek(FirstPos, IL_SEEK_SET);
 
-	return bRet;
+    return bRet;
 }
-
 
 //! Reads from a memory "lump" that contains a Pxr
-ILboolean ilLoadPxrL(const void *Lump, ILuint Size)
+ILboolean ilLoadPxrL(const void* Lump, ILuint Size)
 {
-	iSetInputLump(Lump, Size);
-	return iLoadPxrInternal();
+    iSetInputLump(Lump, Size);
+    return iLoadPxrInternal();
 }
-
 
 // Internal function used to load the Pxr.
 ILboolean iLoadPxrInternal()
 {
-	ILushort	Width, Height;
-	ILubyte		Bpp;
+    ILushort Width, Height;
+    ILubyte Bpp;
 
-	Width = sizeof(PIXHEAD);
+    Width = sizeof(PIXHEAD);
 
-	iseek(416, IL_SEEK_SET);
-	Height = GetLittleUShort();
-	Width = GetLittleUShort();
-	iseek(424, IL_SEEK_SET);
-	Bpp = (ILubyte)igetc();
+    iseek(416, IL_SEEK_SET);
+    Height = GetLittleUShort();
+    Width = GetLittleUShort();
+    iseek(424, IL_SEEK_SET);
+    Bpp = (ILubyte)igetc();
 
-	switch (Bpp)
-	{
-		case 0x08:
-			ilTexImage(Width, Height, 1, 1, IL_LUMINANCE, IL_UNSIGNED_BYTE, NULL);
-			break;
-		case 0x0E:
-			ilTexImage(Width, Height, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, NULL);
-			break;
-		case 0x0F:
-			ilTexImage(Width, Height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, NULL);
-			break;
-		default:
-			ilSetError(IL_INVALID_FILE_HEADER);
-			return IL_FALSE;
-	}
+    switch (Bpp)
+    {
+    case 0x08:
+        ilTexImage(Width, Height, 1, 1, IL_LUMINANCE, IL_UNSIGNED_BYTE, NULL);
+        break;
+    case 0x0E:
+        ilTexImage(Width, Height, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, NULL);
+        break;
+    case 0x0F:
+        ilTexImage(Width, Height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, NULL);
+        break;
+    default:
+        ilSetError(IL_INVALID_FILE_HEADER);
+        return IL_FALSE;
+    }
 
-	iseek(1024, IL_SEEK_SET);
-	iread(iCurImage->Data, 1, iCurImage->SizeOfData);
-	iCurImage->Origin = IL_ORIGIN_UPPER_LEFT;
+    iseek(1024, IL_SEEK_SET);
+    iread(iCurImage->Data, 1, iCurImage->SizeOfData);
+    iCurImage->Origin = IL_ORIGIN_UPPER_LEFT;
 
-	return IL_TRUE;
+    return IL_TRUE;
 }
 
 
-#endif//IL_NO_PXR
+#endif //IL_NO_PXR

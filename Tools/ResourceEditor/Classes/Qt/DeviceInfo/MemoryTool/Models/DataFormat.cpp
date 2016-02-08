@@ -41,7 +41,7 @@ String FormatNumberWithDigitGroups(uint32 value)
     buf[to + 1] = '\0';
     while (g > 0)
     {
-        for (int j = 0;j < 3;++j)
+        for (int j = 0; j < 3; ++j)
         {
             buf[to] = buf[from];
             to -= 1;

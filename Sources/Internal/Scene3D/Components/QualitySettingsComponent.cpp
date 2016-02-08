@@ -30,12 +30,10 @@
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
-
 QualitySettingsComponent::QualitySettingsComponent()
-    : Component()   
+    : Component()
     , filterByType(true)
 {
 }
@@ -43,34 +41,33 @@ QualitySettingsComponent::QualitySettingsComponent()
 QualitySettingsComponent::~QualitySettingsComponent()
 {
 }
-   
-    
-Component * QualitySettingsComponent::Clone(Entity * toEntity)
+
+Component* QualitySettingsComponent::Clone(Entity* toEntity)
 {
-    QualitySettingsComponent * component = new QualitySettingsComponent();
-	component->SetEntity(toEntity);
-    
+    QualitySettingsComponent* component = new QualitySettingsComponent();
+    component->SetEntity(toEntity);
+
     component->filterByType = filterByType;
-    component->modelType = modelType;    
+    component->modelType = modelType;
     component->requiredGroup = requiredGroup;
     component->requiredQuality = requiredQuality;
 
     return component;
 }
 
-void QualitySettingsComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void QualitySettingsComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
     if (modelType.IsValid())
         archive->SetString("modelType", modelType.c_str());
     if (requiredGroup.IsValid())
         archive->SetString("requiredGroup", requiredGroup.c_str());
     if (requiredQuality.IsValid())
-        archive->SetString("requiredQuality", requiredQuality.c_str());    
+        archive->SetString("requiredQuality", requiredQuality.c_str());
     archive->SetBool("filterByType", filterByType);
 }
 
-void QualitySettingsComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void QualitySettingsComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     if (archive->IsKeyExists("modelType"))
         modelType = FastName(archive->GetString("modelType"));
@@ -80,7 +77,7 @@ void QualitySettingsComponent::Deserialize(KeyedArchive *archive, SerializationC
         requiredQuality = FastName(archive->GetString("requiredQuality"));
     filterByType = archive->GetBool("filterByType", filterByType);
 
-	Component::Deserialize(archive, serializationContext);
+    Component::Deserialize(archive, serializationContext);
 }
 
 void QualitySettingsComponent::SetFilterByType(bool filter)
@@ -93,35 +90,34 @@ bool QualitySettingsComponent::GetFilterByType() const
     return filterByType;
 }
 
-void QualitySettingsComponent::SetModelType(const FastName & type)
+void QualitySettingsComponent::SetModelType(const FastName& type)
 {
     modelType = type;
     QualitySettingsSystem::Instance()->UpdateEntityVisibility(GetEntity());
 }
 
-const FastName & QualitySettingsComponent::GetModelType() const
+const FastName& QualitySettingsComponent::GetModelType() const
 {
     return modelType;
 }
 
-void QualitySettingsComponent::SetRequiredGroup(const FastName & group)
+void QualitySettingsComponent::SetRequiredGroup(const FastName& group)
 {
     requiredGroup = group;
     QualitySettingsSystem::Instance()->UpdateEntityVisibility(GetEntity());
 }
-const FastName & QualitySettingsComponent::GetRequiredGroup() const
+const FastName& QualitySettingsComponent::GetRequiredGroup() const
 {
     return requiredGroup;
 }
 
-void QualitySettingsComponent::SetRequiredQuality(const FastName & quality)
+void QualitySettingsComponent::SetRequiredQuality(const FastName& quality)
 {
     requiredQuality = quality;
     QualitySettingsSystem::Instance()->UpdateEntityVisibility(GetEntity());
 }
-const FastName & QualitySettingsComponent::GetRequiredQuality() const
+const FastName& QualitySettingsComponent::GetRequiredQuality() const
 {
     return requiredQuality;
 }
-
 };

@@ -36,13 +36,13 @@
 
 class QDir;
 
-class EditorLocalizationSystem: public QObject
+class EditorLocalizationSystem : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString currentLocale READ GetCurrentLocale WRITE SetCurrentLocale NOTIFY CurrentLocaleChanged)
 
 public:
-    explicit EditorLocalizationSystem(QObject *parent = nullptr);
+    explicit EditorLocalizationSystem(QObject* parent = nullptr);
 
     QStringList GetAvailableLocaleNames() const;
     QStringList GetAvailableLocaleValues() const;

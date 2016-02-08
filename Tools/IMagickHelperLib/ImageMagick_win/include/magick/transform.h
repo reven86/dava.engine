@@ -23,24 +23,25 @@ extern "C" {
 #endif
 
 extern MagickExport Image
-  *ChopImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *ConsolidateCMYKImages(const Image *,ExceptionInfo *),
-  *CropImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *CropImageToTiles(const Image *,const char *, ExceptionInfo *),
-  *ExcerptImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *ExtentImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *FlipImage(const Image *,ExceptionInfo *),
-  *FlopImage(const Image *,ExceptionInfo *),
-  *RollImage(const Image *,const ssize_t,const ssize_t,ExceptionInfo *),
-  *ShaveImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *SpliceImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *TransposeImage(const Image *,ExceptionInfo *),
-  *TransverseImage(const Image *,ExceptionInfo *),
-  *TrimImage(const Image *,ExceptionInfo *);
+*
+ChopImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*ConsolidateCMYKImages(const Image *, ExceptionInfo *),
+*CropImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*CropImageToTiles(const Image *, const char *, ExceptionInfo *),
+*ExcerptImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*ExtentImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*FlipImage(const Image *, ExceptionInfo *),
+*FlopImage(const Image *, ExceptionInfo *),
+*RollImage(const Image *, const ssize_t, const ssize_t, ExceptionInfo *),
+*ShaveImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*SpliceImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*TransposeImage(const Image *, ExceptionInfo *),
+*TransverseImage(const Image *, ExceptionInfo *),
+*TrimImage(const Image *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  TransformImage(Image **,const char *,const char *),
-  TransformImages(Image **,const char *,const char *);
+TransformImage(Image **, const char *, const char *),
+TransformImages(Image **, const char *, const char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -21,15 +21,15 @@
 
 // Internal to IL but makes things easier for us:
 struct ILimage;
-ILAPI ILimage*	ILAPIENTRY iConvertImage(ILenum DestFormat, ILenum DestType);
-ILAPI ILubyte*	ILAPIENTRY iGetPaddedData(ILimage *Image);
-ILAPI ILimage*	ILAPIENTRY ilGetCurImage(void);
-ILAPI ILvoid	ILAPIENTRY ilCloseImage(ILimage *Image);
-ILAPI ILvoid	ILAPIENTRY iBindImageTemp(void);
+ILAPI ILimage* ILAPIENTRY iConvertImage(ILenum DestFormat, ILenum DestType);
+ILAPI ILubyte* ILAPIENTRY iGetPaddedData(ILimage* Image);
+ILAPI ILimage* ILAPIENTRY ilGetCurImage(void);
+ILAPI ILvoid ILAPIENTRY ilCloseImage(ILimage* Image);
+ILAPI ILvoid ILAPIENTRY iBindImageTemp(void);
 
 // Functions for the static library.
-CBitmap *ilutConvertToCBitmap();
-CBitmap *ilutMFCLoadImage(const ILstring FileName);
+CBitmap* ilutConvertToCBitmap();
+CBitmap* ilutMFCLoadImage(const ILstring FileName);
 
 #endif // __MFCIL_H__
 #endif // __mfcil_h__

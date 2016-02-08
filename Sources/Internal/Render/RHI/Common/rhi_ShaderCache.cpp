@@ -987,6 +987,9 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
             src_len += sprintf(src + src_len, "#define %s %i \n", vattr[i].name, vattr[i].value);
     }
 
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_VERTEX \n");
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_INSTANCE \n");
+
     switch (targetApi)
     {
     case RHI_DX9:
@@ -1085,7 +1088,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
             sscanf(decl, "DECL_VPROG_BUFFER(%i,", &i);
 
-            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1 + i);
+            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, MAX_VERTEX_STREAM_COUNT + i);
             src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i);
             vp_buf_declared[i] = true;
 

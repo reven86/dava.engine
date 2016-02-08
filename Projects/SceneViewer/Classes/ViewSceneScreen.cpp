@@ -167,7 +167,7 @@ void ViewSceneScreen::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void ViewSceneScreen::OnBack(BaseObject *caller, void *param, void *callerData)
+void ViewSceneScreen::OnBack(BaseObject* caller, void* param, void* callerData)
 {
     SetPreviousScreen();
 }
@@ -201,7 +201,7 @@ void ViewSceneScreen::OnReloadShaders(DAVA::BaseObject* caller, void* param, voi
     scene->renderSystem->SetForceUpdateLights();
     
 #define INVALIDATE_2D_MATERIAL(material) \
-if(RenderSystem2D::material) \
+if (RenderSystem2D::material) \
 RenderSystem2D::material->InvalidateRenderVariants();
 
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
@@ -214,7 +214,7 @@ RenderSystem2D::material->InvalidateRenderVariants();
 #undef INVALIDATE_2D_MATERIAL
 }
 
-void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
+void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 {
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
@@ -228,7 +228,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
     BaseScreen::Update(timeElapsed);
-    
+
     updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 
     UpdateInfo(timeElapsed);
@@ -260,15 +260,15 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
 {
     ++frameCounter;
     framesTime += timeElapsed;
-    
-    if(framesTime > INFO_UPDATE_TIME)
+
+    if (framesTime > INFO_UPDATE_TIME)
     {
         int32 fps = (int32)(frameCounter / framesTime);
         info->SetText(Format(L"FPS: %d", fps));
 
         framesTime -= INFO_UPDATE_TIME;
         frameCounter = 0;
-        
+
         drawTime = updateTime = 0;
     }
 }
@@ -277,9 +277,9 @@ void ViewSceneScreen::DidAppear()
 {
     framesTime = 0.f;
     frameCounter = 0;
-    
+
     drawTime = updateTime = 0;
-    
+
     info->SetText(L"");
 }
 

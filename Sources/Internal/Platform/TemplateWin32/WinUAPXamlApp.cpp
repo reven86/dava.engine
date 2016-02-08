@@ -67,6 +67,7 @@ using namespace ::Windows::ApplicationModel::Core;
 using namespace ::Windows::UI::Xaml::Media;
 using namespace ::Windows::System::Threading;
 using namespace ::Windows::Phone::UI::Input;
+using namespace ::Windows::UI::Xaml::Markup;
 
 namespace DAVA
 {
@@ -214,7 +215,7 @@ void WinUAPXamlApp::PreStartAppSettings()
     Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 }
 
-void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
+void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     // If mainLoopThreadStarted is false then app performing cold start
     // else app is restored from background or resumed from suspended state
@@ -249,17 +250,17 @@ void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActiva
     }
 }
 
-void WinUAPXamlApp::AddUIElement(Windows::UI::Xaml::UIElement^ uiElement)
+void WinUAPXamlApp::AddUIElement(Windows::UI::Xaml::UIElement ^ uiElement)
 {
     // Note: must be called from UI thread
     canvas->Children->Append(uiElement);
 }
 
-void WinUAPXamlApp::RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement)
+void WinUAPXamlApp::RemoveUIElement(Windows::UI::Xaml::UIElement ^ uiElement)
 {
     // Note: must be called from UI thread
     unsigned int index = 0;
-    for (auto x = canvas->Children->First();x->HasCurrent;x->MoveNext(), ++index)
+    for (auto x = canvas->Children->First(); x->HasCurrent; x->MoveNext(), ++index)
     {
         if (x->Current == uiElement)
         {
@@ -269,19 +270,19 @@ void WinUAPXamlApp::RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement)
     }
 }
 
-void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y)
+void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement ^ uiElement, float32 x, float32 y)
 {
     // Note: must be called from UI thread
     canvas->SetLeft(uiElement, x);
     canvas->SetTop(uiElement, y);
 }
 
-void WinUAPXamlApp::SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox)
+void WinUAPXamlApp::SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox ^ textBox)
 {
     textBox->Style = customTextBoxStyle;
 }
 
-void WinUAPXamlApp::SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox)
+void WinUAPXamlApp::SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox ^ passwordBox)
 {
     passwordBox->Style = customPasswordBoxStyle;
 }
@@ -367,21 +368,21 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     Application::Current->Exit();
 }
 
-void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
+void WinUAPXamlApp::OnSuspending(::Platform::Object ^ sender, Windows::ApplicationModel::SuspendingEventArgs ^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
-void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
+void WinUAPXamlApp::OnResuming(::Platform::Object ^ sender, ::Platform::Object ^ args)
 {
-    core->RunOnMainThread([]() {
+    core->RunOnMainThreadBlocked([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
 
-void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args)
+void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ sender, ::Windows::UI::Core::WindowActivatedEventArgs ^ args)
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
@@ -402,7 +403,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
     });
 }
 
-void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
+void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs ^ args)
 {
     bool visible = args->Visible;
     AllowDisplaySleep(!visible);
@@ -839,11 +840,11 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
 void WinUAPXamlApp::SetupEventHandlers()
 {
     Suspending += ref new SuspendingEventHandler(this, &WinUAPXamlApp::OnSuspending);
-    Resuming += ref new EventHandler<::Platform::Object^>(this, &WinUAPXamlApp::OnResuming);
+    Resuming += ref new EventHandler<::Platform::Object ^>(this, &WinUAPXamlApp::OnResuming);
 
-    CoreWindow^ coreWindow = Window::Current->CoreWindow;
-    coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
-    coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
+    CoreWindow ^ coreWindow = Window::Current->CoreWindow;
+    coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
+    coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
     auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
         deferredSizeScaleEvents->CoreWindowSizeChanged(coreWindow, arg);
@@ -872,7 +873,7 @@ void WinUAPXamlApp::SetupEventHandlers()
 
     if (isPhoneApiDetected)
     {
-        HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
+        HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs ^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
     }
 
     SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs ^>(this, &WinUAPXamlApp::OnBackRequested);
@@ -880,10 +881,12 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
-    using Windows::UI::Xaml::Markup::XamlReader;
+    // workaround for Surface, otherwise we lost MouseMoved event
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
-    webview->Visibility = Visibility::Collapsed;
+    // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
+    obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
+    TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
@@ -891,6 +894,7 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     Window::Current->Content = swapChainPanel;
 
     AddUIElement(webview);
+    AddUIElement(textBox);
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -903,18 +907,18 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     AddUIElement(controlThatTakesFocus);
     PositionUIElement(controlThatTakesFocus, -100, -100);
 
-    {   // Load custom textbox and password styles that allow transparent background when control has focus
+    { // Load custom textbox and password styles that allow transparent background when control has focus
         using Windows::UI::Xaml::Markup::XamlReader;
 
-        Platform::Object^ obj = XamlReader::Load(ref new Platform::String(xamlTextBoxStyles));
-        ResourceDictionary^ dict = (ResourceDictionary^)obj;
+        Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlTextBoxStyles));
+        ResourceDictionary ^ dict = (ResourceDictionary ^ )obj;
 
         Resources->MergedDictionaries->Append(dict);
-        Object^ texboxStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_textbox"));
-        Object^ passwordStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_passwordbox"));
+        Object ^ texboxStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_textbox"));
+        Object ^ passwordStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_passwordbox"));
 
-        customTextBoxStyle = (Windows::UI::Xaml::Style^)texboxStyleObj;
-        customPasswordBoxStyle = (Windows::UI::Xaml::Style^)passwordStyleObj;
+        customTextBoxStyle = (Windows::UI::Xaml::Style ^ )texboxStyleObj;
+        customPasswordBoxStyle = (Windows::UI::Xaml::Style ^ )passwordStyleObj;
     }
 }
 
@@ -1046,7 +1050,7 @@ void WinUAPXamlApp::UpdateScreenSizeAndScale(float32 width, float32 height, floa
 void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
 {
     // Note: must run on UI thread
-    ApplicationView^ view = ApplicationView::GetForCurrentView();
+    ApplicationView ^ view = ApplicationView::GetForCurrentView();
     if (view->IsFullScreenMode == isFullscreen_)
     {
         isFullscreen = isFullscreen_;
@@ -1233,12 +1237,19 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 )";
 
 const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
-<WebView x:Name="xamlWebView"
+<WebView x:Name="xamlWebView" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
 )";
 
-}   // namespace DAVA
+const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
+<TextBox x:Name="xamlTextBox" Visibility="Collapsed"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</TextBox>
+)";
 
-#endif  // __DAVAENGINE_WIN_UAP__
+} // namespace DAVA
+
+#endif // __DAVAENGINE_WIN_UAP__

@@ -41,7 +41,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Template class UDPSocketTemplate wraps UDP socket from underlying network library and provides interface to user
  through CRTP idiom. Class specified by template parameter T should inherit UDPSocketTemplate and provide some
@@ -81,23 +80,24 @@ private:
     static void HandleSendThunk(uv_udp_send_t* request, int error);
 
 private:
-    uv_udp_t uvhandle;                      // libuv handle itself
-    IOLoop* loop;                           // IOLoop object handle is attached to
-    bool isOpen;                            // Handle has been initialized and can be used in operations
-    bool isClosing;                         // Close has been issued and waiting for close operation complete, used mainly for asserts
-    uv_udp_send_t uvsend;                   // libuv request for send
-    Buffer sendBuffers[MAX_WRITE_BUFFERS];  // Send buffers participating in current send operation
-    size_t sendBufferCount;                 // Number of send buffers participating in current send operation
+    uv_udp_t uvhandle; // libuv handle itself
+    IOLoop* loop; // IOLoop object handle is attached to
+    bool isOpen; // Handle has been initialized and can be used in operations
+    bool isClosing; // Close has been issued and waiting for close operation complete, used mainly for asserts
+    uv_udp_send_t uvsend; // libuv request for send
+    Buffer sendBuffers[MAX_WRITE_BUFFERS]; // Send buffers participating in current send operation
+    size_t sendBufferCount; // Number of send buffers participating in current send operation
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
-UDPSocketTemplate<T>::UDPSocketTemplate(IOLoop* ioLoop) : uvhandle()
-                                                        , loop(ioLoop)
-                                                        , isOpen(false)
-                                                        , isClosing(false)
-                                                        , uvsend()
-                                                        , sendBufferCount(0)
+UDPSocketTemplate<T>::UDPSocketTemplate(IOLoop* ioLoop)
+    : uvhandle()
+    , loop(ioLoop)
+    , isOpen(false)
+    , isClosing(false)
+    , uvsend()
+    , sendBufferCount(0)
 {
     DVASSERT(ioLoop != NULL);
     Memset(sendBuffers, 0, sizeof(sendBuffers));
@@ -115,7 +115,7 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
-    int size = static_cast<int> (endpoint.Size());
+    int size = static_cast<int>(endpoint.Size());
     return uv_udp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
 #else
     return -1;
@@ -151,7 +151,7 @@ int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
-        error = DoOpen();   // Automatically open on first call
+        error = DoOpen(); // Automatically open on first call
     if (0 == error)
         error = uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
     return error;
@@ -197,7 +197,7 @@ int32 UDPSocketTemplate<T>::DoStartReceive()
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
-        error = DoOpen();   // Automatically open on first call
+        error = DoOpen(); // Automatically open on first call
     if (0 == error)
         error = uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
     return error;
@@ -212,10 +212,10 @@ int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, co
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
-    DVASSERT(0 == sendBufferCount);    // Next send is allowed only after previous send completion
+    DVASSERT(0 == sendBufferCount); // Next send is allowed only after previous send completion
 
     sendBufferCount = bufferCount;
-    for (size_t i = 0;i < bufferCount;++i)
+    for (size_t i = 0; i < bufferCount; ++i)
     {
         DVASSERT(buffers[i].base != NULL && buffers[i].len > 0);
         sendBuffers[i] = buffers[i];
@@ -250,7 +250,7 @@ template <typename T>
 void UDPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);
-    self->isClosing = false;    // Mark socket has been closed
+    self->isClosing = false; // Mark socket has been closed
     self->sendBufferCount = 0;
     // And clear handle and requests
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
@@ -263,10 +263,11 @@ template <typename T>
 void UDPSocketTemplate<T>::HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buffer, const sockaddr* addr, unsigned int flags)
 {
     // According to libuv documentation under such condition there is nothing to read on UDP socket
-    if(0 == nread && NULL == addr) return;
+    if (0 == nread && NULL == addr)
+        return;
 
     int32 error = 0;
-    if(nread < 0)
+    if (nread < 0)
     {
         error = static_cast<int32>(nread);
         nread = 0;
@@ -280,11 +281,11 @@ void UDPSocketTemplate<T>::HandleSendThunk(uv_udp_send_t* request, int error)
 {
     UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(request->data);
     size_t bufferCount = self->sendBufferCount;
-    self->sendBufferCount = 0;     // Mark send operation has completed
+    self->sendBufferCount = 0; // Mark send operation has completed
     static_cast<T*>(self)->HandleSend(error, self->sendBuffers, bufferCount);
 }
 
-}   // namespace Net
-}	// namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_UDPSOCKETTEMPLATE_H__
+#endif // __DAVAENGINE_UDPSOCKETTEMPLATE_H__

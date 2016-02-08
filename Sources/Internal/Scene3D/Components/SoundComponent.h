@@ -36,19 +36,22 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Sound/SoundEvent.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class SoundComponent;
 struct SoundComponentElement
 {
-    SoundComponentElement(SoundEvent * _soundEvent, uint32 _flags, const Vector3 & _localDirection) : 
-        soundEvent(_soundEvent),
-        localDirection(_localDirection),
+    SoundComponentElement(SoundEvent* _soundEvent, uint32 _flags, const Vector3& _localDirection)
+        :
+        soundEvent(_soundEvent)
+        ,
+        localDirection(_localDirection)
+        ,
         flags(_flags)
-        {}
+    {
+    }
 
-    SoundEvent * soundEvent;
+    SoundEvent* soundEvent;
     Vector3 localDirection;
     uint32 flags;
 
@@ -66,13 +69,13 @@ public:
     SoundComponent();
     virtual ~SoundComponent();
 
-    virtual Component * Clone(Entity * toEntity);
+    virtual Component* Clone(Entity* toEntity);
 
-    virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+
     inline uint32 GetEventsCount() const;
-    inline SoundEvent * GetSoundEvent(uint32 index) const;
+    inline SoundEvent* GetSoundEvent(uint32 index) const;
 
     void Trigger();
     void Stop();
@@ -82,27 +85,27 @@ public:
     void SetSoundEventFlags(uint32 eventIndex, uint32 flags);
     inline uint32 GetSoundEventFlags(uint32 eventIndex) const;
 
-    void AddSoundEvent(SoundEvent * _event, uint32 flags = 0, const Vector3 & direction = Vector3(1.f, 0.f, 0.f));
-    void RemoveSoundEvent(SoundEvent * event);
+    void AddSoundEvent(SoundEvent* _event, uint32 flags = 0, const Vector3& direction = Vector3(1.f, 0.f, 0.f));
+    void RemoveSoundEvent(SoundEvent* event);
     void RemoveAllEvents();
 
-    void SetLocalDirection(uint32 eventIndex, const Vector3 & direction);
-    void SetLocalDirection(const DAVA::Vector3 &direction);
-    inline const Vector3 & GetLocalDirection(uint32 eventIndex) const;
+    void SetLocalDirection(uint32 eventIndex, const Vector3& direction);
+    void SetLocalDirection(const DAVA::Vector3& direction);
+    inline const Vector3& GetLocalDirection(uint32 eventIndex) const;
 
     IMPLEMENT_COMPONENT_TYPE(SOUND_COMPONENT);
-    
+
 protected:
     Vector<SoundComponentElement> events;
 
 public:
     INTROSPECTION_EXTEND(SoundComponent, Component,
-        COLLECTION(events, "events", I_SAVE | I_VIEW | I_EDIT)
-        );
+                         COLLECTION(events, "events", I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
 
 //Inline
-inline SoundEvent * SoundComponent::GetSoundEvent(uint32 index) const
+inline SoundEvent* SoundComponent::GetSoundEvent(uint32 index) const
 {
     DVASSERT(index < (uint32)events.size());
     return events[index].soundEvent;
@@ -119,12 +122,11 @@ inline uint32 SoundComponent::GetSoundEventFlags(uint32 index) const
     return events[index].flags;
 }
 
-inline const Vector3 & SoundComponent::GetLocalDirection(uint32 index) const
+inline const Vector3& SoundComponent::GetLocalDirection(uint32 index) const
 {
     DVASSERT(index < (uint32)events.size());
     return events[index].localDirection;
 }
-
 };
 
 #endif

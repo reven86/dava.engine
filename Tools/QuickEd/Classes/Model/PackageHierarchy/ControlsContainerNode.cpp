@@ -29,14 +29,11 @@
 
 #include "ControlsContainerNode.h"
 
-ControlsContainerNode::ControlsContainerNode(PackageBaseNode *parent)
+ControlsContainerNode::ControlsContainerNode(PackageBaseNode* parent)
     : PackageBaseNode(parent)
 {
-    
 }
 
 ControlsContainerNode::~ControlsContainerNode()
 {
-    
 }
-

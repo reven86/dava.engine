@@ -39,22 +39,19 @@
 
 #include "DAVAEngine.h"
 
-
 class SizeDialog : public QDialog
 {
 public:
-    
-    explicit SizeDialog(QWidget *parent = 0);
-    
+    explicit SizeDialog(QWidget* parent = 0);
+
     ~SizeDialog();
-    
+
     DAVA::Vector2 GetSize() const;
-    
+
 private:
-    
-    QVBoxLayout *verticalLayout;
+    QVBoxLayout* verticalLayout;
     QLabel* messageLbl;
-    QHBoxLayout *horLayout;
+    QHBoxLayout* horLayout;
     QLabel* widthLbl;
     QSpinBox* widthSpinBox;
     QLabel* heightLbl;
