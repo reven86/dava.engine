@@ -51,6 +51,7 @@ public:
 	static const FastName DETAIL_ALPHABLEND;
     static const FastName SHADOWRECT;
     static const FastName TILE_MASK;
+    static const FastName TILE_MASK_DEBUG;
     static const FastName DETAIL_ALPHATEST;
     static const FastName SHADOW_VOLUME;
     static const FastName VERTEXCOLOR_ALPHABLEND;

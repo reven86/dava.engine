@@ -148,6 +148,8 @@ public:
     void BindDynamicParameters(Camera* camera) override;
     void PrepareToRender(Camera* camera) override;
 
+    void SetDebugDraw(bool isDebug);
+    bool IsDebugDraw() const;
 
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
@@ -194,7 +196,6 @@ protected:
 
     bool forceFirstLod = false;
     bool updatable = false;
-    bool isDebugDraw = false;
 
     bool isInstancingUsed = false;
 
@@ -319,6 +320,12 @@ protected:
         Vector4 lodOffset; // per edge
     };
 
+    struct InstanceDataBuffer
+    {
+        rhi::HVertexBuffer buffer;
+        rhi::HSyncObject syncObject;
+    };
+
     void AllocateGeometryDataInstancing();
 
     Texture* CreateHeightTexture(Heightmap* heightmap);
@@ -329,7 +336,10 @@ protected:
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
     InstanceData* instanceDataPtr = nullptr;
-    CircularArray<rhi::HVertexBuffer, 9> instanceDataBuffers;
+
+    //CircularArray<rhi::HVertexBuffer, 9> instanceDataBuffers;
+    Vector<InstanceDataBuffer> freeInstanceDataBuffers;
+    Vector<InstanceDataBuffer> usedInstanceDataBuffers;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -338,14 +348,14 @@ public:
                          PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
                          PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
+                         PROPERTY("isDebugDraw", "isDebugDraw", IsDebugDraw, SetDebugDraw, I_VIEW | I_EDIT)
                          MEMBER(solidAngleError, "solidAngleError", I_VIEW | I_EDIT)
                          MEMBER(geometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
                          MEMBER(absHeightError, "absHeightError", I_VIEW | I_EDIT)
 
                          MEMBER(zoomSolidAngleError, "solidAngleError", I_VIEW | I_EDIT)
                          MEMBER(zoomGeometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
-                         MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT)
-                         MEMBER(isDebugDraw, "isDebugDraw", I_VIEW | I_EDIT));
+                         MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT));
 };
 
 // Inline functions

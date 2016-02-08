@@ -163,8 +163,16 @@ void Landscape::ReleaseGeometryData()
     if (patchIndexBuffer)
         rhi::DeleteIndexBuffer(patchIndexBuffer);
 
-    for (rhi::HVertexBuffer & vb : instanceDataBuffers.elements)
-        rhi::DeleteVertexBuffer(vb);
+    //for (rhi::HVertexBuffer & vb : instanceDataBuffers.elements)
+    //    rhi::DeleteVertexBuffer(vb);
+
+    for (InstanceDataBuffer& buffer : freeInstanceDataBuffers)
+        rhi::DeleteVertexBuffer(buffer.buffer);
+    freeInstanceDataBuffers.clear();
+
+    for (InstanceDataBuffer& buffer : usedInstanceDataBuffers)
+        rhi::DeleteVertexBuffer(buffer.buffer);
+    usedInstanceDataBuffers.clear();
 }
     
 void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & _box)
@@ -931,11 +939,11 @@ void Landscape::AllocateGeometryDataInstancing()
     ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
     landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
-    rhi::VertexBuffer::Descriptor instanceBufferDesc;
-    instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
-    instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
-    for (rhi::HVertexBuffer& buffer : instanceDataBuffers.elements)
-        buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
+    //rhi::VertexBuffer::Descriptor instanceBufferDesc;
+    //instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
+    //instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+    //for (rhi::HVertexBuffer& buffer : instanceDataBuffers.elements)
+    //    buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
 
     uint32 verticesCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
     VertexInstancing* patchVertices = new VertexInstancing[verticesCount];
@@ -1036,9 +1044,33 @@ void Landscape::DrawLandscapeInstancing()
     drawIndices = 0;
     activeRenderBatchArray.clear();
 
+    for (int32 i = static_cast<int32>(usedInstanceDataBuffers.size()) - 1; i >= 0; --i)
+    {
+        if (rhi::SyncObjectSignaled(usedInstanceDataBuffers[i].syncObject))
+        {
+            freeInstanceDataBuffers.push_back(usedInstanceDataBuffers[i]);
+            RemoveExchangingWithLast(usedInstanceDataBuffers, i);
+        }
+    }
+
     if (subdivPatchesDrawCount)
     {
-        rhi::HVertexBuffer instanceBuffer = instanceDataBuffers.Next();
+        //rhi::HVertexBuffer instanceBuffer = instanceDataBuffers.Next();
+        rhi::HVertexBuffer instanceBuffer;
+        if (freeInstanceDataBuffers.size())
+        {
+            instanceBuffer = freeInstanceDataBuffers.back().buffer;
+            freeInstanceDataBuffers.pop_back();
+        }
+        else
+        {
+            rhi::VertexBuffer::Descriptor instanceBufferDesc;
+            instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
+            instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+            instanceBuffer = rhi::CreateVertexBuffer(instanceBufferDesc);
+        }
+        usedInstanceDataBuffers.push_back({ instanceBuffer, rhi::GetCurrentFrameSyncObject() });
+
         renderBatchArray[0].renderBatch->instanceBuffer = instanceBuffer;
         renderBatchArray[0].renderBatch->instanceCount = subdivPatchesDrawCount;
         activeRenderBatchArray.push_back(renderBatchArray[0].renderBatch);
@@ -1406,6 +1438,16 @@ void Landscape::SetUpdatable(bool isUpdatable)
 bool Landscape::IsUpdatable() const
 {
     return updatable;
+}
+
+void Landscape::SetDebugDraw(bool isDebug)
+{
+    landscapeMaterial->SetFXName(isDebug ? NMaterialName::TILE_MASK_DEBUG : NMaterialName::TILE_MASK);
+}
+
+bool Landscape::IsDebugDraw() const
+{
+    return landscapeMaterial->GetEffectiveFXName() == NMaterialName::TILE_MASK_DEBUG;
 }
 
 /*
