@@ -236,28 +236,37 @@ ControlType* UIControlHelpers::FindControlByPathRecursivelyImpl(Vector<FastName>
     return nullptr;
 }
 
-void UIControlHelpers::ScrollToControl(DAVA::UIControl* control, bool withAnimation)
+void UIControlHelpers::ScrollToControl(DAVA::UIControl* control, bool toTopLeftForBigControls)
 {
     UIControl* parent = control->GetParent();
     if (parent)
     {
-        ScrollToRect(parent, control->GetRect(), withAnimation);
+        ScrollToRect(parent, control->GetRect(), 0.0f, toTopLeftForBigControls);
     }
 }
 
-void UIControlHelpers::ScrollToRect(DAVA::UIControl* control, const Rect& rect, bool withAnimation)
+void UIControlHelpers::ScrollToControlWithAnimation(DAVA::UIControl* control, float32 animationTime, bool toTopLeftForBigControls)
+{
+    UIControl* parent = control->GetParent();
+    if (parent)
+    {
+        ScrollToRect(parent, control->GetRect(), animationTime, toTopLeftForBigControls);
+    }
+}
+
+void UIControlHelpers::ScrollToRect(DAVA::UIControl* control, const Rect& rect, float32 animationTime, bool toTopLeftForBigControls)
 {
     UIList* list = dynamic_cast<UIList*>(control);
     if (list)
     {
-        ScrollListToRect(list, rect, withAnimation);
+        ScrollListToRect(list, rect, animationTime, toTopLeftForBigControls);
     }
     else
     {
         UIScrollView* scrollView = dynamic_cast<UIScrollView*>(control);
         if (scrollView)
         {
-            ScrollUIScrollViewToRect(scrollView, rect, withAnimation);
+            ScrollUIScrollViewToRect(scrollView, rect, animationTime, toTopLeftForBigControls);
         }
     }
 
@@ -265,14 +274,29 @@ void UIControlHelpers::ScrollToRect(DAVA::UIControl* control, const Rect& rect, 
     if (parent)
     {
         Rect r = rect;
-        r += control->GetPosition();
-        ScrollToRect(parent, r, withAnimation);
+        r += control->GetPosition() - control->GetPivotPoint();
+        ScrollToRect(parent, r, animationTime, toTopLeftForBigControls);
     }
 }
 
-float32 UIControlHelpers::GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize)
+float32 UIControlHelpers::GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize, bool toTopLeftForBigControls)
 {
-    if (controlPos < 0)
+    if (controlSize > scrollSize)
+    {
+        if (controlPos > 0 || toTopLeftForBigControls)
+        {
+            return -controlPos;
+        }
+        else if (controlPos + controlSize < scrollSize)
+        {
+            return scrollSize - (controlPos + controlSize);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    else if (controlPos < 0)
     {
         return -controlPos;
     }
@@ -286,45 +310,55 @@ float32 UIControlHelpers::GetScrollPositionToShowControl(float32 controlPos, flo
     }
 }
 
-void UIControlHelpers::ScrollListToRect(UIList* list, const DAVA::Rect& rect, bool withAnimation)
+Rect UIControlHelpers::ScrollListToRect(UIList* list, const DAVA::Rect& rect, float32 animationTime, bool toTopLeftForBigControls)
 {
     Vector2 scrollSize = list->GetSize();
 
     float32 scrollPos = list->GetScrollPosition();
+    Rect r = rect;
     if (list->GetOrientation() == UIList::ORIENTATION_HORIZONTAL)
     {
-        scrollPos += GetScrollPositionToShowControl(rect.x, rect.dx, scrollSize.dx);
+        float32 delta = GetScrollPositionToShowControl(rect.x, rect.dx, scrollSize.dx, toTopLeftForBigControls);
+        scrollPos += delta;
+        r.x += delta;
     }
     else
     {
-        scrollPos += GetScrollPositionToShowControl(rect.y, rect.dy, scrollSize.dy);
+        float32 delta = GetScrollPositionToShowControl(rect.y, rect.dy, scrollSize.dy, toTopLeftForBigControls);
+        scrollPos += delta;
+        r.y += delta;
     }
 
-    if (withAnimation)
+    if (animationTime > 0.0f)
     {
-        list->ScrollToPosition(-scrollPos);
+        list->ScrollToPosition(-scrollPos, animationTime);
     }
     else
     {
         list->SetScrollPosition(-scrollPos);
     }
+
+    return r;
 }
 
-void UIControlHelpers::ScrollUIScrollViewToRect(UIScrollView* scrollView, const DAVA::Rect& rect, bool withAnimation)
+Rect UIControlHelpers::ScrollUIScrollViewToRect(UIScrollView* scrollView, const DAVA::Rect& rect, float32 animationTime, bool toTopLeftForBigControls)
 {
     Vector2 scrollSize = scrollView->GetSize();
     Vector2 scrollPos = scrollView->GetScrollPosition();
 
-    scrollPos.x += GetScrollPositionToShowControl(rect.x, rect.dx, scrollSize.dx);
-    scrollPos.y += GetScrollPositionToShowControl(rect.y, rect.dy, scrollSize.dy);
+    Vector2 delta;
+    delta.x = GetScrollPositionToShowControl(rect.x, rect.dx, scrollSize.dx, toTopLeftForBigControls);
+    delta.y = GetScrollPositionToShowControl(rect.y, rect.dy, scrollSize.dy, toTopLeftForBigControls);
+    scrollPos += delta;
 
-    if (withAnimation)
+    if (animationTime > 0.0f)
     {
-        scrollView->ScrollToPosition(scrollPos);
+        scrollView->ScrollToPosition(scrollPos, animationTime);
     }
     else
     {
         scrollView->SetScrollPosition(scrollPos);
     }
+    return rect + delta;
 }
 }

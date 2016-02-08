@@ -50,7 +50,8 @@ public:
     static UIControl* FindControlByPath(const String& controlPath, UIControl* rootControl);
     static const UIControl* FindControlByPath(const String& controlPath, const UIControl* rootControl);
 
-    static void ScrollToControl(DAVA::UIControl* control, bool withAnimation = false);
+    static void ScrollToControl(DAVA::UIControl* control, bool toTopLeftForBigControls = false);
+    static void ScrollToControlWithAnimation(DAVA::UIControl* control, float32 animationTime = 0.3f, bool toTopLeftForBigControls = false);
 
 private:
     template <typename ControlType>
@@ -62,10 +63,10 @@ private:
     template <typename ControlType>
     static ControlType* FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl);
 
-    static void ScrollToRect(DAVA::UIControl* control, const Rect& rect, bool withAnimation);
-    static float32 GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize);
-    static void ScrollListToRect(UIList* list, const DAVA::Rect& rect, bool withAnimation);
-    static void ScrollUIScrollViewToRect(UIScrollView* scrollView, const DAVA::Rect& rect, bool withAnimation);
+    static void ScrollToRect(DAVA::UIControl* control, const Rect& rect, float32 animationTime, bool toTopLeftForBigControls);
+    static float32 GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize, bool toTopLeftForBigControls);
+    static Rect ScrollListToRect(UIList* list, const DAVA::Rect& rect, float32 animationTime, bool toTopLeftForBigControls);
+    static Rect ScrollUIScrollViewToRect(UIScrollView* scrollView, const DAVA::Rect& rect, float32 animationTime, bool toTopLeftForBigControls);
 
     static const FastName WILDCARD_PARENT;
     static const FastName WILDCARD_CURRENT;

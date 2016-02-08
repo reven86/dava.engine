@@ -33,8 +33,6 @@
 
 using namespace DAVA;
 
-extern int32 GetCpuCount();
-
 DAVA_TESTCLASS(UIControlTest)
 {
     // root
