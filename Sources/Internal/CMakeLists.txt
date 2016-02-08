@@ -88,6 +88,7 @@ elseif( MACOS )
                     QuartzCore
                     CoreMedia
                     WebKit
+                    SystemConfiguration
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
@@ -102,7 +103,10 @@ elseif( MACOS )
     set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( IOS )  
-    find_package( ZLIB )
+
+    if ( NOT NOT_TARGET_EXECUTABLE )
+        find_package( ZLIB )
+    endif()
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
@@ -213,10 +217,12 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
+                                                        "Notification/LocalNotificationMac.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
+                                                        "TemplateMacOS/MovieViewControlMacOS.mm"
                                                     IGNORE_LIST_IOS
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"

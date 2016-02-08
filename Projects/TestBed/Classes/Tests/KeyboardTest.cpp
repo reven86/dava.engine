@@ -52,6 +52,8 @@ Map<String, UIControl*> gamepadButtons;
 Rect gamepadPos(500, 000, 800, 450);
 float32 gamepadStickDeltaMove = 20.f; // 20 pixels
 
+UIControl* redBox = nullptr;
+
 class CustomText : public UIStaticText
 {
 public:
@@ -72,7 +74,11 @@ public:
     bool SystemInput(UIEvent* currentInput) override
     {
         bool result = false;
-        if (currentInput->device == UIEvent::Device::GAMEPAD)
+        if (currentInput->phase == UIEvent::Phase::GESTURE)
+        {
+            OnGestureEvent(currentInput);
+        }
+        else if (currentInput->device == UIEvent::Device::GAMEPAD)
         {
             // this code never happen
             DVASSERT(false);
@@ -143,6 +149,33 @@ private:
         ctrl->SetPosition(pos);
         UpdateGamepadElement(name, pos != gamepadPos.GetPosition());
     }
+
+    void OnGestureEvent(UIEvent* event)
+    {
+        float32 magnification = event->gesture.magnification;
+        Vector2 newSize = redBox->GetSize();
+        if (magnification > -1.f && magnification < 1.f)
+        {
+            newSize.x *= (1.0f + magnification);
+            newSize.y *= (1.0f + magnification);
+        }
+        redBox->SetSize(newSize);
+
+        float32 angleDegrees = event->gesture.rotation;
+        if (angleDegrees != 0.f)
+        {
+            angleDegrees *= -1.f;
+        }
+        float32 newAngle = redBox->GetAngle() + ((angleDegrees / 180) * 3.14f);
+        redBox->SetAngle(newAngle);
+
+        float swipeStep = 50.f;
+        Vector2 newPos = redBox->GetPosition() +
+        Vector2(swipeStep * event->gesture.dx,
+                swipeStep * event->gesture.dy);
+        redBox->SetPosition(newPos);
+    }
+
     void OnGamepadEvent(UIEvent* event)
     {
         //Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
@@ -364,7 +397,6 @@ private:
         return false; // let pass event to other controls
     }
 
-
     uint32 numKeyboardEvents = 0;
     uint32 numKeyDown = 0;
     uint32 numKeyUp = 0;
@@ -405,7 +437,8 @@ void KeyboardTest::LoadResources()
     previewText = new UIStaticText(Rect(20, 30, 400, 200));
     previewText->SetFont(font);
     previewText->SetTextColor(Color::White);
-    previewText->SetText(L"Press (Hold) and Unpress keys");
+    previewText->SetMultiline(true);
+    previewText->SetText(L"Press (Hold) and Unpress keys\nOn MacOS test gestures magnify/rotate/swipe");
     previewText->SetDebugDraw(true);
     previewText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewText);
@@ -449,6 +482,17 @@ void KeyboardTest::LoadResources()
         AddControl(touch.img);
     }
 
+    UIButton* box = new UIButton(Rect(512, 512, 128, 128));
+    box->SetPivotPoint(Vector2(64.f, 64.f));
+    box->SetInputEnabled(false);
+    box->SetDebugDraw(true);
+    auto boxBack = box->GetBackground();
+    boxBack->SetDrawColor(Color(1.f, 0.f, 0.f, 1.f));
+    boxBack->SetColor(Color(1.f, 0.f, 0.f, 1.f));
+    boxBack->SetDrawType(UIControlBackground::eDrawType::DRAW_FILL);
+    redBox = box;
+    AddControl(redBox);
+
     gamepad = new UIControl(gamepadPos);
     auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
     gamepad->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
@@ -472,6 +516,7 @@ void KeyboardTest::UnloadResources()
     SafeRelease(customText);
     SafeRelease(previewText);
     SafeRelease(resetButton);
+    SafeRelease(redBox);
 
     for (auto& touch : touches)
     {

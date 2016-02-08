@@ -48,7 +48,6 @@
 using namespace DAVA;
 
 GameCore::GameCore()
-    : cursor(nullptr)
 {
     new GridVisualizer();
 
@@ -77,13 +76,11 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-    cursor = nullptr;
     Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
 {
-	SafeRelease(cursor);
 }
 
 void GameCore::OnSuspend()
@@ -98,29 +95,28 @@ void GameCore::OnResume()
 
 void GameCore::OnBackground()
 {
-	
 }
 
 void GameCore::BeginFrame()
 {
-	ApplicationCore::BeginFrame();
+    ApplicationCore::BeginFrame();
 }
 
 void GameCore::Update(float32 timeElapsed)
-{	
-	ApplicationCore::Update(timeElapsed);
+{
+    ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::Draw()
 {
-	ApplicationCore::Draw();
+    ApplicationCore::Draw();
 }
 
 void GameCore::UnpackHelp()
 {
-	//Unpack Help to Documents.
+    //Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
-	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
+    FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();
@@ -128,8 +124,8 @@ void GameCore::UnpackHelp()
         {
             FileSystem::Instance()->DeleteDirectory(docsPath);
             FileSystem::Instance()->CreateDirectory(docsPath, true);
-		
-			helpRA->UnpackToFolder(docsPath);
+
+            helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 

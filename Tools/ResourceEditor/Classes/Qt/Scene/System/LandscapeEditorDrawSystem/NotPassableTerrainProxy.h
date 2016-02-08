@@ -41,33 +41,33 @@ public:
     virtual ~NotPassableTerrainProxy();
 
     bool Enable();
-	bool Disable();
-	bool IsEnabled() const;
-	
-	Texture* GetTexture();
+    bool Disable();
+    bool IsEnabled() const;
+
+    Texture* GetTexture();
     void UpdateTexture(DAVA::Heightmap* heightmap,
                        const AABBox3& landscapeBoundingBox,
                        const DAVA::Rect2i& forRect);
 
 private:
-	static const DAVA::int32 NOT_PASSABLE_ANGLE = 23;
-	
-	struct TerrainColor
-	{
-		DAVA::Color color;
-		DAVA::Vector2 angleRange;
-		
-		TerrainColor(const DAVA::Vector2& angle, const DAVA::Color& color)
-		{
-			this->color = color;
-			this->angleRange = angle;
-		}
-	};
-	
-	bool enabled;
-	Texture * notPassableTexture;
-	DAVA::float32 notPassableAngleTan;
-	DAVA::Vector<TerrainColor> angleColor;
+    static const DAVA::int32 NOT_PASSABLE_ANGLE = 23;
+
+    struct TerrainColor
+    {
+        DAVA::Color color;
+        DAVA::Vector2 angleRange;
+
+        TerrainColor(const DAVA::Vector2& angle, const DAVA::Color& color)
+        {
+            this->color = color;
+            this->angleRange = angle;
+        }
+    };
+
+    bool enabled;
+    Texture* notPassableTexture;
+    DAVA::float32 notPassableAngleTan;
+    DAVA::Vector<TerrainColor> angleColor;
 
     Vector<rhi::HVertexBuffer> gridBuffers;
 

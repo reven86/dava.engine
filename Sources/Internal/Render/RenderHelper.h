@@ -173,4 +173,3 @@ private:
 }
 
 #endif // __DAVAENGINE_OBJC_FRAMEWORK_RENDER_HELPER_H__
-

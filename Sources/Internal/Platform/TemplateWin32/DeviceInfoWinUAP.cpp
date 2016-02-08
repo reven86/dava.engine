@@ -102,7 +102,16 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     modelName = RTStringToString(deviceInfo.SystemSku);
     deviceName = WideString(deviceInfo.FriendlyName->Data());
     gpu = GPUFamily();
-    uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+
+    try
+    {
+        uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+    }
+    catch (Platform::Exception ^ e)
+    {
+        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
+        uDID = "";
+    }
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -182,14 +191,14 @@ WideString DeviceInfoPrivate::GetName()
 }
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
-{   
+{
     return gpu;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     DeviceInfo::NetworkInfo networkInfo;
-    ConnectionProfile^ icp = NetworkInformation::GetInternetConnectionProfile();
+    ConnectionProfile ^ icp = NetworkInformation::GetInternetConnectionProfile();
     if (icp != nullptr && icp->NetworkAdapter != nullptr)
     {
         if (icp->IsWlanConnectionProfile)
@@ -213,7 +222,7 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    
+
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
@@ -225,7 +234,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
         screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 
-        DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+        DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
         DVASSERT(displayInfo != nullptr);
         screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
         DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
@@ -250,7 +259,7 @@ bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
     ULARGE_INTEGER totalNumberOfFreeBytes;
 
     BOOL res = ::GetDiskFreeSpaceExA(storage_info.path.GetAbsolutePathname().c_str(),
-        &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes);
+                                     &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes);
 
     if (res == FALSE)
         return false;
@@ -284,7 +293,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     auto removableStorages = WaitAsync(KnownFolders::RemovableDevices->GetFoldersAsync());
     for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
-        Platform::String^ path = removableStorages->GetAt(i)->Path;
+        Platform::String ^ path = removableStorages->GetAt(i)->Path;
         storage.path = FilePath::FromNativeString(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
@@ -299,7 +308,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    auto func = [type](HIDConvPair pair)->bool {
+    auto func = [type](HIDConvPair pair) -> bool {
         return pair.second == type;
     };
     auto it = std::find_if(HidConvSet.begin(), HidConvSet.end(), func);
@@ -313,7 +322,7 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 {
-    auto func = [type](HIDConvPair pair)->bool {
+    auto func = [type](HIDConvPair pair) -> bool {
         return pair.first == type;
     };
     DeviceInfo::eHIDType hidType = std::find_if(HidConvSet.begin(), HidConvSet.end(), func)->second;
@@ -330,7 +339,7 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
     return GPU_DX11;
 }
 
-DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
+DeviceWatcher ^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
     hids.GetAccessor()->emplace(type, Set<String>());
     DeviceWatcher ^ watcher = nullptr;
@@ -353,10 +362,10 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
     {
         watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(USAGE_PAGE, type));
     }
-    auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, type](DeviceWatcher^ watcher, DeviceInformation^ information) {
+    auto added = ref new TypedEventHandler<DeviceWatcher ^, DeviceInformation ^>([this, type](DeviceWatcher ^ watcher, DeviceInformation ^ information) {
         OnDeviceAdded(type, information);
     });
-    auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, type](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
+    auto removed = ref new TypedEventHandler<DeviceWatcher ^, DeviceInformationUpdate ^>([this, type](DeviceWatcher ^ watcher, DeviceInformationUpdate ^ information) {
         OnDeviceRemoved(type, information);
     });
     auto updated = ref new TypedEventHandler<DeviceWatcher ^, DeviceInformationUpdate ^>([this, type](DeviceWatcher ^ watcher, DeviceInformationUpdate ^ information) {
@@ -384,7 +393,7 @@ void DeviceInfoPrivate::CreateAndStartHIDWatcher()
     watchers.emplace_back(CreateDeviceWatcher(TOUCH));
 }
 
-void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)
+void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation ^ information)
 {
     if (!information->IsEnabled)
     {
@@ -417,7 +426,7 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
     }
 }
 
-void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate^ information)
+void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate ^ information)
 {
     String id = RTStringToString(information->Id);
     auto hidsAccessor(hids.GetAccessor());
@@ -498,7 +507,6 @@ bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
     Set<String>& setIdDevices = (*(hidsAccessor))[type];
     return (setIdDevices.size() > 0);
 }
-
 }
 
 #endif // defined(__DAVAENGINE_WIN_UAP__)

@@ -48,9 +48,10 @@ public:
 
 protected:
     virtual ~UI3DView();
+
 public:
-    void SetScene(Scene * scene);
-    Scene * GetScene() const;
+    void SetScene(Scene* scene);
+    Scene* GetScene() const;
 
     inline const Rect& GetLastViewportRect()
     {

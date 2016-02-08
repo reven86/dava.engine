@@ -34,17 +34,17 @@
 
 namespace DAVA
 {
-
-UIPackage::UIPackage() : 
+UIPackage::UIPackage()
+    :
     controlPackageContext(new UIControlPackageContext())
 {
 }
 
 UIPackage::~UIPackage()
 {
-    for (UIControl *control : controls)
+    for (UIControl* control : controls)
         control->Release();
-    
+
     controls.clear();
 
     SafeRelease(controlPackageContext);
@@ -52,12 +52,12 @@ UIPackage::~UIPackage()
 
 DAVA::int32 UIPackage::GetControlsCount() const
 {
-    return (int32) controls.size();
+    return (int32)controls.size();
 }
-    
-UIControl * UIPackage::GetControl(const String &name) const
+
+UIControl* UIPackage::GetControl(const String& name) const
 {
-    for (UIControl *control : controls)
+    for (UIControl* control : controls)
     {
         if (control->GetName() == name)
             return control;
@@ -66,21 +66,21 @@ UIControl * UIPackage::GetControl(const String &name) const
     return nullptr;
 }
 
-UIControl * UIPackage::GetControl(int32 index) const
+UIControl* UIPackage::GetControl(int32 index) const
 {
     DVASSERT(0 <= index && index < static_cast<int32>(controls.size()));
     return controls[index];
 }
 
-void UIPackage::AddControl(UIControl *control)
+void UIPackage::AddControl(UIControl* control)
 {
     control->SetPackageContext(controlPackageContext);
     controls.push_back(SafeRetain(control));
 }
-    
-void UIPackage::RemoveControl(UIControl *control)
+
+void UIPackage::RemoveControl(UIControl* control)
 {
-    Vector<UIControl *>::iterator iter = std::find(controls.begin(), controls.end(), control);
+    Vector<UIControl*>::iterator iter = std::find(controls.begin(), controls.end(), control);
     if (iter != controls.end())
     {
         SafeRelease(*iter);
@@ -100,11 +100,10 @@ RefPtr<UIPackage> UIPackage::Clone() const
     package->controls.resize(controls.size());
 
     std::transform(controls.begin(), controls.end(), package->controls.begin(),
-    [](UIControl *control)->UIControl *
-    {
-        return control->Clone();
-    });
+                   [](UIControl* control) -> UIControl*
+                   {
+                       return control->Clone();
+                   });
     return package;
 }
-
 }

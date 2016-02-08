@@ -24,36 +24,36 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedColorspace,
-  RGBColorspace,
-  GRAYColorspace,
-  TransparentColorspace,
-  OHTAColorspace,
-  LabColorspace,
-  XYZColorspace,
-  YCbCrColorspace,
-  YCCColorspace,
-  YIQColorspace,
-  YPbPrColorspace,
-  YUVColorspace,
-  CMYKColorspace,
-  sRGBColorspace,
-  HSBColorspace,
-  HSLColorspace,
-  HWBColorspace,
-  Rec601LumaColorspace,
-  Rec601YCbCrColorspace,
-  Rec709LumaColorspace,
-  Rec709YCbCrColorspace,
-  LogColorspace,
-  CMYColorspace
+    UndefinedColorspace,
+    RGBColorspace,
+    GRAYColorspace,
+    TransparentColorspace,
+    OHTAColorspace,
+    LabColorspace,
+    XYZColorspace,
+    YCbCrColorspace,
+    YCCColorspace,
+    YIQColorspace,
+    YPbPrColorspace,
+    YUVColorspace,
+    CMYKColorspace,
+    sRGBColorspace,
+    HSBColorspace,
+    HSLColorspace,
+    HWBColorspace,
+    Rec601LumaColorspace,
+    Rec601YCbCrColorspace,
+    Rec709LumaColorspace,
+    Rec709YCbCrColorspace,
+    LogColorspace,
+    CMYColorspace
 } ColorspaceType;
 
 extern MagickExport MagickBooleanType
-  RGBTransformImage(Image *,const ColorspaceType),
-  SetImageColorspace(Image *,const ColorspaceType),
-  TransformImageColorspace(Image *,const ColorspaceType),
-  TransformRGBImage(Image *,const ColorspaceType);
+RGBTransformImage(Image *, const ColorspaceType),
+SetImageColorspace(Image *, const ColorspaceType),
+TransformImageColorspace(Image *, const ColorspaceType),
+TransformRGBImage(Image *, const ColorspaceType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

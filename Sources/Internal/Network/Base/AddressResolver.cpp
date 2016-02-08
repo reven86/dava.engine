@@ -125,6 +125,5 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
     }
 }
 
-
 } // end of namespace Net
 } // end of namespace DAVA

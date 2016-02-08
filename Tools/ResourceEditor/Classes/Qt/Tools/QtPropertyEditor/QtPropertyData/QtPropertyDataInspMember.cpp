@@ -29,105 +29,104 @@
 
 #include "QtPropertyDataInspMember.h"
 
-QtPropertyDataInspMember::QtPropertyDataInspMember(void *_object, const DAVA::InspMember *_member)
-	: QtPropertyDataDavaVariant(DAVA::VariantType())
-	, object(_object)
-	, member(_member)
-	, lastCommand(NULL)
+QtPropertyDataInspMember::QtPropertyDataInspMember(const DAVA::FastName& name, void* _object, const DAVA::InspMember* _member)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , object(_object)
+    , member(_member)
+    , lastCommand(NULL)
 {
-	if(NULL != member)
-	{
-		SetVariantValue(member->Value(object));
-	}
+    if (NULL != member)
+    {
+        SetVariantValue(member->Value(object));
+    }
 }
 
 QtPropertyDataInspMember::~QtPropertyDataInspMember()
 {
-	DAVA::SafeDelete(lastCommand);
+    DAVA::SafeDelete(lastCommand);
 }
 
-const DAVA::MetaInfo * QtPropertyDataInspMember::MetaInfo() const
+const DAVA::MetaInfo* QtPropertyDataInspMember::MetaInfo() const
 {
-	if(NULL != member)
-	{
-		return member->Type();
-	}
+    if (NULL != member)
+    {
+        return member->Type();
+    }
 
-	return NULL;
+    return NULL;
 }
 
-void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
+void QtPropertyDataInspMember::SetValueInternal(const QVariant& value)
 {
-	QtPropertyDataDavaVariant::SetValueInternal(value);
-	DAVA::VariantType newValue = QtPropertyDataDavaVariant::GetVariantValue();
+    QtPropertyDataDavaVariant::SetValueInternal(value);
+    DAVA::VariantType newValue = QtPropertyDataDavaVariant::GetVariantValue();
 
-	// also save value to meta-object
-	if(NULL != member)
-	{
-		DAVA::SafeDelete(lastCommand);
-		lastCommand = new InspMemberModifyCommand(member, object, newValue);
+    // also save value to meta-object
+    if (NULL != member)
+    {
+        DAVA::SafeDelete(lastCommand);
+        lastCommand = new InspMemberModifyCommand(member, object, newValue);
 
-		member->SetValue(object, newValue);
-	}
+        member->SetValue(object, newValue);
+    }
 }
-
 
 void QtPropertyDataInspMember::SetTempValueInternal(const QVariant& value)
 {
-	QtPropertyDataDavaVariant::SetValueInternal(value);
-	DAVA::VariantType newValue = GetVariantValue();
+    QtPropertyDataDavaVariant::SetValueInternal(value);
+    DAVA::VariantType newValue = GetVariantValue();
 
-	// save value to meta-object
-	if(NULL != member)
-	{
-		member->SetValue(object, newValue);
-	}
+    // save value to meta-object
+    if (NULL != member)
+    {
+        member->SetValue(object, newValue);
+    }
 }
 
 bool QtPropertyDataInspMember::UpdateValueInternal()
 {
-	bool ret = false;
+    bool ret = false;
 
-	// get current value from introspection member
-	// we should do this because member may change at any time
-	if(NULL != member)
-	{
-		DAVA::VariantType v = member->Value(object);
+    // get current value from introspection member
+    // we should do this because member may change at any time
+    if (NULL != member)
+    {
+        DAVA::VariantType v = member->Value(object);
 
-		// if current variant value not equal to the real member value
-		// we should update current variant value
-		if(v != GetVariantValue())
-		{
-			QtPropertyDataDavaVariant::SetVariantValue(v);
-			ret = true;
-		}
-	}
+        // if current variant value not equal to the real member value
+        // we should update current variant value
+        if (v != GetVariantValue())
+        {
+            QtPropertyDataDavaVariant::SetVariantValue(v);
+            ret = true;
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-bool QtPropertyDataInspMember::EditorDoneInternal(QWidget *editor)
+bool QtPropertyDataInspMember::EditorDoneInternal(QWidget* editor)
 {
-	bool ret = QtPropertyDataDavaVariant::EditorDoneInternal(editor);
+    bool ret = QtPropertyDataDavaVariant::EditorDoneInternal(editor);
 
-	// if there was some changes in current value, done by editor
-	// we should save them into meta-object
-	if(ret && NULL != member)
-	{
-		member->SetValue(object, QtPropertyDataDavaVariant::GetVariantValue());
-	}
+    // if there was some changes in current value, done by editor
+    // we should save them into meta-object
+    if (ret && NULL != member)
+    {
+        member->SetValue(object, QtPropertyDataDavaVariant::GetVariantValue());
+    }
 
-	return ret;
+    return ret;
 }
 
 void* QtPropertyDataInspMember::CreateLastCommand() const
 {
-	Command2 *command = NULL;
+    Command2* command = NULL;
 
-	if(NULL != lastCommand)
-	{
-		command = new InspMemberModifyCommand(*lastCommand);
-	}
+    if (NULL != lastCommand)
+    {
+        command = new InspMemberModifyCommand(*lastCommand);
+    }
 
-	return command;
+    return command;
 }

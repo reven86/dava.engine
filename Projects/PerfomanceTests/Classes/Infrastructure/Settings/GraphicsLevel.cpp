@@ -32,10 +32,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace DAVA;
 
 #define GET_BOOL(prop) ReadBool(prop, #prop, archive, node) 
-#define GET_STRING(prop) ReadString(prop, #prop, archive, node) 
+#define GET_STRING(prop) ReadString(prop, #prop, archive, node)
 
-GraphicsLevel::GraphicsLevel(const DAVA::String & fileName, YamlNode * node)
-    :   archive(new DAVA::KeyedArchive)
+GraphicsLevel::GraphicsLevel(const DAVA::String& fileName, YamlNode* node)
+    : archive(new DAVA::KeyedArchive)
 {
     vegetationAnimation = false;
     stencilShadows = true;
@@ -47,15 +47,16 @@ GraphicsLevel::~GraphicsLevel()
 {
 }
 
-void ReadString(String & var, const String & key, KeyedArchive * arch, DAVA::YamlNode * node)
+void ReadString(String& var, const String& key, KeyedArchive* arch, DAVA::YamlNode* node)
 {
     var = arch->GetString(key, var);
-    if (!node) return;
-    const auto & map = node->AsMap();
+    if (!node)
+        return;
+    const auto& map = node->AsMap();
     auto fit = map.find(key);
     if (fit != map.end() && fit->second->GetType() == YamlNode::TYPE_MAP)
     {
-        const auto & typeMap = fit->second->AsMap();
+        const auto& typeMap = fit->second->AsMap();
         auto fit2 = typeMap.find("string");
         if (fit2 != typeMap.end() && fit2->second->GetType() == YamlNode::TYPE_STRING)
         {
@@ -64,15 +65,16 @@ void ReadString(String & var, const String & key, KeyedArchive * arch, DAVA::Yam
     }
 }
 
-void ReadBool(bool & var, const String & key, KeyedArchive * arch, DAVA::YamlNode * node)
+void ReadBool(bool& var, const String& key, KeyedArchive* arch, DAVA::YamlNode* node)
 {
     var = arch->GetBool(key, var);
-    if (!node) return;
-    const auto & map = node->AsMap();
+    if (!node)
+        return;
+    const auto& map = node->AsMap();
     auto fit = map.find(key);
     if (fit != map.end() && fit->second->GetType() == YamlNode::TYPE_MAP)
     {
-        const auto & typeMap = fit->second->AsMap();
+        const auto& typeMap = fit->second->AsMap();
         auto fit2 = typeMap.find("bool");
         if (fit2 != typeMap.end() && fit2->second->GetType() == YamlNode::TYPE_STRING)
         {
@@ -81,27 +83,26 @@ void ReadBool(bool & var, const String & key, KeyedArchive * arch, DAVA::YamlNod
     }
 }
 
-void GraphicsLevel::ReadSettings(const DAVA::String & fileName, DAVA::YamlNode * node)
+void GraphicsLevel::ReadSettings(const DAVA::String& fileName, DAVA::YamlNode* node)
 {
     archive->DeleteAllKeys();
 
     String path = "~res:/GraphicSettings/" + fileName;
     archive->LoadFromYamlFile(path);
-    
+
     GET_STRING(water);
     GET_STRING(vegetation);
     GET_STRING(tree_lighting);
     GET_STRING(landscape);
     GET_STRING(static_object);
-    
+
     GET_BOOL(vegetationAnimation);
     GET_BOOL(stencilShadows);
 }
 
-
 void GraphicsLevel::Activate(void)
 {
-    QualitySettingsSystem * qs = QualitySettingsSystem::Instance();
+    QualitySettingsSystem* qs = QualitySettingsSystem::Instance();
     qs->SetCurMaterialQuality(FastName("Water"), FastName(water));
     qs->SetCurMaterialQuality(FastName("Vegetation"), FastName(vegetation));
     qs->SetCurMaterialQuality(FastName("Spherical Harmonics"), FastName(tree_lighting));

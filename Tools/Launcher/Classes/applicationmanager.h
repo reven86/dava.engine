@@ -39,25 +39,25 @@
 #include <QQueue>
 
 class ConfigDownloader;
-class ApplicationManager: public QObject
+class ApplicationManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ApplicationManager(QObject *parent = 0);
+    explicit ApplicationManager(QObject* parent = 0);
     ~ApplicationManager();
 
     void RefreshRemoteConfig();
 
-    QString GetString(const QString & stringID) const;
+    QString GetString(const QString& stringID) const;
 
-    ConfigParser * GetLocalConfig();
-    ConfigParser * GetRemoteConfig();
+    ConfigParser* GetLocalConfig();
+    ConfigParser* GetRemoteConfig();
 
-    void CheckUpdates(QQueue<UpdateTask> & tasks);
+    void CheckUpdates(QQueue<UpdateTask>& tasks);
 
-    void RunApplication(const QString & branchID, const QString & appID, const QString & versionID);
-    bool RemoveApplication(const QString & branchID, const QString & appID, const QString & versionID);
-    bool RemoveBranch(const QString & branchID);
+    void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
+    bool RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID);
+    bool RemoveBranch(const QString& branchID);
 
     bool ShouldShowNews();
     void NewsShowed();
@@ -66,16 +66,16 @@ signals:
     void Refresh();
 
 public slots:
-    void OnAppInstalled(const QString & branchID, const QString & appID, const AppVersion & version);
+    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 private:
-    void LoadLocalConfig(const QString & configPath);
-    void ParseRemoteConfigData(const QByteArray & data);
+    void LoadLocalConfig(const QString& configPath);
+    void ParseRemoteConfigData(const QByteArray& data);
 
     QString localConfigFilePath;
 
-    ConfigParser * localConfig;
-    ConfigParser * remoteConfig;
+    ConfigParser* localConfig;
+    ConfigParser* remoteConfig;
 
     friend class ConfigDownloader;
 };

@@ -36,31 +36,28 @@
 #include "Base/Singleton.h"
 #include "Entity/SceneSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class Entity;
 class AnimationComponent;
 
 class AnimationSystem : public SceneSystem
 {
 public:
-	AnimationSystem(Scene * scene);
-	~AnimationSystem();
+    AnimationSystem(Scene* scene);
+    ~AnimationSystem();
 
-    void RemoveEntity(Entity * entity) override;
+    void RemoveEntity(Entity* entity) override;
 
     virtual void Process(float32 timeElapsed);
 
-    void ImmediateEvent(Component * component, uint32 event) override;
-    
+    void ImmediateEvent(Component* component, uint32 event) override;
+
 private:
     Vector<AnimationComponent*> activeComponents;
-    void AddToActive(AnimationComponent *comp);
-    void RemoveFromActive(AnimationComponent *comp);
-
+    void AddToActive(AnimationComponent* comp);
+    void RemoveFromActive(AnimationComponent* comp);
 };
-
 };
 
 #endif //__DAVAENGINE_ANIMATION_SYSTEM_H__

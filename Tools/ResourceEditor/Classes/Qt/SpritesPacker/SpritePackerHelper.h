@@ -34,33 +34,32 @@
 #include <QFutureWatcher>
 
 class SceneData;
-namespace DAVA {
-
+namespace DAVA
+{
 // Sprite Packer Helper for Particles Editor.
 class SpritePackerHelper : public QObject, public DAVA::StaticSingleton<SpritePackerHelper>
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	SpritePackerHelper();
-	void UpdateParticleSprites(DAVA::eGPUFamily gpu);
+    SpritePackerHelper();
+    void UpdateParticleSprites(DAVA::eGPUFamily gpu);
 
 signals:
-	void readyAll();
+    void readyAll();
 
 private:
-    void EnumerateSpritesForReloading(Scene * scene, Map<String, Sprite *> &sprites);
-    void EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite *> &sprites);
+    void EnumerateSpritesForReloading(Scene* scene, Map<String, Sprite*>& sprites);
+    void EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite*>& sprites);
 
-	void Pack(DAVA::eGPUFamily gpu);
-	void Reload();
+    void Pack(DAVA::eGPUFamily gpu);
+    void Reload();
 
     QFuture<void>* future;
     QFutureWatcher<void> watcher;
 
 private slots:
     void threadRepackAllFinished();
-	
 };
 };
 #endif /* __SPRITE_PACKER_HELPER_H__ */

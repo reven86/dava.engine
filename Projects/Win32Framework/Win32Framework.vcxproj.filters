@@ -279,9 +279,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h">
-      <Filter>Internal\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\DisplayMode.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
@@ -316,9 +313,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
@@ -1717,6 +1711,12 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1774,12 +1774,6 @@
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\Core.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp">
@@ -3066,6 +3060,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.cpp">
       <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PerfQuerySetDX11.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PerfQuerySetDX9.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

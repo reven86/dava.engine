@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 /*
  Most of structs declared inside namespace MemMgr can be transferred over network or saved to file
  so theirs size and layout must be the same on all platforms. It's achieved by selecting
@@ -47,8 +46,8 @@ namespace DAVA
 */
 struct TagAllocStat
 {
-    uint32 allocByApp;      // Number of bytes allocated by application
-    uint32 blockCount;      // Number of allocated blocks
+    uint32 allocByApp; // Number of bytes allocated by application
+    uint32 blockCount; // Number of allocated blocks
 };
 static_assert(sizeof(TagAllocStat) == 8, "sizeof(TagAllocStat) != 8");
 
@@ -57,10 +56,10 @@ static_assert(sizeof(TagAllocStat) == 8, "sizeof(TagAllocStat) != 8");
 */
 struct AllocPoolStat
 {
-    uint32 allocByApp;      // Number of bytes allocated by application
-    uint32 allocTotal;      // Total allocated bytes: allocByApp + overhead imposed by memory manager and aligning
-    uint32 blockCount;      // Number of allocated blocks
-    uint32 maxBlockSize;    // Max allocated block size
+    uint32 allocByApp; // Number of bytes allocated by application
+    uint32 allocTotal; // Total allocated bytes: allocByApp + overhead imposed by memory manager and aligning
+    uint32 blockCount; // Number of allocated blocks
+    uint32 maxBlockSize; // Max allocated block size
 };
 static_assert(sizeof(AllocPoolStat) % 16 == 0, "sizeof(AllocPoolStat) % 16 != 0");
 
@@ -69,13 +68,13 @@ static_assert(sizeof(AllocPoolStat) % 16 == 0, "sizeof(AllocPoolStat) % 16 != 0"
 */
 struct GeneralAllocStat
 {
-    uint32 nextBlockNo;         // Order number which will be assigned to next allocated memory block
-    uint32 activeTags;          // Current active tags
-    uint32 activeTagCount;      // Number of active tags
-    uint32 allocInternal;       // Size of memory allocated for memory manager internal use: symbol table, etc
-    uint32 internalBlockCount;  // Number of internal memory blocks
-    uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
-    uint32 ghostSize;           // Size of bypassed memory
+    uint32 nextBlockNo; // Order number which will be assigned to next allocated memory block
+    uint32 activeTags; // Current active tags
+    uint32 activeTagCount; // Number of active tags
+    uint32 allocInternal; // Size of memory allocated for memory manager internal use: symbol table, etc
+    uint32 internalBlockCount; // Number of internal memory blocks
+    uint32 ghostBlockCount; // Number of blocks allocated bypassing memory manager
+    uint32 ghostSize; // Size of bypassed memory
     uint32 allocInternalTotal;
 };
 static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 != 0");
@@ -97,7 +96,7 @@ static_assert(sizeof(MMItemName) % 16 == 0, "sizeof(MMItemName) % 16 != 0");
 */
 struct MMBacktrace
 {
-    uint32 hash;        // Backtrace hash
+    uint32 hash; // Backtrace hash
     uint32 padding;
     // uint64 frames[];
 };
@@ -108,9 +107,9 @@ static_assert(sizeof(MMBacktrace) == 8, "sizeof(MMBacktrace) != 8");
 */
 struct MMSymbol
 {
-    static const size_t NAME_LENGTH = 136;  // Reasons to select 136 as name length:
-                                            //  - make struct size to be multiple of 16
-                                            //  - allow to store long enough symbol name
+    static const size_t NAME_LENGTH = 136; // Reasons to select 136 as name length:
+    //  - make struct size to be multiple of 16
+    //  - allow to store long enough symbol name
     uint64 addr;
     char8 name[NAME_LENGTH];
 };
@@ -121,12 +120,12 @@ static_assert(sizeof(MMSymbol) % 16 == 0, "sizeof(MMSymbol) % 16 == 0");
 */
 struct MMBlock
 {
-    uint32 orderNo;         // Block order number
-    uint32 allocByApp;      // Size requested by application
-    uint32 allocTotal;      // Total allocated size
-    uint32 bktraceHash;     // Unique hash number to identify block backtrace
-    uint32 pool;            // Allocation pool block belongs to
-    uint32 tags;            // Tags block belongs to
+    uint32 orderNo; // Block order number
+    uint32 allocByApp; // Size requested by application
+    uint32 allocTotal; // Total allocated size
+    uint32 bktraceHash; // Unique hash number to identify block backtrace
+    uint32 pool; // Allocation pool block belongs to
+    uint32 tags; // Tags block belongs to
     uint32 type;
     uint32 padding;
 };
@@ -142,10 +141,10 @@ static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
 */
 struct MMStatConfig
 {
-    uint32 size;                // Total size of configuration
-    uint32 allocPoolCount;      // Number of registered allocation pools
-    uint32 tagCount;            // Number of registered tags
-    uint32 bktraceDepth;        // Depth of collected backtrace
+    uint32 size; // Total size of configuration
+    uint32 allocPoolCount; // Number of registered allocation pools
+    uint32 tagCount; // Number of registered tags
+    uint32 bktraceDepth; // Depth of collected backtrace
     // MMItemName allocPoolNames[];
     // MMItemName tagNames[];
 };
@@ -159,10 +158,10 @@ static_assert(sizeof(MMStatConfig) == 16, "sizeof(MMStatConfig) != 16");
 */
 struct MMCurStat
 {
-    uint64 timestamp;               // Room for timestamp, not filled by memory manager
-    uint32 size;                    // Total size of allocation statistics
+    uint64 timestamp; // Room for timestamp, not filled by memory manager
+    uint32 size; // Total size of allocation statistics
     uint32 padding;
-    GeneralAllocStat statGeneral;   // General statistics
+    GeneralAllocStat statGeneral; // General statistics
     // AllocPoolStat statAllocPool[];
     // TagAllocStat statTagAlloc[];
 };
@@ -180,19 +179,19 @@ static_assert(sizeof(MMCurStat) % 16 == 0, "sizeof(MMCurStat) % 16 == 0");
 */
 struct MMSnapshot
 {
-    uint64 timestamp;           // Room for timestamp
-    uint32 size;                // Total size of memory snapshot
-    uint32 dataOffset;          // Offset of snapshot data
-    uint32 blockCount;          // Number of blocks in snapshot
-    uint32 bktraceCount;        // Number of backtraces in snapshot
-    uint32 symbolCount;         // Number of symbols in snapshot
-    uint32 bktraceDepth;        // Depth of collected backtrace
+    uint64 timestamp; // Room for timestamp
+    uint32 size; // Total size of memory snapshot
+    uint32 dataOffset; // Offset of snapshot data
+    uint32 blockCount; // Number of blocks in snapshot
+    uint32 bktraceCount; // Number of backtraces in snapshot
+    uint32 symbolCount; // Number of symbols in snapshot
+    uint32 bktraceDepth; // Depth of collected backtrace
     // MMBlock blocks[];
     // MMSymbol symbols[];
     // MMBacktrace bktrace[];
 };
 static_assert(sizeof(MMSnapshot) % 16 == 0, "sizeof(MMSnapshot) % 16 == 0");
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_MEMPROFILERTYPES_H__
+#endif // __DAVAENGINE_MEMPROFILERTYPES_H__

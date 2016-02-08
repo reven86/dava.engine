@@ -37,19 +37,19 @@ class PackageNode;
 class StyleSheetNode;
 class AbstractProperty;
 
-class ChangeStylePropertyCommand: public QUndoCommand
+class ChangeStylePropertyCommand : public QUndoCommand
 {
 public:
-    ChangeStylePropertyCommand(PackageNode *_root, StyleSheetNode *_node, AbstractProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue, QUndoCommand* parent = 0);
     virtual ~ChangeStylePropertyCommand();
-    
+
     void redo() override;
     void undo() override;
-    
+
 private:
-    PackageNode *root;
-    StyleSheetNode *node;
-    AbstractProperty *property;
+    PackageNode* root;
+    StyleSheetNode* node;
+    AbstractProperty* property;
     DAVA::VariantType oldValue;
     DAVA::VariantType newValue;
 };

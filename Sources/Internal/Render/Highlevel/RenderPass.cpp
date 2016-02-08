@@ -95,13 +95,13 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
         layersBatchArrays[layer->GetRenderLayerID()].SetSortingFlags(layer->GetSortingFlags());
     }
 }
-    
-void RenderPass::RemoveRenderLayer(RenderLayer * layer)
-{
-	Vector<RenderLayer*>::iterator it = std::find(renderLayers.begin(), renderLayers.end(), layer);
-	DVASSERT(it != renderLayers.end());
 
-	renderLayers.erase(it);
+void RenderPass::RemoveRenderLayer(RenderLayer* layer)
+{
+    Vector<RenderLayer*>::iterator it = std::find(renderLayers.begin(), renderLayers.end(), layer);
+    DVASSERT(it != renderLayers.end());
+
+    renderLayers.erase(it);
 }
 
 void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4* externalClipPlane)
@@ -135,11 +135,11 @@ void RenderPass::Draw(RenderSystem* renderSystem)
     EndRenderPass();
 }
 
-void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem)
+void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
-        currVisibilityCriteria&=~RenderObject::VISIBLE_STATIC_OCCLUSION;
+        currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
 
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, visibilityArray, currVisibilityCriteria);
@@ -267,7 +267,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     refractionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFRACTION_TEX_SIZE, (float32)RuntimeTextures::REFRACTION_TEX_SIZE));
 }
 
-void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
+void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* renderSystem)
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
@@ -310,6 +310,8 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     PrepareVisibilityArrays(mainCamera, renderSystem);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
+    passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
+    passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
     BeginRenderPass();
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
@@ -351,10 +353,10 @@ WaterPrePass::~WaterPrePass()
 
 WaterReflectionRenderPass::WaterReflectionRenderPass(const FastName& name)
     : WaterPrePass(name)
-{	
+{
 }
 
-void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
+void WaterReflectionRenderPass::UpdateCamera(Camera* camera)
 {
     Vector3 v;
     v = camera->GetPosition();
@@ -362,35 +364,34 @@ void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
     camera->SetPosition(v);
     v = camera->GetTarget();
     v.z = waterLevel - (v.z - waterLevel);
-    camera->SetTarget(v);        
+    camera->SetTarget(v);
 }
 
 void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
-{    
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();    
-            
+{
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
 
     if (!passDrawCamera)
     {
-        passMainCamera = new Camera();    
-        passDrawCamera = new Camera();            
+        passMainCamera = new Camera();
+        passDrawCamera = new Camera();
     }
 
-    passMainCamera->CopyMathOnly(*mainCamera);        
+    passMainCamera->CopyMathOnly(*mainCamera);
     UpdateCamera(passMainCamera);
 
     Vector4 clipPlane(0, 0, 1, -(waterLevel - 0.1f));
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
-    
-    if (drawCamera==mainCamera)
+
+    if (drawCamera == mainCamera)
     {
-        currDrawCamera = currMainCamera;    
+        currDrawCamera = currMainCamera;
     }
     else
     {
-        passDrawCamera->CopyMathOnly(*drawCamera);        
+        passDrawCamera->CopyMathOnly(*drawCamera);
         UpdateCamera(passDrawCamera);
         currDrawCamera = passDrawCamera;
     }
@@ -417,9 +418,8 @@ WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName& name)
 
 void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
 {
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();    
-
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
 
     if (!passDrawCamera)
     {
@@ -436,9 +436,9 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
 
-    if (drawCamera==mainCamera)
+    if (drawCamera == mainCamera)
     {
-        currDrawCamera = currMainCamera;    
+        currDrawCamera = currMainCamera;
     }
     else
     {
@@ -458,6 +458,4 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     DrawLayers(currMainCamera);
     EndRenderPass();
 }
-
-
 };

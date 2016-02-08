@@ -33,11 +33,10 @@
 #include <QWidget>
 #include <QPointer>
 
-
 class MouseHelper;
 
 class ColorPreview
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 

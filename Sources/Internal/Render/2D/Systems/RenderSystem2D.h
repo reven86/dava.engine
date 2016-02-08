@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
-#define	__DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
+#define __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 class Font;
 class Sprite;
 class TextBlock;
@@ -48,16 +47,16 @@ class UIGeometricData;
 
 struct TiledDrawData
 {
-    Vector< Vector2 > vertices;
-    Vector< Vector2 > texCoords;
-    Vector< uint16  > indeces;
+    Vector<Vector2> vertices;
+    Vector<Vector2> texCoords;
+    Vector<uint16> indeces;
     void GenerateTileData();
-    void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+    void GenerateAxisData(float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector<Vector3>& axisData);
 
-    Vector< Vector2 > transformedVertices;
+    Vector<Vector2> transformedVertices;
     void GenerateTransformData();
 
-    Sprite *sprite;
+    Sprite* sprite;
     int32 frame;
     Vector2 size;
     Vector2 stretchCap;
@@ -75,7 +74,7 @@ struct StretchDrawData
     void GenerateTransformData();
     uint32 GetVertexInTrianglesCount() const;
 
-    Sprite *sprite;
+    Sprite* sprite;
     int32 frame;
     Vector2 size;
     int32 type;
@@ -129,6 +128,7 @@ public:
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
@@ -136,7 +136,7 @@ public:
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
-    
+
     void Init();
 
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
@@ -170,13 +170,13 @@ public:
     void BeginFrame();
     void EndFrame();
     void Flush();
-    
-    void SetClip(const Rect &rect);
-	void IntersectClipRect(const Rect &rect);
-	void RemoveClip();
-    
-	void PushClip();
-	void PopClip();
+
+    void SetClip(const Rect& rect);
+    void IntersectClipRect(const Rect& rect);
+    void RemoveClip();
+
+    void PushClip();
+    void PopClip();
 
     void ScreenSizeChanged();
 
@@ -278,7 +278,10 @@ public:
     */
     void DrawPolygonTransformed(const Polygon2& polygon, bool closed, const Matrix3& transform, const Color& color);
 
-    void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+    void DrawTexture(Texture* texture, NMaterial* material, const Color& color,
+                     const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+
+    void DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect, const Rect& srcRect);
 
     const RenderTargetPassDescriptor& GetActiveTargetDescriptor();
     const RenderTargetPassDescriptor& GetMainTargetDescriptor();
@@ -286,7 +289,7 @@ public:
 
 private:
     void UpdateVirtualToPhysicalMatrix(bool);
-    bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
+    bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
     void Setup2DMatrices();
 
     Rect TransformClipRect(const Rect& rect, const Matrix4& transformMatrix);
@@ -349,7 +352,8 @@ private:
     // Batching errors handling
     uint32 prevFrameErrorsFlags;
     uint32 currFrameErrorsFlags;
-    enum ErrorFlag {
+    enum ErrorFlag
+    {
         NO_ERRORS = 0,
         BUFFER_OVERFLOW_ERROR = 1,
     };
@@ -371,5 +375,4 @@ inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCo
 
 } // ns
 
-#endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */
-
+#endif /* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */

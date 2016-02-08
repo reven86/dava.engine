@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 class FilePath;
 class Texture;
 class Entity;
@@ -47,16 +46,15 @@ public:
     static void ReplaceMipMaps(Entity* entity, const FastName& textureName = NMaterialTextureName::TEXTURE_ALBEDO);
 
 private:
-    static void EnumerateTexturesRecursive(Entity * entity, Set<Texture *> & textures, const FastName & textureName);
-    static void ReplaceMipMaps(Texture * texture);
+    static void EnumerateTexturesRecursive(Entity* entity, Set<Texture*>& textures, const FastName& textureName);
+    static void ReplaceMipMaps(Texture* texture);
 
     static void AllocateInternalDataIfNeeded(int32 requestedSize);
     static void ReleaseInternalData();
 
-    static uint32 * mipmapData;
+    static uint32* mipmapData;
     static int32 mipmapDataSize;
 };
-    
 };
 
 #endif // __MIPMAP_REPLACER_H__

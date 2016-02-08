@@ -38,35 +38,34 @@
 #include <QPointer>
 #include <QStringListModel>
 
-
-namespace Ui {
-    class RunActionEventWidget;
+namespace Ui
+{
+class RunActionEventWidget;
 }
-
 
 class SceneEditor2;
 class EntityGroup;
 
 class RunActionEventWidget
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit RunActionEventWidget(QWidget *parent = NULL);
+    explicit RunActionEventWidget(QWidget* parent = NULL);
     ~RunActionEventWidget();
 
 private:
     QScopedPointer<Ui::RunActionEventWidget> ui;
-    QMap< int, int > editorIdMap;
+    QMap<int, int> editorIdMap;
     QPointer<QStringListModel> autocompleteModel;
-    SceneEditor2 *scene;
+    SceneEditor2* scene;
 
 private slots:
     void OnTypeChanged();
     void OnInvoke();
-    void sceneActivated(SceneEditor2 *scene);
-    void sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
+    void sceneActivated(SceneEditor2* scene);
+    void sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
 };
 
 

@@ -35,12 +35,13 @@
 
 using namespace DAVA;
 
-
 GameCore::GameCore()
-{ }
+{
+}
 
 GameCore::~GameCore()
-{ }
+{
+}
 
 void GameCore::OnAppStarted()
 {
@@ -51,11 +52,12 @@ void GameCore::OnAppStarted()
 }
 
 void GameCore::OnAppFinished()
-{ }
+{
+}
 
 void GameCore::OnSuspend()
 {
-	//prevent going to suspend
+    //prevent going to suspend
 }
 
 void GameCore::OnResume()
@@ -65,18 +67,18 @@ void GameCore::OnResume()
 
 void GameCore::OnBackground()
 {
-	//prevent going to background
+    //prevent going to background
 }
 
 void GameCore::BeginFrame()
 {
-	ApplicationCore::BeginFrame();
+    ApplicationCore::BeginFrame();
 }
 static float t = 0;
 void GameCore::Update(float32 timeElapsed)
 {
-	ApplicationCore::Update(timeElapsed);
-    t += timeElapsed;
+    ApplicationCore::Update(timeElapsed);
+	t += timeElapsed;
 }
 
 void GameCore::Draw()
@@ -105,5 +107,3 @@ void GameCore::Draw()
     //RenderSystem2D::Instance()->DrawTexture(rt, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(of.x , of.y, sz.dx , sz.dy), Rect(0, 0, float(sz.dx) / 2048.0f, float(sz.dy) / 2048.0f));
     RenderSystem2D::Instance()->EndFrame();
 }
-
-

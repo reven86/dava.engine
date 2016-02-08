@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-    
 class GamepadDevice : public BaseObject
 {
 public:
@@ -43,7 +42,7 @@ public:
         GAMEPAD_PROFILE_SIMPLE = 0,
         GAMEPAD_PROFILE_NO_TRIGGERS,
         GAMEPAD_PROFILE_EXTENDED,
-            
+
         GAMEPAD_PROFILE_COUNT
     };
 
@@ -71,28 +70,31 @@ public:
     };
 
     GamepadDevice();
-        
+
     void Reset();
-        
+
     inline bool IsAvailable() const;
     inline eDavaGamepadProfile GetProfile() const;
     inline float32 GetElementState(eDavaGamepadElement element) const;
-        
+
     inline void SystemProcessElement(eDavaGamepadElement element, float32 newValue);
 
-    void SetAvailable(bool available) { isAvailable = available; }
+    void SetAvailable(bool available)
+    {
+        isAvailable = available;
+    }
 
 private:
     void InitInternal();
 
     float32 elementValues[GAMEPAD_ELEMENT_COUNT];
     eDavaGamepadProfile profile;
-        
+
     bool isAvailable;
 
 #if defined(__DAVAENGINE_IPHONE__)
 public:
-    void OnControllerConnected(void * gameControllerObject);
+    void OnControllerConnected(void* gameControllerObject);
 #endif
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -103,13 +105,13 @@ public:
     inline uint8 GetDavaEventIdForSystemKeycode(int32 systemKey) const;
     inline uint8 GetDavaEventIdForSystemAxis(int32 systemKey) const;
     inline void OnTriggersAvailable(bool isAvailable);
-        
+
 private:
     uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
     uint8 axisTranslator[MAX_TRANSLATOR_KEYS];
 #endif
 };
-    
+
 inline bool GamepadDevice::IsAvailable() const
 {
     return isAvailable;
@@ -174,13 +176,12 @@ inline uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey) const
 
 inline void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)
 {
-    if(isAvailable)
+    if (isAvailable)
         profile = GAMEPAD_PROFILE_EXTENDED;
     else
         profile = GAMEPAD_PROFILE_NO_TRIGGERS;
 }
 #endif
-    
 }
 
 #endif //__GAMEPAD_DEVICE_H_

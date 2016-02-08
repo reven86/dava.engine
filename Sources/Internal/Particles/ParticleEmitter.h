@@ -43,105 +43,104 @@
 #include "FileSystem/FilePath.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA 
-{	
+namespace DAVA
+{
 /*this class is proxy to load old effect hierarchy
   */
 class PartilceEmitterLoadProxy : public RenderObject
 {
 public:
-	PartilceEmitterLoadProxy();
-	String emitterFilename;
-	void Load(KeyedArchive *archive, SerializationContext *serializationContext); 
+    PartilceEmitterLoadProxy();
+    String emitterFilename;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext);
 };
 
 class ParticleEmitter : public BaseObject
 {
 public:
-    static ParticleEmitter *LoadEmitter(const FilePath & filename);
+    static ParticleEmitter* LoadEmitter(const FilePath& filename);
 
-	enum eType
-	{
-		EMITTER_POINT,
-		EMITTER_RECT,
-		EMITTER_ONCIRCLE_VOLUME,
-		EMITTER_ONCIRCLE_EDGES,
-		EMITTER_SHOCKWAVE
-	};
+    enum eType
+    {
+        EMITTER_POINT,
+        EMITTER_RECT,
+        EMITTER_ONCIRCLE_VOLUME,
+        EMITTER_ONCIRCLE_EDGES,
+        EMITTER_SHOCKWAVE
+    };
 
-	enum eState
-	{
-		STATE_PLAYING,    
-		STATE_STOPPING, //emitter is stopping - no new particle generation, still need to update and recalculate
-		STATE_STOPPED   //emitter is completely stopped - no processing at all
-	};
+    enum eState
+    {
+        STATE_PLAYING,
+        STATE_STOPPING, //emitter is stopping - no new particle generation, still need to update and recalculate
+        STATE_STOPPED //emitter is completely stopped - no processing at all
+    };
 
-	ParticleEmitter();	
-	ParticleEmitter * Clone();
+    ParticleEmitter();
+    ParticleEmitter* Clone();
 
     bool LoadFromYaml(const FilePath& pathName, bool preserveInheritPosition = false);
-    void SaveToYaml(const FilePath & pathName);    	
-	
-	void AddLayer(ParticleLayer * layer);
-	ParticleLayer* GetNextLayer(ParticleLayer* layer);
-	virtual void InsertLayer(ParticleLayer * layer, ParticleLayer * beforeLayer);	
-	void RemoveLayer(ParticleLayer * layer);
-	void RemoveLayer(int32 index);	
-	void MoveLayer(ParticleLayer * layer, ParticleLayer * beforeLayer);					    	      
+    void SaveToYaml(const FilePath& pathName);
 
-	void UpdateEmptyLayerNames();
-	void UpdateLayerNameIfEmpty(ParticleLayer* layer, int32 index);			
-	void LoadParticleLayerFromYaml(const YamlNode* yamlNode, bool preserveInheritPosition);
-	
-	// Invert the emission vector coordinates for backward compatibility.
-	void InvertEmissionVectorCoordinates();
+    void AddLayer(ParticleLayer* layer);
+    ParticleLayer* GetNextLayer(ParticleLayer* layer);
+    virtual void InsertLayer(ParticleLayer* layer, ParticleLayer* beforeLayer);
+    void RemoveLayer(ParticleLayer* layer);
+    void RemoveLayer(int32 index);
+    void MoveLayer(ParticleLayer* layer, ParticleLayer* beforeLayer);
+
+    void UpdateEmptyLayerNames();
+    void UpdateLayerNameIfEmpty(ParticleLayer* layer, int32 index);
+    void LoadParticleLayerFromYaml(const YamlNode* yamlNode, bool preserveInheritPosition);
+
+    // Invert the emission vector coordinates for backward compatibility.
+    void InvertEmissionVectorCoordinates();
 
     String GetEmitterTypeName();
 
-	void GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables);
+    void GetModifableLines(List<ModifiablePropertyLineBase*>& modifiables);
 
-	void Cleanup(bool needCleanupLayers = true);
-	void CleanupLayers();
+    void Cleanup(bool needCleanupLayers = true);
+    void CleanupLayers();
 
+    FilePath configPath;
+    eType emitterType;
 
-	FilePath configPath;	
-	eType	emitterType;	    	
+    Vector<ParticleLayer*> layers;
+    bool shortEffect;
 
-	Vector<ParticleLayer*> layers;	
-	bool shortEffect;	
-	
-	float32 lifeTime;
+    float32 lifeTime;
 
-	FastName name;
+    FastName name;
 
-	RefPtr< PropertyLine<Vector3> > emissionVector;    
-	RefPtr< PropertyLine<float32> > emissionRange;
-	RefPtr< PropertyLine<float32> > radius;
-	RefPtr< PropertyLine<Color> > colorOverLife;
-	RefPtr< PropertyLine<Vector3> > size;	    
+    RefPtr<PropertyLine<Vector3>> emissionVector;
+    RefPtr<PropertyLine<float32>> emissionRange;
+    RefPtr<PropertyLine<float32>> radius;
+    RefPtr<PropertyLine<Color>> colorOverLife;
+    RefPtr<PropertyLine<Vector3>> size;
 
-    RefPtr< PropertyLine<float32> > emissionAngle;
-    RefPtr< PropertyLine<float32> > emissionAngleVariation;
+    RefPtr<PropertyLine<float32>> emissionAngle;
+    RefPtr<PropertyLine<float32>> emissionAngleVariation;
 
 protected:
     virtual ~ParticleEmitter();
 
 private:
-	bool requireDeepClone;
+    bool requireDeepClone;
 
 
-#if defined (USE_FILEPATH_IN_MAP)
+#if defined(USE_FILEPATH_IN_MAP)
     using EmitterCacheMap = Map<FilePath, ParticleEmitter*>;
 #else //#if defined (USE_FILEPATH_IN_MAP)
     using EmitterCacheMap = Map<String, ParticleEmitter*>;
-#endif //#if defined (USE_FILEPATH_IN_MAP)		    
+#endif //#if defined (USE_FILEPATH_IN_MAP)
     void ReleaseFromCache(const FilePath& name);
 
     static EmitterCacheMap emitterCache;
+
 public:
     static bool FORCE_DEEP_CLONE;
 };
-
 }
 
 #endif // __DAVAENGINE_PARTICLE_EMITTER_H__

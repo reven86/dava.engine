@@ -49,10 +49,10 @@ NotificationScreen::NotificationScreen()
 void NotificationScreen::LoadResources()
 {
     BaseScreen::LoadResources();
-	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
-	DVASSERT(font);
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    DVASSERT(font);
 
-	font->SetSize(30);
+    font->SetSize(30);
 
     UISlider* slide = new UISlider(Rect(50, 400, 300, 50));
     slide->SetDebugDraw(true);
@@ -71,7 +71,7 @@ void NotificationScreen::LoadResources()
     showNotificationTextDelayed->SetStateFont(0xFF, font);
     showNotificationTextDelayed->SetStateFontColor(0xFF, Color::White);
     showNotificationTextDelayed->SetStateText(0xFF, L"Notify text in 5 seconds");
-    
+
     showNotificationTextDelayed->SetDebugDraw(true);
     showNotificationTextDelayed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyTextDelayed));
     AddControl(showNotificationTextDelayed);
@@ -105,14 +105,14 @@ void NotificationScreen::LoadResources()
 
     hideNotificationProgress = new UIButton(Rect(500, 100, 450, 60));
     hideNotificationProgress->SetStateFont(0xFF, font);
-	hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
-	hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
+    hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
+    hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
 
-	hideNotificationProgress->SetDebugDraw(false);
-	hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
-	AddControl(hideNotificationProgress);
+    hideNotificationProgress->SetDebugDraw(false);
+    hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
+    AddControl(hideNotificationProgress);
 
-	SafeRelease(font);
+    SafeRelease(font);
 }
 
 void NotificationScreen::UnloadResources()
@@ -127,66 +127,65 @@ void NotificationScreen::UnloadResources()
 
 void NotificationScreen::Update(float32 timeElapsed)
 {
-    
     BaseScreen::Update(timeElapsed);
-                               
-	if (nullptr == notificationProgress)
-		return;
 
-	static float32 timeCounter = 0;
-	timeCounter += timeElapsed;
+    if (nullptr == notificationProgress)
+        return;
 
-	if (0.25 <= timeCounter)
-	{
-		timeCounter = 0;
+    static float32 timeCounter = 0;
+    timeCounter += timeElapsed;
 
-		if (100 == progress)
-		{
-			progress = 0;
-		}
+    if (0.25 <= timeCounter)
+    {
+        timeCounter = 0;
 
-		notificationProgress->SetProgressCurrent(progress++);
-	}
+        if (100 == progress)
+        {
+            progress = 0;
+        }
+
+        notificationProgress->SetProgressCurrent(progress++);
+    }
 }
 
-void NotificationScreen::Draw(const UIGeometricData &geometricData)
+void NotificationScreen::Draw(const UIGeometricData& geometricData)
 {
 }
 
 void NotificationScreen::UpdateNotification()
 {
-	if (nullptr == notificationProgress)
-		return;
+    if (nullptr == notificationProgress)
+        return;
 
-	if (100 == progress)
-	{
-		progress = 0;
-	}
+    if (100 == progress)
+    {
+        progress = 0;
+    }
 
-	notificationProgress->SetProgressCurrent(progress++);
+    notificationProgress->SetProgressCurrent(progress++);
 }
 
-void NotificationScreen::OnNotifyText(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnNotifyText(BaseObject* obj, void* data, void* callerData)
 {
-	if (nullptr == notificationText)
-	{
-		notificationText = LocalNotificationController::Instance()->CreateNotificationText();
+    if (nullptr == notificationText)
+    {
+        notificationText = LocalNotificationController::Instance()->CreateNotificationText();
         notificationText->Update();
 
-		notificationText->SetAction(Message(this, &NotificationScreen::OnNotificationTextPressed));
-	}
-	else
-	{
-		notificationText->Show();
-	}
+        notificationText->SetAction(Message(this, &NotificationScreen::OnNotificationTextPressed));
+    }
+    else
+    {
+        notificationText->Show();
+    }
 
-	notificationText->SetTitle(L"Application is on foreground!");
-	notificationText->SetText(L"This text appeared at button press ");
+    notificationText->SetTitle(L"Application is on foreground!");
+    notificationText->SetText(L"This text appeared at button press ");
 
-	hideNotificationText->SetDebugDraw(true);
+    hideNotificationText->SetDebugDraw(true);
 }
 
-void NotificationScreen::OnNotifyTextDelayed(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnNotifyTextDelayed(BaseObject* obj, void* data, void* callerData)
 {
     LocalNotificationController::Instance()->PostDelayedNotification(L"Test Delayed notification Title", L"Some text", 5);
 }
@@ -196,47 +195,46 @@ void NotificationScreen::OnNotifyCancelDelayed(BaseObject* obj, void* data, void
     LocalNotificationController::Instance()->RemoveAllDelayedNotifications();
 }
 
-void NotificationScreen::OnHideText(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnHideText(BaseObject* obj, void* data, void* callerData)
 {
-	if (notificationText && notificationText->IsVisible())
-	{
-		notificationText->Hide();
-		hideNotificationText->SetDebugDraw(false);
-	}
+    if (notificationText && notificationText->IsVisible())
+    {
+        notificationText->Hide();
+        hideNotificationText->SetDebugDraw(false);
+    }
 }
 
-void NotificationScreen::OnNotifyProgress(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnNotifyProgress(BaseObject* obj, void* data, void* callerData)
 {
-	if (nullptr == notificationProgress)
-	{
-		notificationProgress = LocalNotificationController::Instance()->CreateNotificationProgress(L"", L"", 100, 0);
-		notificationProgress->SetAction(Message(this, &NotificationScreen::OnNotificationProgressPressed));
-	}
-	else
-	{
-		notificationProgress->Show();
-	}
+    if (nullptr == notificationProgress)
+    {
+        notificationProgress = LocalNotificationController::Instance()->CreateNotificationProgress(L"", L"", 100, 0);
+        notificationProgress->SetAction(Message(this, &NotificationScreen::OnNotificationProgressPressed));
+    }
+    else
+    {
+        notificationProgress->Show();
+    }
 
-	notificationProgress->SetTitle(L"Fake Download Progress");
-	notificationProgress->SetText(L"You pressed the button");
+    notificationProgress->SetTitle(L"Fake Download Progress");
+    notificationProgress->SetText(L"You pressed the button");
 
-	hideNotificationProgress->SetDebugDraw(true);
+    hideNotificationProgress->SetDebugDraw(true);
 }
 
-void NotificationScreen::OnHideProgress(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnHideProgress(BaseObject* obj, void* data, void* callerData)
 {
-	if (notificationProgress && notificationProgress->IsVisible())
-	{
-		notificationProgress->Hide();
-		hideNotificationProgress->SetDebugDraw(false);
-	}
+    if (notificationProgress && notificationProgress->IsVisible())
+    {
+        notificationProgress->Hide();
+        hideNotificationProgress->SetDebugDraw(false);
+    }
 }
 
-void NotificationScreen::OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnNotificationTextPressed(BaseObject* obj, void* data, void* callerData)
 {
-
 }
 
-void NotificationScreen::OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnNotificationProgressPressed(BaseObject* obj, void* data, void* callerData)
 {
 }

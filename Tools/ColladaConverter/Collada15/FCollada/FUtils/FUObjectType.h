@@ -27,54 +27,66 @@
 
 	@ingroup FUtils
 */
-class  FUObjectType
+class FUObjectType
 {
 private:
-	const FUObjectType* parent;
-	const char* typeName;
+    const FUObjectType* parent;
+    const char* typeName;
 
 public:
-	/** [INTERNAL] Constructor: do not use directly.
+    /** [INTERNAL] Constructor: do not use directly.
 		Only the FUObject class should use this constructor.
 		All other class object types should use the constructor below.
 		Use neither constructor directly: use the ImplementObjectType macro.
 		@param typeName The name of type.
 			Used only in debug builds for debugging purposes. */
-	FUObjectType(const char* typeName);
+    FUObjectType(const char* typeName);
 
-	/** [INTERNAL] Constructor: do not use directly.
+    /** [INTERNAL] Constructor: do not use directly.
 		Use the ImplementObjectType macro.
 		@param parent The parent class object type.
 		@param typeName The name of type.
 			Used only in debug builds for debugging purposes. */
-	FUObjectType(const FUObjectType& parent, const char* typeName);
+    FUObjectType(const FUObjectType& parent, const char* typeName);
 
-	/** Retrieves the type of the down-class.
+    /** Retrieves the type of the down-class.
 		@return The type of the down-class. The FUObject class
 			will return itself as the parent, so be careful when looping down.*/
-	const FUObjectType& GetParent() const { return (parent != NULL) ? *parent : *this; }
+    const FUObjectType& GetParent() const
+    {
+        return (parent != NULL) ? *parent : *this;
+    }
 
-	/** Retrieves whether this object type includes a given object type.
+    /** Retrieves whether this object type includes a given object type.
 		This function allows you to verify if this object type is
 		of a given object type or some up-class of the given object type.
 		You should use this comparison function before up-casting an object.
 		@param otherType A second object type.
 		@return Whether this object type includes the given object type. */
-	bool Includes(const FUObjectType& otherType) const;
+    bool Includes(const FUObjectType& otherType) const;
 
-	/** Retrieves whether a given object type is equivalent to this object type.
+    /** Retrieves whether a given object type is equivalent to this object type.
 		@param otherType A second object type.
 		@return Whether the two object types are equivalent. */
-	inline bool operator==(const FUObjectType& otherType) const { return &otherType == this; }
+    inline bool operator==(const FUObjectType& otherType) const
+    {
+        return &otherType == this;
+    }
 
-	/** Retrieves whether a given object type is different from this object type.
+    /** Retrieves whether a given object type is different from this object type.
 		@param otherType A second object type.
 		@return Whether the two object type are different. */
-	inline bool operator!=(const FUObjectType& otherType) const { return &otherType != this; }
+    inline bool operator!=(const FUObjectType& otherType) const
+    {
+        return &otherType != this;
+    }
 
-	/** Retrieves the object type name.
+    /** Retrieves the object type name.
 		@return The object type name. */
-	inline const char* GetTypeName() const { return typeName; }
+    inline const char* GetTypeName() const
+    {
+        return typeName;
+    }
 };
 
 /**
@@ -106,9 +118,9 @@ private:
 /** See above. */
 #define ImplementObjectTypeT(ClassName) \
 	template <> \
-	FUObjectType ClassName::__classType(Parent::GetClassType(), #ClassName); \
+    FUObjectType ClassName::__classType(Parent::GetClassType(), #ClassName); \
 	template <> \
-	void ClassName::Release() { Detach(); delete this; }
+    void ClassName::Release() { Detach(); delete this; }
 
 /**
 	Implements the object type for an object class, but without the Release() function.

@@ -34,27 +34,27 @@
 
 class QToolButton;
 
-class LineEditExt: public QLineEdit
+class LineEditExt : public QLineEdit
 {
     Q_OBJECT
 public:
-    explicit LineEditExt(QWidget *parent = NULL);
+    explicit LineEditExt(QWidget* parent = NULL);
     ~LineEditExt();
-    
+
     bool clearButtonEnabled() const;
     void setClearButtonEnabled(bool enable);
-    
+
 protected:
-    void resizeEvent(QResizeEvent *event);
-    
+    void resizeEvent(QResizeEvent* event);
+
 private slots:
-    void updateClearButton(const QString &text);
-    
+    void updateClearButton(const QString& text);
+
 private:
     QString styleSheetForCurrentState() const;
     QString buttonStyleSheetForCurrentState() const;
-    
-    QToolButton *clearButton;
+
+    QToolButton* clearButton;
     bool buttonEnabled;
 };
 
