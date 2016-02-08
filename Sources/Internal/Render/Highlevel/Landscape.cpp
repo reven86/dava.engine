@@ -155,7 +155,7 @@ void Landscape::ReleaseGeometryData()
 
     indices.clear();
 
-    quadsInWidth = 0;
+    quadsInWidthPow2 = 0;
 
 ////Instanced data
     if (patchVertexBuffer)
@@ -267,6 +267,7 @@ void Landscape::AllocateGeometryData()
     {
         subdivLevelInfoArray[k].offset = subdivPatchCount;
         subdivLevelInfoArray[k].size = size;
+        subdivLevelInfoArray[k].sizePow2 = k;
         subdivPatchCount += size * size;
         Logger::FrameworkDebug("level: %d size: %d quadCount: %d", k, size, heightmapSizeMinus1 / size);
         size *= 2;
@@ -396,7 +397,7 @@ Landscape::SubdivisionPatchInfo* Landscape::GetSubdivPatch(uint32 level, uint32 
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
 
     if (x < levelInfo.size && y < levelInfo.size)
-        return &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+        return &subdivPatchArray[levelInfo.offset + (y << levelInfo.sizePow2) + x];
     else
         return 0;
 }
@@ -409,10 +410,10 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
         return;
 
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
+    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (y << levelInfo.sizePow2) + x];
 
     // Calculate patch bounding box
-    uint32 realQuadCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
+    uint32 realQuadCountInPatch = (heightmap->Size() - 1) >> levelInfo.sizePow2;
     uint32 heightMapStartX = x * realQuadCountInPatch;
     uint32 heightMapStartY = y * realQuadCountInPatch;
 
@@ -493,7 +494,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     }
 
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    uint32 offset = levelInfo.offset + levelInfo.size * y + x;
+    uint32 offset = levelInfo.offset + (y << levelInfo.sizePow2) + x;
     PatchQuadInfo* patch = &patchQuadArray[offset];
     SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[offset];
 
@@ -511,7 +512,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
 
     if (level == subdivLevelCount - 1)
     {
-        TerminateSubdivision(level, x, y, levelInfo.size);
+        TerminateSubdivision(level, x, y, levelInfo.sizePow2);
         subdivPatchesDrawCount++;
         return;
     }
@@ -531,7 +532,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
-        subdivPatchInfo->lastSubdividedSize = levelInfo.size;
+        subdivPatchInfo->lastSubdivSizePow2 = levelInfo.sizePow2;
 
         uint32 x2 = x * 2;
         uint32 y2 = y * 2;
@@ -543,13 +544,12 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     }
     else
     {
-        //DrawPatch(level, x, y, 0, 0, 0, 0);
-        TerminateSubdivision(level, x, y, levelInfo.size);
+        TerminateSubdivision(level, x, y, levelInfo.sizePow2);
         subdivPatchesDrawCount++;
     }
 }
 
-void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize)
+void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivSizePow2)
 {
     if (level == subdivLevelCount)
     {
@@ -557,18 +557,18 @@ void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 la
     }
 
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << levelInfo.sizePow2) + x];
 
-    subdivPatchInfo->lastSubdividedSize = lastSubdividedSize;
+    subdivPatchInfo->lastSubdivSizePow2 = lastSubdivSizePow2;
     subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
 
     uint32 x2 = x * 2;
     uint32 y2 = y * 2;
 
-    TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdividedSize);
-    TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdividedSize);
-    TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdividedSize);
-    TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdividedSize);
+    TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdivSizePow2);
+    TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdivSizePow2);
+    TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdivSizePow2);
+    TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdivSizePow2);
 }
 
 void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
@@ -578,7 +578,7 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
 
     // TODO: optimise all offset calculations in all places
-    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+    SubdivisionPatchInfo* subdivPatchInfo = &subdivPatchArray[levelInfo.offset + (y << levelInfo.sizePow2) + x];
 
     uint32 state = subdivPatchInfo->subdivisionState;
     if (state == SubdivisionPatchInfo::CLIPPED)
@@ -601,26 +601,24 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
         SubdivisionPatchInfo* yNeg = GetSubdivPatch(level, x, y - 1);
         SubdivisionPatchInfo* yPos = GetSubdivPatch(level, x, y + 1);
 
-        uint32 xNegSize = levelInfo.size;
-        uint32 xPosSize = levelInfo.size;
-        uint32 yNegSize = levelInfo.size;
-        uint32 yPosSize = levelInfo.size;
+        uint32 xNegSizePow2 = levelInfo.sizePow2;
+        uint32 xPosSizePow2 = levelInfo.sizePow2;
+        uint32 yNegSizePow2 = levelInfo.sizePow2;
+        uint32 yPosSizePow2 = levelInfo.sizePow2;
 
         if (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-            xNegSize = xNeg->lastSubdividedSize;
+            xNegSizePow2 = xNeg->lastSubdivSizePow2;
         if (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-            xPosSize = xPos->lastSubdividedSize;
+            xPosSizePow2 = xPos->lastSubdivSizePow2;
         if (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-            yNegSize = yNeg->lastSubdividedSize;
+            yNegSizePow2 = yNeg->lastSubdivSizePow2;
         if (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-            yPosSize = yPos->lastSubdividedSize;
-
-        DVASSERT(xNegSize && xPosSize && yNegSize && yPosSize);
+            yPosSizePow2 = yPos->lastSubdivSizePow2;
 
         if (isInstancingUsed)
-            DrawPatchInstancing(level, x, y, xNegSize, xPosSize, yNegSize, yPosSize);
+            DrawPatchInstancing(level, x, y, xNegSizePow2, xPosSizePow2, yNegSizePow2, yPosSizePow2);
         else
-            DrawPatchNoInstancing(level, x, y, xNegSize, xPosSize, yNegSize, yPosSize);
+            DrawPatchNoInstancing(level, x, y, xNegSizePow2, xPosSizePow2, yNegSizePow2, yPosSizePow2);
     }
 }
 
@@ -651,10 +649,12 @@ void Landscape::AllocateGeometryDataNoInstancing()
     const uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
     const uint32 quadSize = RENDER_QUAD_WIDTH - 1;
 
-    quadsInWidth = heightmapSizeMinus1 / quadSize;
+    uint32 quadsInWidth = heightmapSizeMinus1 / quadSize;
     // For cases where landscape is very small allocate 1 VBO.
     if (quadsInWidth == 0)
         quadsInWidth = 1;
+
+    quadsInWidthPow2 = HighestBitIndex(quadsInWidth);
 
     for (uint32 y = 0; y < quadsInWidth; ++y)
     {
@@ -789,14 +789,14 @@ void Landscape::DrawLandscapeNoInstancing()
     FlushQueue();
 }
 
-void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
+void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
+    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (yy << levelInfo.sizePow2) + xx];
 
-    uint32 divider = levelInfo.size / quadsInWidth;
-    DVASSERT(divider);
-    uint32 quadBuffer = (yy / divider) * quadsInWidth + (xx / divider);
+    int32 dividerPow2 = levelInfo.sizePow2 - quadsInWidthPow2;
+    DVASSERT(dividerPow2 >= 0);
+    uint32 quadBuffer = ((yy >> dividerPow2) << quadsInWidthPow2) + (xx >> dividerPow2);
 
     if ((quadBuffer != queuedQuadBuffer) && (queuedQuadBuffer != -1))
     {
@@ -806,7 +806,7 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
     queuedQuadBuffer = quadBuffer;
 
     // Draw Middle
-    uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
+    uint32 realVertexCountInPatch = (heightmap->Size() - 1) >> levelInfo.sizePow2;
     uint32 step = realVertexCountInPatch / PATCH_QUAD_COUNT;
     uint32 heightMapStartX = xx * realVertexCountInPatch;
     uint32 heightMapStartY = yy * realVertexCountInPatch;
@@ -835,9 +835,9 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                 uint16 x1aligned2 = x1;
                 uint16 y1aligned2 = y1;
 
-                if (x == (heightMapStartX & RENDER_QUAD_AND) && (xNegSize != 0))
+                if (x == (heightMapStartX & RENDER_QUAD_AND))
                 {
-                    uint16 alignMod = levelInfo.size / xNegSize;
+                    uint16 alignMod = levelInfo.size >> xNegSizePow2;
                     if (alignMod > 1)
                     {
                         y0aligned = y0 / (alignMod * step) * (alignMod * step);
@@ -845,9 +845,9 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                     }
                 }
 
-                if (y == (heightMapStartY & RENDER_QUAD_AND) && (yNegSize != 0))
+                if (y == (heightMapStartY & RENDER_QUAD_AND))
                 {
-                    uint16 alignMod = levelInfo.size / yNegSize;
+                    uint16 alignMod = levelInfo.size >> yNegSizePow2;
                     if (alignMod > 1)
                     {
                         x0aligned = x0 / (alignMod * step) * (alignMod * step);
@@ -855,9 +855,9 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                     }
                 }
 
-                if ((x == ((heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch - step)) && (xPosSize != 0))
+                if (x == ((heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch - step))
                 {
-                    uint16 alignMod = levelInfo.size / xPosSize;
+                    uint16 alignMod = levelInfo.size >> xPosSizePow2;
                     if (alignMod > 1)
                     {
                         y0aligned2 = y0 / (alignMod * step) * (alignMod * step);
@@ -865,9 +865,9 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                     }
                 }
 
-                if ((y == ((heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch - step)) && (yPosSize != 0))
+                if (y == ((heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch - step))
                 {
-                    uint16 alignMod = levelInfo.size / yPosSize;
+                    uint16 alignMod = levelInfo.size >> yPosSizePow2;
                     if (alignMod > 1)
                     {
                         x0aligned2 = x0 / (alignMod * step) * (alignMod * step);
@@ -1080,18 +1080,18 @@ void Landscape::DrawLandscapeInstancing()
     }
 }
 
-void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
+void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
+    PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (yy << levelInfo.sizePow2) + xx];
 
     instanceDataPtr->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
     instanceDataPtr->patchScale = 1.f / levelInfo.size;
     instanceDataPtr->lodOffset = Vector4(
-        float32(levelInfo.size / xNegSize),
-        float32(levelInfo.size / xPosSize),
-        float32(levelInfo.size / yNegSize),
-        float32(levelInfo.size / yPosSize));
+        float32(1 << (levelInfo.sizePow2 - xNegSizePow2)),
+        float32(1 << (levelInfo.sizePow2 - xPosSizePow2)),
+        float32(1 << (levelInfo.sizePow2 - yNegSizePow2)),
+        float32(1 << (levelInfo.sizePow2 - yPosSizePow2)));
 
     ++instanceDataPtr;
 }
@@ -1472,7 +1472,7 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 {
     //TODO: refactor this!
     DVASSERT(!isInstancingUsed);
-
+    /*
     int32 heightmapSize = fromHeightmap->Size();
     DVASSERT(heightmap->Size() == heightmapSize);
 
@@ -1529,6 +1529,7 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
             }
         }
     }
+    */
 }
 
 }

@@ -218,7 +218,7 @@ protected:
             TERMINATED = 3,
         };
 
-        uint32 lastSubdividedSize = 0;
+        uint32 lastSubdivSizePow2 = 0;
         uint8 subdivisionState = CLIPPED;
         uint8 startClipPlane = 0;
     };
@@ -227,12 +227,13 @@ protected:
     {
         uint32 offset;
         uint32 size;
+        uint32 sizePow2;
     };
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
-    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
+    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivSizePow2);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
     uint32 minSubdivLevelSize = 0;
@@ -282,7 +283,7 @@ protected:
     int16 AllocateQuadVertexBuffer(uint32 x, uint32 y, uint32 size);
 
     void DrawLandscapeNoInstancing();
-    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+    void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2);
 
     void FlushQueue();
     void ClearQueue();
@@ -300,7 +301,7 @@ protected:
     int16 queuedQuadBuffer = 0;
     int32 flushQueueCounter = 0;
 
-    uint32 quadsInWidth = 0;
+    uint32 quadsInWidthPow2 = 0;
 
     bool isRequireTangentBasis = false;
 
@@ -332,7 +333,7 @@ protected:
     Texture* CreateHeightTexture(Heightmap* heightmap);
 
     void DrawLandscapeInstancing();
-    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2);
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
