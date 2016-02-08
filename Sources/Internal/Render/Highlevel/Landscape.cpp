@@ -65,6 +65,8 @@ const FastName Landscape::TEXTURE_TILE("tileTexture0");
 const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
+const FastName Landscape::FLAG_PATCH_SIZE_QUADS("PATCH_SIZE_QUADS");
+
 const FastName Landscape::LANDSCAPE_QUALITY_NAME("Landscape");
 const FastName Landscape::LANDSCAPE_QUALITY_VALUE_HIGH("HIGH");
 
@@ -163,7 +165,7 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 
     bbox = _box;
 
-    BuildLandscape();
+    RebuildLandscape();
 
     if (foliageSystem)
     {
@@ -225,6 +227,7 @@ void Landscape::AllocateGeometryData()
         landscapeMaterial = new NMaterial();
         landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
         landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+        landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_QUAD_COUNT);
     }
 
     if (!heightmap->Size())
@@ -261,7 +264,7 @@ void Landscape::AllocateGeometryData()
     }
 }
 
-void Landscape::BuildLandscape()
+void Landscape::RebuildLandscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1185,7 +1188,7 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
     bbox.Empty();
 	bbox.AddPoint(Vector3(-newLandscapeSize.x/2.f, -newLandscapeSize.y/2.f, 0.f));
 	bbox.AddPoint(Vector3(newLandscapeSize.x/2.f, newLandscapeSize.y/2.f, newLandscapeSize.z));
-    BuildLandscape();
+    RebuildLandscape();
 
     if (foliageSystem)
     {
@@ -1280,6 +1283,15 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
             }
         }
 
+        if (landscapeMaterial->HasLocalFlag(FLAG_PATCH_SIZE_QUADS))
+        {
+            landscapeMaterial->SetFlag(FLAG_PATCH_SIZE_QUADS, PATCH_QUAD_COUNT);
+        }
+        else
+        {
+            landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_QUAD_COUNT);
+        }
+
         landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
     }
 
@@ -1300,8 +1312,8 @@ void Landscape::SetHeightmap(DAVA::Heightmap *height)
 
     SafeRelease(heightmap);
     heightmap = SafeRetain(height);
-    
-    BuildLandscape();
+
+    RebuildLandscape();
 }
 
 NMaterial* Landscape::GetMaterial()
@@ -1366,7 +1378,7 @@ void Landscape::SetUpdatable(bool isUpdatable)
     if (updatable != isUpdatable)
     {
         updatable = isUpdatable;
-        BuildLandscape();
+        RebuildLandscape();
     }
 }
 

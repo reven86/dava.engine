@@ -83,6 +83,8 @@ public:
     const static FastName TEXTURE_TILEMASK;
     const static FastName TEXTURE_SPECULAR;
 
+    const static FastName FLAG_PATCH_SIZE_QUADS;
+
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
@@ -162,7 +164,7 @@ protected:
     void SetLandscapeSize(const Vector3& newSize);
 
     bool BuildHeightmap();
-    void BuildLandscape();
+    void RebuildLandscape();
 
     struct RestoreBufferData
     {
