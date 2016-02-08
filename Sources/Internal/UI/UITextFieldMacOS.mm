@@ -667,11 +667,28 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
             }
 
             [[NSApp keyWindow] makeFirstResponder:nsTextField];
-            if ([[nsTextField stringValue] length] > 0)
+
+            // first attempt set cursor
+            [nsTextField selectText:nsTextField];
+            NSRange range = [[nsTextField currentEditor] selectedRange];
+            [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+
+            // second attemt set cursor
+            NSText* textEditor = [nsTextField.window fieldEditor:YES forObject:nsTextField];
+            if (textEditor)
             {
-                NSRange range = [[nsTextField currentEditor] selectedRange];
-                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+                id cell = [nsTextField selectedCell];
+                [cell selectWithFrame:[nsTextField bounds]
+                               inView:nsTextField
+                               editor:textEditor
+                             delegate:nsTextField
+                                start:range.length
+                               length:0];
             }
+
+            // on mac os all NSTextField controls share same NSTextView as cell for
+            // user input so better set cursor and curcor color every time
+            SetTextColor(currentColor);
         }
 
         void CloseKeyboard() override
@@ -803,6 +820,8 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
                 [nsTextField setFrame:controlRect];
                 nativeControlRect = controlRect;
             }
+
+            SetTextColor(currentColor);
         }
 
         void SetTextColor(const DAVA::Color& color) override
