@@ -38,11 +38,11 @@ namespace DAVA
 class IDataStorage : public BaseObject
 {
 public:
-    virtual String GetStringValue(const String &key) = 0;
-    virtual int64 GetLongValue(const String &key) = 0;
-    virtual void SetStringValue(const String &key, const String &value) = 0;
-    virtual void SetLongValue(const String &key, int64 value) = 0;
-    virtual void RemoveEntry(const String &key) = 0;
+    virtual String GetStringValue(const String& key) = 0;
+    virtual int64 GetLongValue(const String& key) = 0;
+    virtual void SetStringValue(const String& key, const String& value) = 0;
+    virtual void SetLongValue(const String& key, int64 value) = 0;
+    virtual void RemoveEntry(const String& key) = 0;
     virtual void Clear() = 0;
     virtual void Push() = 0;
 };
@@ -51,7 +51,7 @@ public:
 class DataStorage
 {
 public:
-    static IDataStorage *Create();
+    static IDataStorage* Create();
 
 private:
     DataStorage(){};
@@ -61,4 +61,3 @@ private:
 } //namespace DAVA
 
 #endif // __DATA_STORAGE_H__
-

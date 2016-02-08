@@ -36,46 +36,43 @@
 #include "Base/Singleton.h"
 #include "Entity/SceneSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class Entity;
 class Transform;
 
 class TransformSystem : public SceneSystem
 {
 public:
-	TransformSystem(Scene * scene);
-	~TransformSystem();
+    TransformSystem(Scene* scene);
+    ~TransformSystem();
 
-    void ImmediateEvent(Component * component, uint32 event) override;
-	virtual void AddEntity(Entity * entity);
-	virtual void RemoveEntity(Entity * entity);
+    void ImmediateEvent(Component* component, uint32 event) override;
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
 
     void LinkTransform(int32 parentIndex, int32 childIndex);
-	void UnlinkTransform(int32 childIndex);
+    void UnlinkTransform(int32 childIndex);
 
     virtual void Process(float32 timeElapsed);
 
 private:
     void SortAndThreadSplit();
-    
-	Vector<Entity*> updatableEntities;
+
+    Vector<Entity*> updatableEntities;
     Vector<Component*> sendEvent;
-    
-	void EntityNeedUpdate(Entity * entity);
-	void HierahicAddToUpdate(Entity * entity);
-    void FindNodeThatRequireUpdate(Entity * entity);
-    void TransformAllChildEntities(Entity * entity);
-    void RecursiveTransformCheck(Entity * entity);
 
+    void EntityNeedUpdate(Entity* entity);
+    void HierahicAddToUpdate(Entity* entity);
+    void FindNodeThatRequireUpdate(Entity* entity);
+    void TransformAllChildEntities(Entity* entity);
+    void RecursiveTransformCheck(Entity* entity);
 
-	void HierahicFindUpdatableTransform(Entity * entity, bool forcedUpdate = false);
+    void HierahicFindUpdatableTransform(Entity* entity, bool forcedUpdate = false);
 
-	int32 passedNodes;
-	int32 multipliedNodes;
+    int32 passedNodes;
+    int32 multipliedNodes;
 };
-
 };
 
 #endif //__DAVAENGINE_TRANSFORM_SYSTEM_H__

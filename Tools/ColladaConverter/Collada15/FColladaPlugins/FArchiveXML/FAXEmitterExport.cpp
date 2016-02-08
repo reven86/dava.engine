@@ -14,17 +14,15 @@
 #include "FCDocument/FCDEmitterParticle.h"
 #include "FCDocument/FCDParticleModifier.h"
 
-
 //
 // Emitter export
 //
 
 xmlNode* FArchiveXML::WriteEmitter(FCDObject* object, xmlNode* parentNode)
 {
-	FCDEmitter* emitter = (FCDEmitter*) object;
-	xmlNode* emitterNode = FArchiveXML::WriteToEntityXMLFCDEntity(emitter, parentNode, DAE_EMITTER_ELEMENT);
+    FCDEmitter* emitter = (FCDEmitter*)object;
+    xmlNode* emitterNode = FArchiveXML::WriteToEntityXMLFCDEntity(emitter, parentNode, DAE_EMITTER_ELEMENT);
 
-	FArchiveXML::WriteEntityExtra(emitter, emitterNode);
-	return emitterNode;
+    FArchiveXML::WriteEntityExtra(emitter, emitterNode);
+    return emitterNode;
 }
-

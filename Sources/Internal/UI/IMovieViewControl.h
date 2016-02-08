@@ -34,20 +34,20 @@
 
 namespace DAVA
 {
-
 enum eMovieScalingMode
 {
-    scalingModeNone = 0,        // No scaling
-    scalingModeAspectFit,       // Uniform scale until one dimension fits
-    scalingModeAspectFill,      // Uniform scale until the movie fills the visible bounds. One dimension may have clipped contents
-    scalingModeFill             // Non-uniform scale. Both render dimensions will exactly match the visible bounds
+    scalingModeNone = 0, // No scaling
+    scalingModeAspectFit, // Uniform scale until one dimension fits
+    scalingModeAspectFill, // Uniform scale until the movie fills the visible bounds. One dimension may have clipped contents
+    scalingModeFill // Non-uniform scale. Both render dimensions will exactly match the visible bounds
 };
 
 struct OpenMovieParams
 {
     OpenMovieParams(eMovieScalingMode mode = scalingModeNone)
         : scalingMode(mode)
-    {}
+    {
+    }
 
     eMovieScalingMode scalingMode;
 };
@@ -56,7 +56,7 @@ struct OpenMovieParams
 class IMovieViewControl
 {
 public:
-    virtual ~IMovieViewControl() {};
+    virtual ~IMovieViewControl(){};
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;
@@ -80,6 +80,6 @@ public:
     virtual bool IsPlaying() = 0;
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
 #endif //__DAVAENGINE_IMOVIEVIEWCONTROL__H__

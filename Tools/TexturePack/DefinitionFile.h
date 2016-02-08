@@ -34,24 +34,24 @@
 #include <vector>
 #include "BaseMath.h"
 
-class DefinitionFile 
+class DefinitionFile
 {
 public:
-	bool Load(const std::string & filename);
-	bool LoadPNGDef(const std::string & filename);
-	
-	DefinitionFile();
-	~DefinitionFile();
-	
-	void ClearPackedFrames();
-	
-	std::string filename;
-	int			frameCount;
-	int			spriteWidth;
-	int			spriteHeight;
-	Rect2i		* frameRects;
+    bool Load(const std::string& filename);
+    bool LoadPNGDef(const std::string& filename);
 
-	std::vector<std::string> pathsInfo;
+    DefinitionFile();
+    ~DefinitionFile();
+
+    void ClearPackedFrames();
+
+    std::string filename;
+    int frameCount;
+    int spriteWidth;
+    int spriteHeight;
+    Rect2i* frameRects;
+
+    std::vector<std::string> pathsInfo;
 };
 
 #endif

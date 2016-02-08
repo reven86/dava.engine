@@ -26,11 +26,10 @@ ImplementParameterObjectNoCtr(FCDEmitterInstance, FCDEntityInstance, forceInstan
 ImplementParameterObjectNoCtr(FCDEmitterInstance, FCDEntityInstance, emittedInstances);
 
 FCDEmitterInstance::FCDEmitterInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType)
-:	FCDEntityInstance(document, parent, entityType)
+    : FCDEntityInstance(document, parent, entityType)
 {
 }
 
 FCDEmitterInstance::~FCDEmitterInstance()
 {
 }
-

@@ -69,62 +69,68 @@ public:
 	*/
     struct StringMetrics
     {
-        inline StringMetrics(): drawRect(), height(0), width(0), baseline(0) {}
-		Rect2i drawRect;
-		int32 height;
-		int32 width;
-		int32 baseline;
-	};
-protected:
-	virtual ~Font();
-public:
-	Font();
+        inline StringMetrics()
+            : drawRect()
+            , height(0)
+            , width(0)
+            , baseline(0)
+        {
+        }
+        Rect2i drawRect;
+        int32 height;
+        int32 width;
+        int32 baseline;
+    };
 
-	/**
+protected:
+    virtual ~Font();
+
+public:
+    Font();
+
+    /**
 		\brief Set global DPI(dots per inch).
 		Default value is 72.
 		\param[in] dpi DPI value
 	*/
-	static void SetDPI(int32 dpi);
+    static void SetDPI(int32 dpi);
 
-
-	/**
+    /**
 		\brief Get global DPI.
 	*/
-	static int32 GetDPI();
-	
-	/**
+    static int32 GetDPI();
+
+    /**
 		\brief Set size.
 		\param[in] size in points
 	*/
-	virtual void SetSize(float32 size);
+    virtual void SetSize(float32 size);
 
-	/**
+    /**
 		\brief Get size.
 		\returns size in pixels
 	*/
-	virtual float32	GetSize() const;
+    virtual float32 GetSize() const;
 
-	/**
+    /**
 	 \brief Set vertical spacing.
 	 Spacing value is added to vertical range between lines in multiline text.
 	 \param[in] verticalSpacing value in pixels
 	 */
-	virtual void SetVerticalSpacing(int32 verticalSpacing);
+    virtual void SetVerticalSpacing(int32 verticalSpacing);
 
-
-	/**
+    /**
 	 \brief Get vertical spacing 
 	 \returns vertical spacing value in pixels
 	 */
-	virtual int32 GetVerticalSpacing() const;
+    virtual int32 GetVerticalSpacing() const;
 
     /**
      \brief Set font ascend scale factor for FT font. Using for vertical align.
      \param[in] ascendScale ascend scale factor
     */
     virtual void SetAscendScale(float32 ascendScale);
-    
+
     /**
     \brief Get font ascend scale factor for FT font. Using for vertical align.
     \returns ascend scale factor
@@ -149,63 +155,68 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0);
-	
-	/**
+    virtual Size2i GetStringSize(const WideString& str, Vector<float32>* charSizes = 0);
+
+    /**
 	 \brief Get string metrics.
 	 \param[in] str - processed string
 	 \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
 	 \returns StringMetrics structure
 	 */
-	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
+    virtual StringMetrics GetStringMetrics(const WideString& str, Vector<float32>* charSizes = 0) const = 0;
 
-	/**
+    /**
 		\brief Checks if symbol is present in font.
 		\param[in] ch - tested symbol
 		\returns true if symbol is available, false otherwise
 	*/
-	virtual bool IsCharAvaliable(char16 ch) const = 0;
+    virtual bool IsCharAvaliable(char16 ch) const = 0;
 
-	/**
+    /**
 		\brief Get height of highest symbol in font.
 		\returns height in pixels
 	*/
-	virtual uint32 GetFontHeight() const = 0;
+    virtual uint32 GetFontHeight() const = 0;
 
-	/**
+    /**
 		\brief Clone font.
 	*/
-	virtual Font * Clone() const = 0;
+    virtual Font* Clone() const = 0;
 
-	/**
+    /**
 		\brief Tests if two fonts are the same.
 	*/
-	virtual bool IsEqual(const Font *font) const;
+    virtual bool IsEqual(const Font* font) const;
 
-	//TODO: get rid of this
-	virtual bool IsTextSupportsSoftwareRendering() const { return false; };
-	virtual bool IsTextSupportsHardwareRendering() const { return false; };
+    //TODO: get rid of this
+    virtual bool IsTextSupportsSoftwareRendering() const
+    {
+        return false;
+    };
+    virtual bool IsTextSupportsHardwareRendering() const
+    {
+        return false;
+    };
 
-	//This will allow to determine font type
-	virtual eFontType GetFontType() const;
+    //This will allow to determine font type
+    virtual eFontType GetFontType() const;
 
-	/* Put font properties into YamlNode */
-	virtual YamlNode * SaveToYamlNode() const;
+    /* Put font properties into YamlNode */
+    virtual YamlNode* SaveToYamlNode() const;
 
-	// Return the hashcode (identical for identical fonts).
-	virtual uint32 GetHashCode();
+    // Return the hashcode (identical for identical fonts).
+    virtual uint32 GetHashCode();
 
 protected:
     // Get the raw hash string (identical for identical fonts).
-	virtual String GetRawHashString();
-    
-	static int32 globalFontDPI;
-	
-	float32	size;
-	int32 verticalSpacing;
-	eFontType fontType;
+    virtual String GetRawHashString();
+
+    static int32 globalFontDPI;
+
+    float32 size;
+    int32 verticalSpacing;
+    eFontType fontType;
 };
-    
 };
 
 #endif // __DAVAENGINE_FONT_H__

@@ -38,7 +38,6 @@
 #include <QtGui>
 #include <QtWidgets>
 #include <QQueue>
-
 class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
@@ -53,12 +52,12 @@ class Project;
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
-    
+
 public:
     struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
 
-    void CreateUndoRedoActions(const QUndoGroup *undoGroup);
+    void CreateUndoRedoActions(const QUndoGroup* undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
@@ -69,13 +68,13 @@ public:
     QComboBox* GetComboBoxLanguage();
 
 protected:
-    void closeEvent(QCloseEvent *event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 signals:
     void TabClosed(int tab);
     void CloseProject();
     void ActionExitTriggered();
-    void RecentMenuTriggered(QAction *);
+    void RecentMenuTriggered(QAction*);
     void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
     void SaveAllDocuments();
@@ -84,7 +83,7 @@ signals:
     void CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
-    void GlobalStyleClassesChanged(const QString &classesStr);
+    void GlobalStyleClassesChanged(const QString& classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
     void EmulationModeChanbed(bool emulationMode);
     void PixelizationChanged(bool pixelization);
@@ -98,19 +97,19 @@ private slots:
     void OnCleanChanged(bool val);
     void OnSaveDocument();
     void OnShowHelp();
-    
+
     void OnOpenProject();
-    
+
     void RebuildRecentMenu();
 
     void OnBackgroundCustomColorClicked();
 
     // Pixelization.
     void OnPixelizationStateChanged();
-    
+
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
-    void OnGlobalClassesChanged(const QString &str);
+    void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
 
 private:

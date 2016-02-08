@@ -44,7 +44,7 @@ class Command2;
 
 using namespace DAVA;
 
-class LandscapeEditorDrawSystem: public DAVA::SceneSystem
+class LandscapeEditorDrawSystem : public DAVA::SceneSystem
 {
 public:
     enum eErrorType
@@ -68,14 +68,14 @@ public:
     RulerToolProxy* GetRulerToolProxy();
 
     eErrorType EnableCustomDraw();
-	void DisableCustomDraw();
+    void DisableCustomDraw();
 
-	eErrorType EnableTilemaskEditing();
-	void DisableTilemaskEditing();
+    eErrorType EnableTilemaskEditing();
+    void DisableTilemaskEditing();
 
-	bool IsNotPassableTerrainEnabled();
-	eErrorType EnableNotPassableTerrain();
-	void DisableNotPassableTerrain();
+    bool IsNotPassableTerrainEnabled();
+    eErrorType EnableNotPassableTerrain();
+    void DisableNotPassableTerrain();
 
     void EnableCursor();
     void DisableCursor();
@@ -83,9 +83,9 @@ public:
     void SetCursorSize(float32 cursorSize);
     void SetCursorPosition(const Vector2& cursorPos);
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const Command2 *command, bool redo);
+    void ProcessCommand(const Command2* command, bool redo);
 
     float32 GetTextureSize(const FastName& level);
     Vector3 GetLandscapeSize();
@@ -121,17 +121,18 @@ public:
 
     static String GetDescriptionByError(eErrorType error);
 
-protected:
+private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
-    
+
     eErrorType InitLandscape(Entity* landscapeEntity, Landscape* landscape);
     void DeinitLandscape();
-    
+
     eErrorType IsNotPassableTerrainCanBeEnabled();
-    
+
     bool UpdateTilemaskPathname();
 
+private:
     Entity* landscapeNode = nullptr;
     Landscape* baseLandscape = nullptr;
     LandscapeProxy* landscapeProxy = nullptr;
@@ -139,10 +140,11 @@ protected:
     NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
     CustomColorsProxy* customColorsProxy = nullptr;
     RulerToolProxy* rulerToolProxy = nullptr;
-
-    uint32 customDrawRequestCount;
-
+    uint32 customDrawRequestCount = 0;
     FilePath sourceTilemaskPath;
 };
+
+
+
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

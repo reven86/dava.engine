@@ -56,10 +56,11 @@ class VersionInfoWidget;
 class DeviceListController;
 
 class QtMainWindow
-    : public QMainWindow
-    , public DAVA::Singleton<QtMainWindow>
+: public QMainWindow
+  ,
+  public DAVA::Singleton<QtMainWindow>
 {
-	Q_OBJECT
+    Q_OBJECT
 
 protected:
     static const int GLOBAL_INVALIDATE_TIMER_DELTA = 1000;
@@ -71,53 +72,53 @@ signals:
     void SpritesReloaded();
 
 public:
-	explicit QtMainWindow(QWidget *parent = 0);
-	~QtMainWindow();
+    explicit QtMainWindow(QWidget* parent = 0);
+    ~QtMainWindow();
 
-	Ui::MainWindow* GetUI();
-	SceneTabWidget* GetSceneWidget();
-	SceneEditor2* GetCurrentScene();
+    Ui::MainWindow* GetUI();
+    SceneTabWidget* GetSceneWidget();
+    SceneEditor2* GetCurrentScene();
 
-    bool OpenScene(const QString & path);
-	bool SaveScene(SceneEditor2 *scene);
-	bool SaveSceneAs(SceneEditor2 *scene);
+    bool OpenScene(const QString& path);
+    bool SaveScene(SceneEditor2* scene);
+    bool SaveSceneAs(SceneEditor2* scene);
 
-	void SetGPUFormat(DAVA::eGPUFamily gpu);
-	DAVA::eGPUFamily GetGPUFormat();
+    void SetGPUFormat(DAVA::eGPUFamily gpu);
+    DAVA::eGPUFamily GetGPUFormat();
 
-	void WaitStart(const QString &title, const QString &message, int min = 0, int max = 100);
-	void WaitSetMessage(const QString &messsage);
-	void WaitSetValue(int value);
-	void WaitStop();
+    void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
+    void WaitSetMessage(const QString& messsage);
+    void WaitSetValue(int value);
+    void WaitStop();
 
-	void BeastWaitSetMessage(const QString &messsage);
-	bool BeastWaitCanceled();
+    void BeastWaitSetMessage(const QString& messsage);
+    bool BeastWaitCanceled();
 
-	void EnableGlobalTimeout(bool enable);
+    void EnableGlobalTimeout(bool enable);
 
     void RestartParticleEffects();
 
-// qt actions slots
+    // qt actions slots
 public slots:
-	void OnProjectOpen();
-	void OnProjectClose();
-	void OnSceneNew();
-	void OnSceneOpen();
-	void OnSceneSave();
-	void OnSceneSaveAs();
-	void OnSceneSaveToFolder();
+    void OnProjectOpen();
+    void OnProjectClose();
+    void OnSceneNew();
+    void OnSceneOpen();
+    void OnSceneSave();
+    void OnSceneSaveAs();
+    void OnSceneSaveToFolder();
     void OnSceneSaveToFolderCompressed();
-	void OnRecentFilesTriggered(QAction *recentAction);
-    void OnRecentProjectsTriggered(QAction *recentAction);
-	void ExportMenuTriggered(QAction *exportAsAction);
+    void OnRecentFilesTriggered(QAction* recentAction);
+    void OnRecentProjectsTriggered(QAction* recentAction);
+    void ExportMenuTriggered(QAction* exportAsAction);
     void OnImportSpeedTreeXML();
 
-	void OnUndo();
-	void OnRedo();
+    void OnUndo();
+    void OnRedo();
 
-	void OnEditorGizmoToggle(bool show);
+    void OnEditorGizmoToggle(bool show);
     void OnViewLightmapCanvas(bool show);
-	void OnAllowOnSceneSelectionToggle(bool allow);
+    void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
     void OnEnableVisibilitySystemToggle(bool enabled);
     void OnRefreshVisibilitySystem();
@@ -126,53 +127,53 @@ public slots:
 
     void OnEnableDisableShadows(bool enable);
 
-	void OnReloadTextures();
-	void OnReloadTexturesTriggered(QAction *reloadAction);
-	void OnReloadSprites();
+    void OnReloadTextures();
+    void OnReloadTexturesTriggered(QAction* reloadAction);
+    void OnReloadSprites();
 
-	void OnSelectMode();
-	void OnMoveMode();
-	void OnRotateMode();
-	void OnScaleMode();
-	void OnPivotCenterMode();
-	void OnPivotCommonMode();
-	void OnManualModifMode();
-	void OnPlaceOnLandscape();
-	void OnSnapToLandscape();
-	void OnResetTransform();
+    void OnSelectMode();
+    void OnMoveMode();
+    void OnRotateMode();
+    void OnScaleMode();
+    void OnPivotCenterMode();
+    void OnPivotCommonMode();
+    void OnManualModifMode();
+    void OnPlaceOnLandscape();
+    void OnSnapToLandscape();
+    void OnResetTransform();
     void OnLockTransform();
     void OnUnlockTransform();
 
     void OnCenterPivotPoint();
     void OnZeroPivotPoint();
 
-	void OnMaterialEditor();
-	void OnTextureBrowser();
-	void OnSceneLightMode();
+    void OnMaterialEditor();
+    void OnTextureBrowser();
+    void OnSceneLightMode();
 
-	void OnCubemapEditor();
+    void OnCubemapEditor();
     void OnImageSplitter();
-	
-	void OnAddLandscape();
+
+    void OnAddLandscape();
     void OnAddVegetation();
-	void OnLightDialog();
-	void OnCameraDialog();
-	void OnEmptyEntity();
-	void OnAddWindEntity();
+    void OnLightDialog();
+    void OnCameraDialog();
+    void OnEmptyEntity();
+    void OnAddWindEntity();
     void OnAddPathEntity();
 
-	void OnUserNodeDialog();
-	void OnSwitchEntityDialog();
-	void OnParticleEffectDialog();
+    void OnUserNodeDialog();
+    void OnSwitchEntityDialog();
+    void OnParticleEffectDialog();
     void On2DCameraDialog();
     void On2DSpriteDialog();
-	void OnAddEntityFromSceneTree();
-	
-	void OnShowSettings();
-	void OnOpenHelp();
+    void OnAddEntityFromSceneTree();
 
-	void OnSaveHeightmapToImage();
-	void OnSaveTiledTexture();
+    void OnShowSettings();
+    void OnOpenHelp();
+
+    void OnSaveHeightmapToImage();
+    void OnSaveTiledTexture();
     void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
     void OnConvertModifiedTextures();
@@ -184,20 +185,20 @@ public slots:
     void OnBuildStaticOcclusion();
     void OnInavalidateStaticOcclusion();
 
-	void OnLandscapeEditorToggled(SceneEditor2* scene);
+    void OnLandscapeEditorToggled(SceneEditor2* scene);
     void OnForceFirstLod(bool);
     void OnCustomColorsEditor();
     void OnHeightmapEditor();
     void OnRulerTool();
     void OnTilemaskEditor();
-	void OnNotPassableTerrain();
+    void OnNotPassableTerrain();
     void OnWayEditor();
-	
-	void OnObjectsTypeChanged(QAction *action);
+
+    void OnObjectsTypeChanged(QAction* action);
     void OnObjectsTypeChanged(int type);
 
-	void OnHangingObjects();
-	void OnHangingObjectsHeight(double value);
+    void OnHangingObjects();
+    void OnHangingObjectsHeight(double value);
 
     void OnMaterialLightViewChanged(bool);
     void OnCustomQuality();
@@ -209,99 +210,99 @@ public slots:
     void OnGenerateHeightDelta();
 
     void OnBatchProcessScene();
-    
+
     void OnSnapCameraToLandscape(bool);
 
     void SetupTitle();
 
 protected:
-	virtual bool eventFilter(QObject *object, QEvent *event);
-	void closeEvent(QCloseEvent * e);
+    virtual bool eventFilter(QObject* object, QEvent* event);
+    void closeEvent(QCloseEvent* e);
 
-	void SetupMainMenu();
-	void SetupToolBars();
-	void SetupStatusBar();
-	void SetupDocks();
-	void SetupActions();
-	void SetupShortCuts();
+    void SetupMainMenu();
+    void SetupToolBars();
+    void SetupStatusBar();
+    void SetupDocks();
+    void SetupActions();
+    void SetupShortCuts();
 
     void StartGlobalInvalidateTimer();
 
-	void RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode);
+    void RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode);
 
-	bool IsAnySceneChanged();
+    bool IsAnySceneChanged();
 
-	void DiableUIForFutureUsing();
-	
-	bool SelectCustomColorsTexturePath();
-	
-	static void SetActionCheckedSilently(QAction *action, bool checked);
+    void DiableUIForFutureUsing();
 
-    void OpenProject(const DAVA::FilePath & projectPath);
-    
+    bool SelectCustomColorsTexturePath();
+
+    static void SetActionCheckedSilently(QAction* action, bool checked);
+
+    void OpenProject(const DAVA::FilePath& projectPath);
+
     void OnSceneSaveAsInternal(bool saveWithCompressed);
 
     void SaveAllSceneEmitters(SceneEditor2* scene) const;
 
 private slots:
-	void ProjectOpened(const QString &path);
-	void ProjectClosed();
+    void ProjectOpened(const QString& path);
+    void ProjectClosed();
 
-	void SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
-	void SceneActivated(SceneEditor2 *scene);
-	void SceneDeactivated(SceneEditor2 *scene);
-	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
+    void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void SceneActivated(SceneEditor2* scene);
+    void SceneDeactivated(SceneEditor2* scene);
+    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
-	void EditorLightEnabled(bool enabled);
-	void OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
-	void UnmodalDialogFinished(int);
+    void EditorLightEnabled(bool enabled);
+    void OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
+    void UnmodalDialogFinished(int);
 
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
-    void OnConsoleItemClicked(const QString &data);
+    void OnConsoleItemClicked(const QString& data);
 
 private:
-	Ui::MainWindow *ui;
-	QtWaitDialog *waitDialog;
-	QtWaitDialog *beastWaitDialog;
+    Ui::MainWindow* ui;
+    QtWaitDialog* waitDialog;
+    QtWaitDialog* beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
 
-	bool globalInvalidate;
+    bool globalInvalidate;
 
-	ModificationWidget *modificationWidget;
+    ModificationWidget* modificationWidget;
 
-    QComboBox *objectTypesWidget;
+    QComboBox* objectTypesWidget;
 
-	AddSwitchEntityDialog*	addSwitchEntityDialog;
-	HangingObjectsHeight*	hangingObjectsWidget;
+    AddSwitchEntityDialog* addSwitchEntityDialog;
+    HangingObjectsHeight* hangingObjectsWidget;
 
-	void EnableSceneActions(bool enable);
-	void EnableProjectActions(bool enable);
-	void UpdateConflictingActionsState(bool enable);
+    void EnableSceneActions(bool enable);
+    void EnableProjectActions(bool enable);
+    void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
     void UpdateWayEditor(const Command2* command, bool redo);
 
-	void LoadViewState(SceneEditor2 *scene);
-	void LoadUndoRedoState(SceneEditor2 *scene);
-	void LoadModificationState(SceneEditor2 *scene);
-	void LoadEditorLightState(SceneEditor2 *scene);
-	void LoadGPUFormat();
-	void LoadLandscapeEditorState(SceneEditor2* scene);
-	void LoadObjectTypes(SceneEditor2 *scene);
-	void LoadHangingObjects(SceneEditor2 *scene);
+    void LoadViewState(SceneEditor2* scene);
+    void LoadUndoRedoState(SceneEditor2* scene);
+    void LoadModificationState(SceneEditor2* scene);
+    void LoadEditorLightState(SceneEditor2* scene);
+    void LoadGPUFormat();
+    void LoadLandscapeEditorState(SceneEditor2* scene);
+    void LoadObjectTypes(SceneEditor2* scene);
+    void LoadHangingObjects(SceneEditor2* scene);
     void LoadMaterialLightViewMode();
 
-	bool SaveTilemask(bool forAllTabs = true);
+    bool SaveTilemask(bool forAllTabs = true);
 
-	// Landscape editor specific
-	// TODO: remove later -->
-	bool IsTilemaskModificationCommand(const Command2* cmd);
-	bool LoadAppropriateTextureFormat();
-	bool IsSavingAllowed();
-	// <--
+    // Landscape editor specific
+    // TODO: remove later -->
+    bool IsTilemaskModificationCommand(const Command2* cmd);
+    bool LoadAppropriateTextureFormat();
+    bool IsSavingAllowed();
+    // <--
 
     //Need for any debug functionality
     QPointer<DeveloperTools> developerTools;
@@ -313,23 +314,23 @@ private:
     RecentMenuItems recentProjects;
 
 private:
-
     struct EmitterDescriptor
     {
-        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
-            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
+        EmitterDescriptor(ParticleEmitter* _emitter, ParticleLayer* layer, FilePath path, String name)
+            : emitter(_emitter)
+            , ownerLayer(layer)
+            , yamlPath(path)
+            , entityName(name)
         {
         }
 
-        ParticleEmitter * emitter = nullptr;
-        ParticleLayer *ownerLayer = nullptr;
+        ParticleEmitter* emitter = nullptr;
+        ParticleLayer* ownerLayer = nullptr;
         FilePath yamlPath;
         String entityName;
     };
 
-    void CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA::List<EmitterDescriptor> &emitters, const String &entityName) const;
-
-
+    void CollectEmittersForSave(ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const;
 };
 
 

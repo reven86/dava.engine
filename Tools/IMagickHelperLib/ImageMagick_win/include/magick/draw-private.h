@@ -26,56 +26,56 @@ extern "C" {
 #include "magick/image.h"
 #include "magick/memory_.h"
 
-static inline MagickBooleanType GetFillColor(const DrawInfo *draw_info,
-  const ssize_t x,const ssize_t y,PixelPacket *pixel)
+static inline MagickBooleanType GetFillColor(const DrawInfo* draw_info,
+                                             const ssize_t x, const ssize_t y, PixelPacket* pixel)
 {
-  Image
-    *pattern;
+    Image
+    * pattern;
 
-  MagickBooleanType
+    MagickBooleanType
     status;
 
-  pattern=draw_info->fill_pattern;
-  if (pattern == (Image *) NULL)
+    pattern = draw_info->fill_pattern;
+    if (pattern == (Image*)NULL)
     {
-      *pixel=draw_info->fill;
-      return(MagickTrue);
+        *pixel = draw_info->fill;
+        return (MagickTrue);
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
   #pragma omp critical
 #endif
-  status=GetOneVirtualMethodPixel(pattern,TileVirtualPixelMethod,
-    x+pattern->tile_offset.x,y+pattern->tile_offset.y,pixel,
-    &pattern->exception);
-  if (pattern->matte == MagickFalse)
-    pixel->opacity=OpaqueOpacity;
-  return(status);
+    status = GetOneVirtualMethodPixel(pattern, TileVirtualPixelMethod,
+                                      x + pattern->tile_offset.x, y + pattern->tile_offset.y, pixel,
+                                      &pattern->exception);
+    if (pattern->matte == MagickFalse)
+        pixel->opacity = OpaqueOpacity;
+    return (status);
 }
 
-static inline MagickBooleanType GetStrokeColor(const DrawInfo *draw_info,
-  const ssize_t x,const ssize_t y,PixelPacket *pixel)
+static inline MagickBooleanType GetStrokeColor(const DrawInfo* draw_info,
+                                               const ssize_t x, const ssize_t y, PixelPacket* pixel)
 {
-  Image
-    *pattern;
+    Image
+    * pattern;
 
-  MagickBooleanType
+    MagickBooleanType
     status;
 
-  pattern=draw_info->stroke_pattern;
-  if (pattern == (Image *) NULL)
+    pattern = draw_info->stroke_pattern;
+    if (pattern == (Image*)NULL)
     {
-      *pixel=draw_info->stroke;
-      return(MagickTrue);
+        *pixel = draw_info->stroke;
+        return (MagickTrue);
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
   #pragma omp critical
 #endif
-  status=GetOneVirtualMethodPixel(pattern,TileVirtualPixelMethod,
-    x+pattern->tile_offset.x,y+pattern->tile_offset.y,pixel,
-    &pattern->exception);
-  if (pattern->matte == MagickFalse)
-    pixel->opacity=OpaqueOpacity;
-  return(status);
+    status = GetOneVirtualMethodPixel(pattern, TileVirtualPixelMethod,
+                                      x + pattern->tile_offset.x, y + pattern->tile_offset.y, pixel,
+                                      &pattern->exception);
+    if (pattern->matte == MagickFalse)
+        pixel->opacity = OpaqueOpacity;
+    return (status);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

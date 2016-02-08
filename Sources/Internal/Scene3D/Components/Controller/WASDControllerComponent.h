@@ -33,24 +33,20 @@
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class WASDControllerComponent: public Component
+class WASDControllerComponent : public Component
 {
 public:
-
     IMPLEMENT_COMPONENT_TYPE(WASD_CONTROLLER_COMPONENT);
 
-    virtual Component* Clone(Entity * toEntity);
-    
+    virtual Component* Clone(Entity* toEntity);
+
 public:
     INTROSPECTION_EXTEND(WASDControllerComponent, Component,
-       NULL
-    );
+                         NULL
+                         );
 };
-
-    
 };
 
 #endif //__DAVAENGINE_WASD_CONTROLLER_COMPONENT_H__

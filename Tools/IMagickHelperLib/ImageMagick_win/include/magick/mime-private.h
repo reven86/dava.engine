@@ -24,11 +24,11 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedData,
-  StringData,
-  ByteData,
-  ShortData,
-  LongData
+    UndefinedData,
+    StringData,
+    ByteData,
+    ShortData,
+    LongData
 } DataType;
 
 #if defined(__cplusplus) || defined(c_plusplus)

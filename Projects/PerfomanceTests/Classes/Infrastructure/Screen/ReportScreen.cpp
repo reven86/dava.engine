@@ -46,10 +46,10 @@ void ReportScreen::CreateReportScreen()
 
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
     UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
-    
+
     uint32 offsetY = 150;
     uint32 testNumber = 0;
-    
+
     for (auto* test : testChain)
     {
         if (test->IsFinished())
@@ -59,12 +59,12 @@ void ReportScreen::CreateReportScreen()
             float32 minDelta = std::numeric_limits<float>::max();
             float32 maxDelta = std::numeric_limits<float>::min();
             float32 averageDelta = 0.0f;
-            
+
             float32 testTime = 0.0f;
             float32 elapsedTime = 0.0f;
-            
+
             uint32 framesCount = framesInfo.size();
-            
+
             for (const auto& frameInfo : framesInfo)
             {
                 if (frameInfo.delta > maxDelta)
@@ -86,7 +86,7 @@ void ReportScreen::CreateReportScreen()
 
             ScopedPtr<UIControl> reportItemCopy(reportItem->Clone());
             reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
-            
+
             UIStaticText* testName = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_NAME_PATH);
             testName->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", test->GetSceneName().c_str())));
 
@@ -109,7 +109,7 @@ void ReportScreen::CreateReportScreen()
             framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", framesCount)));
 
             AddControl(reportItemCopy);
-            
+
             testNumber++;
         }
     }

@@ -39,25 +39,25 @@
 
 namespace DAVA
 {
-
-class ZipFile: public DynamicMemoryFile
+class ZipFile : public DynamicMemoryFile
 {
-
 public:
-    static File* CreateFromAPK(const FilePath &filePath, uint32 attributes);
+    static File* CreateFromAPK(const FilePath& filePath, uint32 attributes);
 #ifdef USE_LOCAL_RESOURCES
-    static File* CreateFromZip(const FilePath &filePath, uint32 attributes);
+    static File* CreateFromZip(const FilePath& filePath, uint32 attributes);
     static void SetZipFileName(const String& fileName);
-    static const String& GetZipFileName() { return zipFileName;};
+    static const String& GetZipFileName()
+    {
+        return zipFileName;
+    };
 #endif
 
 private:
-    
     ZipFile();
     virtual ~ZipFile();
 
-    static ZipFile* CreateFromPath(zip* package, const FilePath &filePath, const String &path, uint32 attributes);
-    static ZipFile* CreateFromData(const FilePath &filePath, const uint8 * data, int32 dataSize, uint32 attributes);
+    static ZipFile* CreateFromPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes);
+    static ZipFile* CreateFromData(const FilePath& filePath, const uint8* data, int32 dataSize, uint32 attributes);
 
     static Mutex mutex;
 
@@ -66,8 +66,6 @@ private:
     static String zipFileName;
 #endif
 };
-
-
 };
 
 

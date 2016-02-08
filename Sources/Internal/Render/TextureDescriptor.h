@@ -38,20 +38,19 @@
 
 namespace DAVA
 {
-
-    enum TextureFileType
-    {
-        TEXTURE_UNCOMPRESSED = 0,
-        TEXTURE_COMPRESSED,
-        TEXTURE_DESCRIPTOR,
-        TEXTURE_TYPE_COUNT,
-        NOT_SPECIFIED
-    };
+enum TextureFileType
+{
+    TEXTURE_UNCOMPRESSED = 0,
+    TEXTURE_COMPRESSED,
+    TEXTURE_DESCRIPTOR,
+    TEXTURE_TYPE_COUNT,
+    NOT_SPECIFIED
+};
 
 class File;
-class TextureDescriptor 
+class TextureDescriptor
 {
-	static const String DESCRIPTOR_EXTENSION;
+    static const String DESCRIPTOR_EXTENSION;
     static const String DEFAULT_CUBEFACE_EXTENSION;
 
     static const int32 DATE_BUFFER_SIZE = 20;
@@ -111,55 +110,56 @@ public:
         void SetGenerateMipmaps(const bool& generateMipmaps);
         bool GetGenerateMipMaps() const;
 
-        void SetIsNormalMap(const bool & isNormalMap);
+        void SetIsNormalMap(const bool& isNormalMap);
         bool GetIsNormalMap() const;
 
-		int8 textureFlags;
-		uint8 cubefaceFlags;
+        int8 textureFlags;
+        uint8 cubefaceFlags;
         ImageFormat sourceFileFormat;
         String sourceFileExtension;
         String cubefaceExtensions[Texture::CUBE_FACE_COUNT];
 
-		INTROSPECTION(TextureDataSettings,
-            PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
-            PROPERTY("isNormalMap", "isNormalMap", GetIsNormalMap, SetIsNormalMap, I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(cubefaceFlags, "cubefaceFlags", I_SAVE)
-            MEMBER(sourceFileFormat, "sourceFileFormat", I_SAVE)
-            MEMBER(sourceFileExtension, "sourceFileExtension", I_SAVE)
-		)
+        INTROSPECTION(TextureDataSettings,
+                      PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
+                      PROPERTY("isNormalMap", "isNormalMap", GetIsNormalMap, SetIsNormalMap, I_VIEW | I_EDIT | I_SAVE)
+                      MEMBER(cubefaceFlags, "cubefaceFlags", I_SAVE)
+                      MEMBER(sourceFileFormat, "sourceFileFormat", I_SAVE)
+                      MEMBER(sourceFileExtension, "sourceFileExtension", I_SAVE)
+                      )
 
     private:
-		void EnableFlag(bool enable, int8 flag);
-		bool IsFlagEnabled(int8 flag) const;
+        void EnableFlag(bool enable, int8 flag);
+        bool IsFlagEnabled(int8 flag) const;
+    };
 
-	};
-
-    struct Compression: public InspBase
+    struct Compression : public InspBase
     {
         int32 format;
         mutable uint32 sourceFileCrc;
         int32 compressToWidth;
         int32 compressToHeight;
         mutable uint32 convertedFileCrc;
-        
-		Compression() { Clear(); } 
+
+        Compression()
+        {
+            Clear();
+        }
         void Clear();
 
-		INTROSPECTION(Compression,
-			MEMBER(format, InspDesc("format", GlobalEnumMap<PixelFormat>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(sourceFileCrc, "Source File CRC", I_SAVE)
-			MEMBER(compressToWidth, "compressToWidth", I_SAVE)
-			MEMBER(compressToHeight, "compressToHeight", I_SAVE)
-            MEMBER(convertedFileCrc, "Converted File CRC", I_SAVE)
-		)
+        INTROSPECTION(Compression,
+                      MEMBER(format, InspDesc("format", GlobalEnumMap<PixelFormat>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+                      MEMBER(sourceFileCrc, "Source File CRC", I_SAVE)
+                      MEMBER(compressToWidth, "compressToWidth", I_SAVE)
+                      MEMBER(compressToHeight, "compressToHeight", I_SAVE)
+                      MEMBER(convertedFileCrc, "Converted File CRC", I_SAVE)
+                      )
     };
-    
 
 public:
     TextureDescriptor();
-	virtual ~TextureDescriptor();
+    virtual ~TextureDescriptor();
 
-	static TextureDescriptor * CreateFromFile(const FilePath &filePathname);
+    static TextureDescriptor* CreateFromFile(const FilePath& filePathname);
     static TextureDescriptor* CreateDescriptor(rhi::TextureAddrMode wrap, bool generateMipmaps);
 
     void Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps);
@@ -168,35 +168,33 @@ public:
 
     void SetDefaultValues();
 
-    void SetQualityGroup(const FastName &group);
+    void SetQualityGroup(const FastName& group);
     FastName GetQualityGroup() const;
-    
-    bool Load(const FilePath &filePathname); //may be protected?
+
+    bool Load(const FilePath& filePathname); //may be protected?
 
     void Save() const;
-    void Save(const FilePath &filePathname) const;
-    void Export(const FilePath &filePathname) const;
+    void Save(const FilePath& filePathname) const;
+    void Export(const FilePath& filePathname) const;
 
     bool IsCompressedTextureActual(eGPUFamily forGPU) const;
     bool HasCompressionFor(eGPUFamily forGPU) const;
     bool UpdateCrcForFormat(eGPUFamily forGPU) const;
-    
-    
+
     bool IsCompressedFile() const;
-	void SetGenerateMipmaps(bool generateMipmaps);
+    void SetGenerateMipmaps(bool generateMipmaps);
     bool GetGenerateMipMaps() const;
-	bool IsCubeMap() const;
+    bool IsCubeMap() const;
 
     FilePath GetSourceTexturePathname() const;
 
     void GetFacePathnames(Vector<FilePath>& faceNames) const;
-    void GenerateFacePathnames(const FilePath & baseName, const Array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
-    static void GenerateFacePathnames(const FilePath & baseName, Vector<FilePath>& faceNames, const String &extension);
+    void GenerateFacePathnames(const FilePath& baseName, const Array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
+    static void GenerateFacePathnames(const FilePath& baseName, Vector<FilePath>& faceNames, const String& extension);
 
-    
-	static const String & GetDescriptorExtension();
-    static const String & GetLightmapTextureExtension();
-    static const String & GetDefaultFaceExtension();
+    static const String& GetDescriptorExtension();
+    static const String& GetLightmapTextureExtension();
+    static const String& GetDefaultFaceExtension();
 
     static bool IsSupportedTextureExtension(const String& extension);
     static bool IsSourceTextureExtension(const String& extension);
@@ -205,24 +203,23 @@ public:
 
     static bool IsSupportedSourceFormat(ImageFormat imageFormat);
     static bool IsSupportedCompressedFormat(ImageFormat imageFormat);
-    
+
     const String& GetSourceTextureExtension() const;
     const String& GetFaceExtension(uint32 face) const;
 
-    static FilePath GetDescriptorPathname(const FilePath &texturePathname);
+    static FilePath GetDescriptorPathname(const FilePath& texturePathname);
 
     FilePath CreateCompressedTexturePathname(eGPUFamily forGPU, ImageFormat imageFormat) const;
     FilePath CreatePathnameForGPU(const eGPUFamily forGPU) const;
     PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
     ImageFormat GetImageFormatForGPU(const eGPUFamily forGPU) const;
 
-	bool Reload();
+    bool Reload();
 
 protected:
+    const Compression* GetCompressionParams(eGPUFamily forGPU) const;
 
-    const Compression * GetCompressionParams(eGPUFamily forGPU) const;
-    
-	void WriteCompression(File *file, const Compression *compression) const;
+    void WriteCompression(File* file, const Compression* compression) const;
 
     //loading
     DAVA_DEPRECATED(void LoadVersion6(File* file));
@@ -235,33 +232,31 @@ protected:
     //end of loading
 
     void RecalculateCompressionSourceCRC();
-	uint32 ReadSourceCRC() const;
+    uint32 ReadSourceCRC() const;
     uint32 ReadSourceCRC_V8_or_less() const;
-	uint32 GetConvertedCRC(eGPUFamily forGPU) const;
+    uint32 GetConvertedCRC(eGPUFamily forGPU) const;
 
     uint32 GenerateDescriptorCRC(eGPUFamily forGPU) const;
 
-    void SaveInternal(File *file, const int32 signature, const uint8 compressionCount) const;
+    void SaveInternal(File* file, const int32 signature, const uint8 compressionCount) const;
 
 public:
-    
     FilePath pathname;
 
-	//moved from Texture
-	FastName qualityGroup;
-	TextureDrawSettings drawSettings;
-	TextureDataSettings dataSettings;
-	Compression compression[GPU_FAMILY_COUNT];
+    //moved from Texture
+    FastName qualityGroup;
+    TextureDrawSettings drawSettings;
+    TextureDataSettings dataSettings;
+    Compression compression[GPU_FAMILY_COUNT];
 
     PixelFormat format : 8; // texture format
     //Binary only
     int8 exportedAsGpuFamily;
-	
-    bool isCompressedFile:1;
+
+    bool isCompressedFile : 1;
 
     static Array<ImageFormat, 5> sourceTextureTypes;
     static Array<ImageFormat, 2> compressedTextureTypes;
 };
-    
 };
 #endif // __DAVAENGINE_TEXTURE_DESCRIPTOR_H__

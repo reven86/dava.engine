@@ -61,9 +61,9 @@ RenderBatch::RenderBatch()
     queryRequested = -1;
     queryRequestFrame = 0;
     lastFraemDrawn = -10;
-#endif        
+#endif
 }
-    
+
 RenderBatch::~RenderBatch()
 {
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
@@ -73,49 +73,46 @@ RenderBatch::~RenderBatch()
 
     SafeRelease(material);
 }
-    
-void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
+
+void RenderBatch::SetPolygonGroup(PolygonGroup* _polygonGroup)
 {
-	SafeRelease(dataSource);
+    SafeRelease(dataSource);
     dataSource = SafeRetain(_polygonGroup);
-	UpdateAABBoxFromSource();
+    UpdateAABBoxFromSource();
 }
 
-void RenderBatch::SetMaterial(NMaterial * _material)
+void RenderBatch::SetMaterial(NMaterial* _material)
 {
-	NMaterial* oldMat = material;
+    NMaterial* oldMat = material;
     material = SafeRetain(_material);
-	SafeRelease(oldMat);
-}    
-
-    
-void RenderBatch::SetRenderObject(RenderObject * _renderObject)
-{
-	renderObject = _renderObject;
+    SafeRelease(oldMat);
 }
 
-const AABBox3 & RenderBatch::GetBoundingBox() const
+void RenderBatch::SetRenderObject(RenderObject* _renderObject)
+{
+    renderObject = _renderObject;
+}
+
+const AABBox3& RenderBatch::GetBoundingBox() const
 {
     return aabbox;
 }
-    
-    
+
 void RenderBatch::SetSortingKey(uint32 _key)
 {
-    DVASSERT(_key<16);
-    sortingKey = (sortingKey&~SORTING_KEY_MASK)+_key;
+    DVASSERT(_key < 16);
+    sortingKey = (sortingKey & ~SORTING_KEY_MASK) + _key;
 }
 
 void RenderBatch::SetSortingOffset(uint32 offset)
 {
-    DVASSERT(offset<32);    
-    sortingKey=(sortingKey&~SORTING_OFFSET_MASK)+(offset<<SORTING_OFFSET_SHIFT);
+    DVASSERT(offset < 32);
+    sortingKey = (sortingKey & ~SORTING_OFFSET_MASK) + (offset << SORTING_OFFSET_SHIFT);
 }
 
-
-void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
+void RenderBatch::GetDataNodes(Set<DataNode*>& dataNodes)
 {
-	NMaterial* curNode = material;
+    NMaterial* curNode = material;
     while (curNode != NULL)
     {
         dataNodes.insert(curNode);
@@ -128,19 +125,19 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
     }
 }
 
-void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)
+void RenderBatch::InsertDataNode(DataNode* node, Set<DataNode*>& dataNodes)
 {
-	dataNodes.insert(node);
+    dataNodes.insert(node);
 
-	/*for(int32 i = 0; i < node->GetChildrenNodeCount(); ++i)
+    /*for(int32 i = 0; i < node->GetChildrenNodeCount(); ++i)
 	{
 		InsertDataNode(node->GetChildNode(i), dataNodes);
 	}*/
 }
 
-RenderBatch * RenderBatch::Clone(RenderBatch * destination)
+RenderBatch* RenderBatch::Clone(RenderBatch* destination)
 {
-    RenderBatch * rb = destination;
+    RenderBatch* rb = destination;
     if (!rb)
         rb = new RenderBatch();
 
@@ -174,33 +171,33 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     return rb;
 }
 
-void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)
+void RenderBatch::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	BaseObject::SaveObject(archive);
+    BaseObject::SaveObject(archive);
 
-	if(NULL != archive)
-	{
+    if (NULL != archive)
+    {
         uint64 dataSourceID = DataNode::INVALID_ID;
         if (nullptr != dataSource)
         {
             dataSourceID = dataSource->GetNodeID();
         }
 
-		archive->SetVariant("rb.aabbox", VariantType(aabbox));
+        archive->SetVariant("rb.aabbox", VariantType(aabbox));
         archive->SetUInt32("rb.sortingKey", sortingKey);
         archive->SetVariant("rb.datasource", VariantType(dataSourceID));
 
-		if(material)
-		{
-			uint64 matKey = material->GetNodeID();
-			archive->SetUInt64("rb.nmatname", matKey);
+        if (material)
+        {
+            uint64 matKey = material->GetNodeID();
+            archive->SetUInt64("rb.nmatname", matKey);
         }
     }
 }
 
-void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializationContext)
+void RenderBatch::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	if(NULL != archive)
+    if (NULL != archive)
     {
         sortingKey = archive->GetUInt32("rb.sortingKey", SORTING_KEY_DEF_VALUE);
 
@@ -225,12 +222,12 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 
 void RenderBatch::UpdateAABBoxFromSource()
 {
-	if(NULL != dataSource)
-	{
-		aabbox = dataSource->GetBoundingBox();
-		DVASSERT(aabbox.min.x != AABBOX_INFINITY &&
-			aabbox.min.y != AABBOX_INFINITY &&
-			aabbox.min.z != AABBOX_INFINITY);
-	}
+    if (NULL != dataSource)
+    {
+        aabbox = dataSource->GetBoundingBox();
+        DVASSERT(aabbox.min.x != AABBOX_INFINITY &&
+                 aabbox.min.y != AABBOX_INFINITY &&
+                 aabbox.min.z != AABBOX_INFINITY);
+    }
 }
 };

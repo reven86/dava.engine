@@ -26,58 +26,62 @@ ImplementParameterObject(FCDPhysicsRigidBodyInstance, FCDPhysicsRigidBodyParamet
 ImplementParameterObjectNoCtr(FCDPhysicsRigidBodyInstance, FCDSceneNode, targetNode);
 
 FCDPhysicsRigidBodyInstance::FCDPhysicsRigidBodyInstance(FCDocument* document, FCDPhysicsModelInstance* _parent, FCDPhysicsRigidBody* body)
-:	FCDEntityInstance(document, NULL, FCDEntity::PHYSICS_RIGID_BODY)
-,	parent(_parent), onCollisionEvent(NULL)
-,	InitializeParameterAnimatable(velocity, FMVector3::Zero)
-,	InitializeParameterAnimatable(angularVelocity, FMVector3::Zero)
-,	InitializeParameterNoArg(parameters)
-,	InitializeParameterNoArg(targetNode)
+    : FCDEntityInstance(document, NULL, FCDEntity::PHYSICS_RIGID_BODY)
+    , parent(_parent)
+    , onCollisionEvent(NULL)
+    , InitializeParameterAnimatable(velocity, FMVector3::Zero)
+    , InitializeParameterAnimatable(angularVelocity, FMVector3::Zero)
+    , InitializeParameterNoArg(parameters)
+    , InitializeParameterNoArg(targetNode)
 {
-	onCollisionEvent = new CollisionEvent();
-	parameters = new FCDPhysicsRigidBodyParameters(document, this);
-	if (body != NULL) SetRigidBody(body);
+    onCollisionEvent = new CollisionEvent();
+    parameters = new FCDPhysicsRigidBodyParameters(document, this);
+    if (body != NULL)
+        SetRigidBody(body);
 }
 
 FCDPhysicsRigidBodyInstance::~FCDPhysicsRigidBodyInstance()
 {
-	parent = NULL;
-	SAFE_DELETE(onCollisionEvent);
+    parent = NULL;
+    SAFE_DELETE(onCollisionEvent);
 }
 
 FCDEntityInstance* FCDPhysicsRigidBodyInstance::Clone(FCDEntityInstance* _clone) const
 {
-	FCDPhysicsRigidBodyInstance* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDPhysicsRigidBodyInstance(const_cast<FCDocument*>(GetDocument()), NULL, NULL);
-	else clone = DynamicCast<FCDPhysicsRigidBodyInstance>(_clone);
+    FCDPhysicsRigidBodyInstance* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDPhysicsRigidBodyInstance(const_cast<FCDocument*>(GetDocument()), NULL, NULL);
+    else
+        clone = DynamicCast<FCDPhysicsRigidBodyInstance>(_clone);
 
-	Parent::Clone(_clone);
-	
-	if (clone != NULL)
-	{
-		clone->angularVelocity = angularVelocity;
-		clone->velocity = velocity;
-		clone->GetParameters()->CopyFrom(*parameters);
+    Parent::Clone(_clone);
 
-		// Intentionally leave the target scene node as NULL.
-	}
-	return _clone;
+    if (clone != NULL)
+    {
+        clone->angularVelocity = angularVelocity;
+        clone->velocity = velocity;
+        clone->GetParameters()->CopyFrom(*parameters);
+
+        // Intentionally leave the target scene node as NULL.
+    }
+    return _clone;
 }
 
 void FCDPhysicsRigidBodyInstance::SetRigidBody(FCDPhysicsRigidBody* body)
 {
-	FUAssert(body != NULL, return);
+    FUAssert(body != NULL, return );
 
-	SetEntity(body); 
+    SetEntity(body);
 
-	// copy some of the default values from the body
-	FCDPhysicsRigidBodyParameters* bodyParams = body->GetParameters();
-	parameters->SetDynamic(bodyParams->IsDynamic());
-	parameters->SetMass(bodyParams->GetMass());
-	parameters->SetMassFrameTranslate(bodyParams->GetMassFrameTranslate());
-	parameters->SetMassFrameRotateAxis(bodyParams->GetMassFrameRotateAxis());
-	parameters->SetMassFrameRotateAngle(bodyParams->GetMassFrameRotateAngle());
-	parameters->SetInertia(bodyParams->GetInertia());
-	parameters->SetDensity(bodyParams->GetDensity());
-	parameters->SetDensityMoreAccurate(bodyParams->IsDensityMoreAccurate());
-	parameters->SetInertiaAccurate(bodyParams->IsInertiaAccurate());
+    // copy some of the default values from the body
+    FCDPhysicsRigidBodyParameters* bodyParams = body->GetParameters();
+    parameters->SetDynamic(bodyParams->IsDynamic());
+    parameters->SetMass(bodyParams->GetMass());
+    parameters->SetMassFrameTranslate(bodyParams->GetMassFrameTranslate());
+    parameters->SetMassFrameRotateAxis(bodyParams->GetMassFrameRotateAxis());
+    parameters->SetMassFrameRotateAngle(bodyParams->GetMassFrameRotateAngle());
+    parameters->SetInertia(bodyParams->GetInertia());
+    parameters->SetDensity(bodyParams->GetDensity());
+    parameters->SetDensityMoreAccurate(bodyParams->IsDensityMoreAccurate());
+    parameters->SetInertiaAccurate(bodyParams->IsInertiaAccurate());
 }

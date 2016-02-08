@@ -29,19 +29,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SingleTestFlowController.h"
 
 SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams, bool _showUI)
-    :   showUI(_showUI)
-    ,   testForRunName(_testName)
-    ,   testParams(_testParams)
-    ,   testForRun(nullptr)
-    ,   testChooserScreen(new TestChooserScreen())
-    ,   currentScreen(nullptr)
+    : showUI(_showUI)
+    , testForRunName(_testName)
+    , testParams(_testParams)
+    , testForRun(nullptr)
+    , testChooserScreen(new TestChooserScreen())
+    , currentScreen(nullptr)
 {
 }
 
 void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
 {
     TestFlowController::Init(_testChain);
-    
+
     if (testForRunName.empty())
     {
         testChooserScreen->SetTestChain(testChain);
@@ -49,7 +49,7 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
     }
     else
     {
-        for (auto *test : _testChain)
+        for (auto* test : _testChain)
         {
             if (test->GetParams().sceneName == testForRunName)
             {
@@ -68,7 +68,6 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
             Core::Instance()->Quit();
         }
     }
-    
 }
 
 void SingleTestFlowController::BeginFrame()
@@ -78,14 +77,14 @@ void SingleTestFlowController::BeginFrame()
         currentScreen->RegisterScreen();
         currentScreen->OnStart();
     }
-    
+
     currentScreen->BeginFrame();
 }
 
 void SingleTestFlowController::EndFrame()
 {
     currentScreen->EndFrame();
-    
+
     if (nullptr == testForRun)
     {
         if (testChooserScreen->IsFinished())

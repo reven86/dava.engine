@@ -34,17 +34,14 @@
 
 namespace DAVA
 {
-
 //! Interface to retrieve updates
 class Camera;
 class IRenderUpdatable
 {
 public:
-	virtual void RenderUpdate(Camera *camera, float32 timeElapsed) = 0;
+    virtual void RenderUpdate(Camera* camera, float32 timeElapsed) = 0;
 };
-
 };
 
 
 #endif // __DAVAENGINE_IRENDERUPDATABLE_H__
-

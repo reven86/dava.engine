@@ -58,7 +58,7 @@
 //
 #define MAGICKCORE_X11_DELEGATE
 
-// Exclude deprecated methods in MagickCore API 
+// Exclude deprecated methods in MagickCore API
 //
 //#undef MAGICKCORE_EXCLUDE_DEPRECATED
 
@@ -127,7 +127,7 @@
 
 //
 // Hard Coded Paths
-// 
+//
 // If hard-coded paths are defined via the the following define
 // statements, then they will override any values from the Windows
 // registry.    It is unusual to use hard-coded paths under Windows.
@@ -162,8 +162,7 @@
 //
 
 // Define the package name.
-#define MAGICKCORE_PACKAGE_NAME  "ImageMagick"
-
+#define MAGICKCORE_PACKAGE_NAME "ImageMagick"
 
 // Use Visual C++ C inline method extension to improve performance
 #define inline __inline
@@ -175,7 +174,7 @@
 
 // Visual C++ does not define ssize_t by default.
 #if !defined(__MINGW32__)
-#if defined(_WIN64) 
+#if defined(_WIN64)
 typedef __int64 ssize_t;
 #else
 typedef long ssize_t;
@@ -184,14 +183,14 @@ typedef long ssize_t;
 
 // Required or InitializeCriticalSectionandSpinCount is undefined.
 #if !defined(_WIN32_WINNT)
-#  define _WIN32_WINNT  0x0501
+#define _WIN32_WINNT 0x0501
 #endif
 
 #if !defined(__FUNCTION__)
-  #define __FUNCTION__  "unknown"
+  #define __FUNCTION__ "unknown"
 #endif
-#define __func__  __FUNCTION__
-#define nearbyint(x)  ((ssize_t) ((x)+0.5))
+#define __func__ __FUNCTION__
+#define nearbyint(x) ((ssize_t)((x) + 0.5))
 
 /* Define to 1 if you have the <ft2build.h> header file. */
 #define MAGICKCORE_HAVE_FT2BUILD_H 1
@@ -286,4 +285,3 @@ typedef long ssize_t;
 
 /* Define to 1 if you have the `TIFFSwabArrayOfTriples' function. */
 #define HAVE_TIFFSWABARRAYOFTRIPLES 1
-
