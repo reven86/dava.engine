@@ -1358,9 +1358,31 @@ doCommandBySelector:(SEL)commandSelector
        originalSelectedRange:(NSRange)origSelRange
             errorDescription:(NSString**)error
 {
+    BOOL result = YES;
+
+    NSString* inputStr = (*partialStringPtr);
+    NSRange inputRange = (*proposedSelRangePtr);
+
     if ([*partialStringPtr length] >= maxLength)
     {
-        return NO;
+        int spaceLeft = maxLength - [origString length] - 1;
+        // we can crop part of string only if user try to add to end
+        if (spaceLeft > 0 && origSelRange.location == [origString length])
+        {
+            NSRange correctRange = NSMakeRange(origSelRange.location, spaceLeft);
+            NSString* matchSizeStr = [*partialStringPtr substringWithRange:correctRange];
+            NSString* resultStr = [NSString stringWithFormat:@"%@%@", origString, matchSizeStr];
+            // write back
+            *partialStringPtr = resultStr;
+            *proposedSelRangePtr = NSMakeRange([resultStr length], 0);
+            result = NO;
+        }
+        else
+        {
+            // if we crop and insert text in middle user may not
+            // see absent of croped part, it is not good
+            return NO; // cancel change now
+        }
     }
 
     if (text != nullptr)
@@ -1377,19 +1399,39 @@ doCommandBySelector:(SEL)commandSelector
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
         if (delegate != nullptr)
         {
-            // simple change whole string for new string
-            NSString* nsReplacement = *partialStringPtr;
+            NSString* nsReplacement = nullptr;
+            DAVA::int32 location = 0;
+            // if we just add to string end
+            if (origSelRange.location == [origString length] && origSelRange.length == 0)
+            {
+                nsReplacement = [*partialStringPtr substringFromIndex:origSelRange.location];
+                location = origSelRange.location;
+            }
+            else
+            {
+                // simple change whole string for new string
+                nsReplacement = *partialStringPtr;
+                location = 0;
+            }
             DAVA::WideString replacement;
             const char* cstr = [nsReplacement cStringUsingEncoding:NSUTF8StringEncoding];
             size_t strSize = std::strlen(cstr);
             DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, replacement);
 
-            DAVA::int32 location = 0;
             DAVA::int32 length = [origString length];
-            bool result = delegate->TextFieldKeyPressed(davaCtrl, location, length, replacement);
-            if (!result)
+            bool resultDelegate = delegate->TextFieldKeyPressed(davaCtrl, location, length, replacement);
+            if (!resultDelegate)
             {
-                return NO;
+                if (result == NO)
+                {
+                    // restore input params
+                    *partialStringPtr = inputStr;
+                    *proposedSelRangePtr = inputRange;
+                }
+                else
+                {
+                    result = NO;
+                }
             }
             else
             {
@@ -1400,7 +1442,7 @@ doCommandBySelector:(SEL)commandSelector
         }
     }
 
-    return YES;
+    return result;
 }
 
 - (NSAttributedString*)attributedStringForObjectValue:(id)anObject
