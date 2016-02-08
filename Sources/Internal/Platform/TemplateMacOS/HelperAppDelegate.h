@@ -27,30 +27,27 @@
 =====================================================================================*/
 
 
-#ifndef __ANDROID_DELEGATE_H__
-#define __ANDROID_DELEGATE_H__
+#ifndef __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
+#define __DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
+
 
 #include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_MACOS__)
 
-#include <jni.h>
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Core/ApplicationCore.h"
+#import "Platform/TemplateMacOS/MainWindowController.h"
 
-class AndroidDelegate : public DAVA::AndroidSystemDelegate
+#import <AppKit/AppKit.h>
+
+@interface HelperAppDelegate : NSObject<NSApplicationDelegate>
 {
-    enum eConst
-    {
-        MAX_PATH_SZ = 260
-    };
+@private
+    MainWindowController* mainWindowController;
+}
 
-    char httpDownloaderName[MAX_PATH_SZ];
+- (void)setWindowController:(MainWindowController*)ctrlr;
 
-public:
-    AndroidDelegate(JavaVM* vm);
+@end
 
-    virtual bool DownloadHttpFile(const DAVA::String& url, const DAVA::String& documentsPathname);
-};
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
-#endif //#ifndef __ANDROID_LISTENER_H__
+#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_HELPER_APP_DELEGATE_MAC_H__
