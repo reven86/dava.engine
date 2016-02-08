@@ -37,12 +37,6 @@
 
 using namespace DAVA;
 
-enum eBackgroundType : bool
-{
-    BackgroundTexture,
-    BackgroundColor
-};
-
 namespace CanvasSystem_namespace
 {
 class GridControl : public UIControl, public TrackedObject 
@@ -68,7 +62,7 @@ GridControl::GridControl()
 
 void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
 {
-    coloredBackground = static_cast<eBackgroundType>(type);
+    coloredBackground = type;
     switch (coloredBackground)
     {
     case BackgroundColor:

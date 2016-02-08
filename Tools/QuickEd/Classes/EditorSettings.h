@@ -32,7 +32,11 @@
 
 #include "DAVAEngine.h"
 
-enum eBackgroundType : bool;
+enum eBackgroundType : DAVA::int64
+{
+    BackgroundTexture,
+    BackgroundColor
+};
 
 class EditorSettings: public DAVA::Singleton<EditorSettings>
 {
