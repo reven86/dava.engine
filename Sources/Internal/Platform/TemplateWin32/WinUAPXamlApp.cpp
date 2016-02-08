@@ -654,16 +654,16 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
         auto delta = wheelDelta / static_cast<float32>(WHEEL_DELTA);
-        KeyboardDevice & keybDev = InputSystem::Instance()->GetKeyboard();
+        KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
         if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
         {
-            ev.wheelDelta = {delta, 0};
+            ev.wheelDelta = { delta, 0 };
         }
-        else 
+        else
         {
-            ev.wheelDelta = {0, delta};
+            ev.wheelDelta = { 0, delta };
         }
-        
+
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;

@@ -547,8 +547,8 @@ void CoreWin32Platform::OnMouseWheel(float32 wheelDelta, float32 x, float32 y)
     e.phase = UIEvent::Phase::WHEEL;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
-    auto delta = wheelDelta;// / static_cast<float32>(WHEEL_DELTA);
-    KeyboardDevice & keybDev = InputSystem::Instance()->GetKeyboard();
+    float32 delta = wheelDelta;
+    KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
     if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
     {
         e.wheelDelta = { delta, 0 };
