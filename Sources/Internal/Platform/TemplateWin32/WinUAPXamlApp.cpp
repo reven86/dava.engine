@@ -397,6 +397,8 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
     }
 
     core->RunOnMainThread([ this, isFocused = isWindowFocused ] {
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+
         if (isPhoneApiDetected)
         {
             Core::Instance()->SetIsActive(isFocused);
@@ -410,7 +412,6 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
         else
         {
             Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         }
     });
 }

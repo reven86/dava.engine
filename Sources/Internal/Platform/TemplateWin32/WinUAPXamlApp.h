@@ -186,7 +186,7 @@ private:
     bool isPhoneApiDetected = false;
 
     bool isWindowVisible = true;
-    bool isWindowFocused = true;
+    bool isWindowFocused = false;
     bool isWindowClosed = false;
     bool isFullscreen = false;
     bool isRenderCreated = false;
