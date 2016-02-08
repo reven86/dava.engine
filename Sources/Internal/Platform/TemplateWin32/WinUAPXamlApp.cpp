@@ -45,6 +45,7 @@
 #include "FileSystem/Logger.h"
 
 #include "Utils/Utils.h"
+#include "Input/InputSystem.h"
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
@@ -652,8 +653,17 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
 
     core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
-
-        ev.wheelDelta.y = wheelDelta / static_cast<float32>(WHEEL_DELTA);
+        auto delta = wheelDelta / static_cast<float32>(WHEEL_DELTA);
+        KeyboardDevice & keybDev = InputSystem::Instance()->GetKeyboard();
+        if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
+        {
+            ev.wheelDelta.x = delta;
+        }
+        else
+        {
+            ev.wheelDelta.y = delta;
+        }
+        
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
