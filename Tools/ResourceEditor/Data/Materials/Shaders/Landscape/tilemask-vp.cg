@@ -43,6 +43,9 @@ property float4   lightPosition0               : dynamic,a : ;
 
 #include "vp-fog-props.cgh"
 
+#ifndef PATCH_SIZE_QUADS
+#define PATCH_SIZE_QUADS 16
+#endif
 
 VPROG_BEGIN
 
@@ -53,10 +56,10 @@ VPROG_BEGIN
     float4 lodOffset = VP_IN_TEXCOORD5;
 
     float morphAmount = dot(edgeMask, lodOffset);
-    float2 pos_i = abs(morphDir - in_pos) * 16.0;
-    float i = dot(pos_i, abs(morphDir));
-    float f = mod(i, morphAmount);
-    in_pos += morphDir * f / 16.0;
+	float2 pos_i = abs(morphDir - in_pos) * PATCH_SIZE_QUADS;
+	float i = dot(pos_i, abs(morphDir));
+	float f = fmod(i, morphAmount);
+	in_pos += morphDir * f / PATCH_SIZE_QUADS;
    
     float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
     float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition);

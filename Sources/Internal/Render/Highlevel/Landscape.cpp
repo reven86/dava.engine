@@ -951,8 +951,8 @@ void Landscape::AllocateGeometryDataInstancing()
             }
             else //others vertices
             {
-                vertex.edgeMask = Vector4();
-                vertex.morphDir = Vector2();
+                vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero
+                vertex.morphDir = Vector2(0.f, 0.f);
             }
 
             if (x < (PATCH_VERTEX_COUNT - 1) && y < (PATCH_VERTEX_COUNT - 1))
