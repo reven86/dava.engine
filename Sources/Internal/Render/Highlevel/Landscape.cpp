@@ -112,8 +112,18 @@ void Landscape::RestoreGeometry()
 {
     for (auto& restoreData : bufferRestoreData)
     {
-        if (rhi::NeedRestoreVertexBuffer(restoreData.buffer))
-            rhi::UpdateVertexBuffer(restoreData.buffer, restoreData.data, 0, restoreData.dataSize);
+        switch (restoreData.bufferType)
+        {
+        case RestoreBufferData::RESTORE_BUFFER_VERTEX:
+            if (rhi::NeedRestoreVertexBuffer(static_cast<rhi::HVertexBuffer>(restoreData.buffer)))
+                rhi::UpdateVertexBuffer(static_cast<rhi::HVertexBuffer>(restoreData.buffer), restoreData.data, 0, restoreData.dataSize);
+            break;
+
+        case RestoreBufferData::RESTORE_BUFFER_INDEX:
+            if (rhi::NeedRestoreIndexBuffer(static_cast<rhi::HIndexBuffer>(restoreData.buffer)))
+                rhi::UpdateIndexBuffer(static_cast<rhi::HIndexBuffer>(restoreData.buffer), restoreData.data, 0, restoreData.dataSize);
+            break;
+        }
     }
 }
 
@@ -756,7 +766,7 @@ int16 Landscape::AllocateQuadVertexBuffer(uint32 quadX, uint32 quadY, uint32 qua
 #if defined(__DAVAENGINE_IPHONE__)
     SafeDeleteArray(landscapeVertices);
 #else
-    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize });
+    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize, RestoreBufferData::RESTORE_BUFFER_VERTEX });
 #endif
 
     return (int16)(vertexBuffers.size() - 1);
@@ -971,11 +981,11 @@ void Landscape::AllocateGeometryDataInstancing()
         }
     }
 
-    rhi::VertexBuffer::Descriptor desc;
-    desc.size = verticesCount * sizeof(VertexInstancing);
-    desc.initialData = patchVertices;
-    desc.usage = rhi::USAGE_STATICDRAW;
-    patchVertexBuffer = rhi::CreateVertexBuffer(desc);
+    rhi::VertexBuffer::Descriptor vdesc;
+    vdesc.size = verticesCount * sizeof(VertexInstancing);
+    vdesc.initialData = patchVertices;
+    vdesc.usage = rhi::USAGE_STATICDRAW;
+    patchVertexBuffer = rhi::CreateVertexBuffer(vdesc);
 
     rhi::IndexBuffer::Descriptor idesc;
     idesc.size = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6 * sizeof(uint16);
@@ -983,8 +993,13 @@ void Landscape::AllocateGeometryDataInstancing()
     idesc.usage = rhi::USAGE_STATICDRAW;
     patchIndexBuffer = rhi::CreateIndexBuffer(idesc);
 
+#if defined(__DAVAENGINE_IPHONE__)
     SafeDeleteArray(patchVertices);
     SafeDeleteArray(patchIndices);
+#else
+    bufferRestoreData.push_back({ patchVertexBuffer, reinterpret_cast<uint8*>(patchVertices), vdesc.size, RestoreBufferData::RESTORE_BUFFER_VERTEX });
+    bufferRestoreData.push_back({ patchIndexBuffer, reinterpret_cast<uint8*>(patchIndices), idesc.size, RestoreBufferData::RESTORE_BUFFER_INDEX });
+#endif
 
     RenderBatch* batch = new RenderBatch();
     batch->SetMaterial(landscapeMaterial);

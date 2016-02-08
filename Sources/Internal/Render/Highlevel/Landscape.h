@@ -168,9 +168,16 @@ protected:
 
     struct RestoreBufferData
     {
-        rhi::HVertexBuffer buffer;
+        enum eBufferType
+        {
+            RESTORE_BUFFER_VERTEX,
+            RESTORE_BUFFER_INDEX
+        };
+
+        rhi::Handle buffer;
         uint8* data;
         uint32 dataSize;
+        eBufferType bufferType;
     };
 
     Vector<RestoreBufferData> bufferRestoreData;
