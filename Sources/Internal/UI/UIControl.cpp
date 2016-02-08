@@ -1471,6 +1471,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::CHAR:
     case UIEvent::Phase::CHAR_REPEAT:
+    case UIEvent::Phase::KEY_UP:
     case UIEvent::Phase::KEY_DOWN:
     case UIEvent::Phase::KEY_DOWN_REPEAT:
     {
@@ -1492,7 +1493,6 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
         if (IsPointInside(currentInput->point))
         {
-        case UIEvent::Phase::KEY_UP:
             Input(currentInput);
             return true;
         }
