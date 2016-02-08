@@ -30,10 +30,10 @@
 #ifndef __SCENE_WAYEDIT_SYSTEM_H__
 #define __SCENE_WAYEDIT_SYSTEM_H__
 
-#include <QMap>
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "UI/UIEvent.h"
@@ -51,11 +51,10 @@
 
 class SceneEditor2;
 
-class WayEditSystem : public DAVA::SceneSystem
-                      ,
-                      public EntityModificationSystemDelegate
-                      ,
-                      public StructureSystemDelegate
+class WayEditSystem : public DAVA::SceneSystem,
+                      public EntityModificationSystemDelegate,
+                      public StructureSystemDelegate,
+                      public SceneSelectionSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -78,8 +77,6 @@ public:
     void WillRemove(DAVA::Entity* removedEntity) override;
     void DidRemoved(DAVA::Entity* removedEntity) override;
 
-    bool CanChangeSelection();
-
 protected:
     void Draw();
 
@@ -99,6 +96,8 @@ protected:
     void UpdateSelectionMask();
     void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
 
+    bool shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection) override;
+    
 protected:
     EntityGroup currentSelection;
     EntityGroup selectedWaypoints;

@@ -33,6 +33,7 @@
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -113,6 +114,9 @@ public:
 
     void Draw();
     void CancelSelection();
+    
+    void addSelectionDelegate(SceneSelectionSystemDelegate* aDelegate);
+    void removeSelectionDelegate(SceneSelectionSystemDelegate* aDelegate);
 
 private:
     void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
@@ -153,6 +157,7 @@ private:
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
+    DAVA::Set<SceneSelectionSystemDelegate*> selectionDelegates;
     ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
     GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
     bool selectionAllowed = true;

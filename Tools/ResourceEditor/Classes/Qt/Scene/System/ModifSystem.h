@@ -30,7 +30,9 @@
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
+#include "SystemDelegates.h"
 #include "Commands2/Command2.h"
+#include "SystemDelegates.h"
 
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Entity.h"
@@ -44,16 +46,7 @@ class SceneCameraSystem;
 class EntityGroup;
 class HoodSystem;
 
-class EntityModificationSystemDelegate
-{
-public:
-    virtual ~EntityModificationSystemDelegate() = default;
-
-    virtual void WillClone(DAVA::Entity* originalEntity) = 0;
-    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
-};
-
-class EntityModificationSystem : public DAVA::SceneSystem
+class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -92,16 +85,7 @@ public:
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);
 
-protected:
-    SceneCollisionSystem* collisionSystem;
-    SceneCameraSystem* cameraSystem;
-    HoodSystem* hoodSystem;
-
-    void Draw();
-
-    void ProcessCommand(const Command2* command, bool redo);
-
-protected:
+private:
     struct EntityToModify
     {
         DAVA::Entity* entity;
@@ -112,30 +96,50 @@ protected:
         DAVA::Matrix4 moveToZeroPos;
         DAVA::Matrix4 moveFromZeroPos;
     };
-
-    enum CloneState
+    
+    enum CloneState : DAVA::uint32
     {
         CLONE_DONT,
         CLONE_NEED,
         CLONE_DONE
     };
-
-    enum BakeMode
+    
+    enum BakeMode : DAVA::uint32
     {
         BAKE_ZERO_PIVOT,
         BAKE_CENTER_PIVOT
     };
+    
+    void Draw();
+    void ProcessCommand(const Command2* command, bool redo);
+    void BeginModification(const EntityGroup& entities);
+    void EndModification();
+    
+    void CloneBegin();
+    void CloneEnd();
+    
+    void ApplyModification();
+    
+    DAVA::Vector3 CamCursorPosToModifPos(DAVA::Camera* camera, DAVA::Vector2 pos);
+    DAVA::Vector2 Cam2dProjection(const DAVA::Vector3& from, const DAVA::Vector3& to);
+    
+    DAVA::Vector3 Move(const DAVA::Vector3& newPos3d);
+    DAVA::float32 Rotate(const DAVA::Vector2& newPos2d);
+    DAVA::float32 Scale(const DAVA::Vector2& newPos2d);
+    void BakeGeometry(const EntityGroup& entities, BakeMode mode);
+    void SearchEntitiesWithRenderObject(DAVA::RenderObject* ro, DAVA::Entity* root, DAVA::Set<DAVA::Entity*>& result);
+    
+    DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
+    bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
+    
+    bool shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection) override;
 
+private:
+    SceneCollisionSystem* collisionSystem;
+    SceneCameraSystem* cameraSystem;
+    HoodSystem* hoodSystem;
+    
     CloneState cloneState;
-
-    bool inModifState;
-    bool isOrthoModif;
-    bool modified;
-
-    ST_ModifMode curMode;
-    ST_Axis curAxis;
-
-    bool snapToLandscape;
 
     // starting modification pos
     DAVA::Vector3 modifStartPos3d;
@@ -155,29 +159,15 @@ protected:
     DAVA::float32 crossXY;
     DAVA::float32 crossXZ;
     DAVA::float32 crossYZ;
-
-    void BeginModification(const EntityGroup& entities);
-    void EndModification();
-
-    void CloneBegin();
-    void CloneEnd();
-
-    void ApplyModification();
-
-    DAVA::Vector3 CamCursorPosToModifPos(DAVA::Camera* camera, DAVA::Vector2 pos);
-    DAVA::Vector2 Cam2dProjection(const DAVA::Vector3& from, const DAVA::Vector3& to);
-
-    DAVA::Vector3 Move(const DAVA::Vector3& newPos3d);
-    DAVA::float32 Rotate(const DAVA::Vector2& newPos2d);
-    DAVA::float32 Scale(const DAVA::Vector2& newPos2d);
-    void BakeGeometry(const EntityGroup& entities, BakeMode mode);
-    void SearchEntitiesWithRenderObject(DAVA::RenderObject* ro, DAVA::Entity* root, DAVA::Set<DAVA::Entity*>& result);
-
-    DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
-    bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
-
-private:
     DAVA::List<EntityModificationSystemDelegate*> delegates;
+    
+    ST_ModifMode curMode;
+    ST_Axis curAxis;
+    
+    bool inModifState;
+    bool isOrthoModif;
+    bool modified;
+    bool snapToLandscape;
 };
 
 #endif //__ENTITY_MODIFICATION_SYSTEM_H__

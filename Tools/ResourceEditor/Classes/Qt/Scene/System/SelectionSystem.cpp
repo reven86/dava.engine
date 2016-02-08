@@ -263,24 +263,19 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
 
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
     {
-        // we can select only if mouse isn't over hood axis
-        // or if hood is invisible now
-        // or if current mode is NORMAL (no modification)
-
-        auto modifSystem = ((SceneEditor2*)GetScene())->modifSystem;
-        auto wayEditor = ((SceneEditor2*)GetScene())->wayEditSystem;
-        bool modificationAllowed = (modifSystem->GetModifMode() != ST_ModifMode::ST_MODIF_OFF) && modifSystem->ModifCanStartByMouse(curSelections);
-        bool selectionAllowed = !hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis());
-        bool wayEditorAllowsSelection = wayEditor->CanChangeSelection();
-
-        if (selectionAllowed && wayEditorAllowsSelection && !modificationAllowed)
+        for (auto selectionDelegate : selectionDelegates)
         {
-            selecting = true;
-            selectionStartPoint = event->point;
-            selectionEndPoint = selectionStartPoint;
-            lastGroupSelection.Clear();
-            PerformSelectionAtPoint(selectionStartPoint);
+            if (selectionDelegate->shouldChangeSelectionFromCurrent(curSelections) == false)
+            {
+                return;
+            }
         }
+        
+        selecting = true;
+        selectionStartPoint = event->point;
+        selectionEndPoint = selectionStartPoint;
+        lastGroupSelection.Clear();
+        PerformSelectionAtPoint(selectionStartPoint);
     }
     else if (selecting && (DAVA::UIEvent::Phase::DRAG == event->phase))
     {
@@ -783,4 +778,14 @@ void SceneSelectionSystem::FinishSelection()
     objectsToSelect.Clear();
 
     SetSelection(newSelection);
+}
+
+void SceneSelectionSystem::addSelectionDelegate(SceneSelectionSystemDelegate* aDelegate)
+{
+    selectionDelegates.insert(aDelegate);
+}
+
+void SceneSelectionSystem::removeSelectionDelegate(SceneSelectionSystemDelegate* aDelegate)
+{
+    selectionDelegates.erase(aDelegate);
 }

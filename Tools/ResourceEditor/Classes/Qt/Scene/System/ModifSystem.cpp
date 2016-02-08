@@ -1140,3 +1140,8 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
         }
     }
 }
+
+bool EntityModificationSystem::shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection)
+{
+    return (GetModifMode() == ST_ModifMode::ST_MODIF_OFF) || !ModifCanStartByMouse(currentSelection);
+}

@@ -36,6 +36,7 @@
 #include "Scene/System/HoodSystem/ScaleHood.h"
 #include "Scene/System/HoodSystem/RotateHood.h"
 #include "Commands2/Command2.h"
+#include "SystemDelegates.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"
@@ -46,7 +47,7 @@
 
 class SceneCameraSystem;
 
-class HoodSystem : public DAVA::SceneSystem
+class HoodSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -81,43 +82,37 @@ public:
     virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent* event);
 
-protected:
-    bool lockedScale;
-    bool lockedModif;
-    bool lockedAxis;
-    bool isVisible;
-
-    ST_ModifMode curMode;
-    ST_Axis curAxis;
-    ST_Axis moseOverAxis;
-    DAVA::Vector3 curPos;
-    DAVA::float32 curScale;
-    DAVA::Vector3 modifOffset;
-
-    SceneCameraSystem* cameraSystem;
-
+private:
     void Draw();
-
     void ProcessCommand(const Command2* command, bool redo);
-
     void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
-
     void ResetModifValues();
 
+    bool shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection) override;
+    
 private:
-    btCollisionWorld* collWorld;
-    btAxisSweep3* collBroadphase;
-    btDefaultCollisionConfiguration* collConfiguration;
-    btCollisionDispatcher* collDispatcher;
-    btIDebugDraw* collDebugDraw;
-
-    HoodObject* curHood;
-
+    btCollisionWorld* collWorld = nullptr;
+    btAxisSweep3* collBroadphase = nullptr;
+    btDefaultCollisionConfiguration* collConfiguration = nullptr;
+    btCollisionDispatcher* collDispatcher = nullptr;
+    btIDebugDraw* collDebugDraw = nullptr;
+    HoodObject* curHood = nullptr;
+    SceneCameraSystem* cameraSystem = nullptr;
     NormalHood normalHood;
     MoveHood moveHood;
     RotateHood rotateHood;
     ScaleHood scaleHood;
+    DAVA::Vector3 curPos;
+    DAVA::float32 curScale = 1.0f;
+    DAVA::Vector3 modifOffset;
+    ST_ModifMode curMode = ST_MODIF_OFF;
+    ST_Axis curAxis = ST_AXIS_NONE;
+    ST_Axis moseOverAxis = ST_AXIS_NONE;
+    bool lockedScale = false;
+    bool lockedModif = false;
+    bool lockedAxis = false;
+    bool isVisible = true;
 };
 
 #endif // __ENTITY_MODIFICATION_SYSTEM_HOOD_H__

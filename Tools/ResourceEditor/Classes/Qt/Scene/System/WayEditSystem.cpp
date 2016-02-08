@@ -244,19 +244,6 @@ void WayEditSystem::ProcessSelection()
     }
 }
 
-bool WayEditSystem::CanChangeSelection()
-{
-    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
-
-    if (isEnabled && shiftPressed)
-    {
-        return selectedWaypoints.Size() == 1;
-    }
-
-    return true;
-}
-
 void WayEditSystem::Input(DAVA::UIEvent* event)
 {
     if (isEnabled && (DAVA::UIEvent::MouseButton::LEFT == event->mouseButton))
@@ -540,4 +527,17 @@ void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEnt
 
         sceneEditor->Exec(new AddComponentCommand(originalEntity, edge));
     }
+}
+
+bool WayEditSystem::shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection)
+{
+    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+    
+    if (isEnabled && shiftPressed)
+    {
+        return selectedWaypoints.Size() == 1;
+    }
+    
+    return true;
 }
