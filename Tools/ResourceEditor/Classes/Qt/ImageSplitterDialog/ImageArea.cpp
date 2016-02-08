@@ -45,8 +45,7 @@
 #include <QUrl>
 #include <QMimeData>
 
-
-ImageArea::ImageArea(QWidget *parent /*= 0*/)
+ImageArea::ImageArea(QWidget* parent /*= 0*/)
     : QLabel(parent)
     , image(NULL)
     , acceptableSize(0, 0)
@@ -65,23 +64,23 @@ ImageArea::~ImageArea()
     DAVA::SafeRelease(image);
 }
 
-void ImageArea::dragEnterEvent(QDragEnterEvent *event)
+void ImageArea::dragEnterEvent(QDragEnterEvent* event)
 {
-    const QMimeData *mimeData = event->mimeData();
-    
+    const QMimeData* mimeData = event->mimeData();
+
     if (!mimeData->hasFormat("text/uri-list"))
     {
         return;
     }
     DAVA::Image* image = CreateTopLevelImage(mimeData->urls().first().toLocalFile().toStdString());
-    if(NULL != image )
+    if (NULL != image)
     {
         DAVA::SafeRelease(image);
         event->acceptProposedAction();
     }
 }
 
-void ImageArea::dropEvent(QDropEvent *event)
+void ImageArea::dropEvent(QDropEvent* event)
 {
     SetImage(event->mimeData()->urls().first().toLocalFile().toStdString());
     event->acceptProposedAction();
@@ -97,10 +96,10 @@ DAVA::String ImageArea::GetDefaultPath() const
     return ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
 }
 
-void ImageArea::mousePressEvent (QMouseEvent * ev)
+void ImageArea::mousePressEvent(QMouseEvent* ev)
 {
-    if(ev->button() == Qt::LeftButton)
-	{
+    if (ev->button() == Qt::LeftButton)
+    {
         DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPathSpecular).AsString();
         if (defaultPath.IsEmpty())
         {
@@ -111,29 +110,30 @@ void ImageArea::mousePressEvent (QMouseEvent * ev)
             }
         }
 
-		DAVA::String retString = FileDialog::getOpenFileName(this, "Select image",
-                                                              defaultPath.GetAbsolutePathname().c_str(),
-                                                              PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter
-                                                              ).toStdString();
-        if(!retString.empty())
+        DAVA::String retString = FileDialog::getOpenFileName(this, "Select image",
+                                                             defaultPath.GetAbsolutePathname().c_str(),
+                                                             PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter
+                                                             )
+                                 .toStdString();
+        if (!retString.empty())
         {
             SetImage(retString);
         }
-	}
-	
-	QLabel::mousePressEvent(ev);
+    }
+
+    QLabel::mousePressEvent(ev);
 }
 void ImageArea::SetImage(DAVA::Image* selectedImage)
 {
     DAVA::Vector2 selectedImageSize(selectedImage->GetWidth(), selectedImage->GetHeight());
-    if(acceptableSize.IsZero())
+    if (acceptableSize.IsZero())
     {
         acceptableSize = selectedImageSize;
     }
-    if(selectedImageSize == acceptableSize)
+    if (selectedImageSize == acceptableSize)
     {
         DAVA::SafeRelease(image);
-        image = SafeRetain(selectedImage);        
+        image = SafeRetain(selectedImage);
         emit changed();
     }
     else
@@ -145,13 +145,13 @@ void ImageArea::SetImage(DAVA::Image* selectedImage)
 void ImageArea::SetImage(const DAVA::FilePath& filePath)
 {
     DAVA::Image* selectedImage = CreateTopLevelImage(filePath);
-    if(NULL == selectedImage)
+    if (NULL == selectedImage)
     {
         QMessageBox::warning(this, "File error", "Cann't load image.", QMessageBox::Ok);
         return;
     }
 
-    if((DAVA::FORMAT_INVALID == requestedFormat) || (selectedImage->GetPixelFormat() == requestedFormat))
+    if ((DAVA::FORMAT_INVALID == requestedFormat) || (selectedImage->GetPixelFormat() == requestedFormat))
     {
         const DAVA::FilePath path = filePath;
         SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(path.GetAbsolutePathname()));
@@ -176,7 +176,7 @@ void ImageArea::ClearArea()
 
 void ImageArea::UpdatePreviewPicture()
 {
-    if(NULL == image)
+    if (NULL == image)
     {
         return;
     }

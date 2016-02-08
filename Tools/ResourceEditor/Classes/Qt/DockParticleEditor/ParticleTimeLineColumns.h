@@ -47,188 +47,209 @@ const int32 EXTRA_INFO_AREA_COLUMN_WIDTH = 50;
 
 class ParticlesExtraInfoColumn : public QWidget
 {
-	Q_OBJECT
-	
+    Q_OBJECT
+
 public:
-	explicit ParticlesExtraInfoColumn(const ParticleTimeLineWidget* timeLineWidget,
-									  QWidget *parent = 0);
+    explicit ParticlesExtraInfoColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                      QWidget* parent = 0);
 
-	// This method is called when the list of layers is changed.
-	virtual void OnLayersListChanged() {};
+    // This method is called when the list of layers is changed.
+    virtual void OnLayersListChanged(){};
 
-	// This method returns the preferred column's width.
-	virtual int32 GetColumnWidth() { return EXTRA_INFO_DEFAULT_COLUMN_WIDTH; };
+    // This method returns the preferred column's width.
+    virtual int32 GetColumnWidth()
+    {
+        return EXTRA_INFO_DEFAULT_COLUMN_WIDTH;
+    };
 
-	// This method is called when the appropriate particle effect is started/stopped/restarted.
-	virtual void Reset() {};
+    // This method is called when the appropriate particle effect is started/stopped/restarted.
+    virtual void Reset(){};
 
 protected:
-	virtual void paintEvent(QPaintEvent *);
-	
-	// These methods are to be overriden for derived classes.
-	// Get an extra information to be displayed near the line.
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line) {return QString();};
-	
-	// Get the extra info for the header/footer.
-	virtual QString GetExtraInfoHeader() {return QString(); };
-	virtual QString GetExtraInfoFooter() {return QString(); };
-	
-	// In case some information should be accumulated during the loop,
-	// these methods are called just before the loop and just after it.
-	virtual void OnBeforeGetExtraInfoLoop() {};
-	virtual void OnAfterGetExtraInfoLoop() {};
-	
-	// The timeline widget being used.
-	const ParticleTimeLineWidget* timeLineWidget;
-	
-	// Helper methods.
-	QString FormatFloat(float32 value);
+    virtual void paintEvent(QPaintEvent*);
+
+    // These methods are to be overriden for derived classes.
+    // Get an extra information to be displayed near the line.
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
+    {
+        return QString();
+    };
+
+    // Get the extra info for the header/footer.
+    virtual QString GetExtraInfoHeader()
+    {
+        return QString();
+    };
+    virtual QString GetExtraInfoFooter()
+    {
+        return QString();
+    };
+
+    // In case some information should be accumulated during the loop,
+    // these methods are called just before the loop and just after it.
+    virtual void OnBeforeGetExtraInfoLoop(){};
+    virtual void OnAfterGetExtraInfoLoop(){};
+
+    // The timeline widget being used.
+    const ParticleTimeLineWidget* timeLineWidget;
+
+    // Helper methods.
+    QString FormatFloat(float32 value);
 };
 
 // Base class for Cumulative Columns.
 class ParticlesExtraInfoCumulativeColumn : public ParticlesExtraInfoColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesExtraInfoCumulativeColumn(const ParticleTimeLineWidget* timeLineWidget,
-												QWidget *parent = 0);
-	virtual void OnLayersListChanged();
+    explicit ParticlesExtraInfoCumulativeColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                                QWidget* parent = 0);
+    virtual void OnLayersListChanged();
 
 protected:
-	// Add the value to the Cumulative Data.
-	void UpdateCumulativeData(ParticleLayer* layer, float32 value);
-	
-	// Update the value in Cumulative Data if the new value is bigger than existing one.
-	void UpdateCumulativeDataIfMaximum(ParticleLayer* layer, float32 value);
-	
-	// Cleanup all the Cumulative Data.
-	void CleanupCumulativeData();
+    // Add the value to the Cumulative Data.
+    void UpdateCumulativeData(ParticleLayer* layer, float32 value);
 
-	int32 totalParticlesCount;
-	float32 totalParticlesArea;
-	int32 totalUpdatesCount;
+    // Update the value in Cumulative Data if the new value is bigger than existing one.
+    void UpdateCumulativeDataIfMaximum(ParticleLayer* layer, float32 value);
 
-	Map<ParticleLayer*, float32> cumulativeData;
+    // Cleanup all the Cumulative Data.
+    void CleanupCumulativeData();
+
+    int32 totalParticlesCount;
+    float32 totalParticlesArea;
+    int32 totalUpdatesCount;
+
+    Map<ParticleLayer*, float32> cumulativeData;
 };
 
 // Particles Count information.
 class ParticlesCountColumn : public ParticlesExtraInfoColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesCountColumn(const ParticleTimeLineWidget* timeLineWidget,
-								  QWidget *parent = 0);
+    explicit ParticlesCountColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                  QWidget* parent = 0);
 
-	virtual int32 GetColumnWidth() { return EXTRA_INFO_COUNT_COLUMN_WIDTH; };
+    virtual int32 GetColumnWidth()
+    {
+        return EXTRA_INFO_COUNT_COLUMN_WIDTH;
+    };
 
 protected:
-	virtual void OnBeforeGetExtraInfoLoop();
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
-	
-	virtual QString GetExtraInfoHeader();
-	virtual QString GetExtraInfoFooter();
-	
+    virtual void OnBeforeGetExtraInfoLoop();
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+
+    virtual QString GetExtraInfoHeader();
+    virtual QString GetExtraInfoFooter();
+
 private:
-	int32 totalParticlesCount;
+    int32 totalParticlesCount;
 };
 
 class ParticlesAverageCountColumn : public ParticlesExtraInfoCumulativeColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesAverageCountColumn(const ParticleTimeLineWidget* timeLineWidget,
-									 QWidget *parent = 0);
-	
-	virtual void Reset();
+    explicit ParticlesAverageCountColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                         QWidget* parent = 0);
+
+    virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
-	
-	virtual QString GetExtraInfoHeader();
-	virtual QString GetExtraInfoFooter();
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+
+    virtual QString GetExtraInfoHeader();
+    virtual QString GetExtraInfoFooter();
 };
 
 class ParticlesMaxCountColumn : public ParticlesExtraInfoCumulativeColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesMaxCountColumn(const ParticleTimeLineWidget* timeLineWidget,
-								  QWidget *parent = 0);
-	
-	virtual int32 GetColumnWidth() { return EXTRA_INFO_MAX_COUNT_COLUMN_WIDTH; };
-	virtual void OnLayersListChanged();
-	virtual void Reset();
+    explicit ParticlesMaxCountColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                     QWidget* parent = 0);
+
+    virtual int32 GetColumnWidth()
+    {
+        return EXTRA_INFO_MAX_COUNT_COLUMN_WIDTH;
+    };
+    virtual void OnLayersListChanged();
+    virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
-	virtual void OnBeforeGetExtraInfoLoop();
-	virtual void OnAfterGetExtraInfoLoop();
+    virtual void OnBeforeGetExtraInfoLoop();
+    virtual void OnAfterGetExtraInfoLoop();
 
-	virtual QString GetExtraInfoHeader();
-	virtual QString GetExtraInfoFooter();
-	
+    virtual QString GetExtraInfoHeader();
+    virtual QString GetExtraInfoFooter();
+
 private:
-	int32 maxParticlesCount;
-	int32 totalParticlesCountOnThisLoop;
+    int32 maxParticlesCount;
+    int32 totalParticlesCountOnThisLoop;
 };
 
 // Particles Area information.
 class ParticlesAreaColumn : public ParticlesExtraInfoColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
-								 QWidget *parent = 0);
-	virtual int32 GetColumnWidth() { return EXTRA_INFO_AREA_COLUMN_WIDTH; };
+    explicit ParticlesAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                 QWidget* parent = 0);
+    virtual int32 GetColumnWidth()
+    {
+        return EXTRA_INFO_AREA_COLUMN_WIDTH;
+    };
 
 protected:
-	virtual void OnBeforeGetExtraInfoLoop();
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
-	
-	virtual QString GetExtraInfoHeader();
-	virtual QString GetExtraInfoFooter();
+    virtual void OnBeforeGetExtraInfoLoop();
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+
+    virtual QString GetExtraInfoHeader();
+    virtual QString GetExtraInfoFooter();
 
 private:
-	float32 totalParticlesArea;
+    float32 totalParticlesArea;
 };
 
 class ParticlesAverageAreaColumn : public ParticlesExtraInfoCumulativeColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesAverageAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
-										 QWidget *parent = 0);
-	virtual void Reset();
+    explicit ParticlesAverageAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                        QWidget* parent = 0);
+    virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
-	
-	virtual QString GetExtraInfoHeader();
-	virtual QString GetExtraInfoFooter();
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
+
+    virtual QString GetExtraInfoHeader();
+    virtual QString GetExtraInfoFooter();
 };
 
 class ParticlesMaxAreaColumn : public ParticlesExtraInfoCumulativeColumn
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ParticlesMaxAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
-									QWidget *parent = 0);
-	virtual void OnLayersListChanged();
-	virtual void Reset();
+    explicit ParticlesMaxAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
+                                    QWidget* parent = 0);
+    virtual void OnLayersListChanged();
+    virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
+    virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line);
 
-	virtual void OnBeforeGetExtraInfoLoop();
-	virtual void OnAfterGetExtraInfoLoop();
+    virtual void OnBeforeGetExtraInfoLoop();
+    virtual void OnAfterGetExtraInfoLoop();
 
-	virtual QString GetExtraInfoHeader();
-	virtual QString GetExtraInfoFooter();
-	
+    virtual QString GetExtraInfoHeader();
+    virtual QString GetExtraInfoFooter();
+
 private:
-	float32 maxParticlesArea;
-	float32 totalParticlesAreaOnThisLoop;
+    float32 maxParticlesArea;
+    float32 totalParticlesAreaOnThisLoop;
 };
 
 

@@ -37,33 +37,32 @@
 
 namespace DAVA
 {
-
 class BaseObject;
 class BulletComponent : public Component
 {
 protected:
-	virtual ~BulletComponent();
+    virtual ~BulletComponent();
+
 public:
-	IMPLEMENT_COMPONENT_TYPE(BULLET_COMPONENT);
+    IMPLEMENT_COMPONENT_TYPE(BULLET_COMPONENT);
 
-	BulletComponent();
+    BulletComponent();
 
-	void SetBulletObject(BaseObject * bulletObject);
-	BaseObject * GetBulletObject();
+    void SetBulletObject(BaseObject* bulletObject);
+    BaseObject* GetBulletObject();
 
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
 
 private:
-	BaseObject * bulletObject;
-    
+    BaseObject* bulletObject;
+
 public:
     INTROSPECTION_EXTEND(BulletComponent, Component,
-        PROPERTY("bulletObject", "Bullet Object", GetBulletObject, SetBulletObject, I_SAVE | I_VIEW | I_EDIT)
-    );
+                         PROPERTY("bulletObject", "Bullet Object", GetBulletObject, SetBulletObject, I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
-
 }
 
 #endif //__DAVAENGINE_BULLET_COMPONENT_H__

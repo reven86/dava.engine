@@ -26,54 +26,54 @@ extern "C" {
 #include <magick/image-private.h>
 #include <magick/pixel.h>
 
-static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
+static inline void ConvertRGBToCMYK(MagickPixelPacket* pixel)
 {
-  MagickRealType
+    MagickRealType
     black,
     cyan,
     magenta,
     yellow;
-                                                                                
-  if ((pixel->red == 0) && (pixel->green == 0) && (pixel->blue == 0))
+
+    if ((pixel->red == 0) && (pixel->green == 0) && (pixel->blue == 0))
     {
-      pixel->index=(MagickRealType) QuantumRange;
-      return;
+        pixel->index = (MagickRealType)QuantumRange;
+        return;
     }
-  cyan=(MagickRealType) (1.0-QuantumScale*pixel->red);
-  magenta=(MagickRealType) (1.0-QuantumScale*pixel->green);
-  yellow=(MagickRealType) (1.0-QuantumScale*pixel->blue);
-  black=cyan;
-  if (magenta < black)
-    black=magenta;
-  if (yellow < black)
-    black=yellow;
-  cyan=(MagickRealType) ((cyan-black)/(1.0-black));
-  magenta=(MagickRealType) ((magenta-black)/(1.0-black));
-  yellow=(MagickRealType) ((yellow-black)/(1.0-black));
-  pixel->colorspace=CMYKColorspace;
-  pixel->red=QuantumRange*cyan;
-  pixel->green=QuantumRange*magenta;
-  pixel->blue=QuantumRange*yellow;
-  pixel->index=QuantumRange*black;
+    cyan = (MagickRealType)(1.0 - QuantumScale * pixel->red);
+    magenta = (MagickRealType)(1.0 - QuantumScale * pixel->green);
+    yellow = (MagickRealType)(1.0 - QuantumScale * pixel->blue);
+    black = cyan;
+    if (magenta < black)
+        black = magenta;
+    if (yellow < black)
+        black = yellow;
+    cyan = (MagickRealType)((cyan - black) / (1.0 - black));
+    magenta = (MagickRealType)((magenta - black) / (1.0 - black));
+    yellow = (MagickRealType)((yellow - black) / (1.0 - black));
+    pixel->colorspace = CMYKColorspace;
+    pixel->red = QuantumRange * cyan;
+    pixel->green = QuantumRange * magenta;
+    pixel->blue = QuantumRange * yellow;
+    pixel->index = QuantumRange * black;
 }
 
 static inline MagickBooleanType IsGrayColorspace(
-  const ColorspaceType colorspace)
+const ColorspaceType colorspace)
 {
-  if ((colorspace == GRAYColorspace) || (colorspace == Rec601LumaColorspace) ||
-      (colorspace == Rec709LumaColorspace))
-    return(MagickTrue);
-  return(MagickFalse);
+    if ((colorspace == GRAYColorspace) || (colorspace == Rec601LumaColorspace) ||
+        (colorspace == Rec709LumaColorspace))
+        return (MagickTrue);
+    return (MagickFalse);
 }
 
 static inline MagickBooleanType IsRGBColorspace(
-  const ColorspaceType colorspace)
+const ColorspaceType colorspace)
 {
-  if ((IsGrayColorspace(colorspace) != MagickFalse) ||
-      (colorspace == RGBColorspace) || (colorspace == sRGBColorspace) ||
-      (colorspace == TransparentColorspace))
-    return(MagickTrue);
-  return(MagickFalse);
+    if ((IsGrayColorspace(colorspace) != MagickFalse) ||
+        (colorspace == RGBColorspace) || (colorspace == sRGBColorspace) ||
+        (colorspace == TransparentColorspace))
+        return (MagickTrue);
+    return (MagickFalse);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

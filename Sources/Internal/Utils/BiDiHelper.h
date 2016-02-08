@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 class BiDiWrapper;
 
 class BiDiHelper
@@ -65,7 +64,6 @@ public:
 private:
     BiDiWrapper* wrapper;
 };
-
 }
 
 #endif

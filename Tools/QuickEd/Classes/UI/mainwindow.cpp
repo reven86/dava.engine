@@ -44,10 +44,10 @@
 
 namespace
 {
-    const QString APP_GEOMETRY = "geometry";
-    const QString APP_STATE = "windowstate";
-    const char* COLOR_PROPERTY_ID = "color";
-    const QString CONSOLE_STATE = "console state";
+const QString APP_GEOMETRY = "geometry";
+const QString APP_STATE = "windowstate";
+const char* COLOR_PROPERTY_ID = "color";
+const QString CONSOLE_STATE = "console state";
 }
 
 using namespace DAVA;
@@ -114,14 +114,14 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 }
 
-void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
+void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
 {
     Q_ASSERT(undoGroup);
-    QAction *undoAction = undoGroup->createUndoAction(this);
+    QAction* undoAction = undoGroup->createUndoAction(this);
     undoAction->setShortcuts(QKeySequence::Undo);
     undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
 
-    QAction *redoAction = undoGroup->createRedoAction(this);
+    QAction* redoAction = undoGroup->createRedoAction(this);
     redoAction->setShortcuts(QKeySequence::Redo);
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
@@ -188,14 +188,14 @@ void MainWindow::RestoreMainWindowState()
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     auto val = settings.value(APP_GEOMETRY);
     if (val.canConvert<QByteArray>())
-	{
-    	restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
-	}
+    {
+        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+    }
     val = settings.value(APP_STATE);
     if (val.canConvert<QByteArray>())
     {
-    	restoreState(settings.value(APP_STATE).toByteArray());
-	}
+        restoreState(settings.value(APP_STATE).toByteArray());
+    }
     val = settings.value(CONSOLE_STATE);
     if (val.canConvert<QByteArray>())
     {
@@ -266,13 +266,13 @@ void MainWindow::InitLanguageBox()
 {
     comboboxLanguage = new QComboBox();
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    QLabel *label = new QLabel(tr("language"));
+    QLabel* label = new QLabel(tr("language"));
     label->setBuddy(comboboxLanguage);
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(comboboxLanguage);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
 }
@@ -289,15 +289,15 @@ void MainWindow::FillComboboxLanguages(const Project* project)
 
 void MainWindow::InitRtlBox()
 {
-    QCheckBox *rtlBox = new QCheckBox();
+    QCheckBox* rtlBox = new QCheckBox();
     rtlBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("Right-to-left"));
+    QLabel* label = new QLabel(tr("Right-to-left"));
     label->setBuddy(rtlBox);
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(rtlBox);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
@@ -321,15 +321,15 @@ void MainWindow::InitBiDiSupportBox()
 
 void MainWindow::InitGlobalClasses()
 {
-    QLineEdit *classesEdit = new QLineEdit();
+    QLineEdit* classesEdit = new QLineEdit();
     classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    QLabel *label = new QLabel(tr("global classes"));
+    QLabel* label = new QLabel(tr("global classes"));
     label->setBuddy(classesEdit);
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(classesEdit);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
@@ -339,13 +339,13 @@ void MainWindow::InitEmulationMode()
 {
     emulationBox = new QCheckBox();
     emulationBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("Emulation"));
+    QLabel* label = new QLabel(tr("Emulation"));
     label->setBuddy(emulationBox);
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(emulationBox);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
 }
@@ -362,7 +362,7 @@ void MainWindow::InitMenu()
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
     connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
 
-    // Remap zoom in/out shorcuts for windows platform
+// Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
     QList<QKeySequence> shortcuts;
     shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
@@ -397,7 +397,7 @@ void MainWindow::SetupViewMenu()
 
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
-    
+
     // Setup the Background Color menu.
     QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
     menuView->addSeparator();
@@ -409,22 +409,22 @@ void MainWindow::SetupViewMenu()
         QString colorName;
     } colorsMap[] =
     {
-        { Qt::black, "Black" },
-        { QColor(0x33, 0x33, 0x33, 0xFF), "Default" },
-        { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
-        { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
-        { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+      { Qt::black, "Black" },
+      { QColor(0x33, 0x33, 0x33, 0xFF), "Default" },
+      { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
+      { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
+      { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
     };
-    
+
     Color curBackgroundColor = EditorSettings::Instance()->GetCurrentBackgroundFrameColor();
     int32 itemsCount = COUNT_OF(colorsMap);
-    
+
     bool isCustomColor = true;
-    for (int32 i = 0; i < itemsCount; i ++)
+    for (int32 i = 0; i < itemsCount; i++)
     {
         QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
         colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
-        
+
         Color curColor = QColorToColor(colorsMap[i].color);
         if (curColor == curBackgroundColor)
         {
@@ -433,22 +433,22 @@ void MainWindow::SetupViewMenu()
 
         colorAction->setCheckable(true);
         colorAction->setChecked(curColor == curBackgroundColor);
-        
+
         backgroundFramePredefinedColorActions.append(colorAction);
         setBackgroundColorMenu->addAction(colorAction);
     }
-    
+
     backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
     backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
     backgroundFrameUseCustomColorAction->setCheckable(true);
     backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
     setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
-    
+
     setBackgroundColorMenu->addSeparator();
-    
+
     backgroundFrameSelectCustomColorAction = new QAction("Select Custom Color...", setBackgroundColorMenu);
     setBackgroundColorMenu->addAction(backgroundFrameSelectCustomColorAction);
-    
+
     connect(setBackgroundColorMenu, SIGNAL(triggered(QAction*)), this, SLOT(SetBackgroundColorMenuTriggered(QAction*)));
 
     // Another actions below the Set Background Color.
@@ -477,12 +477,12 @@ void MainWindow::RebuildRecentMenu()
         projectList << QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(i).c_str()));
     }
     projectList.removeDuplicates();
-    for (auto &projectPath : projectList)
-        {
-            QAction *recentProject = new QAction(projectPath, this);
-            recentProject->setData(projectPath);
-            menuRecent->addAction(recentProject);
-        }
+    for (auto& projectPath : projectList)
+    {
+        QAction* recentProject = new QAction(projectPath, this);
+        recentProject->setData(projectPath);
+        menuRecent->addAction(recentProject);
+    }
     menuRecent->setEnabled(projectCount > 0);
 }
 
@@ -502,7 +502,7 @@ int MainWindow::AddTab(Document* document, int index)
     return insertedIndex;
 }
 
-void MainWindow::closeEvent(QCloseEvent *ev)
+void MainWindow::closeEvent(QCloseEvent* ev)
 {
     SaveMainWindowState();
     emit CloseRequested();
@@ -525,7 +525,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     else
     {
         QStringList errors;
-        for (const auto &result : resultList.GetResults())
+        for (const auto& result : resultList.GetResults())
         {
             errors << QString::fromStdString(result.message);
         }
@@ -536,14 +536,14 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 void MainWindow::OnOpenProject()
 {
     QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
-                                                        ResourcesManageHelper::GetDefaultDirectory(),
-                                                        tr( "Project (*.uieditor)"));
+                                                      ResourcesManageHelper::GetDefaultDirectory(),
+                                                      tr("Project (*.uieditor)"));
     if (projectPath.isEmpty())
     {
         return;
     }
     projectPath = QDir::toNativeSeparators(projectPath);
-        
+
     emit ActionOpenProjectTriggered(projectPath);
 }
 
@@ -551,15 +551,15 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
 {
     // Add file to recent project files list
     EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
-    
+
     // Save to settings default project directory
     QFileInfo fileInfo(projectPath);
     QString projectDir = fileInfo.absoluteDir().absolutePath();
     EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
-	// Update window title
-	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
-    
+    // Update window title
+    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
@@ -582,7 +582,7 @@ void MainWindow::OnBiDiSupportChanged(int arg)
     emit BiDiSupportChanged(arg == Qt::Checked);
 }
 
-void MainWindow::OnGlobalClassesChanged(const QString &str)
+void MainWindow::OnGlobalClassesChanged(const QString& str)
 {
     emit GlobalStyleClassesChanged(str);
 }
@@ -624,7 +624,7 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
     }
 
     EditorSettings::Instance()->SetCurrentBackgroundFrameColor(newColor);
-    
+
     // Update the check marks.
     bool colorFound = false;
     foreach (QAction* colorAction, backgroundFramePredefinedColorActions)

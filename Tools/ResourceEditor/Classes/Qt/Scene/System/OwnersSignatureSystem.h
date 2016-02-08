@@ -35,25 +35,22 @@
 #include "DAVAEngine.h"
 #include "Commands2/Command2.h"
 
-class OwnersSignatureSystem: public DAVA::SceneSystem
+class OwnersSignatureSystem : public DAVA::SceneSystem
 {
-
 public:
+    OwnersSignatureSystem(DAVA::Scene* scene);
+    ~OwnersSignatureSystem();
 
-	OwnersSignatureSystem(DAVA::Scene* scene);
-	~OwnersSignatureSystem();
-	
-	void ProcessCommand(const Command2 *command, bool redo);
-	
+    void ProcessCommand(const Command2* command, bool redo);
+
 private:
-	
-	bool IsCommandIdValid(int _id);
-	
-	void UpdateEntityOwner(DAVA::KeyedArchive *customProperties);
-	
-	DAVA::String GetCurrentTime();
+    bool IsCommandIdValid(int _id);
 
-	static const DAVA::int32 validIDs[] ;
+    void UpdateEntityOwner(DAVA::KeyedArchive* customProperties);
+
+    DAVA::String GetCurrentTime();
+
+    static const DAVA::int32 validIDs[];
 };
 
 

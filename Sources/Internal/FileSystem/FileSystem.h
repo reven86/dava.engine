@@ -35,13 +35,13 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/ZipFile.h"
 #endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
  */
-namespace DAVA 
+namespace DAVA
 {
 class ResourceArchive;
 /**
@@ -57,21 +57,20 @@ class ResourceArchive;
 	\todo refactoring of utils and ~res:/ ~doc:/ access for the project files
 	\todo add support for pack files
 */
-class FileSystem : public Singleton <FileSystem>
+class FileSystem : public Singleton<FileSystem>
 {
 public:
-	FileSystem();
-	virtual ~FileSystem();
-	
-	/**
+    FileSystem();
+    virtual ~FileSystem();
+
+    /**
 		\brief Function to delete file from filesystem
 		\param[in] filePath full path for the file we want to delete
 		\returns true if deletion was successful
 	 */
-	virtual bool DeleteFile(const FilePath & filePath);
-	
-	
-	/*
+    virtual bool DeleteFile(const FilePath& filePath);
+
+    /*
 		\brief Function to delete directory
 		
 		If isRecursive variable is false, function will succeed only in case if directory is empty.
@@ -80,88 +79,87 @@ public:
 		\param[in] isRecursive if true trying to delete all subfolders, if not just trying to delete this directory
 		\returns true if this directory was deleted
 	 */
-	virtual bool DeleteDirectory(const FilePath & path, bool isRecursive = true);
+    virtual bool DeleteDirectory(const FilePath& path, bool isRecursive = true);
 
-	
-	/*
+    /*
 		\brief Deletes all files in given directory
 		if isRecursive is set function walks into all child directories and delete files there also.
 		This funciton do not delete directoris, it delete only files
 		\param[in] isRecursive if true go into child directories and delete files there also, false by default
 		\returns number of deleted files
-	*/ 
-	virtual uint32 DeleteDirectoryFiles(const FilePath & path, bool isRecursive = false);
+	*/
+    virtual uint32 DeleteDirectoryFiles(const FilePath& path, bool isRecursive = false);
 
-	enum eCreateDirectoryResult
-	{
-		DIRECTORY_CANT_CREATE = 0,
-		DIRECTORY_EXISTS = 1,
-		DIRECTORY_CREATED = 2,
-	};
-	/**
+    enum eCreateDirectoryResult
+    {
+        DIRECTORY_CANT_CREATE = 0,
+        DIRECTORY_EXISTS = 1,
+        DIRECTORY_CREATED = 2,
+    };
+    /**
 		\brief Function to create directory at filePath you've requested
 		\param[in] filepath where you want to create a directory
 		\returns true if directory created successfully
 	 */
-	virtual eCreateDirectoryResult CreateDirectory(const FilePath & filePath, bool isRecursive = false);
-	
-	/**
+    virtual eCreateDirectoryResult CreateDirectory(const FilePath& filePath, bool isRecursive = false);
+
+    /**
 		\brief Function to retrieve current working directory
 		\returns current working directory
 	 */
-	virtual const FilePath & GetCurrentWorkingDirectory();
+    virtual const FilePath& GetCurrentWorkingDirectory();
 
-	/**
+    /**
 		\brief Function to retrieve directory, which contain executable binary file
 		\returns current directory, with  executable file
 	 */
-	virtual FilePath  GetCurrentExecutableDirectory();
+    virtual FilePath GetCurrentExecutableDirectory();
 
-	/**
+    /**
 		\brief Function to set current working directory
 		\param[in] newWorkingDirectory new working directory to be set
 		\returns true if directory set successfully
 	 */
-	virtual bool SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory);
-	
-	/**
+    virtual bool SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory);
+
+    /**
         \brief Function to retrieve current documents directory
         \returns current documents directory
      */
-	virtual const FilePath & GetCurrentDocumentsDirectory();
-    
+    virtual const FilePath& GetCurrentDocumentsDirectory();
+
     /**
          \brief Function to set current documents directory
          \param[in] newDocDirectory new documents directory to be set
      */
-	virtual void SetCurrentDocumentsDirectory(const FilePath & newDocDirectory);
-    
+    virtual void SetCurrentDocumentsDirectory(const FilePath& newDocDirectory);
+
     /**
          \brief Function to set current documents directory to default
      */
-	virtual void SetDefaultDocumentsDirectory();
-    
+    virtual void SetDefaultDocumentsDirectory();
+
     /**
          \brief Function to retrieve user's documents path
          \returns user's documents path
      */
-	static const FilePath GetUserDocumentsPath();
-    
+    static const FilePath GetUserDocumentsPath();
+
     /**
          \brief Function to retrieve public documents path
          \returns public documents path
      */
-	virtual const FilePath GetPublicDocumentsPath();
+    virtual const FilePath GetPublicDocumentsPath();
 
-#if defined(__DAVAENGINE_APPLE__)  
+#if defined(__DAVAENGINE_APPLE__)
     /**
         \brief Function to retrieve user’s home path
         \returns user’s home path
     */
     const FilePath GetHomePath();
 #endif
-    
-	/**
+
+    /**
 		\brief Function check if specified path is a regular file
 	*/
     bool IsFile(const FilePath& pathToCheck) const;
@@ -184,35 +182,35 @@ public:
      \param[in] filePath The name of the file to be checked for lock.
      \returns true if file is locked, false if not locked
 	 */
-	virtual bool IsFileLocked(const FilePath & filePath) const;
+    virtual bool IsFileLocked(const FilePath& filePath) const;
 
-	File *CreateFileForFrameworkPath(const FilePath & frameworkPath, uint32 attributes);
+    File* CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes);
 
-	/**
+    /**
 		\brief Copies an existing file to a new file.
 		\param[in] existingFile The name of an existing file.
 		\param[out] newFile The name of the new file.
 		\returns true if file was successfully copied, false otherwise
 	*/
-	virtual bool CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
+    virtual bool CopyFile(const FilePath& existingFile, const FilePath& newFile, bool overwriteExisting = false);
 
-	/**
+    /**
 		\brief Moves an existing file to a new file.
 		\param[in] existingFile The name of an existing file.
 		\param[out] newFile The name of the new file.
 		\param[in] overwriteExisting signal to overwrite existing file with name newFile.
 		\returns true if file was successfully moved, false otherwise
 	*/
-	virtual bool MoveFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
+    virtual bool MoveFile(const FilePath& existingFile, const FilePath& newFile, bool overwriteExisting = false);
 
-	/**
+    /**
 		\brief Copies directory to another existing directory.
 		\param[in] sourceDirectory The name of an existing file.
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-	virtual bool CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory, bool overwriteExisting = false);
-    
+    virtual bool CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
+
     /**
         \brief Read whole file contents into new buffer. 
         If function returns zero error happened and it haven't loaded the file
@@ -222,35 +220,34 @@ public:
         \param[out] fileSize
         \returns pointer to newly created buffer with file contents
      */
-    uint8 * ReadFileContents(const FilePath & pathname, uint32 & fileSize);
-    
-    
+    uint8* ReadFileContents(const FilePath& pathname, uint32& fileSize);
+
     /**
         \brief Read whole file contents into string.
         \param[in] pathname path to the file we want to read
         \returns string with whole file contents
      */
-    String ReadFileContents(const FilePath & pathname);
+    String ReadFileContents(const FilePath& pathname);
 
-	/**
+    /**
 		\brief Function to attach ResourceArchive to filesystem
 	
 		\param[in] archiveName pathname or local filename of archive we want to attach
 		\param[in] attachPath path we attach our archive 
-	*/ 
-	virtual void AttachArchive(const String & archiveName, const String & attachPath);
+	*/
+    virtual void AttachArchive(const String& archiveName, const String& attachPath);
 
-	/**
+    /**
 	 \brief Invokes the command processor to execute a command
 	 \param[in] command contains the system command to be executed
 	 \returns platform-dependent
 	 */
-	int32 Spawn(const String& command);
+    int32 Spawn(const String& command);
 
-	/**
+    /**
 	 \brief Marks folder as contains no media files to exclude it from index
 	 */
-	void MarkFolderAsNoMedia(const FilePath &folder);
+    void MarkFolderAsNoMedia(const FilePath& folder);
 
     /**
     \brief Compares two files to check if theirs content is same. Ignores lineendings
@@ -259,7 +256,7 @@ public:
     \param[in] ignoreEmptyLines - ignores any empty lines
     \returns true if files are equals and false if not
     */
-    bool CompareTextFiles(const FilePath &filePath1, const FilePath &filePath2);
+    bool CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2);
 
     /**
     \brief Compares two files to check if theirs content is same.
@@ -267,7 +264,7 @@ public:
     \param[in] filePath2 - path to one of files to compare
     \returns true if files are equals and false if not
     */
-    bool CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2);
+    bool CompareBinaryFiles(const FilePath& filePath1, const FilePath& filePath2);
 
     bool GetFileSize(const FilePath& path, uint32& size);
 
@@ -277,36 +274,36 @@ public:
     bool Exists(const FilePath& filePath) const;
 
 private:
-    bool HasLineEnding(File *f);
+    bool HasLineEnding(File* f);
 
-	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);
+    virtual eCreateDirectoryResult CreateExactDirectory(const FilePath& filePath);
 
-	FilePath currentWorkingDirectory;
+    FilePath currentWorkingDirectory;
     FilePath currentDocDirectory;
 
-	struct ResourceArchiveItem
-	{
-		ResourceArchive * archive;
-		String attachPath;
-	};
+    struct ResourceArchiveItem
+    {
+        ResourceArchive* archive;
+        String attachPath;
+    };
 
-	List<ResourceArchiveItem> resourceArchiveList;
+    List<ResourceArchiveItem> resourceArchiveList;
     Map<String, void*> lockedFileHandles;
 
-	friend class File;
+    friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-	friend class ZipFile;
+    friend class ZipFile;
+
 public:
-	void Init();
+    void Init();
 
 private:
-	bool IsAPKPath(const String& path) const;
-	Set<String> fileSet;
-	Set<String> dirSet;
+    bool IsAPKPath(const String& path) const;
+    Set<String> fileSet;
+    Set<String> dirSet;
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 };
-	
 };
 
 #endif // __DAVAENGINE_FILESYSTEM_H__

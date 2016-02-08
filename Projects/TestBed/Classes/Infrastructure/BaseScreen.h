@@ -36,27 +36,29 @@
 class BaseScreen : public DAVA::UIScreen
 {
 protected:
-    virtual ~BaseScreen(){}
-public:
+    virtual ~BaseScreen()
+    {
+    }
 
+public:
     BaseScreen();
-    BaseScreen(const DAVA::String & screenName, DAVA::int32 skipBeforeTests = 10);
-    
+    BaseScreen(const DAVA::String& screenName, DAVA::int32 skipBeforeTests = 10);
+
     inline DAVA::int32 GetScreenId();
-    
-    void SystemScreenSizeDidChanged(const DAVA::Rect &newFullScreenSize) override;
+
+    void SystemScreenSizeDidChanged(const DAVA::Rect& newFullScreenSize) override;
 
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    bool SystemInput(DAVA::UIEvent *currentInput) override;
+    bool SystemInput(DAVA::UIEvent* currentInput) override;
 
-    virtual void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData);
-    
+    virtual void OnExitButton(DAVA::BaseObject* obj, void* data, void* callerData);
+
 private:
-    static DAVA::int32 globalScreenId; // 1, on create of screen increment  
+    static DAVA::int32 globalScreenId; // 1, on create of screen increment
     DAVA::int32 currentScreenId;
-    DAVA::UIButton *exitButton;
+    DAVA::UIButton* exitButton;
 };
 
 DAVA::int32 BaseScreen::GetScreenId()

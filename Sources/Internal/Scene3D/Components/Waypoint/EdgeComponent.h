@@ -35,62 +35,58 @@
 
 namespace DAVA
 {
-    
 class SerializationContext;
 class KeyedArchive;
 class Entity;
-    
+
 class EdgeComponent : public Component
 {
 protected:
     ~EdgeComponent();
-public:
-	IMPLEMENT_COMPONENT_TYPE(EDGE_COMPONENT);
 
-	EdgeComponent();
+public:
+    IMPLEMENT_COMPONENT_TYPE(EDGE_COMPONENT);
+
+    EdgeComponent();
     EdgeComponent(const EdgeComponent&);
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
 
-    void SetNextEntity(Entity * entity);
-    Entity * GetNextEntity() const;
-    
-    void SetProperties(KeyedArchive *archieve);
-    KeyedArchive * GetProperties() const;
-    
-private:
+    void SetNextEntity(Entity* entity);
+    Entity* GetNextEntity() const;
 
-	//For property panel
-	void SetNextEntityName(const FastName & name);
-	const FastName GetNextEntityName() const;
-
-	void SetNextEntityTag(int32 tag);
-	int32 GetNextEntityTag() const;
+    void SetProperties(KeyedArchive* archieve);
+    KeyedArchive* GetProperties() const;
 
 private:
-    
-    Entity * nextEntity;
-    KeyedArchive *properties;
-    
+    //For property panel
+    void SetNextEntityName(const FastName& name);
+    const FastName GetNextEntityName() const;
+
+    void SetNextEntityTag(int32 tag);
+    int32 GetNextEntityTag() const;
+
+private:
+    Entity* nextEntity;
+    KeyedArchive* properties;
+
 public:
-	INTROSPECTION_EXTEND(EdgeComponent, Component,
-		MEMBER(properties, "Edge properties", I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("nextEntityName", "Next Entity Name", GetNextEntityName, SetNextEntityName, I_VIEW)
-		PROPERTY("nextEntityTag", "Next Entity Tag", GetNextEntityTag, SetNextEntityTag, I_VIEW)
-    );
+    INTROSPECTION_EXTEND(EdgeComponent, Component,
+                         MEMBER(properties, "Edge properties", I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("nextEntityName", "Next Entity Name", GetNextEntityName, SetNextEntityName, I_VIEW)
+                         PROPERTY("nextEntityTag", "Next Entity Tag", GetNextEntityTag, SetNextEntityTag, I_VIEW)
+                         );
 };
 
-
-inline Entity * EdgeComponent::GetNextEntity() const
+inline Entity* EdgeComponent::GetNextEntity() const
 {
     return nextEntity;
 }
 
-inline KeyedArchive * EdgeComponent::GetProperties() const
+inline KeyedArchive* EdgeComponent::GetProperties() const
 {
     return properties;
 }
-    
 }
 #endif //__DAVAENGINE_EDGE_COMPONENT_H__

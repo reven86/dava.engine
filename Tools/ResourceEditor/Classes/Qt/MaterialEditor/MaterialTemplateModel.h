@@ -32,18 +32,17 @@
 
 #include <QSortFilterProxyModel>
 
-
 class MaterialTemplateModel
-    : public QSortFilterProxyModel
+: public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    MaterialTemplateModel( QObject *parent = NULL );
+    MaterialTemplateModel(QObject* parent = NULL);
     ~MaterialTemplateModel();
 
 private:
-    bool filterAcceptsRow( int source_row, const QModelIndex & source_parent ) const;
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
 };
 
 

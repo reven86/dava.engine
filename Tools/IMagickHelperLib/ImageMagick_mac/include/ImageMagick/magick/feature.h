@@ -27,7 +27,7 @@ extern "C" {
 */
 typedef struct _ChannelFeatures
 {
-  double
+    double
     angular_second_moment[4],
     contrast[4],
     correlation[4],
@@ -45,7 +45,8 @@ typedef struct _ChannelFeatures
 } ChannelFeatures;
 
 extern MagickExport ChannelFeatures
-  *GetImageChannelFeatures(const Image *,const size_t,ExceptionInfo *);
+*
+GetImageChannelFeatures(const Image*, const size_t, ExceptionInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

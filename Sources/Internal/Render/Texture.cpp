@@ -67,7 +67,7 @@
 #endif //GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
 #endif //__DAVAENGINE_ANDROID__
 
-namespace DAVA 
+namespace DAVA
 {
 namespace Validator
 {
@@ -142,65 +142,65 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
 }
 
 Array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
-{{
-    String("_px"),
-    String("_nx"),
-    String("_py"),
-    String("_ny"),
-    String("_pz"),
-    String("_nz")
-}};
+{ {
+String("_px"),
+String("_nx"),
+String("_py"),
+String("_ny"),
+String("_pz"),
+String("_nz")
+} };
 
 class TextureMemoryUsageInfo
 {
 public:
-	TextureMemoryUsageInfo()
-	{
-		pvrTexturesMemoryUsed = 0;
-		texturesMemoryUsed = 0;
-		fboMemoryUsed = 0;
-	}
-	
-	void AllocPVRTexture(int size)
-	{
-		pvrTexturesMemoryUsed += size;
-	}
-	
-	void ReleasePVRTexture(int size)
-	{
-		pvrTexturesMemoryUsed -= size;
-	}
-	
-	void AllocTexture(int size)
-	{
-		texturesMemoryUsed += size;
-	}
-	
-	void ReleaseTexture(int size)
-	{
-		texturesMemoryUsed -= size;
-	}
-	
-	void AllocFBOTexture(int size)
-	{
-		fboMemoryUsed += size;
-	}
-	
-	void ReleaseFBOTexture(int size)
-	{
-		fboMemoryUsed -= size;
-	}
-	
-	// STATISTICS
-	int pvrTexturesMemoryUsed;
-	int texturesMemoryUsed;
-	int	fboMemoryUsed;
+    TextureMemoryUsageInfo()
+    {
+        pvrTexturesMemoryUsed = 0;
+        texturesMemoryUsed = 0;
+        fboMemoryUsed = 0;
+    }
+
+    void AllocPVRTexture(int size)
+    {
+        pvrTexturesMemoryUsed += size;
+    }
+
+    void ReleasePVRTexture(int size)
+    {
+        pvrTexturesMemoryUsed -= size;
+    }
+
+    void AllocTexture(int size)
+    {
+        texturesMemoryUsed += size;
+    }
+
+    void ReleaseTexture(int size)
+    {
+        texturesMemoryUsed -= size;
+    }
+
+    void AllocFBOTexture(int size)
+    {
+        fboMemoryUsed += size;
+    }
+
+    void ReleaseFBOTexture(int size)
+    {
+        fboMemoryUsed -= size;
+    }
+
+    // STATISTICS
+    int pvrTexturesMemoryUsed;
+    int texturesMemoryUsed;
+    int fboMemoryUsed;
 };
 
 eGPUFamily Texture::defaultGPU = GPU_ORIGIN;
-    
+
 static TextureMemoryUsageInfo texMemoryUsageInfo;
-	
+
 TexturesMap Texture::textureMap;
 
 Mutex Texture::textureMapMutex;
@@ -210,7 +210,7 @@ static int32 textureFboCounter = 0;
 bool Texture::pixelizationFlag = false;
 
 // Main constructors
-Texture * Texture::Get(const FilePath & pathName)
+Texture* Texture::Get(const FilePath& pathName)
 {
     LockGuard<Mutex> guard(textureMapMutex);
 
@@ -224,7 +224,7 @@ Texture * Texture::Get(const FilePath & pathName)
     return texture;
 }
 
-void Texture::AddToMap(Texture *tex)
+void Texture::AddToMap(Texture* tex)
 {
     if (!tex->texDescriptor->pathname.IsEmpty())
     {
@@ -258,9 +258,9 @@ Texture::~Texture()
 {
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));
     ReleaseTextureData();
-	SafeDelete(texDescriptor);
+    SafeDelete(texDescriptor);
 }
-    
+
 void Texture::ReleaseTextureData()
 {
     if (handle.IsValid())
@@ -291,70 +291,70 @@ void Texture::ReleaseTextureData()
     isRenderTarget = false;
 }
 
-Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo)
+Texture* Texture::CreateTextFromData(PixelFormat format, uint8* data, uint32 width, uint32 height, bool generateMipMaps, const char* addInfo)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Texture * tx = CreateFromData(format, data, width, height, generateMipMaps);
-    
-	if (!addInfo)
+    Texture* tx = CreateFromData(format, data, width, height, generateMipMaps);
+
+    if (!addInfo)
     {
         tx->texDescriptor->pathname = Format("Text texture %d", textureFboCounter);
     }
-	else
+    else
     {
         tx->texDescriptor->pathname = Format("Text texture %d info:%s", textureFboCounter, addInfo);
     }
     AddToMap(tx);
-    
-	textureFboCounter++;
-	return tx;
+
+    textureFboCounter++;
+    return tx;
 }
-	
-void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId)
+
+void Texture::TexImage(int32 level, uint32 width, uint32 height, const void* _data, uint32 dataSize, uint32 cubeFaceId)
 {
     rhi::UpdateTexture(handle, _data, level, (rhi::TextureFace)cubeFaceId);
 }
-    
-Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint32 _width, uint32 _height, bool generateMipMaps)
+
+Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32 _width, uint32 _height, bool generateMipMaps)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Image *image = Image::CreateFromData(_width, _height, _format, _data);
+    Image* image = Image::CreateFromData(_width, _height, _format, _data);
     if (nullptr == image)
         return nullptr;
 
     Texture* texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
 
-    Vector<Image *> *images = new Vector<Image *>();
+    Vector<Image*>* images = new Vector<Image*>();
     images->push_back(image);
 
     Validator::CheckAndFixImageFormat(images);
 
     texture->SetParamsFromImages(images);
-	texture->FlushDataToRenderer(images);
+    texture->FlushDataToRenderer(images);
 
-	return texture;
+    return texture;
 }
-    
-Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
+
+Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Texture * texture = new Texture();
+    Texture* texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
 
-    Vector<Image *> *images = new Vector<Image *>();
+    Vector<Image*>* images = new Vector<Image*>();
     image->Retain();
     images->push_back(image);
 
     Validator::CheckAndFixImageFormat(images);
 
     texture->SetParamsFromImages(images);
-	texture->FlushDataToRenderer(images);
-    
-	return texture;
+    texture->FlushDataToRenderer(images);
+
+    return texture;
 }
 
 void Texture::SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW)
@@ -376,29 +376,29 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
     rhi::ReleaseSamplerState(samplerStateHandle);
     samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
-	
+
 void Texture::GenerateMipmaps()
 {
     DVASSERT("Mipmap generation on fly is not supported anymore!")
 }
 
-Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu)
+Texture* Texture::CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Texture * texture = new Texture();
-	texture->texDescriptor->Initialize(descriptor);
+    Texture* texture = new Texture();
+    texture->texDescriptor->Initialize(descriptor);
 
-    Vector<Image *> * images = new Vector<Image *> ();
-    
-	bool loaded = texture->LoadImages(gpu, images);
+    Vector<Image*>* images = new Vector<Image*>();
+
+    bool loaded = texture->LoadImages(gpu, images);
     if (!loaded)
     {
         Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
                       descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
 
         SafeDelete(images);
-		SafeRelease(texture);
+        SafeRelease(texture);
         return nullptr;
     }
 
@@ -408,42 +408,42 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
     return texture;
 }
 
-bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
+bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(gpu != GPU_INVALID);
-    
+
     if (!IsLoadAvailable(gpu))
     {
         Logger::Error("[Texture::LoadImages] Load not available: invalid requested GPU family (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
         return false;
     }
-	
+
     const int32 baseMipMap = GetBaseMipMap();
     if (texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
     {
         Vector<FilePath> facePathes;
         texDescriptor->GetFacePathnames(facePathes);
-        
+
         PixelFormat imagesFormat = FORMAT_INVALID;
-		for(auto i = 0; i < CUBE_FACE_COUNT; ++i)
-		{
-            auto & currentfacePath = facePathes[i];
+        for (auto i = 0; i < CUBE_FACE_COUNT; ++i)
+        {
+            auto& currentfacePath = facePathes[i];
             if (currentfacePath.IsEmpty())
                 continue;
 
-            Vector<Image *> faceImage;
+            Vector<Image*> faceImage;
             ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap);
             if (faceImage.size() == 0)
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
 
-				ReleaseImages(images);
-				return false;
-			}
-            
-			DVASSERT(faceImage.size() == 1);
+                ReleaseImages(images);
+                return false;
+            }
+
+            DVASSERT(faceImage.size() == 1);
 
             faceImage[0]->cubeFaceID = i;
             faceImage[0]->mipmapLevel = 0;
@@ -456,7 +456,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
             else if (imagesFormat != faceImage[0]->format)
             {
                 Logger::Error("[Texture::LoadImages] Face(%s) has different pixel format(%s)", currentfacePath.GetAbsolutePathname().c_str(), PixelFormatDescriptor::GetPixelFormatString(faceImage[0]->format));
-                
+
                 ReleaseImages(images);
                 return false;
             }
@@ -464,25 +464,25 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
             if (texDescriptor->GetGenerateMipMaps())
             {
-                Vector<Image *> mipmapsImages = faceImage[0]->CreateMipMapsImages();
+                Vector<Image*> mipmapsImages = faceImage[0]->CreateMipMapsImages();
                 images->insert(images->end(), mipmapsImages.begin(), mipmapsImages.end());
                 SafeRelease(faceImage[0]);
             }
             else
             {
-			    images->push_back(faceImage[0]);
+                images->push_back(faceImage[0]);
             }
-		}
-	}
-	else
-	{
-		FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
+        }
+    }
+    else
+    {
+        FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
 
         ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
         ImageSystem::Instance()->EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {
-            Image * img = *images->begin();
+            Image* img = *images->begin();
             *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
             SafeRelease(img);
         }
@@ -510,28 +510,27 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
     return true;
 }
 
-
-void Texture::ReleaseImages(Vector<Image *> *images)
+void Texture::ReleaseImages(Vector<Image*>* images)
 {
-	for_each(images->begin(), images->end(), SafeRelease<Image>);
-	images->clear();
+    for_each(images->begin(), images->end(), SafeRelease<Image>);
+    images->clear();
 }
 
-void Texture::SetParamsFromImages(const Vector<Image *> * images)
+void Texture::SetParamsFromImages(const Vector<Image*>* images)
 {
-	DVASSERT(images->size() != 0);
+    DVASSERT(images->size() != 0);
 
-    Image *img = *images->begin();
-	width = img->width;
-	height = img->height;
-	texDescriptor->format = img->format;
+    Image* img = *images->begin();
+    width = img->width;
+    height = img->height;
+    texDescriptor->format = img->format;
 
     textureType = (img->cubeFaceID != Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_CUBE : rhi::TEXTURE_TYPE_2D;
 
     state = STATE_DATA_LOADED;
 }
 
-void Texture::FlushDataToRenderer(Vector<Image *> * images)
+void Texture::FlushDataToRenderer(Vector<Image*>* images)
 {
     DVASSERT(images->size() != 0);
 
@@ -635,7 +634,7 @@ Texture* Texture::CreateFromFile(const FilePath& pathName, const FastName& group
     Texture* texture = PureCreate(pathName, group);
     if (nullptr == texture)
     {
-        TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
+        TextureDescriptor* descriptor = TextureDescriptor::CreateFromFile(pathName);
         if (descriptor)
         {
             texture = CreatePink(descriptor->IsCubeMap() ? rhi::TEXTURE_TYPE_CUBE : typeHint);
@@ -647,16 +646,16 @@ Texture* Texture::CreateFromFile(const FilePath& pathName, const FastName& group
             texture = CreatePink(typeHint);
             texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
         }
-        
-        texture->texDescriptor->SetQualityGroup(group);
-        
-        AddToMap(texture);
-	}
 
-	return texture;
+        texture->texDescriptor->SetQualityGroup(group);
+
+        AddToMap(texture);
+    }
+
+    return texture;
 }
 
-Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
+Texture* Texture::PureCreate(const FilePath& pathName, const FastName& group)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -667,7 +666,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
         return nullptr;
 
     FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(pathName);
-    Texture * texture = Texture::Get(descriptorPathname);
+    Texture* texture = Texture::Get(descriptorPathname);
     if (texture)
         return texture;
 
@@ -677,8 +676,8 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 
     descriptor->SetQualityGroup(group);
 
-	eGPUFamily gpuForLoading = GetGPUForLoading(defaultGPU, descriptor);
-	texture = CreateFromImage(descriptor, gpuForLoading);
+    eGPUFamily gpuForLoading = GetGPUForLoading(defaultGPU, descriptor);
+    texture = CreateFromImage(descriptor, gpuForLoading);
     if (texture)
     {
         texture->loadedAsFile = gpuForLoading;
@@ -688,49 +687,49 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
     delete descriptor;
     return texture;
 }
-    
-void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, uint32 _height)
+
+void Texture::ReloadFromData(PixelFormat format, uint8* data, uint32 _width, uint32 _height)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     rhi::HTexture oldHandle = handle;
     ReleaseTextureData();
-    
-    Image *image = Image::CreateFromData(_width, _height, format, data);
+
+    Image* image = Image::CreateFromData(_width, _height, format, data);
     if (!image)
         return;
 
-    Vector<Image *> *images = new Vector<Image *>();
+    Vector<Image*>* images = new Vector<Image*>();
     images->push_back(image);
-	
+
     SetParamsFromImages(images);
-	FlushDataToRenderer(images);
+    FlushDataToRenderer(images);
     rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
 }
-    
+
 void Texture::Reload()
 {
     ReloadAs(loadedAsFile);
 }
-    
+
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     rhi::HTexture oldHandle = handle;
 
     DVASSERT(isRenderTarget == false);
-    
+
     ReleaseTextureData();
 
-	bool descriptorReloaded = texDescriptor->Reload();
-    
-	eGPUFamily gpuForLoading = GetGPUForLoading(gpuFamily, texDescriptor);
-    Vector<Image *> *images = new Vector<Image *> ();
-    
+    bool descriptorReloaded = texDescriptor->Reload();
+
+    eGPUFamily gpuForLoading = GetGPUForLoading(gpuFamily, texDescriptor);
+    Vector<Image*>* images = new Vector<Image*>();
+
     bool loaded = false;
     if (descriptorReloaded && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
     {
-	    loaded = LoadImages(gpuForLoading, images);
+        loaded = LoadImages(gpuForLoading, images);
     }
 
     if (loaded)
@@ -743,14 +742,13 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
     else
     {
         SafeDelete(images);
-        
+
         Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", texDescriptor->pathname.GetAbsolutePathname().c_str());
         MakePink();
     }
     rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
 }
 
-    
 bool Texture::IsLoadAvailable(const eGPUFamily gpuFamily) const
 {
     if (texDescriptor->IsCompressedFile())
@@ -762,20 +760,19 @@ bool Texture::IsLoadAvailable(const eGPUFamily gpuFamily) const
     {
         return false;
     }
-    
+
     return true;
 }
 
-    
 int32 Texture::Release()
 {
     if (GetRetainCount() == 1)
     {
         textureMapMutex.Lock();
-		textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
+        textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
         textureMapMutex.Unlock();
-	}
-	return BaseObject::Release();
+    }
+    return BaseObject::Release();
 }
 
 Texture*
@@ -871,9 +868,9 @@ void Texture::DumpTextures()
     Logger::FrameworkDebug("--------------- Currently allocated textures ---------------");
 
     textureMapMutex.Lock();
-	for(TexturesMap::iterator it = textureMap.begin(); it != textureMap.end(); ++it)
-	{
-		Texture *t = it->second;
+    for (TexturesMap::iterator it = textureMap.begin(); it != textureMap.end(); ++it)
+    {
+        Texture* t = it->second;
         Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), (uint32)(t->handle), t->width, t->height,
                                t->GetRetainCount(), t->debugInfo.c_str(), PixelFormatDescriptor::GetPixelFormatString(t->texDescriptor->format));
         cnt++;
@@ -883,17 +880,17 @@ void Texture::DumpTextures()
         {
             allocSize += t->width * t->height * PixelFormatDescriptor::GetPixelFormatSizeInBits(t->texDescriptor->format);
         }
-	}
+    }
     textureMapMutex.Unlock();
 
-	Logger::FrameworkDebug("      Total allocated textures %d    memory size %d", cnt, allocSize/8);
-	Logger::FrameworkDebug("============================================================");
+    Logger::FrameworkDebug("      Total allocated textures %d    memory size %d", cnt, allocSize / 8);
+    Logger::FrameworkDebug("============================================================");
 }
-	
-void Texture::SetDebugInfo(const String & _debugInfo)
+
+void Texture::SetDebugInfo(const String& _debugInfo)
 {
 #if defined(__DAVAENGINE_DEBUG__)
-	debugInfo = FastName(_debugInfo.c_str());
+    debugInfo = FastName(_debugInfo.c_str());
 #endif
 }
 
@@ -955,8 +952,8 @@ Image* Texture::CreateImageFromMemory()
 
     return image;
 }
-	
-const TexturesMap & Texture::GetTextureMap()
+
+const TexturesMap& Texture::GetTextureMap()
 {
     return textureMap;
 }
@@ -964,7 +961,7 @@ const TexturesMap & Texture::GetTextureMap()
 uint32 Texture::GetDataSize() const
 {
     DVASSERT((0 <= texDescriptor->format) && (texDescriptor->format < FORMAT_COUNT));
-    
+
     uint32 allocSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBits(texDescriptor->format) / 8;
     return allocSize;
 }
@@ -973,9 +970,9 @@ Texture* Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	//we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
-	//pink textures at game is invalid situation
-	Texture *tex = new Texture();
+    //we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
+    //pink textures at game is invalid situation
+    Texture* tex = new Texture();
     if (rhi::TEXTURE_TYPE_CUBE == requestedType)
     {
         tex->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, true);
@@ -995,36 +992,36 @@ void Texture::MakePink(bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    Vector<Image *> *images = new Vector<Image *> ();
+    Vector<Image*>* images = new Vector<Image*>();
     if (texDescriptor->IsCubeMap())
     {
         for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
         {
-            Image *img = Image::CreatePinkPlaceholder(checkers);
-			img->cubeFaceID = i;
-			img->mipmapLevel = 0;
+            Image* img = Image::CreatePinkPlaceholder(checkers);
+            img->cubeFaceID = i;
+            img->mipmapLevel = 0;
 
-			images->push_back(img);
-		}
-	}
-	else
-	{
-		images->push_back(Image::CreatePinkPlaceholder(checkers));
-	}
+            images->push_back(img);
+        }
+    }
+    else
+    {
+        images->push_back(Image::CreatePinkPlaceholder(checkers));
+    }
 
-	SetParamsFromImages(images);
+    SetParamsFromImages(images);
     FlushDataToRenderer(images);
 
     isPink = true;
 
     SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 }
-    
+
 bool Texture::IsPinkPlaceholder()
 {
-	return isPink;
+    return isPink;
 }
-    
+
 void Texture::SetDefaultGPU(eGPUFamily gpuFamily)
 {
     defaultGPU = gpuFamily;
@@ -1035,21 +1032,19 @@ eGPUFamily Texture::GetDefaultGPU()
     return defaultGPU;
 }
 
-    
-eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor)
+eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor)
 {
     if (descriptor->IsCompressedFile())
         return (eGPUFamily)descriptor->exportedAsGpuFamily;
-    
+
     return requestedGPU;
 }
 
-
-const FilePath & Texture::GetPathname() const
+const FilePath& Texture::GetPathname() const
 {
     return texDescriptor->pathname;
 }
-    
+
 void Texture::SetPathname(const FilePath& path)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -1067,7 +1062,7 @@ void Texture::SetPathname(const FilePath& path)
 
 PixelFormat Texture::GetFormat() const
 {
-	return texDescriptor->format;
+    return texDescriptor->format;
 }
 
 void Texture::SetPixelization(bool value)
@@ -1083,7 +1078,7 @@ void Texture::SetPixelization(bool value)
     const TexturesMap& texturesMap = GetTextureMap();
 
     textureMapMutex.Lock();
-    for (Map<FilePath, Texture *>::const_iterator iter = texturesMap.begin(); iter != texturesMap.end(); iter ++)
+    for (Map<FilePath, Texture*>::const_iterator iter = texturesMap.begin(); iter != texturesMap.end(); iter++)
     {
         Texture* texture = iter->second;
         rhi::TextureFilter minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
@@ -1096,14 +1091,13 @@ void Texture::SetPixelization(bool value)
     //RHI_COMPLETE
 }
 
-
 int32 Texture::GetBaseMipMap() const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     if (texDescriptor->GetQualityGroup().IsValid())
     {
-        const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
+        const TextureQuality* curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if (nullptr != curTxQuality)
         {
             return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);

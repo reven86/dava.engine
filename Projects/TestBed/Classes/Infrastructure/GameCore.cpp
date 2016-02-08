@@ -47,6 +47,7 @@
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
 #include "Tests/InputTest.h"
+#include "Tests/FloatingPointExceptionTest.h"
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
@@ -86,6 +87,7 @@ void GameCore::RegisterTests()
     new InputTest();
     new CoreTest();
     new FormatsTest();
+    new FloatingPointExceptionTest();
     //$UNITTEST_CTOR
 }
 

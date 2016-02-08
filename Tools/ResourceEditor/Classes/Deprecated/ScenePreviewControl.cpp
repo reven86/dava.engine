@@ -36,12 +36,12 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
-ScenePreviewControl::ScenePreviewControl(const Rect & rect)
-    :   UI3DView(rect)
+ScenePreviewControl::ScenePreviewControl(const Rect& rect)
+    : UI3DView(rect)
 {
     SetInputEnabled(true, true);
 }
-    
+
 ScenePreviewControl::~ScenePreviewControl()
 {
     ReleaseScene();
@@ -50,7 +50,7 @@ ScenePreviewControl::~ScenePreviewControl()
     rotationSystem = nullptr;
 }
 
-void ScenePreviewControl::Input(DAVA::UIEvent *event)
+void ScenePreviewControl::Input(DAVA::UIEvent* event)
 {
     UI3DView::Input(event);
 }
@@ -76,26 +76,26 @@ void ScenePreviewControl::ReleaseScene()
     currentScenePath = FilePath();
 }
 
-int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
+int32 ScenePreviewControl::OpenScene(const FilePath& pathToFile)
 {
     ReleaseScene();
     RecreateScene();
-    
+
     int32 retError = SceneFileV2::ERROR_NO_ERROR;
-    if(pathToFile.IsEqualToExtension(".sce"))
+    if (pathToFile.IsEqualToExtension(".sce"))
     {
-        SceneFile *file = new SceneFile();
+        SceneFile* file = new SceneFile();
         file->SetDebugLog(false);
-        if(!file->LoadScene(pathToFile, editorScene))
+        if (!file->LoadScene(pathToFile, editorScene))
         {
             retError = ERROR_CANNOT_OPEN_FILE;
         }
-        
+
         SafeRelease(file);
     }
-    else if(pathToFile.IsEqualToExtension(".sc2"))
+    else if (pathToFile.IsEqualToExtension(".sc2"))
     {
-        SceneFileV2 *file = new SceneFileV2();
+        SceneFileV2* file = new SceneFileV2();
         file->EnableDebugLog(false);
         retError = file->LoadScene(pathToFile, editorScene);
         SafeRelease(file);
@@ -104,20 +104,20 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
     {
         retError = ERROR_WRONG_EXTENSION;
     }
-    
+
     CreateCamera();
 
-	Set<String> errorsLogToHideDialog;
-	SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
-    
+    Set<String> errorsLogToHideDialog;
+    SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
+
     return retError;
 }
 
 void ScenePreviewControl::Update(float32 timeElapsed)
 {
     UI3DView::Update(timeElapsed);
-    
-    if(needSetCamera)
+
+    if (needSetCamera)
     {
         needSetCamera = false;
         SetupCamera();
@@ -161,7 +161,7 @@ void ScenePreviewControl::CreateCamera()
 
 void ScenePreviewControl::SetupCamera()
 {
-    Camera *camera = editorScene->GetCurrentCamera();
+    Camera* camera = editorScene->GetCurrentCamera();
     if (camera && editorScene)
     {
         AABBox3 sceneBox = editorScene->GetWTMaximumBoundingBoxSlow();
@@ -169,7 +169,7 @@ void ScenePreviewControl::SetupCamera()
         camera->SetTarget(target);
         Vector3 dir = (sceneBox.max - sceneBox.min);
         camera->SetPosition(target + dir);
-        
+
         editorScene->SetCurrentCamera(camera);
         rotationSystem->RecalcCameraViewAngles(camera);
     }

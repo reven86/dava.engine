@@ -35,15 +35,15 @@
 class BaseValidator
 {
 public:
-
-    bool Validate(QVariant &v);
+    bool Validate(QVariant& v);
 
 protected:
-    
-    virtual bool ValidateInternal(QVariant &v) = 0;
-    virtual void FixupInternal(QVariant &v) const {};
+    virtual bool ValidateInternal(QVariant& v) = 0;
+    virtual void FixupInternal(QVariant& v) const {};
 
-    virtual void ErrorNotifyInternal(const QVariant &v) const {}
+    virtual void ErrorNotifyInternal(const QVariant& v) const
+    {
+    }
 };
 
 #endif // __BASE_VALIDATOR_H__

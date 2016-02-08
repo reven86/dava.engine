@@ -36,15 +36,14 @@
 
 namespace DAVA
 {
-
 /*
     Task type
  */
 enum DownloadType
 {
     RESUMED = 0, // try to resume downllad
-    FULL,        // download data even if there was a downloaded part
-    GET_SIZE,    // just get size of remote file
+    FULL, // download data even if there was a downloaded part
+    GET_SIZE, // just get size of remote file
 };
 
 /*
@@ -54,26 +53,26 @@ enum DownloadStatus
 {
     DL_PENDING = 0, // task is in pending queue
     DL_IN_PROGRESS, // task is performs now (means DownloadManager::currentTask is only one the task on that state)
-    DL_FINISHED,    // task is in finished queue
-    DL_UNKNOWN,     // unknow download status (means that task is just created)
+    DL_FINISHED, // task is in finished queue
+    DL_UNKNOWN, // unknow download status (means that task is just created)
 };
-    
+
 /*
     All download errors which we handles
 */
 enum DownloadError
 {
-    DLE_NO_ERROR = 0,           // there is no errors
-    DLE_CANCELLED,              // download was cancelled by our side
-    DLE_COULDNT_RESUME,         // seems server doesn't supports download resuming
-    DLE_COULDNT_RESOLVE_HOST,   // DNS request failed and we cannot to take IP from full qualified domain name
-    DLE_COULDNT_CONNECT,        // we cannot connect to given adress at given port
-    DLE_CONTENT_NOT_FOUND,      // server replies that there is no requested content
-    DLE_NO_RANGE_REQUEST,       // Range requests is not supported. Use 1 thread without reconnects only.
-    DLE_COMMON_ERROR,           // some common error which is rare and requires to debug the reason
-    DLE_INIT_ERROR,             // any handles initialisation was unsuccessful
-    DLE_FILE_ERROR,             // file read and write errors
-    DLE_UNKNOWN,                // we cannot determine the error
+    DLE_NO_ERROR = 0, // there is no errors
+    DLE_CANCELLED, // download was cancelled by our side
+    DLE_COULDNT_RESUME, // seems server doesn't supports download resuming
+    DLE_COULDNT_RESOLVE_HOST, // DNS request failed and we cannot to take IP from full qualified domain name
+    DLE_COULDNT_CONNECT, // we cannot connect to given adress at given port
+    DLE_CONTENT_NOT_FOUND, // server replies that there is no requested content
+    DLE_NO_RANGE_REQUEST, // Range requests is not supported. Use 1 thread without reconnects only.
+    DLE_COMMON_ERROR, // some common error which is rare and requires to debug the reason
+    DLE_INIT_ERROR, // any handles initialisation was unsuccessful
+    DLE_FILE_ERROR, // file read and write errors
+    DLE_UNKNOWN, // we cannot determine the error
 };
 
 /*
@@ -104,7 +103,7 @@ struct DownloadStatistics
  */
 struct DownloadTaskDescription
 {
-    DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount);
+    DownloadTaskDescription(const String& srcUrl, const FilePath& storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount);
 
     uint32 id;
     String url;
@@ -120,7 +119,7 @@ struct DownloadTaskDescription
     uint64 downloadProgress;
     uint8 partsCount;
 };
-    
+
 /*
     Contains all info which we need to know at download restore
 */
@@ -133,33 +132,33 @@ class Downloader;
 class DownloadPart
 {
 public:
-    DownloadPart(Downloader *currentDownloader);
-    
-    bool SaveToBuffer(char8 *srcBuf, uint32 size);
-    
-    inline void SetDestinationBuffer(char8 *dstBuffer);
+    DownloadPart(Downloader* currentDownloader);
+
+    bool SaveToBuffer(char8* srcBuf, uint32 size);
+
+    inline void SetDestinationBuffer(char8* dstBuffer);
     inline void SetSeekPos(uint64 seek);
     inline uint64 GetSeekPos() const;
     inline void SetSize(uint32 size);
     inline uint32 GetSize() const;
     inline void SetProgress(uint32 newProgress);
     inline uint32 GetProgress() const;
-    
-    inline Downloader *GetDownloader() const;
-    
+
+    inline Downloader* GetDownloader() const;
+
 private:
     /*
         Used to pass a pointer to current Downloader into DataReceive handler
      */
-    Downloader *downloader;
-    char8 *dataBuffer;
-    
+    Downloader* downloader;
+    char8* dataBuffer;
+
     uint32 downloadSize;
     uint64 seekPos;
     uint32 progress;
 };
-    
-inline void DownloadPart::SetDestinationBuffer(char8 *dstBuffer)
+
+inline void DownloadPart::SetDestinationBuffer(char8* dstBuffer)
 {
     dataBuffer = dstBuffer;
 }
@@ -194,7 +193,7 @@ inline uint32 DownloadPart::GetProgress() const
     return progress;
 }
 
-inline Downloader *DownloadPart::GetDownloader() const
+inline Downloader* DownloadPart::GetDownloader() const
 {
     return downloader;
 }
@@ -207,11 +206,10 @@ protected:
 public:
     DataChunkInfo(uint32 size);
 
-    char8 *buffer;
+    char8* buffer;
     uint32 bufferSize;
     uint64 progress;
 };
-
 }
 
 #endif

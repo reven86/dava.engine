@@ -31,35 +31,35 @@
 #include "../Qt/Scene/SceneEditor2.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand( Entity* _landscapeEntity,
-														   const FilePath& _heightMapPath,
-														   const AABBox3& _newLandscapeBox)
-								: Command2(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
+LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(Entity* _landscapeEntity,
+                                                           const FilePath& _heightMapPath,
+                                                           const AABBox3& _newLandscapeBox)
+    : Command2(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
 {
-	landscape = FindLandscape(_landscapeEntity);
-	if(NULL == landscape)
-	{
-		return;
-	}
-	landscapeEntity = SafeRetain(_landscapeEntity);
+    landscape = FindLandscape(_landscapeEntity);
+    if (NULL == landscape)
+    {
+        return;
+    }
+    landscapeEntity = SafeRetain(_landscapeEntity);
 
-	originalHeightMapPath = landscape->GetHeightmapPathname();
-	originalLandscapeBox = landscape->GetBoundingBox();
-	newHeightMapPath = _heightMapPath;
-	newLandscapeBox = _newLandscapeBox;
+    originalHeightMapPath = landscape->GetHeightmapPathname();
+    originalLandscapeBox = landscape->GetBoundingBox();
+    newHeightMapPath = _heightMapPath;
+    newLandscapeBox = _newLandscapeBox;
 }
 
 LandscapeSetHeightMapCommand::~LandscapeSetHeightMapCommand()
 {
-	SafeRelease(landscapeEntity);
+    SafeRelease(landscapeEntity);
 }
 
 void LandscapeSetHeightMapCommand::Undo()
 {
-	landscape->BuildLandscapeFromHeightmapImage(originalHeightMapPath, originalLandscapeBox);
+    landscape->BuildLandscapeFromHeightmapImage(originalHeightMapPath, originalLandscapeBox);
 }
 
 void LandscapeSetHeightMapCommand::Redo()
 {
-	landscape->BuildLandscapeFromHeightmapImage(newHeightMapPath, newLandscapeBox);
+    landscape->BuildLandscapeFromHeightmapImage(newHeightMapPath, newLandscapeBox);
 }

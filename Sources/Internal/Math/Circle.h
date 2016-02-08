@@ -33,21 +33,19 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 /**	
 	\ingroup math
 	\brief Circle
- */	
+ */
 class Circle
 {
 public:
-	float32 radius;
-	float32 squareRadius;
-	Vector2 center;
+    float32 radius;
+    float32 squareRadius;
+    Vector2 center;
 };
-	
 };
 
 #endif // __DAVAENGINE_CIRCLE_H__

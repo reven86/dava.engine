@@ -26,16 +26,16 @@
 class FCDAnimationKey
 {
 public:
-	/** The key input. Typically, this will be a time value, in seconds.
+    /** The key input. Typically, this will be a time value, in seconds.
 		For driven curves, the dimension of this value will depend on the driver. */
-	float input;
+    float input;
 
-	/** The key output. */
-	float output;
+    /** The key output. */
+    float output;
 
-	/** The key interpolation type.
+    /** The key interpolation type.
 		@see FUDaeInterpolation::Interpolation */
-	uint32 interpolation;
+    uint32 interpolation;
 };
 
 /**
@@ -48,8 +48,8 @@ public:
 class FCDAnimationKeyBezier : public FCDAnimationKey
 {
 public:
-	FMVector2 inTangent; /**< The incoming tangent value. */
-	FMVector2 outTangent; /**< The outcoming tangent value. */
+    FMVector2 inTangent; /**< The incoming tangent value. */
+    FMVector2 outTangent; /**< The outcoming tangent value. */
 };
 
 /**
@@ -62,12 +62,12 @@ public:
 class FCDAnimationKeyTCB : public FCDAnimationKey
 {
 public:
-	float tension; /**< The tension. */
-	float continuity; /**< The continuity. */
-	float bias; /**< The bias. */
+    float tension; /**< The tension. */
+    float continuity; /**< The continuity. */
+    float bias; /**< The bias. */
 
-	float easeIn; /**< The ease-in factor. */
-	float easeOut; /**< The ease-out factor. */
+    float easeIn; /**< The ease-in factor. */
+    float easeOut; /**< The ease-out factor. */
 };
 
 /**
@@ -78,32 +78,35 @@ public:
 class FCDAnimationMKey
 {
 private:
-	uint32 dimension;
+    uint32 dimension;
 
 public:
-	/** Constructor. Do not use directly.
+    /** Constructor. Do not use directly.
 		Instead call FCDAnimationMultiCurve::AddKey(FUDaeInterpolation::LINEAR)
 		or FCDAnimationMultiCurve::AddKey(FUDaeInterpolation::STEP).
 		@param dimension The number of dimension to the key output. */
-	FCDAnimationMKey(uint32 dimension);
+    FCDAnimationMKey(uint32 dimension);
 
-	/** Destructor. */
-	virtual ~FCDAnimationMKey();
+    /** Destructor. */
+    virtual ~FCDAnimationMKey();
 
-	/** Retrieves the number of dimensions for this key.
+    /** Retrieves the number of dimensions for this key.
 		@return The number of dimensions. */
-	uint32 GetDimension() const { return dimension; };
+    uint32 GetDimension() const
+    {
+        return dimension;
+    };
 
-	/** The key input. Typically, this will be a time value, in seconds.
+    /** The key input. Typically, this will be a time value, in seconds.
 		For driven curves, the dimension of this value will depend on the driver. */
-	float input;
+    float input;
 
-	/** The key interpolation type.
+    /** The key interpolation type.
 		@see FUDaeInterpolation::Interpolation */
-	uint32 interpolation;
+    uint32 interpolation;
 
-	/** The multi-dimensional key output. */
-	float* output;
+    /** The multi-dimensional key output. */
+    float* output;
 };
 
 /**
@@ -113,16 +116,16 @@ public:
 class FCDAnimationMKeyBezier : public FCDAnimationMKey
 {
 public:
-	/** Constructor: do not use directly.
+    /** Constructor: do not use directly.
 		Instead call FCDAnimationCurve::AddKey(FUDaeInterpolation::BEZIER).
 		@param dimension The number of dimension to the key output. */
-	FCDAnimationMKeyBezier(uint32 dimension);
+    FCDAnimationMKeyBezier(uint32 dimension);
 
-	/** Destructor. */
-	virtual ~FCDAnimationMKeyBezier();
+    /** Destructor. */
+    virtual ~FCDAnimationMKeyBezier();
 
-	FMVector2* inTangent; /**< The incoming tangent value. */
-	FMVector2* outTangent; /**< The outcoming tangent value. */
+    FMVector2* inTangent; /**< The incoming tangent value. */
+    FMVector2* outTangent; /**< The outcoming tangent value. */
 };
 
 /**
@@ -132,21 +135,20 @@ public:
 class FCDAnimationMKeyTCB : public FCDAnimationMKey
 {
 public:
-	/** Constructor: do not use directly.
+    /** Constructor: do not use directly.
 		Instead call FCDAnimationMultiCurve::AddKey(FUDaeInterpolation::TCB).
 		@param dimension The number of dimension to the key output. */
-	FCDAnimationMKeyTCB(uint32 dimension);
+    FCDAnimationMKeyTCB(uint32 dimension);
 
-	/** Destructor. */
-	virtual ~FCDAnimationMKeyTCB();
+    /** Destructor. */
+    virtual ~FCDAnimationMKeyTCB();
 
-	float* tension; /**< The multi-dimensional tensions. */
-	float* continuity; /**< The multi-dimensional continuities. */
-	float* bias; /**< The multi-dimensional biases. */
+    float* tension; /**< The multi-dimensional tensions. */
+    float* continuity; /**< The multi-dimensional continuities. */
+    float* bias; /**< The multi-dimensional biases. */
 
-	float* easeIn; /**< The multi-dimensional ease-in factors. */
-	float* easeOut; /**< The multi-dimensional ease-out factors. */
+    float* easeIn; /**< The multi-dimensional ease-in factors. */
+    float* easeOut; /**< The multi-dimensional ease-out factors. */
 };
 
 #endif // _FCD_ANIMATION_KEY_H_
-

@@ -45,26 +45,23 @@
 
 namespace DAVA
 {
-
 ApplicationCore::ApplicationCore()
-	: BaseObject()
+    : BaseObject()
 #if defined(__DAVAENGINE_ANDROID__)
-	, backgroundTicker(NULL)
-	, backgroundTickerFinishing(false)
-	, backgroundTickTimeMs(250)
+    , backgroundTicker(NULL)
+    , backgroundTickerFinishing(false)
+    , backgroundTickTimeMs(250)
 #endif
 {
-
 }
 
 ApplicationCore::~ApplicationCore()
 {
-
 }
-	
+
 void ApplicationCore::Update(float32 timeElapsed)
 {
-	TIME_PROFILE("ApplicationCore::Update");
+    TIME_PROFILE("ApplicationCore::Update");
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
@@ -80,9 +77,10 @@ void ApplicationCore::Update(float32 timeElapsed)
     UIControlSystem::Instance()->Update();
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
 }
-    
+
 void ApplicationCore::OnEnterFullscreen()
-{ }
+{
+}
 
 void ApplicationCore::OnExitFullscreen()
 {
@@ -90,7 +88,7 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
-	TIME_PROFILE("ApplicationCore::Draw");
+    TIME_PROFILE("ApplicationCore::Draw");
 
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
     UIControlSystem::Instance()->Draw();
@@ -115,73 +113,73 @@ void ApplicationCore::EndFrame()
 
 void ApplicationCore::OnSuspend()
 {
-	SoundSystem::Instance()->Suspend();
-	Core::Instance()->SetIsActive(false);
+    SoundSystem::Instance()->Suspend();
+    Core::Instance()->SetIsActive(false);
 
 #if defined(__DAVAENGINE_ANDROID__)
-	StartBackbroundTicker();
+    StartBackbroundTicker();
 #endif
 }
 
 void ApplicationCore::OnResume()
 {
 #if defined(__DAVAENGINE_ANDROID__)
-	StopBackgroundTicker();
+    StopBackgroundTicker();
 #endif
 
-	Core::Instance()->SetIsActive(true);
-	SoundSystem::Instance()->Resume();
+    Core::Instance()->SetIsActive(true);
+    SoundSystem::Instance()->Resume();
 }
 
 #if defined(__DAVAENGINE_ANDROID__)
 
 void ApplicationCore::StartBackbroundTicker(uint32 tickPeriod)
 {
-	if (NULL == backgroundTicker)
-	{
-		Logger::Debug("[ApplicationCore: OnSuspend] Background tick Thread Create Start");
-		backgroundTicker = Thread::Create(Message(this, &ApplicationCore::BackgroundTickerHandler));
-		backgroundTickerFinishing = false;
-		if (backgroundTicker)
-		{
-			backgroundTickTimeMs = tickPeriod;
-			backgroundTicker->Start();
-		}
-		Logger::Debug("[ApplicationCore: OnSuspend] Background tick  Thread Create End");
-	}
+    if (NULL == backgroundTicker)
+    {
+        Logger::Debug("[ApplicationCore: OnSuspend] Background tick Thread Create Start");
+        backgroundTicker = Thread::Create(Message(this, &ApplicationCore::BackgroundTickerHandler));
+        backgroundTickerFinishing = false;
+        if (backgroundTicker)
+        {
+            backgroundTickTimeMs = tickPeriod;
+            backgroundTicker->Start();
+        }
+        Logger::Debug("[ApplicationCore: OnSuspend] Background tick  Thread Create End");
+    }
 }
 
 void ApplicationCore::StopBackgroundTicker()
 {
-	if (NULL != backgroundTicker)
-	{
-		Logger::Debug("[ApplicationCore: OnResume] Background tick Thread Finish start");
-		backgroundTickerFinishing = true;
-		backgroundTicker->Join();
-		SafeRelease(backgroundTicker);
-		Logger::Debug("[ApplicationCore: OnResume] Background tick Thread Finish end");
-	}
+    if (NULL != backgroundTicker)
+    {
+        Logger::Debug("[ApplicationCore: OnResume] Background tick Thread Finish start");
+        backgroundTickerFinishing = true;
+        backgroundTicker->Join();
+        SafeRelease(backgroundTicker);
+        Logger::Debug("[ApplicationCore: OnResume] Background tick Thread Finish end");
+    }
 }
 
-void ApplicationCore::BackgroundTickerHandler(BaseObject * caller, void * callerData, void * userData)
+void ApplicationCore::BackgroundTickerHandler(BaseObject* caller, void* callerData, void* userData)
 {
-	while(!backgroundTickerFinishing)
-	{
-		Thread::Sleep(backgroundTickTimeMs);
-		OnBackgroundTick();
-	}
+    while (!backgroundTickerFinishing)
+    {
+        Thread::Sleep(backgroundTickTimeMs);
+        OnBackgroundTick();
+    }
 }
 #endif
-    
+
 void ApplicationCore::OnBackgroundTick()
 {
-	DownloadManager::Instance()->Update();
-	LocalNotificationController::Instance()->Update();
+    DownloadManager::Instance()->Update();
+    LocalNotificationController::Instance()->Update();
 }
-    
+
 bool ApplicationCore::OnQuit()
 {
-	return false;
+    return false;
 }
 
 void ApplicationCore::OnAppFinished()
@@ -196,7 +194,7 @@ void ApplicationCore::OnBackground()
 
 void ApplicationCore::OnForeground()
 {
-	// Default implementation is empty.
+    // Default implementation is empty.
 }
 
 void ApplicationCore::OnDeviceLocked()

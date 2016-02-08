@@ -47,11 +47,10 @@
 #include "Platform/SystemTimer.h"
 #include "Debug/Stats.h"
 
-
 namespace DAVA
 {
-RenderUpdateSystem::RenderUpdateSystem(Scene * scene)
-:	SceneSystem(scene)
+RenderUpdateSystem::RenderUpdateSystem(Scene* scene)
+    : SceneSystem(scene)
 {
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
 }
@@ -60,73 +59,74 @@ RenderUpdateSystem::~RenderUpdateSystem()
 {
 }
 
-void RenderUpdateSystem::ImmediateEvent(Component * component, uint32 event)
+void RenderUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 {
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
-        Entity * entity = component->GetEntity();
+        Entity* entity = component->GetEntity();
         // Update new transform pointer, and mark that transform is changed
-        Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-		RenderObject * object = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
-        if(NULL != object)
+        Matrix4* worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+        RenderObject* object = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
+        if (NULL != object)
         {
             object->SetWorldTransformPtr(worldTransformPointer);
             entity->GetScene()->renderSystem->MarkForUpdate(object);
         }
     }
-    
+
     //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
     {
         // entity->GetCameraComponent();
         // RenderSystem::
     }
 }
-    
-void RenderUpdateSystem::AddEntity(Entity * entity)
+
+void RenderUpdateSystem::AddEntity(Entity* entity)
 {
-    RenderObject * renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
-    if (!renderObject)return;
-	Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+    RenderObject* renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
+    if (!renderObject)
+        return;
+    Matrix4* worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
     renderObject->SetWorldTransformPtr(worldTransformPointer);
     UpdateActiveIndexes(entity, renderObject);
     entityObjectMap.insert(entity, renderObject);
-	GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
+    GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
 }
 
-void RenderUpdateSystem::RemoveEntity(Entity * entity)
+void RenderUpdateSystem::RemoveEntity(Entity* entity)
 {
-    RenderObject * renderObject = entityObjectMap.at(entity);
+    RenderObject* renderObject = entityObjectMap.at(entity);
     if (!renderObject)
-	{
-		return;
-	}
-    
+    {
+        return;
+    }
+
     GetScene()->GetRenderSystem()->RemoveFromRender(renderObject);
 
-	entityObjectMap.erase(entity);
+    entityObjectMap.erase(entity);
 }
-    
+
 void RenderUpdateSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("RenderUpdateSystem::Process");
 
-    RenderSystem * renderSystem = GetScene()->GetRenderSystem();
+    RenderSystem* renderSystem = GetScene()->GetRenderSystem();
     renderSystem->SetMainCamera(GetScene()->GetCurrentCamera());
     renderSystem->SetDrawCamera(GetScene()->GetDrawCamera());
 
     GetScene()->GetRenderSystem()->Update(timeElapsed);
 }
 
-void RenderUpdateSystem::UpdateActiveIndexes(Entity *entity, RenderObject *object)
+void RenderUpdateSystem::UpdateActiveIndexes(Entity* entity, RenderObject* object)
 {
-    Entity *parent;
-    
+    Entity* parent;
+
     // search effective lod index
     parent = entity;
-    while(NULL != parent)
+    while (NULL != parent)
     {
-        LodComponent *lc = GetLodComponent(parent);
-        if(NULL != lc)
+        LodComponent* lc = GetLodComponent(parent);
+        if (NULL != lc)
         {
             object->SetLodIndex(lc->currentLod);
             break;
@@ -137,10 +137,10 @@ void RenderUpdateSystem::UpdateActiveIndexes(Entity *entity, RenderObject *objec
 
     // search effective switch index
     parent = entity;
-    while(NULL != parent)
+    while (NULL != parent)
     {
-        SwitchComponent *sc = GetSwitchComponent(parent);
-        if(NULL != sc)
+        SwitchComponent* sc = GetSwitchComponent(parent);
+        if (NULL != sc)
         {
             object->SetSwitchIndex(sc->GetSwitchIndex());
             break;
@@ -149,5 +149,4 @@ void RenderUpdateSystem::UpdateActiveIndexes(Entity *entity, RenderObject *objec
         parent = parent->GetParent();
     }
 }
-    
 };

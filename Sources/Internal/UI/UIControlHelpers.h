@@ -39,9 +39,8 @@ class UIControl;
 class UIControlHelpers
 {
 public:
-    static String GetControlPath(const UIControl *control, const UIControl *rootControl = NULL);
-    static UIControl *GetControlByPath(const String &controlPath, const UIControl *rootControl);
+    static String GetControlPath(const UIControl* control, const UIControl* rootControl = NULL);
+    static UIControl* GetControlByPath(const String& controlPath, const UIControl* rootControl);
 };
-
 };
 #endif // __DAVAENGINE_UI_CONTROL_HELPERS_H__

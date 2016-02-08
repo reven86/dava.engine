@@ -30,7 +30,7 @@ extern "C" {
 #define ClampPixelBlue(pixel) ClampToQuantum((pixel)->blue)
 #define ClampPixelIndex(indexes) ClampToQuantum(*(indexes))
 #define ClampPixelOpacity(pixel) ClampToQuantum((pixel)->opacity)
-#define GetPixelAlpha(pixel) (QuantumRange-(pixel)->opacity)
+#define GetPixelAlpha(pixel) (QuantumRange - (pixel)->opacity)
 #define GetPixelBlack(indexes) (*(indexes))
 #define GetPixelBlue(pixel) ((pixel)->blue)
 #define GetPixelCb(pixel) ((pixel)->green)
@@ -40,96 +40,96 @@ extern "C" {
 #define GetPixelGreen(pixel) ((pixel)->green)
 #define GetPixelIndex(indexes) (*(indexes))
 #define GetPixelMagenta(pixel) ((pixel)->green)
-#define GetPixelNext(pixel)  ((pixel)+1)
+#define GetPixelNext(pixel) ((pixel) + 1)
 #define GetPixelOpacity(pixel) ((pixel)->opacity)
 #define GetPixelRed(pixel) ((pixel)->red)
-#define GetPixelRGB(pixel,packet) \
+#define GetPixelRGB(pixel, packet) \
 { \
-  (packet)->red=GetPixelRed((pixel)); \
-  (packet)->green=GetPixelGreen((pixel)); \
-  (packet)->blue=GetPixelBlue((pixel)); \
+  (packet)->red = GetPixelRed((pixel)); \
+  (packet)->green = GetPixelGreen((pixel)); \
+  (packet)->blue = GetPixelBlue((pixel)); \
 }
-#define GetPixelRGBO(pixel,packet) \
+#define GetPixelRGBO(pixel, packet) \
 { \
-  (packet)->red=GetPixelRed((pixel)); \
-  (packet)->green=GetPixelGreen((pixel)); \
-  (packet)->blue=GetPixelBlue((pixel)); \
-  (packet)->opacity=GetPixelOpacity((pixel)); \
+  (packet)->red = GetPixelRed((pixel)); \
+  (packet)->green = GetPixelGreen((pixel)); \
+  (packet)->blue = GetPixelBlue((pixel)); \
+  (packet)->opacity = GetPixelOpacity((pixel)); \
 }
 #define GetPixelY(pixel) ((pixel)->red)
 #define GetPixelYellow(pixel) ((pixel)->blue)
-#define SetPixelAlpha(pixel,value) \
-  ((pixel)->opacity=(Quantum) (QuantumRange-(value)))
-#define SetPixelBlack(indexes,value) (*(indexes)=(Quantum) (value))
-#define SetPixelBlue(pixel,value) ((pixel)->blue=(Quantum) (value))
-#define SetPixelCb(pixel,value) ((pixel)->green=(Quantum) (value))
-#define SetPixelCr(pixel,value) ((pixel)->blue=(Quantum) (value))
-#define SetPixelCyan(pixel,value) ((pixel)->red=(Quantum) (value))
-#define SetPixelGray(pixel,value) \
-  ((pixel)->red=(pixel)->green=(pixel)->blue=(Quantum) (value))
-#define SetPixelGreen(pixel,value) ((pixel)->green=(Quantum) (value))
-#define SetPixelIndex(indexes,value) (*(indexes)=(IndexPacket) (value))
-#define SetPixelMagenta(pixel,value) ((pixel)->green=(Quantum) (value))
-#define SetPixelOpacity(pixel,value) \
-  ((pixel)->opacity=(Quantum) (value))
-#define SetPixelRed(pixel,value) ((pixel)->red=(Quantum) (value))
-#define SetPixelRgb(pixel,packet) \
+#define SetPixelAlpha(pixel, value) \
+  ((pixel)->opacity = (Quantum)(QuantumRange - (value)))
+#define SetPixelBlack(indexes, value) (*(indexes) = (Quantum)(value))
+#define SetPixelBlue(pixel, value) ((pixel)->blue = (Quantum)(value))
+#define SetPixelCb(pixel, value) ((pixel)->green = (Quantum)(value))
+#define SetPixelCr(pixel, value) ((pixel)->blue = (Quantum)(value))
+#define SetPixelCyan(pixel, value) ((pixel)->red = (Quantum)(value))
+#define SetPixelGray(pixel, value) \
+  ((pixel)->red = (pixel)->green = (pixel)->blue = (Quantum)(value))
+#define SetPixelGreen(pixel, value) ((pixel)->green = (Quantum)(value))
+#define SetPixelIndex(indexes, value) (*(indexes) = (IndexPacket)(value))
+#define SetPixelMagenta(pixel, value) ((pixel)->green = (Quantum)(value))
+#define SetPixelOpacity(pixel, value) \
+  ((pixel)->opacity = (Quantum)(value))
+#define SetPixelRed(pixel, value) ((pixel)->red = (Quantum)(value))
+#define SetPixelRgb(pixel, packet) \
 { \
-  SetPixelRed(pixel,(packet)->red); \
-  SetPixelGreen(pixel,(packet)->green); \
-  SetPixelBlue(pixel,(packet)->blue); \
+  SetPixelRed(pixel, (packet)->red); \
+  SetPixelGreen(pixel, (packet)->green); \
+  SetPixelBlue(pixel, (packet)->blue); \
 }
-#define SetPixelRGBA(pixel,packet) \
+#define SetPixelRGBA(pixel, packet) \
 { \
-  SetPixelRed(pixel,(packet)->red); \
-  SetPixelGreen(pixel,(packet)->green); \
-  SetPixelBlue(pixel,(packet)->blue); \
-  SetPixelAlpha(pixel,(QuantumRange-(packet)->opacity)); \
+  SetPixelRed(pixel, (packet)->red); \
+  SetPixelGreen(pixel, (packet)->green); \
+  SetPixelBlue(pixel, (packet)->blue); \
+  SetPixelAlpha(pixel, (QuantumRange - (packet)->opacity)); \
 }
-#define SetPixelRGBO(pixel,packet) \
+#define SetPixelRGBO(pixel, packet) \
 { \
-  SetPixelRed(pixel,(packet)->red); \
-  SetPixelGreen(pixel,(packet)->green); \
-  SetPixelBlue(pixel,(packet)->blue); \
-  SetPixelOpacity(pixel,(packet)->opacity); \
+  SetPixelRed(pixel, (packet)->red); \
+  SetPixelGreen(pixel, (packet)->green); \
+  SetPixelBlue(pixel, (packet)->blue); \
+  SetPixelOpacity(pixel, (packet)->opacity); \
 }
-#define SetPixelYellow(pixel,value) ((pixel)->blue=(Quantum) (value))
-#define SetPixelY(pixel,value) ((pixel)->red=(Quantum) (value))
+#define SetPixelYellow(pixel, value) ((pixel)->blue = (Quantum)(value))
+#define SetPixelY(pixel, value) ((pixel)->red = (Quantum)(value))
 
 typedef enum
 {
-  UndefinedInterpolatePixel,
-  AverageInterpolatePixel,
-  BicubicInterpolatePixel,
-  BilinearInterpolatePixel,
-  FilterInterpolatePixel,
-  IntegerInterpolatePixel,
-  MeshInterpolatePixel,
-  NearestNeighborInterpolatePixel,
-  SplineInterpolatePixel
+    UndefinedInterpolatePixel,
+    AverageInterpolatePixel,
+    BicubicInterpolatePixel,
+    BilinearInterpolatePixel,
+    FilterInterpolatePixel,
+    IntegerInterpolatePixel,
+    MeshInterpolatePixel,
+    NearestNeighborInterpolatePixel,
+    SplineInterpolatePixel
 } InterpolatePixelMethod;
 
 typedef enum
 {
-  PixelRed = 0,
-  PixelCyan = 0,
-  PixelGray = 0,
-  PixelY = 0,
-  PixelGreen = 1,
-  PixelMagenta = 1,
-  PixelCb = 1,
-  PixelBlue = 2,
-  PixelYellow = 2,
-  PixelCr = 2,
-  PixelAlpha = 3,
-  PixelBlack = 4,
-  PixelIndex = 4,
-  MaskPixelComponent = 5
+    PixelRed = 0,
+    PixelCyan = 0,
+    PixelGray = 0,
+    PixelY = 0,
+    PixelGreen = 1,
+    PixelMagenta = 1,
+    PixelCb = 1,
+    PixelBlue = 2,
+    PixelYellow = 2,
+    PixelCr = 2,
+    PixelAlpha = 3,
+    PixelBlack = 4,
+    PixelIndex = 4,
+    MaskPixelComponent = 5
 } PixelComponent;
 
 typedef struct _DoublePixelPacket
 {
-  double
+    double
     red,
     green,
     blue,
@@ -139,7 +139,7 @@ typedef struct _DoublePixelPacket
 
 typedef struct _LongPixelPacket
 {
-  unsigned int
+    unsigned int
     red,
     green,
     blue,
@@ -149,22 +149,22 @@ typedef struct _LongPixelPacket
 
 typedef struct _MagickPixelPacket
 {
-  ClassType
+    ClassType
     storage_class;
 
-  ColorspaceType
+    ColorspaceType
     colorspace;
 
-  MagickBooleanType
+    MagickBooleanType
     matte;
 
-  double
+    double
     fuzz;
 
-  size_t
+    size_t
     depth;
 
-  MagickRealType
+    MagickRealType
     red,
     green,
     blue,
@@ -177,15 +177,15 @@ typedef Quantum IndexPacket;
 typedef struct _PixelPacket
 {
 #if defined(MAGICKCORE_WORDS_BIGENDIAN)
-#define MAGICK_PIXEL_RGBA  1
-  Quantum
+#define MAGICK_PIXEL_RGBA 1
+    Quantum
     red,
     green,
     blue,
     opacity;
 #else
-#define MAGICK_PIXEL_BGRA  1
-  Quantum
+#define MAGICK_PIXEL_BGRA 1
+    Quantum
     blue,
     green,
     red,
@@ -194,19 +194,19 @@ typedef struct _PixelPacket
 } PixelPacket;
 
 typedef struct _CacheView
-  CacheView_;
+CacheView_;
 
 extern MagickExport MagickBooleanType
-  ExportImagePixels(const Image *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const char *,const StorageType,void *,ExceptionInfo *),
-  ImportImagePixels(Image *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const char *,const StorageType,const void *),
-  InterpolateMagickPixelPacket(const Image *,const CacheView_ *,
-    const InterpolatePixelMethod,const double,const double,MagickPixelPacket *,
-    ExceptionInfo *);
+ExportImagePixels(const Image *, const ssize_t, const ssize_t, const size_t,
+                  const size_t, const char *, const StorageType, void *, ExceptionInfo *),
+ImportImagePixels(Image *, const ssize_t, const ssize_t, const size_t,
+                  const size_t, const char *, const StorageType, const void *),
+InterpolateMagickPixelPacket(const Image *, const CacheView_ *,
+                             const InterpolatePixelMethod, const double, const double, MagickPixelPacket *,
+                             ExceptionInfo *);
 
 extern MagickExport void
-  GetMagickPixelPacket(const Image *,MagickPixelPacket *);
+GetMagickPixelPacket(const Image*, MagickPixelPacket*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

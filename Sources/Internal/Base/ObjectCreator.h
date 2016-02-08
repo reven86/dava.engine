@@ -33,9 +33,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/ObjectFactory.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 /**
 	\ingroup baseobjects
 	\brief This is helper class to perform creation of objects 
@@ -43,15 +42,18 @@ namespace DAVA
 class ObjectCreator
 {
 public:
-	ObjectCreator(const String & _name)
-	{
-		name = _name;
-	}
-	
-	virtual BaseObject * New(){return 0;}
-	String name;
+    ObjectCreator(const String& _name)
+    {
+        name = _name;
+    }
+
+    virtual BaseObject* New()
+    {
+        return 0;
+    }
+    String name;
 };
-	
+
 /**
 	\ingroup baseobjects
 	\brief This is helper class to perform creation of objects 
@@ -60,18 +62,16 @@ template <class T>
 class ObjectCreatorImpl : public ObjectCreator
 {
 public:
-	ObjectCreatorImpl(const String & _name)
-	{
-		name = _name;
-		
-	}
-	virtual BaseObject * New()
-	{
-		T * object = new T();
-		return object;
-	};
+    ObjectCreatorImpl(const String& _name)
+    {
+        name = _name;
+    }
+    virtual BaseObject* New()
+    {
+        T* object = new T();
+        return object;
+    };
 };
-	
 };
 
 #endif // __DAVAENGINE_OBJECT_CREATOR_H__

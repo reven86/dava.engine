@@ -32,8 +32,7 @@
 
 #include "Base/BaseTypes.h"
 
-
-namespace DAVA 
+namespace DAVA
 {
 /**
 	 \ingroup utils
@@ -42,23 +41,22 @@ namespace DAVA
 class UTF8Utils
 {
 public:
-
-	/**
+    /**
 		\brief convert UTF8 string to WideString
 		\param[in] string string in UTF8 format
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-	static void EncodeToWideString(const uint8 * string, size_t size, WideString & resultString);
+    static void EncodeToWideString(const uint8* string, size_t size, WideString& resultString);
 
     /**
         \brief convert UTF8 string to WideString
         \param[in] utf8String string in UTF8 format
         \return string in unicode
      */
-    inline static WideString EncodeToWideString(const String & utf8String);
+    inline static WideString EncodeToWideString(const String& utf8String);
 
-	/**
+    /**
 	 \brief convert WideString string to UTF8
 	 \param[in] wstring string in WideString format
 	 \returns string in UTF8 format, contained in DAVA::String
@@ -68,13 +66,12 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 
-inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
+inline WideString UTF8Utils::EncodeToWideString(const String& utf8String)
 {
     WideString str;
-    EncodeToWideString((const uint8 *)utf8String.c_str(), utf8String.length(), str);
+    EncodeToWideString((const uint8*)utf8String.c_str(), utf8String.length(), str);
     return str;
 }
-
 };
 
 

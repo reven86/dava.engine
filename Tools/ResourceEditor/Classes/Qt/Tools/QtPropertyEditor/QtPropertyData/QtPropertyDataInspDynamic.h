@@ -53,8 +53,8 @@ public:
         return dynamicInfo;
     }
 
-	DAVA::VariantType GetVariant() const
-	{
+    DAVA::VariantType GetVariant() const
+    {
         return dynamicInfo->MemberValueGet(ddata, name);
     }
 
@@ -68,15 +68,14 @@ public:
     DAVA::InspInfoDynamic::DynamicData ddata;
 
 protected:
-	int inspFlags;
-	InspDynamicModifyCommand* lastCommand;
+    int inspFlags;
+    InspDynamicModifyCommand* lastCommand;
 
-
-	virtual QVariant GetValueAlias() const;
-	virtual void SetValueInternal(const QVariant &value);
+    virtual QVariant GetValueAlias() const;
+    virtual void SetValueInternal(const QVariant& value);
     virtual void SetTempValueInternal(const QVariant& value);
-	virtual bool UpdateValueInternal();
-	virtual bool EditorDoneInternal(QWidget *editor);
+    virtual bool UpdateValueInternal();
+    virtual bool EditorDoneInternal(QWidget* editor);
 };
 
 #endif // __QT_PROPERTY_DATA_INSP_DYNAMIC_H__

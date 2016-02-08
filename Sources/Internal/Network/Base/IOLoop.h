@@ -41,7 +41,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class IOLoop provides event loop which polls for events and schedules handlers (callback) to be run.
  There should be at least one IOLoop instance in network application.
@@ -56,9 +55,9 @@ public:
     // Behaviours of Run method
     enum eRunMode
     {
-        RUN_DEFAULT = UV_RUN_DEFAULT,   // Wait for events and execute handlers so long as there are active objects
-        RUN_ONCE    = UV_RUN_ONCE,      // Wait for events, execute handlers and exit
-        RUN_NOWAIT  = UV_RUN_NOWAIT     // Execute handlers if they are ready and immediatly exit
+        RUN_DEFAULT = UV_RUN_DEFAULT, // Wait for events and execute handlers so long as there are active objects
+        RUN_ONCE = UV_RUN_ONCE, // Wait for events, execute handlers and exit
+        RUN_NOWAIT = UV_RUN_NOWAIT // Execute handlers if they are ready and immediatly exit
     };
 
     using UserHandlerType = Function<void()>;
@@ -67,7 +66,10 @@ public:
     IOLoop(bool useDefaultIOLoop = true);
     ~IOLoop();
 
-    uv_loop_t* Handle() const { return actualLoop; }
+    uv_loop_t* Handle() const
+    {
+        return actualLoop;
+    }
 
     int32 Run(eRunMode runMode = RUN_DEFAULT);
 
@@ -85,14 +87,14 @@ private:
     uv_loop_t uvloop; // libuv loop handle itself
 
     bool quitFlag = false;
-    uv_async_t uvasync;                     // libuv handle for calling callback from different threads
+    uv_async_t uvasync; // libuv handle for calling callback from different threads
 #endif
     Vector<UserHandlerType> queuedHandlers; // List of queued user handlers
-    Vector<UserHandlerType> execHandlers;   // List of executing user handlers
+    Vector<UserHandlerType> execHandlers; // List of executing user handlers
     Mutex mutex;
 };
 
-}   // namespace Net
-}	// namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_IOLOOP_H__
+#endif // __DAVAENGINE_IOLOOP_H__

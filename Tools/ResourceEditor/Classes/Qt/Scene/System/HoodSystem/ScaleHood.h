@@ -34,8 +34,8 @@
 
 struct ScaleHood : public HoodObject
 {
-	ScaleHood();
-	~ScaleHood();
+    ScaleHood();
+    ~ScaleHood();
 
     virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem);
 
