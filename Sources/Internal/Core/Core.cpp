@@ -221,7 +221,7 @@ void Core::CreateSingletons()
     fpu_exceptions::EnableFloatingPointExceptions();
 #else
     fpu_exceptions::DisableFloatingPointExceptions();
-#endif // __DAVAENGINE_DEBUG__
+#endif
 
     new AllocatorFactory();
     new JobManager();
