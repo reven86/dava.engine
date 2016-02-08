@@ -92,11 +92,11 @@ Landscape::Landscape()
     zoomFov = 6.5f;
     normalFov = 70.0f;
 
+    isInstancingUsed = rhi::DeviceCaps().isInstancingSupported;
+
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
-
-    isInstancingUsed = true;
 }
 
 Landscape::~Landscape()

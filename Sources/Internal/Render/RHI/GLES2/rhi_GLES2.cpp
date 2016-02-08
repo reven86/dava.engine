@@ -220,6 +220,9 @@ gles_check_GL_extensions()
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
         _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
 
+        _GLES2_DeviceCaps.isInstancingSupported = (strstr(ext, "GL_EXT_draw_instanced") || strstr(ext, "GL_ARB_draw_instanced")) &&
+        (strstr(ext, "GL_EXT_instanced_arrays") || strstr(ext, "GL_ARB_instanced_arrays"));
+
 #if defined(__DAVAENGINE_ANDROID__)
         _GLES2_IsGlDepth24Stencil8Supported = (strstr(ext, "GL_DEPTH24_STENCIL8") != nullptr) || (strstr(ext, "GL_OES_packed_depth_stencil") != nullptr) || (strstr(ext, "GL_EXT_packed_depth_stencil") != nullptr);
 #else
@@ -229,16 +232,15 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
     }
 
-    _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
-
     const char* version = (const char*)glGetString(GL_VERSION);
     if (!IsEmptyString(version))
     {
-        int majorVersion = 2;
+        int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
-        if (dotChar && dotChar != version)
+        if (dotChar && dotChar != version && *(dotChar + 1))
         {
             majorVersion = atoi(dotChar - 1);
+            minorVersion = atoi(dotChar + 1);
         }
 
         if (strstr(version, "OpenGL ES"))
@@ -247,6 +249,7 @@ gles_check_GL_extensions()
             {
                 _GLES2_DeviceCaps.is32BitIndicesSupported = true;
                 _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
+                _GLES2_DeviceCaps.isInstancingSupported = true;
             }
         }
         else
@@ -254,6 +257,7 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
+            _GLES2_DeviceCaps.isInstancingSupported = (majorVersion > 3) && (minorVersion > 3);
 
 #if defined(GL_R16F) && defined(GL_RG16F)
             RG16F_Supported = majorVersion >= 3;
