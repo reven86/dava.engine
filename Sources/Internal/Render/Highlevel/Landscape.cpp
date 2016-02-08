@@ -132,6 +132,10 @@ void Landscape::ReleaseGeometryData()
     subdivPatchArray.clear();
     patchQuadArray.clear();
 
+    subdivLevelCount = 0;
+    subdivPatchCount = 0;
+    quadsInWidth = 0;
+
 ////Non-instanced data
     for (rhi::HVertexBuffer handle : vertexBuffers)
         rhi::DeleteVertexBuffer(handle);
@@ -585,14 +589,16 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
         uint32 yNegSize = levelInfo.size;
         uint32 yPosSize = levelInfo.size;
 
-        if (xNeg)
+        if (xNeg && xNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED)
             xNegSize = xNeg->lastSubdividedSize;
-        if (xPos)
+        if (xPos && xPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
             xPosSize = xPos->lastSubdividedSize;
-        if (yNeg)
+        if (yNeg && yNeg->subdivisionState != SubdivisionPatchInfo::CLIPPED)
             yNegSize = yNeg->lastSubdividedSize;
-        if (yPos)
+        if (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
             yPosSize = yPos->lastSubdividedSize;
+
+        DVASSERT(xNegSize && xPosSize && yNegSize && yPosSize);
 
         if (isInstancingUsed)
             DrawPatchInstancing(level, x, y, xNegSize, xPosSize, yNegSize, yPosSize);

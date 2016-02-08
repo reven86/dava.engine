@@ -208,15 +208,9 @@ protected:
             TERMINATED = 3,
         };
 
-        SubdivisionPatchInfo()
-        {
-            subdivisionState = CLIPPED;
-            startClipPlane = 0;
-        }
-
-        uint32 lastSubdividedSize;
-        uint32 subdivisionState;
-        uint8 startClipPlane;
+        uint32 lastSubdividedSize = 0;
+        uint8 subdivisionState = CLIPPED;
+        uint8 startClipPlane = 0;
     };
 
     struct SubdivisionLevelInfo
@@ -231,9 +225,9 @@ protected:
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
-    uint32 subdivLevelCount;
-    uint32 subdivPatchCount;
-    uint32 quadsInWidth;
+    uint32 subdivLevelCount = 0;
+    uint32 subdivPatchCount = 0;
+    uint32 quadsInWidth = 0;
 
     SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
     Vector<PatchQuadInfo> patchQuadArray;
