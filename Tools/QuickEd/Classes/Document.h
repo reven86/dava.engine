@@ -43,10 +43,11 @@ inline WidgetContext::~WidgetContext()
 {
 }
 
-namespace DAVA {
-    class FilePath;
-    class UIControl;
-    class UIEvent;
+namespace DAVA
+{
+class FilePath;
+class UIControl;
+class UIEvent;
 }
 
 class PackageNode;
@@ -65,7 +66,7 @@ public:
     explicit Document(const DAVA::RefPtr<PackageNode> &package, QObject* parent = nullptr);
     ~Document();
 
-    const DAVA::FilePath &GetPackageFilePath() const;
+    const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack() const;
     PackageNode *GetPackage() const;

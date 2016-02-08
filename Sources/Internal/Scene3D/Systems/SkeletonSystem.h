@@ -36,32 +36,28 @@
 
 namespace DAVA
 {
-
 class Component;
 class SkinnedMesh;
 
 class SkeletonSystem : public SceneSystem
 {
-
 public:
-    SkeletonSystem(Scene * scene);
+    SkeletonSystem(Scene* scene);
     ~SkeletonSystem();
 
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    
-    virtual void Process(float32 timeElapsed);		
-    void ImmediateEvent(Component * component, uint32 event) override;
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+
+    virtual void Process(float32 timeElapsed);
+    void ImmediateEvent(Component* component, uint32 event) override;
 
 private:
-    void UpdatePose(SkeletonComponent *component);
-    void UpdateSkinnedMesh(SkeletonComponent *component, SkinnedMesh *skinnedMeshObject);
+    void UpdatePose(SkeletonComponent* component);
+    void UpdateSkinnedMesh(SkeletonComponent* component, SkinnedMesh* skinnedMeshObject);
 
-    
-    void RebuildSkeleton(Entity *entity);    
+    void RebuildSkeleton(Entity* entity);
 
     Vector<Entity*> entities;
-
 };
 
 } //ns

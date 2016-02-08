@@ -43,7 +43,8 @@ class TagModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    enum {
+    enum
+    {
         CLM_NAME = 0,
         CLM_ALLOC_APP,
         CLM_NBLOCKS,
@@ -72,4 +73,4 @@ private:
     QColor colors[2];
 };
 
-#endif  // __TAGMODEL_H__
+#endif // __TAGMODEL_H__

@@ -124,4 +124,4 @@ private:
     QLineEdit* minBlockOrderWidget = nullptr;
 };
 
-#endif  // __MEMORYTOOL_FILTERANDSORTBAR_H__
+#endif // __MEMORYTOOL_FILTERANDSORTBAR_H__

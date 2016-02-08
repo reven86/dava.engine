@@ -45,7 +45,7 @@ CoreWin32PlatformBase::CoreWin32PlatformBase()
 void CoreWin32PlatformBase::InitArgs()
 {
     int argc = 0;
-    LPWSTR *szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+    LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
 
     if (argc > 0 && NULL != szArglist)
     {
@@ -65,7 +65,7 @@ void CoreWin32PlatformBase::InitArgs()
 void CoreWin32PlatformBase::Quit()
 {
     PostQuitMessage(0);
-	exit(0);
+    exit(0);
 }
 
 void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
@@ -93,7 +93,6 @@ Point2i CoreWin32PlatformBase::GetCursorPosition()
     GetCursorPos(&p);
     return Point2i(p.x, p.y);
 }
-
 }
 
 #endif // #if defined(__DAVAENGINE_WIN32__)

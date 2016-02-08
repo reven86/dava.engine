@@ -29,10 +29,10 @@
 
 #include "BaseValidator.h"
 
-bool BaseValidator::Validate(QVariant &v)
+bool BaseValidator::Validate(QVariant& v)
 {
     bool ret = ValidateInternal(v);
-    if(!ret)
+    if (!ret)
     {
         FixupInternal(v);
         ret = ValidateInternal(v);

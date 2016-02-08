@@ -38,38 +38,39 @@
 
 namespace Log
 {
-
-typedef unsigned char	uint8;
-typedef unsigned short	uint16;
-typedef unsigned int	uint32;
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
 typedef unsigned long long uint64;
 
-typedef signed char		int8;
-typedef signed short	int16;
-typedef signed int		int32;
-typedef signed long long	int64;
+typedef signed char int8;
+typedef signed short int16;
+typedef signed int int32;
+typedef signed long long int64;
 
-typedef char	char8;
-typedef short	char16;
+typedef char char8;
+typedef short char16;
 
-typedef float			float32;
-typedef double			float64;
+typedef float float32;
+typedef double float64;
 
-typedef std::string		String;
+typedef std::string String;
 
-//template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
+//template <typename _Ty, typename _Ax = std::allocator(_Ty)>
 //class List : public std::list<_Ty, _Ax>  {};
 
 
 #define List std::list
 #define Vector std::vector
 
-template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+template <class _Kty,
+          class _Ty,
+          class _Pr = std::less<_Kty>,
+          class _Alloc = std::allocator<std::pair<const _Kty, _Ty>>>
 
-class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+class Map : public std::map<_Kty, _Ty, _Pr, _Alloc>
+{
+};
 
 
 
@@ -83,13 +84,13 @@ class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
 template <class T>
 inline T Min(T a, T b)
 {
-	return (a < b) ? (a) : (b);
+    return (a < b) ? (a) : (b);
 }
 
 template <class T>
 inline T Max(T a, T b)
 {
-	return (a > b) ? (a) : (b);
+    return (a > b) ? (a) : (b);
 }
 
 
@@ -97,27 +98,25 @@ inline T Max(T a, T b)
 #define Memset memset
 
 template <class TYPE>
-void SafeDelete(TYPE * &d)
+void SafeDelete(TYPE*& d)
 {
-	if (d)
-	{
-		delete d;
-		d = 0;
-	}
+    if (d)
+    {
+        delete d;
+        d = 0;
+    }
 }
 
 template <class TYPE>
-void SafeDeleteArray(TYPE * & d)
+void SafeDeleteArray(TYPE*& d)
 {
-	if (d)
-	{
-		delete [] d;
-		d = 0;
-	}
+    if (d)
+    {
+        delete[] d;
+        d = 0;
+    }
 }
-
 };
-
 
 using namespace Log;
 //#include "LogEngineConfig.h"
@@ -125,4 +124,3 @@ using namespace Log;
 
 
 #endif
-

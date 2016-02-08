@@ -68,7 +68,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-    return 	DeviceInfo::PLATFORM_MACOS;
+    return DeviceInfo::PLATFORM_MACOS;
 }
 
 String DeviceInfoPrivate::GetPlatformString()
@@ -89,7 +89,7 @@ String DeviceInfoPrivate::GetVersion()
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-	return "Apple inc.";
+    return "Apple inc.";
 }
 
 String DeviceInfoPrivate::GetModel()
@@ -106,66 +106,66 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
-	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
+    NSLocale* english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
-	NSString* langID = [[NSLocale preferredLanguages] objectAtIndex:0];
-	NSString *lang = [english displayNameForKey:NSLocaleLanguageCode value:langID];
+    NSString* langID = [[NSLocale preferredLanguages] objectAtIndex:0];
+    NSString* lang = [english displayNameForKey:NSLocaleLanguageCode value:langID];
 
-	String res = Format("%s (%s)", [langID UTF8String], [lang UTF8String]);
-	return res;
+    String res = Format("%s (%s)", [langID UTF8String], [lang UTF8String]);
+    return res;
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
+    NSLocale* english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
-	NSString *countryCode = [[NSLocale currentLocale] objectForKey: NSLocaleCountryCode];
-	NSString *country = [english displayNameForKey: NSLocaleCountryCode value: countryCode];
+    NSString* countryCode = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
+    NSString* country = [english displayNameForKey:NSLocaleCountryCode value:countryCode];
 
-	String res = Format("%s (%s)", [countryCode UTF8String], [country UTF8String]);
-	return res;
+    String res = Format("%s (%s)", [countryCode UTF8String], [country UTF8String]);
+    return res;
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-	NSTimeZone *localTime = [NSTimeZone systemTimeZone];
-    
+    NSTimeZone* localTime = [NSTimeZone systemTimeZone];
+
     String res = Format("%s", [[localTime name] UTF8String]);
-	return res;
+    return res;
 }
-    
+
 String DeviceInfoPrivate::GetUDID()
 {
-    OpenUDIDMacOS*  udid = [[[OpenUDIDMacOS alloc] init] autorelease];
+    OpenUDIDMacOS* udid = [[[OpenUDIDMacOS alloc] init] autorelease];
     return [[udid value] UTF8String];
 }
-    
+
 WideString DeviceInfoPrivate::GetName()
 {
-    NSString * deviceName = [[NSHost currentHost] localizedName];
-    
-    NSStringEncoding pEncode    =   CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE );
-    NSData* pSData              =   [ deviceName dataUsingEncoding : pEncode ];
-    
-    return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
+    NSString* deviceName = [[NSHost currentHost] localizedName];
+
+    NSStringEncoding pEncode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
+    NSData* pSData = [deviceName dataUsingEncoding:pEncode];
+
+    return WideString((wchar_t*)[pSData bytes], [pSData length] / sizeof(wchar_t));
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-	return String();
+    return String();
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-	return String();
+    return String();
 }
 
 // Not impletemted yet
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
-	return 0;
+    return 0;
 }
 
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
@@ -227,8 +227,8 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
-	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
-	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
+    screenInfo.width = [[NSScreen mainScreen] frame].size.width;
+    screenInfo.height = [[NSScreen mainScreen] frame].size.height;
     screenInfo.scale = [[NSScreen mainScreen] backingScaleFactor];
 }
 

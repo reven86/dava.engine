@@ -31,109 +31,110 @@
 #include "Tools/QtWaitDialog/QtWaitDialog.h"
 #include "ui_waitdialog.h"
 
-QtWaitDialog::QtWaitDialog(QWidget *parent)
+QtWaitDialog::QtWaitDialog(QWidget* parent)
     : QWidget(parent, Qt::Window | Qt::CustomizeWindowHint)
     , ui(new Ui::QtWaitDialog)
     , wasCanceled(false)
     , isRunnedFromExec(false)
 {
     setFixedSize(400, 150);
-	setWindowModality(Qt::WindowModal);
+    setWindowModality(Qt::WindowModal);
 
     ui->setupUi(this);
 
-	QPalette pal = palette();
-	pal.setColor(QPalette::Base, Qt::transparent);
-	ui->waitLabel->setPalette(pal);
+    QPalette pal = palette();
+    pal.setColor(QPalette::Base, Qt::transparent);
+    ui->waitLabel->setPalette(pal);
 
-	connect(ui->waitButton, SIGNAL(pressed()), this, SLOT(CancelPressed()));
-	connect(this, SIGNAL(canceled()), this, SLOT(WaitCanceled()));
+    connect(ui->waitButton, SIGNAL(pressed()), this, SLOT(CancelPressed()));
+    connect(this, SIGNAL(canceled()), this, SLOT(WaitCanceled()));
 }
 
 QtWaitDialog::~QtWaitDialog()
-{}
-
-void QtWaitDialog::Exec(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
 {
-	Setup(title, message, hasWaitbar, hasCancel);
-
-	setCursor(Qt::BusyCursor);
-    isRunnedFromExec = true;
-    show();
-	loop.exec();
 }
 
-void QtWaitDialog::Show(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
+void QtWaitDialog::Exec(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel)
 {
-	Setup(title, message, hasWaitbar, hasCancel);
-	
-	setCursor(Qt::BusyCursor);
+    Setup(title, message, hasWaitbar, hasCancel);
+
+    setCursor(Qt::BusyCursor);
+    isRunnedFromExec = true;
+    show();
+    loop.exec();
+}
+
+void QtWaitDialog::Show(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel)
+{
+    Setup(title, message, hasWaitbar, hasCancel);
+
+    setCursor(Qt::BusyCursor);
     isRunnedFromExec = false;
-	show();
+    show();
 
     processEvents();
 }
 
 void QtWaitDialog::Reset()
 {
-	wasCanceled = false;
-	emit canceled();
+    wasCanceled = false;
+    emit canceled();
 
-    if ( isRunnedFromExec )
+    if (isRunnedFromExec)
     {
         loop.quit();
     }
 
     close();
-	setCursor(Qt::ArrowCursor);
+    setCursor(Qt::ArrowCursor);
 }
 
-void QtWaitDialog::SetMessage(const QString &message)
+void QtWaitDialog::SetMessage(const QString& message)
 {
-	ui->waitLabel->setPlainText(message);
+    ui->waitLabel->setPlainText(message);
     processEvents();
 }
 
 void QtWaitDialog::SetRange(int min, int max)
 {
-	ui->waitBar->setRange(min, max);
+    ui->waitBar->setRange(min, max);
     processEvents();
 }
 
 void QtWaitDialog::SetRangeMin(int min)
 {
-	ui->waitBar->setMinimum(min);
+    ui->waitBar->setMinimum(min);
     processEvents();
 }
 
 void QtWaitDialog::SetRangeMax(int max)
 {
-	ui->waitBar->setMaximum(max);
+    ui->waitBar->setMaximum(max);
     processEvents();
 }
 
 void QtWaitDialog::SetValue(int value)
 {
-	ui->waitBar->setVisible(true);
-	ui->waitBar->setValue(value);
+    ui->waitBar->setVisible(true);
+    ui->waitBar->setValue(value);
     processEvents();
 }
 
 void QtWaitDialog::CancelPressed()
 {
-	wasCanceled = true;
-	emit canceled();
+    wasCanceled = true;
+    emit canceled();
 }
 
 void QtWaitDialog::WaitCanceled()
 {
-	ui->waitButton->setEnabled(false);
+    ui->waitButton->setEnabled(false);
     processEvents();
 }
 
 void QtWaitDialog::processEvents()
 {
-    if ( !isRunnedFromExec )
+    if (!isRunnedFromExec)
     {
         QApplication::processEvents();
     }
@@ -141,24 +142,24 @@ void QtWaitDialog::processEvents()
 
 void QtWaitDialog::EnableCancel(bool enable)
 {
-	if(!wasCanceled)
-	{
-		ui->waitButton->setEnabled(enable);
-	}
+    if (!wasCanceled)
+    {
+        ui->waitButton->setEnabled(enable);
+    }
 }
 
-void QtWaitDialog::Setup(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
+void QtWaitDialog::Setup(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel)
 {
-	setWindowTitle(title);
-	SetMessage(message);
+    setWindowTitle(title);
+    SetMessage(message);
 
-	ui->waitButton->setEnabled(hasCancel);
-	ui->waitBar->setVisible(hasWaitbar);
+    ui->waitButton->setEnabled(hasCancel);
+    ui->waitBar->setVisible(hasWaitbar);
 
-	wasCanceled = false;
+    wasCanceled = false;
 }
 
 bool QtWaitDialog::WasCanceled() const
 {
-	return wasCanceled;
+    return wasCanceled;
 }

@@ -16,7 +16,7 @@
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
-#endif//_WIN32
+#endif //_WIN32
 
 #ifdef _WIN32
 	#if (defined(IL_USE_PRAGMA_LIBS))
@@ -32,13 +32,16 @@
 #ifndef IL_STATIC_LIB
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	hModule;  ul_reason_for_call;  lpReserved;
-	
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-		//iluInit();
-	}
+    hModule;
+    ul_reason_for_call;
+    lpReserved;
 
-	return TRUE;
+    if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+    {
+        //iluInit();
+    }
+
+    return TRUE;
 }
 
 #endif
@@ -46,26 +49,26 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserve
 
 void ILAPIENTRY iluInit()
 {
-	// Used mostly for rotations
-	//IL_PI = 4 * atan(1);		// precomputed value of pi
-	//IL_DEGCONV = IL_PI / 180;	// division is slow on some computers
+    // Used mostly for rotations
+    //IL_PI = 4 * atan(1);		// precomputed value of pi
+    //IL_DEGCONV = IL_PI / 180;	// division is slow on some computers
 
-	iluSetLanguage(ILU_ENGLISH);
-	return;
+    iluSetLanguage(ILU_ENGLISH);
+    return;
 }
-
 
 //#ifndef _WIN32_WCE
 ILuint ILAPIENTRY iluLoadImage(ILconst_string FileName)
 {
-	ILuint Id;
-	ilGenImages(1, &Id);
-	if (Id == 0)
-		return 0;
-	if (!ilLoadImage(FileName)) {
-		ilDeleteImages(1, &Id);
-		return 0;
-	}
-	return Id;
+    ILuint Id;
+    ilGenImages(1, &Id);
+    if (Id == 0)
+        return 0;
+    if (!ilLoadImage(FileName))
+    {
+        ilDeleteImages(1, &Id);
+        return 0;
+    }
+    return Id;
 }
 //#endif//_WIN32_WCE

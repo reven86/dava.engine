@@ -27,8 +27,9 @@
 ImplementObjectType(FCDPhysicsScene);
 
 FCDPhysicsScene::FCDPhysicsScene(FCDocument* document)
-:	FCDEntity(document, "PhysicsSceneNode")
-,	gravity(0.0f, -9.8f, 0.0f), timestep(1.0f)
+    : FCDEntity(document, "PhysicsSceneNode")
+    , gravity(0.0f, -9.8f, 0.0f)
+    , timestep(1.0f)
 {
 }
 
@@ -38,64 +39,66 @@ FCDPhysicsScene::~FCDPhysicsScene()
 
 FCDEntity* FCDPhysicsScene::Clone(FCDEntity* _clone, bool cloneChildren) const
 {
-	FCDPhysicsScene* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDPhysicsScene(const_cast<FCDocument*>(GetDocument()));
-	else if (_clone->HasType(FCDPhysicsScene::GetClassType())) clone = (FCDPhysicsScene*) _clone;
+    FCDPhysicsScene* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDPhysicsScene(const_cast<FCDocument*>(GetDocument()));
+    else if (_clone->HasType(FCDPhysicsScene::GetClassType()))
+        clone = (FCDPhysicsScene*)_clone;
 
-	Parent::Clone(_clone, cloneChildren);
-	
-	if (clone == NULL)
-	{
-		// Clone the miscellaneous parameters
-		clone->gravity = gravity;
-		clone->timestep = timestep;
+    Parent::Clone(_clone, cloneChildren);
 
-		// Clone the physics model instances
-		for (FCDPhysicsModelInstanceContainer::const_iterator it = physicsModelInstances.begin(); it != physicsModelInstances.end(); ++it)
-		{
-			FCDPhysicsModelInstance* clonedInstance = clone->AddPhysicsModelInstance();
-			(*it)->Clone(clonedInstance);
-		}
+    if (clone == NULL)
+    {
+        // Clone the miscellaneous parameters
+        clone->gravity = gravity;
+        clone->timestep = timestep;
 
-		// Clone the force field instances
-		for (FCDForceFieldInstanceContainer::const_iterator it = forceFieldInstances.begin(); it != forceFieldInstances.end(); ++it)
-		{
-			FCDPhysicsForceFieldInstance* clonedInstance = clone->AddForceFieldInstance();
-			(*it)->Clone(clonedInstance);
-		}
-	}
-	return _clone;
+        // Clone the physics model instances
+        for (FCDPhysicsModelInstanceContainer::const_iterator it = physicsModelInstances.begin(); it != physicsModelInstances.end(); ++it)
+        {
+            FCDPhysicsModelInstance* clonedInstance = clone->AddPhysicsModelInstance();
+            (*it)->Clone(clonedInstance);
+        }
+
+        // Clone the force field instances
+        for (FCDForceFieldInstanceContainer::const_iterator it = forceFieldInstances.begin(); it != forceFieldInstances.end(); ++it)
+        {
+            FCDPhysicsForceFieldInstance* clonedInstance = clone->AddForceFieldInstance();
+            (*it)->Clone(clonedInstance);
+        }
+    }
+    return _clone;
 }
 
 FCDPhysicsModelInstance* FCDPhysicsScene::AddPhysicsModelInstance(FCDPhysicsModel* model)
 {
-	FCDPhysicsModelInstance* instance = physicsModelInstances.Add(GetDocument());
-	instance->SetEntity(model);
-	SetNewChildFlag();
-	return instance;
+    FCDPhysicsModelInstance* instance = physicsModelInstances.Add(GetDocument());
+    instance->SetEntity(model);
+    SetNewChildFlag();
+    return instance;
 }
 
 FCDPhysicsForceFieldInstance* FCDPhysicsScene::AddForceFieldInstance(FCDForceField* forceField)
 {
-	FCDPhysicsForceFieldInstance* instance = (FCDPhysicsForceFieldInstance*)
-			FCDEntityInstanceFactory::CreateInstance(
-					GetDocument(), (FCDSceneNode*) NULL, forceField);
-	forceFieldInstances.push_back(instance);
-	SetNewChildFlag();
-	return instance;
+    FCDPhysicsForceFieldInstance* instance = (FCDPhysicsForceFieldInstance*)
+    FCDEntityInstanceFactory::CreateInstance(
+    GetDocument(), (FCDSceneNode*)NULL, forceField);
+    forceFieldInstances.push_back(instance);
+    SetNewChildFlag();
+    return instance;
 }
 
 void FCDPhysicsScene::CleanSubId()
 {
-	FUSUniqueStringMap myStringMap;
+    FUSUniqueStringMap myStringMap;
 
-	for (FCDForceFieldInstanceContainer::iterator itI = forceFieldInstances.begin(); itI != forceFieldInstances.end(); ++itI)
-	{
-		(*itI)->CleanSubId(&myStringMap);
-	}
+    for (FCDForceFieldInstanceContainer::iterator itI = forceFieldInstances.begin(); itI != forceFieldInstances.end(); ++itI)
+    {
+        (*itI)->CleanSubId(&myStringMap);
+    }
 
-	for (FCDPhysicsModelInstanceContainer::iterator itI = physicsModelInstances.begin(); itI != physicsModelInstances.end(); ++itI)
-	{
-		(*itI)->CleanSubId(&myStringMap);
-	}
+    for (FCDPhysicsModelInstanceContainer::iterator itI = physicsModelInstances.begin(); itI != physicsModelInstances.end(); ++itI)
+    {
+        (*itI)->CleanSubId(&myStringMap);
+    }
 }

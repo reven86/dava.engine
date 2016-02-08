@@ -50,7 +50,7 @@ private:
     UIControl* bgStubPanel;
     bool updateWait;
 
-    void OnVisibleClick(BaseObject* sender, void * data, void * callerData);
+    void OnVisibleClick(BaseObject* sender, void* data, void* callerData);
 };
 
 #endif //__WEBVIEWTEST_TEST_H__

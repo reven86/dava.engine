@@ -25,66 +25,66 @@ extern "C" {
 #include "magick/log.h"
 #include "magick/string_.h"
 
-#define ThrowBinaryException(severity,tag,context) \
+#define ThrowBinaryException(severity, tag, context) \
 { \
-  if (image != (Image *) NULL) \
-    (void) ThrowMagickException(&image->exception,GetMagickModule(),severity, \
-      tag == (const char *) NULL ? "unknown" : tag,"`%s'",context); \
-  return(MagickFalse); \
+  if (image != (Image*)NULL) \
+    (void) ThrowMagickException(&image->exception, GetMagickModule(), severity, \
+                                        tag == (const char*)NULL ? "unknown" : tag, "`%s'", context); \
+  return (MagickFalse); \
 }
-#define ThrowFatalException(severity,tag) \
+#define ThrowFatalException(severity, tag) \
 { \
-  char \
-    *message; \
+  char                                 \
+        * message; \
  \
-  ExceptionInfo \
-    exception; \
+  ExceptionInfo                                                 \
+        exception; \
  \
   GetExceptionInfo(&exception); \
-  message=GetExceptionMessage(errno); \
-  (void) ThrowMagickException(&exception,GetMagickModule(),severity, \
-    tag == (const char *) NULL ? "unknown" : tag,"`%s'",message); \
-  message=DestroyString(message); \
+  message = GetExceptionMessage(errno); \
+  (void) ThrowMagickException(&exception, GetMagickModule(), severity,            \
+                                    tag == (const char*)NULL ? "unknown" : tag, "`%s'", message); \
+  message = DestroyString(message); \
   CatchException(&exception); \
   (void) DestroyExceptionInfo(&exception); \
   _exit(1); \
 }
-#define ThrowFileException(exception,severity,tag,context) \
+#define ThrowFileException(exception, severity, tag, context) \
 { \
-  char \
-    *message; \
+  char              \
+        * message; \
  \
-  message=GetExceptionMessage(errno); \
-  (void) ThrowMagickException(exception,GetMagickModule(),severity, \
-    tag == (const char *) NULL ? "unknown" : tag,"`%s': %s",context,message); \
-  message=DestroyString(message); \
+  message = GetExceptionMessage(errno); \
+  (void) ThrowMagickException(exception, GetMagickModule(), severity,             \
+                                    tag == (const char*)NULL ? "unknown" : tag, "`%s': %s", context, message); \
+  message = DestroyString(message); \
 }
-#define ThrowImageException(severity,tag) \
+#define ThrowImageException(severity, tag) \
 { \
-  (void) ThrowMagickException(exception,GetMagickModule(),severity, \
-    tag == (const char *) NULL ? "unknown" : tag,"`%s'",image->filename); \
-  return((Image *) NULL); \
+  (void) ThrowMagickException(exception, GetMagickModule(), severity,             \
+                                    tag == (const char*)NULL ? "unknown" : tag, "`%s'", image->filename); \
+  return ((Image*)NULL); \
 }
-#define ThrowReaderException(severity,tag) \
+#define ThrowReaderException(severity, tag) \
 { \
-  (void) ThrowMagickException(exception,GetMagickModule(),severity, \
-    tag == (const char *) NULL ? "unknown" : tag,"`%s'",image_info->filename); \
-  if ((image) != (Image *) NULL) \
+  (void) ThrowMagickException(exception, GetMagickModule(), severity,             \
+                                    tag == (const char*)NULL ? "unknown" : tag, "`%s'", image_info->filename); \
+  if ((image) != (Image*)NULL) \
     { \
       (void) CloseBlob(image); \
-      image=DestroyImageList(image); \
+      image = DestroyImageList(image); \
     } \
-  return((Image *) NULL); \
+  return ((Image*)NULL); \
 }
-#define ThrowWriterException(severity,tag) \
+#define ThrowWriterException(severity, tag) \
 { \
-  (void) ThrowMagickException(&image->exception,GetMagickModule(),severity, \
-    tag == (const char *) NULL ? "unknown" : tag,"`%s'",image->filename); \
+  (void) ThrowMagickException(&image->exception, GetMagickModule(), severity,     \
+                                    tag == (const char*)NULL ? "unknown" : tag, "`%s'", image->filename); \
   if (image_info->adjoin != MagickFalse) \
-    while (image->previous != (Image *) NULL) \
-      image=image->previous; \
+    while (image->previous != (Image*)NULL) \
+      image = image->previous; \
   (void) CloseBlob(image); \
-  return(MagickFalse); \
+  return (MagickFalse); \
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

@@ -36,125 +36,124 @@
 #include "../Qt/Main/QtUtils.h"
 
 ActionEnableHeightmapEditor::ActionEnableHeightmapEditor(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_HEIGHTMAP_EDITOR_ENABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_HEIGHTMAP_EDITOR_ENABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionEnableHeightmapEditor::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool enabled = sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
-	if (enabled)
-	{
-		return;
-	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
 
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
+    bool enabled = sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
+    if (enabled)
+    {
+        return;
+    }
 
-	if (!success )
-	{
-		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->heightmapEditorSystem->EnableLandscapeEditing();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-	}
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
+
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN);
+
+    if (!success)
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->heightmapEditorSystem->EnableLandscapeEditing();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+    }
+
+    if (success &&
+        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(false);
     }
 
-	SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
+    SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
 }
 
 ActionDisableHeightmapEditor::ActionDisableHeightmapEditor(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_HEIGHTMAP_EDITOR_DISABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_HEIGHTMAP_EDITOR_DISABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionDisableHeightmapEditor::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool disabled = !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
-	if (disabled)
-	{
-		return;
-	}
-
-	disabled = sceneEditor->heightmapEditorSystem->DisableLandscapeEdititing();
-	if (!disabled)
-	{
-		ShowErrorDialog(ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR);
-	}
-    
-    if(disabled)
+    if (sceneEditor == NULL)
     {
-        if(!sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
+        return;
+    }
+
+    bool disabled = !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled();
+    if (disabled)
+    {
+        return;
+    }
+
+    disabled = sceneEditor->heightmapEditorSystem->DisableLandscapeEdititing();
+    if (!disabled)
+    {
+        ShowErrorDialog(ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR);
+    }
+
+    if (disabled)
+    {
+        if (!sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
         {
             sceneEditor->foliageSystem->SetFoliageVisible(true);
         }
-        
+
         sceneEditor->foliageSystem->SyncFoliageWithLandscape();
     }
 
-	SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
+    SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
 }
 
-
 ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
-											   Heightmap* originalHeightmap,
-											   const Rect& updatedRect)
-:	Command2(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
-,	heightmapProxy(heightmapProxy)
+                                               Heightmap* originalHeightmap,
+                                               const Rect& updatedRect)
+    : Command2(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
+    , heightmapProxy(heightmapProxy)
 {
-	if (originalHeightmap && heightmapProxy)
-	{
-		this->updatedRect = updatedRect;
-		undoRegion = GetHeightmapRegion(originalHeightmap);
-		redoRegion = GetHeightmapRegion(heightmapProxy);
-	}
+    if (originalHeightmap && heightmapProxy)
+    {
+        this->updatedRect = updatedRect;
+        undoRegion = GetHeightmapRegion(originalHeightmap);
+        redoRegion = GetHeightmapRegion(heightmapProxy);
+    }
 }
 
 ModifyHeightmapCommand::~ModifyHeightmapCommand()
 {
-	SafeDeleteArray(undoRegion);
-	SafeDeleteArray(redoRegion);
+    SafeDeleteArray(undoRegion);
+    SafeDeleteArray(redoRegion);
 }
 
 Entity* ModifyHeightmapCommand::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }
 
 void ModifyHeightmapCommand::Redo()
 {
-	ApplyHeightmapRegion(redoRegion);
+    ApplyHeightmapRegion(redoRegion);
 }
 
 void ModifyHeightmapCommand::Undo()
 {
-	ApplyHeightmapRegion(undoRegion);
+    ApplyHeightmapRegion(undoRegion);
 }
 
 uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
 {
-	int32 size = heightmap->Size();
+    int32 size = heightmap->Size();
     int32 width = (int32)ceilf(updatedRect.dx);
     int32 height = (int32)ceilf(updatedRect.dy);
     int32 xOffset = (int32)floorf(updatedRect.x);
@@ -168,11 +167,11 @@ uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
     for (int32 i = 0; i < height; ++i)
     {
         uint16* src = oldData + (yOffset + i) * size + xOffset;
-		uint16* dst = newData + i * width;
-		memcpy(dst, src, sizeof(uint16) * width);
-	}
-	
-	return newData;
+        uint16* dst = newData + i * width;
+        memcpy(dst, src, sizeof(uint16) * width);
+    }
+
+    return newData;
 }
 
 void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)
@@ -191,8 +190,8 @@ void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)
     {
         uint16* src = region + i * width;
         uint16* dst = data + (yOffset + i) * size + xOffset;
-		memcpy(dst, src, sizeof(uint16) * width);
-	}
-	
-	heightmapProxy->UpdateRect(updatedRect);
+        memcpy(dst, src, sizeof(uint16) * width);
+    }
+
+    heightmapProxy->UpdateRect(updatedRect);
 }

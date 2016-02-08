@@ -41,17 +41,18 @@ public:
     QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive, const DAVA::String& key);
     virtual ~QtPropertyKeyedArchiveMember();
 
-	DAVA::KeyedArchive* archive;
-	DAVA::String key;
+    DAVA::KeyedArchive* archive;
+    DAVA::String key;
 
 protected:
-	KeyeadArchiveSetValueCommand* lastCommand;
+    KeyeadArchiveSetValueCommand* lastCommand;
 
-	virtual void SetValueInternal(const QVariant &value);
-	virtual bool UpdateValueInternal();
-	virtual bool EditorDoneInternal(QWidget *editor);
+    virtual void SetValueInternal(const QVariant& value);
+    virtual bool UpdateValueInternal();
+    virtual bool EditorDoneInternal(QWidget* editor);
 
-	virtual void* CreateLastCommand() const;
+    virtual void* CreateLastCommand() const;
+
 private:
     void CheckAndFillPresetValues();
 };

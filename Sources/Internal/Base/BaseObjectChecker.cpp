@@ -37,48 +37,42 @@
 
 #include <set>
 
-
-
-namespace DAVA 
+namespace DAVA
 {
-
 std::set<BaseObject*> baseObjects;
 
-void BaseObjectChecker::RegisterBaseObject(BaseObject * obj)
+void BaseObjectChecker::RegisterBaseObject(BaseObject* obj)
 {
-	baseObjects.insert(obj);
+    baseObjects.insert(obj);
 }
 
-	
-void BaseObjectChecker::UnregisterBaseObject(BaseObject * obj)
+void BaseObjectChecker::UnregisterBaseObject(BaseObject* obj)
 {
-	std::set<BaseObject*>::iterator r = baseObjects.find(obj);
-	if (r != baseObjects.end())
-	{
-		baseObjects.erase(r);
-	}
+    std::set<BaseObject*>::iterator r = baseObjects.find(obj);
+    if (r != baseObjects.end())
+    {
+        baseObjects.erase(r);
+    }
 }
 
-bool BaseObjectChecker::IsAvailable(BaseObject * obj)
+bool BaseObjectChecker::IsAvailable(BaseObject* obj)
 {
-	std::set<BaseObject*>::iterator r = baseObjects.find(obj);
-	if (r != baseObjects.end())
-	{
-		return true;
-	}
-	return false;
+    std::set<BaseObject*>::iterator r = baseObjects.find(obj);
+    if (r != baseObjects.end())
+    {
+        return true;
+    }
+    return false;
 }
 
 void BaseObjectChecker::Dump()
 {
     for (std::set<BaseObject*>::iterator it = baseObjects.begin(); it != baseObjects.end(); ++it)
     {
-        BaseObject * obj = *it;
+        BaseObject* obj = *it;
         Logger::FrameworkDebug("(%s) object not released", typeid(obj).name());
     }
 }
-
 }
 
 #endif // ENABLE_BASE_OBJECT_CHECKS
-

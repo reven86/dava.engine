@@ -37,15 +37,14 @@
 
 namespace DAVA
 {
-
 namespace
 {
-    const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
+const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
 }
 
 struct ImmediatePropertySetter
 {
-    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    void operator()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
     {
         control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
         targetIntrospectionMember->SetValue(targetObject, value);
@@ -57,7 +56,7 @@ struct ImmediatePropertySetter
 
 struct AnimatedPropertySetter
 {
-    template<typename T>
+    template <typename T>
     void Animate(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
@@ -75,7 +74,7 @@ struct AnimatedPropertySetter
         }
     }
 
-    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    void operator()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
     {
         switch (value.GetType())
         {
@@ -107,12 +106,10 @@ struct AnimatedPropertySetter
 
 UIStyleSheetSystem::UIStyleSheetSystem()
 {
-
 }
 
 UIStyleSheetSystem::~UIStyleSheetSystem()
 {
-
 }
 
 void UIStyleSheetSystem::ProcessControl(UIControl* control)
@@ -169,18 +166,18 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         ProcessControl(child);
     }
 }
-    
-void UIStyleSheetSystem::AddGlobalClass(const FastName &clazz)
+
+void UIStyleSheetSystem::AddGlobalClass(const FastName& clazz)
 {
     globalClasses.AddClass(clazz);
 }
 
-void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
+void UIStyleSheetSystem::RemoveGlobalClass(const FastName& clazz)
 {
     globalClasses.RemoveClass(clazz);
 }
-    
-bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
+
+bool UIStyleSheetSystem::HasGlobalClass(const FastName& clazz) const
 {
     return globalClasses.HasClass(clazz);
 }
@@ -199,7 +196,7 @@ void UIStyleSheetSystem::ClearGlobalClasses()
 {
     globalClasses.RemoveAllClasses();
 }
-    
+
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
 {
     UIControl* currentControl = control;
@@ -270,5 +267,4 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         break;
     }
 }
-
 }

@@ -37,6 +37,7 @@ class SpeedLoadImagesTest : public BaseScreen
 {
 protected:
     ~SpeedLoadImagesTest() override;
+
 public:
     SpeedLoadImagesTest();
 
@@ -44,18 +45,18 @@ public:
     void UnloadResources() override;
 
 private:
-    void OnTestPng(BaseObject *obj, void *data, void *callerData);
-    void OnTestJpg(BaseObject *obj, void *data, void *callerData);
-    void OnTestTga(BaseObject *obj, void *data, void *callerData);
-    void OnTestWebP(BaseObject *obj, void *data, void *callerData);
-    void OnTestPvr(BaseObject *obj, void *data, void *callerData);
+    void OnTestPng(BaseObject* obj, void* data, void* callerData);
+    void OnTestJpg(BaseObject* obj, void* data, void* callerData);
+    void OnTestTga(BaseObject* obj, void* data, void* callerData);
+    void OnTestWebP(BaseObject* obj, void* data, void* callerData);
+    void OnTestPvr(BaseObject* obj, void* data, void* callerData);
 
-    void TestAndDisplayFormat(String extension, const Vector<String> &qualities);
-    void CreatePaths(String extension, const Vector<String> &qualities, Vector<FilePath> &outPaths);
-    uint64 GetLoadTime(const FilePath &path);
+    void TestAndDisplayFormat(String extension, const Vector<String>& qualities);
+    void CreatePaths(String extension, const Vector<String>& qualities, Vector<FilePath>& outPaths);
+    uint64 GetLoadTime(const FilePath& path);
 
 private:
-    UIStaticText *resultText;
+    UIStaticText* resultText;
 };
 
 #endif /* defined(__SPEED_LOAD_IMAGES_TEST__) */

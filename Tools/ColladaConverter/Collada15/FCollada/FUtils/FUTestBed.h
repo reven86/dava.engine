@@ -26,37 +26,43 @@ class FUTestSuite;
 class FCOLLADA_EXPORT FUTestBed
 {
 private:
-	size_t testPassed, testFailed;
-	FULogFile fileOut;
-	fstring filename;
-	bool isVerbose;
+    size_t testPassed, testFailed;
+    FULogFile fileOut;
+    fstring filename;
+    bool isVerbose;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		@param filename The filename of the logfile to open.
 		@param isVerbose Whether to enable more logging.
 			Currently, this means writing one line to the log when
 			starting any test suite starts. */
-	FUTestBed(const fchar* filename, bool isVerbose);
+    FUTestBed(const fchar* filename, bool isVerbose);
 
-	/** Retrieves whether verbose logging is enabled.
+    /** Retrieves whether verbose logging is enabled.
 		@return Whether verbose logging is enabled. */
-	inline bool IsVerbose() const { return isVerbose; }
-	
-	/** [INTERNAL] Retrieves the log file.
+    inline bool IsVerbose() const
+    {
+        return isVerbose;
+    }
+
+    /** [INTERNAL] Retrieves the log file.
 		Used by test suites to write out custom output.
 		@return The log file structure. */
-	FULogFile& GetLogFile() { return fileOut; }
+    FULogFile& GetLogFile()
+    {
+        return fileOut;
+    }
 
-	/** Runs a test suite and returns the results.
+    /** Runs a test suite and returns the results.
 		@param headTestSuite The top-level test suite to start.
 		@return Whether all the tests have passed. */
-	bool RunTestbed(FUTestSuite* headTestSuite);
-	
-	/** [INTERNAL] Runs a test suite and compiles the results.
+    bool RunTestbed(FUTestSuite* headTestSuite);
+
+    /** [INTERNAL] Runs a test suite and compiles the results.
 		This is used recursively to run a full hierarchy of test suites.
 		@param testSuite A test suite to run. */
-	void RunTestSuite(FUTestSuite* testSuite);
+    void RunTestSuite(FUTestSuite* testSuite);
 };
 
 extern FCOLLADA_EXPORT bool FUTestBed_skipAsserts;
@@ -70,17 +76,19 @@ extern FCOLLADA_EXPORT bool FUTestBed_skipAsserts;
 class FUTestSuite
 {
 public:
-	/** Destructor. */
-	virtual ~FUTestSuite() {}
-		
-	/** [INTERNAL] Runs one test.
+    /** Destructor. */
+    virtual ~FUTestSuite()
+    {
+    }
+
+    /** [INTERNAL] Runs one test.
 		Called by the FUTestBed.
 		@param testBed The test bed compiling the results.
 		@param fileOut The log file of the test bed.
 		@param __testSuiteDone Out parameter: whether the test suite has no more tests after this one.
 		@param testIndex An increasing index used to run all the tests.
-		@return Whether the current test has passed. */	
-	virtual bool RunTest(FUTestBed& testBed, FULogFile& fileOut, bool& __testSuiteDone, size_t testIndex) = 0;
+		@return Whether the current test has passed. */
+    virtual bool RunTest(FUTestBed& testBed, FULogFile& fileOut, bool& __testSuiteDone, size_t testIndex) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,13 +125,14 @@ public:
 FUTestSuite* _test##suiteName; \
 static class FUTestSuite##suiteName : public FUTestSuite \
 { \
-public: \
-	FUTestSuite##suiteName() : FUTestSuite() { _test##suiteName = this; } \
+public :                         \
+        FUTestSuite##suiteName() \
+            : FUTestSuite() { _test##suiteName = this; } \
 	virtual ~FUTestSuite##suiteName() {} \
 	virtual bool RunTest(FUTestBed& testBed, FULogFile& fileOut, bool& __testSuiteDone, size_t testIndex) \
 	{ \
 		switch (testIndex) { \
-			case ~0 : { \
+			case ~0: { \
 				if (testBed.IsVerbose()) { \
 					fileOut.WriteLine("Running %s...", #suiteName); \
 				}

@@ -31,20 +31,20 @@
 
 using namespace DAVA;
 
-Result::Result(ResultType type_, const DAVA::String &message_)
+Result::Result(ResultType type_, const DAVA::String& message_)
     : type(type_)
     , message(message_)
 {
 }
 
-Result::Result(Result &&result)
+Result::Result(Result&& result)
     : type(result.type)
     , message(std::move(result.message))
 {
     result.type = RESULT_SUCCESS;
 }
 
-Result& Result::operator = (Result&& result)
+Result& Result::operator=(Result&& result)
 {
     if (this != &result)
     {
@@ -58,16 +58,15 @@ Result& Result::operator = (Result&& result)
 ResultList::ResultList()
     : allOk(true)
 {
-    
 }
 
-ResultList::ResultList(const Result &result)
+ResultList::ResultList(const Result& result)
     : allOk(result)
 {
     results.push_back(result);
 }
 
-ResultList::ResultList(Result &&result)
+ResultList::ResultList(Result&& result)
 {
     AddResult(std::move(result));
 }
@@ -93,34 +92,33 @@ ResultList& ResultList::operator<<(Result&& result)
     return AddResult(std::move(result));
 }
 
-
-ResultList& ResultList::AddResult(const Result &result)
+ResultList& ResultList::AddResult(const Result& result)
 {
     allOk &= result;
     results.push_back(result);
     return *this;
 }
 
-ResultList& ResultList::AddResult(Result &&result)
+ResultList& ResultList::AddResult(Result&& result)
 {
     allOk &= result;
     results.emplace_back(std::move(result));
     return *this;
 }
 
-ResultList& ResultList::AddResult(const Result::ResultType type, const String &message)
+ResultList& ResultList::AddResult(const Result::ResultType type, const String& message)
 {
     return AddResult(Result(type, message));
 }
 
-ResultList& ResultList::AddResultList(const ResultList &resultList)
+ResultList& ResultList::AddResultList(const ResultList& resultList)
 {
     allOk &= resultList.allOk;
     results.insert(results.end(), resultList.results.begin(), resultList.results.end());
     return *this;
 }
 
-ResultList& ResultList::AddResultList(ResultList &&resultList)
+ResultList& ResultList::AddResultList(ResultList&& resultList)
 {
     if (this != &resultList)
     {

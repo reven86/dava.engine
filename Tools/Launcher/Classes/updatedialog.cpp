@@ -42,16 +42,26 @@
 #include <QDebug>
 #include <QTreeView>
 
-UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationManager * _appManager, QNetworkAccessManager * accessManager, QWidget *parent) :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
-    ui(new Ui::UpdateDialog),
-    networkManager(accessManager),
-    currentDownload(0),
-    tasks(taskQueue),
-    currentLogItem(0),
-    currentTopLogItem(0),
-    unpacker(0),
-    lastErrorCode(0),
+UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
+    :
+    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    ,
+    ui(new Ui::UpdateDialog)
+    ,
+    networkManager(accessManager)
+    ,
+    currentDownload(0)
+    ,
+    tasks(taskQueue)
+    ,
+    currentLogItem(0)
+    ,
+    currentTopLogItem(0)
+    ,
+    unpacker(0)
+    ,
+    lastErrorCode(0)
+    ,
     appManager(_appManager)
 {
     ui->setupUi(this);
@@ -63,7 +73,7 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationMana
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
     connect(this, SIGNAL(UpdateDownloadProgress(int)), ui->progressBar, SLOT(setValue(int)));
     connect(this, SIGNAL(UpdateUnpackProgress(int)), ui->progressBar2, SLOT(setValue(int)));
-    connect(unpacker, SIGNAL(OnProgress(int,int)), this, SLOT(UnpackProgress(int,int)));
+    connect(unpacker, SIGNAL(OnProgress(int, int)), this, SLOT(UnpackProgress(int, int)));
     connect(unpacker, SIGNAL(OnComplete()), this, SLOT(UnpackComplete()));
     connect(unpacker, SIGNAL(OnError(int)), this, SLOT(UnpackError(int)));
 
@@ -80,7 +90,7 @@ UpdateDialog::~UpdateDialog()
 
 void UpdateDialog::OnCancelClicked()
 {
-    if(currentDownload)
+    if (currentDownload)
         currentDownload->abort();
     outputFile.close();
 
@@ -98,7 +108,7 @@ void UpdateDialog::UpdateButton()
 
 void UpdateDialog::StartNextTask()
 {
-    if(!tasks.isEmpty())
+    if (!tasks.isEmpty())
     {
         ui->progressBar->setValue(0);
         ui->progressBar2->setValue(0);
@@ -107,11 +117,11 @@ void UpdateDialog::StartNextTask()
 
         UpdateTask task = tasks.front();
 
-        if(task.isRemoveBranch)
+        if (task.isRemoveBranch)
         {
             AddTopLogValue(QString("Removing branch %1:").arg(appManager->GetString(task.branchID)));
 
-            if(appManager->RemoveBranch(task.branchID))
+            if (appManager->RemoveBranch(task.branchID))
             {
                 AddLogValue("Removing Complete!");
                 CompleteLog();
@@ -129,7 +139,7 @@ void UpdateDialog::StartNextTask()
         }
         else
         {
-            const QString & archiveFilepath = FileManager::Instance()->GetTempDownloadFilepath();
+            const QString& archiveFilepath = FileManager::Instance()->GetTempDownloadFilepath();
 
             outputFile.setFileName(archiveFilepath);
             outputFile.open(QFile::WriteOnly);
@@ -138,7 +148,7 @@ void UpdateDialog::StartNextTask()
             connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
             connect(currentDownload, SIGNAL(readyRead()), this, SLOT(DownloadReadyRead()));
             connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
-            connect(currentDownload, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(DownloadProgress(qint64,qint64)));
+            connect(currentDownload, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
 
             AddTopLogValue(QString("%1 - %2:")
                            .arg(appManager->GetString(task.appID))
@@ -165,7 +175,7 @@ void UpdateDialog::NetworkError(QNetworkReply::NetworkError code)
 
 void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
-    if(bytesTotal)
+    if (bytesTotal)
     {
         int percentage = ((double)bytesReceived / bytesTotal) * 100;
         emit UpdateDownloadProgress(percentage);
@@ -181,7 +191,7 @@ void UpdateDialog::DownloadFinished()
 
     UpdateTask task = tasks.front();
 
-    if(currentDownload)
+    if (currentDownload)
     {
         currentDownload->deleteLater();
         currentDownload = 0;
@@ -189,7 +199,7 @@ void UpdateDialog::DownloadFinished()
         QString appDir = FileManager::Instance()->GetApplicationFolder(task.branchID, task.appID);
 
         QString runPath = appDir + task.version.runPath;
-        while(ProcessHelper::IsProcessRuning(runPath))
+        while (ProcessHelper::IsProcessRuning(runPath))
             ErrorMessanger::Instance()->ShowRetryDlg(false);
 
         FileManager::Instance()->DeleteDirectory(appDir);
@@ -201,7 +211,7 @@ void UpdateDialog::DownloadFinished()
 
         unpacker->UnZipFile(filePath, appDir);
     }
-    else if(lastErrorCode != QNetworkReply::OperationCanceledError)
+    else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {
         UpdateLastLogValue("Download Fail!");
         BreakLog();
@@ -215,7 +225,7 @@ void UpdateDialog::DownloadFinished()
 
 void UpdateDialog::UnpackProgress(int current, int count)
 {
-    if(count)
+    if (count)
     {
         int percentage = ((double)current / count) * 100;
         emit UpdateUnpackProgress(percentage);
@@ -259,10 +269,10 @@ void UpdateDialog::DownloadReadyRead()
     outputFile.write(currentDownload->readAll());
 }
 
-void UpdateDialog::AddTopLogValue(const QString & log)
+void UpdateDialog::AddTopLogValue(const QString& log)
 {
-    if(currentTopLogItem)
-         currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
+    if (currentTopLogItem)
+        currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
 
     currentTopLogItem = new QTreeWidgetItem();
     currentTopLogItem->setText(0, log);
@@ -273,10 +283,10 @@ void UpdateDialog::AddTopLogValue(const QString & log)
     ui->treeWidget->scrollToBottom();
 }
 
-void UpdateDialog::AddLogValue(const QString & log)
+void UpdateDialog::AddLogValue(const QString& log)
 {
-    if(currentLogItem)
-         currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
+    if (currentLogItem)
+        currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
 
     currentLogItem = new QTreeWidgetItem();
     currentLogItem->setText(0, log);
@@ -288,19 +298,19 @@ void UpdateDialog::AddLogValue(const QString & log)
     ui->treeWidget->scrollToBottom();
 }
 
-void UpdateDialog::UpdateLastLogValue(const QString & log)
+void UpdateDialog::UpdateLastLogValue(const QString& log)
 {
-    if(currentLogItem)
+    if (currentLogItem)
         currentLogItem->setText(0, log);
 }
 
 void UpdateDialog::BreakLog()
 {
-    if(currentTopLogItem)
-         currentTopLogItem->setTextColor(0, LOG_COLOR_FAIL);
+    if (currentTopLogItem)
+        currentTopLogItem->setTextColor(0, LOG_COLOR_FAIL);
 
-    if(currentLogItem)
-         currentLogItem->setTextColor(0, LOG_COLOR_FAIL);
+    if (currentLogItem)
+        currentLogItem->setTextColor(0, LOG_COLOR_FAIL);
 
     currentTopLogItem = 0;
     currentLogItem = 0;
@@ -308,11 +318,11 @@ void UpdateDialog::BreakLog()
 
 void UpdateDialog::CompleteLog()
 {
-    if(currentTopLogItem)
-         currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
+    if (currentTopLogItem)
+        currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
 
-    if(currentLogItem)
-         currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
+    if (currentLogItem)
+        currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
 
     currentTopLogItem = 0;
     currentLogItem = 0;

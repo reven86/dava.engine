@@ -35,25 +35,24 @@
 
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 class JniFileList
 {
 public:
-	struct JniFileListEntry
-	{
-		String name;
-		uint32 size;
-		bool isDirectory;
-	};
-	JniFileList();
-	Vector<JniFileListEntry> GetFileList(const String& path);
+    struct JniFileListEntry
+    {
+        String name;
+        uint32 size;
+        bool isDirectory;
+    };
+    JniFileList();
+    Vector<JniFileListEntry> GetFileList(const String& path);
 
 private:
-	JNI::JavaClass jniFileList;
-	Function<jstringArray (jstring)> getFileList;
+    JNI::JavaClass jniFileList;
+    Function<jstringArray(jstring)> getFileList;
 };
-
 };
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)

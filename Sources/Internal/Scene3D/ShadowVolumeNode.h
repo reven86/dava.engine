@@ -37,29 +37,32 @@
 
 namespace DAVA
 {
-
 class PolygonGroup;
 
 class ShadowVolumeNode : public Entity
 {
 protected:
-	virtual ~ShadowVolumeNode();
+    virtual ~ShadowVolumeNode();
+
 public:
-	ShadowVolumeNode();
+    ShadowVolumeNode();
 
-	virtual void Draw();
+    virtual void Draw();
 
-	void DrawShadow();
+    void DrawShadow();
 
-	void CopyGeometryFrom(MeshInstanceNode * meshInstance);
+    void CopyGeometryFrom(MeshInstanceNode* meshInstance);
 
-	virtual void Save(KeyedArchive * archive, SerializationContext * sceneFileV2);
-	virtual void Load(KeyedArchive * archive, SerializationContext * sceneFileV2);
-	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
+    virtual void Save(KeyedArchive* archive, SerializationContext* sceneFileV2);
+    virtual void Load(KeyedArchive* archive, SerializationContext* sceneFileV2);
+    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
 
-	virtual Entity* Clone(Entity *dstNode = NULL);
+    virtual Entity* Clone(Entity* dstNode = NULL);
 
-    PolygonGroup * GetPolygonGroup() { return shadowPolygonGroup; };
+    PolygonGroup* GetPolygonGroup()
+    {
+        return shadowPolygonGroup;
+    };
 
 private:
     //shadow mesh generation
@@ -71,23 +74,22 @@ private:
     //int32 DuplicateVertexAndSetNormalAtIndex(const Vector3 & normal, int32 index);
     //Vector3 CalculateNormalForVertex(int32 * originalTriangleVertices);
 
-///
-	struct EdgeMapping
-	{
-		int32 oldEdge[2];
-		int32 newEdge[2][2];
+    ///
+    struct EdgeMapping
+    {
+        int32 oldEdge[2];
+        int32 newEdge[2][2];
 
-	public:
-		EdgeMapping()
-		{
-			Memset(oldEdge, -1, sizeof(oldEdge));
-			Memset(newEdge, -1, sizeof(newEdge));
-		}
-	};
+    public:
+        EdgeMapping()
+        {
+            Memset(oldEdge, -1, sizeof(oldEdge));
+            Memset(newEdge, -1, sizeof(newEdge));
+        }
+    };
 
-	int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count);
+    int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count);
 };
-
 }
 
 #endif //__DAVAENGINE_SHADOW_VOLUME_NODE_H__

@@ -89,79 +89,79 @@ public:
     ~SceneEditor2();
 
     // editor systems
-    SceneCameraSystem *cameraSystem;
-	SceneCollisionSystem *collisionSystem;
-	SceneGridSystem *gridSystem;
-	HoodSystem *hoodSystem;
-	SceneSelectionSystem *selectionSystem;
-	EntityModificationSystem *modifSystem;
-	LandscapeEditorDrawSystem* landscapeEditorDrawSystem;
-	HeightmapEditorSystem* heightmapEditorSystem;
-	TilemaskEditorSystem* tilemaskEditorSystem;
-	CustomColorsSystem* customColorsSystem;
-	RulerToolSystem* rulerToolSystem;
-	StructureSystem *structureSystem;
-	EditorParticlesSystem *particlesSystem;
-	EditorLightSystem *editorLightSystem;
-	TextDrawSystem *textDrawSystem;
-	DebugDrawSystem *debugDrawSystem;
-	BeastSystem	*beastSystem;
-	OwnersSignatureSystem *ownersSignatureSystem;
-    StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
-	EditorMaterialSystem *materialSystem;
-	EditorLODSystem *editorLODSystem;
+    SceneCameraSystem* cameraSystem;
+    SceneCollisionSystem* collisionSystem;
+    SceneGridSystem* gridSystem;
+    HoodSystem* hoodSystem;
+    SceneSelectionSystem* selectionSystem;
+    EntityModificationSystem* modifSystem;
+    LandscapeEditorDrawSystem* landscapeEditorDrawSystem;
+    HeightmapEditorSystem* heightmapEditorSystem;
+    TilemaskEditorSystem* tilemaskEditorSystem;
+    CustomColorsSystem* customColorsSystem;
+    RulerToolSystem* rulerToolSystem;
+    StructureSystem* structureSystem;
+    EditorParticlesSystem* particlesSystem;
+    EditorLightSystem* editorLightSystem;
+    TextDrawSystem* textDrawSystem;
+    DebugDrawSystem* debugDrawSystem;
+    BeastSystem* beastSystem;
+    OwnersSignatureSystem* ownersSignatureSystem;
+    StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
+    EditorMaterialSystem* materialSystem;
+    EditorLODSystem* editorLODSystem;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem;
     DAVA::RotationControllerSystem* rotationSystem;
     DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
 
-    WayEditSystem *wayEditSystem;
-	PathSystem *pathSystem;
-    
-	// save/load
-	bool Load(const DAVA::FilePath &path);
-    virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
-	SceneFileV2::eError Save();
-	bool Export(const DAVA::eGPUFamily newGPU);
+    WayEditSystem* wayEditSystem;
+    PathSystem* pathSystem;
 
-	const DAVA::FilePath &GetScenePath();
-	void SetScenePath(const DAVA::FilePath &newScenePath);
+    // save/load
+    bool Load(const DAVA::FilePath& path);
+    virtual SceneFileV2::eError Save(const DAVA::FilePath& pathname, bool saveForGame = false);
+    SceneFileV2::eError Save();
+    bool Export(const DAVA::eGPUFamily newGPU);
 
-	// commands
-	bool CanUndo() const;
-	bool CanRedo() const;
+    const DAVA::FilePath& GetScenePath();
+    void SetScenePath(const DAVA::FilePath& newScenePath);
 
-	void Undo();
-	void Redo();
+    // commands
+    bool CanUndo() const;
+    bool CanRedo() const;
 
-	void BeginBatch(const DAVA::String &text);
-	void EndBatch();
+    void Undo();
+    void Redo();
+
+    void BeginBatch(const DAVA::String& text);
+    void EndBatch();
     bool IsBatchStarted() const;
 
-	void Exec(Command2 *command);
-	void ClearCommands(int commandId);
+    void Exec(Command2* command);
+    void ClearCommands(int commandId);
     void ClearAllCommands();
-	const CommandStack* GetCommandStack() const;
+    const CommandStack* GetCommandStack() const;
 
-	// checks whether the scene changed since the last save
-	bool IsLoaded() const;
-	bool IsChanged() const;
-	void SetChanged(bool changed);
+    // checks whether the scene changed since the last save
+    bool IsLoaded() const;
+    bool IsChanged() const;
+    void SetChanged(bool changed);
 
-	// enable/disable drawing custom HUD
-	void SetHUDVisible(bool visible);
-	bool IsHUDVisible() const;
+    // enable/disable drawing custom HUD
+    void SetHUDVisible(bool visible);
+    bool IsHUDVisible() const;
 
-	// DAVA events
-	virtual void Update(float timeElapsed);
+    // DAVA events
+    virtual void Update(float timeElapsed);
 
-	// this function should be called each time UI3Dview changes its position
-	// viewport rect is used to calc. ray from camera to any 2d point on this viewport
-	void SetViewportRect(const DAVA::Rect &newViewportRect);
+    // this function should be called each time UI3Dview changes its position
+    // viewport rect is used to calc. ray from camera to any 2d point on this viewport
+    void SetViewportRect(const DAVA::Rect& newViewportRect);
 
-	//Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
-	void AddEditorEntity(Entity *editorEntity);
+    //Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
+    void AddEditorEntity(Entity* editorEntity);
 
     const RenderStats& GetRenderStats() const;
 
@@ -170,28 +170,27 @@ public:
     int32 GetEnabledTools();
 
     SceneEditor2* CreateCopyForExport(); //Need to prevent changes of original scene
-    Entity * Clone(Entity *dstNode /* = NULL */) override;
+    Entity* Clone(Entity* dstNode /* = NULL */) override;
 
     void Activate() override;
     void Deactivate() override;
-    
-    
-	DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
-	
-	INTROSPECTION(SceneEditor2, 
-		MEMBER(cameraSystem, "CameraSystem", I_VIEW | I_EDIT)
-        MEMBER(collisionSystem, "Collision System", I_VIEW | I_EDIT)
-        MEMBER(selectionSystem, "Selection System", I_VIEW | I_EDIT)
-		MEMBER(gridSystem, "GridSystem", I_VIEW | I_EDIT)
-        MEMBER(materialSystem, "Material System", I_VIEW | I_EDIT)
-		)
+
+    DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
+
+    INTROSPECTION(SceneEditor2,
+                  MEMBER(cameraSystem, "CameraSystem", I_VIEW | I_EDIT)
+                  MEMBER(collisionSystem, "Collision System", I_VIEW | I_EDIT)
+                  MEMBER(selectionSystem, "Selection System", I_VIEW | I_EDIT)
+                  MEMBER(gridSystem, "GridSystem", I_VIEW | I_EDIT)
+                  MEMBER(materialSystem, "Material System", I_VIEW | I_EDIT)
+                  )
 
 protected:
-	bool isLoaded;
-	bool isHUDVisible;
+    bool isLoaded;
+    bool isHUDVisible;
 
-	DAVA::FilePath curScenePath;
-	CommandStack commandStack;
+    DAVA::FilePath curScenePath;
+    CommandStack commandStack;
     RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
@@ -200,29 +199,28 @@ protected:
     virtual void Draw();
 
     void ExtractEditorEntities();
-	void InjectEditorEntities();
+    void InjectEditorEntities();
 
-	void RemoveSystems();
+    void RemoveSystems();
 
-	bool wasChanged; //deprecated
-    
+    bool wasChanged; //deprecated
+
     void Setup3DDrawing();
 
 private:
-	friend struct EditorCommandNotify;
+    friend struct EditorCommandNotify;
 
-	struct EditorCommandNotify : public CommandNotify
-	{
-		SceneEditor2* editor;
+    struct EditorCommandNotify : public CommandNotify
+    {
+        SceneEditor2* editor;
 
-		EditorCommandNotify(SceneEditor2 *_editor);
-		virtual void Notify(const Command2 *command, bool redo);
-		virtual void CleanChanged(bool clean);
-	};
+        EditorCommandNotify(SceneEditor2* _editor);
+        virtual void Notify(const Command2* command, bool redo);
+        virtual void CleanChanged(bool clean);
+    };
 };
 
-
-Q_DECLARE_METATYPE(SceneEditor2 *)
+Q_DECLARE_METATYPE(SceneEditor2*)
 
 
 #endif // __SCENE_EDITOR_PROXY_H__

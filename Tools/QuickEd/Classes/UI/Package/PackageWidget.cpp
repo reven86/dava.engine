@@ -161,7 +161,7 @@ bool CanMoveRight(PackageBaseNode* node)
 }
 } //unnamed namespace
 
-PackageWidget::PackageWidget(QWidget *parent)
+PackageWidget::PackageWidget(QWidget* parent)
     : QDockWidget(parent)
 {
     setupUi(this);
@@ -173,7 +173,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     filteredPackageModel->setSourceModel(packageModel);
 
     treeView->setModel(filteredPackageModel);
-    treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
+    treeView->header()->setSectionResizeMode /*setResizeMode*/ (QHeaderView::ResizeToContents);
 
     connect(packageModel, &PackageModel::BeforeNodesMoved, this, &PackageWidget::OnBeforeNodesMoved);
     connect(packageModel, &PackageModel::NodesMoved, this, &PackageWidget::OnNodesMoved);
@@ -361,24 +361,24 @@ void PackageWidget::RefreshActions()
     moveLeftAction->setEnabled(canMoveLeft);
 }
 
-void PackageWidget::CollectSelectedControls(Vector<ControlNode*> &nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedControls(Vector<ControlNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*> &nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedStyles(DAVA::Vector<StyleSheetNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, const Vector<StyleSheetNode*> &styles)
+void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, const Vector<StyleSheetNode*>& styles)
 {
-    QClipboard *clipboard = QApplication::clipboard();
+    QClipboard* clipboard = QApplication::clipboard();
     if (!controls.empty() || !styles.empty())
     {
         YamlPackageSerializer serializer;
@@ -386,7 +386,7 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
         PackageNode *package = document->GetPackage();
         serializer.SerializePackageNodes(package, controls, styles);
         String str = serializer.WriteToString();
-        QMimeData *data = new QMimeData();
+        QMimeData* data = new QMimeData();
         data->setText(QString(str.c_str()));
         clipboard->setMimeData(data);
     }
@@ -436,7 +436,7 @@ void PackageWidget::OnImport()
     }
 
     Vector<FilePath> packages;
-    for (const auto &fileName : fileNames)
+    for (const auto& fileName : fileNames)
     {
         packages.push_back(FilePath(fileName.toStdString()));
     }
@@ -454,7 +454,7 @@ void PackageWidget::OnCopy()
 
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, true, false);
-    
+
     CopyNodesToClipboard(controls, styles);
 }
 
@@ -462,14 +462,14 @@ void PackageWidget::OnPaste()
 {
     QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
-    QClipboard *clipboard = QApplication::clipboard();
-    
+    QClipboard* clipboard = QApplication::clipboard();
+
     if (!selectedIndexList.empty() && clipboard && clipboard->mimeData())
     {
-        const QModelIndex &index = selectedIndexList.first();
-        
-        PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
-        
+        const QModelIndex& index = selectedIndexList.first();
+
+        PackageBaseNode* baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
+
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
@@ -500,7 +500,7 @@ void PackageWidget::OnDelete()
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
-    
+
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, false, true);
 
@@ -519,7 +519,7 @@ void PackageWidget::OnDelete()
 
 void PackageWidget::OnRename()
 {
-    const auto &selected = treeView->selectionModel()->selectedIndexes();
+    const auto& selected = treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() == 1);
     treeView->edit(selected.first());
 }
@@ -529,7 +529,7 @@ void PackageWidget::OnAddStyle()
     DAVA::Vector<DAVA::UIStyleSheetSelectorChain> selectorChains;
     selectorChains.push_back(UIStyleSheetSelectorChain("?"));
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
-    
+
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
     DVASSERT(!document.isNull());
     PackageNode *package = document->GetPackage();
@@ -753,7 +753,7 @@ void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 
 void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
 {
-    for (auto &index : indexes)
+    for (auto& index : indexes)
     {
         QModelIndex mappedIndex = filteredPackageModel->mapFromSource(index);
         if (mappedIndex.isValid())

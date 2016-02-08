@@ -36,36 +36,36 @@
 #include "FileSystem/File.h"
 #include "ImageFormatInterface.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Image;
 
-class ImageSystem: public Singleton<ImageSystem>
+class ImageSystem : public Singleton<ImageSystem>
 {
 public:
     ImageSystem();
     virtual ~ImageSystem();
 
-    eErrorCode Load(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
-    eErrorCode Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
+    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
+    eErrorCode Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap = 0) const;
 
-    Image* EnsurePowerOf2Image(Image *image) const;
+    Image* EnsurePowerOf2Image(Image* image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;
 
-    eErrorCode Save(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
-    eErrorCode SaveAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
-    eErrorCode Save(const FilePath &fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
 
     inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
-    ImageFormatInterface* GetImageFormatInterface(const FilePath &pathName) const;
-    ImageFormatInterface* GetImageFormatInterface(File *file) const;
+    ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName) const;
+    ImageFormatInterface* GetImageFormatInterface(File* file) const;
 
-    ImageInfo GetImageInfo(const FilePath &pathName) const;
+    ImageInfo GetImageInfo(const FilePath& pathName) const;
 
     inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
-    
-    ImageFormat GetImageFormatForExtension(const String &extension) const;
-    ImageFormat GetImageFormatForExtension(const FilePath &pathname) const;
+
+    ImageFormat GetImageFormatForExtension(const String& extension) const;
+    ImageFormat GetImageFormatForExtension(const FilePath& pathname) const;
 
     ImageFormat GetImageFormatByName(const String& name) const;
 
@@ -85,7 +85,6 @@ inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) c
 {
     return GetImageFormatInterface(format)->Extensions();
 }
-
 };
 
 

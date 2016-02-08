@@ -37,79 +37,78 @@
 
 namespace DAVA
 {
-
 AnimationComponent::AnimationComponent()
-: animation(NULL)
-, time(0.0f)
-, frameIndex(0)
-, repeatsCount(1)
-, currRepeatsCont(0)
-, state(STATE_STOPPED)
+    : animation(NULL)
+    , time(0.0f)
+    , frameIndex(0)
+    , repeatsCount(1)
+    , currRepeatsCont(0)
+    , state(STATE_STOPPED)
 {
 }
 
 AnimationComponent::~AnimationComponent()
 {
-	SafeRelease(animation);
+    SafeRelease(animation);
 }
 
-Component * AnimationComponent::Clone(Entity * toEntity)
+Component* AnimationComponent::Clone(Entity* toEntity)
 {
-	AnimationComponent * newAnimation = new AnimationComponent();
-	newAnimation->SetEntity(toEntity);
+    AnimationComponent* newAnimation = new AnimationComponent();
+    newAnimation->SetEntity(toEntity);
 
-	newAnimation->time = time;
-	newAnimation->animation = SafeRetain(animation);
-	newAnimation->repeatsCount = repeatsCount;
-	newAnimation->currRepeatsCont = 0;
-	newAnimation->state = STATE_STOPPED; //for another state we need add this one to AnimationSystem
+    newAnimation->time = time;
+    newAnimation->animation = SafeRetain(animation);
+    newAnimation->repeatsCount = repeatsCount;
+    newAnimation->currRepeatsCont = 0;
+    newAnimation->state = STATE_STOPPED; //for another state we need add this one to AnimationSystem
 
-	return newAnimation;
+    return newAnimation;
 }
 
-void AnimationComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void AnimationComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(NULL != archive)
-	{
-		archive->SetVariant("animation", VariantType(animation->GetNodeID()));
-		archive->SetUInt32("repeatsCount", repeatsCount);
-	}
+    if (NULL != archive)
+    {
+        archive->SetVariant("animation", VariantType(animation->GetNodeID()));
+        archive->SetUInt32("repeatsCount", repeatsCount);
+    }
 }
 
-void AnimationComponent::Deserialize(KeyedArchive *archive, SerializationContext *sceneFile)
+void AnimationComponent::Deserialize(KeyedArchive* archive, SerializationContext* sceneFile)
 {
-	if(NULL != archive)
-	{
-		AnimationData* newAnimation = static_cast<AnimationData*>(sceneFile->GetDataBlock(archive->GetVariant("animation")->AsUInt64()));
-		if (animation != newAnimation)
-		{
-			SafeRelease(animation);
-			animation = SafeRetain(newAnimation);
-		}
-		repeatsCount = archive->GetUInt32("repeatsCount", 1);
-	}
+    if (NULL != archive)
+    {
+        AnimationData* newAnimation = static_cast<AnimationData*>(sceneFile->GetDataBlock(archive->GetVariant("animation")->AsUInt64()));
+        if (animation != newAnimation)
+        {
+            SafeRelease(animation);
+            animation = SafeRetain(newAnimation);
+        }
+        repeatsCount = archive->GetUInt32("repeatsCount", 1);
+    }
 
-	Component::Deserialize(archive, sceneFile);
+    Component::Deserialize(archive, sceneFile);
 }
 
-void AnimationComponent::GetDataNodes(Set<DataNode*> & dataNodes)
+void AnimationComponent::GetDataNodes(Set<DataNode*>& dataNodes)
 {
-	if (animation)
-		dataNodes.insert(animation);
+    if (animation)
+        dataNodes.insert(animation);
 }
 
 void AnimationComponent::SetAnimation(AnimationData* _animation)
 {
-	if (_animation == animation)
-		return;
+    if (_animation == animation)
+        return;
 
-	SafeRelease(animation);
-	animation = SafeRetain(_animation);
+    SafeRelease(animation);
+    animation = SafeRetain(_animation);
 }
 
-void AnimationComponent::SetIsPlaying( bool value )
+void AnimationComponent::SetIsPlaying(bool value)
 {
     if (state == STATE_STOPPED && value)
         Start();
@@ -119,7 +118,7 @@ void AnimationComponent::SetIsPlaying( bool value )
 
 bool AnimationComponent::GetIsPlaying() const
 {
-	return state == STATE_PLAYING;
+    return state == STATE_PLAYING;
 }
 
 void AnimationComponent::Start()
@@ -127,18 +126,16 @@ void AnimationComponent::Start()
     GlobalEventSystem::Instance()->Event(this, EventSystem::START_ANIMATION);
 }
 
-void AnimationComponent::StopAfterNRepeats( int32 numberOfRepeats )
+void AnimationComponent::StopAfterNRepeats(int32 numberOfRepeats)
 {
     repeatsCount = numberOfRepeats;
 }
 
-
 void AnimationComponent::Stop()
 {
-    if (state == STATE_STOPPED) 
+    if (state == STATE_STOPPED)
         return;
     GlobalEventSystem::Instance()->Event(this, EventSystem::STOP_ANIMATION);
     animationTransform.Identity();
 }
-
 };
