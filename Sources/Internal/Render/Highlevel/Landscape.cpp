@@ -66,6 +66,7 @@ const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const FastName Landscape::FLAG_PATCH_SIZE_QUADS("PATCH_SIZE_QUADS");
+const FastName Landscape::FLAG_USE_INSTANCING("USE_INSTANCING");
 
 const FastName Landscape::LANDSCAPE_QUALITY_NAME("Landscape");
 const FastName Landscape::LANDSCAPE_QUALITY_VALUE_HIGH("HIGH");
@@ -263,6 +264,11 @@ void Landscape::AllocateGeometryData()
 
     subdivPatchArray.resize(subdivPatchCount);
     patchQuadArray.resize(subdivPatchCount);
+
+    if (landscapeMaterial->HasLocalFlag(FLAG_USE_INSTANCING))
+        landscapeMaterial->SetFlag(FLAG_USE_INSTANCING, isInstancingUsed ? 1 : 0);
+    else
+        landscapeMaterial->AddFlag(FLAG_USE_INSTANCING, isInstancingUsed ? 1 : 0);
 
     if (isInstancingUsed)
     {

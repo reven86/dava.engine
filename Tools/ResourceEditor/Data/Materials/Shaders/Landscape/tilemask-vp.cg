@@ -1,13 +1,24 @@
 #include "common.cgh"
 
-VPROG_IN_BEGIN
-	VPROG_IN_STREAM_VERTEX
+#if USE_INSTANCING
+
+	VPROG_IN_BEGIN
+		VPROG_IN_STREAM_VERTEX
+			VPROG_IN_POSITION
+			VPROG_IN_TEXCOORD0(4)
+		VPROG_IN_STREAM_INSTANCE
+			VPROG_IN_TEXCOORD4(3)
+			VPROG_IN_TEXCOORD5(4)
+	VPROG_IN_END
+	
+#else
+	
+	VPROG_IN_BEGIN
 		VPROG_IN_POSITION
-		VPROG_IN_TEXCOORD0(4)
-	VPROG_IN_STREAM_INSTANCE
-		VPROG_IN_TEXCOORD4(3)
-		VPROG_IN_TEXCOORD5(4)
-VPROG_IN_END
+		VPROG_IN_TEXCOORD
+	VPROG_IN_END
+	
+#endif
 
 VPROG_OUT_BEGIN
     
@@ -23,13 +34,18 @@ VPROG_OUT_BEGIN
 
 VPROG_OUT_END
 
-DECL_VP_SAMPLER2D(heightmap)
+#if USE_INSTANCING
+	DECL_VP_SAMPLER2D(heightmap)
+#endif
 
 property float4x4 worldViewProjMatrix          : dynamic,a : ;
-property float3 boundingBoxSize 			   : dynamic,b : ;
+
+#if USE_INSTANCING
+	property float3 boundingBoxSize 		   : dynamic,a : ;
+#endif
 
 #if TILEMASK
-    property float2   textureTiling : static,instance : def_value=50,50;
+    property float2   textureTiling 		   : static,instance : def_value=50,50;
 #endif
 
 #if VERTEX_FOG
@@ -44,10 +60,12 @@ property float4   lightPosition0               : dynamic,a : ;
 #include "vp-fog-props.cgh"
 
 #ifndef PATCH_SIZE_QUADS
-#define PATCH_SIZE_QUADS 16
+	#define PATCH_SIZE_QUADS 16
 #endif
 
 VPROG_BEGIN
+
+#if USE_INSTANCING
 
     float2 in_pos = VP_IN_POSITION.xy;
     float2 morphDir = VP_IN_POSITION.zw;
@@ -56,10 +74,10 @@ VPROG_BEGIN
     float4 lodOffset = VP_IN_TEXCOORD5;
 
     float morphAmount = dot(edgeMask, lodOffset);
-	float2 pos_i = abs(morphDir - in_pos) * PATCH_SIZE_QUADS;
+	float2 pos_i = abs(morphDir - in_pos) * float(PATCH_SIZE_QUADS);
 	float i = dot(pos_i, abs(morphDir));
 	float f = fmod(i, morphAmount);
-	in_pos += morphDir * f / PATCH_SIZE_QUADS;
+	in_pos += morphDir * f / float(PATCH_SIZE_QUADS);
    
     float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
     float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition);
@@ -69,10 +87,19 @@ VPROG_BEGIN
 	
     VP_OUT_POSITION = mul( float4(position.x, position.y, position.z, 1.0), worldViewProjMatrix );
     VP_OUT(texCoord) = float2(relativePosition.x, 1.0 - relativePosition.y);
+	 
+#else
 	
-    #if TILEMASK
-        VP_OUT(texCoordTiled) = VP_OUT(texCoord) * float2(textureTiling.x, textureTiling.y);
-    #endif
+	float3 in_pos = VP_IN_POSITION.xyz;
+    
+    VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
+	VP_OUT(texCoord) = VP_IN_TEXCOORD;
+	
+#endif
+	
+#if TILEMASK
+    VP_OUT(texCoordTiled) = VP_OUT(texCoord) * float2(40.0, 40.0);
+#endif
 	
 #if VERTEX_FOG
 	
