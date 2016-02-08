@@ -435,10 +435,9 @@ void MainWindow::SetupBackgroundMenu()
     } colorsMap[] =
     {
       { Qt::black, "Black" },
-      { QColor(0x33, 0x33, 0x33, 0xFF), "Gray" },
-      { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
-      { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
-      { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
+      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
+      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
     };
     for (const auto& colorItem : colorsMap)
     {
