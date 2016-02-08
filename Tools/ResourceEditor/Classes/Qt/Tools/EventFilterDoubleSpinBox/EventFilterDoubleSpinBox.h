@@ -37,14 +37,13 @@
 
 class EventFilterDoubleSpinBox : public QDoubleSpinBox
 {
-	Q_OBJECT
-	
+    Q_OBJECT
+
 public:
-    explicit EventFilterDoubleSpinBox(QWidget *parent = 0);
-	
+    explicit EventFilterDoubleSpinBox(QWidget* parent = 0);
+
 private:
-	void keyPressEvent(QKeyEvent *event);
-	
+    void keyPressEvent(QKeyEvent* event);
 };
 
 #endif /* defined(__EVENT_FILTER_DOUBLE_SPIN_BOX_H__) */

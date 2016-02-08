@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 JniFileList::JniFileList()
     : jniFileList("com/dava/framework/JNIFileList")
 {
@@ -43,8 +42,8 @@ JniFileList::JniFileList()
 
 Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& path)
 {
-	Vector<JniFileList::JniFileListEntry> fileList;
-	JNIEnv *env = JNI::GetEnv();
+    Vector<JniFileList::JniFileListEntry> fileList;
+    JNIEnv* env = JNI::GetEnv();
     jstring jPath = env->NewStringUTF(path.c_str());
 
     jstringArray jArray = getFileList(jPath);
@@ -62,7 +61,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 
             jlong jSize = env->GetLongField(item, jSizeField);
             jboolean jIsDir = env->GetBooleanField(item, jIsDirectoryField);
-            jstring jName = (jstring) env->GetObjectField(item, jNameField);
+            jstring jName = (jstring)env->GetObjectField(item, jNameField);
 
             JniFileListEntry entry;
             entry.name = JNI::ToString(jName);
@@ -79,7 +78,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 
     env->DeleteLocalRef(jPath);
 
-	return fileList;
+    return fileList;
 }
 
-}//namespace DAVA
+} //namespace DAVA

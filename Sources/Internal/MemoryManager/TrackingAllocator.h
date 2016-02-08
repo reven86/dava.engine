@@ -40,14 +40,13 @@
 
 namespace DAVA
 {
-
 // C++11 introduced std::allocator_traits which helps in defining custom allocators
 // But it doesn't works in MSVC on some data structures:
 //  using mystr = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
 //  std::vector<mystr, my_allocator<mystr>> v;
 
 // Allocator for application memory allocations, parameter AllocPoolT specifies memory pool allocated memory belongs to
-template<typename T, unsigned int AllocPoolT>
+template <typename T, unsigned int AllocPoolT>
 class TrackingAllocator
 {
 public:
@@ -68,7 +67,9 @@ public:
     TrackingAllocator() = default;
     TrackingAllocator(const TrackingAllocator&) = default;
     template <typename U, unsigned int AllocPoolU>
-    TrackingAllocator(const TrackingAllocator<U, AllocPoolU>&) DAVA_NOEXCEPT{}
+    TrackingAllocator(const TrackingAllocator<U, AllocPoolU>&) DAVA_NOEXCEPT
+    {
+    }
     ~TrackingAllocator() = default;
 
     size_type max_size() const DAVA_NOEXCEPT
@@ -106,7 +107,7 @@ public:
         ::new (static_cast<void*>(ptr)) T(value);
     }
 
-    template<typename U, typename... Args>
+    template <typename U, typename... Args>
     void construct(U* ptr, Args&&... args)
     {
         ::new (static_cast<void*>(ptr)) U(std::forward<Args>(args)...);
@@ -117,7 +118,7 @@ public:
         ptr->~T();
     }
 
-    template<typename U>
+    template <typename U>
     void destroy(U* ptr)
     {
         ptr->~U();
@@ -125,20 +126,20 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-template<typename T1, unsigned int AllocPoolT1, typename T2, unsigned int AllocPoolT2>
-inline bool operator == (const TrackingAllocator<T1, AllocPoolT1>&, const TrackingAllocator<T2, AllocPoolT2>&)
+template <typename T1, unsigned int AllocPoolT1, typename T2, unsigned int AllocPoolT2>
+inline bool operator==(const TrackingAllocator<T1, AllocPoolT1>&, const TrackingAllocator<T2, AllocPoolT2>&)
 {
-    return true;    // TrackingAllocator is stateless so two allocators are always equal
+    return true; // TrackingAllocator is stateless so two allocators are always equal
 }
 
-template<typename T1, unsigned int AllocPoolT1, typename T2, unsigned int AllocPoolT2>
-inline bool operator != (const TrackingAllocator<T1, AllocPoolT1>&, const TrackingAllocator<T2, AllocPoolT2>&)
+template <typename T1, unsigned int AllocPoolT1, typename T2, unsigned int AllocPoolT2>
+inline bool operator!=(const TrackingAllocator<T1, AllocPoolT1>&, const TrackingAllocator<T2, AllocPoolT2>&)
 {
     return false;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#endif  // __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
+#endif // __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__

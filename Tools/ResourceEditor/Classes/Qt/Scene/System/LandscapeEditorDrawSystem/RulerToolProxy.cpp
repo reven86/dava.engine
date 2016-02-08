@@ -30,8 +30,8 @@
 #include "RulerToolProxy.h"
 
 RulerToolProxy::RulerToolProxy(int32 size)
-:	size(size)
-,	spriteChanged(false)
+    : size(size)
+    , spriteChanged(false)
 {
     rulerToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
 
@@ -44,15 +44,15 @@ RulerToolProxy::RulerToolProxy(int32 size)
 
 RulerToolProxy::~RulerToolProxy()
 {
-	SafeRelease(rulerToolTexture);
+    SafeRelease(rulerToolTexture);
 }
 
 int32 RulerToolProxy::GetSize()
 {
-	return size;
+    return size;
 }
 
 Texture* RulerToolProxy::GetTexture()
 {
-	return rulerToolTexture;
+    return rulerToolTexture;
 }

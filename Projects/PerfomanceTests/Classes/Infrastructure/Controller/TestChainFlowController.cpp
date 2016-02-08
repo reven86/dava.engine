@@ -29,20 +29,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TestChainFlowController.h"
 
 TestChainFlowController::TestChainFlowController(bool _showUI)
-    :   reportScreen(new ReportScreen())
-    ,   currentScreen(nullptr)
-    ,   currentTest(nullptr)
-    ,   currentTestIndex(0)
-    ,   showUI(_showUI)
-    ,   testsFinished(false)
-    
+    : reportScreen(new ReportScreen())
+    , currentScreen(nullptr)
+    , currentTest(nullptr)
+    , currentTestIndex(0)
+    , showUI(_showUI)
+    , testsFinished(false)
+
 {
 }
 
 void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
 {
     TestFlowController::Init(_testChain);
-    
+
     currentTestIndex = 0;
     currentTest = testChain[currentTestIndex];
     currentTest->ShowUI(showUI);
@@ -52,27 +52,27 @@ void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
 void TestChainFlowController::BeginFrame()
 {
     if (!currentScreen->IsRegistered())
-    {   
+    {
         currentScreen->RegisterScreen();
         currentScreen->OnStart();
     }
-    
+
     currentScreen->BeginFrame();
 }
 
 void TestChainFlowController::EndFrame()
 {
     currentScreen->EndFrame();
-    
+
     if (!testsFinished)
     {
         if (currentTest->IsFinished())
         {
             currentTest->OnFinish();
             currentTestIndex++;
-            
+
             testsFinished = testChain.size() == currentTestIndex;
-            
+
             if (!testsFinished)
             {
                 currentTest = testChain[currentTestIndex];

@@ -32,14 +32,13 @@
 #include "Concurrency/LockGuard.h"
 
 #ifndef __DAVAENGINE_WINDOWS__
-#   include <time.h>
-#   include <errno.h>
+#include <time.h>
+#include <errno.h>
 #endif
 
 namespace DAVA
 {
-
-ConcurrentObject<Set<Thread *>> Thread::threadList;
+ConcurrentObject<Set<Thread*>> Thread::threadList;
 Thread::Id Thread::mainThreadId;
 
 void Thread::InitMainThread()
@@ -58,12 +57,12 @@ bool Thread::IsMainThread()
     return currentId == mainThreadId;
 }
 
-Thread *Thread::Create(const Message& msg)
+Thread* Thread::Create(const Message& msg)
 {
     return new Thread(msg);
 }
 
-Thread *Thread::Create(const Procedure& proc)
+Thread* Thread::Create(const Procedure& proc)
 {
     return new Thread(proc);
 }
@@ -101,8 +100,7 @@ void Thread::CancelAll()
     {
         x->Cancel();
     }
-} 
-
+}
 
 Thread::Thread()
     : state(STATE_CREATED)
@@ -119,14 +117,16 @@ Thread::Thread()
     threadListAccessor->insert(this);
 }
 
-Thread::Thread(const Message &msg) : Thread()
+Thread::Thread(const Message& msg)
+    : Thread()
 {
     Message message = msg;
     Thread* caller = this;
     threadFunc = [=] { message(caller); };
 }
 
-Thread::Thread(const Procedure &proc) : Thread()
+Thread::Thread(const Procedure& proc)
+    : Thread()
 {
     threadFunc = proc;
 }
@@ -138,10 +138,10 @@ Thread::~Thread()
     auto threadListAccessor = threadList.GetAccessor();
     threadListAccessor->erase(this);
 }
-    
-void Thread::ThreadFunction(void *param)
+
+void Thread::ThreadFunction(void* param)
 {
-    Thread * t = (Thread *)param;
+    Thread* t = (Thread*)param;
     t->id = GetCurrentId();
 
     t->threadFunc();

@@ -43,15 +43,13 @@ using namespace DAVA;
 
 namespace
 {
-
 // List of semicolon separated names specifying which test classes should run
 String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 
-bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
-bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
-
+bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
+bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 }
 
 void GameCore::ProcessCommandLine()
@@ -134,7 +132,7 @@ void GameCore::OnResume()
     ApplicationCore::OnResume();
 }
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 void GameCore::OnForeground()
 {
     ApplicationCore::OnForeground();

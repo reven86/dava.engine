@@ -38,9 +38,9 @@ namespace DAVA
 
 #include <windows.h>
 #include <process.h>
-const DWORD MS_VC_EXCEPTION=0x406D1388;
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
 
-#pragma pack(push,8)
+#pragma pack(push, 8)
 typedef struct tagTHREADNAME_INFO
 {
     DWORD dwType; // Must be 0x1000.
@@ -70,13 +70,13 @@ void Thread::Start()
     DVASSERT(STATE_CREATED == state);
 
     auto hdl = _beginthreadex
-        (
-        0, // Security attributes
-        static_cast<DWORD>(stackSize),
-        ThreadFunc,
-        this,
-        0,
-        0);
+    (
+    0, // Security attributes
+    static_cast<DWORD>(stackSize),
+    ThreadFunc,
+    this,
+    0,
+    0);
 
     handle = reinterpret_cast<HANDLE>(hdl);
     state = STATE_RUNNING;
@@ -89,8 +89,8 @@ unsigned __stdcall ThreadFunc(void* param)
      inside that ifdef we set thread name through raising speciefic exception.
      https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
      */
-    
-    Thread *t = static_cast<Thread *>(param);
+
+    Thread* t = static_cast<Thread*>(param);
 
     THREADNAME_INFO info;
     info.dwType = 0x1000;
@@ -100,15 +100,15 @@ unsigned __stdcall ThreadFunc(void* param)
 
     __try
     {
-        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), reinterpret_cast<PULONG_PTR>(&info));
+        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<PULONG_PTR>(&info));
     }
-    __except(EXCEPTION_CONTINUE_EXECUTION)
+    __except (EXCEPTION_CONTINUE_EXECUTION)
     {
     }
 #endif
 
     Thread::ThreadFunction(param);
-	return 0;
+    return 0;
 }
 
 void Thread::Join()
@@ -156,31 +156,30 @@ bool DAVA::Thread::BindToProcessor(unsigned proc_n)
 
     return success;
 }
-    
+
 void Thread::SetPriority(eThreadPriority priority)
 {
     DVASSERT(state == STATE_RUNNING);
     if (threadPriority == priority)
         return;
-    
+
     threadPriority = priority;
     int prio = THREAD_PRIORITY_NORMAL;
     switch (threadPriority)
     {
-        case PRIORITY_LOW:
-            prio = THREAD_PRIORITY_LOWEST;
-            break;
-        case PRIORITY_HIGH:
-            prio = THREAD_PRIORITY_HIGHEST;
-            break;
+    case PRIORITY_LOW:
+        prio = THREAD_PRIORITY_LOWEST;
+        break;
+    case PRIORITY_HIGH:
+        prio = THREAD_PRIORITY_HIGHEST;
+        break;
     }
-    
+
     if (::SetThreadPriority(handle, prio) == 0)
     {
         Logger::FrameworkDebug("[Thread::SetPriority]: Cannot set thread priority");
     }
 }
-
 }
 
 #endif

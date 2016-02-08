@@ -34,29 +34,33 @@
 
 namespace Log
 {
-
 class Exception
 {
 public:
-	virtual ~Exception();
-	virtual const String & GetMessage() { return message; };
+    virtual ~Exception();
+    virtual const String& GetMessage()
+    {
+        return message;
+    };
 
 protected:
-	Exception(const String & _message)
-		: message(_message)
-	{}
-	String message;
+    Exception(const String& _message)
+        : message(_message)
+    {
+    }
+    String message;
 };
 
 // fatal exceptions
 class FindFileException : public Exception
 {
 public:
-	FindFileException() 
-		: Exception("[*** FatalException] failed to find file\n")
-	{
-	}
-	~FindFileException() {};
+    FindFileException()
+        : Exception("[*** FatalException] failed to find file\n")
+    {
+    }
+    ~FindFileException(){};
+
 private:
 };
 
@@ -64,16 +68,14 @@ private:
 class MemoryAllocateException : public Exception
 {
 public:
-	MemoryAllocateException() 
-		: Exception("[*** MemoryAllocateException] failed to allocate memory\n")
-	{
-	}
-	~MemoryAllocateException() {};
+    MemoryAllocateException()
+        : Exception("[*** MemoryAllocateException] failed to allocate memory\n")
+    {
+    }
+    ~MemoryAllocateException(){};
+
 private:
 };
-
-
 };
 
 #endif // __LOGENGINE_EXCEPTION_H__
-

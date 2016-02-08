@@ -22,21 +22,21 @@
 #endif
 typedef struct PCXHEAD
 {
-	ILubyte		Manufacturer;
-	ILubyte		Version;
-	ILubyte		Encoding;
-	ILubyte		Bpp;
-	ILushort	Xmin, Ymin, Xmax, Ymax;
-	ILushort	HDpi;
-	ILushort	VDpi;
-	ILubyte		ColMap[48];
-	ILubyte		Reserved;
-	ILubyte		NumPlanes;
-	ILushort	Bps;
-	ILushort	PaletteInfo;
-	ILushort	HScreenSize;
-	ILushort	VScreenSize;
-	ILubyte		Filler[54];
+    ILubyte Manufacturer;
+    ILubyte Version;
+    ILubyte Encoding;
+    ILubyte Bpp;
+    ILushort Xmin, Ymin, Xmax, Ymax;
+    ILushort HDpi;
+    ILushort VDpi;
+    ILubyte ColMap[48];
+    ILubyte Reserved;
+    ILubyte NumPlanes;
+    ILushort Bps;
+    ILushort PaletteInfo;
+    ILushort HScreenSize;
+    ILushort VScreenSize;
+    ILubyte Filler[54];
 } IL_PACKSTRUCT PCXHEAD;
 #ifdef _WIN32
 #pragma pack(pop, packed_struct)
@@ -44,15 +44,15 @@ typedef struct PCXHEAD
 
 // For checking and reading
 ILboolean iIsValidPcx(void);
-ILboolean iCheckPcx(PCXHEAD *Header);
+ILboolean iCheckPcx(PCXHEAD* Header);
 ILboolean iLoadPcxInternal(void);
 ILboolean iSavePcxInternal(void);
-ILboolean iUncompressPcx(PCXHEAD *Header);
-ILboolean iUncompressSmall(PCXHEAD *Header);
+ILboolean iUncompressPcx(PCXHEAD* Header);
+ILboolean iUncompressSmall(PCXHEAD* Header);
 
 // For writing
 ILuint encput(ILubyte byt, ILubyte cnt);
-ILuint encLine(ILubyte *inBuff, ILint inLen, ILubyte Stride);
+ILuint encLine(ILubyte* inBuff, ILint inLen, ILubyte Stride);
 
 
-#endif//PCX_H
+#endif //PCX_H

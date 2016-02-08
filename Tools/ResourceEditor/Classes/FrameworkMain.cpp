@@ -37,7 +37,7 @@
 
 void FrameworkDidLaunched()
 {
-	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
+    DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
 
     appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
@@ -58,8 +58,8 @@ void FrameworkDidLaunched()
     DAVA::Core::SetApplicationCore(core);
     DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
-    
-	SafeRelease(appOptions);
+
+    SafeRelease(appOptions);
 }
 
 void FrameworkWillTerminate()

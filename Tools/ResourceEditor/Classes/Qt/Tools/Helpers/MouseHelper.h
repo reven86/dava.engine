@@ -35,7 +35,7 @@
 #include <QPointer>
 
 class MouseHelper
-    : public QObject
+: public QObject
 {
     Q_OBJECT
 

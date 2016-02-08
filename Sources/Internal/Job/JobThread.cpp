@@ -31,8 +31,7 @@
 
 namespace DAVA
 {
-
-JobThread::JobThread(JobQueueWorker *_workerQueue, Semaphore *_workerDoneSem)
+JobThread::JobThread(JobQueueWorker* _workerQueue, Semaphore* _workerDoneSem)
     : workerQueue(_workerQueue)
     , workerDoneSem(_workerDoneSem)
     , threadCancel(false)
@@ -47,7 +46,7 @@ JobThread::~JobThread()
 {
     // cancel thread
     threadCancel = true;
-    while(!threadFinished)
+    while (!threadFinished)
     {
         workerQueue->Broadcast();
         Thread::Sleep(10); // sleep 10 ms until other check
@@ -58,14 +57,15 @@ JobThread::~JobThread()
     SafeRelease(thread);
 }
 
-void JobThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
+void JobThread::ThreadFunc(BaseObject* bo, void* userParam, void* callerParam)
 {
-    while(!threadCancel)
+    while (!threadCancel)
     {
         workerQueue->Wait();
 
-        while(workerQueue->PopAndExec())
-        { }
+        while (workerQueue->PopAndExec())
+        {
+        }
 
         workerDoneSem->Post();
     }

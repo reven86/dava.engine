@@ -34,37 +34,35 @@
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class Camera;
 
 class CameraComponent : public Component
 {
 protected:
     virtual ~CameraComponent();
-public:
-    CameraComponent(Camera * _camera = 0);
 
-	Camera* GetCamera();
-	void SetCamera(Camera * _camera);
+public:
+    CameraComponent(Camera* _camera = 0);
+
+    Camera* GetCamera();
+    void SetCamera(Camera* _camera);
 
     IMPLEMENT_COMPONENT_TYPE(CAMERA_COMPONENT);
 
-    virtual Component* Clone(Entity *toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+
 private:
     Camera* camera;
-    
+
 public:
     INTROSPECTION_EXTEND(CameraComponent, Component,
-        PROPERTY("camera", "Camera", GetCamera, SetCamera, I_SAVE | I_VIEW | I_EDIT)
-    );
+                         PROPERTY("camera", "Camera", GetCamera, SetCamera, I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
-
-
 };
 
 #endif //__DAVAENGINE_CAMERA_COMPONENT_H__

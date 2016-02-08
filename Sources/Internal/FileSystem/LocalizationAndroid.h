@@ -33,16 +33,14 @@
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-namespace DAVA 
+namespace DAVA
 {
-
 class LocalizationAndroid
 {
 public:
-	static void SelectPreferedLocalization();
+    static void SelectPreferedLocalization();
     static String GetDeviceLang(void);
 };
-	
 };
 
 #endif //__DAVAENGINE_ANDROID__

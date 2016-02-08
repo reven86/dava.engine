@@ -38,24 +38,25 @@ using namespace DAVA;
 
 DAVA::float32 DebugDrawSystem::HANGING_OBJECTS_HEIGHT = 0.001f;
 
-DebugDrawSystem::DebugDrawSystem(DAVA::Scene * scene)
-	: DAVA::SceneSystem(scene)
+DebugDrawSystem::DebugDrawSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
 {
-	SceneEditor2 *sc = (SceneEditor2 *)GetScene();
+    SceneEditor2* sc = (SceneEditor2*)GetScene();
 
-	collSystem = sc->collisionSystem;
-	selSystem = sc->selectionSystem;
+    collSystem = sc->collisionSystem;
+    selSystem = sc->selectionSystem;
 
-	DVASSERT(NULL != collSystem);
+    DVASSERT(NULL != collSystem);
     DVASSERT(NULL != selSystem);
 }
 
 DebugDrawSystem::~DebugDrawSystem()
-{ }
+{
+}
 
 void DebugDrawSystem::SetRequestedObjectType(ResourceEditor::eSceneObjectType _objectType)
 {
-	objectType = _objectType;
+    objectType = _objectType;
 
     if (ResourceEditor::ESOT_NONE != objectType)
     {
@@ -71,10 +72,9 @@ void DebugDrawSystem::SetRequestedObjectType(ResourceEditor::eSceneObjectType _o
     }
 }
 
-
 ResourceEditor::eSceneObjectType DebugDrawSystem::GetRequestedObjectType() const
 {
-	return objectType;
+    return objectType;
 }
 
 void DebugDrawSystem::Draw()
@@ -82,7 +82,7 @@ void DebugDrawSystem::Draw()
     Draw(GetScene());
 }
 
-void DebugDrawSystem::Draw(DAVA::Entity *entity)
+void DebugDrawSystem::Draw(DAVA::Entity* entity)
 {
     if (NULL != entity)
     {
@@ -106,14 +106,14 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
         {
             Draw(entity->GetChild(i));
         }
-	}
+    }
 }
 
-void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
+void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity* entity)
 {
-	bool drawBox = false;
+    bool drawBox = false;
 
-	KeyedArchive * customProperties = GetCustomPropertiesArchieve(entity);
+    KeyedArchive* customProperties = GetCustomPropertiesArchieve(entity);
     if (customProperties)
     {
         if (customProperties->IsKeyExists("CollisionType"))
@@ -137,7 +137,7 @@ void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
     }
 }
 
-void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
+void DebugDrawSystem::DrawUserNode(DAVA::Entity* entity)
 {
     if (NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
     {
@@ -161,9 +161,9 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
     }
 }
 
-void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
+void DebugDrawSystem::DrawLightNode(DAVA::Entity* entity)
 {
-	DAVA::Light *light = GetLight(entity);
+    DAVA::Light* light = GetLight(entity);
     if (NULL != light)
     {
         RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
@@ -175,10 +175,10 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
             DAVA::Vector3 center = worldBox.GetCenter();
             DAVA::Vector3 direction = -light->GetDirection();
 
-			direction.Normalize();
-			direction = direction * worldBox.GetSize().x;
+            direction.Normalize();
+            direction = direction * worldBox.GetSize().x;
 
-			center -= (direction / 2);
+            center -= (direction / 2);
 
             drawer->DrawArrow(center + direction, center, direction.Length() / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
@@ -195,7 +195,7 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
     }
 }
 
-void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
+void DebugDrawSystem::DrawSoundNode(DAVA::Entity* entity)
 {
     SettingsManager* settings = SettingsManager::Instance();
 
@@ -211,7 +211,7 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
     }
 }
 
-void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
+void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity* entity)
 {
     SettingsManager* settings = SettingsManager::Instance();
 
@@ -252,9 +252,9 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
     }
 }
 
-void DebugDrawSystem::DrawWindNode(DAVA::Entity *entity)
+void DebugDrawSystem::DrawWindNode(DAVA::Entity* entity)
 {
-	WindComponent * wind = GetWindComponent(entity);
+    WindComponent* wind = GetWindComponent(entity);
     if (wind)
     {
         const Matrix4& worldMx = entity->GetWorldTransform();
@@ -364,15 +364,15 @@ bool DebugDrawSystem::IsObjectHanging(Entity* entity) const
 
 Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2& centerXY) const
 {
-	LandscapeEditorDrawSystem *landSystem = ((SceneEditor2 *)GetScene())->landscapeEditorDrawSystem;
-	LandscapeProxy* landscape = landSystem->GetLandscapeProxy();
+    LandscapeEditorDrawSystem* landSystem = ((SceneEditor2*)GetScene())->landscapeEditorDrawSystem;
+    LandscapeProxy* landscape = landSystem->GetLandscapeProxy();
 
     if (landscape)
     {
         return landscape->PlacePoint(Vector3(centerXY));
     }
 
-	return Vector3();
+    return Vector3();
 }
 
 void DebugDrawSystem::DrawSwitchesWithDifferentLods(DAVA::Entity* entity)

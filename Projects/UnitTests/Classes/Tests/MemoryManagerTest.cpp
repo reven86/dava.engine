@@ -169,4 +169,4 @@ DAVA_TESTCLASS(MemoryManagerTest)
     volatile uint32 leftTag = 0;
 };
 
-#endif  // DAVA_MEMORY_PROFILING_ENABLE
+#endif // DAVA_MEMORY_PROFILING_ENABLE

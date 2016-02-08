@@ -36,7 +36,6 @@ namespace DAVA
 {
 namespace UnitTests
 {
-
 class TestClass;
 class TestClassFactoryBase;
 
@@ -55,12 +54,12 @@ class TestCore final
     };
 
 public:
-    using TestClassStartedCallback = Function<void (const String&)>;
-    using TestClassFinishedCallback = Function<void (const String&)>;
-    using TestClassDisabledCallback = Function<void (const String&)>;
-    using TestStartedCallback = Function<void (const String&, const String&)>;
-    using TestFinishedCallback = Function<void (const String&, const String&)>;
-    using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
+    using TestClassStartedCallback = Function<void(const String&)>;
+    using TestClassFinishedCallback = Function<void(const String&)>;
+    using TestClassDisabledCallback = Function<void(const String&)>;
+    using TestStartedCallback = Function<void(const String&, const String&)>;
+    using TestFinishedCallback = Function<void(const String&, const String&)>;
+    using TestFailedCallback = Function<void(const String&, const String&, const String&, const char*, int, const String&)>;
 
 private:
     TestCore() = default;
@@ -104,7 +103,7 @@ private:
     TestFailedCallback testFailedCallback;
 };
 
-}   // namespace UnitTests
-}   // namespace DAVA
+} // namespace UnitTests
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TESTCORE_H__
+#endif // __DAVAENGINE_TESTCORE_H__

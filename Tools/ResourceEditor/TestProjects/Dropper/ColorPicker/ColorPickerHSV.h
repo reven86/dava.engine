@@ -34,21 +34,20 @@
 
 #include "AbstractColorPicker.h"
 
-
 class PaletteHSV;
 class GradientSlider;
 
 class ColorPickerHSV
-    : public AbstractColorPicker
+: public AbstractColorPicker
 {
     Q_OBJECT
 
 public:
-    explicit ColorPickerHSV(QWidget *parent = NULL);
+    explicit ColorPickerHSV(QWidget* parent = NULL);
     ~ColorPickerHSV();
 
 protected:
-    void SetColorInternal( const QColor& c ) override;
+    void SetColorInternal(const QColor& c) override;
 
 private slots:
     void OnChanging();

@@ -32,7 +32,7 @@
 
 #include "CommandLine/CommandLineTool.h"
 
-class DumpTool: public CommandLineTool
+class DumpTool : public CommandLineTool
 {
     enum eAction : DAVA::int32
     {
@@ -52,8 +52,8 @@ private:
     eAction commandAction = ACTION_NONE;
     DAVA::String filename;
     DAVA::FilePath inFolder;
-	DAVA::FilePath outFile;
-	DAVA::FilePath qualityPathname;
+    DAVA::FilePath outFile;
+    DAVA::FilePath qualityPathname;
 };
 
 

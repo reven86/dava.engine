@@ -30,7 +30,7 @@
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE 1 // MSVS 2005 support.
 #endif // _CRT_SECURE_NO_DEPRECATE
-#pragma warning(disable:4702)
+#pragma warning(disable : 4702)
 #endif // _WIN32
 
 #if !defined(NOMINMAX)
@@ -46,20 +46,32 @@
 
 #ifndef FCOLLADA_NOMINMAX
 /** Retrieves the largest of two values. */
-template<class T>
-inline T& max(T& x, T& y) { return (x > y) ? x : y; }
-template<class T>
-inline const T& max(const T& x, const T& y) { return (x > y) ? x : y; } /**< See above. */
+template <class T>
+inline T& max(T& x, T& y)
+{
+    return (x > y) ? x : y;
+}
+template <class T>
+inline const T& max(const T& x, const T& y)
+{
+    return (x > y) ? x : y;
+} /**< See above. */
 
 /** Retrieves the smallest of two values. */
 template <class T>
-inline T& min(T& x, T& y) { return (x < y) ? x : y; }
+inline T& min(T& x, T& y)
+{
+    return (x < y) ? x : y;
+}
 template <class T>
-inline const T& min(const T& x,const T& y) { return (x < y) ? x : y; } /**< See above. */
+inline const T& min(const T& x, const T& y)
+{
+    return (x < y) ? x : y;
+} /**< See above. */
 #endif // FCOLLADA_NOMINMAX
 
 #ifdef _WIN32
-#pragma warning(default:4702)
+#pragma warning(default : 4702)
 #endif
 
 // Conversion macros
@@ -98,10 +110,10 @@ typedef struct _xmlNode xmlNode;
 #endif // NO_LIBXML
 
 // SAFE_DELETE Macro set.
-#undef  SAFE_DELETE
+#undef SAFE_DELETE
 #define SAFE_DELETE(ptr) if ((ptr) != NULL) { delete (ptr); (ptr) = NULL; } /**< This macro safely deletes a pointer and sets the given pointer to NULL. */
 #undef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(ptr) if (ptr != NULL) { delete [] ptr; ptr = NULL; } /**< This macro safely deletes an heap array and sets the given pointer to NULL. */
+#define SAFE_DELETE_ARRAY(ptr) if (ptr != NULL) { delete[] ptr; ptr = NULL; } /**< This macro safely deletes an heap array and sets the given pointer to NULL. */
 #define SAFE_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; } /**< This macro safely frees a memory block and sets the given pointer to NULL. */
 #define SAFE_RELEASE(ptr) { if ((ptr) != NULL) { (ptr)->Release(); (ptr) = NULL; } } /**< This macro safely releases an interface and sets the given pointer to NULL. */
 #define CLEAR_POINTER_VECTOR(a) { size_t l = (a).size(); for (size_t i = 0; i < l; ++i) SAFE_DELETE((a)[i]); (a).clear(); } /**< This macro deletes all the object pointers contained within a vector and clears it. */
