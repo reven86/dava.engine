@@ -40,15 +40,15 @@
 
 namespace DAVA
 {
-void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject * object)
+void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
 {
     float32 treeHeight = object->GetBoundingBox().GetSize().z;
 
     uint32 size = object->GetRenderBatchCount();
     for (uint32 k = 0; k < size; ++k)
     {
-        RenderBatch * rb = object->GetRenderBatch(k);
-        PolygonGroup * pg = rb->GetPolygonGroup();
+        RenderBatch* rb = object->GetRenderBatch(k);
+        PolygonGroup* pg = rb->GetPolygonGroup();
         if (nullptr != pg)
         {
             int32 vertexFormat = pg->GetFormat();
@@ -72,7 +72,7 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject * obj
                     float32 leafHeightOscillationCoeff = (.5f + x / 2);
                     //leafAngle: x: cos(T0);  y: sin(T0)
                     Vector2 leafAngle(cosf(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
-                        sinf(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
+                                      sinf(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
 
                     pg->SetAngle(i, leafAngle);
                 }
@@ -83,7 +83,7 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject * obj
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertTrees(Entity *scene)
+void TreeToAnimatedTreeConverter::ConvertTrees(Entity* scene)
 {
     uniqLeafPGs.clear();
     uniqTrunkPGs.clear();
@@ -91,15 +91,15 @@ void TreeToAnimatedTreeConverter::ConvertTrees(Entity *scene)
 
     ConvertingPathRecursive(scene);
 
-    Set<PolygonGroup *>::iterator leafPGIt = uniqLeafPGs.begin();
+    Set<PolygonGroup*>::iterator leafPGIt = uniqLeafPGs.begin();
     for (; leafPGIt != uniqLeafPGs.end(); ++leafPGIt)
         ConvertLeafPGForAnimations((*leafPGIt));
 
-    Set<PolygonGroup *>::iterator pgTrunkPGIt = uniqTrunkPGs.begin();
+    Set<PolygonGroup*>::iterator pgTrunkPGIt = uniqTrunkPGs.begin();
     for (; pgTrunkPGIt != uniqTrunkPGs.end(); ++pgTrunkPGIt)
         ConvertTrunkForAnimations((*pgTrunkPGIt));
 
-    Set<SpeedTreeObject *>::iterator treeIt = uniqTreeObjects.begin();
+    Set<SpeedTreeObject*>::iterator treeIt = uniqTreeObjects.begin();
     for (; treeIt != uniqTreeObjects.end(); ++treeIt)
     {
         (*treeIt)->RecalcBoundingBox();
@@ -107,21 +107,21 @@ void TreeToAnimatedTreeConverter::ConvertTrees(Entity *scene)
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
+void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity* node)
 {
     for (int32 c = 0; c < node->GetChildrenCount(); ++c)
     {
-        Entity * childNode = node->GetChild(c);
+        Entity* childNode = node->GetChild(c);
         ConvertingPathRecursive(childNode);
     }
 
-    RenderComponent *rc = GetRenderComponent(node);
+    RenderComponent* rc = GetRenderComponent(node);
     if (nullptr == rc)
     {
         return;
     }
 
-    RenderObject *ro = rc->GetRenderObject();
+    RenderObject* ro = rc->GetRenderObject();
     if (nullptr == ro)
     {
         return;
@@ -132,7 +132,7 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     uint32 count = ro->GetRenderBatchCount();
     for (uint32 b = 0; b < count && !isSpeedTree; ++b)
     {
-        RenderBatch *renderBatch = ro->GetRenderBatch(b);
+        RenderBatch* renderBatch = ro->GetRenderBatch(b);
         isSpeedTree |= SpeedTreeObject::IsTreeLeafBatch(renderBatch);
     }
 
@@ -140,7 +140,7 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     {
         return;
     }
-    SpeedTreeObject * treeObject = cast_if_equal<SpeedTreeObject*>(ro);
+    SpeedTreeObject* treeObject = cast_if_equal<SpeedTreeObject*>(ro);
     if (nullptr == treeObject)
     {
         treeObject = new SpeedTreeObject();
@@ -156,8 +156,8 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     uint32 size = treeObject->GetRenderBatchCount();
     for (uint32 k = 0; k < size; ++k)
     {
-        RenderBatch * rb = treeObject->GetRenderBatch(k);
-        PolygonGroup * pg = rb->GetPolygonGroup();
+        RenderBatch* rb = treeObject->GetRenderBatch(k);
+        PolygonGroup* pg = rb->GetPolygonGroup();
         if (SpeedTreeObject::IsTreeLeafBatch(rb))
             uniqLeafPGs.insert(pg);
         else
@@ -165,7 +165,7 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup * pg)
+void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
 {
     int32 vertexFormat = pg->GetFormat();
     int32 vxCount = pg->GetVertexCount();
@@ -174,11 +174,11 @@ void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup * pg)
     int32 oldLeafFormat = (EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_TANGENT);
     DVASSERT((vertexFormat & oldLeafFormat) == oldLeafFormat); //old tree leaf vertex format
 
-    PolygonGroup * pgCopy = new PolygonGroup();
+    PolygonGroup* pgCopy = new PolygonGroup();
     pgCopy->AllocateData(vertexFormat, vxCount, indCount);
 
-    Memcpy(pgCopy->meshData, pg->meshData, vxCount*pg->vertexStride);
-    Memcpy(pgCopy->indexArray, pg->indexArray, indCount*sizeof(int16));
+    Memcpy(pgCopy->meshData, pg->meshData, vxCount * pg->vertexStride);
+    Memcpy(pgCopy->indexArray, pg->indexArray, indCount * sizeof(int16));
 
     pg->ReleaseData();
     pg->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_PIVOT | EVF_FLEXIBILITY | EVF_ANGLE_SIN_COS, vxCount, indCount);
@@ -214,7 +214,7 @@ void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup * pg)
     pg->BuildBuffers();
 }
 
-void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup * pg)
+void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
 {
     int32 vertexFormat = pg->GetFormat();
     int32 vxCount = pg->GetVertexCount();
@@ -223,11 +223,11 @@ void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup * pg)
     int32 oldTrunkFormat = (EVF_VERTEX | EVF_TEXCOORD0);
     DVASSERT((vertexFormat & oldTrunkFormat) == oldTrunkFormat); //old tree trunk vertex format
 
-    PolygonGroup * pgCopy = new PolygonGroup();
+    PolygonGroup* pgCopy = new PolygonGroup();
     pgCopy->AllocateData(vertexFormat, vxCount, indCount);
 
-    Memcpy(pgCopy->meshData, pg->meshData, vxCount*pg->vertexStride);
-    Memcpy(pgCopy->indexArray, pg->indexArray, indCount*sizeof(int16));
+    Memcpy(pgCopy->meshData, pg->meshData, vxCount * pg->vertexStride);
+    Memcpy(pgCopy->indexArray, pg->indexArray, indCount * sizeof(int16));
 
     pg->ReleaseData();
     pg->AllocateData(EVF_VERTEX | EVF_TEXCOORD0 | EVF_FLEXIBILITY, vxCount, indCount);
@@ -256,5 +256,4 @@ void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup * pg)
 
     pg->BuildBuffers();
 }
-
 };

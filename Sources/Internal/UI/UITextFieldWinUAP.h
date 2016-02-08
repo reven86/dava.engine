@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 struct Rect;
 class Color;
 
@@ -98,7 +97,7 @@ private:
     std::shared_ptr<PrivateTextFieldWinUAP> privateImpl;
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_UITEXTFIELDWINUAP_H_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_UITEXTFIELDWINUAP_H_H__

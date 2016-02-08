@@ -35,37 +35,35 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class RenderComponent : public Component
 {
 protected:
     virtual ~RenderComponent();
+
 public:
-    RenderComponent(RenderObject * _object = 0);
-    
+    RenderComponent(RenderObject* _object = 0);
+
     IMPLEMENT_COMPONENT_TYPE(RENDER_COMPONENT);
 
-    void SetRenderObject(RenderObject * object);
-    RenderObject * GetRenderObject();
-    
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void GetDataNodes(Set<DataNode*> & dataNodes);
-	virtual void OptimizeBeforeExport();
-    
+    void SetRenderObject(RenderObject* object);
+    RenderObject* GetRenderObject();
+
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
+    virtual void OptimizeBeforeExport();
+
 private:
-    RenderObject * renderObject;
-    
+    RenderObject* renderObject;
+
 public:
     INTROSPECTION_EXTEND(RenderComponent, Component,
-        MEMBER(renderObject, "renderObject", I_SAVE | I_VIEW | I_EDIT)
-    );
+                         MEMBER(renderObject, "renderObject", I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
-
-
 };
 
 #endif //__DAVAENGINE_SCENE3D_RENDER_COMPONENT_H__

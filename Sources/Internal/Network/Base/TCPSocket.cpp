@@ -35,20 +35,19 @@ namespace DAVA
 {
 namespace Net
 {
-
-TCPSocket::TCPSocket(IOLoop* ioLoop) : TCPSocketTemplate<TCPSocket>(ioLoop)
-                                     , readBuffer()
-                                     , closeHandler()
-                                     , shutdownHandler()
-                                     , connectHandler()
-                                     , readHandler()
+TCPSocket::TCPSocket(IOLoop* ioLoop)
+    : TCPSocketTemplate<TCPSocket>(ioLoop)
+    , readBuffer()
+    , closeHandler()
+    , shutdownHandler()
+    , connectHandler()
+    , readHandler()
 {
-
 }
 
 int32 TCPSocket::Connect(const Endpoint& endpoint, ConnectHandlerType handler)
 {
-    DVASSERT (handler != nullptr);
+    DVASSERT(handler != nullptr);
     connectHandler = handler;
     return DoConnect(endpoint);
 }
@@ -79,7 +78,8 @@ void TCPSocket::Close(CloseHandlerType handler)
 {
     closeHandler = handler;
     IsOpen() ? DoClose()
-             : HandleClose();   // Execute user handle in any case
+               :
+               HandleClose(); // Execute user handle in any case
 }
 
 void TCPSocket::ReadHere(Buffer buffer)
@@ -121,5 +121,5 @@ void TCPSocket::HandleWrite(int32 error, const Buffer* buffers, size_t bufferCou
     writeHandler(this, error, buffers, bufferCount);
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

@@ -39,7 +39,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class NetConfig
 {
 public:
@@ -48,7 +47,7 @@ public:
         TransportConfig();
         TransportConfig(eTransportType aType, const Endpoint& aEndpoint);
 
-        friend bool operator == (const TransportConfig& left, const TransportConfig& right);
+        friend bool operator==(const TransportConfig& left, const TransportConfig& right);
 
         eTransportType type;
         Endpoint endpoint;
@@ -66,10 +65,19 @@ public:
     bool AddTransport(eTransportType type, const Endpoint& endpoint);
     bool AddService(uint32 serviceId);
 
-    eNetworkRole Role() const { return role; }
+    eNetworkRole Role() const
+    {
+        return role;
+    }
 
-    const Vector<TransportConfig>& Transports() const { return transports; }
-    const Vector<uint32>& Services() const { return services; }
+    const Vector<TransportConfig>& Transports() const
+    {
+        return transports;
+    }
+    const Vector<uint32>& Services() const
+    {
+        return services;
+    }
 
 private:
     eNetworkRole role;
@@ -81,14 +89,16 @@ private:
 inline NetConfig::TransportConfig::TransportConfig()
     : type()
     , endpoint()
-{}
+{
+}
 
 inline NetConfig::TransportConfig::TransportConfig(eTransportType aType, const Endpoint& aEndpoint)
     : type(aType)
     , endpoint(aEndpoint)
-{}
+{
+}
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_NETCONFIG_H__
+#endif // __DAVAENGINE_NETCONFIG_H__

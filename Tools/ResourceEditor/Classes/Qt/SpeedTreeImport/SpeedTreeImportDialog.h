@@ -33,17 +33,18 @@
 #include "DAVAEngine.h"
 #include <QDialog>
 
-namespace Ui {
-	class QtTreeImportDialog;
+namespace Ui
+{
+class QtTreeImportDialog;
 }
 
-class SpeedTreeImportDialog: public QDialog
+class SpeedTreeImportDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	SpeedTreeImportDialog(QWidget *parent = 0);
-	~SpeedTreeImportDialog();
+    SpeedTreeImportDialog(QWidget* parent = 0);
+    ~SpeedTreeImportDialog();
 
 public slots:
     int exec();
@@ -56,9 +57,9 @@ private slots:
     void OnSc2Select();
 
 private:
-    void SetSC2FolderValue(const QString & path);
+    void SetSC2FolderValue(const QString& path);
 
-	Ui::QtTreeImportDialog *ui;
+    Ui::QtTreeImportDialog* ui;
 
     DAVA::Vector<DAVA::FilePath> xmlFiles;
     DAVA::FilePath sc2FolderPath;

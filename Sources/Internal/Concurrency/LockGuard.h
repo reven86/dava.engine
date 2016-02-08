@@ -32,14 +32,14 @@
 
 namespace DAVA
 {
-
 //-----------------------------------------------------------------------------
 //LockGuard class - RAII wrapper for mutex object
 //-----------------------------------------------------------------------------
-template<class MutexT>
+template <class MutexT>
 class LockGuard
 {
     using MutexType = MutexT;
+
 public:
     // construct and lock
     explicit LockGuard(MutexType& mutex);
@@ -58,7 +58,7 @@ private:
 //-----------------------------------------------------------------------------
 //Realization of LockGuard
 //-----------------------------------------------------------------------------
-template<class MutexT>
+template <class MutexT>
 LockGuard<MutexT>::LockGuard(MutexType& mutex)
     : mutex_ref(mutex)
 {

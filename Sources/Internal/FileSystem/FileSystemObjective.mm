@@ -37,29 +37,24 @@
 
 namespace DAVA
 {
+const FilePath FileSystem::GetUserDocumentsPath()
+{
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* bundlePath = [paths objectAtIndex:0];
+    NSString* filePath = [bundlePath stringByAppendingString:@"/"];
+    return FilePath(String([filePath cStringUsingEncoding:NSUTF8StringEncoding]));
+}
 
-    const FilePath FileSystem::GetUserDocumentsPath()
-    {
-        NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString * bundlePath = [paths objectAtIndex:0];
-        NSString * filePath = [bundlePath stringByAppendingString: @"/"];
-        return FilePath(String([filePath cStringUsingEncoding: NSUTF8StringEncoding]));
-    }
-    
-    const FilePath FileSystem::GetPublicDocumentsPath()
-    {
-        return "/Users/Shared/";
-    }
-    
-    const FilePath FileSystem::GetHomePath()
-    {
-        NSString * dirPath = NSHomeDirectory();
-        return FilePath(String([[dirPath stringByAppendingString: @"/"] cStringUsingEncoding:NSUTF8StringEncoding]));
-    }
+const FilePath FileSystem::GetPublicDocumentsPath()
+{
+    return "/Users/Shared/";
+}
+
+const FilePath FileSystem::GetHomePath()
+{
+    NSString* dirPath = NSHomeDirectory();
+    return FilePath(String([[dirPath stringByAppendingString:@"/"] cStringUsingEncoding:NSUTF8StringEncoding]));
+}
 }
 
 #endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-
-
-
-

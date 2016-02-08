@@ -35,22 +35,20 @@
 
 namespace DAVA
 {
-
 UIStyleSheetYamlLoader::UIStyleSheetYamlLoader()
 {
-
 }
 
 void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets)
 {
     DVASSERT(styleSheets);
 
-    const Vector<YamlNode*> &styleSheetMap = rootNode->AsVector();
+    const Vector<YamlNode*>& styleSheetMap = rootNode->AsVector();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
     for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
     {
-        const MultiMap<String, YamlNode*> &styleSheet = (*styleSheetIter)->AsMap();
+        const MultiMap<String, YamlNode*>& styleSheet = (*styleSheetIter)->AsMap();
 
         auto propertiesSectionIter = styleSheet.find("properties");
 
@@ -111,5 +109,4 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
         }
     }
 }
-
 }

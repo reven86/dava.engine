@@ -23,16 +23,17 @@ extern "C" {
 #endif
 
 typedef struct _FxInfo
-  FxInfo;
+FxInfo;
 
 extern MagickExport FxInfo
-  *AcquireFxInfo(const Image *,const char *),
-  *DestroyFxInfo(FxInfo *);
+*
+AcquireFxInfo(const Image *, const char *),
+*DestroyFxInfo(FxInfo *);
 
 extern MagickExport MagickBooleanType
-  FxEvaluateExpression(FxInfo *,MagickRealType *,ExceptionInfo *),
-  FxEvaluateChannelExpression(FxInfo *,const ChannelType,const ssize_t,
-   const ssize_t,MagickRealType *,ExceptionInfo *);
+FxEvaluateExpression(FxInfo *, MagickRealType *, ExceptionInfo *),
+FxEvaluateChannelExpression(FxInfo *, const ChannelType, const ssize_t,
+                            const ssize_t, MagickRealType *, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

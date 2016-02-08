@@ -22,32 +22,34 @@
 extern "C" {
 #endif
 
-#define MagickSignatureSize  64
+#define MagickSignatureSize 64
 
 #include <magick/string_.h>
 
 typedef struct _SignatureInfo
-  SignatureInfo;
+SignatureInfo;
 
 extern MagickExport MagickBooleanType
-  SignatureImage(Image *);
+SignatureImage(Image*);
 
 extern MagickExport SignatureInfo
-  *AcquireSignatureInfo(void),
-  *DestroySignatureInfo(SignatureInfo *);
+*
+AcquireSignatureInfo(void),
+*DestroySignatureInfo(SignatureInfo *);
 
 extern MagickExport const StringInfo
-  *GetSignatureDigest(const SignatureInfo *);
+*
+GetSignatureDigest(const SignatureInfo*);
 
 extern MagickExport unsigned int
-  GetSignatureBlocksize(const SignatureInfo *),
-  GetSignatureDigestsize(const SignatureInfo *);
+GetSignatureBlocksize(const SignatureInfo *),
+GetSignatureDigestsize(const SignatureInfo *);
 
 extern MagickExport void
-  InitializeSignature(SignatureInfo *),
-  FinalizeSignature(SignatureInfo *),
-  SetSignatureDigest(SignatureInfo *,const StringInfo *),
-  UpdateSignature(SignatureInfo *,const StringInfo *);
+InitializeSignature(SignatureInfo *),
+FinalizeSignature(SignatureInfo *),
+SetSignatureDigest(SignatureInfo *, const StringInfo *),
+UpdateSignature(SignatureInfo *, const StringInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

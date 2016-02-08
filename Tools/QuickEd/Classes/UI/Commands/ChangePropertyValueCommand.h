@@ -37,7 +37,7 @@ class PackageNode;
 class ControlNode;
 class AbstractProperty;
 
-class ChangePropertyValueCommand: public QUndoCommand
+class ChangePropertyValueCommand : public QUndoCommand
 {
 public:
     ChangePropertyValueCommand(PackageNode* _root, const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash = 0, QUndoCommand* parent = nullptr);

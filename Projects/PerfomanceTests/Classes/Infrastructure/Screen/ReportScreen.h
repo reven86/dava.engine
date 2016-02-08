@@ -36,17 +36,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class ReportScreen : public BaseScreen
 {
 public:
-
     void SetTestChain(const Vector<BaseTest*>& testsChain);
     bool IsFinished() const override;
-    
+
 protected:
-    
     void LoadResources() override;
 
 private:
     void CreateReportScreen();
-    
+
     Vector<BaseTest*> testChain;
 };
 
@@ -56,4 +54,3 @@ inline void ReportScreen::SetTestChain(const Vector<BaseTest*>& _testsChain)
 }
 
 #endif
-

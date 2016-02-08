@@ -17,29 +17,29 @@
 
 namespace Magick
 {
-
-  class BlobRef {
-  public:
+class BlobRef
+{
+public:
     // There are no public methods in this class
 
     // Construct with data, making private copy of data
-    BlobRef ( const void* data_, size_t length_ );
+    BlobRef(const void* data_, size_t length_);
 
     // Destructor (actually destroys data)
-    ~BlobRef ( void );
+    ~BlobRef(void);
 
-  private:
+private:
     // Copy constructor and assignment are not supported
-    BlobRef (const BlobRef&);
-    BlobRef& operator= (const BlobRef&);
+    BlobRef(const BlobRef&);
+    BlobRef& operator=(const BlobRef&);
 
-  public:
-    void *          _data;      // Blob data
-    size_t          _length;    // Blob length
+public:
+    void* _data; // Blob data
+    size_t _length; // Blob length
     Blob::Allocator _allocator; // Memory allocation system in use
-    ::ssize_t       _refCount;  // Reference count
-    MutexLock       _mutexLock; // Mutex lock
-  };
+    ::ssize_t _refCount; // Reference count
+    MutexLock _mutexLock; // Mutex lock
+};
 
 } // namespace Magick
 

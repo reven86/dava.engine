@@ -74,7 +74,7 @@ UnorderedMap<eGPUFamily, GPUData, std::hash<uint8>> gpuData = {
 const Map<PixelFormat, ImageFormat>& GetAvailableFormatsForGpu(eGPUFamily gpuFamily)
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
-    
+
     return gpuData[gpuFamily].availableFormats;
 }
 
@@ -111,15 +111,15 @@ const String& GetGPUPrefix(const eGPUFamily gpuFamily)
 
 eGPUFamily GetGPUByName(const String& name)
 {
-    for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+    for (int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
     {
         eGPUFamily gpu = (eGPUFamily)i;
-        if(name == gpuData[gpu].name)
+        if (name == gpuData[gpu].name)
         {
             return gpu;
         }
     }
-    
+
     return GPU_INVALID;
 }
 

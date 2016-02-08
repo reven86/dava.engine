@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 Mutex::Mutex()
 {
     int ret = pthread_mutex_init(&mutex, nullptr);
@@ -90,6 +89,6 @@ bool MutexBase::TryLock()
     return pthread_mutex_trylock(&mutex) == 0;
 }
 
-}  // namespace DAVA
+} // namespace DAVA
 
-#endif  // !USE_CPP11_CONCURRENCY
+#endif // !USE_CPP11_CONCURRENCY

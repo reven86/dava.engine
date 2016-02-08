@@ -36,16 +36,17 @@
 #include <QNetworkReply>
 #include <QFile>
 
-namespace Ui {
+namespace Ui
+{
 class SelfUpdater;
 }
 
 class SelfUpdater : public QDialog
 {
     Q_OBJECT
-    
+
 public:
-    explicit SelfUpdater(const QString & arcUrl, QNetworkAccessManager * accessManager, QWidget *parent = 0);
+    explicit SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent = 0);
     ~SelfUpdater();
 
 signals:
@@ -57,13 +58,13 @@ private slots:
     void OnStartUpdating();
 
 private:
-    Ui::SelfUpdater *ui;
+    Ui::SelfUpdater* ui;
     QString archiveUrl;
 
-    QNetworkAccessManager * networkManager;
-    QNetworkReply * currentDownload;
+    QNetworkAccessManager* networkManager;
+    QNetworkReply* currentDownload;
 
-    ZipUnpacker * unpacker;
+    ZipUnpacker* unpacker;
 
     int lastErrorCode;
     QString lastErrorDesrc;

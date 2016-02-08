@@ -134,9 +134,9 @@ void SceneExporterTool::ProcessInternal()
 
     exporter.SetOutFolder(outFolder);
     exporter.SetInFolder(inFolder);
-	exporter.SetGPUForExporting(requestedGPU);
-	exporter.EnableOptimizations(optimizeOnExport);
-	exporter.SetCompressionQuality(quality);
+    exporter.SetGPUForExporting(requestedGPU);
+    exporter.EnableOptimizations(optimizeOnExport);
+    exporter.SetCompressionQuality(quality);
 
     if (commandAction == ACTION_EXPORT_FILE)
     {
@@ -218,7 +218,6 @@ void SceneExporterTool::ExportFileList(SceneExporter& exporter)
         isEof = fileWithLinks->IsEof();
     } while (!isEof);
 }
-
 
 FilePath SceneExporterTool::GetQualityConfigPath() const
 {

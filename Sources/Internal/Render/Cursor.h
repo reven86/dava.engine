@@ -44,7 +44,6 @@ public:
     static bool SetSystemCursorVisibility(bool show);
 #endif
 };
-
 };
 
 #endif // __DAVAENGINE_CURSOR_H__

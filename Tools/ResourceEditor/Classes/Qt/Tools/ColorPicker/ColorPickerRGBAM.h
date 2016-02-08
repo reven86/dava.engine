@@ -34,11 +34,10 @@
 
 #include "AbstractColorPicker.h"
 
-
 class ColorComponentSlider;
 
 class ColorPickerRGBAM
-    : public AbstractColorPicker
+: public AbstractColorPicker
 {
     Q_OBJECT
 

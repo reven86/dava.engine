@@ -36,7 +36,7 @@
 #include "FileSystem/FilePath.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Scene;
 class StaticMesh;
@@ -57,9 +57,9 @@ public:
 
     virtual uint64 GetSortID();
 
-    StaticMesh * GetMesh();
+    StaticMesh* GetMesh();
     int32 GetPolygroupIndex();
-    PolygonGroup * GetPolygonGroup();
+    PolygonGroup* GetPolygonGroup();
 
 private:
     friend class MeshInstanceNode;
@@ -69,53 +69,53 @@ private:
     int32 polygroupIndex = 0;
 };
 
-    
 class MeshInstanceNode : public Entity
 {
-public:	
-	struct LightmapData
-	{
-		Texture * lightmap;
-		FilePath lightmapName;
-		Vector2 uvOffset;
-		Vector2 uvScale;
-	};
-protected:
-	~MeshInstanceNode();
 public:
-	MeshInstanceNode();
+    struct LightmapData
+    {
+        Texture* lightmap;
+        FilePath lightmapName;
+        Vector2 uvOffset;
+        Vector2 uvScale;
+    };
+
+protected:
+    ~MeshInstanceNode();
+
+public:
+    MeshInstanceNode();
 
     void AddPolygonGroup(StaticMesh* mesh, int32 polygonGroupIndex, NMaterial* material);
 
     virtual void Update(float32 timeElapsed);
     virtual void Draw();
     virtual uint64 GetSortID();
-    
-    uint32 GetRenderBatchCount();
-    RenderBatch * GetRenderBatch(uint32 batchIndex);
 
-	inline const AABBox3 & GetBoundingBox() const;
-    inline const AABBox3 & GetWorldTransformedBox() const; 
-	
-    Vector<PolygonGroupWithMaterial*> & GetPolygonGroups();
-    	
-    virtual Entity* Clone(Entity *dstNode = NULL);
-    
+    uint32 GetRenderBatchCount();
+    RenderBatch* GetRenderBatch(uint32 batchIndex);
+
+    inline const AABBox3& GetBoundingBox() const;
+    inline const AABBox3& GetWorldTransformedBox() const;
+
+    Vector<PolygonGroupWithMaterial*>& GetPolygonGroups();
+
+    virtual Entity* Clone(Entity* dstNode = NULL);
+
     //Returns maximum Bounding Box as WorlTransformedBox
     virtual AABBox3 GetWTMaximumBoundingBoxSlow();
 
-	
     /**
         \brief virtual function to save node to KeyedArchive
      */
-    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-    
+    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+
     /**
         \brief virtual function to load node to KeyedArchive
      */
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
 
-	/**
+    /**
         \brief Add lightmap texture.
         Consequent calls of this function will add lightmaps to consequent PolygonGroups of this MeshInstance.
             
@@ -130,68 +130,63 @@ public:
 
         \param[in] lightmapName path to texture
 	 */
-	void AddLightmap(int32 polygonGroupIndex, const LightmapData & lightmapData);
+    void AddLightmap(int32 polygonGroupIndex, const LightmapData& lightmapData);
 
-	/**
+    /**
 		\brief Same as previous function, but polygonGroupIndex is calculated as polygonGroupIndex=currentPolygonGroupCount.
 	*/
-	void AddLightmap(const LightmapData & lightmapData);
+    void AddLightmap(const LightmapData& lightmapData);
 
-	/**
+    /**
         \brief Delete all lightmaps for this MeshInstance. 
 	 */
-	void ClearLightmaps();
+    void ClearLightmaps();
 
-	bool HasLightmaps();
+    bool HasLightmaps();
 
-	void CreateDynamicShadowNode();
-	void DeleteDynamicShadowNode();
-	void ConvertToShadowVolume();
-    
-    virtual void GetDataNodes(Set<DataNode*> & dataNodes);
+    void CreateDynamicShadowNode();
+    void DeleteDynamicShadowNode();
+    void ConvertToShadowVolume();
 
+    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
 
-	LightmapData * GetLightmapDataForIndex(int32 index);
+    LightmapData* GetLightmapDataForIndex(int32 index);
     int32 GetLightmapCount();
 
     /**
         \brief Bake transformations into polygon groups if polygon groups single instanced.
      */
     virtual void BakeTransforms();
-    
+
     /**
         \brief Register nearest node to this MeshInstanceNode.
         MeshInstance can have own criteria of detection on which light nodes are interesting for this particular mesh and which are not.
      */
-    virtual void RegisterNearestLight(Light * node);
+    virtual void RegisterNearestLight(Light* node);
 
-	Vector<PolygonGroupWithMaterial*> polygroups;
+    Vector<PolygonGroupWithMaterial*> polygroups;
 
 protected:
     virtual void UpdateLights();
-    
-//    virtual Entity* CopyDataTo(Entity *dstNode);
-    
-    
-    Vector<Light*> nearestLights;
-    
-    
-	AABBox3 bbox;
-    AABBox3 transformedBox;
-    
-	Vector<LightmapData> lightmaps;
 
+    //    virtual Entity* CopyDataTo(Entity *dstNode);
+
+    Vector<Light*> nearestLights;
+
+    AABBox3 bbox;
+    AABBox3 transformedBox;
+
+    Vector<LightmapData> lightmaps;
 };
-	
-inline const AABBox3 & MeshInstanceNode::GetBoundingBox() const
+
+inline const AABBox3& MeshInstanceNode::GetBoundingBox() const
 {
-	return bbox;
+    return bbox;
 }
-inline const AABBox3 & MeshInstanceNode::GetWorldTransformedBox() const
+inline const AABBox3& MeshInstanceNode::GetWorldTransformedBox() const
 {
     return transformedBox;
 }
-
 };
 
 #endif // __DAVAENGINE_MESH_INSTANCE_H__

@@ -29,58 +29,58 @@
 
 #include "BeastSystem.h"
 
+BeastSystem::BeastSystem(Scene* scene)
+    : SceneSystem(scene)
+{
+}
 
-BeastSystem::BeastSystem(Scene* scene):SceneSystem(scene)
-{}
+BeastSystem::~BeastSystem()
+{
+}
 
-BeastSystem::~BeastSystem(){}
-
-void BeastSystem::AddEntity(Entity * entity)
+void BeastSystem::AddEntity(Entity* entity)
 {
     SetDefaultPropertyValues(entity);
 }
 
-void BeastSystem::SetDefaultPropertyValues(Entity * entity)
+void BeastSystem::SetDefaultPropertyValues(Entity* entity)
 {
-	DAVA::KeyedArchive* propertyList = GetOrCreateCustomProperties(entity)->GetArchive();
+    DAVA::KeyedArchive* propertyList = GetOrCreateCustomProperties(entity)->GetArchive();
 
-	if(GetLight(entity))
-	{
-		SetBool(propertyList, "editor.staticlight.enable", true);
+    if (GetLight(entity))
+    {
+        SetBool(propertyList, "editor.staticlight.enable", true);
 
-		SetFloat(propertyList, "editor.intensity", 1.f);
+        SetFloat(propertyList, "editor.intensity", 1.f);
 
-		SetFloat(propertyList, "editor.staticlight.shadowangle", 0.f);
-		SetFloat(propertyList, "editor.staticlight.shadowradius", 0.f);
-		SetInt32(propertyList, "editor.staticlight.shadowsamples", 1);
-		SetFloat(propertyList, "editor.staticlight.falloffcutoff", 1000.f);
-		SetFloat(propertyList, "editor.staticlight.falloffexponent", 1.f);
-	}
+        SetFloat(propertyList, "editor.staticlight.shadowangle", 0.f);
+        SetFloat(propertyList, "editor.staticlight.shadowradius", 0.f);
+        SetInt32(propertyList, "editor.staticlight.shadowsamples", 1);
+        SetFloat(propertyList, "editor.staticlight.falloffcutoff", 1000.f);
+        SetFloat(propertyList, "editor.staticlight.falloffexponent", 1.f);
+    }
 }
 
-void BeastSystem::SetBool(KeyedArchive* propertyList, const String & key, bool value)
+void BeastSystem::SetBool(KeyedArchive* propertyList, const String& key, bool value)
 {
-	if(!propertyList->IsKeyExists(key))
-	{
-		propertyList->SetBool(key, value);
-	}
+    if (!propertyList->IsKeyExists(key))
+    {
+        propertyList->SetBool(key, value);
+    }
 }
 
-void BeastSystem::SetFloat(KeyedArchive* propertyList, const String & key, float32 value)
+void BeastSystem::SetFloat(KeyedArchive* propertyList, const String& key, float32 value)
 {
-	if(!propertyList->IsKeyExists(key))
-	{
-		propertyList->SetFloat(key, value);
-	}
+    if (!propertyList->IsKeyExists(key))
+    {
+        propertyList->SetFloat(key, value);
+    }
 }
 
-void BeastSystem::SetInt32( KeyedArchive* propertyList, const String & key, int32 value )
+void BeastSystem::SetInt32(KeyedArchive* propertyList, const String& key, int32 value)
 {
-	if(!propertyList->IsKeyExists(key))
-	{
-		propertyList->SetInt32(key, value);
-	}
+    if (!propertyList->IsKeyExists(key))
+    {
+        propertyList->SetInt32(key, value);
+    }
 }
-
-
-

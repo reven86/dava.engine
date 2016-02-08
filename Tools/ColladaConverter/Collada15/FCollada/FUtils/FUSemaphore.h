@@ -29,34 +29,34 @@ class FCOLLADA_EXPORT FUSemaphore
 {
 private:
 #ifdef WIN32
-	HANDLE semaphoreHandle; // WIN32
-#elif defined (__APPLE__)
-	MPTaskID semaphoreHandle;
+    HANDLE semaphoreHandle; // WIN32
+#elif defined(__APPLE__)
+    MPTaskID semaphoreHandle;
 #else
 #warning "FUSemaphore: Semaphore not implemented for non Windows"
 #endif
 
 public:
-	/** Constructor. 
+    /** Constructor. 
 		@param initialValue The initial value for the semaphore.
 		@param maximumValue The maximum value for the semaphore. Must be higher than initialValue. */
-	FUSemaphore(uint32 initialValue, uint32 maximumValue);
+    FUSemaphore(uint32 initialValue, uint32 maximumValue);
 
-	/** Destructor. */
-	~FUSemaphore();
+    /** Destructor. */
+    ~FUSemaphore();
 
-	/** Increments the value of the semaphore. 
+    /** Increments the value of the semaphore. 
 		Do not increment it above the maximum value set in the constructor. No check is made. */
-	void Up();
+    void Up();
 
-	/** Decrements the value of the semaphore.
+    /** Decrements the value of the semaphore.
 
 		The value of the semaphore never drops below 0. If the current value is 0, and this method is called,
 		then this method blocks until it is possible to decrement it and then does so. This is made possible when
 		another thread calls Up. 
 
 		If more than one thread is blocked, and Up is called, any one of the waiting threads may be unblocked. */
-	void Down();
+    void Down();
 };
 
 /**
@@ -67,8 +67,10 @@ public:
 class FCOLLADA_EXPORT FUBinarySemaphore : public FUSemaphore
 {
 public:
-	FUBinarySemaphore() : FUSemaphore(0, 1) {}
+    FUBinarySemaphore()
+        : FUSemaphore(0, 1)
+    {
+    }
 };
 
 #endif // _FU_SEMAPHORE_H_
-

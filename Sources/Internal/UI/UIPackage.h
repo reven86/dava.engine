@@ -38,36 +38,36 @@ class UIControl;
 class UIStyleSheet;
 class UIControlPackageContext;
 
-class UIPackage: public BaseObject
+class UIPackage : public BaseObject
 {
 public:
     UIPackage();
 
 protected:
     ~UIPackage();
-    
+
 public:
     int32 GetControlsCount() const;
-    UIControl *GetControl(int32 index) const;
-    UIControl *GetControl(const String &name) const;
-    
-    template<class C>
-    C GetControl(const String &name) const
+    UIControl* GetControl(int32 index) const;
+    UIControl* GetControl(const String& name) const;
+
+    template <class C>
+    C GetControl(const String& name) const
     {
         return DynamicTypeCheck<C>(GetControl(name));
     }
-    
-    void AddControl(UIControl *control);
-    void RemoveControl(UIControl *control);
+
+    void AddControl(UIControl* control);
+    void RemoveControl(UIControl* control);
 
     UIControlPackageContext* GetControlPackageContext();
 
     RefPtr<UIPackage> Clone() const;
+
 private:
-    Vector<UIControl *> controls;
+    Vector<UIControl*> controls;
 
     UIControlPackageContext* controlPackageContext;
 };
-
 };
 #endif // __DAVAENGINE_UI_PACKAGE_H__

@@ -34,26 +34,29 @@
 
 namespace DAVA
 {
-	class UIAggregatorControl : public UIControl
-	{
-	protected:
-		~UIAggregatorControl(){}
-	public:
-        UIAggregatorControl(const Rect& rect = Rect());
-        UIAggregatorControl* Clone() override;
+class UIAggregatorControl : public UIControl
+{
+protected:
+    ~UIAggregatorControl()
+    {
+    }
 
-        virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-        virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
+public:
+    UIAggregatorControl(const Rect& rect = Rect());
+    UIAggregatorControl* Clone() override;
 
-        void AddAggregatorChild(UIControl* uiControl);
+    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
 
-        void SetAggregatorPath(const FilePath& path);
-        const FilePath& GetAggregatorPath() const;
+    void AddAggregatorChild(UIControl* uiControl);
 
-    private:
-        List<UIControl*> aggregatorControls;
-        FilePath aggregatorPath;
-    };
+    void SetAggregatorPath(const FilePath& path);
+    const FilePath& GetAggregatorPath() const;
+
+private:
+    List<UIControl*> aggregatorControls;
+    FilePath aggregatorPath;
+};
 };
 
 #endif

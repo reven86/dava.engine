@@ -37,7 +37,7 @@
 
 using namespace DAVA;
 
-StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain &chain)
+StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain& chain)
     : ValueProperty("Selector")
 {
     styleSheet = new UIStyleSheet();
@@ -57,12 +57,12 @@ uint32 StyleSheetSelectorProperty::GetCount() const
     return 0;
 }
 
-AbstractProperty *StyleSheetSelectorProperty::GetProperty(int index) const
+AbstractProperty* StyleSheetSelectorProperty::GetProperty(int index) const
 {
     return nullptr;
 }
 
-void StyleSheetSelectorProperty::Accept(PropertyVisitor *visitor)
+void StyleSheetSelectorProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitStyleSheetSelectorProperty(this);
 }
@@ -82,7 +82,7 @@ VariantType StyleSheetSelectorProperty::GetValue() const
     return VariantType(value);
 }
 
-void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType &aValue)
+void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType& aValue)
 {
     Vector<String> selectorList;
     Split(aValue.AsString(), ",", selectorList);
@@ -98,22 +98,22 @@ void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType &aValue)
     value = styleSheet->GetSelectorChain().ToString();
 }
 
-const DAVA::UIStyleSheetSelectorChain &StyleSheetSelectorProperty::GetSelectorChain() const
+const DAVA::UIStyleSheetSelectorChain& StyleSheetSelectorProperty::GetSelectorChain() const
 {
     return styleSheet->GetSelectorChain();
 }
 
-const DAVA::String &StyleSheetSelectorProperty::GetSelectorChainString() const
+const DAVA::String& StyleSheetSelectorProperty::GetSelectorChainString() const
 {
     return value;
 }
 
-UIStyleSheet *StyleSheetSelectorProperty::GetStyleSheet() const
+UIStyleSheet* StyleSheetSelectorProperty::GetStyleSheet() const
 {
     return styleSheet;
 }
 
-void StyleSheetSelectorProperty::SetStyleSheetPropertyTable(DAVA::UIStyleSheetPropertyTable *propertyTable)
+void StyleSheetSelectorProperty::SetStyleSheetPropertyTable(DAVA::UIStyleSheetPropertyTable* propertyTable)
 {
     styleSheet->SetPropertyTable(propertyTable);
 }

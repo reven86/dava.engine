@@ -46,7 +46,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
     oldBatch->Retain();
 
     newBatch = new DAVA::RenderBatch();
-    DAVA::PolygonGroup * shadowPg = DAVA::MeshUtils::CreateShadowPolygonGroup(oldBatch->GetPolygonGroup());
+    DAVA::PolygonGroup* shadowPg = DAVA::MeshUtils::CreateShadowPolygonGroup(oldBatch->GetPolygonGroup());
     shadowPg->BuildBuffers();
     newBatch->SetPolygonGroup(shadowPg);
     shadowPg->Release();
@@ -80,8 +80,8 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
 
 ConvertToShadowCommand::~ConvertToShadowCommand()
 {
-	DAVA::SafeRelease(oldBatch);
-	DAVA::SafeRelease(newBatch);
+    DAVA::SafeRelease(oldBatch);
+    DAVA::SafeRelease(newBatch);
     DAVA::SafeRelease(renderObject);
     DAVA::SafeRelease(entity);
 }
@@ -101,12 +101,12 @@ DAVA::Entity* ConvertToShadowCommand::GetEntity() const
     return entity;
 }
 
-bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch)
+bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch* renderBatch)
 {
     if (renderBatch && renderBatch->GetMaterial() && renderBatch->GetPolygonGroup())
     {
         return renderBatch->GetMaterial()->GetEffectiveFXName() != DAVA::NMaterialName::SHADOW_VOLUME;
     }
 
-	return false;
+    return false;
 }

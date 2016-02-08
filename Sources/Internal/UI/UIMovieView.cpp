@@ -31,18 +31,18 @@
 #include "UI/UIMovieView.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
-#   include "Platform/TemplateiOS/MovieViewControliOS.h"
+#include "Platform/TemplateiOS/MovieViewControliOS.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#   include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
+#include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#   include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
+#include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#   include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
+#include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
 #else
 // UIMovieView is not implemented for this platform yet, using stub one.
-#   define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
-#   include "Platform/MovieViewControlStub.h"
-#   include "Render/RenderHelper.h"
+#define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
+#include "Platform/MovieViewControlStub.h"
+#include "Render/RenderHelper.h"
 #endif
 #include "Render/2D/Systems/RenderSystem2D.h"
 
@@ -65,7 +65,7 @@ void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& pa
     movieViewControl->OpenMovie(moviePath, params);
 }
 
-void UIMovieView::SetPosition(const Vector2 &position)
+void UIMovieView::SetPosition(const Vector2& position)
 {
     UIControl::SetPosition(position);
 
@@ -73,7 +73,7 @@ void UIMovieView::SetPosition(const Vector2 &position)
     movieViewControl->SetRect(newRect);
 }
 
-void UIMovieView::SetSize(const Vector2 &newSize)
+void UIMovieView::SetSize(const Vector2& newSize)
 {
     UIControl::SetSize(newSize);
 
@@ -106,7 +106,7 @@ bool UIMovieView::IsPlaying()
     return movieViewControl->IsPlaying();
 }
 
-void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
+void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
 {
     UIControl::SystemDraw(geometricData);
 
@@ -142,4 +142,4 @@ UIMovieView* UIMovieView::Clone()
     return uiMoviewView;
 }
 
-}   // namespace DAVA
+} // namespace DAVA

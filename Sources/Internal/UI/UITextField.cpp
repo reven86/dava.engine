@@ -39,18 +39,20 @@
 static const DAVA::Vector2 NO_REQUIRED_SIZE = DAVA::Vector2(-1, -1);
 
 #if defined(__DAVAENGINE_ANDROID__)
-#   include "UITextFieldAndroid.h"
-#   include "Utils/UTF8Utils.h"
+#include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 
-extern void CreateTextField(DAVA::UITextField *);
+extern void CreateTextField(DAVA::UITextField*);
 extern void ReleaseTextField();
 extern void OpenKeyboard();
 extern void CloseKeyboard();
 
 #elif defined(__DAVAENGINE_IPHONE__)
-#   include "UI/UITextFieldiPhone.h"
+#include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#   include "UI/UITextFieldWinUAP.h"
+#include "UI/UITextFieldWinUAP.h"
+#elif defined(__DAVAENGINE_MACOS__)
+#include "UI/UITextFieldMacOS.h"
 #else
 #include "UI/UIStaticText.h"
 #include "Platform/SystemTimer.h"
@@ -270,7 +272,7 @@ private:
 #endif
 
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_WIN_UAP__)
-#   define DAVA_TEXTFIELD_USE_NATIVE
+#define DAVA_TEXTFIELD_USE_NATIVE
 #endif
 
 namespace DAVA
@@ -283,11 +285,11 @@ UITextField::UITextField(const Rect& rect)
 
     SetupDefaults();
 }
-    
+
 void UITextField::SetupDefaults()
 {
     SetInputEnabled(true, false);
-    
+
     SetAutoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES);
     SetAutoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT);
     SetSpellCheckingType(SPELL_CHECKING_TYPE_DEFAULT);
@@ -296,15 +298,15 @@ void UITextField::SetupDefaults()
     SetReturnKeyType(RETURN_KEY_DEFAULT);
     SetEnableReturnKeyAutomatically(false);
     SetTextUseRtlAlign(TextBlock::RTL_DONT_USE);
-    
+
     SetMaxLength(-1);
-    
+
     SetIsPassword(false);
     SetTextColor(GetTextColor());
     SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-    
+
     SetFontSize(26); //12 is default size for IOS
-    
+
     SetText(L"");
     SetRenderToTexture(true);
 }
@@ -332,7 +334,7 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::WillAppear()
 {
-    if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this)) 
+    if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
     {
         UIControlSystem::Instance()->SetFocusedControl(this, false);
     }
@@ -352,7 +354,7 @@ void UITextField::WillDisappear()
     textFieldImpl->HideField();
 #endif
 }
-    
+
 void UITextField::OnFocused()
 {
     SetRenderToTexture(false);
@@ -364,7 +366,7 @@ void UITextField::SetFocused()
     UIControlSystem::Instance()->SetFocusedControl(this, true);
 }
 
-void UITextField::OnFocusLost(UIControl *newFocus)
+void UITextField::OnFocusLost(UIControl* newFocus)
 {
     SetRenderToTexture(true);
 
@@ -376,7 +378,7 @@ void UITextField::OnFocusLost(UIControl *newFocus)
     }
 }
 
-bool UITextField::IsLostFocusAllowed(UIControl *newFocus)
+bool UITextField::IsLostFocusAllowed(UIControl* newFocus)
 {
     if (delegate != nullptr)
     {
@@ -387,17 +389,17 @@ bool UITextField::IsLostFocusAllowed(UIControl *newFocus)
 
 void UITextField::ReleaseFocus()
 {
-    if(this == UIControlSystem::Instance()->GetFocusedControl())
+    if (this == UIControlSystem::Instance()->GetFocusedControl())
     {
         UIControlSystem::Instance()->SetFocusedControl(nullptr, true);
     }
 }
-    
-void UITextField::SetFont(Font * font)
+
+void UITextField::SetFont(Font* font)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
     textFieldImpl->SetFont(font);
-#endif  // !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#endif // !defined(DAVA_TEXTFIELD_USE_NATIVE)
 }
 
 void UITextField::SetTextColor(const Color& fontColor)
@@ -405,7 +407,7 @@ void UITextField::SetTextColor(const Color& fontColor)
     textFieldImpl->SetTextColor(fontColor);
 }
 
-void UITextField::SetShadowOffset(const DAVA::Vector2 &offset)
+void UITextField::SetShadowOffset(const DAVA::Vector2& offset)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
     textFieldImpl->SetShadowOffset(offset);
@@ -446,7 +448,7 @@ void UITextField::SetTextUseRtlAlignFromInt(int32 value)
 {
     SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(value));
 }
-    
+
 int32 UITextField::GetTextUseRtlAlignAsInt() const
 {
     return static_cast<TextBlock::eUseRtlAlign>(GetTextUseRtlAlign());
@@ -457,7 +459,7 @@ void UITextField::SetFontSize(float32 size)
     textFieldImpl->SetFontSize(size);
 }
 
-void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
+void UITextField::SetDelegate(UITextFieldDelegate* _delegate)
 {
     delegate = _delegate;
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -465,7 +467,7 @@ void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
 #endif
 }
 
-UITextFieldDelegate * UITextField::GetDelegate()
+UITextFieldDelegate* UITextField::GetDelegate()
 {
     return delegate;
 }
@@ -475,15 +477,15 @@ void UITextField::SetSpriteAlign(int32 align)
     UIControl::SetSpriteAlign(align);
 }
 
-void UITextField::SetSize(const DAVA::Vector2 &newSize)
+void UITextField::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
     textFieldImpl->SetSize(newSize);
 #endif
 }
-    
-void UITextField::SetPosition(const DAVA::Vector2 &position)
+
+void UITextField::SetPosition(const DAVA::Vector2& position)
 {
     UIControl::SetPosition(position);
 }
@@ -501,19 +503,19 @@ bool UITextField::IsMultiline() const
 {
     return isMultiline_;
 }
-    
+
 void UITextField::SetText(const WideString& text_)
 {
     textFieldImpl->SetText(text_);
     text = text_;
 }
 
-const WideString & UITextField::GetText()
+const WideString& UITextField::GetText()
 {
     textFieldImpl->GetText(text);
     return text;
 }
-    
+
 Font* UITextField::GetFont() const
 {
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
@@ -555,7 +557,7 @@ int32 UITextField::GetTextAlign() const
     return textFieldImpl->GetTextAlign();
 }
 
-void UITextField::Input(UIEvent *currentInput)
+void UITextField::Input(UIEvent* currentInput)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
     if (nullptr == delegate)
@@ -617,12 +619,12 @@ void UITextField::Input(UIEvent *currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 #endif
 }
-    
-WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString)
-{//TODO: fix this for copy/paste
+
+WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString& replacementString)
+{ //TODO: fix this for copy/paste
     WideString txt = GetText();
-    
-    if(replacementLocation >= 0)
+
+    if (replacementLocation >= 0)
     {
         if (replacementLocation <= static_cast<int32>(txt.length()))
         {
@@ -633,32 +635,32 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
             Logger::Error("[UITextField::GetAppliedChanges] - index out of bounds.");
         }
     }
-    
+
     return txt;
 }
 
-void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
+void UITextField::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
 {
     UIControl::LoadFromYamlNode(node, loader);
 
-    const YamlNode * textNode = node->Get("text");
+    const YamlNode* textNode = node->Get("text");
     if (textNode)
     {
         SetText(textNode->AsWString());
     }
 
-    const YamlNode * fontNode = node->Get("font");
+    const YamlNode* fontNode = node->Get("font");
     if (fontNode)
     {
-        Font * font = loader->GetFontByName(fontNode->AsString());
+        Font* font = loader->GetFontByName(fontNode->AsString());
         if (font)
         {
             SetFont(font);
             SetFontSize((float32)font->GetFontHeight());
         }
     }
-    
-    const YamlNode * passwordNode = node->Get("isPassword");
+
+    const YamlNode* passwordNode = node->Get("isPassword");
     if (passwordNode)
     {
         SetIsPassword(passwordNode->AsBool());
@@ -722,21 +724,21 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     }
 #endif
 
-    const YamlNode * textColorNode = node->Get("textcolor");
-    const YamlNode * textAlignNode = node->Get("textalign");
+    const YamlNode* textColorNode = node->Get("textcolor");
+    const YamlNode* textAlignNode = node->Get("textalign");
 
-    if(textColorNode)
+    if (textColorNode)
     {
         SetTextColor(textColorNode->AsColor());
     }
 
-    if(textAlignNode)
+    if (textAlignNode)
     {
         SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
     }
 
-    const YamlNode * textUseRtlAlign = node->Get("textUseRtlAlign");
-    if(textUseRtlAlign)
+    const YamlNode* textUseRtlAlign = node->Get("textUseRtlAlign");
+    if (textUseRtlAlign)
     {
         SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(textUseRtlAlign->AsInt32()));
     }
@@ -748,11 +750,11 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     }
 }
 
-YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
+YamlNode* UITextField::SaveToYamlNode(UIYamlLoader* loader)
 {
     ScopedPtr<UITextField> baseTextField(new UITextField());
 
-    YamlNode *node = UIControl::SaveToYamlNode(loader);
+    YamlNode* node = UIControl::SaveToYamlNode(loader);
 
     //Text
     if (baseTextField->GetText() != this->GetText())
@@ -763,16 +765,16 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     //Font
     //Get font name and put it here
     node->Set("font", FontManager::Instance()->GetFontName(this->GetFont()));
-    
+
     //TextColor
-    const Color &textColor = GetTextColor();
+    const Color& textColor = GetTextColor();
     if (baseTextField->GetTextColor() != textColor)
     {
         node->Set("textcolor", VariantType(textColor));
     }
 
     // ShadowColor
-    const Color &shadowColor = GetShadowColor();
+    const Color& shadowColor = GetShadowColor();
     if (baseTextField->GetShadowColor() != GetShadowColor())
     {
         node->Set("shadowcolor", VariantType(shadowColor));
@@ -789,17 +791,16 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(GetTextAlign()));
     }
-    
+
     // Text use rtl align
     if (baseTextField->GetTextUseRtlAlign() != GetTextUseRtlAlign())
     {
         node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
     }
-    
 
     // Draw Type must be overwritten fot UITextField.
     UIControlBackground::eDrawType drawType = GetBackground()->GetDrawType();
-    
+
     if (baseTextField->GetBackground()->GetDrawType() != drawType)
     {
         node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
@@ -852,12 +853,12 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
 
 UITextField* UITextField::Clone()
 {
-    UITextField *t = new UITextField();
+    UITextField* t = new UITextField();
     t->CopyDataFrom(this);
     return t;
 }
 
-void UITextField::CopyDataFrom(UIControl *srcControl)
+void UITextField::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
     UITextField* t = static_cast<UITextField*>(srcControl);
@@ -865,7 +866,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     isPassword = t->isPassword;
     SetText(t->text);
     SetRect(t->GetRect());
-    
+
     cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
     textFieldImpl->CopyDataFrom(t->textFieldImpl);
@@ -881,18 +882,18 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     SetTextUseRtlAlign(t->GetTextUseRtlAlign());
     SetMaxLength(t->GetMaxLength());
 }
-    
+
 void UITextField::SetIsPassword(bool isPassword_)
 {
     isPassword = isPassword_;
     textFieldImpl->SetIsPassword(isPassword_);
 }
-    
+
 bool UITextField::IsPassword() const
 {
     return isPassword;
 }
-    
+
 WideString UITextField::GetVisibleText() const
 {
     if (!isPassword)
@@ -902,7 +903,7 @@ WideString UITextField::GetVisibleText() const
 
     return WideString(text.length(), L'*');
 }
-    
+
 int32 UITextField::GetAutoCapitalizationType() const
 {
     return autoCapitalizationType;
@@ -1047,9 +1048,9 @@ String UITextField::GetFontPresetName() const
     return name;
 }
 
-void UITextField::SetFontByPresetName(const String &presetName)
+void UITextField::SetFontByPresetName(const String& presetName)
 {
-    Font *font = nullptr;
+    Font* font = nullptr;
     if (!presetName.empty())
     {
         font = FontManager::Instance()->GetFont(presetName);
@@ -1071,4 +1072,4 @@ void UITextField::SystemDraw(const UIGeometricData& geometricData)
     textFieldImpl->SystemDraw(localData);
 }
 
-}   // namespace DAVA
+} // namespace DAVA

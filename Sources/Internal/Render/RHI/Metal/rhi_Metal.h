@@ -72,6 +72,7 @@ void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc);
 namespace PipelineStateMetal
 {
 uint32 SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce);
+uint32 VertexStreamCount(Handle ps);
 }
 
 namespace DepthStencilStateMetal

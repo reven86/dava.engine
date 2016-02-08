@@ -39,13 +39,13 @@
 #include "TeamcityOutput/TeamcityOutput.h"
 
 using namespace DAVA;
- 
+
 void PrintUsage()
 {
     printf("Usage:\n");
 
     printf("\t-usage or --help to display this help\n");
-    printf("\t-exo - extended output\n"); 
+    printf("\t-exo - extended output\n");
     printf("\t-v or --verbose - detailed output\n");
     printf("\t-s or --silent - silent mode. Log only warnings and errors.\n");
     printf("\t-teamcity - extra output in teamcity format\n");
@@ -61,10 +61,10 @@ void PrintUsage()
 
 void DumpCommandLine()
 {
-    const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
-    
+    const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
+
     Logger::FrameworkDebug("");
-    for(auto& param : commandLine)
+    for (auto& param : commandLine)
     {
         Logger::FrameworkDebug("parameter: %s", param.c_str());
     }
@@ -73,7 +73,7 @@ void DumpCommandLine()
 
 void ProcessRecourcePacker()
 {
-    if(CommandLineParser::Instance()->GetVerbose())
+    if (CommandLineParser::Instance()->GetVerbose())
     {
         DumpCommandLine();
     }
@@ -100,8 +100,8 @@ void ProcessRecourcePacker()
         Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
         return;
     }
-    
-    if(commandLine.size() < 3)
+
+    if (commandLine.size() < 3)
     {
         Logger::Error("[FATAL ERROR: PVRTexTool path need to be second parameter]");
         return;
@@ -119,16 +119,15 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.rootDirectory.GetAbsolutePathname().c_str());
 
-    
     eGPUFamily exportForGPU = GPU_ORIGIN;
-    if(CommandLineParser::CommandIsFound(String("-gpu")))
+    if (CommandLineParser::CommandIsFound(String("-gpu")))
     {
         String gpuName = CommandLineParser::GetCommandParam("-gpu");
         exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
-		if (GPU_INVALID == exportForGPU)
-		{
-			exportForGPU = GPU_ORIGIN;
-		}
+        if (GPU_INVALID == exportForGPU)
+        {
+            exportForGPU = GPU_ORIGIN;
+        }
     }
 
     if (CommandLineParser::CommandIsFound(String("-useCache")))
@@ -161,49 +160,47 @@ void FrameworkDidLaunched()
 {
     Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
 
-	if (Core::Instance()->IsConsoleMode())
-	{
-        if(     CommandLineParser::GetCommandsCount() < 2
-           ||   (CommandLineParser::CommandIsFound(String("-usage")))
-           ||   (CommandLineParser::CommandIsFound(String("-help")))
-           )
+    if (Core::Instance()->IsConsoleMode())
+    {
+        if (CommandLineParser::GetCommandsCount() < 2
+            || (CommandLineParser::CommandIsFound(String("-usage")))
+            || (CommandLineParser::CommandIsFound(String("-help")))
+            )
         {
             PrintUsage();
-			return;
+            return;
         }
-		
-        if(CommandLineParser::CommandIsFound(String("-exo")))
+
+        if (CommandLineParser::CommandIsFound(String("-exo")))
         {
             CommandLineParser::Instance()->SetExtendedOutput(true);
-            
+
             Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
         }
-        
-        if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("--verbose")))
+
+        if (CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("--verbose")))
         {
             CommandLineParser::Instance()->SetVerbose(true);
 
             Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
         }
 
-	if (CommandLineParser::CommandIsFound(String("-s")) || CommandLineParser::CommandIsFound(String("--silent")))
-	{
-		Logger::Instance()->SetLogLevel(Logger::LEVEL_WARNING);
-	}
+        if (CommandLineParser::CommandIsFound(String("-s")) || CommandLineParser::CommandIsFound(String("--silent")))
+        {
+            Logger::Instance()->SetLogLevel(Logger::LEVEL_WARNING);
+        }
 
-        if(CommandLineParser::CommandIsFound(String("-teamcity")))
+        if (CommandLineParser::CommandIsFound(String("-teamcity")))
         {
             CommandLineParser::Instance()->SetUseTeamcityOutput(true);
 
-            DAVA::TeamcityOutput *out = new DAVA::TeamcityOutput();
+            DAVA::TeamcityOutput* out = new DAVA::TeamcityOutput();
             DAVA::Logger::AddCustomOutput(out);
         }
-
-	}
+    }
 
     ProcessRecourcePacker();
 }
-
 
 void FrameworkWillTerminate()
 {

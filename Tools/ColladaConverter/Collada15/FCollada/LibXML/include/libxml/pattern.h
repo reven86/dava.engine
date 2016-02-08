@@ -27,47 +27,47 @@ extern "C" {
  * A compiled (XPath based) pattern to select nodes
  */
 typedef struct _xmlPattern xmlPattern;
-typedef xmlPattern *xmlPatternPtr;
+typedef xmlPattern* xmlPatternPtr;
 
 XMLPUBFUN void XMLCALL
-			xmlFreePattern		(xmlPatternPtr comp);
+xmlFreePattern(xmlPatternPtr comp);
 
 XMLPUBFUN void XMLCALL
-			xmlFreePatternList	(xmlPatternPtr comp);
+xmlFreePatternList(xmlPatternPtr comp);
 
 XMLPUBFUN xmlPatternPtr XMLCALL
-			xmlPatterncompile	(const xmlChar *pattern,
-						 xmlDict *dict,
-						 int flags,
-						 const xmlChar **namespaces);
+xmlPatterncompile(const xmlChar* pattern,
+                  xmlDict* dict,
+                  int flags,
+                  const xmlChar** namespaces);
 XMLPUBFUN int XMLCALL
-			xmlPatternMatch		(xmlPatternPtr comp,
-						 xmlNodePtr node);
+xmlPatternMatch(xmlPatternPtr comp,
+                xmlNodePtr node);
 
 /* streaming interfaces */
 typedef struct _xmlStreamCtxt xmlStreamCtxt;
-typedef xmlStreamCtxt *xmlStreamCtxtPtr;
+typedef xmlStreamCtxt* xmlStreamCtxtPtr;
 
 XMLPUBFUN int XMLCALL
-			xmlPatternStreamable	(xmlPatternPtr comp);
+xmlPatternStreamable(xmlPatternPtr comp);
 XMLPUBFUN int XMLCALL
-			xmlPatternMaxDepth	(xmlPatternPtr comp);
+xmlPatternMaxDepth(xmlPatternPtr comp);
 XMLPUBFUN int XMLCALL
-			xmlPatternFromRoot	(xmlPatternPtr comp);
+xmlPatternFromRoot(xmlPatternPtr comp);
 XMLPUBFUN xmlStreamCtxtPtr XMLCALL
-			xmlPatternGetStreamCtxt	(xmlPatternPtr comp);
+xmlPatternGetStreamCtxt(xmlPatternPtr comp);
 XMLPUBFUN void XMLCALL
-			xmlFreeStreamCtxt	(xmlStreamCtxtPtr stream);
+xmlFreeStreamCtxt(xmlStreamCtxtPtr stream);
 XMLPUBFUN int XMLCALL
-			xmlStreamPush		(xmlStreamCtxtPtr stream,
-						 const xmlChar *name,
-						 const xmlChar *ns);
+xmlStreamPush(xmlStreamCtxtPtr stream,
+              const xmlChar* name,
+              const xmlChar* ns);
 XMLPUBFUN int XMLCALL
-			xmlStreamPushAttr	(xmlStreamCtxtPtr stream,
-						 const xmlChar *name,
-						 const xmlChar *ns);
+xmlStreamPushAttr(xmlStreamCtxtPtr stream,
+                  const xmlChar* name,
+                  const xmlChar* ns);
 XMLPUBFUN int XMLCALL
-			xmlStreamPop		(xmlStreamCtxtPtr stream);
+xmlStreamPop(xmlStreamCtxtPtr stream);
 #ifdef __cplusplus
 }
 #endif
