@@ -722,7 +722,11 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
 
             // HACK if user click cleartext button and current
             // native control not in focus - remove focus from dava control too
-            if (string.empty() && [[NSApp keyWindow] firstResponder] != nsTextField && !insideTextShouldReturn)
+            // to show hint to user
+            if (string.empty() &&
+                [[NSApp keyWindow] firstResponder] != nsTextField &&
+                !insideTextShouldReturn &&
+                davaText == UIControlSystem::Instance()->GetFocusedControl())
             {
                 UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
             }
