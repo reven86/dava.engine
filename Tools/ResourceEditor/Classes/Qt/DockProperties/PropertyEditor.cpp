@@ -1161,14 +1161,15 @@ void PropertyEditor::SetFavorite(QtPropertyData* data, bool favorite)
                         userData->isFavorite = true;
 
                         ApplyCustomExtensions(favorite.get());
-                        favoriteGroup->MergeChild(std::move(favorite));
 
                         // create user data for added favorite, that will have COPY type,
                         // and associatedData will point to the original property
                         PropEditorUserData* favUserData = new PropEditorUserData(PropEditorUserData::COPY, data, true);
-                        favorite->SetUserData(favUserData);
-
                         favUserData->realPath = data->GetPath();
+
+                        favorite->SetUserData(favUserData);
+                        favoriteGroup->MergeChild(std::move(favorite));
+
                         scheme.insert(data->GetPath());
                         RemFavoriteChilds(data);
                     }
