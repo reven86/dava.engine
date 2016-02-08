@@ -39,7 +39,7 @@ using namespace DAVA;
 
 namespace CanvasSystem_namespace
 {
-class GridControl : public UIControl, public TrackedObject 
+class GridControl : public UIControl, public TrackedObject
 {
 public:
     GridControl();

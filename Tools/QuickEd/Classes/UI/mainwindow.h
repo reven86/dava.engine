@@ -37,7 +37,7 @@
 #include "EditorSettings.h"
 #include <QtGui>
 #include <QtWidgets>
-#include <QQueue>
+
 class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;

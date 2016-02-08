@@ -48,13 +48,13 @@ const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
 const QString CONSOLE_STATE = "console state";
 
-    void SetColoredIconToAction(QAction* action, QColor color)
-    {
-        QPixmap pixmap(16, 16);
-        pixmap.fill(color);
-        action->setIcon(pixmap);
-        action->setData(color);
-    }
+void SetColoredIconToAction(QAction* action, QColor color)
+{
+    QPixmap pixmap(16, 16);
+    pixmap.fill(color);
+    action->setIcon(pixmap);
+    action->setData(color);
+}
 }
 
 using namespace DAVA;
@@ -648,4 +648,3 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
         logWidget->AddMessage(logLevel, output);
     }
 }
-
