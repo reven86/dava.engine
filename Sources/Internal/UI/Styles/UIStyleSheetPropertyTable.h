@@ -36,19 +36,19 @@
 
 namespace DAVA
 {
-
 class UIStyleSheetPropertyTable :
-    public BaseObject
+public BaseObject
 {
 protected:
-    virtual ~UIStyleSheetPropertyTable() {};
+    virtual ~UIStyleSheetPropertyTable(){};
+
 public:
     void SetProperties(const Vector<UIStyleSheetProperty>& properties);
     const Vector<UIStyleSheetProperty>& GetProperties() const;
+
 private:
     Vector<UIStyleSheetProperty> properties;
 };
-
 };
 
 

@@ -24,32 +24,33 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedPixel,
-  CharPixel,
-  DoublePixel,
-  FloatPixel,
-  IntegerPixel,
-  LongPixel,
-  QuantumPixel,
-  ShortPixel
+    UndefinedPixel,
+    CharPixel,
+    DoublePixel,
+    FloatPixel,
+    IntegerPixel,
+    LongPixel,
+    QuantumPixel,
+    ShortPixel
 } StorageType;
 
 extern MagickExport Image
-  *ConstituteImage(const size_t,const size_t,const char *,const StorageType,
-    const void *,ExceptionInfo *),
-  *PingImage(const ImageInfo *,ExceptionInfo *),
-  *PingImages(const ImageInfo *,ExceptionInfo *),
-  *ReadImage(const ImageInfo *,ExceptionInfo *),
-  *ReadImages(const ImageInfo *,ExceptionInfo *),
-  *ReadInlineImage(const ImageInfo *,const char *,ExceptionInfo *);
+*
+ConstituteImage(const size_t, const size_t, const char *, const StorageType,
+                const void *, ExceptionInfo *),
+*PingImage(const ImageInfo *, ExceptionInfo *),
+*PingImages(const ImageInfo *, ExceptionInfo *),
+*ReadImage(const ImageInfo *, ExceptionInfo *),
+*ReadImages(const ImageInfo *, ExceptionInfo *),
+*ReadInlineImage(const ImageInfo *, const char *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  ConstituteComponentGenesis(void),
-  WriteImage(const ImageInfo *,Image *),
-  WriteImages(const ImageInfo *,Image *,const char *,ExceptionInfo *);
+ConstituteComponentGenesis(void),
+WriteImage(const ImageInfo *, Image *),
+WriteImages(const ImageInfo *, Image *, const char *, ExceptionInfo *);
 
 extern MagickExport void
-  ConstituteComponentTerminus(void);
+ConstituteComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

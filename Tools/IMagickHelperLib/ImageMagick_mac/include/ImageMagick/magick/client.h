@@ -23,10 +23,11 @@ extern "C" {
 #endif
 
 extern MagickExport const char
-  *GetClientPath(void),
-  *GetClientName(void),
-  *SetClientName(const char *),
-  *SetClientPath(const char *);
+*
+GetClientPath(void),
+*GetClientName(void),
+*SetClientName(const char *),
+*SetClientPath(const char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

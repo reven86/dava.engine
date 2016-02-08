@@ -39,19 +39,19 @@ class QtPropertyItemDelegate;
 
 class QtPropertyEditor : public QTreeView
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum Style
-	{
-		DEFAULT_STYLE = 0,
-		HEADER_STYLE,
+    enum Style
+    {
+        DEFAULT_STYLE = 0,
+        HEADER_STYLE,
 
-		USER_STYLE
-	};
+        USER_STYLE
+    };
 
-	QtPropertyEditor(QWidget *parent = 0);
-	~QtPropertyEditor();
+    QtPropertyEditor(QWidget* parent = 0);
+    ~QtPropertyEditor();
 
     void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent = QModelIndex());
     QModelIndex AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
@@ -61,7 +61,7 @@ public:
     QModelIndex InsertHeader(const QString& text, int row);
 
     QtPropertyData* GetProperty(const QModelIndex& index) const;
-    QtPropertyData * GetRootProperty() const;
+    QtPropertyData* GetRootProperty() const;
 
     void FinishTreeCreation();
 
@@ -70,44 +70,44 @@ public:
 
     void RemoveProperty(const QModelIndex& index);
     void RemoveProperty(QtPropertyData* data);
-	void RemovePropertyAll();
+    void RemovePropertyAll();
 
-	void SetUpdateTimeout(int ms);
-	int GetUpdateTimeout();
+    void SetUpdateTimeout(int ms);
+    int GetUpdateTimeout();
 
-	virtual void ApplyStyle(QtPropertyData *data, int style);
+    virtual void ApplyStyle(QtPropertyData* data, int style);
 
 public slots:
-	void Update();
+    void Update();
 
-	void OnExpanded(const QModelIndex & index);
-	void OnCollapsed(const QModelIndex & index);
+    void OnExpanded(const QModelIndex& index);
+    void OnCollapsed(const QModelIndex& index);
 
 signals:
-	void PropertyEdited(const QModelIndex &index);
+    void PropertyEdited(const QModelIndex& index);
 
 protected:
-	QtPropertyModel *curModel;
-	QtPropertyItemDelegate *curItemDelegate;
-	
-	int updateTimeout;
-	QTimer updateTimer;
-	bool doUpdateOnPaintEvent;
+    QtPropertyModel* curModel;
+    QtPropertyItemDelegate* curItemDelegate;
 
-	void leaveEvent(QEvent * event) override;
-    void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    int updateTimeout;
+    QTimer updateTimer;
+    bool doUpdateOnPaintEvent;
+
+    void leaveEvent(QEvent* event) override;
+    void drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 protected slots:
-	virtual void OnItemClicked(const QModelIndex &);
-	virtual void OnItemEdited(const QModelIndex &);
-	virtual void OnUpdateTimeout();
+    virtual void OnItemClicked(const QModelIndex&);
+    virtual void OnItemEdited(const QModelIndex&);
+    virtual void OnUpdateTimeout();
 
-	virtual void rowsAboutToBeInserted(const QModelIndex & parent, int start, int end);
-	virtual void rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end);
-	virtual void rowsOp(const QModelIndex & parent, int start, int end);
+    virtual void rowsAboutToBeInserted(const QModelIndex& parent, int start, int end);
+    virtual void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end);
+    virtual void rowsOp(const QModelIndex& parent, int start, int end);
 
 private:
-	void ShowButtonsUnderCursor();
+    void ShowButtonsUnderCursor();
 };
 
 #endif // __QT_PROPERTY_VIEW_H__

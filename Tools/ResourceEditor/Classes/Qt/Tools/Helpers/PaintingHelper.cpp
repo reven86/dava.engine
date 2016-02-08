@@ -32,12 +32,11 @@
 #include <QPainter>
 #include <QLinearGradient>
 
-
 QImage PaintingHelper::DrawHSVImage(QSize const& size)
 {
     QImage img(size.width(), size.height(), QImage::Format_RGB32);
 
-    uint* p = reinterpret_cast<uint *>(img.scanLine(0));
+    uint* p = reinterpret_cast<uint*>(img.scanLine(0));
 
     if (size.width() == 1 || size.height() == 1)
     {
@@ -84,8 +83,8 @@ int PaintingHelper::SatRC(QPoint const& pt, QSize const& size)
 
 int PaintingHelper::ValRC(QPoint const& pt, QSize const& size)
 {
-    Q_UNUSED( pt );
-    Q_UNUSED( size );
+    Q_UNUSED(pt);
+    Q_UNUSED(size);
 
     return 220;
 }

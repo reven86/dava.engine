@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_WINDSYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WINDSYSTEM_H__
+#define __DAVAENGINE_SCENE3D_WINDSYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Observer.h"
@@ -45,35 +45,34 @@ class WindSystem : public SceneSystem, public Observer
 {
     struct WindInfo
     {
-        WindInfo(WindComponent * c);
+        WindInfo(WindComponent* c);
 
-        WindComponent * component;
+        WindComponent* component;
         float32 timeValue;
     };
 
 public:
-    WindSystem(Scene * scene);
+    WindSystem(Scene* scene);
     virtual ~WindSystem();
-	
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
     virtual void Process(float32 timeElapsed);
 
-    Vector3 GetWind(const Vector3 & inPosition) const;
+    Vector3 GetWind(const Vector3& inPosition) const;
 
-    virtual void HandleEvent(Observable * observable);
+    virtual void HandleEvent(Observable* observable);
 
 protected:
-    float32 GetWindValueFromTable(const Vector3 & inPosition, const WindInfo * info) const;
+    float32 GetWindValueFromTable(const Vector3& inPosition, const WindInfo* info) const;
 
-    Vector<WindInfo *> winds;
+    Vector<WindInfo*> winds;
     bool isAnimationEnabled;
     bool isVegetationAnimationEnabled;
 
     float32 windValuesTable[WIND_TABLE_SIZE];
 };
-    
+
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */

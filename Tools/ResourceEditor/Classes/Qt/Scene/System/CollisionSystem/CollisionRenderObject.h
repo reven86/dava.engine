@@ -36,7 +36,7 @@
 class CollisionRenderObject : public CollisionBaseObject
 {
 public:
-	CollisionRenderObject(DAVA::Entity *entity, btCollisionWorld *word, DAVA::RenderObject *renderObject);
+    CollisionRenderObject(DAVA::Entity* entity, btCollisionWorld* word, DAVA::RenderObject* renderObject);
     ~CollisionRenderObject() override;
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;

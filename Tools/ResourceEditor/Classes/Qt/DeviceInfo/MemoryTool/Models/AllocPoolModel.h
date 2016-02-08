@@ -43,7 +43,8 @@ class AllocPoolModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    enum {
+    enum
+    {
         CLM_NAME = 0,
         CLM_ALLOC_APP,
         CLM_ALLOC_TOTAL,
@@ -72,4 +73,4 @@ private:
     DAVA::Vector<QColor> poolColors;
 };
 
-#endif  // __ALLOCPOOLMODEL_H__
+#endif // __ALLOCPOOLMODEL_H__

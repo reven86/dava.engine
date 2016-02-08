@@ -35,22 +35,23 @@
 #include "DAVAEngine.h"
 #include "Qt/Scene/SceneEditor2.h"
 
-namespace Ui {
+namespace Ui
+{
 class SoundComponentEditor;
 }
 
 class SoundComponentEditor : public QDialog
 {
     Q_OBJECT
-    
+
 public:
-    explicit SoundComponentEditor(SceneEditor2* scene, QWidget *parent = 0);
+    explicit SoundComponentEditor(SceneEditor2* scene, QWidget* parent = 0);
     virtual ~SoundComponentEditor();
-    
-    void SetEditableEntity(DAVA::Entity * entity);
+
+    void SetEditableEntity(DAVA::Entity* entity);
 
 private slots:
-    void OnEventSelected(QListWidgetItem * item);
+    void OnEventSelected(QListWidgetItem* item);
 
     void OnSliderMoved(int value);
     void OnSliderPressed();
@@ -71,17 +72,17 @@ private:
 
     void FillEventsList();
 
-    void AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param, float32 currentParamValue);
+    void AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo& param, float32 currentParamValue);
     void ClearParamsFrame();
     void FillEventParamsFrame();
 
-    DAVA::Entity * entity;
-    DAVA::SoundComponent * component;
+    DAVA::Entity* entity;
+    DAVA::SoundComponent* component;
     int32 selectedEventIndex;
 
     SceneEditor2* scene;
 
-    Ui::SoundComponentEditor *ui;
+    Ui::SoundComponentEditor* ui;
 };
 
 #endif // __SOUND_EDITOR_H__

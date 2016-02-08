@@ -32,32 +32,31 @@
 
 namespace DAVA
 {
-	InspMemberDynamic::InspMemberDynamic(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags, InspInfoDynamic *_dynamicInfo)
-		: InspMember(_name, _desc, _offset, _type, _flags)
-		, dynamicInfo(_dynamicInfo)
-	{
-		if(NULL != dynamicInfo)
-		{
-			dynamicInfo->memberDynamic = this;
-		}
-	}
+InspMemberDynamic::InspMemberDynamic(const char* _name, const InspDesc& _desc, const long int _offset, const MetaInfo* _type, int _flags, InspInfoDynamic* _dynamicInfo)
+    : InspMember(_name, _desc, _offset, _type, _flags)
+    , dynamicInfo(_dynamicInfo)
+{
+    if (NULL != dynamicInfo)
+    {
+        dynamicInfo->memberDynamic = this;
+    }
+}
 
-	InspMemberDynamic::~InspMemberDynamic()
-	{
-		if(NULL != dynamicInfo)
-		{
-			delete dynamicInfo;
-		}
-	}
+InspMemberDynamic::~InspMemberDynamic()
+{
+    if (NULL != dynamicInfo)
+    {
+        delete dynamicInfo;
+    }
+}
 
-	const InspMemberDynamic* InspMemberDynamic::Dynamic() const
-	{
-		return this;
-	}
+const InspMemberDynamic* InspMemberDynamic::Dynamic() const
+{
+    return this;
+}
 
-	InspInfoDynamic* InspMemberDynamic::GetDynamicInfo() const
-	{
-		return dynamicInfo;
-	}
-
+InspInfoDynamic* InspMemberDynamic::GetDynamicInfo() const
+{
+    return dynamicInfo;
+}
 };

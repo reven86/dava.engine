@@ -37,14 +37,14 @@
 class PropertyEditorStateHelper : public DAVA::QTreeViewStateHelper<QString>
 {
 public:
-	virtual void SaveTreeViewState(bool needCleanupStorage);
-	PropertyEditorStateHelper(QTreeView* treeView, QtPropertyModel* model);
-	
+    virtual void SaveTreeViewState(bool needCleanupStorage);
+    PropertyEditorStateHelper(QTreeView* treeView, QtPropertyModel* model);
+
 protected:
-	virtual QString GetPersistentDataForModelIndex(const QModelIndex &modelIndex);
-	
+    virtual QString GetPersistentDataForModelIndex(const QModelIndex& modelIndex);
+
 private:
-	QtPropertyModel* model;
+    QtPropertyModel* model;
 };
 
 #endif /* defined(__PROPERTY_EDITOR_STATE_HELPER__H__) */

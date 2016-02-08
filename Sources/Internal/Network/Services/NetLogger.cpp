@@ -79,13 +79,13 @@ size_t NetLogger::GetMessageQueueSize() const
 
 void NetLogger::ChannelOpen()
 {
-    SendNextRecord();   // start sending log records if any
+    SendNextRecord(); // start sending log records if any
 }
 
 void NetLogger::OnPacketSent(IChannel* channel, const void* buffer, size_t length)
 {
     // Record has been sent and buffer can be deleted
-    delete [] static_cast<const char8*>(buffer);
+    delete[] static_cast<const char8*>(buffer);
 }
 
 void NetLogger::OnPacketDelivered(IChannel* channel, uint32 packetId)
@@ -97,7 +97,7 @@ void NetLogger::OnPacketDelivered(IChannel* channel, uint32 packetId)
 
 void NetLogger::Output(Logger::eLogLevel ll, const char8* text)
 {
-    if(text)
+    if (text)
         DoOutput(ll, text);
 }
 
@@ -117,9 +117,9 @@ void NetLogger::SendNextRecord()
         const char* levelStr = Logger::Instance()->GetLogLevelString(record.level);
 
         size_t n = timeStr.size() + 1 + strlen(levelStr) + 1 + record.message.size();
-        char8* buf = new char8[n + 1];  // this will be deleted in OnChannelSendComplete callback
+        char8* buf = new char8[n + 1]; // this will be deleted in OnChannelSendComplete callback
         Snprintf(buf, n + 1, "%s %s %s", timeStr.c_str(), levelStr, record.message.c_str());
-        Send(buf, n - 1);   // remove trailing '\n'
+        Send(buf, n - 1); // remove trailing '\n'
     }
 }
 
@@ -136,7 +136,7 @@ bool NetLogger::EnqueueMessage(Logger::eLogLevel ll, const char8* message)
 bool NetLogger::GetFirstMessage(LogRecord& record)
 {
     LockGuard<Mutex> lock(mutex);
-    if(!recordQueue.empty())
+    if (!recordQueue.empty())
     {
         record = recordQueue.front();
         return true;
@@ -147,7 +147,7 @@ bool NetLogger::GetFirstMessage(LogRecord& record)
 void NetLogger::RemoveFirstMessage()
 {
     LockGuard<Mutex> lock(mutex);
-    if(!recordQueue.empty())
+    if (!recordQueue.empty())
     {
         recordQueue.pop_front();
     }
@@ -155,16 +155,16 @@ void NetLogger::RemoveFirstMessage()
 
 String NetLogger::TimestampToString(time_t timestamp) const
 {
-    tm tms = {0};
+    tm tms = { 0 };
 #if defined(__DAVAENGINE_WINDOWS__)
     localtime_s(&tms, &timestamp);
-#else   // __DAVAENGINE_WINDOWS__
+#else // __DAVAENGINE_WINDOWS__
     localtime_r(&timestamp, &tms);
-#endif  // __DAVAENGINE_WINDOWS__
-    Array<char8, 50> buf = {0};
+#endif // __DAVAENGINE_WINDOWS__
+    Array<char8, 50> buf = { 0 };
     std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", &tms);
     return String(buf.data());
 }
 
-}   // namespace Net
+} // namespace Net
 }

@@ -30,80 +30,76 @@
 #include "FileSystem/KeyedUnarchiver.h"
 #include "Utils/Utils.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
 KeyedUnarchiver::KeyedUnarchiver()
 {
 }
 KeyedUnarchiver::~KeyedUnarchiver()
 {
 }
-	
-bool KeyedUnarchiver::UnarchiveFile(const FilePath & pathName)
+
+bool KeyedUnarchiver::UnarchiveFile(const FilePath& pathName)
 {
-	File * archive = File::Create(pathName, File::OPEN|File::READ);
-	if (!archive)return false;
-	
-	UnarchiveFile(archive);
-	
-	SafeRelease(archive);
-	return true;
-}
-	
-bool KeyedUnarchiver::UnarchiveFile(File *file)
-{
-	while(!file->IsEof())
-	{
-		VariantType key;
-		key.Read(file);
-		VariantType value;
-		value.Read(file);
-		objectMap[key.AsString()] = value;
-	}
-	return true;
+    File* archive = File::Create(pathName, File::OPEN | File::READ);
+    if (!archive)
+        return false;
+
+    UnarchiveFile(archive);
+
+    SafeRelease(archive);
+    return true;
 }
 
-	
-bool KeyedUnarchiver::IsKeyExists(const String & key)
+bool KeyedUnarchiver::UnarchiveFile(File* file)
 {
-	Map<String, VariantType>::iterator t = objectMap.find(key);
-	if (t != objectMap.end())
-	{
-		return true;
-	}
-	return false;
-}
-	
-bool KeyedUnarchiver::DecodeBool(const String & key)
-{
-	return objectMap[key].AsBool();
+    while (!file->IsEof())
+    {
+        VariantType key;
+        key.Read(file);
+        VariantType value;
+        value.Read(file);
+        objectMap[key.AsString()] = value;
+    }
+    return true;
 }
 
-int32 KeyedUnarchiver::DecodeInt(const String & key)
+bool KeyedUnarchiver::IsKeyExists(const String& key)
 {
-	return objectMap[key].AsInt32();
+    Map<String, VariantType>::iterator t = objectMap.find(key);
+    if (t != objectMap.end())
+    {
+        return true;
+    }
+    return false;
 }
 
-float32 KeyedUnarchiver::DecodeFloat(const String & key)
+bool KeyedUnarchiver::DecodeBool(const String& key)
 {
-	return objectMap[key].AsFloat();
+    return objectMap[key].AsBool();
 }
 
-const String & KeyedUnarchiver::DecodeString(const String & key)
+int32 KeyedUnarchiver::DecodeInt(const String& key)
 {
-	return objectMap[key].AsString();
-}
-const WideString & KeyedUnarchiver::DecodeWideString(const String & key)
-{
-	return objectMap[key].AsWideString();
+    return objectMap[key].AsInt32();
 }
 
-const VariantType & KeyedUnarchiver::DecodeVariant(const String & key)
+float32 KeyedUnarchiver::DecodeFloat(const String& key)
 {
-	return objectMap[key];
+    return objectMap[key].AsFloat();
 }
 
+const String& KeyedUnarchiver::DecodeString(const String& key)
+{
+    return objectMap[key].AsString();
+}
+const WideString& KeyedUnarchiver::DecodeWideString(const String& key)
+{
+    return objectMap[key].AsWideString();
+}
 
+const VariantType& KeyedUnarchiver::DecodeVariant(const String& key)
+{
+    return objectMap[key];
+}
 };
-

@@ -29,8 +29,8 @@
 
 #include "DeleteRenderBatchCommand.h"
 
-DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity *en, DAVA::RenderObject *ro, DAVA::uint32 batchIndex)
-	: Command2(CMDID_DELETE_RENDER_BATCH, "Delete Render Batch")
+DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity* en, DAVA::RenderObject* ro, DAVA::uint32 batchIndex)
+    : Command2(CMDID_DELETE_RENDER_BATCH, "Delete Render Batch")
     , entity(en)
     , renderObject(ro)
     , renderBatchIndex(batchIndex)
@@ -38,7 +38,7 @@ DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity *en, DAVA::Rende
     DVASSERT(entity);
     DVASSERT(renderObject);
     DVASSERT(renderBatchIndex < renderObject->GetRenderBatchCount());
-    
+
     renderBatch = renderObject->GetRenderBatch(renderBatchIndex, lodIndex, switchIndex);
     renderBatch->Retain();
 }
@@ -59,14 +59,12 @@ void DeleteRenderBatchCommand::Undo()
     renderObject->AddRenderBatch(renderBatch, lodIndex, switchIndex);
 }
 
-
-DAVA::Entity * DeleteRenderBatchCommand::GetEntity() const
+DAVA::Entity* DeleteRenderBatchCommand::GetEntity() const
 {
     return entity;
 }
 
-DAVA::RenderBatch * DeleteRenderBatchCommand::GetRenderBatch() const
+DAVA::RenderBatch* DeleteRenderBatchCommand::GetRenderBatch() const
 {
     return renderBatch;
 }
-

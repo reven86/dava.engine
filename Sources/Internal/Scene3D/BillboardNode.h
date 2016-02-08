@@ -32,18 +32,18 @@
 
 #include "Scene3D/Entity.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class BillboardNode : public Entity
 {
 protected:
     virtual ~BillboardNode();
+
 public:
     BillboardNode();
-    
+
     virtual void Draw();
 };
-
 };
 
 #endif

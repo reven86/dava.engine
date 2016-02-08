@@ -39,7 +39,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
 {
     ScopedPtr<Entity> skinnedTank(new Entity());
     skinnedTank->SetName(TankUtils::TankNode::SKINNED_TANK);
-    
+
     Entity* lWheelsRoot = sourceTank->FindByName(TankNode::L_WHEELS);
     Entity* rWheelsRoot = sourceTank->FindByName(TankNode::R_WHEELS);
 
@@ -51,7 +51,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
     Vector<SkeletonComponent::JointConfig> tankJoints;
     ScopedPtr<RenderObject> skinnedRo(MeshUtils::CreateSkinnedMesh(sourceTank, tankJoints));
     skinnedRo->AddFlag(RenderObject::VISIBLE_REFLECTION | RenderObject::VISIBLE_REFRACTION);
-    
+
     RenderComponent* renderComponent = static_cast<RenderComponent*>(skinnedTank->GetOrCreateComponent(Component::RENDER_COMPONENT));
     renderComponent->SetRenderObject(skinnedRo);
 
@@ -69,7 +69,6 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
                 outJointIndexes.push_back(i);
                 tankJoints[i].position = centerPos;
             }
-
         }
     }
 
@@ -79,7 +78,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
         {
             Entity* turret = sourceTank->FindByName(TankNode::TURRET);
             RenderComponent* renderComponent = static_cast<RenderComponent*>(turret->GetComponent(Component::RENDER_COMPONENT));
-            
+
             tankJoints[i].position = renderComponent->GetRenderObject()->GetBoundingBox().GetCenter();
         }
     }
@@ -87,13 +86,13 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
     SkeletonComponent* conquerorSkeleton = new SkeletonComponent();
     conquerorSkeleton->SetConfigJoints(tankJoints);
     conquerorSkeleton->RebuildFromConfig();
-    
+
     skinnedTank->AddComponent(conquerorSkeleton);
 
     Vector<Entity*> sourceTankChildren;
     sourceTank->GetChildEntitiesWithComponent(sourceTankChildren, Component::RENDER_COMPONENT);
 
-    for (auto *child : sourceTankChildren)
+    for (auto* child : sourceTankChildren)
     {
         child->RemoveComponent(Component::RENDER_COMPONENT);
     }

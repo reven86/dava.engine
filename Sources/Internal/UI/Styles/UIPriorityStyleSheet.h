@@ -35,28 +35,27 @@
 
 namespace DAVA
 {
-    
 class UIStyleSheet;
-    
+
 class UIPriorityStyleSheet
 {
 public:
-    UIPriorityStyleSheet(UIStyleSheet *styleSheet, int32 priority = 0);
-    UIPriorityStyleSheet(const UIPriorityStyleSheet &other);
+    UIPriorityStyleSheet(UIStyleSheet* styleSheet, int32 priority = 0);
+    UIPriorityStyleSheet(const UIPriorityStyleSheet& other);
     virtual ~UIPriorityStyleSheet();
 
-    UIPriorityStyleSheet &operator=(const UIPriorityStyleSheet &other);
+    UIPriorityStyleSheet& operator=(const UIPriorityStyleSheet& other);
     bool operator<(const UIPriorityStyleSheet& other) const;
-    
-    inline UIStyleSheet *GetStyleSheet() const;
+
+    inline UIStyleSheet* GetStyleSheet() const;
     inline int32 GetPriority() const;
-    
+
 private:
     RefPtr<UIStyleSheet> styleSheet;
     int32 priority;
 };
 
-UIStyleSheet *UIPriorityStyleSheet::GetStyleSheet() const
+UIStyleSheet* UIPriorityStyleSheet::GetStyleSheet() const
 {
     return styleSheet.Get();
 }
@@ -65,7 +64,6 @@ int32 UIPriorityStyleSheet::GetPriority() const
 {
     return priority;
 }
-
 };
 
 

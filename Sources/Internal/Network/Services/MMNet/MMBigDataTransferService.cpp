@@ -45,7 +45,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 MMBigDataTransferService::MMBigDataTransferService(eNetworkRole role_)
     : role(role_)
     , ioLoop(new IOLoop(false))
@@ -53,7 +52,7 @@ MMBigDataTransferService::MMBigDataTransferService(eNetworkRole role_)
     , ioThread(Thread::Create([this]() { IOThread(); }))
 {
     registrar->Register(SERVICE_ID, MakeFunction(this, &MMBigDataTransferService::NetServiceCreator),
-                                    MakeFunction(this, &MMBigDataTransferService::NetServiceDeleter));
+                        MakeFunction(this, &MMBigDataTransferService::NetServiceDeleter));
     ioThread->Start();
 }
 
@@ -81,7 +80,8 @@ void MMBigDataTransferService::Start(bool newSession, uint32 connToken_, const I
 
     NetConfig config(role);
     Endpoint endpoint = SERVER_ROLE == role ? Endpoint(PORT)
-                                            : Endpoint(addr, PORT);
+                                              :
+                                              Endpoint(addr, PORT);
 
     config.AddTransport(TRANSPORT_TCP, endpoint);
     config.AddService(SERVICE_ID);
@@ -300,5 +300,5 @@ void MMBigDataTransferService::NetServiceDeleter(IChannelListener* service, void
     netServiceInUse = false;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

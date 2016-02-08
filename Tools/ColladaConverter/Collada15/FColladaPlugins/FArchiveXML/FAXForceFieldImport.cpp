@@ -18,22 +18,21 @@
 #include "FCDocument/FCDForceWind.h"
 #include "FCDocument/FCDForceField.h"
 
-				
-bool FArchiveXML::LoadForceField(FCDObject* object, xmlNode* node)					
+bool FArchiveXML::LoadForceField(FCDObject* object, xmlNode* node)
 {
-	FCDForceField* forceField = (FCDForceField*)object;
+    FCDForceField* forceField = (FCDForceField*)object;
 
-	bool status = FArchiveXML::LoadEntity(object, node);
-	if (!status) return status;
-	if (!IsEquivalent(node->name, DAE_FORCE_FIELD_ELEMENT))
-	{
-		FUError::Error(FUError::WARNING_LEVEL, FUError::WARNING_UNKNOWN_FORCE_FIELD_ELEMENT, node->line);
-		return status;
-	}
+    bool status = FArchiveXML::LoadEntity(object, node);
+    if (!status)
+        return status;
+    if (!IsEquivalent(node->name, DAE_FORCE_FIELD_ELEMENT))
+    {
+        FUError::Error(FUError::WARNING_LEVEL, FUError::WARNING_UNKNOWN_FORCE_FIELD_ELEMENT, node->line);
+        return status;
+    }
 
+    status &= (FArchiveXML::LoadExtra(forceField->GetInformation(), node));
 
-	status &= (FArchiveXML::LoadExtra(forceField->GetInformation(), node));
-	
-	forceField->SetDirtyFlag();
-	return status;
+    forceField->SetDirtyFlag();
+    return status;
 }

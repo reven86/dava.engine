@@ -39,25 +39,25 @@
 class Command2 : public CommandNotifyProvider
 {
 public:
-	Command2(int _id, const DAVA::String& _text = "");
+    Command2(int _id, const DAVA::String& _text = "");
 
-	int GetId() const;
+    int GetId() const;
 
-	virtual void Undo() = 0;
-	virtual void Redo() = 0;
-	virtual DAVA::Entity* GetEntity() const = 0;
+    virtual void Undo() = 0;
+    virtual void Redo() = 0;
+    virtual DAVA::Entity* GetEntity() const = 0;
 
-	virtual bool MergeWith(const Command2* command);
+    virtual bool MergeWith(const Command2* command);
 
-	DAVA::String GetText() const;
-	void SetText(const DAVA::String &text);
+    DAVA::String GetText() const;
+    void SetText(const DAVA::String& text);
 
 protected:
-	int id;
-	DAVA::String text;
+    int id;
+    DAVA::String text;
 
-	void UndoInternalCommand(Command2 *command);
-	void RedoInternalCommand(Command2 *command);
+    void UndoInternalCommand(Command2* command);
+    void RedoInternalCommand(Command2* command);
 };
 
 #endif // __COMMAND2_H__

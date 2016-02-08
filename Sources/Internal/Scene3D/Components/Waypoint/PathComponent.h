@@ -36,32 +36,31 @@
 
 namespace DAVA
 {
-
 class SerializationContext;
 class KeyedArchive;
 class Entity;
-    
+
 class PathComponent : public Component
 {
 public:
-    
     struct Edge;
-    struct Waypoint: public InspBase
+    struct Waypoint : public InspBase
     {
         Waypoint();
         ~Waypoint();
         Waypoint(const Waypoint&);
-        
+
         FastName name;
         Vector3 position;
-        Vector<Edge *> edges;
+        Vector<Edge*> edges;
         bool isStarting = false;
+
     private:
         KeyedArchive* properties;
 
     public:
-        void AddEdge(Edge *edge);
-        void RemoveEdge(Edge *edge);
+        void AddEdge(Edge* edge);
+        void RemoveEdge(Edge* edge);
 
         void SetProperties(KeyedArchive* p);
         KeyedArchive* GetProperties() const;
@@ -70,82 +69,80 @@ public:
         bool IsStarting() const;
 
         INTROSPECTION(Waypoint,
-            MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-            MEMBER(position, "Waypoint position", I_SAVE | I_EDIT | I_VIEW)
-            MEMBER(properties, "Waypoint Properties", I_SAVE | I_EDIT | I_VIEW)
-            //MEMBER(isStarting, "Is waypoint starting", I_VIEW) // still editable on property editor. TODO: uncomment when fixed this
-            COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
-        );
+                      MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
+                      MEMBER(position, "Waypoint position", I_SAVE | I_EDIT | I_VIEW)
+                      MEMBER(properties, "Waypoint Properties", I_SAVE | I_EDIT | I_VIEW)
+                      //MEMBER(isStarting, "Is waypoint starting", I_VIEW) // still editable on property editor. TODO: uncomment when fixed this
+                      COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
+                      );
     };
-    
-    struct Edge: public InspBase
+
+    struct Edge : public InspBase
     {
         Edge();
         ~Edge();
         Edge(const Edge&);
-        
-        Waypoint * destination;
+
+        Waypoint* destination;
 
     private:
         KeyedArchive* properties;
 
         //For property panel
-        void SetDestinationName(const FastName & name);
+        void SetDestinationName(const FastName& name);
         const FastName GetDestinationName() const;
-        
-        void SetDestinationPoint(const Vector3 & point);
+
+        void SetDestinationPoint(const Vector3& point);
         const Vector3 GetDestinationPoint() const;
-        
+
     public:
         void SetProperties(KeyedArchive* p);
         KeyedArchive* GetProperties() const;
-        
+
         INTROSPECTION(Edge,
-            PROPERTY("DestinationName", "Destination Name", GetDestinationName, SetDestinationName, I_VIEW)
-            PROPERTY("DestinationPoint", "Destination Point", GetDestinationPoint, SetDestinationPoint, I_VIEW)
-            MEMBER(properties, "Edge Properties", I_SAVE | I_EDIT | I_VIEW)
-        );
+                      PROPERTY("DestinationName", "Destination Name", GetDestinationName, SetDestinationName, I_VIEW)
+                      PROPERTY("DestinationPoint", "Destination Point", GetDestinationPoint, SetDestinationPoint, I_VIEW)
+                      MEMBER(properties, "Edge Properties", I_SAVE | I_EDIT | I_VIEW)
+                      );
     };
 
 public:
-	IMPLEMENT_COMPONENT_TYPE(PATH_COMPONENT);
+    IMPLEMENT_COMPONENT_TYPE(PATH_COMPONENT);
 
-	PathComponent();
+    PathComponent();
     virtual ~PathComponent();
 
-    Component * Clone(Entity * toEntity) override;
-    void Serialize(KeyedArchive *archive, SerializationContext *serializationContext) override;
-    void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext) override;
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void AddPoint(Waypoint *point);
-    void RemovePoint(Waypoint *point);
-    
-    Waypoint * GetWaypoint(const FastName & name);
-    const Vector<Waypoint *> & GetPoints() const;
+    void AddPoint(Waypoint* point);
+    void RemovePoint(Waypoint* point);
+
+    Waypoint* GetWaypoint(const FastName& name);
+    const Vector<Waypoint*>& GetPoints() const;
     Waypoint* GetStartWaypoint() const;
-    
-    void SetName(const FastName & name);
-    const FastName & GetName() const;
+
+    void SetName(const FastName& name);
+    const FastName& GetName() const;
 
     void SetColor(const Color& color);
     const Color& GetColor() const;
-    
+
     void Reset();
-    
+
 private:
-    
-    uint32 GetWaypointIndex(const Waypoint * point);
-    
-    
+    uint32 GetWaypointIndex(const Waypoint* point);
+
     FastName name;
     Color color;
-    Vector<Waypoint *> waypoints;
+    Vector<Waypoint*> waypoints;
 
 public:
-	INTROSPECTION_EXTEND(PathComponent, Component,
-        MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
-    );
+    INTROSPECTION_EXTEND(PathComponent, Component,
+                         MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
+                         MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
 
 inline void PathComponent::Waypoint::SetStarting(bool val)
@@ -158,17 +155,17 @@ inline bool PathComponent::Waypoint::IsStarting() const
     return isStarting;
 }
 
-inline const Vector<PathComponent::Waypoint *> & PathComponent::GetPoints() const
+inline const Vector<PathComponent::Waypoint*>& PathComponent::GetPoints() const
 {
     return waypoints;
 }
 
-inline void PathComponent::SetName(const FastName & _name)
+inline void PathComponent::SetName(const FastName& _name)
 {
     name = _name;
 }
-    
-inline const FastName & PathComponent::GetName() const
+
+inline const FastName& PathComponent::GetName() const
 {
     return name;
 }
@@ -192,7 +189,5 @@ inline KeyedArchive* PathComponent::Edge::GetProperties() const
 {
     return properties;
 }
-
-
 }
 #endif //__DAVAENGINE_PATH_COMPONENT_H__

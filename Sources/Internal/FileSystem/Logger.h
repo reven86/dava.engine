@@ -32,7 +32,7 @@
 
 #define LOG_AS_INT(param) Logger::Debug("%s = %d", #param, param);
 #define LOG_AS_FLOAT(param) Logger::Debug("%s = %.4f", #param, param);
-#define LOG_AS_BOOL(param) Logger::Debug("%s = %s", #param, param?"true":"false");
+#define LOG_AS_BOOL(param) Logger::Debug("%s = %s", #param, param ? "true" : "false");
 #define LOG_AS_MATRIX4(param)   Logger::Debug("%s_0 = %f, %f, %f, %f", #param, param._00, param._01, param._02, param._03); \
                                 Logger::Debug("%s_1 = %f, %f, %f, %f", #param, param._10, param._11, param._12, param._13); \
                                 Logger::Debug("%s_2 = %f, %f, %f, %f", #param, param._20, param._21, param._22, param._23); \
@@ -45,12 +45,11 @@
 
 #include <cstdarg>
 
-namespace DAVA 
+namespace DAVA
 {
-
 class LoggerOutput;
 
-class Logger: public Singleton<Logger>
+class Logger : public Singleton<Logger>
 {
 public:
     enum eLogLevel
@@ -80,12 +79,12 @@ public:
     //! Enables/disables logging to file. Disabled by default.
     //! \param[in] filename: name of log file. Empty string disables logging to file,
     //! non-empty creates log file in working directory.
-    virtual void SetLogFilename(const String & filename);
+    virtual void SetLogFilename(const String& filename);
 
     //! Enables/disables logging to file. Disabled by default.
     //! \param[in] filepath: path to log file. Empty string disables logging to file,
     //! non-empty creates log file described by filepath.
-    virtual void SetLogPathname(const FilePath & filepath);
+    virtual void SetLogPathname(const FilePath& filepath);
 
     //! Returns the current set log level.
     virtual eLogLevel GetLogLevel() const;
@@ -109,22 +108,22 @@ public:
     virtual void Log(eLogLevel ll, const char8* text, ...) const;
     virtual void Logv(eLogLevel ll, const char8* text, va_list li) const;
 
-    static void FrameworkDebug(const char8 * text, ...);
-    static void Debug(const char8 * text, ...);
-    static void Warning(const char8 * text, ...);
-    static void Info(const char8 * text, ...);
-    static void Error(const char8 * text, ...);
+    static void FrameworkDebug(const char8* text, ...);
+    static void Debug(const char8* text, ...);
+    static void Warning(const char8* text, ...);
+    static void Info(const char8* text, ...);
+    static void Error(const char8* text, ...);
 
-    static void AddCustomOutput(DAVA::LoggerOutput *lo);
-    static void RemoveCustomOutput(DAVA::LoggerOutput *lo);
+    static void AddCustomOutput(DAVA::LoggerOutput* lo);
+    static void RemoveCustomOutput(DAVA::LoggerOutput* lo);
 
 #if defined(__DAVAENGINE_ANDROID__)
-    static void SetTag(const char8 *logTag);
-#endif    
+    static void SetTag(const char8* logTag);
+#endif
 
     void EnableConsoleMode();
 
-    const char8 * GetLogLevelString(eLogLevel ll) const;
+    const char8* GetLogLevelString(eLogLevel ll) const;
     //TODO: insert Optional
     eLogLevel GetLogLevelFromString(const char8* ll) const;
 
@@ -137,9 +136,8 @@ private:
 
     eLogLevel logLevel;
     FilePath logFilename;
-    Vector<LoggerOutput *> customOutputs;
+    Vector<LoggerOutput*> customOutputs;
     bool consoleModeEnabled;
-
 };
 
 class LoggerOutput

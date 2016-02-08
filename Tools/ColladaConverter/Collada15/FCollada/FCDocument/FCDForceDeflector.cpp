@@ -9,4 +9,3 @@
 #include "StdAfx.h"
 #include "FCDocument/FCDocument.h"
 #include "FCDocument/FCDForceDeflector.h"
-

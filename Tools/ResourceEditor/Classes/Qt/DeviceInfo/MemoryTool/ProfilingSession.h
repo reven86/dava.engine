@@ -53,7 +53,7 @@ class ProfilingSession
 public:
     ProfilingSession();
     ProfilingSession(const ProfilingSession&) = delete;
-    ProfilingSession& operator = (const ProfilingSession&) = delete;
+    ProfilingSession& operator=(const ProfilingSession&) = delete;
     ~ProfilingSession();
 
     bool StartNew(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& deviceInfo, const DAVA::FilePath& destDir);
@@ -74,10 +74,10 @@ public:
 
     // Get index of the closest stat item or -1 if not found
     size_t ClosestStatItem(DAVA::uint64 timestamp) const;
-    
+
     // Load memory snapshot
     bool LoadSnapshot(size_t index);
-    
+
     // Number of registered allocation pools
     size_t AllocPoolCount() const;
     // Number of registered memory block tags
@@ -235,4 +235,4 @@ inline const DAVA::FilePath& ProfilingSession::MemoryLogFile() const
     return logFileName;
 }
 
-#endif  // __PROFILINGSESSION_H__
+#endif // __PROFILINGSESSION_H__
