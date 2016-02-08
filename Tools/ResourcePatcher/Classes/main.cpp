@@ -32,6 +32,14 @@
 #include "FileSystem/VariantType.h"
 #include "CommandLine/ProgramOptions.h"
 
+void FrameworkDidLaunched()
+{
+}
+
+void FrameworkWillTerminate()
+{
+}
+
 void PrintError(DAVA::PatchFileReader::PatchError error)
 {
     switch (error)
