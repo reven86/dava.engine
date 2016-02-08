@@ -147,7 +147,6 @@ void Landscape::ReleaseGeometryData()
 
     subdivLevelCount = 0;
     subdivPatchCount = 0;
-    quadsInWidth = 0;
 
 ////Non-instanced data
     for (rhi::HVertexBuffer handle : vertexBuffers)
@@ -155,6 +154,8 @@ void Landscape::ReleaseGeometryData()
     vertexBuffers.clear();
 
     indices.clear();
+
+    quadsInWidth = 0;
 
 ////Instanced data
     if (patchVertexBuffer)
@@ -258,6 +259,7 @@ void Landscape::AllocateGeometryData()
     uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
     uint32 maxLevels = FastLog2(heightmapSizeMinus1 / PATCH_QUAD_COUNT) + 1;
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
+    minSubdivLevelSize = isInstancingUsed ? 0 : heightmapSizeMinus1 / (RENDER_QUAD_WIDTH - 1);
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -473,18 +475,6 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
         }
     }
 
-    if (realQuadCountInPatch > MAX_QUAD_COUNT_IN_VB)
-    {
-        patch->vdoQuad = -1;
-    }
-    else
-    {
-        uint32 x = heightMapStartX / MAX_QUAD_COUNT_IN_VB;
-        uint32 y = heightMapStartY / MAX_QUAD_COUNT_IN_VB;
-
-        patch->vdoQuad = y * quadsInWidth + x;
-    }
-
     uint32 x2 = x * 2;
     uint32 y2 = y * 2;
 
@@ -538,7 +528,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 radius = Distance(origin, max);
     float32 solidAngle = atanf(radius / distance);
 
-    if ((patch->vdoQuad == -1) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
+    if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdividedSize = levelInfo.size;
@@ -804,12 +794,16 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
 
-    if ((patch->vdoQuad != queuedQuadBuffer) && (queuedQuadBuffer != -1))
+    uint32 divider = levelInfo.size / quadsInWidth;
+    DVASSERT(divider);
+    uint32 quadBuffer = (yy / divider) * quadsInWidth + (xx / divider);
+
+    if ((quadBuffer != queuedQuadBuffer) && (queuedQuadBuffer != -1))
     {
         FlushQueue();
     }
 
-    queuedQuadBuffer = patch->vdoQuad;
+    queuedQuadBuffer = quadBuffer;
 
     // Draw Middle
     uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;

@@ -65,12 +65,12 @@ public:
     static const int32 PATCH_VERTEX_COUNT = 17;
     static const int32 PATCH_QUAD_COUNT = (PATCH_VERTEX_COUNT - 1);
     static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
-    static const int32 MAX_QUAD_COUNT_IN_VB = 128;
+
     static const int32 RENDER_QUAD_WIDTH = 129;
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+    static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
-    static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;
@@ -204,7 +204,6 @@ protected:
 
     struct PatchQuadInfo
     {
-        uint32 vdoQuad; //TODO: remove this
         AABBox3 bbox;
         Vector3 positionOfMaxError;
         float32 maxError;
@@ -236,9 +235,9 @@ protected:
     void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
+    uint32 minSubdivLevelSize = 0;
     uint32 subdivLevelCount = 0;
     uint32 subdivPatchCount = 0;
-    uint32 quadsInWidth = 0;
 
     SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
     Vector<PatchQuadInfo> patchQuadArray;
@@ -300,6 +299,8 @@ protected:
     int32 queueIndexCount = 0;
     int16 queuedQuadBuffer = 0;
     int32 flushQueueCounter = 0;
+
+    uint32 quadsInWidth = 0;
 
     bool isRequireTangentBasis = false;
 
