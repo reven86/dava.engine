@@ -459,19 +459,15 @@ void MainWindow::SetupBackgroundMenu()
     }
     QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
     backgroundColorMenu->addAction(backgroundCustomColorAction);
-    actionGroup->addAction(backgroundCustomColorAction);
     connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
+    actionGroup->addAction(backgroundCustomColorAction);
 
     for (auto& action : actionGroup->actions())
     {
         action->setCheckable(true);
     }
     connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
-        previousBackgroundColorActions.enqueue(action);
-        if (previousBackgroundColorActions.size() > 2)
-        {
-            previousBackgroundColorActions.dequeue();
-        }
+        previousBackgroundColorAction = action;
     });
 
     auto editorSettings = EditorSettings::Instance();
@@ -533,12 +529,9 @@ void MainWindow::OnBackgroundCustomColorClicked()
     QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
     if (!color.isValid())
     {
-        DVASSERT(!previousBackgroundColorActions.isEmpty()); //can not be empty, last added action is sender();
-        QAction* previousAction = previousBackgroundColorActions.head();
-        DVASSERT(nullptr != previousAction);
-        if (previousAction != customColorAction) //if we launch app with custom color there is no other actions in queue
+        if (previousBackgroundColorAction != nullptr && previousBackgroundColorAction != customColorAction) //if we launch app with custom color previous color action will be nullptr
         {
-            previousAction->trigger();
+            previousBackgroundColorAction->trigger();
         }
         return;
     }
