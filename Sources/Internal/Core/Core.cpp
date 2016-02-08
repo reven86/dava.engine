@@ -117,7 +117,7 @@ Core::~Core()
 
 namespace fpu_exceptions
 {
-#ifdef __DAVAENGINE_DEBUG__
+#ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
 #ifdef __DAVAENGINE_WINDOWS__
 void (*SEFuncPtr)(unsigned int, PEXCEPTION_POINTERS) = nullptr;
 
@@ -217,7 +217,7 @@ void Core::CreateSingletons()
 {
     new Logger();
     
-#ifdef __DAVAENGINE_DEBUG__
+#ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
     fpu_exceptions::EnableFloatingPointExceptions();
 #else
     fpu_exceptions::DisableFloatingPointExceptions();
