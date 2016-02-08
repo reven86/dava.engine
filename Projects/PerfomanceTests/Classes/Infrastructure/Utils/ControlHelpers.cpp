@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-FilePath ControlHelpers::GetPathToUIYaml(const String &yamlFileName)
+FilePath ControlHelpers::GetPathToUIYaml(const String& yamlFileName)
 {
     const FilePath path = Format("~res:/UI/win/%s", yamlFileName.c_str());
     return path;

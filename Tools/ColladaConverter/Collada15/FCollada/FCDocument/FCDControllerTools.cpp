@@ -20,45 +20,45 @@
 
 namespace FCDControllerTools
 {
-	void ApplyTranslationMap(const FCDSkinController* controller, const FCDGeometryIndexTranslationMap& translationMap, const UInt16List& packingMap, fm::pvector<const FCDSkinControllerVertex>& skinInfluences)
-	{
-		const FCDSkinControllerVertex* influences = controller->GetVertexInfluences();
-		uint32 influenceCount = (uint32)controller->GetInfluenceCount();
+void ApplyTranslationMap(const FCDSkinController* controller, const FCDGeometryIndexTranslationMap& translationMap, const UInt16List& packingMap, fm::pvector<const FCDSkinControllerVertex>& skinInfluences)
+{
+    const FCDSkinControllerVertex* influences = controller->GetVertexInfluences();
+    uint32 influenceCount = (uint32)controller->GetInfluenceCount();
 
-		// make a copy of the influences
-		//FCDSkinControllerVertex* copiedInfluences = new FCDSkinControllerVertex[influenceCount];
-		//for (size_t i = 0; i < influenceCount; i++)
-		//{
-		//	copiedInfluences[i] = influences[i];
-		//}
+    // make a copy of the influences
+    //FCDSkinControllerVertex* copiedInfluences = new FCDSkinControllerVertex[influenceCount];
+    //for (size_t i = 0; i < influenceCount; i++)
+    //{
+    //	copiedInfluences[i] = influences[i];
+    //}
 
-		// Alright, this map contains pointers to the different weights
-		uint16 largestIdx = 0;
-		for (size_t i = 0; i < packingMap.size(); ++i)
-		{
-			if (packingMap[i] > largestIdx && packingMap[i] != (uint16)-1) 
-			{
-				largestIdx = packingMap[i];
-			}
-		}
+    // Alright, this map contains pointers to the different weights
+    uint16 largestIdx = 0;
+    for (size_t i = 0; i < packingMap.size(); ++i)
+    {
+        if (packingMap[i] > largestIdx && packingMap[i] != (uint16)-1)
+        {
+            largestIdx = packingMap[i];
+        }
+    }
 
-		// This is how many vertices we are packing here!
-		skinInfluences.resize(largestIdx + 1);
-		FUAssert(largestIdx < influenceCount,);
+    // This is how many vertices we are packing here!
+    skinInfluences.resize(largestIdx + 1);
+    FUAssert(largestIdx < influenceCount, );
 
-		// Now iterate over all the vertices that we have used and come up with something
-		for (uint32 i = 0; i < influenceCount; ++i)
-		{
-			UInt32List uniqueIndices = translationMap[i];
-			for (UInt32List::iterator uItr = uniqueIndices.begin(); uItr != uniqueIndices.end(); ++uItr)
-			{
-				if (packingMap[*uItr] != (uint16)-1)
-				{
-					skinInfluences[packingMap[*uItr]] = influences + i;
-				}
-			}
-		}
-		/* Failing on this assertion is probably because the translationMap was
+    // Now iterate over all the vertices that we have used and come up with something
+    for (uint32 i = 0; i < influenceCount; ++i)
+    {
+        UInt32List uniqueIndices = translationMap[i];
+        for (UInt32List::iterator uItr = uniqueIndices.begin(); uItr != uniqueIndices.end(); ++uItr)
+        {
+            if (packingMap[*uItr] != (uint16)-1)
+            {
+                skinInfluences[packingMap[*uItr]] = influences + i;
+            }
+        }
+    }
+    /* Failing on this assertion is probably because the translationMap was
 		   not created by GenerateUniqueIndices for the target of the given
 		   controller. It can also be caused by calling this method multiple
 		   times for the same translationMap. *
@@ -107,6 +107,5 @@ namespace FCDControllerTools
 			}
 		}
 		SAFE_DELETE_ARRAY(copiedInfluences); */
-	}
 }
-
+}

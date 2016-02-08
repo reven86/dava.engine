@@ -43,48 +43,48 @@ class PropertiesTreeItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    PropertiesTreeItemDelegate(QObject *parent = NULL);
+    PropertiesTreeItemDelegate(QObject* parent = NULL);
     ~PropertiesTreeItemDelegate();
 
-    virtual QWidget * createEditor( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
-    virtual void setEditorData ( QWidget * editor, const QModelIndex & index ) const override;
-    virtual void setModelData ( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const override;
-    virtual bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override;
+    virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    virtual void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    virtual void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    virtual bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
-    AbstractPropertyDelegate * GetCustomItemDelegateForIndex(const QModelIndex & index) const;
+    AbstractPropertyDelegate* GetCustomItemDelegateForIndex(const QModelIndex& index) const;
 
-    void emitCommitData(QWidget * editor);
-    void emitCloseEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint);
+    void emitCommitData(QWidget* editor);
+    void emitCloseEditor(QWidget* editor, QAbstractItemDelegate::EndEditHint hint);
 
 private:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QMap<QVariant::Type, AbstractPropertyDelegate *> qvariantItemDelegates;
-    QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate *> propertyItemDelegates;
-    QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate *> variantTypeItemDelegates;
-    QMap<QString, AbstractPropertyDelegate *> propertyNameTypeItemDelegates;
+    QMap<QVariant::Type, AbstractPropertyDelegate*> qvariantItemDelegates;
+    QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
+    QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*> variantTypeItemDelegates;
+    QMap<QString, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;
 };
-class PropertyWidget: public QWidget
+class PropertyWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit PropertyWidget(QWidget *parent = NULL);
+    explicit PropertyWidget(QWidget* parent = NULL);
     ~PropertyWidget(){};
 
-    bool event(QEvent *e) override;
+    bool event(QEvent* e) override;
 
-    void keyPressEvent(QKeyEvent *e) override;
+    void keyPressEvent(QKeyEvent* e) override;
 
-    void mousePressEvent(QMouseEvent *e) override;
+    void mousePressEvent(QMouseEvent* e) override;
 
-    void mouseReleaseEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
 
-    void focusInEvent(QFocusEvent *e) override;
+    void focusInEvent(QFocusEvent* e) override;
 
-    void focusOutEvent(QFocusEvent *e) override;
+    void focusOutEvent(QFocusEvent* e) override;
 
 public:
-    QWidget *editWidget;
+    QWidget* editWidget;
 };
 #endif // __PROPERTIESTREEITEMDELEGATE_H__

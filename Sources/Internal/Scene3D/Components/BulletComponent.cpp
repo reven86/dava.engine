@@ -32,47 +32,43 @@
 
 namespace DAVA
 {
-    
-
 BulletComponent::BulletComponent()
-:	bulletObject(0)
+    : bulletObject(0)
 {
-
 }
 
 BulletComponent::~BulletComponent()
 {
-	SafeRelease(bulletObject);
+    SafeRelease(bulletObject);
 }
 
-Component * BulletComponent::Clone(Entity * toEntity)
+Component* BulletComponent::Clone(Entity* toEntity)
 {
-	BulletComponent * newComponent = new BulletComponent();
-	newComponent->SetEntity(toEntity);
-	//bulletObject is intentionally not cloned
-	return newComponent;
+    BulletComponent* newComponent = new BulletComponent();
+    newComponent->SetEntity(toEntity);
+    //bulletObject is intentionally not cloned
+    return newComponent;
 }
 
-void BulletComponent::SetBulletObject(BaseObject * _bulletObject)
+void BulletComponent::SetBulletObject(BaseObject* _bulletObject)
 {
-	SafeRelease(bulletObject);
+    SafeRelease(bulletObject);
 
-	bulletObject = SafeRetain(_bulletObject);
+    bulletObject = SafeRetain(_bulletObject);
 }
 
-BaseObject * BulletComponent::GetBulletObject()
+BaseObject* BulletComponent::GetBulletObject()
 {
-	return bulletObject;
+    return bulletObject;
 }
 
-void BulletComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void BulletComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	// Don't need to save
+    // Don't need to save
 }
 
-void BulletComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void BulletComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	// Don't need to save
+    // Don't need to save
 }
-
 }

@@ -40,9 +40,8 @@
 
 namespace DAVA
 {
-
 // Allocator for internal data MemoryManager's structures
-template<typename T>
+template <typename T>
 class InternalAllocator
 {
 public:
@@ -63,7 +62,9 @@ public:
     InternalAllocator() = default;
     InternalAllocator(const InternalAllocator&) = default;
     template <typename U>
-    InternalAllocator(const InternalAllocator<U>&) DAVA_NOEXCEPT {}
+    InternalAllocator(const InternalAllocator<U>&) DAVA_NOEXCEPT
+    {
+    }
     ~InternalAllocator() = default;
 
     size_type max_size() const DAVA_NOEXCEPT
@@ -101,7 +102,7 @@ public:
         ::new (static_cast<void*>(ptr)) T(value);
     }
 
-    template<typename U, typename... Args>
+    template <typename U, typename... Args>
     void construct(U* ptr, Args&&... args)
     {
         ::new (static_cast<void*>(ptr)) U(std::forward<Args>(args)...);
@@ -112,7 +113,7 @@ public:
         ptr->~T();
     }
 
-    template<typename U>
+    template <typename U>
     void destroy(U* ptr)
     {
         ptr->~U();
@@ -120,20 +121,20 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-template<typename T1, typename T2>
-inline bool operator == (const InternalAllocator<T1>&, const InternalAllocator<T2>&)
+template <typename T1, typename T2>
+inline bool operator==(const InternalAllocator<T1>&, const InternalAllocator<T2>&)
 {
-    return true;    // InternalAllocator is stateless so two allocators are always equal
+    return true; // InternalAllocator is stateless so two allocators are always equal
 }
 
-template<typename T1, typename T2>
-inline bool operator != (const InternalAllocator<T1>&, const InternalAllocator<T2>&)
+template <typename T1, typename T2>
+inline bool operator!=(const InternalAllocator<T1>&, const InternalAllocator<T2>&)
 {
     return false;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#endif  // __DAVAENGINE_INTERNALALLOCATOR_H__
+#endif // __DAVAENGINE_INTERNALALLOCATOR_H__

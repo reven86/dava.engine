@@ -92,8 +92,8 @@ namespace PipelineStateGLES2
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHI(Handle ps, uint32 vdeclUID);
-void SetVertexDeclToRHI(Handle ps, uint32 vdeclUID, uint32 firstVertex = 0);
+void SetToRHI(Handle ps);
+void SetVertexDeclToRHI(Handle ps, uint32 vdeclUID, uint32 firstVertex, uint32 vertexStreamCount, const Handle* vb);
 uint32 VertexSamplerCount(Handle ps);
 uint32 ProgramUid(Handle ps);
 void InvalidateCache();

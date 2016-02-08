@@ -55,7 +55,7 @@ public:
     String GetHTTPProxyHost();
     String GetHTTPNonProxyHosts();
     int32 GetHTTPProxyPort();
-    DeviceInfo::ScreenInfo & GetScreenInfo();
+    DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
     eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
@@ -67,7 +67,6 @@ public:
 private:
     DeviceInfo::ScreenInfo screenInfo;
 };
-
 };
 
 #endif //  defined(__DAVAENGINE_WIN_32__)

@@ -36,37 +36,36 @@
 
 namespace DAVA
 {
-	class CustomPropertiesComponent : public Component
-	{
-	protected:
-		virtual ~CustomPropertiesComponent();
-	public:
-		CustomPropertiesComponent();
-		
-		IMPLEMENT_COMPONENT_TYPE(CUSTOM_PROPERTIES_COMPONENT);
-				
-		virtual Component * Clone(Entity * toEntity);
-		virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-		virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
-		
-		KeyedArchive* GetArchive();
-				
-		//this method helps to load data for older scene file version
-		void LoadFromArchive(const KeyedArchive& srcProperties, SerializationContext *serializationContext);
-		
-	public:
-		
-		INTROSPECTION_EXTEND(CustomPropertiesComponent, Component,
-							 MEMBER(properties, "Custom properties", I_SAVE | I_VIEW | I_EDIT)
-		);
-	private:
-		
-		CustomPropertiesComponent(const KeyedArchive& srcProperties);
-		
-	private:
-		
-		KeyedArchive* properties;
-	};
+class CustomPropertiesComponent : public Component
+{
+protected:
+    virtual ~CustomPropertiesComponent();
+
+public:
+    CustomPropertiesComponent();
+
+    IMPLEMENT_COMPONENT_TYPE(CUSTOM_PROPERTIES_COMPONENT);
+
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+
+    KeyedArchive* GetArchive();
+
+    //this method helps to load data for older scene file version
+    void LoadFromArchive(const KeyedArchive& srcProperties, SerializationContext* serializationContext);
+
+public:
+    INTROSPECTION_EXTEND(CustomPropertiesComponent, Component,
+                         MEMBER(properties, "Custom properties", I_SAVE | I_VIEW | I_EDIT)
+                         );
+
+private:
+    CustomPropertiesComponent(const KeyedArchive& srcProperties);
+
+private:
+    KeyedArchive* properties;
+};
 };
 
 #endif /* defined(__DAVAENGINE_CUSTOM_PROPERTIES_COMPONENT_H__) */

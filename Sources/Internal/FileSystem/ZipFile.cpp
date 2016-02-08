@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 Mutex ZipFile::mutex;
 
 #ifdef USE_LOCAL_RESOURCES
@@ -51,51 +50,50 @@ String ZipFile::zipFileName = "Data.zip";
 ZipFile::ZipFile()
     : DynamicMemoryFile()
 {
-    
 }
 
 ZipFile::~ZipFile()
 {
 }
 
-File * ZipFile::CreateFromAPK(const FilePath &filePath, uint32 attributes)
+File* ZipFile::CreateFromAPK(const FilePath& filePath, uint32 attributes)
 {
     LockGuard<Mutex> guard(mutex);
 
-    FileSystem * fileSystem = FileSystem::Instance();
-	for (List<FileSystem::ResourceArchiveItem>::iterator ai = fileSystem->resourceArchiveList.begin();
+    FileSystem* fileSystem = FileSystem::Instance();
+    for (List<FileSystem::ResourceArchiveItem>::iterator ai = fileSystem->resourceArchiveList.begin();
          ai != fileSystem->resourceArchiveList.end(); ++ai)
-	{
-		FileSystem::ResourceArchiveItem & item = *ai;
-        
-		String filenamecpp = filePath.GetAbsolutePathname();
-        
-		String::size_type pos = filenamecpp.find(item.attachPath);
-		if (0 == pos)
-		{
-			String relfilename = filenamecpp.substr(item.attachPath.length());
-			int32 size = item.archive->LoadResource(relfilename, 0);
-			if (-1 == size)
-			{
-				return 0;
-			}
-            
-			uint8 * buffer = new uint8[size];
-			item.archive->LoadResource(relfilename, buffer);
+    {
+        FileSystem::ResourceArchiveItem& item = *ai;
 
-			ZipFile *fileInstance = CreateFromData(relfilename, buffer, size, attributes);
+        String filenamecpp = filePath.GetAbsolutePathname();
+
+        String::size_type pos = filenamecpp.find(item.attachPath);
+        if (0 == pos)
+        {
+            String relfilename = filenamecpp.substr(item.attachPath.length());
+            int32 size = item.archive->LoadResource(relfilename, 0);
+            if (-1 == size)
+            {
+                return 0;
+            }
+
+            uint8* buffer = new uint8[size];
+            item.archive->LoadResource(relfilename, buffer);
+
+            ZipFile* fileInstance = CreateFromData(relfilename, buffer, size, attributes);
             SafeDeleteArray(buffer);
-			return fileInstance;
-		}
-	}
-    
+            return fileInstance;
+        }
+    }
+
     bool isDirectory = FileSystem::Instance()->IsDirectory(filePath);
-    if(isDirectory)
+    if (isDirectory)
     {
         //Logger::FrameworkDebug("[ZipFile::CreateFromAssets] Can't create file because it is a directory (%s)", filePath.GetAbsolutePathname().c_str());
         return NULL;
     }
-    
+
     AssetsManager* assetsManager = AssetsManager::Instance();
     DVASSERT_MSG(assetsManager, "[ZipFile::CreateFromAssets] Need to create AssetsManager before loading files");
 
@@ -111,38 +109,38 @@ File * ZipFile::CreateFromAPK(const FilePath &filePath, uint32 attributes)
 }
 
 #ifdef USE_LOCAL_RESOURCES
-File * ZipFile::CreateFromZip(const FilePath &filePath, uint32 attributes)
+File* ZipFile::CreateFromZip(const FilePath& filePath, uint32 attributes)
 {
-	if (!exZipPackage)
-	{
-		int32 res = 0;
-		String zipPath(localResourcesPath);
-		zipPath += zipFileName;
-		exZipPackage = zip_open(zipPath.c_str(), ZIP_CHECKCONS, &res);
-		if (NULL == exZipPackage)
-		{
-			//DVASSERT_MSG(false, "[ZipFile::CreateFromZip] Can't initialize zip package.");
-			return NULL;
-		}
-	}
+    if (!exZipPackage)
+    {
+        int32 res = 0;
+        String zipPath(localResourcesPath);
+        zipPath += zipFileName;
+        exZipPackage = zip_open(zipPath.c_str(), ZIP_CHECKCONS, &res);
+        if (NULL == exZipPackage)
+        {
+            //DVASSERT_MSG(false, "[ZipFile::CreateFromZip] Can't initialize zip package.");
+            return NULL;
+        }
+    }
 
-	String path = filePath.GetAbsolutePathname();
-	return CreateFromPath(exZipPackage, filePath, path, attributes);
+    String path = filePath.GetAbsolutePathname();
+    return CreateFromPath(exZipPackage, filePath, path, attributes);
 }
 
 void ZipFile::SetZipFileName(const String& fileName)
 {
-	if (exZipPackage)
-	{
-		zip_close(exZipPackage);
-		exZipPackage = NULL;
-	}
-	zipFileName = fileName;
+    if (exZipPackage)
+    {
+        zip_close(exZipPackage);
+        exZipPackage = NULL;
+    }
+    zipFileName = fileName;
 }
 
 #endif
 
-ZipFile* ZipFile::CreateFromPath(zip* package, const FilePath &filePath, const String &path, uint32 attributes)
+ZipFile* ZipFile::CreateFromPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes)
 {
     int index = zip_name_locate(package, path.c_str(), 0);
     if (-1 == index)
@@ -168,7 +166,7 @@ ZipFile* ZipFile::CreateFromPath(zip* package, const FilePath &filePath, const S
     }
 
     DVASSERT(stat.size >= 0);
-    uint8 *data = new uint8[stat.size];
+    uint8* data = new uint8[stat.size];
 
     if (zip_fread(file, data, stat.size) != stat.size)
     {
@@ -178,31 +176,24 @@ ZipFile* ZipFile::CreateFromPath(zip* package, const FilePath &filePath, const S
         return NULL;
     }
 
-    ZipFile *fileInstance = CreateFromData(filePath, data, stat.size, attributes);
+    ZipFile* fileInstance = CreateFromData(filePath, data, stat.size, attributes);
     DVASSERT_MSG(fileInstance, "[ZipFile::CreateFromAssets] Can't create dynamic file from memory");
 
     SafeDeleteArray(data);
     zip_fclose(file);
     return fileInstance;
 }
-    
-ZipFile * ZipFile::CreateFromData(const FilePath &filePath, const uint8 * data, int32 dataSize, uint32 attributes)
+
+ZipFile* ZipFile::CreateFromData(const FilePath& filePath, const uint8* data, int32 dataSize, uint32 attributes)
 {
-	ZipFile *fl = new ZipFile();
-	fl->filename = filePath;
-	fl->Write(data, dataSize);
-	fl->fileAttributes = attributes;
-	fl->currentPtr = 0;
-    
+    ZipFile* fl = new ZipFile();
+    fl->filename = filePath;
+    fl->Write(data, dataSize);
+    fl->fileAttributes = attributes;
+    fl->currentPtr = 0;
+
     return fl;
 }
-
-    
-
-    
 };
 
 #endif // __DAVAENGINE_ANDROID__
-
-
-

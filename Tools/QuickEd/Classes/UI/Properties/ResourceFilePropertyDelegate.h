@@ -36,21 +36,24 @@ class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    explicit ResourceFilePropertyDelegate(const QString &resourcefilter, const QString &resourceDir, PropertiesTreeItemDelegate *delegate);
+    explicit ResourceFilePropertyDelegate(const QString& extension, const QString& resourceDir, PropertiesTreeItemDelegate* delegate);
     ~ResourceFilePropertyDelegate();
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
-    void setEditorData(QWidget * editor, const QModelIndex & index) const override;
-    bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
     void enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions) override;
 
 private slots:
     void selectFileClicked();
     void clearFileClicked();
-    void valueChanged();
+    void OnEditingFinished();
+    void OnTextChanged(const QString& text);
 
 private:
-    QString resourcefilter;
+    bool IsPathValid(const QString& path);
+    QPointer<QLineEdit> lineEdit = nullptr;
+    QString resourceExtension;
     QString resourceDir;
 };
 

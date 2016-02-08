@@ -130,18 +130,18 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
 
 void ShowUsage()
 {
-    String message = 
-        "UWPRunner is a utility for installing, running and collection output "
-        "of universal windows applications.\n"
-        "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
-        "Usage: \n"
-        "    --package [path to appx package]\n"
-        "    --dependencies [path to package dependencies dir]\n"
-        "    --profile (local/phone) [target device for package]\n"
-        "    --arch [architecture of launching package, only for bundle]\n"
-        "    --tc_test [use teamcity test output]\n"
-        "    --install_only [only install package]\n"
-        "    --run_only [don't install, just run]\n";
+    String message =
+    "UWPRunner is a utility for installing, running and collection output "
+    "of universal windows applications.\n"
+    "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
+    "Usage: \n"
+    "    --package [path to appx package]\n"
+    "    --dependencies [path to package dependencies dir]\n"
+    "    --profile (local/phone) [target device for package]\n"
+    "    --arch [architecture of launching package, only for bundle]\n"
+    "    --tc_test [use teamcity test output]\n"
+    "    --install_only [only install package]\n"
+    "    --run_only [don't install, just run]\n";
 
     std::cout << message;
 }

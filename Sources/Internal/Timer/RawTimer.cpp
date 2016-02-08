@@ -30,9 +30,8 @@
 #include "Timer/RawTimer.h"
 #include "Platform/SystemTimer.h"
 
-namespace  DAVA
+namespace DAVA
 {
-    
 void RawTimer::Start()
 {
     timerStartTime = SystemTimer::Instance()->AbsoluteMS();
@@ -65,6 +64,4 @@ uint64 RawTimer::GetElapsed()
         return 0;
     }
 }
-
-
 }

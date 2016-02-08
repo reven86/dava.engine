@@ -39,12 +39,10 @@
 
 #include "ColorCell.h"
 
-
 namespace
 {
-    const int BORDER = 1;
+const int BORDER = 1;
 }
-
 
 CustomPalette::CustomPalette(QWidget* parent)
     : QWidget(parent)
@@ -108,11 +106,11 @@ void CustomPalette::CreateControls()
     controls.reserve(n);
     for (int i = 0; i < n; i++)
     {
-        ColorCell *cell = new ColorCell(this);
+        ColorCell* cell = new ColorCell(this);
         const QColor c = (i < colors.size()) ? colors[i] : Qt::transparent;
         cell->SetColor(c);
 
-        connect(cell, SIGNAL( clicked(const QColor&) ), SIGNAL( selected(const QColor&) ));
+        connect(cell, SIGNAL(clicked(const QColor&)), SIGNAL(selected(const QColor&)));
 
         controls << cell;
     }
@@ -120,8 +118,8 @@ void CustomPalette::CreateControls()
 
 void CustomPalette::AdjustControls()
 {
-    const int xOfs = ( width() - BORDER * 2 - nColumns * cellSize.width() ) / nColumns;
-    const int yOfs = ( height() - BORDER * 2 - nRows * cellSize.height() ) / nRows;
+    const int xOfs = (width() - BORDER * 2 - nColumns * cellSize.width()) / nColumns;
+    const int yOfs = (height() - BORDER * 2 - nRows * cellSize.height()) / nRows;
 
     int yPos = yOfs / 2;
     for (int y = 0; y < nRows; y++)
@@ -130,7 +128,7 @@ void CustomPalette::AdjustControls()
         for (int x = 0; x < nColumns; x++)
         {
             const int i = x + y * nColumns;
-            ColorCell *cell = controls[i];
+            ColorCell* cell = controls[i];
             if (cell)
             {
                 cell->resize(cellSize);

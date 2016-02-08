@@ -47,12 +47,11 @@
 
 namespace DAVA
 {
-
-FileList::FileList(const FilePath & filepath, bool includeHidden)
+FileList::FileList(const FilePath& filepath, bool includeHidden)
 {
     DVASSERT(filepath.IsDirectoryPathname());
-    
-	path = filepath;
+
+    path = filepath;
 
 #if defined(__DAVAENGINE_WINDOWS__)
 
@@ -85,7 +84,7 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
             {
                 fileList.push_back(entry);
             }
-			//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
+            //Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
         } while (_wfindnext(hFile, &c_file) == 0);
 
         _findclose(hFile);
@@ -96,21 +95,21 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
 //entry.isDirectory = true;
 //Files.push_back(entry);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-	struct dirent **namelist;
-	FileEntry entry;
+    struct dirent** namelist;
+    FileEntry entry;
 
-	int32 n = scandir(path.GetAbsolutePathname().c_str(), &namelist, 0, alphasort);
+    int32 n = scandir(path.GetAbsolutePathname().c_str(), &namelist, 0, alphasort);
 
-	if (n >= 0)
-	{
-		while(n--)
-		{
-			entry.path = path + namelist[n]->d_name;
-			entry.name = namelist[n]->d_name;
-			entry.size = 0;
+    if (n >= 0)
+    {
+        while (n--)
+        {
+            entry.path = path + namelist[n]->d_name;
+            entry.name = namelist[n]->d_name;
+            entry.size = 0;
 
 #if defined(__DAVAENGINE_MACOS__)
-            if(DT_LNK == namelist[n]->d_type)
+            if (DT_LNK == namelist[n]->d_type)
             {
                 struct stat link_stat;
                 if (0 == stat(entry.path.GetAbsolutePathname().c_str(), &link_stat))
@@ -123,8 +122,8 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
             {
                 entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
-			entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
-            if(entry.isDirectory)
+            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            if (entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
             }
@@ -134,102 +133,102 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
                 fileList.push_back(entry);
             }
 
-			free(namelist[n]);
-		}
-		free(namelist);
-	}
-#elif defined (__DAVAENGINE_ANDROID__)
-	JniFileList jniFileList;
-	Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
-	FileEntry entry;
-	for (int32 i = 0; i < entrys.size(); ++i)
-	{
-		const JniFileList::JniFileListEntry& jniEntry = entrys[i];
+            free(namelist[n]);
+        }
+        free(namelist);
+    }
+#elif defined(__DAVAENGINE_ANDROID__)
+    JniFileList jniFileList;
+    Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
+    FileEntry entry;
+    for (int32 i = 0; i < entrys.size(); ++i)
+    {
+        const JniFileList::JniFileListEntry& jniEntry = entrys[i];
 
-		entry.path = path + jniEntry.name;
-		entry.name = jniEntry.name;
-		entry.size = jniEntry.size;
-		entry.isDirectory = jniEntry.isDirectory;
+        entry.path = path + jniEntry.name;
+        entry.name = jniEntry.name;
+        entry.size = jniEntry.size;
+        entry.isDirectory = jniEntry.isDirectory;
         entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
 
-		if(entry.isDirectory)
-		{
-			entry.path.MakeDirectoryPathname();
-		}
+        if (entry.isDirectory)
+        {
+            entry.path.MakeDirectoryPathname();
+        }
 
         if (!entry.isHidden || includeHidden)
         {
             fileList.push_back(entry);
         }
-	}
+    }
 #endif //PLATFORMS
 
-	directoryCount = 0;
-	fileCount = 0;
-	for (int fi = 0; fi < GetCount(); ++fi)
-	{
-		if (IsDirectory(fi))
-		{
-			if (!IsNavigationDirectory(fi))
-				directoryCount++;
-		}else
-			fileCount++;
-	}
+    directoryCount = 0;
+    fileCount = 0;
+    for (int fi = 0; fi < GetCount(); ++fi)
+    {
+        if (IsDirectory(fi))
+        {
+            if (!IsNavigationDirectory(fi))
+                directoryCount++;
+        }
+        else
+            fileCount++;
+    }
 }
 
 FileList::~FileList()
 {
-
 }
 
 int32 FileList::GetCount() const
 {
-	return (int32)fileList.size();
-}	
+    return (int32)fileList.size();
+}
 
 int32 FileList::GetFileCount() const
 {
-	return fileCount;
+    return fileCount;
 }
 
 int32 FileList::GetDirectoryCount() const
 {
-	return directoryCount;
+    return directoryCount;
 }
 
-const FilePath & FileList::GetPathname(int32 index) const
+const FilePath& FileList::GetPathname(int32 index) const
 {
-	DVASSERT((index >= 0) && (index < (int32)fileList.size()));
-	return fileList[index].path;
+    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    return fileList[index].path;
 }
-    
-const String & FileList::GetFilename(int32 index) const
+
+const String& FileList::GetFilename(int32 index) const
 {
     DVASSERT((index >= 0) && (index < (int32)fileList.size()));
     return fileList[index].name;
 }
-    
 
-bool FileList::IsDirectory(int32 index)  const
+bool FileList::IsDirectory(int32 index) const
 {
-	DVASSERT((index >= 0) && (index < (int32)fileList.size()));
-	return fileList[index].isDirectory;
+    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    return fileList[index].isDirectory;
 }
-	
+
 bool FileList::IsNavigationDirectory(int32 index) const
 {
-	DVASSERT((index >= 0) && (index < (int32)fileList.size()));
-	//bool isDir = fileList[index].isDirectory;
-	//if (isDir)
-	//{
-    
+    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    //bool isDir = fileList[index].isDirectory;
+    //if (isDir)
+    //{
+
     String filename = GetFilename(index);
-	if ((filename == ".") || (filename == ".."))return true;
-	//}
-	return false;
+    if ((filename == ".") || (filename == ".."))
+        return true;
+    //}
+    return false;
 }
 
-bool FileList::IsHidden(int32 index)  const
+bool FileList::IsHidden(int32 index) const
 {
     DVASSERT((index >= 0) && (index < (int32)fileList.size()));
     return fileList[index].isHidden;
@@ -237,16 +236,16 @@ bool FileList::IsHidden(int32 index)  const
 
 //bool FileList::FileEntry::operator< (const FileList::FileEntry &other)
 //{
-//    if (!isDirectory && other.isDirectory) 
+//    if (!isDirectory && other.isDirectory)
 //    {
 //        return true;
 //    }
-//    
+//
 //    if (name < other.name)
 //    {
 //        return true;
 //    }
-//    
+//
 //    return false;
 //}
 
@@ -254,6 +253,5 @@ void FileList::Sort()
 {
     std::sort(fileList.begin(), fileList.end());
 }
-    
-    
+
 }; // end of namespace DAVA

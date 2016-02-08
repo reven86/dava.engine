@@ -63,18 +63,18 @@ class SceneSelectionSystem : public DAVA::SceneSystem
     static const DAVA::uint64 ALL_COMPONENTS_MASK = 0xFFFFFFFFFFFFFFFF;
 
 public:
-    SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys);
-	~SceneSelectionSystem();
+    SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
+    ~SceneSelectionSystem();
 
-	void SetSelection(DAVA::Entity *entity);
-    void SetSelection(const EntityGroup &newSelection);
-	void AddSelection(DAVA::Entity *entity);
-    void AddSelection(const EntityGroup &entities);
+    void SetSelection(DAVA::Entity* entity);
+    void SetSelection(const EntityGroup& newSelection);
+    void AddSelection(DAVA::Entity* entity);
+    void AddSelection(const EntityGroup& entities);
     void ExcludeSelection(DAVA::Entity* entity);
     void ExcludeSelection(const EntityGroup& entities);
     void Clear();
 
-    bool IsEntitySelectable(DAVA::Entity *entity) const;
+    bool IsEntitySelectable(DAVA::Entity* entity) const;
 
     const EntityGroup& GetSelection() const;
 
@@ -100,18 +100,18 @@ public:
 
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
-	void Process(DAVA::float32 timeElapsed) override;
+    void Process(DAVA::float32 timeElapsed) override;
     void ProcessCommand(const Command2* command, bool redo);
 
-    void Input(DAVA::UIEvent *event) override;
+    void Input(DAVA::UIEvent* event) override;
 
     void Activate() override;
     void Deactivate() override;
-    
-    bool IsEntitySelected(DAVA::Entity *entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 
-	void Draw();
+    bool IsEntitySelected(DAVA::Entity* entity);
+    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
+
+    void Draw();
     void CancelSelection();
 
 private:

@@ -15,72 +15,64 @@
 
 namespace FCTestExportImport
 {
-	static const char* szTestName = "FCTestExportImportEmitter";
+static const char* szTestName = "FCTestExportImportEmitter";
 
-	bool FillForceFieldLibrary(FULogFile& fileOut, FCDForceFieldLibrary* library)
-	{
-		// Export a simple force field.
-		FCDForceField* field = library->AddEntity();
-		field->SetName(FC("SomeField"));
-		PassIf(field != NULL);
+bool FillForceFieldLibrary(FULogFile& fileOut, FCDForceFieldLibrary* library)
+{
+    // Export a simple force field.
+    FCDForceField* field = library->AddEntity();
+    field->SetName(FC("SomeField"));
+    PassIf(field != NULL);
 
+    return true;
+}
 
-		return true;
-	}
+bool FillEmitterLibrary(FULogFile& fileOut, FCDEmitterLibrary* library)
+{
+    // Export a first emitter.
+    FCDEmitter* emitter1 = library->AddEntity();
+    PassIf(emitter1 != NULL);
+    PassIf(library->GetEntityCount() == 1);
+    PassIf(library->GetEntity(0) == emitter1);
+    PassIf(emitter1->GetType() == FCDEntity::EMITTER);
 
-	bool FillEmitterLibrary(FULogFile& fileOut, FCDEmitterLibrary* library)
-	{
-		// Export a first emitter.
-		FCDEmitter* emitter1 = library->AddEntity();
-		PassIf(emitter1 != NULL);
-		PassIf(library->GetEntityCount() == 1);
-		PassIf(library->GetEntity(0) == emitter1);
-		PassIf(emitter1->GetType() == FCDEntity::EMITTER);
+    // Export a second emitter.
+    FCDEmitter* emitter2 = library->AddEntity();
+    PassIf(library->GetEntityCount() == 2);
+    PassIf(emitter2 != NULL);
 
+    return true;
+}
 
-		// Export a second emitter.
-		FCDEmitter* emitter2 = library->AddEntity();
-		PassIf(library->GetEntityCount() == 2);
-		PassIf(emitter2 != NULL);
+bool FillEmitterInstance(FULogFile& fileOut, FCDEmitterInstance* instance)
+{
+    PassIf(instance != NULL);
 
+    return true;
+}
 
-		return true;
-	}
+bool CheckForceFieldLibrary(FULogFile& fileOut, FCDForceFieldLibrary* library)
+{
+    PassIf(library->GetEntityCount() == 1);
 
-	bool FillEmitterInstance(FULogFile& fileOut, FCDEmitterInstance* instance)
-	{
-		PassIf(instance != NULL);
+    FCDForceField* field = library->GetEntity(0);
+    PassIf(IsEquivalent(field->GetName(), FC("SomeField")));
 
+    return true;
+}
 
-		return true;
-	}
+bool CheckEmitterLibrary(FULogFile& fileOut, FCDEmitterLibrary* library)
+{
+    return true;
+    PassIf(library->GetEntityCount() == 2);
 
-	bool CheckForceFieldLibrary(FULogFile& fileOut, FCDForceFieldLibrary* library)
-	{
-		PassIf(library->GetEntityCount() == 1);
+    return true;
+}
 
-		FCDForceField* field = library->GetEntity(0);
-		PassIf(IsEquivalent(field->GetName(), FC("SomeField")));
+bool CheckEmitterInstance(FULogFile& fileOut, FCDEmitterInstance* instance)
+{
+    PassIf(instance != NULL);
 
-
-		return true;
-	}
-
-	bool CheckEmitterLibrary(FULogFile& fileOut, FCDEmitterLibrary* library)
-	{
-		return true;
-		PassIf(library->GetEntityCount() == 2);
-
-
-		return true;
-	}
-
-	bool CheckEmitterInstance(FULogFile& fileOut, FCDEmitterInstance* instance)
-	{
-		PassIf(instance != NULL);
-
-
-		return true;
-	}
+    return true;
+}
 };
-

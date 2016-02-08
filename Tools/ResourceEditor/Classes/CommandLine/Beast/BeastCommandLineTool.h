@@ -32,12 +32,12 @@
 
 #include "CommandLine/CommandLineTool.h"
 
-#if defined (__DAVAENGINE_BEAST__)
+#if defined(__DAVAENGINE_BEAST__)
 
-class BeastCommandLineTool: public CommandLineTool
+class BeastCommandLineTool : public CommandLineTool
 {
 public:
-	BeastCommandLineTool();
+    BeastCommandLineTool();
 
 private:
     void ConvertOptionsToParamsInternal() override;

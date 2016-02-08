@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
-#define	__DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
+#define __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 class Font;
 class Sprite;
 class TextBlock;
@@ -48,16 +47,16 @@ class UIGeometricData;
 
 struct TiledDrawData
 {
-    Vector< Vector2 > vertices;
-    Vector< Vector2 > texCoords;
-    Vector< uint16  > indeces;
+    Vector<Vector2> vertices;
+    Vector<Vector2> texCoords;
+    Vector<uint16> indeces;
     void GenerateTileData();
-    void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+    void GenerateAxisData(float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector<Vector3>& axisData);
 
-    Vector< Vector2 > transformedVertices;
+    Vector<Vector2> transformedVertices;
     void GenerateTransformData();
 
-    Sprite *sprite;
+    Sprite* sprite;
     int32 frame;
     Vector2 size;
     Vector2 stretchCap;
@@ -75,7 +74,7 @@ struct StretchDrawData
     void GenerateTransformData();
     uint32 GetVertexInTrianglesCount() const;
 
-    Sprite *sprite;
+    Sprite* sprite;
     int32 frame;
     Vector2 size;
     int32 type;
@@ -135,7 +134,7 @@ public:
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
-    
+
     void Init();
 
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
@@ -169,13 +168,13 @@ public:
     void BeginFrame();
     void EndFrame();
     void Flush();
-    
-    void SetClip(const Rect &rect);
-	void IntersectClipRect(const Rect &rect);
-	void RemoveClip();
-    
-	void PushClip();
-	void PopClip();
+
+    void SetClip(const Rect& rect);
+    void IntersectClipRect(const Rect& rect);
+    void RemoveClip();
+
+    void PushClip();
+    void PopClip();
 
     void ScreenSizeChanged();
 
@@ -284,7 +283,7 @@ public:
 
 private:
     void SetVirtualToPhysicalTransformEnabled(bool);
-    bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
+    bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
     void Setup2DMatrices();
 
     Rect TransformClipRect(const Rect& rect, const Matrix4& transformMatrix);
@@ -347,7 +346,8 @@ private:
     // Batching errors handling
     uint32 prevFrameErrorsFlags;
     uint32 currFrameErrorsFlags;
-    enum ErrorFlag {
+    enum ErrorFlag
+    {
         NO_ERRORS = 0,
         BUFFER_OVERFLOW_ERROR = 1,
     };
@@ -370,5 +370,4 @@ inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCo
 
 } // ns
 
-#endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */
-
+#endif /* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */

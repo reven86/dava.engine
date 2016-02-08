@@ -40,8 +40,6 @@
 
 namespace DAVA
 {
-    
-    
 void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
 {
     DVASSERT(format == FORMAT_RGBA8888);
@@ -53,21 +51,23 @@ void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
     CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
     CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
     CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-    
+
     CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, data, width * height * bytesPerPixel, NULL);
-    
+
     CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpaceRef, bitmapInfo, provider, NULL, NO, renderingIntent);
 
     UIImage* image = [UIImage imageWithCGImage:imageRef];
-    
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
 
-    if(callback != 0)
+    ALAssetsLibrary* library = [[ALAssetsLibrary alloc] init];
+
+    if (callback != 0)
     {
-        [library writeImageToSavedPhotosAlbum:[image CGImage] orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
-         {
-             callback->SaveToSystemPhotosFinished();
-        }];
+        [library writeImageToSavedPhotosAlbum:[image CGImage]
+                                  orientation:(ALAssetOrientation)[image imageOrientation]
+                              completionBlock:^(NSURL* assetURL, NSError* error)
+                                              {
+                                                callback->SaveToSystemPhotosFinished();
+                                              }];
     }
     else
     {
@@ -77,7 +77,7 @@ void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
     [library release];
 }
 
-void *Image::GetUIImage()
+void* Image::GetUIImage()
 {
     size_t bitsPerComponent = 8;
     size_t bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
@@ -96,8 +96,6 @@ void *Image::GetUIImage()
 
     return image;
 }
-  
 }
 
 #endif //__DAVAENGINE_IPHONE_
-

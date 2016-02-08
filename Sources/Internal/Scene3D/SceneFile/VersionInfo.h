@@ -36,7 +36,6 @@
 #include "Base/Singleton.h"
 #include "FileSystem/FilePath.h"
 
-
 //#define USER_VERSIONING_DEBUG_FEATURES
 
 namespace DAVA
@@ -55,7 +54,7 @@ static const int32 ALPHATEST_VALUE_FLAG_SCENE_VERSION = 17;
 static const int32 RHI_SCENE_VERSION = 18;
 
 class VersionInfo
-    : public Singleton<VersionInfo>
+: public Singleton<VersionInfo>
 {
 public:
     using TagsMap = Map<String, uint32>;
@@ -65,8 +64,13 @@ public:
         TagsMap tags;
 
         SceneVersion()
-            : version(0){}
-        bool IsValid() const{ return version > 0; }
+            : version(0)
+        {
+        }
+        bool IsValid() const
+        {
+            return version > 0;
+        }
     };
     using VersionMap = Map<uint32, SceneVersion>;
 
@@ -105,7 +109,6 @@ private:
     static TagsMap GetTagsDiff(const TagsMap& from, const TagsMap& what);
     static String FormatTagsString(const TagsMap& tags);
 };
-
 };
 
 #endif

@@ -44,7 +44,6 @@
 #include "DropperShade.h"
 #include "Platform/DpiHelper.h"
 
-
 EyeDropper::EyeDropper(QWidget* parent)
     : QObject(parent)
     , parentWidget(parent)
@@ -62,9 +61,9 @@ void EyeDropper::Exec()
 
 void EyeDropper::OnDone()
 {
-    for ( int i = 0; i < shades.size(); i++ )
+    for (int i = 0; i < shades.size(); i++)
     {
-        DropperShade *shade = shades[i];
+        DropperShade* shade = shades[i];
         if (shade)
         {
             shades[i]->deleteLater();
@@ -89,36 +88,34 @@ void EyeDropper::InitShades()
     shades.resize(n);
     for (int i = 0; i < n; i++)
     {
-        QScreen *screen = QApplication::screens()[i];
+        QScreen* screen = QApplication::screens()[i];
         const double scale = screen->devicePixelRatio();
         QRect rc = screens[i].rc;
 
         QPixmap pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         pix.setDevicePixelRatio(scale);
         const QImage img = pix.toImage();
-        
-        DropperShade *shade = new DropperShade( img, screens[i].rc );
+
+        DropperShade* shade = new DropperShade(img, screens[i].rc);
         shades[i] = shade;
         shade->show();
 
-        connect( shade, SIGNAL( canceled() ), SIGNAL( canceled() ) );
-        connect( shade, SIGNAL( picked(const QColor&) ), SIGNAL( picked(const QColor&) ) );
-        connect( shade, SIGNAL( moved(const QColor&) ), SIGNAL( moved(const QColor&) ) );
+        connect(shade, SIGNAL(canceled()), SIGNAL(canceled()));
+        connect(shade, SIGNAL(picked(const QColor&)), SIGNAL(picked(const QColor&)));
+        connect(shade, SIGNAL(moved(const QColor&)), SIGNAL(moved(const QColor&)));
 
-        connect( shade, SIGNAL( canceled() ), SLOT( OnDone() ) );
-        connect( shade, SIGNAL( picked(const QColor&) ), SLOT( OnDone() ) );
+        connect(shade, SIGNAL(canceled()), SLOT(OnDone()));
+        connect(shade, SIGNAL(picked(const QColor&)), SLOT(OnDone()));
     }
 
-    for (int i = 0; i < shades.size(); i++ )
+    for (int i = 0; i < shades.size(); i++)
     {
         for (int j = 0; j < shades.size(); j++)
         {
             if (i != j)
             {
-                connect(shades[i], SIGNAL( zoonFactorChanged(int) ), shades[j], SLOT( SetZoomFactor(int) ));
+                connect(shades[i], SIGNAL(zoonFactorChanged(int)), shades[j], SLOT(SetZoomFactor(int)));
             }
         }
     }
-
 }
-

@@ -35,57 +35,52 @@
 
 namespace DAVA
 {
-    
 class Image;
-class Heightmap: public BaseObject
+class Heightmap : public BaseObject
 {
 protected:
-	virtual ~Heightmap();
-public:
+    virtual ~Heightmap();
 
+public:
     static const int32 MAX_VALUE = 65535;
     static const int32 IMAGE_CORRECTION = MAX_VALUE / 255;
-    
+
     Heightmap();
-    
-    bool BuildFromImage( const Image *image);
-    void SaveToImage(const FilePath & filename);
-    
-    virtual void Save(const FilePath &filePathname);
-    virtual bool Load(const FilePath &filePathname);
+
+    bool BuildFromImage(const Image* image);
+    void SaveToImage(const FilePath& filename);
+
+    virtual void Save(const FilePath& filePathname);
+    virtual bool Load(const FilePath& filePathname);
 
     void ReleaseData();
-    
-    uint16 * Data();
+
+    uint16* Data();
     int32 Size() const;
-    
+
     int32 GetTileSize() const;
     void SetTileSize(int32 newSize);
-    
+
     static const String FileExtension();
 
-    Heightmap *Clone(Heightmap *clonedHeightmap);
+    Heightmap* Clone(Heightmap* clonedHeightmap);
 
 protected:
-    
-    Heightmap *CreateHeightmapForSize(int32 newSize);
-    
+    Heightmap* CreateHeightmapForSize(int32 newSize);
+
     bool AllocateData(int32 newSize);
-    
+
 protected:
-    
-	uint16 *data;
+    uint16* data;
     int32 size;
     int32 tileSize;
-    
-public:
-    
-    INTROSPECTION_EXTEND(Heightmap, BaseObject,
-        MEMBER(size, "Size", I_VIEW)
-        MEMBER(tileSize, "Tile Size", I_VIEW)
-    );
-};
 
+public:
+    INTROSPECTION_EXTEND(Heightmap, BaseObject,
+                         MEMBER(size, "Size", I_VIEW)
+                         MEMBER(tileSize, "Tile Size", I_VIEW)
+                         );
+};
 };
 
 #endif //__DAVAENGINE_HEIGHT_MAP_H__

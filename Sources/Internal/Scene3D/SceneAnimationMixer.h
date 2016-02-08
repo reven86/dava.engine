@@ -35,32 +35,28 @@
 #include "Scene3D/SceneNodeAnimationList.h"
 #include "Base/EventDispatcher.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class SceneAnimationMixer : public BaseObject
 {
 protected:
-	~SceneAnimationMixer();
-public:
-	SceneAnimationMixer(Scene * scene);
-	
-	// void SetTimeMultiplier(float32 timeMult);
-	
-	void CycleAnimation(SceneNodeAnimationList * cycle);
-	void RemoveAllCycleAnimations();
-	
-	void Update(float32 time);
-	
-private:
-	
-	
-	
-	Scene * scene;
-	std::list<SceneNodeAnimationList*> cycledAnimations;
-	std::list<SceneNodeAnimationList*> normalAnimations;
-};
+    ~SceneAnimationMixer();
 
+public:
+    SceneAnimationMixer(Scene* scene);
+
+    // void SetTimeMultiplier(float32 timeMult);
+
+    void CycleAnimation(SceneNodeAnimationList* cycle);
+    void RemoveAllCycleAnimations();
+
+    void Update(float32 time);
+
+private:
+    Scene* scene;
+    std::list<SceneNodeAnimationList*> cycledAnimations;
+    std::list<SceneNodeAnimationList*> normalAnimations;
+};
 };
 
 

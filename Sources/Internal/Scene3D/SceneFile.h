@@ -58,66 +58,68 @@ class SkeletonNode;
 class SceneFile : public BaseObject
 {
 protected:
-	~SceneFile(){}
+    ~SceneFile()
+    {
+    }
+
 public:
-	SceneFile();
-	
-	bool LoadScene(const FilePath & filename, Scene * _scene, bool relToBundle = true);
-	bool SaveScene(const FilePath & filename);
-	
-	bool ReadTexture();
-	bool ReadMaterial();
-	bool ReadStaticMesh();
-	bool ReadAnimatedMesh();
-	bool ReadSceneNode(Entity * parentNode, int level);
-	
-	bool ReadCamera();
-	bool ReadAnimation();
-	bool ReadLight();
+    SceneFile();
 
-	bool ReadSceneGraph();
-	
-	void SetDebugLog(bool debugLogEnabled);
-	
-	File *		sceneFP;
-	Scene *		scene;
-	SkeletonNode * currentSkeletonNode;
-	bool		debugLogEnabled;
+    bool LoadScene(const FilePath& filename, Scene* _scene, bool relToBundle = true);
+    bool SaveScene(const FilePath& filename);
 
+    bool ReadTexture();
+    bool ReadMaterial();
+    bool ReadStaticMesh();
+    bool ReadAnimatedMesh();
+    bool ReadSceneNode(Entity* parentNode, int level);
 
-	struct Header
-	{
-		Header();
+    bool ReadCamera();
+    bool ReadAnimation();
+    bool ReadLight();
 
-		char8	descriptor[4];			// DVSC
-		uint32	version;				
-		uint32	materialCount;
-		uint32	lightCount;
-		uint32	cameraCount;
+    bool ReadSceneGraph();
 
-		uint32	staticMeshCount;
-		uint32	animatedMeshCount;
+    void SetDebugLog(bool debugLogEnabled);
 
-		uint32	nodeAnimationsCount;
-	};
-    
-    Header  header;
+    File* sceneFP;
+    Scene* scene;
+    SkeletonNode* currentSkeletonNode;
+    bool debugLogEnabled;
 
-	class ObjectDef
-	{
-	public:
-		char8	name[512];		// for convinient search
-	};
+    struct Header
+    {
+        Header();
 
-	class TextureDef : public ObjectDef
-	{
-	public:
-		uint8   hasOpacity;
-	};
+        char8 descriptor[4]; // DVSC
+        uint32 version;
+        uint32 materialCount;
+        uint32 lightCount;
+        uint32 cameraCount;
 
-	class MaterialDef : public ObjectDef
-	{
-	public:
+        uint32 staticMeshCount;
+        uint32 animatedMeshCount;
+
+        uint32 nodeAnimationsCount;
+    };
+
+    Header header;
+
+    class ObjectDef
+    {
+    public:
+        char8 name[512]; // for convinient search
+    };
+
+    class TextureDef : public ObjectDef
+    {
+    public:
+        uint8 hasOpacity;
+    };
+
+    class MaterialDef : public ObjectDef
+    {
+    public:
         MaterialDef()
         {
             diffuseTexture[0] = 0;
@@ -126,109 +128,108 @@ public:
             specularTexture[0] = 0;
             normalMapTexture[0] = 0;
         }
-        
-		Vector4 ambient;
-		Vector4 diffuse;
-		Vector4 specular;
-		Vector4 emission;
-		float32	shininess;
 
-		Vector4 reflective;
-		float32	reflectivity;
+        Vector4 ambient;
+        Vector4 diffuse;
+        Vector4 specular;
+        Vector4 emission;
+        float32 shininess;
 
-		Vector4 transparent;
-		float32	transparency; 
-		float32	indexOfRefraction;
+        Vector4 reflective;
+        float32 reflectivity;
 
-		char8	diffuseTexture[512];
-        char8   lightmapTexture[512];       // decal texture as well
-		char8	reflectiveTexture[512];
-        char8   specularTexture[512];
-        char8   normalMapTexture[512];
-        
-        uint8   hasOpacity;                 // means material has opacity and have to be sorted from back to front
-	};
+        Vector4 transparent;
+        float32 transparency;
+        float32 indexOfRefraction;
 
-	struct LightDef : ObjectDef
-	{	
-	public:
-		enum eLightType
-		{
-			AMBIENT,
-			SPOT,
-			DIRECTIONAL,
-			POINT
-		};
-		
-		eLightType type;
-		
-		/// position or direction (directional lights have w = 0)
-		Vector4 position;
-		Vector4 ambient;
-		Vector4 diffuse;
-		Vector4 specular;
-		Vector4 spotDirection;
-	
-		float32 constanAttenuation;
-		float32 linearAttenuation;
-		float32 quadraticAttenuation;
-		float32 spotCutOff;
-		float32 spotExponent;
-	};
-	
-	struct CameraDef : ObjectDef
-	{	
-	public:
-		float32 znear;
-		float32 zfar;
-		float32 fovy;
-		bool ortho;
-		
-		CameraDef()
-		{
-			znear = 1.0f;
-			zfar = 2500.f;
-			fovy = 35.f;
-			ortho = false;
-		}
-	};
-	
-	struct SceneNodeDef
-	{
-		enum
-		{
-			SCENE_NODE_BASE = 0,		// base node without additional data
-			SCENE_NODE_MESH,			// node with mesh instance
-			SCENE_NODE_ANIMATED_MESH,	// node with animated mesh
-			SCENE_NODE_CAMERA,			// node with camera
-			SCENE_NODE_SKELETON,		// root skeleton node
-			SCENE_NODE_BONE,			// other skeleton bones
-		};
-		
-		int32	parentId;				// id of parent node
-		int32	childCount;				// number of childs
-		Matrix4 localTransform;			// local transform matrix
-		int32	nodeType;				// type of node
-		int32	customDataSize;			// custom data size
-	};
-	
-	struct PolygonGroupInstanceDef
-	{
-		int32 materialId;	
-		int32 polygonId;
-	};
+        char8 diffuseTexture[512];
+        char8 lightmapTexture[512]; // decal texture as well
+        char8 reflectiveTexture[512];
+        char8 specularTexture[512];
+        char8 normalMapTexture[512];
+
+        uint8 hasOpacity; // means material has opacity and have to be sorted from back to front
+    };
+
+    struct LightDef : ObjectDef
+    {
+    public:
+        enum eLightType
+        {
+            AMBIENT,
+            SPOT,
+            DIRECTIONAL,
+            POINT
+        };
+
+        eLightType type;
+
+        /// position or direction (directional lights have w = 0)
+        Vector4 position;
+        Vector4 ambient;
+        Vector4 diffuse;
+        Vector4 specular;
+        Vector4 spotDirection;
+
+        float32 constanAttenuation;
+        float32 linearAttenuation;
+        float32 quadraticAttenuation;
+        float32 spotCutOff;
+        float32 spotExponent;
+    };
+
+    struct CameraDef : ObjectDef
+    {
+    public:
+        float32 znear;
+        float32 zfar;
+        float32 fovy;
+        bool ortho;
+
+        CameraDef()
+        {
+            znear = 1.0f;
+            zfar = 2500.f;
+            fovy = 35.f;
+            ortho = false;
+        }
+    };
+
+    struct SceneNodeDef
+    {
+        enum
+        {
+            SCENE_NODE_BASE = 0, // base node without additional data
+            SCENE_NODE_MESH, // node with mesh instance
+            SCENE_NODE_ANIMATED_MESH, // node with animated mesh
+            SCENE_NODE_CAMERA, // node with camera
+            SCENE_NODE_SKELETON, // root skeleton node
+            SCENE_NODE_BONE, // other skeleton bones
+        };
+
+        int32 parentId; // id of parent node
+        int32 childCount; // number of childs
+        Matrix4 localTransform; // local transform matrix
+        int32 nodeType; // type of node
+        int32 customDataSize; // custom data size
+    };
+
+    struct PolygonGroupInstanceDef
+    {
+        int32 materialId;
+        int32 polygonId;
+    };
 
 private:
-    
-    void ProcessLOD(Entity *forRootNode);
-	String scenePath;
+    void ProcessLOD(Entity* forRootNode);
+    String scenePath;
     FilePath rootNodePath;
-    Entity *rootNode;
-    
+    Entity* rootNode;
+
     //int32 textureIndexOffset;
-	//int32 staticMeshIndexOffset;
-	int32 animatedMeshIndexOffset;
-	int32 cameraIndexOffset;
+    //int32 staticMeshIndexOffset;
+    int32 animatedMeshIndexOffset;
+    int32 cameraIndexOffset;
 
     Vector<NMaterial*> materials;
     Vector<StaticMesh*> staticMeshes;
@@ -236,11 +237,6 @@ private:
     Vector<SceneNodeAnimationList*> animations;
 };
 
-
 }; // namespace DAVA
 
 #endif // __DAVAENGINE_SCENEFORMAT_H__
-
-
-
-

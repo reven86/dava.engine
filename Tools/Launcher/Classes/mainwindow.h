@@ -42,16 +42,17 @@
 class ListModel;
 class QSortFilterProxyModel;
 
-namespace Ui {
+namespace Ui
+{
 class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    
+
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget* parent = 0);
     ~MainWindow();
 
 public slots:
@@ -64,41 +65,41 @@ public slots:
     void OnInstall(int rowNumber);
     void OnRemove(int rowNumber);
 
-    void OnCellClicked(const QPoint & pos);
+    void OnCellClicked(const QPoint& pos);
     void OnCellDoubleClicked(QModelIndex index);
 
     void OnlinkClicked(QUrl url);
-    
-    void NewsDownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
+
+    void NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 private:
     void ShowWebpage();
-    void ShowTable(const QString & branchID);
-    void ShowUpdateDialog(QQueue<UpdateTask> & tasks);
+    void ShowTable(const QString& branchID);
+    void ShowUpdateDialog(QQueue<UpdateTask>& tasks);
 
     void UpdateURLValue();
 
     void RefreshBranchesList();
     void UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState state);
 
-    void GetTableApplicationIDs(int rowNumber, QString & appID, QString & installedVersionID, QString & avalibleVersionID);
+    void GetTableApplicationIDs(int rowNumber, QString& appID, QString& installedVersionID, QString& avalibleVersionID);
 
-    QWidget * CreateAppNameTableItem(const QString & stringID);
-    QWidget * CreateAppInstalledTableItem(const QString & stringID);
-    QWidget * CreateAppAvalibleTableItem(Application * app);
+    QWidget* CreateAppNameTableItem(const QString& stringID);
+    QWidget* CreateAppInstalledTableItem(const QString& stringID);
+    QWidget* CreateAppAvalibleTableItem(Application* app);
 
-    Ui::MainWindow *ui;
-    ApplicationManager * appManager;
+    Ui::MainWindow* ui;
+    ApplicationManager* appManager;
 
-    QNetworkAccessManager * networkManager;
-    FileDownloader * newsDownloader;
-    
+    QNetworkAccessManager* networkManager;
+    FileDownloader* newsDownloader;
+
     QPersistentModelIndex selectedListItem;
     QString selectedBranchID;
 
     QFont tableFont;
-    ListModel *listModel;
-    QSortFilterProxyModel *filterModel;
+    ListModel* listModel;
+    QSortFilterProxyModel* filterModel;
 };
 
 #endif // MAINWINDOW_H

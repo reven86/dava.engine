@@ -44,20 +44,22 @@ QT_USE_NAMESPACE
 class RunnerEngine
 {
 public:
-    virtual ~RunnerEngine() { }
+    virtual ~RunnerEngine()
+    {
+    }
     virtual bool install(bool removeFirst = false) = 0;
     virtual bool remove() = 0;
     virtual bool start() = 0;
-    virtual bool enableDebugging(const QString &debugger, const QString &debuggerArguments) = 0;
+    virtual bool enableDebugging(const QString& debugger, const QString& debuggerArguments) = 0;
     virtual bool disableDebugging() = 0;
     virtual bool suspend() = 0;
     virtual bool stop() = 0;
     virtual qint64 pid() const = 0;
     virtual int exitCode() const = 0;
     virtual QString executable() const = 0;
-    virtual QString devicePath(const QString &relativePath) const = 0;
-    virtual bool sendFile(const QString &localFile, const QString &deviceFile) = 0;
-    virtual bool receiveFile(const QString &deviceFile, const QString &localFile) = 0;
+    virtual QString devicePath(const QString& relativePath) const = 0;
+    virtual bool sendFile(const QString& localFile, const QString& deviceFile) = 0;
+    virtual bool receiveFile(const QString& deviceFile, const QString& localFile) = 0;
 };
 
 #endif // RUNNERENGINE_H

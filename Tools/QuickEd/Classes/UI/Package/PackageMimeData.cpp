@@ -42,37 +42,37 @@ PackageMimeData::PackageMimeData()
 
 PackageMimeData::~PackageMimeData()
 {
-    for (ControlNode *control : controls)
+    for (ControlNode* control : controls)
         control->Release();
     controls.clear();
 
-    for (StyleSheetNode *style : styles)
+    for (StyleSheetNode* style : styles)
         style->Release();
-    
+
     styles.clear();
 }
 
-void PackageMimeData::AddControl(ControlNode *node)
+void PackageMimeData::AddControl(ControlNode* node)
 {
     controls.push_back(SafeRetain(node));
 }
 
-void PackageMimeData::AddStyle(StyleSheetNode *node)
+void PackageMimeData::AddStyle(StyleSheetNode* node)
 {
     styles.push_back(SafeRetain(node));
 }
 
-const Vector<ControlNode*> &PackageMimeData::GetControls() const
+const Vector<ControlNode*>& PackageMimeData::GetControls() const
 {
     return controls;
 }
 
-const Vector<StyleSheetNode*> &PackageMimeData::GetStyles() const
+const Vector<StyleSheetNode*>& PackageMimeData::GetStyles() const
 {
     return styles;
 }
 
-bool PackageMimeData::hasFormat(const QString &mimetype) const
+bool PackageMimeData::hasFormat(const QString& mimetype) const
 {
     if (mimetype == MIME_TYPE)
         return true;
@@ -87,10 +87,10 @@ QStringList PackageMimeData::formats() const
     return types;
 }
 
-QVariant PackageMimeData::retrieveData(const QString &mimetype, QVariant::Type preferredType) const
+QVariant PackageMimeData::retrieveData(const QString& mimetype, QVariant::Type preferredType) const
 {
     if (mimetype == MIME_TYPE)
         return QVariant(QVariant::UserType);
-    
+
     return QMimeData::retrieveData(mimetype, preferredType);
 }

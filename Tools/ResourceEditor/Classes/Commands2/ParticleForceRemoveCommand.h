@@ -37,15 +37,18 @@
 class ParticleForceRemoveCommand : public Command2
 {
 public:
-	ParticleForceRemoveCommand(DAVA::ParticleForce *force, DAVA::ParticleLayer* layer);
-	~ParticleForceRemoveCommand();
+    ParticleForceRemoveCommand(DAVA::ParticleForce* force, DAVA::ParticleLayer* layer);
+    ~ParticleForceRemoveCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const { return NULL; }
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const
+    {
+        return NULL;
+    }
 
-	DAVA::ParticleForce *force;
-	DAVA::ParticleLayer* layer;
+    DAVA::ParticleForce* force;
+    DAVA::ParticleLayer* layer;
 };
 
 #endif // __PARTICLE_FORCE_REMOVE_COMMAND_H__
