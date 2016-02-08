@@ -40,7 +40,6 @@ void FrameworkWillTerminate()
 {
 }
 
-
 void PrintError(DAVA::PatchFileReader::PatchError error)
 {
     switch (error)
