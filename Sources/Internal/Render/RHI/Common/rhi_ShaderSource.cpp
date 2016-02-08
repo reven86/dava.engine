@@ -1472,7 +1472,7 @@ void ShaderSourceCache::Save(const char* fileName)
         Logger::Info("saving cached-shaders (%u): ", Entry.size());
         for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
         {
-            Logger::FrameworkDebug("  uid= \"%s\"", e->uid.c_str());
+            //Logger::Info("  uid= \"%s\"", e->uid.c_str());
             WriteS0(file, e->uid.c_str());
             WriteUI4(file, e->srcHash);
             e->src->Save(file);
@@ -1509,7 +1509,7 @@ void ShaderSourceCache::Load(const char* fileName)
 
                 e->uid = FastName(str.c_str());
                 e->srcHash = ReadUI4(file);
-                Logger::FrameworkDebug("  uid= \"%s\"", e->uid.c_str());
+                //Logger::Info("  uid= \"%s\"", e->uid.c_str());
                 e->src = new ShaderSource();
 
                 e->src->Load(file);
