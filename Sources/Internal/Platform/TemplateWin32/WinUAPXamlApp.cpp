@@ -657,11 +657,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
         KeyboardDevice & keybDev = InputSystem::Instance()->GetKeyboard();
         if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
         {
-            ev.wheelDelta.x = delta;
+            ev.wheelDelta = {delta, 0};
         }
-        else
+        else 
         {
-            ev.wheelDelta.y = delta;
+            ev.wheelDelta = {0, delta};
         }
         
         ev.phase = UIEvent::Phase::WHEEL;
