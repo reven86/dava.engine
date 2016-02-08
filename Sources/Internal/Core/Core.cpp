@@ -210,7 +210,7 @@ void DisableFloatingPointExceptions()
 #endif
 }
 #endif 
-#endif // not __DAVAENGINE_DEBUG__
+#endif // not DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
 } // end namespace debug_details
 
 void Core::CreateSingletons()
