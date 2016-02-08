@@ -41,7 +41,6 @@ include ( FileTreeCheck        )
 include ( DavaTemplate         )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
-include ( DavaDynamicLib       )
 include ( UnityBuild           )
 
 

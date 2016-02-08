@@ -43,8 +43,6 @@ if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
-add_definitions ( -DNGT_INTEGRATION )
-
 if( DAVA_DISABLE_AUTOTESTS )
     add_definitions ( -DDISABLE_AUTOTESTS )
 endif()
