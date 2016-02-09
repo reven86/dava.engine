@@ -72,16 +72,16 @@ QVariant BranchDiffTreeModel::data(const QModelIndex& index, int role) const
                 if (branch->left)
                 {
                     return QString("alloc=%1, nblocks=%2")
-                        .arg(FormatNumberWithDigitGroups(branch->left->allocByApp).c_str())
-                        .arg(branch->left->nblocks);
+                    .arg(FormatNumberWithDigitGroups(branch->left->allocByApp).c_str())
+                    .arg(branch->left->nblocks);
                 }
                 break;
             case CLM_STAT2:
                 if (branch->right)
                 {
                     return QString("alloc=%1, nblocks=%2")
-                        .arg(FormatNumberWithDigitGroups(branch->right->allocByApp).c_str())
-                        .arg(branch->right->nblocks);
+                    .arg(FormatNumberWithDigitGroups(branch->right->allocByApp).c_str())
+                    .arg(branch->right->nblocks);
                 }
                 break;
             default:

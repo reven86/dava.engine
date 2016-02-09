@@ -33,8 +33,8 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
-                     LPSTR    lpCmdLine,
-                     int       nCmdShow)
+                     LPSTR lpCmdLine,
+                     int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -45,7 +45,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 [Platform::MTAThread]
-int main(Platform::Array<Platform::String^>^ args)
+int main(Platform::Array<Platform::String ^> ^ args)
 {
     return DAVA::Core::Run(0, 0, 0);
 }

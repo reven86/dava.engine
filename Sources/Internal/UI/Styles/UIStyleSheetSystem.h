@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class UIControl;
 class UIStyleSheet;
 struct UIStyleSheetSelector;
@@ -49,9 +48,9 @@ public:
     ~UIStyleSheetSystem();
 
     void ProcessControl(UIControl* control);
-    void AddGlobalClass(const FastName &clazz);
-    void RemoveGlobalClass(const FastName &clazz);
-    bool HasGlobalClass(const FastName &clazz) const;
+    void AddGlobalClass(const FastName& clazz);
+    void RemoveGlobalClass(const FastName& clazz);
+    bool HasGlobalClass(const FastName& clazz) const;
     void SetGlobalTaggedClass(const FastName& tag, const FastName& clazz);
     void ResetGlobalTaggedClass(const FastName& tag);
     void ClearGlobalClasses();
@@ -65,7 +64,6 @@ private:
 
     UIStyleSheetClassSet globalClasses;
 };
-
 };
 
 #endif

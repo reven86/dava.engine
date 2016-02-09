@@ -36,13 +36,11 @@
 
 namespace DAVA
 {
-
 class DeviceInfoPrivate;
 
 class DeviceInfo
 {
 public:
-
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
 
     struct ScreenInfo
@@ -133,7 +131,8 @@ public:
             , readOnly(false)
             , removable(false)
             , emulated(false)
-        {}
+        {
+        }
     };
 
     //human interface device(HID)
@@ -186,6 +185,5 @@ public:
 private:
     static DeviceInfoPrivate* GetPrivateImpl();
 };
-
 };
 #endif /* defined(__FRAMEWORK__DEVICEINFO__) */

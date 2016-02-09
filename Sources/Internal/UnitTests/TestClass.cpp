@@ -33,7 +33,6 @@ namespace DAVA
 {
 namespace UnitTests
 {
-
 String TestClass::PrettifyTypeName(const String& name) const
 {
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
@@ -65,5 +64,5 @@ String TestClass::RemoveTestPostfix(const String& name) const
     return name;
 }
 
-}   // namespace UnitTests
-}   // namespace DAVA
+} // namespace UnitTests
+} // namespace DAVA

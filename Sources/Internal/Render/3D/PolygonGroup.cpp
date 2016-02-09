@@ -32,7 +32,7 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFileV2.h"
 
-namespace DAVA 
+namespace DAVA
 {
 PolygonGroup::PolygonGroup()
     : DataNode()
@@ -76,7 +76,7 @@ PolygonGroup::~PolygonGroup()
     if (indexBuffer.IsValid())
         rhi::DeleteIndexBuffer(indexBuffer);
 }
-    
+
 void PolygonGroup::UpdateDataPointersAndStreams()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -218,8 +218,7 @@ void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _in
 
     UpdateDataPointersAndStreams();
 }
-    
-    
+
 void PolygonGroup::CreateBaseVertexArray()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -232,18 +231,18 @@ void PolygonGroup::CreateBaseVertexArray()
         GetCoord(v, baseVertexArray[v]);
     }
 }
-    
-void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
+
+void PolygonGroup::ApplyMatrix(const Matrix4& matrix)
 {
     aabbox = AABBox3(); // reset bbox
-    
+
     Matrix4 normalMatrix4;
     matrix.GetInverse(normalMatrix4);
     normalMatrix4.Transpose();
     Matrix3 normalMatrix3;
     normalMatrix3 = normalMatrix4;
-    
-    if(NULL != vertexArray)
+
+    if (NULL != vertexArray)
     {
         for (int32 vi = 0; vi < vertexCount; ++vi)
         {
@@ -251,8 +250,8 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
             GetCoord(vi, vertex);
             vertex = vertex * matrix;
             SetCoord(vi, vertex);
-        
-            if(NULL != normalArray)
+
+            if (NULL != normalArray)
             {
                 Vector3 normal;
                 GetNormal(vi, normal);
@@ -262,14 +261,14 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
         }
     }
 }
-	    
+
 void PolygonGroup::ReleaseData()
 {
     SafeDeleteArray(jointCountArray);
     SafeDeleteArray(meshData);
     SafeDeleteArray(indexArray);
     SafeDeleteArray(textureCoordArray);
-	SafeDeleteArray(cubeTextureCoordArray);
+    SafeDeleteArray(cubeTextureCoordArray);
 }
 
 uint32 PolygonGroup::ReleaseGeometryData()
@@ -291,7 +290,7 @@ uint32 PolygonGroup::ReleaseGeometryData()
         jointWeightArray = nullptr;
         cubeTextureCoordArray = nullptr;
         jointCountArray = nullptr;
-	
+
         pivotArray = nullptr;
         flexArray = nullptr;
         angleArray = nullptr;
@@ -350,17 +349,15 @@ void PolygonGroup::RestoreBuffers()
     }
 }
 
-
-    
-void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
+void PolygonGroup::Save(KeyedArchive* keyedArchive, SerializationContext* serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DataNode::Save(keyedArchive, serializationContext);
-    
+
     keyedArchive->SetInt32("vertexFormat", vertexFormat);
-    keyedArchive->SetInt32("vertexCount", vertexCount); 
-    keyedArchive->SetInt32("indexCount", indexCount); 
+    keyedArchive->SetInt32("vertexCount", vertexCount);
+    keyedArchive->SetInt32("indexCount", indexCount);
     keyedArchive->SetInt32("textureCoordCount", textureCoordCount);
     keyedArchive->SetInt32("rhi_primitiveType", primitiveType);
 
@@ -368,16 +365,14 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
     keyedArchive->SetInt32("indexFormat", indexFormat);
     keyedArchive->SetByteArray("indices", (uint8*)indexArray, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
-	keyedArchive->SetInt32("cubeTextureCoordCount", cubeTextureCoordCount);
+    keyedArchive->SetInt32("cubeTextureCoordCount", cubeTextureCoordCount);
 
-//    for (int32 k = 0; k < GetVertexCount(); ++k)
-//    {
-//        Vector3 normal;
-//        GetNormal(k, normal);
-//        Logger::FrameworkDebug("savenorm2: %f %f %f", normal.x, normal.y, normal.z);
-//    }
-    
-
+    //    for (int32 k = 0; k < GetVertexCount(); ++k)
+    //    {
+    //        Vector3 normal;
+    //        GetNormal(k, normal);
+    //        Logger::FrameworkDebug("savenorm2: %f %f %f", normal.x, normal.y, normal.z);
+    //    }
 }
 
 void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams)
@@ -391,7 +386,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
     primitiveType = (rhi::PrimitiveType)keyedArchive->GetInt32("rhi_primitiveType", rhi::PRIMITIVE_TRIANGLELIST);
     cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
-    
+
     int32 formatPacking = keyedArchive->GetInt32("packing");
     if (formatPacking == PACKING_NONE)
     {
@@ -402,7 +397,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
             return;
         }
 
-        const uint8 * archiveData = keyedArchive->GetByteArray("vertices");
+        const uint8* archiveData = keyedArchive->GetByteArray("vertices");
 
         int32 resFormat = cutUnusedStreams ? requiredFlags : (vertexFormat | requiredFlags);
         DVASSERT(resFormat);
@@ -413,8 +408,8 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
             int32 newVertexStride = GetVertexSize(resFormat);
             SafeDeleteArray(meshData);
             meshData = new uint8[vertexCount * newVertexStride];
-            uint8 *dst = meshData;
-            const uint8 *src = &archiveData[0];
+            uint8* dst = meshData;
+            const uint8* src = &archiveData[0];
             for (int32 i = 0; i < vertexCount; ++i)
             {
                 for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
@@ -432,22 +427,21 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
             meshData = new uint8[vertexCount * vertexStride];
             Memcpy(meshData, archiveData, size); //all streams in data required - just copy
         }
-        
     }
-    
+
     indexFormat = keyedArchive->GetInt32("indexFormat");
     if (indexFormat == EIF_16)
     {
         int size = keyedArchive->GetByteArraySize("indices");
         if (size != indexCount * INDEX_FORMAT_SIZE[indexFormat])
         {
-            Logger::Error("PolygonGroup::Load - Something is going wrong, size of index array is incorrect");   
+            Logger::Error("PolygonGroup::Load - Something is going wrong, size of index array is incorrect");
             return;
         }
         SafeDeleteArray(indexArray);
         indexArray = new int16[indexCount];
-        const uint8 * archiveData = keyedArchive->GetByteArray("indices");
-        memcpy(indexArray, archiveData, indexCount * INDEX_FORMAT_SIZE[indexFormat]);         
+        const uint8* archiveData = keyedArchive->GetByteArray("indices");
+        memcpy(indexArray, archiveData, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
     }
 
     SafeDeleteArray(textureCoordArray);
@@ -458,7 +452,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
 
     BuildBuffers();
 }
-    
+
 void PolygonGroup::RecalcAABBox()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -493,52 +487,52 @@ void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 
     }
 }
 
-bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const
+bool PolygonGroup::IsFloatDataEqual(const float32** meshData, const float32** optData, uint32 vertexFormat, uint32 format) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	if (vertexFormat & format)
-	{
-		uint32 size = GetVertexSize(format);
-		uint32 count = size / sizeof(float32);
-		for (uint32 i = 0; i < count; ++i)
-		{
-			float32 x1 = **meshData;
-			*meshData += sizeof(float32);
-			float32 x2 = **optData;
-			*optData += sizeof(float32);
-			if (!FLOAT_EQUAL_EPS(x1, x2, 0.00001f))
-				return false;
-		}
-	}
-	return true;
+    if (vertexFormat & format)
+    {
+        uint32 size = GetVertexSize(format);
+        uint32 count = size / sizeof(float32);
+        for (uint32 i = 0; i < count; ++i)
+        {
+            float32 x1 = **meshData;
+            *meshData += sizeof(float32);
+            float32 x2 = **optData;
+            *optData += sizeof(float32);
+            if (!FLOAT_EQUAL_EPS(x1, x2, 0.00001f))
+                return false;
+        }
+    }
+    return true;
 }
 
-int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
+int32 PolygonGroup::OptimazeVertexes(const uint8* meshData, Vector<uint8>& optMeshData, uint32 vertexFormat) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     uint32 optimizedVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(vertexFormat));
 
-	for (uint32 i = 0; i < optimizedVertexCount; ++i)
-	{
-		const float32 * optData = (float32*)(&optMeshData[i * GetVertexSize(vertexFormat)]);
-		const float32 * tmpMeshData = (float32*) meshData;
-		
-		bool skip = false;
-		for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
-		{
-			if (!IsFloatDataEqual(&tmpMeshData, &optData, vertexFormat, mask))
-			{
-				skip = true;
-				break;
-			}
-		}
-		if (skip)
-			continue;
+    for (uint32 i = 0; i < optimizedVertexCount; ++i)
+    {
+        const float32* optData = (float32*)(&optMeshData[i * GetVertexSize(vertexFormat)]);
+        const float32* tmpMeshData = (float32*)meshData;
 
-		return i;
-	}
+        bool skip = false;
+        for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+        {
+            if (!IsFloatDataEqual(&tmpMeshData, &optData, vertexFormat, mask))
+            {
+                skip = true;
+                break;
+            }
+        }
+        if (skip)
+            continue;
+
+        return i;
+    }
 
     optMeshData.resize(GetVertexSize(vertexFormat) * (optimizedVertexCount + 1));
 
@@ -552,43 +546,42 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     int32 newVertexStride = GetVertexSize(newVertexFormat);
-    uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
+    uint8* newMeshData = new uint8[newVertexStride * vertexCount];
     memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
 
-	const uint8 * tmpMesh = meshData;
-	uint8 * tmpNewMesh = newMeshData;
-	for (int32 i = 0; i < vertexCount; ++i)
-	{
-		for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
-		{
-			CopyData(&tmpMesh, &tmpNewMesh, vertexFormat, newVertexFormat, mask);
-		}
-	}
-	
-	Vector<uint8> optMeshData;
-	tmpNewMesh = newMeshData;
-	for (int32 i = 0; i < vertexCount; ++i)
-	{
-		int16 newIndex = OptimazeVertexes(tmpNewMesh, optMeshData, newVertexFormat);
-		tmpNewMesh += GetVertexSize(newVertexFormat);
-		
-		for (int32 i1 = 0; i1 < indexCount; ++i1)
-		{
-			if (indexArray[i1] == i)
-				indexArray[i1] = newIndex;
-		}
-	}
+    const uint8* tmpMesh = meshData;
+    uint8* tmpNewMesh = newMeshData;
+    for (int32 i = 0; i < vertexCount; ++i)
+    {
+        for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+        {
+            CopyData(&tmpMesh, &tmpNewMesh, vertexFormat, newVertexFormat, mask);
+        }
+    }
 
-	uint32 newVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(newVertexFormat));
-	
-	SAFE_DELETE_ARRAY(meshData);
-	SAFE_DELETE_ARRAY(newMeshData);
-	vertexCount = newVertexCount;
-	vertexStride = newVertexStride;
-	vertexFormat = newVertexFormat;
+    Vector<uint8> optMeshData;
+    tmpNewMesh = newMeshData;
+    for (int32 i = 0; i < vertexCount; ++i)
+    {
+        int16 newIndex = OptimazeVertexes(tmpNewMesh, optMeshData, newVertexFormat);
+        tmpNewMesh += GetVertexSize(newVertexFormat);
+
+        for (int32 i1 = 0; i1 < indexCount; ++i1)
+        {
+            if (indexArray[i1] == i)
+                indexArray[i1] = newIndex;
+        }
+    }
+
+    uint32 newVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(newVertexFormat));
+
+    SAFE_DELETE_ARRAY(meshData);
+    SAFE_DELETE_ARRAY(newMeshData);
+    vertexCount = newVertexCount;
+    vertexStride = newVertexStride;
+    vertexFormat = newVertexFormat;
 
     meshData = new uint8[vertexStride * vertexCount];
     memcpy(meshData, &optMeshData[0], vertexStride * vertexCount);
 };
-
 };

@@ -38,28 +38,28 @@ using namespace DAVA;
 
 class LandscapeProxy;
 
-class LandscapeSetHeightMapCommand: public Command2
+class LandscapeSetHeightMapCommand : public Command2
 {
 public:
-	LandscapeSetHeightMapCommand( Entity* landscapeEntity,
-								 const FilePath& texturePath,
-								 const AABBox3& newLandscapeBox);
-	~LandscapeSetHeightMapCommand();
-	
-	virtual void Undo();
-	virtual void Redo();
-	DAVA::Entity* GetEntity() const
-	{
-		return landscapeEntity;
-	}
+    LandscapeSetHeightMapCommand(Entity* landscapeEntity,
+                                 const FilePath& texturePath,
+                                 const AABBox3& newLandscapeBox);
+    ~LandscapeSetHeightMapCommand();
+
+    virtual void Undo();
+    virtual void Redo();
+    DAVA::Entity* GetEntity() const
+    {
+        return landscapeEntity;
+    }
 
 protected:
-	FilePath	originalHeightMapPath;
-	FilePath	newHeightMapPath;
-	Entity*		landscapeEntity;
-	Landscape*	landscape;
-	AABBox3		originalLandscapeBox;
-	AABBox3		newLandscapeBox;
+    FilePath originalHeightMapPath;
+    FilePath newHeightMapPath;
+    Entity* landscapeEntity;
+    Landscape* landscape;
+    AABBox3 originalLandscapeBox;
+    AABBox3 newLandscapeBox;
 };
 
 

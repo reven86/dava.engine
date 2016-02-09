@@ -28,4 +28,3 @@
 #ifdef WIN32
 #include <iostream>
 #endif
-

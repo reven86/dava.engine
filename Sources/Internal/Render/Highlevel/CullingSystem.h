@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_RENDER_CULLINGSYSTEM_H__
-#define	__DAVAENGINE_RENDER_CULLINGSYSTEM_H__
+#define __DAVAENGINE_RENDER_CULLINGSYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
@@ -46,23 +46,22 @@ class Camera;
 class CullingSystem : public SceneSystem
 {
 public:
-    CullingSystem(Scene * scene);
+    CullingSystem(Scene* scene);
     virtual ~CullingSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    virtual void ImmediateUpdate(Entity * entity);
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+    virtual void ImmediateUpdate(Entity* entity);
 
     virtual void Process(float32 timeElapsed);
-    
-    void SetCamera(Camera * camera);
-    
+
+    void SetCamera(Camera* camera);
+
 private:
     Vector<RenderObject*> renderObjectArray;
-    Camera * camera;
+    Camera* camera;
 };
-    
+
 } // ns
 
-#endif	/* __DAVAENGINE_RENDER_CULLINGSYSTEM_H__ */
-
+#endif /* __DAVAENGINE_RENDER_CULLINGSYSTEM_H__ */

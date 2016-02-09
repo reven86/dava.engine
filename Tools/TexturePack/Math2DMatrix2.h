@@ -37,120 +37,115 @@ namespace Log
 {
 namespace Math
 {
-
-//!	Matrix2 
+//!	Matrix2
 struct Matrix2
 {
-	union
-	{
-		float32 data[4];
-		struct {
-			float32 _00, _01;
+    union
+    {
+        float32 data[4];
+        struct
+        {
+            float32 _00, _01;
             float32 _10, _11;
-		};
-	};
-	
-	inline Matrix2() {};
-	inline Matrix2(float32 m00, float32 m01, float32 m10, float32 m11);
-	inline Matrix2(const Matrix2 & m);
+        };
+    };
 
-	
-	inline float32 Det() const;
-	
-	// Helpers
-	inline void SetIdentity();
-	void	BuildRotation(float32 Angle);
+    inline Matrix2(){};
+    inline Matrix2(float32 m00, float32 m01, float32 m10, float32 m11);
+    inline Matrix2(const Matrix2& m);
 
-	inline Matrix2& operator *= (const Matrix2 & arg);
-	inline Matrix2 operator *	(const Matrix2 & arg) const;
+    inline float32 Det() const;
 
-	inline Matrix2& operator -= (const Matrix2 & arg);
-	inline Matrix2 operator -	(const Matrix2 & arg) const;
+    // Helpers
+    inline void SetIdentity();
+    void BuildRotation(float32 Angle);
 
-	inline Matrix2& operator += (const Matrix2 & arg);
-	inline Matrix2 operator +	(const Matrix2 & arg) const;
+    inline Matrix2& operator*=(const Matrix2& arg);
+    inline Matrix2 operator*(const Matrix2& arg) const;
+
+    inline Matrix2& operator-=(const Matrix2& arg);
+    inline Matrix2 operator-(const Matrix2& arg) const;
+
+    inline Matrix2& operator+=(const Matrix2& arg);
+    inline Matrix2 operator+(const Matrix2& arg) const;
 };
-
-
-
-
 
 inline Matrix2::Matrix2(float32 m00, float32 m01, float32 m10, float32 m11)
 {
-	data[0] = m00;
-	data[1] = m01;
-	data[2] = m10;
-	data[3] = m11;
+    data[0] = m00;
+    data[1] = m01;
+    data[2] = m10;
+    data[3] = m11;
 };
 
-inline Matrix2::Matrix2(const Matrix2 & m)
+inline Matrix2::Matrix2(const Matrix2& m)
 {
-	*this = m;
+    *this = m;
 }
 
 inline float32 Matrix2::Det() const
 {
-	return data[0] * data[3] - data[1] * data[2];
+    return data[0] * data[3] - data[1] * data[2];
 }
 
 inline void Matrix2::SetIdentity()
 {
-	data[0] = 1; data[1] = 0;
-	data[2] = 0; data[3] = 1;
+    data[0] = 1;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 1;
 }
 
 inline void Matrix2::BuildRotation(float32 Angle)
 {
-	float32	CosA = cosf(Angle);
-	float32	SinA = sinf(Angle);
+    float32 CosA = cosf(Angle);
+    float32 SinA = sinf(Angle);
 
-	data[0] = CosA; data[1] = SinA;
-	data[2] = -SinA; data[3] = CosA;
+    data[0] = CosA;
+    data[1] = SinA;
+    data[2] = -SinA;
+    data[3] = CosA;
 }
 
-inline Matrix2 Matrix2::operator *(const Matrix2 & m) const
+inline Matrix2 Matrix2::operator*(const Matrix2& m) const
 {
-	return Matrix2( _00 * m._00 + _01 * m._10, 
-					_00 * m._01 + _01 * m._11, 
-					
-					_10 * m._00 + _11 * m._10, 
-					_10 * m._01 + _11 * m._11);
+    return Matrix2(_00 * m._00 + _01 * m._10,
+                   _00 * m._01 + _01 * m._11,
+
+                   _10 * m._00 + _11 * m._10,
+                   _10 * m._01 + _11 * m._11);
 }
 
-inline Matrix2& Matrix2::operator *= (const Matrix2 & m)
+inline Matrix2& Matrix2::operator*=(const Matrix2& m)
 {
-	return (*this = *this * m);
+    return (*this = *this * m);
 }
 
-inline Matrix2 Matrix2::operator +(const Matrix2 & m) const
+inline Matrix2 Matrix2::operator+(const Matrix2& m) const
 {
-	return Matrix2( _00 + m._00, _01 + m._01, 
-						  _10 + m._10, _11 + m._11);
+    return Matrix2(_00 + m._00, _01 + m._01,
+                   _10 + m._10, _11 + m._11);
 }
 
-inline Matrix2& Matrix2::operator += (const Matrix2 & m)
+inline Matrix2& Matrix2::operator+=(const Matrix2& m)
 {
-	return (*this = *this + m);
+    return (*this = *this + m);
 }
 
-inline Matrix2 Matrix2::operator -(const Matrix2 & m) const
+inline Matrix2 Matrix2::operator-(const Matrix2& m) const
 {
-	return Matrix2( _00 - m._00, _01 - m._01, 
-						  _10 - m._10, _11 - m._11);
+    return Matrix2(_00 - m._00, _01 - m._01,
+                   _10 - m._10, _11 - m._11);
 }
 
-inline Matrix2& Matrix2::operator -= (const Matrix2 & m)
+inline Matrix2& Matrix2::operator-=(const Matrix2& m)
 {
-	return (*this = *this - m);
+    return (*this = *this - m);
 }
 
-
-
-
-};	// end of namespace	Math
-};	// end of namespace Log
+}; // end of namespace	Math
+}; // end of namespace Log
 
 
 
 #endif // __LOGENGINE_MATH2DMATRIX2_H__
-

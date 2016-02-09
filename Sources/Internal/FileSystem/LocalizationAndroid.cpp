@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 void LocalizationAndroid::SelectPreferedLocalization()
 {
     LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
@@ -43,9 +42,8 @@ void LocalizationAndroid::SelectPreferedLocalization()
 String LocalizationAndroid::GetDeviceLang(void)
 {
     JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
-    Function<jstring ()> getLocale  = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
+    Function<jstring()> getLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
 
     return JNI::ToString(getLocale());
 }
-
 };

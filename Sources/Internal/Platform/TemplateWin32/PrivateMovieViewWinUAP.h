@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 class CorePlatformWinUAP;
 class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieViewWinUAP>
 {
@@ -71,18 +70,18 @@ private:
     Windows::Storage::Streams::IRandomAccessStream ^ CreateStreamFromFilePath(const FilePath& path) const;
     void OpenMovieFromStream(Windows::Storage::Streams::IRandomAccessStream ^ stream, const OpenMovieParams& params);
 
-private:    // MediaElement event handlers
+private: // MediaElement event handlers
     void OnMediaOpened();
     void OnMediaEnded();
-    void OnMediaFailed(Windows::UI::Xaml::ExceptionRoutedEventArgs^ args);
+    void OnMediaFailed(Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args);
 
 private:
     CorePlatformWinUAP* core;
-    Windows::UI::Xaml::Controls::MediaElement^ nativeMovieView = nullptr;
+    Windows::UI::Xaml::Controls::MediaElement ^ nativeMovieView = nullptr;
     bool visible = true;
-    bool movieLoaded = false;   // Movie has been successfully loaded and decoded
-    bool playRequest = false;   // Movie should play after loading as Play() can be invoked earlier than movie has been loaded
-    bool moviePlaying = false;  // Movie is playing now
+    bool movieLoaded = false; // Movie has been successfully loaded and decoded
+    bool playRequest = false; // Movie should play after loading as Play() can be invoked earlier than movie has been loaded
+    bool moviePlaying = false; // Movie is playing now
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +95,7 @@ inline bool PrivateMovieViewWinUAP::IsPlaying()
     return moviePlaying || playRequest;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__

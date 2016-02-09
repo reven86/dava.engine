@@ -32,24 +32,22 @@
 
 namespace DAVA
 {
-
-void Observable::AddObserver(Observer * observer)
+void Observable::AddObserver(Observer* observer)
 {
-	observers.insert(observer);
+    observers.insert(observer);
 }
 
-void Observable::RemoveObserver(Observer * observer)
+void Observable::RemoveObserver(Observer* observer)
 {
-	observers.erase(observer);
+    observers.erase(observer);
 }
 
 void Observable::NotifyObservers()
 {
-	Set<Observer*>::iterator end = observers.end();
-	for(Set<Observer*>::iterator it = observers.begin(); it != end; ++it)
-	{
-		(*it)->HandleEvent(this);
-	}
+    Set<Observer*>::iterator end = observers.end();
+    for (Set<Observer*>::iterator it = observers.begin(); it != end; ++it)
+    {
+        (*it)->HandleEvent(this);
+    }
 }
-
 };

@@ -36,20 +36,17 @@
 
 namespace DAVA
 {
-
 class BaseObject;
 class BaseObjectChecker
 {
 public:
-	BaseObjectChecker(){};
-	virtual ~BaseObjectChecker() {};
-	
-	static void RegisterBaseObject(BaseObject * obj);
-	static void UnregisterBaseObject(BaseObject * obj);
-	static bool IsAvailable(BaseObject * obj);
+    BaseObjectChecker(){};
+    virtual ~BaseObjectChecker(){};
+
+    static void RegisterBaseObject(BaseObject* obj);
+    static void UnregisterBaseObject(BaseObject* obj);
+    static bool IsAvailable(BaseObject* obj);
     static void Dump();
 };
-	
 }; 
 #endif // __DAVAENGINE_BASE_OBJECT_CHECKER_H__
-

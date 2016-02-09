@@ -36,12 +36,11 @@ namespace DAVA
 {
 namespace Net
 {
-
-TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : TCPAcceptorTemplate(ioLoop)
-                                         , closeHandler()
-                                         , connectHandler()
+TCPAcceptor::TCPAcceptor(IOLoop* ioLoop)
+    : TCPAcceptorTemplate(ioLoop)
+    , closeHandler()
+    , connectHandler()
 {
-
 }
 
 int32 TCPAcceptor::StartListen(ConnectHandlerType handler, int32 backlog)
@@ -55,7 +54,8 @@ void TCPAcceptor::Close(CloseHandlerType handler)
 {
     closeHandler = handler;
     IsOpen() ? DoClose()
-             : HandleClose();   // Execute user handle in any case
+               :
+               HandleClose(); // Execute user handle in any case
 }
 
 int32 TCPAcceptor::Accept(TCPSocket* socket)
@@ -70,7 +70,7 @@ int32 TCPAcceptor::Accept(TCPSocket* socket)
 
 void TCPAcceptor::HandleClose()
 {
-    if(closeHandler != nullptr)
+    if (closeHandler != nullptr)
     {
         closeHandler(this);
     }
@@ -81,5 +81,5 @@ void TCPAcceptor::HandleConnect(int32 error)
     connectHandler(this, error);
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 class Entity;
 class PolygonGroup;
 class RenderObject;
@@ -42,15 +41,14 @@ class RenderObject;
 class SwitchToRenerObjectConverter
 {
 public:
-    void ConsumeSwitchedRenderObjects(Entity * scene);
-    void SerachForSwitch(Entity * currentNode);
-    bool MergeSwitch(Entity * entity);
+    void ConsumeSwitchedRenderObjects(Entity* scene);
+    void SerachForSwitch(Entity* currentNode);
+    bool MergeSwitch(Entity* entity);
 
 private:
-    void FindRenderObjectsRecursive(Entity * fromEntity, Vector<std::pair<Entity*, RenderObject*> > & entityAndObjectPairs);
+    void FindRenderObjectsRecursive(Entity* fromEntity, Vector<std::pair<Entity*, RenderObject*>>& entityAndObjectPairs);
     Set<PolygonGroup*> bakedPolygonGroups;
 };
-
 };
 
 #endif //__DAVAENGINE_SWITCHTORENDEROBJECTCONVERTER_H__

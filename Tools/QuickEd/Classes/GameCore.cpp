@@ -95,29 +95,28 @@ void GameCore::OnResume()
 
 void GameCore::OnBackground()
 {
-	
 }
 
 void GameCore::BeginFrame()
 {
-	ApplicationCore::BeginFrame();
+    ApplicationCore::BeginFrame();
 }
 
 void GameCore::Update(float32 timeElapsed)
-{	
-	ApplicationCore::Update(timeElapsed);
+{
+    ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::Draw()
 {
-	ApplicationCore::Draw();
+    ApplicationCore::Draw();
 }
 
 void GameCore::UnpackHelp()
 {
-	//Unpack Help to Documents.
+    //Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
-	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
+    FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();

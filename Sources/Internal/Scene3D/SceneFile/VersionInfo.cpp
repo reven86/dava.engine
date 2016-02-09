@@ -33,10 +33,8 @@
 
 #include <sstream>
 
-
 namespace DAVA
 {
-
 VersionInfo::VersionInfo()
 {
     versionMap = GetVersionHistory();
@@ -62,7 +60,7 @@ const VersionInfo::SceneVersion& VersionInfo::GetCurrentVersion() const
 String VersionInfo::UnsupportedTagsMessage(const SceneVersion& version) const
 {
     const TagsMap& allTags = GetTags();
-    const TagsMap& errTags = GetTagsDiff(allTags, version.tags);    // List of tags that not supported by current version of framework
+    const TagsMap& errTags = GetTagsDiff(allTags, version.tags); // List of tags that not supported by current version of framework
     const String& msg = FormatTagsString(errTags);
 
     return msg;
@@ -71,7 +69,7 @@ String VersionInfo::UnsupportedTagsMessage(const SceneVersion& version) const
 String VersionInfo::NoncompatibleTagsMessage(const SceneVersion& version) const
 {
     const TagsMap& allTags = GetTags(version.version);
-    const TagsMap& warnTags = GetTagsDiff(version.tags, allTags);   // List of tags that will be added to scene
+    const TagsMap& warnTags = GetTagsDiff(version.tags, allTags); // List of tags that will be added to scene
     const String& msg = FormatTagsString(warnTags);
 
     return msg;
@@ -83,9 +81,9 @@ VersionInfo::TagsMap VersionInfo::GetTagsDiff(const TagsMap& from, const Version
 
     for (TagsMap::const_iterator it = from.begin(); it != from.end(); it++)
     {
-        if (what.find( it->first ) == what.end())
+        if (what.find(it->first) == what.end())
         {
-            result.insert(TagsMap::value_type(it->first,it->second));
+            result.insert(TagsMap::value_type(it->first, it->second));
         }
     }
 
@@ -132,13 +130,13 @@ VersionInfo::eStatus VersionInfo::TestVersion(const SceneVersion& version) const
     const TagsMap& fwAllTags = GetTags();
     const TagsMap& fwVersionedTags = GetTags(version.version);
 
-    const TagsMap& errTags = GetTagsDiff(tags, fwAllTags);            // List of tags that not supported by current version of framework
-    const TagsMap& warnTags = GetTagsDiff(fwVersionedTags, tags);     // List of tags that will be added to scene
+    const TagsMap& errTags = GetTagsDiff(tags, fwAllTags); // List of tags that not supported by current version of framework
+    const TagsMap& warnTags = GetTagsDiff(fwVersionedTags, tags); // List of tags that will be added to scene
 
-    if ( errTags.size() > 0 )
+    if (errTags.size() > 0)
         return INVALID;
 
-    if ( warnTags.size() > 0 )
+    if (warnTags.size() > 0)
         return COMPATIBLE;
 
     return VALID;
@@ -150,7 +148,7 @@ VersionInfo::VersionMap VersionInfo::GetVersionHistory()
 
     // Current version
     SceneVersion currentVersion;
-    currentVersion.version = SCENE_FILE_CURRENT_VERSION;    // Current version of scene file
+    currentVersion.version = SCENE_FILE_CURRENT_VERSION; // Current version of scene file
     AddVersion(versions, currentVersion);
 
     return versions;
@@ -182,5 +180,4 @@ VersionInfo::VersionMap VersionInfo::GetDefaultVersionHistory()
     return GetVersionHistory();
 }
 #endif
-
 }

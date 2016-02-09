@@ -76,10 +76,10 @@ public:
 
     void PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera);
 
-    void RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera,
-                                  const DAVA::Vector3& point, DAVA::Texture* cubemapTarget);
+    void RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, const DAVA::Vector3& point, DAVA::Texture* cubemapTarget);
 
-    void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap, const VisbilityPoint& vp);
+    void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* batchesCamera,
+                                   DAVA::Camera* drawCamera, DAVA::Texture* cubemap, const VisbilityPoint& vp);
 
     void RenderCurrentOverlayTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera);
     void RenderProgress(float, const DAVA::Color&);
@@ -95,12 +95,11 @@ public:
 
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const DAVA::Vector3& point, DAVA::uint32 faceIndex);
-    void RenderWithCurrentSettings(DAVA::RenderSystem* renderSystem, DAVA::Camera* sceneCamera);
+    void RenderWithCurrentSettings(DAVA::RenderSystem* renderSystem);
     bool ShouldRenderObject(DAVA::RenderObject*);
     bool ShouldRenderBatch(DAVA::RenderBatch*);
 
-    void CollectRenderBatches(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
-                              DAVA::Camera* lodCamera, DAVA::Vector<DAVA::RenderBatch*>& batches);
+    void CollectRenderBatches(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Vector<DAVA::RenderBatch*>& batches);
 
     void UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const VisbilityPoint& vp);
 

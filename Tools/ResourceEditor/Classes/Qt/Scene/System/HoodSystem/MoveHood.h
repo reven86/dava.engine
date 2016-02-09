@@ -34,8 +34,8 @@
 
 struct MoveHood : public HoodObject
 {
-	MoveHood();
-	~MoveHood();
+    MoveHood();
+    ~MoveHood();
 
     virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem);
 
@@ -48,9 +48,9 @@ struct MoveHood : public HoodObject
     HoodCollObject* axisXY1;
     HoodCollObject* axisXY2;
     HoodCollObject* axisXZ1;
-    HoodCollObject *axisXZ2;
-	HoodCollObject *axisYZ1;
-	HoodCollObject *axisYZ2;
+    HoodCollObject* axisXZ2;
+    HoodCollObject* axisYZ1;
+    HoodCollObject* axisYZ2;
 };
 
 #endif // __MOVE_HOOD_H__

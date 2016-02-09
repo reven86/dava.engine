@@ -33,68 +33,73 @@ extern "C" {
 #include <string>
 using namespace std;
 
-
 typedef struct UTXHEADER
 {
-	ILuint		Signature;
-	ILushort	Version;
-	ILushort	LicenseMode;
-	ILuint		Flags;
-	ILuint		NameCount;
-	ILuint		NameOffset;
-	ILuint		ExportCount;
-	ILuint		ExportOffset;
-	ILuint		ImportCount;
-	ILuint		ImportOffset;
+    ILuint Signature;
+    ILushort Version;
+    ILushort LicenseMode;
+    ILuint Flags;
+    ILuint NameCount;
+    ILuint NameOffset;
+    ILuint ExportCount;
+    ILuint ExportOffset;
+    ILuint ImportCount;
+    ILuint ImportOffset;
 } UTXHEADER;
 
 typedef struct UTXENTRYNAME
 {
-	//char	*Name;
-	string	Name;
-	ILuint	Flags;
+    //char	*Name;
+    string Name;
+    ILuint Flags;
 } UTXENTRYNAME;
 
 typedef struct UTXEXPORTTABLE
 {
-	ILint	Class;
-	ILint	Super;
-	ILint	Group;
-	ILint	ObjectName;
-	ILuint	ObjectFlags;
-	ILint	SerialSize;
-	ILint	SerialOffset;
+    ILint Class;
+    ILint Super;
+    ILint Group;
+    ILint ObjectName;
+    ILuint ObjectFlags;
+    ILint SerialSize;
+    ILint SerialOffset;
 
-	ILboolean	ClassImported;
-	ILboolean	SuperImported;
-	ILboolean	GroupImported;
+    ILboolean ClassImported;
+    ILboolean SuperImported;
+    ILboolean GroupImported;
 } UTXEXPORTTABLE;
 
 typedef struct UTXIMPORTTABLE
 {
-	ILint		ClassPackage;
-	ILint		ClassName;
-	ILint		Package;
-	ILint		ObjectName;
+    ILint ClassPackage;
+    ILint ClassName;
+    ILint Package;
+    ILint ObjectName;
 
-	ILboolean	PackageImported;
+    ILboolean PackageImported;
 } UTXIMPORTTABLE;
 
 class UTXPALETTE
 {
 public:
-	UTXPALETTE() { Pal = NULL; }
-	~UTXPALETTE() { delete [] Pal; }
+    UTXPALETTE()
+    {
+        Pal = NULL;
+    }
+    ~UTXPALETTE()
+    {
+        delete[] Pal;
+    }
 
-	ILubyte	*Pal;
-	ILuint	Count;
-	ILuint	Name;
+    ILubyte* Pal;
+    ILuint Count;
+    ILuint Name;
 };
 
 // Data formats
-#define UTX_P8		0x00
-#define UTX_DXT1	0x03
+#define UTX_P8 0x00
+#define UTX_DXT1 0x03
 
 ILboolean iLoadUtxInternal(void);
 
-#endif//UTX_H
+#endif //UTX_H

@@ -36,21 +36,18 @@
 #include <QValidator>
 #include <QLayout>
 
-
-FloatPropertyDelegate::FloatPropertyDelegate( PropertiesTreeItemDelegate *delegate )
+FloatPropertyDelegate::FloatPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
-
 }
 
 FloatPropertyDelegate::~FloatPropertyDelegate()
 {
-
 }
 
 QWidget* FloatPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    QLineEdit *lineEdit = new QLineEdit(parent);
+    QLineEdit* lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
     lineEdit->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
@@ -58,9 +55,9 @@ QWidget* FloatPropertyDelegate::createEditor(QWidget* parent, const QStyleOption
     return lineEdit;
 }
 
-void FloatPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelIndex & index ) const 
+void FloatPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& index) const
 {
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
+    QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
     editor->setText(QString("%1").arg(variant.AsFloat()));
@@ -68,12 +65,12 @@ void FloatPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelInde
     BasePropertyDelegate::SetValueModified(editor, false);
 }
 
-bool FloatPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index ) const 
+bool FloatPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
+    QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     QVariant variant;
     variant.setValue<DAVA::VariantType>(DAVA::VariantType(editor->text().toFloat()));
@@ -83,11 +80,11 @@ bool FloatPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemMode
 
 void FloatPropertyDelegate::OnEditingFinished()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
+    QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
     if (!lineEdit)
         return;
 
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     if (!editor)
         return;
 
