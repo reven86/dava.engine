@@ -167,10 +167,10 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 
 void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 {
-	if (!notPassableTerrainProxy || !notPassableTerrainProxy->IsEnabled())
-	{
-		return;
-	}
+    if (!notPassableTerrainProxy || !notPassableTerrainProxy->IsEnabled())
+    {
+        return;
+    }
 
     notPassableTerrainProxy->SetEnabled(false);
     landscapeProxy->SetToolTexture(nullptr, false);
