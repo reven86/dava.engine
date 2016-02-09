@@ -907,6 +907,9 @@ gles2_SyncObject_Delete(Handle obj)
 static bool
 gles2_SyncObject_IsSignaled(Handle obj)
 {
+    if (!SyncObjectPoolGLES2::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 

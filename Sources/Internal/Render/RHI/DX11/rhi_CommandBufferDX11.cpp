@@ -1127,6 +1127,9 @@ dx11_SyncObject_Delete(Handle obj)
 static bool
 dx11_SyncObject_IsSignaled(Handle obj)
 {
+    if (!SyncObjectPoolDX11::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(obj);
 

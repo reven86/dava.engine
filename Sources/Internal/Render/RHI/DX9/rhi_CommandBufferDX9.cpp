@@ -483,6 +483,9 @@ dx9_SyncObject_Delete(Handle obj)
 static bool
 dx9_SyncObject_IsSignaled(Handle obj)
 {
+    if (!SyncObjectPoolDX9::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(obj);
 

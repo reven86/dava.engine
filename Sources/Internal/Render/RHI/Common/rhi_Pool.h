@@ -63,6 +63,7 @@ public:
     static void Free(Handle h);
 
     static T* Get(Handle h);
+    static bool IsAlive(Handle h);
 
     static void Reserve(unsigned maxCount);
     static unsigned ReCreateAll();
@@ -239,6 +240,20 @@ inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
     DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
 
     return &(e->object);
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline bool ResourcePool<T, RT, DT, nr>::IsAlive(Handle h)
+{
+    DVASSERT(h != InvalidHandle);
+    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT);
+    uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
+    DVASSERT(index < ObjectCount);
+
+    Entry* e = Object + index;
+    return e->allocated && (e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
 }
 
 //------------------------------------------------------------------------------
