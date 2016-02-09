@@ -538,7 +538,6 @@ void CoreWin32Platform::OnMouseMove(float32 x, float32 y)
     }
 }
 
-#include "Input/InputSystem.h"
 void CoreWin32Platform::OnMouseWheel(float32 wheelDelta, float32 x, float32 y)
 {
     UIEvent e;
