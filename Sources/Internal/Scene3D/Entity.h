@@ -526,7 +526,7 @@ void Entity::GetChildNodes(Container<T, A>& container)
 template <template <typename, typename> class Container, class A>
 void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type)
 {
-    for (auto & child : children)
+    for (auto& child : children)
     {
         if (child->GetComponentCount(type) > 0)
         {

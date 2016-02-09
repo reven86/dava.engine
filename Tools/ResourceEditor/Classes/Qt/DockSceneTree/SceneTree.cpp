@@ -63,7 +63,6 @@
 #include "Tools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-
 SceneTree::SceneTree(QWidget* parent /*= 0*/)
     : QTreeView(parent)
     , isInSync(false)

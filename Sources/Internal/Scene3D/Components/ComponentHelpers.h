@@ -66,8 +66,7 @@ class SnapToLandscapeControllerComponent;
 class StaticOcclusionComponent;
 class StaticOcclusionDebugDrawComponent;
 
-
-bool HasComponent(const Entity *fromEntity, const Component::eType componentType);
+bool HasComponent(const Entity* fromEntity, const Component::eType componentType);
 
 ParticleEffectComponent* GetEffectComponent(const Entity* fromEntity);
 AnimationComponent* GetAnimationComponent(const Entity* fromEntity);

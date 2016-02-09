@@ -28,5 +28,3 @@
 
 
 #include "Main/Guards.h"
-
-

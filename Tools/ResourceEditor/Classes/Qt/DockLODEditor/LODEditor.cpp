@@ -53,7 +53,6 @@
 
 using namespace DAVA;
 
-
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LODEditor)
@@ -62,11 +61,11 @@ LODEditor::LODEditor(QWidget* parent)
 
     Function<void()> fnUpdatePanels(this, &LODEditor::UpdatePanelsForCurrentScene);
     panelsUpdater = new LazyUpdater(fnUpdatePanels, this);
-    
+
     SetupSceneSignals();
     SetupInternalUI();
-      
-    new QtPosSaver( this );
+
+    new QtPosSaver(this);
 }
 
 LODEditor::~LODEditor() = default;
@@ -91,7 +90,6 @@ void LODEditor::SetupInternalUI()
     UpdatePanelsUI(nullptr);
 }
 
-
 //MODE
 
 void LODEditor::SceneOrSelectionModeSelected(bool allSceneModeActivated)
@@ -99,7 +97,7 @@ void LODEditor::SceneOrSelectionModeSelected(bool allSceneModeActivated)
     VariantType value(allSceneModeActivated);
     SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
 
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->SetMode(allSceneModeActivated ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION);
 }
 
@@ -116,7 +114,7 @@ void LODEditor::SetupPanelsButtonUI()
     connect(ui->viewLODButton, &QPushButton::clicked, this, &LODEditor::ViewLODButtonClicked);
     connect(ui->editLODButton, &QPushButton::clicked, this, &LODEditor::EditLODButtonClicked);
 
-    //default state 
+    //default state
     frameViewVisible = true;
     frameEditVisible = true;
     ui->viewLODButton->setVisible(frameViewVisible);
@@ -142,7 +140,7 @@ void LODEditor::EditLODButtonClicked()
     frameEditVisible = ui->frameEditLOD->isVisible();
 }
 
-void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
+void LODEditor::InvertFrameVisibility(QFrame* frame, QPushButton* frameButton)
 {
     bool visible = !frame->isVisible();
     frame->setVisible(visible);
@@ -151,7 +149,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
     frameButton->setIcon(icon);
 }
 
-void LODEditor::UpdatePanelsUI(SceneEditor2 *forScene)
+void LODEditor::UpdatePanelsUI(SceneEditor2* forScene)
 {
     if (forScene != nullptr)
     {
@@ -170,10 +168,10 @@ void LODEditor::UpdatePanelsForCurrentScene()
 {
     bool panelVisible = false;
 
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     if (system != nullptr)
     {
-        const LODComponentHolder *lodData = system->GetActiveLODData();
+        const LODComponentHolder* lodData = system->GetActiveLODData();
         panelVisible = (lodData->GetLODLayersCount() > 0);
     }
 
@@ -198,7 +196,6 @@ void LODEditor::UpdatePanelsForCurrentScene()
 
 //ENDOF PANELS
 
-
 //FORCE
 void LODEditor::SetupForceUI()
 {
@@ -208,14 +205,13 @@ void LODEditor::SetupForceUI()
     ui->forceSlider->setRange(LodComponent::INVALID_DISTANCE, LodComponent::MAX_LOD_DISTANCE);
     ui->forceSlider->setValue(LodComponent::INVALID_DISTANCE);
 
-    connect(ui->forceLayer, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, &LODEditor::ForceLayerActivated);
+    connect(ui->forceLayer, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), this, &LODEditor::ForceLayerActivated);
 }
-
 
 void LODEditor::ForceDistanceStateChanged(bool checked)
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
-    
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
+
     ForceValues forceValues = system->GetForceValues();
     forceValues.flag = (checked) ? ForceValues::APPLY_DISTANCE : ForceValues::APPLY_LAYER;
     system->SetForceValues(forceValues);
@@ -223,17 +219,17 @@ void LODEditor::ForceDistanceStateChanged(bool checked)
 
 void LODEditor::ForceDistanceChanged(int distance)
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
 
     ForceValues forceValues = system->GetForceValues();
-    forceValues.distance = static_cast<float32> (distance);
+    forceValues.distance = static_cast<float32>(distance);
     system->SetForceValues(forceValues);
 }
 
 void LODEditor::ForceLayerActivated(int index)
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
-    const LODComponentHolder *lodData = system->GetActiveLODData();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
+    const LODComponentHolder* lodData = system->GetActiveLODData();
 
     ForceValues forceValues = system->GetForceValues();
     forceValues.layer = index - 1;
@@ -260,7 +256,6 @@ void LODEditor::CreateForceLayerValues(uint32 layersCount)
 
 //FORCE
 
-
 //DISTANCES
 void LODEditor::SetupDistancesUI()
 {
@@ -272,21 +267,21 @@ void LODEditor::SetupDistancesUI()
     InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
 }
 
-void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index)
+void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index)
 {
-    spinbox->setRange(LodComponent::MIN_LOD_DISTANCE, LodComponent::MAX_LOD_DISTANCE);  //distance 
+    spinbox->setRange(LodComponent::MIN_LOD_DISTANCE, LodComponent::MAX_LOD_DISTANCE); //distance
     spinbox->setValue(LodComponent::MIN_LOD_DISTANCE);
     spinbox->setFocusPolicy(Qt::WheelFocus);
     spinbox->setKeyboardTracking(false);
-    
-    connect(spinbox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &LODEditor::LODDistanceChangedBySpinbox);
-    
+
+    connect(spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &LODEditor::LODDistanceChangedBySpinbox);
+
     distanceWidgets[index].name = name;
     distanceWidgets[index].distance = spinbox;
     distanceWidgets[index].SetVisible(false);
 }
 
-void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS> &distances, int32 count)
+void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS>& distances, int32 count)
 {
     for (int32 i = 0; i < count; ++i)
     {
@@ -294,13 +289,12 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA:
 
         float32 minDistance = (i == 0) ? LodComponent::MIN_LOD_DISTANCE : distances[i - 1];
         float32 maxDistance = (i == count - 1) ? LodComponent::MAX_LOD_DISTANCE : distances[i + 1];
-        distanceWidgets[i].distance->setRange(minDistance, maxDistance);  //distance 
+        distanceWidgets[i].distance->setRange(minDistance, maxDistance); //distance
         distanceWidgets[i].distance->setValue(distances[i]);
     }
 }
 
-
-void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious)
+void LODEditor::LODDistanceChangedBySlider(const QVector<int>& changedLayers, bool continious)
 {
     if (changedLayers.empty())
     {
@@ -314,10 +308,10 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
         distances[i] = ui->distanceSlider->GetDistance(i);
     }
 
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     if (continious)
-    {   //update only UI
-        const LODComponentHolder *lodData = system->GetActiveLODData();
+    { //update only UI
+        const LODComponentHolder* lodData = system->GetActiveLODData();
 
         UpdateDistanceSpinboxesUI(distances, lodData->GetLODLayersCount());
     }
@@ -336,23 +330,22 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
         distances[i] = distanceWidgets[i].distance->value();
     }
 
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->SetLODDistances(distances);
 }
 
 //DISTANCES
 
-
 //SCENE SIGNALS
 
-void LODEditor::SceneActivated(SceneEditor2 *scene)
+void LODEditor::SceneActivated(SceneEditor2* scene)
 {
     DVASSERT(scene);
     scene->editorLODSystem->AddDelegate(this);
     scene->editorStatisticsSystem->AddDelegate(this);
 }
 
-void LODEditor::SceneDeactivated(SceneEditor2 *scene)
+void LODEditor::SceneDeactivated(SceneEditor2* scene)
 {
     DVASSERT(scene);
     scene->editorLODSystem->RemoveDelegate(this);
@@ -364,19 +357,19 @@ void LODEditor::SceneDeactivated(SceneEditor2 *scene)
     }
 }
 
-void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
+void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
 {
     DVASSERT(scene != nullptr);
 
-    EditorLODSystem *system = scene->editorLODSystem;
+    EditorLODSystem* system = scene->editorLODSystem;
     system->SelectionChanged(selected, deselected);
 }
 
-void LODEditor::SolidChanged(SceneEditor2 *scene, const Entity *entity, bool value)
+void LODEditor::SolidChanged(SceneEditor2* scene, const Entity* entity, bool value)
 {
     DVASSERT(scene != nullptr);
 
-    EditorLODSystem *system = scene->editorLODSystem;
+    EditorLODSystem* system = scene->editorLODSystem;
     system->SolidChanged(entity, value);
 }
 
@@ -394,18 +387,18 @@ void LODEditor::SetupActionsUI()
 
 void LODEditor::CopyLastLODToLOD0Clicked()
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->CopyLastLODToFirst();
 }
 
 void LODEditor::CreatePlaneLODClicked()
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
-    const LODComponentHolder *lodData = system->GetActiveLODData();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
+    const LODComponentHolder* lodData = system->GetActiveLODData();
 
     FilePath defaultTexturePath = system->GetPathForPlaneEntity();
     PlaneLODDialog dialog(lodData->GetLODLayersCount(), defaultTexturePath, this);
-    if(dialog.exec() == QDialog::Accepted)
+    if (dialog.exec() == QDialog::Accepted)
     {
         QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");
         system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
@@ -415,28 +408,27 @@ void LODEditor::CreatePlaneLODClicked()
 
 void LODEditor::DeleteFirstLOD()
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->DeleteFirstLOD();
 }
 
 void LODEditor::DeleteLastLOD()
 {
-    EditorLODSystem *system = GetCurrentEditorLODSystem();
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->DeleteLastLOD();
 }
-
 
 //ACTIONS
 
 //DELEGATE
-void LODEditor::UpdateModeUI(EditorLODSystem *forSystem, const eEditorMode mode)
+void LODEditor::UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode)
 {
     ui->checkBoxLodEditorMode->setChecked(mode == eEditorMode::MODE_ALL_SCENE);
 
     panelsUpdater->Update();
 }
 
-void LODEditor::UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & forceValues)
+void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues)
 {
     const QSignalBlocker guard1(ui->enableForceDistance);
     const QSignalBlocker guard2(ui->forceSlider);
@@ -449,7 +441,7 @@ void LODEditor::UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & fo
 
     ui->forceSlider->setValue(forceValues.distance);
 
-    const LODComponentHolder *lodData = forSystem->GetActiveLODData();
+    const LODComponentHolder* lodData = forSystem->GetActiveLODData();
     const uint32 layerItemsCount = lodData->GetLODLayersCount();
     if (ui->forceLayer->count() != layerItemsCount + 1)
     {
@@ -467,13 +459,13 @@ void LODEditor::UpdateForceUI(EditorLODSystem *forSystem, const ForceValues & fo
     }
 }
 
-void LODEditor::UpdateDistanceUI(EditorLODSystem *forSystem, const LODComponentHolder *lodData)
+void LODEditor::UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData)
 {
     DVASSERT(lodData != nullptr);
 
     const QSignalBlocker guard(ui->distanceSlider);
 
-    const LodComponent &lc = lodData->GetLODComponent();
+    const LodComponent& lc = lodData->GetLODComponent();
     int32 count = static_cast<int32>(lodData->GetLODLayersCount());
     ui->distanceSlider->SetLayersCount(count);
 
@@ -497,7 +489,7 @@ void LODEditor::UpdateDistanceUI(EditorLODSystem *forSystem, const LODComponentH
     }
 }
 
-void LODEditor::UpdateActionUI(EditorLODSystem *forSystem)
+void LODEditor::UpdateActionUI(EditorLODSystem* forSystem)
 {
     const bool canDeleteLod = forSystem->CanDeleteLOD();
     ui->buttonDeleteFirstLOD->setEnabled(canDeleteLod);
@@ -508,23 +500,20 @@ void LODEditor::UpdateActionUI(EditorLODSystem *forSystem)
     ui->createPlaneLodButton->setEnabled(canCreateLod);
 }
 
-void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem *forSystem)
+void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 {
-    EditorLODSystem *lodSystem = GetCurrentEditorLODSystem();
-    const auto & triangles = forSystem->GetTriangles(lodSystem->GetMode(), true);
+    EditorLODSystem* lodSystem = GetCurrentEditorLODSystem();
+    const auto& triangles = forSystem->GetTriangles(lodSystem->GetMode(), true);
 
     int32 index = EditorStatisticsSystem::INDEX_OF_FIRST_LOD_TRIANGLES;
-    for (auto & dw : distanceWidgets)
+    for (auto& dw : distanceWidgets)
     {
         dw.name->setText(Format("%d. (%u)", index, triangles[index]).c_str());
         ++index;
     }
 }
 
-
 //DELEGATE
-
-
 
 void LODEditor::DistanceWidget::SetVisible(bool visible)
 {
@@ -532,12 +521,11 @@ void LODEditor::DistanceWidget::SetVisible(bool visible)
     distance->setVisible(visible);
 }
 
-
-EditorLODSystem *LODEditor::GetCurrentEditorLODSystem() const
+EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 {
     DVASSERT(QtMainWindow::Instance());
 
-    SceneEditor2 *scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     if (scene != nullptr)
     {
         return scene->editorLODSystem;
@@ -546,12 +534,11 @@ EditorLODSystem *LODEditor::GetCurrentEditorLODSystem() const
     return nullptr;
 }
 
-
-EditorStatisticsSystem *LODEditor::GetCurrentEditorStatisticsSystem() const
+EditorStatisticsSystem* LODEditor::GetCurrentEditorStatisticsSystem() const
 {
     DVASSERT(QtMainWindow::Instance());
 
-    SceneEditor2 *scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     if (scene != nullptr)
     {
         return scene->editorStatisticsSystem;
@@ -559,6 +546,3 @@ EditorStatisticsSystem *LODEditor::GetCurrentEditorStatisticsSystem() const
 
     return nullptr;
 }
-
-
-

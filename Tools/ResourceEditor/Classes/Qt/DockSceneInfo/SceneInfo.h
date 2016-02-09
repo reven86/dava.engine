@@ -80,7 +80,7 @@ protected slots:
 private:
     void showEvent(QShowEvent* event) override;
 
-    EditorStatisticsSystem *GetCurrentEditorStatisticsSystem() const;
+    EditorStatisticsSystem* GetCurrentEditorStatisticsSystem() const;
 
     void InitializeInfo();
     void InitializeGeneralSection();

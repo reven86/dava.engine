@@ -51,11 +51,9 @@
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/SelectionSystem.h"
 
-
 using namespace DAVA;
 
-
-void LODComponentHolder::BindToSystem(EditorLODSystem *system_, SceneEditor2 *scene_)
+void LODComponentHolder::BindToSystem(EditorLODSystem* system_, SceneEditor2* scene_)
 {
     DVASSERT(system_ != nullptr);
     DVASSERT(scene_ != nullptr);
@@ -64,7 +62,6 @@ void LODComponentHolder::BindToSystem(EditorLODSystem *system_, SceneEditor2 *sc
     scene = scene_;
 }
 
-
 void LODComponentHolder::SummarizeValues()
 {
     Array<float32, LodComponent::MAX_LOD_LAYERS> lodDistances;
@@ -72,10 +69,10 @@ void LODComponentHolder::SummarizeValues()
 
     maxLodLayerIndex = LodComponent::INVALID_LOD_LAYER;
 
-    uint32 count = static_cast<uint32> (lodComponents.size());
+    uint32 count = static_cast<uint32>(lodComponents.size());
     if (count > 0)
     {
-        for (auto & lc : lodComponents)
+        for (auto& lc : lodComponents)
         {
             maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(GetLodLayersCount(lc)) - 1);
 
@@ -99,11 +96,10 @@ void LODComponentHolder::SummarizeValues()
     }
 }
 
-
 void LODComponentHolder::PropagateValues()
 {
     scene->BeginBatch("LOD Distance Changed");
-    for (auto & lc : lodComponents)
+    for (auto& lc : lodComponents)
     {
         const int32 layersCount = static_cast<int32>(GetLodLayersCount(lc));
         for (int32 i = 0; i < layersCount; ++i)
@@ -119,7 +115,7 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
     bool wasLayerRemoved = false;
 
     scene->BeginBatch(Format("Delete lod layer %", layer));
-    for (auto & lc : lodComponents)
+    for (auto& lc : lodComponents)
     {
         if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
@@ -137,9 +133,9 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
     bool wasCopiedRemoved = false;
 
     scene->BeginBatch(Format("Copy lod layer %d to %d", from, to));
-    for (auto & lc : lodComponents)
+    for (auto& lc : lodComponents)
     {
-        Entity *entity = lc->GetEntity();
+        Entity* entity = lc->GetEntity();
         if (HasComponent(entity, Component::PARTICLE_EFFECT_COMPONENT))
         {
             continue;
@@ -155,9 +151,9 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
     return wasCopiedRemoved;
 }
 
-void LODComponentHolder::ApplyForce(const ForceValues &force)
+void LODComponentHolder::ApplyForce(const ForceValues& force)
 {
-    for (auto & lc : lodComponents)
+    for (auto& lc : lodComponents)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
@@ -183,7 +179,7 @@ uint32 LODComponentHolder::GetLODLayersCount() const
     return (maxLodLayerIndex + 1);
 }
 
-const LodComponent & LODComponentHolder::GetLODComponent() const
+const LodComponent& LODComponentHolder::GetLODComponent() const
 {
     return mergedComponent;
 }
@@ -193,10 +189,9 @@ const LodComponent & LODComponentHolder::GetLODComponent() const
 EditorLODSystem::EditorLODSystem(Scene* scene)
     : SceneSystem(scene)
 {
-
     for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
     {
-        lodData[m].BindToSystem(this, static_cast<SceneEditor2 *>(GetScene()));
+        lodData[m].BindToSystem(this, static_cast<SceneEditor2*>(GetScene()));
     }
 
     const bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
@@ -210,35 +205,33 @@ EditorLODSystem::~EditorLODSystem()
     activeLodData = nullptr;
 }
 
-
 void EditorLODSystem::Process(float32 timeElapsed)
 {
     DispatchSignals();
     ProcessPlaneLODs();
 }
 
-void EditorLODSystem::AddEntity(Entity * entity)
+void EditorLODSystem::AddEntity(Entity* entity)
 {
-    LodComponent *lc = GetLodComponent(entity);
+    LodComponent* lc = GetLodComponent(entity);
     DVASSERT(lc != nullptr);
 
     AddComponent(entity, lc);
 }
 
-void EditorLODSystem::RemoveEntity(Entity * entity)
+void EditorLODSystem::RemoveEntity(Entity* entity)
 {
-    LodComponent *lc = GetLodComponent(entity);
+    LodComponent* lc = GetLodComponent(entity);
     DVASSERT(lc != nullptr);
 
     RemoveComponent(entity, lc);
 }
 
-
-void EditorLODSystem::AddComponent(Entity * entity, Component * component)
+void EditorLODSystem::AddComponent(Entity* entity, Component* component)
 {
     DVASSERT(component->GetType() == Component::LOD_COMPONENT);
 
-    lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(static_cast<LodComponent *>(component));
+    lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(static_cast<LodComponent*>(component));
     lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
 
     if (mode == eEditorMode::MODE_ALL_SCENE)
@@ -247,11 +240,11 @@ void EditorLODSystem::AddComponent(Entity * entity, Component * component)
     }
 }
 
-void EditorLODSystem::RemoveComponent(Entity * entity, Component * component)
+void EditorLODSystem::RemoveComponent(Entity* entity, Component* component)
 {
     DVASSERT(component->GetType() == Component::LOD_COMPONENT);
 
-    LodComponent * removedComponent = static_cast<LodComponent *>(component);
+    LodComponent* removedComponent = static_cast<LodComponent*>(component);
     for (uint32 m = 0; m < eEditorMode::MODE_COUNT; ++m)
     {
         bool removed = FindAndRemoveExchangingWithLast(lodData[m].lodComponents, removedComponent);
@@ -275,7 +268,6 @@ void EditorLODSystem::SceneDidLoaded()
     }
 }
 
-
 eEditorMode EditorLODSystem::GetMode() const
 {
     return mode;
@@ -293,12 +285,12 @@ void EditorLODSystem::SetMode(eEditorMode mode_)
     EmitInvalidateUI(FLAG_ALL);
 }
 
-const ForceValues & EditorLODSystem::GetForceValues() const
+const ForceValues& EditorLODSystem::GetForceValues() const
 {
     return forceValues;
 }
 
-void EditorLODSystem::SetForceValues(const ForceValues & values)
+void EditorLODSystem::SetForceValues(const ForceValues& values)
 {
     DVASSERT(activeLodData != nullptr);
 
@@ -335,15 +327,14 @@ void EditorLODSystem::SetForceValues(const ForceValues & values)
     EmitInvalidateUI(FLAG_FORCE);
 }
 
-
 bool EditorLODSystem::CanDeleteLOD() const
 {
     DVASSERT(activeLodData != nullptr);
 
     bool canDeleteLod = (!activeLodData->lodComponents.empty()) && (activeLodData->GetLODLayersCount() > 0);
-    for (auto &lc : activeLodData->lodComponents)
+    for (auto& lc : activeLodData->lodComponents)
     {
-        if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) )
+        if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT))
         {
             canDeleteLod = false;
             break;
@@ -374,7 +365,7 @@ bool EditorLODSystem::CanCreateLOD() const
     return false;
 }
 
-void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const FilePath & texturePath)
+void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const FilePath& texturePath)
 {
     DVASSERT(activeLodData != nullptr);
 
@@ -412,7 +403,6 @@ void EditorLODSystem::DeleteLOD(DAVA::int32 layer)
     }
 }
 
-
 void EditorLODSystem::CopyLastLODToFirst()
 {
     DVASSERT(activeLodData != nullptr);
@@ -426,12 +416,12 @@ void EditorLODSystem::CopyLastLODToFirst()
     }
 }
 
-const LODComponentHolder * EditorLODSystem::GetActiveLODData() const
+const LODComponentHolder* EditorLODSystem::GetActiveLODData() const
 {
     return activeLodData;
 }
 
-void EditorLODSystem::SetLODDistances(const Array<float32, LodComponent::MAX_LOD_LAYERS> &distances)
+void EditorLODSystem::SetLODDistances(const Array<float32, LodComponent::MAX_LOD_LAYERS>& distances)
 {
     DVASSERT(activeLodData != nullptr);
 
@@ -447,12 +437,12 @@ void EditorLODSystem::SetLODDistances(const Array<float32, LodComponent::MAX_LOD
     EmitInvalidateUI(FLAG_DISTANCE);
 }
 
-void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
+void EditorLODSystem::SolidChanged(const Entity* entity, bool value)
 {
-    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *> (GetScene());
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
     EntityGroup selection(sceneEditor->selectionSystem->GetSelection().CopyContentToVector());
 
-    if (selection.ContainsEntity(const_cast<Entity *>(entity)) == false)
+    if (selection.ContainsEntity(const_cast<Entity*>(entity)) == false)
     {
         return;
     }
@@ -460,20 +450,20 @@ void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
     SelectionChanged(&selection, nullptr);
 }
 
-void EditorLODSystem::SelectionChanged(const EntityGroup *selected, const EntityGroup *deselected)
+void EditorLODSystem::SelectionChanged(const EntityGroup* selected, const EntityGroup* deselected)
 {
     lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
 
     bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
 
     uint32 count = selected->Size();
-    Vector<Entity *>lodEntities;
-    lodEntities.reserve(count);    //mostly we have less than 5 lods in hierarchy
+    Vector<Entity*> lodEntities;
+    lodEntities.reserve(count); //mostly we have less than 5 lods in hierarchy
 
-    const auto & entitiesContent = selected->GetContent();
-    for (auto & it : entitiesContent)
+    const auto& entitiesContent = selected->GetContent();
+    for (auto& it : entitiesContent)
     {
-        Entity *entity = it.first;
+        Entity* entity = it.first;
         if (entity->GetSolid() || !ignoreChildren)
         {
             entity->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
@@ -485,12 +475,12 @@ void EditorLODSystem::SelectionChanged(const EntityGroup *selected, const Entity
         }
     }
 
-    for (auto & entity : lodEntities)
+    for (auto& entity : lodEntities)
     {
         uint32 count = entity->GetComponentCount(Component::LOD_COMPONENT);
         for (uint32 i = 0; i < count; ++i)
         {
-            lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(static_cast<LodComponent *> (entity->GetComponent(Component::LOD_COMPONENT, i)));
+            lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(static_cast<LodComponent*>(entity->GetComponent(Component::LOD_COMPONENT, i)));
         }
     }
 
@@ -562,7 +552,7 @@ void EditorLODSystem::DispatchSignals()
     invalidateUIFlag = FLAG_NONE;
 }
 
-void EditorLODSystem::ProcessCommand(const Command2 *command, bool redo)
+void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
 {
     if (generateCommands)
     {
@@ -617,12 +607,12 @@ FilePath EditorLODSystem::GetPathForPlaneEntity() const
 {
     DVASSERT(activeLodData != nullptr);
     DVASSERT(!activeLodData->lodComponents.empty());
-    
-    SceneEditor2 *editorScene = static_cast<SceneEditor2 *>(GetScene());
-    Entity *entity = activeLodData->lodComponents.front()->GetEntity();
+
+    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
+    Entity* entity = activeLodData->lodComponents.front()->GetEntity();
 
     FilePath entityPath = editorScene->GetScenePath();
-    KeyedArchive * properties = GetCustomPropertiesArchieve(entity);
+    KeyedArchive* properties = GetCustomPropertiesArchieve(entity);
     if (nullptr != properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
     {
         entityPath = FilePath(properties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, entityPath.GetAbsolutePathname()));

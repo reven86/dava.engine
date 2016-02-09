@@ -35,8 +35,8 @@
 
 namespace DAVA
 {
-    class Entity;
-    class RenderComponent;
+class Entity;
+class RenderComponent;
 }
 
 class EditorStatisticsSystemUIDelegate;
@@ -52,28 +52,25 @@ class EditorStatisticsSystem : public DAVA::SceneSystem
     };
 
 public:
-
     static const DAVA::int32 INDEX_OF_ALL_LODS_TRIANGLES = 0;
     static const DAVA::int32 INDEX_OF_FIRST_LOD_TRIANGLES = 1;
 
-    EditorStatisticsSystem(DAVA::Scene * scene);
+    EditorStatisticsSystem(DAVA::Scene* scene);
 
-    void AddEntity(DAVA::Entity * entity) override;
-    void RemoveEntity(DAVA::Entity * entity) override;
-    void AddComponent(DAVA::Entity * entity, DAVA::Component * component);
-    void RemoveComponent(DAVA::Entity * entity, DAVA::Component * component);
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+    void AddComponent(DAVA::Entity* entity, DAVA::Component* component);
+    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component);
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    const DAVA::Vector<DAVA::uint32> &GetTriangles(eEditorMode mode, bool allTriangles) const;
+    const DAVA::Vector<DAVA::uint32>& GetTriangles(eEditorMode mode, bool allTriangles) const;
 
-    void AddDelegate(EditorStatisticsSystemUIDelegate *uiDelegate);
-    void RemoveDelegate(EditorStatisticsSystemUIDelegate *uiDelegate);
+    void AddDelegate(EditorStatisticsSystemUIDelegate* uiDelegate);
+    void RemoveDelegate(EditorStatisticsSystemUIDelegate* uiDelegate);
 
 private:
-
     void CalculateTriangles();
-
 
     //signals
     void EmitInvalidateUI(DAVA::uint32 flags);
@@ -81,23 +78,20 @@ private:
     //signals
 
 private:
-
     DAVA::Vector<TrianglesData> triangles;
 
-    DAVA::Vector<EditorStatisticsSystemUIDelegate *> uiDelegates;
+    DAVA::Vector<EditorStatisticsSystemUIDelegate*> uiDelegates;
     DAVA::uint32 invalidateUIflag = FLAG_NONE;
 };
 
 class EditorStatisticsSystemUIDelegate
 {
 public:
-
     virtual ~EditorStatisticsSystemUIDelegate() = default;
 
-    virtual void UpdateTrianglesUI(EditorStatisticsSystem *forSystem){};
+    virtual void UpdateTrianglesUI(EditorStatisticsSystem* forSystem){};
 };
 
 
 
 #endif // __SCENE_LOD_SYSTEM_V2_H__
-

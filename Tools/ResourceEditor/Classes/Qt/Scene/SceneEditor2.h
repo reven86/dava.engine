@@ -111,7 +111,7 @@ public:
     StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
     EditorMaterialSystem* materialSystem;
     EditorLODSystem* editorLODSystem = nullptr;
-    EditorStatisticsSystem *editorStatisticsSystem = nullptr;
+    EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem;

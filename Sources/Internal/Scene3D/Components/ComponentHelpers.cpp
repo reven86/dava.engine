@@ -57,7 +57,6 @@
 
 namespace DAVA
 {
-
 bool HasComponent(const Entity* fromEntity, const Component::eType componentType)
 {
     if (fromEntity != nullptr)

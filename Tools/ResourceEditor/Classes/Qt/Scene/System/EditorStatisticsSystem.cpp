@@ -45,14 +45,11 @@ struct TrianglesData
     Vector<uint32> storedTriangles;
     Vector<uint32> visibleTriangles;
     Vector<uint32> temporaryTriangles;
-    Vector<RenderComponent *> renderComponents;
+    Vector<RenderComponent*> renderComponents;
 };
-
-
 
 namespace EditorStatisticsSystemInternal
 {
-
 static const int32 SIZE_OF_TRIANGLES = LodComponent::MAX_LOD_LAYERS + 1;
 
 void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, Vector<uint32>& visibleTriangles)
@@ -63,7 +60,7 @@ void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, V
         int32 lodIndex = 0;
         int32 switchIndex = 0;
 
-        RenderBatch *rb = renderObject->GetRenderBatch(b, lodIndex, switchIndex);
+        RenderBatch* rb = renderObject->GetRenderBatch(b, lodIndex, switchIndex);
         lodIndex += 1; //because of non-lod index is -1
         if (lodIndex < 0)
         {
@@ -84,7 +81,7 @@ void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, V
                 }
             }
 
-            PolygonGroup *pg = rb->GetPolygonGroup();
+            PolygonGroup* pg = rb->GetPolygonGroup();
             if (nullptr != pg)
             {
                 int32 indexCount = pg->GetIndexCount() / 3;
@@ -102,9 +99,9 @@ void EnumerateTriangles(TrianglesData& triangles)
 {
     std::fill(triangles.temporaryTriangles.begin(), triangles.temporaryTriangles.end(), 0);
     std::fill(triangles.visibleTriangles.begin(), triangles.visibleTriangles.end(), 0);
-    for (auto &rc : triangles.renderComponents)
+    for (auto& rc : triangles.renderComponents)
     {
-        RenderObject *ro = rc->GetRenderObject();
+        RenderObject* ro = rc->GetRenderObject();
         if (ro && (ro->GetType() == RenderObject::TYPE_MESH || ro->GetType() == RenderObject::TYPE_SPEED_TREE))
         {
             EnumerateTriangles(ro, triangles.temporaryTriangles, triangles.visibleTriangles);
@@ -112,16 +109,16 @@ void EnumerateTriangles(TrianglesData& triangles)
     }
 }
 
-void EnumerateRenderComponentsRecursive(Entity *entity, Vector<RenderComponent *> &renderComponents, bool recursive)
+void EnumerateRenderComponentsRecursive(Entity* entity, Vector<RenderComponent*>& renderComponents, bool recursive)
 {
     if (HasComponent(entity, Component::RENDER_COMPONENT))
     {
         uint32 componentsCount = entity->GetComponentCount(Component::RENDER_COMPONENT);
         for (uint32 c = 0; c < componentsCount; ++c)
         {
-            RenderComponent *rc = static_cast<RenderComponent *>(entity->GetComponent(Component::RENDER_COMPONENT, c));
+            RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT, c));
             DVASSERT(std::find(renderComponents.begin(), renderComponents.end(), rc) == renderComponents.end());
-            
+
             renderComponents.push_back(rc);
         }
     }
@@ -136,8 +133,7 @@ void EnumerateRenderComponentsRecursive(Entity *entity, Vector<RenderComponent *
     }
 }
 
-
-void EnumerateRenderComponents(const EntityGroup &entities, Vector<RenderComponent *> &renderComponents)
+void EnumerateRenderComponents(const EntityGroup& entities, Vector<RenderComponent*>& renderComponents)
 {
     renderComponents.clear();
     uint32 count = entities.Size();
@@ -146,19 +142,16 @@ void EnumerateRenderComponents(const EntityGroup &entities, Vector<RenderCompone
         renderComponents.reserve(count);
 
         const bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
-        const auto & entitiesContent = entities.GetContent();
-        for (auto & it : entitiesContent)
+        const auto& entitiesContent = entities.GetContent();
+        for (auto& it : entitiesContent)
         {
-            Entity *entity = it.first;
+            Entity* entity = it.first;
             bool recursive = entity->GetSolid() || !ignoreChildren;
             EnumerateRenderComponentsRecursive(entity, renderComponents, recursive);
         }
     }
 }
-
 }
-
-
 
 EditorStatisticsSystem::EditorStatisticsSystem(Scene* scene)
     : SceneSystem(scene)
@@ -172,8 +165,7 @@ EditorStatisticsSystem::EditorStatisticsSystem(Scene* scene)
     }
 }
 
-
-void EditorStatisticsSystem::AddEntity(Entity * entity)
+void EditorStatisticsSystem::AddEntity(Entity* entity)
 {
     if (HasComponent(entity, Component::RENDER_COMPONENT))
     {
@@ -181,7 +173,7 @@ void EditorStatisticsSystem::AddEntity(Entity * entity)
     }
 }
 
-void EditorStatisticsSystem::RemoveEntity(Entity * entity)
+void EditorStatisticsSystem::RemoveEntity(Entity* entity)
 {
     if (HasComponent(entity, Component::RENDER_COMPONENT))
     {
@@ -189,28 +181,28 @@ void EditorStatisticsSystem::RemoveEntity(Entity * entity)
     }
 }
 
-void EditorStatisticsSystem::AddComponent(Entity * entity, Component * component)
+void EditorStatisticsSystem::AddComponent(Entity* entity, Component* component)
 {
     if (component->GetType() == Component::RENDER_COMPONENT)
     {
-        Vector<RenderComponent *> &renderComponents = triangles[eEditorMode::MODE_ALL_SCENE].renderComponents;
+        Vector<RenderComponent*>& renderComponents = triangles[eEditorMode::MODE_ALL_SCENE].renderComponents;
 
-        RenderComponent *newComponent = static_cast<RenderComponent *>(component);
+        RenderComponent* newComponent = static_cast<RenderComponent*>(component);
         DVASSERT(std::find(renderComponents.begin(), renderComponents.end(), newComponent) == renderComponents.end());
         renderComponents.push_back(newComponent);
     }
 }
 
-void EditorStatisticsSystem::RemoveComponent(Entity * entity, Component * component)
+void EditorStatisticsSystem::RemoveComponent(Entity* entity, Component* component)
 {
     if (component->GetType() == Component::RENDER_COMPONENT)
     {
-        RenderComponent *removedComponent = static_cast<RenderComponent *>(component);
+        RenderComponent* removedComponent = static_cast<RenderComponent*>(component);
         FindAndRemoveExchangingWithLast(triangles[eEditorMode::MODE_ALL_SCENE].renderComponents, removedComponent);
     }
 }
 
-const Vector<uint32> &EditorStatisticsSystem::GetTriangles(eEditorMode mode, bool allTriangles) const
+const Vector<uint32>& EditorStatisticsSystem::GetTriangles(eEditorMode mode, bool allTriangles) const
 {
     if (allTriangles)
     {
@@ -226,10 +218,9 @@ void EditorStatisticsSystem::Process(float32 timeElapsed)
     DispatchSignals();
 }
 
-
 void EditorStatisticsSystem::CalculateTriangles()
 {
-    SceneEditor2 *editorScene = static_cast<SceneEditor2 *> (GetScene());
+    SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
 
     auto CalculateTrianglesForMode = [this](eEditorMode mode) {
         EditorStatisticsSystemInternal::EnumerateTriangles(triangles[mode]);
@@ -254,7 +245,6 @@ void EditorStatisticsSystem::EmitInvalidateUI(uint32 flags)
     invalidateUIflag = flags;
 }
 
-
 void EditorStatisticsSystem::DispatchSignals()
 {
     if (invalidateUIflag == FLAG_NONE)
@@ -273,7 +263,7 @@ void EditorStatisticsSystem::DispatchSignals()
     invalidateUIflag = FLAG_NONE;
 }
 
-void EditorStatisticsSystem::AddDelegate(EditorStatisticsSystemUIDelegate *uiDelegate)
+void EditorStatisticsSystem::AddDelegate(EditorStatisticsSystemUIDelegate* uiDelegate)
 {
     DVASSERT(uiDelegate != nullptr);
 
@@ -284,11 +274,9 @@ void EditorStatisticsSystem::AddDelegate(EditorStatisticsSystemUIDelegate *uiDel
     }
 }
 
-void EditorStatisticsSystem::RemoveDelegate(EditorStatisticsSystemUIDelegate *uiDelegate)
+void EditorStatisticsSystem::RemoveDelegate(EditorStatisticsSystemUIDelegate* uiDelegate)
 {
     DVASSERT(uiDelegate != nullptr);
 
     FindAndRemoveExchangingWithLast(uiDelegates, uiDelegate);
 }
-
-

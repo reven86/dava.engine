@@ -50,12 +50,9 @@ public:
     };
 
 private:
-    bool &guardedValue;
+    bool& guardedValue;
     const bool oldValue;
 };
-
-
-
 }
 
 

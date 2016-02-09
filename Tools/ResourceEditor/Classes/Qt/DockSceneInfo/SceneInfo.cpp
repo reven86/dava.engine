@@ -84,7 +84,6 @@ SceneInfo::~SceneInfo()
     posSaver.SaveValue("splitPos", v);
 }
 
-
 void SceneInfo::InitializeInfo()
 {
     RemovePropertyAll();
@@ -227,10 +226,10 @@ void SceneInfo::RefreshLODInfoInFrame()
 {
     QtPropertyData* header = GetInfoHeader("LOD in Frame");
 
-    EditorStatisticsSystem *statisticsSystem = GetCurrentEditorStatisticsSystem();
+    EditorStatisticsSystem* statisticsSystem = GetCurrentEditorStatisticsSystem();
     if (statisticsSystem != nullptr)
     {
-        const auto & triangles = statisticsSystem->GetTriangles(eEditorMode::MODE_ALL_SCENE, false);
+        const auto& triangles = statisticsSystem->GetTriangles(eEditorMode::MODE_ALL_SCENE, false);
 
         uint32 lodTriangles = 0;
         for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
@@ -263,11 +262,11 @@ void SceneInfo::RefreshLODInfoInFrame()
 void SceneInfo::RefreshLODInfoForSelection()
 {
     QtPropertyData* header = GetInfoHeader("LOD Info for Selected Entities");
-    
-    EditorStatisticsSystem *statisticsSystem = GetCurrentEditorStatisticsSystem();
+
+    EditorStatisticsSystem* statisticsSystem = GetCurrentEditorStatisticsSystem();
     if (statisticsSystem != nullptr)
     {
-        const auto & triangles = statisticsSystem->GetTriangles(eEditorMode::MODE_SELECTION, true);
+        const auto& triangles = statisticsSystem->GetTriangles(eEditorMode::MODE_SELECTION, true);
 
         uint32 lodTriangles = 0;
         for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
@@ -401,7 +400,6 @@ void SceneInfo::CollectParticlesData()
 
     spritesCount = (uint32)sprites.size();
 }
-
 
 DAVA::uint32 SceneInfo::GetTrianglesForNotLODEntityRecursive(DAVA::Entity* entity, bool onlyVisibleBatches)
 {
@@ -920,11 +918,11 @@ void SceneInfo::RefreshLayersSection()
     }
 }
 
-EditorStatisticsSystem *SceneInfo::GetCurrentEditorStatisticsSystem() const
+EditorStatisticsSystem* SceneInfo::GetCurrentEditorStatisticsSystem() const
 {
     DVASSERT(QtMainWindow::Instance());
 
-    SceneEditor2 *scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     if (scene != nullptr)
     {
         return scene->editorStatisticsSystem;
@@ -932,5 +930,3 @@ EditorStatisticsSystem *SceneInfo::GetCurrentEditorStatisticsSystem() const
 
     return nullptr;
 }
-
-
