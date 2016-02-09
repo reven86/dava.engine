@@ -273,8 +273,8 @@ void RenderSystem2D::Setup2DMatrices()
 {
     Size2f targetSize;
     const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
-    targetSize.dx = descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width;
-    targetSize.dy = descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height;
+    targetSize.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+    targetSize.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
 
     if ((descr.colorAttachment != rhi::InvalidHandle) && (!rhi::DeviceCaps().isUpperLeftRTOrigin))
     {
@@ -359,8 +359,8 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
         //RHI_COMPLETE - Mikhail please review this
         const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width,
-                    descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
+                    static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width),
+                    static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
@@ -1614,8 +1614,8 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
     const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
     if (destRect.dx < 0.f || destRect.dy < 0.f)
     {
-        destRect.dx = descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width;
-        destRect.dy = descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height;
+        destRect.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+        destRect.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
 
         if (descr.transformVirtualToPhysical)
         {
