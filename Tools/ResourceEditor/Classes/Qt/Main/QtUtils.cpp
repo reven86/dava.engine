@@ -49,14 +49,13 @@ using namespace DAVA;
 
 FilePath PathnameToDAVAStyle(const QString& convertedPathname)
 {
-    return FilePath((const String &)QSTRING_TO_DAVASTRING(convertedPathname));
+    return FilePath((const String&)QSTRING_TO_DAVASTRING(convertedPathname));
 }
 
 FilePath GetOpenFileName(const String& title, const FilePath& pathname, const String& filter)
 {
     QString filePath = FileDialog::getOpenFileName(nullptr, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                    QString(filter.c_str()));
-
 
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
     if (!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
@@ -75,7 +74,7 @@ String SizeInBytesToString(float32 size)
 
     if (1000000 < size)
     {
-        retString = Format("%0.2f MB", size / (1024 * 1024) );
+        retString = Format("%0.2f MB", size / (1024 * 1024));
     }
     else if (1000 < size)
     {
@@ -85,8 +84,8 @@ String SizeInBytesToString(float32 size)
     {
         retString = Format("%d B", (int32)size);
     }
-    
-    return  retString;
+
+    return retString;
 }
 
 WideString SizeInBytesToWideString(float32 size)
@@ -96,24 +95,25 @@ WideString SizeInBytesToWideString(float32 size)
 
 Image* CreateTopLevelImage(const FilePath& imagePathname)
 {
-    Image *image = NULL;
-    Vector<Image *> imageSet;
+    Image* image = NULL;
+    Vector<Image*> imageSet;
     ImageSystem::Instance()->Load(imagePathname, imageSet);
-    if(0 != imageSet.size())
+    if (0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);
-		for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
+        for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
     }
-    
+
     return image;
 }
 
 void ShowErrorDialog(const Set<String>& errors, const String& title /* = "" */)
 {
-    if (errors.empty()) return;
+    if (errors.empty())
+        return;
 
-	const uint32 maxErrorsPerDialog = 6;
-	uint32 totalErrors = errors.size();
+    const uint32 maxErrorsPerDialog = 6;
+    uint32 totalErrors = errors.size();
 
     const String dialogTitle = title + Format(" %u error(s) occured.", totalErrors);
     const String errorDivideLine("\n--------------------\n");
@@ -151,7 +151,7 @@ void ShowErrorDialog(const String& errorMessage, const String& title)
 
 bool IsKeyModificatorPressed(Key key)
 {
-	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
+    return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()
@@ -163,16 +163,19 @@ QColor ColorToQColor(const Color& color)
 {
     float32 maxC = 1.0;
 
-    if(maxC < color.r) maxC = color.r;
-    if(maxC < color.g) maxC = color.g;
-    if(maxC < color.b) maxC = color.b;
+    if (maxC < color.r)
+        maxC = color.r;
+    if (maxC < color.g)
+        maxC = color.g;
+    if (maxC < color.b)
+        maxC = color.b;
 
     return QColor::fromRgbF(color.r / maxC, color.g / maxC, color.b / maxC, Clamp(color.a, 0.0f, 1.0f));
 }
 
 Color QColorToColor(const QColor& qcolor)
 {
-	return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
+    return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 }
 
 int ShowQuestion(const String& header, const String& question, int buttons, int defaultButton)
@@ -183,7 +186,7 @@ int ShowQuestion(const String& header, const String& question, int buttons, int 
     return answer;
 }
 
-void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
+void ShowActionWithText(QToolBar* toolbar, QAction* action, bool showText)
 {
     if (NULL != toolbar && NULL != action)
     {
@@ -197,7 +200,7 @@ void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 
 String ReplaceInString(const String& sourceString, const String& what, const String& on)
 {
-	String::size_type pos = sourceString.find(what);
+    String::size_type pos = sourceString.find(what);
     if (pos != String::npos)
     {
         String newString = sourceString;
@@ -212,7 +215,7 @@ void ShowFileInExplorer(const QString& path)
 {
     const QFileInfo fileInfo(path);
 
-#if defined (Q_OS_MAC)
+#if defined(Q_OS_MAC)
     QStringList args;
     args << "-e";
     args << "tell application \"Finder\"";
@@ -222,13 +225,12 @@ void ShowFileInExplorer(const QString& path)
     args << "select POSIX file \"" + fileInfo.absoluteFilePath() + "\"";
     args << "-e";
     args << "end tell";
-    QProcess::startDetached( "osascript", args );
-#elif defined (Q_OS_WIN)
+    QProcess::startDetached("osascript", args);
+#elif defined(Q_OS_WIN)
     QStringList args;
-    args << "/select," << QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
-    QProcess::startDetached( "explorer", args );
-#endif//
-
+    args << "/select," << QDir::toNativeSeparators(fileInfo.absoluteFilePath());
+    QProcess::startDetached("explorer", args);
+#endif //
 }
 
 void SaveSpriteToFile(Sprite* sprite, const FilePath& path)

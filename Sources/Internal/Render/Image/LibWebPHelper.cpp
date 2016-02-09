@@ -38,12 +38,11 @@
 
 namespace DAVA
 {
-
 LibWebPHelper::LibWebPHelper()
 {
     name.assign("WEBP");
     supportedExtensions.push_back(".webp");
-    supportedFormats = { {FORMAT_RGB888, FORMAT_RGBA8888} };
+    supportedFormats = { { FORMAT_RGB888, FORMAT_RGBA8888 } };
 }
 
 bool LibWebPHelper::CanProcessFile(File* infile) const
@@ -51,7 +50,7 @@ bool LibWebPHelper::CanProcessFile(File* infile) const
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
 {
     WebPDecoderConfig config;
     WebPBitstreamFeatures* bitstream = &config.input;
@@ -64,7 +63,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     infile->Seek(0, File::SEEK_FROM_START);
     uint32 dataSize = infile->GetSize();
-    uint8_t *data = new uint8_t[dataSize];
+    uint8_t* data = new uint8_t[dataSize];
     SCOPE_EXIT
     {
         SafeDeleteArray(data);
@@ -77,7 +76,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         bitstream = &local_features;
     }
-    
+
     auto bsStatus = WebPGetFeatures(data, dataSize, bitstream);
     if (bsStatus != VP8_STATUS_OK)
     {
@@ -85,7 +84,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    uint8_t *newData = nullptr;
+    uint8_t* newData = nullptr;
     if (bitstream->has_alpha)
     {
         newData = WebPDecodeRGBA(data, dataSize, &bitstream->width, &bitstream->height);
@@ -121,7 +120,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode LibWebPHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size());
     const Image* original = imageSet[0];
@@ -136,7 +135,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    uint8_t *outData = nullptr;
+    uint8_t* outData = nullptr;
     SCOPE_EXIT
     {
         SafeDeleteArray(outData);
@@ -172,7 +171,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    File *outFile = File::Create(fileName, File::CREATE | File::WRITE);
+    File* outFile = File::Create(fileName, File::CREATE | File::WRITE);
     if (nullptr == outFile)
     {
         Logger::Error("[LibWebPHelper::WriteFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
@@ -185,13 +184,13 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     Logger::Error("[LibWebPHelper::WriteFileAsCubeMap] For WebP cubeMaps are not supported");
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
+DAVA::ImageInfo LibWebPHelper::GetImageInfo(File* infile) const
 {
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);
@@ -199,7 +198,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
 
     infile->Seek(0, File::SEEK_FROM_START);
     uint32 dataSize = infile->GetSize();
-    uint8_t *data = new uint8_t[dataSize];
+    uint8_t* data = new uint8_t[dataSize];
     SCOPE_EXIT
     {
         SafeDeleteArray(data);
@@ -232,5 +231,4 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
 
     return info;
 }
-
 };

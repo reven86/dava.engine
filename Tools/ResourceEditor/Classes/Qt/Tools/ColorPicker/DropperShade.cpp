@@ -39,15 +39,13 @@
 
 #include "../Helpers/MouseHelper.h"
 
-
 namespace
 {
-    const int cCursorRadius = 151;  // Should be odd
+const int cCursorRadius = 151; // Should be odd
 }
 
-
-DropperShade::DropperShade( const QImage& src, const QRect& rect )
-: QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
+DropperShade::DropperShade(const QImage& src, const QRect& rect)
+    : QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
     , cache(src)
     , cursorSize(cCursorRadius, cCursorRadius)
     , zoomFactor(1)
@@ -62,11 +60,11 @@ DropperShade::DropperShade( const QImage& src, const QRect& rect )
     move(rect.topLeft());
     cursorPos = mapFromGlobal(QCursor::pos());
 
-    connect(mouse, SIGNAL( mouseMove( const QPoint& ) ), SLOT( OnMouseMove( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseRelease( const QPoint& ) ), SLOT( OnClicked( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseWheel( int ) ), SLOT( OnMouseWheel( int ) ));
-    connect(mouse, SIGNAL( mouseEntered() ), SLOT( OnMouseEnter() ));
-    connect(mouse, SIGNAL( mouseLeaved() ), SLOT( OnMouseLeave() ));
+    connect(mouse, SIGNAL(mouseMove(const QPoint&)), SLOT(OnMouseMove(const QPoint&)));
+    connect(mouse, SIGNAL(mouseRelease(const QPoint&)), SLOT(OnClicked(const QPoint&)));
+    connect(mouse, SIGNAL(mouseWheel(int)), SLOT(OnMouseWheel(int)));
+    connect(mouse, SIGNAL(mouseEntered()), SLOT(OnMouseEnter()));
+    connect(mouse, SIGNAL(mouseLeaved()), SLOT(OnMouseLeave()));
 }
 
 DropperShade::~DropperShade()
@@ -75,7 +73,7 @@ DropperShade::~DropperShade()
 
 void DropperShade::SetZoomFactor(int zoom)
 {
-    if ( (sender() != this) && (zoomFactor != zoom) )
+    if ((sender() != this) && (zoomFactor != zoom))
     {
         zoomFactor = zoom;
         update();
@@ -99,15 +97,15 @@ void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
 
     const int zf = (zoomFactor * 2 + 1);
     const QRect rcVirtual(
-        _pos.x() - cursorSize.width() / 2,
-        _pos.y() - cursorSize.height() / 2,
-        cursorSize.width(),
-        cursorSize.height());
+    _pos.x() - cursorSize.width() / 2,
+    _pos.y() - cursorSize.height() / 2,
+    cursorSize.width(),
+    cursorSize.height());
     const QRect rcReal(
-        (_pos.x() - cursorSize.width() / 2 / zf) * scale,
-        (_pos.y() - cursorSize.height() / 2 / zf) * scale,
-        (rcVirtual.width() / zf) * scale + 1,
-        (rcVirtual.height() / zf) * scale + 1);
+    (_pos.x() - cursorSize.width() / 2 / zf) * scale,
+    (_pos.y() - cursorSize.height() / 2 / zf) * scale,
+    (rcVirtual.width() / zf) * scale + 1,
+    (rcVirtual.height() / zf) * scale + 1);
 
     const QImage& crop = cache.copy(rcReal);
     const QImage& scaled = crop.scaled(cursorSize.width() * scale, cursorSize.height() * scale, Qt::KeepAspectRatio, Qt::FastTransformation);
@@ -121,12 +119,12 @@ void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
     int ym = rcVirtual.center().y();
     int yb = rcVirtual.bottom();
 
-    p->setPen( QPen( Qt::black, 1.0 ) );
+    p->setPen(QPen(Qt::black, 1.0));
     p->drawLine(xl, yt, xr, yt);
     p->drawLine(xl, yb, xr, yb);
     p->drawLine(xl, yt, xl, yb);
     p->drawLine(xr, yt, xr, yb);
-    
+
     p->drawLine(xl, ym, xr, ym);
     p->drawLine(xm, yt, xm, yb);
 
@@ -135,7 +133,7 @@ void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
     yt++;
     yb--;
 
-    p->setPen( QPen( Qt::white, 1.0 ) );
+    p->setPen(QPen(Qt::white, 1.0));
     p->drawLine(xl, yt, xr, yt);
     p->drawLine(xl, yb, xr, yb);
     p->drawLine(xl, yt, xl, yb);
@@ -182,7 +180,7 @@ void DropperShade::OnMouseWheel(int delta)
     zoomFactor += delta > 0 ? 1 : -1;
     if (zoomFactor < 0)
         zoomFactor = 0;
-    if (zoomFactor > max )
+    if (zoomFactor > max)
         zoomFactor = max;
 
     if (old != zoomFactor)

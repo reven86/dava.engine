@@ -99,6 +99,7 @@ private:
 
     DAVA::eGPUFamily exportForGPU = DAVA::eGPUFamily::GPU_ORIGIN;
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
+
     bool optimizeOnExport = false;
 
     DAVA::FilePath dataFolder;

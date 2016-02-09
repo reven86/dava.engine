@@ -28,83 +28,87 @@ extern "C" {
 
 typedef struct _StringInfo
 {
-  char
+    char
     path[MaxTextExtent];
 
-  unsigned char
-    *datum;
+    unsigned char
+    * datum;
 
-  size_t
+    size_t
     length,
     signature;
 } StringInfo;
 
 extern MagickExport char
-  *AcquireString(const char *),
-  *CloneString(char **,const char *),
-  *ConstantString(const char *),
-  *DestroyString(char *),
-  **DestroyStringList(char **),
-  *EscapeString(const char *,const char),
-  *FileToString(const char *,const size_t,ExceptionInfo *),
-  *GetEnvironmentValue(const char *),
-  *StringInfoToHexString(const StringInfo *),
-  *StringInfoToString(const StringInfo *),
-  **StringToArgv(const char *,int *),
-  *StringToken(const char *,char **),
-  **StringToList(const char *);
+*
+AcquireString(const char *),
+*CloneString(char **, const char *),
+*ConstantString(const char *),
+*DestroyString(char *),
+**DestroyStringList(char **),
+*EscapeString(const char *, const char),
+*FileToString(const char *, const size_t, ExceptionInfo *),
+*GetEnvironmentValue(const char *),
+*StringInfoToHexString(const StringInfo *),
+*StringInfoToString(const StringInfo *),
+**StringToArgv(const char *, int *),
+*StringToken(const char *, char **),
+**StringToList(const char *);
 
 extern MagickExport const char
-  *GetStringInfoPath(const StringInfo *);
+*
+GetStringInfoPath(const StringInfo*);
 
 extern MagickExport double
-  InterpretSiPrefixValue(const char *restrict,char **restrict);
+InterpretSiPrefixValue(const char* restrict, char** restrict);
 
 extern MagickExport int
-  CompareStringInfo(const StringInfo *,const StringInfo *),
-  LocaleCompare(const char *,const char *),
-  LocaleNCompare(const char *,const char *,const size_t);
+CompareStringInfo(const StringInfo *, const StringInfo *),
+LocaleCompare(const char *, const char *),
+LocaleNCompare(const char *, const char *, const size_t);
 
 extern MagickExport MagickBooleanType
-  ConcatenateString(char **,const char *),
-  SubstituteString(char **,const char *,const char *);
+ConcatenateString(char **, const char *),
+SubstituteString(char **, const char *, const char *);
 
 extern MagickExport size_t
-  ConcatenateMagickString(char *,const char *,const size_t)
-    magick_attribute((nonnull)),
-  CopyMagickString(char *,const char *,const size_t)
-    magick_attribute((nonnull)),
-  GetStringInfoLength(const StringInfo *);
+ConcatenateMagickString(char *, const char *, const size_t)
+magick_attribute((nonnull)),
+CopyMagickString(char *, const char *, const size_t)
+magick_attribute((nonnull)),
+GetStringInfoLength(const StringInfo *);
 
 extern MagickExport ssize_t
-  FormatMagickSize(const MagickSizeType,const MagickBooleanType,char *),
-  FormatMagickTime(const time_t,const size_t,char *);
+FormatMagickSize(const MagickSizeType, const MagickBooleanType, char *),
+FormatMagickTime(const time_t, const size_t, char *);
 
 extern MagickExport StringInfo
-  *AcquireStringInfo(const size_t),
-  *BlobToStringInfo(const void *,const size_t),
-  *CloneStringInfo(const StringInfo *),
-  *ConfigureFileToStringInfo(const char *),
-  *DestroyStringInfo(StringInfo *),
-  *FileToStringInfo(const char *,const size_t,ExceptionInfo *),
-  *SplitStringInfo(StringInfo *,const size_t),
-  *StringToStringInfo(const char *);
+*
+AcquireStringInfo(const size_t),
+*BlobToStringInfo(const void *, const size_t),
+*CloneStringInfo(const StringInfo *),
+*ConfigureFileToStringInfo(const char *),
+*DestroyStringInfo(StringInfo *),
+*FileToStringInfo(const char *, const size_t, ExceptionInfo *),
+*SplitStringInfo(StringInfo *, const size_t),
+*StringToStringInfo(const char *);
 
 extern MagickExport unsigned char
-  *GetStringInfoDatum(const StringInfo *);
+*
+GetStringInfoDatum(const StringInfo*);
 
 extern MagickExport void
-  ConcatenateStringInfo(StringInfo *,const StringInfo *)
-    magick_attribute((nonnull)),
-  LocaleLower(char *),
-  LocaleUpper(char *),
-  PrintStringInfo(FILE *file,const char *,const StringInfo *),
-  ResetStringInfo(StringInfo *),
-  SetStringInfo(StringInfo *,const StringInfo *),
-  SetStringInfoDatum(StringInfo *,const unsigned char *),
-  SetStringInfoLength(StringInfo *,const size_t),
-  SetStringInfoPath(StringInfo *,const char *),
-  StripString(char *);
+ConcatenateStringInfo(StringInfo *, const StringInfo *)
+magick_attribute((nonnull)),
+LocaleLower(char *),
+LocaleUpper(char *),
+PrintStringInfo(FILE *file, const char *, const StringInfo *),
+ResetStringInfo(StringInfo *),
+SetStringInfo(StringInfo *, const StringInfo *),
+SetStringInfoDatum(StringInfo *, const unsigned char *),
+SetStringInfoLength(StringInfo *, const size_t),
+SetStringInfoPath(StringInfo *, const char *),
+StripString(char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

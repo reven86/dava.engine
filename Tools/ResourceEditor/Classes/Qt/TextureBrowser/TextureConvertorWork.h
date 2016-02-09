@@ -36,41 +36,42 @@
 
 struct JobItem
 {
-	int id;
-	int type;
+    int id;
+    int type;
     eTextureConvertMode convertMode;
-	const DAVA::TextureDescriptor* descriptor;
+    const DAVA::TextureDescriptor* descriptor;
 
-	JobItem()
-		: id(0)
-		, type(0)
+    JobItem()
+        : id(0)
+        , type(0)
         , convertMode(CONVERT_NOT_EXISTENT)
-		, descriptor(NULL)
-	{ }
+        , descriptor(NULL)
+    {
+    }
 };
 
 class JobStack
 {
 public:
-	JobStack();
-	~JobStack();
+    JobStack();
+    ~JobStack();
 
-	bool push(const JobItem &item);
-	JobItem* pop();
-	int size();
+    bool push(const JobItem& item);
+    JobItem* pop();
+    int size();
 
 private:
-	struct JobItemWrapper : public JobItem
-	{
-		JobItemWrapper(const JobItem &item);
+    struct JobItemWrapper : public JobItem
+    {
+        JobItemWrapper(const JobItem& item);
 
-		JobItemWrapper *next;
-		JobItemWrapper *prev;
-	};
+        JobItemWrapper* next;
+        JobItemWrapper* prev;
+    };
 
-	JobItemWrapper *head;
+    JobItemWrapper* head;
 
-	int itemsCount;
+    int itemsCount;
 };
 
 #endif // __TEXTURE_CONVERTOR_WORK_H__

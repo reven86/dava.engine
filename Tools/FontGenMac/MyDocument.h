@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  
  File: MyDocument.h
@@ -85,10 +84,10 @@
 
 @interface MyDocument : NSDocument
 {
-	IBOutlet CoreTextArcView *arcView;
-	IBOutlet NSButton *boldButton;
-	IBOutlet NSButton *italicButton;
-	IBOutlet NSPanel * characterPanel;
+    IBOutlet CoreTextArcView* arcView;
+    IBOutlet NSButton* boldButton;
+    IBOutlet NSButton* italicButton;
+    IBOutlet NSPanel* characterPanel;
 }
 
 - (IBAction)setString:(id)sender;
@@ -99,10 +98,10 @@
 - (IBAction)setShowsLineMetrics:(id)sender;
 - (IBAction)setDimsSubstitutedGlyphs:(id)sender;
 
-@property(retain, nonatomic) CoreTextArcView *arcView;
+@property(retain, nonatomic) CoreTextArcView* arcView;
 
--(IBAction) showCharacterSetup: (id)sender;
--(IBAction) exportFontToFile: (id)sender;
+- (IBAction)showCharacterSetup:(id)sender;
+- (IBAction)exportFontToFile:(id)sender;
 
 - (void)updateDisplay;
 

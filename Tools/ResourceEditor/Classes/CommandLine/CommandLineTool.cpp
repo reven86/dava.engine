@@ -54,9 +54,9 @@ DAVA::String CommandLineTool::GetToolKey() const
 FilePath CommandLineTool::CreateQualityConfigPath(const FilePath& path) const
 {
     FilePath projectPath = ProjectManager::CreateProjectPathFromPath(path);
-    if(projectPath.IsEmpty())
+    if (projectPath.IsEmpty())
         return projectPath;
-    
+
     return (projectPath + "Data/Quality.yaml");
 }
 

@@ -33,40 +33,41 @@
 
 using namespace DAVA;
 
-StyleSheetsNode::StyleSheetsNode(PackageBaseNode *parent) : PackageBaseNode(parent)
+StyleSheetsNode::StyleSheetsNode(PackageBaseNode* parent)
+    : PackageBaseNode(parent)
 {
 }
 
 StyleSheetsNode::~StyleSheetsNode()
 {
-    for (StyleSheetNode *styleSheet : styleSheets)
+    for (StyleSheetNode* styleSheet : styleSheets)
         styleSheet->Release();
     styleSheets.clear();
 }
 
-void StyleSheetsNode::Add(StyleSheetNode *node)
+void StyleSheetsNode::Add(StyleSheetNode* node)
 {
     DVASSERT(node->GetParent() == NULL);
     node->SetParent(this);
     styleSheets.push_back(SafeRetain(node));
 }
 
-void StyleSheetsNode::InsertAtIndex(DAVA::int32 index, StyleSheetNode *node)
+void StyleSheetsNode::InsertAtIndex(DAVA::int32 index, StyleSheetNode* node)
 {
     DVASSERT(node->GetParent() == NULL);
     node->SetParent(this);
-    
+
     styleSheets.insert(styleSheets.begin() + index, SafeRetain(node));
 }
 
-void StyleSheetsNode::Remove(StyleSheetNode *node)
+void StyleSheetsNode::Remove(StyleSheetNode* node)
 {
     auto it = find(styleSheets.begin(), styleSheets.end(), node);
     if (it != styleSheets.end())
     {
         DVASSERT(node->GetParent() == this);
         node->SetParent(NULL);
-        
+
         styleSheets.erase(it);
         SafeRelease(node);
     }
@@ -78,15 +79,15 @@ void StyleSheetsNode::Remove(StyleSheetNode *node)
 
 int StyleSheetsNode::GetCount() const
 {
-    return (int) styleSheets.size();
+    return (int)styleSheets.size();
 }
 
-StyleSheetNode *StyleSheetsNode::Get(int index) const
+StyleSheetNode* StyleSheetsNode::Get(int index) const
 {
     return styleSheets[index];
 }
 
-void StyleSheetsNode::Accept(PackageVisitor *visitor)
+void StyleSheetsNode::Accept(PackageVisitor* visitor)
 {
     visitor->VisitStyleSheets(this);
 }
@@ -101,7 +102,7 @@ bool StyleSheetsNode::IsInsertingStylesSupported() const
     return true;
 }
 
-bool StyleSheetsNode::CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const
+bool StyleSheetsNode::CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) const
 {
     return !IsReadOnly();
 }

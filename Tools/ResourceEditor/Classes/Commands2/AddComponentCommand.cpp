@@ -30,13 +30,13 @@
 #include "Commands2/AddComponentCommand.h"
 #include "DAVAEngine.h"
 
-AddComponentCommand::AddComponentCommand(DAVA::Entity* _entity, DAVA::Component * _component)
-	: Command2(CMDID_COMPONENT_ADD, "Add Component")
+AddComponentCommand::AddComponentCommand(DAVA::Entity* _entity, DAVA::Component* _component)
+    : Command2(CMDID_COMPONENT_ADD, "Add Component")
     , entity(_entity)
     , component(_component)
 {
     DVASSERT(entity);
-	DVASSERT(component);
+    DVASSERT(component);
 }
 
 AddComponentCommand::~AddComponentCommand()

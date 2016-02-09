@@ -35,19 +35,18 @@
 
 namespace DAVA
 {
-	class Scene;
-	class Entity;
-	class RenderObject;
-	class KeyedArchive;
-	class ParticleEffectComponent;
-	class ParticleEmitter;
+class Scene;
+class Entity;
+class RenderObject;
+class KeyedArchive;
+class ParticleEffectComponent;
+class ParticleEmitter;
 }
 
 class SceneDumper
 {
 public:
-
-	using SceneLinks = DAVA::Set < DAVA::FilePath >;
+    using SceneLinks = DAVA::Set<DAVA::FilePath>;
 
     static SceneLinks DumpLinks(const DAVA::FilePath& scenePath);
 
@@ -57,12 +56,12 @@ private:
 
 	void DumpLinksRecursive(DAVA::Entity *entity, SceneLinks &links) const;
 
-	void DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLinks &links) const;
-	void DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks &links) const;
-	void DumpEffect(DAVA::ParticleEffectComponent *effect, SceneLinks &links) const;
-	void DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const;
+    void DumpCustomProperties(DAVA::KeyedArchive* properties, SceneLinks& links) const;
+    void DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks& links) const;
+    void DumpEffect(DAVA::ParticleEffectComponent* effect, SceneLinks& links) const;
+    void DumpEmitter(DAVA::ParticleEmitter* emitter, SceneLinks& links, SceneLinks& gfxFolders) const;
 
-	DAVA::Scene *scene = nullptr;
+    DAVA::Scene* scene = nullptr;
     DAVA::FilePath scenePathname;
 };
 

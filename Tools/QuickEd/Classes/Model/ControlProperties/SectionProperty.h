@@ -36,23 +36,24 @@ template <typename ValueType>
 class SectionProperty : public AbstractProperty
 {
 public:
-    SectionProperty(const DAVA::String &sectionName);
+    SectionProperty(const DAVA::String& sectionName);
+
 protected:
     virtual ~SectionProperty();
-    
+
 public:
-    void AddProperty(ValueType *property);
-    void InsertProperty(ValueType *property, DAVA::int32 index);
-    void RemoveProperty(ValueType *property);
+    void AddProperty(ValueType* property);
+    void InsertProperty(ValueType* property, DAVA::int32 index);
+    void RemoveProperty(ValueType* property);
     DAVA::uint32 GetCount() const override;
     ValueType* GetProperty(DAVA::int32 index) const override;
 
     void Refresh(DAVA::int32 refreshFlags) override;
-    void Accept(PropertyVisitor *visitor) override;
-    
-    const DAVA::String &GetName() const override;
+    void Accept(PropertyVisitor* visitor) override;
 
-    virtual ValueType *FindProperty(const DAVA::InspMember *member) const;
+    const DAVA::String& GetName() const override;
+
+    virtual ValueType* FindProperty(const DAVA::InspMember* member) const;
 
     virtual ePropertyType GetType() const
     {
@@ -62,12 +63,11 @@ public:
 protected:
     DAVA::Vector<ValueType*> children;
     DAVA::String name;
-
 };
 
 template <typename ValueType>
-inline SectionProperty<ValueType>::SectionProperty(const DAVA::String &sectionName)
-: name(sectionName)
+inline SectionProperty<ValueType>::SectionProperty(const DAVA::String& sectionName)
+    : name(sectionName)
 {
 }
 
@@ -84,7 +84,7 @@ inline SectionProperty<ValueType>::~SectionProperty()
 }
 
 template <typename ValueType>
-inline void SectionProperty<ValueType>::AddProperty(ValueType *property)
+inline void SectionProperty<ValueType>::AddProperty(ValueType* property)
 {
     DVASSERT(property->GetParent() == nullptr);
     property->SetParent(this);
@@ -92,7 +92,7 @@ inline void SectionProperty<ValueType>::AddProperty(ValueType *property)
 }
 
 template <typename ValueType>
-inline void SectionProperty<ValueType>::InsertProperty(ValueType *property, DAVA::int32 index)
+inline void SectionProperty<ValueType>::InsertProperty(ValueType* property, DAVA::int32 index)
 {
     DVASSERT(property->GetParent() == nullptr);
     if (0 <= index && index <= static_cast<DAVA::int32>(children.size()))
@@ -107,7 +107,7 @@ inline void SectionProperty<ValueType>::InsertProperty(ValueType *property, DAVA
 }
 
 template <typename ValueType>
-inline void SectionProperty<ValueType>::RemoveProperty(ValueType *property)
+inline void SectionProperty<ValueType>::RemoveProperty(ValueType* property)
 {
     auto it = std::find(children.begin(), children.end(), property);
     if (it != children.end())
@@ -134,7 +134,7 @@ inline ValueType* SectionProperty<ValueType>::GetProperty(DAVA::int32 index) con
 {
     if (0 <= index && index < static_cast<DAVA::int32>(children.size()))
         return children[index];
-    
+
     DVASSERT(false);
     return nullptr;
 }
@@ -142,24 +142,24 @@ inline ValueType* SectionProperty<ValueType>::GetProperty(DAVA::int32 index) con
 template <typename ValueType>
 inline void SectionProperty<ValueType>::Refresh(DAVA::int32 refreshFlags)
 {
-    for (ValueType *prop : children)
+    for (ValueType* prop : children)
         prop->Refresh(refreshFlags);
 }
 
 template <typename ValueType>
-inline void SectionProperty<ValueType>::Accept(PropertyVisitor *visitor)
+inline void SectionProperty<ValueType>::Accept(PropertyVisitor* visitor)
 {
     // do nothing
 }
 
 template <typename ValueType>
-const DAVA::String & SectionProperty<ValueType>::GetName() const
+const DAVA::String& SectionProperty<ValueType>::GetName() const
 {
     return name;
 }
 
 template <typename ValueType>
-ValueType *SectionProperty<ValueType>::FindProperty(const DAVA::InspMember *member) const
+ValueType* SectionProperty<ValueType>::FindProperty(const DAVA::InspMember* member) const
 {
     for (auto child : children)
     {

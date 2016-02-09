@@ -47,7 +47,6 @@ public:
     VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const override;
     void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) override;
 };
-
 };
 
 #endif /* defined(__DAVAENGINE_NMATERIALSTATEDYNAMICFLAGSINSP_NAMES_H__) */

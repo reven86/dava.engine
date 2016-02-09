@@ -25,17 +25,16 @@
 #endif//defined(_WIN32) && defined(_MEM_DEBUG)*/
 
 
-#if defined (__ALLOC_C)
+#if defined(__ALLOC_C)
 	#define __ALLOC_EXTERN
 #else
 	#define __ALLOC_EXTERN extern
 #endif
 #include <IL/il.h>
 
-
 __ALLOC_EXTERN mAlloc ialloc_ptr;
-__ALLOC_EXTERN mFree  ifree_ptr;
+__ALLOC_EXTERN mFree ifree_ptr;
 
 
 
-#endif//ALLOC_H
+#endif //ALLOC_H

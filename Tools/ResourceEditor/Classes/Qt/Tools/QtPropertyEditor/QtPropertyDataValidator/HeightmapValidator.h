@@ -37,15 +37,13 @@
 class HeightMapValidator : public PathValidator
 {
 public:
-    
     HeightMapValidator(const QStringList& value);
-    
-protected:
-	
-    virtual bool ValidateInternal(const QVariant &v);
 
-    virtual void ErrorNotifyInternal(const QVariant &v) const;
-    
+protected:
+    virtual bool ValidateInternal(const QVariant& v);
+
+    virtual void ErrorNotifyInternal(const QVariant& v) const;
+
     DAVA::String notifyMessage;
 };
 

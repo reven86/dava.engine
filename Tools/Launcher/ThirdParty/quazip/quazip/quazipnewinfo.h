@@ -64,49 +64,50 @@ quazip/(un)zip.h files for details, basically it's zlib license.
  * passing this structure to
  * QuaZipFile::open(OpenMode,const QuaZipNewInfo&,int,int,bool).
  **/
-struct QUAZIP_EXPORT QuaZipNewInfo {
-  /// File name.
-  /** This field holds file name inside archive, including path relative
+struct QUAZIP_EXPORT QuaZipNewInfo
+{
+    /// File name.
+    /** This field holds file name inside archive, including path relative
    * to archive root.
    **/
-  QString name;
-  /// File timestamp.
-  /** This is the last file modification date and time. Will be stored
+    QString name;
+    /// File timestamp.
+    /** This is the last file modification date and time. Will be stored
    * in the archive central directory. It is a good practice to set it
    * to the source file timestamp instead of archive creating time. Use
    * setFileDateTime() or QuaZipNewInfo(const QString&, const QString&).
    **/
-  QDateTime dateTime;
-  /// File internal attributes.
-  quint16 internalAttr;
-  /// File external attributes.
-  /**
+    QDateTime dateTime;
+    /// File internal attributes.
+    quint16 internalAttr;
+    /// File external attributes.
+    /**
     The highest 16 bits contain Unix file permissions and type (dir or
     file). The constructor QuaZipNewInfo(const QString&, const QString&)
     takes permissions from the provided file.
     */
-  quint32 externalAttr;
-  /// File comment.
-  /** Will be encoded using QuaZip::getCommentCodec().
+    quint32 externalAttr;
+    /// File comment.
+    /** Will be encoded using QuaZip::getCommentCodec().
    **/
-  QString comment;
-  /// File local extra field.
-  QByteArray extraLocal;
-  /// File global extra field.
-  QByteArray extraGlobal;
-  /// Uncompressed file size.
-  /** This is only needed if you are using raw file zipping mode, i. e.
+    QString comment;
+    /// File local extra field.
+    QByteArray extraLocal;
+    /// File global extra field.
+    QByteArray extraGlobal;
+    /// Uncompressed file size.
+    /** This is only needed if you are using raw file zipping mode, i. e.
    * adding precompressed file in the zip archive.
    **/
-  ulong uncompressedSize;
-  /// Constructs QuaZipNewInfo instance.
-  /** Initializes name with \a name, dateTime with current date and
+    ulong uncompressedSize;
+    /// Constructs QuaZipNewInfo instance.
+    /** Initializes name with \a name, dateTime with current date and
    * time. Attributes are initialized with zeros, comment and extra
    * field with null values.
    **/
-  QuaZipNewInfo(const QString& name);
-  /// Constructs QuaZipNewInfo instance.
-  /** Initializes name with \a name. Timestamp and permissions are taken
+    QuaZipNewInfo(const QString& name);
+    /// Constructs QuaZipNewInfo instance.
+    /** Initializes name with \a name. Timestamp and permissions are taken
    * from the specified file. If the \a file does not exists or its timestamp
    * is inaccessible (e. g. you do not have read permission for the
    * directory file in), uses current time and zero permissions. Other attributes are
@@ -114,9 +115,9 @@ struct QUAZIP_EXPORT QuaZipNewInfo {
    * 
    * \sa setFileDateTime()
    **/
-  QuaZipNewInfo(const QString& name, const QString& file);
-  /// Sets the file timestamp from the existing file.
-  /** Use this function to set the file timestamp from the existing
+    QuaZipNewInfo(const QString& name, const QString& file);
+    /// Sets the file timestamp from the existing file.
+    /** Use this function to set the file timestamp from the existing
    * file. Use it like this:
    * \code
    * QuaZipFile zipFile(&zip);
@@ -130,21 +131,21 @@ struct QUAZIP_EXPORT QuaZipNewInfo {
    * This function does not change dateTime if some error occured (e. g.
    * file is inaccessible).
    **/
-  void setFileDateTime(const QString& file);
-  /// Sets the file permissions from the existing file.
-  /**
+    void setFileDateTime(const QString& file);
+    /// Sets the file permissions from the existing file.
+    /**
     Takes permissions from the file and sets the high 16 bits of
     external attributes. Uses QFileInfo to get permissions on all
     platforms.
     */
-  void setFilePermissions(const QString &file);
-  /// Sets the file permissions.
-  /**
+    void setFilePermissions(const QString& file);
+    /// Sets the file permissions.
+    /**
     Modifies the highest 16 bits of external attributes. The type part
     is set to dir if the name ends with a slash, and to regular file
     otherwise.
     */
-  void setPermissions(QFile::Permissions permissions);
+    void setPermissions(QFile::Permissions permissions);
 };
 
 #endif

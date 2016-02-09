@@ -47,7 +47,7 @@ class SpritesPacker : public QObject
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
 public:
     SpritesPacker(QObject *parent = nullptr);
-    ~SpritesPacker();
+    ~SpritesPacker() override;
 
     void AddTask(const QDir &inputDir, const QDir &outputDir);
     void ClearTasks();

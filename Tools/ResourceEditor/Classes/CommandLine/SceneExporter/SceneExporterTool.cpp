@@ -300,7 +300,6 @@ void SceneExporterTool::ProcessInternal()
     }
 }
 
-
 FilePath SceneExporterTool::GetQualityConfigPath() const
 {
     if (qualityConfigPath.IsEmpty())

@@ -35,18 +35,21 @@
 class InspMemberModifyCommand : public Command2
 {
 public:
-	InspMemberModifyCommand(const DAVA::InspMember *member, void *object, const DAVA::VariantType &value);
-	~InspMemberModifyCommand();
+    InspMemberModifyCommand(const DAVA::InspMember* member, void* object, const DAVA::VariantType& value);
+    ~InspMemberModifyCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const { return NULL; };
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const
+    {
+        return NULL;
+    };
 
-	const DAVA::InspMember *member;
-	void *object;
+    const DAVA::InspMember* member;
+    void* object;
 
-	DAVA::VariantType oldValue;
-	DAVA::VariantType newValue;
+    DAVA::VariantType oldValue;
+    DAVA::VariantType newValue;
 };
 
 #endif // __INSP_MEMEBER_MODIFY_COMMAND_H__

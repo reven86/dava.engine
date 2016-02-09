@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-#if defined (__DAVAENGINE_BEAST__)
+#if defined(__DAVAENGINE_BEAST__)
 
 BeastCommandLineTool::BeastCommandLineTool()
     : CommandLineTool("-beast")
@@ -95,4 +95,3 @@ DAVA::FilePath BeastCommandLineTool::GetQualityConfigPath() const
 
 
 #endif //#if defined (__DAVAENGINE_BEAST__)
-

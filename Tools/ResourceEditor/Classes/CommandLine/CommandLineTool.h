@@ -36,7 +36,7 @@
 #include "CommandLine/ProgramOptions.h"
 
 class CommandLineTool
-{    
+{
 public:
     CommandLineTool(const DAVA::String& toolName);
     virtual ~CommandLineTool() = default;
@@ -67,5 +67,3 @@ protected:
 };
 
 #endif // __COMMAND_LINE_TOOL_H__
-
-

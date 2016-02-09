@@ -38,7 +38,7 @@ public:
     ScenePathValidator(const QStringList& value);
 
 protected:
-    virtual bool ValidateInternal(const QVariant &v);
+    virtual bool ValidateInternal(const QVariant& v);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__SCENEPATHVALIDATOR__) */

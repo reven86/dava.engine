@@ -36,36 +36,36 @@
 
 class SelectEntityPathWidget;
 
-class AddSwitchEntityDialog: public BaseAddEntityDialog
+class AddSwitchEntityDialog : public BaseAddEntityDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	AddSwitchEntityDialog(QWidget* parent = 0);
-	
-	~AddSwitchEntityDialog();
-	
-	void CleanupPathWidgets();
+    AddSwitchEntityDialog(QWidget* parent = 0);
 
-	const DAVA::Vector<SelectEntityPathWidget*>& GetPathWidgets()
-	{
-		return pathWidgets;
-	}
-	
-	void GetPathEntities(DAVA::Vector<DAVA::Entity*>& entities, SceneEditor2* editor);
-	
-	void accept();
-	
-	void reject();
+    ~AddSwitchEntityDialog();
+
+    void CleanupPathWidgets();
+
+    const DAVA::Vector<SelectEntityPathWidget*>& GetPathWidgets()
+    {
+        return pathWidgets;
+    }
+
+    void GetPathEntities(DAVA::Vector<DAVA::Entity*>& entities, SceneEditor2* editor);
+
+    void accept();
+
+    void reject();
 
 protected:
+    virtual void FillPropertyEditorWithContent()
+    {
+    }
 
-	virtual void FillPropertyEditorWithContent(){}
-	
-	DAVA::Vector<SelectEntityPathWidget*> pathWidgets;
-	
-	DAVA::Vector<QWidget*>			additionalWidgets;
+    DAVA::Vector<SelectEntityPathWidget*> pathWidgets;
 
+    DAVA::Vector<QWidget*> additionalWidgets;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__ADDSWITCHENTITYDIALOG__) */

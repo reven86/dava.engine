@@ -55,8 +55,6 @@ using namespace DAVA;
 
 namespace SceneExporterCache
 {
-//using CachedFiles = List<FilePath>;
-
 const uint32 EXPORTER_VERSION = 1;
 const uint32 LINKS_PARSER_VERSION = 1;
 const String LINKS_NAME = "links.txt";
@@ -121,6 +119,7 @@ void LoadExportedObjects(const FilePath& linkPathname, SceneExporter::ExportedOb
             while (size--)
             {
                 if (linksFile->IsEof())
+
                 {
                     Logger::Warning("Reading of file stopped by EOF: %s", linkPathname.GetAbsolutePathname().c_str());
                     break;

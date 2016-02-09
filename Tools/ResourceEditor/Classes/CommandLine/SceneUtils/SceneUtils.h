@@ -36,8 +36,7 @@
 class SceneUtils
 {
 public:
-
-	SceneUtils();
+    SceneUtils();
     ~SceneUtils();
 
     void CleanFolder(const DAVA::FilePath& folderPathname);
@@ -57,11 +56,10 @@ private:
     void PrepareDestination();
 
 public:
-
     DAVA::FilePath dataFolder;
     DAVA::FilePath dataSourceFolder;
     DAVA::String workingFolder;
-    
+
     DAVA::Map<DAVA::FilePath, DAVA::FilePath> filesForCopy;
 };
 

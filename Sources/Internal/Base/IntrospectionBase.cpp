@@ -32,10 +32,15 @@
 
 namespace DAVA
 {
-
-InspMember::InspMember(const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags /* = 0 */)
-: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(nullptr)
-{ }
+InspMember::InspMember(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags /* = 0 */)
+    : name(_name)
+    , desc(_desc)
+    , offset(_offset)
+    , type(_type)
+    , flags(_flags)
+    , parentInsp(nullptr)
+{
+}
 
 const FastName& InspMember::Name() const
 {
@@ -44,64 +49,63 @@ const FastName& InspMember::Name() const
 
 const InspDesc& InspMember::Desc() const
 {
-	return desc;
+    return desc;
 }
 
 const MetaInfo* InspMember::Type() const
 {
-	return type;
+    return type;
 }
 
-void* InspMember::Pointer(void *object) const
+void* InspMember::Pointer(void* object) const
 {
     return OffsetPointer<void>(object, offset);
 }
 
-void* InspMember::Data(void *object) const
+void* InspMember::Data(void* object) const
 {
-	if(type->IsPointer())
-	{
-		return *static_cast<void **>(Pointer(object));
-	}
-	else
-	{
-		return Pointer(object);
-	}
+    if (type->IsPointer())
+    {
+        return *static_cast<void**>(Pointer(object));
+    }
+    else
+    {
+        return Pointer(object);
+    }
 }
 
-VariantType InspMember::Value(void *object) const
+VariantType InspMember::Value(void* object) const
 {
-	return VariantType::LoadData(Pointer(object), type);
+    return VariantType::LoadData(Pointer(object), type);
 }
 
-void InspMember::SetValue(void *object, const VariantType &val) const
+void InspMember::SetValue(void* object, const VariantType& val) const
 {
-	VariantType::SaveData(Pointer(object), type, val);
+    VariantType::SaveData(Pointer(object), type, val);
 }
 
-void InspMember::SetValueRaw(void *object, void* val) const
+void InspMember::SetValueRaw(void* object, void* val) const
 {
-	DVASSERT(false);
+    DVASSERT(false);
 }
 
 const InspColl* InspMember::Collection() const
 {
-	return nullptr;
+    return nullptr;
 }
 
 const InspMemberDynamic* InspMember::Dynamic() const
 {
-	return nullptr;
+    return nullptr;
 }
 
 int InspMember::Flags() const
 {
-	return flags;
+    return flags;
 }
 
-void InspMember::ApplyParentInsp(const InspInfo *_parentInsp) const
+void InspMember::ApplyParentInsp(const InspInfo* _parentInsp) const
 {
-	parentInsp = _parentInsp;
+    parentInsp = _parentInsp;
 }
-
 };

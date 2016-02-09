@@ -36,7 +36,8 @@
 #include <QFile>
 #include "filedownloader.h"
 
-namespace Ui {
+namespace Ui
+{
 class ConfigDownloader;
 }
 
@@ -44,22 +45,22 @@ class ApplicationManager;
 class ConfigDownloader : public QDialog
 {
     Q_OBJECT
-    
+
 public:
-    explicit ConfigDownloader(ApplicationManager * manager, QNetworkAccessManager * accessManager, QWidget *parent = 0);
+    explicit ConfigDownloader(ApplicationManager* manager, QNetworkAccessManager* accessManager, QWidget* parent = 0);
     ~ConfigDownloader();
 
     virtual int exec();
 
 private slots:
-    void DownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
+    void DownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 private:
-    Ui::ConfigDownloader *ui;
+    Ui::ConfigDownloader* ui;
 
-    FileDownloader * downloader;
+    FileDownloader* downloader;
 
-    ApplicationManager * appManager;
+    ApplicationManager* appManager;
 };
 
 #endif // CONFIGDOWNLOADER_H

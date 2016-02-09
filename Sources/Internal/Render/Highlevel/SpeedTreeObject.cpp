@@ -33,27 +33,28 @@
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
-namespace DAVA 
+namespace DAVA
 {
     
 #define SPHERICAL_HARMONICS_BASIS_MAX_SIZE 9
 
 const FastName SpeedTreeObject::FLAG_WIND_ANIMATION("WIND_ANIMATION");
 
-SpeedTreeObject::SpeedTreeObject() :
-lightSmoothing(0.f)
+SpeedTreeObject::SpeedTreeObject()
+    :
+    lightSmoothing(0.f)
 {
     type = TYPE_SPEED_TREE;
 
     Vector<Vector3> fakeSH(9, Vector3());
-    fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188f; //fake SH value to make original object color
+    fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f / 0.564188f; //fake SH value to make original object color
     SetSphericalHarmonics(fakeSH);
 }
-    
+
 SpeedTreeObject::~SpeedTreeObject()
 {
 }
-    
+
 void SpeedTreeObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
@@ -61,39 +62,39 @@ void SpeedTreeObject::RecalcBoundingBox()
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        RenderBatch * rb = renderBatchArray[k].renderBatch;
+        RenderBatch* rb = renderBatchArray[k].renderBatch;
         bbox.AddAABBox(CalcBBoxForSpeedTreeGeometry(rb));
     }
 }
 
-void SpeedTreeObject::SetTreeAnimationParams(const Vector2 & trunkOscillationParams, const Vector2 & leafOscillationParams)
+void SpeedTreeObject::SetTreeAnimationParams(const Vector2& trunkOscillationParams, const Vector2& leafOscillationParams)
 {
     trunkOscillation = trunkOscillationParams;
     leafOscillation = leafOscillationParams;
 }
 
-void SpeedTreeObject::SetSphericalHarmonics(const Vector<Vector3> & coeffs)
+void SpeedTreeObject::SetSphericalHarmonics(const Vector<Vector3>& coeffs)
 {
     DVASSERT(coeffs.size() == SPHERICAL_HARMONICS_BASIS_MAX_SIZE);
     sphericalHarmonics = coeffs;
 }
 
-const Vector<Vector3> & SpeedTreeObject::GetSphericalHarmonics() const
+const Vector<Vector3>& SpeedTreeObject::GetSphericalHarmonics() const
 {
     return sphericalHarmonics;
 }
 
-void SpeedTreeObject::SetLightSmoothing(const float32 & smooth)
+void SpeedTreeObject::SetLightSmoothing(const float32& smooth)
 {
     lightSmoothing = smooth;
 }
 
-const float32 & SpeedTreeObject::GetLightSmoothing() const
+const float32& SpeedTreeObject::GetLightSmoothing() const
 {
     return lightSmoothing;
 }
 
-void SpeedTreeObject::BindDynamicParameters(Camera * camera)
+void SpeedTreeObject::BindDynamicParameters(Camera* camera)
 {
     RenderObject::BindDynamicParameters(camera);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_TRUNK_OSCILLATION, &trunkOscillation, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
@@ -124,44 +125,44 @@ void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
     }
 }
 
-RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
+RenderObject* SpeedTreeObject::Clone(RenderObject* newObject)
 {
-    if(!newObject)
+    if (!newObject)
     {
         DVASSERT_MSG(IsPointerToExactClass<SpeedTreeObject>(this), "Can clone only SpeedTreeObject");
         newObject = new SpeedTreeObject();
     }
 
     RenderObject::Clone(newObject);
-    
-    SpeedTreeObject * treeObject = (SpeedTreeObject *)newObject;
+
+    SpeedTreeObject* treeObject = (SpeedTreeObject*)newObject;
     treeObject->SetSphericalHarmonics(GetSphericalHarmonics());
     treeObject->SetLightSmoothing(GetLightSmoothing());
 
     return newObject;
 }
 
-void SpeedTreeObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
+void SpeedTreeObject::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     RenderObject::Save(archive, serializationContext);
 
     int32 shCount = static_cast<int32>(sphericalHarmonics.size());
-    if(shCount)
+    if (shCount)
     {
         archive->SetInt32("sto.SHBasisCount", shCount);
-        archive->SetByteArray("sto.SHCoeff", (uint8 *)&sphericalHarmonics[0], sizeof(Vector3) * shCount);
+        archive->SetByteArray("sto.SHCoeff", (uint8*)&sphericalHarmonics[0], sizeof(Vector3) * shCount);
     }
 
     archive->SetFloat("sto.lightSmoothing", lightSmoothing);
 }
 
-void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
+void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     RenderObject::Load(archive, serializationContext);
 
     int32 shCount = archive->GetInt32("sto.SHBasisCount");
-    Vector3 * sphericalArray = (Vector3 *)archive->GetByteArray("sto.SHCoeff");
-    if(sphericalArray && shCount)
+    Vector3* sphericalArray = (Vector3*)archive->GetByteArray("sto.SHCoeff");
+    if (sphericalArray && shCount)
         sphericalHarmonics.assign(sphericalArray, sphericalArray + shCount);
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
@@ -180,18 +181,18 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
     }
 }
 
-AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
+AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch* rb)
 {
-    if(IsTreeLeafBatch(rb))
+    if (IsTreeLeafBatch(rb))
     {
         AABBox3 pgBbox;
-        PolygonGroup * pg = rb->GetPolygonGroup();
+        PolygonGroup* pg = rb->GetPolygonGroup();
 
-        if((pg->GetFormat() & EVF_PIVOT) == 0)
+        if ((pg->GetFormat() & EVF_PIVOT) == 0)
             return rb->GetBoundingBox();
 
         int32 vertexCount = pg->GetVertexCount();
-        for(int32 vi = 0; vi < vertexCount; vi++)
+        for (int32 vi = 0; vi < vertexCount; vi++)
         {
             Vector3 pivot;
             pg->GetPivot(vi, pivot);
@@ -204,7 +205,7 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
 
             Swap(offsetX.x, offsetX.z);
             Swap(offsetX.y, offsetX.z);
-            
+
             pointX = pivot + offsetX;
             pointY = pivot + offsetY;
 
@@ -219,9 +220,9 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
     return rb->GetBoundingBox();
 }
 
-bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
+bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch* batch)
 {
-    if(batch && batch->GetMaterial())
+    if (batch && batch->GetMaterial())
     {
         const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
         return (materialFXName == NMaterialName::SPEEDTREE_LEAF) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
@@ -229,5 +230,4 @@ bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
 
     return false;
 }
-
 };

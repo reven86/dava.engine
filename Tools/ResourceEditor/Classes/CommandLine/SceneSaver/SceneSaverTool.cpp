@@ -100,7 +100,7 @@ bool SceneSaverTool::InitializeInternal()
         Logger::Error("Filename was not selected");
         return false;
     }
-    
+
     return true;
 }
 
@@ -147,4 +147,3 @@ DAVA::FilePath SceneSaverTool::GetQualityConfigPath() const
 
     return qualityConfigPath;
 }
-

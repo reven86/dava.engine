@@ -32,14 +32,13 @@
 
 namespace DAVA
 {
-
 const char* UAPNetworkHelper::UAP_IP_ADDRESS = "127.0.0.1";
 
 DeviceInfo::ePlatform GetPlatformChecked()
 {
     DeviceInfo::ePlatform platform = DeviceInfo::GetPlatform();
     bool uapPlatform = platform == DeviceInfo::PLATFORM_DESKTOP_WIN_UAP ||
-                       platform == DeviceInfo::PLATFORM_PHONE_WIN_UAP;
+    platform == DeviceInfo::PLATFORM_PHONE_WIN_UAP;
 
     DVASSERT_MSG(uapPlatform, "Not UAP platform");
     return platform;
@@ -81,4 +80,4 @@ Net::Endpoint UAPNetworkHelper::GetEndPoint(Net::eNetworkRole role)
     }
 }
 
-}  // namespace DAVA
+} // namespace DAVA

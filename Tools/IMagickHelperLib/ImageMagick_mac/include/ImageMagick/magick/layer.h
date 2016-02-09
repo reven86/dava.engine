@@ -24,49 +24,50 @@ extern "C" {
 
 typedef enum
 {
-  UnrecognizedDispose,
-  UndefinedDispose = 0,
-  NoneDispose = 1,
-  BackgroundDispose = 2,
-  PreviousDispose = 3
+    UnrecognizedDispose,
+    UndefinedDispose = 0,
+    NoneDispose = 1,
+    BackgroundDispose = 2,
+    PreviousDispose = 3
 } DisposeType;
 
 typedef enum
 {
-  UndefinedLayer,
-  CoalesceLayer,
-  CompareAnyLayer,
-  CompareClearLayer,
-  CompareOverlayLayer,
-  DisposeLayer,
-  OptimizeLayer,
-  OptimizeImageLayer,
-  OptimizePlusLayer,
-  OptimizeTransLayer,
-  RemoveDupsLayer,
-  RemoveZeroLayer,
-  CompositeLayer,
-  MergeLayer,
-  FlattenLayer,
-  MosaicLayer,
-  TrimBoundsLayer
+    UndefinedLayer,
+    CoalesceLayer,
+    CompareAnyLayer,
+    CompareClearLayer,
+    CompareOverlayLayer,
+    DisposeLayer,
+    OptimizeLayer,
+    OptimizeImageLayer,
+    OptimizePlusLayer,
+    OptimizeTransLayer,
+    RemoveDupsLayer,
+    RemoveZeroLayer,
+    CompositeLayer,
+    MergeLayer,
+    FlattenLayer,
+    MosaicLayer,
+    TrimBoundsLayer
 } ImageLayerMethod;
 
 extern MagickExport Image
-  *CoalesceImages(const Image *,ExceptionInfo *),
-  *DisposeImages(const Image *,ExceptionInfo *),
-  *CompareImageLayers(const Image *,const ImageLayerMethod,ExceptionInfo *),
-  *DeconstructImages(const Image *,ExceptionInfo *),
-  *MergeImageLayers(Image *,const ImageLayerMethod,ExceptionInfo *),
-  *OptimizeImageLayers(const Image *,ExceptionInfo *),
-  *OptimizePlusImageLayers(const Image *,ExceptionInfo *);
+*
+CoalesceImages(const Image *, ExceptionInfo *),
+*DisposeImages(const Image *, ExceptionInfo *),
+*CompareImageLayers(const Image *, const ImageLayerMethod, ExceptionInfo *),
+*DeconstructImages(const Image *, ExceptionInfo *),
+*MergeImageLayers(Image *, const ImageLayerMethod, ExceptionInfo *),
+*OptimizeImageLayers(const Image *, ExceptionInfo *),
+*OptimizePlusImageLayers(const Image *, ExceptionInfo *);
 
 extern MagickExport void
-  CompositeLayers(Image *,const CompositeOperator,Image *,const ssize_t,
-    const ssize_t,ExceptionInfo *),
-  OptimizeImageTransparency(const Image *,ExceptionInfo *),
-  RemoveDuplicateLayers(Image **,ExceptionInfo *),
-  RemoveZeroDelayLayers(Image **,ExceptionInfo *);
+CompositeLayers(Image *, const CompositeOperator, Image *, const ssize_t,
+                const ssize_t, ExceptionInfo *),
+OptimizeImageTransparency(const Image *, ExceptionInfo *),
+RemoveDuplicateLayers(Image **, ExceptionInfo *),
+RemoveZeroDelayLayers(Image **, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

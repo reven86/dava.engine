@@ -32,14 +32,14 @@
 
 #include <QToolButton>
 
-class ToolButtonWithWidget: public QToolButton
+class ToolButtonWithWidget : public QToolButton
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	ToolButtonWithWidget(QWidget *parent = 0);
+    ToolButtonWithWidget(QWidget* parent = 0);
 
-	void SetWidget(QWidget *widget);
+    void SetWidget(QWidget* widget);
 };
 
 #endif // __TOOL_BUTTON_WITH_WIDGET_H__

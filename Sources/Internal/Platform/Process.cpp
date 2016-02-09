@@ -51,7 +51,7 @@ Process::Process(const FilePath& path, const Vector<String>& args)
     running = false;
     exitCode = -1; //invalid
 
-#if defined (__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__)
     childProcIn[0] = childProcIn[1] = 0;
     childProcOut[0] = childProcOut[1] = 0;
 
@@ -90,7 +90,7 @@ int Process::GetExitCode() const
     return exitCode;
 }
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
 
 void Process::CleanupHandles()
 {
@@ -338,40 +338,40 @@ bool Process::Run(bool showWindow)
     switch (pid)
     {
     case 0: //child process
-        {
-            close(STDERR_FILENO);
-            close(STDOUT_FILENO);
+    {
+        close(STDERR_FILENO);
+        close(STDOUT_FILENO);
 
-            dup2(pipes[WRITE], STDERR_FILENO);
-            dup2(pipes[WRITE], STDOUT_FILENO);
+        dup2(pipes[WRITE], STDERR_FILENO);
+        dup2(pipes[WRITE], STDOUT_FILENO);
 
-            close(pipes[READ]);
-            pipes[READ] = -1;
+        close(pipes[READ]);
+        pipes[READ] = -1;
 
-            int execResult = execv(execPath.c_str(), &execArgs[0]);
-            DVASSERT(execResult >= 0);
-            _exit(0); //if we got here - there's a problem
-            break;
-        }
+        int execResult = execv(execPath.c_str(), &execArgs[0]);
+        DVASSERT(execResult >= 0);
+        _exit(0); //if we got here - there's a problem
+        break;
+    }
 
-        case -1: //error
-        {
-            result = false;
-            Logger::Error("[Process::Run] Failed to start process %s", executablePath.GetAbsolutePathname().c_str());
-            break;
-        }
+    case -1: //error
+    {
+        result = false;
+        Logger::Error("[Process::Run] Failed to start process %s", executablePath.GetAbsolutePathname().c_str());
+        break;
+    }
 
-        default: //parent process
-        {
-            close(pipes[WRITE]);
-            pipes[WRITE] = -1;
+    default: //parent process
+    {
+        close(pipes[WRITE]);
+        pipes[WRITE] = -1;
 
-            running = true;
-            result = true;
-        }
-        };
+        running = true;
+        result = true;
+    }
+    };
 
-        return result;
+    return result;
 }
 
 void Process::Wait()
@@ -430,7 +430,6 @@ void Process::CleanupHandles()
 }
 
 #endif
-	
 };
 
 #endif

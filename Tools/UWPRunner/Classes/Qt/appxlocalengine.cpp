@@ -62,23 +62,25 @@ using namespace ABI::Windows::System;
 
 QT_USE_NAMESPACE
 
-QString sidForPackage(const QString &packageFamilyName)
+QString sidForPackage(const QString& packageFamilyName)
 {
     QString sid;
     HKEY regKey;
     LONG result = RegOpenKeyExW(
-                HKEY_CLASSES_ROOT,
-                L"Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppContainer\\Mappings",
-                0, KEY_READ, &regKey);
-    if (result != ERROR_SUCCESS) {
+    HKEY_CLASSES_ROOT,
+    L"Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppContainer\\Mappings",
+    0, KEY_READ, &regKey);
+    if (result != ERROR_SUCCESS)
+    {
         qCWarning(lcWinRtRunner) << "Unable to open registry key:" << qt_error_string(result);
         return sid;
     }
 
     DWORD index = 0;
     wchar_t subKey[MAX_PATH];
-    const wchar_t *packageFamilyNameW = wchar(packageFamilyName);
-    forever {
+    const wchar_t* packageFamilyNameW = wchar(packageFamilyName);
+    forever
+    {
         result = RegEnumKeyW(regKey, index++, subKey, MAX_PATH);
         if (result != ERROR_SUCCESS)
             break;
@@ -87,7 +89,8 @@ QString sidForPackage(const QString &packageFamilyName)
         result = RegGetValueW(regKey, subKey, L"Moniker", RRF_RT_REG_SZ, NULL, moniker, &monikerSize);
         if (result != ERROR_SUCCESS)
             continue;
-        if (lstrcmpW(moniker, packageFamilyNameW) == 0) {
+        if (lstrcmpW(moniker, packageFamilyNameW) == 0)
+        {
             sid = QString::fromWCharArray(subKey);
             break;
         }
@@ -100,23 +103,27 @@ class OutputDebugMonitor
 {
 public:
     OutputDebugMonitor()
-        : runLock(CreateEvent(NULL, FALSE, FALSE, NULL)), thread(0)
+        : runLock(CreateEvent(NULL, FALSE, FALSE, NULL))
+        , thread(0)
     {
     }
     ~OutputDebugMonitor()
     {
-        if (runLock) {
+        if (runLock)
+        {
             SetEvent(runLock);
             CloseHandle(runLock);
         }
-        if (thread) {
+        if (thread)
+        {
             WaitForSingleObject(thread, INFINITE);
             CloseHandle(thread);
         }
     }
-    void start(const QString &packageFamilyName)
+    void start(const QString& packageFamilyName)
     {
-        if (thread) {
+        if (thread)
+        {
             qCWarning(lcWinRtRunner) << "OutputDebugMonitor is already running.";
             return;
         }
@@ -124,7 +131,8 @@ public:
         package = packageFamilyName;
 
         thread = CreateThread(NULL, 0, &monitor, this, NULL, NULL);
-        if (!thread) {
+        if (!thread)
+        {
             qCWarning(lcWinRtRunner) << "Unable to create thread for app debugging:"
                                      << qt_error_string(GetLastError());
             return;
@@ -132,18 +140,19 @@ public:
 
         return;
     }
+
 private:
     static DWORD __stdcall monitor(LPVOID param)
     {
-        OutputDebugMonitor *that = static_cast<OutputDebugMonitor *>(param);
+        OutputDebugMonitor* that = static_cast<OutputDebugMonitor*>(param);
 
-        const QString handleBase = QStringLiteral("Local\\AppContainerNamedObjects\\")
-                + sidForPackage(that->package);
+        const QString handleBase = QStringLiteral("Local\\AppContainerNamedObjects\\") + sidForPackage(that->package);
         const QString eventName = handleBase + QStringLiteral("\\debug-event");
         const QString shmemName = handleBase + QStringLiteral("\\debug-shmem");
 
         HANDLE event = CreateEventW(NULL, FALSE, FALSE, reinterpret_cast<LPCWSTR>(eventName.utf16()));
-        if (!event) {
+        if (!event)
+        {
             qCWarning(lcWinRtRunner) << "Unable to open shared event for app debugging:"
                                      << qt_error_string(GetLastError());
             return 1;
@@ -151,7 +160,8 @@ private:
 
         HANDLE shmem = 0;
         DWORD ret = 0;
-        forever {
+        forever
+        {
             HANDLE handles[] = { that->runLock, event };
             DWORD result = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
 
@@ -160,11 +170,14 @@ private:
                 break;
 
             // debug event set; print message
-            if (result == WAIT_OBJECT_0 + 1) {
-                if (!shmem) {
+            if (result == WAIT_OBJECT_0 + 1)
+            {
+                if (!shmem)
+                {
                     shmem = OpenFileMappingW(GENERIC_READ, FALSE,
-                                            reinterpret_cast<LPCWSTR>(shmemName.utf16()));
-                    if (!shmem) {
+                                             reinterpret_cast<LPCWSTR>(shmemName.utf16()));
+                    if (!shmem)
+                    {
                         qCWarning(lcWinRtRunner) << "Unable to open shared memory for app debugging:"
                                                  << qt_error_string(GetLastError());
                         ret = 1;
@@ -172,13 +185,14 @@ private:
                     }
                 }
 
-                const quint32 *data = reinterpret_cast<const quint32 *>(
-                            MapViewOfFile(shmem, FILE_MAP_READ, 0, 0, 4096));
+                const quint32* data = reinterpret_cast<const quint32*>(
+                MapViewOfFile(shmem, FILE_MAP_READ, 0, 0, 4096));
                 QtMsgType messageType = static_cast<QtMsgType>(data[0]);
                 QString message = QString::fromWCharArray(
-                            reinterpret_cast<const wchar_t *>(data + 1));
+                reinterpret_cast<const wchar_t*>(data + 1));
                 UnmapViewOfFile(data);
-                switch (messageType) {
+                switch (messageType)
+                {
                 default:
                 case QtDebugMsg:
                     qCDebug(lcWinRtRunnerApp, qPrintable(message));
@@ -222,12 +236,12 @@ public:
     void retrieveInstalledPackages();
 };
 
-bool AppxLocalEngine::canHandle(Runner *runner)
+bool AppxLocalEngine::canHandle(Runner* runner)
 {
     return !runner->manifest().isEmpty();
 }
 
-RunnerEngine *AppxLocalEngine::create(Runner *runner)
+RunnerEngine* AppxLocalEngine::create(Runner* runner)
 {
     QScopedPointer<AppxLocalEngine> engine(new AppxLocalEngine(runner));
     if (engine->d_ptr->hasFatalError)
@@ -242,11 +256,10 @@ QStringList AppxLocalEngine::deviceNames()
     return QStringList(QStringLiteral("local"));
 }
 
-
-
 static ProcessorArchitecture toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE appxArch)
 {
-    switch (appxArch) {
+    switch (appxArch)
+    {
     case APPX_PACKAGE_ARCHITECTURE_X86:
         return ProcessorArchitecture_X86;
     case APPX_PACKAGE_ARCHITECTURE_ARM:
@@ -254,13 +267,13 @@ static ProcessorArchitecture toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE a
     case APPX_PACKAGE_ARCHITECTURE_X64:
         return ProcessorArchitecture_X64;
     case APPX_PACKAGE_ARCHITECTURE_NEUTRAL:
-        // fall-through intended
+    // fall-through intended
     default:
         return ProcessorArchitecture_Neutral;
     }
 }
 
-AppxLocalEngine::AppxLocalEngine(Runner *runner)
+AppxLocalEngine::AppxLocalEngine(Runner* runner)
     : AppxEngine(runner, new AppxLocalEnginePrivate)
 {
     Q_D(AppxLocalEngine);
@@ -290,14 +303,15 @@ AppxLocalEngine::~AppxLocalEngine()
     CloseHandle(d->processHandle);
 }
 
-bool AppxLocalEngine::installPackage(IAppxManifestReader *reader, const QString &filePath)
+bool AppxLocalEngine::installPackage(IAppxManifestReader* reader, const QString& filePath)
 {
     Q_D(const AppxLocalEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__ << filePath;
     qCWarning(lcWinRtRunner) << "Installing package:" << filePath;
 
     HRESULT hr;
-    if (reader) {
+    if (reader)
+    {
         ComPtr<IAppxManifestPackageId> packageId;
         hr = reader->GetPackageId(&packageId);
         RETURN_FALSE_IF_FAILED("Failed to get package ID from reader.");
@@ -308,7 +322,8 @@ bool AppxLocalEngine::installPackage(IAppxManifestReader *reader, const QString 
 
         const QString packageName = QString::fromWCharArray(name);
         CoTaskMemFree(name);
-        if (d->installedPackages.contains(packageName)) {
+        if (d->installedPackages.contains(packageName))
+        {
             qCDebug(lcWinRtRunner) << "The package" << packageName << "is already installed.";
             return true;
         }
@@ -321,12 +336,15 @@ bool AppxLocalEngine::installPackage(IAppxManifestReader *reader, const QString 
     hr = d->uriFactory->CreateUri(hStringFromQString(nativeFilePath), &uri);
     RETURN_FALSE_IF_FAILED("Failed to create an URI for the package");
 
-    ComPtr<IAsyncOperationWithProgress<DeploymentResult *, DeploymentProgress>> deploymentOperation;
-    if (addInsteadOfRegister) {
+    ComPtr<IAsyncOperationWithProgress<DeploymentResult*, DeploymentProgress>> deploymentOperation;
+    if (addInsteadOfRegister)
+    {
         hr = d->packageManager->AddPackageAsync(uri.Get(), NULL, DeploymentOptions_None,
                                                 &deploymentOperation);
         RETURN_FALSE_IF_FAILED("Failed to add package");
-    } else {
+    }
+    else
+    {
         hr = d->packageManager->RegisterPackageAsync(uri.Get(), 0,
                                                      DeploymentOptions_DevelopmentMode,
                                                      &deploymentOperation);
@@ -343,13 +361,16 @@ bool AppxLocalEngine::installPackage(IAppxManifestReader *reader, const QString 
     hr = results->get_ExtendedErrorCode(&errorCode);
     RETURN_FALSE_IF_FAILED("Failed to retrieve package registration results.");
 
-    if (FAILED(errorCode)) {
+    if (FAILED(errorCode))
+    {
         HString errorText;
-        if (SUCCEEDED(results->get_ErrorText(errorText.GetAddressOf()))) {
+        if (SUCCEEDED(results->get_ErrorText(errorText.GetAddressOf())))
+        {
             qCWarning(lcWinRtRunner) << "Unable to register package:"
                                      << QString::fromWCharArray(errorText.GetRawBuffer(NULL));
         }
-        if (HRESULT_CODE(errorCode) == ERROR_INSTALL_POLICY_FAILURE) {
+        if (HRESULT_CODE(errorCode) == ERROR_INSTALL_POLICY_FAILURE)
+        {
             // The user's license has expired. Give them the opportunity to renew it.
             FILETIME expiration;
             hr = AcquireDeveloperLicense(GetForegroundWindow(), &expiration);
@@ -369,8 +390,9 @@ bool AppxLocalEngine::install(bool removeFirst)
 
     ComPtr<IPackage> packageInformation;
     HRESULT hr = d->packageManager->FindPackageByUserSecurityIdPackageFullName(
-                NULL, hStringFromQString(d->packageFullName), &packageInformation);
-    if (SUCCEEDED(hr) && packageInformation) {
+    NULL, hStringFromQString(d->packageFullName), &packageInformation);
+    if (SUCCEEDED(hr) && packageInformation)
+    {
         qCWarning(lcWinRtRunner) << "Package already installed.";
         if (removeFirst)
             remove();
@@ -378,9 +400,9 @@ bool AppxLocalEngine::install(bool removeFirst)
             return true;
     }
 
-    return installDependencies() && 
-           installPackage(Q_NULLPTR, d->app) &&
-           installResources(); //resources must be installed after main package
+    return installDependencies() &&
+    installPackage(Q_NULLPTR, d->app) &&
+    installResources(); //resources must be installed after main package
 }
 
 bool AppxLocalEngine::remove()
@@ -389,7 +411,7 @@ bool AppxLocalEngine::remove()
     qCDebug(lcWinRtRunner) << __FUNCTION__;
 
     // ### TODO: use RemovePackageWithOptions to preserve previous state when re-installing
-    ComPtr<IAsyncOperationWithProgress<DeploymentResult *, DeploymentProgress>> deploymentOperation;
+    ComPtr<IAsyncOperationWithProgress<DeploymentResult*, DeploymentProgress>> deploymentOperation;
     HRESULT hr = d->packageManager->RemovePackageAsync(hStringFromQString(d->packageFullName), &deploymentOperation);
     RETURN_FALSE_IF_FAILED("Unable to start package removal");
 
@@ -408,7 +430,7 @@ bool AppxLocalEngine::start()
     qCDebug(lcWinRtRunner) << __FUNCTION__;
 
     const QString launchArguments =
-            (d->runner->arguments() << QStringLiteral("-qdevel")).join(QLatin1Char(' '));
+    (d->runner->arguments() << QStringLiteral("-qdevel")).join(QLatin1Char(' '));
     DWORD pid;
     const QString activationId = d->packageFamilyName + QStringLiteral("!App");
     HRESULT hr = d->appLauncher->ActivateApplication(wchar(activationId),
@@ -422,11 +444,11 @@ bool AppxLocalEngine::start()
     return true;
 }
 
-bool AppxLocalEngine::enableDebugging(const QString &debuggerExecutable, const QString &debuggerArguments)
+bool AppxLocalEngine::enableDebugging(const QString& debuggerExecutable, const QString& debuggerArguments)
 {
     Q_D(AppxLocalEngine);
 
-    const QString &debuggerCommand = debuggerExecutable + QLatin1Char(' ') + debuggerArguments;
+    const QString& debuggerCommand = debuggerExecutable + QLatin1Char(' ') + debuggerArguments;
     HRESULT hr = d->packageDebug->EnableDebugging(wchar(d->packageFullName),
                                                   wchar(debuggerCommand),
                                                   NULL);
@@ -466,14 +488,16 @@ bool AppxLocalEngine::stop()
     if (!d->processHandle)
         qCDebug(lcWinRtRunner) << "No handle to the process; the exit code won't be available.";
 
-    if (d->processHandle && !GetExitCodeProcess(d->processHandle, &d->exitCode)) {
+    if (d->processHandle && !GetExitCodeProcess(d->processHandle, &d->exitCode))
+    {
         d->exitCode = UINT_MAX;
         qCWarning(lcWinRtRunner).nospace() << "Failed to obtain process exit code.";
         qCDebug(lcWinRtRunner, "GetLastError: 0x%x", GetLastError());
         return false;
     }
 
-    if (!d->processHandle || d->exitCode == STILL_ACTIVE) {
+    if (!d->processHandle || d->exitCode == STILL_ACTIVE)
+    {
         HRESULT hr = d->packageDebug->TerminateAllProcesses(wchar(d->packageFullName));
         RETURN_FALSE_IF_FAILED("Failed to terminate package process");
 
@@ -484,7 +508,7 @@ bool AppxLocalEngine::stop()
     return true;
 }
 
-QString AppxLocalEngine::devicePath(const QString &relativePath) const
+QString AppxLocalEngine::devicePath(const QString& relativePath) const
 {
     Q_D(const AppxLocalEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__;
@@ -492,12 +516,11 @@ QString AppxLocalEngine::devicePath(const QString &relativePath) const
     // Return a path safe for passing to the application
     QDir localAppDataPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
     const QString path = localAppDataPath.absoluteFilePath(
-                QStringLiteral("Packages/") + d->packageFamilyName
-                + QStringLiteral("/LocalState/") + relativePath);
+    QStringLiteral("Packages/") + d->packageFamilyName + QStringLiteral("/LocalState/") + relativePath);
     return QDir::toNativeSeparators(path);
 }
 
-bool AppxLocalEngine::sendFile(const QString &localFile, const QString &deviceFile)
+bool AppxLocalEngine::sendFile(const QString& localFile, const QString& deviceFile)
 {
     qCDebug(lcWinRtRunner) << __FUNCTION__;
 
@@ -515,7 +538,7 @@ bool AppxLocalEngine::sendFile(const QString &localFile, const QString &deviceFi
     return result;
 }
 
-bool AppxLocalEngine::receiveFile(const QString &deviceFile, const QString &localFile)
+bool AppxLocalEngine::receiveFile(const QString& deviceFile, const QString& localFile)
 {
     qCDebug(lcWinRtRunner) << __FUNCTION__;
 
@@ -537,7 +560,8 @@ void AppxLocalEnginePrivate::retrieveInstalledPackages()
 
     boolean hasCurrent;
     hr = pkgit->get_HasCurrent(&hasCurrent);
-    while (SUCCEEDED(hr) && hasCurrent) {
+    while (SUCCEEDED(hr) && hasCurrent)
+    {
         ComPtr<IPackage> pkg;
         hr = pkgit->get_Current(&pkg);
         RETURN_VOID_IF_FAILED("Failed to get current package");
@@ -551,9 +575,12 @@ void AppxLocalEnginePrivate::retrieveInstalledPackages()
         RETURN_VOID_IF_FAILED("Failed retrieve package name");
 
         ProcessorArchitecture architecture;
-        if (packageArchitecture == ProcessorArchitecture_Neutral) {
+        if (packageArchitecture == ProcessorArchitecture_Neutral)
+        {
             architecture = packageArchitecture;
-        } else {
+        }
+        else
+        {
             hr = pkgId->get_Architecture(&architecture);
             RETURN_VOID_IF_FAILED("Failed to retrieve package architecture");
         }
