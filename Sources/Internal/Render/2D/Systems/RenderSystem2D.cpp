@@ -1156,20 +1156,23 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
-    BatchDescriptor batch;
-    batch.singleColor = color;
-    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
-    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-    batch.material = state->GetMaterial();
-    batch.vertexCount = spriteVertexCount;
-    batch.indexCount = spriteIndexCount;
-    batch.vertexStride = 2;
-    batch.texCoordStride = 2;
-    batch.vertexPointer = (float32*)sd.transformedVertices.data();
-    batch.texCoordPointer = (float32*)sd.texCoords.data();
-    batch.indexPointer = sd.indeces;
+    if (spriteVertexCount > 0 && spriteIndexCount > 0) // Ignore incorrecvt streched data
+    {
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
+        batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
+        batch.material = state->GetMaterial();
+        batch.vertexCount = spriteVertexCount;
+        batch.indexCount = spriteIndexCount;
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = (float32*)sd.transformedVertices.data();
+        batch.texCoordPointer = (float32*)sd.texCoords.data();
+        batch.indexPointer = sd.indeces;
 
-    PushBatch(batch);
+        PushBatch(batch);
+    }
 
     if (!pStreachData)
     {
@@ -1249,20 +1252,23 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
     spriteVertexCount = (int32)td.transformedVertices.size();
     spriteIndexCount = (int32)td.indeces.size();
 
-    BatchDescriptor batch;
-    batch.singleColor = color;
-    batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
-    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-    batch.vertexCount = spriteVertexCount;
-    batch.indexCount = spriteIndexCount;
-    batch.vertexStride = 2;
-    batch.texCoordStride = 2;
-    batch.vertexPointer = (float32*)td.transformedVertices.data();
-    batch.texCoordPointer = (float32*)td.texCoords.data();
-    batch.indexPointer = td.indeces.data();
+    if (spriteIndexCount > 0 && spriteIndexCount > 0) // Ignore incorrect tiled data
+    {
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.material = state->GetMaterial();
+        batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
+        batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
+        batch.vertexCount = spriteVertexCount;
+        batch.indexCount = spriteIndexCount;
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = (float32*)td.transformedVertices.data();
+        batch.texCoordPointer = (float32*)td.texCoords.data();
+        batch.indexPointer = td.indeces.data();
 
-    PushBatch(batch);
+        PushBatch(batch);
+    }
 
     if (!pTiledData)
     {
