@@ -1156,7 +1156,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
-    if (spriteVertexCount > 0 && spriteIndexCount > 0) // Ignore incorrecvt streched data
+    if (spriteVertexCount > 0 && spriteIndexCount > 0) // Ignore incorrect streched data
     {
         BatchDescriptor batch;
         batch.singleColor = color;
