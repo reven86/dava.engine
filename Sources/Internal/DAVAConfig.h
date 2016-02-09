@@ -66,6 +66,7 @@
 #define ENABLE_ASSERT_LOGGING
 #define ENABLE_ASSERT_MESSAGE
 #define ENABLE_ASSERT_BREAK
+//#define DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS // throw std::runtime_error on div_by_zero, overflow, underflow
 #else //not defined __DAVAENGINE_DEBUG__    // can disable or select any dvassert service
 #define ENABLE_ASSERT_LOGGING
 #define ENABLE_ASSERT_MESSAGE
