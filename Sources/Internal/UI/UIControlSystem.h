@@ -336,8 +336,6 @@ private:
     UIControl* exclusiveInputLocker;
     UIControl* hovered;
 
-    UIControl* focusedControl;
-
     UIControl* popupContainer;
     Set<UIPopup*> popupsToRemove;
 

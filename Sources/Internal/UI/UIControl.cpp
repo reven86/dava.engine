@@ -51,7 +51,7 @@
 
 namespace DAVA
 {
-const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover" };
+const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
 
 static Mutex controlsListMutex;
 static Vector<const UIControl*> controlsList; //weak pointers
@@ -94,7 +94,6 @@ UIControl::UIControl(const Rect& rect)
          */
     inputEnabled = true;
     inputProcessorsCount = 1;
-    focusEnabled = true;
 
     background = new UIControlBackground();
     eventDispatcher = NULL;
@@ -716,11 +715,6 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 (*it)->SetInputEnabled(isEnabled, hierarchic);
             }
         }
-    }
-
-    void UIControl::SetFocusEnabled(bool isEnabled)
-    {
-        focusEnabled = isEnabled;
     }
 
     bool UIControl::GetDisabled() const
@@ -1512,8 +1506,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 currentInput->touchLocker = this;
                 if (exclusiveInput)
                 {
-                    UIControlSystem::Instance()->SetExclusiveInputLocker(this,
-                                                                         currentInput->touchId);
+                    UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->touchId);
                 }
 
                 PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
