@@ -339,7 +339,6 @@ protected:
     rhi::HIndexBuffer patchIndexBuffer;
     InstanceData* instanceDataPtr = nullptr;
 
-    //CircularArray<rhi::HVertexBuffer, 9> instanceDataBuffers;
     Vector<InstanceDataBuffer> freeInstanceDataBuffers;
     Vector<InstanceDataBuffer> usedInstanceDataBuffers;
 

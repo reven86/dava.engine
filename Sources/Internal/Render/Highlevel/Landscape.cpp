@@ -164,9 +164,6 @@ void Landscape::ReleaseGeometryData()
     if (patchIndexBuffer)
         rhi::DeleteIndexBuffer(patchIndexBuffer);
 
-    //for (rhi::HVertexBuffer & vb : instanceDataBuffers.elements)
-    //    rhi::DeleteVertexBuffer(vb);
-
     for (InstanceDataBuffer& buffer : freeInstanceDataBuffers)
         rhi::DeleteVertexBuffer(buffer.buffer);
     freeInstanceDataBuffers.clear();
@@ -933,12 +930,6 @@ void Landscape::AllocateGeometryDataInstancing()
     ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
     landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
-    //rhi::VertexBuffer::Descriptor instanceBufferDesc;
-    //instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
-    //instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
-    //for (rhi::HVertexBuffer& buffer : instanceDataBuffers.elements)
-    //    buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
-
     uint32 verticesCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
     VertexInstancing* patchVertices = new VertexInstancing[verticesCount];
     uint16* patchIndices = new uint16[(PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6];
@@ -1049,7 +1040,6 @@ void Landscape::DrawLandscapeInstancing()
 
     if (subdivPatchesDrawCount)
     {
-        //rhi::HVertexBuffer instanceBuffer = instanceDataBuffers.Next();
         rhi::HVertexBuffer instanceBuffer;
         if (freeInstanceDataBuffers.size())
         {
