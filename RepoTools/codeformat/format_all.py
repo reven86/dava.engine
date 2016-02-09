@@ -24,6 +24,7 @@ def check_format(file, formatOK):
 
 def format(file):
 	proc = subprocess.Popen([cwd+'/'+execName, '-i', '--style=file', file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	proc.communicate()
 
 cwd = os.getcwd()
 if os.name == 'nt':
