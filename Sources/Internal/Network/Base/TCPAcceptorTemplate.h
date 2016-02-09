@@ -40,7 +40,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Template class TCPAcceptorTemplate wraps TCP acceptor from underlying network library and provides interface to user
  through CRTP idiom. Class specified by template parameter T should inherit TCPAcceptorTemplate and provide some
@@ -70,18 +69,19 @@ private:
     static void HandleConnectThunk(uv_stream_t* handle, int error);
 
 private:
-    uv_tcp_t uvhandle;          // libuv handle itself
-    IOLoop* loop;               // IOLoop object handle is attached to
-    bool isOpen;                // Handle has been initialized and can be used in operations
-    bool isClosing;             // Close has been issued and waiting for close operation complete, used mainly for asserts
+    uv_tcp_t uvhandle; // libuv handle itself
+    IOLoop* loop; // IOLoop object handle is attached to
+    bool isOpen; // Handle has been initialized and can be used in operations
+    bool isClosing; // Close has been issued and waiting for close operation complete, used mainly for asserts
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
-TCPAcceptorTemplate<T>::TCPAcceptorTemplate(IOLoop* ioLoop) : uvhandle()
-                                                    , loop(ioLoop)
-                                                    , isOpen(false)
-                                                    , isClosing(false)
+TCPAcceptorTemplate<T>::TCPAcceptorTemplate(IOLoop* ioLoop)
+    : uvhandle()
+    , loop(ioLoop)
+    , isOpen(false)
+    , isClosing(false)
 {
     DVASSERT(ioLoop != NULL);
 }
@@ -100,7 +100,7 @@ int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
-        error = DoOpen();   // Automatically open on first call
+        error = DoOpen(); // Automatically open on first call
     if (0 == error)
         error = uv_tcp_bind(&uvhandle, endpoint.CastToSockaddr(), 0);
     return error;
@@ -177,7 +177,7 @@ template <typename T>
 void TCPAcceptorTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     TCPAcceptorTemplate* self = static_cast<TCPAcceptorTemplate*>(handle->data);
-    self->isClosing = false;    // Mark acceptor has been closed
+    self->isClosing = false; // Mark acceptor has been closed
     // And clear handle
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
 
@@ -191,7 +191,7 @@ void TCPAcceptorTemplate<T>::HandleConnectThunk(uv_stream_t* handle, int error)
     static_cast<T*>(self)->HandleConnect(error);
 }
 
-}   // namespace Net
-}	// namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
+#endif // __DAVAENGINE_TCPACCEPTORTEMPLATE_H__

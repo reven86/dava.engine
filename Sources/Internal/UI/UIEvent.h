@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-	
 class UIControl;
 /**
 \ingroup controlsystem
@@ -120,8 +119,14 @@ public:
         }
     }
 
-    eInputHandledType GetInputHandledType() { return inputHandledType; };
-    void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
+    eInputHandledType GetInputHandledType()
+    {
+        return inputHandledType;
+    };
+    void ResetInputHandledType()
+    {
+        inputHandledType = INPUT_NOT_HANDLED;
+    };
 
     union {
         uint32 touchId;

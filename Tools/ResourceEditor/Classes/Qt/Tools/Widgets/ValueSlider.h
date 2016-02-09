@@ -33,7 +33,6 @@
 #include <QWidget>
 #include <QPointer>
 
-
 class QLineEdit;
 class MouseHelper;
 
@@ -42,11 +41,11 @@ class MouseHelper;
 //
 
 class ValueSlider
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
-    signals:
+signals:
     void started(double);
     void changing(double);
     void changed(double);

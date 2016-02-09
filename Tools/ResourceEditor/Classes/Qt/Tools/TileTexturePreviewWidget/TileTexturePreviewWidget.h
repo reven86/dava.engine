@@ -38,73 +38,73 @@ using namespace DAVA;
 
 class QLabel;
 
-class TileTexturePreviewWidget: public QTreeWidget
+class TileTexturePreviewWidget : public QTreeWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum eWidgetModes
-	{
-		MODE_WITH_COLORS = 0,
-		MODE_WITHOUT_COLORS,
+    enum eWidgetModes
+    {
+        MODE_WITH_COLORS = 0,
+        MODE_WITHOUT_COLORS,
 
-		MODES_COUNT
-	};
+        MODES_COUNT
+    };
 
-	static const int32 TEXTURE_PREVIEW_WIDTH = 180;
-	static const int32 TEXTURE_PREVIEW_HEIGHT = 32;
+    static const int32 TEXTURE_PREVIEW_WIDTH = 180;
+    static const int32 TEXTURE_PREVIEW_HEIGHT = 32;
 
-	explicit TileTexturePreviewWidget(QWidget* parent = 0);
-	~TileTexturePreviewWidget();
+    explicit TileTexturePreviewWidget(QWidget* parent = 0);
+    ~TileTexturePreviewWidget();
 
-	void AddTexture(Image* previewTexture, const Color& color = Color::White);
-	void UpdateColor(int32 index, const Color& color);
+    void AddTexture(Image* previewTexture, const Color& color = Color::White);
+    void UpdateColor(int32 index, const Color& color);
 
-	int32 GetSelectedTexture();
-	void SetSelectedTexture(int32 number);
+    int32 GetSelectedTexture();
+    void SetSelectedTexture(int32 number);
 
-	void SetMode(eWidgetModes mode);
+    void SetMode(eWidgetModes mode);
 
-	void Clear();
+    void Clear();
 
 protected:
-	virtual bool eventFilter(QObject* obj, QEvent* ev);
+    virtual bool eventFilter(QObject* obj, QEvent* ev);
 
 signals:
-	void SelectionChanged(int selectedTexture);
-	void TileColorChanged(int32 tileNumber, Color color);
+    void SelectionChanged(int selectedTexture);
+    void TileColorChanged(int32 tileNumber, Color color);
 
 private slots:
-	void OnCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
-	void OnItemChanged(QTreeWidgetItem* item, int column);
+    void OnCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+    void OnItemChanged(QTreeWidgetItem* item, int column);
 
 private:
-	static const int32 COLOR_PREVIEW_COLUMN = 1;
-	static const int32 COLOR_SELECT_BUTTON_COLUMN = 2;
-	static const int32 DEF_TILE_TEXTURES_COUNT = 4;
-	static const int32 TEXTURE_PREVIEW_WIDTH_SMALL = 110;
+    static const int32 COLOR_PREVIEW_COLUMN = 1;
+    static const int32 COLOR_SELECT_BUTTON_COLUMN = 2;
+    static const int32 DEF_TILE_TEXTURES_COUNT = 4;
+    static const int32 TEXTURE_PREVIEW_WIDTH_SMALL = 110;
 
-	int32 selectedTexture;
+    int32 selectedTexture;
 
-	Vector<Color> colors;
-	Vector<Image*> images;
-	Vector<QLabel*> labels;
+    Vector<Color> colors;
+    Vector<Image*> images;
+    Vector<QLabel*> labels;
 
-	eWidgetModes mode;
+    eWidgetModes mode;
 
-	QRegExpValidator* validator;
+    QRegExpValidator* validator;
 
-	void ConnectToSignals();
+    void ConnectToSignals();
 
-	void SetColor(int32 number, const Color& color);
-	void UpdateImage(int32 number);
-	void UpdateColor(int32 number);
-	void UpdateSelection();
+    void SetColor(int32 number, const Color& color);
+    void UpdateImage(int32 number);
+    void UpdateColor(int32 number);
+    void UpdateSelection();
 
-	void InitWithColors();
-	void InitWithoutColors();
+    void InitWithColors();
+    void InitWithoutColors();
 
-	Image* MultiplyImageWithColor(Image* image, const Color& color);
+    Image* MultiplyImageWithColor(Image* image, const Color& color);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILETEXTUREPREVIEWWIDGET__) */

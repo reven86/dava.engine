@@ -36,41 +36,41 @@
 #include "Concurrency/PosixThreads.h"
 #include "Concurrency/Thread.h"
 
-#if defined (__DAVAENGINE_ANDROID__)
-#   include <sys/syscall.h>
-#   include <unistd.h>
-#   include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#   include "Platform/TemplateAndroid/JniHelpers.h"
-#elif defined (__DAVAENGINE_APPLE__)
-#   import <Foundation/NSAutoreleasePool.h>
-#   include <mach/thread_policy.h>
+#if defined(__DAVAENGINE_ANDROID__)
+#include <sys/syscall.h>
+#include <unistd.h>
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
+#elif defined(__DAVAENGINE_APPLE__)
+#import <Foundation/NSAutoreleasePool.h>
+#include <mach/thread_policy.h>
 #endif
 
 namespace DAVA
 {
 // android have no way to kill a thread, so we will use signal to determine
 // if we need to end thread
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__)
 void thread_exit_handler(int sig)
 {
-	if (SIGRTMIN == sig)
-	{
-	    JNI::DetachCurrentThreadFromJVM();
-		pthread_exit(0);
-	}
+    if (SIGRTMIN == sig)
+    {
+        JNI::DetachCurrentThreadFromJVM();
+        pthread_exit(0);
+    }
 }
 #endif
 
 void Thread::Init()
 {
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__)
     handle = 0;
-	struct sigaction cancelThreadAction;
-	Memset(&cancelThreadAction, 0, sizeof(cancelThreadAction));
-	sigemptyset(&cancelThreadAction.sa_mask);
-	cancelThreadAction.sa_flags = 0;
-	cancelThreadAction.sa_handler = thread_exit_handler;
-	sigaction(SIGRTMIN, &cancelThreadAction, NULL);
+    struct sigaction cancelThreadAction;
+    Memset(&cancelThreadAction, 0, sizeof(cancelThreadAction));
+    sigemptyset(&cancelThreadAction.sa_mask);
+    cancelThreadAction.sa_flags = 0;
+    cancelThreadAction.sa_handler = thread_exit_handler;
+    sigaction(SIGRTMIN, &cancelThreadAction, NULL);
 #endif
 }
 
@@ -82,11 +82,11 @@ void Thread::Shutdown()
 
 void Thread::KillNative()
 {
-	uint32 ret = 0;
-#if defined (__DAVAENGINE_APPLE__)
+    uint32 ret = 0;
+#if defined(__DAVAENGINE_APPLE__)
     ret = pthread_cancel(handle);
 #endif
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__)
     ret = pthread_kill(handle, SIGRTMIN);
 #endif
     if (0 != ret)
@@ -95,27 +95,27 @@ void Thread::KillNative()
     }
 }
 
-void *PthreadMain(void *param)
+void* PthreadMain(void* param)
 {
 #if defined(__DAVAENGINE_APPLE__)
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 #endif
 
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__)
     JNI::AttachCurrentThreadToJVM();
 #endif
 
-    Thread *t = static_cast<Thread *>(param);    
-#   if defined (__DAVAENGINE_ANDROID__)
+    Thread* t = static_cast<Thread*>(param);    
+#if defined(__DAVAENGINE_ANDROID__)
     pthread_setname_np(t->handle, t->name.c_str());
     t->system_handle = gettid();
-#   elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_APPLE__)
     pthread_setname_np(t->name.c_str());
-#   endif
+#endif
 
     Thread::ThreadFunction(param);
 
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__)
     JNI::DetachCurrentThreadFromJVM();
 #endif
 
@@ -130,17 +130,17 @@ void Thread::Start()
     DVASSERT(STATE_CREATED == state);
     Retain();
 
-    pthread_attr_t attr {};
+    pthread_attr_t attr{};
     pthread_attr_init(&attr);
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
     pthread_create(&handle, &attr, PthreadMain, (void*)this);
     state = STATE_RUNNING;
-    
+
     pthread_attr_destroy(&attr);
 }
-    
+
 void Thread::Join()
 {
     pthread_join(handle, NULL);
@@ -157,9 +157,9 @@ bool BindToProcessorApple(pthread_t thread, unsigned proc_n)
 {
     thread_affinity_policy_data_t policy = { int(proc_n) };
     thread_port_t mach_thread = pthread_mach_thread_np(thread);
-    auto res = thread_policy_set(mach_thread, 
-                                 THREAD_AFFINITY_POLICY, 
-                                 (thread_policy_t)& policy, 1);
+    auto res = thread_policy_set(mach_thread,
+                                 THREAD_AFFINITY_POLICY,
+                                 (thread_policy_t)&policy, 1);
     return res == KERN_SUCCESS;
 }
 
@@ -177,7 +177,7 @@ bool BindToProcessorAndroid(pid_t pid, unsigned proc_n)
 bool Thread::BindToProcessor(unsigned proc_n)
 {
     DVASSERT(proc_n < std::thread::hardware_concurrency());
-	if (proc_n >= std::thread::hardware_concurrency())
+    if (proc_n >= std::thread::hardware_concurrency())
         return false;
 
 #if defined(__DAVAENGINE_APPLE__)
@@ -195,48 +195,48 @@ bool Thread::BindToProcessor(unsigned proc_n)
 
 #endif
 }
-    
+
 bool calculatePriority(int priority, int* sched_policy, int* sched_prio)
 {
     const int lowestPrio = Thread::PRIORITY_LOW;
     const int highestPrio = Thread::PRIORITY_HIGH;
-    
+
     int prio_min = sched_get_priority_min(*sched_policy);
     int prio_max = sched_get_priority_max(*sched_policy);
-    
+
     if (prio_min == -1 || prio_max == -1)
         return false;
-    
+
     int prio = ((priority - lowestPrio) * (prio_max - prio_min) / highestPrio) + prio_min;
     prio = std::max(prio_min, std::min(prio_max, prio));
-    
+
     *sched_prio = prio;
     return true;
 }
-    
+
 void Thread::SetPriority(eThreadPriority priority)
 {
     DVASSERT(state == STATE_RUNNING);
     if (threadPriority == priority)
         return;
-     
+
     threadPriority = priority;
     int sched_policy = 0;
-    sched_param param {};
-    
+    sched_param param{};
+
     if (pthread_getschedparam(handle, &sched_policy, &param) != 0)
     {
         Logger::FrameworkDebug("[Thread::SetPriority]: Cannot get schedule parameters");
         return;
     }
-    
+
     int prio = 0;
     if (!calculatePriority(priority, &sched_policy, &prio))
     {
         Logger::FrameworkDebug("[Thread::SetPriority]: Cannot determine scheduler priority range");
         return;
     }
-    
+
     param.sched_priority = prio;
     int status = pthread_setschedparam(handle, sched_policy, &param);
 

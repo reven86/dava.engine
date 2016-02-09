@@ -43,7 +43,6 @@
 
 namespace DAVA
 {
-
 class DispatcherWinUAP final
 {
 public:
@@ -64,7 +63,7 @@ public:
         friend class DispatcherWinUAP;
 
     private:
-        template<typename T>
+        template <typename T>
         BlockingTaskWrapper(DispatcherWinUAP* disp, T&& task_);
 
     public:
@@ -96,14 +95,14 @@ public:
     void ProcessTasks();
 
     // Schedule task to run on dispatcher's thread and return immediatly
-    template<typename T>
+    template <typename T>
     void RunAsync(T&& task);
 
     // Schedule task to run on dispatcher's thread and block calling thread waiting for task completion
-    template<typename T>
+    template <typename T>
     void RunAsyncAndWait(T&& task);
 
-    template<typename T>
+    template <typename T>
     BlockingTaskWrapper GetBlockingTaskWrapper(T&& task);
 
     bool InBlockingCall() const;
@@ -126,32 +125,33 @@ inline Thread::Id DispatcherWinUAP::BoundThreadId() const
     return boundThreadId;
 }
 
-template<typename T>
+template <typename T>
 void DispatcherWinUAP::RunAsync(T&& task)
 {
     ScheduleTask(std::function<void()>(std::forward<T>(task)), false);
 }
 
-template<typename T>
+template <typename T>
 void DispatcherWinUAP::RunAsyncAndWait(T&& task)
 {
     ScheduleTaskAndWait(std::function<void()>(std::forward<T>(task)));
 }
 
-template<typename T>
+template <typename T>
 DispatcherWinUAP::BlockingTaskWrapper DispatcherWinUAP::GetBlockingTaskWrapper(T&& task)
 {
     return BlockingTaskWrapper(this, std::forward<T>(task));
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<typename T>
+template <typename T>
 DispatcherWinUAP::BlockingTaskWrapper::BlockingTaskWrapper(DispatcherWinUAP* disp, T&& task_)
     : dispatcher(disp)
     , task(std::move(task_))
-{}
+{
+}
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_DISPATCHER_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_DISPATCHER_H__

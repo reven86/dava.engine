@@ -238,7 +238,7 @@ void EditorCore::OnGLWidgedInitialized()
     }
 }
 
-void EditorCore::OnOpenPackageFile(const QString &path)
+void EditorCore::OnOpenPackageFile(const QString& path)
 {
     if (!path.isEmpty())
     {
@@ -257,7 +257,7 @@ void EditorCore::OnOpenPackageFile(const QString &path)
     }
 }
 
-void EditorCore::OnProjectPathChanged(const QString &projectPath)
+void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
@@ -276,7 +276,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
-        const QFileInfo &fileInfo = it.fileInfo();
+        const QFileInfo& fileInfo = it.fileInfo();
         it.next();
         if (fileInfo.isDir())
         {
@@ -307,17 +307,18 @@ bool EditorCore::CloseOneDocument(int index)
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
     Document* document = documents.at(index);
-    QUndoStack *undoStack = document->GetUndoStack();
+    QUndoStack* undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {
         QMessageBox::StandardButton ret = QMessageBox::question(
-            qApp->activeWindow(),
-            tr("Save changes"),
-            tr("The file %1 has been modified.\n"
-               "Do you want to save your changes?").arg(document->GetPackageFilePath().GetBasename().c_str()),
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-            QMessageBox::Save
-            );
+        qApp->activeWindow(),
+        tr("Save changes"),
+        tr("The file %1 has been modified.\n"
+           "Do you want to save your changes?")
+        .arg(document->GetPackageFilePath().GetBasename().c_str()),
+        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+        QMessageBox::Save
+        );
         if (ret == QMessageBox::Save)
         {
             SaveDocument(index);
@@ -354,7 +355,7 @@ void EditorCore::Exit()
     }
 }
 
-void EditorCore::RecentMenu(QAction *recentProjectAction)
+void EditorCore::RecentMenu(QAction* recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
 
@@ -373,7 +374,7 @@ void EditorCore::OnCurrentTabChanged(int index)
 void EditorCore::UpdateLanguage()
 {
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
-    for(auto &document : documents)
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -383,7 +384,7 @@ void EditorCore::UpdateLanguage()
 void EditorCore::OnRtlChanged(bool isRtl)
 {
     UIControlSystem::Instance()->SetRtl(isRtl);
-    for(auto &document : documents)
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -400,16 +401,16 @@ void EditorCore::OnBiDiSupportChanged(bool support)
     }
 }
 
-void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
+void EditorCore::OnGlobalStyleClassesChanged(const QString& classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
 
     UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
-    for (String &token : tokens)
+    for (String& token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 
-    for(auto &document : documents)
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -474,7 +475,7 @@ Document* EditorCore::GetDocument(const QString& path) const
     return nullptr;
 }
 
-void EditorCore::OpenProject(const QString &path)
+void EditorCore::OpenProject(const QString& path)
 {
     if (!CloseProject())
     {
@@ -496,7 +497,7 @@ void EditorCore::OpenProject(const QString &path)
 bool EditorCore::CloseProject()
 {
     bool hasUnsaved = false;
-    for (auto &doc : documents)
+    for (auto& doc : documents)
     {
         if (!doc->GetUndoStack()->isClean())
         {
@@ -507,12 +508,12 @@ bool EditorCore::CloseProject()
     if (hasUnsaved)
     {
         int ret = QMessageBox::question(
-            qApp->activeWindow(),
-            tr("Save changes"),
-            tr("Some files has been modified.\n"
-                "Do you want to save your changes?"),
-            QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
-            );
+        qApp->activeWindow(),
+        tr("Save changes"),
+        tr("Some files has been modified.\n"
+           "Do you want to save your changes?"),
+        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
+        );
         if (ret == QMessageBox::Cancel)
         {
             return false;
@@ -523,7 +524,7 @@ bool EditorCore::CloseProject()
         }
     }
 
-    while(!documents.isEmpty())
+    while (!documents.isEmpty())
     {
         CloseDocument(0);
     }
@@ -537,7 +538,7 @@ void EditorCore::CloseDocument(int index)
     Document* activeDocument = documentGroup->GetActiveDocument();
     int newIndex = mainWindow->CloseTab(index);
     DVASSERT(activeDocument != nullptr);
-    Document *detached = documents.takeAt(index);
+    Document* detached = documents.takeAt(index);
     Document* nextDocument = nullptr;
     if (detached != activeDocument)
     {
@@ -557,7 +558,7 @@ void EditorCore::CloseDocument(int index)
 
 int EditorCore::CreateDocument(int index, PackageNode* package)
 {
-    Document *document = new Document(package, this);
+    Document* document = new Document(package, this);
     documents.insert(index, document);
     documentGroup->InsertDocument(index, document);
     int insertedIndex = mainWindow->AddTab(document, index);
@@ -570,7 +571,7 @@ int EditorCore::CreateDocument(int index, PackageNode* package)
     return index;
 }
 
-void EditorCore::SaveDocument(Document *document)
+void EditorCore::SaveDocument(Document* document)
 {
     DVASSERT(document);
     if (document->GetUndoStack()->isClean())
@@ -598,4 +599,3 @@ int EditorCore::GetIndexByPackagePath(const FilePath& davaPath) const
     }
     return -1;
 }
-

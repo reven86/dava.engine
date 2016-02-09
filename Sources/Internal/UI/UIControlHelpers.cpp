@@ -33,14 +33,13 @@
 
 namespace DAVA
 {
-
-String UIControlHelpers::GetControlPath(const UIControl *control, const UIControl *rootControl /*= NULL*/)
+String UIControlHelpers::GetControlPath(const UIControl* control, const UIControl* rootControl /*= NULL*/)
 {
     if (!control)
         return "";
 
     String controlPath = "";
-    UIControl * controlIter = control->GetParent();
+    UIControl* controlIter = control->GetParent();
     do
     {
         if (!controlIter)
@@ -54,7 +53,7 @@ String UIControlHelpers::GetControlPath(const UIControl *control, const UIContro
     return controlPath;
 }
 
-UIControl *UIControlHelpers::GetControlByPath(const String &controlPath, const UIControl *rootControl)
+UIControl* UIControlHelpers::GetControlByPath(const String& controlPath, const UIControl* rootControl)
 {
     const UIControl* control = rootControl;
     Vector<String> controlNames;
@@ -62,10 +61,10 @@ UIControl *UIControlHelpers::GetControlByPath(const String &controlPath, const U
     Vector<String>::const_iterator iter = controlNames.begin();
     Vector<String>::const_iterator iterEnd = controlNames.end();
     UIControl* findControl = NULL;
-    
+
     for (; iter != iterEnd; ++iter)
     {
-        findControl = control->FindByName(*iter,false);
+        findControl = control->FindByName(*iter, false);
         if (!findControl)
         {
             return NULL;
@@ -74,5 +73,4 @@ UIControl *UIControlHelpers::GetControlByPath(const String &controlPath, const U
     }
     return findControl;
 }
-
 }

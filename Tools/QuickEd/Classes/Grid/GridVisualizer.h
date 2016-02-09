@@ -34,10 +34,10 @@
 #include "Math/Rect.h"
 #include "Render/UniqueStateSet.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 // This class helps us to visualize UI Editor Grid if needed.
-class GridVisualizer : public Singleton < GridVisualizer >
+class GridVisualizer : public Singleton<GridVisualizer>
 {
 public:
     // Construction/destruction.
@@ -51,10 +51,9 @@ public:
     void DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState);
 
 protected:
-    // Current screen scale. 
+    // Current screen scale.
     float32 curScale;
 };
-
 };
 
 

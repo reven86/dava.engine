@@ -58,7 +58,7 @@
 namespace DAVA
 {
 
-bool HasComponent(const Entity *fromEntity, const Component::eType componentType)
+bool HasComponent(const Entity* fromEntity, const Component::eType componentType)
 {
     if (fromEntity != nullptr)
     {
@@ -68,81 +68,79 @@ bool HasComponent(const Entity *fromEntity, const Component::eType componentType
     return false;
 }
 
-
-RenderComponent * GetRenderComponent(const Entity *fromEntity)
+RenderComponent* GetRenderComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
-	    return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
+    if (fromEntity)
+        return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
     else
         return nullptr;
 }
 
-TransformComponent * GetTransformComponent(const Entity *fromEntity)
+TransformComponent* GetTransformComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
-	    return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
+    if (fromEntity)
+        return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
     else
         return nullptr;
 }
 
-SkeletonComponent * GetSkeletonComponent(const Entity *fromEntity)
+SkeletonComponent* GetSkeletonComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
+    if (fromEntity)
         return static_cast<SkeletonComponent*>(fromEntity->GetComponent(Component::SKELETON_COMPONENT));
     else
         return nullptr;
 }
 
-RenderObject * GetRenderObject(const Entity *fromEntity)
+RenderObject* GetRenderObject(const Entity* fromEntity)
 {
-	RenderObject * object = nullptr;
+    RenderObject* object = nullptr;
 
-	if(nullptr != fromEntity)
-	{
-		RenderComponent * component = GetRenderComponent(fromEntity);
-		if(component)
-		{
-			object = component->GetRenderObject();
-		}
-	}
+    if (nullptr != fromEntity)
+    {
+        RenderComponent* component = GetRenderComponent(fromEntity);
+        if (component)
+        {
+            object = component->GetRenderObject();
+        }
+    }
 
-	return object;
+    return object;
 }
 
-SpeedTreeObject * GetSpeedTreeObject(const Entity *fromEntity)
+SpeedTreeObject* GetSpeedTreeObject(const Entity* fromEntity)
 {
-    RenderObject *ro = GetRenderObject(fromEntity);
-    if(ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
+    RenderObject* ro = GetRenderObject(fromEntity);
+    if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
     {
-        return (static_cast<SpeedTreeObject *>(ro));
+        return (static_cast<SpeedTreeObject*>(ro));
     }
 
     return nullptr;
 }
 
-ParticleEffectComponent * GetEffectComponent(const Entity *fromEntity)
+ParticleEffectComponent* GetEffectComponent(const Entity* fromEntity)
 {
-	if(fromEntity)
-	{
-		return static_cast<ParticleEffectComponent*>(fromEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
-	}
+    if (fromEntity)
+    {
+        return static_cast<ParticleEffectComponent*>(fromEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
-AnimationComponent * GetAnimationComponent(const Entity *fromEntity)
+AnimationComponent* GetAnimationComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
+    if (fromEntity)
     {
         return static_cast<AnimationComponent*>(fromEntity->GetComponent(Component::ANIMATION_COMPONENT));
     }
     return nullptr;
 }
 
-
-LightComponent *GetLightComponent(const Entity *fromEntity)
+LightComponent* GetLightComponent(const Entity* fromEntity)
 {
-    if(nullptr != fromEntity)
+    if (nullptr != fromEntity)
     {
         return static_cast<LightComponent*>(fromEntity->GetComponent(Component::LIGHT_COMPONENT));
     }
@@ -150,40 +148,40 @@ LightComponent *GetLightComponent(const Entity *fromEntity)
     return nullptr;
 }
 
-Light * GetLight(const Entity *fromEntity )
+Light* GetLight(const Entity* fromEntity)
 {
-    LightComponent * component = GetLightComponent(fromEntity);
-    if(component)
+    LightComponent* component = GetLightComponent(fromEntity);
+    if (component)
     {
         return component->GetLightObject();
     }
 
-	return nullptr;
+    return nullptr;
 }
 
-Landscape * GetLandscape(const Entity *fromEntity)
+Landscape* GetLandscape(const Entity* fromEntity)
 {
-	if(nullptr != fromEntity)
-	{
-		RenderObject * object = GetRenderObject(fromEntity);
-		if(object && object->GetType() == RenderObject::TYPE_LANDSCAPE)
-		{
-			Landscape *landscape = static_cast<Landscape *>(object);
-			return landscape;
-		}
-	}
-
-	return nullptr;
-}
-
-VegetationRenderObject * GetVegetation(const Entity *fromEntity)
-{
-    if(nullptr != fromEntity)
+    if (nullptr != fromEntity)
     {
-        RenderObject * object = GetRenderObject(fromEntity);
-        if(object && object->GetType() == RenderObject::TYPE_VEGETATION)
+        RenderObject* object = GetRenderObject(fromEntity);
+        if (object && object->GetType() == RenderObject::TYPE_LANDSCAPE)
         {
-            VegetationRenderObject *vegetation = static_cast<VegetationRenderObject *>(object);
+            Landscape* landscape = static_cast<Landscape*>(object);
+            return landscape;
+        }
+    }
+
+    return nullptr;
+}
+
+VegetationRenderObject* GetVegetation(const Entity* fromEntity)
+{
+    if (nullptr != fromEntity)
+    {
+        RenderObject* object = GetRenderObject(fromEntity);
+        if (object && object->GetType() == RenderObject::TYPE_VEGETATION)
+        {
+            VegetationRenderObject* vegetation = static_cast<VegetationRenderObject*>(object);
             return vegetation;
         }
     }
@@ -191,264 +189,261 @@ VegetationRenderObject * GetVegetation(const Entity *fromEntity)
     return nullptr;
 }
 
-Camera * GetCamera(const Entity *fromEntity)
+Camera* GetCamera(const Entity* fromEntity)
 {
-	if(nullptr != fromEntity)
-	{
-		CameraComponent *component = static_cast<CameraComponent *>(fromEntity->GetComponent(Component::CAMERA_COMPONENT));
-		if(component)
-		{
-			return component->GetCamera();
-		}
-	}
-    
+    if (nullptr != fromEntity)
+    {
+        CameraComponent* component = static_cast<CameraComponent*>(fromEntity->GetComponent(Component::CAMERA_COMPONENT));
+        if (component)
+        {
+            return component->GetCamera();
+        }
+    }
+
     return nullptr;
 }
-    
-LodComponent * GetLodComponent(const Entity *fromEntity)
+
+LodComponent* GetLodComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
+    if (fromEntity)
     {
         return static_cast<LodComponent*>(fromEntity->GetComponent(Component::LOD_COMPONENT));
     }
-    
+
     return nullptr;
 }
 
-SwitchComponent * GetSwitchComponent(const Entity *fromEntity)
+SwitchComponent* GetSwitchComponent(const Entity* fromEntity)
 {
-	if(fromEntity)
-	{
-		return (SwitchComponent*) fromEntity->GetComponent(Component::SWITCH_COMPONENT);
-	}
-
-	return nullptr;
-}
-
-SoundComponent * GetSoundComponent(const Entity *fromEntity)
-{
-    if(fromEntity)
+    if (fromEntity)
     {
-        return static_cast<SoundComponent *>(fromEntity->GetComponent(Component::SOUND_COMPONENT));
+        return (SwitchComponent*)fromEntity->GetComponent(Component::SWITCH_COMPONENT);
     }
 
     return nullptr;
 }
 
-uint32 GetLodLayersCount(const Entity *fromEntity)
+SoundComponent* GetSoundComponent(const Entity* fromEntity)
 {
-    if (!fromEntity) return 0;
-	
-	if(GetEffectComponent(fromEntity)) 
-		return LodComponent::MAX_LOD_LAYERS;
+    if (fromEntity)
+    {
+        return static_cast<SoundComponent*>(fromEntity->GetComponent(Component::SOUND_COMPONENT));
+    }
 
-    RenderObject *object = GetRenderObject(fromEntity);
-    if(!object) 
-		return 0;
-    
-    return (object->GetMaxLodIndex() + 1);
+    return nullptr;
 }
-    
-uint32 GetLodLayersCount(LodComponent *fromComponent)
+
+uint32 GetLodLayersCount(const Entity* fromEntity)
 {
-    if(!fromComponent) return 0;
+    if (!fromEntity)
+        return 0;
 
-    Entity *entity = fromComponent->GetEntity();
+    if (GetEffectComponent(fromEntity))
+        return LodComponent::MAX_LOD_LAYERS;
 
-	if(GetEffectComponent(entity)) 
-		return LodComponent::MAX_LOD_LAYERS;
+    RenderObject* object = GetRenderObject(fromEntity);
+    if (!object)
+        return 0;
 
-	RenderObject *object = GetRenderObject(entity);
-	if(!object) 
-		return 0;
-    
     return (object->GetMaxLodIndex() + 1);
 }
 
-void RecursiveProcessMeshNode(Entity * curr, void * userData, void(*process)(Entity*, void *))
+uint32 GetLodLayersCount(LodComponent* fromComponent)
 {
-	RenderComponent * comp = (RenderComponent*)curr->GetComponent(Component::RENDER_COMPONENT);
-	if (comp)
-	{
-		RenderObject * renderObject = comp->GetRenderObject();
-		if (renderObject->GetType() == RenderObject::TYPE_MESH)
-		{
-			process(curr, userData);
-		}
-	}
-	else
-	{
-		for (int32 i = 0; i < curr->GetChildrenCount(); i++)
-			RecursiveProcessMeshNode(curr->GetChild(i), userData, process);
-	}
+    if (!fromComponent)
+        return 0;
+
+    Entity* entity = fromComponent->GetEntity();
+
+    if (GetEffectComponent(entity))
+        return LodComponent::MAX_LOD_LAYERS;
+
+    RenderObject* object = GetRenderObject(entity);
+    if (!object)
+        return 0;
+
+    return (object->GetMaxLodIndex() + 1);
 }
 
-
-
-void RecursiveProcessLodNode(Entity * curr, int32 lod, void * userData, void(*process)(Entity*, void*))
+void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Entity*, void*))
 {
-	LodComponent * lodComp = (LodComponent*)curr->GetComponent(Component::LOD_COMPONENT);
-	if (lodComp)
-	{
-		Vector<LodComponent::LodData*> retLodLayers;
-		lodComp->GetLodData(retLodLayers);
-		for (Vector<LodComponent::LodData*>::iterator it = retLodLayers.begin(); it != retLodLayers.end(); ++it)
-		{
-			LodComponent::LodData * data = *it;
-			if (data->layer == lod)
-			{
-				for (Vector<Entity*>::iterator i = data->nodes.begin(); i != data->nodes.end(); ++i)
-				{
-					process((*i), userData);
-				}
-				break;
-			}
-		}
-	}
-	else
-	{
-		for (int32 i = 0; i < curr->GetChildrenCount(); i++)
-			RecursiveProcessLodNode(curr->GetChild(i), lod, userData, process);
-	}
-}
-
-SpeedTreeComponent * GetSpeedTreeComponent(const Entity *fromEntity)
-{
-    if(fromEntity)
+    RenderComponent* comp = (RenderComponent*)curr->GetComponent(Component::RENDER_COMPONENT);
+    if (comp)
     {
-        return static_cast<SpeedTreeComponent *>(fromEntity->GetComponent(Component::SPEEDTREE_COMPONENT));
+        RenderObject* renderObject = comp->GetRenderObject();
+        if (renderObject->GetType() == RenderObject::TYPE_MESH)
+        {
+            process(curr, userData);
+        }
     }
-    
-    return nullptr;
-}
-
-WindComponent * GetWindComponent(const Entity *fromEntity)
-{
-    if(fromEntity)
+    else
     {
-        return static_cast<WindComponent *>(fromEntity->GetComponent(Component::WIND_COMPONENT));
+        for (int32 i = 0; i < curr->GetChildrenCount(); i++)
+            RecursiveProcessMeshNode(curr->GetChild(i), userData, process);
     }
-    
-    return nullptr;
 }
 
-WaveComponent * GetWaveComponent(const Entity *fromEntity)
+void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*))
 {
-    if(fromEntity)
+    LodComponent* lodComp = (LodComponent*)curr->GetComponent(Component::LOD_COMPONENT);
+    if (lodComp)
     {
-        return static_cast<WaveComponent *>(fromEntity->GetComponent(Component::WAVE_COMPONENT));
+        Vector<LodComponent::LodData*> retLodLayers;
+        lodComp->GetLodData(retLodLayers);
+        for (Vector<LodComponent::LodData*>::iterator it = retLodLayers.begin(); it != retLodLayers.end(); ++it)
+        {
+            LodComponent::LodData* data = *it;
+            if (data->layer == lod)
+            {
+                for (Vector<Entity*>::iterator i = data->nodes.begin(); i != data->nodes.end(); ++i)
+                {
+                    process((*i), userData);
+                }
+                break;
+            }
+        }
+    }
+    else
+    {
+        for (int32 i = 0; i < curr->GetChildrenCount(); i++)
+            RecursiveProcessLodNode(curr->GetChild(i), lod, userData, process);
+    }
+}
+
+SpeedTreeComponent* GetSpeedTreeComponent(const Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return static_cast<SpeedTreeComponent*>(fromEntity->GetComponent(Component::SPEEDTREE_COMPONENT));
     }
 
     return nullptr;
 }
 
-Entity * FindLandscapeEntity(Entity * rootEntity)
+WindComponent* GetWindComponent(const Entity* fromEntity)
 {
-	if(GetLandscape(rootEntity))
-	{
-		return rootEntity;
-	}
+    if (fromEntity)
+    {
+        return static_cast<WindComponent*>(fromEntity->GetComponent(Component::WIND_COMPONENT));
+    }
 
-	DAVA::int32 count = rootEntity->GetChildrenCount();
-	for(DAVA::int32 i = 0; i < count; ++i)
-	{
-		Entity *landscapeEntity = FindLandscapeEntity(rootEntity->GetChild(i));
-		if(landscapeEntity)
-		{
-			return landscapeEntity;
-		}
-	}
-
-	return nullptr;
+    return nullptr;
 }
 
-Entity * FindVegetationEntity(Entity * rootEntity)
+WaveComponent* GetWaveComponent(const Entity* fromEntity)
 {
-    if(GetVegetation(rootEntity))
+    if (fromEntity)
+    {
+        return static_cast<WaveComponent*>(fromEntity->GetComponent(Component::WAVE_COMPONENT));
+    }
+
+    return nullptr;
+}
+
+Entity* FindLandscapeEntity(Entity* rootEntity)
+{
+    if (GetLandscape(rootEntity))
     {
         return rootEntity;
     }
-        
+
     DAVA::int32 count = rootEntity->GetChildrenCount();
-    for(DAVA::int32 i = 0; i < count; ++i)
+    for (DAVA::int32 i = 0; i < count; ++i)
     {
-        Entity *vegetationEntity = FindVegetationEntity(rootEntity->GetChild(i));
-        if(vegetationEntity)
+        Entity* landscapeEntity = FindLandscapeEntity(rootEntity->GetChild(i));
+        if (landscapeEntity)
+        {
+            return landscapeEntity;
+        }
+    }
+
+    return nullptr;
+}
+
+Entity* FindVegetationEntity(Entity* rootEntity)
+{
+    if (GetVegetation(rootEntity))
+    {
+        return rootEntity;
+    }
+
+    DAVA::int32 count = rootEntity->GetChildrenCount();
+    for (DAVA::int32 i = 0; i < count; ++i)
+    {
+        Entity* vegetationEntity = FindVegetationEntity(rootEntity->GetChild(i));
+        if (vegetationEntity)
         {
             return vegetationEntity;
         }
     }
-        
+
     return nullptr;
 }
 
-Landscape * FindLandscape(Entity * rootEntity)
+Landscape* FindLandscape(Entity* rootEntity)
 {
-	Entity *entity = FindLandscapeEntity(rootEntity);
-	return GetLandscape(entity);
+    Entity* entity = FindLandscapeEntity(rootEntity);
+    return GetLandscape(entity);
 }
 
-VegetationRenderObject* FindVegetation(Entity * rootEntity)
+VegetationRenderObject* FindVegetation(Entity* rootEntity)
 {
-    Entity *entity = FindVegetationEntity(rootEntity);
+    Entity* entity = FindVegetationEntity(rootEntity);
     return GetVegetation(entity);
 }
 
+QualitySettingsComponent* GetQualitySettingsComponent(const Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return (static_cast<QualitySettingsComponent*>(fromEntity->GetComponent(Component::QUALITY_SETTINGS_COMPONENT)));
+    }
 
-QualitySettingsComponent * GetQualitySettingsComponent(const Entity *fromEntity)
-{
-    if(fromEntity)
-    {
-		return (static_cast<QualitySettingsComponent *>(fromEntity->GetComponent(Component::QUALITY_SETTINGS_COMPONENT)));
-    }
-    
-    return nullptr;
-}
-    
-CustomPropertiesComponent * GetCustomProperties(const Entity *fromEntity)
-{
-    if(fromEntity)
-    {
-		return (static_cast<CustomPropertiesComponent *>(fromEntity->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
-    }
-    
-    return nullptr;
-    
-}
-    
-CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity)
-{
-    if(fromEntity)
-    {
-        return (static_cast<CustomPropertiesComponent *>(fromEntity->GetOrCreateComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
-    }
-    
     return nullptr;
 }
 
-
-KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity)
+CustomPropertiesComponent* GetCustomProperties(const Entity* fromEntity)
 {
-    CustomPropertiesComponent * comp = GetCustomProperties(fromEntity);
-    if(comp)
+    if (fromEntity)
+    {
+        return (static_cast<CustomPropertiesComponent*>(fromEntity->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
+    }
+
+    return nullptr;
+}
+
+CustomPropertiesComponent* GetOrCreateCustomProperties(Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return (static_cast<CustomPropertiesComponent*>(fromEntity->GetOrCreateComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
+    }
+
+    return nullptr;
+}
+
+KeyedArchive* GetCustomPropertiesArchieve(const Entity* fromEntity)
+{
+    CustomPropertiesComponent* comp = GetCustomProperties(fromEntity);
+    if (comp)
     {
         return comp->GetArchive();
     }
-    
+
     return nullptr;
 }
 
-PathComponent * GetPathComponent(const Entity *fromEntity)
+PathComponent* GetPathComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
+    if (fromEntity)
     {
-        return (PathComponent*) fromEntity->GetComponent(Component::PATH_COMPONENT);
+        return (PathComponent*)fromEntity->GetComponent(Component::PATH_COMPONENT);
     }
 
-        return nullptr;
+    return nullptr;
 }
 
-WaypointComponent * GetWaypointComponent(const Entity *fromEntity)
+WaypointComponent* GetWaypointComponent(const Entity* fromEntity)
 {
     if (fromEntity)
     {
@@ -458,7 +453,7 @@ WaypointComponent * GetWaypointComponent(const Entity *fromEntity)
     return NULL;
 }
 
-EdgeComponent* FindEdgeComponent(const Entity *fromEntity, const Entity *toEntity)
+EdgeComponent* FindEdgeComponent(const Entity* fromEntity, const Entity* toEntity)
 {
     uint32 count = fromEntity->GetComponentCount(Component::EDGE_COMPONENT);
     for (uint32 i = 0; i < count; ++i)
@@ -473,13 +468,13 @@ EdgeComponent* FindEdgeComponent(const Entity *fromEntity, const Entity *toEntit
     return nullptr;
 }
 
-SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity *fromEntity)
+SnapToLandscapeControllerComponent* GetSnapToLandscapeControllerComponent(const Entity* fromEntity)
 {
-    if(fromEntity)
+    if (fromEntity)
     {
-        return (static_cast<SnapToLandscapeControllerComponent *>(fromEntity->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)));
+        return (static_cast<SnapToLandscapeControllerComponent*>(fromEntity->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)));
     }
-    
+
     return nullptr;
 }
 

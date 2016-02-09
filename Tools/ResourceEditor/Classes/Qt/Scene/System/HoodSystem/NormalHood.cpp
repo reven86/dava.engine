@@ -34,26 +34,26 @@
 // framework
 #include "Render/RenderHelper.h"
 
-NormalHood::NormalHood() : HoodObject(2.0f)
+NormalHood::NormalHood()
+    : HoodObject(2.0f)
 {
-	axisX = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(baseSize, 0, 0));
-	axisX->axis = ST_AXIS_X;
+    axisX = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(baseSize, 0, 0));
+    axisX->axis = ST_AXIS_X;
 
-	axisY = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, baseSize, 0));
-	axisY->axis = ST_AXIS_Y;
+    axisY = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, baseSize, 0));
+    axisY->axis = ST_AXIS_Y;
 
-	axisZ = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, 0, baseSize));
-	axisZ->axis = ST_AXIS_Z;
+    axisZ = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, 0, baseSize));
+    axisZ->axis = ST_AXIS_Z;
 }
 
 NormalHood::~NormalHood()
 {
-
 }
 
 void NormalHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem)
 {
-	// x
+    // x
     drawer->DrawLine(axisX->curFrom, axisX->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
     // y

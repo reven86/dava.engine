@@ -1,6 +1,6 @@
 #ifndef _MAGICK_MAGICK_CONFIG_H
 #define _MAGICK_MAGICK_CONFIG_H 1
- 
+
 /* magick/magick-config.h. Generated automatically at end of configure. */
 /* config/config.h.  Generated from config.h.in by configure.  */
 /* config/config.h.in.  Generated from configure.ac by autoheader.  */
@@ -1296,12 +1296,12 @@
 
 /* Define to the type of args 2, 3 and 4 for `select'. */
 #ifndef MAGICKCORE_SELECT_TYPE_ARG234
-#define MAGICKCORE_SELECT_TYPE_ARG234 (fd_set *)
+#define MAGICKCORE_SELECT_TYPE_ARG234 (fd_set*)
 #endif
 
 /* Define to the type of arg 5 for `select'. */
 #ifndef MAGICKCORE_SELECT_TYPE_ARG5
-#define MAGICKCORE_SELECT_TYPE_ARG5 (struct timeval *)
+#define MAGICKCORE_SELECT_TYPE_ARG5 (struct timeval*)
 #endif
 
 /* Directory where architecture-independent configuration files live. */
@@ -1415,25 +1415,24 @@
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-# define _ALL_SOURCE 1
+#define _ALL_SOURCE 1
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
+#define _GNU_SOURCE 1
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-# define _POSIX_PTHREAD_SEMANTICS 1
+#define _POSIX_PTHREAD_SEMANTICS 1
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-# define _TANDEM_SOURCE 1
+#define _TANDEM_SOURCE 1
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-# define __EXTENSIONS__ 1
+#define __EXTENSIONS__ 1
 #endif
-
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
@@ -1458,13 +1457,13 @@
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #if defined AC_APPLE_UNIVERSAL_BUILD
-# if defined __BIG_ENDIAN__
-#  define WORDS_BIGENDIAN 1
-# endif
+#if defined __BIG_ENDIAN__
+#define WORDS_BIGENDIAN 1
+#endif
 #else
-# ifndef WORDS_BIGENDIAN
+#ifndef WORDS_BIGENDIAN
 /* #  undef WORDS_BIGENDIAN */
-# endif
+#endif
 #endif
 
 /* Location of X11 configure files */
@@ -1606,8 +1605,8 @@
    previous line.  Perhaps some future version of Sun C++ will work with
    restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
 #if defined __SUNPRO_CC && !defined __RESTRICT
-# define _Restrict
-# define __restrict__
+#define _Restrict
+#define __restrict__
 #endif
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
@@ -1649,6 +1648,6 @@
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
- 
+
 /* once: _MAGICK_MAGICK_CONFIG_H */
 #endif

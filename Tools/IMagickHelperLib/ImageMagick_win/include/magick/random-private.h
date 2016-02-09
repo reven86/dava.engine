@@ -24,43 +24,43 @@ extern "C" {
 
 #include "magick/thread-private.h"
 
-static inline RandomInfo **DestroyRandomInfoThreadSet(
-  RandomInfo **random_info)
+static inline RandomInfo** DestroyRandomInfoThreadSet(
+RandomInfo** random_info)
 {
-  register ssize_t
+    register ssize_t
     i;
 
-  assert(random_info != (RandomInfo **) NULL);
-  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
-    if (random_info[i] != (RandomInfo *) NULL)
-      random_info[i]=DestroyRandomInfo(random_info[i]);
-  return((RandomInfo **) RelinquishAlignedMemory(random_info));
+    assert(random_info != (RandomInfo**)NULL);
+    for (i = 0; i < (ssize_t)GetOpenMPMaximumThreads(); i++)
+        if (random_info[i] != (RandomInfo*)NULL)
+            random_info[i] = DestroyRandomInfo(random_info[i]);
+    return ((RandomInfo**)RelinquishAlignedMemory(random_info));
 }
 
-static inline RandomInfo **AcquireRandomInfoThreadSet(void)
+static inline RandomInfo** AcquireRandomInfoThreadSet(void)
 {
-  register ssize_t
+    register ssize_t
     i;
 
-  RandomInfo
-    **random_info;
+    RandomInfo
+    ** random_info;
 
-  size_t
+    size_t
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
-  random_info=(RandomInfo **) AcquireAlignedMemory(number_threads,
-    sizeof(*random_info));
-  if (random_info == (RandomInfo **) NULL)
-    return((RandomInfo **) NULL);
-  (void) ResetMagickMemory(random_info,0,number_threads*sizeof(*random_info));
-  for (i=0; i < (ssize_t) number_threads; i++)
-  {
-    random_info[i]=AcquireRandomInfo();
-    if (random_info[i] == (RandomInfo *) NULL)
-      return(DestroyRandomInfoThreadSet(random_info));
-  }
-  return(random_info);
+    number_threads = GetOpenMPMaximumThreads();
+    random_info = (RandomInfo**)AcquireAlignedMemory(number_threads,
+                                                     sizeof(*random_info));
+    if (random_info == (RandomInfo**)NULL)
+        return ((RandomInfo**)NULL);
+    (void)ResetMagickMemory(random_info, 0, number_threads * sizeof(*random_info));
+    for (i = 0; i < (ssize_t)number_threads; i++)
+    {
+        random_info[i] = AcquireRandomInfo();
+        if (random_info[i] == (RandomInfo*)NULL)
+            return (DestroyRandomInfoThreadSet(random_info));
+    }
+    return (random_info);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

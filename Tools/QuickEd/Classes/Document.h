@@ -44,10 +44,11 @@ inline WidgetContext::~WidgetContext()
 {
 }
 
-namespace DAVA {
-    class FilePath;
-    class UIControl;
-    class UIEvent;
+namespace DAVA
+{
+class FilePath;
+class UIControl;
+class UIEvent;
 }
 
 class PackageNode;
@@ -70,7 +71,7 @@ public:
     void Deactivate();
 
     EditorSystemsManager* GetSystemManager();
-    const DAVA::FilePath &GetPackageFilePath() const;
+    const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack();
     PackageNode* GetPackage();

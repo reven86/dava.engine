@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 class ParticleEmitter;
 class ParticleEffectComponent;
 class SkeletonComponent;
@@ -67,57 +66,56 @@ class SnapToLandscapeControllerComponent;
 class StaticOcclusionComponent;
 class StaticOcclusionDebugDrawComponent;
 
+
 bool HasComponent(const Entity *fromEntity, const Component::eType componentType);
 
-ParticleEffectComponent * GetEffectComponent(const Entity *fromEntity);
-AnimationComponent * GetAnimationComponent(const Entity *fromEntity);
-TransformComponent * GetTransformComponent(const Entity *fromEntity);
-RenderComponent * GetRenderComponent(const Entity *fromEntity);
-SkeletonComponent * GetSkeletonComponent(const Entity *fromEntity);
-RenderObject * GetRenderObject(const Entity *fromEntity);
-VegetationRenderObject * GetVegetation(const Entity *fromEntity);
-SpeedTreeObject * GetSpeedTreeObject(const Entity *fromEntity);
-SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity *fromEntity);
+ParticleEffectComponent* GetEffectComponent(const Entity* fromEntity);
+AnimationComponent* GetAnimationComponent(const Entity* fromEntity);
+TransformComponent* GetTransformComponent(const Entity* fromEntity);
+RenderComponent* GetRenderComponent(const Entity* fromEntity);
+SkeletonComponent* GetSkeletonComponent(const Entity* fromEntity);
+RenderObject* GetRenderObject(const Entity* fromEntity);
+VegetationRenderObject* GetVegetation(const Entity* fromEntity);
+SpeedTreeObject* GetSpeedTreeObject(const Entity* fromEntity);
+SnapToLandscapeControllerComponent* GetSnapToLandscapeControllerComponent(const Entity* fromEntity);
 StaticOcclusionComponent* GetStaticOcclusionComponent(const Entity* fromEntity);
 StaticOcclusionDebugDrawComponent* GetStaticOcclusionDebugDrawComponent(const Entity* fromEntity);
 
-Light *GetLight(const Entity *fromEntity);
-LightComponent *GetLightComponent(const Entity *fromEntity);
-Landscape *GetLandscape(const Entity *fromEntity);
+Light* GetLight(const Entity* fromEntity);
+LightComponent* GetLightComponent(const Entity* fromEntity);
+Landscape* GetLandscape(const Entity* fromEntity);
 
-Camera * GetCamera(const Entity *fromEntity);
+Camera* GetCamera(const Entity* fromEntity);
 
-SoundComponent * GetSoundComponent(const Entity *fromEntity);
+SoundComponent* GetSoundComponent(const Entity* fromEntity);
 
-LodComponent * GetLodComponent(const Entity *fromEntity);
-SwitchComponent* GetSwitchComponent(const Entity *fromEntity);
-    
-uint32 GetLodLayersCount(const Entity *fromEntity);
-uint32 GetLodLayersCount(LodComponent *fromComponent);
-    
-    
-void RecursiveProcessMeshNode(Entity * curr, void * userData, void(*process)(Entity*, void *));
-void RecursiveProcessLodNode(Entity * curr, int32 lod, void * userData, void(*process)(Entity*, void*));
+LodComponent* GetLodComponent(const Entity* fromEntity);
+SwitchComponent* GetSwitchComponent(const Entity* fromEntity);
 
-Entity * FindLandscapeEntity(Entity * rootEntity);
-Landscape * FindLandscape(Entity * rootEntity);
-Entity * FindVegetationEntity(Entity * rootEntity);
-VegetationRenderObject* FindVegetation(Entity * rootEntity);
+uint32 GetLodLayersCount(const Entity* fromEntity);
+uint32 GetLodLayersCount(LodComponent* fromComponent);
 
-SpeedTreeComponent * GetSpeedTreeComponent(const Entity *fromEntity);
-WindComponent * GetWindComponent(const Entity *fromEntity);
-WaveComponent * GetWaveComponent(const Entity *fromEntity);
+void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Entity*, void*));
+void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*));
 
-QualitySettingsComponent * GetQualitySettingsComponent(const Entity *fromEntity);
-    
-CustomPropertiesComponent * GetCustomProperties(const Entity *fromEntity);
-CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity);
-KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity);
+Entity* FindLandscapeEntity(Entity* rootEntity);
+Landscape* FindLandscape(Entity* rootEntity);
+Entity* FindVegetationEntity(Entity* rootEntity);
+VegetationRenderObject* FindVegetation(Entity* rootEntity);
 
-PathComponent * GetPathComponent(const Entity *fromEntity);
+SpeedTreeComponent* GetSpeedTreeComponent(const Entity* fromEntity);
+WindComponent* GetWindComponent(const Entity* fromEntity);
+WaveComponent* GetWaveComponent(const Entity* fromEntity);
+
+QualitySettingsComponent* GetQualitySettingsComponent(const Entity* fromEntity);
+
+CustomPropertiesComponent* GetCustomProperties(const Entity* fromEntity);
+CustomPropertiesComponent* GetOrCreateCustomProperties(Entity* fromEntity);
+KeyedArchive* GetCustomPropertiesArchieve(const Entity* fromEntity);
+
+PathComponent* GetPathComponent(const Entity* fromEntity);
 WaypointComponent* GetWaypointComponent(const Entity* fromEntity);
-EdgeComponent* FindEdgeComponent(const Entity *fromEntity, const Entity *toEntity);
-
+EdgeComponent* FindEdgeComponent(const Entity* fromEntity, const Entity* toEntity);
 }
 
 #endif //__DAVAENGINE_COMPONENT_HELPERS_H__

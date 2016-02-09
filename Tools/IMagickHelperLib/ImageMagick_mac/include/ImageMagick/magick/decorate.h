@@ -24,11 +24,11 @@ extern "C" {
 
 typedef struct _FrameInfo
 {
-  size_t
+    size_t
     width,
     height;
 
-  ssize_t
+    ssize_t
     x,
     y,
     inner_bevel,
@@ -36,11 +36,12 @@ typedef struct _FrameInfo
 } FrameInfo;
 
 extern MagickExport Image
-  *BorderImage(const Image *,const RectangleInfo *,ExceptionInfo *),
-  *FrameImage(const Image *,const FrameInfo *,ExceptionInfo *);
+*
+BorderImage(const Image *, const RectangleInfo *, ExceptionInfo *),
+*FrameImage(const Image *, const FrameInfo *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  RaiseImage(Image *,const RectangleInfo *,const MagickBooleanType);
+RaiseImage(Image*, const RectangleInfo*, const MagickBooleanType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -35,7 +35,7 @@
 class AddComponentCommand : public Command2
 {
 public:
-	AddComponentCommand(DAVA::Entity* entity, DAVA::Component* component);
+    AddComponentCommand(DAVA::Entity* entity, DAVA::Component* component);
     ~AddComponentCommand() override;
 
     void Undo() override;

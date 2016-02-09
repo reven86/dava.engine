@@ -72,7 +72,7 @@ DAVA_TESTCLASS(DispatcherWinUAPTest)
             {
             case 0:
                 // Run increment on other thread
-                for (int32 i = 0;i < 10;++i)
+                for (int32 i = 0; i < 10; ++i)
                 {
                     dispatcher2->RunAsync([this]() { counter += 1; });
                 }

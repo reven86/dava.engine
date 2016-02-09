@@ -24,44 +24,44 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedCompression,
-  NoCompression,
-  BZipCompression,
-  DXT1Compression,
-  DXT3Compression,
-  DXT5Compression,
-  FaxCompression,
-  Group4Compression,
-  JPEGCompression,
-  JPEG2000Compression,      /* ISO/IEC std 15444-1 */
-  LosslessJPEGCompression,
-  LZWCompression,
-  RLECompression,
-  ZipCompression,
-  ZipSCompression,
-  PizCompression,
-  Pxr24Compression,
-  B44Compression,
-  B44ACompression,
-  LZMACompression,            /* Lempel-Ziv-Markov chain algorithm */
-  JBIG1Compression,           /* ISO/IEC std 11544 / ITU-T rec T.82 */
-  JBIG2Compression            /* ISO/IEC std 14492 / ITU-T rec T.88 */
+    UndefinedCompression,
+    NoCompression,
+    BZipCompression,
+    DXT1Compression,
+    DXT3Compression,
+    DXT5Compression,
+    FaxCompression,
+    Group4Compression,
+    JPEGCompression,
+    JPEG2000Compression, /* ISO/IEC std 15444-1 */
+    LosslessJPEGCompression,
+    LZWCompression,
+    RLECompression,
+    ZipCompression,
+    ZipSCompression,
+    PizCompression,
+    Pxr24Compression,
+    B44Compression,
+    B44ACompression,
+    LZMACompression, /* Lempel-Ziv-Markov chain algorithm */
+    JBIG1Compression, /* ISO/IEC std 11544 / ITU-T rec T.82 */
+    JBIG2Compression /* ISO/IEC std 14492 / ITU-T rec T.88 */
 } CompressionType;
 
 typedef struct _Ascii85Info
-  Ascii85Info;
+Ascii85Info;
 
 extern MagickExport MagickBooleanType
-  HuffmanDecodeImage(Image *),
-  HuffmanEncodeImage(const ImageInfo *,Image *,Image *),
-  LZWEncodeImage(Image *,const size_t,unsigned char *),
-  PackbitsEncodeImage(Image *,const size_t,unsigned char *),
-  ZLIBEncodeImage(Image *,const size_t,unsigned char *);
+HuffmanDecodeImage(Image *),
+HuffmanEncodeImage(const ImageInfo *, Image *, Image *),
+LZWEncodeImage(Image *, const size_t, unsigned char *),
+PackbitsEncodeImage(Image *, const size_t, unsigned char *),
+ZLIBEncodeImage(Image *, const size_t, unsigned char *);
 
 extern MagickExport void
-  Ascii85Encode(Image *,const unsigned char),
-  Ascii85Flush(Image *),
-  Ascii85Initialize(Image *);
+Ascii85Encode(Image *, const unsigned char),
+Ascii85Flush(Image *),
+Ascii85Initialize(Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

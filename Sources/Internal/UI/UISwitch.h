@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class TogglePositionAnimation;
 
 /*
@@ -51,60 +50,78 @@ class TogglePositionAnimation;
  */
 class UISwitch : public UIControl
 {
-
     friend class TogglePositionAnimation;
+
 protected:
     virtual ~UISwitch();
+
 public:
-    UISwitch(const Rect &rect = Rect());
+    UISwitch(const Rect& rect = Rect());
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual void LoadFromYamlNodeCompleted();
-    virtual void CopyDataFrom(DAVA::UIControl *srcControl);
+    virtual void CopyDataFrom(DAVA::UIControl* srcControl);
 
-	YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    YamlNode* SaveToYamlNode(UIYamlLoader* loader);
 
-    virtual void AddControl(UIControl *control) override;
-    virtual void RemoveControl(UIControl *control) override;
-    virtual UISwitch *Clone() override;
+    virtual void AddControl(UIControl* control) override;
+    virtual void RemoveControl(UIControl* control) override;
+    virtual UISwitch* Clone() override;
 
-    virtual void Input(UIEvent *currentInput) override;
+    virtual void Input(UIEvent* currentInput) override;
 
-    bool GetIsLeftSelected() const {return isLeftSelected;}
+    bool GetIsLeftSelected() const
+    {
+        return isLeftSelected;
+    }
     void SetIsLeftSelected(bool aIsLeftSelected);
 
-    UIButton * GetButtonNext() const {return buttonLeft.Get();}
-    UIButton * GetButtonPrevious() const { return buttonRight.Get(); }
-    UIButton * GetToggle() const { return toggle.Get(); }
+    UIButton* GetButtonNext() const
+    {
+        return buttonLeft.Get();
+    }
+    UIButton* GetButtonPrevious() const
+    {
+        return buttonRight.Get();
+    }
+    UIButton* GetToggle() const
+    {
+        return toggle.Get();
+    }
 
     /*
      * If tap on any place beside toggle must provoke switch of controls state.
      */
-    void SetSwitchOnTapBesideToggle(bool aSwitchOnTapBesideToggle) {switchOnTapBesideToggle = aSwitchOnTapBesideToggle;}
-    bool GetSwitchOnTapBesideToggle() const {return switchOnTapBesideToggle;}
+    void SetSwitchOnTapBesideToggle(bool aSwitchOnTapBesideToggle)
+    {
+        switchOnTapBesideToggle = aSwitchOnTapBesideToggle;
+    }
+    bool GetSwitchOnTapBesideToggle() const
+    {
+        return switchOnTapBesideToggle;
+    }
 
 protected:
-    void InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent *inputEvent = NULL);
+    void InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent* inputEvent = NULL);
     void InitControls();
     void ReleaseControls();
 
     float32 GetToggleUttermostPosition();
-    void CheckToggleSideChange(UIEvent *inputEvent = NULL);
+    void CheckToggleSideChange(UIEvent* inputEvent = NULL);
     void ChangeVisualState();
 
     RefPtr<UIButton> buttonLeft;
     RefPtr<UIButton> buttonRight;
     RefPtr<UIButton> toggle;
 
-	// Boolean variables are grouped together because of DF-2149.
+    // Boolean variables are grouped together because of DF-2149.
     bool switchOnTapBesideToggle : 1;
     bool isLeftSelected : 1;
 
 public:
     INTROSPECTION_EXTEND(UISwitch, UIControl,
-        nullptr
-        );
+                         nullptr
+                         );
 };
-
 }
 #endif //__DAVAENGINE_UI_SWITCH_H__

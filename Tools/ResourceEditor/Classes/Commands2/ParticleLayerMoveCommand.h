@@ -37,18 +37,21 @@
 class ParticleLayerMoveCommand : public Command2
 {
 public:
-	ParticleLayerMoveCommand(DAVA::ParticleEmitter *oldEmitter, DAVA::ParticleLayer* layer, DAVA::ParticleEmitter *newEmitter, DAVA::ParticleLayer *newBefore = NULL);
-	~ParticleLayerMoveCommand();
+    ParticleLayerMoveCommand(DAVA::ParticleEmitter* oldEmitter, DAVA::ParticleLayer* layer, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore = NULL);
+    ~ParticleLayerMoveCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const { return NULL; }
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const
+    {
+        return NULL;
+    }
 
-	DAVA::ParticleLayer* layer;
-	DAVA::ParticleEmitter* oldEmitter;
-	DAVA::ParticleLayer* oldBefore;
-	DAVA::ParticleEmitter* newEmitter;
-	DAVA::ParticleLayer* newBefore;
+    DAVA::ParticleLayer* layer;
+    DAVA::ParticleEmitter* oldEmitter;
+    DAVA::ParticleLayer* oldBefore;
+    DAVA::ParticleEmitter* newEmitter;
+    DAVA::ParticleLayer* newBefore;
 };
 
 #endif // __PARTICLE_LAYER_MOVE_COMMAND_H__

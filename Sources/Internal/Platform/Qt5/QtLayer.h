@@ -35,57 +35,59 @@
 
 #include "UI/UIEvent.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class QtLayerDelegate
 {
 public:
-	virtual ~QtLayerDelegate() {}
+    virtual ~QtLayerDelegate()
+    {
+    }
 
-	virtual void Quit() = 0;
+    virtual void Quit() = 0;
 };
 
-
 class QtLayer
-	: public Singleton<QtLayer>
+: public Singleton<QtLayer>
 {
 public:
     QtLayer();
     virtual ~QtLayer();
-    
+
     void OnSuspend();
     void OnResume();
-	
+
     void AppStarted();
     void AppFinished();
 
     void Resize(int32 width, int32 height, float64 dpr);
     void ProcessFrame();
 
-    void * CreateAutoreleasePool();
-    void ReleaseAutoreleasePool(void *pool);
+    void* CreateAutoreleasePool();
+    void ReleaseAutoreleasePool(void* pool);
 
     void Quit();
-    void SetDelegate(QtLayerDelegate *delegate);
+    void SetDelegate(QtLayerDelegate* delegate);
 
-    bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
+    bool IsDAVAEngineEnabled() const
+    {
+        return isDAVAEngineEnabled;
+    };
 
     void KeyPressed(Key key, int32 count, uint64 timestamp);
     void KeyReleased(Key key);
 
-    void MouseEvent(const UIEvent & event);
+    void MouseEvent(const UIEvent& event);
 
 #ifdef __DAVAENGINE_MACOS__
-    static void MakeAppForeground( bool foreground = true );
+    static void MakeAppForeground(bool foreground = true);
     static void RestoreMenuBar();
 #endif
 
 private:
-    QtLayerDelegate *delegate;
+    QtLayerDelegate* delegate;
     bool isDAVAEngineEnabled;
 };
-
 }
 
 

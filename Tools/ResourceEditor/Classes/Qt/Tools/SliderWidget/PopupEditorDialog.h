@@ -34,31 +34,31 @@
 
 class QLineEdit;
 
-class PopupEditorDialog: public QDialog
+class PopupEditorDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	PopupEditorDialog(int initialValue,
-					  int rangeMin, int rangeMax,
-					  const QWidget* widget = 0,
-					  QWidget* parent = 0);
-	~PopupEditorDialog();
+    PopupEditorDialog(int initialValue,
+                      int rangeMin, int rangeMax,
+                      const QWidget* widget = 0,
+                      QWidget* parent = 0);
+    ~PopupEditorDialog();
 
 signals:
-	void ValueReady(const QWidget* widget, int value);
+    void ValueReady(const QWidget* widget, int value);
 
-	protected slots:
-	void OnReturnPressed();
-	void OnEditingFinished();
+protected slots:
+    void OnReturnPressed();
+    void OnEditingFinished();
 
 protected:
-	virtual void showEvent(QShowEvent* event);
+    virtual void showEvent(QShowEvent* event);
 
 private:
-	QLineEdit* editValue;
-	const QWidget* widget;
-	int value;
+    QLineEdit* editValue;
+    const QWidget* widget;
+    int value;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__POPUPEDITORDIALOG__) */

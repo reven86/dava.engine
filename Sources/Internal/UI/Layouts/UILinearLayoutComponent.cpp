@@ -38,17 +38,15 @@ UILinearLayoutComponent::UILinearLayoutComponent()
     SetSkipInvisibleControls(true);
 }
 
-UILinearLayoutComponent::UILinearLayoutComponent(const UILinearLayoutComponent &src)
+UILinearLayoutComponent::UILinearLayoutComponent(const UILinearLayoutComponent& src)
     : flags(src.flags)
     , padding(src.padding)
     , spacing(src.spacing)
 {
-    
 }
 
 UILinearLayoutComponent::~UILinearLayoutComponent()
 {
-    
 }
 
 UILinearLayoutComponent* UILinearLayoutComponent::Clone() const
@@ -166,5 +164,4 @@ void UILinearLayoutComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
-
 }

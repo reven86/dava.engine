@@ -36,50 +36,51 @@
 #include "Scene/SceneSignals.h"
 
 class LazyUpdater;
-struct PropEditorUserData : public QtPropertyData::UserData 
+struct PropEditorUserData : public QtPropertyData::UserData
 {
-	enum PropertyType
-	{
-		ORIGINAL,
-		COPY
-	};
+    enum PropertyType
+    {
+        ORIGINAL,
+        COPY
+    };
 
-	PropEditorUserData(PropertyType _type, QtPropertyData *_associatedData = NULL, bool _isFavorite = false, DAVA::Entity *_entity = NULL)
-		: type(_type)
-		, associatedData(_associatedData)
-		, isFavorite(_isFavorite)
+    PropEditorUserData(PropertyType _type, QtPropertyData* _associatedData = NULL, bool _isFavorite = false, DAVA::Entity* _entity = NULL)
+        : type(_type)
+        , associatedData(_associatedData)
+        , isFavorite(_isFavorite)
         , entity(_entity)
-	{}
+    {
+    }
 
-	PropertyType type;
-	QtPropertyData *associatedData;
-	QString realPath;
-	bool isFavorite;
-    DAVA::Entity *entity;
+    PropertyType type;
+    QtPropertyData* associatedData;
+    QString realPath;
+    bool isFavorite;
+    DAVA::Entity* entity;
 };
 
 class PropertyEditor : public QtPropertyEditor
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum eViewMode
-	{
-		VIEW_NORMAL,
-		VIEW_ADVANCED,
-		VIEW_FAVORITES_ONLY
-	};
+    enum eViewMode
+    {
+        VIEW_NORMAL,
+        VIEW_ADVANCED,
+        VIEW_FAVORITES_ONLY
+    };
 
-	PropertyEditor(QWidget *parent = 0, bool connectToSceneSignals = true);
-	~PropertyEditor();
+    PropertyEditor(QWidget* parent = 0, bool connectToSceneSignals = true);
+    ~PropertyEditor();
 
-	virtual void SetEntities(const EntityGroup *selected);
-	
-	void SetViewMode(eViewMode mode);
-	eViewMode GetViewMode() const;
+    virtual void SetEntities(const EntityGroup* selected);
 
-	void SetFavoritesEditMode(bool set);
-	bool GetFavoritesEditMode() const;
+    void SetViewMode(eViewMode mode);
+    eViewMode GetViewMode() const;
+
+    void SetFavoritesEditMode(bool set);
+    bool GetFavoritesEditMode() const;
 
     bool IsFavorite(QtPropertyData* data) const;
     void SetFavorite(QtPropertyData* data, bool favorite);
@@ -88,15 +89,15 @@ public:
     void SaveScheme(const DAVA::FilePath& path);
 
 public slots:
-	void sceneActivated(SceneEditor2 *scene);
-	void sceneDeactivated(SceneEditor2 *scene);
-	void sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
-	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
+    void sceneActivated(SceneEditor2* scene);
+    void sceneDeactivated(SceneEditor2* scene);
+    void sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
 
-	void ActionEditComponent();
-	void ActionEditMaterial();
+    void ActionEditComponent();
+    void ActionEditMaterial();
     void ActionEditSoundComponent();
-	void OnAddActionComponent();
+    void OnAddActionComponent();
     void OnAddStaticOcclusionComponent();
     void OnAddSoundComponent();
     void OnAddWaveComponent();
@@ -109,10 +110,10 @@ public slots:
     void OnAddVisibilityComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
-	
-	void ConvertToShadow();
 
-	void DeleteRenderBatch();
+    void ConvertToShadow();
+
+    void DeleteRenderBatch();
 
     void RebuildTangentSpace();
 
@@ -120,13 +121,12 @@ public slots:
 
     void ResetProperties();
 
-
 protected:
-	eViewMode viewMode;
-	bool favoritesEditMode;
+    eViewMode viewMode;
+    bool favoritesEditMode;
 
-	QtPosSaver posSaver;
-	QSet<QString> scheme;
+    QtPosSaver posSaver;
+    QSet<QString> scheme;
 
     QtPropertyData* favoriteGroup;
     DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
@@ -145,7 +145,7 @@ protected:
     void ApplyCustomExtensions(QtPropertyData* data);
 
     void OnAddComponent(Component::eType type);
-    void OnAddComponent(Component *component);
+    void OnAddComponent(Component* component);
 
     void AddFavoriteChilds(QtPropertyData* parent);
     void RemFavoriteChilds(QtPropertyData* parent);
@@ -153,8 +153,8 @@ protected:
     bool IsInspViewAllowed(const DAVA::InspInfo* info) const;
 
     virtual void OnItemEdited(const QModelIndex& index);
-    virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
-	virtual void mouseReleaseEvent(QMouseEvent *event);
+    virtual void drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+    virtual void mouseReleaseEvent(QMouseEvent* event);
 
     bool IsParentFavorite(const QtPropertyData* data) const;
     PropEditorUserData* GetUserData(QtPropertyData* data) const;
@@ -164,7 +164,7 @@ protected:
     QString GetDefaultFilePath();
 
 private:
-	LazyUpdater *propertiesUpdater;
+    LazyUpdater* propertiesUpdater;
 };
 
 #endif // __QT_PROPERTY_WIDGET_H__

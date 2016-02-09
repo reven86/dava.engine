@@ -43,7 +43,8 @@ class NMaterial;
 class CustomColorsProxy : public DAVA::BaseObject
 {
 protected:
-	~CustomColorsProxy();
+    ~CustomColorsProxy();
+
 public:
     CustomColorsProxy(DAVA::int32 size);
 

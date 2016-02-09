@@ -32,8 +32,9 @@
 
 #include "ui_DialogConfigurePreset.h"
 
-namespace DAVA {
-    class Font;
+namespace DAVA
+{
+class Font;
 }
 
 class DialogConfigurePreset : public QDialog, public Ui::DialogConfigurePreset
@@ -41,24 +42,25 @@ class DialogConfigurePreset : public QDialog, public Ui::DialogConfigurePreset
     Q_OBJECT
 
 public:
-    explicit DialogConfigurePreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    explicit DialogConfigurePreset(const QString& originalPresetName, QWidget* parent = nullptr);
     ~DialogConfigurePreset() = default;
 private slots:
     void initPreset();
-    void OnDefaultFontChanged(const QString &arg);
+    void OnDefaultFontChanged(const QString& arg);
     void OnDefaultFontSizeChanged(int size);
-    void OnLocalizedFontChanged(const QString &arg);
+    void OnLocalizedFontChanged(const QString& arg);
     void OnLocalizedFontSizeChanged(int size);
 
-    void OnCurrentLocaleChanged(const QString &arg);
+    void OnCurrentLocaleChanged(const QString& arg);
     void OnResetLocale();
     void OnApplyToAllLocales();
     void OnOk();
     void OnCancel();
+
 private:
     void UpdateDefaultFontWidgets();
     void UpdateLocalizedFontWidgets();
-    void SetFont(const QString &font, const int fontSize, const QString &locale);
+    void SetFont(const QString& font, const int fontSize, const QString& locale);
     const QString originalPresetName;
 };
 

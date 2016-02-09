@@ -40,10 +40,10 @@ public:
     ~ConvertToShadowCommand();
 
     virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
-	static bool CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch);
+    static bool CanConvertBatchToShadow(DAVA::RenderBatch* renderBatch);
 
     DAVA::Entity* entity;
     DAVA::RenderObject* renderObject;

@@ -30,10 +30,9 @@
 #include "Request.h"
 
 Request::Request()
-    :   isAccepted(true)
+    : isAccepted(true)
 {
 }
-
 
 void Request::Accept()
 {
