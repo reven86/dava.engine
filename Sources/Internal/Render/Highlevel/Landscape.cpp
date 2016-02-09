@@ -940,32 +940,8 @@ void Landscape::AllocateGeometryDataInstancing()
         {
             VertexInstancing & vertex = patchVertices[y * PATCH_VERTEX_COUNT + x];
             vertex.position = Vector2(float32(x) / (PATCH_VERTEX_COUNT - 1), float32(y) / (PATCH_VERTEX_COUNT - 1));
-
-            if (x == 0 && y != 0 && y != PATCH_QUAD_COUNT) //left side of patch without corners
-            {
-                vertex.edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
-                vertex.morphDir = Vector2(0.f, 1.f);
-            }
-            else if (x == PATCH_QUAD_COUNT && y != 0 && y != PATCH_QUAD_COUNT) //right side of patch without corners
-            {
-                vertex.edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
-                vertex.morphDir = Vector2(0.f, -1.f);
-            }
-            else if (y == 0 && x != 0 && x != PATCH_QUAD_COUNT) //bottom side of patch without corners
-            {
-                vertex.edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
-                vertex.morphDir = Vector2(1.f, 0.f);
-            }
-            else if (y == PATCH_QUAD_COUNT && x != 0 && x != PATCH_QUAD_COUNT) //top side of patch without corners
-            {
-                vertex.edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
-                vertex.morphDir = Vector2(-1.f, 0.f);
-            }
-            else //others vertices
-            {
-                vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero
-                vertex.morphDir = Vector2(0.f, 0.f);
-            }
+            vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero for middle vertices
+            vertex.morphDir = Vector2(0.f, 0.f);
 
             if (x < (PATCH_VERTEX_COUNT - 1) && y < (PATCH_VERTEX_COUNT - 1))
             {
@@ -978,6 +954,25 @@ void Landscape::AllocateGeometryDataInstancing()
                 *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
             }
         }
+    }
+
+    for (uint32 i = 1; i < PATCH_QUAD_COUNT; ++i)
+    {
+        //x = 0; y = i; left side of patch without corners
+        patchVertices[i * PATCH_VERTEX_COUNT].edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
+        patchVertices[i * PATCH_VERTEX_COUNT].morphDir = Vector2(0.f, 1.f);
+
+        //x = PATCH_QUAD_COUNT; y = PATCH_QUAD_COUNT; right side of patch without corners
+        patchVertices[i * PATCH_VERTEX_COUNT + PATCH_QUAD_COUNT].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
+        patchVertices[i * PATCH_VERTEX_COUNT + PATCH_QUAD_COUNT].morphDir = Vector2(0.f, -1.f);
+
+        //x = i; y = 0; bottom side of patch without corners
+        patchVertices[i].edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
+        patchVertices[i].morphDir = Vector2(1.f, 0.f);
+
+        //x = i; y = PATCH_QUAD_COUNT; top side of patch without corners
+        patchVertices[PATCH_QUAD_COUNT * PATCH_VERTEX_COUNT + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
+        patchVertices[PATCH_QUAD_COUNT * PATCH_VERTEX_COUNT + i].morphDir = Vector2(-1.f, 0.f);
     }
 
     rhi::VertexBuffer::Descriptor vdesc;
