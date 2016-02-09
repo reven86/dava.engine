@@ -314,10 +314,11 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     // Install mouse hook which determines whether Mission Control, Launchpad is active
     // and notifies application about lost focus while mouse pinning is on
     // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
+    CGEventMask mask = CGEventMaskBit(kCGEventMouseMoved); // It's enough to intercept mouse move event only
     CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
                                              kCGTailAppendEventTap,
                                              kCGEventTapOptionListenOnly,
-                                             NSAnyEventMask,
+                                             mask,
                                              &EventTapCallback,
                                              nullptr);
 
