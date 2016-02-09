@@ -41,18 +41,18 @@
 class LazyUpdater;
 class TextureProperties : public QtPropertyEditor
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	typedef enum PropType
-	{
-		PROP_MIPMAP,
+    typedef enum PropType
+    {
+        PROP_MIPMAP,
         PROP_NORMALMAP,
-		PROP_WRAP,
-		PROP_FILTER,
-		PROP_FORMAT,
-		PROP_SIZE
-	} PropertiesType;
+        PROP_WRAP,
+        PROP_FILTER,
+        PROP_FORMAT,
+        PROP_SIZE
+    } PropertiesType;
 
 public:
     TextureProperties(QWidget* parent = nullptr);
@@ -65,7 +65,7 @@ public:
     void setOriginalImageSize(const QSize& size);
 
 signals:
-	void PropertyChanged(int type);
+    void PropertyChanged(int type);
 
 private slots:
 

@@ -23,7 +23,7 @@ class FCDLight;
 /** Holds commonly-used transformation functions for lights. */
 namespace FCDLightTools
 {
-	/** Loads the penumbra into the light.
+/** Loads the penumbra into the light.
 		The FCDLight does not contain penumbra information directly, but it 
 		can be represented with appropriate values for the outerAngle and the
 		fallOffAngle. If the penumbra is positive, then the outerAngle is the
@@ -38,7 +38,7 @@ namespace FCDLightTools
 		@param createAnimationChannel True to create animation channel for the 
 				falloff angle if needed. False will attach the animation to the
 				outer angle's channel if needed. */
-	void FCOLLADA_EXPORT LoadPenumbra(FCDLight* light, float penumbraValue, FCDAnimated* penumbraAnimated, bool createAnimationChannel=true);
+void FCOLLADA_EXPORT LoadPenumbra(FCDLight* light, float penumbraValue, FCDAnimated* penumbraAnimated, bool createAnimationChannel = true);
 }
 
 #endif // _FCD_LIGHT_TOOLS_H_

@@ -50,7 +50,7 @@ private:
     Entity* GetEntity() const override;
 
     uint16* GetHeightmapRegion(Heightmap* heightmap);
-	void ApplyHeightmapRegion(uint16* region);
+    void ApplyHeightmapRegion(uint16* region);
 
 private:
     HeightmapProxy* heightmapProxy = nullptr;

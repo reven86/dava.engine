@@ -34,12 +34,17 @@
 
 namespace DAVA
 {
-
 class LocalNotificationDelayed : public LocalNotification
 {
 public:
-    void SetDelaySeconds(int value) { delaySeconds = value; }
-    int GetDelaySeconds() { return delaySeconds; }
+    void SetDelaySeconds(int value)
+    {
+        delaySeconds = value;
+    }
+    int GetDelaySeconds()
+    {
+        return delaySeconds;
+    }
     void RemoveAllDelayedNotifications();
     void Post();
 
@@ -49,7 +54,6 @@ private:
 private:
     int delaySeconds;
 };
-
 }
 
 #endif // __NOTIFICATION_H__

@@ -38,33 +38,32 @@
 
 namespace DAVA
 {
-
 class SwitchComponent : public Component
 {
 protected:
     ~SwitchComponent(){};
+
 public:
-	IMPLEMENT_COMPONENT_TYPE(SWITCH_COMPONENT);
+    IMPLEMENT_COMPONENT_TYPE(SWITCH_COMPONENT);
 
-	SwitchComponent();
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    SwitchComponent();
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
 
-	void SetSwitchIndex(const int32 & switchIndex);
-	int32 GetSwitchIndex() const;
+    void SetSwitchIndex(const int32& switchIndex);
+    int32 GetSwitchIndex() const;
 
 private:
-	int32 oldSwitchIndex;
-	int32 newSwitchIndex;
+    int32 oldSwitchIndex;
+    int32 newSwitchIndex;
 
-	friend class SwitchSystem;
+    friend class SwitchSystem;
 
 public:
-	INTROSPECTION_EXTEND(SwitchComponent, Component,
-		PROPERTY("newSwitchIndex", "Switch index", GetSwitchIndex, SetSwitchIndex, I_VIEW | I_EDIT)
-		);
+    INTROSPECTION_EXTEND(SwitchComponent, Component,
+                         PROPERTY("newSwitchIndex", "Switch index", GetSwitchIndex, SetSwitchIndex, I_VIEW | I_EDIT)
+                         );
 };
-
 }
 #endif //__DAVAENGINE_SWITCH_COMPONENT_H__

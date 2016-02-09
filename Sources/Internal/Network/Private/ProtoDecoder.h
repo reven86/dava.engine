@@ -36,25 +36,24 @@ namespace DAVA
 {
 namespace Net
 {
-
 class ProtoDecoder
 {
 public:
     enum eDecodeStatus
     {
-        DECODE_OK,          // Frame or data packet decoded
-        DECODE_INCOMPLETE,  // Frame or data packet is incomplete, need more data
-        DECODE_INVALID      // Frame is invalid
+        DECODE_OK, // Frame or data packet decoded
+        DECODE_INCOMPLETE, // Frame or data packet is incomplete, need more data
+        DECODE_INVALID // Frame is invalid
     };
 
     struct DecodeResult
     {
-        size_t decodedSize;     // Number of bytes consumed from input buffer
+        size_t decodedSize; // Number of bytes consumed from input buffer
         uint32 type;
         uint32 channelId;
         uint32 packetId;
         size_t dataSize;
-        uint8* data;            // Pointer to user data of data packet
+        uint8* data; // Pointer to user data of data packet
     };
 
 public:
@@ -81,7 +80,7 @@ private:
     size_t curFrameSize;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_ _H__
+#endif // __DAVAENGINE_ _H__

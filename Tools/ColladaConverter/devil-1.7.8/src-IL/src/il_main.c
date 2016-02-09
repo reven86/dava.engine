@@ -17,14 +17,15 @@
 #if defined(_WIN32) && defined(_MSC_VER)
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	hModule;  ul_reason_for_call;  lpReserved;
+    hModule;
+    ul_reason_for_call;
+    lpReserved;
 
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-		//ilInit();
-	}
+    if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+    {
+        //ilInit();
+    }
 
-	return TRUE;
+    return TRUE;
 }
 #endif
-
-

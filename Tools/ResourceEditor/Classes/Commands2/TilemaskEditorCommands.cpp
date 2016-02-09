@@ -53,9 +53,9 @@ ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* _landscapeProxy, co
 
 ModifyTilemaskCommand::~ModifyTilemaskCommand()
 {
-	SafeRelease(undoImageMask);
-	SafeRelease(redoImageMask);
-	SafeRelease(landscapeProxy);
+    SafeRelease(undoImageMask);
+    SafeRelease(redoImageMask);
+    SafeRelease(landscapeProxy);
 
     SafeRelease(texture[0]);
     SafeRelease(texture[1]);
@@ -87,7 +87,7 @@ void ModifyTilemaskCommand::Redo()
 
 Entity* ModifyTilemaskCommand::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }
 
 void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, int32 internalHandleIndex)
@@ -115,26 +115,26 @@ SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy,
     , level(level)
     , redoColor(color)
 {
-	this->landscapeProxy = SafeRetain(landscapeProxy);
-	undoColor = landscapeProxy->GetLandscapeTileColor(level);
+    this->landscapeProxy = SafeRetain(landscapeProxy);
+    undoColor = landscapeProxy->GetLandscapeTileColor(level);
 }
 
 SetTileColorCommand::~SetTileColorCommand()
 {
-	SafeRelease(landscapeProxy);
+    SafeRelease(landscapeProxy);
 }
 
 void SetTileColorCommand::Undo()
 {
-	landscapeProxy->SetLandscapeTileColor(level, undoColor);
+    landscapeProxy->SetLandscapeTileColor(level, undoColor);
 }
 
 void SetTileColorCommand::Redo()
 {
-	landscapeProxy->SetLandscapeTileColor(level, redoColor);
+    landscapeProxy->SetLandscapeTileColor(level, redoColor);
 }
 
 Entity* SetTileColorCommand::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }

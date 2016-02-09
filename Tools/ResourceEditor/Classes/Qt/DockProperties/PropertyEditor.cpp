@@ -100,31 +100,31 @@ void ExecuteCommands(DAVA::Vector<Command2*>&& commands, const DAVA::String& com
 }
 }
 
-PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
-	: QtPropertyEditor(parent)
-	, viewMode(VIEW_NORMAL)
-	, treeStateHelper(this, curModel)
+PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSignals /*= true*/)
+    : QtPropertyEditor(parent)
+    , viewMode(VIEW_NORMAL)
+    , treeStateHelper(this, curModel)
 {
-	Function<void()> fn(this, &PropertyEditor::ResetProperties);
-	propertiesUpdater = new LazyUpdater(fn, this);
+    Function<void()> fn(this, &PropertyEditor::ResetProperties);
+    propertiesUpdater = new LazyUpdater(fn, this);
 
-	if(connectToSceneSignals)
-	{
-		QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
-		QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
-		QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool )));
-		QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-	}
-	posSaver.Attach(this, "DocPropetyEditor");
+    if (connectToSceneSignals)
+    {
+        QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    }
+    posSaver.Attach(this, "DocPropetyEditor");
 
-	DAVA::VariantType v = posSaver.LoadValue("splitPos");
-	if(v.GetType() == DAVA::VariantType::TYPE_INT32)
-	{
-        header()->resizeSection( 0, v.AsInt32() );
+    DAVA::VariantType v = posSaver.LoadValue("splitPos");
+    if (v.GetType() == DAVA::VariantType::TYPE_INT32)
+    {
+        header()->resizeSection(0, v.AsInt32());
     }
 
     Ui::MainWindow* mainUi = QtMainWindow::Instance()->GetUI();
-    connect( mainUi->actionAddActionComponent, SIGNAL( triggered() ), SLOT( OnAddActionComponent() ) );
+    connect(mainUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
     connect(mainUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
     connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
@@ -145,13 +145,13 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 
 PropertyEditor::~PropertyEditor()
 {
-	DAVA::VariantType v(header()->sectionSize(0));
-	posSaver.SaveValue("splitPos", v);
+    DAVA::VariantType v(header()->sectionSize(0));
+    posSaver.SaveValue("splitPos", v);
 
     ClearCurrentNodes();
 }
 
-void PropertyEditor::SetEntities(const EntityGroup *selected)
+void PropertyEditor::SetEntities(const EntityGroup* selected)
 {
     ClearCurrentNodes();
     SCOPE_EXIT
@@ -176,59 +176,59 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
 
 void PropertyEditor::SetViewMode(eViewMode mode)
 {
-	if(viewMode != mode)
-	{
-		viewMode = mode;
+    if (viewMode != mode)
+    {
+        viewMode = mode;
         ResetProperties();
-	}
+    }
 }
 
 PropertyEditor::eViewMode PropertyEditor::GetViewMode() const
 {
-	return viewMode;
+    return viewMode;
 }
 
 void PropertyEditor::SetFavoritesEditMode(bool set)
 {
-	if(favoritesEditMode != set)
-	{
-		favoritesEditMode = set;
-		ResetProperties();
-	}
+    if (favoritesEditMode != set)
+    {
+        favoritesEditMode = set;
+        ResetProperties();
+    }
 }
 
 bool PropertyEditor::GetFavoritesEditMode() const
 {
-	return favoritesEditMode;
+    return favoritesEditMode;
 }
 
 void PropertyEditor::ClearCurrentNodes()
 {
-    for ( int i = 0; i < curNodes.size(); i++ )
-	    SafeRelease(curNodes[i]);
+    for (int i = 0; i < curNodes.size(); i++)
+        SafeRelease(curNodes[i]);
     curNodes.clear();
 }
 
 void PropertyEditor::ResetProperties()
 {
     // Store the current Property Editor Tree state before switching to the new node.
-	// Do not clear the current states map - we are using one storage to share opened
-	// Property Editor nodes between the different Scene Nodes.
-	treeStateHelper.SaveTreeViewState(false);
+    // Do not clear the current states map - we are using one storage to share opened
+    // Property Editor nodes between the different Scene Nodes.
+    treeStateHelper.SaveTreeViewState(false);
 
-	RemovePropertyAll();
-	favoriteGroup = NULL;
+    RemovePropertyAll();
+    favoriteGroup = NULL;
 
     const int nNodes = curNodes.size();
-    if(nNodes > 0)
-	{
-		// create data tree, but don't add it to the property editor
+    if (nNodes > 0)
+    {
+        // create data tree, but don't add it to the property editor
         std::unique_ptr<QtPropertyData> root(new QtPropertyData(DAVA::FastName("root")));
 
         // add info about current entities
         for (int i = 0; i < nNodes; i++)
         {
-            DAVA::Entity *node = curNodes.at(i);
+            DAVA::Entity* node = curNodes.at(i);
             const DAVA::InspInfo* inspInfo = node->GetTypeInfo();
             std::unique_ptr<QtPropertyData> curEntityData(CreateInsp(inspInfo->Name(), node, inspInfo));
 
@@ -241,11 +241,11 @@ void PropertyEditor::ResetProperties()
             for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
             {
                 const int nComponents = node->GetComponentCount(ic);
-                for ( int cidx = 0; cidx < nComponents; cidx++ )
+                for (int cidx = 0; cidx < nComponents; cidx++)
                 {
-                    Component *component = node->GetComponent(ic, cidx);
-			        if (component)
-			        {
+                    Component* component = node->GetComponent(ic, cidx);
+                    if (component)
+                    {
                         const DAVA::InspInfo* componentInspInfo = component->GetTypeInfo();
                         std::unique_ptr<QtPropertyData> componentData(CreateInsp(componentInspInfo->Name(), component, componentInspInfo));
                         PropEditorUserData* userData = GetUserData(componentData.get());
@@ -257,9 +257,9 @@ void PropertyEditor::ResetProperties()
                         case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
                         case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
-                        case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
-                        case Component::WAYPOINT_COMPONENT:             // disable remove, b/c waypoint entity doesn't make sence without waypoint component
-                        case Component::EDGE_COMPONENT:                 // disable remove, b/c edge has to be removed directly from scene only
+                        case Component::CUSTOM_PROPERTIES_COMPONENT: // Disable removing, because custom properties are created automatically
+                        case Component::WAYPOINT_COMPONENT: // disable remove, b/c waypoint entity doesn't make sence without waypoint component
+                        case Component::EDGE_COMPONENT: // disable remove, b/c edge has to be removed directly from scene only
                             isRemovable = false;
                             break;
                         }
@@ -269,10 +269,10 @@ void PropertyEditor::ResetProperties()
                             QtPropertyToolButton* deleteButton = CreateButton(componentData.get(), SharedIcon(":/QtIcons/remove.png"), "Remove Component");
                             deleteButton->setObjectName("RemoveButton");
                             deleteButton->setEnabled(true);
-				            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
+                            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
                         }
 
-                        if ( i == 0 )
+                        if (i == 0)
                         {
                             root->ChildAdd(std::move(componentData));
                         }
@@ -280,7 +280,7 @@ void PropertyEditor::ResetProperties()
                         {
                             root->MergeChild(std::move(componentData));
                         }
-			        }
+                    }
                 }
             }
         }
@@ -302,55 +302,54 @@ void PropertyEditor::ResetProperties()
 
     // Restore back the tree view state from the shared storage.
     if (!treeStateHelper.IsTreeStateStorageEmpty())
-	{
-		treeStateHelper.RestoreTreeViewState();
-	}
-	else
-	{
-		// Expand the root elements as default value.
-		expandToDepth(0);
-	}
+    {
+        treeStateHelper.RestoreTreeViewState();
+    }
+    else
+    {
+        // Expand the root elements as default value.
+        expandToDepth(0);
+    }
 }
 
 void PropertyEditor::ApplyModeFilter(QtPropertyData* parent)
 {
-	if(NULL != parent)
-	{
-		for(int i = 0; i < parent->ChildCount(); ++i)
-		{
-			bool toBeRemove = false;
-			bool scanChilds = true;
+    if (NULL != parent)
+    {
+        for (int i = 0; i < parent->ChildCount(); ++i)
+        {
+            bool toBeRemove = false;
+            bool scanChilds = true;
             QtPropertyData* data = parent->ChildGet(i);
 
             // show only editable items and favorites
             if (viewMode == VIEW_NORMAL)
             {
-                if(!data->IsEditable())
-				{
-					toBeRemove = true;
-				}
-			}
-			// show all editable/viewable items
-			else if(viewMode == VIEW_ADVANCED)
-			{
+                if (!data->IsEditable())
+                {
+                    toBeRemove = true;
+                }
+            }
+            // show all editable/viewable items
+            else if (viewMode == VIEW_ADVANCED)
+            {
+            }
+            // show only favorite items
+            else if (viewMode == VIEW_FAVORITES_ONLY)
+            {
+                QtPropertyData* favorite = NULL;
+                PropEditorUserData* userData = GetUserData(data);
 
-			}
-			// show only favorite items
-			else if(viewMode == VIEW_FAVORITES_ONLY)
-			{
-				QtPropertyData *favorite = NULL;
-				PropEditorUserData *userData = GetUserData(data);
-
-				if(userData->type == PropEditorUserData::ORIGINAL)
-				{
-					toBeRemove = true;
-					favorite = userData->associatedData;
-				}
-				else if(userData->type == PropEditorUserData::COPY)
-				{
-					favorite = data;
-					scanChilds = false;
-				}
+                if (userData->type == PropEditorUserData::ORIGINAL)
+                {
+                    toBeRemove = true;
+                    favorite = userData->associatedData;
+                }
+                else if (userData->type == PropEditorUserData::COPY)
+                {
+                    favorite = data;
+                    scanChilds = false;
+                }
 
                 if (favorite != nullptr && favorite->GetUserData() != nullptr)
                 {
@@ -362,98 +361,98 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData* parent)
 
             if (toBeRemove)
             {
-				parent->ChildRemove(data);
-				i--;
-			}
-			else if(scanChilds)
-			{
-				// apply mode to data childs
-				ApplyModeFilter(data);
-			}
-		}
-	}
+                parent->ChildRemove(data);
+                i--;
+            }
+            else if (scanChilds)
+            {
+                // apply mode to data childs
+                ApplyModeFilter(data);
+            }
+        }
+    }
 }
 
 void PropertyEditor::ApplyFavorite(QtPropertyData* data)
 {
-	if(NULL != data)
-	{
-		if(scheme.contains(data->GetPath()))
-		{
-			SetFavorite(data, true);
-		}
+    if (NULL != data)
+    {
+        if (scheme.contains(data->GetPath()))
+        {
+            SetFavorite(data, true);
+        }
 
-		// go through childs
-		for(int i = 0; i < data->ChildCount(); ++i)
-		{
-			ApplyFavorite(data->ChildGet(i));
-		}
-	}
+        // go through childs
+        for (int i = 0; i < data->ChildCount(); ++i)
+        {
+            ApplyFavorite(data->ChildGet(i));
+        }
+    }
 }
 
 void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
 {
-	if(NULL != data)
-	{
-		const DAVA::MetaInfo *meta = data->MetaInfo();
+    if (NULL != data)
+    {
+        const DAVA::MetaInfo* meta = data->MetaInfo();
         const bool isSingleSelection = data->GetMergedItemCount() == 0;
 
-        if(NULL != meta)
-		{
-			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
-			{
-				// Add optional button to edit action component
+        if (NULL != meta)
+        {
+            if (DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
+            {
+                // Add optional button to edit action component
                 QtPropertyToolButton* editActions = CreateButton(data, SharedIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
-				QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
-			}
-            else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
+                QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
+            }
+            else if (DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
                 QtPropertyToolButton* editSound = CreateButton(data, SharedIcon(":/QtIcons/settings.png"), "Edit sound component");
                 editSound->setAutoRaise(true);
                 QObject::connect(editSound, SIGNAL(clicked()), this, SLOT(ActionEditSoundComponent()));
             }
-            else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
+            else if (DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
             {
-                QtPropertyToolButton *triggerWave = data->AddButton();
+                QtPropertyToolButton* triggerWave = data->AddButton();
                 triggerWave->setIcon(SharedIcon(":/QtIcons/clone.png"));
                 triggerWave->setAutoRaise(true);
 
                 QObject::connect(triggerWave, SIGNAL(clicked()), this, SLOT(OnTriggerWaveComponent()));
             }
-			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
-			{
-                QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
-                if(NULL != introData)
+            else if (DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
+            {
+                QtPropertyDataIntrospection* introData = dynamic_cast<QtPropertyDataIntrospection*>(data);
+                if (NULL != introData)
                 {
-                    DAVA::RenderObject *renderObject = (DAVA::RenderObject *) introData->object;
-                    if(SceneValidator::IsObjectHasDifferentLODsCount(renderObject))
+                    DAVA::RenderObject* renderObject = (DAVA::RenderObject*)introData->object;
+                    if (SceneValidator::IsObjectHasDifferentLODsCount(renderObject))
                     {
                         QtPropertyToolButton* cloneBatches = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
                 }
-			}
-			else if(DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
-			{
+            }
+            else if (DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
+            {
                 QtPropertyToolButton* deleteButton = CreateButton(data, SharedIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
+                QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
 
-				QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
-				if(NULL != introData)
-				{
-					DAVA::RenderBatch *batch = (DAVA::RenderBatch *) introData->object;
+                QtPropertyDataIntrospection* introData = dynamic_cast<QtPropertyDataIntrospection*>(data);
+                if (NULL != introData)
+                {
+                    DAVA::RenderBatch* batch = (DAVA::RenderBatch*)introData->object;
                     if (batch != NULL)
                     {
-					    DAVA::RenderObject *ro = batch->GetRenderObject();
-					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
-					    {
+                        DAVA::RenderObject* ro = batch->GetRenderObject();
+                        if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
+                        {
                             QtPropertyToolButton* convertButton = CreateButton(data, SharedIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
                             convertButton->setEnabled(isSingleSelection);
-						    connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
-					    }
+                            connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
+                        }
 
                         PolygonGroup* group = batch->GetPolygonGroup();
                         if (group != NULL)
@@ -471,75 +470,74 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                             }
                         }
                     }
-				}
-			}
-			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
-			{
+                }
+            }
+            else if (DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
+            {
                 QtPropertyToolButton* goToMaterialButton = CreateButton(data, SharedIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
-				QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
-			}
-            else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
-			{
+                QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
+            }
+            else if (DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
+            {
                 QString dataName(data->GetName().c_str());
-                PathDescriptor *pathDescriptor = &PathDescriptor::descriptors[0];
+                PathDescriptor* pathDescriptor = &PathDescriptor::descriptors[0];
 
                 for (auto descriptor : PathDescriptor::descriptors)
-				{
-                    if(descriptor.pathName == dataName)
-					{
+                {
+                    if (descriptor.pathName == dataName)
+                    {
                         pathDescriptor = &descriptor;
-						break;
-					}
-				}
-
-
-				QtPropertyDataDavaVariant* variantData = static_cast<QtPropertyDataDavaVariant*>(data);
-				QString defaultPath = GetDefaultFilePath();
-				variantData->SetDefaultOpenDialogPath(defaultPath);
-				variantData->SetOpenDialogFilter(pathDescriptor->fileFilter);
-
-				QStringList pathList;
-				pathList.append(defaultPath);
-
-				switch(pathDescriptor->pathType)
-				{
-					case PathDescriptor::PATH_HEIGHTMAP:
-						variantData->SetValidator(new HeightMapValidator(pathList));
-						break;
-					case PathDescriptor::PATH_TEXTURE:
-						variantData->SetValidator(new TexturePathValidator(pathList));
-						break;
-					case PathDescriptor::PATH_IMAGE:
-					case PathDescriptor::PATH_TEXTURE_SHEET:
-						variantData->SetValidator(new PathValidator(pathList));
-						break;
-                    case PathDescriptor::PATH_SCENE:
-                        variantData->SetValidator(new ScenePathValidator(pathList));
                         break;
+                    }
+                }
 
-					default:
-						break;
-				}
+                QtPropertyDataDavaVariant* variantData = static_cast<QtPropertyDataDavaVariant*>(data);
+                QString defaultPath = GetDefaultFilePath();
+                variantData->SetDefaultOpenDialogPath(defaultPath);
+                variantData->SetOpenDialogFilter(pathDescriptor->fileFilter);
+
+                QStringList pathList;
+                pathList.append(defaultPath);
+
+                switch (pathDescriptor->pathType)
+                {
+                case PathDescriptor::PATH_HEIGHTMAP:
+                    variantData->SetValidator(new HeightMapValidator(pathList));
+                    break;
+                case PathDescriptor::PATH_TEXTURE:
+                    variantData->SetValidator(new TexturePathValidator(pathList));
+                    break;
+                case PathDescriptor::PATH_IMAGE:
+                case PathDescriptor::PATH_TEXTURE_SHEET:
+                    variantData->SetValidator(new PathValidator(pathList));
+                    break;
+                case PathDescriptor::PATH_SCENE:
+                    variantData->SetValidator(new ScenePathValidator(pathList));
+                    break;
+
+                default:
+                    break;
+                }
             }
-            else if(DAVA::MetaInfo::Instance<DAVA::QualitySettingsComponent>() == meta)
+            else if (DAVA::MetaInfo::Instance<DAVA::QualitySettingsComponent>() == meta)
             {
                 DAVA::QualitySettingsSystem* qss = DAVA::QualitySettingsSystem::Instance();
                 QtPropertyDataDavaVariant* modelTypeData = (QtPropertyDataDavaVariant*)data->ChildGet(DAVA::FastName("modelType"));
-                if(NULL != modelTypeData)
+                if (NULL != modelTypeData)
                 {
                     modelTypeData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
-                    for(int i = 0; i < qss->GetOptionsCount(); ++i)
+                    for (int i = 0; i < qss->GetOptionsCount(); ++i)
                     {
                         modelTypeData->AddAllowedValue(DAVA::VariantType(qss->GetOptionName(i)));
                     }
                 }
 
                 QtPropertyDataDavaVariant* groupData = (QtPropertyDataDavaVariant*)data->ChildGet(DAVA::FastName("requiredGroup"));
-                if(NULL != groupData)
+                if (NULL != groupData)
                 {
                     groupData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
-                    for(size_t i = 0; i < qss->GetMaterialQualityGroupCount(); ++i)
+                    for (size_t i = 0; i < qss->GetMaterialQualityGroupCount(); ++i)
                     {
                         groupData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityGroupName(i)));
                     }
@@ -548,44 +546,44 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                 DAVA::FastName curGroup = groupData->GetVariantValue().AsFastName();
 
                 QtPropertyDataDavaVariant* requiredQualityData = (QtPropertyDataDavaVariant*)data->ChildGet(DAVA::FastName("requiredQuality"));
-                if(NULL != requiredQualityData)
+                if (NULL != requiredQualityData)
                 {
                     requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
-                    for(size_t i = 0; i < qss->GetMaterialQualityCount(curGroup); ++i)
+                    for (size_t i = 0; i < qss->GetMaterialQualityCount(curGroup); ++i)
                     {
                         requiredQualityData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityName(curGroup, i)));
                     }
                 }
             }
-		}
+        }
 
-		// go through childs
-		for(int i = 0; i < data->ChildCount(); ++i)
-		{
-			ApplyCustomExtensions(data->ChildGet(i));
-		}
-	}
+        // go through childs
+        for (int i = 0; i < data->ChildCount(); ++i)
+        {
+            ApplyCustomExtensions(data->ChildGet(i));
+        }
+    }
 }
 
 QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void* object, const DAVA::InspInfo* info)
 {
-	QtPropertyData *ret = NULL;
+    QtPropertyData* ret = NULL;
 
-	if(NULL != info)
-	{
-		bool hasMembers = false;
-		const InspInfo *baseInfo = info;
+    if (NULL != info)
+    {
+        bool hasMembers = false;
+        const InspInfo* baseInfo = info;
 
-		// check if there are any members in introspection
-		while(NULL != baseInfo)
-		{
-			if(baseInfo->MembersCount() > 0)
-			{
-				hasMembers = true;
-				break;
-			}
-			baseInfo = baseInfo->BaseInfo();
-		}
+        // check if there are any members in introspection
+        while (NULL != baseInfo)
+        {
+            if (baseInfo->MembersCount() > 0)
+            {
+                hasMembers = true;
+                break;
+            }
+            baseInfo = baseInfo->BaseInfo();
+        }
 
         ret = new QtPropertyDataIntrospection(name, object, info, false);
 
@@ -593,11 +591,11 @@ QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void* obj
         // and if we allow to view such introspection type
         if (hasMembers && IsInspViewAllowed(info))
         {
-            while(NULL != baseInfo)
-			{
-				for(int i = 0; i < baseInfo->MembersCount(); ++i)
-				{
-					const DAVA::InspMember *member = baseInfo->Member(i);
+            while (NULL != baseInfo)
+            {
+                for (int i = 0; i < baseInfo->MembersCount(); ++i)
+                {
+                    const DAVA::InspMember* member = baseInfo->Member(i);
 
                     std::unique_ptr<QtPropertyData> memberData(CreateInspMember(member->Name(), object, member));
                     ret->ChildAdd(std::move(memberData));
@@ -608,27 +606,27 @@ QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void* obj
         }
     }
 
-	return ret;
+    return ret;
 }
 
 QtPropertyData* PropertyEditor::CreateInspMember(const DAVA::FastName& name, void* object, const DAVA::InspMember* member)
 {
-	QtPropertyData* ret = NULL;
+    QtPropertyData* ret = NULL;
 
-	if(NULL != member && (member->Flags() & DAVA::I_VIEW))
-	{
-		void *momberObject = member->Data(object);
-		const DAVA::InspInfo *memberIntrospection = member->Type()->GetIntrospection(momberObject);
-		bool isKeyedArchive = (member->Type() == DAVA::MetaInfo::Instance<DAVA::KeyedArchive*>());
+    if (NULL != member && (member->Flags() & DAVA::I_VIEW))
+    {
+        void* momberObject = member->Data(object);
+        const DAVA::InspInfo* memberIntrospection = member->Type()->GetIntrospection(momberObject);
+        bool isKeyedArchive = (member->Type() == DAVA::MetaInfo::Instance<DAVA::KeyedArchive*>());
 
-		if(NULL != memberIntrospection && !isKeyedArchive)
-		{
+        if (NULL != memberIntrospection && !isKeyedArchive)
+        {
             ret = CreateInsp(name, momberObject, memberIntrospection);
         }
         else
         {
-            if(member->Collection() && !isKeyedArchive)
-			{
+            if (member->Collection() && !isKeyedArchive)
+            {
                 ret = CreateInspCollection(name, momberObject, member->Collection());
             }
             else
@@ -648,23 +646,23 @@ QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name,
     if (NULL != collection && collection->Size(object) > 0)
     {
         int index = 0;
-        DAVA::MetaInfo *valueType = collection->ItemType();
-		DAVA::InspColl::Iterator i = collection->Begin(object);
-		while(NULL != i)
-		{
+        DAVA::MetaInfo* valueType = collection->ItemType();
+        DAVA::InspColl::Iterator i = collection->Begin(object);
+        while (NULL != i)
+        {
             DAVA::FastName childName(std::to_string(index));
             if (NULL != valueType->GetIntrospection())
             {
                 void* itemObject = collection->ItemData(i);
-                const DAVA::InspInfo *itemInfo = valueType->GetIntrospection(itemObject);
+                const DAVA::InspInfo* itemInfo = valueType->GetIntrospection(itemObject);
 
                 std::unique_ptr<QtPropertyData> inspData(CreateInsp(childName, itemObject, itemInfo));
                 ret->ChildAdd(std::move(inspData));
             }
             else
             {
-                if(!valueType->IsPointer())
-				{
+                if (!valueType->IsPointer())
+                {
                     std::unique_ptr<QtPropertyData> childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
                     ret->ChildAdd(std::move(childData));
                 }
@@ -684,17 +682,17 @@ QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name,
 
             index++;
             i = collection->Next(i);
-		}
-	}
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
+QtPropertyData* PropertyEditor::CreateClone(QtPropertyData* original)
 {
-	QtPropertyDataIntrospection *inspData = dynamic_cast<QtPropertyDataIntrospection *>(original);
-	if(NULL != inspData)
-	{
+    QtPropertyDataIntrospection* inspData = dynamic_cast<QtPropertyDataIntrospection*>(original);
+    if (NULL != inspData)
+    {
         return CreateInsp(original->GetName(), inspData->object, inspData->info);
     }
 
@@ -717,8 +715,8 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
     }
 
     QtPropertyDataInspColl* memberCollection = dynamic_cast<QtPropertyDataInspColl*>(original);
-    if(NULL != memberCollection)
-	{
+    if (NULL != memberCollection)
+    {
         return CreateInspCollection(original->GetName(), memberCollection->object, memberCollection->collection);
     }
 
@@ -739,72 +737,72 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
     return retValue;
 }
 
-void PropertyEditor::sceneActivated(SceneEditor2 *scene)
+void PropertyEditor::sceneActivated(SceneEditor2* scene)
 {
-	if(NULL != scene)
-	{
+    if (NULL != scene)
+    {
         SetEntities(&scene->selectionSystem->GetSelection());
     }
 }
 
-void PropertyEditor::sceneDeactivated(SceneEditor2 *scene)
+void PropertyEditor::sceneDeactivated(SceneEditor2* scene)
 {
-	SetEntities(NULL);
+    SetEntities(NULL);
 }
 
-void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
+void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
 {
     SetEntities(selected);
 }
 
-void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-	int cmdId = command->GetId();
+    int cmdId = command->GetId();
 
-	switch (cmdId)
-	{
-	case CMDID_COMPONENT_ADD:
-	case CMDID_COMPONENT_REMOVE:
-	case CMDID_CONVERT_TO_SHADOW:
-	case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
+    switch (cmdId)
+    {
+    case CMDID_COMPONENT_ADD:
+    case CMDID_COMPONENT_REMOVE:
+    case CMDID_CONVERT_TO_SHADOW:
+    case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
     case CMDID_SOUND_ADD_EVENT:
     case CMDID_SOUND_REMOVE_EVENT:
-	case CMDID_DELETE_RENDER_BATCH:
-	case CMDID_CLONE_LAST_BATCH:
+    case CMDID_DELETE_RENDER_BATCH:
+    case CMDID_CLONE_LAST_BATCH:
     case CMDID_EXPAND_PATH:
     case CMDID_COLLAPSE_PATH:
+    {
+        bool doReset = (command->GetEntity() == NULL);
+        for (int i = 0; !doReset && i < curNodes.size(); i++)
         {
-            bool doReset = (command->GetEntity() == NULL);
-            for ( int i = 0; !doReset && i < curNodes.size(); i++ )
+            if (command->GetEntity() == curNodes.at(i))
             {
-                if (command->GetEntity() == curNodes.at(i))
-                {
-                    doReset = true;
-                }
+                doReset = true;
             }
-            if (doReset)
-            {
-				propertiesUpdater->Update();
-            }
-            break;
         }
-	default:
-		OnUpdateTimeout();
-		break;
-	}
+        if (doReset)
+        {
+            propertiesUpdater->Update();
+        }
+        break;
+    }
+    default:
+        OnUpdateTimeout();
+        break;
+    }
 }
 
-void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/redo
+void PropertyEditor::OnItemEdited(const QModelIndex& index) // TODO: fix undo/redo
 {
-	QtPropertyEditor::OnItemEdited(index);
+    QtPropertyEditor::OnItemEdited(index);
 
-	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (curScene == NULL)
-        return ;
-	QtPropertyData *propData = GetProperty(index);
+        return;
+    QtPropertyData* propData = GetProperty(index);
 
-	if(NULL != propData)
-	{
+    if (NULL != propData)
+    {
         bool useBatch = propData->GetMergedItemCount() > 0;
         if (useBatch)
         {
@@ -821,20 +819,20 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
         {
             curScene->EndBatch();
         }
-	}
+    }
 
     // this code it used to reload QualitySettingComponent field, when some changes made by user
     // because of QualitySettingComponent->requiredQuality directly depends from QualitySettingComponent->requiredGroup
     if (propData->GetName() == DAVA::FastName("requiredGroup"))
     {
         QtPropertyDataDavaVariant* requiredQualityData = (QtPropertyDataDavaVariant*)propData->Parent()->ChildGet(DAVA::FastName("requiredQuality"));
-        if(NULL != requiredQualityData)
+        if (NULL != requiredQualityData)
         {
             requiredQualityData->ClearAllowedValues();
 
-            DAVA::FastName curGroup = ((QtPropertyDataDavaVariant *)propData)->GetVariantValue().AsFastName();
+            DAVA::FastName curGroup = ((QtPropertyDataDavaVariant*)propData)->GetVariantValue().AsFastName();
             requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
-            for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(curGroup); ++i)
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(curGroup); ++i)
             {
                 requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(curGroup, i)));
             }
@@ -844,36 +842,36 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
     }
 }
 
-void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
+void PropertyEditor::mouseReleaseEvent(QMouseEvent* event)
 {
-	bool skipEvent = false;
-	QModelIndex index = indexAt(event->pos());
+    bool skipEvent = false;
+    QModelIndex index = indexAt(event->pos());
 
-	// handle favorite state toggle for item under mouse
-	if(favoritesEditMode && index.parent().isValid() && index.column() == 0)
-	{
-		QRect rect = visualRect(index);
-		rect.setX(0);
-		rect.setWidth(16);
+    // handle favorite state toggle for item under mouse
+    if (favoritesEditMode && index.parent().isValid() && index.column() == 0)
+    {
+        QRect rect = visualRect(index);
+        rect.setX(0);
+        rect.setWidth(16);
 
-		if(rect.contains(event->pos()))
-		{
-			QtPropertyData *data = GetProperty(index);
-			if(NULL != data && !IsParentFavorite(data))
-			{
-				SetFavorite(data, !IsFavorite(data));
-				skipEvent = true;
-			}
-		}
-	}
+        if (rect.contains(event->pos()))
+        {
+            QtPropertyData* data = GetProperty(index);
+            if (NULL != data && !IsParentFavorite(data))
+            {
+                SetFavorite(data, !IsFavorite(data));
+                skipEvent = true;
+            }
+        }
+    }
 
-	if(!skipEvent)
-	{
-		QtPropertyEditor::mouseReleaseEvent(event);
-	}
+    if (!skipEvent)
+    {
+        QtPropertyEditor::mouseReleaseEvent(event);
+    }
 }
 
-void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
+void PropertyEditor::drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     // custom draw for favorites edit mode
     QStyleOptionViewItemV4 opt = option;
@@ -882,10 +880,10 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
         QtPropertyData* data = GetProperty(index);
         if (NULL != data)
         {
-            if(!IsParentFavorite(data))
-			{
-				if(IsFavorite(data))
-				{
+            if (!IsParentFavorite(data))
+            {
+                if (IsFavorite(data))
+                {
                     SharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
                 }
                 else
@@ -901,31 +899,31 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 
 void PropertyEditor::ActionEditComponent()
 {
-	if(curNodes.size() == 1)
-	{
-        Entity *node = curNodes.at(0);
-		ActionComponentEditor editor(this);
+    if (curNodes.size() == 1)
+    {
+        Entity* node = curNodes.at(0);
+        ActionComponentEditor editor(this);
 
-		editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
-		editor.exec();
+        editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
+        editor.exec();
 
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
         curScene->selectionSystem->SetSelection(node);
         if (editor.IsModified())
         {
             curScene->SetChanged(true);
         }
-	}	
+    }
 }
 
 void PropertyEditor::ConvertToShadow()
 {
-	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-	if(NULL != btn)
-	{
-		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (NULL != btn)
+    {
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
         if (NULL != data && NULL != curScene)
         {
@@ -968,13 +966,13 @@ void PropertyEditor::ConvertToShadow()
 
 void PropertyEditor::RebuildTangentSpace()
 {
-    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-    if(NULL != btn)
+    if (NULL != btn)
     {
-        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-        if(NULL != data && NULL != curScene)
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+        if (NULL != data && NULL != curScene)
         {
             RenderBatch* batch = (RenderBatch*)data->object;
             curScene->Exec(new RebuildTangentSpaceCommand(batch, true));
@@ -985,12 +983,12 @@ void PropertyEditor::RebuildTangentSpace()
 void PropertyEditor::DeleteRenderBatch()
 {
     // Code for removing several render batches
-	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-	if(NULL != btn)
-	{
-		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (NULL != btn)
+    {
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
         Entity* node = curNodes.at(0);
 
         if (data != nullptr && curScene != nullptr && node != nullptr)
@@ -1033,27 +1031,28 @@ void PropertyEditor::DeleteRenderBatch()
 
 void PropertyEditor::ActionEditMaterial()
 {
-	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-	if(NULL != btn)
-	{
-		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-		if(NULL != data)
-		{
-			QtMainWindow::Instance()->OnMaterialEditor();
-			MaterialEditor::Instance()->SelectMaterial((DAVA::NMaterial *) data->object);
-		}
-	}
+    if (NULL != btn)
+    {
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        if (NULL != data)
+        {
+            QtMainWindow::Instance()->OnMaterialEditor();
+            MaterialEditor::Instance()->SelectMaterial((DAVA::NMaterial*)data->object);
+        }
+    }
 }
 
 void PropertyEditor::ActionEditSoundComponent()
 {
-    if(curNodes.size() == 1)
+    if (curNodes.size() == 1)
     {
         SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-        if(!scene) return;
+        if (!scene)
+            return;
 
-        Entity *node = curNodes.at(0);
+        Entity* node = curNodes.at(0);
 
         scene->BeginBatch("Edit Sound Component");
 
@@ -1064,202 +1063,203 @@ void PropertyEditor::ActionEditSoundComponent()
         scene->EndBatch();
 
         ResetProperties();
-    }	
+    }
 }
 
 bool PropertyEditor::IsParentFavorite(const QtPropertyData* data) const
 {
-	bool ret = false;
+    bool ret = false;
 
-	QtPropertyData *parent = data->Parent();
-	while(NULL != parent)
-	{
-		if(IsFavorite(parent))
-		{
-			ret = true;
-			break;
-		}
-		else
-		{
-			parent = parent->Parent();
-		}
-	}
+    QtPropertyData* parent = data->Parent();
+    while (NULL != parent)
+    {
+        if (IsFavorite(parent))
+        {
+            ret = true;
+            break;
+        }
+        else
+        {
+            parent = parent->Parent();
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-bool PropertyEditor::IsFavorite(QtPropertyData *data) const
+bool PropertyEditor::IsFavorite(QtPropertyData* data) const
 {
-	bool ret = false;
+    bool ret = false;
 
-	if(NULL != data)
-	{
-		PropEditorUserData *userData = GetUserData(data);
-		ret = userData->isFavorite;
-	}
+    if (NULL != data)
+    {
+        PropEditorUserData* userData = GetUserData(data);
+        ret = userData->isFavorite;
+    }
 
-	return ret;
+    return ret;
 }
 
-void PropertyEditor::SetFavorite(QtPropertyData *data, bool favorite)
+void PropertyEditor::SetFavorite(QtPropertyData* data, bool favorite)
 {
-	if(NULL == favoriteGroup)
-	{
-		favoriteGroup = GetProperty(InsertHeader("Favorites", 0));
-	}
+    if (NULL == favoriteGroup)
+    {
+        favoriteGroup = GetProperty(InsertHeader("Favorites", 0));
+    }
 
-	if(NULL != data)
-	{
-		PropEditorUserData *userData = GetUserData(data);
+    if (NULL != data)
+    {
+        PropEditorUserData* userData = GetUserData(data);
 
-		switch(userData->type)
-		{
-			case PropEditorUserData::ORIGINAL:
-				if(userData->isFavorite != favorite)
-				{
-					// it is in favorite now, so we are going to remove it from favorites
-					if(!favorite)
-					{
-						DVASSERT(NULL != userData->associatedData);
+        switch (userData->type)
+        {
+        case PropEditorUserData::ORIGINAL:
+            if (userData->isFavorite != favorite)
+            {
+                // it is in favorite now, so we are going to remove it from favorites
+                if (!favorite)
+                {
+                    DVASSERT(NULL != userData->associatedData);
 
-						QtPropertyData *favorite = userData->associatedData;
-						favoriteGroup->ChildRemove(favorite);
-						userData->associatedData = NULL;
-						userData->isFavorite = false;
+                    QtPropertyData* favorite = userData->associatedData;
+                    favoriteGroup->ChildRemove(favorite);
+                    userData->associatedData = NULL;
+                    userData->isFavorite = false;
 
-						scheme.remove(data->GetPath());
-						AddFavoriteChilds(data);
-					}
-					// new item should be added to favorites list
-					else
-					{
-						DVASSERT(NULL == userData->associatedData);
+                    scheme.remove(data->GetPath());
+                    AddFavoriteChilds(data);
+                }
+                // new item should be added to favorites list
+                else
+                {
+                    DVASSERT(NULL == userData->associatedData);
 
-						// check if it hasn't parent, that is already favorite
-						bool canBeAdded = true;
-						QtPropertyData *parent = data;
-						while(NULL != parent)
-						{
-							if(GetUserData(parent)->isFavorite)
-							{
-								canBeAdded = false;
-								break;
-							}
+                    // check if it hasn't parent, that is already favorite
+                    bool canBeAdded = true;
+                    QtPropertyData* parent = data;
+                    while (NULL != parent)
+                    {
+                        if (GetUserData(parent)->isFavorite)
+                        {
+                            canBeAdded = false;
+                            break;
+                        }
 
-							parent = parent->Parent();
-						}
+                        parent = parent->Parent();
+                    }
 
-						if(canBeAdded)
-						{
-                            std::unique_ptr<QtPropertyData> favorite(CreateClone(data));
-                            data->ForeachMergedItem([&favorite, this](QtPropertyData* item) {
-                                std::unique_ptr<QtPropertyData> mergedClone(CreateClone(item));
-                                favorite->Merge(std::move(mergedClone));
-                                return true;
-                            });
+                    if (canBeAdded)
+                    {
+                        std::unique_ptr<QtPropertyData> favorite(CreateClone(data));
+                        data->ForeachMergedItem([&favorite, this](QtPropertyData* item) {
+                            std::unique_ptr<QtPropertyData> mergedClone(CreateClone(item));
+                            favorite->Merge(std::move(mergedClone));
+                            return true;
+                        });
 
-                            userData->associatedData = favorite.get();
-                            userData->isFavorite = true;
+                        userData->associatedData = favorite.get();
+                        userData->isFavorite = true;
 
-                            ApplyCustomExtensions(favorite.get());
-                            favoriteGroup->MergeChild(std::move(favorite));
+                        ApplyCustomExtensions(favorite.get());
 
-                            // create user data for added favorite, that will have COPY type,
-                            // and associatedData will point to the original property
-                            PropEditorUserData* favUserData = new PropEditorUserData(PropEditorUserData::COPY, data, true);
-                            favorite->SetUserData(favUserData);
+                        // create user data for added favorite, that will have COPY type,
+                        // and associatedData will point to the original property
+                        PropEditorUserData* favUserData = new PropEditorUserData(PropEditorUserData::COPY, data, true);
+                        favUserData->realPath = data->GetPath();
 
-                            favUserData->realPath = data->GetPath();
-							scheme.insert(data->GetPath());
-							RemFavoriteChilds(data);
-						}
-					}
+                        favorite->SetUserData(favUserData);
+                        favoriteGroup->MergeChild(std::move(favorite));
 
-					data->EmitDataChanged(QtPropertyData::VALUE_SET);
-				}
-				break;
+                        scheme.insert(data->GetPath());
+                        RemFavoriteChilds(data);
+                    }
+                }
 
-			case PropEditorUserData::COPY:
-				if(userData->isFavorite != favorite)
-				{
-					// copy of the original data can only be removed
-					DVASSERT(!favorite);
-					
-					// copy of the original data should always have a pointer to the original property data
-					QtPropertyData *original = userData->associatedData;
-					if(NULL != original)
-					{
-						PropEditorUserData *originalUserData = GetUserData(original);
-						originalUserData->associatedData = NULL;
-						originalUserData->isFavorite = false;
+                data->EmitDataChanged(QtPropertyData::VALUE_SET);
+            }
+            break;
 
-						AddFavoriteChilds(original);
-					}
+        case PropEditorUserData::COPY:
+            if (userData->isFavorite != favorite)
+            {
+                // copy of the original data can only be removed
+                DVASSERT(!favorite);
 
-					scheme.remove(userData->realPath);
-					favoriteGroup->ChildRemove(data);
-				}
-				break;
+                // copy of the original data should always have a pointer to the original property data
+                QtPropertyData* original = userData->associatedData;
+                if (NULL != original)
+                {
+                    PropEditorUserData* originalUserData = GetUserData(original);
+                    originalUserData->associatedData = NULL;
+                    originalUserData->isFavorite = false;
 
-			default:
-				DVASSERT(false && "Unknown userData type");
-				break;
-		}
-	}
+                    AddFavoriteChilds(original);
+                }
 
-	// if there is no favorite items - remove favorite group
-	if(favoriteGroup->ChildCount() == 0)
-	{
-		RemoveProperty(favoriteGroup);
-		favoriteGroup = NULL;
-	}
+                scheme.remove(userData->realPath);
+                favoriteGroup->ChildRemove(data);
+            }
+            break;
+
+        default:
+            DVASSERT(false && "Unknown userData type");
+            break;
+        }
+    }
+
+    // if there is no favorite items - remove favorite group
+    if (favoriteGroup->ChildCount() == 0)
+    {
+        RemoveProperty(favoriteGroup);
+        favoriteGroup = NULL;
+    }
 }
 
-void PropertyEditor::AddFavoriteChilds(QtPropertyData *data)
+void PropertyEditor::AddFavoriteChilds(QtPropertyData* data)
 {
-	if(NULL != data)
-	{
-		// go through childs
-		for(int i = 0; i < data->ChildCount(); ++i)
-		{
+    if (NULL != data)
+    {
+        // go through childs
+        for (int i = 0; i < data->ChildCount(); ++i)
+        {
             QtPropertyData* child = data->ChildGet(i);
             if (scheme.contains(child->GetPath()))
             {
                 SetFavorite(child, true);
             }
-			else
-			{
-				AddFavoriteChilds(child);
-			}
-		}
-	}
+            else
+            {
+                AddFavoriteChilds(child);
+            }
+        }
+    }
 }
 
-void PropertyEditor::RemFavoriteChilds(QtPropertyData *data)
+void PropertyEditor::RemFavoriteChilds(QtPropertyData* data)
 {
-	if(NULL != data)
-	{
-		if(GetUserData(data)->type == PropEditorUserData::ORIGINAL)
-		{
-			// go through childs
-			for(int i = 0; i < data->ChildCount(); ++i)
-			{
+    if (NULL != data)
+    {
+        if (GetUserData(data)->type == PropEditorUserData::ORIGINAL)
+        {
+            // go through childs
+            for (int i = 0; i < data->ChildCount(); ++i)
+            {
                 QtPropertyData* child = data->ChildGet(i);
                 PropEditorUserData* userData = GetUserData(child);
                 if (NULL != userData->associatedData)
                 {
                     favoriteGroup->ChildRemove(userData->associatedData);
 
-					userData->associatedData = NULL;
-					userData->isFavorite = false;
-				}
-				else
-				{
-					RemFavoriteChilds(child);
-				}
-			}
-		}
-	}
+                    userData->associatedData = NULL;
+                    userData->isFavorite = false;
+                }
+                else
+                {
+                    RemFavoriteChilds(child);
+                }
+            }
+        }
+    }
 }
 
 PropEditorUserData* PropertyEditor::GetUserData(QtPropertyData* data) const
@@ -1269,84 +1269,84 @@ PropEditorUserData* PropertyEditor::GetUserData(QtPropertyData* data) const
     {
         userData = new PropEditorUserData(PropEditorUserData::ORIGINAL);
         data->SetUserData(userData);
-	}
+    }
 
-	return userData;
+    return userData;
 }
 
-void PropertyEditor::LoadScheme(const DAVA::FilePath &path)
+void PropertyEditor::LoadScheme(const DAVA::FilePath& path)
 {
-	// first, we open the file
-	QFile file(path.GetAbsolutePathname().c_str());
-	if(file.open(QIODevice::ReadOnly))
-	{
-		scheme.clear();
+    // first, we open the file
+    QFile file(path.GetAbsolutePathname().c_str());
+    if (file.open(QIODevice::ReadOnly))
+    {
+        scheme.clear();
 
-		QTextStream qin(&file);
-		while(!qin.atEnd())
-		{
-			scheme.insert(qin.readLine());
-		}
+        QTextStream qin(&file);
+        while (!qin.atEnd())
+        {
+            scheme.insert(qin.readLine());
+        }
 
- 		file.close();
-	}
+        file.close();
+    }
 }
 
-void PropertyEditor::SaveScheme(const DAVA::FilePath &path)
+void PropertyEditor::SaveScheme(const DAVA::FilePath& path)
 {
-	// first, we open the file
-	QFile file(path.GetAbsolutePathname().c_str());
-	if(file.open(QIODevice::WriteOnly))
-	{
-		QTextStream qout(&file);
-		foreach(const QString &value, scheme)
-		{
-			qout << value << endl;
-		}
-		file.close();
-	}
+    // first, we open the file
+    QFile file(path.GetAbsolutePathname().c_str());
+    if (file.open(QIODevice::WriteOnly))
+    {
+        QTextStream qout(&file);
+        foreach (const QString& value, scheme)
+        {
+            qout << value << endl;
+        }
+        file.close();
+    }
 }
 
-bool PropertyEditor::IsInspViewAllowed(const DAVA::InspInfo *info) const
+bool PropertyEditor::IsInspViewAllowed(const DAVA::InspInfo* info) const
 {
-	bool ret = true;
+    bool ret = true;
 
-	if(info->Type() == DAVA::MetaInfo::Instance<DAVA::NMaterial>())
-	{
-		// Don't show properties for NMaterial.
+    if (info->Type() == DAVA::MetaInfo::Instance<DAVA::NMaterial>())
+    {
+        // Don't show properties for NMaterial.
         // They should be edited in materialEditor.
-		ret = false;
-	}
+        ret = false;
+    }
 
-	return ret;
+    return ret;
 }
 
 QtPropertyToolButton* PropertyEditor::CreateButton(QtPropertyData* data, const QIcon& icon, const QString& tooltip)
 {
-	DVASSERT(data);
+    DVASSERT(data);
 
-	QtPropertyToolButton *button = data->AddButton();
-	button->setIcon(icon);
-	button->setToolTip(tooltip);
-	button->setIconSize(QSize(12, 12));
-	button->setAutoRaise(true);
+    QtPropertyToolButton* button = data->AddButton();
+    button->setIcon(icon);
+    button->setToolTip(tooltip);
+    button->setIconSize(QSize(12, 12));
+    button->setAutoRaise(true);
 
-	return button;
+    return button;
 }
 
 void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 {
-    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-    if(NULL != btn)
+    if (NULL != btn)
     {
-        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        if(NULL != data)
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        if (NULL != data)
         {
-            DAVA::RenderObject *renderObject = (DAVA::RenderObject *)data->object;
+            DAVA::RenderObject* renderObject = (DAVA::RenderObject*)data->object;
 
-            SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-            if(curScene && renderObject)
+            SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+            if (curScene && renderObject)
             {
                 curScene->Exec(new CloneLastBatchCommand(renderObject));
             }
@@ -1356,15 +1356,15 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     int size = curNodes.size();
-    if(size > 0)
+    if (size > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", type));
 
-        for(int i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
         {
-            Component *c = Component::CreateByType(type);
+            Component* c = Component::CreateByType(type);
             curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
         }
 
@@ -1372,28 +1372,29 @@ void PropertyEditor::OnAddComponent(Component::eType type)
     }
 }
 
-void PropertyEditor::OnAddComponent(DAVA::Component *component)
+void PropertyEditor::OnAddComponent(DAVA::Component* component)
 {
     DVASSERT(component);
-    if(!component) return;
-    
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (!component)
+        return;
+
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     int size = curNodes.size();
-    if(size > 0)
+    if (size > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
-        
-        for(int i = 0; i < size; ++i)
+
+        for (int i = 0; i < size; ++i)
         {
             Entity* node = curNodes.at(i);
-            
+
             if (node->GetComponentCount(component->GetType()) == 0)
             {
-                Component *c = component->Clone(node);
+                Component* c = component->Clone(node);
                 curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
             }
         }
-        
+
         curScene->EndBatch();
     }
 }
@@ -1430,7 +1431,7 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (curNodes.size() > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
@@ -1438,8 +1439,8 @@ void PropertyEditor::OnAddPathComponent()
         for (Entity* node : curNodes)
         {
             DVASSERT(node);
-            if (node->GetComponentCount(Component::PATH_COMPONENT) == 0 
-             && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
+            if (node->GetComponentCount(Component::PATH_COMPONENT) == 0
+                && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
             {
                 PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
                 curScene->Exec(new AddComponentCommand(node, pathComponent));
@@ -1457,13 +1458,13 @@ void PropertyEditor::OnAddRotationControllerComponent()
 
 void PropertyEditor::OnAddSnapToLandscapeControllerComponent()
 {
-    SnapToLandscapeControllerComponent *snapComponent = static_cast<SnapToLandscapeControllerComponent *> (Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+    SnapToLandscapeControllerComponent* snapComponent = static_cast<SnapToLandscapeControllerComponent*>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
 
     float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
     snapComponent->SetHeightOnLandscape(height);
 
     OnAddComponent(snapComponent);
-    
+
     SafeDelete(snapComponent);
 }
 
@@ -1479,15 +1480,15 @@ void PropertyEditor::OnAddVisibilityComponent()
 
 void PropertyEditor::OnRemoveComponent()
 {
-	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-	if(NULL != btn)
-	{
-		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (NULL != btn)
+    {
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
-		if(NULL != data && NULL != curScene)
-		{
+        if (NULL != data && NULL != curScene)
+        {
             DAVA::Vector<Command2*> commands;
             commands.reserve(data->GetMergedItemCount() + 1);
 
@@ -1514,9 +1515,9 @@ void PropertyEditor::OnRemoveComponent()
 
 void PropertyEditor::OnTriggerWaveComponent()
 {
-    for(int i = 0; i < curNodes.size(); ++i)
+    for (int i = 0; i < curNodes.size(); ++i)
     {
-        WaveComponent * component = GetWaveComponent(curNodes.at(i));
+        WaveComponent* component = GetWaveComponent(curNodes.at(i));
         if (component)
         {
             component->Trigger();

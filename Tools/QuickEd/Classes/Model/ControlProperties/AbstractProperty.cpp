@@ -31,8 +31,8 @@
 
 using namespace DAVA;
 
-
-AbstractProperty::AbstractProperty() : parent(NULL)
+AbstractProperty::AbstractProperty()
+    : parent(NULL)
 {
 }
 
@@ -40,12 +40,12 @@ AbstractProperty::~AbstractProperty()
 {
 }
 
-AbstractProperty *AbstractProperty::GetParent() const
+AbstractProperty* AbstractProperty::GetParent() const
 {
     return parent;
 }
 
-void AbstractProperty::SetParent(AbstractProperty *parent)
+void AbstractProperty::SetParent(AbstractProperty* parent)
 {
     this->parent = parent;
 }
@@ -64,11 +64,11 @@ void AbstractProperty::Refresh(DAVA::int32 refreshFlags)
 {
 }
 
-AbstractProperty *AbstractProperty::FindPropertyByPrototype(AbstractProperty *prototype)
+AbstractProperty* AbstractProperty::FindPropertyByPrototype(AbstractProperty* prototype)
 {
     for (uint32 i = 0; i < GetCount(); i++)
     {
-        AbstractProperty *result = GetProperty(i)->FindPropertyByPrototype(prototype);
+        AbstractProperty* result = GetProperty(i)->FindPropertyByPrototype(prototype);
         if (result)
             return result;
     }
@@ -105,7 +105,7 @@ DAVA::VariantType AbstractProperty::GetValue() const
     return DAVA::VariantType();
 }
 
-void AbstractProperty::SetValue(const DAVA::VariantType &/*newValue*/)
+void AbstractProperty::SetValue(const DAVA::VariantType& /*newValue*/)
 {
     // Do nothing by default
 }
@@ -115,12 +115,12 @@ VariantType AbstractProperty::GetDefaultValue() const
     return VariantType();
 }
 
-void AbstractProperty::SetDefaultValue(const DAVA::VariantType &newValue)
+void AbstractProperty::SetDefaultValue(const DAVA::VariantType& newValue)
 {
     // Do nothing by default
 }
 
-const EnumMap *AbstractProperty::GetEnumMap() const
+const EnumMap* AbstractProperty::GetEnumMap() const
 {
     return NULL;
 }
@@ -140,17 +140,17 @@ bool AbstractProperty::IsOverriddenLocally() const
     return false; // false by default
 }
 
-AbstractProperty *AbstractProperty::GetRootProperty()
+AbstractProperty* AbstractProperty::GetRootProperty()
 {
-    AbstractProperty *property = this;
+    AbstractProperty* property = this;
     while (property->parent)
         property = property->parent;
     return property;
 }
 
-const AbstractProperty *AbstractProperty::GetRootProperty() const
+const AbstractProperty* AbstractProperty::GetRootProperty() const
 {
-    const AbstractProperty *property = this;
+    const AbstractProperty* property = this;
     while (property->parent)
         property = property->parent;
     return property;

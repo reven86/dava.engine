@@ -50,7 +50,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 MMNetServer::MMNetServer()
     : NetService()
     , connToken(Random::Instance()->Rand())
@@ -80,7 +79,7 @@ void MMNetServer::OnTag(uint32 tag, bool entering)
 {
     // Here, we can automatically make memory snapshot
 }
-    
+
 void MMNetServer::ChannelOpen()
 {
     configSize = MemoryManager::Instance()->CalcStatConfigSize();
@@ -89,7 +88,8 @@ void MMNetServer::ChannelOpen()
     const uint32 MAX_PACKET_SIZE = 1024 * 30;
     const uint32 FRAMES_PER_SECOND = 1000 / 16;
     maxStatItemsPerPacket = statGatherFreq > 0 ? statSendFreq / statGatherFreq + 1
-                                               : statSendFreq / FRAMES_PER_SECOND + 1;
+                                                 :
+                                                 statSendFreq / FRAMES_PER_SECOND + 1;
     maxStatItemsPerPacket = std::min(maxStatItemsPerPacket, MAX_PACKET_SIZE / statItemSize);
 }
 
@@ -141,7 +141,8 @@ void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeade
     DVASSERT(tokenRequested == true);
     uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
     uint16 status = GetAndSaveSnapshot(curTimestamp - baseTimePoint) ? MMNetProto::STATUS_SUCCESS
-                                                                     : MMNetProto::STATUS_ERROR;
+                                                                       :
+                                                                       MMNetProto::STATUS_ERROR;
     SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REPLY_SNAPSHOT, status));
 }
 
@@ -160,12 +161,12 @@ void MMNetServer::PacketDelivered()
     else if (MMNetProto::TYPE_AUTO_STAT == header->type)
     {
         if (freePoolEntries < totalPoolEntries)
-        {   // Return packet back to pool if it has at least one occupied entry
+        { // Return packet back to pool if it has at least one occupied entry
             packetPool[totalPoolEntries - freePoolEntries - 1] = std::move(packet);
             freePoolEntries += 1;
         }
         else if (totalPoolEntries < MAX_POOL_SIZE)
-        {   // Or increase pool if its size is less than maximum permitted size
+        { // Or increase pool if its size is less than maximum permitted size
             packetPool[totalPoolEntries] = std::move(packet);
             totalPoolEntries += 1;
             freePoolEntries += 1;
@@ -222,12 +223,12 @@ MMNetProto::Packet MMNetServer::ObtainStatPacket()
 {
     MMNetProto::Packet packet;
     if (freePoolEntries > 0)
-    {   // Pool has free entry, so get packet from entry with highest index
+    { // Pool has free entry, so get packet from entry with highest index
         packet = std::move(packetPool[totalPoolEntries - freePoolEntries]);
         freePoolEntries -= 1;
     }
     else
-    {   // Pool has no free entries or empty, so allocate new packet
+    { // Pool has no free entries or empty, so allocate new packet
         packet = CreateReplyStatPacket(maxStatItemsPerPacket);
     }
 
@@ -286,7 +287,7 @@ MMNetProto::Packet MMNetServer::CreateReplyStatPacket(uint32 maxItems)
 
 bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 {
-    static Atomic<uint32> curSnapshotIndex{0};
+    static Atomic<uint32> curSnapshotIndex{ 0 };
 
     bool result = false;
     FilePath filePath("~doc:");
@@ -307,13 +308,13 @@ bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
         }
     }
     if (erase)
-    {   // Erase snapshot file if something went wrong
+    { // Erase snapshot file if something went wrong
         FileSystem::Instance()->DeleteFile(filePath);
     }
     return result;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // defined(DAVA_MEMORY_PROFILING_ENABLE)

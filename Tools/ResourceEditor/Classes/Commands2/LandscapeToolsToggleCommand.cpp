@@ -88,7 +88,6 @@ bool TryDisableWithFunctions(SceneEditor2* editor, const String& error,
 
     return true;
 }
-
 }
 
 /*

@@ -39,8 +39,6 @@
 #include "ColorComponentSlider.h"
 #include "../Helpers/PaintingHelper.h"
 
-
-
 ColorPickerRGBAM::ColorPickerRGBAM(QWidget* parent)
     : AbstractColorPicker(parent)
 {
@@ -54,20 +52,22 @@ ColorPickerRGBAM::ColorPickerRGBAM(QWidget* parent)
     m->SetValueRange(0.0, maxMul);
     m->SetValue(1.0);
 
-    ColorComponentSlider* sliders[] = { r, g, b, a, m, };
+    ColorComponentSlider* sliders[] = {
+        r, g, b, a, m,
+    };
     const QString labels[] = { "Red", "Green", "Blue", "Alpha", "Multiply" };
 
     QVBoxLayout* l = new QVBoxLayout();
     l->setMargin(0);
     l->setContentsMargins(0, 0, 0, 0);
 
-    for (int i = 0; i < sizeof( sliders ) / sizeof( *sliders ); i++)
+    for (int i = 0; i < sizeof(sliders) / sizeof(*sliders); i++)
     {
-        ColorComponentSlider *slider = sliders[i];
+        ColorComponentSlider* slider = sliders[i];
         l->addLayout(CreateSlider(labels[i], slider));
 
-        connect(slider, SIGNAL( changing( double ) ), SLOT( OnChanging( double ) ));
-        connect(slider, SIGNAL( changed( double ) ), SLOT( OnChanged( double ) ));
+        connect(slider, SIGNAL(changing(double)), SLOT(OnChanging(double)));
+        connect(slider, SIGNAL(changed(double)), SLOT(OnChanged(double)));
     }
     l->addStretch(1);
 
@@ -90,16 +90,16 @@ void ColorPickerRGBAM::SetMultiplierValue(double val)
 
 void ColorPickerRGBAM::OnChanging(double val)
 {
-    Q_UNUSED( val );
-    ColorComponentSlider* source = qobject_cast<ColorComponentSlider *>(sender());
+    Q_UNUSED(val);
+    ColorComponentSlider* source = qobject_cast<ColorComponentSlider*>(sender());
     UpdateColorInternal(source);
     emit changing(GetColor());
 }
 
 void ColorPickerRGBAM::OnChanged(double val)
 {
-    Q_UNUSED( val );
-    ColorComponentSlider* source = qobject_cast<ColorComponentSlider *>(sender());
+    Q_UNUSED(val);
+    ColorComponentSlider* source = qobject_cast<ColorComponentSlider*>(sender());
     UpdateColorInternal(source);
     emit changed(GetColor());
 }

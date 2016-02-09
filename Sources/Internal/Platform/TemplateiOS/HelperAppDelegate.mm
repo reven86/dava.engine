@@ -37,8 +37,8 @@
 #import <UIKit/UIKit.h>
 #import "HelperAppDelegate.h"
 
-extern  void FrameworkWillTerminate();
-extern  void FrameworkDidLaunched();
+extern void FrameworkWillTerminate();
+extern void FrameworkDidLaunched();
 
 static RenderView* renderView = nil;
 
@@ -97,13 +97,13 @@ public:
     }
 };
 
-int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
+int DAVA::Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     CoreIOS* core = new CoreIOS();
     core->SetCommandLine(argc, argv);
-	core->CreateSingletons();
-	
+    core->CreateSingletons();
+
     FrameworkDidLaunched();
 
     core->ProcessResize();
@@ -132,11 +132,10 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 #include "Core/ApplicationCore.h"
 #include "UI/UIScreenManager.h"
 
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-	UIWindow *wnd = application.keyWindow;
-	wnd.frame = [::UIScreen mainScreen].bounds;
+    UIWindow* wnd = application.keyWindow;
+    wnd.frame = [ ::UIScreen mainScreen].bounds;
 
     renderViewController = [[RenderViewController alloc] init];
 
@@ -163,58 +162,58 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     return YES;
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
+- (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
-    if(core)
+    DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
+    if (core)
     {
         core->OnResume();
     }
-    else 
+    else
     {
-       DAVA::Core::Instance()->SetIsActive(true);
+        DAVA::Core::Instance()->SetIsActive(true);
     }
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void)applicationWillResignActive:(UIApplication*)application
 {
-    DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
-    if(core)
+    DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
+    if (core)
     {
         core->OnSuspend();
     }
-    else 
+    else
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
+- (void)applicationDidEnterBackground:(UIApplication*)application
 {
     bool isLock = false;
     UIApplicationState state = [application applicationState];
     if (state == UIApplicationStateInactive)
     {
-//        NSLog(@"Sent to background by locking screen");
+        //        NSLog(@"Sent to background by locking screen");
         isLock = true;
     }
-//    else if (state == UIApplicationStateBackground)
-//    {
-//        NSLog(@"Sent to background by home button/switching to other app");
-//    }
-	DAVA::Core::Instance()->GoBackground(isLock);
+    //    else if (state == UIApplicationStateBackground)
+    //    {
+    //        NSLog(@"Sent to background by home button/switching to other app");
+    //    }
+    DAVA::Core::Instance()->GoBackground(isLock);
 
     rhi::SuspendRendering();
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
+- (void)applicationWillEnterForeground:(UIApplication*)application
 {
-    DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
-    if(core)
+    DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
+    if (core)
     {
-		DAVA::Core::Instance()->GoForeground();
+        DAVA::Core::Instance()->GoForeground();
     }
-    else 
+    else
     {
         DAVA::Core::Instance()->SetIsActive(true);
     }
@@ -222,25 +221,24 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     rhi::ResumeRendering();
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
+- (void)applicationWillTerminate:(UIApplication*)application
 {
-	NSLog(@"Application termination started");
-	DAVA::Core::Instance()->SystemAppFinished();
-	NSLog(@"System release started");
-    
-    if(DAVA::Logger::Instance())
+    NSLog(@"Application termination started");
+    DAVA::Core::Instance()->SystemAppFinished();
+    NSLog(@"System release started");
+
+    if (DAVA::Logger::Instance())
     {
         DAVA::Logger::Instance()->SetLogFilename("");
     }
-    
-//	DAVA::Core::Instance()->ReleaseSingletons();
-    
 
-//	DAVA::Sprite::DumpSprites();
-//	DAVA::Texture::DumpTextures();
+    //	DAVA::Core::Instance()->ReleaseSingletons();
 
-	FrameworkWillTerminate();
-	NSLog(@"Application termination finished");
+    //	DAVA::Sprite::DumpSprites();
+    //	DAVA::Texture::DumpTextures();
+
+    FrameworkWillTerminate();
+    NSLog(@"Application termination finished");
 }
 
 @end

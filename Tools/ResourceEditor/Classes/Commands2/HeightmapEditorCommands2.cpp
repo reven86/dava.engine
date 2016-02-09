@@ -41,38 +41,38 @@ ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
     : Command2(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
     , heightmapProxy(heightmapProxy)
 {
-	if (originalHeightmap && heightmapProxy)
-	{
-		this->updatedRect = updatedRect;
-		undoRegion = GetHeightmapRegion(originalHeightmap);
-		redoRegion = GetHeightmapRegion(heightmapProxy);
-	}
+    if (originalHeightmap && heightmapProxy)
+    {
+        this->updatedRect = updatedRect;
+        undoRegion = GetHeightmapRegion(originalHeightmap);
+        redoRegion = GetHeightmapRegion(heightmapProxy);
+    }
 }
 
 ModifyHeightmapCommand::~ModifyHeightmapCommand()
 {
-	SafeDeleteArray(undoRegion);
-	SafeDeleteArray(redoRegion);
+    SafeDeleteArray(undoRegion);
+    SafeDeleteArray(redoRegion);
 }
 
 Entity* ModifyHeightmapCommand::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }
 
 void ModifyHeightmapCommand::Redo()
 {
-	ApplyHeightmapRegion(redoRegion);
+    ApplyHeightmapRegion(redoRegion);
 }
 
 void ModifyHeightmapCommand::Undo()
 {
-	ApplyHeightmapRegion(undoRegion);
+    ApplyHeightmapRegion(undoRegion);
 }
 
 uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
 {
-	int32 size = heightmap->Size();
+    int32 size = heightmap->Size();
     int32 width = (int32)ceilf(updatedRect.dx);
     int32 height = (int32)ceilf(updatedRect.dy);
     int32 xOffset = (int32)floorf(updatedRect.x);
@@ -89,8 +89,8 @@ uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
         uint16* dst = newData + i * width;
         memcpy(dst, src, sizeof(uint16) * width);
     }
-	
-	return newData;
+
+    return newData;
 }
 
 void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)

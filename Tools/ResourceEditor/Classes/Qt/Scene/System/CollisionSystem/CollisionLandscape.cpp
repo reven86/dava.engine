@@ -30,8 +30,8 @@
 #include "Qt/Scene/System/CollisionSystem/CollisionLandscape.h"
 #include "Render/Highlevel/Heightmap.h"
 
-CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Landscape *landscape)
-	: CollisionBaseObject(entity, word)
+CollisionLandscape::CollisionLandscape(DAVA::Entity* entity, btCollisionWorld* word, DAVA::Landscape* landscape)
+    : CollisionBaseObject(entity, word)
 {
     if ((landscape != nullptr) && (word != nullptr))
     {
@@ -47,8 +47,8 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
             DAVA::float32 landHeight = landSize.z;
             DAVA::float32 landScaleH = landHeight / 65535.f;
 
-			DAVA::uint16 *heightData = heightmap->Data();
-			btHMap.resize(heightmap->Size() * heightmap->Size());
+            DAVA::uint16* heightData = heightmap->Data();
+            btHMap.resize(heightmap->Size() * heightmap->Size());
 
             for (DAVA::int32 y = 0; y < heightmap->Size(); ++y)
             {
@@ -60,8 +60,8 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
             }
 
             btTransform landTransform;
-			landTransform.setIdentity();
-			landTransform.setOrigin(btVector3(0, 0, landHeight / 2.0f));
+            landTransform.setIdentity();
+            landTransform.setOrigin(btVector3(0, 0, landHeight / 2.0f));
 
             btTerrain = DAVA::CreateObjectAligned<btHeightfieldTerrainShape, 16>(heightmap->Size(), heightmap->Size(), &btHMap.front(), landScaleH, 0, landHeight, 2, PHY_FLOAT, true);
             btTerrain->setLocalScaling(btVector3(landScaleW, landScaleW, 1.0f));
@@ -77,10 +77,10 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
 
 CollisionLandscape::~CollisionLandscape()
 {
-	if(NULL != btObject)
-	{
-		btWord->removeCollisionObject(btObject);
-		DAVA::SafeDelete(btObject);
+    if (NULL != btObject)
+    {
+        btWord->removeCollisionObject(btObject);
+        DAVA::SafeDelete(btObject);
         DAVA::DestroyObjectAligned(btTerrain);
     }
 }

@@ -39,17 +39,16 @@
 
 namespace DAVA
 {
-
 namespace
 {
-
 // Wrapper to prepare task for running in DispatcherWinUAP's thread context and waiting task completion
 class TaskWrapper final
 {
 public:
     TaskWrapper(std::function<void()>&& task_)
         : task(std::move(task_))
-    {}
+    {
+    }
 
     void RunTask()
     {
@@ -64,7 +63,7 @@ public:
     void WaitTaskComplete()
     {
         UniqueLock<Mutex> lock(mutex);
-        cv.Wait(lock, [this](){ return taskDone; });
+        cv.Wait(lock, [this]() { return taskDone; });
     }
 
 private:
@@ -74,7 +73,7 @@ private:
     bool taskDone = false;
 };
 
-}   // unnamed namespace
+} // unnamed namespace
 
 DispatcherWinUAP::BlockingTaskWrapper::BlockingTaskWrapper(BlockingTaskWrapper&& other)
     : dispatcher(std::move(other.dispatcher))
@@ -125,7 +124,8 @@ void DispatcherWinUAP::BlockingTaskWrapper::WaitTaskComplete()
 
 DispatcherWinUAP::DispatcherWinUAP()
     : boundThreadId(Thread::GetCurrentId())
-{}
+{
+}
 
 void DispatcherWinUAP::BindToCurrentThread()
 {
@@ -198,6 +198,6 @@ void DispatcherWinUAP::ScheduleTaskAndWait(std::function<void()>&& task)
     blockingCall.clear();
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

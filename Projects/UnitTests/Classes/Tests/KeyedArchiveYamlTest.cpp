@@ -38,22 +38,22 @@ using namespace DAVA;
 //#define GENERATED_FILE_PATH "~res:/KeyedArchives/keyed_archive_created.yaml"
 //#define GENERATED_FILE_PATH "/Users/user/Documents/work/gitHub/dava.framework/Projects/UnitTests/Data/KeyedArchives/keyed_archive_created.yaml"
 
-#define BOOLMAPID       "mapNamebool"
-#define INT32MAPID      "mapNameint32"
-#define UINT32MAPID     "mapNameUInt32"
-#define FLOATMAPID      "mapNamefloat"
-#define STRINGMAPID     "mapNameString"
-#define WSTRINGMAPID    "mapNameWideString"
-#define BYTEARRMAPID    "mapNameByteArrey"
-#define INT64MAPID      "mapNameint64"
-#define UINT64MAPID     "mapNameUInt64"
-#define VECTOR2MAPID    "mapNamevector2"
-#define VECTOR3MAPID    "mapNameVector3"
-#define VECTOR4MAPID    "mapNameVector4"
-#define MATRIX2MAPID    "mapNameMatrix2"
-#define MATRIX3MAPID    "mapNameMatrix3"
-#define MATRIX4MAPID    "mapNameMatrix4"
-#define KEYEDARCHMAPID  "mapNameKArch"
+#define BOOLMAPID "mapNamebool"
+#define INT32MAPID "mapNameint32"
+#define UINT32MAPID "mapNameUInt32"
+#define FLOATMAPID "mapNamefloat"
+#define STRINGMAPID "mapNameString"
+#define WSTRINGMAPID "mapNameWideString"
+#define BYTEARRMAPID "mapNameByteArrey"
+#define INT64MAPID "mapNameint64"
+#define UINT64MAPID "mapNameUInt64"
+#define VECTOR2MAPID "mapNamevector2"
+#define VECTOR3MAPID "mapNameVector3"
+#define VECTOR4MAPID "mapNameVector4"
+#define MATRIX2MAPID "mapNameMatrix2"
+#define MATRIX3MAPID "mapNameMatrix3"
+#define MATRIX4MAPID "mapNameMatrix4"
+#define KEYEDARCHMAPID "mapNameKArch"
 
 DAVA_TESTCLASS(KeyedArchiveYamlTest)
 {
@@ -61,7 +61,8 @@ DAVA_TESTCLASS(KeyedArchiveYamlTest)
 
     KeyedArchiveYamlTest()
         : loadedArchive(new KeyedArchive())
-    {}
+    {
+    }
 
     DAVA_TEST(TestFunction)
     {

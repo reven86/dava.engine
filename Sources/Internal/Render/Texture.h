@@ -56,12 +56,12 @@ class File;
 class Texture;
 	
 #ifdef USE_FILEPATH_IN_MAP
-    using TexturesMap = Map<FilePath, Texture *>;
+using TexturesMap = Map<FilePath, Texture*>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-    using TexturesMap = Map<String, Texture *>;
+using TexturesMap = Map<String, Texture*>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
-    class Texture : public BaseObject
+class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:
@@ -109,7 +109,7 @@ public:
         \param[in] image stores data
         \param[in] generateMipMaps generate mipmaps or not
      */
-	static Texture * CreateFromData(Image *img, bool generateMipMaps);
+    static Texture* CreateFromData(Image* img, bool generateMipMaps);
 
     /**
         \brief Create text texture from data arrray
@@ -121,9 +121,9 @@ public:
         \param[in] height height of new texture
         \param[in] addInfo additional info
      */
-	static Texture * CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo = 0);
-    
-	/**
+    static Texture* CreateTextFromData(PixelFormat format, uint8* data, uint32 width, uint32 height, bool generateMipMaps, const char* addInfo = 0);
+
+    /**
         \brief Create texture from given file. Supported formats .png, .pvr (only on iOS). 
 		If file cannot be opened, returns "pink placeholder" texture.
         \param[in] pathName path to the png or pvr file
@@ -149,7 +149,7 @@ public:
         If texture isn't in cache, returns 0
         \param[in] name path of TextureDescriptor
      */
-    static Texture * Get(const FilePath & name);
+    static Texture* Get(const FilePath& name);
 
     int32 Release() override;
 
@@ -175,7 +175,7 @@ public:
         \brief Function to receive pathname of texture object
         \returns pathname of texture
      */
-    const FilePath & GetPathname() const;
+    const FilePath& GetPathname() const;
     void SetPathname(const FilePath& path);
 
     Image* CreateImageFromMemory();
@@ -184,27 +184,26 @@ public:
 
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
-    void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
+    void ReloadFromData(PixelFormat format, uint8* data, uint32 width, uint32 height);
 
     inline TextureState GetState() const;
 
-    void SetDebugInfo(const String & _debugInfo);
-    
-	static const TexturesMap & GetTextureMap();
-    
+    void SetDebugInfo(const String& _debugInfo);
+
+    static const TexturesMap& GetTextureMap();
+
     uint32 GetDataSize() const;
 
     static void SetDefaultGPU(eGPUFamily gpuFamily);
     static eGPUFamily GetDefaultGPU();
-    
-    
-    inline const eGPUFamily GetSourceFileGPUFamily() const;
-    inline TextureDescriptor * GetDescriptor() const;
 
-	PixelFormat GetFormat() const;
+    inline const eGPUFamily GetSourceFileGPUFamily() const;
+    inline TextureDescriptor* GetDescriptor() const;
+
+    PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
-    
+
     int32 GetBaseMipMap() const;
 
     static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
@@ -214,13 +213,13 @@ protected:
 
     void ReleaseTextureData();
 
-	static void AddToMap(Texture *tex);
-    
-	static Texture * CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu);
-    
-	bool LoadImages(eGPUFamily gpu, Vector<Image *> * images);
-    
-	void SetParamsFromImages(const Vector<Image *> * images);
+    static void AddToMap(Texture* tex);
+
+    static Texture* CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu);
+
+    bool LoadImages(eGPUFamily gpu, Vector<Image*>* images);
+
+    void SetParamsFromImages(const Vector<Image*>* images);
 
     void FlushDataToRenderer(Vector<Image*>* images);
 
@@ -235,17 +234,17 @@ protected:
 
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 
-	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
+    static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor);
 
-public:							// properties for fast access
+public: // properties for fast access
     rhi::HTexture handle;
     rhi::HTexture handleDepthStencil; //it's legacy and should be removed. (maybe together with CreateFBO method)
     rhi::HSamplerState samplerStateHandle;
     rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
 
-    uint32		width:16;			// texture width
-	uint32		height:16;			// texture height
+    uint32 width : 16; // texture width
+    uint32 height : 16; // texture height
 
     eGPUFamily loadedAsFile;
 
@@ -255,18 +254,18 @@ public:							// properties for fast access
     bool isRenderTarget : 1;
     bool isPink : 1;
 
-    FastName		debugInfo;
+    FastName debugInfo;
 
-    TextureDescriptor *texDescriptor;
+    TextureDescriptor* texDescriptor;
 
     static Mutex textureMapMutex;
 
     static TexturesMap textureMap;
     static eGPUFamily defaultGPU;
-    
+
     static bool pixelizationFlag;
 };
-    
+
 // Implementation of inline functions
 
 inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
@@ -276,15 +275,13 @@ inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
 
 inline Texture::TextureState Texture::GetState() const
 {
-	return state;
+    return state;
 }
 
-inline TextureDescriptor * Texture::GetDescriptor() const
+inline TextureDescriptor* Texture::GetDescriptor() const
 {
     return texDescriptor;
 }
-
-
 };
 
 #endif // __DAVAENGINE_TEXTUREGLES_H__

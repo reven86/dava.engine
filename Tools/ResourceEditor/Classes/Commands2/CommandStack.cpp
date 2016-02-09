@@ -31,127 +31,127 @@
 #include "Commands2/CommandAction.h"
 
 CommandStack::CommandStack()
-	: commandListLimit(0)
-	, nextCommandIndex(0)
-	, cleanCommandIndex(0)
-	, lastCheckCleanState(true)
+    : commandListLimit(0)
+    , nextCommandIndex(0)
+    , cleanCommandIndex(0)
+    , lastCheckCleanState(true)
     , nestedBatchesCounter(0)
-	, curBatchCommand(NULL)
+    , curBatchCommand(NULL)
 {
-	stackCommandsNotify = new CommandStackNotify(this);
+    stackCommandsNotify = new CommandStackNotify(this);
 }
 
 CommandStack::~CommandStack()
 {
-	Clear();
-	SafeRelease(stackCommandsNotify);
+    Clear();
+    SafeRelease(stackCommandsNotify);
 }
 
 bool CommandStack::CanUndo() const
 {
-	bool ret = false;
+    bool ret = false;
 
-	if(commandList.size() > 0 && nextCommandIndex > 0)
-	{
-		ret = true;
-	}
+    if (commandList.size() > 0 && nextCommandIndex > 0)
+    {
+        ret = true;
+    }
 
-	return ret;
+    return ret;
 }
 
 bool CommandStack::CanRedo() const
 {
-	bool ret = false;
+    bool ret = false;
 
-	if(nextCommandIndex < commandList.size())
-	{
-		ret = true;
-	}
+    if (nextCommandIndex < commandList.size())
+    {
+        ret = true;
+    }
 
-	return ret;
+    return ret;
 }
 
 void CommandStack::Clear()
 {
-	nextCommandIndex = 0;
-	cleanCommandIndex = 0;
-	
-	std::list<Command2 *>::iterator i = commandList.begin();
-	std::list<Command2 *>::iterator end = commandList.end();
+    nextCommandIndex = 0;
+    cleanCommandIndex = 0;
 
-	for(; i != end; ++i)
-	{
-		delete *i;
-	}
+    std::list<Command2*>::iterator i = commandList.begin();
+    std::list<Command2*>::iterator end = commandList.end();
 
-	commandList.clear();
+    for (; i != end; ++i)
+    {
+        delete *i;
+    }
 
-	CleanCheck();
+    commandList.clear();
+
+    CleanCheck();
 }
 
 void CommandStack::Clear(int commandId)
 {
-	for(size_t i = 0; i < commandList.size(); i++)
-	{
-		Command2 *cmd = GetCommandInternal(i);
+    for (size_t i = 0; i < commandList.size(); i++)
+    {
+        Command2* cmd = GetCommandInternal(i);
 
-		if(cmd->GetId() == commandId)
-		{
-			ClearCommand(i);
+        if (cmd->GetId() == commandId)
+        {
+            ClearCommand(i);
 
-			i--; // check command with same index on next step
-		}
-		else if(cmd->GetId() == CMDID_BATCH)
-		{
-			CommandBatch *batch = (CommandBatch *) cmd;
+            i--; // check command with same index on next step
+        }
+        else if (cmd->GetId() == CMDID_BATCH)
+        {
+            CommandBatch* batch = (CommandBatch*)cmd;
 
-			batch->Clear(commandId);
-			if(batch->Size() == 0)
-			{
-				// clear empty batch
-				ClearCommand(i);
+            batch->Clear(commandId);
+            if (batch->Size() == 0)
+            {
+                // clear empty batch
+                ClearCommand(i);
 
-				i--; // check command with same index on next step
-			}
-		}
-	}
+                i--; // check command with same index on next step
+            }
+        }
+    }
 }
 
 void CommandStack::Undo()
 {
-	if(CanUndo())
-	{
-		nextCommandIndex--;
-		Command2* commandToUndo = GetCommandInternal(nextCommandIndex);
+    if (CanUndo())
+    {
+        nextCommandIndex--;
+        Command2* commandToUndo = GetCommandInternal(nextCommandIndex);
 
-		if(NULL != commandToUndo)
-		{
-			commandToUndo->Undo();
-			EmitNotify(commandToUndo, false);
-		}
-	}
+        if (NULL != commandToUndo)
+        {
+            commandToUndo->Undo();
+            EmitNotify(commandToUndo, false);
+        }
+    }
 
-	CleanCheck();
+    CleanCheck();
 }
 
 void CommandStack::Redo()
 {
-	if(CanRedo())
-	{
-		Command2* commandToRedo = GetCommandInternal(nextCommandIndex);
-		nextCommandIndex++;
+    if (CanRedo())
+    {
+        Command2* commandToRedo = GetCommandInternal(nextCommandIndex);
+        nextCommandIndex++;
 
-		if(NULL != commandToRedo)
-		{
-			commandToRedo->Redo();
-			EmitNotify(commandToRedo, true);
-		}
-	}
+        if (NULL != commandToRedo)
+        {
+            commandToRedo->Redo();
+            EmitNotify(commandToRedo, true);
+        }
+    }
 
-	CleanCheck();
+    CleanCheck();
 }
 
-void CommandStack::Exec(Command2 *command)
+void CommandStack::Exec(Command2* command)
 {
     if (NULL != command)
     {
@@ -168,7 +168,7 @@ void CommandStack::Exec(Command2 *command)
             }
         }
         else
-		{
+        {
             action->Redo();
             EmitNotify(command, true);
             delete action;
@@ -176,39 +176,39 @@ void CommandStack::Exec(Command2 *command)
     }
 }
 
-void CommandStack::BeginBatch(const DAVA::String &text)
+void CommandStack::BeginBatch(const DAVA::String& text)
 {
     if (nestedBatchesCounter++ == 0)
-	{
-		curBatchCommand = new CommandBatch();
-		curBatchCommand->SetText(text);
-		curBatchCommand->SetNotify(stackCommandsNotify);
-	}
+    {
+        curBatchCommand = new CommandBatch();
+        curBatchCommand->SetText(text);
+        curBatchCommand->SetNotify(stackCommandsNotify);
+    }
 }
 
 void CommandStack::EndBatch()
 {
-	if(NULL != curBatchCommand)
-	{
+    if (NULL != curBatchCommand)
+    {
         --nestedBatchesCounter;
         DVASSERT(nestedBatchesCounter >= 0);
 
         if (nestedBatchesCounter > 0)
             return;
 
-		if(curBatchCommand->Size() > 0)
-		{
-			// all command were already executed in batch
-			// so just add them to stack without calling redo
-			ExecInternal(curBatchCommand, false);
-		}
-		else
-		{
-			delete curBatchCommand;
-		}
+        if (curBatchCommand->Size() > 0)
+        {
+            // all command were already executed in batch
+            // so just add them to stack without calling redo
+            ExecInternal(curBatchCommand, false);
+        }
+        else
+        {
+            delete curBatchCommand;
+        }
 
-		curBatchCommand = NULL;
-	}
+        curBatchCommand = NULL;
+    }
 }
 
 bool CommandStack::IsBatchStarted() const
@@ -218,157 +218,158 @@ bool CommandStack::IsBatchStarted() const
 
 bool CommandStack::IsClean() const
 {
-	return (cleanCommandIndex == nextCommandIndex);
+    return (cleanCommandIndex == nextCommandIndex);
 }
 
 void CommandStack::SetClean(bool clean)
 {
-	if(clean)
-	{
-		cleanCommandIndex = nextCommandIndex;
-	}
-	else
-	{
-		cleanCommandIndex = -1;
-	}
+    if (clean)
+    {
+        cleanCommandIndex = nextCommandIndex;
+    }
+    else
+    {
+        cleanCommandIndex = -1;
+    }
 
-	CleanCheck();
+    CleanCheck();
 }
 
 size_t CommandStack::GetCleanIndex() const
 {
-	return cleanCommandIndex;
+    return cleanCommandIndex;
 }
 
 size_t CommandStack::GetNextIndex() const
 {
-	return nextCommandIndex;
+    return nextCommandIndex;
 }
 
 size_t CommandStack::GetUndoLimit() const
 {
-	return commandListLimit;
+    return commandListLimit;
 }
 
 void CommandStack::SetUndoLimit(size_t limit)
 {
-	commandListLimit = limit;
+    commandListLimit = limit;
 }
 
 size_t CommandStack::GetCount() const
 {
-	return commandList.size();
+    return commandList.size();
 }
 
 const Command2* CommandStack::GetCommand(size_t index) const
 {
-	return GetCommandInternal(index);
+    return GetCommandInternal(index);
 }
 
 Command2* CommandStack::GetCommandInternal(size_t index) const
 {
-	Command2* command = NULL;
+    Command2* command = NULL;
 
-	if(index < commandList.size())
-	{
-		std::list<Command2 *>::const_iterator i = commandList.begin();
-		std::advance(i, index);
+    if (index < commandList.size())
+    {
+        std::list<Command2*>::const_iterator i = commandList.begin();
+        std::advance(i, index);
 
-		if(i != commandList.end())
-		{
-			command = *i;
-		}
-	}
+        if (i != commandList.end())
+        {
+            command = *i;
+        }
+    }
 
-	return command;
+    return command;
 }
 
-void CommandStack::ExecInternal(Command2 *command, bool runCommand)
+void CommandStack::ExecInternal(Command2* command, bool runCommand)
 {
-	ClearRedoCommands();
+    ClearRedoCommands();
 
-	commandList.push_back(command);
-	nextCommandIndex++;
+    commandList.push_back(command);
+    nextCommandIndex++;
 
-	if(runCommand)
-	{
-		command->SetNotify(stackCommandsNotify);
-		command->Redo();
-	}
+    if (runCommand)
+    {
+        command->SetNotify(stackCommandsNotify);
+        command->Redo();
+    }
 
-	EmitNotify(command, true);
-	ClearLimitedCommands();
+    EmitNotify(command, true);
+    ClearLimitedCommands();
 
-	CleanCheck();
+    CleanCheck();
 }
 
 void CommandStack::ClearRedoCommands()
 {
-	if(CanRedo())
-	{
-		std::list<Command2 *>::iterator i = commandList.begin();
-		std::advance(i, nextCommandIndex);
-		while(i != commandList.end())
-		{
-			delete *i;
-			i = commandList.erase(i);
-		}
-	}
+    if (CanRedo())
+    {
+        std::list<Command2*>::iterator i = commandList.begin();
+        std::advance(i, nextCommandIndex);
+        while (i != commandList.end())
+        {
+            delete *i;
+            i = commandList.erase(i);
+        }
+    }
 }
 
 void CommandStack::ClearLimitedCommands()
 {
-	while(commandListLimit > 0 && commandList.size() > commandListLimit)
-	{
-		ClearCommand(0);
-	}
+    while (commandListLimit > 0 && commandList.size() > commandListLimit)
+    {
+        ClearCommand(0);
+    }
 }
 
 void CommandStack::ClearCommand(size_t index)
 {
-	const Command2 *command = GetCommand(index);
-	if(NULL != command)
-	{
-		commandList.remove((Command2 *) command);
+    const Command2* command = GetCommand(index);
+    if (NULL != command)
+    {
+        commandList.remove((Command2*)command);
 
-		if(nextCommandIndex > 0)
-		{
-			nextCommandIndex--;
-		}
+        if (nextCommandIndex > 0)
+        {
+            nextCommandIndex--;
+        }
 
-		if(cleanCommandIndex > 0 && index < cleanCommandIndex)
-		{
-			cleanCommandIndex--;
-		}
+        if (cleanCommandIndex > 0 && index < cleanCommandIndex)
+        {
+            cleanCommandIndex--;
+        }
 
-		delete command;
-	}
+        delete command;
+    }
 
-	CleanCheck();
+    CleanCheck();
 }
 
 void CommandStack::CleanCheck()
 {
-	if(lastCheckCleanState != IsClean())
-	{
-		lastCheckCleanState = IsClean();
-		EmitCleanChanged(lastCheckCleanState);
-	}
+    if (lastCheckCleanState != IsClean())
+    {
+        lastCheckCleanState = IsClean();
+        EmitCleanChanged(lastCheckCleanState);
+    }
 }
 
-void CommandStack::CommandExecuted(const Command2 *command, bool redo)
+void CommandStack::CommandExecuted(const Command2* command, bool redo)
 {
-	EmitNotify(command, redo);
+    EmitNotify(command, redo);
 }
 
-CommandStackNotify::CommandStackNotify(CommandStack *_stack)
-	: stack(_stack)
-{ }
-
-void CommandStackNotify::Notify(const Command2 *command, bool redo)
+CommandStackNotify::CommandStackNotify(CommandStack* _stack)
+    : stack(_stack)
 {
-	if(NULL != stack)
-	{
-		stack->CommandExecuted(command, redo);
-	}
+}
+
+void CommandStackNotify::Notify(const Command2* command, bool redo)
+{
+    if (NULL != stack)
+    {
+        stack->CommandExecuted(command, redo);
+    }
 }

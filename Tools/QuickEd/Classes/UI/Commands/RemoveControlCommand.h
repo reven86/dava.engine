@@ -39,16 +39,16 @@ class ControlsContainerNode;
 class RemoveControlCommand : public QUndoCommand
 {
 public:
-    RemoveControlCommand(PackageNode *_root, ControlNode *_node, ControlsContainerNode *_from, int _index, QUndoCommand *parent = nullptr);
+    RemoveControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _from, int _index, QUndoCommand* parent = nullptr);
     virtual ~RemoveControlCommand();
-    
+
     void redo() override;
     void undo() override;
-    
+
 private:
-    PackageNode *root;
-    ControlNode *node;
-    ControlsContainerNode *from;
+    PackageNode* root;
+    ControlNode* node;
+    ControlsContainerNode* from;
     int index;
 };
 

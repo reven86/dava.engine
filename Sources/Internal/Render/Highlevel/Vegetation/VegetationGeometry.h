@@ -56,7 +56,6 @@ namespace DAVA
 class VegetationGeometry
 {
 protected:
-
     struct PolygonSortData
     {
         Array<VegetationIndex, 3> indices;
@@ -199,7 +198,6 @@ inline VegetationGeometry::PolygonSortData::PolygonSortData()
     indices[0] = indices[1] = indices[2] = -1;
     cameraDistance = -1.0f;
 }
-
 };
 
 #endif /* defined(__DAVAENGINE_VEGETATIONCUSTOMSLGEOMETRYGENERATOR_H__) */

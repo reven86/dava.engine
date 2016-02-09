@@ -41,10 +41,9 @@
 
 namespace DAVA
 {
-
 const static int32 DEFAULT_INTERNAL_DATA_SIZE = 2048 * 2048;
 
-uint32 * MipMapReplacer::mipmapData = nullptr;
+uint32* MipMapReplacer::mipmapData = nullptr;
 int32 MipMapReplacer::mipmapDataSize = 0;
 
 void MipMapReplacer::AllocateInternalDataIfNeeded(int32 requestedSize)
@@ -63,45 +62,46 @@ void MipMapReplacer::ReleaseInternalData()
     mipmapDataSize = 0;
 }
 
-void MipMapReplacer::ReplaceMipMaps(Entity * node, const FastName & textureName /* = NMaterial::TEXTURE_ALBEDO */)
+void MipMapReplacer::ReplaceMipMaps(Entity* node, const FastName& textureName /* = NMaterial::TEXTURE_ALBEDO */)
 {
-    Set<Texture *> textures;
+    Set<Texture*> textures;
     EnumerateTexturesRecursive(node, textures, textureName);
-    
-    if (!textures.size()) return;
+
+    if (!textures.size())
+        return;
 
     AllocateInternalDataIfNeeded(DEFAULT_INTERNAL_DATA_SIZE);
 
-    Set<Texture *>::iterator endIt = textures.end();
-    for(Set<Texture *>::iterator it = textures.begin(); it != endIt; ++it)
+    Set<Texture*>::iterator endIt = textures.end();
+    for (Set<Texture*>::iterator it = textures.begin(); it != endIt; ++it)
         ReplaceMipMaps((*it));
 
     ReleaseInternalData();
 }
 
-void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> & textures, const FastName & textureName)
+void MipMapReplacer::EnumerateTexturesRecursive(Entity* entity, Set<Texture*>& textures, const FastName& textureName)
 {
-    if(!entity)
+    if (!entity)
         return;
 #if RHI_COMPLETE
     int32 childrenCount = entity->GetChildrenCount();
-    for(int32 i = 0; i < childrenCount; i++)
+    for (int32 i = 0; i < childrenCount; i++)
         EnumerateTexturesRecursive(entity->GetChild(i), textures, textureName);
 
-    RenderObject * ro = GetRenderObject(entity);
-    if(ro)
+    RenderObject* ro = GetRenderObject(entity);
+    if (ro)
     {
         int32 rbCount = ro->GetRenderBatchCount();
-        for(int32 i = 0; i < rbCount; i++)
+        for (int32 i = 0; i < rbCount; i++)
         {
-            RenderBatch * rb = ro->GetRenderBatch(i);
-            if(rb)
+            RenderBatch* rb = ro->GetRenderBatch(i);
+            if (rb)
             {
-                NMaterial * material = rb->GetMaterial();
-                while(material)
+                NMaterial* material = rb->GetMaterial();
+                while (material)
                 {
-                    Texture * texture = material->GetTexture(textureName);
-                    if(texture)
+                    Texture* texture = material->GetTexture(textureName);
+                    if (texture)
                         textures.insert(texture);
 
                     material = material->GetParent();
@@ -112,10 +112,10 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
 #endif
 }
 
-void MipMapReplacer::ReplaceMipMaps(Texture * texture)
+void MipMapReplacer::ReplaceMipMaps(Texture* texture)
 {
 #if RHI_COMPLETE
-    if(!texture)
+    if (!texture)
         return;
 
     static uint32 mipmapColor[8] = {
@@ -131,12 +131,12 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
 
     static GLuint CUBE_FACE_GL_NAMES[] =
     {
-        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+      GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+      GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+      GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     };
 
     int32 width = texture->GetWidth();
@@ -152,10 +152,12 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
     bool isCubemap = texture->GetDescriptor()->IsCubeMap();
     while (width > 0 || height > 0)
     {
-        if(width == 0) width = 1;
-        if(height == 0) height = 1;
-        
-        const uint32 & color = mipmapColor[miplevel % 8];
+        if (width == 0)
+            width = 1;
+        if (height == 0)
+            height = 1;
+
+        const uint32& color = mipmapColor[miplevel % 8];
         const uint32 dataCount = width * height;
         for (uint32 i = 0; i < dataCount; ++i)
             mipmapData[i] = color;
@@ -176,12 +178,11 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
         height /= 2;
         miplevel++;
     }
-    
+
     if (0 != saveId)
     {
         RenderManager::Instance()->HWglBindTexture(saveId, texture->textureType);
     }
 #endif //RHI_COMPLETE
 }
-
 };

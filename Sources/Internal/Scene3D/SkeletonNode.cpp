@@ -30,61 +30,56 @@
 #include "Scene3D/SkeletonNode.h"
 #include "Render/RenderHelper.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
-
 SkeletonNode::SkeletonNode()
-	: BoneNode(0)
+    : BoneNode(0)
 {
 }
 
 SkeletonNode::~SkeletonNode()
 {
-	
 }
-	
+
 void SkeletonNode::EnableDebugDraw(bool _enableDebugDraw)
 {
-	enableDebugDraw = _enableDebugDraw;
+    enableDebugDraw = _enableDebugDraw;
 }
 
 void SkeletonNode::Update(float32 timeElapsed)
 {
-
-//	//if (isMatrixesChanged)
-//	{
-//		if (parent)
-//			worldTransform = localTransform * parent->worldTransform;
-//		else 
-//			worldTransform = localTransform;
-//		isMatrixesChanged = false;
-//	}
-//	//printf("- node: %s tr: %f %f %f\n", name.c_str(), localTransform.data[12], localTransform.data[13], localTransform.data[14]); 
-//	
-//	uint32 size = (uint32)childs.size();
-//	for (uint32 c = 0; c < size; ++c)
-//		childs[c]->Update(timeElapsed);
+    //	//if (isMatrixesChanged)
+    //	{
+    //		if (parent)
+    //			worldTransform = localTransform * parent->worldTransform;
+    //		else
+    //			worldTransform = localTransform;
+    //		isMatrixesChanged = false;
+    //	}
+    //	//printf("- node: %s tr: %f %f %f\n", name.c_str(), localTransform.data[12], localTransform.data[13], localTransform.data[14]);
+    //
+    //	uint32 size = (uint32)childs.size();
+    //	for (uint32 c = 0; c < size; ++c)
+    //		childs[c]->Update(timeElapsed);
 }
 
 void SkeletonNode::Draw()
 {
-	BoneNode::Draw();
-//
-//	glPushMatrix();
-//	glMultMatrixf(worldTransform.data);
-//	
-//	glDisable(GL_TEXTURE_2D);
-//	
-//	glColor4f(0.984375, 0.078125, 0.64453125, 1.0f);
-//		//glutWireCube(0.5f);
-//		
-//	AABBox box(Vector3(0.0f, 0.0f, 0.0f), 5.0f);
-//	RenderHelper::DrawBox(box);
-//	
-//	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-//	glPopMatrix();
-//	glEnable(GL_TEXTURE_2D);
+    BoneNode::Draw();
+    //
+    //	glPushMatrix();
+    //	glMultMatrixf(worldTransform.data);
+    //
+    //	glDisable(GL_TEXTURE_2D);
+    //
+    //	glColor4f(0.984375, 0.078125, 0.64453125, 1.0f);
+    //		//glutWireCube(0.5f);
+    //
+    //	AABBox box(Vector3(0.0f, 0.0f, 0.0f), 5.0f);
+    //	RenderHelper::DrawBox(box);
+    //
+    //	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    //	glPopMatrix();
+    //	glEnable(GL_TEXTURE_2D);
 }
-
 };

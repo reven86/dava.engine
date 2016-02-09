@@ -21,50 +21,50 @@
 #endif
 typedef struct ICODIR
 {
-	ILshort		Reserved;	// Reserved (must be 0)
-	ILshort		Type;		// Type (1 for icons, 2 for cursors)
-	ILshort		Count;		// How many different images?
+    ILshort Reserved; // Reserved (must be 0)
+    ILshort Type; // Type (1 for icons, 2 for cursors)
+    ILshort Count; // How many different images?
 } IL_PACKSTRUCT ICODIR;
 
 typedef struct ICODIRENTRY
 {
-	ILubyte		Width;			// Width, in pixels
-	ILubyte		Height;			// Height, in pixels
-	ILubyte		NumColours;		// Number of colors in image (0 if >=8bpp)
-	ILubyte		Reserved;		// Reserved (must be 0)
-	ILshort		Planes;			// Colour planes
-	ILshort		Bpp;			// Bits per pixel
-	ILuint		SizeOfData;		// How many bytes in this resource?
-	ILuint		Offset;			// Offset from beginning of the file
+    ILubyte Width; // Width, in pixels
+    ILubyte Height; // Height, in pixels
+    ILubyte NumColours; // Number of colors in image (0 if >=8bpp)
+    ILubyte Reserved; // Reserved (must be 0)
+    ILshort Planes; // Colour planes
+    ILshort Bpp; // Bits per pixel
+    ILuint SizeOfData; // How many bytes in this resource?
+    ILuint Offset; // Offset from beginning of the file
 } IL_PACKSTRUCT ICODIRENTRY;
 
 typedef struct INFOHEAD
 {
-	ILint		Size;
-	ILint		Width;
-	ILint		Height;
-	ILshort		Planes;
-	ILshort		BitCount;
-	ILint		Compression;
-	ILint		SizeImage;
-	ILint		XPixPerMeter;
-	ILint		YPixPerMeter;
-	ILint		ColourUsed;
-	ILint		ColourImportant;
+    ILint Size;
+    ILint Width;
+    ILint Height;
+    ILshort Planes;
+    ILshort BitCount;
+    ILint Compression;
+    ILint SizeImage;
+    ILint XPixPerMeter;
+    ILint YPixPerMeter;
+    ILint ColourUsed;
+    ILint ColourImportant;
 } IL_PACKSTRUCT INFOHEAD;
 
 typedef struct ICOIMAGE
 {
-	INFOHEAD	Head;
-	ILubyte		*Pal;	// Palette
-	ILubyte		*Data;	// XOR mask
-	ILubyte		*AND;	// AND mask
+    INFOHEAD Head;
+    ILubyte* Pal; // Palette
+    ILubyte* Data; // XOR mask
+    ILubyte* AND; // AND mask
 } ICOIMAGE;
 #ifdef _WIN32
 	#pragma pack(pop, ico_struct)
 #endif
 
 ILboolean iLoadIconInternal();
-ILboolean iLoadIconPNG(ICOIMAGE *Icon);
+ILboolean iLoadIconPNG(ICOIMAGE* Icon);
 
-#endif//ICON_H
+#endif //ICON_H

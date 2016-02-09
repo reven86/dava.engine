@@ -37,25 +37,24 @@
 
 namespace DAVA
 {
-
 LocalNotificationController::~LocalNotificationController()
 {
-	LockGuard<Mutex> guard(notificationsListMutex);
+    LockGuard<Mutex> guard(notificationsListMutex);
     if (!notificationsList.empty())
     {
-        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
+        for (List<LocalNotification*>::iterator it = notificationsList.begin(); it != notificationsList.end();)
         {
-            LocalNotification *notification = (*it);
+            LocalNotification* notification = (*it);
             it = notificationsList.erase(it);
             SafeRelease(notification);
         }
     }
 }
 
-LocalNotificationProgress *const LocalNotificationController::CreateNotificationProgress(const WideString &title, const WideString &text, uint32 maximum, uint32 current, bool useSound)
+LocalNotificationProgress* const LocalNotificationController::CreateNotificationProgress(const WideString& title, const WideString& text, uint32 maximum, uint32 current, bool useSound)
 {
-	LocalNotificationProgress *note = new LocalNotificationProgress();
-    
+    LocalNotificationProgress* note = new LocalNotificationProgress();
+
     if (NULL != note)
     {
         note->SetText(text);
@@ -72,9 +71,9 @@ LocalNotificationProgress *const LocalNotificationController::CreateNotification
     return note;
 }
 
-LocalNotificationText *const LocalNotificationController::CreateNotificationText(const WideString &title, const WideString &text, bool useSound)
+LocalNotificationText* const LocalNotificationController::CreateNotificationText(const WideString& title, const WideString& text, bool useSound)
 {
-	LocalNotificationText *note = new LocalNotificationText();
+    LocalNotificationText* note = new LocalNotificationText();
 
     if (NULL != note)
     {
@@ -90,9 +89,9 @@ LocalNotificationText *const LocalNotificationController::CreateNotificationText
     return note;
 }
 
-bool LocalNotificationController::Remove(LocalNotification *notification)
+bool LocalNotificationController::Remove(LocalNotification* notification)
 {
-	LockGuard<Mutex> guard(notificationsListMutex);
+    LockGuard<Mutex> guard(notificationsListMutex);
 
     auto endIt = end(notificationsList);
     auto it = find(begin(notificationsList), endIt, notification);
@@ -105,16 +104,16 @@ bool LocalNotificationController::Remove(LocalNotification *notification)
     return false;
 }
 
-bool LocalNotificationController::RemoveById(const String &notificationId)
+bool LocalNotificationController::RemoveById(const String& notificationId)
 {
     LockGuard<Mutex> guard(notificationsListMutex);
 
     auto endIt = end(notificationsList);
-    auto it = find_if(begin(notificationsList), endIt, [&notificationId](LocalNotification* note)->bool
-    {
-        return 0 == note->GetId().compare(notificationId);
-    });
-    
+    auto it = find_if(begin(notificationsList), endIt, [&notificationId](LocalNotification* note) -> bool
+                      {
+                          return 0 == note->GetId().compare(notificationId);
+                      });
+
     if (it != endIt)
     {
         (*it)->Release();
@@ -134,10 +133,10 @@ void LocalNotificationController::Clear()
     }
     notificationsList.clear();
 }
-    
+
 void LocalNotificationController::Update()
 {
-	LockGuard<Mutex> guard(notificationsListMutex);
+    LockGuard<Mutex> guard(notificationsListMutex);
 
     for (auto notification : notificationsList)
     {
@@ -145,9 +144,9 @@ void LocalNotificationController::Update()
     }
 }
 
-LocalNotification *const LocalNotificationController::GetNotificationById(const String &id)
+LocalNotification* const LocalNotificationController::GetNotificationById(const String& id)
 {
-	LockGuard<Mutex> guard(notificationsListMutex);
+    LockGuard<Mutex> guard(notificationsListMutex);
     for (auto notification : notificationsList)
     {
         if (notification->GetId().compare(id) == 0)
@@ -159,18 +158,18 @@ LocalNotification *const LocalNotificationController::GetNotificationById(const 
     return NULL;
 }
 
-void LocalNotificationController::OnNotificationPressed(const String &id)
+void LocalNotificationController::OnNotificationPressed(const String& id)
 {
-	LocalNotification *const notification = GetNotificationById(id);
-	if (NULL != notification)
-	{
-		notification->RunAction();
-	}
+    LocalNotification* const notification = GetNotificationById(id);
+    if (NULL != notification)
+    {
+        notification->RunAction();
+    }
 }
 
-void LocalNotificationController::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
+void LocalNotificationController::PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound)
 {
-    LocalNotificationDelayed *notification = new LocalNotificationDelayed();
+    LocalNotificationDelayed* notification = new LocalNotificationDelayed();
     notification->SetTitle(title);
     notification->SetText(text);
     notification->SetDelaySeconds(delaySeconds);
@@ -181,9 +180,8 @@ void LocalNotificationController::PostDelayedNotification(const WideString &titl
 
 void LocalNotificationController::RemoveAllDelayedNotifications()
 {
-    LocalNotificationDelayed *notification = new LocalNotificationDelayed();
+    LocalNotificationDelayed* notification = new LocalNotificationDelayed();
     notification->RemoveAllDelayedNotifications();
     SafeRelease(notification);
 }
-
 }

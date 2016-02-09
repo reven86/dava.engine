@@ -38,7 +38,7 @@ class RotationControllerSystem;
 class WASDControllerSystem;
 };
 
-class ViewSceneScreen: public BaseScreen
+class ViewSceneScreen : public BaseScreen
 {
 protected:
     virtual ~ViewSceneScreen()
@@ -49,7 +49,7 @@ public:
     virtual void LoadResources();
     virtual void UnloadResources();
 
-    virtual void Draw(const UIGeometricData &geometricData);
+    virtual void Draw(const UIGeometricData& geometricData);
     virtual void Update(float32 timeElapsed);
 
     virtual void DidAppear();
@@ -57,7 +57,7 @@ public:
     virtual void Input(UIEvent* currentInput);
 
 protected:
-    void OnBack(BaseObject *caller, void *param, void *callerData);
+    void OnBack(BaseObject* caller, void* param, void* callerData);
     void OnReloadShaders(BaseObject* caller, void* param, void* callerData);
     void UpdateInfo(float32 timeElapsed);
 

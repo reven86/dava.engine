@@ -52,10 +52,10 @@ public:
     virtual Entity* GetEntity() const;
 
 protected:
-	CustomColorsProxy* customColorsProxy;
-	Image* undoImage;
-	Image* redoImage;
-	Rect updatedRect;
+    CustomColorsProxy* customColorsProxy;
+    Image* undoImage;
+    Image* redoImage;
+    Rect updatedRect;
 
     Texture* texture;
 

@@ -43,7 +43,7 @@ class UILayoutSystem
 public:
     UILayoutSystem();
     virtual ~UILayoutSystem();
-    
+
 public:
     bool IsRtl() const;
     void SetRtl(bool rtl);
@@ -72,7 +72,6 @@ private:
     bool autoupdatesEnabled = true;
     Vector<ControlLayoutData> layoutData;
 };
-
 }
 
 

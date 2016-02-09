@@ -113,10 +113,10 @@ DAVA_TESTCLASS(SaveImageTest)
             uint8 blue = 0xFF * i1 / size;
             for (uint32 i2 = 0; i2 < size; ++i2)
             {
-                *_date++ = 0xFF * i2 / size;    // R channel, 0 to FF horizontally
-                *_date++ = 0x00;                // G channel
-                *_date++ = blue;                // B channel, 0 to FF vertically
-                *_date++ = 0xFA;                // A channel
+                *_date++ = 0xFF * i2 / size; // R channel, 0 to FF horizontally
+                *_date++ = 0x00; // G channel
+                *_date++ = blue; // B channel, 0 to FF vertically
+                *_date++ = 0xFA; // A channel
             }
         }
         return img;
@@ -132,9 +132,9 @@ DAVA_TESTCLASS(SaveImageTest)
             uint8 blue = 0xFF * i1 / size;
             for (uint32 i2 = 0; i2 < size; ++i2)
             {
-                *_date++ = 0xFF * i2 / size;    // R channel, 0 to FF horizontally
-                *_date++ = 0x00;                // G channel
-                *_date++ = blue;                // B channel, 0 to FF vertically
+                *_date++ = 0xFF * i2 / size; // R channel, 0 to FF horizontally
+                *_date++ = 0x00; // G channel
+                *_date++ = blue; // B channel, 0 to FF vertically
             }
         }
         return img;

@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-ClassProperty::ClassProperty(ControlNode *aControl)
+ClassProperty::ClassProperty(ControlNode* aControl)
     : ValueProperty("Class")
     , control(aControl) // weak
 {
@@ -47,7 +47,7 @@ ClassProperty::~ClassProperty()
     control = nullptr; // weak
 }
 
-void ClassProperty::Accept(PropertyVisitor *visitor)
+void ClassProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitClassProperty(this);
 }
@@ -72,12 +72,12 @@ VariantType ClassProperty::GetValue() const
     return VariantType(control->GetControl()->GetClassName());
 }
 
-const String &ClassProperty::GetClassName() const
+const String& ClassProperty::GetClassName() const
 {
     return control->GetControl()->GetClassName();
 }
 
-ControlNode *ClassProperty::GetControlNode() const
+ControlNode* ClassProperty::GetControlNode() const
 {
     return control;
 }

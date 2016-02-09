@@ -37,29 +37,29 @@ using namespace DAVA;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ModifyTilemaskCommand: public Command2
+class ModifyTilemaskCommand : public Command2
 {
 public:
-	ModifyTilemaskCommand(LandscapeProxy* landscapeProxy,
-						  const Rect& updatedRect);
-	~ModifyTilemaskCommand();
+    ModifyTilemaskCommand(LandscapeProxy* landscapeProxy,
+                          const Rect& updatedRect);
+    ~ModifyTilemaskCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual Entity* GetEntity() const;
+    virtual void Undo();
+    virtual void Redo();
+    virtual Entity* GetEntity() const;
 
 protected:
-	Image* undoImageMask;
-	Image* redoImageMask;
-	LandscapeProxy* landscapeProxy;
-	Rect updatedRect;
+    Image* undoImageMask;
+    Image* redoImageMask;
+    LandscapeProxy* landscapeProxy;
+    Rect updatedRect;
 
     void ApplyImageToTexture(Image* image, Texture* dstTex, int32 internalHandle);
 
     Texture* texture[2];
 };
 
-class SetTileColorCommand: public Command2
+class SetTileColorCommand : public Command2
 {
 public:
     SetTileColorCommand(LandscapeProxy* landscapeProxy,

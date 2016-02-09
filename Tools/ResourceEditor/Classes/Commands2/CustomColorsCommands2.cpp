@@ -51,25 +51,25 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
 {
-	SafeRelease(undoImage);
-	SafeRelease(redoImage);
-	SafeRelease(customColorsProxy);
+    SafeRelease(undoImage);
+    SafeRelease(redoImage);
+    SafeRelease(customColorsProxy);
     SafeRelease(texture);
 }
 
 void ModifyCustomColorsCommand::Undo()
 {
-	ApplyImage(undoImage);
-	customColorsProxy->DecrementChanges();
+    ApplyImage(undoImage);
+    customColorsProxy->DecrementChanges();
 }
 
 void ModifyCustomColorsCommand::Redo()
 {
-	ApplyImage(redoImage);
-	customColorsProxy->IncrementChanges();
+    ApplyImage(redoImage);
+    customColorsProxy->IncrementChanges();
 }
 
-void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
+void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
 {
     SafeRelease(texture);
 
