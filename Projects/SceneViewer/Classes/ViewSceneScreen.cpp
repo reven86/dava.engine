@@ -201,7 +201,7 @@ void ViewSceneScreen::OnReloadShaders(DAVA::BaseObject* caller, void* param, voi
     scene->renderSystem->SetForceUpdateLights();
     
 #define INVALIDATE_2D_MATERIAL(material) \
-if(RenderSystem2D::material) \
+if (RenderSystem2D::material) \
 RenderSystem2D::material->InvalidateRenderVariants();
 
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)

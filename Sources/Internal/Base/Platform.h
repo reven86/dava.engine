@@ -67,17 +67,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 //detecting of compiler features definitions
-#if !defined(DAVA_NOINLINE) || \
-!defined(DAVA_FORCEINLINE) || \
-\
-!defined(DAVA_ALIGNOF) ||     \
-\
-!defined(DAVA_NOEXCEPT) ||    \
-\
-!defined(DAVA_CONSTEXPR) ||   \
-\
-!defined(DAVA_DEPRECATED) ||  \
-\
+#if !defined(DAVA_NOINLINE) ||                                    \
+!defined(DAVA_FORCEINLINE) ||                                     \
+                                                                  \
+!defined(DAVA_ALIGNOF) ||                                         \
+                                                                  \
+!defined(DAVA_NOEXCEPT) ||                                        \
+                                                                  \
+!defined(DAVA_CONSTEXPR) ||                                       \
+                                                                  \
+!defined(DAVA_DEPRECATED) ||                                      \
+                                                                  \
 !defined(DAVA_ALIGNED)
 #error Some compiler features is not defined for current platform
 #endif
