@@ -88,7 +88,7 @@ DAVA_TESTCLASS(UIControlTest)
         return c;
     }
 
-    UIControl* Child(UIControl * parent, const char* name)
+    UIControl* MakeChild(UIControl * parent, const char* name)
     {
         UIControl* c = new UIControl();
         c->SetName(name);
@@ -100,25 +100,25 @@ DAVA_TESTCLASS(UIControlTest)
     {
         root = MakeRoot("root");
 
-        a = Child(root, "a");
-        a1 = Child(a, "1");
-        a2 = Child(a, "2");
-        a3 = Child(a, "3");
-        a11 = Child(a1, "1");
-        a21 = Child(a2, "1");
+        a = MakeChild(root, "a");
+        a1 = MakeChild(a, "1");
+        a2 = MakeChild(a, "2");
+        a3 = MakeChild(a, "3");
+        a11 = MakeChild(a1, "1");
+        a21 = MakeChild(a2, "1");
 
-        b = Child(root, "b");
-        b1 = Child(b, "1");
-        b2 = Child(b, "2");
-        b3 = Child(b, "3");
-        b11 = Child(b1, "1");
-        b12 = Child(b1, "2");
-        b21 = Child(b2, "1");
+        b = MakeChild(root, "b");
+        b1 = MakeChild(b, "1");
+        b2 = MakeChild(b, "2");
+        b3 = MakeChild(b, "3");
+        b11 = MakeChild(b1, "1");
+        b12 = MakeChild(b1, "2");
+        b21 = MakeChild(b2, "1");
 
-        c = Child(root, "c");
-        c1 = Child(c, "1");
-        c2 = Child(c, "2");
-        c3 = Child(c, "3");
+        c = MakeChild(root, "c");
+        c1 = MakeChild(c, "1");
+        c2 = MakeChild(c, "2");
+        c3 = MakeChild(c, "3");
     }
 
     void TearDown(const String& testName) override
