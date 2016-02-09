@@ -88,7 +88,7 @@ void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode
         if (mesh)
         {
             ColladaMeshInstance* meshInstance = CreateMeshInstance(mesh, dynamic_cast<FCDGeometryInstance*>(instance), false);
-			node->AddMeshInstance(meshInstance);
+            node->AddMeshInstance(meshInstance);
         }
 
         ColladaLight* light = FindLightWithName(name);
@@ -178,12 +178,12 @@ ColladaMesh* ColladaScene::FindMeshWithName(const fm::string& name)
 
 ColladaMaterial* ColladaScene::FindMaterialWithName(const fm::string& name)
 {
-	for (int m = 0; m < (int)colladaMaterials.size(); ++m)
-		if (colladaMaterials[m]->material->GetDaeId() == name)
-		{
-			return colladaMaterials[m];
-		}
-	return 0;
+    for (int m = 0; m < (int)colladaMaterials.size(); ++m)
+        if (colladaMaterials[m]->material->GetDaeId() == name)
+        {
+            return colladaMaterials[m];
+        }
+    return 0;
 }
 
 ColladaTexture* ColladaScene::FindTextureWithName(const fm::string& name)
@@ -292,17 +292,17 @@ ColladaMeshInstance* ColladaScene::CreateMeshInstance(ColladaMesh* mesh, FCDGeom
 
             if (materialSemantic == polygonMaterialSemantic)
             {
-				auto colladaMaterial = materialInstance->GetMaterial();
-				if (colladaMaterial != nullptr)
-				{
-					const fm::string& materialId = colladaMaterial->GetDaeId();
-	                material = FindMaterialWithName(materialId);
-				}
-				else 
-				{
-					printf("\n[ERROR] no material for %s in polygon group %s inside mesh %s\n",
-						materialSemantic.c_str(), polygonMaterialSemantic.c_str(), mesh->name.c_str());
-				}
+                auto colladaMaterial = materialInstance->GetMaterial();
+                if (colladaMaterial != nullptr)
+                {
+                    const fm::string& materialId = colladaMaterial->GetDaeId();
+                    material = FindMaterialWithName(materialId);
+                }
+                else
+                {
+                    printf("\n[ERROR] no material for %s in polygon group %s inside mesh %s\n",
+                           materialSemantic.c_str(), polygonMaterialSemantic.c_str(), mesh->name.c_str());
+                }
             }
         }
 
@@ -311,16 +311,16 @@ ColladaMeshInstance* ColladaScene::CreateMeshInstance(ColladaMesh* mesh, FCDGeom
         {
             printf(" material: %s", material->material->GetDaeId().c_str());
             if (material->hasDiffuseTexture)
-			{
+            {
                 wprintf(L" diffuse texture: %S\n", (wchar_t*)(material->diffuseTexture->image->GetFilename().c_str()));
-			}
-			printf("\n");
+            }
+            printf("\n");
         }
-		ColladaPolygonGroup* polyGroup = mesh->GetPolygonGroup(i);
-		printf("- mesh instance added polygroup: %p %d\n", polyGroup, i);
+        ColladaPolygonGroup* polyGroup = mesh->GetPolygonGroup(i);
+        printf("- mesh instance added polygroup: %p %d\n", polyGroup, i);
 
-		ColladaPolygonGroupInstance* polygonGroupInstance = new ColladaPolygonGroupInstance(polyGroup, material);
-		meshInstance->AddPolygonGroupInstance(polygonGroupInstance);
+        ColladaPolygonGroupInstance* polygonGroupInstance = new ColladaPolygonGroupInstance(polyGroup, material);
+        meshInstance->AddPolygonGroupInstance(polygonGroupInstance);
     }
 
     return meshInstance;
