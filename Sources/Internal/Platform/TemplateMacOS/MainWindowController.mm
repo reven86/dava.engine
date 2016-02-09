@@ -53,13 +53,41 @@
             }
             else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
             {
-                if ([self sendAction:@selector(copy:) to:nil from:self])
+                if ([self sendAction:@selector(copy:) to:[[NSApp keyWindow] firstResponder] from:self])
                     return;
             }
             else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
             {
-                if ([self sendAction:@selector(paste:) to:nil from:self])
-                    return;
+                // HACK if user trying to paste text into textfield
+                // we have to check room for it
+                // and if no more room skip paste operation here
+                // because some time NSFormatter not called
+                NSResponder* view = [[NSApp keyWindow] firstResponder];
+                DAVA::UIControl* focused = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+                if (focused != nullptr)
+                {
+                    DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focused);
+                    if (tf)
+                    {
+                        DAVA::WideString text = tf->GetText();
+                        int size = tf->GetMaxLength();
+                        int textSize = static_cast<int>(text.length());
+                        if (size > 0 && size > (textSize + 1))
+                        {
+                            if ([self sendAction:@selector(paste:) to:view from:self])
+                                return;
+                        }
+                        else
+                        {
+                            // skip paste into no room textfield
+                        }
+                    }
+                }
+                else
+                {
+                    if ([self sendAction:@selector(paste:) to:view from:self])
+                        return;
+                }
             }
             else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
             {
