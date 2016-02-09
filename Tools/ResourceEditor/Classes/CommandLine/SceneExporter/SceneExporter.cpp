@@ -277,9 +277,12 @@ void SceneExporter::EnableOptimizations(bool enable)
     optimizeOnExport = enable;
 }
 
-void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_)
+void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String mashineName, String runDate, String comment)
 {
     cacheClient = cacheClient_;
+    cacheItemDescription.machineName = mashineName;
+    cacheItemDescription.creationDate = runDate;
+    cacheItemDescription.comment = comment;
 }
 
 void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String& sceneLink)
@@ -308,7 +311,6 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(cacheKey, outScenePathname.GetDirectory());
         if (requested == AssetCache::ERROR_OK)
         {
-            Logger::Info("[%s] - got from cache", scenePathname.GetAbsolutePathname().c_str());
             SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
             ExportObjects(externalLinks);
             return;
@@ -328,29 +330,11 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
     { //place exported scene into cache
         SceneExporterInternal::SaveExportedObjects(linksPathname, externalLinks);
 
-        auto AddFileToValue = [](AssetCache::CachedItemValue& value, const FilePath& pathname) {
-            ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
-            if (file)
-            {
-                std::shared_ptr<Vector<uint8>> data = std::make_shared<Vector<uint8>>();
-
-                auto dataSize = file->GetSize();
-                data.get()->resize(dataSize);
-
-                auto read = file->Read(data.get()->data(), dataSize);
-                DVVERIFY(read == dataSize);
-
-                value.Add(pathname.GetFilename(), data);
-            }
-            else
-            {
-                Logger::Error("[%s] Cannot read file(%s)", __FUNCTION__, pathname.GetStringValue().c_str());
-            }
-        };
-
         AssetCache::CachedItemValue value;
-        AddFileToValue(value, outScenePathname);
-        AddFileToValue(value, linksPathname);
+        value.Add(outScenePathname);
+        value.Add(linksPathname);
+        value.FinalizeValidationData();
+        value.SetDescription(cacheItemDescription);
 
         AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(cacheKey, value);
         if (added == AssetCache::ERROR_OK)

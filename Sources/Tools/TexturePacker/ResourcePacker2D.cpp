@@ -587,9 +587,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
 }
 
-void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_)
+void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, String mashineName, String runDate, String comment)
 {
     cacheClient = cacheClient_;
+    cacheItemDescription.machineName = mashineName;
+    cacheItemDescription.creationDate = runDate;
+    cacheItemDescription.comment = comment;
 }
 
 
@@ -608,7 +611,6 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(key, outputPath);
     if (requested == AssetCache::ERROR_OK)
     {
-        Logger::Info("[%s] - got from cache", inputPath.GetAbsolutePathname().c_str());
         return true;
     }
     else
@@ -638,30 +640,15 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     {
         if (!outFilesList->IsDirectory(fi))
         {
-            const FilePath& path = outFilesList->GetPathname(fi);
-            ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
-            if (file)
-            {
-                std::shared_ptr<Vector<uint8>> data = std::make_shared<Vector<uint8>>();
-
-                auto dataSize = file->GetSize();
-                data.get()->resize(dataSize);
-
-                auto read = file->Read(data.get()->data(), dataSize);
-                DVVERIFY(read == dataSize);
-
-                value.Add(path.GetFilename(), data);
-            }
-            else
-            {
-                Logger::Error("[ResourcePacker2D::%s] Cannot read file(%s)", __FUNCTION__, path.GetStringValue().c_str());
-                return false;
-            }
+            value.Add(outFilesList->GetPathname(fi));
         }
     }
 
     if (!value.IsEmpty())
     {
+        value.FinalizeValidationData();
+        value.SetDescription(cacheItemDescription);
+
         AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(key, value);
         if (added == AssetCache::ERROR_OK)
         {

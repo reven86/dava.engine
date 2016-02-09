@@ -257,7 +257,11 @@ void SceneExporterTool::ProcessInternal()
         AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(connectionsParams);
         if (connected == AssetCache::ERROR_OK)
         {
-            exporter.SetCacheClient(&cacheClient);
+            String mashineName = WStringToString(DeviceInfo::GetName());
+            DateTime timeNow = DateTime::Now();
+            String timeString = WStringToString(timeNow.GetLocalizedDate()) + WStringToString(timeNow.GetLocalizedTime());
+
+            exporter.SetCacheClient(&cacheClient, mashineName, timeString, "Resource Editor. Export scene");
         }
         else
         {

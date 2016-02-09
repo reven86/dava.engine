@@ -29,6 +29,9 @@
 #include "FileSystem/FileSystem.h"
 #include "AssetCache/AssetCacheClient.h"
 
+#include "Platform/DeviceInfo.h"
+#include "Platform/DateTime.h"
+
 #include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "Settings/SettingsManager.h"
@@ -84,7 +87,11 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
         if (connected == AssetCache::ERROR_OK)
         {
-            resourcePacker.SetCacheClient(&cacheClient);
+            String mashineName = WStringToString(DeviceInfo::GetName());
+            DateTime timeNow = DateTime::Now();
+            String timeString = WStringToString(timeNow.GetLocalizedDate()) + WStringToString(timeNow.GetLocalizedTime());
+
+            resourcePacker.SetCacheClient(&cacheClient, mashineName, timeString, "Resource Editor.Repack Sprites");
         }
     }
 

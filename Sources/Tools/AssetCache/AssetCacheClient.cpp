@@ -208,17 +208,27 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
 
     if (currentRequestResult.requestID == AssetCache::PACKET_GET_REQUEST)
     {
+        const bool dataRetrived = (!value.IsEmpty()) && value.IsValid();
+
         {
             LockGuard<Mutex> guard(requestLocker);
-            requestResult.succeed = (value.IsEmpty() == false);
+            requestResult.succeed = dataRetrived;
             requestResult.recieved = true;
             requestResult.processingRequest = true;
         }
 
-        if (value.IsEmpty() == false)
+        if (dataRetrived)
         {
+            const AssetCache::CachedItemValue::Description& description = value.GetDescription();
+            Logger::Info("[AssetCacheClient::%s] machine(%s), date(%s), hash (%s)", __FUNCTION__, description.machineName.c_str(), description.creationDate.c_str(), AssetCache::KeyToString(key).c_str());
+            Logger::FrameworkDebug("[AssetCacheClient::%s] serverPath(%s), clientPath(%s), comment(%s)", __FUNCTION__, description.serverPath.c_str(), description.clientPath.c_str(), description.comment.c_str());
+
             FileSystem::Instance()->CreateDirectory(outputFolder, true);
             value.Export(outputFolder);
+        }
+        else if (!value.IsValid())
+        {
+            Logger::Error("[AssetCacheClient::%s] Retrived Invalid value.", __FUNCTION__);
         }
 
         {

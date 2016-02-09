@@ -82,7 +82,7 @@ public:
     bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
     void ExportObjects(const ExportedObjectCollection& exportedObjects);
 
-    void SetCacheClient(DAVA::AssetCacheClient* cacheClient);
+    void SetCacheClient(DAVA::AssetCacheClient* cacheClient, String mashineName, String runDate, String comment);
 
 private:
     void ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
@@ -106,6 +106,7 @@ private:
     DAVA::FilePath dataSourceFolder;
 
     DAVA::AssetCacheClient* cacheClient = nullptr;
+    DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
 };
 
 

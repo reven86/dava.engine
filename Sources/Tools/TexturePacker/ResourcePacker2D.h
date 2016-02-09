@@ -37,6 +37,7 @@
 #include <atomic>
 
 #include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CachedItemValue.h"
 
 namespace DAVA
 {
@@ -60,7 +61,7 @@ public:
     void SetRunning(bool arg);
     bool IsRunning() const;
 
-    void SetCacheClient(AssetCacheClient* cacheClient);
+    void SetCacheClient(AssetCacheClient* cacheClient, String mashineName, String runDate, String comment);
 
     void PackResources(eGPUFamily forGPU);
 
@@ -102,6 +103,7 @@ public:
 
 private:
     AssetCacheClient* cacheClient = nullptr;
+    AssetCache::CachedItemValue::Description cacheItemDescription;
 
     Set<String> errors;
 
