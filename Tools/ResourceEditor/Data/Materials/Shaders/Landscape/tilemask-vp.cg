@@ -98,7 +98,7 @@ VPROG_BEGIN
 #endif
 	
 #if TILEMASK
-    VP_OUT(texCoordTiled) = VP_OUT(texCoord) * float2(40.0, 40.0);
+    VP_OUT(texCoordTiled) = VP_OUT(texCoord) * textureTiling.xy;
 #endif
 	
 #if VERTEX_FOG
