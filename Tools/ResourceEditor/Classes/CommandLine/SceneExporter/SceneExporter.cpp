@@ -69,14 +69,16 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
     }
 
     { //calculate digest for params
+        ScopedPtr<File> file(File::Create(scenePathname, File::OPEN | File::READ));
+
         MD5::MD5Digest sceneParamsDigest;
         String params = "ResourceEditor";
         params += Format("Pathname: %s", sceneLink.c_str());
+        params += Format("FileSize: %s", (file) ? file->GetSize() : 0);
         params += Format("SceneFileVersion: %d", SCENE_FILE_CURRENT_VERSION);
         params += Format("ExporterVersion: %u", EXPORTER_VERSION);
         params += Format("LinksParserVersion: %u", LINKS_PARSER_VERSION);
         params += Format("Optimized: %u", optimize);
-        //quality.yaml hash?
 
         MD5::ForData(reinterpret_cast<const uint8*>(params.data()), static_cast<uint32>(params.size()), sceneParamsDigest);
         Memcpy(key.data() + MD5::MD5Digest::DIGEST_SIZE, sceneParamsDigest.digest.data(), MD5::MD5Digest::DIGEST_SIZE);

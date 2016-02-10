@@ -89,7 +89,7 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         {
             String mashineName = WStringToString(DeviceInfo::GetName());
             DateTime timeNow = DateTime::Now();
-            String timeString = WStringToString(timeNow.GetLocalizedDate()) + WStringToString(timeNow.GetLocalizedTime());
+            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
 
             resourcePacker.SetCacheClient(&cacheClient, mashineName, timeString, "Resource Editor.Repack Sprites");
         }

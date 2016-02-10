@@ -259,7 +259,7 @@ void SceneExporterTool::ProcessInternal()
         {
             String mashineName = WStringToString(DeviceInfo::GetName());
             DateTime timeNow = DateTime::Now();
-            String timeString = WStringToString(timeNow.GetLocalizedDate()) + WStringToString(timeNow.GetLocalizedTime());
+            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
 
             exporter.SetCacheClient(&cacheClient, mashineName, timeString, "Resource Editor. Export scene");
         }

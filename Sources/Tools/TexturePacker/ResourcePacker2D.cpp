@@ -386,11 +386,15 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
 
     CommandLineParser::Instance()->SetFlags(currentFlags);
+    String mergedFlags;
+    Merge(currentFlags, ' ', mergedFlags);
 
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
 
     bool inputDirHasFiles = false;
+    uint64 allFilesSize = 0;
+    uint32 allFilesCount = 0;
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
@@ -402,17 +406,18 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
             }
 
             inputDirHasFiles = true;
-            break;
+
+            allFilesSize += fileList->GetFileSize(fi);
+            ++allFilesCount;
         }
     }
 
-    String mergedFlags;
-    Merge(currentFlags, ' ', mergedFlags);
-    Logger::FrameworkDebug("Flags applied for current folder: %s", mergedFlags.c_str());
 
     String mergedParams = mergedFlags;
     mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
     mergedParams += String("PackerVersion = ") + VERSION;
+    mergedParams += Format("FilesSize = %llu", allFilesSize);
+    mergedParams += Format("FilesCount = %u", allFilesCount);
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
     bool paramsModified = RecalculateParamsMD5(mergedParams, processDir + "params.md5");

@@ -134,6 +134,7 @@ void CachedItemValue::Deserialize(KeyedArchive* archieve)
     DVASSERT(isFetched == false);
 
     size = archieve->GetUInt64("size");
+    uint64 fetchedSize = 0;
 
     auto count = archieve->GetUInt32("data_count");
     for (uint32 i = 0; i < count; ++i)
@@ -149,9 +150,17 @@ void CachedItemValue::Deserialize(KeyedArchive* archieve)
 
             data.get()->resize(size);
             Memcpy(data.get()->data(), archieve->GetByteArray(key), size);
+
+            fetchedSize += size;
         }
 
         dataContainer[name] = data;
+    }
+
+    if (isFetched && fetchedSize != size)
+    {
+        Logger::Error("[%s] Fetched size %llu differs from stored %llu", __FUNCTION__, fetchedSize, size);
+        size = fetchedSize;
     }
 
     //Description
@@ -231,6 +240,7 @@ bool CachedItemValue::Deserialize(File* file)
     if (file->Read(&count) != sizeof(count))
         return false;
 
+    uint64 fetchedSize = 0;
     for (; count > 0; --count)
     {
         String name;
@@ -249,9 +259,17 @@ bool CachedItemValue::Deserialize(File* file)
             data->resize(datasize);
             if (file->Read(data->data(), datasize) != datasize)
                 return false;
+
+            fetchedSize += datasize;
         }
 
         dataContainer[name] = data;
+    }
+
+    if (isFetched && fetchedSize != size)
+    {
+        Logger::Error("[%s] Fetched size %llu differs from stored %llu", __FUNCTION__, fetchedSize, size);
+        size = fetchedSize;
     }
 
     //Description

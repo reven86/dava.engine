@@ -39,8 +39,8 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
     struct ResultOfRequest
     {
         int32 requestID = AssetCache::PACKET_UNKNOWN;
+        AssetCache::ErrorCodes result = AssetCache::ERROR_OK;
         bool recieved = false;
-        bool succeed = false;
         bool processingRequest = false;
     };
 
