@@ -54,14 +54,9 @@ public:
     static void ScrollToControlWithAnimation(DAVA::UIControl* control, float32 animationTime = 0.3f, bool toTopLeftForBigControls = false);
 
 private:
-    template <typename ControlType>
-    static ControlType* FindControlByPathImpl(const String& controlPath, ControlType* rootControl);
-
-    template <typename ControlType>
-    static ControlType* FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl);
-
-    template <typename ControlType>
-    static ControlType* FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl);
+    static const UIControl* FindControlByPathImpl(const String& controlPath, const UIControl* rootControl);
+    static const UIControl* FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, const UIControl* rootControl);
+    static const UIControl* FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, const UIControl* rootControl);
 
     static void ScrollToRect(DAVA::UIControl* control, const Rect& rect, float32 animationTime, bool toTopLeftForBigControls);
     static float32 GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize, bool toTopLeftForBigControls);
