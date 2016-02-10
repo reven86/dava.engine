@@ -52,8 +52,8 @@ public:
     {
         String machineName;
         String creationDate;
-        String serverPath;
-        String clientPath;
+        String addingChain;
+        String receivingChain;
         String comment;
     };
 
@@ -147,7 +147,7 @@ inline void CachedItemValue::SetDescription(const CachedItemValue::Description& 
 
 inline bool operator==(const CachedItemValue::Description& left, const CachedItemValue::Description& right)
 {
-    return (left.machineName == right.machineName) && (left.creationDate == right.creationDate) && (left.serverPath == right.serverPath) && (left.clientPath == right.clientPath) && (left.comment == right.comment);
+    return (left.machineName == right.machineName) && (left.creationDate == right.creationDate) && (left.addingChain == right.addingChain) && (left.receivingChain == right.receivingChain) && (left.comment == right.comment);
 }
 
 inline bool operator==(const CachedItemValue::ValidationDetails& left, const CachedItemValue::ValidationDetails& right)

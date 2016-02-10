@@ -74,7 +74,7 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
         MD5::MD5Digest sceneParamsDigest;
         String params = "ResourceEditor";
         params += Format("Pathname: %s", sceneLink.c_str());
-        params += Format("FileSize: %s", (file) ? file->GetSize() : 0);
+        params += Format("FileSize: %d", (file) ? file->GetSize() : 0);
         params += Format("SceneFileVersion: %d", SCENE_FILE_CURRENT_VERSION);
         params += Format("ExporterVersion: %u", EXPORTER_VERSION);
         params += Format("LinksParserVersion: %u", LINKS_PARSER_VERSION);
@@ -279,10 +279,10 @@ void SceneExporter::EnableOptimizations(bool enable)
     optimizeOnExport = enable;
 }
 
-void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String mashineName, String runDate, String comment)
+void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String machineName, String runDate, String comment)
 {
     cacheClient = cacheClient_;
-    cacheItemDescription.machineName = mashineName;
+    cacheItemDescription.machineName = machineName;
     cacheItemDescription.creationDate = runDate;
     cacheItemDescription.comment = comment;
 }

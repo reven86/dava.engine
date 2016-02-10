@@ -65,7 +65,7 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetC
     if ((nullptr != server) && (nullptr != channel))
     {
         DAVA::AssetCache::CachedItemValue::Description description = value.GetDescription();
-        description.serverPath += "/" + serverName;
+        description.addingChain += "/" + serverName;
         value.SetDescription(description);
 
         bool isValid = value.IsValid();
@@ -94,7 +94,7 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel* channel, const DAVA
         { // Found in db.
             DAVA::AssetCache::CachedItemValue value = entry->GetValue();
             DAVA::AssetCache::CachedItemValue::Description description = value.GetDescription();
-            description.clientPath += "/" + serverName;
+            description.receivingChain += "/" + serverName;
             value.SetDescription(description);
 
             server->Send(channel, key, value);
@@ -159,7 +159,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
             {
                 DAVA::AssetCache::CachedItemValue sendValue = value;
                 DAVA::AssetCache::CachedItemValue::Description descr = sendValue.GetDescription();
-                descr.clientPath += "/" + serverName;
+                descr.receivingChain += "/" + serverName;
                 sendValue.SetDescription(descr);
                 server->Send(description.clientChannel, key, sendValue);
             }

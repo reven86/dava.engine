@@ -61,7 +61,7 @@ public:
     void SetRunning(bool arg);
     bool IsRunning() const;
 
-    void SetCacheClient(AssetCacheClient* cacheClient, String mashineName, String runDate, String comment);
+    void SetCacheClient(AssetCacheClient* cacheClient, String comment);
 
     void PackResources(eGPUFamily forGPU);
 

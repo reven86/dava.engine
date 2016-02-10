@@ -87,11 +87,7 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
         if (connected == AssetCache::ERROR_OK)
         {
-            String mashineName = WStringToString(DeviceInfo::GetName());
-            DateTime timeNow = DateTime::Now();
-            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
-
-            resourcePacker.SetCacheClient(&cacheClient, mashineName, timeString, "Resource Editor.Repack Sprites");
+            resourcePacker.SetCacheClient(&cacheClient, "Resource Editor.Repack Sprites");
         }
     }
 

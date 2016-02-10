@@ -151,12 +151,7 @@ void ProcessRecourcePacker()
         if (connected == AssetCache::ERROR_OK)
         {
             shouldDisconnect = true;
-
-            String mashineName = WStringToString(DeviceInfo::GetName());
-            DateTime timeNow = DateTime::Now();
-            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
-
-            resourcePacker.SetCacheClient(&cacheClient, mashineName, timeString, "Resource Packer. Repack Sprites");
+            resourcePacker.SetCacheClient(&cacheClient, "Resource Packer. Repack Sprites");
         }
     }
     else

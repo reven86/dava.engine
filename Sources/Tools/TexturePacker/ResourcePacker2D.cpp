@@ -34,6 +34,8 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/DateTime.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
@@ -592,11 +594,15 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
 }
 
-void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, String mashineName, String runDate, String comment)
+void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, String comment)
 {
     cacheClient = cacheClient_;
-    cacheItemDescription.machineName = mashineName;
-    cacheItemDescription.creationDate = runDate;
+
+    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
+
+    DateTime timeNow = DateTime::Now();
+    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+
     cacheItemDescription.comment = comment;
 }
 

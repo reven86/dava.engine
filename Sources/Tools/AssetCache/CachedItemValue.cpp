@@ -119,8 +119,8 @@ void CachedItemValue::Serialize(KeyedArchive* archieve, bool serializeData) cons
     //Description
     archieve->SetString("Description.machineName", description.machineName);
     archieve->SetString("Description.creationDate", description.creationDate);
-    archieve->SetString("Description.serverPath", description.serverPath);
-    archieve->SetString("Description.clientPath", description.clientPath);
+    archieve->SetString("Description.addingChain", description.addingChain);
+    archieve->SetString("Description.receivingChain", description.receivingChain);
     archieve->SetString("Description.comment", description.comment);
     //Validation
     archieve->SetUInt32("ValidationDetails.filesCount", validationDetails.filesCount);
@@ -166,8 +166,8 @@ void CachedItemValue::Deserialize(KeyedArchive* archieve)
     //Description
     description.machineName = archieve->GetString("Description.machineName");
     description.creationDate = archieve->GetString("Description.creationDate");
-    description.serverPath = archieve->GetString("Description.serverPath");
-    description.clientPath = archieve->GetString("Description.clientPath");
+    description.addingChain = archieve->GetString("Description.addingChain");
+    description.receivingChain = archieve->GetString("Description.receivingChain");
     description.comment = archieve->GetString("Description.comment");
     //Validation
     validationDetails.filesCount = archieve->GetUInt32("ValidationDetails.filesCount");
@@ -211,9 +211,9 @@ bool CachedItemValue::Serialize(File* buffer) const
         return false;
     if (buffer->WriteString(description.creationDate) == false)
         return false;
-    if (buffer->WriteString(description.serverPath) == false)
+    if (buffer->WriteString(description.addingChain) == false)
         return false;
-    if (buffer->WriteString(description.clientPath) == false)
+    if (buffer->WriteString(description.receivingChain) == false)
         return false;
     if (buffer->WriteString(description.comment) == false)
         return false;
@@ -277,9 +277,9 @@ bool CachedItemValue::Deserialize(File* file)
         return false;
     if (file->ReadString(description.creationDate) == false)
         return false;
-    if (file->ReadString(description.serverPath) == false)
+    if (file->ReadString(description.addingChain) == false)
         return false;
-    if (file->ReadString(description.clientPath) == false)
+    if (file->ReadString(description.receivingChain) == false)
         return false;
     if (file->ReadString(description.comment) == false)
         return false;
