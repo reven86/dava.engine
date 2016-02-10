@@ -1,4 +1,5 @@
 #include "Base/Platform.h"
+#include "FileSystem/Logger.h"
 
 #ifdef __DAVAENGINE_ANDROID__
 
