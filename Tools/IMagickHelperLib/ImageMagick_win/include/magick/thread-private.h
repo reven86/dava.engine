@@ -32,9 +32,9 @@ extern "C" {
 #endif
 
 #define omp_throttle(factor) num_threads(omp_get_max_threads() >> \
-                                         (factor) ==              \
-                                         0 ?                      \
-                                         1 :                      \
+                                         (factor) == \
+                                         0 ? \
+                                         1 : \
                                          omp_get_max_threads() >> (factor))
 
 #if defined(MAGICKCORE_THREAD_SUPPORT)

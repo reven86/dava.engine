@@ -1330,16 +1330,16 @@ static int spacePop(xmlParserCtxtPtr ctxt)
 #define CMP8(s, c1, c2, c3, c4, c5, c6, c7, c8) \
   (CMP7(s, c1, c2, c3, c4, c5, c6, c7) && ((unsigned char*)s)[7] == c8)
 #define CMP9(s, c1, c2, c3, c4, c5, c6, c7, c8, c9) \
-  (CMP8(s, c1, c2, c3, c4, c5, c6, c7, c8) &&                      \
+  (CMP8(s, c1, c2, c3, c4, c5, c6, c7, c8) && \
      ((unsigned char*)s)[8] == c9)
 #define CMP10(s, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10) \
-  (CMP9(s, c1, c2, c3, c4, c5, c6, c7, c8, c9) &&                  \
+  (CMP9(s, c1, c2, c3, c4, c5, c6, c7, c8, c9) && \
      ((unsigned char*)s)[9] == c10)
 
 #define SKIP(val) do {							\
     ctxt->nbChars += (val), ctxt->input->cur += (val), ctxt->input->col += (val);			\
     if (*ctxt->input->cur == '%') xmlParserHandlePEReference(ctxt);	\
-    if ((*ctxt->input->cur == 0) &&                              \
+    if ((*ctxt->input->cur == 0) && \
             (xmlParserInputGrow(ctxt->input, INPUT_CHUNK) <= 0))		\
 	    xmlPopInput(ctxt);						\
   } while (0)
@@ -1354,13 +1354,13 @@ static int spacePop(xmlParserCtxtPtr ctxt)
 	ctxt->input->cur++;						\
     }									\
     if (*ctxt->input->cur == '%') xmlParserHandlePEReference(ctxt);	\
-    if ((*ctxt->input->cur == 0) &&                              \
+    if ((*ctxt->input->cur == 0) && \
             (xmlParserInputGrow(ctxt->input, INPUT_CHUNK) <= 0))		\
 	    xmlPopInput(ctxt);						\
   } while (0)
 
-#define SHRINK if ((ctxt->progressive == 0) &&                                  \
-        (ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) &&  \
+#define SHRINK if ((ctxt->progressive == 0) && \
+        (ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
         (ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
 	xmlSHRINK(ctxt);
 
