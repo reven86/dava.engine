@@ -33,7 +33,6 @@
 
 namespace DAVA
 {
-
 JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
     : jobsMaxCount(maxCount)
     , nextPushIndex(0)
@@ -48,12 +47,12 @@ JobQueueWorker::~JobQueueWorker()
     SafeDeleteArray(jobs);
 }
 
-void JobQueueWorker::Push(const Function<void()> &fn)
+void JobQueueWorker::Push(const Function<void()>& fn)
 {
-    if(fn != nullptr)
+    if (fn != nullptr)
     {
         LockGuard<Spinlock> guard(lock);
-        if(nextPushIndex == nextPopIndex && 0 == processingCount)
+        if (nextPushIndex == nextPopIndex && 0 == processingCount)
         {
             nextPushIndex = 0;
             nextPopIndex = 0;
@@ -73,13 +72,13 @@ bool JobQueueWorker::PopAndExec()
 
     {
         LockGuard<Spinlock> guard(lock);
-        if(nextPopIndex < nextPushIndex)
+        if (nextPopIndex < nextPushIndex)
         {
             fn = jobs[nextPopIndex++];
         }
     }
 
-    if(fn != nullptr)
+    if (fn != nullptr)
     {
         fn();
 
@@ -118,5 +117,4 @@ void JobQueueWorker::Wait()
     UniqueLock<Mutex> lock(jobsInQueueMutex);
     jobsInQueueCV.Wait(lock);
 }
-
 }

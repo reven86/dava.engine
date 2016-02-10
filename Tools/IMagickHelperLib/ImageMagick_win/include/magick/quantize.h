@@ -26,54 +26,55 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedDitherMethod,
-  NoDitherMethod,
-  RiemersmaDitherMethod,
-  FloydSteinbergDitherMethod
+    UndefinedDitherMethod,
+    NoDitherMethod,
+    RiemersmaDitherMethod,
+    FloydSteinbergDitherMethod
 } DitherMethod;
 
 typedef struct _QuantizeInfo
 {
-  size_t
+    size_t
     number_colors;
 
-  size_t
+    size_t
     tree_depth;
 
-  MagickBooleanType
+    MagickBooleanType
     dither;
 
-  ColorspaceType
+    ColorspaceType
     colorspace;
 
-  MagickBooleanType
+    MagickBooleanType
     measure_error;
 
-  size_t
+    size_t
     signature;
 
-  DitherMethod
+    DitherMethod
     dither_method;
 } QuantizeInfo;
 
 extern MagickExport MagickBooleanType
-  CompressImageColormap(Image *),
-  GetImageQuantizeError(Image *),
-  PosterizeImage(Image *,const size_t,const MagickBooleanType),
-  PosterizeImageChannel(Image *,const ChannelType,const size_t,
-    const MagickBooleanType),
-  QuantizeImage(const QuantizeInfo *,Image *),
-  QuantizeImages(const QuantizeInfo *,Image *),
-  RemapImage(const QuantizeInfo *,Image *,const Image *),
-  RemapImages(const QuantizeInfo *,Image *,const Image *);
+CompressImageColormap(Image *),
+GetImageQuantizeError(Image *),
+PosterizeImage(Image *, const size_t, const MagickBooleanType),
+PosterizeImageChannel(Image *, const ChannelType, const size_t,
+                      const MagickBooleanType),
+QuantizeImage(const QuantizeInfo *, Image *),
+QuantizeImages(const QuantizeInfo *, Image *),
+RemapImage(const QuantizeInfo *, Image *, const Image *),
+RemapImages(const QuantizeInfo *, Image *, const Image *);
 
 extern MagickExport QuantizeInfo
-  *AcquireQuantizeInfo(const ImageInfo *),
-  *CloneQuantizeInfo(const QuantizeInfo *),
-  *DestroyQuantizeInfo(QuantizeInfo *);
+*
+AcquireQuantizeInfo(const ImageInfo *),
+*CloneQuantizeInfo(const QuantizeInfo *),
+*DestroyQuantizeInfo(QuantizeInfo *);
 
 extern MagickExport void
-  GetQuantizeInfo(QuantizeInfo *);
+GetQuantizeInfo(QuantizeInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

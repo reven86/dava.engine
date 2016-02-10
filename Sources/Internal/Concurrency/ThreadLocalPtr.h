@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 /*
     template class ThreadLocalPtr - implementation of cross-platform thread local storage (TLS). Each instance of ThreadLocalPtr
     represents a pointer to an object of type T. Each thread has a distinct value.
@@ -58,7 +57,7 @@ namespace DAVA
         integrate ThreadLocalPtr into DAVA::Thread to support automatic cleanup on thread exit. For now user is responsible for
         calling ThreadLocalPtr::Reset() to delete pointer
 */
-template<typename T>
+template <typename T>
 class ThreadLocalPtr final
 {
 #if defined(__DAVAENGINE_WINDOWS__)
@@ -66,7 +65,7 @@ class ThreadLocalPtr final
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     using KeyType = pthread_key_t;
 #else
-#   error "ThreadLocalPtr: platform is unknown"
+#error "ThreadLocalPtr: platform is unknown"
 #endif
 
 public:
@@ -75,8 +74,8 @@ public:
     ~ThreadLocalPtr() DAVA_NOEXCEPT;
 
     T* Get() const DAVA_NOEXCEPT;
-    T* operator -> () const DAVA_NOEXCEPT;
-    T& operator * () const DAVA_NOEXCEPT;
+    T* operator->() const DAVA_NOEXCEPT;
+    T& operator*() const DAVA_NOEXCEPT;
 
     // Get current pointer and set nullptr without deleting
     T* Release() DAVA_NOEXCEPT;
@@ -88,7 +87,7 @@ public:
 
 private:
     ThreadLocalPtr(const ThreadLocalPtr&) = delete;
-    ThreadLocalPtr& operator = (const ThreadLocalPtr&) = delete;
+    ThreadLocalPtr& operator=(const ThreadLocalPtr&) = delete;
 
     // Platform spefific methods
     void CreateTlsKey() DAVA_NOEXCEPT;
@@ -101,50 +100,50 @@ private:
 private:
     KeyType key;
     bool isCreated = false;
-    void(*deleter)(T*);
+    void (*deleter)(T*);
 };
 
 //////////////////////////////////////////////////////////////////////////
 
-template<typename T>
+template <typename T>
 inline ThreadLocalPtr<T>::ThreadLocalPtr() DAVA_NOEXCEPT
-    : deleter(&DefaultDeleter)
+: deleter(&DefaultDeleter)
 {
     CreateTlsKey();
 }
 
-template<typename T>
-inline ThreadLocalPtr<T>::ThreadLocalPtr(void(*deleter_)(T*)) DAVA_NOEXCEPT
-    : deleter(deleter_)
+template <typename T>
+inline ThreadLocalPtr<T>::ThreadLocalPtr(void (*deleter_)(T*)) DAVA_NOEXCEPT
+: deleter(deleter_)
 {
     CreateTlsKey();
 }
 
-template<typename T>
+template <typename T>
 inline ThreadLocalPtr<T>::~ThreadLocalPtr() DAVA_NOEXCEPT
 {
     DeleteTlsKey();
 }
 
-template<typename T>
+template <typename T>
 inline T* ThreadLocalPtr<T>::Get() const DAVA_NOEXCEPT
 {
     return static_cast<T*>(GetTlsValue());
 }
 
-template<typename T>
-inline T* ThreadLocalPtr<T>::operator -> () const DAVA_NOEXCEPT
+template <typename T>
+inline T* ThreadLocalPtr<T>::operator->() const DAVA_NOEXCEPT
 {
     return Get();
 }
 
-template<typename T>
-inline T& ThreadLocalPtr<T>::operator * () const DAVA_NOEXCEPT
+template <typename T>
+inline T& ThreadLocalPtr<T>::operator*() const DAVA_NOEXCEPT
 {
     return *Get();
 }
 
-template<typename T>
+template <typename T>
 inline T* ThreadLocalPtr<T>::Release() DAVA_NOEXCEPT
 {
     T* ptr = Get();
@@ -152,7 +151,7 @@ inline T* ThreadLocalPtr<T>::Release() DAVA_NOEXCEPT
     return ptr;
 }
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::Reset(T* newValue) DAVA_NOEXCEPT
 {
     T* curValue = Get();
@@ -163,13 +162,13 @@ inline void ThreadLocalPtr<T>::Reset(T* newValue) DAVA_NOEXCEPT
     }
 }
 
-template<typename T>
+template <typename T>
 inline bool ThreadLocalPtr<T>::IsCreated() const DAVA_NOEXCEPT
 {
     return isCreated;
 }
 
-template<typename T>
+template <typename T>
 void ThreadLocalPtr<T>::DefaultDeleter(T* ptr) DAVA_NOEXCEPT
 {
     delete ptr;
@@ -178,7 +177,7 @@ void ThreadLocalPtr<T>::DefaultDeleter(T* ptr) DAVA_NOEXCEPT
 // Win32 implementation
 #if defined(__DAVAENGINE_WINDOWS__)
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::CreateTlsKey() DAVA_NOEXCEPT
 {
     key = TlsAlloc();
@@ -186,19 +185,19 @@ inline void ThreadLocalPtr<T>::CreateTlsKey() DAVA_NOEXCEPT
     assert(isCreated);
 }
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::DeleteTlsKey() const DAVA_NOEXCEPT
 {
     TlsFree(key);
 }
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::SetTlsValue(void* rawValue) const DAVA_NOEXCEPT
 {
     TlsSetValue(key, rawValue);
 }
 
-template<typename T>
+template <typename T>
 inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 {
     return TlsGetValue(key);
@@ -207,26 +206,26 @@ inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 // POSIX implementation
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::CreateTlsKey() DAVA_NOEXCEPT
 {
     isCreated = (0 == pthread_key_create(&key, nullptr));
     assert(isCreated);
 }
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::DeleteTlsKey() const DAVA_NOEXCEPT
 {
     pthread_key_delete(key);
 }
 
-template<typename T>
+template <typename T>
 inline void ThreadLocalPtr<T>::SetTlsValue(void* rawValue) const DAVA_NOEXCEPT
 {
     pthread_setspecific(key, rawValue);
 }
 
-template<typename T>
+template <typename T>
 inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 {
     return pthread_getspecific(key);
@@ -234,7 +233,6 @@ inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 
 #endif
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_THREADLOCALPTR_H__
-
+#endif // __DAVAENGINE_THREADLOCALPTR_H__

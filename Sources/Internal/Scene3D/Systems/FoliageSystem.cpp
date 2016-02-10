@@ -37,16 +37,14 @@
 
 namespace DAVA
 {
-    
 static const int16 MAX_ANIMATED_CELL_WIDTH = 2;
 static const int16 MIN_ANIMATED_CELL_WIDTH = 1;
 
 FoliageSystem::FoliageSystem(Scene* scene)
     : SceneSystem(scene)
 {
-        
 }
-    
+
 FoliageSystem::~FoliageSystem()
 {
     SafeRelease(landscapeEntity);
@@ -55,8 +53,8 @@ FoliageSystem::~FoliageSystem()
         SafeRelease(fe);
     }
 }
-    
-void FoliageSystem::AddEntity(Entity * entity)
+
+void FoliageSystem::AddEntity(Entity* entity)
 {
     Landscape* landscapeRO = GetLandscape(entity);
     if (landscapeRO && (entity != landscapeEntity))
@@ -83,7 +81,7 @@ void FoliageSystem::AddEntity(Entity * entity)
     }
 }
 
-void FoliageSystem::RemoveEntity(Entity * entity)
+void FoliageSystem::RemoveEntity(Entity* entity)
 {
     auto i = std::find(foliageEntities.begin(), foliageEntities.end(), entity);
     if (i != foliageEntities.end())
@@ -92,7 +90,7 @@ void FoliageSystem::RemoveEntity(Entity * entity)
         foliageEntities.erase(i);
     }
 
-    if(entity == landscapeEntity)
+    if (entity == landscapeEntity)
     {
         SafeRelease(landscapeEntity);
     }
@@ -182,7 +180,7 @@ void FoliageSystem::ProcessVegetationRenderObject(VegetationRenderObject* vegeta
         }
     }
 }
-    
+
 void FoliageSystem::SyncFoliageWithLandscape()
 {
     if (landscapeEntity == nullptr)
@@ -245,7 +243,7 @@ void FoliageSystem::DebugDrawVegetation()
     }
 }
 
-void FoliageSystem::CollectFoliageMaterials(Set<NMaterial *> & materials)
+void FoliageSystem::CollectFoliageMaterials(Set<NMaterial*>& materials)
 {
     for (auto foliageEntity : foliageEntities)
     {
@@ -264,5 +262,4 @@ void FoliageSystem::CollectFoliageMaterials(Set<NMaterial *> & materials)
         }
     }
 }
-
 };

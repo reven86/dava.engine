@@ -18,30 +18,31 @@
 
 int main(int argc, const char* argv[])
 {
-	if (argc < 2)
-	{
-		std::cout << "Expecting at least one argument: the filename(s) to validate." << std::endl;
-		exit(-1);
-	}
+    if (argc < 2)
+    {
+        std::cout << "Expecting at least one argument: the filename(s) to validate." << std::endl;
+        exit(-1);
+    }
 
-	FCollada::Initialize();
+    FCollada::Initialize();
 
-	--argc; ++argv;
-	for (; argc > 0; --argc, ++argv)
-	{
-		FUErrorSimpleHandler errorHandler;
-		FCDocument* document = FCollada::NewTopDocument();
-		fstring filename = TO_FSTRING(argv[0]);
-		FCollada::LoadDocumentFromFile(document, filename.c_str());
+    --argc;
+    ++argv;
+    for (; argc > 0; --argc, ++argv)
+    {
+        FUErrorSimpleHandler errorHandler;
+        FCDocument* document = FCollada::NewTopDocument();
+        fstring filename = TO_FSTRING(argv[0]);
+        FCollada::LoadDocumentFromFile(document, filename.c_str());
 
-		std::cout << argv[0] << std::endl;
-		std::cout << errorHandler.GetErrorString();
-		std::cout << std::endl << std::endl;
-		SAFE_DELETE(document);
-	}
+        std::cout << argv[0] << std::endl;
+        std::cout << errorHandler.GetErrorString();
+        std::cout << std::endl
+                  << std::endl;
+        SAFE_DELETE(document);
+    }
 
-	FCollada::Release();
+    FCollada::Release();
 
-	return 0;
+    return 0;
 }
-

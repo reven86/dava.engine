@@ -112,7 +112,7 @@ void IOLoop::HandleAsync()
         execHandlers.swap(queuedHandlers);
     }
 
-    for (Vector<UserHandlerType>::const_iterator i = execHandlers.begin(), e = execHandlers.end();i != e;++i)
+    for (Vector<UserHandlerType>::const_iterator i = execHandlers.begin(), e = execHandlers.end(); i != e; ++i)
     {
         (*i)();
     }
@@ -131,5 +131,5 @@ void IOLoop::HandleAsyncThunk(uv_async_t* handle)
     self->HandleAsync();
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

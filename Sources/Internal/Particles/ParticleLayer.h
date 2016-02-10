@@ -43,9 +43,8 @@
 
 namespace DAVA
 {
-
 class ParticleEmitter;
-	
+
 /**	
 	In most cases you'll not need to use this class directly 
 	and should use ParticleEffect instead. 
@@ -55,22 +54,22 @@ class ParticleEmitter;
 	- You want to change something on the fly inside layer
  */
 struct ParticleLayer : public BaseObject
-{	
-	enum eType 
-	{
-		TYPE_SINGLE_PARTICLE,
-		TYPE_PARTICLES,				// default for any particle layer loaded from yaml file
-		TYPE_SUPEREMITTER_PARTICLES
-	};
+{
+    enum eType
+    {
+        TYPE_SINGLE_PARTICLE,
+        TYPE_PARTICLES, // default for any particle layer loaded from yaml file
+        TYPE_SUPEREMITTER_PARTICLES
+    };
 
-	enum eParticleOrientation
-	{
-		PARTICLE_ORIENTATION_CAMERA_FACING = 1<<0, //default
-		PARTICLE_ORIENTATION_X_FACING = 1<<1,
-		PARTICLE_ORIENTATION_Y_FACING = 1<<2,
-		PARTICLE_ORIENTATION_Z_FACING = 1<<3,
-		PARTICLE_ORIENTATION_WORLD_ALIGN = 1<<4 
-	};
+    enum eParticleOrientation
+    {
+        PARTICLE_ORIENTATION_CAMERA_FACING = 1 << 0, //default
+        PARTICLE_ORIENTATION_X_FACING = 1 << 1,
+        PARTICLE_ORIENTATION_Y_FACING = 1 << 2,
+        PARTICLE_ORIENTATION_Z_FACING = 1 << 3,
+        PARTICLE_ORIENTATION_WORLD_ALIGN = 1 << 4
+    };
 
     enum eDegradeStrategy
     {
@@ -79,31 +78,29 @@ struct ParticleLayer : public BaseObject
         DEGRADE_REMOVE = 2
     };
 
+    ParticleLayer();
+    virtual ~ParticleLayer();
+    virtual ParticleLayer* Clone();
 
-	ParticleLayer();
-	virtual ~ParticleLayer();		
-	virtual ParticleLayer * Clone();
-	
-	void LoadFromYaml(const FilePath & configPath, const YamlNode * node, bool preserveInheritPosition);	
-    void SaveToYamlNode(const FilePath & configPath, YamlNode* parentNode, int32 layerIndex);
-	void SaveForcesToYamlNode(YamlNode* layerNode);
+    void LoadFromYaml(const FilePath& configPath, const YamlNode* node, bool preserveInheritPosition);
+    void SaveToYamlNode(const FilePath& configPath, YamlNode* parentNode, int32 layerIndex);
+    void SaveForcesToYamlNode(YamlNode* layerNode);
 
-	void AddForce(ParticleForce* force);
-	void RemoveForce(ParticleForce* force);
-	void RemoveForce(int32 forceIndex);
-	void CleanupForces();
-		
+    void AddForce(ParticleForce* force);
+    void RemoveForce(ParticleForce* force);
+    void RemoveForce(int32 forceIndex);
+    void CleanupForces();
 
-	void GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables);
-	
-	// Convert from Layer Type to its name and vice versa.
-	eType StringToLayerType(const String& layerTypeName, eType defaultLayerType);
-	String LayerTypeToString(eType layerType, const String& defaultLayerTypeName);
+    void GetModifableLines(List<ModifiablePropertyLineBase*>& modifiables);
 
-	void UpdateLayerTime(float32 startTime, float32 endTime);
+    // Convert from Layer Type to its name and vice versa.
+    eType StringToLayerType(const String& layerTypeName, eType defaultLayerType);
+    String LayerTypeToString(eType layerType, const String& defaultLayerTypeName);
 
-	bool IsLodActive(int32 lod);	
-	void SetLodActive(int32 lod, bool active);
+    void UpdateLayerTime(float32 startTime, float32 endTime);
+
+    bool IsLodActive(int32 lod);
+    void SetLodActive(int32 lod, bool active);
 
     ScopedPtr<Sprite> sprite;
     void SetSprite(const FilePath& spritePath);
@@ -161,36 +158,35 @@ struct ParticleLayer : public BaseObject
     float32 startTime;
     float32 endTime;
     // Layer loop paremeters
-	float32		deltaTime;
-	float32 	deltaVariation;
-	float32 	loopVariation;
-	float32 	loopEndTime;		
-	
+    float32 deltaTime;
+    float32 deltaVariation;
+    float32 loopVariation;
+    float32 loopEndTime;
 
-	eType		type;
+    eType type;
 
     eDegradeStrategy degradeStrategy;
 
-	int32 particleOrientation;
+    int32 particleOrientation;
 
-	bool		frameOverLifeEnabled;
-	float32		frameOverLifeFPS;
-	bool		randomFrameOnStart;
-	bool		loopSpriteAnimation;
+    bool frameOverLifeEnabled;
+    float32 frameOverLifeFPS;
+    bool randomFrameOnStart;
+    bool loopSpriteAnimation;
 
-	//for long particles
-	float32 scaleVelocityBase;
-	float32 scaleVelocityFactor;
+    //for long particles
+    float32 scaleVelocityBase;
+    float32 scaleVelocityFactor;
 
-	ParticleEmitter* innerEmitter;
-	FilePath	innerEmitterPath;
+    ParticleEmitter* innerEmitter;
+    FilePath innerEmitterPath;
 
 private:
-	struct LayerTypeNamesInfo
-	{
-		eType layerType;
-		String layerTypeName;
-	};
+    struct LayerTypeNamesInfo
+    {
+        eType layerType;
+        String layerTypeName;
+    };
     static const LayerTypeNamesInfo layerTypeNamesInfoMap[];
 
     void FillSizeOverlifeXY(RefPtr<PropertyLine<float32>> sizeOverLife);

@@ -80,7 +80,6 @@ DAVA::Entity* CreatePlaneLODCommand::GetEntity() const
     return request->lodComponent->GetEntity();
 }
 
-
 void CreatePlaneLODCommand::CreateTextureFiles()
 {
     DVASSERT(request->planeImage);
@@ -97,7 +96,7 @@ void CreatePlaneLODCommand::DeleteTextureFiles()
     FileSystem::Instance()->DeleteFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
 }
 
-DAVA::RenderBatch * CreatePlaneLODCommand::GetRenderBatch() const
+DAVA::RenderBatch* CreatePlaneLODCommand::GetRenderBatch() const
 {
     return request->planeBatch;
 }

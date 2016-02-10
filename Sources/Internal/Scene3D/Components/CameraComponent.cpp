@@ -35,9 +35,7 @@
 
 namespace DAVA
 {
-    
-    
-CameraComponent::CameraComponent(Camera * _camera)
+CameraComponent::CameraComponent(Camera* _camera)
 {
     camera = SafeRetain(_camera);
 }
@@ -49,54 +47,53 @@ CameraComponent::~CameraComponent()
 
 Camera* CameraComponent::GetCamera()
 {
-	return camera;
+    return camera;
 }
-    
-void CameraComponent::SetCamera(Camera * _camera)
+
+void CameraComponent::SetCamera(Camera* _camera)
 {
-	SafeRelease(camera);
+    SafeRelease(camera);
     camera = SafeRetain(_camera);
 }
 
-Component* CameraComponent::Clone(Entity * toEntity)
+Component* CameraComponent::Clone(Entity* toEntity)
 {
-    CameraComponent * newComponent = new CameraComponent();
-	newComponent->SetEntity(toEntity);
+    CameraComponent* newComponent = new CameraComponent();
+    newComponent->SetEntity(toEntity);
     newComponent->camera = (Camera*)camera->Clone();
 
     return newComponent;
 }
 
-void CameraComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void CameraComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(NULL != archive && NULL != camera)
-	{
-		KeyedArchive *camArch = new KeyedArchive();
-		camera->SaveObject(camArch);
+    if (NULL != archive && NULL != camera)
+    {
+        KeyedArchive* camArch = new KeyedArchive();
+        camera->SaveObject(camArch);
 
-		archive->SetArchive("cc.camera", camArch);
+        archive->SetArchive("cc.camera", camArch);
 
-		camArch->Release();
-	}
+        camArch->Release();
+    }
 }
 
-void CameraComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void CameraComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	if(NULL != archive)
-	{
-		KeyedArchive *camArch = archive->GetArchive("cc.camera");
-		if(NULL != camArch)
-		{
-			Camera* cam = new Camera();
-			cam->LoadObject(camArch);
-			SetCamera(cam);
-			cam->Release();
-		}
-	}
+    if (NULL != archive)
+    {
+        KeyedArchive* camArch = archive->GetArchive("cc.camera");
+        if (NULL != camArch)
+        {
+            Camera* cam = new Camera();
+            cam->LoadObject(camArch);
+            SetCamera(cam);
+            cam->Release();
+        }
+    }
 
-	Component::Deserialize(archive, serializationContext);
+    Component::Deserialize(archive, serializationContext);
 }
-    
 };

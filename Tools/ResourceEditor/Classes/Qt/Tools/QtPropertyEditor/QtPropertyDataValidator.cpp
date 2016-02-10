@@ -29,10 +29,10 @@
 
 #include "QtPropertyDataValidator.h"
 
-bool QtPropertyDataValidator::Validate(QVariant &v)
+bool QtPropertyDataValidator::Validate(QVariant& v)
 {
     bool ret = ValidateInternal(v);
-    if(!ret)
+    if (!ret)
     {
         FixupInternal(v);
         ret = ValidateInternal(v);

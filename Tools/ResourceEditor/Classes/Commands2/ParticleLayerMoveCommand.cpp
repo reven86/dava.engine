@@ -29,68 +29,66 @@
 
 #include "Commands2/ParticleLayerMoveCommand.h"
 
-ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitter *_oldEmitter, DAVA::ParticleLayer* _layer, DAVA::ParticleEmitter *_newEmitter, DAVA::ParticleLayer *_newBefore /* = NULL */)
-	: Command2(CMDID_PARTICLE_LAYER_MOVE, "Move particle layer")
-	, layer(_layer)
-	, oldEmitter(_oldEmitter)
-	, oldBefore(NULL)
-	, newEmitter(_newEmitter)
-	, newBefore(_newBefore)
+ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitter* _oldEmitter, DAVA::ParticleLayer* _layer, DAVA::ParticleEmitter* _newEmitter, DAVA::ParticleLayer* _newBefore /* = NULL */)
+    : Command2(CMDID_PARTICLE_LAYER_MOVE, "Move particle layer")
+    , layer(_layer)
+    , oldEmitter(_oldEmitter)
+    , oldBefore(NULL)
+    , newEmitter(_newEmitter)
+    , newBefore(_newBefore)
 {
-	SafeRetain(layer);
+    SafeRetain(layer);
 
-	
-
-	if(NULL != layer && NULL != oldEmitter)
-	{
-		oldBefore = oldEmitter->GetNextLayer(layer);
-	}
+    if (NULL != layer && NULL != oldEmitter)
+    {
+        oldBefore = oldEmitter->GetNextLayer(layer);
+    }
 }
 
 ParticleLayerMoveCommand::~ParticleLayerMoveCommand()
 {
-	SafeRelease(layer);
+    SafeRelease(layer);
 }
 
 void ParticleLayerMoveCommand::Undo()
 {
-	if(NULL != layer)
-	{
-		if(NULL != newEmitter)
-		{
-			newEmitter->RemoveLayer(layer);
-		}
+    if (NULL != layer)
+    {
+        if (NULL != newEmitter)
+        {
+            newEmitter->RemoveLayer(layer);
+        }
 
-		if(NULL != oldEmitter)
-		{
-			if(NULL != oldBefore)
-			{
-				oldEmitter->InsertLayer(layer, oldBefore);
-			}
-			else
-			{
-				oldEmitter->AddLayer(layer);
-			}
-		}
-	}
+        if (NULL != oldEmitter)
+        {
+            if (NULL != oldBefore)
+            {
+                oldEmitter->InsertLayer(layer, oldBefore);
+            }
+            else
+            {
+                oldEmitter->AddLayer(layer);
+            }
+        }
+    }
 }
 
 void ParticleLayerMoveCommand::Redo()
 {
-	if(NULL != layer && NULL != newEmitter)
-	{
-		if(NULL != oldEmitter)
-		{
-			oldEmitter->RemoveLayer(layer);
-		}
+    if (NULL != layer && NULL != newEmitter)
+    {
+        if (NULL != oldEmitter)
+        {
+            oldEmitter->RemoveLayer(layer);
+        }
 
-		if(NULL != newBefore)
-		{
-			newEmitter->InsertLayer(layer, newBefore);
-		}
-		else
-		{
-			newEmitter->AddLayer(layer);
-		}
-	}
+        if (NULL != newBefore)
+        {
+            newEmitter->InsertLayer(layer, newBefore);
+        }
+        else
+        {
+            newEmitter->AddLayer(layer);
+        }
+    }
 }

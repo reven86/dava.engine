@@ -31,9 +31,8 @@
 #include "Render/RenderCallbacks.h"
 #include "Render/Material/NMaterialNames.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 SpriteObject::SpriteObject()
 {
     ScopedPtr<Texture> pink(Texture::CreatePink());
@@ -51,7 +50,7 @@ SpriteObject::SpriteObject(const FilePath& pathToSprite, int32 _frame, const Vec
 
 SpriteObject::SpriteObject(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
-	Init(spr, _frame, reqScale, pivotPoint);
+    Init(spr, _frame, reqScale, pivotPoint);
     RegisterRestoreCallback();
 }
 
@@ -86,19 +85,19 @@ void SpriteObject::Clear()
     SafeRelease(sprite);
 }
 
-void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint )
+void SpriteObject::Init(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
     Clear();
 
-	type = TYPE_SPRITE;
-	spriteType = SPRITE_OBJECT;
+    type = TYPE_SPRITE;
+    spriteType = SPRITE_OBJECT;
 
-	sprScale = reqScale;
-	sprPivot = pivotPoint;
-	sprite = SafeRetain(spr);
-	frame = _frame;
+    sprScale = reqScale;
+    sprPivot = pivotPoint;
+    sprite = SafeRetain(spr);
+    frame = _frame;
 
-	SetupRenderBatch();
+    SetupRenderBatch();
 }
 
 void SpriteObject::Restore()
@@ -238,8 +237,7 @@ void SpriteObject::SetupRenderBatch()
     SafeRelease(batch);
 }
 
-
-RenderObject * SpriteObject::Clone(RenderObject *newObject)
+RenderObject* SpriteObject::Clone(RenderObject* newObject)
 {
     if (newObject == nullptr)
     {
@@ -257,10 +255,9 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
     return spriteObject;
 }
 
-
 void SpriteObject::SetFrame(int32 newFrame)
 {
-	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
+    frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
     if (GetRenderBatchCount() > 0)
     {
@@ -271,32 +268,32 @@ void SpriteObject::SetFrame(int32 newFrame)
 
 int32 SpriteObject::GetFrame() const
 {
-	return frame;
+    return frame;
 }
 
-Sprite * SpriteObject::GetSprite() const
+Sprite* SpriteObject::GetSprite() const
 {
-	return sprite;
+    return sprite;
 }
 
 void SpriteObject::SetSpriteType(eSpriteType _type)
 {
-	spriteType = _type;
+    spriteType = _type;
 }
 
 SpriteObject::eSpriteType SpriteObject::GetSpriteType() const
 {
-	return spriteType;
+    return spriteType;
 }
 
-const Vector2 & SpriteObject::GetScale() const
+const Vector2& SpriteObject::GetScale() const
 {
-	return sprScale;
+    return sprScale;
 }
 
-const Vector2 & SpriteObject::GetPivot() const
+const Vector2& SpriteObject::GetPivot() const
 {
-	return sprPivot;
+    return sprPivot;
 }
 
 void SpriteObject::BindDynamicParameters(Camera* camera)
@@ -356,7 +353,7 @@ void SpriteObject::BindDynamicParameters(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, (pointer_size)&worldMatrix);
 }
 
-void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
+void SpriteObject::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     // we dont need to save render batche(s)
     // because sprite creating it on loading
@@ -377,7 +374,7 @@ void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializati
     }
 }
 
-void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
+void SpriteObject::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     RenderObject::Load(archive, serializationContext);
 
@@ -395,7 +392,7 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
             Init(localSprite, 0, Vector2(1, 1), Vector2(localSprite->GetWidth(), localSprite->GetHeight()) * 0.5f);
             AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
         }
-	}
+    }
 }
 void SpriteObject::RecalcBoundingBox()
 {

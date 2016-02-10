@@ -70,7 +70,7 @@ DAVA_TESTCLASS(JNITest)
     Function<void(jint, jint, jboolean)> askJavaToCallToC;
 
     JNI::JavaClass javaNotificationProvider;
-    Function<void (jstring, jstring, jstring, jboolean)> showNotificationText;
+    Function<void(jstring, jstring, jstring, jboolean)> showNotificationText;
 
     JNITest()
         : javaNotificationProvider("com/dava/framework/JNINotificationProvider")
@@ -91,9 +91,9 @@ DAVA_TESTCLASS(JNITest)
     DAVA_TEST(TestFunction)
     {
         // try to use Java Class from !Main thread.
-        Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
+        Thread* someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
         someThread->Start();
-        while(someThread->GetState() != Thread::STATE_ENDED)
+        while (someThread->GetState() != Thread::STATE_ENDED)
         {
             JobManager::Instance()->Update();
         }
@@ -107,7 +107,7 @@ DAVA_TESTCLASS(JNITest)
         }
 
         // test calls to Java using JNITest java class
-        JNIEnv *env = JNI::GetEnv();
+        JNIEnv* env = JNI::GetEnv();
 
         // get Function as Static Method for PassString
         auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
@@ -176,7 +176,7 @@ DAVA_TESTCLASS(JNITest)
         askJavaToCallToC(1, 1024, true);
     }
 
-    void ThreadFunc(BaseObject * caller, void * callerData, void * userData)
+    void ThreadFunc(BaseObject * caller, void* callerData, void* userData)
     {
         JNI::JavaClass inThreadInitedClass("com/dava/framework/JNINotificationProvider");
 

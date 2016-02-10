@@ -40,15 +40,16 @@ namespace DAVA
 {
 namespace Net
 {
-
 class IOLoop;
 class ServiceRegistrar;
 class NetConfig;
 class ProtoDriver;
 
 class NetController : public IController
-                    , public IServerListener
-                    , public IClientListener
+                      ,
+                      public IServerListener
+                      ,
+                      public IClientListener
 {
 private:
     struct ClientEntry
@@ -60,7 +61,7 @@ private:
         ProtoDriver* driver;
     };
 
-    friend bool operator == (const ClientEntry& entry, const IClientTransport* obj);
+    friend bool operator==(const ClientEntry& entry, const IClientTransport* obj);
 
 public:
     NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout = DEFAULT_READ_TIMEOUT);
@@ -70,7 +71,7 @@ public:
 
     // IController
     virtual void Start();
-    virtual void Stop(Function<void (IController*)> handler);
+    virtual void Stop(Function<void(IController*)> handler);
     virtual void Restart();
 
     // IServerListener
@@ -103,7 +104,7 @@ private:
     const ServiceRegistrar& registrar;
     void* serviceContext;
     size_t runningObjects;
-    Function<void (IController*)> stopHandler;
+    Function<void(IController*)> stopHandler;
     bool isTerminating;
     uint32 readTimeout = 0;
 
@@ -117,14 +118,15 @@ inline NetController::ClientEntry::ClientEntry(IClientTransport* aClient, ProtoD
     : client(aClient)
     , parent(aParent)
     , driver(aDriver)
-{}
+{
+}
 
-inline bool operator == (const NetController::ClientEntry& entry, const IClientTransport* obj)
+inline bool operator==(const NetController::ClientEntry& entry, const IClientTransport* obj)
 {
     return entry.client == obj;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_NETCONTROLLER_H__
+#endif // __DAVAENGINE_NETCONTROLLER_H__

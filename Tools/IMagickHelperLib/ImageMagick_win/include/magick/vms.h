@@ -23,8 +23,8 @@ extern "C" {
 #endif
 
 #if defined(__DECC) || defined(__DECCXX)
-#  include <lib$routines.h>
-#  include <starlet.h>
+#include <lib$routines.h>
+#include <starlet.h>
 #endif
 
 #include <errno.h>
@@ -918,15 +918,15 @@ extern "C" {
 typedef struct _ile3
 {
 #pragma __nomember_alignment
-  unsigned short int
+    unsigned short int
     ile3$w_length,
     ile3$w_code;
 
-  void
-    *ile3$ps_bufaddr;
+    void
+    * ile3$ps_bufaddr;
 
-  unsigned short int
-    *ile3$ps_retlen_addr;
+    unsigned short int
+    * ile3$ps_retlen_addr;
 } ile3;
 #pragma __member_alignment __restore
 
@@ -934,49 +934,51 @@ typedef struct _ile3
 #if defined(__VMS_VER) && (__VMS_VER >= 70000000)
 #include <dirent.h>
 #else
-
+
 /*
   Typedef declarations.
 */
 struct dirent
 {
-  char
+    char
     d_name[255];
 
-  int
+    int
     d_namlen;
 };
 
 typedef struct _dirdesc
 {
-  long
+    long
     context;
 
-  char
-    *pattern;
+    char
+    * pattern;
 
-  struct dirent
+    struct dirent
     entry;
 
-  struct dsc$descriptor_s
+    struct dsc$descriptor_s
     pat;
 } DIR;
 
 extern DIR
-  *opendir(char *);
+*
+opendir(char*);
 
 extern struct dirent
-  *readdir(DIR *);
+*
+readdir(DIR*);
 
 extern void
-  closedir(DIR *);
+closedir(DIR*);
 #endif
 
 extern MagickExport MagickBooleanType
-  VMSIsMagickConflict(const char *);
+VMSIsMagickConflict(const char*);
 
 extern void
-  XtFree(char *);
+XtFree(char*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

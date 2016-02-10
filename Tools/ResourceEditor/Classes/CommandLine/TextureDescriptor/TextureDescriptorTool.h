@@ -35,7 +35,7 @@
 #include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
 
-class TextureDescriptorTool: public CommandLineTool
+class TextureDescriptorTool : public CommandLineTool
 {
     enum eAction : DAVA::int32
     {
@@ -58,7 +58,7 @@ private:
     eAction commandAction = ACTION_NONE;
 
     DAVA::FilePath folderPathname;
-	DAVA::FilePath filePathname;
+    DAVA::FilePath filePathname;
 
     bool forceModeEnabled = false;
     bool convertEnabled = false;

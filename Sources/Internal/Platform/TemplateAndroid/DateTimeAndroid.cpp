@@ -39,7 +39,6 @@
 
 namespace DAVA
 {
-
 JniDateTime::JniDateTime()
     : jniDateTime("com/dava/framework/JNIDateTime")
 {
@@ -49,7 +48,7 @@ JniDateTime::JniDateTime()
 
 WideString JniDateTime::AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset)
 {
-    JNIEnv *env = JNI::GetEnv();
+    JNIEnv* env = JNI::GetEnv();
 
     jstring jFormat = env->NewStringUTF(UTF8Utils::EncodeToUTF8(format).c_str());
     jstring jCountryCode = env->NewStringUTF(countryCode.c_str());
@@ -70,11 +69,11 @@ int JniDateTime::GetLocalTimeZoneOffset()
 
 WideString DateTime::AsWString(const wchar_t* format) const
 {
-	JniDateTime jniDateTime;
-	String countryCode = LocalizationSystem::Instance()->GetCountryCode();
-	WideString retString = jniDateTime.AsWString( WideString (format), countryCode, innerTime, timeZoneOffset);
+    JniDateTime jniDateTime;
+    String countryCode = LocalizationSystem::Instance()->GetCountryCode();
+    WideString retString = jniDateTime.AsWString(WideString(format), countryCode, innerTime, timeZoneOffset);
 
-	return retString;
+    return retString;
 }
 
 WideString DateTime::GetLocalizedDate() const
@@ -89,10 +88,9 @@ WideString DateTime::GetLocalizedTime() const
 
 int32 DateTime::GetLocalTimeZoneOffset()
 {
-	JniDateTime jniDateTime;
-	return jniDateTime.GetLocalTimeZoneOffset();
+    JniDateTime jniDateTime;
+    return jniDateTime.GetLocalTimeZoneOffset();
 }
-
 }
 
 #endif

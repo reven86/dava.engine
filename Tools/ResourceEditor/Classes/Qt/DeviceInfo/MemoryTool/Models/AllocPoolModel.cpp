@@ -37,15 +37,18 @@ AllocPoolModel::AllocPoolModel(QObject* parent)
     : QAbstractTableModel(parent)
     , profileSession(nullptr)
     , timestamp(0)
-{}
+{
+}
 
 AllocPoolModel::~AllocPoolModel()
-{}
+{
+}
 
 int AllocPoolModel::rowCount(const QModelIndex& parent) const
 {
     return profileSession != nullptr ? static_cast<int>(profileSession->AllocPoolCount())
-                                     : 0;
+                                       :
+                                       0;
 }
 
 int AllocPoolModel::columnCount(const QModelIndex& parent) const

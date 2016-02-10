@@ -37,8 +37,9 @@
 
 class MaterialModel;
 class MaterialItem
-    : public QObject
-    , public QStandardItem
+: public QObject
+  ,
+  public QStandardItem
 {
     Q_OBJECT
 
@@ -53,10 +54,10 @@ public:
     virtual ~MaterialItem();
 
     QVariant data(int role = Qt::UserRole + 1) const;
-	DAVA::NMaterial * GetMaterial() const;
+    DAVA::NMaterial* GetMaterial() const;
 
-	void SetFlag(MaterialFlag flag, bool set);
-	bool GetFlag(MaterialFlag flag) const;
+    void SetFlag(MaterialFlag flag, bool set);
+    bool GetFlag(MaterialFlag flag) const;
 
     void SetLodIndex(DAVA::int32 index);
     int GetLodIndex() const;

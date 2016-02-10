@@ -34,22 +34,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class GraphicsLevel
 {
 public:
-    GraphicsLevel(const DAVA::String & fileName, DAVA::YamlNode * node);
+    GraphicsLevel(const DAVA::String& fileName, DAVA::YamlNode* node);
     ~GraphicsLevel();
-    
+
     void Activate(void);
 
 private:
-   
-    void ReadSettings(const DAVA::String & fileName, DAVA::YamlNode * node);
+    void ReadSettings(const DAVA::String& fileName, DAVA::YamlNode* node);
 
     DAVA::ScopedPtr<DAVA::KeyedArchive> archive;
 
-    DAVA::String  water;
-    DAVA::String  vegetation;
-    DAVA::String  tree_lighting;
-    DAVA::String  landscape;
-    DAVA::String  static_object;
+    DAVA::String water;
+    DAVA::String vegetation;
+    DAVA::String tree_lighting;
+    DAVA::String landscape;
+    DAVA::String static_object;
 
     bool vegetationAnimation;
     bool stencilShadows;

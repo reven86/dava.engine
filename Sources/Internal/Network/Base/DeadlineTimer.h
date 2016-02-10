@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class DeadlineTimer provides a waitable timer.
  DeadlineTimer allows to wait for specified amount of time.
@@ -59,7 +58,7 @@ namespace Net
 */
 class DeadlineTimer : public DeadlineTimerTemplate<DeadlineTimer>
 {
-    friend DeadlineTimerTemplate<DeadlineTimer>;    // Make base class friend to allow it to call my Handle... methods
+    friend DeadlineTimerTemplate<DeadlineTimer>; // Make base class friend to allow it to call my Handle... methods
 
 public:
     using CloseHandlerType = Function<void(DeadlineTimer* timer)>;
@@ -80,7 +79,7 @@ private:
     WaitHandlerType waitHandler;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_DEADLINETIMER_H__
+#endif // __DAVAENGINE_DEADLINETIMER_H__

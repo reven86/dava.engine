@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 void StringUtils::GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
 {
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
@@ -72,7 +71,7 @@ WideString StringUtils::TrimRight(const WideString& string)
     return WideString(rend.base(), rit.base());
 }
 
-WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8 tabRule /*= -1*/)
+WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -1*/)
 {
     WideString out;
     WideString::const_iterator it = string.begin();
@@ -90,7 +89,7 @@ WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8
             // Skip this characters (remove it)
             break;
         case L'\t':
-            if(tabRule < 0)
+            if (tabRule < 0)
             {
                 out.push_back(*it); // Leave tab symbol
             }
@@ -109,5 +108,4 @@ WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8
     }
     return out;
 }
-
 }

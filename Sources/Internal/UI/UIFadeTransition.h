@@ -33,29 +33,27 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIScreenTransition.h"
 
-
 namespace DAVA
 {
-
 class UIFadeTransition : public UIScreenTransition
 {
 public:
-	UIFadeTransition();
-	virtual ~UIFadeTransition();
-	
-	enum eType
-	{
-		FADE_MIX = 0, 
-		FADE_IN_FADE_OUT, 
-	};
+    UIFadeTransition();
+    virtual ~UIFadeTransition();
 
-	virtual void SetType(eType _type);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
+    enum eType
+    {
+        FADE_MIX = 0,
+        FADE_IN_FADE_OUT,
+    };
+
+    virtual void SetType(eType _type);
+    virtual void Update(float32 timeElapsed);
+    virtual void Draw(const UIGeometricData& geometricData);
+
 private:
-	eType type;
+    eType type;
 };
-
 };
 
 

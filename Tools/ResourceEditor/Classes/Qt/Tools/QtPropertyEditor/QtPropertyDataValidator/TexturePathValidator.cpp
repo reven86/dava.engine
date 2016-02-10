@@ -33,11 +33,11 @@
 #include "Main/mainwindow.h"
 
 TexturePathValidator::TexturePathValidator(const QStringList& value)
-:   PathValidator(value)
+    : PathValidator(value)
 {
 }
 
-bool TexturePathValidator::ValidateInternal(const QVariant &v)
+bool TexturePathValidator::ValidateInternal(const QVariant& v)
 {
     bool res = RegExpValidator::ValidateInternal(v);
 

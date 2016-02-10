@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  NEON math library for the iPhone / iPod touch
  
@@ -76,15 +75,13 @@
 // Matrixes are assumed to be stored in column major format according to OpenGL
 // specification.
 
-namespace DAVA 
+namespace DAVA
 {
-
-    // Multiplies two 4x4 matrices (a,b) outputing a 4x4 matrix (output)
-void NEON_Matrix4Mul(const float* a, const float* b, float* output );
+// Multiplies two 4x4 matrices (a,b) outputing a 4x4 matrix (output)
+void NEON_Matrix4Mul(const float* a, const float* b, float* output);
 
 // Multiplies a 4x4 matrix (m) with a vector 4 (v), outputing a vector 4
 void NEON_Matrix4Vector4Mul(const float* m, const float* v, float* output);
-
 };
 
 #endif // __NEON_MATRIX_IMPL_H__

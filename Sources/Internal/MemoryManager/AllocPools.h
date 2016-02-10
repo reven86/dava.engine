@@ -32,7 +32,6 @@
 
 namespace DAVA
 {
-
 // Predefined allocation pools
 enum ePredefAllocPools
 {
@@ -65,6 +64,6 @@ enum ePredefAllocPools
     FIRST_CUSTOM_ALLOC_POOL = PREDEF_POOL_COUNT // First custom allocation pool must be FIRST_CUSTOM_ALLOC_POOL
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_ALLOCPOOLS_H__
+#endif // __DAVAENGINE_ALLOCPOOLS_H__
