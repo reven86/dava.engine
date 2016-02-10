@@ -62,12 +62,13 @@ public:
     Landscape();
     virtual ~Landscape();
 
-    static const int32 PATCH_VERTEX_COUNT = 17;
-    static const int32 PATCH_QUAD_COUNT = (PATCH_VERTEX_COUNT - 1);
+    static const int32 PATCH_SIZE_VERTICES = 17;
+    static const int32 PATCH_SIZE_QUADS = (PATCH_SIZE_VERTICES - 1);
     static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
 
-    static const int32 RENDER_QUAD_WIDTH = 129;
-    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+    static const int32 RENDER_PARCEL_SIZE_VERTICES = 129;
+    static const int32 RENDER_PARCEL_SIZE_QUADS = (RENDER_PARCEL_SIZE_VERTICES - 1);
+    static const int32 RENDER_PARCEL_AND = RENDER_PARCEL_SIZE_VERTICES - 2;
     static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
@@ -280,7 +281,7 @@ protected:
     void AllocateGeometryDataNoInstancing();
 
     void AllocateRenderBatch();
-    int16 AllocateQuadVertexBuffer(uint32 x, uint32 y, uint32 size);
+    int16 AllocateParcelVertexBuffer(uint32 x, uint32 y, uint32 size);
 
     void DrawLandscapeNoInstancing();
     void DrawPatchNoInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2);
@@ -362,7 +363,7 @@ public:
 // Inline functions
 inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
 {
-    return x + y * RENDER_QUAD_WIDTH;
+    return x + y * RENDER_PARCEL_SIZE_VERTICES;
 }
 };
 

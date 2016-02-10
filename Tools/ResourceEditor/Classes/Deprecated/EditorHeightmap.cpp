@@ -69,7 +69,7 @@ void EditorHeightmap::DownscaleOrClone()
 
 void EditorHeightmap::Downscale(int32 newSize)
 {
-    AllocateData(newSize);
+    ReallocateData(newSize);
     SetTileSize(savedHeightmap->GetTileSize());
     
     int32 savedHeightmapSize = savedHeightmap->Size() - 1;

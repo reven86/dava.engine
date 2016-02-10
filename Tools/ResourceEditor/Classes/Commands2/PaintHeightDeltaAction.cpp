@@ -56,50 +56,21 @@ PaintHeightDeltaAction::~PaintHeightDeltaAction()
 
 void PaintHeightDeltaAction::Redo()
 {
-    DAVA::Image* croppedHeightmap = CropHeightmapToPow2(heightmap);
-    
-    imageWidth = DAVA::Max(croppedHeightmap->width, imageWidth);
-    imageHeight = DAVA::Max(croppedHeightmap->height, imageHeight);
-    
+    uint32 hmSize = uint32(heightmap->Size());
+    DVASSERT(IsPowerOf2(hmSize));
+    DAVA::Image* heightmapImage = DAVA::Image::CreateFromData(hmSize, hmSize, DAVA::FORMAT_A16, (DAVA::uint8*)heightmap->Data());
+
+    imageWidth = DAVA::Max(hmSize, imageWidth);
+    imageHeight = DAVA::Max(hmSize, imageHeight);
+
     DAVA::Image* imageDelta = CreateHeightDeltaImage(imageWidth, imageHeight);
-    
-    PrepareDeltaImage(croppedHeightmap, imageDelta);
-    
+
+    PrepareDeltaImage(heightmapImage, imageDelta);
+
     SaveDeltaImage(imagePath, imageDelta);
-    
-    SafeRelease(croppedHeightmap);
+
+    SafeRelease(heightmapImage);
     SafeRelease(imageDelta);
-}
-
-DAVA::Image* PaintHeightDeltaAction::CropHeightmapToPow2(DAVA::Heightmap* srcHeightmap)
-{
-    //VI: see VegetationObject for details
-
-    DAVA::Image* originalImage = DAVA::Image::CreateFromData(srcHeightmap->Size(),
-                                                             srcHeightmap->Size(),
-                                                             DAVA::FORMAT_A16,
-                                                             (DAVA::uint8*)srcHeightmap->Data());
-    
-    DAVA::int32 pow2Size = srcHeightmap->Size();
-    if(!DAVA::IsPowerOf2(srcHeightmap->Size()))
-    {
-        DAVA::EnsurePowerOf2(pow2Size);
-        
-        if(pow2Size > srcHeightmap->Size())
-        {
-            pow2Size = pow2Size >> 1;
-        }
-    }
-    
-    if(pow2Size != heightmap->Size())
-    {
-        DAVA::Image* croppedImage = DAVA::Image::CopyImageRegion(originalImage, pow2Size, pow2Size);
-        SafeRelease(originalImage);
-        
-        originalImage = croppedImage;
-    }
-    
-    return originalImage;
 }
 
 DAVA::Image* PaintHeightDeltaAction::CreateHeightDeltaImage(DAVA::uint32 width, DAVA::uint32 height)

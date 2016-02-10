@@ -45,39 +45,39 @@ public:
 
     static const int32 MAX_VALUE = 65535;
     static const int32 IMAGE_CORRECTION = MAX_VALUE / 255;
-    
-    Heightmap();
-    
-    bool BuildFromImage( const Image *image);
+
+    Heightmap(int32 size = 0);
+
+    bool BuildFromImage(const Image* image);
     void SaveToImage(const FilePath & filename);
     
     virtual void Save(const FilePath &filePathname);
     virtual bool Load(const FilePath &filePathname);
 
-    void ReleaseData();
-    
-    uint16 * Data();
-    int32 Size() const;
-    
-    int32 GetTileSize() const;
-    void SetTileSize(int32 newSize);
-    
-    static const String FileExtension();
+    inline uint16 GetHeight(uint16 x, uint16 y) const;
+    inline uint16 GetHeightClamp(uint16 x, uint16 y) const;
 
-    Heightmap *Clone(Heightmap *clonedHeightmap);
+    inline int32 Size() const;
+    inline uint16* Data();
+
+    inline int32 GetTileSize() const;
+    inline void SetTileSize(int32 newSize);
+
+    Heightmap* Clone(Heightmap* clonedHeightmap);
+
+    inline static const String& FileExtension();
 
 protected:
-    
-    Heightmap *CreateHeightmapForSize(int32 newSize);
-    
-    bool AllocateData(int32 newSize);
-    
-protected:
-    
-	uint16 *data;
-    int32 size;
-    int32 tileSize;
-    
+    bool ReallocateData(int32 newSize);
+
+    DAVA_DEPRECATED(void LoadNotPow2(File* file, int32 readMapSize, int32 readTileSize));
+
+    uint16* data = nullptr;
+    int32 size = 0;
+    int32 tileSize = 0;
+
+    static String FILE_EXTENSION;
+
 public:
     
     INTROSPECTION_EXTEND(Heightmap, BaseObject,
@@ -86,6 +86,42 @@ public:
     );
 };
 
+inline uint16 Heightmap::GetHeightClamp(uint16 x, uint16 y) const
+{
+    uint16 hm_1 = uint16(size - 1);
+    return data[Min(x, hm_1) + Min(y, hm_1) * size];
+}
+
+inline uint16 Heightmap::GetHeight(uint16 x, uint16 y) const
+{
+    DVASSERT(x < size && y < size);
+    return data[x + y * size];
+}
+
+inline uint16* Heightmap::Data()
+{
+    return data;
+}
+
+inline int32 Heightmap::Size() const
+{
+    return size;
+}
+
+inline int32 Heightmap::GetTileSize() const
+{
+    return tileSize;
+}
+
+inline void Heightmap::SetTileSize(int32 newSize)
+{
+    tileSize = newSize;
+}
+
+inline const String& Heightmap::FileExtension()
+{
+    return FILE_EXTENSION;
+}
 };
 
 #endif //__DAVAENGINE_HEIGHT_MAP_H__

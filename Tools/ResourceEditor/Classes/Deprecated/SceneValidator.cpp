@@ -603,7 +603,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
             return false;
         }
 
-        pathIsCorrect = IsPowerOf2(heightmap->Size() - 1);
+        pathIsCorrect = IsPowerOf2(heightmap->Size());
         if(!pathIsCorrect)
         {
 			PushLogMessage(errorsLog, nullptr, "Heightmap %s has wrong size. Scene: %s",

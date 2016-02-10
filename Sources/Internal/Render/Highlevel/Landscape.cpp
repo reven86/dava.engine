@@ -79,7 +79,7 @@ Landscape::Landscape()
 
     type = TYPE_LANDSCAPE;
 
-    heightmap = new Heightmap;
+    heightmap = new Heightmap();
 
     solidAngleError = (26.5f * PI / 180.0f);
     geometryAngleError = (1.0f * PI / 180.0f);
@@ -225,14 +225,6 @@ bool Landscape::BuildHeightmap()
     {
         retValue = heightmap->Load(heightmapPath);
     }
-	else
-	{
-		// SZ: don't assert here, and it will be possible to load landscape in editor and
-		// fix wrong path to heightmap
-		// 
-		//DVASSERT(false && "wrong extension");
-        heightmap->ReleaseData();
-	}
 
     return retValue;
 }
@@ -244,7 +236,7 @@ void Landscape::AllocateGeometryData()
         landscapeMaterial = new NMaterial();
         landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
         landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
-        landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_QUAD_COUNT);
+        landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_SIZE_QUADS);
     }
 
     if (!heightmap->Size())
@@ -253,10 +245,10 @@ void Landscape::AllocateGeometryData()
         return;
     }
 
-    uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
-    uint32 maxLevels = FastLog2(heightmapSizeMinus1 / PATCH_QUAD_COUNT) + 1;
+    uint32 heightmapSize = heightmap->Size();
+    uint32 maxLevels = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
-    minSubdivLevelSize = isInstancingUsed ? 0 : heightmapSizeMinus1 / (RENDER_QUAD_WIDTH - 1);
+    minSubdivLevelSize = isInstancingUsed ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -266,7 +258,7 @@ void Landscape::AllocateGeometryData()
         subdivLevelInfoArray[k].size = size;
         subdivLevelInfoArray[k].sizePow2 = k;
         subdivPatchCount += size * size;
-        Logger::FrameworkDebug("level: %d size: %d quadCount: %d", k, size, heightmapSizeMinus1 / size);
+        Logger::FrameworkDebug("level: %d size: %d quadCount: %d", k, size, heightmapSize / size);
         size *= 2;
     }
 
@@ -300,18 +292,9 @@ void Landscape::RebuildLandscape()
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
 {
-    int32 pow2Size = 1 << HighestBitIndex(heightmap->Size());
-    Texture* tx = NULL;
-    if (pow2Size != heightmap->Size())
-    {
-        ScopedPtr<Image> originalImage(Image::CreateFromData(heightmap->Size(), heightmap->Size(), FORMAT_A16, (uint8*)heightmap->Data()));
-        ScopedPtr<Image> croppedImage(Image::CopyImageRegion(originalImage, pow2Size, pow2Size));
-        tx = Texture::CreateFromData(FORMAT_RGBA4444, croppedImage->GetData(), pow2Size, pow2Size, false);
-    }
-    else
-    {
-        tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()), pow2Size, pow2Size, false);
-    }
+    uint32 hmSize = heightmap->Size();
+    DVASSERT(IsPowerOf2(hmSize));
+    Texture* tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()), hmSize, hmSize, false);
 
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
@@ -322,8 +305,8 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
 {
     Vector3 res;
-    res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
-    res.y = (bbox.min.y + (float32)y / (float32)(heightmap->Size() - 1) * (bbox.max.y - bbox.min.y));
+    res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size()) * (bbox.max.x - bbox.min.x));
+    res.y = (bbox.min.y + (float32)y / (float32)(heightmap->Size()) * (bbox.max.y - bbox.min.y));
     res.z = (bbox.min.z + ((float32)height / (float32)Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
     return res;
 };
@@ -342,9 +325,10 @@ bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
         return false;
     }
 
+    //HEIGHTMAP_COMPLETE
     auto hmSize = heightmap->Size();
-    float32 fx = static_cast<float>(hmSize - 1) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
-    float32 fy = static_cast<float>(hmSize - 1) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+    float32 fx = static_cast<float>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+    float32 fy = static_cast<float>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
     int32 x = static_cast<int32>(fx);
     int32 y = static_cast<int32>(fy);
     int nextX = DAVA::Min(x + 1, hmSize - 1);
@@ -410,7 +394,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (y << levelInfo.sizePow2) + x];
 
     // Calculate patch bounding box
-    uint32 realQuadCountInPatch = (heightmap->Size() - 1) >> levelInfo.sizePow2;
+    int32 hmSize = heightmap->Size();
+    uint32 realQuadCountInPatch = hmSize >> levelInfo.sizePow2;
     uint32 heightMapStartX = x * realQuadCountInPatch;
     uint32 heightMapStartY = y * realQuadCountInPatch;
 
@@ -420,16 +405,15 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
 
         patch->maxError = 0.0f;
 
-        uint16 * data = heightmap->Data();
-
-        uint16 patchMod = realQuadCountInPatch / PATCH_QUAD_COUNT;
+        uint16 patchMod = realQuadCountInPatch / PATCH_SIZE_QUADS;
 
         for (uint16 xx = heightMapStartX; xx <= heightMapStartX + realQuadCountInPatch; ++xx)
         {
             for (uint16 yy = heightMapStartY; yy <= heightMapStartY + realQuadCountInPatch; ++yy)
             {
-                uint16 value = data[heightmap->Size() * yy + xx];
-                Vector3 pos = GetPoint(xx, yy, value);
+                uint16 hmValue = heightmap->GetHeightClamp(xx, yy);
+
+                Vector3 pos = GetPoint(xx, yy, hmValue);
                 patch->bbox.AddPoint(pos);
 
                 if (patchMod == 1)
@@ -443,8 +427,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
                     uint16 x0 = (xx / (patchMod)) * patchMod;
                     uint16 y0 = (yy / (patchMod)) * patchMod;
 
-                    uint16 x1 = x0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
-                    uint16 y1 = y0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
+                    uint16 x1 = x0 + (realQuadCountInPatch / PATCH_SIZE_QUADS);
+                    uint16 y1 = y0 + (realQuadCountInPatch / PATCH_SIZE_QUADS);
 
                     DVASSERT(x0 >= heightMapStartX && x0 <= heightMapStartX + realQuadCountInPatch);
                     DVASSERT(x1 >= heightMapStartX && x1 <= heightMapStartX + realQuadCountInPatch);
@@ -454,10 +438,10 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
                     float xin = (float32)(xx - x0) / (float32)(x1 - x0);
                     float yin = (float32)(yy - y0) / (float32)(y1 - y0);
 
-                    Vector3 p00 = GetPoint(x0, y0, data[heightmap->Size() * y0 + x0]);
-                    Vector3 p01 = GetPoint(x0, y1, data[heightmap->Size() * y1 + x0]);
-                    Vector3 p10 = GetPoint(x1, y0, data[heightmap->Size() * y0 + x1]);
-                    Vector3 p11 = GetPoint(x1, y1, data[heightmap->Size() * y1 + x1]);
+                    Vector3 p00 = GetPoint(x0, y0, heightmap->GetHeightClamp(x0, y0));
+                    Vector3 p01 = GetPoint(x0, y1, heightmap->GetHeightClamp(x0, y1));
+                    Vector3 p10 = GetPoint(x1, y0, heightmap->GetHeightClamp(x1, y0));
+                    Vector3 p11 = GetPoint(x1, y1, heightmap->GetHeightClamp(x1, y1));
 
                     Vector3 lodPos = p00 * (1.0f - xin) * (1.0f - yin) + p01 * (1.0f - xin) * yin + p10 * xin * (1.0f - yin) + p11 * xin * yin;
 
@@ -643,10 +627,7 @@ void Landscape::AllocateGeometryDataNoInstancing()
 
     indices.resize(INITIAL_INDEX_BUFFER_CAPACITY);
 
-    const uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
-    const uint32 quadSize = RENDER_QUAD_WIDTH - 1;
-
-    uint32 quadsInWidth = heightmapSizeMinus1 / quadSize;
+    uint32 quadsInWidth = heightmap->Size() / RENDER_PARCEL_SIZE_QUADS;
     // For cases where landscape is very small allocate 1 VBO.
     if (quadsInWidth == 0)
         quadsInWidth = 1;
@@ -657,7 +638,7 @@ void Landscape::AllocateGeometryDataNoInstancing()
     {
         for (uint32 x = 0; x < quadsInWidth; ++x)
         {
-            uint16 check = AllocateQuadVertexBuffer(x * quadSize, y * quadSize, quadSize);
+            uint16 check = AllocateParcelVertexBuffer(x * RENDER_PARCEL_SIZE_QUADS, y * RENDER_PARCEL_SIZE_QUADS, RENDER_PARCEL_SIZE_QUADS);
             DVASSERT(check == (uint16)(x + y * quadsInWidth));
         }
     }
@@ -672,10 +653,10 @@ void Landscape::AllocateRenderBatch()
     batch->SetSortingKey(10);
 
     batch->vertexLayoutId = vLayoutUIDNoInstancing;
-    batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+    batch->vertexCount = RENDER_PARCEL_SIZE_VERTICES * RENDER_PARCEL_SIZE_VERTICES;
 }
 
-int16 Landscape::AllocateQuadVertexBuffer(uint32 quadX, uint32 quadY, uint32 quadSize)
+int16 Landscape::AllocateParcelVertexBuffer(uint32 quadX, uint32 quadY, uint32 quadSize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -694,27 +675,23 @@ int16 Landscape::AllocateQuadVertexBuffer(uint32 quadX, uint32 quadY, uint32 qua
         for (uint32 x = quadX; x < quadX + quadSize + 1; ++x)
         {
             VertexNoInstancing* vertex = reinterpret_cast<VertexNoInstancing*>(&landscapeVertices[index * vertexSize]);
-            vertex->position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
+            vertex->position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
 
-            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
+            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size()), 1.0f - (float32)(y) / (float32)(heightmap->Size()));
             vertex->texCoord = texCoord;
 
             if (isRequireTangentBasis)
             {
                 //VI: calculate normal for the point.
-                uint32 xx = 0;
-                uint32 yy = 0;
+                uint32 xx = x + 1;
+                uint32 yy = y + 1;
+                Vector3 right = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
+                Vector3 bottom = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
 
-                xx = (x < uint32(heightmap->Size()) - 1) ? x + 1 : x;
-                Vector3 right = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
-
-                xx = (x > 0) ? x - 1 : x;
-                Vector3 left = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
-
-                yy = (y < uint32(heightmap->Size()) - 1) ? y + 1 : y;
-                Vector3 bottom = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
-                yy = (y > 0) ? y - 1 : y;
-                Vector3 top = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
+                xx = Min(x, x - 1);
+                yy = Min(y, y - 1);
+                Vector3 left = GetPoint(xx, y, heightmap->GetHeightClamp(xx, y));
+                Vector3 top = GetPoint(x, yy, heightmap->GetHeightClamp(x, yy));
 
                 Vector3 position = vertex->position;
                 Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
@@ -803,19 +780,19 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
     queuedQuadBuffer = quadBuffer;
 
     // Draw Middle
-    uint32 realVertexCountInPatch = (heightmap->Size() - 1) >> levelInfo.sizePow2;
-    uint32 step = realVertexCountInPatch / PATCH_QUAD_COUNT;
+    uint32 realVertexCountInPatch = heightmap->Size() >> levelInfo.sizePow2;
+    uint32 step = realVertexCountInPatch / PATCH_SIZE_QUADS;
     uint32 heightMapStartX = xx * realVertexCountInPatch;
     uint32 heightMapStartY = yy * realVertexCountInPatch;
 
-    ResizeIndicesBufferIfNeeded(queueIndexCount + PATCH_QUAD_COUNT * PATCH_QUAD_COUNT * 6);
+    ResizeIndicesBufferIfNeeded(queueIndexCount + PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6);
 
     uint16* indicesPtr = indices.data() + queueIndexCount;
     // Draw middle block
     {
-        for (uint16 y = (heightMapStartY & RENDER_QUAD_AND); y < (heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch; y += step)
+        for (uint16 y = (heightMapStartY & RENDER_PARCEL_AND); y < (heightMapStartY & RENDER_PARCEL_AND) + realVertexCountInPatch; y += step)
         {
-            for (uint16 x = (heightMapStartX & RENDER_QUAD_AND); x < (heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch; x += step)
+            for (uint16 x = (heightMapStartX & RENDER_PARCEL_AND); x < (heightMapStartX & RENDER_PARCEL_AND) + realVertexCountInPatch; x += step)
             {
                 uint16 x0 = x;
                 uint16 y0 = y;
@@ -832,7 +809,7 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                 uint16 x1aligned2 = x1;
                 uint16 y1aligned2 = y1;
 
-                if (x == (heightMapStartX & RENDER_QUAD_AND))
+                if (x == (heightMapStartX & RENDER_PARCEL_AND))
                 {
                     uint16 alignMod = levelInfo.size >> xNegSizePow2;
                     if (alignMod > 1)
@@ -842,7 +819,7 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                     }
                 }
 
-                if (y == (heightMapStartY & RENDER_QUAD_AND))
+                if (y == (heightMapStartY & RENDER_PARCEL_AND))
                 {
                     uint16 alignMod = levelInfo.size >> yNegSizePow2;
                     if (alignMod > 1)
@@ -852,7 +829,7 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                     }
                 }
 
-                if (x == ((heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch - step))
+                if (x == ((heightMapStartX & RENDER_PARCEL_AND) + realVertexCountInPatch - step))
                 {
                     uint16 alignMod = levelInfo.size >> xPosSizePow2;
                     if (alignMod > 1)
@@ -862,7 +839,7 @@ void Landscape::DrawPatchNoInstancing(uint32 level, uint32 xx, uint32 yy, uint32
                     }
                 }
 
-                if (y == ((heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch - step))
+                if (y == ((heightMapStartY & RENDER_PARCEL_AND) + realVertexCountInPatch - step))
                 {
                     uint16 alignMod = levelInfo.size >> yPosSizePow2;
                     if (alignMod > 1)
@@ -930,49 +907,49 @@ void Landscape::AllocateGeometryDataInstancing()
     ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
     landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
-    uint32 verticesCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
+    uint32 verticesCount = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
     VertexInstancing* patchVertices = new VertexInstancing[verticesCount];
-    uint16* patchIndices = new uint16[(PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6];
+    uint16* patchIndices = new uint16[PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6];
     uint16* indicesPtr = patchIndices;
-    for (uint32 y = 0; y < PATCH_VERTEX_COUNT; ++y)
+    for (uint32 y = 0; y < PATCH_SIZE_VERTICES; ++y)
     {
-        for (uint32 x = 0; x < PATCH_VERTEX_COUNT; ++x)
+        for (uint32 x = 0; x < PATCH_SIZE_VERTICES; ++x)
         {
-            VertexInstancing & vertex = patchVertices[y * PATCH_VERTEX_COUNT + x];
-            vertex.position = Vector2(float32(x) / (PATCH_VERTEX_COUNT - 1), float32(y) / (PATCH_VERTEX_COUNT - 1));
+            VertexInstancing& vertex = patchVertices[y * PATCH_SIZE_VERTICES + x];
+            vertex.position = Vector2(float32(x) / (PATCH_SIZE_VERTICES - 1), float32(y) / (PATCH_SIZE_VERTICES - 1));
             vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero for middle vertices
             vertex.morphDir = Vector2(0.f, 0.f);
 
-            if (x < (PATCH_VERTEX_COUNT - 1) && y < (PATCH_VERTEX_COUNT - 1))
+            if (x < (PATCH_SIZE_VERTICES - 1) && y < (PATCH_SIZE_VERTICES - 1))
             {
-                *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 0);
-                *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 1);
-                *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
 
-                *indicesPtr++ = (y + 0) * PATCH_VERTEX_COUNT + (x + 1);
-                *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 1);
-                *indicesPtr++ = (y + 1) * PATCH_VERTEX_COUNT + (x + 0);
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
             }
         }
     }
 
-    for (uint32 i = 1; i < PATCH_QUAD_COUNT; ++i)
+    for (uint32 i = 1; i < PATCH_SIZE_QUADS; ++i)
     {
         //x = 0; y = i; left side of patch without corners
-        patchVertices[i * PATCH_VERTEX_COUNT].edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
-        patchVertices[i * PATCH_VERTEX_COUNT].morphDir = Vector2(0.f, 1.f);
+        patchVertices[i * PATCH_SIZE_VERTICES].edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
+        patchVertices[i * PATCH_SIZE_VERTICES].morphDir = Vector2(0.f, 1.f);
 
         //x = PATCH_QUAD_COUNT; y = PATCH_QUAD_COUNT; right side of patch without corners
-        patchVertices[i * PATCH_VERTEX_COUNT + PATCH_QUAD_COUNT].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
-        patchVertices[i * PATCH_VERTEX_COUNT + PATCH_QUAD_COUNT].morphDir = Vector2(0.f, -1.f);
+        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
+        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].morphDir = Vector2(0.f, -1.f);
 
         //x = i; y = 0; bottom side of patch without corners
         patchVertices[i].edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
         patchVertices[i].morphDir = Vector2(1.f, 0.f);
 
         //x = i; y = PATCH_QUAD_COUNT; top side of patch without corners
-        patchVertices[PATCH_QUAD_COUNT * PATCH_VERTEX_COUNT + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
-        patchVertices[PATCH_QUAD_COUNT * PATCH_VERTEX_COUNT + i].morphDir = Vector2(-1.f, 0.f);
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].morphDir = Vector2(-1.f, 0.f);
     }
 
     rhi::VertexBuffer::Descriptor vdesc;
@@ -982,7 +959,7 @@ void Landscape::AllocateGeometryDataInstancing()
     patchVertexBuffer = rhi::CreateVertexBuffer(vdesc);
 
     rhi::IndexBuffer::Descriptor idesc;
-    idesc.size = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6 * sizeof(uint16);
+    idesc.size = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6 * sizeof(uint16);
     idesc.initialData = patchIndices;
     idesc.usage = rhi::USAGE_STATICDRAW;
     patchIndexBuffer = rhi::CreateIndexBuffer(idesc);
@@ -1001,8 +978,8 @@ void Landscape::AllocateGeometryDataInstancing()
     batch->vertexBuffer = patchVertexBuffer;
     batch->indexBuffer = patchIndexBuffer;
     batch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-    batch->indexCount = (PATCH_VERTEX_COUNT - 1) * (PATCH_VERTEX_COUNT - 1) * 6;
-    batch->vertexCount = PATCH_VERTEX_COUNT * PATCH_VERTEX_COUNT;
+    batch->indexCount = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6;
+    batch->vertexCount = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
 
     rhi::VertexLayout vLayout;
     vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 4);
@@ -1131,17 +1108,16 @@ bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int3
         return false;
     }
 
-    uint32 gridWidth = heightmap->Size();
-    uint32 gridHeight = heightmap->Size();
+    uint32 gridWidth = heightmap->Size() + 1;
+    uint32 gridHeight = heightmap->Size() + 1;
     vertices.resize(gridWidth * gridHeight);
     for (uint32 y = 0, index = 0; y < gridHeight; ++y)
     {
-        uint32 row = y * heightmap->Size();
         float32 ny = static_cast<float32>(y) / static_cast<float32>(gridHeight - 1);
         for (uint32 x = 0; x < gridWidth; ++x)
         {
             float32 nx = static_cast<float32>(x) / static_cast<float32>(gridWidth - 1);
-            vertices[index].position = GetPoint(x, y, heightmap->Data()[row + x]);
+            vertices[index].position = GetPoint(x, y, heightmap->GetHeightClamp(x, y));
             vertices[index].texCoord = Vector2(nx, ny);
             index++;
         }
@@ -1317,11 +1293,11 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
 
         if (landscapeMaterial->HasLocalFlag(FLAG_PATCH_SIZE_QUADS))
         {
-            landscapeMaterial->SetFlag(FLAG_PATCH_SIZE_QUADS, PATCH_QUAD_COUNT);
+            landscapeMaterial->SetFlag(FLAG_PATCH_SIZE_QUADS, PATCH_SIZE_QUADS);
         }
         else
         {
-            landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_QUAD_COUNT);
+            landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_SIZE_QUADS);
         }
 
         landscapeMaterial->PreBuildMaterial(PASS_FORWARD);

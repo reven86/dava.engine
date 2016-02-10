@@ -48,7 +48,6 @@ public:
 
     static const FastName UNIFORM_TILEPOS;
     static const FastName UNIFORM_WORLD_SIZE;
-    static const FastName UNIFORM_HEIGHTMAP_SCALE;
     static const FastName UNIFORM_SWITCH_LOD_SCALE;
     static const FastName UNIFORM_PERTURBATION_FORCE;
     static const FastName UNIFORM_PERTURBATION_POINT;

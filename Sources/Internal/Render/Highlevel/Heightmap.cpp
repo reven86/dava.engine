@@ -37,40 +37,34 @@
 
 namespace DAVA
 {
+String Heightmap::FILE_EXTENSION(".heightmap");
 
-Heightmap::Heightmap()
-    :   data(NULL)
-    ,   size(0)
-    ,   tileSize(0)
+Heightmap::Heightmap(int32 size)
 {
+    if (size)
+    {
+        ReallocateData(size);
+    }
+
     //TODO: remove it. Used only for test
     SetTileSize(17);
 }
 
 Heightmap::~Heightmap()
 {
-    ReleaseData();
+    SafeDeleteArray(data);
 }
 
-void Heightmap::ReleaseData()
-{
-    SafeDeleteArray(data);
-    size = 0;
-}
-    
 bool Heightmap::BuildFromImage(const DAVA::Image *image)
 {
     DVASSERT(image);
-    
+    DVASSERT((image->GetWidth() == image->GetHeight()) && (IsPowerOf2(image->GetWidth())));
+
     Image *heightImage = Image::CreateFromData(image->GetWidth(), image->GetHeight(), image->GetPixelFormat(), image->GetData());
     heightImage->FlipVertical();
-    
-    if(size != heightImage->width)
-    {
-        ReleaseData();
-        AllocateData(heightImage->width);
-    }
-    
+
+    ReallocateData(heightImage->width);
+
     if(FORMAT_A16 == heightImage->format)
     {
         uint16 *dstData = data;
@@ -107,13 +101,13 @@ bool Heightmap::BuildFromImage(const DAVA::Image *image)
 void Heightmap::SaveToImage(const FilePath & filename)
 {
     Image * image = Image::Create(size, size, FORMAT_A16);
-    
-    uint16 * unpackedBytes = new uint16[size * size];
 
+    uint16* unpackedBytes = new uint16[size * size];
     for (int32 k = 0; k < size * size; ++k)
     {
         unpackedBytes[k] = ((data[k] & 0xFF) << 8) | ((data[k] & 0xFF00) >> 8);
     }
+
     Memcpy(image->data, unpackedBytes, size*size*sizeof(uint16));
     image->FlipVertical();
 
@@ -122,35 +116,20 @@ void Heightmap::SaveToImage(const FilePath & filename)
     ImageSystem::Instance()->Save(filename, image, image->format);
     SafeRelease(image);
 }
-  
-bool Heightmap::AllocateData(int32 newSize)
+
+bool Heightmap::ReallocateData(int32 newSize)
 {
+    if (size == newSize)
+    {
+        return (size != 0);
+    }
+
+    SafeDeleteArray(data);
+
     size = newSize;
     data = new uint16[size * size];
 
-    return (NULL != data);
-}
-
-    
-    
-uint16 * Heightmap::Data()
-{
-    return data;
-}
-
-int32 Heightmap::Size() const
-{
-    return size;
-}
-    
-int32 Heightmap::GetTileSize() const
-{
-    return tileSize;
-}
-
-void Heightmap::SetTileSize(int32 newSize)
-{
-    tileSize = newSize;
+    return (nullptr != data);
 }
 
 void Heightmap::Save(const FilePath &filePathname)
@@ -180,13 +159,13 @@ void Heightmap::Save(const FilePath &filePathname)
 
     if(size && tileSize)
     {
-        int32 blockCount = (size-1) / (tileSize - 1);
+        int32 blockCount = size / tileSize;
         for(int32 iRow = 0; iRow < blockCount; ++iRow)
         {
             for(int32 iCol = 0; iCol < blockCount; ++iCol)
             {
-                int32 tileY = iRow * size * (tileSize - 1);
-                int32 tileX = iCol * (tileSize - 1);
+                int32 tileY = iRow * (size - 1) * tileSize;
+                int32 tileX = iCol * tileSize;
                 for(int32 iTileRow = 0; iTileRow < tileSize; ++iTileRow, tileY += size)
                 {
                     file->Write(data + tileY + tileX, tileSize * sizeof(data[0]));
@@ -206,37 +185,40 @@ bool Heightmap::Load(const FilePath &filePathname)
         return false;
     }
 
-    
     File * file = File::Create(filePathname, File::OPEN | File::READ);
     if (!file)
     {
         Logger::Error("Heightmap::Load failed to create file: %s", filePathname.GetAbsolutePathname().c_str());
         return false;
     }
-    
-    int32 newSize = 0;
-    
-    file->Read(&newSize, sizeof(newSize));
-    file->Read(&tileSize, sizeof(tileSize));
-    
-    if(size != newSize)
-    {
-        ReleaseData();
-        AllocateData(newSize);
-    }
 
-    if(size && tileSize)
+    int32 mapSize = 0, mapTileSize = 0;
+
+    file->Read(&mapSize, sizeof(mapSize));
+    file->Read(&mapTileSize, sizeof(mapTileSize));
+
+    if (mapSize && mapTileSize)
     {
-        int32 blockCount = (size-1) / (tileSize - 1);
-        for(int32 iRow = 0; iRow < blockCount; ++iRow)
+        if (!IsPowerOf2(mapSize))
         {
-            for(int32 iCol = 0; iCol < blockCount; ++iCol)
+            LoadNotPow2(file, mapSize, mapTileSize);
+        }
+        else
+        {
+            ReallocateData(mapSize);
+            SetTileSize(mapTileSize);
+
+            int32 blockCount = mapSize / mapTileSize;
+            for (int32 iRow = 0; iRow < blockCount; ++iRow)
             {
-                int32 tileY = iRow * size * (tileSize - 1);
-                int32 tileX = iCol * (tileSize - 1);
-                for(int32 iTileRow = 0; iTileRow < tileSize; ++iTileRow, tileY += size)
+                for (int32 iCol = 0; iCol < blockCount; ++iCol)
                 {
-                    file->Read(data + tileY + tileX, tileSize * sizeof(data[0]));
+                    int32 tileY = iRow * mapSize * mapTileSize;
+                    int32 tileX = iCol * mapTileSize;
+                    for (int32 iTileRow = 0; iTileRow < mapTileSize; ++iTileRow, tileY += mapSize)
+                    {
+                        file->Read(data + tileY + tileX, tileSize * sizeof(data[0]));
+                    }
                 }
             }
         }
@@ -246,52 +228,49 @@ bool Heightmap::Load(const FilePath &filePathname)
     return true;
 }
 
-const String Heightmap::FileExtension()
+void Heightmap::LoadNotPow2(File* file, int32 readMapSize, int32 readTileSize)
 {
-    return ".heightmap";
+    int32 mapSize = 1 << HighestBitIndex(readMapSize);
+    int32 mapTileSize = 1 << HighestBitIndex(readTileSize);
+
+    Logger::Warning("[Heightmap::Load] Heightmap was cropped to %dx%d with tile size %d", mapSize, mapSize, tileSize);
+
+    ReallocateData(mapSize);
+    SetTileSize(mapTileSize);
+
+    uint16* tileRowData = new uint16[readTileSize];
+
+    int32 blockCount = mapSize / mapTileSize;
+    for (int32 iRow = 0; iRow < blockCount; ++iRow)
+    {
+        for (int32 iCol = 0; iCol < blockCount; ++iCol)
+        {
+            int32 tileY = iRow * mapSize * mapTileSize;
+            int32 tileX = iCol * mapTileSize;
+            for (int32 iTileRow = 0; iTileRow < readTileSize; ++iTileRow, tileY += mapSize)
+            {
+                file->Read(tileRowData, readTileSize * sizeof(data[0]));
+                if (iTileRow < mapTileSize)
+                    Memcpy(data + tileY + tileX, tileRowData, mapTileSize * sizeof(data[0]));
+            }
+        }
+    }
+
+    SafeDeleteArray(tileRowData);
 }
 
 Heightmap* Heightmap::Clone(DAVA::Heightmap* clonedHeightmap)
 {
-    Heightmap* createdHeightmap = clonedHeightmap;
+    Heightmap* createdHeightmap = (clonedHeightmap == nullptr) ? new Heightmap() : clonedHeightmap;
 
-    if ((createdHeightmap != nullptr) && (createdHeightmap->Size() != size))
+    if (!createdHeightmap->ReallocateData(size))
     {
-        createdHeightmap->ReleaseData();
-        createdHeightmap->AllocateData(size);
-
-        if (createdHeightmap->Data() == nullptr)
-        {
-            return nullptr;
-        }
-    }
-    else
-    {
-        createdHeightmap = CreateHeightmapForSize(size);
-        if (createdHeightmap == nullptr)
-        {
-            return nullptr;
-        }
+        SafeRelease(createdHeightmap);
+        return nullptr;
     }
 
     memmove(createdHeightmap->data, data, size * size * sizeof(uint16));
     createdHeightmap->SetTileSize(tileSize); // TODO: is it true?
-
-    return createdHeightmap;
-}
-    
-Heightmap * Heightmap::CreateHeightmapForSize(int32 newSize)
-{
-    Heightmap *createdHeightmap = new Heightmap();
-    if(!createdHeightmap)   return NULL;
-    
-    createdHeightmap->AllocateData(newSize);
-    
-    if(!createdHeightmap->data)
-    {
-        SafeRelease(createdHeightmap);
-        return NULL;
-    }
 
     return createdHeightmap;
 }
