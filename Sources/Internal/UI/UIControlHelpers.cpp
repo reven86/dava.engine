@@ -137,7 +137,7 @@ UIControl* UIControlHelpers::FindChildControlByName(const FastName& controlName,
 
 UIControl* UIControlHelpers::FindControlByPath(const String& controlPath, UIControl* rootControl)
 {
-    return FindControlByPathImpl(controlPath, rootControl);
+    return const_cast<UIControl*>(FindControlByPathImpl(controlPath, rootControl));
 }
 
 const UIControl* UIControlHelpers::FindControlByPath(const String& controlPath, const UIControl* rootControl)
@@ -145,8 +145,7 @@ const UIControl* UIControlHelpers::FindControlByPath(const String& controlPath, 
     return FindControlByPathImpl(controlPath, rootControl);
 }
 
-template <typename ControlType>
-ControlType* UIControlHelpers::FindControlByPathImpl(const String& controlPath, ControlType* rootControl)
+const UIControl* UIControlHelpers::FindControlByPathImpl(const String& controlPath, const UIControl* rootControl)
 {
     Vector<String> strPath;
     Split(controlPath, "/", strPath, false, true);
@@ -161,10 +160,9 @@ ControlType* UIControlHelpers::FindControlByPathImpl(const String& controlPath, 
     return FindControlByPathImpl(path.begin(), path.end(), rootControl);
 }
 
-template <typename ControlType>
-ControlType* UIControlHelpers::FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl)
+const UIControl* UIControlHelpers::FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, const UIControl* rootControl)
 {
-    ControlType* control = rootControl;
+    const UIControl* control = rootControl;
 
     for (auto it = begin; it != end; ++it)
     {
@@ -187,7 +185,7 @@ ControlType* UIControlHelpers::FindControlByPathImpl(Vector<FastName>::const_ite
             auto nextIt = it + 1;
             for (UIControl* c : control->GetChildren())
             {
-                UIControl* res = FindControlByPathImpl(nextIt, end, c);
+                const UIControl* res = FindControlByPathImpl(nextIt, end, c);
                 if (res)
                 {
                     return res;
@@ -213,18 +211,17 @@ ControlType* UIControlHelpers::FindControlByPathImpl(Vector<FastName>::const_ite
     return control;
 }
 
-template <typename ControlType>
-ControlType* UIControlHelpers::FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, ControlType* rootControl)
+const UIControl* UIControlHelpers::FindControlByPathRecursivelyImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, const UIControl* rootControl)
 {
-    ControlType* control = rootControl;
+    const UIControl* control = rootControl;
 
-    ControlType* res = FindControlByPathImpl(begin, end, rootControl);
+    const UIControl* res = FindControlByPathImpl(begin, end, rootControl);
     if (res)
     {
         return res;
     }
 
-    for (ControlType* c : control->GetChildren())
+    for (UIControl* c : control->GetChildren())
     {
         res = FindControlByPathRecursivelyImpl(begin, end, c);
         if (res)
