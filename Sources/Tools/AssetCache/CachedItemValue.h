@@ -145,12 +145,12 @@ inline void CachedItemValue::SetDescription(const CachedItemValue::Description& 
     description = description_;
 }
 
-bool operator==(const CachedItemValue::Description& left, const CachedItemValue::Description& right)
+inline bool operator==(const CachedItemValue::Description& left, const CachedItemValue::Description& right)
 {
     return (left.machineName == right.machineName) && (left.creationDate == right.creationDate) && (left.serverPath == right.serverPath) && (left.clientPath == right.clientPath) && (left.comment == right.comment);
 }
 
-bool operator==(const CachedItemValue::ValidationDetails& left, const CachedItemValue::ValidationDetails& right)
+inline bool operator==(const CachedItemValue::ValidationDetails& left, const CachedItemValue::ValidationDetails& right)
 {
     return (left.filesCount == right.filesCount) && (left.filesDataSize == right.filesDataSize);
 }
