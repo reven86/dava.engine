@@ -220,7 +220,8 @@ gles_check_GL_extensions()
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
         _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
 
-        _GLES2_DeviceCaps.isInstancingSupported = (strstr(ext, "GL_EXT_draw_instanced") || strstr(ext, "GL_ARB_draw_instanced")) &&
+        _GLES2_DeviceCaps.isInstancingSupported =
+        (strstr(ext, "GL_EXT_draw_instanced") || strstr(ext, "GL_ARB_draw_instanced") || strstr(ext, "GL_ARB_draw_elements_base_vertex")) &&
         (strstr(ext, "GL_EXT_instanced_arrays") || strstr(ext, "GL_ARB_instanced_arrays"));
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -257,7 +258,7 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
-            _GLES2_DeviceCaps.isInstancingSupported = (majorVersion > 3) && (minorVersion > 3);
+            _GLES2_DeviceCaps.isInstancingSupported |= (majorVersion > 3) && (minorVersion > 3);
 
 #if defined(GL_R16F) && defined(GL_RG16F)
             RG16F_Supported = majorVersion >= 3;
