@@ -70,7 +70,7 @@ extern "C" {
 
 #define ThrowXWindowException(severity, tag, context) \
 { \
-  ExceptionInfo                        \
+  ExceptionInfo                          \
         exception; \
  \
   GetExceptionInfo(&exception); \
