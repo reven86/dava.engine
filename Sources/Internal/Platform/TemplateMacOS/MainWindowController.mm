@@ -44,39 +44,60 @@
     // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
     if ([theEvent type] == NSKeyDown)
     {
-        if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+        int cmdOrCmdWithCaps = ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask);
+        if ((cmdOrCmdWithCaps == NSCommandKeyMask) || (cmdOrCmdWithCaps == (NSCommandKeyMask | NSAlphaShiftKeyMask)))
         {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"x"])
+            if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"x"])
             {
                 if ([self sendAction:@selector(cut:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"c"])
             {
-                if ([self sendAction:@selector(copy:) to:nil from:self])
+                if ([self sendAction:@selector(copy:) to:[[NSApp keyWindow] firstResponder] from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"v"])
             {
-                if ([self sendAction:@selector(paste:) to:nil from:self])
-                    return;
+                // HACK if user trying to paste text into textfield
+                // we have to check room for it
+                // and if no more room skip paste operation here
+                // because some time NSFormatter not called
+                NSResponder* view = [[NSApp keyWindow] firstResponder];
+                DAVA::UIControl* focused = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+                if (focused != nullptr)
+                {
+                    DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focused);
+                    if (tf)
+                    {
+                        DAVA::WideString text = tf->GetText();
+                        int size = tf->GetMaxLength();
+                        int textSize = static_cast<int>(text.length());
+                        if (size > 0 && size > (textSize + 1))
+                        {
+                            if ([self sendAction:@selector(paste:) to:view from:self])
+                                return;
+                        }
+                        else
+                        {
+                            // skip paste into no room textfield
+                        }
+                    }
+                }
+                else
+                {
+                    if ([self sendAction:@selector(paste:) to:view from:self])
+                        return;
+                }
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"z"])
             {
                 if ([self sendAction:@selector(undo:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"a"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"a"])
             {
                 if ([self sendAction:@selector(selectAll:) to:nil from:self])
-                    return;
-            }
-        }
-        else if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
-        {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"Z"])
-            {
-                if ([self sendAction:@selector(redo:) to:nil from:self])
                     return;
             }
         }
