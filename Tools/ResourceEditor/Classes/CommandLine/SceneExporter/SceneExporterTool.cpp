@@ -32,6 +32,8 @@
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
+#include "Platform/DateTime.h"
+#include "Platform/DeviceInfo.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
 

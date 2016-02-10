@@ -75,17 +75,17 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
 
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
-        String ipStr = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
-        uint16 port = static_cast<DAVA::uint16>(SettingsManager::GetValue(Settings::General_AssetCache_Port).AsUInt32());
-        uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
+        DAVA::String ipStr = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
+        DAVA::uint16 port = static_cast<DAVA::uint16>(SettingsManager::GetValue(Settings::General_AssetCache_Port).AsUInt32());
+        DAVA::uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
 
-        AssetCacheClient::ConnectionParams params;
+        DAVA::AssetCacheClient::ConnectionParams params;
         params.ip = (ipStr.empty() ? "127.0.0.1" : ipStr);
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 
-        AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
-        if (connected == AssetCache::ERROR_OK)
+        DAVA::AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
+        if (connected == DAVA::AssetCache::ERROR_OK)
         {
             resourcePacker.SetCacheClient(&cacheClient, "Resource Editor.Repack Sprites");
         }
