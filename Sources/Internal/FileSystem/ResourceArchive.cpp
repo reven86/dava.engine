@@ -30,6 +30,8 @@ THIS
 
 #include "FileSystem/ResourceArchive.h"
 
+#include <fstream>
+
 #include <lz4/lz4.h>
 #include <lz4/lz4hc.h>
 
@@ -347,18 +349,28 @@ private:
     ResourceArchive::FileInfos filesInfoSortedByName;
 };
 
-static ResourceArchive::CompressionType GetPackingByExt(
+static ResourceArchive::CompressionType GetPackingBestType(
     const String& fileName,
     const Vector<ResourceArchive::Rule>& rules)
 {
+    ResourceArchive::CompressionType result = ResourceArchive::CompressionType::Lz4HC;
+
     for (const auto& rule : rules)
     {
         if (fileName.rfind(rule.fileExt, 0) != String::npos)
         {
-            return rule.compressionType;
+            result = rule.compressionType;
+            break;
         }
     }
-    return ResourceArchive::CompressionType::Lz4HC;
+
+    std::ifstream in(fileName, std::ios::ate | std::ios::binary);
+    if (in.tellg() <= 128) // TODO make it better in rule
+    {
+        result = ResourceArchive::CompressionType::None;
+    }
+
+    return result;
 };
 
 static bool Packing(const String& fileName,
@@ -426,7 +438,7 @@ static bool CompressFileAndWriteToOutput(
         return false;
     }
 
-    PackingType compressionType = GetPackingByExt(fileName, packingRules);
+    PackingType compressionType = GetPackingBestType(fileName, packingRules);
 
     uint32 startPos{0};
     if (fileTable.empty() == false)

@@ -343,19 +343,22 @@ int main(int argc, char* argv[])
         return PackDirectoryIntoPakfile(dirName, pakFile, compressionRules,
                                         addHidden == "true");
     }
-    else if (unpackOptions.Parse(argc, argv))
+
+    if (unpackOptions.Parse(argc, argv))
     {
         auto pakFile = unpackOptions.GetArgument("pakfile");
         auto dirName = unpackOptions.GetArgument("directory");
 
         return UnpackPackfileIntoDirectory(pakFile, dirName);
     }
-    else if (listOptions.Parse(argc, argv))
+
+    if (listOptions.Parse(argc, argv))
     {
         auto pakFile = listOptions.GetArgument("pakfile");
         return ListPackFileContent(pakFile);
     }
-    else
+    
+    
     {
         packOptions.PrintUsage();
         unpackOptions.PrintUsage();
