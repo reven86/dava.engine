@@ -331,7 +331,7 @@ bool EditorLODSystem::CanDeleteLOD() const
 {
     DVASSERT(activeLodData != nullptr);
 
-    bool canDeleteLod = (!activeLodData->lodComponents.empty()) && (activeLodData->GetLODLayersCount() > 0);
+    bool canDeleteLod = (!activeLodData->lodComponents.empty()) && (activeLodData->GetLODLayersCount() > 1);
     for (auto& lc : activeLodData->lodComponents)
     {
         if (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT))
