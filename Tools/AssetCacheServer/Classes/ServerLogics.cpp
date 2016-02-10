@@ -92,7 +92,12 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel* channel, const DAVA
         auto entry = dataBase->Get(key);
         if (nullptr != entry)
         { // Found in db.
-            server->Send(channel, key, entry->GetValue());
+            DAVA::AssetCache::CachedItemValue value = entry->GetValue();
+            DAVA::AssetCache::CachedItemValue::Description description = value.GetDescription();
+            description.clientPath += "/" + serverName;
+            value.SetDescription(description);
+
+            server->Send(channel, key, value);
 
             { //add task for lazy sending of files;
                 serverTasks.emplace_back(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST);
@@ -135,7 +140,7 @@ void ServerLogics::OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::cha
 
 void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue & value)
 {
-    if (nullptr != dataBase && !value.IsEmpty())
+    if (nullptr != dataBase && !value.IsEmpty() && value.IsValid())
     {
         dataBase->Insert(key, value);
     }
@@ -152,7 +157,11 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
             RequestDescription& description = (*iter);
             if (nullptr != description.clientChannel)
             {
-                server->Send(description.clientChannel, key, value);
+                DAVA::AssetCache::CachedItemValue sendValue = value;
+                DAVA::AssetCache::CachedItemValue::Description descr = sendValue.GetDescription();
+                descr.clientPath += "/" + serverName;
+                sendValue.SetDescription(descr);
+                server->Send(description.clientChannel, key, sendValue);
             }
             waitedRequests.erase(iter);
         }
