@@ -134,7 +134,7 @@ bool android_gl_end_frame()
 
     if (!ret && eglGetError() == EGL_CONTEXT_LOST)
     {
-        Logger::Error("Context Lost");
+        DAVA::Logger::Error("Context Lost");
         eglDestroyContext(_display, _context);
         _GLES2_Context = _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
 
