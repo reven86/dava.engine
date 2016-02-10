@@ -33,11 +33,9 @@
 
 namespace DAVA
 {
-class UIAnchorComponent : public UIComponent
+class UIAnchorComponent : public UIBaseComponent<UIComponent::ANCHOR_COMPONENT>
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(ANCHOR_COMPONENT);
-
     UIAnchorComponent();
     UIAnchorComponent(const UIAnchorComponent& src);
 

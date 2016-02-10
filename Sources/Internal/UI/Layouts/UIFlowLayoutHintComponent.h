@@ -35,11 +35,9 @@ namespace DAVA
 {
 class UIControl;
 
-class UIFlowLayoutHintComponent : public UIComponent
+class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_HINT_COMPONENT);
-
     UIFlowLayoutHintComponent();
     UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
 

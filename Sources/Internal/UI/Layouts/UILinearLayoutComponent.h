@@ -33,7 +33,7 @@
 
 namespace DAVA
 {
-class UILinearLayoutComponent : public UIComponent
+class UILinearLayoutComponent : public UIBaseComponent<UIComponent::LINEAR_LAYOUT_COMPONENT>
 {
 public:
     enum eOrientation
@@ -43,8 +43,6 @@ public:
     };
 
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
-
     UILinearLayoutComponent();
     UILinearLayoutComponent(const UILinearLayoutComponent& src);
 

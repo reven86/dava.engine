@@ -35,11 +35,9 @@ namespace DAVA
 {
 class UIControl;
 
-class UIIgnoreLayoutComponent : public UIComponent
+class UIIgnoreLayoutComponent : public UIBaseComponent<UIComponent::IGNORE_LAYOUT_COMPONENT>
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
-
     UIIgnoreLayoutComponent() = default;
     UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src) = default;
 

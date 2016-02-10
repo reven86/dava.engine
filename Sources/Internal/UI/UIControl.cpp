@@ -31,6 +31,7 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Focus/FocusHelpers.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -1494,36 +1495,41 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             if (!currentInput->touchLocker && IsPointInside(currentInput->point))
             {
                 if (multiInput || !currentInputID)
-            {
-                controlState |= STATE_PRESSED_INSIDE;
-                controlState &= ~STATE_NORMAL;
-                ++touchesInside;
-                ++totalTouches;
-                currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-
-                // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
-                // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
-                currentInput->touchLocker = this;
-                if (exclusiveInput)
                 {
-                    UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->touchId);
+                    controlState |= STATE_PRESSED_INSIDE;
+                    controlState &= ~STATE_NORMAL;
+                    ++touchesInside;
+                    ++totalTouches;
+                    currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
+
+                    // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
+                    // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
+                    currentInput->touchLocker = this;
+                    if (exclusiveInput)
+                    {
+                        UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->touchId);
+                    }
+
+                    if (UIControlSystem::Instance()->GetFocusedControl() != this && FocusHelpers::CanFocusControl(this))
+                    {
+                        UIControlSystem::Instance()->SetFocusedControl(this);
+                    }
+
+                    PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+
+                    if (!multiInput)
+                    {
+                        currentInputID = currentInput->touchId;
+                    }
+
+                    Input(currentInput);
+                    return true;
                 }
-
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
-                if (!multiInput)
+                else
                 {
-                    currentInputID = currentInput->touchId;
+                    currentInput->touchLocker = this;
+                    return true;
                 }
-
-                Input(currentInput);
-                return true;
-            }
-            else
-            {
-                currentInput->touchLocker = this;
-                return true;
-            }
             }
         }
         break;
@@ -1591,9 +1597,9 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                             --touchesInside;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
                             if (totalTouches == 0)
-                        {
-                            controlState |= STATE_HOVER;
-                        }
+                            {
+                                controlState |= STATE_HOVER;
+                            }
 #endif
                         }
 
@@ -1604,26 +1610,18 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                         {
                             if (IsPointInside(currentInput->point, true))
                             {
-                                if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
-                            {
-                                UIControlSystem::Instance()->SetFocusedControl(
-                                this, false);
-                            }
-                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE,
-                                                 currentInput);
+                                PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
                             }
                             else
                             {
-                                PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE,
-                                                     currentInput);
+                                PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
                             }
                             controlState &= ~STATE_PRESSED_INSIDE;
                             controlState &= ~STATE_PRESSED_OUTSIDE;
                             controlState |= STATE_NORMAL;
                             if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
                             {
-                                UIControlSystem::Instance()->SetExclusiveInputLocker(
-                                NULL, -1);
+                                UIControlSystem::Instance()->SetExclusiveInputLocker(nullptr, -1);
                             }
                         }
                         else if (touchesInside <= 0)
@@ -1795,18 +1793,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::SystemWillBecomeInvisible()
     {
-        if (GetHover())
-        {
-            UIControlSystem::Instance()->SetHoveredControl(NULL);
-        }
-        if (UIControlSystem::Instance()->GetFocusedControl() == this)
-        {
-            UIControlSystem::Instance()->SetFocusedControl(NULL, true);
-        }
-        if (GetInputEnabled())
-        {
-            UIControlSystem::Instance()->CancelInputs(this, false);
-        }
+        UIControlSystem::Instance()->ControlBecomeInvisible(this);
 
         List<UIControl*>::const_iterator it = childs.begin();
         List<UIControl*>::const_iterator end = childs.end();
@@ -2350,24 +2337,21 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         }
     }
 
-    bool UIControl::IsLostFocusAllowed( UIControl *newFocus )
+    void UIControl::SystemOnFocusLost()
     {
-        return true;
-    }
-
-    void UIControl::SystemOnFocusLost(UIControl *newFocus)
-    {
+        SetState(GetState() & ~STATE_FOCUSED);
         PerformEvent(EVENT_FOCUS_LOST);
-        OnFocusLost(newFocus);
+        OnFocusLost();
     }
 
     void UIControl::SystemOnFocused()
     {
+        SetState(GetState() | STATE_FOCUSED);
         PerformEvent(EVENT_FOCUS_SET);
         OnFocused();
     }
 
-    void UIControl::OnFocusLost(UIControl *newFocus)
+    void UIControl::OnFocusLost()
     {
     }
 

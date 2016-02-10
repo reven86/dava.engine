@@ -47,7 +47,6 @@ UIScrollView::UIScrollView(const Rect& rect)
     , centerContent(false)
 {
     SetInputEnabled(false, false);
-    SetFocusEnabled(false);
 	multiInput = true;
 	SetClipContents(true);
 	

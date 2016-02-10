@@ -50,6 +50,8 @@ namespace DAVA
 class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
+class UIFocusSystem;
+class UIKeyInputSystem;
 class UIScreenshoter;
 
 class ScreenSwitchListener
@@ -268,7 +270,9 @@ public:
     /**
 	 \brief Called by the control to set himself as the focused control
 	 */
-    void SetFocusedControl(UIControl* newFocused, bool forceSet);
+    void SetFocusedControl(UIControl* newFocused);
+
+    void ControlBecomeInvisible(UIControl* control);
 
     /**
 	 \brief Returns currently focused control
@@ -321,6 +325,8 @@ private:
 
     UILayoutSystem* layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
+    UIFocusSystem* focusSystem;
+    UIKeyInputSystem* keyInputSystem;
     UIScreenshoter* screenshoter;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;

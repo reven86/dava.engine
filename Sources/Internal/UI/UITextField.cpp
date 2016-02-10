@@ -336,7 +336,7 @@ void UITextField::WillAppear()
 {
     if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
     {
-        UIControlSystem::Instance()->SetFocusedControl(this, false);
+        UIControlSystem::Instance()->SetFocusedControl(this);
     }
 }
 
@@ -363,10 +363,10 @@ void UITextField::OnFocused()
 
 void UITextField::SetFocused()
 {
-    UIControlSystem::Instance()->SetFocusedControl(this, true);
+    UIControlSystem::Instance()->SetFocusedControl(this);
 }
 
-void UITextField::OnFocusLost(UIControl* newFocus)
+void UITextField::OnFocusLost()
 {
     SetRenderToTexture(true);
 
@@ -378,20 +378,11 @@ void UITextField::OnFocusLost(UIControl* newFocus)
     }
 }
 
-bool UITextField::IsLostFocusAllowed(UIControl* newFocus)
-{
-    if (delegate != nullptr)
-    {
-        return delegate->IsTextFieldCanLostFocus(this);
-    }
-    return true;
-}
-
 void UITextField::ReleaseFocus()
 {
     if (this == UIControlSystem::Instance()->GetFocusedControl())
     {
-        UIControlSystem::Instance()->SetFocusedControl(nullptr, true);
+        UIControlSystem::Instance()->SetFocusedControl(nullptr);
     }
 }
 

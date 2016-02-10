@@ -87,10 +87,6 @@ public:
     {
         return false;
     }
-    virtual bool IsTextFieldCanLostFocus(UITextField* /*textField*/)
-    {
-        return true;
-    }
 
     /*
         \brief Called when device keyboard is displayed/hidden.
@@ -181,7 +177,7 @@ public:
     void WillDisappear() override;
 
     void OnFocused() override;
-    void OnFocusLost(UIControl* newFocus) override;
+    void OnFocusLost() override;
 
     void SetDelegate(UITextFieldDelegate* delegate);
     UITextFieldDelegate* GetDelegate();
@@ -233,8 +229,6 @@ public:
     void SetFocused();
 
     void ReleaseFocus();
-
-    bool IsLostFocusAllowed(UIControl* newFocus) override;
 
     /**
      \brief Sets the font of the control text.

@@ -35,7 +35,7 @@ namespace DAVA
 {
 class UIControl;
 
-class UISizePolicyComponent : public UIComponent
+class UISizePolicyComponent : public UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>
 {
 public:
     enum eSizePolicy
@@ -51,8 +51,6 @@ public:
     };
 
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
-
     UISizePolicyComponent();
     UISizePolicyComponent(const UISizePolicyComponent& src);
 

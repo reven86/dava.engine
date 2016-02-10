@@ -72,7 +72,6 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
 void UIList::InitAfterYaml()
 {
     SetInputEnabled(true, false);
-    SetFocusEnabled(false);
     clipContents = true;
     Rect r = GetRect();
     r.x = 0;
@@ -87,7 +86,6 @@ void UIList::InitAfterYaml()
 
     scrollContainer = new UIControl(r);
     AddControl(scrollContainer);
-    scrollContainer->SetFocusEnabled(false);
 
     oldPos = 0;
     newPos = 0;
@@ -589,12 +587,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
         {
             mainTouch = -1;
             lockTouch = false;
-            SetFocusEnabled(true);
-            scrollContainer->SetFocusEnabled(true);
-            bool retVal = UIControl::SystemInput(currentInput);
-            SetFocusEnabled(false);
-            scrollContainer->SetFocusEnabled(false);
-            return retVal;
+            return UIControl::SystemInput(currentInput);
         }
     }
 

@@ -37,6 +37,8 @@
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Focus/UIFocusSystem.h"
+#include "UI/Focus/UIKeyInputSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -53,6 +55,8 @@ UIControlSystem::~UIControlSystem()
     SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
+    SafeDelete(keyInputSystem);
+    SafeDelete(focusSystem);
     SafeDelete(screenshoter);
 }
 
@@ -70,7 +74,6 @@ UIControlSystem::UIControlSystem()
     prevScreen = NULL;
     removeCurrentScreen = false;
     hovered = NULL;
-    focusedControl = NULL;
 
     popupContainer = new UIControl(Rect(0, 0, 1, 1));
     popupContainer->SetName(FastName("UIControlSystem_popupContainer"));
@@ -88,6 +91,9 @@ UIControlSystem::UIControlSystem()
 
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
+    focusSystem = new UIFocusSystem();
+    keyInputSystem = new UIKeyInputSystem(focusSystem);
+
     screenshoter = new UIScreenshoter();
 }
 
@@ -127,6 +133,8 @@ void UIControlSystem::ReplaceScreen(UIScreen* newMainControl)
     prevScreen = currentScreen;
     currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
+
+    focusSystem->SetRoot(currentScreen);
 }
 
 UIScreen* UIControlSystem::GetScreen()
@@ -278,6 +286,7 @@ void UIControlSystem::ProcessScreenLogic()
                 nextScreenProcessed->SystemWillAppear();
             }
             currentScreen = nextScreenProcessed;
+            focusSystem->SetRoot(currentScreen);
             NotifyListenersDidSwitch(currentScreen);
             if (nextScreenProcessed)
             {
@@ -458,9 +467,18 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 
         if (currentScreen)
         {
-            if (!popupContainer->SystemInput(eventToHandle))
+            UIEvent::Phase phase = eventToHandle->phase;
+
+            if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT)
             {
-                currentScreen->SystemInput(eventToHandle);
+                keyInputSystem->HandleKeyEvent(eventToHandle);
+            }
+            else
+            {
+                if (!popupContainer->SystemInput(eventToHandle))
+                {
+                    currentScreen->SystemInput(eventToHandle);
+                }
             }
         }
 
@@ -604,34 +622,29 @@ UIControl* UIControlSystem::GetHoveredControl(UIControl* newHovered)
     return hovered;
 }
 
-void UIControlSystem::SetFocusedControl(UIControl* newFocused, bool forceSet)
+void UIControlSystem::SetFocusedControl(UIControl* newFocused)
 {
-    if (focusedControl)
+    focusSystem->SetFocusedControl(newFocused);
+}
+
+void UIControlSystem::ControlBecomeInvisible(UIControl* control)
+{
+    if (control->GetHover())
     {
-        if (forceSet || focusedControl->IsLostFocusAllowed(newFocused))
-        {
-            focusedControl->SystemOnFocusLost(newFocused);
-            SafeRelease(focusedControl);
-            focusedControl = SafeRetain(newFocused);
-            if (focusedControl)
-            {
-                focusedControl->SystemOnFocused();
-            }
-        }
+        SetHoveredControl(nullptr);
     }
-    else
+
+    if (control->GetInputEnabled())
     {
-        focusedControl = SafeRetain(newFocused);
-        if (focusedControl)
-        {
-            focusedControl->SystemOnFocused();
-        }
+        CancelInputs(control, false);
     }
+
+    focusSystem->ControlBecomInvisible(control);
 }
 
 UIControl* UIControlSystem::GetFocusedControl()
 {
-    return focusedControl;
+    return focusSystem->GetFocusedControl();
 }
 
 const UIGeometricData& UIControlSystem::GetBaseGeometricData() const

@@ -33,7 +33,7 @@
 
 namespace DAVA
 {
-class UIFlowLayoutComponent : public UIComponent
+class UIFlowLayoutComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>
 {
 public:
     enum eOrientation
@@ -43,8 +43,6 @@ public:
     };
 
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
-
     UIFlowLayoutComponent();
     UIFlowLayoutComponent(const UIFlowLayoutComponent& src);
 

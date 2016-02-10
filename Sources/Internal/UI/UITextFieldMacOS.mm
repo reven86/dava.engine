@@ -641,7 +641,7 @@ public:
         // native control not in focus - remove focus from dava control too
         if (string.empty() && [[NSApp keyWindow] firstResponder] != nsTextField && !insideTextShouldReturn)
         {
-            UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
+            UIControlSystem::Instance()->SetFocusedControl(nullptr);
         }
     }
 
@@ -668,8 +668,7 @@ public:
                 {
                     if (isKeyboardOpened)
                     {
-                        UITextFieldDelegate* delegate = davaText->GetDelegate();
-                        if (delegate && !delegate->IsTextFieldCanLostFocus(davaText))
+                        if (true) // TODO: dangerous place
                         {
                             // select text field
                             [window makeFirstResponder:nsTextField];
@@ -1242,7 +1241,7 @@ doCommandBySelector:(SEL)commandSelector
         // we need make dava control in sync with focus
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != davaCtrl)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(davaCtrl);
         }
 
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
@@ -1299,7 +1298,7 @@ doCommandBySelector:(SEL)commandSelector
     DAVA::UITextField* textField = (*text).ctrl->davaText;
     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
     {
-        DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+        DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
     }
     return YES;
 }
