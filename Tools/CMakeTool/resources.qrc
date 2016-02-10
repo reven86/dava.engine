@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/config_mac.txt</file>
+        <file>Resources/config_windows.txt</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,45 @@
+{
+    "Platforms" : {
+        "Windows" : {
+            "string" : "-G\"Visual Studio 12\" $PATH_TO_BUILD_FOLDER/.."
+        },
+        "OS X" : {
+            "string" : "-G\"Xcode\" $PATH_TO_BUILD_FOLDER"
+        },
+        "IOS" : {
+            "string" : "-G\"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $PATH_TO_BUILD_FOLDER/.."
+        },
+        
+        "Android" : {
+            "string" : "-G \"%1%2\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $PATH_TO_BUILD_FOLDER/..",
+            "default substring 1" : "Eclipse CDT4 - ",
+            "default substring 2" : "NMake Makefiles",
+            "checkboxes" : {
+                "console" : {
+                    "substring 1" : ""
+                },
+                "use MinGW" : {
+                    "substring 2" : "Mingw Makefiles" 
+                }
+            }
+        },
+        "Windows 10" : {
+            "string" : "$DAVA_FRAMEWORK_PATH/\Tools\WinStoreCMake\mk_project.bat $PATH_TO_BUILD_FOLDER/.. %1",
+            "default substring 1" : "",
+            "radiobuttons" : {
+                "ARM" : {
+                    "substring 1" : "ARM"
+                },
+                "Win32" : {
+                    "substring 1" : "Win32"
+                },
+                "Win64" : {
+                    "substring 1" : "Win64"
+                }
+            }
+        }
+    },
+    "Options" : {
+        "Unity build" : "-DUNITY_BUILD=true"
+    }
+}
