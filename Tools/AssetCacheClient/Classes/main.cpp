@@ -29,6 +29,7 @@
 #include "Base/Platform.h"
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/Logger.h"
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
@@ -70,6 +71,7 @@ void CreateDAVA()
     DAVA::FileSystem::Instance()->SetDefaultDocumentsDirectory();
     DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
+    new DAVA::LocalizationSystem();
     new DAVA::SystemTimer();
 
     DAVA::Thread::InitMainThread();
@@ -85,7 +87,7 @@ void ReleaseDAVA()
     DAVA::Net::NetCore::Instance()->Release();
 
     DAVA::SystemTimer::Instance()->Release();
-
+    DAVA::LocalizationSystem::Instance()->Release();
     DAVA::FileSystem::Instance()->Release();
     DAVA::JobManager::Instance()->Release();
 

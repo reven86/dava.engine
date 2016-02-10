@@ -28,8 +28,11 @@
 
 #include "AddRequest.h"
 
-#include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
+#include "Platform/DateTime.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/SystemTimer.h"
+#include "Utils/Utils.h"
 
 #include "AssetCache/AssetCacheClient.h"
 
@@ -72,6 +75,15 @@ DAVA::AssetCache::ErrorCodes AddRequest::SendRequest(AssetCacheClient* cacheClie
         }
     }
 
+    AssetCache::CachedItemValue::Description description;
+    description.machineName = WStringToString(DeviceInfo::GetName());
+
+    DateTime timeNow = DateTime::Now();
+    description.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    description.comment = "Asset Cache Client";
+
+    value.SetDescription(description);
+    value.FinalizeValidationData();
     return cacheClient->AddToCacheBlocked(key, value);
 }
 
