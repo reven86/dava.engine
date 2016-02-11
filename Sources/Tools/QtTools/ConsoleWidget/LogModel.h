@@ -33,10 +33,13 @@
 #include "FileSystem/Logger.h"
 #include <functional>
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QAbstractListModel>
 #include <QSize>
 #include <QPixmap>
+POP_QT_WARNING_SUPRESSOR
 
 class QMutex;
 class QTimer;
@@ -44,7 +47,9 @@ class QTimer;
 class LogModel
     : public QAbstractListModel
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     enum Roles

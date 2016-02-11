@@ -31,9 +31,12 @@
 #define QTTOOLS_WIDGETMODEL_H
 
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QPointer>
 #include <QWidget>
 #include <QSharedPointer>
+POP_QT_WARNING_SUPRESSOR
 
 #include "AbstractWidgetModel.h"
 
@@ -46,7 +49,9 @@ class WidgetModel
 {
     friend class WidgetItem;
 
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 private:
     using ItemCache = QMap < QWidget *, QSharedPointer<WidgetItem> > ;
