@@ -391,6 +391,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         handleSuspend();
+
+        DestroyKeyboardLayout();
+
         super.onPause();
 
         Log.d(JNIConst.LOG_TAG, "[Activity::onPause] out");
@@ -422,6 +425,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         JNIWebView.RelinkNativeControls();
 
         handleResume();
+
+        InitKeyboardLayout();
 
         /*
          Start of workaround
@@ -557,6 +562,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 }
             });
         }
+    }
+
+    void DestroyKeyboardLayout() {
+        final WindowManager windowManager = getWindowManager();
+        JNITextField.DestroyKeyboardLayout(windowManager);
     }
     
     protected final List<Integer> supportedAxises = Arrays.asList(
