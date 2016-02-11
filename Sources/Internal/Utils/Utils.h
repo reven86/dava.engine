@@ -106,7 +106,7 @@ inline String WStringToString(const WideString& s)
     String temp(len, ' ');
     //std::copy(s.begin(), s.end(), temp.begin());
     for (size_t i = 0; i < len; ++i)
-        temp[i] = (char)s[i];
+        temp[i] = static_cast<char>(s[i]);
     return temp;
 }
 
