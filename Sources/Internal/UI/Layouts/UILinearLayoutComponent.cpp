@@ -43,12 +43,10 @@ UILinearLayoutComponent::UILinearLayoutComponent(const UILinearLayoutComponent &
     , padding(src.padding)
     , spacing(src.spacing)
 {
-    
 }
 
 UILinearLayoutComponent::~UILinearLayoutComponent()
 {
-    
 }
 
 UILinearLayoutComponent* UILinearLayoutComponent::Clone() const
@@ -195,5 +193,4 @@ void UILinearLayoutComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
-
 }

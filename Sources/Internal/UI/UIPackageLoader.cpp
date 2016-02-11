@@ -47,7 +47,6 @@
 
 namespace DAVA
 {
-
 UIPackageLoader::UIPackageLoader()
 {
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
@@ -119,7 +118,6 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
         return false;
     }
     
-
     builder->BeginPackage(packagePath);
 
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
@@ -164,7 +162,6 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
 
         loadingQueue.clear();
     }
-
 
     builder->EndPackage();
 
@@ -282,7 +279,6 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractU
             builder->ProcessStyleSheet(selectorChains, propertiesToSet);
         }
     }
-    
 }
 
 void UIPackageLoader::LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder)
@@ -350,7 +346,6 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root, AbstractUIPac
         }
 
         control->LoadFromYamlNodeCompleted();
-
     }
     builder->EndControl(root);
 }
@@ -451,7 +446,6 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl *control, const YamlNode *no
         
         builder->EndComponentPropertiesSection();
     }
-    
 }
 
 Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(const YamlNode *node)
@@ -562,6 +556,4 @@ VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *membe
     }
     return VariantType();
 }
-
-
 }

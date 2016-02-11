@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 class TextBlockRender;
 class TextBlockSoftwareRender;
 class TextBlockGraphicRender;
@@ -54,14 +53,17 @@ class TextBlockGraphicRender;
 class TextBlock : public BaseObject
 {
 public:
-    enum eFitType 
+    enum eFitType
     {
-            FITTING_DISABLED = 0
-        ,	FITTING_ENLARGE	= 1
-        ,	FITTING_REDUCE = 2
-        ,   FITTING_POINTS = 4
+        FITTING_DISABLED = 0
+        ,
+        FITTING_ENLARGE = 1
+        ,
+        FITTING_REDUCE = 2
+        ,
+        FITTING_POINTS = 4
     };
-    
+
     enum eUseRtlAlign
     {
         RTL_DONT_USE,
@@ -95,7 +97,6 @@ public:
     virtual eUseRtlAlign GetUseRtlAlign();
     virtual bool IsRtl();
 
-    
     //[DO NOT ACTUAL ANYMORE] if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size	
@@ -144,7 +145,10 @@ public:
 	bool IsVisualTextCroped();
 #endif
 
-    TextBlockRender* GetRenderer(){ return textBlockRender; }
+    TextBlockRender* GetRenderer()
+    {
+        return textBlockRender;
+    }
 
     bool IsForceBiDiSupportEnabled() const
     {

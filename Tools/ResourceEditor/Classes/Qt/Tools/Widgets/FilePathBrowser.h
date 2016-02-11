@@ -36,17 +36,16 @@
 
 #include "QtTools/LineEdit/LineEditEx.h"
 
-
 class FilePathBrowser
-    : public LineEditEx
+: public LineEditEx
 {
     Q_OBJECT
 
 signals:
-    void pathChanged( const QString& path );
+    void pathChanged(const QString& path);
 
 public:
-    explicit FilePathBrowser(QWidget *parent = NULL);
+    explicit FilePathBrowser(QWidget* parent = NULL);
     ~FilePathBrowser();
 
     void SetHint(const QString& hint);
@@ -68,14 +67,14 @@ private:
     void InitButtons();
     void TryToAcceptPath(const QString& path);
 
-    QSize ButtonSizeHint(const QAction *action) const;
-    void keyPressEvent(QKeyEvent * event);
+    QSize ButtonSizeHint(const QAction* action) const;
+    void keyPressEvent(QKeyEvent* event);
 
-    QPointer< QLabel > validIcon;
-    QCache< bool, QPixmap > iconCache;
+    QPointer<QLabel> validIcon;
+    QCache<bool, QPixmap> iconCache;
 
     bool allowInvalidPath;
-    
+
     QString hintText;
     QString defaultFolder;
     QString path;

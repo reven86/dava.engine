@@ -32,7 +32,7 @@
 
 using namespace DAVA;
 
-SvcHelper::SvcHelper(const String &name)
+SvcHelper::SvcHelper(const String& name)
     : serviceName(name)
 {
     serviceControlManager = ::OpenSCManager(0, 0, 0);
@@ -63,8 +63,8 @@ String SvcHelper::ServiceDescription() const
     Array<char, 8 * 1024> data;
     DWORD bytesNeeded;
 
-    BOOL res = ::QueryServiceConfig2(service, 
-        SERVICE_CONFIG_DESCRIPTION, (LPBYTE)data.data(), data.size(), &bytesNeeded);
+    BOOL res = ::QueryServiceConfig2(service,
+                                     SERVICE_CONFIG_DESCRIPTION, (LPBYTE)data.data(), data.size(), &bytesNeeded);
 
     if (!res)
     {
@@ -86,7 +86,7 @@ bool SvcHelper::IsRunning() const
     {
         return false;
     }
-    
+
     return info.dwCurrentState != SERVICE_STOPPED;
 }
 
@@ -119,11 +119,12 @@ bool SvcHelper::Start()
 bool SvcHelper::Stop()
 {
     SERVICE_STATUS status;
-    if (::ControlService(service, SERVICE_CONTROL_STOP, &status) == TRUE) {
+    if (::ControlService(service, SERVICE_CONTROL_STOP, &status) == TRUE)
+    {
         bool stopped = status.dwCurrentState == SERVICE_STOPPED;
         unsigned i = 0;
 
-        while (!stopped && i < 10) 
+        while (!stopped && i < 10)
         {
             Thread::Sleep(200);
             if (!::QueryServiceStatus(service, &status))
@@ -137,6 +138,6 @@ bool SvcHelper::Stop()
 
         return stopped;
     }
-    
+
     return false;
 }

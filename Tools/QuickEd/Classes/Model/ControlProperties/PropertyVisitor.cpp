@@ -2,10 +2,8 @@
 
 PropertyVisitor::PropertyVisitor()
 {
-    
 }
 
 PropertyVisitor::~PropertyVisitor()
 {
-    
 }

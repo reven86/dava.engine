@@ -33,11 +33,10 @@
 #include <QWidget>
 #include <QPointer>
 
-
 class MouseHelper;
 
 class ColorCell
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
@@ -48,7 +47,7 @@ signals:
     void clicked(const QColor& c);
 
 public:
-    explicit ColorCell(QWidget *parent);
+    explicit ColorCell(QWidget* parent);
     ~ColorCell();
 
     const QColor& GetColor() const;
@@ -62,10 +61,10 @@ private slots:
 private:
     void paintEvent(QPaintEvent* e);
 
-    void dragEnterEvent(QDragEnterEvent *e);
-    void dragLeaveEvent(QDragLeaveEvent *e);
-    void dragMoveEvent(QDragMoveEvent *e);
-    void dropEvent(QDropEvent *e);
+    void dragEnterEvent(QDragEnterEvent* e);
+    void dragLeaveEvent(QDragLeaveEvent* e);
+    void dragMoveEvent(QDragMoveEvent* e);
+    void dropEvent(QDropEvent* e);
 
     QColor color;
     bool isHovered;

@@ -18,11 +18,11 @@
 TESTSUITE_START(FCTestXRef)
 
 TESTSUITE_TEST(0, SubTests)
-	RUN_TESTSUITE(FCTestXRefSimple);
-	RUN_TESTSUITE(FCTestXRefTree);
-	RUN_TESTSUITE(FCTestXRefAcyclic);
+RUN_TESTSUITE(FCTestXRefSimple);
+RUN_TESTSUITE(FCTestXRefTree);
+RUN_TESTSUITE(FCTestXRefAcyclic);
 
-	// Make sure our XRef tests have not left dangling documents.
-	PassIf(FCollada::GetTopDocumentCount() == 0);
+// Make sure our XRef tests have not left dangling documents.
+PassIf(FCollada::GetTopDocumentCount() == 0);
 
 TESTSUITE_END

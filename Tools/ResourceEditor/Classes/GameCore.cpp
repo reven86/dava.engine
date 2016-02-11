@@ -35,12 +35,13 @@
 
 using namespace DAVA;
 
-
 GameCore::GameCore()
-{ }
+{
+}
 
 GameCore::~GameCore()
-{ }
+{
+}
 
 void GameCore::OnAppStarted()
 {
@@ -51,11 +52,12 @@ void GameCore::OnAppStarted()
 }
 
 void GameCore::OnAppFinished()
-{ }
+{
+}
 
 void GameCore::OnSuspend()
 {
-	//prevent going to suspend
+    //prevent going to suspend
 }
 
 void GameCore::OnResume()
@@ -65,22 +67,20 @@ void GameCore::OnResume()
 
 void GameCore::OnBackground()
 {
-	//prevent going to background
+    //prevent going to background
 }
 
 void GameCore::BeginFrame()
 {
-	ApplicationCore::BeginFrame();
+    ApplicationCore::BeginFrame();
 }
 
 void GameCore::Update(float32 timeElapsed)
 {
-	ApplicationCore::Update(timeElapsed);
+    ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::Draw()
 {
-	ApplicationCore::Draw();
+    ApplicationCore::Draw();
 }
-
-

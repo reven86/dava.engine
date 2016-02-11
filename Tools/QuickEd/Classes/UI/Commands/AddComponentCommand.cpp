@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-AddComponentCommand::AddComponentCommand(PackageNode *_root, ControlNode *_node, ComponentPropertiesSection *_section, QUndoCommand *parent)
+AddComponentCommand::AddComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))

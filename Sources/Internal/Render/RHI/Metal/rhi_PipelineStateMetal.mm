@@ -324,7 +324,7 @@ void PipelineStateMetal_t::VertexProg::GetBufferInfo(MTLRenderPipelineReflection
         for (MTLArgument* arg in info.vertexArguments)
         {
             //            const char* name = arg.name.UTF8String;
-            if (arg.active && arg.type == MTLArgumentTypeBuffer && arg.index == 1 + i // CRAP: vprog-buf#0 assumed to be vdata
+            if (arg.active && arg.type == MTLArgumentTypeBuffer && arg.index == MAX_VERTEX_STREAM_COUNT + i // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
                 )
             {
                 MTLStructType* str = arg.bufferStructType;
@@ -468,14 +468,9 @@ void PipelineStateMetal_t::ConstBuf::SetToRHI(unsigned bufIndex, id<MTLRenderCom
     }
 
     if (type == PROG_VERTEX)
-        [ce setVertexBuffer:buf offset:inst_offset atIndex:1 + bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
+        [ce setVertexBuffer:buf offset:inst_offset atIndex:MAX_VERTEX_STREAM_COUNT + bufIndex]; // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
     else
         [ce setFragmentBuffer:buf offset:inst_offset atIndex:bufIndex];
-
-    //    if( type == PROG_VERTEX )
-    //        [ce setVertexBuffer:VertexConstRingBuffer.BufferUID() offset:inst_offset atIndex:1+bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
-    //    else
-    //        [ce setFragmentBuffer:FragmentConstRingBuffer.BufferUID() offset:inst_offset atIndex:bufIndex];
 }
 
 //------------------------------------------------------------------------------
@@ -703,14 +698,17 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
             }
             DVASSERT(fmt != MTLVertexFormatInvalid);
 
-            rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = 0;
+            rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = desc.vertexLayout.ElementStreamIndex(i);
             rp_desc.vertexDescriptor.attributes[attr_i].offset = desc.vertexLayout.ElementOffset(i);
             rp_desc.vertexDescriptor.attributes[attr_i].format = fmt;
         }
 
-        rp_desc.vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
-        rp_desc.vertexDescriptor.layouts[0].stepRate = 1;
-        rp_desc.vertexDescriptor.layouts[0].stride = desc.vertexLayout.Stride();
+        for (unsigned s = 0; s != desc.vertexLayout.StreamCount(); ++s)
+        {
+            rp_desc.vertexDescriptor.layouts[s].stepFunction = (desc.vertexLayout.StreamFrequency(s) == VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+            rp_desc.vertexDescriptor.layouts[s].stepRate = 1;
+            rp_desc.vertexDescriptor.layouts[s].stride = desc.vertexLayout.Stride(s);
+        }
 
         ps->state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionBufferTypeInfo reflection:&ps_info error:&rs_err];
 
@@ -818,6 +816,14 @@ void SetupDispatch(Dispatch* dispatch)
 }
 
 uint32
+VertexStreamCount(Handle ps)
+{
+    PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
+
+    return psm->layout.StreamCount();
+}
+
+uint32
 SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce)
 {
     uint32 stride = 0;
@@ -893,6 +899,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
             {
                 unsigned attr_i = _Metal_VertexAttribIndex(psm->layout.ElementSemantics(i), psm->layout.ElementSemanticsIndex(i));
                 bool attr_set = false;
+                unsigned stream_i = layout->ElementStreamIndex(i);
 
                 for (unsigned j = 0; j != layout->ElementCount(); ++j)
                 {
@@ -945,7 +952,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                             break;
                         }
 
-                        rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = 0;
+                        rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = stream_i;
                         rp_desc.vertexDescriptor.attributes[attr_i].offset = layout->ElementOffset(j);
                         rp_desc.vertexDescriptor.attributes[attr_i].format = fmt;
 
@@ -956,9 +963,12 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                 DVASSERT(attr_set);
             }
 
-            rp_desc.vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
-            rp_desc.vertexDescriptor.layouts[0].stepRate = 1;
-            rp_desc.vertexDescriptor.layouts[0].stride = layout->Stride();
+            for (unsigned s = 0; s != layout->StreamCount(); ++s)
+            {
+                rp_desc.vertexDescriptor.layouts[s].stepFunction = (layout->StreamFrequency(s) == VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+                rp_desc.vertexDescriptor.layouts[s].stepRate = 1;
+                rp_desc.vertexDescriptor.layouts[s].stride = layout->Stride(s);
+            }
 
             state.layoutUID = layoutUID;
             state.state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];

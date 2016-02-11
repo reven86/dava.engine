@@ -63,9 +63,12 @@ bool ExtractFileFromArchive(const String& zipFile, const String& file, const Str
 
     String script = "import zipfile                                      \n"
                     "import os                                           \n"
-                    "zf = zipfile.ZipFile('" + zipFile + "')             \n"
-                    "zf.extract('" + file + "', '" + outPath + "')       \n"
-                    "os.rename('" + unzippedFile + "', '" + outFile + "')\n";
+                    "zf = zipfile.ZipFile('" +
+    zipFile + "')             \n"
+              "zf.extract('" +
+    file + "', '" + outPath + "')       \n"
+                              "os.rename('" +
+    unzippedFile + "', '" + outFile + "')\n";
 
     return RunPythonScript(script);
 }
@@ -74,8 +77,10 @@ bool ExtractAllFromArchive(const String& zipFile, const String& outPath)
 {
     FileSystem::Instance()->DeleteDirectory(outPath);
     String script = "import zipfile                         \n"
-                    "zf = zipfile.ZipFile('" + zipFile + "')\n"
-                    "zf.extractall('" + outPath + "')       \n";
-    
+                    "zf = zipfile.ZipFile('" +
+    zipFile + "')\n"
+              "zf.extractall('" +
+    outPath + "')       \n";
+
     return RunPythonScript(script);
 }

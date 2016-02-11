@@ -65,8 +65,7 @@ UWPRunner::UWPRunner(const PackageOptions& opt)
     : options(opt)
 {
     //install slot to log consumer
-    logConsumerConnectionID = logConsumer.newMessageNotifier.Connect([this](const String& logStr)
-    {
+    logConsumerConnectionID = logConsumer.newMessageNotifier.Connect([this](const String& logStr) {
         NetLogOutput(logStr);
     });
 }
@@ -103,11 +102,11 @@ void UWPRunner::Run()
     }
 
     Runner runner(QString::fromStdString(options.mainPackage),
-        QString::fromStdString(options.packageToInstall),
-        resources,
-        QString::fromStdString(options.dependencies),
-        QStringList(),
-        QString::fromStdString(qtProfile));
+                  QString::fromStdString(options.packageToInstall),
+                  resources,
+                  QString::fromStdString(options.dependencies),
+                  QStringList(),
+                  QString::fromStdString(qtProfile));
 
     //Check runner state
     if (!runner.isValid())
@@ -177,8 +176,7 @@ void UWPRunner::WaitApp()
         }
 
         Thread::Sleep(sleepTimeMS);
-    } 
-    while (!logConsumer.IsSessionEnded());
+    } while (!logConsumer.IsSessionEnded());
 }
 
 void UWPRunner::ProcessPackageOptions()
@@ -263,9 +261,9 @@ void UWPRunner::InitializeNetwork(bool isMobileDevice)
     }
 
     NetCore::Instance()->RegisterService(
-        NetCore::SERVICE_LOG,
-        [this] (uint32 serviceId, void*) -> IChannelListener* { return &logConsumer; },
-        [] (IChannelListener* obj, void*) -> void {});
+    NetCore::SERVICE_LOG,
+    [this](uint32 serviceId, void*) -> IChannelListener* { return &logConsumer; },
+    [](IChannelListener* obj, void*) -> void {});
 
     eNetworkRole role;
     Endpoint endPoint;
@@ -302,7 +300,7 @@ void UWPRunner::UnInitializeNetwork()
 bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 {
     const String desiredAddr = UAPNetworkHelper::UAP_IP_ADDRESS;
-    const DWORD  desiredPort = UAPNetworkHelper::UAP_MOBILE_TCP_PORT;
+    const DWORD desiredPort = UAPNetworkHelper::UAP_MOBILE_TCP_PORT;
     bool changed = false;
 
     String address = key.QueryString("DestinationAddress");

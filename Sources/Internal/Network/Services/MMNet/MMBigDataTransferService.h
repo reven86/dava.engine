@@ -40,14 +40,12 @@
 
 namespace DAVA
 {
-
 class Thread;
 class File;
 class FilePath;
 
 namespace Net
 {
-
 class IOLoop;
 class NetController;
 class ServiceRegistrar;
@@ -58,14 +56,18 @@ class MMBigDataTransferService : public NetService
     struct SnapshotInfo
     {
         SnapshotInfo() = default;
-        SnapshotInfo(const FilePath& fname) : filename(fname) {}
+        SnapshotInfo(const FilePath& fname)
+            : filename(fname)
+        {
+        }
         SnapshotInfo(SnapshotInfo&& other)
             : filename(std::move(other.filename))
             , fileSize(other.fileSize)
             , bytesTransferred(other.bytesTransferred)
             , chunkSize(other.chunkSize)
-        {}
-        SnapshotInfo& operator = (SnapshotInfo&& other)
+        {
+        }
+        SnapshotInfo& operator=(SnapshotInfo&& other)
         {
             filename = std::move(other.filename);
             fileSize = other.fileSize;
@@ -116,9 +118,18 @@ private:
     void NetServiceDeleter(IChannelListener* service, void* context);
 
 private:
-    enum { SERVICE_ID = 0 };
-    enum { PORT = 55478 };
-    enum { OUTBUF_SIZE = 63 * 1024 };
+    enum
+    {
+        SERVICE_ID = 0
+    };
+    enum
+    {
+        PORT = 55478
+    };
+    enum
+    {
+        OUTBUF_SIZE = 63 * 1024
+    };
 
     eNetworkRole role;
     uint32 connToken = 0;
@@ -136,7 +147,7 @@ private:
     SnapshotCallback snapshotCallback;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_MMANOTHERSERVICE_H__
+#endif // __DAVAENGINE_MMANOTHERSERVICE_H__

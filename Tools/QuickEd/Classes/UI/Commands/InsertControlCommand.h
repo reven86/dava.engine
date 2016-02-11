@@ -39,16 +39,16 @@ class ControlsContainerNode;
 class InsertControlCommand : public QUndoCommand
 {
 public:
-    InsertControlCommand(PackageNode *_root, ControlNode *_node, ControlsContainerNode *_dest, int _index, QUndoCommand *parent = nullptr);
+    InsertControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _dest, int _index, QUndoCommand* parent = nullptr);
     virtual ~InsertControlCommand();
- 
+
     void redo() override;
     void undo() override;
 
 private:
-    PackageNode *root;
-    ControlNode *node;
-    ControlsContainerNode *dest;
+    PackageNode* root;
+    ControlNode* node;
+    ControlsContainerNode* dest;
     int index;
 };
 

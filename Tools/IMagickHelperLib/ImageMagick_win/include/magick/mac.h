@@ -28,76 +28,79 @@ extern "C" {
 #include <errno.h>
 
 #if defined(_MAGICKCORE_POSIX_SUPPORT_VERSION)
-# include <dirent.h>
-# if !defined(DISABLE_SIOUX)
-#  include <SIOUX.h>
-# endif
+#include <dirent.h>
+#if !defined(DISABLE_SIOUX)
+#include <SIOUX.h>
+#endif
 #else
-# include <stat.h>
+#include <stat.h>
 
-#define S_IREAD  00400
-#define S_IWRITE  00200
+#define S_IREAD 00400
+#define S_IWRITE 00200
 
 typedef struct _DIR
 {
-  int
+    int
     d_VRefNum;
 
-  long
+    long
     d_DirID;
 
-  int
+    int
     d_index;
 } DIR;
 
 struct dirent
 {
-  char
+    char
     d_name[255];
 
-  int
+    int
     d_namlen;
 };
 #endif
 
 MagickExport Image
-  *ReadPICTImage(const ImageInfo *,ExceptionInfo *);
+*
+ReadPICTImage(const ImageInfo*, ExceptionInfo*);
 
 extern MagickExport int
-  Exit(int),
-  MACSystemCommand(const char *);
+Exit(int),
+MACSystemCommand(const char *);
 
 extern MagickExport MagickBooleanType
-  MACIsMagickConflict(const char *);
+MACIsMagickConflict(const char*);
 
 extern MagickExport void
-  MACErrorHandler(const ExceptionType,const char *,const char *),
-  MACWarningHandler(const ExceptionType,const char *,const char *),
-  ProcessPendingEvents(const char *),
-  SetApplicationType(const char *,const char *,OSType);
+MACErrorHandler(const ExceptionType, const char *, const char *),
+MACWarningHandler(const ExceptionType, const char *, const char *),
+ProcessPendingEvents(const char *),
+SetApplicationType(const char *, const char *, OSType);
 
 #if defined(DISABLE_SIOUX)
 typedef void
-  (*MACEventHookPtr)(const char *);
+(*MACEventHookPtr)(const char*);
 
 typedef void
-  (*MACErrorHookPtr)(const short,const char *text);
+(*MACErrorHookPtr)(const short, const char* text);
 
 extern MagickExport void
-  MACSetErrorHook(MACErrorHookPtr),
-  MACSetEventHook(MACEventHookPtr),
-  MACFatalErrorHandler(const ExceptionType,const char *,const char *);
+MACSetErrorHook(MACErrorHookPtr),
+MACSetEventHook(MACEventHookPtr),
+MACFatalErrorHandler(const ExceptionType, const char *, const char *);
 #endif
 
 #if !defined(_MAGICKCORE_POSIX_SUPPORT_VERSION)
 extern MagickExport DIR
-  *opendir(const char *);
+*
+opendir(const char*);
 
 extern MagickExport long
-  telldir(DIR *);
+telldir(DIR*);
 
 extern MagickExport struct dirent
-  *readdir(DIR *);
+*
+readdir(DIR*);
 
 extern MagickExport void
   seekdir(DIR *,long

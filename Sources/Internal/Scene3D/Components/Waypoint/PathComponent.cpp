@@ -32,17 +32,14 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 
-
 namespace DAVA
 {
-
 //== Waypoint ==
 PathComponent::Waypoint::Waypoint()
 {
     properties = NULL;
 }
 
-    
 PathComponent::Waypoint::~Waypoint()
 {
     for_each(edges.begin(), edges.end(), SafeDelete<PathComponent::Edge>);
@@ -67,26 +64,25 @@ void PathComponent::Waypoint::SetProperties(KeyedArchive* p)
     }
 }
 
-void PathComponent::Waypoint::AddEdge(PathComponent::Edge *edge)
+void PathComponent::Waypoint::AddEdge(PathComponent::Edge* edge)
 {
     edges.push_back(edge);
 }
 
-void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge *edge)
+void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge* edge)
 {
     uint32 edgesCount = static_cast<uint32>(edges.size());
-    for(uint32 e = 0; e < edgesCount; ++e)
+    for (uint32 e = 0; e < edgesCount; ++e)
     {
-        if(edge == edges[e])
+        if (edge == edges[e])
         {
             SafeDelete(edges[e]);
-            RemoveExchangingWithLast(edges,e);
+            RemoveExchangingWithLast(edges, e);
             break;
         }
     }
 }
 
-    
 //== Edge ==
 PathComponent::Edge::Edge()
 {
@@ -114,44 +110,42 @@ void PathComponent::Edge::SetProperties(KeyedArchive* p)
     }
 }
 
-void PathComponent::Edge::SetDestinationName(const FastName & name)
+void PathComponent::Edge::SetDestinationName(const FastName& name)
 {
     //do nothing
 }
 
 const FastName PathComponent::Edge::GetDestinationName() const
 {
-    if(destination)
+    if (destination)
     {
         return destination->name;
     }
-    
+
     return FastName();
 }
 
-void PathComponent::Edge::SetDestinationPoint(const Vector3 & point)
+void PathComponent::Edge::SetDestinationPoint(const Vector3& point)
 {
     //do nothing
 }
 
 const Vector3 PathComponent::Edge::GetDestinationPoint() const
 {
-    if(destination)
+    if (destination)
     {
         return destination->position;
     }
-    
+
     return Vector3();
 }
 
-    
-    
 //== PathComponent ==
 PathComponent::PathComponent()
-    :	Component()
+    : Component()
 {
 }
-    
+
 PathComponent::~PathComponent()
 {
     Reset();
@@ -162,21 +156,21 @@ PathComponent::Waypoint* NewWaypoint()
     return new PathComponent::Waypoint;
 }
 
-Component * PathComponent::Clone(Entity * toEntity)
+Component* PathComponent::Clone(Entity* toEntity)
 {
-	PathComponent * newComponent = new PathComponent();
+    PathComponent* newComponent = new PathComponent();
 
     newComponent->SetName(name);
     newComponent->SetColor(color);
-	newComponent->SetEntity(toEntity);
+    newComponent->SetEntity(toEntity);
 
     const uint32 waypointCount = static_cast<uint32>(waypoints.size());
-    if(waypointCount)
+    if (waypointCount)
     {
         newComponent->waypoints.resize(waypointCount);
         std::generate(newComponent->waypoints.begin(), newComponent->waypoints.end(), NewWaypoint);
 
-        for(uint32 w = 0; w < waypointCount; ++w)
+        for (uint32 w = 0; w < waypointCount; ++w)
         {
             const Waypoint* waypoint = waypoints[w];
             DVASSERT(waypoint);
@@ -190,16 +184,16 @@ Component * PathComponent::Clone(Entity * toEntity)
             newWaypoint->SetProperties(waypoint->GetProperties());
 
             const uint32 edgesCount = static_cast<uint32>(waypoint->edges.size());
-            for(uint32 e = 0; e < edgesCount; ++e)
+            for (uint32 e = 0; e < edgesCount; ++e)
             {
-                Edge *edge = waypoint->edges[e];
+                Edge* edge = waypoint->edges[e];
                 DVASSERT(edge);
                 DVASSERT(edge->destination);
 
                 uint32 destWaypointIdx = GetWaypointIndex(edge->destination);
                 DVASSERT(destWaypointIdx < waypointCount);
 
-                Edge *newEdge = new Edge;
+                Edge* newEdge = new Edge;
 
                 newEdge->SetProperties(edge->GetProperties());
                 newEdge->destination = newComponent->waypoints[destWaypointIdx];
@@ -211,53 +205,53 @@ Component * PathComponent::Clone(Entity * toEntity)
     return newComponent;
 }
 
-void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void PathComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Serialize(archive, serializationContext);
 
-    if(NULL != archive)
+    if (NULL != archive)
     {
         archive->SetFastName("name", name);
         archive->SetColor("color", color);
-        
+
         const uint32 waypointCount = static_cast<uint32>(waypoints.size());
         archive->SetUInt32("waypointCount", waypointCount);
 
-        if(waypointCount)
+        if (waypointCount)
         {
-            for(uint32 w = 0; w < waypointCount; ++w)
+            for (uint32 w = 0; w < waypointCount; ++w)
             {
-                const Waypoint *wp = waypoints[w];
-                
-                KeyedArchive * wpArchieve = new KeyedArchive();
+                const Waypoint* wp = waypoints[w];
+
+                KeyedArchive* wpArchieve = new KeyedArchive();
 
                 wpArchieve->SetFastName("name", wp->name);
                 wpArchieve->SetVector3("position", wp->position);
                 wpArchieve->SetBool("isStarting", wp->isStarting);
-                if(wp->GetProperties())
+                if (wp->GetProperties())
                 {
                     wpArchieve->SetArchive("properties", wp->GetProperties());
                 }
-                
+
                 const uint32 edgesCount = static_cast<uint32>(wp->edges.size());
                 wpArchieve->SetUInt32("edgesCount", edgesCount);
-                for(uint32 e = 0; e < edgesCount; ++e)
+                for (uint32 e = 0; e < edgesCount; ++e)
                 {
-                    Edge *edge = wp->edges[e];
-                    
-                    KeyedArchive * edgeArchieve = new KeyedArchive();
-                    if(edge->GetProperties())
+                    Edge* edge = wp->edges[e];
+
+                    KeyedArchive* edgeArchieve = new KeyedArchive();
+                    if (edge->GetProperties())
                     {
                         edgeArchieve->SetArchive("properties", edge->GetProperties());
                     }
-                    
+
                     DVASSERT(edge->destination);
                     edgeArchieve->SetUInt32("destination", GetWaypointIndex(edge->destination)); //index in waypoints array
-                    
+
                     wpArchieve->SetArchive(Format("edge_%d", e), edgeArchieve);
                     SafeRelease(edgeArchieve);
                 }
-                
+
                 archive->SetArchive(Format("waypoint_%d", w), wpArchieve);
                 SafeRelease(wpArchieve);
             }
@@ -265,48 +259,48 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
     }
 }
 
-    
-uint32 PathComponent::GetWaypointIndex(const PathComponent::Waypoint * point)
+uint32 PathComponent::GetWaypointIndex(const PathComponent::Waypoint* point)
 {
     const uint32 waypointCount = (const uint32)waypoints.size();
-    for(uint32 w = 0; w < waypointCount; ++w)
+    for (uint32 w = 0; w < waypointCount; ++w)
     {
-        if(point == waypoints[w])
+        if (point == waypoints[w])
         {
             return w;
         }
     }
-    
+
     DVASSERT(false);
     return -1;
 }
 
-void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void PathComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Deserialize(archive, serializationContext);
 
-    if(archive == NULL) return;
-    
-    
+    if (archive == NULL)
+        return;
+
     DVASSERT(waypoints.size() == 0);
     Reset();
 
     name = archive->GetFastName("name");
     color = archive->GetColor("color");
-    
+
     const uint32 waypointCount = archive->GetUInt32("waypointCount");
-    if(!waypointCount) return;
-    
+    if (!waypointCount)
+        return;
+
     waypoints.resize(waypointCount);
     std::generate(waypoints.begin(), waypoints.end(), NewWaypoint);
 
     bool startingWaypointExists = false;
 
-    for(uint32 w = 0; w < waypointCount; ++w)
+    for (uint32 w = 0; w < waypointCount; ++w)
     {
-        Waypoint *wp = waypoints[w];
-        
-        KeyedArchive * wpArchieve = archive->GetArchive(Format("waypoint_%d", w));
+        Waypoint* wp = waypoints[w];
+
+        KeyedArchive* wpArchieve = archive->GetArchive(Format("waypoint_%d", w));
         DVASSERT(wpArchieve);
 
         wp->name = wpArchieve->GetFastName("name");
@@ -314,25 +308,25 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
         wp->isStarting = wpArchieve->GetBool("isStarting");
         if (wp->isStarting)
             startingWaypointExists = true;
-        
-        KeyedArchive *wpProperties = wpArchieve->GetArchive("properties");
+
+        KeyedArchive* wpProperties = wpArchieve->GetArchive("properties");
         wp->SetProperties(wpProperties);
-        
+
         const uint32 edgesCount = wpArchieve->GetUInt32("edgesCount");
-        for(uint32 e = 0; e < edgesCount; ++e)
+        for (uint32 e = 0; e < edgesCount; ++e)
         {
-            Edge *edge = new Edge();
-            
-            KeyedArchive * edgeArchieve = wpArchieve->GetArchive(Format("edge_%d", e));
+            Edge* edge = new Edge();
+
+            KeyedArchive* edgeArchieve = wpArchieve->GetArchive(Format("edge_%d", e));
             DVASSERT(edgeArchieve);
-            
-            KeyedArchive *edgeProperties = edgeArchieve->GetArchive("properties");
+
+            KeyedArchive* edgeProperties = edgeArchieve->GetArchive("properties");
             edge->SetProperties(edgeProperties);
-            
+
             uint32 index = edgeArchieve->GetUInt32("destination");
             DVASSERT(index < waypointCount);
             edge->destination = waypoints[index];
-            
+
             wp->edges.push_back(edge);
         }
     }
@@ -343,23 +337,23 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     }
 }
 
-void PathComponent::AddPoint(DAVA::PathComponent::Waypoint *point)
+void PathComponent::AddPoint(DAVA::PathComponent::Waypoint* point)
 {
     waypoints.push_back(point);
 }
 
-void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
+void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint* point)
 {
     uint32 waypointCount = static_cast<uint32>(waypoints.size());
-    for(uint32 w = 0; w < waypointCount; ++w)
+    for (uint32 w = 0; w < waypointCount; ++w)
     {
-        Waypoint *wp = waypoints[w];
-        
+        Waypoint* wp = waypoints[w];
+
         uint32 edgesCount = static_cast<uint32>(wp->edges.size());
-        for(uint32 e = 0; e < edgesCount; ++e)
+        for (uint32 e = 0; e < edgesCount; ++e)
         {
-            Edge *edge = wp->edges[e];
-            if(edge->destination == point)
+            Edge* edge = wp->edges[e];
+            if (edge->destination == point)
             {
                 SafeDelete(wp->edges[e]);
                 wp->edges.erase(wp->edges.begin() + e);
@@ -367,8 +361,8 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
                 --edgesCount;
             }
         }
-        
-        if(wp == point)
+
+        if (wp == point)
         {
             SafeDelete(waypoints[w]);
             waypoints.erase(waypoints.begin() + w);
@@ -378,13 +372,13 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
     }
 }
 
-PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
+PathComponent::Waypoint* PathComponent::GetWaypoint(const FastName& name)
 {
     const uint32 waypointCount = static_cast<uint32>(waypoints.size());
-    for(uint32 w = 0; w < waypointCount; ++w)
+    for (uint32 w = 0; w < waypointCount; ++w)
     {
-        Waypoint *wp = waypoints[w];
-        if(wp->GetProperties() && (wp->GetProperties()->GetFastName("name") == name))
+        Waypoint* wp = waypoints[w];
+        if (wp->GetProperties() && (wp->GetProperties()->GetFastName("name") == name))
         {
             return wp;
         }
@@ -400,8 +394,7 @@ void PathComponent::Reset()
 
 PathComponent::Waypoint* PathComponent::GetStartWaypoint() const
 {
-    auto found = find_if(waypoints.begin(), waypoints.end(), [](PathComponent::Waypoint* wp){return wp->IsStarting();});
+    auto found = find_if(waypoints.begin(), waypoints.end(), [](PathComponent::Waypoint* wp) { return wp->IsStarting(); });
     return (found == waypoints.end() ? nullptr : *found);
 }
-    
 }

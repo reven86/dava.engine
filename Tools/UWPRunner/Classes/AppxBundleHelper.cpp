@@ -39,13 +39,13 @@
 
 using namespace DAVA;
 
-AppxBundleHelper::AppxBundleHelper(const FilePath &fileName)
+AppxBundleHelper::AppxBundleHelper(const FilePath& fileName)
 {
     String dirName = fileName.GetBasename() + "_files/";
     bundlePackageDir = fileName.GetDirectory() + dirName;
 
     Logger::Info("Extracting bundle...");
-    bool result = ExtractAllFromArchive(fileName.GetAbsolutePathname(), 
+    bool result = ExtractAllFromArchive(fileName.GetAbsolutePathname(),
                                         bundlePackageDir.GetAbsolutePathname());
 
     DVASSERT_MSG(result, "Failed to extract files from bundle");
@@ -69,7 +69,7 @@ AppxBundleHelper::~AppxBundleHelper()
     RemoveFiles();
 }
 
-bool AppxBundleHelper::IsBundle(const FilePath &fileName)
+bool AppxBundleHelper::IsBundle(const FilePath& fileName)
 {
     return fileName.GetExtension() == ".appxbundle";
 }
@@ -157,7 +157,7 @@ void AppxBundleHelper::ParseBundleManifest()
         PackageInfo packageInfo;
         packageInfo.architecture = "any";
         packageInfo.isApplication = false;
-            
+
         for (const auto& attribute : attributes)
         {
             if (attribute.name() == QStringLiteral("Type"))

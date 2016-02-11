@@ -397,7 +397,6 @@ private:
         return false; // let pass event to other controls
     }
 
-
     uint32 numKeyboardEvents = 0;
     uint32 numKeyDown = 0;
     uint32 numKeyUp = 0;

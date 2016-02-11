@@ -409,7 +409,6 @@ Sprite * TextBlock::GetSprite()
     return nullptr;
 }
 
-
 void TextBlock::NeedPrepare(Texture* texture /*=NULL*/)
 {
     needCalculateCacheParams = true;
@@ -646,7 +645,6 @@ void TextBlock::CalculateCacheParams()
                         }
                     }
                 }
-
 
                 if (((!xBigger && !yBigger) && (!xLower || !yLower)) || FLOAT_EQUAL(renderSize, 0.f))
                 {
@@ -962,5 +960,4 @@ TextBlock * TextBlock::Clone()
 
     return block;
 }
-
 };

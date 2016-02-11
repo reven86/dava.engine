@@ -75,6 +75,8 @@ enum CommandGLES2Type
 
     GLES2__DRAW_PRIMITIVE = 41,
     GLES2__DRAW_INDEXED_PRIMITIVE = 42,
+    GLES2__DRAW_INSTANCED_PRIMITIVE = 43,
+    GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE = 44,
 
     GLES2__SET_MARKER = 51,
 
@@ -245,12 +247,32 @@ CommandGLES2_DrawPrimitive : public CommandGLES2Impl<CommandGLES2_DrawPrimitive,
 } DV_ATTR_PACKED;
 
 struct
+CommandGLES2_DrawInstancedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedPrimitive, GLES2__DRAW_INSTANCED_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+    uint16 instanceCount;
+    uint16 baseInstance;
+} DV_ATTR_PACKED;
+
+struct
 CommandGLES2_DrawIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawIndexedPrimitive, GLES2__DRAW_INDEXED_PRIMITIVE>
 {
     uint8 mode;
     uint32 vertexCount;
     uint32 firstVertex;
     uint32 startIndex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawInstancedIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedIndexedPrimitive, GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+    uint32 firstVertex;
+    uint32 startIndex;
+    uint16 instanceCount;
+    uint16 baseInstance;
 } DV_ATTR_PACKED;
 
 struct
@@ -709,7 +731,7 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 static void
 gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    // NOTE: expected to be called BEFORE SetFragmentTexture
+// NOTE: expected to be called BEFORE SetFragmentTexture
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
@@ -721,33 +743,39 @@ gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
+static int
+_GLES2_GetDrawMode(PrimitiveType primType, uint32 primCount, unsigned* v_cnt)
 {
-    unsigned v_cnt = 0;
     int mode = GL_TRIANGLES;
 
-    switch (type)
+    switch (primType)
     {
     case PRIMITIVE_TRIANGLELIST:
-        v_cnt = count * 3;
+        *v_cnt = primCount * 3;
         mode = GL_TRIANGLES;
         break;
 
     case PRIMITIVE_TRIANGLESTRIP:
-        v_cnt = 2 + count;
+        *v_cnt = 2 + primCount;
         mode = GL_TRIANGLE_STRIP;
         break;
 
     case PRIMITIVE_LINELIST:
-        v_cnt = count * 2;
+        *v_cnt = primCount * 2;
         mode = GL_LINES;
         break;
+    }
 
-    default:
-    {
-    }
-    }
+    return mode;
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
+{
+    unsigned v_cnt = 0;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -765,29 +793,7 @@ static void
 gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex)
 {
     unsigned v_cnt = 0;
-    int mode = GL_TRIANGLES;
-
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        v_cnt = count * 3;
-        mode = GL_TRIANGLES;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        v_cnt = 2 + count;
-        mode = GL_TRIANGLE_STRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        v_cnt = count * 2;
-        mode = GL_LINES;
-        break;
-
-    default:
-    {
-    }
-    }
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -798,6 +804,48 @@ gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
     cmd->startIndex = startIndex;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt, firstVertex, startIndex);
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    unsigned v_cnt = 0;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_DrawInstancedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawInstancedPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = 0;
+#else
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_PRIMITIVE, uint32(mode), instCount, v_cnt);
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    unsigned v_cnt = 0;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawInstancedIndexedPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+    cmd->firstVertex = firstVertex;
+    cmd->startIndex = startIndex;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = baseInstance;
+#else
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE, uint32(mode), instCount, v_cnt, firstVertex, startIndex, baseInstance);
 #endif
 }
 
@@ -1030,7 +1078,7 @@ void CommandBufferGLES2_t::Execute()
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
-    Handle cur_vb = InvalidHandle;
+    Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     Handle cur_ib = InvalidHandle;
     bool vdecl_pending = true;
     IndexSize idx_size = INDEX_SIZE_16BIT;
@@ -1038,6 +1086,9 @@ void CommandBufferGLES2_t::Execute()
     Handle cur_query_buf = InvalidHandle;
     uint32 cur_query_i = DAVA::InvalidIndex;
     GLint def_viewport[4] = { 0, 0, 0, 0 };
+
+    for (unsigned i = 0; i != MAX_VERTEX_STREAM_COUNT; ++i)
+        cur_vb[i] = InvalidHandle;
 
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
@@ -1181,20 +1232,24 @@ void CommandBufferGLES2_t::Execute()
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             Handle vb = ((const CommandGLES2_SetVertexData*)cmd)->vb;
+            unsigned stream_i = ((const CommandGLES2_SetVertexData*)cmd)->streamIndex;
             #else
             Handle vb = (Handle)(arg[0]);
+            unsigned stream_i = uint32(arg[1]);
             c += 2;
             #endif
-            if (cur_vb != vb)
+            if (cur_vb[stream_i] != vb)
             {
-                VertexBufferGLES2::SetToRHI(vb);
+                if (stream_i == 0)
+                    VertexBufferGLES2::SetToRHI(vb);
+
                 PipelineStateGLES2::InvalidateVattrCache();
                 vdecl_pending = true;
                 cur_base_vert = 0;
 
                 StatSet::IncStat(stat_SET_VB, 1);
 
-                cur_vb = vb;
+                cur_vb[stream_i] = vb;
             }
         }
         break;
@@ -1491,7 +1546,7 @@ void CommandBufferGLES2_t::Execute()
 
             if (last_ps != cur_ps)
             {
-                PipelineStateGLES2::SetToRHI(cur_ps, cur_vdecl);
+                PipelineStateGLES2::SetToRHI(cur_ps);
                 StatSet::IncStat(stat_SET_PS, 1);
                 last_ps = cur_ps;
             }
@@ -1512,7 +1567,7 @@ void CommandBufferGLES2_t::Execute()
 
             if (vdecl_pending)
             {
-                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl);
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
                 vdecl_pending = false;
             }
 
@@ -1557,7 +1612,7 @@ void CommandBufferGLES2_t::Execute()
 
             if (last_ps != cur_ps)
             {
-                PipelineStateGLES2::SetToRHI(cur_ps, cur_vdecl);
+                PipelineStateGLES2::SetToRHI(cur_ps);
                 StatSet::IncStat(stat_SET_PS, 1);
                 last_ps = cur_ps;
             }
@@ -1575,7 +1630,7 @@ void CommandBufferGLES2_t::Execute()
 
             if (vdecl_pending || firstVertex != cur_base_vert)
             {
-                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, firstVertex);
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, firstVertex, countof(cur_vb), cur_vb);
                 vdecl_pending = false;
                 cur_base_vert = firstVertex;
             }
@@ -1593,6 +1648,170 @@ void CommandBufferGLES2_t::Execute()
             }
 
             GL_CALL(glDrawElements(mode, v_cnt, i_sz, _GLES2_LastSetIndices + i_off));
+            StatSet::IncStat(stat_DIP, 1);
+            switch (mode)
+            {
+            case GL_TRIANGLES:
+                StatSet::IncStat(stat_DTL, 1);
+                break;
+
+            case GL_TRIANGLE_STRIP:
+                StatSet::IncStat(stat_DTS, 1);
+                break;
+
+            case GL_LINES:
+                StatSet::IncStat(stat_DLL, 1);
+                break;
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
+        }
+        break;
+
+        case GLES2__DRAW_INSTANCED_PRIMITIVE:
+        {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned v_cnt = ((const CommandGLES2_DrawInstancedPrimitive*)cmd)->vertexCount;
+            int mode = ((const CommandGLES2_DrawInstancedPrimitive*)cmd)->mode;
+            unsigned instCount = ((const CommandGLES2_DrawInstancedPrimitive*)cmd)->instanceCount;
+            #else
+            unsigned v_cnt = unsigned(arg[2]);
+            int mode = int(arg[0]);
+            unsigned instCount = int(arg[1]);
+            c += 3;
+            #endif
+
+            if (last_ps != cur_ps)
+            {
+                PipelineStateGLES2::SetToRHI(cur_ps);
+                StatSet::IncStat(stat_SET_PS, 1);
+                last_ps = cur_ps;
+            }
+
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (vp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(vp_const[i], cur_gl_prog, vp_const_data[i]);
+            }
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (fp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
+
+            if (vdecl_pending)
+            {
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
+                vdecl_pending = false;
+            }
+
+            #if defined(__DAVAENGINE_IPHONE__)
+            GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
+            #elif defined(__DAVAENGINE_ANDROID__)
+            GL_CALL(glDrawArraysInstanced_EXT(mode, 0, v_cnt, instCount));
+            #elif defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
+            #else
+            GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            #endif
+            StatSet::IncStat(stat_DP, 1);
+            switch (mode)
+            {
+            case GL_TRIANGLES:
+                StatSet::IncStat(stat_DTL, 1);
+                break;
+
+            case GL_TRIANGLE_STRIP:
+                StatSet::IncStat(stat_DTS, 1);
+                break;
+
+            case GL_LINES:
+                StatSet::IncStat(stat_DLL, 1);
+                break;
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
+        }
+        break;
+
+        case GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned v_cnt = ((const CommandGLES2_DrawInstancedIndexedPrimitive*)cmd)->vertexCount;
+            int mode = ((const CommandGLES2_DrawInstancedIndexedPrimitive*)cmd)->mode;
+            unsigned instCount = ((const CommandGLES2_DrawInstancedIndexedPrimitive*)cmd)->instanceCount;
+            uint32 firstVertex = ((const CommandGLES2_DrawInstancedIndexedPrimitive*)cmd)->firstVertex;
+            uint32 startIndex = ((const CommandGLES2_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
+            uint32 baseInst = ((const CommandGLES2_DrawInstancedIndexedPrimitive*)cmd)->baseInstance;
+            #else
+            unsigned v_cnt = unsigned(arg[2]);
+            int mode = int(arg[0]);
+            unsigned instCount = int(arg[1]);
+            uint32 firstVertex = uint32(arg[3]);
+            uint32 startIndex = uint32(arg[4]);
+            uint32 baseInst = uint32(arg[5]);
+            c += 6;
+            #endif
+            //{SCOPED_NAMED_TIMING("gl.DIP")}
+
+            if (last_ps != cur_ps)
+            {
+                PipelineStateGLES2::SetToRHI(cur_ps);
+                StatSet::IncStat(stat_SET_PS, 1);
+                last_ps = cur_ps;
+            }
+
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (vp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(vp_const[i], cur_gl_prog, vp_const_data[i]);
+            }
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (fp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
+            }
+
+            if (vdecl_pending || firstVertex != cur_base_vert)
+            {
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, firstVertex, countof(cur_vb), cur_vb);
+                vdecl_pending = false;
+                cur_base_vert = firstVertex;
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
+
+            int i_sz = GL_UNSIGNED_SHORT;
+            int i_off = startIndex * sizeof(uint16);
+
+            if (idx_size == INDEX_SIZE_32BIT)
+            {
+                i_sz = GL_UNSIGNED_INT;
+                i_off = startIndex * sizeof(uint32);
+            }
+
+            #if defined(__DAVAENGINE_IPHONE__)
+            DVASSERT(baseInst == 0) // it's not supported in GLES
+            GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            #elif defined(__DAVAENGINE_ANDROID__)
+            DVASSERT(baseInst == 0) // it's not supported in GLES
+            GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            #elif defined(__DAVAENGINE_MACOS__)
+            //            DVASSERT(baseInst == 0)
+            //            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+            #else
+            //            if( baseInst )
+            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+//            else
+//                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            #endif
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
             {
@@ -2506,6 +2725,8 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetSamplerState = &gles2_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive = &gles2_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive = &gles2_CommandBuffer_DrawIndexedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedPrimitive = &gles2_CommandBuffer_DrawInstancedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedIndexedPrimitive = &gles2_CommandBuffer_DrawInstancedIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker = &gles2_CommandBuffer_SetMarker;
 
     dispatch->impl_SyncObject_Create = &gles2_SyncObject_Create;

@@ -39,7 +39,7 @@
 
 using namespace DAVA;
 
-StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
+StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
     : PackageBaseNode(nullptr)
     , rootProperty(nullptr)
 {
@@ -52,7 +52,7 @@ StyleSheetNode::~StyleSheetNode()
     SafeRelease(rootProperty);
 }
 
-StyleSheetNode *StyleSheetNode::Clone() const
+StyleSheetNode* StyleSheetNode::Clone() const
 {
     Vector<UIStyleSheetSelectorChain> selectors = rootProperty->CollectStyleSheetSelectors();
     Vector<UIStyleSheetProperty> properties = rootProperty->CollectStyleSheetProperties();
@@ -64,12 +64,12 @@ int StyleSheetNode::GetCount() const
     return 0;
 }
 
-PackageBaseNode *StyleSheetNode::Get(int index) const
+PackageBaseNode* StyleSheetNode::Get(int index) const
 {
     return nullptr;
 }
 
-void StyleSheetNode::Accept(PackageVisitor *visitor)
+void StyleSheetNode::Accept(PackageVisitor* visitor)
 {
     visitor->VisitStyleSheet(this);
 }
@@ -94,7 +94,7 @@ bool StyleSheetNode::CanCopy() const
     return true;
 }
 
-StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
+StyleSheetRootProperty* StyleSheetNode::GetRootProperty() const
 {
     return rootProperty;
 }

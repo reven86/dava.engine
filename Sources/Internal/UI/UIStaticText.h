@@ -62,6 +62,7 @@ public:
 #endif
 protected:
     virtual ~UIStaticText();
+
 public:
     UIStaticText(const Rect& rect = Rect());
 
@@ -111,21 +112,32 @@ public:
 
     void PrepareSprite();
 
-
     const WideString & GetText() const;
     const Vector<WideString> & GetMultilineStrings() const;
 
-    Font * GetFont() const { return textBlock->GetFont(); }
+    Font* GetFont() const
+    {
+        return textBlock->GetFont();
+    }
 
     virtual UIStaticText *Clone() override;
     virtual void CopyDataFrom(UIControl *srcControl) override;
-    TextBlock * GetTextBlock() { return textBlock; }
+    TextBlock* GetTextBlock()
+    {
+        return textBlock;
+    }
     const Color &GetTextColor() const;
     const Color &GetShadowColor() const;
     const Vector2 &GetShadowOffset() const;
 
-    inline UIControlBackground* GetTextBackground() const { return textBg; };
-    inline UIControlBackground* GetShadowBackground() const { return shadowBg; };
+    inline UIControlBackground* GetTextBackground() const
+    {
+        return textBg;
+    };
+    inline UIControlBackground* GetShadowBackground() const
+    {
+        return shadowBg;
+    };
 
     // Animation methods for Text Color and Shadow Color.
     virtual Animation * TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
@@ -161,7 +173,6 @@ public:
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
     
 public:
-    
     String GetFontPresetName() const;
     void SetFontByPresetName(const String &presetName);
     
@@ -194,7 +205,6 @@ public:
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT));
 };
-
 };
 
 #endif //__DAVAENGINE_UI_STATIC_TEXT_H__

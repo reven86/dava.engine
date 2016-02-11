@@ -32,11 +32,9 @@
 
 #include "TeamcityOutput/TeamcityOutput.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-   
-class TeamcityTestsOutput: public TeamcityOutput
+class TeamcityTestsOutput : public TeamcityOutput
 {
 public:
     virtual void Output(Logger::eLogLevel ll, const char8* text);
@@ -64,7 +62,6 @@ public:
     static const String MATERIAL_FRAME_DELTA;
 
 private:
-
     static const String START_TEST;
     static const String FINISH_TEST;
     static const String ERROR_TEST;
@@ -73,8 +70,6 @@ private:
 
     void TestOutput(const String& data);
 };
-
 };
 
 #endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
-

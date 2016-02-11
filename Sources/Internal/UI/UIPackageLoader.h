@@ -105,7 +105,6 @@ private:
     
     DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
 };
-
 };
 
 #endif // __DAVAENGINE_UI_PACKAGE_LOADER_H__

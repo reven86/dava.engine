@@ -98,6 +98,7 @@ private: // PropertyVisitor
     void VisitStyleSheetRoot(StyleSheetRootProperty *property) override;
     void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) override;
     void VisitStyleSheetProperty(StyleSheetProperty *property) override;
+
 private:
     void AcceptChildren(AbstractProperty *property);
     void PutValueProperty(const DAVA::String &name, ValueProperty *property);

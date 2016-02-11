@@ -36,9 +36,8 @@
 class CubemapUtils
 {
 public:
-	
-	static void GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::FilePath>& faceNames);
-	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue);
+    static void GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::FilePath>& faceNames);
+    static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue);
 };
 
 #endif /* defined(__CUBEMAP_UTILS_H__) */

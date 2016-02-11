@@ -35,7 +35,7 @@
 class SvcHelper
 {
 public:
-    SvcHelper(const DAVA::String &name);
+    SvcHelper(const DAVA::String& name);
     ~SvcHelper();
 
     DAVA::String ServiceName() const;
@@ -52,4 +52,4 @@ private:
     SC_HANDLE service = nullptr;
 };
 
-#endif  // SVCHELPER_H
+#endif // SVCHELPER_H

@@ -31,16 +31,15 @@
 
 #include <QMouseEvent>
 
-
 MouseHelper::MouseHelper(QWidget* _w)
     : QObject(_w)
-      , w(_w)
-      , isHover(false)
-      , isPressed(false)
-      , clickDist(4)
-      , dblClickDist(4)
+    , w(_w)
+    , isHover(false)
+    , isPressed(false)
+    , clickDist(4)
+    , dblClickDist(4)
 {
-    Q_ASSERT( w );
+    Q_ASSERT(w);
     w->installEventFilter(this);
 }
 
@@ -66,16 +65,16 @@ bool MouseHelper::eventFilter(QObject* obj, QEvent* e)
             leaveEvent(e);
             break;
         case QEvent::MouseMove:
-            mouseMoveEvent(static_cast<QMouseEvent *>(e));
+            mouseMoveEvent(static_cast<QMouseEvent*>(e));
             break;
         case QEvent::MouseButtonPress:
-            mousePressEvent(static_cast<QMouseEvent *>(e));
+            mousePressEvent(static_cast<QMouseEvent*>(e));
             break;
         case QEvent::MouseButtonRelease:
-            mouseReleaseEvent(static_cast<QMouseEvent *>(e));
+            mouseReleaseEvent(static_cast<QMouseEvent*>(e));
             break;
         case QEvent::Wheel:
-            mouseWheelEvent(static_cast<QWheelEvent *>(e));
+            mouseWheelEvent(static_cast<QWheelEvent*>(e));
             break;
 
         default:
@@ -109,7 +108,7 @@ void MouseHelper::mouseMoveEvent(QMouseEvent* event)
 void MouseHelper::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() != Qt::LeftButton)
-        return ;
+        return;
 
     pos = event->pos();
     clickPos = pos;
@@ -120,9 +119,9 @@ void MouseHelper::mousePressEvent(QMouseEvent* event)
 void MouseHelper::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button() != Qt::LeftButton)
-        return ;
+        return;
     if (!isPressed)
-        return ;
+        return;
 
     pos = event->pos();
     isPressed = false;

@@ -23,10 +23,11 @@ extern "C" {
 #endif
 
 extern MagickExport Image
-  *DeskewImage(const Image *,const double,ExceptionInfo *),
-  *IntegralRotateImage(const Image *,size_t,ExceptionInfo *),
-  *ShearImage(const Image *,const double,const double,ExceptionInfo *),
-  *ShearRotateImage(const Image *,const double,ExceptionInfo *);
+*
+DeskewImage(const Image *, const double, ExceptionInfo *),
+*IntegralRotateImage(const Image *, size_t, ExceptionInfo *),
+*ShearImage(const Image *, const double, const double, ExceptionInfo *),
+*ShearRotateImage(const Image *, const double, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
