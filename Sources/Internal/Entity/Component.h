@@ -42,7 +42,7 @@ namespace DAVA
 class Entity;
 class Component : public Serializable, public InspBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT)
 
 public:
     enum eType
@@ -135,7 +135,7 @@ inline Entity* Component::GetEntity() const
     virtual uint32 GetType() const { return TYPE; }; \
     static const uint32 C_TYPE = TYPE; 
 
-#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
+#define MAKE_COMPONENT_MASK(x) (1ULL << static_cast<uint64>(x))
 
 template <template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T>& container)
