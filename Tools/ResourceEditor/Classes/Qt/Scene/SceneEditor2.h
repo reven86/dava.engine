@@ -120,9 +120,9 @@ public:
     PathSystem* pathSystem;
 
     // save/load
-    bool Load(const DAVA::FilePath& path);
-    virtual SceneFileV2::eError Save(const DAVA::FilePath& pathname, bool saveForGame = false);
-    SceneFileV2::eError Save();
+    SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
+    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
+    SceneFileV2::eError SaveScene();
     bool Export(const DAVA::eGPUFamily newGPU);
 
     const DAVA::FilePath& GetScenePath();
