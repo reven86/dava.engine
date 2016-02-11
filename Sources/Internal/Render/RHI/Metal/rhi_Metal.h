@@ -110,6 +110,10 @@ namespace QueryBufferMetal
 {
 void SetupDispatch(Dispatch* dispatch);
 }
+namespace PerfQuerySetMetal
+{
+void SetupDispatch(Dispatch* dispatch);
+}
 namespace TextureMetal
 {
 void Init(uint32 maxCount);
