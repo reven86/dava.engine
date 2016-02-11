@@ -254,7 +254,7 @@ VertexDeclGLES2
 
         for (unsigned i = 0; i != elemCount; ++i)
         {
-            if (cur_stream_count != streamCount)
+            if (!VAttrCacheValid || cur_stream_count != streamCount)
             {
                 if (elem[i].streamIndex != stream)
                 {
@@ -288,7 +288,7 @@ VertexDeclGLES2
                     vattr[idx].pointer = (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
+                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
