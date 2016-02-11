@@ -53,8 +53,8 @@ public:
 
     TextureListDelegate(QObject* parent = 0);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) override const;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) override const;
 
     void setDrawRule(DrawRule rule);
 
@@ -67,7 +67,7 @@ signals:
     void textureDescriptorChanged(DAVA::TextureDescriptor* descriptor);
 
 protected:
-    bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index);
+    bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private slots:
     void textureReadyThumbnail(const DAVA::TextureDescriptor* descriptor, const TextureInfo& images);
