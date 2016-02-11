@@ -265,7 +265,7 @@ protected:
 		info.OneTimeMetaSafeSet<_type>(); \
         return &info; \
 	} \
-	virtual const DAVA::InspInfo* GetTypeInfo() const \
+    const DAVA::InspInfo* GetTypeInfo() const override \
 	{ \
 		return _type::TypeInfo(); \
 	}
@@ -280,7 +280,7 @@ protected:
 		info.OneTimeMetaSafeSet<_type>(); \
 		return &info; \
 	} \
-	virtual const DAVA::InspInfo* GetTypeInfo() const \
+    const DAVA::InspInfo* GetTypeInfo() const override \
 	{ \
 		return _type::TypeInfo(); \
 	}
