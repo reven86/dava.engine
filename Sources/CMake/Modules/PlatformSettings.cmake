@@ -116,7 +116,6 @@ elseif( WARNINGS_AS_ERRORS )
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
     -Wno-c++98-compat-pedantic \
-    -Wno-reserved-id-macro \
     -Wno-documentation-pedantic \
     -Wno-documentation \
     -Wno-nullable-to-nonnull-conversion \

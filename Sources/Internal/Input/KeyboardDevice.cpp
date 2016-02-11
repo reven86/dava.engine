@@ -29,9 +29,11 @@
 
 #include "KeyboardDevice.h"
 
+#include <algorithm>
+
 namespace DAVA
 {
-static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames =
+static const char* keys[] =
 {
   "UNKNOWN",
   "ESCAPE",
@@ -167,6 +169,8 @@ KeyboardDevice::KeyboardDevice()
 {
     static_assert(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) < MAX_KEYS, "check array size");
     DVASSERT(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) == keyNames.size());
+
+    std::copy(keys, keys + keyNames.size(), keyNames.begin());
 
     ClearAllKeys();
     PrepareKeyTranslator();

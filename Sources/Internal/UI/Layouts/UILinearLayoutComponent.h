@@ -43,7 +43,7 @@ public:
     };
 
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT)
 
     UILinearLayoutComponent();
     UILinearLayoutComponent(const UILinearLayoutComponent& src);
@@ -115,7 +115,7 @@ public:
                          PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynamicSpacing, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
-                         );
+                         )
 };
 }
 

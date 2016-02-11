@@ -228,7 +228,7 @@ inline DAVA::uint32 HashValue_N(const char* key, uint32 length) DAVA_NOEXCEPT
     {
         a += (key[0] + (static_cast<uint32>(key[1]) << 8) + (static_cast<uint32>(key[2]) << 16) + (static_cast<uint32>(key[3]) << 24));
         b += (key[4] + (static_cast<uint32>(key[5]) << 8) + (static_cast<uint32>(key[6]) << 16) + (static_cast<uint32>(key[7]) << 24));
-        c += (key[8] + (static_cast<uint32>(key[9] )<< 8) + (static_cast<uint32>(key[10]) << 16) + (static_cast<uint32>(key[11]) << 24));
+        c += (key[8] + (static_cast<uint32>(key[9]) << 8) + (static_cast<uint32>(key[10]) << 16) + (static_cast<uint32>(key[11]) << 24));
 
         hash_mix(a, b, c);
 
