@@ -102,7 +102,7 @@ bool XMLParser::ParseBytes(const unsigned char* bytes, int length, XMLParserDele
     saxHandler.endElement = XMLParser::EndElement;
     saxHandler.characters = XMLParser::Characters;
 
-    int32 retCode = xmlSAXUserParseMemory(&saxHandler, (void*)delegateptr, (char*)bytes, length);
+    int32 retCode = xmlSAXUserParseMemory(&saxHandler, reinterpret_cast<void*>(delegateptr), reinterpret_cast<const char*>(bytes), length);
     //		Logger::FrameworkDebug("[XMLParser::ParseBytes] retCode = %d", retCode);
     if (0 <= retCode)
     {

@@ -111,8 +111,6 @@ private:
 	void Update(float32 timeElapsed);
 	
 	friend class Animation;*/
-public:
-    INTROSPECTION_EXTEND(AnimatedObject, BaseObject, NULL)
 };
 };
 

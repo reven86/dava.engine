@@ -1,18 +1,21 @@
 #include "LogWidget.h"
+#include "LogModel.h"
+#include "LogFilterModel.h"
+#include "LogDelegate.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Debug/DVAssert.h"
+#include "Base/GlobalEnum.h"
+
+PUSH_QT_WARNING_SUPRESSOR
+#include "ui_LogWidget.h"
 #include <QDebug>
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QThread>
-
-#include "LogModel.h"
-#include "LogFilterModel.h"
-#include "LogDelegate.h"
-#include "Base/GlobalEnum.h"
-#include "Debug/DVAssert.h"
-#include "ui_LogWidget.h"
-
-#include "QtTools/WidgetHelpers/SharedIcon.h"
+POP_QT_WARNING_SUPRESSOR
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)

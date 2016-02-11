@@ -64,6 +64,7 @@ private:
     struct Channel : public IChannel
     {
         Channel(uint32 id, ProtoDriver* driver);
+        ~Channel() override;
 
         bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
         const Endpoint& RemoteEndpoint() const override;

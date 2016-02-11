@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+﻿cmake_minimum_required (VERSION 3.0)
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
@@ -30,7 +30,6 @@ add_definitions       (
 -DQT_HAVE_SSE
 -DQT_HAVE_MMXEXT
 -DQT_HAVE_SSE2
--DQT_LARGEFILE_SUPPORT
 -DQT_THREAD_SUPPORT
 )
 

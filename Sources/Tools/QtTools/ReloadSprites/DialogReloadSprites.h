@@ -30,10 +30,13 @@
 #ifndef __DIALOG_RELOAD_SPRITES_H__
 #define __DIALOG_RELOAD_SPRITES_H__
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 #include "SpritesPacker.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QDialog>
-
 #include <QThread>
+POP_QT_WARNING_SUPRESSOR
+
 namespace Ui
 {
     class DialogReloadSprites;
@@ -41,7 +44,9 @@ namespace Ui
 
 class DialogReloadSprites : public QDialog
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 public:
     explicit DialogReloadSprites(SpritesPacker* packer, QWidget* parent = nullptr);
     ~DialogReloadSprites();
