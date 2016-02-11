@@ -3135,7 +3135,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity, currentScene->selectionSystem->GetSelectionAABox(entity));
+                        entityGroup.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
                     }
                 }
 

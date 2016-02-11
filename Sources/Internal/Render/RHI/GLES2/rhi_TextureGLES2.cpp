@@ -270,7 +270,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         if (desc.isRenderTarget)
         {
             isRenderTarget = true;
-            forceSetSamplerState = false;
 
             GLint int_fmt, fmt;
             GLenum type;
