@@ -93,9 +93,18 @@ inline static uint32 ColorFormatSize(eColorFormat Format)
 
     case ECF_R8G8B8:
         return 3;
+
     case ECF_A8R8G8B8:
         return 4;
-    default:
+
+    case ECF_DXT1:
+    case ECF_DXT2:
+    case ECF_DXT3:
+    case ECF_DXT4:
+    case ECF_DXT5:
+    case ECF_R16F:
+    case ECF_G16R16F:
+    case ECF_A16B16G16R16F:
         return 0;
     }
     return 0;
@@ -185,7 +194,19 @@ inline uint16 RGBColor::Convert16(eColorFormat Format)
 
         return RGB16(color >> 16, color >> 8, color); //((((uint32)R>>3) & 0x1F)<<10) | ((((uint32)G>>3) & 0x1F)<<5) | (((uint32)B) & 0x1F );
     }
-    default:
+
+    case ECF_R5G6B5:
+    case ECF_A4R4G4B4:
+    case ECF_R8G8B8:
+    case ECF_A8R8G8B8:
+    case ECF_DXT1:
+    case ECF_DXT2:
+    case ECF_DXT3:
+    case ECF_DXT4:
+    case ECF_DXT5:
+    case ECF_R16F:
+    case ECF_G16R16F:
+    case ECF_A16B16G16R16F:
         return 0;
     }
     return 0;
@@ -212,7 +233,15 @@ inline uint32 RGBColor::Convert2(eColorFormat Format)
         return color & 0xffffff;
     case ECF_A8R8G8B8:
         return color;
-    default:
+
+    case ECF_DXT1:
+    case ECF_DXT2:
+    case ECF_DXT3:
+    case ECF_DXT4:
+    case ECF_DXT5:
+    case ECF_R16F:
+    case ECF_G16R16F:
+    case ECF_A16B16G16R16F:
         return 0;
     }
     return 0;
@@ -248,23 +277,30 @@ inline void RGBColor::ConvertFrom(eColorFormat format, uint32 value)
     case ECF_A8R8G8B8:
         color = value;
         return;
-    default:
+    case ECF_DXT1:
+    case ECF_DXT2:
+    case ECF_DXT3:
+    case ECF_DXT4:
+    case ECF_DXT5:
+    case ECF_R16F:
+    case ECF_G16R16F:
+    case ECF_A16B16G16R16F:
         return;
     }
 }
 
 inline RGBColor::RGBColor(const Vector4& color)
 {
-    r = (uint8)(color.x * 255.0f);
-    g = (uint8)(color.y * 255.0f);
-    b = (uint8)(color.z * 255.0f);
-    a = (uint8)(color.w * 255.0f);
+    r = static_cast<uint8>(color.x * 255.0f);
+    g = static_cast<uint8>(color.y * 255.0f);
+    b = static_cast<uint8>(color.z * 255.0f);
+    a = static_cast<uint8>(color.w * 255.0f);
 }
 inline RGBColor::RGBColor(const Vector3& color)
 {
-    r = (uint8)(color.x * 255.0f);
-    g = (uint8)(color.y * 255.0f);
-    b = (uint8)(color.z * 255.0f);
+    r = static_cast<uint8>(color.x * 255.0f);
+    g = static_cast<uint8>(color.y * 255.0f);
+    b = static_cast<uint8>(color.z * 255.0f);
     a = 255;
 }
 

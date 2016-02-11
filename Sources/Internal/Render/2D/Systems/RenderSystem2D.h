@@ -291,7 +291,7 @@ private:
     inline bool IsRenderTargetPass()
     {
         return (currentPacketListHandle != packetList2DHandle);
-    };
+    }
 
     const Matrix4& VirtualToPhysicalMatrix() const;
 

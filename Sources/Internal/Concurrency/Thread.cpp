@@ -38,7 +38,6 @@
 
 namespace DAVA
 {
-    
 Thread::Id Thread::mainThreadId;
 
 ConcurrentObject<Set<Thread*>>& GetThreadList()
