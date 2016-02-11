@@ -66,15 +66,15 @@ public:
     T* New()
     {
         return data->New();
-    };
+    }
     void Delete(T* _item)
     {
         return data->Delete(_item);
-    };
+    }
     void Reset()
     {
         data->Reset();
-    };
+    }
 
 private:
     DynamicObjectCacheData<T>* data;
@@ -158,7 +158,7 @@ template <class T>
 void DynamicObjectCacheData<T>::Delete(T* object)
 {
     object->~T();
-    cache.push_back((uint8*)object);
+    cache.push_back(reinterpret_cast<uint8*>(object));
 }
 };
 

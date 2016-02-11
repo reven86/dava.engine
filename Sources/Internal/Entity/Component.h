@@ -91,13 +91,10 @@ public:
 public:
     static Component* CreateByType(uint32 componentType);
 
-    Component();
-    virtual ~Component();
-
     virtual uint32 GetType() const = 0;
     virtual Component* Clone(Entity* toEntity) = 0;
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     inline Entity* GetEntity() const;
     virtual void SetEntity(Entity* entity);
@@ -120,7 +117,7 @@ public:
     void GetDataNodes(Container<T>& container);
 
 protected:
-    Entity* entity; // entity is a Entity, that this component belongs to
+    Entity* entity = 0;
 
 public:
     INTROSPECTION(Component,
