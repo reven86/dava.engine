@@ -258,10 +258,7 @@ inline Rect& Rect::operator=(const Rect& rect)
 
 inline bool Rect::operator==(const Rect& _r) const
 {
-    return (FLOAT_EQUAL(x, _r.x) &&
-            FLOAT_EQUAL(y, _r.y) &&
-            FLOAT_EQUAL(dx, _r.dx) &&
-            FLOAT_EQUAL(dy, _r.dy));
+    return EQUAL_MEMORY(x, _r.x) && EQUAL_MEMORY(y, _r.y) && EQUAL_MEMORY(dx, _r.dx) && EQUAL_MEMORY(dy, _r.dy);
 }
 
 inline bool Rect::operator!=(const Rect& _r) const

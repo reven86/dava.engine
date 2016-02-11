@@ -143,7 +143,7 @@ public:
                          PROPERTY("vDynamicSpacing", "Dynamic Vertical Spacing", IsDynamicVerticalSpacing, SetDynamicVerticalSpacing, I_SAVE | I_VIEW | I_EDIT)
 
                          PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

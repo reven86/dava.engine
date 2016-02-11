@@ -47,7 +47,7 @@ public:
             frame = _frame;
             time = _time;
             next = 0;
-        };
+        }
 
         int frame;
         float32 time;
