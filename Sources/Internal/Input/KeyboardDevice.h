@@ -172,7 +172,6 @@ enum class Key : uint32
     TOTAL_KEYS_COUNT
 };
 
-#pragma pack(push, 1)
 class KeyboardDevice : public BaseObject
 {
 public:
@@ -213,7 +212,6 @@ private:
     Array<Key, MAX_KEYS> keyTranslator;
     Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames;
 };
-#pragma pack(pop)
 
 }; // end DAVA namespace
 
