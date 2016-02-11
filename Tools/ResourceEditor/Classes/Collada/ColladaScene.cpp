@@ -62,18 +62,20 @@ void ColladaScene::ExportAnimations(ColladaAnimation* colladaAnimation, FCDScene
 void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode* node /* = 0 */)
 {
     exportSceneLevel++;
-    if (fcdNode == 0)
+
+    if (fcdNode == nullptr)
         fcdNode = rootFCDNode;
-    if (node == 0)
+
+    if (node == nullptr)
         node = rootNode;
 
-    node->UpdateTransforms(0);
+    node->UpdateTransforms(0.0f);
 
-    for (int i = 0; i < (int)fcdNode->GetInstanceCount(); ++i)
+    for (size_t i = 0; i < fcdNode->GetInstanceCount(); ++i)
     {
         FCDEntityInstance* instance = fcdNode->GetInstance(i);
         FCDEntity* entity = instance->GetEntity();
-        if (!entity)
+        if (entity == nullptr)
             continue;
 
         fm::string name = entity->GetDaeId();
@@ -86,19 +88,12 @@ void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode
         if (mesh)
         {
             ColladaMeshInstance* meshInstance = CreateMeshInstance(mesh, dynamic_cast<FCDGeometryInstance*>(instance), false);
-
-            //for (int space = 0; space < exportSceneLevel; ++space)
-            //	printf(" ");
-            //printf(" - mesh: %s\n", name.c_str());
             node->AddMeshInstance(meshInstance);
         }
 
         ColladaLight* light = FindLightWithName(name);
         if (light)
         {
-            //for (int space = 0; space < exportSceneLevel; ++space)
-            //	printf(" ");
-            //printf(" - light: %s\n", name.c_str());
             node->AddLight(light);
         }
 
@@ -123,7 +118,6 @@ void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode
     {
         FCDSceneNode* fcdChildNode = fcdNode->GetChild(i);
         ColladaSceneNode* childNode = new ColladaSceneNode(this, fcdChildNode);
-
         ExportScene(fcdChildNode, childNode);
         node->AddNode(childNode);
     }
@@ -298,22 +292,33 @@ ColladaMeshInstance* ColladaScene::CreateMeshInstance(ColladaMesh* mesh, FCDGeom
 
             if (materialSemantic == polygonMaterialSemantic)
             {
-                fm::string materialId = materialInstance->GetMaterial()->GetDaeId();
-                material = FindMaterialWithName(materialId);
+                auto colladaMaterial = materialInstance->GetMaterial();
+                if (colladaMaterial != nullptr)
+                {
+                    const fm::string& materialId = colladaMaterial->GetDaeId();
+                    material = FindMaterialWithName(materialId);
+                }
+                else
+                {
+                    printf("\n[ERROR] no material for %s in polygon group %s inside mesh %s\n",
+                           materialSemantic.c_str(), polygonMaterialSemantic.c_str(), mesh->name.c_str());
+                }
             }
         }
 
         printf(" - mesh instance: %s ", mesh->mesh->GetDaeId().c_str());
-        if (material)
+        if (material != nullptr)
         {
-            printf(" material: %s ", material->material->GetDaeId().c_str());
+            printf(" material: %s", material->material->GetDaeId().c_str());
             if (material->hasDiffuseTexture)
-                wprintf(L" diftex: %s\n", (wchar_t*)(material->diffuseTexture->image->GetFilename().c_str()));
+            {
+                wprintf(L" diffuse texture: %S\n", (wchar_t*)(material->diffuseTexture->image->GetFilename().c_str()));
+            }
+            printf("\n");
         }
-        printf("\n");
-
         ColladaPolygonGroup* polyGroup = mesh->GetPolygonGroup(i);
         printf("- mesh instance added polygroup: %p %d\n", polyGroup, i);
+
         ColladaPolygonGroupInstance* polygonGroupInstance = new ColladaPolygonGroupInstance(polyGroup, material);
         meshInstance->AddPolygonGroupInstance(polygonGroupInstance);
     }
