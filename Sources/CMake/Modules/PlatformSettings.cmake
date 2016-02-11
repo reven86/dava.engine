@@ -121,6 +121,8 @@ elseif( WARNINGS_AS_ERRORS )
     -Wno-documentation \
     -Wno-nullable-to-nonnull-conversion \
     -Wno-nonnull \
+    -Wno-nested-anon-types \
+    -Wno-gnu-anonymous-struct \
 ")
 
 
