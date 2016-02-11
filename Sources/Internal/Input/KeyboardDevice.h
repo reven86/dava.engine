@@ -172,11 +172,12 @@ enum class Key : uint32
     TOTAL_KEYS_COUNT
 };
 
+#pragma pack(push, 1)
 class KeyboardDevice : public BaseObject
 {
 public:
     bool IsKeyPressed(Key key) const; // during frame
-    static const String& GetKeyName(Key key);
+    const String& GetKeyName(Key key);
 
 private:
     friend class InputSystem;
@@ -210,7 +211,9 @@ private:
     Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
     static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
+    Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames;
 };
+#pragma pack(pop)
 
 }; // end DAVA namespace
 

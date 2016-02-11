@@ -50,7 +50,7 @@ using DAVA::Size2i;
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
-static const uint32 DefaultDepthBuffer = (uint32)(-2);
+static const uint32 DefaultDepthBuffer = static_cast<uint32>(-2);
 
 typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
 
@@ -832,9 +832,9 @@ RenderPassConfig
     RenderPassConfig()
         : queryBuffer(InvalidHandle)
         , priority(0)
-        , invertCulling(0)
         , PerfQueryIndex0(DAVA::InvalidIndex)
         , PerfQueryIndex1(DAVA::InvalidIndex)
+        , invertCulling(0)
     {
     }
 };

@@ -81,7 +81,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     
 #if defined Q_OS_WIN
     QString actionName = tr("Show in explorer");
-#else if defined Q_OS_MAC
+#elif defined Q_OS_MAC
     QString actionName = tr("Show in finder");
 #endif //Q_OS_WIN //Q_OS_MAC
     showInSystemExplorerAction = new QAction(actionName, this);

@@ -175,7 +175,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 - (BOOL)startNotifier
 {
     BOOL returnValue = NO;
-    SCNetworkReachabilityContext context = { 0, (__bridge void*)(self), NULL, NULL, NULL };
+    SCNetworkReachabilityContext context = { 0, reinterpret_cast<void*>(self), NULL, NULL, NULL };
 
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ReachabilityCallback, &context))
     {

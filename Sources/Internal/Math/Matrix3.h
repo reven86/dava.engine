@@ -78,6 +78,8 @@ struct Matrix3
     inline void Transpose();
     inline void Decomposition(Matrix3& kQ, Vector3& kD, Vector3& kU) const;
 
+    inline Matrix3& operator=(const Matrix3& arg);
+
     inline Matrix3& operator*=(const Matrix3& arg);
     inline Matrix3 operator*(const Matrix3& arg) const;
 
@@ -205,6 +207,20 @@ inline void Matrix3::BuildScale(const Vector2& vec)
     Identity();
     _00 = vec.x;
     _11 = vec.y;
+}
+
+inline Matrix3& Matrix3::operator=(const Matrix3& arg)
+{
+    _00 = arg._00;
+    _01 = arg._01;
+    _02 = arg._02;
+    _10 = arg._10;
+    _11 = arg._11;
+    _12 = arg._12;
+    _20 = arg._20;
+    _21 = arg._21;
+    _22 = arg._22;
+    return *this;
 }
 
 inline Matrix3 Matrix3::operator*(const Matrix3& m) const

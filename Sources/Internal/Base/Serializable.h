@@ -40,7 +40,9 @@ class KeyedArchive;
 class Serializable
 {
 public:
-    virtual ~Serializable(){};
+    virtual ~Serializable()
+    {
+    }
 
     virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) = 0;
     virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) = 0;

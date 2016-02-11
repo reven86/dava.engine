@@ -31,7 +31,6 @@
 #define __DAVAENGINE_PROTODRIVER_H__
 
 #include <Base/BaseTypes.h>
-#include <Concurrency/Atomic.h>
 #include <Concurrency/Mutex.h>
 #include <Concurrency/Spinlock.h>
 
@@ -141,8 +140,6 @@ private:
 
     ProtoDecoder proto;
     ProtoHeader header;
-
-    static Atomic<uint32> nextPacketId; // Global for all instances
 };
 
 //////////////////////////////////////////////////////////////////////////
