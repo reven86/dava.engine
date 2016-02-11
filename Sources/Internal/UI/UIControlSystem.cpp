@@ -49,37 +49,20 @@ const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
 UIControlSystem::~UIControlSystem()
 {
-    SafeRelease(currentScreen);
-    SafeRelease(popupContainer);
+    if (popupContainer->GetSystemVisible())
+        popupContainer->SystemWillBecomeInvisible();
+    popupContainer->SystemDisappear();
+    popupContainer = nullptr;
+
+    currentScreen = nullptr;
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
     SafeDelete(screenshoter);
 }
 
 UIControlSystem::UIControlSystem()
-    : layoutSystem(nullptr)
-    , clearColor(Color::Clear)
+    : clearColor(Color::Clear)
 {
-    screenLockCount = 0;
-    frameSkip = 0;
-    transitionType = 0;
-
-    nextScreenTransition = 0;
-    currentScreen = 0;
-    nextScreen = 0;
-    prevScreen = NULL;
-    removeCurrentScreen = false;
-    hovered = NULL;
-    focusedControl = NULL;
-
-    popupContainer = new UIControl(Rect(0, 0, 1, 1));
-    popupContainer->SetName("UIControlSystem_popupContainer");
-    popupContainer->SetInputEnabled(false);
-
-    exclusiveInputLocker = NULL;
-
-    lockInputCounter = 0;
-
     baseGeometricData.position = Vector2(0, 0);
     baseGeometricData.size = Vector2(0, 0);
     baseGeometricData.pivotPoint = Vector2(0, 0);
@@ -89,49 +72,50 @@ UIControlSystem::UIControlSystem()
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
     screenshoter = new UIScreenshoter();
+
+    popupContainer.Set(new UIControl(Rect(0, 0, 1, 1)));
+    popupContainer->SetName("UIControlSystem_popupContainer");
+    popupContainer->SetInputEnabled(false);
+
+    popupContainer->SystemAppear();
+    if (popupContainer->GetSystemVisible())
+        popupContainer->SystemWillBecomeVisible();
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
 {
     if (_nextScreen == currentScreen)
     {
-        if (nextScreen != 0)
+        if (nextScreen != nullptr)
         {
-            SafeRelease(nextScreenTransition);
-            SafeRelease(nextScreen);
+            nextScreenTransition = nullptr;
+            nextScreen = nullptr;
         }
         return;
     }
 
-    if (nextScreen)
+    if (nextScreen.Valid())
     {
         Logger::Warning("2 screen switches during one frame.");
     }
 
     // 2 switches on one frame can cause memory leak
-    SafeRelease(nextScreenTransition);
-    SafeRelease(nextScreen);
+    nextScreenTransition = nullptr;
+    nextScreen = nullptr;
 
-    nextScreenTransition = SafeRetain(_transition);
+    nextScreenTransition = _transition;
 
-    if (_nextScreen == 0)
+    if (_nextScreen == nullptr)
     {
         removeCurrentScreen = true;
     }
 
-    nextScreen = SafeRetain(_nextScreen);
+    nextScreen = _nextScreen;
 }
 
-void UIControlSystem::ReplaceScreen(UIScreen* newMainControl)
+UIScreen* UIControlSystem::GetScreen() const
 {
-    prevScreen = currentScreen;
-    currentScreen = newMainControl;
-    NotifyListenersDidSwitch(currentScreen);
-}
-
-UIScreen* UIControlSystem::GetScreen()
-{
-    return currentScreen;
+    return currentScreen.Get();
 }
 
 void UIControlSystem::AddPopup(UIPopup* newPopup)
@@ -176,14 +160,19 @@ void UIControlSystem::RemoveAllPopups()
     }
 }
 
-UIControl* UIControlSystem::GetPopupContainer()
+UIControl* UIControlSystem::GetPopupContainer() const
 {
-    return popupContainer;
+    return popupContainer.Get();
+}
+
+UIScreenTransition* UIControlSystem::GetScreenTransition() const
+{
+    return currentScreenTransition.Get();
 }
 
 void UIControlSystem::Reset()
 {
-    SetScreen(0);
+    SetScreen(nullptr);
 }
 
 void UIControlSystem::ProcessScreenLogic()
@@ -193,103 +182,91 @@ void UIControlSystem::ProcessScreenLogic()
 	 */
     if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
     {
-        UIScreen* nextScreenProcessed = 0;
-        UIScreenTransition* transitionProcessed = 0;
+        RefPtr<UIScreen> nextScreenProcessed;
+        RefPtr<UIScreenTransition> nextScreenTransitionProcessed;
 
         nextScreenProcessed = nextScreen;
-        transitionProcessed = nextScreenTransition;
-        nextScreen = 0; // functions called by this method can request another screen switch (for example, LoadResources)
-        nextScreenTransition = 0;
+        nextScreenTransitionProcessed = nextScreenTransition;
+        nextScreen = nullptr; // functions called by this method can request another screen switch (for example, LoadResources)
+        nextScreenTransition = nullptr;
 
         LockInput();
 
         CancelAllInputs();
 
-        NotifyListenersWillSwitch(nextScreenProcessed);
+        NotifyListenersWillSwitch(nextScreenProcessed.Get());
 
-        // If we have transition set
-        if (transitionProcessed)
+        if (nextScreenTransitionProcessed)
         {
+            nextScreenTransitionProcessed->StartTransition();
+            nextScreenTransitionProcessed->SetSourceScreen(currentScreen.Get());
+        }
+        // if we have current screen we call events, unload resources for it group
+        if (currentScreen)
+        {
+            if (currentScreen->GetSystemVisible())
+                currentScreen->SystemWillBecomeInvisible();
+            currentScreen->SystemDisappear();
+
+            RefPtr<UIScreen> prevScreen = currentScreen;
+            currentScreen = nullptr;
+
+            if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
+            {
+                prevScreen->UnloadGroup();
+            }
+        }
+        // if we have next screen we load new resources, if it equal to zero we just remove screen
+        if (nextScreenProcessed)
+        {
+            nextScreenProcessed->LoadGroup();
+        }
+        currentScreen = nextScreenProcessed;
+        if (currentScreen)
+        {
+            currentScreen->SystemAppear();
+            if (currentScreen->GetSystemVisible())
+                currentScreen->SystemWillBecomeVisible();
+        }
+
+        NotifyListenersDidSwitch(currentScreen.Get());
+
+        if (nextScreenTransitionProcessed)
+        {
+            nextScreenTransitionProcessed->SetDestinationScreen(currentScreen.Get());
+
             LockSwitch();
+            LockInput();
 
-            // check if we have not loading transition
-            if (!transitionProcessed->IsLoadingTransition())
-            {
-                // start transition and set currentScreen
-                transitionProcessed->StartTransition(currentScreen, nextScreenProcessed);
-                currentScreen = transitionProcessed;
-            }
-            else
-            {
-                // if we got loading transition
-                UILoadingTransition* loadingTransition = dynamic_cast<UILoadingTransition*>(transitionProcessed);
-                DVASSERT(loadingTransition);
-
-                // Firstly start transition
-                loadingTransition->StartTransition(currentScreen, nextScreenProcessed);
-
-                // Manage transfer to loading transition through InTransition of LoadingTransition
-                if (loadingTransition->GetInTransition())
-                {
-                    loadingTransition->GetInTransition()->StartTransition(currentScreen, loadingTransition);
-                    currentScreen = SafeRetain(loadingTransition->GetInTransition());
-                }
-                else
-                {
-                    if (currentScreen)
-                    {
-                        if (currentScreen->IsOnScreen())
-                            currentScreen->SystemWillBecomeInvisible();
-                        currentScreen->SystemWillDisappear();
-                        if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
-                        {
-                            currentScreen->UnloadGroup();
-                        }
-                        currentScreen->SystemDidDisappear();
-                    }
-                    // if we have next screen we load new resources, if it equal to zero we just remove screen
-                    loadingTransition->LoadGroup();
-                    loadingTransition->SystemWillAppear();
-                    currentScreen = loadingTransition;
-                    loadingTransition->SystemDidAppear();
-                    if (loadingTransition->IsOnScreen())
-                        loadingTransition->SystemWillBecomeVisible();
-                }
-            }
+            currentScreenTransition = nextScreenTransitionProcessed;
+            currentScreenTransition->SystemAppear();
+            if (currentScreenTransition->GetSystemVisible())
+                currentScreenTransition->SystemWillBecomeVisible();
         }
-        else // if there is no transition do change immediatelly
-        {
-            // if we have current screen we call events, unload resources for it group
-            if (currentScreen)
-            {
-                if (currentScreen->IsOnScreen())
-                    currentScreen->SystemWillBecomeInvisible();
-                currentScreen->SystemWillDisappear();
-                if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
-                {
-                    currentScreen->UnloadGroup();
-                }
-                currentScreen->SystemDidDisappear();
-            }
-            // if we have next screen we load new resources, if it equal to zero we just remove screen
-            if (nextScreenProcessed)
-            {
-                nextScreenProcessed->LoadGroup();
-                nextScreenProcessed->SystemWillAppear();
-            }
-            currentScreen = nextScreenProcessed;
-            NotifyListenersDidSwitch(currentScreen);
-            if (nextScreenProcessed)
-            {
-                nextScreenProcessed->SystemDidAppear();
-                if (nextScreenProcessed->IsOnScreen())
-                    nextScreenProcessed->SystemWillBecomeVisible();
-            }
 
-            UnlockInput();
-        }
+        UnlockInput();
+
         frameSkip = FRAME_SKIP;
         removeCurrentScreen = false;
+    }
+    else
+    if (currentScreenTransition)
+    {
+        if (currentScreenTransition->IsComplete())
+        {
+            if (currentScreenTransition->GetSystemVisible())
+                currentScreenTransition->SystemWillBecomeInvisible();
+            currentScreenTransition->SystemDisappear();
+
+            RefPtr<UIScreenTransition> prevScreenTransitionProcessed = currentScreenTransition;
+            currentScreenTransition = nullptr;
+
+            UnlockInput();
+            UnlockSwitch();
+
+            prevScreenTransitionProcessed->EndTransition();
+            prevScreenTransitionProcessed = nullptr;
+        }
     }
 
     /*
@@ -320,7 +297,11 @@ void UIControlSystem::Update()
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
-        if (currentScreen)
+        if (currentScreenTransition)
+        {
+            currentScreenTransition->SystemUpdate(timeElapsed);
+        }
+        else if (currentScreen)
         {
             currentScreen->SystemUpdate(timeElapsed);
         }
@@ -328,7 +309,6 @@ void UIControlSystem::Update()
         popupContainer->SystemUpdate(timeElapsed);
     }
 
-    SafeRelease(prevScreen);
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 
@@ -351,7 +331,11 @@ void UIControlSystem::Draw()
         RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
     }
 
-    if (currentScreen)
+    if (currentScreenTransition)
+    {
+        currentScreenTransition->SystemDraw(baseGeometricData);
+    }
+    else if (currentScreen)
     {
         currentScreen->SystemDraw(baseGeometricData);
     }
@@ -482,7 +466,7 @@ void UIControlSystem::CancelInput(UIEvent* touch)
     {
         touch->touchLocker->SystemInputCancelled(touch);
     }
-    if (touch->touchLocker != currentScreen)
+    if (touch->touchLocker != currentScreen.Get())
     {
         currentScreen->SystemInputCancelled(touch);
     }
@@ -579,7 +563,15 @@ UIControl* UIControlSystem::GetExclusiveInputLocker()
 
 void UIControlSystem::ScreenSizeChanged()
 {
-    popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    Rect fullscreenRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+
+    if (currentScreenTransition.Valid())
+        currentScreenTransition->SystemScreenSizeDidChanged(fullscreenRect);
+
+    if (currentScreen.Valid())
+        currentScreen->SystemScreenSizeDidChanged(fullscreenRect);
+
+    popupContainer->SystemScreenSizeDidChanged(fullscreenRect);
 }
 
 void UIControlSystem::SetHoveredControl(UIControl* newHovered)

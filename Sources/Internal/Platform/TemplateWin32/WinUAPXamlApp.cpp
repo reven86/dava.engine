@@ -450,7 +450,6 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
         DeviceInfo::InitializeScreenInfo();
         ResetRender();
         ReInitCoordinatesSystem();
-        UIScreenManager::Instance()->ScreenSizeChanged();
         UIControlSystem::Instance()->ScreenSizeChanged();
     });
 }
@@ -989,7 +988,7 @@ void WinUAPXamlApp::ResetScreen()
 
     ResetRender();
     ReInitCoordinatesSystem();
-    UIScreenManager::Instance()->ScreenSizeChanged();
+    UIControlSystem::Instance()->ScreenSizeChanged();
 }
 
 void WinUAPXamlApp::ResetRender()

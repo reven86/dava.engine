@@ -216,7 +216,7 @@ public:
 
     UIListCell* GetReusableCell(const String& cellIdentifier); //returns cell from the cells cache, if returns 0 you need to create the new one
 
-    virtual void SystemWillAppear(); // Internal method used by ControlSystem
+    void OnAppear() override;
 
     virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);

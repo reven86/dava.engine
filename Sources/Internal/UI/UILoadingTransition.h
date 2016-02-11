@@ -35,52 +35,25 @@
 
 namespace DAVA
 {
-class UILoadingTransition : public UIScreenTransition
+class UILoadingScreen : public UIScreen
 {
 public:
-    UILoadingTransition();
-    virtual ~UILoadingTransition();
+    UILoadingScreen();
+    virtual ~UILoadingScreen();
 
-    // Setup of default loading screen
-    void SetInTransition(UIScreenTransition* transition);
-    void SetOutTransition(UIScreenTransition* transition);
+    virtual void SetScreenToLoad(UIScreen* _nextScreen);
 
-    void SetBackgroundSprite(Sprite* sprite);
-    void SetAnimationSprite(Sprite* animationSprite);
-    void SetAnimationDuration(float32 durationInSeconds);
-
-    virtual void DidAppear();
-    virtual void StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen);
-    virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData& geometricData);
-    virtual int32 GetGroupId();
-    virtual void WillAppear();
-    virtual void WillDisappear();
-
-    inline UIScreenTransition* GetInTransition();
-
-    bool IsLoadingTransition();
+    void Update(float32 timeElapsed) override;
+    void OnAppear() override;
+    void OnDisappear() override;
 
 protected:
-    Sprite* backgroundSprite;
-    Sprite* animationSprite;
-    float32 animationTime;
-    float32 animationDuration;
-
-    UIScreenTransition* inTransition;
-    UIScreenTransition* outTransition;
-
     void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
-    Thread* thread;
+    RefPtr<Thread> thread;
 
 private:
-    virtual void SetDuration(float32 timeInSeconds);
+    RefPtr<UIScreen> nextScreen;
 };
-
-inline UIScreenTransition* UILoadingTransition::GetInTransition()
-{
-    return inTransition;
-}
 };
 
 

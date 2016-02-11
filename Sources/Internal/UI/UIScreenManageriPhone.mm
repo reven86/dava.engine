@@ -72,11 +72,6 @@ void UIScreenManager::ActivateGLController()
 {
 }
 
-void UIScreenManager::ScreenSizeChanged()
-{
-    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
-}
-
 void UIScreenManager::SetFirst(int screenId)
 {
     Screen& screen = screens[screenId];

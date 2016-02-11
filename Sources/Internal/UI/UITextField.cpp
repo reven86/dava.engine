@@ -332,24 +332,23 @@ void UITextField::Update(float32 timeElapsed)
     textFieldImpl->UpdateRect(GetGeometricData().GetUnrotatedRect());
 }
 
-void UITextField::WillAppear()
+void UITextField::OnAppear()
 {
+    UIControl::OnAppear();
     if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
     {
         UIControlSystem::Instance()->SetFocusedControl(this, false);
     }
-}
 
-void UITextField::DidAppear()
-{
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsOnScreen());
 #endif
 }
 
-void UITextField::WillDisappear()
+void UITextField::OnDisappear()
 {
+    UIControl::OnDisappear();
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->HideField();
 #endif

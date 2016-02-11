@@ -61,7 +61,7 @@ UIScreen::~UIScreen()
     }
 }
 
-void UIScreen::SystemWillAppear()
+void UIScreen::SystemAppear()
 {
     bool needNotify = false;
     const Rect& virtualRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
@@ -71,7 +71,7 @@ void UIScreen::SystemWillAppear()
         needNotify = true;
     }
 
-    UIControl::SystemWillAppear();
+    UIControl::SystemAppear();
 
     if (needNotify)
     {

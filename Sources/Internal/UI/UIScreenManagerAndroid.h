@@ -49,8 +49,6 @@ public:
     UIScreen* GetScreen();
     int32 GetScreenId();
 
-    void ScreenSizeChanged();
-
 private:
     void ActivateGLController();
 

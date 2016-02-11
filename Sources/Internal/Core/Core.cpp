@@ -667,7 +667,6 @@ void Core::SystemProcessFrame()
         if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
         {
             VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-            UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
         }
 

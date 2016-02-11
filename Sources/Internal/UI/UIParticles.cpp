@@ -80,8 +80,9 @@ UIParticles::~UIParticles()
     }
 }
 
-void UIParticles::WillAppear()
+void UIParticles::OnAppear()
 {
+    UIControl::OnAppear()
     updateTime = 0.0f;
 }
 

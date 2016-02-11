@@ -56,8 +56,6 @@ public:
     void* GetController();
     int GetControllerId();
 
-    void ScreenSizeChanged();
-
     // GetScreen, GetController
     // Stack of the screens
     // void SetScreen(int screen);

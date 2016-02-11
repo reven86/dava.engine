@@ -188,17 +188,17 @@ private:
             -if hierarchy is allready on the screen SystemWillAppear() will be called. SystemWillAppear()
                 calls WillAppear() for the control and then calls SystemWillAppear() for all control children.
 
-            -when the control adding to the hierarchy is done SystemDidAppear() and DidAppear() calls at the same way.
+            -when the control adding to the hierarchy is done SystemAppear() and OnAppear() calls at the same way.
 
             -if hierarchy is not on the screen all methods would be called only when the hierarcy parent
                 be placed to the screen.
 
         When the control removes from hierarchy:
 
-            -SystemWillDisappear() will be called. SystemWillDisappear()
-                calls WillDisappear() for the control and then calls SystemWillDisappear() for all control children.
+            -SystemDisappear() will be called. SystemDisappear()
+                calls OnDisappear() for the control and then calls SystemDisappear() for all control children.
 
-            -when the control is removed from the hierarchy SystemDidDisappear() and DidDisappear() calls at the same way.
+            -when the control is removed from the hierarchy SystemDisappear() and OnDisappear() calls at the same way.
 
         Every frame:
 
@@ -228,7 +228,6 @@ private:
 class UIControl : public AnimatedObject
 {
     friend class UIControlSystem;
-    friend class UIScreenTransition;
 
 public:
     /**
@@ -271,8 +270,6 @@ public:
         DRAW_ONLY_IF_NONZERO, //!<Draw the Pivot Point only if it is defined (nonzero).
         DRAW_ALWAYS //!<Always draw the Pivot Point mark.
     };
-
-    friend class ControlSystem;
 
 public:
     /**
@@ -977,51 +974,6 @@ public:
 
 public:
     /**
-     \brief Called before control will be added to view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void WillAppear();
-    /**
-     \brief Called before control will be removed from the view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void WillDisappear();
-    /**
-     \brief Called when control added to view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void DidAppear();
-    /**
-     \brief Called when control removed from the view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void DidDisappear();
-    /**
-     \brief Called before control will be added to view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemWillAppear();
-    /**
-     \brief Called before control will be removed from the view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemWillDisappear();
-    /**
-     \brief Called when control added to view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemDidAppear();
-    /**
-     \brief Called when control removed from the view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemDidDisappear();
-
-    /**
      \brief Called when screen size is changed.
         This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
         Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
@@ -1144,6 +1096,12 @@ public:
     virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
 protected:
+    virtual void SystemAppear();
+    virtual void SystemDisappear();
+
+    virtual void OnAppear();
+    virtual void OnDisappear();
+
     virtual void SystemWillBecomeVisible();
     virtual void SystemWillBecomeInvisible();
 
@@ -1220,7 +1178,7 @@ private:
     Vector2 pivot; //!<control pivot. Top left control corner by default.
 protected:
     UIControl* parent;
-    List<UIControl*> childs;
+    List<UIControl*> children;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1286,9 +1244,20 @@ protected:
     void DrawPivotPoint(const Rect& drawRect);
 
 private:
+    enum class eViewState : int32
+    {
+        NotInHierarhy,
+        InHierarhy,
+        Visible,
+    };
+
+    void ChangeViewState(eViewState newViewState);
+
+private:
     int32 tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
+    eViewState viewState = eViewState::NotInHierarhy;
 
     /* Components */
 public:

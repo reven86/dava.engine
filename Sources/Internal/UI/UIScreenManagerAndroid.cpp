@@ -115,11 +115,6 @@ int32 UIScreenManager::GetScreenId()
     return activeScreenId;
 }
 
-void UIScreenManager::ScreenSizeChanged()
-{
-    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
-}
-
 /*void ScreenManager::StopGLAnimation()
 {
 	Screen & glController = screens[glControllerId];

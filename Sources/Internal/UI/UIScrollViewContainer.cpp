@@ -328,16 +328,10 @@ void UIScrollViewContainer::InputCancelled(UIEvent* currentInput)
     }
 }
 
-void UIScrollViewContainer::WillDisappear()
+void UIScrollViewContainer::OnDisappear()
 {
     mainTouch = -1;
     lockTouch = false;
-    UIScrollView* scrollView = dynamic_cast<UIScrollView*>(GetParent());
-    if (scrollView)
-    {
-        scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
-        scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
-    }
     state = STATE_NONE;
 }
 };

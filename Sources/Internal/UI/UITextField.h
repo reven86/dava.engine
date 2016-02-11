@@ -176,9 +176,8 @@ public:
 
     UITextField(const Rect& rect = Rect());
 
-    void WillAppear() override;
-    void DidAppear() override;
-    void WillDisappear() override;
+    void OnAppear() override;
+    void OnDisappear() override;
 
     void OnFocused() override;
     void OnFocusLost(UIControl* newFocus) override;

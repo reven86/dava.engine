@@ -98,7 +98,7 @@ public:
 protected:
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
-    void DidAppear() override;
+    void OnAppear() override;
 
 public:
     void SetRenderToTexture(bool value);

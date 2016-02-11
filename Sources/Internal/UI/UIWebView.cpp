@@ -139,9 +139,9 @@ void UIWebView::WillBecomeInvisible()
     UpdateNativeControlVisible(false);
 }
 
-void UIWebView::DidAppear()
+void UIWebView::OnAppear()
 {
-    UIControl::DidAppear();
+    UIControl::OnAppear();
     UpdateControlRect();
 }
 
