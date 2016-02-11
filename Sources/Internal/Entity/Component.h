@@ -109,7 +109,9 @@ public:
     /**
 	 \brief This function optimize component before export.
 	*/
-    virtual void OptimizeBeforeExport(){};
+    virtual void OptimizeBeforeExport()
+    {
+    }
 
     /**
          \brief Function to get data nodes of requested type to specific container you provide.
@@ -121,9 +123,7 @@ protected:
     Entity* entity; // entity is a Entity, that this component belongs to
 
 public:
-    INTROSPECTION(Component,
-                  MEMBER(entity, "entity", I_SAVE)
-                  );
+    INTROSPECTION(Component, MEMBER(entity, "entity", I_SAVE))
 };
 
 inline Entity* Component::GetEntity() const
