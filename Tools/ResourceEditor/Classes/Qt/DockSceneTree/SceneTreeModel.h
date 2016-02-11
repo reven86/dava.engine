@@ -116,7 +116,7 @@ private:
     void SetFilterInternal(const QModelIndex& parent, const QString& text);
     void ResetFilter(const QModelIndex& parent = QModelIndex());
 
-    Qt::DropActions supportedDragActions() const;
+    Qt::DropActions supportedDragActions() const override;
 
     SceneEditor2* curScene;
     bool dropAccepted;
