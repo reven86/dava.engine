@@ -40,8 +40,8 @@ class BaseObject;
 class BaseObjectChecker
 {
 public:
-    BaseObjectChecker(){};
-    virtual ~BaseObjectChecker(){};
+    BaseObjectChecker();
+    virtual ~BaseObjectChecker();
 
     static void RegisterBaseObject(BaseObject* obj);
     static void UnregisterBaseObject(BaseObject* obj);

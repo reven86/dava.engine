@@ -43,9 +43,7 @@ struct IServerListener;
 
 struct IServerTransport
 {
-    virtual ~IServerTransport()
-    {
-    }
+    virtual ~IServerTransport() = default;
 
     virtual int32 Start(IServerListener* listener) = 0;
     virtual void Stop() = 0;
@@ -64,9 +62,7 @@ struct IClientListener;
 
 struct IClientTransport
 {
-    virtual ~IClientTransport()
-    {
-    }
+    virtual ~IClientTransport() = default;
 
     virtual int32 Start(IClientListener* listener) = 0;
     virtual void Stop() = 0;
