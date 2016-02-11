@@ -68,6 +68,8 @@ struct Rect
     inline void SetPosition(const Vector2& position);
     inline void SetSize(const Vector2& size);
 
+    inline Rect& operator=(const Rect& r);
+
     inline bool operator==(const Rect& _s) const;
     inline bool operator!=(const Rect& _s) const;
 
@@ -245,9 +247,21 @@ inline void Rect::SetSize(const Vector2& size)
     dy = size.dy;
 }
 
+inline Rect& Rect::operator=(const Rect& rect)
+{
+    x = rect.x;
+    y = rect.y;
+    dx = rect.dx;
+    dy = rect.dy;
+    return *this;
+}
+
 inline bool Rect::operator==(const Rect& _r) const
 {
-    return (x == _r.x && y == _r.y && dx == _r.dx && dy == _r.dy);
+    return (FLOAT_EQUAL(x, _r.x) &&
+            FLOAT_EQUAL(y, _r.y) &&
+            FLOAT_EQUAL(dx, _r.dx) &&
+            FLOAT_EQUAL(dy, _r.dy));
 }
 
 inline bool Rect::operator!=(const Rect& _r) const

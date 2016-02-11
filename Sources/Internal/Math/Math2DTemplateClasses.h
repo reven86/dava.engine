@@ -154,7 +154,7 @@ inline Point2Base<TYPE>::Point2Base(const Point2Base<TYPE>& Point)
 template <class TYPE>
 inline TYPE LineLength(Point2Base<TYPE> p1, Point2Base<TYPE> p2)
 {
-    return (TYPE)sqrtf(((float32)p1.x - (float32)p2.x) * ((float32)p1.x - (float32)p2.x) + ((float32)p1.y - (float32)p2.y) * ((float32)p1.y - (float32)p2.y));
+    return static_cast<TYPE>(sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
 }
 
 // Size2Base implementation
@@ -269,7 +269,7 @@ inline bool Point2Base<TYPE>::operator!=(const Point2Base<TYPE>& _p) const
 template <class TYPE>
 inline TYPE Point2Base<TYPE>::Lenght()
 {
-    return (TYPE)(sqrt(x * x + y * y));
+    return static_cast<TYPE>(sqrt(x * x + y * y));
 }
 
 template <class TYPE>
@@ -395,8 +395,8 @@ inline Size2Base<TYPE> Rect2Base<TYPE>::GetSize() const
 template <class TYPE>
 inline void Rect2Base<TYPE>::SetCenter(const Point2Base<TYPE>& center)
 {
-    x = (TYPE)(center.x - dx * 0.5f);
-    y = (TYPE)(center.y - dy * 0.5f);
+    x = static_cast<TYPE>(center.x - dx * 0.5f);
+    y = static_cast<TYPE>(center.y - dy * 0.5f);
 }
 
 template <class TYPE>

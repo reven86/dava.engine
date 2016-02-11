@@ -217,7 +217,6 @@ public:
 
     /**
         \brief Function to retrieve path in framework style: with ~res: or ~doc:
-        \param[in] type of FilePath representation
 		\returns pathname value for requested type
 	 */
     String GetFrameworkPath() const;
@@ -236,7 +235,7 @@ public:
 
     /**
         \brief Function to set project path for resolving pathnames such as "~res:/Gfx/image.png"
-        \param[in] new project path
+        \param[in] newBundlePath - new project path
 	 */
     static void SetBundleName(const FilePath& newBundlePath);
 
