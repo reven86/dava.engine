@@ -116,7 +116,7 @@ void SpritesPacker::SetRunning(bool arg)
             emit Finished();
         }
         String message = String("Sprites packer ") + (arg ? "started" : (resourcePacker2D.IsRunning() ? "finished" : "canceled"));
-        Logger::Debug(message.c_str());
+        Logger::FrameworkDebug(message.c_str());
         emit RunningStateChanged(arg);
     }
 }
