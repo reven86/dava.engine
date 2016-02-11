@@ -42,7 +42,8 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
 {
     FastNameDB()
         : namesHash(HashMap<const char*, int>(8192 * 2, -1))
-          {};
+    {
+    }
 
     ~FastNameDB()
     {
@@ -51,8 +52,9 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
         {
             if (NULL != namesTable[i])
             {
-                free((void*)namesTable[i]);
-                namesTable[i] = NULL;
+                void* p = static_cast<void*>(const_cast<char*>(namesTable[i]));
+                free(p);
+                namesTable[i] = nullptr;
             }
         }
     }
@@ -180,7 +182,7 @@ bool FastName::IsValid() const
 
 const char* FastName::c_str() const
 {
-    DVASSERT(index >= -1 && index < (int)FastNameDB::Instance()->namesTable.size());
+    DVASSERT(index >= -1 && index < static_cast<int>(FastNameDB::Instance()->namesTable.size()));
     if (index >= 0)
     {
         return FastNameDB::Instance()->namesTable[index];
