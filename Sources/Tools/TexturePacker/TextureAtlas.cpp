@@ -141,8 +141,8 @@ TextureAtlas::AtlasNode* TextureAtlas::Insert(const TextureAtlas::AtlasNodePtr& 
 }
 
 TextureAtlas::TextureAtlas(const Rect2i& rect, bool useTwoSideMargin, int32 _texturesMargin)
-    : texturesMargin(_texturesMargin)
-    , edgePixel(useTwoSideMargin ? 1 : 0)
+    : edgePixel(useTwoSideMargin ? 1 : 0)
+    , texturesMargin(_texturesMargin)
     , splitter(texturesMargin + edgePixel + edgePixel)
 {
     rootNode.reset(new AtlasNode);

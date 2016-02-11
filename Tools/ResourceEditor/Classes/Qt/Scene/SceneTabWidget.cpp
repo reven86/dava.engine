@@ -198,7 +198,7 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
 
     if (FileSystem::Instance()->Exists(scenePathname))
     {
-        bool sceneWasLoaded = scene->Load(scenePathname);
+        bool sceneWasLoaded = scene->LoadScene(scenePathname);
         if (!sceneWasLoaded)
         {
             QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
