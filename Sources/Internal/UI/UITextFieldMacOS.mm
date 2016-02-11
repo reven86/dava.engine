@@ -43,34 +43,31 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 
-/*
- +-----------+                +------+
- |ObjCWrapper+----------------+IField|
- +-----+-----+                +----+-+
- |                 +-----^   ^
- |                 |         |
- |                 |         |
- |                 |         |
- |         +-------+------+  |                    +-----------------+
- |         |MultilineField+-----------------------+MultilineDelegate|
- |         +--------------+  |                    +-----------------+
- |                           |
- |                           |
- |                           |
- |         +-----------------+-------+              +---------------------------------+
- |         |SingleLineOrPasswordField+--------------+CustomTextField,                 |
- |         +-------------------------+              |CustomDelegate,                  |
- |                                                  |CustomTextFieldFormatter,        |
- |                                                  |RSVerticallyCenteredTextFieldCell|
- |                                                  +---------------------------------+
- |
- |
- |
- +----------+----------+
- |TextFieldPlatformImpl|
- +---------------------+
- 
- */
+// +-----------+          +------+
+// |ObjCWrapper+----------+IField|
+// +-----+-----+          +----+-+
+// |                 +-----^   ^
+// |                 |         |
+// |                 |         |
+// |                 |         |
+// |         +-------+------+  |             +-----------------+
+// |         |MultilineField+----------------+MultilineDelegate|
+// |         +--------------+  |             +-----------------+
+// |                           |
+// |                           |
+// |                           |
+// |         +-----------------+-------+     +---------------------------------+
+// |         |SingleLineOrPasswordField+-----+CustomTextField,                 |
+// |         +-------------------------+     |CustomDelegate,                  |
+// |                                         |CustomTextFieldFormatter,        |
+// |                                         |RSVerticallyCenteredTextFieldCell|
+// |                                         +---------------------------------+
+// |
+// |
+// |
+// +----------+----------+
+// |TextFieldPlatformImpl|
+// +---------------------+
 
 // objective C declaration may appeared only in global scope
 @interface MultilineDelegate : NSObject<NSTextViewDelegate>
@@ -91,21 +88,22 @@
 }
 @end
 
-@interface CustomDelegate : NSObject<NSTextFieldDelegate>
-{
-@public
-    DAVA::ObjCWrapper* text;
-}
-- (id)init;
-- (void)dealloc;
-@end
-
 @interface CustomTextFieldFormatter : NSFormatter
 {
 @public
     int maxLength;
     DAVA::ObjCWrapper* text;
 }
+@end
+
+@interface CustomDelegate : NSObject<NSTextFieldDelegate>
+{
+@public
+    DAVA::ObjCWrapper* text;
+    CustomTextFieldFormatter* formatter;
+}
+- (id)init;
+- (void)dealloc;
 @end
 
 @interface RSVerticallyCenteredTextFieldCell : NSTextFieldCell
@@ -133,186 +131,186 @@ public:
     IField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : davaText(davaText_)
         , wrapper(wrapper_)
+    {
+        DVASSERT(davaText != nullptr);
+        DVASSERT(wrapper != nullptr);
+    }
+    virtual ~IField()
+    {
+        davaText = nullptr;
+        wrapper = nullptr;
+    }
+    virtual void OpenKeyboard() = 0;
+    virtual void CloseKeyboard() = 0;
+    virtual void GetText(WideString& string) const = 0;
+    virtual void SetText(const WideString& string) = 0;
+    virtual void UpdateRect(const Rect& rect) = 0;
+
+    virtual void SetTextColor(const DAVA::Color& color) = 0;
+    virtual void SetFontSize(float size) = 0;
+
+    virtual void SetTextAlign(DAVA::int32 align) = 0;
+    virtual DAVA::int32 GetTextAlign() = 0;
+    virtual void SetTextUseRtlAlign(bool useRtlAlign) = 0;
+    virtual bool GetTextUseRtlAlign() const = 0;
+
+    virtual void SetVisible(bool value) = 0;
+    virtual void ShowField() = 0;
+    virtual void HideField() = 0;
+
+    virtual void SetIsPassword(bool isPassword) = 0;
+
+    virtual void SetInputEnabled(bool value) = 0;
+
+    // Keyboard traits.
+    void SetAutoCapitalizationType(DAVA::int32 value)
+    {
+        // not supported implement on client in delegate
+    }
+
+    void SetAutoCorrectionType(DAVA::int32 value)
+    {
+        // not supported implement on client in delegate
+    }
+
+    void SetSpellCheckingType(DAVA::int32 value)
+    {
+        // not supported for NSTextField
+        // we can implement it in NSTextView with property
+        // setContinuousSpellCheckingEnabled:YES
+        // but does we really need it?
+    }
+
+    void SetKeyboardAppearanceType(DAVA::int32 value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    void SetKeyboardType(DAVA::int32 value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    void SetReturnKeyType(DAVA::int32 value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    void SetEnableReturnKeyAutomatically(bool value)
+    {
+        // not aplicable on mac os with hardware keyboard
+    }
+
+    // Cursor pos.
+    virtual uint32 GetCursorPos() = 0;
+    virtual void SetCursorPos(uint32 pos) = 0;
+
+    // Max text length.
+    virtual void SetMaxLength(int maxLength) = 0;
+
+    virtual void SetMultiline(bool multiline) = 0;
+    virtual bool IsMultiline() const = 0;
+
+    virtual void SetRenderToTexture(bool value) = 0;
+    virtual bool IsRenderToTexture() const = 0;
+
+    // return true on success
+    bool RenderToTextureAndSetAsBackgroundSprite(NSView* nsView)
+    {
+        // https://developer.apple.com/library/mac/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_texturedata/opengl_texturedata.html
+
+        NSBitmapImageRep* imageRep = nullptr;
+        imageRep = [nsView bitmapImageRepForCachingDisplayInRect:[nsView frame]]; // 1
+
+        if (nullptr == imageRep)
         {
-            DVASSERT(davaText != nullptr);
-            DVASSERT(wrapper != nullptr);
+            davaText->SetSprite(nullptr, 0);
+            return false;
         }
-        virtual ~IField()
+
+        NSSize imageRepSize = [imageRep size];
+        NSRect imageRect = NSMakeRect(0.f, 0.f, imageRepSize.width, imageRepSize.height);
+
+        // render web view into bitmap image
+        [nsView cacheDisplayInRect:imageRect toBitmapImageRep:imageRep]; // 2
+
+        const uint8* rawData = [imageRep bitmapData];
+        const int w = [imageRep pixelsWide];
+        const int h = [imageRep pixelsHigh];
+        const int BPP = [imageRep bitsPerPixel];
+        const int pitch = [imageRep bytesPerRow];
+
+        PixelFormat format = FORMAT_INVALID;
+        if (24 == BPP)
         {
-            davaText = nullptr;
-            wrapper = nullptr;
+            format = FORMAT_RGB888;
         }
-        virtual void OpenKeyboard() = 0;
-        virtual void CloseKeyboard() = 0;
-        virtual void GetText(WideString& string) const = 0;
-        virtual void SetText(const WideString& string) = 0;
-        virtual void UpdateRect(const Rect& rect) = 0;
-
-        virtual void SetTextColor(const DAVA::Color& color) = 0;
-        virtual void SetFontSize(float size) = 0;
-
-        virtual void SetTextAlign(DAVA::int32 align) = 0;
-        virtual DAVA::int32 GetTextAlign() = 0;
-        virtual void SetTextUseRtlAlign(bool useRtlAlign) = 0;
-        virtual bool GetTextUseRtlAlign() const = 0;
-
-        virtual void SetVisible(bool value) = 0;
-        virtual void ShowField() = 0;
-        virtual void HideField() = 0;
-
-        virtual void SetIsPassword(bool isPassword) = 0;
-
-        virtual void SetInputEnabled(bool value) = 0;
-
-        // Keyboard traits.
-        void SetAutoCapitalizationType(DAVA::int32 value)
+        else if (32 == BPP)
         {
-            // not supported implement on client in delegate
+            DVASSERT(!([imageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
+            format = FORMAT_RGBA8888;
+        }
+        else
+        {
+            DVASSERT(false && "[nsView] Unexpected bits per pixel value");
+            davaText->SetSprite(nullptr, 0);
+            return false;
         }
 
-        void SetAutoCorrectionType(DAVA::int32 value)
         {
-            // not supported implement on client in delegate
-        }
+            RefPtr<Image> imageRGB;
+            int bytesPerLine = w * (BPP / 8);
 
-        void SetSpellCheckingType(DAVA::int32 value)
-        {
-            // not supported for NSTextField
-            // we can implement it in NSTextView with property
-            // setContinuousSpellCheckingEnabled:YES
-            // but does we really need it?
-        }
-
-        void SetKeyboardAppearanceType(DAVA::int32 value)
-        {
-            // not aplicable on mac os with hardware keyboard
-        }
-
-        void SetKeyboardType(DAVA::int32 value)
-        {
-            // not aplicable on mac os with hardware keyboard
-        }
-
-        void SetReturnKeyType(DAVA::int32 value)
-        {
-            // not aplicable on mac os with hardware keyboard
-        }
-
-        void SetEnableReturnKeyAutomatically(bool value)
-        {
-            // not aplicable on mac os with hardware keyboard
-        }
-
-        // Cursor pos.
-        virtual uint32 GetCursorPos() = 0;
-        virtual void SetCursorPos(uint32 pos) = 0;
-
-        // Max text length.
-        virtual void SetMaxLength(int maxLength) = 0;
-
-        virtual void SetMultiline(bool multiline) = 0;
-        virtual bool IsMultiline() const = 0;
-
-        virtual void SetRenderToTexture(bool value) = 0;
-        virtual bool IsRenderToTexture() const = 0;
-
-        // return true on success
-        bool RenderToTextureAndSetAsBackgroundSprite(NSView* nsView)
-        {
-            // https://developer.apple.com/library/mac/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_texturedata/opengl_texturedata.html
-
-            NSBitmapImageRep* imageRep = nullptr;
-            imageRep = [nsView bitmapImageRepForCachingDisplayInRect:[nsView frame]]; // 1
-
-            if (nullptr == imageRep)
+            if (pitch == bytesPerLine)
             {
-                davaText->SetSprite(nullptr, 0);
-                return false;
-            }
-
-            NSSize imageRepSize = [imageRep size];
-            NSRect imageRect = NSMakeRect(0.f, 0.f, imageRepSize.width, imageRepSize.height);
-
-            // render web view into bitmap image
-            [nsView cacheDisplayInRect:imageRect toBitmapImageRep:imageRep]; // 2
-
-            const uint8* rawData = [imageRep bitmapData];
-            const int w = [imageRep pixelsWide];
-            const int h = [imageRep pixelsHigh];
-            const int BPP = [imageRep bitsPerPixel];
-            const int pitch = [imageRep bytesPerRow];
-
-            PixelFormat format = FORMAT_INVALID;
-            if (24 == BPP)
-            {
-                format = FORMAT_RGB888;
-            }
-            else if (32 == BPP)
-            {
-                DVASSERT(!([imageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
-                format = FORMAT_RGBA8888;
+                imageRGB = Image::CreateFromData(w, h, format, rawData);
             }
             else
             {
-                DVASSERT(false && "[nsView] Unexpected bits per pixel value");
-                davaText->SetSprite(nullptr, 0);
-                return false;
+                imageRGB = Image::Create(w, h, format);
+                uint8* pixels = imageRGB->GetData();
+
+                // copy line by line image
+                for (int y = 0; y < h; ++y)
+                {
+                    uint8* dstLineStart = &pixels[y * bytesPerLine];
+                    const uint8* srcLineStart = &rawData[y * pitch];
+                    Memcpy(dstLineStart, srcLineStart, bytesPerLine);
+                }
             }
 
+            DVASSERT(imageRGB);
             {
-                RefPtr<Image> imageRGB;
-                int bytesPerLine = w * (BPP / 8);
-
-                if (pitch == bytesPerLine)
+                RefPtr<Texture> tex(Texture::CreateFromData(imageRGB.Get(), false));
+                const Rect& rect = davaText->GetRect();
                 {
-                    imageRGB = Image::CreateFromData(w, h, format, rawData);
-                }
-                else
-                {
-                    imageRGB = Image::Create(w, h, format);
-                    uint8* pixels = imageRGB->GetData();
-
-                    // copy line by line image
-                    for (int y = 0; y < h; ++y)
-                    {
-                        uint8* dstLineStart = &pixels[y * bytesPerLine];
-                        const uint8* srcLineStart = &rawData[y * pitch];
-                        Memcpy(dstLineStart, srcLineStart, bytesPerLine);
-                    }
-                }
-
-                DVASSERT(imageRGB);
-                {
-                    RefPtr<Texture> tex(Texture::CreateFromData(imageRGB.Get(), false));
-                    const Rect& rect = davaText->GetRect();
-                    {
-                        RefPtr<Sprite> sprite(Sprite::CreateFromTexture(tex.Get(), 0, 0, w, h, rect.dx, rect.dy));
-                        davaText->SetSprite(sprite.Get(), 0);
-                    }
+                    RefPtr<Sprite> sprite(Sprite::CreateFromTexture(tex.Get(), 0, 0, w, h, rect.dx, rect.dy));
+                    davaText->SetSprite(sprite.Get(), 0);
                 }
             }
-            return true;
         }
+        return true;
+    }
 
-        SigConnectionID signalMinimizeRestored;
+    SigConnectionID signalMinimizeRestored;
 
-        UITextField* davaText = nullptr;
-        ObjCWrapper* wrapper = nullptr;
+    UITextField* davaText = nullptr;
+    ObjCWrapper* wrapper = nullptr;
 
-        Rect currentRect;
-        Color currentColor;
-        float32 currentFontSize = 0.f;
+    Rect currentRect;
+    Color currentColor;
+    float32 currentFontSize = 0.f;
 
-        eAlign alignment = ALIGN_LEFT;
-        bool useRtlAlign = false;
-        bool multiline = false;
-        bool password = false;
-        bool renderInTexture = false;
-        bool updateViewState = true;
+    eAlign alignment = ALIGN_LEFT;
+    bool useRtlAlign = false;
+    bool multiline = false;
+    bool password = false;
+    bool renderInTexture = false;
+    bool updateViewState = true;
 
-        bool isKeyboardOpened = false; // HACK to prevent endless recursion
-        bool insideTextShouldReturn = false; // HACK mark what happened
-        NSRect nativeControlRect = NSMakeRect(0, 0, 0, 0);
+    bool isKeyboardOpened = false; // HACK to prevent endless recursion
+    bool insideTextShouldReturn = false; // HACK mark what happened
+    NSRect nativeControlRect = NSMakeRect(0, 0, 0, 0);
 };
 
 static NSRect ConvertToNativeWindowRect(Rect rectSrc)
@@ -325,924 +323,956 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
     rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
 
     // 2. map physical to window
-        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-        return controlRect;
+    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+    return controlRect;
+}
+
+class MultilineField : public IField
+{
+public:
+    MultilineField(UITextField* davaText_, ObjCWrapper* wrapper_)
+        : IField(davaText_, wrapper_)
+    {
+        nsScrollView = [[NSScrollView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+
+        [nsScrollView setBorderType:NSNoBorder];
+        [nsScrollView setHasVerticalScroller:YES];
+        [nsScrollView setHasHorizontalScroller:NO];
+        [nsScrollView setAutoresizingMask:NSViewWidthSizable |
+                      NSViewHeightSizable];
+
+        nsTextView = [[CustomTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
+
+        objcDelegate = [[MultilineDelegate alloc] init];
+        objcDelegate->text = wrapper;
+
+        [nsTextView setDelegate:objcDelegate];
+
+        [nsTextView setEditable:YES];
+
+        // make control border and background transparent
+        nsTextView.drawsBackground = NO;
+
+        [nsScrollView setDocumentView:nsTextView];
+
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView addSubview:nsScrollView];
+
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &MultilineField::OnAppMinimazedResored);
     }
 
-    class MultilineField : public IField
+    ~MultilineField()
     {
-    public:
-        MultilineField(UITextField* davaText_, ObjCWrapper* wrapper_)
-            : IField(davaText_, wrapper_)
-        {
-            nsScrollView = [[NSScrollView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
 
-            [nsScrollView setBorderType:NSNoBorder];
-            [nsScrollView setHasVerticalScroller:YES];
-            [nsScrollView setHasHorizontalScroller:NO];
-            [nsScrollView setAutoresizingMask:NSViewWidthSizable |
-                          NSViewHeightSizable];
+        [nsScrollView removeFromSuperview];
+        [nsScrollView release];
+        nsScrollView = nullptr;
+        [nsTextView removeFromSuperview];
+        [nsTextView release];
+        nsTextView = nullptr;
 
-            nsTextView = [[CustomTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
-            [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
+        [objcDelegate release];
+        objcDelegate = nullptr;
+    }
 
-            objcDelegate = [[MultilineDelegate alloc] init];
-            objcDelegate->text = wrapper;
-
-            [nsTextView setDelegate:objcDelegate];
-
-            [nsTextView setEditable:YES];
-
-            // make control border and background transparent
-            nsTextView.drawsBackground = NO;
-
-            [nsScrollView setDocumentView:nsTextView];
-
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [openGLView addSubview:nsScrollView];
-
-            CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-            signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &MultilineField::OnAppMinimazedResored);
-        }
-
-        ~MultilineField()
-        {
-            CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-            xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
-
-            [nsScrollView removeFromSuperview];
-            [nsScrollView release];
-            nsScrollView = nullptr;
-            [nsTextView removeFromSuperview];
-            [nsTextView release];
-            nsTextView = nullptr;
-
-            [objcDelegate release];
-            objcDelegate = nullptr;
-        }
-
-        void OnAppMinimazedResored(bool value)
-        {
-            SetVisible(!value);
-        }
-
-        void OpenKeyboard() override
-        {
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [openGLView.window makeFirstResponder:nsTextView];
-            //[[NSApp keyWindow] makeFirstResponder:NSTextField];
-
-            UITextFieldDelegate* delegate = davaText->GetDelegate();
-
-            if (delegate && !isKeyboardOpened)
-            {
-                isKeyboardOpened = true;
-                Rect emptyRect;
-                emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
-                delegate->OnKeyboardShown(emptyRect);
-            }
-        }
-
-        void CloseKeyboard() override
-        {
-            UITextFieldDelegate* delegate = davaText->GetDelegate();
-            if (delegate && isKeyboardOpened)
-            {
-                isKeyboardOpened = false;
-                delegate->OnKeyboardHidden();
-            }
-
-            // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [[NSApp keyWindow] makeFirstResponder:openGLView];
-        }
-
-        void GetText(WideString& string) const override
-        {
-            NSString* currentText = [nsTextView string];
-            const char* cstr = [currentText cStringUsingEncoding:NSUTF8StringEncoding];
-            size_t strSize = std::strlen(cstr);
-            UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
-        }
-
-        void SetText(const WideString& string) override
-        {
-            NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
-                                                       length:string.size() * sizeof(wchar_t)
-                                                     encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
-            [nsTextView setString:text];
-        }
-
-        void UpdateRect(const Rect& rectSrc) override
-        {
-            if (currentRect != rectSrc)
-            {
-                currentRect = rectSrc;
-                NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
-
-                [nsScrollView setFrame:controlRect];
-                [nsTextView setFrame:controlRect];
-            }
-        }
-
-        void SetTextColor(const DAVA::Color& color) override
-        {
-            currentColor = color;
-
-            NSColor* nsColor = [NSColor
-            colorWithCalibratedRed:color.r
-                             green:color.g
-                              blue:color.b
-                             alpha:color.a];
-            [nsTextView setTextColor:nsColor];
-
-            [nsTextView setInsertionPointColor:nsColor];
-        }
-
-        void SetFontSize(float virtualFontSize) override
-        {
-            currentFontSize = virtualFontSize;
-
-            float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
-
-            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-            NSSize origSz = NSMakeSize(size, 0);
-            NSSize convSz = [openGLView convertSizeFromBacking:origSz];
-
-            [nsTextView setFont:[NSFont systemFontOfSize:convSz.width]];
-        }
-
-        void SetTextAlign(DAVA::int32 align) override
-        {
-            alignment = static_cast<eAlign>(align);
-
-            NSTextAlignment aligment = NSCenterTextAlignment;
-            if (align & ALIGN_LEFT)
-            {
-                aligment = NSLeftTextAlignment;
-            }
-            else if (align & ALIGN_RIGHT)
-            {
-                aligment = NSRightTextAlignment;
-            }
-            else if (align & ALIGN_VCENTER)
-            {
-                aligment = NSCenterTextAlignment;
-            }
-            [nsTextView setAlignment:aligment];
-
-            // TODO investigate do we need to implement other then ALIGN_VCENTER
-            // several time set align so comment it for now DVASSERT(align & ALIGN_VCENTER);
-            if (align & ALIGN_VCENTER)
-            {
-                // TODO set custom cell properti - vAlignment
-                //[NSSecureTextField setCellClass:[NSSecureTextFieldCell class]];
-            }
-
-            if (useRtlAlign && (aligment == NSLeftTextAlignment ||
-                                aligment == NSRightTextAlignment))
-            {
-                [nsTextView setAlignment:NSNaturalTextAlignment];
-            }
-        }
-
-        DAVA::int32 GetTextAlign() override
-        {
-            return alignment;
-        }
-
-        void SetTextUseRtlAlign(bool useRtlAlign_) override
-        {
-            useRtlAlign = useRtlAlign_;
-            SetTextAlign(alignment);
-        }
-
-        bool GetTextUseRtlAlign() const override
-        {
-            return useRtlAlign;
-        }
-
-        void SetVisible(bool value) override
-        {
-            [nsScrollView setHidden:!value];
-        }
-
-        void ShowField() override
-        {
-            // we always on screen
-        }
-        void HideField() override
-        {
-            // we always on screen
-        }
-
-        void SetInputEnabled(bool value) override
-        {
-            [nsTextView setEditable:value];
-        }
-
-        // Cursor pos.
-        uint32 GetCursorPos() override
-        {
-            NSInteger insertionPoint = [[[nsTextView selectedRanges] objectAtIndex:0] rangeValue].location;
-            return insertionPoint;
-        }
-
-        void SetCursorPos(uint32 pos) override
-        {
-            [nsTextView setSelectedRange:NSMakeRange(pos, 0)];
-        }
-
-        void SetMultiline(bool value) override
-        {
-            multiline = value;
-            DVASSERT(multiline);
-        }
-
-        bool IsMultiline() const override
-        {
-            return multiline;
-        }
-
-        void SetIsPassword(bool value) override
-        {
-            DVASSERT(!value);
-            password = value;
-        }
-
-        bool IsPassword() const
-        {
-            return password;
-        }
-
-        // Max text length.
-        void SetMaxLength(int maxLength) override
-        {
-            objcDelegate->maxLength = maxLength;
-        }
-
-        void SetRenderToTexture(bool value) override
-        {
-            static bool alreadyPrintLog = false;
-            if (!alreadyPrintLog)
-            {
-                alreadyPrintLog = true;
-                Logger::FrameworkDebug("UITextField::SetRenderTotexture not implemented on macos");
-            }
-        }
-
-        bool IsRenderToTexture() const override
-        {
-            return false;
-        }
-
-        NSScrollView* nsScrollView = nullptr;
-        NSTextView* nsTextView = nullptr;
-        MultilineDelegate* objcDelegate = nullptr;
-    };
-
-    class SingleLineOrPasswordField : public IField
+    void OnAppMinimazedResored(bool value)
     {
-    public:
-        explicit SingleLineOrPasswordField(UITextField* davaText_, ObjCWrapper* wrapper_)
-            : IField(davaText_, wrapper_)
+        SetVisible(!value);
+    }
+
+    void OpenKeyboard() override
+    {
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView.window makeFirstResponder:nsTextView];
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+
+        if (delegate && !isKeyboardOpened)
         {
-            [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
-            nsTextField = [[CustomTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
-            [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
-            formatter = [[CustomTextFieldFormatter alloc] init];
-            formatter->text = wrapper;
-            [nsTextField setFormatter:formatter];
-            objcDelegate = [[CustomDelegate alloc] init];
-            objcDelegate->text = wrapper;
+            isKeyboardOpened = true;
+            Rect emptyRect;
+            emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+            delegate->OnKeyboardShown(emptyRect);
+        }
+    }
 
-            [nsTextField setDelegate:objcDelegate];
-
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [openGLView addSubview:nsTextField];
-
-            [nsTextField setEditable:YES];
-            [nsTextField setEnabled:YES];
-            // make control border and background transparent
-            nsTextField.drawsBackground = NO;
-            nsTextField.bezeled = NO;
-
-            CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-            signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &SingleLineOrPasswordField::OnAppMinimazedResored);
-            SetMultiline(false);
+    void CloseKeyboard() override
+    {
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (delegate && isKeyboardOpened)
+        {
+            isKeyboardOpened = false;
+            delegate->OnKeyboardHidden();
         }
 
-        ~SingleLineOrPasswordField()
-        {
-            CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-            xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [[NSApp keyWindow] makeFirstResponder:openGLView];
+    }
 
-            [nsTextField removeFromSuperview];
-            [nsTextField release];
-            nsTextField = nullptr;
-            [formatter release];
-            formatter = nullptr;
-            [objcDelegate release];
-            objcDelegate = nullptr;
+    void GetText(WideString& string) const override
+    {
+        NSString* currentText = [nsTextView string];
+        const char* cstr = [currentText cStringUsingEncoding:NSUTF8StringEncoding];
+        size_t strSize = std::strlen(cstr);
+        UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
+    }
+
+    void SetText(const WideString& string) override
+    {
+        NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
+                                                   length:string.size() * sizeof(wchar_t)
+                                                 encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
+        [nsTextView setString:text];
+    }
+
+    void UpdateRect(const Rect& rectSrc) override
+    {
+        if (currentRect != rectSrc)
+        {
+            currentRect = rectSrc;
+            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+
+            [nsScrollView setFrame:controlRect];
+            [nsTextView setFrame:controlRect];
+        }
+    }
+
+    void SetTextColor(const DAVA::Color& color) override
+    {
+        currentColor = color;
+
+        NSColor* nsColor = [NSColor
+        colorWithCalibratedRed:color.r
+                         green:color.g
+                          blue:color.b
+                         alpha:color.a];
+        [nsTextView setTextColor:nsColor];
+
+        [nsTextView setInsertionPointColor:nsColor];
+    }
+
+    void SetFontSize(float virtualFontSize) override
+    {
+        currentFontSize = virtualFontSize;
+
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+        NSSize origSz = NSMakeSize(size, 0);
+        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
+
+        [nsTextView setFont:[NSFont systemFontOfSize:convSz.width]];
+    }
+
+    void SetTextAlign(DAVA::int32 align) override
+    {
+        alignment = static_cast<eAlign>(align);
+
+        NSTextAlignment aligment = NSCenterTextAlignment;
+        if (align & ALIGN_LEFT)
+        {
+            aligment = NSLeftTextAlignment;
+        }
+        else if (align & ALIGN_RIGHT)
+        {
+            aligment = NSRightTextAlignment;
+        }
+        else if (align & ALIGN_VCENTER)
+        {
+            aligment = NSCenterTextAlignment;
+        }
+        [nsTextView setAlignment:aligment];
+
+        // TODO investigate do we need to implement other then ALIGN_VCENTER
+        // several time set align so comment it for now DVASSERT(align & ALIGN_VCENTER);
+        if (align & ALIGN_VCENTER)
+        {
+            // TODO set custom cell properti - vAlignment
+            //[NSSecureTextField setCellClass:[NSSecureTextFieldCell class]];
         }
 
-        void OnAppMinimazedResored(bool value)
+        if (useRtlAlign && (aligment == NSLeftTextAlignment ||
+                            aligment == NSRightTextAlignment))
         {
-            SetVisible(!value);
+            [nsTextView setAlignment:NSNaturalTextAlignment];
+        }
+    }
+
+    DAVA::int32 GetTextAlign() override
+    {
+        return alignment;
+    }
+
+    void SetTextUseRtlAlign(bool useRtlAlign_) override
+    {
+        useRtlAlign = useRtlAlign_;
+        SetTextAlign(alignment);
+    }
+
+    bool GetTextUseRtlAlign() const override
+    {
+        return useRtlAlign;
+    }
+
+    void SetVisible(bool value) override
+    {
+        [nsScrollView setHidden:!value];
+    }
+
+    void ShowField() override
+    {
+        // we always on screen
+    }
+    void HideField() override
+    {
+        // we always on screen
+    }
+
+    void SetInputEnabled(bool value) override
+    {
+        [nsTextView setEditable:value];
+    }
+
+    // Cursor pos.
+    uint32 GetCursorPos() override
+    {
+        NSInteger insertionPoint = [[[nsTextView selectedRanges] objectAtIndex:0] rangeValue].location;
+        return insertionPoint;
+    }
+
+    void SetCursorPos(uint32 pos) override
+    {
+        [nsTextView setSelectedRange:NSMakeRange(pos, 0)];
+    }
+
+    void SetMultiline(bool value) override
+    {
+        multiline = value;
+        DVASSERT(multiline);
+    }
+
+    bool IsMultiline() const override
+    {
+        return multiline;
+    }
+
+    void SetIsPassword(bool value) override
+    {
+        DVASSERT(!value);
+        password = value;
+    }
+
+    bool IsPassword() const
+    {
+        return password;
+    }
+
+    // Max text length.
+    void SetMaxLength(int maxLength) override
+    {
+        objcDelegate->maxLength = maxLength;
+    }
+
+    void SetRenderToTexture(bool value) override
+    {
+        static bool alreadyPrintLog = false;
+        if (!alreadyPrintLog)
+        {
+            alreadyPrintLog = true;
+            Logger::FrameworkDebug("UITextField::SetRenderTotexture not implemented on macos");
+        }
+    }
+
+    bool IsRenderToTexture() const override
+    {
+        return false;
+    }
+
+    NSScrollView* nsScrollView = nullptr;
+    NSTextView* nsTextView = nullptr;
+    MultilineDelegate* objcDelegate = nullptr;
+};
+
+class SingleLineOrPasswordField : public IField
+{
+public:
+    explicit SingleLineOrPasswordField(UITextField* davaText_, ObjCWrapper* wrapper_)
+        : IField(davaText_, wrapper_)
+    {
+        [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+        nsTextField = [[CustomTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
+        formatter = [[CustomTextFieldFormatter alloc] init];
+        formatter->text = wrapper;
+        [nsTextField setFormatter:formatter];
+        objcDelegate = [[CustomDelegate alloc] init];
+        objcDelegate->text = wrapper;
+        objcDelegate->formatter = formatter;
+
+        [nsTextField setDelegate:objcDelegate];
+
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView addSubview:nsTextField];
+
+        [nsTextField setEditable:YES];
+        [nsTextField setEnabled:YES];
+        // make control border and background transparent
+        nsTextField.drawsBackground = NO;
+        nsTextField.bezeled = NO;
+
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &SingleLineOrPasswordField::OnAppMinimazedResored);
+        SetMultiline(false);
+    }
+
+    ~SingleLineOrPasswordField()
+    {
+        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
+
+        [nsTextField removeFromSuperview];
+        [nsTextField release];
+        nsTextField = nullptr;
+        [formatter release];
+        formatter = nullptr;
+        [objcDelegate release];
+        objcDelegate = nullptr;
+    }
+
+    void OnAppMinimazedResored(bool value)
+    {
+        SetVisible(!value);
+    }
+
+    void OpenKeyboard() override
+    {
+        nsTextField.enabled = YES;
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+
+        if (delegate && !isKeyboardOpened)
+        {
+            isKeyboardOpened = true;
+            Rect emptyRect;
+            emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+            delegate->OnKeyboardShown(emptyRect);
         }
 
-        void OpenKeyboard() override
+        [[NSApp keyWindow] makeFirstResponder:nsTextField];
+
+        //        // HACK try set text and then remove it to show cursor
+        //        if ([[nsTextField stringValue] length] == 0)
+        //        {
+        //            [nsTextField setStringValue:@"a"];
+        //            [nsTextField setStringValue:@""];
+        //        }
+
+        // first attempt set cursor
+        [nsTextField selectText:nsTextField];
+        NSRange range = [[nsTextField currentEditor] selectedRange];
+        [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
+
+        // second attemt set cursor
+        //        NSText* textEditor = [nsTextField.window fieldEditor:YES forObject:nsTextField];
+        //        if (textEditor)
+        //        {
+        //            id cell = [nsTextField selectedCell];
+        //            [cell selectWithFrame:[nsTextField bounds]
+        //                           inView:nsTextField
+        //                           editor:textEditor
+        //                         delegate:nsTextField
+        //                            start:range.length
+        //                           length:0];
+        //        }
+
+        // on mac os all NSTextField controls share same NSTextView as cell for
+        // user input so better set cursor and curcor color every time
+        SetTextColor(currentColor);
+    }
+
+    void CloseKeyboard() override
+    {
+        // prevent recursion
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (delegate && isKeyboardOpened)
         {
-            nsTextField.enabled = YES;
+            isKeyboardOpened = false;
+            delegate->OnKeyboardHidden();
+        }
 
-            UITextFieldDelegate* delegate = davaText->GetDelegate();
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [[NSApp keyWindow] makeFirstResponder:openGLView];
+    }
 
-            if (delegate && !isKeyboardOpened)
+    void GetText(WideString& string) const override
+    {
+        NSString* currentText = [nsTextField stringValue];
+        const char* cstr = [currentText cStringUsingEncoding:NSUTF8StringEncoding];
+        size_t strSize = std::strlen(cstr);
+        UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
+    }
+
+    void SetText(const WideString& string) override
+    {
+        WideString oldText;
+        GetText(oldText);
+
+        if (oldText == string)
+        {
+            return;
+        }
+
+        updateViewState = true;
+
+        NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
+                                                   length:string.size() * sizeof(wchar_t)
+                                                 encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
+        [nsTextField setStringValue:text];
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (delegate != nullptr)
+        {
+            delegate->TextFieldOnTextChanged(davaText, string, oldText);
+        }
+
+        // HACK if user click cleartext button and current
+        // native control not in focus - remove focus from dava control too
+        // to show hint to user
+        if (string.empty() &&
+            [[NSApp keyWindow] firstResponder] != nsTextField &&
+            !insideTextShouldReturn &&
+            davaText == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
+        }
+    }
+
+    void UpdateRect(const Rect& rectSrc) override
+    {
+        // HACK for battle screen
+        // check if focus not synced
+        bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
+        if (isFocused)
+        {
+            NSWindow* window = [NSApp keyWindow];
+            NSResponder* currentResponder = [window firstResponder];
+            if (currentResponder == nil)
             {
-                isKeyboardOpened = true;
-                Rect emptyRect;
-                emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
-                delegate->OnKeyboardShown(emptyRect);
+                // no focus in window at all
             }
-
-            [[NSApp keyWindow] makeFirstResponder:nsTextField];
-            if ([[nsTextField stringValue] length] > 0)
+            else
             {
-                NSRange range = [[nsTextField currentEditor] selectedRange];
-                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
-            }
-        }
-
-        void CloseKeyboard() override
-        {
-            // prevent recursion
-            UITextFieldDelegate* delegate = davaText->GetDelegate();
-            if (delegate && isKeyboardOpened)
-            {
-                isKeyboardOpened = false;
-                delegate->OnKeyboardHidden();
-            }
-
-            // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [[NSApp keyWindow] makeFirstResponder:openGLView];
-        }
-
-        void GetText(WideString& string) const override
-        {
-            NSString* currentText = [nsTextField stringValue];
-            const char* cstr = [currentText cStringUsingEncoding:NSUTF8StringEncoding];
-            size_t strSize = std::strlen(cstr);
-            UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, string);
-        }
-
-        void SetText(const WideString& string) override
-        {
-            WideString oldText;
-            GetText(oldText);
-
-            if (oldText == string)
-            {
-                return;
-            }
-
-            updateViewState = true;
-
-            NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
-                                                       length:string.size() * sizeof(wchar_t)
-                                                     encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
-            [nsTextField setStringValue:text];
-
-            UITextFieldDelegate* delegate = davaText->GetDelegate();
-            if (delegate != nullptr)
-            {
-                delegate->TextFieldOnTextChanged(davaText, string, oldText);
-            }
-
-            // HACK if user click cleartext button and current
-            // native control not in focus - remove focus from dava control too
-            if (string.empty() && [[NSApp keyWindow] firstResponder] != nsTextField && !insideTextShouldReturn)
-            {
-                UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
-            }
-        }
-
-        void UpdateRect(const Rect& rectSrc) override
-        {
-            // HACK for battle screen
-            // check if focus not synced
-            bool isFocused = (UIControlSystem::Instance()->GetFocusedControl() == davaText);
-            if (isFocused)
-            {
-                NSWindow* window = [NSApp keyWindow];
-                NSResponder* currentResponder = [window firstResponder];
-                if (currentResponder == nil)
+                BOOL isNSText = [currentResponder isKindOfClass:[NSText class]];
+                if (isNSText && [(id)currentResponder delegate] == (id)nsTextField)
                 {
-                    // no focus in window at all
+                    // we still has focus do nothing
                 }
                 else
                 {
-                    BOOL isNSText = [currentResponder isKindOfClass:[NSText class]];
-                    if (isNSText && [(id)currentResponder delegate] == (id)nsTextField)
+                    if (isKeyboardOpened)
                     {
-                        // we still has focus do nothing
-                    }
-                    else
-                    {
-                        if (isKeyboardOpened)
+                        UITextFieldDelegate* delegate = davaText->GetDelegate();
+                        if (delegate && !delegate->IsTextFieldCanLostFocus(davaText))
                         {
-                            UITextFieldDelegate* delegate = davaText->GetDelegate();
-                            if (delegate && !delegate->IsTextFieldCanLostFocus(davaText))
+                            // select text field
+                            [window makeFirstResponder:nsTextField];
+                            // remove selection to caret at end
+                            if ([[nsTextField stringValue] length] > 0)
                             {
-                                // select text field
-                                [window makeFirstResponder:nsTextField];
-                                // remove selection to caret at end
-                                if ([[nsTextField stringValue] length] > 0)
-                                {
-                                    NSRange range = [[nsTextField currentEditor] selectedRange];
-                                    [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
-                                }
+                                NSRange range = [[nsTextField currentEditor] selectedRange];
+                                [[nsTextField currentEditor] setSelectedRange:NSMakeRange(range.length, 0)];
                             }
                         }
                     }
                 }
             }
+        }
 
-            // we have to convert coord every time
-            // if user change window/fullscreen mode
-            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+        // we have to convert coord every time
+        // if user change window/fullscreen mode
+        NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
 
-            if (renderInTexture && !isFocused)
+        if (renderInTexture && !isFocused)
+        {
+            if (updateViewState)
             {
-                if (updateViewState)
+                updateViewState = false;
+                if (!RenderToTextureAndSetAsBackgroundSprite(nsTextField))
                 {
-                    updateViewState = false;
-                    if (!RenderToTextureAndSetAsBackgroundSprite(nsTextField))
-                    {
-                        updateViewState = true; // try on next frame
-                    }
-                }
-                if (!updateViewState)
-                {
-                    // can hide native control
-                    controlRect.origin.x -= 10000;
+                    updateViewState = true; // try on next frame
                 }
             }
-            else
+            if (!updateViewState)
             {
-                davaText->SetSprite(nullptr, 0);
-            }
-
-            if (!NSEqualRects(nativeControlRect, controlRect))
-            {
-                [nsTextField setFrame:controlRect];
-                nativeControlRect = controlRect;
+                // can hide native control
+                controlRect.origin.x -= 10000;
             }
         }
-
-        void SetTextColor(const DAVA::Color& color) override
+        else
         {
-            updateViewState = true;
-
-            currentColor = color;
-
-            NSColor* nsColor = [NSColor
-            colorWithCalibratedRed:color.r
-                             green:color.g
-                              blue:color.b
-                             alpha:color.a];
-            [nsTextField setTextColor:nsColor];
-
-            // make cursor same color as text (default - black caret on white back)
-            NSTextView* fieldEditor = (NSTextView*)[nsTextField.window fieldEditor:YES
-                                                                         forObject:nsTextField];
-            fieldEditor.insertionPointColor = nsColor;
+            davaText->SetSprite(nullptr, 0);
         }
 
-        void SetFontSize(float virtualFontSize) override
+        if (!NSEqualRects(nativeControlRect, controlRect))
         {
-            updateViewState = true;
+            [nsTextField setFrame:controlRect];
+            nativeControlRect = controlRect;
+        }
+    }
 
-            currentFontSize = virtualFontSize;
+    void SetTextColor(const DAVA::Color& color) override
+    {
+        updateViewState = true;
 
-            float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+        currentColor = color;
 
-            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-            NSSize origSz = NSMakeSize(size, 0);
-            NSSize convSz = [openGLView convertSizeFromBacking:origSz];
+        NSColor* nsColor = [NSColor
+        colorWithCalibratedRed:color.r
+                         green:color.g
+                          blue:color.b
+                         alpha:color.a];
+        [nsTextField setTextColor:nsColor];
 
-            [nsTextField setFont:[NSFont systemFontOfSize:convSz.width]];
+        // make cursor same color as text (default - black caret on white back)
+        NSTextView* fieldEditor = (NSTextView*)[nsTextField.window fieldEditor:YES
+                                                                     forObject:nsTextField];
+        fieldEditor.insertionPointColor = nsColor;
+    }
+
+    void SetFontSize(float virtualFontSize) override
+    {
+        updateViewState = true;
+
+        currentFontSize = virtualFontSize;
+
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+
+        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+        NSSize origSz = NSMakeSize(size, 0);
+        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
+
+        [nsTextField setFont:[NSFont systemFontOfSize:convSz.width]];
+    }
+
+    void SetTextAlign(DAVA::int32 align) override
+    {
+        updateViewState = true;
+
+        alignment = static_cast<eAlign>(align);
+
+        NSTextAlignment aligment = NSCenterTextAlignment;
+        if (align & ALIGN_LEFT)
+        {
+            aligment = NSLeftTextAlignment;
+        }
+        else if (align & ALIGN_RIGHT)
+        {
+            aligment = NSRightTextAlignment;
+        }
+        else if (align & ALIGN_VCENTER)
+        {
+            aligment = NSCenterTextAlignment;
+        }
+        [nsTextField setAlignment:aligment];
+
+        // TODO investigate do we need to implement other then ALIGN_VCENTER
+        // several time set align so comment it for now DVASSERT(align & ALIGN_VCENTER);
+        if (align & ALIGN_VCENTER)
+        {
+            // TODO set custom cell properti - vAlignment
+            //[NSSecureTextField setCellClass:[NSSecureTextFieldCell class]];
         }
 
-        void SetTextAlign(DAVA::int32 align) override
+        if (useRtlAlign && (aligment == NSLeftTextAlignment ||
+                            aligment == NSRightTextAlignment))
         {
-            updateViewState = true;
-
-            alignment = static_cast<eAlign>(align);
-
-            NSTextAlignment aligment = NSCenterTextAlignment;
-            if (align & ALIGN_LEFT)
-            {
-                aligment = NSLeftTextAlignment;
-            }
-            else if (align & ALIGN_RIGHT)
-            {
-                aligment = NSRightTextAlignment;
-            }
-            else if (align & ALIGN_VCENTER)
-            {
-                aligment = NSCenterTextAlignment;
-            }
-            [nsTextField setAlignment:aligment];
-
-            // TODO investigate do we need to implement other then ALIGN_VCENTER
-            // several time set align so comment it for now DVASSERT(align & ALIGN_VCENTER);
-            if (align & ALIGN_VCENTER)
-            {
-                // TODO set custom cell properti - vAlignment
-                //[NSSecureTextField setCellClass:[NSSecureTextFieldCell class]];
-            }
-
-            if (useRtlAlign && (aligment == NSLeftTextAlignment ||
-                                aligment == NSRightTextAlignment))
-            {
-                [nsTextField setAlignment:NSNaturalTextAlignment];
-            }
+            [nsTextField setAlignment:NSNaturalTextAlignment];
         }
-
-        DAVA::int32 GetTextAlign() override
-        {
-            return alignment;
-        }
-
-        void SetTextUseRtlAlign(bool useRtlAlign_) override
-        {
-            updateViewState = true;
-
-            useRtlAlign = useRtlAlign_;
-            SetTextAlign(alignment);
-        }
-
-        bool GetTextUseRtlAlign() const override
-        {
-            return useRtlAlign;
-        }
-
-        void SetVisible(bool value) override
-        {
-            updateViewState = true;
-
-            [nsTextField setHidden:!value];
-        }
-
-        void ShowField() override
-        {
-            // we always on screen
-        }
-
-        void HideField() override
-        {
-            // we always on screen
-        }
-
-        void SetInputEnabled(bool value) override
-        {
-            [nsTextField setEditable:value];
-        }
-
-        // Cursor pos.
-        uint32 GetCursorPos() override
-        {
-            uint32 cursorPos = 0;
-            if ([nsTextField isEditable])
-            {
-                NSText* text = [nsTextField currentEditor];
-                NSRange range = [text selectedRange];
-                cursorPos = range.location;
-            }
-            return cursorPos;
-        }
-
-        void SetCursorPos(uint32 pos) override
-        {
-            if ([nsTextField isEditable])
-            {
-                NSText* text = [nsTextField currentEditor];
-                [text setSelectedRange:(NSRange){ pos, 0 }];
-            }
-        }
-
-        void SetMultiline(bool value) override
-        {
-            DVASSERT(!value);
-
-            multiline = value;
-            // fix for macos 10.9
-            if ([nsTextField respondsToSelector:@selector(setUsesSingleLineMode:)])
-            {
-                [nsTextField setUsesSingleLineMode:(!multiline)];
-            }
-            [nsTextField.cell setWraps:(!multiline)];
-            [nsTextField.cell setScrollable:(!multiline)];
-        }
-
-        bool IsMultiline() const override
-        {
-            return multiline;
-        }
-
-        void SetIsPassword(bool value) override
-        {
-            if (password != value)
-            {
-                updateViewState = true;
-
-                WideString oldText;
-                GetText(oldText);
-
-                CustomTextField* oldCtrl = nsTextField;
-                if (value)
-                {
-                    [CustomTextField setCellClass:[RSVerticallyCenteredSecureTextFieldCell class]];
-                }
-                else
-                {
-                    [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
-                }
-
-                // we have to recreate nsTextField for new CellClass
-                // do you know way beter?
-                nsTextField = [[CustomTextField alloc] initWithFrame:[oldCtrl frame]];
-
-                [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
-                [nsTextField setFormatter:formatter];
-                [nsTextField setDelegate:objcDelegate];
-
-                [nsTextField setEditable:oldCtrl.editable];
-                [nsTextField setEnabled:oldCtrl.enabled];
-
-                // make control border and background transparent
-                nsTextField.drawsBackground = NO;
-                nsTextField.bezeled = NO;
-
-                NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-                [openGLView addSubview:nsTextField];
-
-                // copy all current properties
-                SetFontSize(currentFontSize);
-                SetTextColor(currentColor);
-                SetText(oldText);
-                SetTextUseRtlAlign(useRtlAlign);
-                SetTextAlign(alignment);
-                SetMultiline(multiline);
-
-                [oldCtrl removeFromSuperview];
-                [oldCtrl release];
-
-                password = value;
-            }
-        }
-
-        bool IsPassword() const
-        {
-            return password;
-        }
-
-        // Max text length.
-        void SetMaxLength(int maxLength) override
-        {
-            formatter->maxLength = maxLength;
-        }
-
-        void SetRenderToTexture(bool value) override
-        {
-            renderInTexture = value;
-            updateViewState = true;
-        }
-
-        bool IsRenderToTexture() const override
-        {
-            return renderInTexture;
-        }
-
-        CustomTextField* nsTextField = nullptr;
-        CustomDelegate* objcDelegate = nullptr;
-        CustomTextFieldFormatter* formatter = nullptr;
-    };
-
-    class ObjCWrapper
-    {
-    public:
-        ObjCWrapper(UITextField* tf)
-        {
-            ctrl = new SingleLineOrPasswordField(tf, this);
-        }
-        ~ObjCWrapper()
-        {
-            delete ctrl;
-            ctrl = nullptr;
-        }
-
-        IField* operator->()
-        {
-            return ctrl;
-        }
-
-        void ChangeMultilineProperty(bool value)
-        {
-            if (ctrl->IsMultiline() != value)
-            {
-                IField* prevCtrl = ctrl;
-                IField* newField = nullptr;
-                if (value)
-                {
-                    newField = new MultilineField(ctrl->davaText, this);
-                }
-                else
-                {
-                    newField = new SingleLineOrPasswordField(ctrl->davaText, this);
-                }
-
-                newField->SetFontSize(prevCtrl->currentFontSize);
-                newField->SetTextColor(prevCtrl->currentColor);
-
-                WideString oldText;
-                prevCtrl->GetText(oldText);
-
-                newField->SetText(oldText);
-                newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
-                newField->SetTextAlign(prevCtrl->alignment);
-                newField->SetMultiline(value);
-
-                delete prevCtrl;
-                ctrl = newField;
-            }
-        }
-
-        IField* ctrl = nullptr;
-    };
-
-    TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
-        : objcWrapper{ *(new ObjCWrapper(tf)) }
-    {
     }
 
-    TextFieldPlatformImpl::~TextFieldPlatformImpl()
+    DAVA::int32 GetTextAlign() override
     {
-        ObjCWrapper* ptr = &objcWrapper;
-        delete ptr;
-        ptr = nullptr;
+        return alignment;
     }
 
-    void TextFieldPlatformImpl::OpenKeyboard()
+    void SetTextUseRtlAlign(bool useRtlAlign_) override
     {
-        objcWrapper->OpenKeyboard();
+        updateViewState = true;
+
+        useRtlAlign = useRtlAlign_;
+        SetTextAlign(alignment);
     }
 
-    void TextFieldPlatformImpl::CloseKeyboard()
+    bool GetTextUseRtlAlign() const override
     {
-        objcWrapper->CloseKeyboard();
+        return useRtlAlign;
     }
 
-    void TextFieldPlatformImpl::GetText(WideString& string) const
+    void SetVisible(bool value) override
     {
-        objcWrapper->GetText(string);
+        updateViewState = true;
+
+        [nsTextField setHidden:!value];
     }
 
-    void TextFieldPlatformImpl::SetText(const WideString& string)
+    void ShowField() override
     {
-        objcWrapper->SetText(string);
+        // we always on screen
     }
 
-    void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
+    void HideField() override
     {
-        objcWrapper->UpdateRect(rect);
+        // we always on screen
     }
 
-    void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
+    void SetInputEnabled(bool value) override
     {
-        objcWrapper->SetTextColor(color);
-    }
-
-    void TextFieldPlatformImpl::SetFontSize(float size)
-    {
-        objcWrapper->SetFontSize(size);
-    }
-
-    void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
-    {
-        objcWrapper->SetTextAlign(align);
-    }
-
-    DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
-    {
-        return objcWrapper->GetTextAlign();
-    }
-
-    void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
-    {
-        objcWrapper->SetTextUseRtlAlign(useRtlAlign);
-    }
-
-    bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
-    {
-        return objcWrapper->GetTextUseRtlAlign();
-    }
-
-    void TextFieldPlatformImpl::SetVisible(bool value)
-    {
-        objcWrapper->SetVisible(value);
-    }
-
-    void TextFieldPlatformImpl::TextFieldPlatformImpl::ShowField()
-    {
-        objcWrapper->ShowField();
-    }
-
-    void TextFieldPlatformImpl::HideField()
-    {
-        objcWrapper->HideField();
-    }
-
-    void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
-    {
-        objcWrapper->SetIsPassword(isPassword);
-    }
-
-    void TextFieldPlatformImpl::SetInputEnabled(bool value)
-    {
-        objcWrapper->SetInputEnabled(value);
-    }
-
-    // Keyboard traits.
-    void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
-    {
-        objcWrapper->SetAutoCapitalizationType(value);
-    }
-
-    void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
-    {
-        objcWrapper->SetAutoCorrectionType(value);
-    }
-
-    void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
-    {
-        objcWrapper->SetSpellCheckingType(value);
-    }
-
-    void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
-    {
-        objcWrapper->SetKeyboardAppearanceType(value);
-    }
-
-    void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
-    {
-        objcWrapper->SetKeyboardType(value);
-    }
-
-    void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
-    {
-        objcWrapper->SetReturnKeyType(value);
-    }
-
-    void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
-    {
-        objcWrapper->SetEnableReturnKeyAutomatically(value);
+        [nsTextField setEditable:value];
     }
 
     // Cursor pos.
-    uint32 TextFieldPlatformImpl::GetCursorPos()
+    uint32 GetCursorPos() override
     {
-        return objcWrapper->GetCursorPos();
+        uint32 cursorPos = 0;
+        if ([nsTextField isEditable])
+        {
+            NSText* text = [nsTextField currentEditor];
+            NSRange range = [text selectedRange];
+            cursorPos = range.location;
+        }
+        return cursorPos;
     }
 
-    void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
+    void SetCursorPos(uint32 pos) override
     {
-        objcWrapper->SetCursorPos(pos);
+        if ([nsTextField isEditable])
+        {
+            NSText* text = [nsTextField currentEditor];
+            [text setSelectedRange:(NSRange){ pos, 0 }];
+        }
+    }
+
+    void SetMultiline(bool value) override
+    {
+        DVASSERT(!value);
+
+        multiline = value;
+        // fix for macos 10.9
+        if ([nsTextField respondsToSelector:@selector(setUsesSingleLineMode:)])
+        {
+            [nsTextField setUsesSingleLineMode:(!multiline)];
+        }
+        [nsTextField.cell setWraps:(!multiline)];
+        [nsTextField.cell setScrollable:(!multiline)];
+    }
+
+    bool IsMultiline() const override
+    {
+        return multiline;
+    }
+
+    void SetIsPassword(bool value) override
+    {
+        if (password != value)
+        {
+            updateViewState = true;
+
+            WideString oldText;
+            GetText(oldText);
+
+            CustomTextField* oldCtrl = nsTextField;
+            if (value)
+            {
+                [CustomTextField setCellClass:[RSVerticallyCenteredSecureTextFieldCell class]];
+            }
+            else
+            {
+                [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+            }
+
+            // we have to recreate nsTextField for new CellClass
+            // do you know way beter?
+            nsTextField = [[CustomTextField alloc] initWithFrame:[oldCtrl frame]];
+
+            [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
+            [nsTextField setFormatter:formatter];
+            [nsTextField setDelegate:objcDelegate];
+
+            [nsTextField setEditable:oldCtrl.editable];
+            [nsTextField setEnabled:oldCtrl.enabled];
+
+            // make control border and background transparent
+            nsTextField.drawsBackground = NO;
+            nsTextField.bezeled = NO;
+
+            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+            [openGLView addSubview:nsTextField];
+
+            // copy all current properties
+            SetFontSize(currentFontSize);
+            SetTextColor(currentColor);
+            SetText(oldText);
+            SetTextUseRtlAlign(useRtlAlign);
+            SetTextAlign(alignment);
+            SetMultiline(multiline);
+
+            [oldCtrl removeFromSuperview];
+            [oldCtrl release];
+
+            password = value;
+        }
+    }
+
+    bool IsPassword() const
+    {
+        return password;
     }
 
     // Max text length.
-    void TextFieldPlatformImpl::SetMaxLength(int maxLength)
+    void SetMaxLength(int maxLength) override
     {
-        objcWrapper->SetMaxLength(maxLength);
+        formatter->maxLength = maxLength;
     }
 
-    void TextFieldPlatformImpl::SetMultiline(bool multiline)
+    void SetRenderToTexture(bool value) override
     {
-        // here use (.) to change internal state, not to transit call to internal IField
-        objcWrapper.ChangeMultilineProperty(multiline);
+        renderInTexture = value;
+        updateViewState = true;
     }
 
-    void TextFieldPlatformImpl::SetRenderToTexture(bool value)
+    bool IsRenderToTexture() const override
     {
-        objcWrapper->SetRenderToTexture(value);
+        return renderInTexture;
     }
 
-    bool TextFieldPlatformImpl::IsRenderToTexture() const
+    CustomTextField* nsTextField = nullptr;
+    CustomDelegate* objcDelegate = nullptr;
+    CustomTextFieldFormatter* formatter = nullptr;
+};
+
+class ObjCWrapper
+{
+public:
+    ObjCWrapper(UITextField* tf)
     {
-        return objcWrapper->IsRenderToTexture();
+        ctrl = new SingleLineOrPasswordField(tf, this);
     }
+    ~ObjCWrapper()
+    {
+        delete ctrl;
+        ctrl = nullptr;
+    }
+
+    IField* operator->()
+    {
+        return ctrl;
+    }
+
+    void ChangeMultilineProperty(bool value)
+    {
+        if (ctrl->IsMultiline() != value)
+        {
+            IField* prevCtrl = ctrl;
+            IField* newField = nullptr;
+            if (value)
+            {
+                newField = new MultilineField(ctrl->davaText, this);
+            }
+            else
+            {
+                newField = new SingleLineOrPasswordField(ctrl->davaText, this);
+            }
+
+            newField->SetFontSize(prevCtrl->currentFontSize);
+            newField->SetTextColor(prevCtrl->currentColor);
+
+            WideString oldText;
+            prevCtrl->GetText(oldText);
+
+            newField->SetText(oldText);
+            newField->SetTextUseRtlAlign(prevCtrl->useRtlAlign);
+            newField->SetTextAlign(prevCtrl->alignment);
+            newField->SetMultiline(value);
+
+            delete prevCtrl;
+            ctrl = newField;
+        }
+    }
+
+    IField* ctrl = nullptr;
+};
+
+TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
+    : objcWrapper{ *(new ObjCWrapper(tf)) }
+{
+}
+
+TextFieldPlatformImpl::~TextFieldPlatformImpl()
+{
+    ObjCWrapper* ptr = &objcWrapper;
+    delete ptr;
+    ptr = nullptr;
+}
+
+void TextFieldPlatformImpl::OpenKeyboard()
+{
+    objcWrapper->OpenKeyboard();
+}
+
+void TextFieldPlatformImpl::CloseKeyboard()
+{
+    objcWrapper->CloseKeyboard();
+}
+
+void TextFieldPlatformImpl::GetText(WideString& string) const
+{
+    objcWrapper->GetText(string);
+}
+
+void TextFieldPlatformImpl::SetText(const WideString& string)
+{
+    objcWrapper->SetText(string);
+}
+
+void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
+{
+    objcWrapper->UpdateRect(rect);
+}
+
+void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
+{
+    objcWrapper->SetTextColor(color);
+}
+
+void TextFieldPlatformImpl::SetFontSize(float size)
+{
+    objcWrapper->SetFontSize(size);
+}
+
+void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
+{
+    objcWrapper->SetTextAlign(align);
+}
+
+DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
+{
+    return objcWrapper->GetTextAlign();
+}
+
+void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
+{
+    objcWrapper->SetTextUseRtlAlign(useRtlAlign);
+}
+
+bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
+{
+    return objcWrapper->GetTextUseRtlAlign();
+}
+
+void TextFieldPlatformImpl::SetVisible(bool value)
+{
+    objcWrapper->SetVisible(value);
+}
+
+void TextFieldPlatformImpl::TextFieldPlatformImpl::ShowField()
+{
+    objcWrapper->ShowField();
+}
+
+void TextFieldPlatformImpl::HideField()
+{
+    objcWrapper->HideField();
+}
+
+void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
+{
+    objcWrapper->SetIsPassword(isPassword);
+}
+
+void TextFieldPlatformImpl::SetInputEnabled(bool value)
+{
+    objcWrapper->SetInputEnabled(value);
+}
+
+// Keyboard traits.
+void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
+{
+    objcWrapper->SetAutoCapitalizationType(value);
+}
+
+void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
+{
+    objcWrapper->SetAutoCorrectionType(value);
+}
+
+void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
+{
+    objcWrapper->SetSpellCheckingType(value);
+}
+
+void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
+{
+    objcWrapper->SetKeyboardAppearanceType(value);
+}
+
+void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
+{
+    objcWrapper->SetKeyboardType(value);
+}
+
+void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
+{
+    objcWrapper->SetReturnKeyType(value);
+}
+
+void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
+{
+    objcWrapper->SetEnableReturnKeyAutomatically(value);
+}
+
+// Cursor pos.
+uint32 TextFieldPlatformImpl::GetCursorPos()
+{
+    return objcWrapper->GetCursorPos();
+}
+
+void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
+{
+    objcWrapper->SetCursorPos(pos);
+}
+
+// Max text length.
+void TextFieldPlatformImpl::SetMaxLength(int maxLength)
+{
+    if (maxLength < 0)
+    {
+        maxLength = INT_MAX;
+    }
+    objcWrapper->SetMaxLength(maxLength);
+}
+
+void TextFieldPlatformImpl::SetMultiline(bool multiline)
+{
+    // here use (.) to change internal state, not to transit call to internal IField
+    objcWrapper.ChangeMultilineProperty(multiline);
+}
+
+void TextFieldPlatformImpl::SetRenderToTexture(bool value)
+{
+    objcWrapper->SetRenderToTexture(value);
+}
+
+bool TextFieldPlatformImpl::IsRenderToTexture() const
+{
+    return objcWrapper->IsRenderToTexture();
+}
 
 } // end namespace DAVA
 
@@ -1253,6 +1283,7 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
     if (self = [super init])
     {
         text = nullptr;
+        formatter = nullptr;
     }
     return self;
 }
@@ -1260,6 +1291,7 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
 - (void)dealloc
 {
     text = nullptr;
+    formatter = nullptr;
 
     [super dealloc];
 }
@@ -1302,6 +1334,21 @@ doCommandBySelector:(SEL)commandSelector
         if (!text->ctrl->IsMultiline())
         {
             result = YES;
+        }
+    }
+    else if (commandSelector == @selector(paste:))
+    {
+        // detect paste in textfield
+        if (!text->ctrl->IsMultiline())
+        {
+            DAVA::WideString currentText;
+            text->ctrl->GetText(currentText);
+            size_t len = currentText.length();
+            if (len >= formatter->maxLength)
+            {
+                // skip paste, no more room
+                result = YES;
+            }
         }
     }
 
@@ -1354,9 +1401,31 @@ doCommandBySelector:(SEL)commandSelector
        originalSelectedRange:(NSRange)origSelRange
             errorDescription:(NSString**)error
 {
+    BOOL result = YES;
+
+    NSString* inputStr = (*partialStringPtr);
+    NSRange inputRange = (*proposedSelRangePtr);
+
     if ([*partialStringPtr length] >= maxLength)
     {
-        return NO;
+        int spaceLeft = maxLength - [origString length] - 1;
+        // we can crop part of string only if user try to add to end
+        if (spaceLeft > 0 && origSelRange.location == [origString length])
+        {
+            NSRange correctRange = NSMakeRange(origSelRange.location, spaceLeft);
+            NSString* matchSizeStr = [*partialStringPtr substringWithRange:correctRange];
+            NSString* resultStr = [NSString stringWithFormat:@"%@%@", origString, matchSizeStr];
+            // write back
+            *partialStringPtr = resultStr;
+            *proposedSelRangePtr = NSMakeRange([resultStr length], 0);
+            result = NO;
+        }
+        else
+        {
+            // if we crop and insert text in middle user may not
+            // see absent of croped part, it is not good
+            return NO; // cancel change now
+        }
     }
 
     if (text != nullptr)
@@ -1373,19 +1442,39 @@ doCommandBySelector:(SEL)commandSelector
         DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
         if (delegate != nullptr)
         {
-            // simple change whole string for new string
-            NSString* nsReplacement = *partialStringPtr;
+            NSString* nsReplacement = nullptr;
+            DAVA::int32 location = 0;
+            // if we just add to string end
+            if (origSelRange.location == [origString length] && origSelRange.length == 0)
+            {
+                nsReplacement = [*partialStringPtr substringFromIndex:origSelRange.location];
+                location = origSelRange.location;
+            }
+            else
+            {
+                // simple change whole string for new string
+                nsReplacement = *partialStringPtr;
+                location = 0;
+            }
             DAVA::WideString replacement;
             const char* cstr = [nsReplacement cStringUsingEncoding:NSUTF8StringEncoding];
             size_t strSize = std::strlen(cstr);
             DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, replacement);
 
-            DAVA::int32 location = 0;
             DAVA::int32 length = [origString length];
-            bool result = delegate->TextFieldKeyPressed(davaCtrl, location, length, replacement);
-            if (!result)
+            bool resultDelegate = delegate->TextFieldKeyPressed(davaCtrl, location, length, replacement);
+            if (!resultDelegate)
             {
-                return NO;
+                if (result == NO)
+                {
+                    // restore input params
+                    *partialStringPtr = inputStr;
+                    *proposedSelRangePtr = inputRange;
+                }
+                else
+                {
+                    result = NO;
+                }
             }
             else
             {
@@ -1396,7 +1485,7 @@ doCommandBySelector:(SEL)commandSelector
         }
     }
 
-    return YES;
+    return result;
 }
 
 - (NSAttributedString*)attributedStringForObjectValue:(id)anObject
@@ -1599,6 +1688,31 @@ doCommandBySelector:(SEL)commandSelector
     NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
     [openGLView mouseDown:theEvent];
 }
+
+//
+//- (BOOL)performKeyEquivalent:(NSEvent*)event
+//{
+//    if (([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+//    {   // The command key is the ONLY modifier key being pressed.
+//        if ([[event charactersIgnoringModifiers] isEqualToString:@"x"])
+//        {
+//            return [NSApp sendAction:@selector(cut:) to:[[self window] firstResponder] from:self];
+//        }
+//        else if ([[event charactersIgnoringModifiers] isEqualToString:@"c"])
+//        {
+//            return [NSApp sendAction:@selector(copy:) to:[[self window] firstResponder] from:self];
+//        }
+//        else if ([[event charactersIgnoringModifiers] isEqualToString:@"v"])
+//        {
+//            return [NSApp sendAction:@selector(paste:) to:[[self window] firstResponder] from:self];
+//        }
+//        else if ([[event charactersIgnoringModifiers] isEqualToString:@"a"])
+//        {
+//            return [NSApp sendAction:@selector(selectAll:) to:[[self window] firstResponder] from:self];
+//        }
+//    }
+//    return [super performKeyEquivalent:event];
+//}
 @end
 
 @implementation CustomTextView
