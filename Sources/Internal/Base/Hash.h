@@ -143,7 +143,7 @@ struct Hash<T*>
 {
     size_t operator()(T* pointer) const
     {
-        return static_cast<size_t>(pointer);
+        return reinterpret_cast<size_t>(pointer);
     }
 
     bool Compare(T* ptr1, T* ptr2) const
