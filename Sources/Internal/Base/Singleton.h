@@ -46,7 +46,7 @@ public:
             instance = static_cast<T*>(this);
         }
     }
-    
+
     virtual ~Singleton()
     {
         instance = nullptr;
@@ -69,10 +69,10 @@ public:
 private:
     static T* instance;
 };
-    
+
 template <typename T>
 T* Singleton<T>::instance = nullptr;
-    
+
 } // namespace DAVA
 
 #endif //__DAVAENGINE_SINGLETON_H__

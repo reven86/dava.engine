@@ -157,8 +157,8 @@ protected:
 
 public:
     INTROSPECTION(BaseObject,
-        MEMBER(referenceCount, "referenceCount", I_SAVE)
-    )
+                  MEMBER(referenceCount, "referenceCount", I_SAVE)
+                  )
 };
 
 template <typename T>

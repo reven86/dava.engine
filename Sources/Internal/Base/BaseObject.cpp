@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 const String& BaseObject::GetClassName() const
 {
     return ObjectFactory::Instance()->GetName(this);
@@ -58,6 +57,6 @@ BaseObject* BaseObject::LoadFromArchive(KeyedArchive* archive)
 }
 
 void BaseObject::LoadObject(KeyedArchive* archive)
-{ }
-
+{
+}
 };
