@@ -50,6 +50,8 @@ const uint32 VBO_STRIDE = 3 * sizeof(float32) + 2 * sizeof(float32) + 4;
 const float32 SEGMENT_LENGTH = 15.0f;
 }
 
+const FastName RenderSystem2D::RENDER_PASS_NAME("2d");
+
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = nullptr;
@@ -60,8 +62,6 @@ NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
 
 RenderSystem2D::RenderSystem2D()
 {
-    RENDER_PASS_NAME = FastName("2d");
-
     viewMatrixSemantic = 8; //0 is bad idea as it is same as UPDATE_SEMANTIC_ALWAYS. why 8 - see comment in Setup2DMatrixes
     projMatrixSemantic = 8;
 

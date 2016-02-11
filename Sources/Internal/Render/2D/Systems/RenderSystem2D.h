@@ -121,7 +121,7 @@ public:
         ALPHA_ADD,
     };
 
-    static FastName RENDER_PASS_NAME;
+    const static FastName RENDER_PASS_NAME;
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
