@@ -141,7 +141,7 @@ public:
     static BaseObject* DummyGet()
     {
         return 0;
-    };
+    }
 
 protected:
     BaseObject(const BaseObject& /*b*/)
