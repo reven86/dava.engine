@@ -31,14 +31,18 @@
 #define QTTOOLS_ABSTRACTWIDGETMODEL_H
 
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QAbstractItemModel>
 #include <QWidget>
-
+POP_QT_WARNING_SUPRESSOR
 
 class AbstractWidgetModel
     : public QAbstractItemModel
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     enum Columns

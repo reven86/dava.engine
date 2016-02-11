@@ -81,7 +81,7 @@ public:
     {
         position.x = data.position.x - data.pivotPoint.x * data.scale.x + position.x * data.scale.x;
         position.y = data.position.y - data.pivotPoint.y * data.scale.y + position.y * data.scale.y;
-        if (data.angle != 0)
+        if (!FLOAT_EQUAL(data.angle, 0.f))
         {
             float tmpX = position.x;
             position.x = (tmpX - data.position.x) * data.cosA + (data.position.y - position.y) * data.sinA + data.position.x;
@@ -90,9 +90,9 @@ public:
         scale.x *= data.scale.x;
         scale.y *= data.scale.y;
         angle += data.angle;
-        if (angle != calculatedAngle)
+        if (!FLOAT_EQUAL(angle, calculatedAngle))
         {
-            if (angle != data.angle)
+            if (!FLOAT_EQUAL(angle, data.angle))
             {
                 cosA = cosf(angle);
                 sinA = sinf(angle);
@@ -124,7 +124,7 @@ public:
         Matrix3 translateMatr;
         translateMatr.BuildTranslation(position);
         // well it must be here otherwise there is a bug!
-        if (calculatedAngle != angle)
+        if (!FLOAT_EQUAL(calculatedAngle, angle))
         {
             cosA = cosf(angle);
             sinA = sinf(angle);
@@ -1161,7 +1161,9 @@ public:
     /**
      \brief Called when this control and his children are loaded.
      */
-    virtual void LoadFromYamlNodeCompleted(){};
+    virtual void LoadFromYamlNodeCompleted()
+    {
+    }
 
     /**
      \brief Returns control in hierarchy status.
@@ -1207,7 +1209,7 @@ public:
     bool GetVisibleForUIEditor() const
     {
         return visibleForUIEditor;
-    };
+    }
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
@@ -1420,7 +1422,7 @@ public:
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
 
                          PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
-                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT));
+                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT))
 };
 
 Vector2 UIControl::GetPivotPoint() const

@@ -71,9 +71,7 @@ class FilePath;
 class IWebViewControl
 {
 public:
-    virtual ~IWebViewControl()
-    {
-    }
+    virtual ~IWebViewControl();
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;

@@ -56,14 +56,14 @@ public:
     Vector<PropertyKey>& GetValues()
     {
         return keys;
-    };
+    }
 
     virtual const T& GetValue(float32 t) = 0;
 
     virtual PropertyLine<T>* Clone()
     {
         return 0;
-    };
+    }
 };
 
 class PropertyValueHelper
@@ -114,7 +114,7 @@ public:
 
     const T& GetValue(float32 t)
     {
-        int32 keysSize = (int32)PropertyLine<T>::keys.size();
+        int32 keysSize = static_cast<int32>(PropertyLine<T>::keys.size());
         DVASSERT(keysSize);
         if (t > PropertyLine<T>::keys[keysSize - 1].t)
         {
@@ -141,7 +141,7 @@ public:
             return PropertyLine<T>::keys[0].value;
         else
         {
-            int32 l = BinaryFind(t, 0, (int32)PropertyLine<T>::keys.size() - 1);
+            int32 l = BinaryFind(t, 0, static_cast<int32>(PropertyLine<T>::keys.size()) - 1);
 
             float ti = (t - PropertyLine<T>::keys[l].t) / (PropertyLine<T>::keys[l + 1].t - PropertyLine<T>::keys[l].t);
             resultValue = PropertyLine<T>::keys[l].value + (PropertyLine<T>::keys[l + 1].value - PropertyLine<T>::keys[l].value) * ti;
@@ -195,7 +195,6 @@ public:
     {
         externalValueName = name;
     }
-
 protected:
     String externalValueName;
 };
@@ -291,7 +290,7 @@ public:
     {
         this->t = t;
         this->v = v;
-    };
+    }
 };
 
 // A wrapper for Property Line, which allows easy access to the values.
@@ -309,7 +308,7 @@ public:
 
     virtual ~PropLineWrapper()
     {
-    };
+    }
 
     void Init(RefPtr<PropertyLine<T>> propertyLine);
 

@@ -47,8 +47,8 @@ public:
     QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* archive);
     ~QtPropertyDataDavaKeyedArcive() override;
 
-    const DAVA::MetaInfo* MetaInfo() override const;
-    void* CreateLastCommand() override const;
+    const DAVA::MetaInfo* MetaInfo() const override;
+    void* CreateLastCommand() const override;
 
     void FinishTreeCreation() override;
 
@@ -60,7 +60,7 @@ protected:
 
     QtConnections connections;
 
-    QVariant GetValueInternal() override const;
+    QVariant GetValueInternal() const override;
     bool UpdateValueInternal() override;
 
 private:
