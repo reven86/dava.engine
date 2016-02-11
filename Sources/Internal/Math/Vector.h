@@ -461,11 +461,11 @@ inline Vector2 Vector2::operator-() const
 //! Comparison operators
 inline bool Vector2::operator==(const Vector2& _v) const
 {
-    return (FLOAT_EQUAL(x, _v.x) && FLOAT_EQUAL(y, _v.y));
+    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y);
 }
 inline bool Vector2::operator!=(const Vector2& _v) const
 {
-    return (!FLOAT_EQUAL(x, _v.x) || !FLOAT_EQUAL(y, _v.y));
+    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y);
 }
 
 //! On functions
@@ -793,11 +793,11 @@ inline Vector3 Vector3::operator-() const
 //! Comparison operators
 inline bool Vector3::operator==(const Vector3& _v) const
 {
-    return (FLOAT_EQUAL(x, _v.x) && FLOAT_EQUAL(y, _v.y) && FLOAT_EQUAL(z, _v.z));
+    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y) && EQUAL_MEMORY(z, _v.z);
 }
 inline bool Vector3::operator!=(const Vector3& _v) const
 {
-    return (!FLOAT_EQUAL(x, _v.x) || !FLOAT_EQUAL(y, _v.y) || !FLOAT_EQUAL(z, _v.z));
+    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y) || !EQUAL_MEMORY(z, _v.z);
 }
 
 //! operators
@@ -1092,11 +1092,11 @@ inline Vector4 Vector4::operator-() const
 //! Comparison operators
 inline bool Vector4::operator==(const Vector4& _v) const
 {
-    return (FLOAT_EQUAL(x, _v.x) && FLOAT_EQUAL(y, _v.y) && FLOAT_EQUAL(z, _v.z) && FLOAT_EQUAL(w, _v.w));
+    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y) && EQUAL_MEMORY(z, _v.z) && EQUAL_MEMORY(w, _v.w);
 }
 inline bool Vector4::operator!=(const Vector4& _v) const
 {
-    return (!FLOAT_EQUAL(x, _v.x) || !FLOAT_EQUAL(y, _v.y) || !FLOAT_EQUAL(z, _v.z) || !FLOAT_EQUAL(w, _v.w));
+    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y) || !EQUAL_MEMORY(z, _v.z) || !EQUAL_MEMORY(w, _v.w);
 }
 
 inline const Vector3& Vector4::GetVector3() const
