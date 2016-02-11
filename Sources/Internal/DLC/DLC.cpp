@@ -167,6 +167,11 @@ FilePath DLC::GetMetaStorePath() const
     return dlcContext.remoteMetaStorePath;
 }
 
+void DLC::SetDownloadingThreadsCount(uint32 newCount)
+{
+    downloadingThreadsCount = newCount;
+}
+
 void DLC::PostEvent(DLCEvent event)
 {
     Function<void()> fn = Bind(&DLC::FSM, this, event);
@@ -548,8 +553,8 @@ void DLC::StepCheckPatchBegin()
     Logger::Info("DLC: Retrieving lite-patch size from: %s", dlcContext.remotePatchFullUrl.c_str());
 
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckPatchFinish));
-    dlcContext.remoteFullSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
-    dlcContext.remoteLiteSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
+    dlcContext.remoteFullSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE, downloadingThreadsCount); // full size should be first
+    dlcContext.remoteLiteSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE, downloadingThreadsCount); // lite size should be last
 }
 
 void DLC::StepCheckPatchFinish(const uint32& id, const DownloadStatus& status)
@@ -727,7 +732,7 @@ void DLC::StepDownloadPatchBegin()
 
     // start download and notify about download status into StepDownloadPatchFinish
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
-    dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+    dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType, downloadingThreadsCount);
 }
 
 void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status)

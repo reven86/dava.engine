@@ -74,26 +74,38 @@ public:
     void Draw(const UIGeometricData& geometricData) override;
 
 private:
+    void UpdateInfoStr();
+    void SetInternalDlServer(BaseObject* obj, void* data, void* callerData);
+    void SetExternalDlServer(BaseObject* obj, void* data, void* callerData);
+    void IncDlThreads(BaseObject* obj, void* data, void* callerData);
+    void DecDlThreads(BaseObject* obj, void* data, void* callerData);
     void Cancel(BaseObject* obj, void* data, void* callerData);
     void Restart(BaseObject* obj, void* data, void* callerData);
 
 protected:
+    String currentDownloadUrl;
+
     DAVA::FilePath workingDir;
     DAVA::FilePath sourceDir;
     DAVA::FilePath destinationDir;
 
-    UIButton* returnButton;
-    UIButton* restartButton;
+    UIStaticText* infoText = nullptr;
+    WideString infoStr;
 
-    UIStaticText* staticText;
-    UIControl* animControl;
-    UIControl* progressControl;
+    uint32 downloadTreadsCount = 4;
 
-    float32 angle;
-    float32 lastUpdateTime;
-    uint32 lastDLCState;
+    UIButton* returnButton = nullptr;
+    UIButton* restartButton = nullptr;
 
-    DLC* dlc;
+    UIStaticText* staticText = nullptr;
+    UIControl* animControl = nullptr;
+    UIControl* progressControl = nullptr;
+
+    float32 angle = 0;
+    float32 lastUpdateTime = 0.f;
+    uint32 lastDLCState = 0;
+
+    DLC* dlc = nullptr;
     DLCCrashTest crashTest;
 };
 
