@@ -242,7 +242,6 @@ private:
     /**
     \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
     */
-    static ConcurrentObject<Set<Thread*>> threadList;
     static Id mainThreadId;
     static Id glThreadId;
 };
