@@ -39,6 +39,7 @@
 
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
+#import <Foundation/NSProcessInfo.h>
 #import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
@@ -78,11 +79,14 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    SInt32 versionMajor = 0, versionMinor = 0, versionBugFix = 0;
-    Gestalt(gestaltSystemVersionMajor, &versionMajor);
-    Gestalt(gestaltSystemVersionMinor, &versionMinor);
-    Gestalt(gestaltSystemVersionBugFix, &versionBugFix);
-    NSString* systemVersion = [NSString stringWithFormat:@"%d.%d.%d", versionMajor, versionMinor, versionBugFix];
+    NSOperatingSystemVersion sysVersion;
+    NSProcessInfo* procInfo = [NSProcessInfo processInfo];
+    sysVersion = procInfo.operatingSystemVersion;
+    
+    NSString* systemVersion =
+        [NSString stringWithFormat:@"%ld.%ld.%ld", sysVersion.majorVersion,
+                                                   sysVersion.minorVersion,
+                                                   sysVersion.patchVersion];
 
     return String([systemVersion UTF8String]);
 }
@@ -147,7 +151,7 @@ WideString DeviceInfoPrivate::GetName()
     NSStringEncoding pEncode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
     NSData* pSData = [deviceName dataUsingEncoding:pEncode];
 
-    return WideString((wchar_t*)[pSData bytes], [pSData length] / sizeof(wchar_t));
+    return WideString(reinterpret_cast<const wchar_t*>([pSData bytes]), [pSData length] / sizeof(wchar_t));
 }
 
 // Not impletemted yet
