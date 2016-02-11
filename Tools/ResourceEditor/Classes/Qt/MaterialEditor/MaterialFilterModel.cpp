@@ -238,7 +238,7 @@ bool MaterialFilteringModel::lessThan(const QModelIndex& left, const QModelIndex
         /// We have unusual requirements.
         /// we need to sort by "sortColumn()" in "sortOrder()"
         /// but if values in "sortColumn()" is equal, we need sort by other columns in AscendingOrder
-        /// that why why we invert comparation functor for DescendingOrder
+        /// that why we invert comparation functor for DescendingOrder
         if (sortOrder() == Qt::DescendingOrder)
             alternativeLessFunctor = &MFMLocal::Greater;
 
