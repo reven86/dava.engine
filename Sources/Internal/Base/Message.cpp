@@ -32,6 +32,9 @@
 
 namespace DAVA
 {
+MessageBase::~MessageBase()
+{
+}
 //void Message::SetSelector(DAVA::BaseObject *_pObj, void (BaseObject::*_pFunc)(BaseObject*, void*, void*), void * _pUserData)
 //{
 //	pObj = _pObj;

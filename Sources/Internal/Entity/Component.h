@@ -42,7 +42,7 @@ namespace DAVA
 class Entity;
 class Component : public Serializable, public InspBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT)
 
 public:
     enum eType
@@ -123,7 +123,9 @@ protected:
     Entity* entity; // entity is a Entity, that this component belongs to
 
 public:
-    INTROSPECTION(Component, MEMBER(entity, "entity", I_SAVE))
+    INTROSPECTION(Component,
+                  MEMBER(entity, "entity", I_SAVE)
+                  )
 };
 
 inline Entity* Component::GetEntity() const
