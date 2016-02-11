@@ -77,12 +77,12 @@ public:
     virtual ~Logger();
 
     //! Enables/disables logging to file. Disabled by default.
-    //! \param[in] filename: name of log file. Empty string disables logging to file,
+    //! \param[in] filename - name of log file. Empty string disables logging to file,
     //! non-empty creates log file in working directory.
     virtual void SetLogFilename(const String& filename);
 
     //! Enables/disables logging to file. Disabled by default.
-    //! \param[in] filepath: path to log file. Empty string disables logging to file,
+    //! \param[in] filepath - path to log file. Empty string disables logging to file,
     //! non-empty creates log file described by filepath.
     virtual void SetLogPathname(const FilePath& filepath);
 
@@ -95,12 +95,12 @@ public:
     //! errors are printed out. Setting it to ELL_INFORMATION, which is
     //! the default setting, warnings,
     //! errors and informational texts are printed out.
-    //! \param ll: new log level filter value.
+    //! \param ll - new log level filter value.
     virtual void SetLogLevel(eLogLevel ll);
 
     //! Prints out a text into the log
-    //! \param text: Text to print out.
-    //! \param ll: Log level of the text. If the text is an error, set
+    //! \param text - Text to print out.
+    //! \param ll - Log level of the text. If the text is an error, set
     //! it to ELL_ERROR, if it is warning set it to ELL_WARNING, and if it
     //! is just an informational text, set it to ELL_INFORMATION. Texts are
     //! filtered with these levels. If you want to be a text displayed,
