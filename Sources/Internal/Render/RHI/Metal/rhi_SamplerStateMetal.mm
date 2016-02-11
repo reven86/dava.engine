@@ -44,8 +44,10 @@ namespace rhi
 struct
 SamplerStateMetal_t
 {
-    uint32 count;
-    id<MTLSamplerState> uid[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32 fp_count;
+    id<MTLSamplerState> fp_uid[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32 vp_count;
+    id<MTLSamplerState> vp_uid[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
 };
 
 typedef ResourcePool<SamplerStateMetal_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false> SamplerStateMetalPool;
@@ -119,7 +121,7 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
     Handle handle = SamplerStateMetalPool::Alloc();
     SamplerStateMetal_t* state = SamplerStateMetalPool::Get(handle);
 
-    state->count = desc.fragmentSamplerCount;
+    state->fp_count = desc.fragmentSamplerCount;
     for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
     {
         MTLSamplerDescriptor* s_desc = [MTLSamplerDescriptor new];
@@ -135,7 +137,26 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.maxAnisotropy = 1;
         s_desc.normalizedCoordinates = YES;
 
-        state->uid[s] = [_Metal_Device newSamplerStateWithDescriptor:s_desc];
+        state->fp_uid[s] = [_Metal_Device newSamplerStateWithDescriptor:s_desc];
+    }
+
+    state->vp_count = desc.vertexSamplerCount;
+    for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
+    {
+        MTLSamplerDescriptor* s_desc = [MTLSamplerDescriptor new];
+
+        s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrU));
+        s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrV));
+        s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrW));
+        s_desc.minFilter = _TextureFilter(TextureFilter(desc.vertexSampler[s].minFilter));
+        s_desc.magFilter = _TextureFilter(TextureFilter(desc.vertexSampler[s].magFilter));
+        s_desc.mipFilter = _TextureMipFilter(TextureMipFilter(desc.vertexSampler[s].mipFilter));
+        s_desc.lodMinClamp = 0.0f;
+        s_desc.lodMaxClamp = FLT_MAX;
+        s_desc.maxAnisotropy = 1;
+        s_desc.normalizedCoordinates = YES;
+
+        state->vp_uid[s] = [_Metal_Device newSamplerStateWithDescriptor:s_desc];
     }
 
     return handle;
@@ -159,8 +180,11 @@ void SetToRHI(Handle hstate, id<MTLRenderCommandEncoder> ce)
 {
     SamplerStateMetal_t* state = SamplerStateMetalPool::Get(hstate);
 
-    for (unsigned s = 0; s != state->count; ++s)
-        [ce setFragmentSamplerState:state->uid[s] atIndex:s];
+    for (unsigned s = 0; s != state->fp_count; ++s)
+        [ce setFragmentSamplerState:state->fp_uid[s] atIndex:s];
+    
+    for (unsigned s = 0; s != state->vp_count; ++s)
+        [ce setVertexSamplerState:state->vp_uid[s] atIndex:s];
 }
 }
 

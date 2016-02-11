@@ -231,6 +231,12 @@ static const char* _ShaderHeader_Metal =
 "inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
 "inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 
+"inline half  lerp( half a, half b, half t ) { return mix( a, b, t ); }\n"
+"inline half2 lerp( half2 a, half2 b, half t ) { return mix( a, b, t ); }\n"
+"inline half3 lerp( half3 a, half3 b, half t ) { return mix( a, b, t ); }\n"
+"inline half4 lerp( half4 a, half4 b, half t ) { return mix( a, b, t ); }\n"
+
+
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 "#define FP_A8(t) t.a\n"
 
@@ -306,6 +312,22 @@ static const char* _ShaderDefine_Metal =
 "    VPROG_IN_BUFFER_5 "
 "    VPROG_IN_BUFFER_6 "
 "    VPROG_IN_BUFFER_7 "
+"    VPROG_IN_TEXTURE_0 "
+"    VPROG_IN_TEXTURE_1 "
+"    VPROG_IN_TEXTURE_2 "
+"    VPROG_IN_TEXTURE_3 "
+"    VPROG_IN_TEXTURE_4 "
+"    VPROG_IN_TEXTURE_5 "
+"    VPROG_IN_TEXTURE_6 "
+"    VPROG_IN_TEXTURE_7 "
+"    VPROG_SAMPLER_0 "
+"    VPROG_SAMPLER_1 "
+"    VPROG_SAMPLER_2 "
+"    VPROG_SAMPLER_3 "
+"    VPROG_SAMPLER_4 "
+"    VPROG_SAMPLER_5 "
+"    VPROG_SAMPLER_6 "
+"    VPROG_SAMPLER_7 "
 ")"
 "{"
 "    VPROG_BUFFER_0 "
@@ -1017,6 +1039,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
         bool vp_buf_declared[16];
         bool fp_buf_declared[16];
         bool fp_tex_declared[16];
+        bool vp_tex_declared[16];
 
         for (unsigned i = 0; i != countof(vp_buf_declared); ++i)
             vp_buf_declared[i] = false;
@@ -1024,6 +1047,8 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
             fp_buf_declared[i] = false;
         for (unsigned i = 0; i != countof(fp_tex_declared); ++i)
             fp_tex_declared[i] = false;
+        for (unsigned i = 0; i != countof(vp_tex_declared); ++i)
+            vp_tex_declared[i] = false;
 
         while ((decl = strstr(s, "DECL_FPROG_BUFFER")))
         {
@@ -1080,6 +1105,29 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
                 src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i \n", i);
             }
         }
+
+        s = srcText;
+        while ((decl = strstr(s, "DECL_VP_SAMPLER2D")))
+        {
+            int i = 0;
+
+            sscanf(decl, "DECL_VP_SAMPLER2D(%i,", &i);
+
+            src_len += sprintf(src + src_len, "#define VPROG_IN_TEXTURE_%i  , texture2d<float> vp_tex%i [[ texture(%i) ]]\n", i, i, i);
+            src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i   , sampler vp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
+            vp_tex_declared[i] = true;
+
+            s += strlen("DECL_VP_SAMPLER2D");
+        }
+        for (unsigned i = 0; i != countof(vp_tex_declared); ++i)
+        {
+            if (!vp_tex_declared[i])
+            {
+                src_len += sprintf(src + src_len, "#define VPROG_IN_TEXTURE_%i \n", i);
+                src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i \n", i);
+            }
+        }
+
 
         s = srcText;
         while ((decl = strstr(s, "DECL_VPROG_BUFFER")))

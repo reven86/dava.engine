@@ -123,6 +123,62 @@ _Metal_VertexAttribIndex(VertexSemantics s, uint32 i)
 
 //------------------------------------------------------------------------------
 
+static void
+DumpShaderText(const char* code, unsigned code_sz)
+{
+    char src[64 * 1024];
+    char* src_line[1024];
+    unsigned line_cnt = 0;
+
+    if (code_sz < sizeof(src))
+    {
+        memcpy(src, code, code_sz);
+        src[code_sz] = '\0';
+        memset(src_line, 0, sizeof(src_line));
+
+        src_line[line_cnt++] = src;
+        for (char* s = src; *s;)
+        {
+            if (*s == '\n')
+            {
+                *s = 0;
+                ++s;
+
+                while (*s && (/**s == '\n'  ||  */ *s == '\r'))
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if (!(*s))
+                    break;
+
+                src_line[line_cnt] = s;
+                ++line_cnt;
+            }
+            else if (*s == '\r')
+            {
+                *s = ' ';
+            }
+            else
+            {
+                ++s;
+            }
+        }
+
+        for (unsigned i = 0; i != line_cnt; ++i)
+        {
+            Logger::Info("%4u |  %s", 1 + i, src_line[i]);
+        }
+    }
+    else
+    {
+        Logger::Info(code);
+    }
+}
+
+//------------------------------------------------------------------------------
+
 class
 PipelineStateMetal_t
 {
@@ -520,6 +576,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
         Logger::Error("FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str());
         Logger::Error("  %s", (vp_err != nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>");
         //Logger::Info( vp_src.UTF8String );
+        DumpShaderText( (const char*)(&vprog_bin[0]), vprog_bin.size() );
     }
 
     if (vp_err != nil)
@@ -546,8 +603,9 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile fprog \"%s\" :", desc.fprogUid.c_str());
         Logger::Error("  %s", (fp_err != nil) ? fp_err.localizedDescription.UTF8String : "<unknown error>");
+        DumpShaderText( (const char*)(&fprog_bin[0]), fprog_bin.size() );
     }
-
+    
     if (fp_err != nil)
         Logger::Warning("fprog warnings:\n %s ", fp_err.localizedDescription.UTF8String);
 
