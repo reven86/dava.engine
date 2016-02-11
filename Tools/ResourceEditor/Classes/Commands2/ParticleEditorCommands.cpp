@@ -109,8 +109,8 @@ void CommandUpdateEmitter::Redo()
 
 CommandUpdateEmitterPosition::CommandUpdateEmitterPosition(ParticleEffectComponent* _effect, ParticleEmitter* _emitter)
     : CommandAction(CMDID_PARTICLE_EMITTER_POSITION_UPDATE)
-    , effect(_effect)
     , emitter(_emitter)
+    , effect(_effect)
 {
 }
 
