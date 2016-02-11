@@ -78,7 +78,7 @@ public:
 };
 
 #define IMPLEMENT_UI_COMPONENT_TYPE(TYPE) \
-    virtual uint32 GetType() const override { return TYPE; }; \
+    virtual uint32 GetType() const override { return TYPE; } \
     static const uint32 C_TYPE = TYPE;
 
 inline void UIComponent::SetControl(UIControl* _control)
