@@ -42,7 +42,7 @@ namespace DAVA
 class Entity;
 class Component : public Serializable, public InspBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT)
 
 public:
     enum eType
@@ -109,7 +109,9 @@ public:
     /**
 	 \brief This function optimize component before export.
 	*/
-    virtual void OptimizeBeforeExport(){};
+    virtual void OptimizeBeforeExport()
+    {
+    }
 
     /**
          \brief Function to get data nodes of requested type to specific container you provide.
@@ -123,7 +125,7 @@ protected:
 public:
     INTROSPECTION(Component,
                   MEMBER(entity, "entity", I_SAVE)
-                  );
+                  )
 };
 
 inline Entity* Component::GetEntity() const
