@@ -50,6 +50,10 @@
 
 namespace DAVA
 {
+IWebViewControl::~IWebViewControl()
+{
+}
+
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
     , webViewControl(0)

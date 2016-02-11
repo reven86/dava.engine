@@ -85,14 +85,13 @@ void ParticleRenderObject::PrepareRenderData(Camera* camera)
 {
     //camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
     static Vector3 basisVectors[7 * 2] = { Vector3(), Vector3(),
-        Vector3(), Vector3(),
-        Vector3(), Vector3(),
-        Vector3(), Vector3(),
-        Vector3(0, 1, 0), Vector3(0, 0, 1),
-        Vector3(1, 0, 0), Vector3(0, 0, 1),
-        Vector3(0, 1, 0), Vector3(1, 0, 0) };
-    
-    
+                                           Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(0, 1, 0), Vector3(0, 0, 1),
+                                           Vector3(1, 0, 0), Vector3(0, 0, 1),
+                                           Vector3(0, 1, 0), Vector3(1, 0, 0) };
+
     activeRenderBatchArray.clear();
     currRenderBatchId = 0;
 

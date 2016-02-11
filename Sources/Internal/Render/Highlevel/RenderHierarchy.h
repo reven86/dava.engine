@@ -68,11 +68,11 @@ public:
 
 class LinearRenderHierarchy : public RenderHierarchy
 {
-    virtual void AddRenderObject(RenderObject* renderObject);
-    virtual void RemoveRenderObject(RenderObject* renderObject);
-    virtual void ObjectUpdated(RenderObject* renderObject);
-    virtual void Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria);
-    virtual void GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray);
+    void AddRenderObject(RenderObject* renderObject) override;
+    void RemoveRenderObject(RenderObject* renderObject) override;
+    void ObjectUpdated(RenderObject* renderObject) override;
+    void Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria) override;
+    void GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray) override;
 
 private:
     Vector<RenderObject*> renderObjectArray;
