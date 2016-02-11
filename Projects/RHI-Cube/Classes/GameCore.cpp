@@ -1426,7 +1426,7 @@ void GameCore::Draw()
         return;
 
     //    sceneRenderTest->Render();
-//        rhiDraw();
+    //        rhiDraw();
     //manticoreDraw();
     DrawInstancedCube();
     //    rtDraw();
@@ -1707,7 +1707,7 @@ void GameCore::manticoreDraw()
 
     #if USE_SECOND_CB
     {
-//        packet.options |= rhi::Packet::OPT_WIREFRAME;
+        //        packet.options |= rhi::Packet::OPT_WIREFRAME;
         const unsigned row_cnt = 200;
         const unsigned col_cnt = 12;
         //const unsigned  row_cnt = 1;

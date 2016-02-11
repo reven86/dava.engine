@@ -71,7 +71,10 @@ public:
     NetCore();
     ~NetCore();
 
-    IOLoop* Loop() { return &loop; }
+    IOLoop* Loop()
+    {
+        return &loop;
+    }
 
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* serviceName = NULL);
     bool UnregisterService(uint32 serviceId);
@@ -81,10 +84,10 @@ public:
 
     TrackId CreateController(const NetConfig& config, void* context = nullptr, uint32 readTimeout = DEFAULT_READ_TIMEOUT);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndpoint = Endpoint(DEFAULT_TCP_ANNOUNCE_PORT));
-    TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
+    TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback);
     void DestroyController(TrackId id);
     void DestroyControllerBlocked(TrackId id);
-    void DestroyAllControllers(Function<void ()> callback);
+    void DestroyAllControllers(Function<void()> callback);
     void DestroyAllControllersBlocked();
 
     void RestartAllControllers();
@@ -114,13 +117,13 @@ private:
     IController* TrackIdToObject(TrackId id) const;
 
 private:
-    IOLoop loop;                                    // Heart of NetCore and network library - event loop
-    Set<IController*> trackedObjects;               // Running objects
+    IOLoop loop; // Heart of NetCore and network library - event loop
+    Set<IController*> trackedObjects; // Running objects
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
-    Function<void ()> controllersStoppedCallback;
+    Function<void()> controllersStoppedCallback;
     bool isFinishing;
-    volatile bool allStopped;                       // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
+    volatile bool allStopped; // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
 
 #if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;
@@ -192,8 +195,8 @@ inline IController* NetCore::TrackIdToObject(TrackId id) const
     return reinterpret_cast<IController*>(id);
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
 
-#endif  // __DAVAENGINE_NETCORE_H__
+#endif // __DAVAENGINE_NETCORE_H__

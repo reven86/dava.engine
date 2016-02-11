@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class RenderOptions : public Observable
 {
 public:
@@ -95,7 +94,6 @@ public:
 private:
     bool options[OPTIONS_COUNT];
 };
-
 };
 
 #endif //__DAVAENGINE_RENDEROPTIONS_H__

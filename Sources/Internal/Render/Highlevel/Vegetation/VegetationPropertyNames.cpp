@@ -43,7 +43,7 @@ const FastName VegetationPropertyNames::FLAG_LOD_COLOR("LOD_COLOR");
 const FastName VegetationPropertyNames::VEGETATION_QUALITY_NAME_HIGH("HIGH");
 const FastName VegetationPropertyNames::VEGETATION_QUALITY_NAME_LOW("LOW");
 const FastName VegetationPropertyNames::VEGETATION_QUALITY_GROUP_NAME("Vegetation");
-    
+
 const FastName VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP("vegetationmap");
 
 const FastName VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_X("vegWaveOffsetx");

@@ -43,12 +43,10 @@ ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(const QString& resour
     , resourceExtension(resourceExtension_)
     , resourceDir(resourceDir_)
 {
-
 }
 
 ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 {
-
 }
 
 QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
@@ -68,7 +66,7 @@ void ResourceFilePropertyDelegate::setEditorData(QWidget*, const QModelIndex& in
     lineEdit->setText(stringValue);
 }
 
-bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index) const
+bool ResourceFilePropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
@@ -93,12 +91,12 @@ bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractIt
 
 void ResourceFilePropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions)
 {
-    QAction *selectFileAction = new QAction(tr("..."), parent);
+    QAction* selectFileAction = new QAction(tr("..."), parent);
     selectFileAction->setToolTip(tr("Select resource file"));
     actions.push_back(selectFileAction);
     connect(selectFileAction, SIGNAL(triggered(bool)), this, SLOT(selectFileClicked()));
 
-    QAction *clearFileAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
+    QAction* clearFileAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
     clearFileAction->setToolTip(tr("Clear resource file"));
     actions.push_back(clearFileAction);
     connect(clearFileAction, SIGNAL(triggered(bool)), this, SLOT(clearFileClicked()));
@@ -154,7 +152,7 @@ void ResourceFilePropertyDelegate::OnEditingFinished()
     {
         return;
     }
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     DVASSERT(editor != nullptr);
     const QString& text = lineEdit->text();
     if (!text.isEmpty() && !IsPathValid(text))
@@ -178,7 +176,7 @@ void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
 bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
 {
     QString fullPath = path;
-    if(!fullPath.endsWith(resourceExtension))
+    if (!fullPath.endsWith(resourceExtension))
     {
         fullPath.append(resourceExtension);
     }

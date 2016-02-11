@@ -35,24 +35,23 @@
 
 namespace DAVA
 {
-    
 class Image;
-class Heightmap: public BaseObject
+class Heightmap : public BaseObject
 {
 protected:
-	virtual ~Heightmap();
-public:
+    virtual ~Heightmap();
 
+public:
     static const int32 MAX_VALUE = 65535;
     static const int32 IMAGE_CORRECTION = MAX_VALUE / 255;
 
     Heightmap(int32 size = 0);
 
     bool BuildFromImage(const Image* image);
-    void SaveToImage(const FilePath & filename);
-    
-    virtual void Save(const FilePath &filePathname);
-    virtual bool Load(const FilePath &filePathname);
+    void SaveToImage(const FilePath& filename);
+
+    virtual void Save(const FilePath& filePathname);
+    virtual bool Load(const FilePath& filePathname);
 
     inline uint16 GetHeight(uint16 x, uint16 y) const;
     inline uint16 GetHeightClamp(uint16 x, uint16 y) const;
@@ -79,13 +78,11 @@ protected:
     static String FILE_EXTENSION;
 
 public:
-    
     INTROSPECTION_EXTEND(Heightmap, BaseObject,
-        MEMBER(size, "Size", I_VIEW)
-        MEMBER(tileSize, "Tile Size", I_VIEW)
-    );
+                         MEMBER(size, "Size", I_VIEW)
+                         MEMBER(tileSize, "Tile Size", I_VIEW)
+                         );
 };
-
 inline uint16 Heightmap::GetHeightClamp(uint16 x, uint16 y) const
 {
     uint16 hm_1 = uint16(size - 1);

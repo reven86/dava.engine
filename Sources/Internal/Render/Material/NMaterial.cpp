@@ -542,7 +542,7 @@ void NMaterial::InvalidateBufferBindings()
 
 void NMaterial::InvalidateTextureBindings()
 {
-    //reset existing handle?
+    // reset existing handle?
     needRebuildTextures = true;
     for (auto& child : children)
         child->InvalidateTextureBindings();
@@ -550,7 +550,8 @@ void NMaterial::InvalidateTextureBindings()
 
 void NMaterial::InvalidateRenderVariants()
 {
-    //release existing descriptor?
+    // release existing descriptor?
+    ClearLocalBuffers(); // to avoid using incorrect buffers in certain situations (e.g chaning parent)
     needRebuildVariants = true;
     for (auto& child : children)
         child->InvalidateRenderVariants();

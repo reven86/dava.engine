@@ -33,7 +33,6 @@
 
 #include "../Helpers/PaintingHelper.h"
 
-
 GradientSlider::GradientSlider(QWidget* parent)
     : AbstractSlider(parent)
     , arrowSize(9, 9)
@@ -126,7 +125,7 @@ void GradientSlider::DrawForeground(QPainter* p) const
         break;
     }
 
-    p->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false );
+    p->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
 
     if (flags.testFlag(TOP_EDGE))
         drawArrow(TOP_EDGE, p);

@@ -468,7 +468,7 @@ void PipelineStateMetal_t::ConstBuf::SetToRHI(unsigned bufIndex, id<MTLRenderCom
     }
 
     if (type == PROG_VERTEX)
-        [ce setVertexBuffer:buf offset:inst_offset atIndex:MAX_VERTEX_STREAM_COUNT+bufIndex]; // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
+        [ce setVertexBuffer:buf offset:inst_offset atIndex:MAX_VERTEX_STREAM_COUNT + bufIndex]; // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
     else
         [ce setFragmentBuffer:buf offset:inst_offset atIndex:bufIndex];
 }
@@ -702,14 +702,14 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
             rp_desc.vertexDescriptor.attributes[attr_i].offset = desc.vertexLayout.ElementOffset(i);
             rp_desc.vertexDescriptor.attributes[attr_i].format = fmt;
         }
-    
-        for( unsigned s=0; s!=desc.vertexLayout.StreamCount(); ++s )
+
+        for (unsigned s = 0; s != desc.vertexLayout.StreamCount(); ++s)
         {
-            rp_desc.vertexDescriptor.layouts[s].stepFunction = (desc.vertexLayout.StreamFrequency(s)==VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+            rp_desc.vertexDescriptor.layouts[s].stepFunction = (desc.vertexLayout.StreamFrequency(s) == VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
             rp_desc.vertexDescriptor.layouts[s].stepRate = 1;
             rp_desc.vertexDescriptor.layouts[s].stride = desc.vertexLayout.Stride(s);
         }
-        
+
         ps->state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionBufferTypeInfo reflection:&ps_info error:&rs_err];
 
         if (ps->state != nil)
@@ -819,7 +819,7 @@ uint32
 VertexStreamCount(Handle ps)
 {
     PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
-    
+
     return psm->layout.StreamCount();
 }
 
@@ -962,14 +962,14 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                 }
                 DVASSERT(attr_set);
             }
-            
-            for( unsigned s=0; s!=layout->StreamCount(); ++s )
+
+            for (unsigned s = 0; s != layout->StreamCount(); ++s)
             {
-                rp_desc.vertexDescriptor.layouts[s].stepFunction = (layout->StreamFrequency(s)==VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+                rp_desc.vertexDescriptor.layouts[s].stepFunction = (layout->StreamFrequency(s) == VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
                 rp_desc.vertexDescriptor.layouts[s].stepRate = 1;
-                rp_desc.vertexDescriptor.layouts[s].stride = layout->Stride( s );
+                rp_desc.vertexDescriptor.layouts[s].stride = layout->Stride(s);
             }
-            
+
             state.layoutUID = layoutUID;
             state.state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
             state.ds_used = ds_used;

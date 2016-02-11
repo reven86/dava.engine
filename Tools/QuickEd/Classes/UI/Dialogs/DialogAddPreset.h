@@ -36,7 +36,7 @@ class DialogAddPreset : public QDialog, public Ui::DialogAddPreset
 {
     Q_OBJECT
 public:
-    explicit DialogAddPreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    explicit DialogAddPreset(const QString& originalPresetName, QWidget* parent = nullptr);
     ~DialogAddPreset() = default;
 private slots:
     void OnNewPresetNameChanged();

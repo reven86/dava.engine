@@ -34,7 +34,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
 
-
 namespace DAVA
 {
 String Heightmap::FILE_EXTENSION(".heightmap");
@@ -60,45 +59,44 @@ bool Heightmap::BuildFromImage(const DAVA::Image *image)
     DVASSERT(image);
     DVASSERT((image->GetWidth() == image->GetHeight()) && (IsPowerOf2(image->GetWidth())));
 
-    Image *heightImage = Image::CreateFromData(image->GetWidth(), image->GetHeight(), image->GetPixelFormat(), image->GetData());
+    Image* heightImage = Image::CreateFromData(image->GetWidth(), image->GetHeight(), image->GetPixelFormat(), image->GetData());
     heightImage->FlipVertical();
 
     ReallocateData(heightImage->width);
 
-    if(FORMAT_A16 == heightImage->format)
+    if (FORMAT_A16 == heightImage->format)
     {
-        uint16 *dstData = data;
-        uint16 *srcData = (uint16*)heightImage->data;
-        for(int32 i = size*size - 1; i >= 0; --i)
+        uint16* dstData = data;
+        uint16* srcData = (uint16*)heightImage->data;
+        for (int32 i = size * size - 1; i >= 0; --i)
         {
             uint16 packed = *srcData++;
             uint16 unpacked = ((packed & 0xFF) << 8) | ((packed & 0xFF00) >> 8);
-            
+
             *dstData++ = unpacked;
         }
     }
-    else if(FORMAT_A8 == heightImage->format)
+    else if (FORMAT_A8 == heightImage->format)
     {
-        uint16 *dstData = data;
-        uint8 *srcData = heightImage->data;
+        uint16* dstData = data;
+        uint8* srcData = heightImage->data;
 
-        for(int32 i = size*size - 1; i >= 0; --i)
+        for (int32 i = size * size - 1; i >= 0; --i)
         {
             *dstData++ = *srcData++ * IMAGE_CORRECTION;
         }
     }
-    else 
+    else
     {
         Logger::Error("Heightmap build from wrong formatted image: format = %d", heightImage->format);
         return false;
     }
-    
-    
+
     SafeRelease(heightImage);
     return true;
 }
 
-void Heightmap::SaveToImage(const FilePath & filename)
+void Heightmap::SaveToImage(const FilePath& filename)
 {
     Image * image = Image::Create(size, size, FORMAT_A16);
 
@@ -112,7 +110,7 @@ void Heightmap::SaveToImage(const FilePath & filename)
     image->FlipVertical();
 
     SafeDeleteArray(unpackedBytes);
-    
+
     ImageSystem::Instance()->Save(filename, image, image->format);
     SafeRelease(image);
 }
@@ -132,7 +130,7 @@ bool Heightmap::ReallocateData(int32 newSize)
     return (nullptr != data);
 }
 
-void Heightmap::Save(const FilePath &filePathname)
+void Heightmap::Save(const FilePath& filePathname)
 {
     if (0 == size)
     {
@@ -140,46 +138,45 @@ void Heightmap::Save(const FilePath &filePathname)
         return;
     }
 
-    if(!filePathname.IsEqualToExtension(FileExtension()))
+    if (!filePathname.IsEqualToExtension(FileExtension()))
     {
         Logger::Error("Heightmap::Save wrong extension: %s", filePathname.GetAbsolutePathname().c_str());
         return;
     }
 
-    
-    File * file = File::Create(filePathname, File::CREATE | File::WRITE);
+    File* file = File::Create(filePathname, File::CREATE | File::WRITE);
     if (!file)
     {
         Logger::Error("Heightmap::Save failed to create file: %s", filePathname.GetAbsolutePathname().c_str());
         return;
     }
-    
+
     file->Write(&size, sizeof(size));
     file->Write(&tileSize, sizeof(tileSize));
 
-    if(size && tileSize)
+    if (size && tileSize)
     {
         int32 blockCount = size / tileSize;
         for(int32 iRow = 0; iRow < blockCount; ++iRow)
         {
-            for(int32 iCol = 0; iCol < blockCount; ++iCol)
+            for (int32 iCol = 0; iCol < blockCount; ++iCol)
             {
                 int32 tileY = iRow * (size - 1) * tileSize;
                 int32 tileX = iCol * tileSize;
-                for(int32 iTileRow = 0; iTileRow < tileSize; ++iTileRow, tileY += size)
+                for (int32 iTileRow = 0; iTileRow < tileSize; ++iTileRow, tileY += size)
                 {
                     file->Write(data + tileY + tileX, tileSize * sizeof(data[0]));
                 }
             }
         }
     }
-    
+
     SafeRelease(file);
 }
-    
-bool Heightmap::Load(const FilePath &filePathname)
+
+bool Heightmap::Load(const FilePath& filePathname)
 {
-    if(!filePathname.IsEqualToExtension(FileExtension()))
+    if (!filePathname.IsEqualToExtension(FileExtension()))
     {
         Logger::Error("Heightmap::Load failed with wrong extension: %s", filePathname.GetAbsolutePathname().c_str());
         return false;
@@ -223,7 +220,7 @@ bool Heightmap::Load(const FilePath &filePathname)
             }
         }
     }
-    
+
     SafeRelease(file);
     return true;
 }
@@ -274,6 +271,4 @@ Heightmap* Heightmap::Clone(DAVA::Heightmap* clonedHeightmap)
 
     return createdHeightmap;
 }
-
 };
-

@@ -35,30 +35,26 @@
 #include <QStandardItemModel>
 #include <QIntValidator>
 
-
 namespace
 {
-    
-    enum TemplateInfoRoles
-    {
-        eVersionRole = Qt::UserRole + 1,
-        eTagTextRole,
-        eTagRevisionRole,
-    };
-
+enum TemplateInfoRoles
+{
+    eVersionRole = Qt::UserRole + 1,
+    eTagTextRole,
+    eTagRevisionRole,
+};
 }
-
 
 VersionInfoWidget::VersionInfoWidget(QWidget* parent)
     : QWidget(parent)
-    , ui( new Ui::VersionInfoWidget() )
+    , ui(new Ui::VersionInfoWidget())
 {
     ui->setupUi(this);
 
-    ui->ver->setValidator(new QIntValidator(0,10000,this));
-    ui->revision->setValidator(new QIntValidator(0,10000,this));
+    ui->ver->setValidator(new QIntValidator(0, 10000, this));
+    ui->revision->setValidator(new QIntValidator(0, 10000, this));
 
-    QStandardItemModel *model = new QStandardItemModel(this);
+    QStandardItemModel* model = new QStandardItemModel(this);
     ui->view->setModel(model);
 
     FillTemplateList();
@@ -86,7 +82,7 @@ void VersionInfoWidget::FillTemplateList()
     versions.clear();
 
 #ifdef USER_VERSIONING_DEBUG_FEATURES
-    
+
     {
         DAVA::VersionInfo::VersionMap defaultVersion = DAVA::VersionInfo::Instance()->GetDefaultVersionHistory();
         versions << VersionTemplate("Default", defaultVersion);
@@ -157,22 +153,21 @@ void VersionInfoWidget::FillTemplateList()
         const QString& text = versions.at(i).first;
         ui->tagTemplate->addItem(text);
     }
-
 }
 
 void VersionInfoWidget::Reset()
 {
     const DAVA::VersionInfo::VersionMap& versionMap = DAVA::VersionInfo::Instance()->Versions();
 
-    QStandardItemModel *model = qobject_cast<QStandardItemModel *>(ui->view->model());
+    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(ui->view->model());
     DVASSERT(model);
 
     model->clear();
     for (auto itVersion = versionMap.begin(); itVersion != versionMap.end(); ++itVersion)
     {
         const DAVA::VersionInfo::SceneVersion& version = itVersion->second;
-        
-        QStandardItem *verItem = new QStandardItem();
+
+        QStandardItem* verItem = new QStandardItem();
         verItem->setData(version.version, Qt::DisplayRole);
         verItem->setData(version.version, eVersionRole);
 
@@ -181,7 +176,7 @@ void VersionInfoWidget::Reset()
             const QString tag = itTags->first.c_str();
             const int rev = itTags->second;
             const QString tagText = QString("%1 %2").arg(tag).arg(rev);
-            QStandardItem *tagItem = new QStandardItem();
+            QStandardItem* tagItem = new QStandardItem();
             tagItem->setData(tagText, Qt::DisplayRole);
             tagItem->setData(version.version, eVersionRole);
             tagItem->setData(tag, eTagTextRole);
@@ -219,7 +214,7 @@ void VersionInfoWidget::OnAddTemplate()
 {
 #ifdef USER_VERSIONING_DEBUG_FEATURES
     if (ui->ver->text().isEmpty())
-        return ;
+        return;
 
     const uint ver = ui->ver->text().toUInt();
     const QString tag = ui->tag->text();
@@ -227,13 +222,13 @@ void VersionInfoWidget::OnAddTemplate()
     const bool isRoot = ui->tag->text().isEmpty() || ui->revision->text().isEmpty();
 
     DAVA::VersionInfo::VersionMap& versionMap = DAVA::VersionInfo::Instance()->Versions();
-    
+
     auto itVersion = versionMap.find(ver);
     if (itVersion == versionMap.end())
     {
         DAVA::VersionInfo::SceneVersion version;
         version.version = ver;
-        DAVA::VersionInfo::AddVersion(versionMap,version);
+        DAVA::VersionInfo::AddVersion(versionMap, version);
     }
 
     if (!isRoot)
@@ -258,14 +253,14 @@ void VersionInfoWidget::OnRemoveTemplate()
     auto itVersion = versionMap.find(ver);
     if (itVersion == versionMap.end())
     {
-        return ;
+        return;
     }
 
     if (isRoot)
     {
         if (versionMap.size() == 1) // Don't erase last version
         {
-            return ;
+            return;
         }
         versionMap.erase(itVersion);
     }
@@ -285,7 +280,7 @@ void VersionInfoWidget::OnRemoveTemplate()
 
 void VersionInfoWidget::OnSelectionChanged()
 {
-    QItemSelectionModel *selection = ui->view->selectionModel();
+    QItemSelectionModel* selection = ui->view->selectionModel();
     const bool hasSelection = selection->hasSelection();
 
     if (!hasSelection)
@@ -293,12 +288,12 @@ void VersionInfoWidget::OnSelectionChanged()
         ui->ver->setText(QString());
         ui->tag->setText(QString());
         ui->revision->setText(QString());
-        return ;
+        return;
     }
 
-    QStandardItemModel *model = qobject_cast<QStandardItemModel *>(ui->view->model());
+    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(ui->view->model());
     DVASSERT(model);
-    QStandardItem *item = model->itemFromIndex(selection->currentIndex());
+    QStandardItem* item = model->itemFromIndex(selection->currentIndex());
     DVASSERT(item);
 
     const uint ver = item->data(eVersionRole).toUInt();

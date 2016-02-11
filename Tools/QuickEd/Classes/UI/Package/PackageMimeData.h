@@ -40,29 +40,29 @@
 class ControlNode;
 class StyleSheetNode;
 
-class PackageMimeData: public QMimeData
+class PackageMimeData : public QMimeData
 {
     Q_OBJECT
-    
+
 public:
     static const QString MIME_TYPE;
 
 public:
     PackageMimeData();
     virtual ~PackageMimeData();
-    
-    void AddControl(ControlNode *node);
-    void AddStyle(StyleSheetNode *node);
 
-    const DAVA::Vector<ControlNode*> &GetControls() const;
-    const DAVA::Vector<StyleSheetNode*> &GetStyles() const;
-    
-    virtual bool hasFormat(const QString &mimetype) const override;
+    void AddControl(ControlNode* node);
+    void AddStyle(StyleSheetNode* node);
+
+    const DAVA::Vector<ControlNode*>& GetControls() const;
+    const DAVA::Vector<StyleSheetNode*>& GetStyles() const;
+
+    virtual bool hasFormat(const QString& mimetype) const override;
     virtual QStringList formats() const override;
-    
+
 protected:
-    virtual QVariant retrieveData(const QString &mimetype, QVariant::Type preferredType) const override;
-    
+    virtual QVariant retrieveData(const QString& mimetype, QVariant::Type preferredType) const override;
+
 private:
     DAVA::Vector<ControlNode*> controls;
     DAVA::Vector<StyleSheetNode*> styles;

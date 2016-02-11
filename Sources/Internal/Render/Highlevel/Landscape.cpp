@@ -172,8 +172,8 @@ void Landscape::ReleaseGeometryData()
         rhi::DeleteVertexBuffer(buffer.buffer);
     usedInstanceDataBuffers.clear();
 }
-    
-void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & _box)
+
+void Landscape::BuildLandscapeFromHeightmapImage(const FilePath& heightmapPathname, const AABBox3& _box)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -203,7 +203,7 @@ bool Landscape::BuildHeightmap()
 
     if (DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
-        Vector<Image *> imageSet;
+        Vector<Image*> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
         if (0 != imageSet.size())
         {
@@ -217,7 +217,7 @@ bool Landscape::BuildHeightmap()
                 heightmap->BuildFromImage(imageSet[0]);
                 retValue = true;
             }
-            
+
             for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
         }
     }
@@ -952,6 +952,8 @@ void Landscape::AllocateGeometryDataInstancing()
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].morphDir = Vector2(-1.f, 0.f);
     }
 
+
+
     rhi::VertexBuffer::Descriptor vdesc;
     vdesc.size = verticesCount * sizeof(VertexInstancing);
     vdesc.initialData = patchVertices;
@@ -1034,7 +1036,7 @@ void Landscape::DrawLandscapeInstancing()
         instanceDataPtr = static_cast<InstanceData*>(rhi::MapVertexBuffer(instanceBuffer, 0, subdivPatchesDrawCount * sizeof(InstanceData)));
 
         AddPatchToRender(0, 0, 0);
-        
+
         rhi::UnmapVertexBuffer(instanceBuffer);
         instanceDataPtr = nullptr;
 
@@ -1139,12 +1141,12 @@ bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int3
     return true;
 }
 
-const FilePath & Landscape::GetHeightmapPathname()
+const FilePath& Landscape::GetHeightmapPathname()
 {
     return heightmapPath;
 }
-	
-void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
+
+void Landscape::SetHeightmapPathname(const FilePath& newHeightMapPath)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1154,12 +1156,12 @@ void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
     }
     BuildLandscapeFromHeightmapImage(newHeightMapPath, bbox);
 }
-	
+
 float32 Landscape::GetLandscapeSize() const
 {
-	return bbox.GetSize().x;
+    return bbox.GetSize().x;
 }
-	
+
 void Landscape::SetLandscapeSize(float32 newSize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -1172,16 +1174,16 @@ float32 Landscape::GetLandscapeHeight() const
 {
     return bbox.GetSize().z;
 }
-	
+
 void Landscape::SetLandscapeHeight(float32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Vector3 newLandscapeSize(bbox.GetSize().x, bbox.GetSize().y, newHeight);
-	SetLandscapeSize(newLandscapeSize);
+    Vector3 newLandscapeSize(bbox.GetSize().x, bbox.GetSize().y, newHeight);
+    SetLandscapeSize(newLandscapeSize);
 }
 
-void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
+void Landscape::SetLandscapeSize(const Vector3& newLandscapeSize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1194,8 +1196,8 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
         return;
     }
     bbox.Empty();
-	bbox.AddPoint(Vector3(-newLandscapeSize.x/2.f, -newLandscapeSize.y/2.f, 0.f));
-	bbox.AddPoint(Vector3(newLandscapeSize.x/2.f, newLandscapeSize.y/2.f, newLandscapeSize.z));
+    bbox.AddPoint(Vector3(-newLandscapeSize.x / 2.f, -newLandscapeSize.y / 2.f, 0.f));
+    bbox.AddPoint(Vector3(newLandscapeSize.x / 2.f, newLandscapeSize.y / 2.f, newLandscapeSize.z));
     RebuildLandscape();
 
     if (foliageSystem)
@@ -1213,8 +1215,8 @@ void Landscape::GetDataNodes(Set<DataNode*>& dataNodes)
         curMaterialNode = curMaterialNode->GetParent();
     }
 }
-    
-void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+
+void Landscape::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1239,8 +1241,8 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
 }
-    
-void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+
+void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1309,12 +1311,12 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
     BuildLandscapeFromHeightmapImage(heightmapPath, loadedBbox);
 }
 
-Heightmap * Landscape::GetHeightmap()
+Heightmap* Landscape::GetHeightmap()
 {
     return heightmap;
 }
 
-void Landscape::SetHeightmap(DAVA::Heightmap *height)
+void Landscape::SetHeightmap(DAVA::Heightmap* height)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1349,15 +1351,15 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
         newObject = new Landscape();
     }
 
-    Landscape *newLandscape = static_cast<Landscape *>(newObject);
+    Landscape* newLandscape = static_cast<Landscape*>(newObject);
     newLandscape->landscapeMaterial = landscapeMaterial->Clone();
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
 
-	return newObject;
+    return newObject;
 }
-	
+
 int32 Landscape::GetDrawIndices() const
 {
     return drawIndices;

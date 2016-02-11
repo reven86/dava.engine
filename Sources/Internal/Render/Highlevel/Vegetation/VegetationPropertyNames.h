@@ -38,14 +38,12 @@
 
 namespace DAVA
 {
-
 /**
  \brief Different uniform and shader flag names
  */
 class VegetationPropertyNames
 {
 public:
-
     static const FastName UNIFORM_TILEPOS;
     static const FastName UNIFORM_WORLD_SIZE;
     static const FastName UNIFORM_SWITCH_LOD_SCALE;
@@ -58,13 +56,12 @@ public:
     static const FastName VEGETATION_QUALITY_NAME_HIGH;
     static const FastName VEGETATION_QUALITY_NAME_LOW;
     static const FastName VEGETATION_QUALITY_GROUP_NAME;
-    
+
     static const FastName UNIFORM_SAMPLER_VEGETATIONMAP;
 
     static const FastName UNIFORM_VEGWAVEOFFSET_X;
     static const FastName UNIFORM_VEGWAVEOFFSET_Y;
 };
-
 };
 
 #endif /* defined(__DAVAENGINE_VEGETATIONPROPERTYNAMES_H__) */

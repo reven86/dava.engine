@@ -39,7 +39,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class IOLoop;
 class TCPServerTransport : public IServerTransport
 {
@@ -64,14 +63,14 @@ private:
     IOLoop* loop;
     Endpoint endpoint;
     TCPAcceptor acceptor;
-    IServerListener* listener;  // Who receive notifications; also indicator that Start has been called
-    bool isTerminating;         // Stop has been invoked
+    IServerListener* listener; // Who receive notifications; also indicator that Start has been called
+    bool isTerminating; // Stop has been invoked
     uint32 readTimeout = 0;
 
     Set<IClientTransport*> spawnedClients;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TCPSERVERTRANSPORT_H__
+#endif // __DAVAENGINE_TCPSERVERTRANSPORT_H__

@@ -35,23 +35,18 @@
 
 namespace DAVA
 {
-    
-class RotationControllerComponent: public Component
+class RotationControllerComponent : public Component
 {
 public:
-    
     IMPLEMENT_COMPONENT_TYPE(ROTATION_CONTROLLER_COMPONENT);
-    
-    virtual Component* Clone(Entity * toEntity);
-    
+
+    virtual Component* Clone(Entity* toEntity);
+
 public:
     INTROSPECTION_EXTEND(RotationControllerComponent, Component,
-        NULL
-    );
+                         NULL
+                         );
 };
-    
-    
 };
 
 #endif //__DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
-

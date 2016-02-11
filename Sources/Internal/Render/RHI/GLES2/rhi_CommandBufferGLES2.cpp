@@ -731,7 +731,7 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 static void
 gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    // NOTE: expected to be called BEFORE SetFragmentTexture
+// NOTE: expected to be called BEFORE SetFragmentTexture
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
@@ -1717,9 +1717,9 @@ void CommandBufferGLES2_t::Execute()
             #elif defined(__DAVAENGINE_ANDROID__)
             GL_CALL(glDrawArraysInstanced_EXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-            GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
+        GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
-            GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+        GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
             #endif
             StatSet::IncStat(stat_DP, 1);
             switch (mode)
@@ -1806,12 +1806,12 @@ void CommandBufferGLES2_t::Execute()
             DVASSERT(baseInst == 0) // it's not supported in GLES
             GL_CALL(glDrawElementsInstanced_EXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_MACOS__)
-//            DVASSERT(baseInst == 0)
-//            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
-            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+        //            DVASSERT(baseInst == 0)
+        //            GL_CALL(glDrawElementsInstancedBaseInstanceARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+        GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
             #else
-            //            if( baseInst )
-            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+        //            if( baseInst )
+        GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
 //            else
 //                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #endif

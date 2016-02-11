@@ -34,10 +34,11 @@ static const int32 GRID_QUAD_SIZE = 65;
 NotPassableTerrainProxy::NotPassableTerrainProxy(int32 heightmapSize)
     : enabled(false)
 {
-	LoadColorsArray();
-	 
-	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
+    LoadColorsArray();
+
+    notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
     notPassableTexture = Texture::CreateFBO(2048, 2048, DAVA::FORMAT_RGBA8888);
+    notPassableTexture->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
 
     rhi::Viewport viewport;
     viewport.width = viewport.height = 2048;
@@ -54,101 +55,82 @@ NotPassableTerrainProxy::NotPassableTerrainProxy(int32 heightmapSize)
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
 {
-	SafeRelease(notPassableTexture);
+    SafeRelease(notPassableTexture);
     for (const rhi::HVertexBuffer& quadBuffer : gridBuffers)
         rhi::DeleteVertexBuffer(quadBuffer);
 }
 
 void NotPassableTerrainProxy::LoadColorsArray()
 {
-	YamlParser* parser = YamlParser::Create("~res:/Configs/LandscapeAngle.yaml");
-	
-	if (parser != 0)
-	{
-		YamlNode* rootNode = parser->GetRootNode();
-		int32 anglesCount = rootNode->GetCount();
-		
+    YamlParser* parser = YamlParser::Create("~res:/Configs/LandscapeAngle.yaml");
+
+    if (parser != 0)
+    {
+        YamlNode* rootNode = parser->GetRootNode();
+        int32 anglesCount = rootNode->GetCount();
+
         angleColor.reserve(anglesCount);
-		for (int32 i = 0; i < anglesCount; ++i)
-		{
-			const YamlNode* node = rootNode->Get(i);
-			if (!node || node->GetCount() != 3)
-			{
-				continue;
-			}
-			
-			float32 angle1 = node->Get(0)->AsFloat();
-			float32 angle2 = node->Get(1)->AsFloat();
-			
-			angle1 = Min(angle1, 89.f);
-			angle2 = Min(angle2, 89.f);
-			
-			float32 tangentMin = tan(DegToRad(angle1));
-			float32 tangentMax = tan(DegToRad(angle2));
-			
-			const YamlNode* colorNode = node->Get(2);
-			if (!colorNode || colorNode->GetCount() != 4)
-			{
-				continue;
-			}
-			
-			Color color(colorNode->Get(0)->AsFloat()/255.f,
-						colorNode->Get(1)->AsFloat()/255.f,
-						colorNode->Get(2)->AsFloat()/255.f,
-						colorNode->Get(3)->AsFloat()/255.f);
-			
-			angleColor.push_back(TerrainColor(Vector2(tangentMin, tangentMax), color));
-		}
-	}
-	
-	SafeRelease(parser);
+        for (int32 i = 0; i < anglesCount; ++i)
+        {
+            const YamlNode* node = rootNode->Get(i);
+            if (!node || node->GetCount() != 3)
+            {
+                continue;
+            }
+
+            float32 angle1 = node->Get(0)->AsFloat();
+            float32 angle2 = node->Get(1)->AsFloat();
+
+            angle1 = Min(angle1, 89.f);
+            angle2 = Min(angle2, 89.f);
+
+            float32 tangentMin = tan(DegToRad(angle1));
+            float32 tangentMax = tan(DegToRad(angle2));
+
+            const YamlNode* colorNode = node->Get(2);
+            if (!colorNode || colorNode->GetCount() != 4)
+            {
+                continue;
+            }
+
+            Color color(colorNode->Get(0)->AsFloat() / 255.f,
+                        colorNode->Get(1)->AsFloat() / 255.f,
+                        colorNode->Get(2)->AsFloat() / 255.f,
+                        colorNode->Get(3)->AsFloat() / 255.f);
+
+            angleColor.push_back(TerrainColor(Vector2(tangentMin, tangentMax), color));
+        }
+    }
+
+    SafeRelease(parser);
 }
 
 bool NotPassableTerrainProxy::PickColor(float32 tan, Color& color) const
 {
-	for (uint32 i = 0; i < angleColor.size(); ++i)
-	{
-		if(tan >= angleColor[i].angleRange.x && tan < angleColor[i].angleRange.y)
-		{
-			color = angleColor[i].color;
-			return true;
-		}
-	}
-	return false;
+    for (uint32 i = 0; i < angleColor.size(); ++i)
+    {
+        if (tan >= angleColor[i].angleRange.x && tan < angleColor[i].angleRange.y)
+        {
+            color = angleColor[i].color;
+            return true;
+        }
+    }
+    return false;
 }
 
-bool NotPassableTerrainProxy::Enable()
+void NotPassableTerrainProxy::SetEnabled(bool _enabled)
 {
-	if (enabled)
-	{
-		return true;
-	}
-	
-	enabled = true;
-	
-	return true;
-}
-
-bool NotPassableTerrainProxy::Disable()
-{
-	if (!enabled)
-	{
-		return true;
-	}
-	
-	enabled = false;
-	
-	return true;
+    enabled = _enabled;
 }
 
 bool NotPassableTerrainProxy::IsEnabled() const
 {
-	return enabled;
+    return enabled;
 }
 
 Texture* NotPassableTerrainProxy::GetTexture()
 {
-	return notPassableTexture;
+    return notPassableTexture;
 }
 
 void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const AABBox3& landscapeBoundingBox, const DAVA::Rect2i& forRect)
@@ -159,7 +141,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const AA
 
     const float32 angleCellDistance = landSize.x / float32(heightmapSize);
     const float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
-	const float32 tanCoef = angleHeightDelta / angleCellDistance;
+    const float32 tanCoef = angleHeightDelta / angleCellDistance;
 
 
     const float32 targetWidth = (float32)notPassableTexture->GetWidth();

@@ -37,12 +37,13 @@
 
 #import <Foundation/Foundation.h>
 
-@interface OpenUDIDMacOS : OpenUDID {
+@interface OpenUDIDMacOS : OpenUDID
+{
 }
 
-- (void) setDict:(id)dict forPasteboard:(id)pboard;
-- (id) getDataForPasteboard:(id)pboard;
-- (id) getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent ;
+- (void)setDict:(id)dict forPasteboard:(id)pboard;
+- (id)getDataForPasteboard:(id)pboard;
+- (id)getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent;
 
 @end
 

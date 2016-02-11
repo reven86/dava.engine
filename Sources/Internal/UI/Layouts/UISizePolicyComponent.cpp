@@ -39,7 +39,7 @@ UISizePolicyComponent::UISizePolicyComponent()
     const float32 DEFAULT_VALUE = 100.0f;
     const float32 MIN_LIMIT = 0.0f;
     const float32 MAX_LIMIT = 99999.0f;
-    
+
     for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
     {
         policy[i].policy = IGNORE_SIZE;
@@ -49,7 +49,7 @@ UISizePolicyComponent::UISizePolicyComponent()
     }
 }
 
-UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent &src)
+UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent& src)
 {
     for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
     {
@@ -62,7 +62,6 @@ UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent &src)
 
 UISizePolicyComponent::~UISizePolicyComponent()
 {
-    
 }
 
 UISizePolicyComponent* UISizePolicyComponent::Clone() const
@@ -169,7 +168,7 @@ float32 UISizePolicyComponent::GetValueByAxis(int32 axis) const
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
     return policy[axis].value;
 }
-    
+
 float32 UISizePolicyComponent::GetMinValueByAxis(int32 axis) const
 {
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
