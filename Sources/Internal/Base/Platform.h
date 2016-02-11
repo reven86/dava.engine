@@ -77,6 +77,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error Some compiler features is not defined for current platform
 #endif
 
+#if defined(__clang__)
+#define DAVA_SWITCH_CASE_FALLTHROUGH [[clang::fallthrough]]
+#else
+#define DAVA_SWITCH_CASE_FALLTHROUGH
+#endif
+
 //suppressing of deprecated functions
 #ifdef DAVAENGINE_HIDE_DEPRECATED
 #undef DAVA_DEPRECATED
