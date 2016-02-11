@@ -74,7 +74,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UIComponent, BaseObject,
                          nullptr
-                         );
+                         )
 };
 
 #define IMPLEMENT_UI_COMPONENT_TYPE(TYPE) \

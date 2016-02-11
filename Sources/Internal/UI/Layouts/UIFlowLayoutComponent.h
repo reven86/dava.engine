@@ -43,7 +43,7 @@ public:
     };
 
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT)
 
     UIFlowLayoutComponent();
     UIFlowLayoutComponent(const UIFlowLayoutComponent& src);

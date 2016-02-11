@@ -44,9 +44,7 @@ struct IChannel;
 struct IChannelListener
 {
     // There should be a virtual destructor defined as objects may be deleted through this interface
-    virtual ~IChannelListener()
-    {
-    }
+    virtual ~IChannelListener() = default;
 
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
     virtual void OnChannelOpen(IChannel* channel) = 0;

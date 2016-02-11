@@ -41,10 +41,12 @@ namespace DAVA
 std::set<BaseObject*> baseObjects;
 
 BaseObjectChecker::BaseObjectChecker
-{ }
+{
+}
 
 BaseObjectChecker::~BaseObjectChecker
-{ }
+{
+}
 
 void BaseObjectChecker::RegisterBaseObject(BaseObject* obj)
 {

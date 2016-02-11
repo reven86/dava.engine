@@ -116,7 +116,7 @@ bool XMLParser::ParseBytes(const unsigned char* bytes, int length, XMLParserDele
 void XMLParser::StartDocument(void* user_data)
 {
     //		Logger::FrameworkDebug("[XMLParser::StartDocument] user_data = %p", user_data);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
     }
@@ -124,7 +124,7 @@ void XMLParser::StartDocument(void* user_data)
 void XMLParser::EndDocument(void* user_data)
 {
     //		Logger::FrameworkDebug("[XMLParser::EndDocument] user_data = %p", user_data);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
     }
@@ -133,11 +133,11 @@ void XMLParser::EndDocument(void* user_data)
 void XMLParser::Characters(void* user_data, const xmlChar* ch, int len)
 {
     //		Logger::FrameworkDebug("[XMLParser::Characters] user_data = %p, len = %d", user_data, len);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
         //char *content = new char[len + 1];
-        String s((char*)ch, len);
+        String s(reinterpret_cast<const char*>(ch), len);
 
         // 			delegateptr->OnFoundCharacters(content);
         delegateptr->OnFoundCharacters(s);
@@ -149,7 +149,7 @@ void XMLParser::Characters(void* user_data, const xmlChar* ch, int len)
 void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar** attrs)
 {
     //		Logger::FrameworkDebug("[XMLParser::StartElement] %s, user_data = %p", name, user_data);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
         Map<String, String> attributes;
@@ -161,8 +161,8 @@ void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar
             int32 i = 0;
             while (attrs[i])
             {
-                char* str = (attrs[i + 1]) ? (char*)attrs[i + 1] : (char*)"";
-                attributes[(char*)attrs[i]] = str;
+                const char* str = (attrs[i + 1]) ? reinterpret_cast<const char*>(attrs[i + 1]) : "";
+                attributes[reinterpret_cast<const char*>(attrs[i])] = str;
 
                 //					Logger::FrameworkDebug("[XMLParser::StartElement] %s = %s", attrs[i], str);
 
@@ -172,17 +172,17 @@ void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar
             //				Logger::FrameworkDebug("[XMLParser::StartElement] attrs out");
         }
 
-        delegateptr->OnElementStarted((char*)name, "", "", attributes);
+        delegateptr->OnElementStarted(reinterpret_cast<const char*>(name), "", "", attributes);
     }
 }
 
 void XMLParser::EndElement(void* user_data, const xmlChar* name)
 {
     //		Logger::FrameworkDebug("[XMLParser::EndElement] %s", name);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
-        delegateptr->OnElementEnded((char*)name, "", "");
+        delegateptr->OnElementEnded(reinterpret_cast<const char*>(name), "", "");
     }
 }
 

@@ -119,7 +119,9 @@ public:
      */
     virtual void Process(float32 timeElapsed);
 
-    virtual void Input(UIEvent* event){}
+    virtual void Input(UIEvent* event)
+    {
+    }
 
     virtual void SetLocked(bool locked);
     bool IsLocked() const;
@@ -127,8 +129,12 @@ public:
     /**
          \brief This functions should be overloaded if system need to do specific actions on scene activation or deactivation 
      */
-    virtual void Activate(){}
-    virtual void Deactivate(){}
+    virtual void Activate()
+    {
+    }
+    virtual void Deactivate()
+    {
+    }
 
 protected:
     inline Scene* GetScene() const;

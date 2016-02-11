@@ -392,8 +392,8 @@ inline void Quaternion::Construct(const Vector3& axis, float32 angle)
     axisR.Normalize();
 
     float32 halfAngle = 0.5f * angle;
-    float32 sin = (float32)sinf(halfAngle);
-    w = (float32)cosf(halfAngle);
+    float32 sin = sinf(halfAngle);
+    w = cosf(halfAngle);
     x = sin * axisR.x;
     y = sin * axisR.y;
     z = sin * axisR.z;
@@ -508,15 +508,15 @@ inline void Quaternion::Construct(const Matrix4& matrix)
 
 inline void Quaternion::ConvertToAxisAngle(Vector3& axis, float32& angle) const
 {
-    float vl = (float)sqrt(x * x + y * y + z * z);
+    float vl = sqrtf(x * x + y * y + z * z);
     if (vl > 0.01f)
     {
         float ivl = 1.0f / vl;
         axis = Vector3(x * ivl, y * ivl, z * ivl);
         if (w < 0)
-            angle = 2.0f * (float)atan2(-vl, -w); //-PI,0
+            angle = 2.0f * atan2f(-vl, -w); //-PI,0
         else
-            angle = 2.0f * (float)atan2(vl, w); //0,PI
+            angle = 2.0f * atan2f(vl, w); //0,PI
     }
     else
     {
@@ -528,11 +528,11 @@ inline void Quaternion::ConvertToAxisAngle(Vector3& axis, float32& angle) const
 //! Comparison operators
 inline bool Quaternion::operator==(const Quaternion& _v) const
 {
-    return ((x == _v.x) && (y == _v.y) && (z == _v.z) && (w == _v.w));
+    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y) && EQUAL_MEMORY(z, _v.z) && EQUAL_MEMORY(w, _v.w);
 }
 inline bool Quaternion::operator!=(const Quaternion& _v) const
 {
-    return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
+    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y) || !EQUAL_MEMORY(z, _v.z) || !EQUAL_MEMORY(w, _v.w);
 }
 
 inline Quaternion Quaternion::MakeRotation(const Vector3& euler)
