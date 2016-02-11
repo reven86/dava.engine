@@ -47,7 +47,7 @@ using namespace DAVA;
 static inline long
 CurTimeUs()
 {
-    return (long)(SystemTimer::Instance()->GetAbsoluteUs());
+    return long(SystemTimer::Instance()->GetAbsoluteUs());
 }
 
 namespace profiler
@@ -502,7 +502,7 @@ CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vect
             && c->GetParentId() == counter->GetId()
             )
         {
-            result->push_back((Counter*)c);
+            result->push_back(const_cast<Counter*>(c));
             CollectCountersWithChilds(base, c, result);
         }
     }
@@ -770,10 +770,14 @@ void DumpEvents()
             ph = "I";
             break;
         }
-        Logger::Info(
-        "{ \"pid\":%u, \"tid\":%u, \"ts\":%lu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
-        unsigned(e->pid), unsigned(e->tid), (long)(e->time), ph, e->category, e->name,
-        (e != _Event.end() - 1) ? ", " : "");
+        Logger::Info("{ \"pid\":%u, \"tid\":%u, \"ts\":%lu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                     unsigned(e->pid),
+                     unsigned(e->tid),
+                     long(e->time),
+                     ph,
+                     e->category,
+                     e->name,
+                     (e != _Event.end() - 1) ? ", " : "");
     }
     Logger::Info("] }");
 }
@@ -803,11 +807,15 @@ void SaveEvents(const char* fileName)
             ph = "I";
             break;
         }
-        Snprintf(
-        buf, 1024,
-        "{ \"pid\":%u, \"tid\":%u, \"ts\":%lu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
-        unsigned(e->pid), unsigned(e->tid), (long)(e->time), ph, e->category, e->name,
-        (e != _Event.end() - 1) ? ", " : "");
+        Snprintf(buf, 1024,
+                 "{ \"pid\":%u, \"tid\":%u, \"ts\":%lu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                 unsigned(e->pid),
+                 unsigned(e->tid),
+                 long(e->time),
+                 ph,
+                 e->category,
+                 e->name,
+                 (e != _Event.end() - 1) ? ", " : "");
         json->WriteLine(buf);
     }
     _EventSync.Unlock();

@@ -203,7 +203,7 @@ void AnimationManager::Update(float32 timeElapsed)
         return;
 
     // update animations first
-    uint32 size = (uint32)animations.size();
+    uint32 size = static_cast<uint32>(animations.size());
     for (uint32 k = 0; k < size; ++k)
     {
         Animation* animation = animations[k];
@@ -218,7 +218,7 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     // process all finish callbacks
-    size = (uint32)animations.size();
+    size = static_cast<uint32>(animations.size());
     for (uint32 k = 0; k < size; ++k)
     {
         Animation* animation = animations[k];
@@ -230,7 +230,7 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //check all animation and process all callbacks on delete
-    size = (uint32)animations.size();
+    size = static_cast<uint32>(animations.size());
     for (uint32 k = 0; k < size; ++k)
     {
         Animation* animation = animations[k];
@@ -251,7 +251,7 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //we need physically remove animations only after process all callbacks
-    size = (uint32)animations.size();
+    size = static_cast<uint32>(animations.size());
     for (uint32 k = 0; k < size; ++k)
     {
         Animation* animation = animations[k];
@@ -277,7 +277,7 @@ void AnimationManager::DumpState()
     Logger::FrameworkDebug("============================================================");
     Logger::FrameworkDebug("------------ Currently allocated animations - %2d ---------", animations.size());
 
-    for (int k = 0; k < (int)animations.size(); ++k)
+    for (int k = 0, end = static_cast<int>(animations.size()); k < end; ++k)
     {
         Animation* animation = animations[k];
 
