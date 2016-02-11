@@ -158,7 +158,7 @@ bool BindToProcessorApple(pthread_t thread, unsigned proc_n)
     thread_affinity_policy_data_t policy_data = { int(proc_n) };
     thread_policy_t policy = reinterpret_cast<thread_policy_t>(&policy_data);
     thread_port_t mach_thread = pthread_mach_thread_np(thread);
-    
+
     auto res = thread_policy_set(mach_thread,
                                  THREAD_AFFINITY_POLICY,
                                  policy, 1);

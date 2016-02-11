@@ -82,11 +82,11 @@ String DeviceInfoPrivate::GetVersion()
     NSOperatingSystemVersion sysVersion;
     NSProcessInfo* procInfo = [NSProcessInfo processInfo];
     sysVersion = procInfo.operatingSystemVersion;
-    
+
     NSString* systemVersion =
-        [NSString stringWithFormat:@"%ld.%ld.%ld", sysVersion.majorVersion,
-                                                   sysVersion.minorVersion,
-                                                   sysVersion.patchVersion];
+    [NSString stringWithFormat:@"%ld.%ld.%ld", sysVersion.majorVersion,
+                               sysVersion.minorVersion,
+                               sysVersion.patchVersion];
 
     return String([systemVersion UTF8String]);
 }
