@@ -123,7 +123,9 @@ protected:
     Entity* entity; // entity is a Entity, that this component belongs to
 
 public:
-    INTROSPECTION(Component, MEMBER(entity, "entity", I_SAVE))
+    INTROSPECTION(Component,
+                  MEMBER(entity, "entity", I_SAVE)
+                  )
 };
 
 inline Entity* Component::GetEntity() const
