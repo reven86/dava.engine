@@ -90,6 +90,7 @@ struct Size2Base
     inline Size2Base(TYPE _dx, TYPE _dy);
     inline Size2Base(const Size2Base<TYPE>& Size);
 
+    inline Size2Base<TYPE>& operator=(const Size2Base<TYPE>& Size);
     inline bool operator==(const Size2Base<TYPE>& _s) const;
     inline bool operator!=(const Size2Base<TYPE>& _s) const;
 };
@@ -118,6 +119,8 @@ struct Rect2Base
     inline void SetCenter(const Point2Base<TYPE>& center);
     inline void SetPosition(const Point2Base<TYPE>& position);
     inline void SetSize(const Size2Base<TYPE>& size);
+
+    inline Rect2Base<TYPE>& operator=(const Rect2Base<TYPE>& rect);
 
     inline bool operator==(const Rect2Base<TYPE>& _s) const;
     inline bool operator!=(const Rect2Base<TYPE>& _s) const;
@@ -180,6 +183,14 @@ inline Size2Base<TYPE>::Size2Base(const Size2Base<TYPE>& Size)
 };
 
 template <class TYPE>
+inline Size2Base<TYPE>& Size2Base<TYPE>::operator=(const Size2Base<TYPE>& Size)
+{
+    dx = Size.dx;
+    dy = Size.dy;
+    return *this;
+}
+
+template <class TYPE>
 inline Rect2Base<TYPE>::Rect2Base(const Point2Base<TYPE>& Point, const Size2Base<TYPE>& Size)
 {
     x = Point.x;
@@ -187,6 +198,16 @@ inline Rect2Base<TYPE>::Rect2Base(const Point2Base<TYPE>& Point, const Size2Base
     dx = Size.dx;
     dy = Size.dy;
 };
+
+template <class TYPE>
+inline Rect2Base<TYPE>& Rect2Base<TYPE>::operator=(const Rect2Base<TYPE>& rect)
+{
+    x = rect.x;
+    y = rect.y;
+    dx = rect.dx;
+    dy = rect.dy;
+    return *this;
+}
 
 template <class TYPE>
 inline Point2Base<TYPE>& Point2Base<TYPE>::operator+=(const Point2Base<TYPE>& Point)
