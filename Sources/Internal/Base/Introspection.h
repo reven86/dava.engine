@@ -106,6 +106,8 @@ public:
         MembersRelease();
     }
 
+    InspInfo(const InspInfo&) = delete;
+
     const FastName& Name() const
     {
         return name;
@@ -225,8 +227,12 @@ public:
     };
 
     InspInfoDynamic()
-        : memberDynamic(NULL){};
-    virtual ~InspInfoDynamic(){};
+        : memberDynamic(NULL)
+    {
+    }
+    virtual ~InspInfoDynamic()
+    {
+    }
 
     virtual DynamicData Prepare(void* object, int filter = 0) const = 0;
     virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
@@ -235,14 +241,14 @@ public:
     virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName& member) const
     {
         return VariantType();
-    };
+    }
     virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const = 0;
     virtual void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) = 0;
 
     const InspMemberDynamic* GetMember() const
     {
         return memberDynamic;
-    };
+    }
 
 protected:
     const InspMemberDynamic* memberDynamic;
@@ -255,7 +261,7 @@ protected:
 	{ \
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
-		static DAVA::InspInfo info = DAVA::InspInfo(#_type, data, sizeof(data) / sizeof(data[0])); \
+		static DAVA::InspInfo info(#_type, data, sizeof(data) / sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
         return &info; \
 	} \
@@ -270,7 +276,7 @@ protected:
 	{ \
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
-		static DAVA::InspInfo info = DAVA::InspInfo(_base_type::TypeInfo(), #_type, data, sizeof(data) / sizeof(data[0])); \
+		static DAVA::InspInfo info(_base_type::TypeInfo(), #_type, data, sizeof(data) / sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
 		return &info; \
 	} \
@@ -281,7 +287,7 @@ protected:
 
 // Определение обычного члена интроспекции. Доступ к нему осуществляется непосредственно.
 #define MEMBER(_name, _desc, _flags) \
-	new DAVA::InspMember(#_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	new DAVA::InspMember(#_name, _desc, reinterpret_cast<size_t>(&((static_cast<ObjectT*>(nullptr))->_name)), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции, как свойства. Доступ к нему осуществляется через функци Get/Set. 
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
@@ -293,6 +299,6 @@ protected:
 
 // Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
 #define DYNAMIC(_name, _desc, _dynamic, _flags) \
-	new DAVA::InspMemberDynamic(#_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
+	new DAVA::InspMemberDynamic(#_name, _desc, reinterpret_cast<size_t>(&((static_cast<ObjectT*>(nullptr))->_name)), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__
