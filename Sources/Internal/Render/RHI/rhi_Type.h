@@ -831,9 +831,9 @@ RenderPassConfig
 
     RenderPassConfig()
         : queryBuffer(InvalidHandle)
-        , priority(0)
         , PerfQueryIndex0(DAVA::InvalidIndex)
         , PerfQueryIndex1(DAVA::InvalidIndex)
+        , priority(0)
         , invertCulling(0)
     {
     }
