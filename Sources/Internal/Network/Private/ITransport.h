@@ -43,7 +43,7 @@ struct IServerListener;
 
 struct IServerTransport
 {
-    virtual ~IServerTransport() = default;
+    virtual ~IServerTransport();
 
     virtual int32 Start(IServerListener* listener) = 0;
     virtual void Stop() = 0;
@@ -53,6 +53,8 @@ struct IServerTransport
 
 struct IServerListener
 {
+    virtual ~IServerListener();
+
     virtual void OnTransportSpawned(IServerTransport* parent, IClientTransport* child) = 0;
     virtual void OnTransportTerminated(IServerTransport* tr) = 0;
 };
@@ -62,7 +64,7 @@ struct IClientListener;
 
 struct IClientTransport
 {
-    virtual ~IClientTransport() = default;
+    virtual ~IClientTransport();
 
     virtual int32 Start(IClientListener* listener) = 0;
     virtual void Stop() = 0;
@@ -72,6 +74,8 @@ struct IClientTransport
 
 struct IClientListener
 {
+    virtual ~IClientListener();
+
     virtual void OnTransportTerminated(IClientTransport* tr) = 0;
     virtual void OnTransportConnected(IClientTransport* tr, const Endpoint& endp) = 0;
     virtual void OnTransportDisconnected(IClientTransport* tr, int32 error) = 0;

@@ -41,6 +41,7 @@ namespace DAVA
 {
 namespace Net
 {
+ProtoDriver::Channel::~Channel() = default;
 
 ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
