@@ -43,12 +43,13 @@ public:
         // TODO: Add assertion here DVASSERT(instance == 0 && "Singleton object should be initialized only once");
         if (instance == 0)
         {
-            instance = (T*)this;
+            instance = static_cast<T*>(this);
         }
     }
+    
     virtual ~Singleton()
     {
-        instance = 0;
+        instance = nullptr;
     }
 
     static T* Instance()
@@ -61,21 +62,17 @@ public:
         if (this)
         {
             delete this;
-            instance = 0;
+            instance = nullptr;
         }
-        else
-        {
-            // TODO: add DebugBreak();
-            //DVASSERT(0 && "Attempt to delete singleton second time");
-        }
-
-        return;
     }
 
 private:
     static T* instance;
 };
+    
 template <typename T>
-T* Singleton<T>::instance = 0;
-};
+T* Singleton<T>::instance = nullptr;
+    
+} // namespace DAVA
+
 #endif //__DAVAENGINE_SINGLETON_H__

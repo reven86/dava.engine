@@ -65,7 +65,7 @@ class KeyedArchive;
 
 class BaseObject : public InspBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT)
 
 protected:
     //! Destructor
@@ -144,16 +144,6 @@ public:
     };
 
 protected:
-    /*
-    void SaveIntrospection(const String &key, KeyedArchive * archive, const IntrospectionInfo *info, void * object);
-    void SaveCollection(const String &key, KeyedArchive * archive, const IntrospectionMember *member, void * object);
-    
-    void LoadIntrospection(const String &key, KeyedArchive * archive, const IntrospectionInfo *info, void * object);
-    void LoadCollection(const String &key, KeyedArchive * archive, const IntrospectionMember *member, void * object);
-
-    void * GetMemberObject(const IntrospectionMember *member, void * object) const;
-	*/
-
     BaseObject(const BaseObject& /*b*/)
     {
     }
@@ -167,8 +157,8 @@ protected:
 
 public:
     INTROSPECTION(BaseObject,
-                  MEMBER(referenceCount, "referenceCount", I_SAVE)
-                  );
+        MEMBER(referenceCount, "referenceCount", I_SAVE)
+    )
 };
 
 template <typename T>
@@ -259,80 +249,6 @@ static void* Create##class_name()\
 return new class_name();\
 };\
 static ObjectRegistrator registrator##class_name(#class_name, &Create##class_name, typeid(class_name), sizeof(class_name), alias);
-
-/*
-     // tried to register every class that was marked by REGISTER_CLASS function;
-     class_name * create_class##_class_name();\
-     static size_t class_size = sizeof(create_class##_class_name());\
-
-     */
-
-/*template<class C>
-C * SafeClone(C * object)
-{
-	if (object)
-		return object->Clone();
-	return 0;
-}
-	
-// Boroda: Do not work when it's here, only works when it embedded into cpp file. WTF?
-template<typename C>
-RefPtr<C> SafeClone(const RefPtr<C> & object)
-{
-	if (object)
-		return RefPtr<C>(object->Clone());
-	return RefPtr<C>(0);
-}
-*/
 };
-
-/*
- For BaseObject* code is wrong / saved for potential use in other class
- 
- #ifdef ENABLE_BASE_OBJECT_CHECKS
- virtual BaseObject& operator*() const throw() 
- {
- if (!BaseObjectChecker::IsAvailable((BaseObject*)this))
- {
- DVASSERT(0 &&"Attempt to access unavailable BaseObject");
- }	
- return *(BaseObject*)this; 
- }
- virtual BaseObject* operator->() const throw() 
- {
- if (!BaseObjectChecker::IsAvailable((BaseObject*)this))
- {
- DVASSERT(0 &&"Attempt to access unavailable BaseObject");
- }	
- return (BaseObject*)this; 
- }
- #endif 
- */
-
-/*	
- Мысли на тему умного учета объектов и сериализации
- 
- 
- #define IMPLEMENT_CLASS(name)
- String GetName()
- {
- return String(#name);
- }	
- 
- int		GetID()
- {
- return GlobalIdCounter++;
- }
-
- class A : public BaseObject
- {
- IMPLEMENT_CLASS(A);
- 
- 
- };
- 
- */
-
-
 
 #endif // __DAVAENGINE_BASEOBJECT_H__
