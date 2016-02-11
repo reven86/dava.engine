@@ -153,6 +153,7 @@ private slots:
     void textureZoom100(bool checked);
     void textureZoomFit(bool checked);
     void textureAreaWheel(int delta);
+    void textureConvertForAllGPU();
     void textureConver(bool checked);
     void textureConverAll(bool checked);
     void textureViewChanged(int index);
