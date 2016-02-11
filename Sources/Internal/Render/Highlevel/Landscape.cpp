@@ -132,7 +132,7 @@ void Landscape::ReleaseGeometryData()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-////General
+    ////General
     for (IndexedRenderBatch& batch : renderBatchArray)
         batch.renderBatch->Release();
     renderBatchArray.clear();
@@ -148,7 +148,7 @@ void Landscape::ReleaseGeometryData()
     subdivLevelCount = 0;
     subdivPatchCount = 0;
 
-////Non-instanced data
+    ////Non-instanced data
     for (rhi::HVertexBuffer handle : vertexBuffers)
         rhi::DeleteVertexBuffer(handle);
     vertexBuffers.clear();
@@ -157,7 +157,7 @@ void Landscape::ReleaseGeometryData()
 
     quadsInWidthPow2 = 0;
 
-////Instanced data
+    ////Instanced data
     if (patchVertexBuffer)
         rhi::DeleteVertexBuffer(patchVertexBuffer);
 
@@ -952,8 +952,6 @@ void Landscape::AllocateGeometryDataInstancing()
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].morphDir = Vector2(-1.f, 0.f);
     }
 
-
-
     rhi::VertexBuffer::Descriptor vdesc;
     vdesc.size = verticesCount * sizeof(VertexInstancing);
     vdesc.initialData = patchVertices;
@@ -999,7 +997,7 @@ void Landscape::AllocateGeometryDataInstancing()
 void Landscape::DrawLandscapeInstancing()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    
+
     drawIndices = 0;
     activeRenderBatchArray.clear();
 
@@ -1052,10 +1050,10 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 x
     instanceDataPtr->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
     instanceDataPtr->patchScale = 1.f / levelInfo.size;
     instanceDataPtr->lodOffset = Vector4(
-        float32(1 << (levelInfo.sizePow2 - xNegSizePow2)),
-        float32(1 << (levelInfo.sizePow2 - xPosSizePow2)),
-        float32(1 << (levelInfo.sizePow2 - yNegSizePow2)),
-        float32(1 << (levelInfo.sizePow2 - yPosSizePow2)));
+    float32(1 << (levelInfo.sizePow2 - xNegSizePow2)),
+    float32(1 << (levelInfo.sizePow2 - xPosSizePow2)),
+    float32(1 << (levelInfo.sizePow2 - yNegSizePow2)),
+    float32(1 << (levelInfo.sizePow2 - yPosSizePow2)));
 
     ++instanceDataPtr;
 }
@@ -1494,5 +1492,4 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
     }
     */
 }
-
 }

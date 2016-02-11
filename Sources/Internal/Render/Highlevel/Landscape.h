@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
     This class is base of the landscape code on all platforms
@@ -91,7 +90,7 @@ public:
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 
     //LandscapeVertex used in GetLevel0Geometry() only
-    struct LandscapeVertex 
+    struct LandscapeVertex
     {
         Vector3 position;
         Vector2 texCoord;
@@ -159,7 +158,6 @@ public:
     void SetForceFirstLod(bool force);
 
 protected:
-
     void AllocateGeometryData();
     void ReleaseGeometryData();
 
@@ -200,7 +198,7 @@ protected:
 
     bool isInstancingUsed = false;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Subdivision
 
     struct PatchQuadInfo
@@ -246,7 +244,7 @@ protected:
     Vector<SubdivisionPatchInfo> subdivPatchArray;
     uint32 subdivPatchesDrawCount = 0;
 
-//////Metrics
+    //////Metrics
     Vector3 cameraPos;
     float32 fovCorrection;
 
@@ -267,7 +265,7 @@ protected:
     float32 zoomFov;
     float32 normalFov;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Non-instancing render
 
     struct VertexNoInstancing
@@ -295,7 +293,7 @@ protected:
 
     Vector<rhi::HVertexBuffer> vertexBuffers;
     std::vector<uint16> indices;
-    
+
     uint32 vLayoutUIDNoInstancing = rhi::VertexLayout::InvalidUID;
 
     int32 queueIndexCount = 0;
@@ -306,7 +304,7 @@ protected:
 
     bool isRequireTangentBasis = false;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Instancing render
 
     struct VertexInstancing
@@ -343,7 +341,7 @@ protected:
     Vector<InstanceDataBuffer> freeInstanceDataBuffers;
     Vector<InstanceDataBuffer> usedInstanceDataBuffers;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public:
     INTROSPECTION_EXTEND(Landscape, RenderObject,

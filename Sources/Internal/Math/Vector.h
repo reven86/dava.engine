@@ -253,11 +253,11 @@ inline Vector3 operator/(const Vector3& _v, float32 _f);
 inline Vector3 operator/(float32 _f, const Vector3& v);
 
 //! additional
-inline Vector3 Normalize(const Vector3 & v);
-inline Vector3 CrossProduct(const Vector3 & v1, const Vector3 & v2);
-inline float32 DotProduct(const Vector3 & v1, const Vector3 & v2);
-inline Vector3 Lerp(const Vector3 & _v1, const Vector3 & _v2, float32 t);
-inline Vector3 Reflect(const Vector3 & v, const Vector3 & n);
+inline Vector3 Normalize(const Vector3& v);
+inline Vector3 CrossProduct(const Vector3& v1, const Vector3& v2);
+inline float32 DotProduct(const Vector3& v1, const Vector3& v2);
+inline Vector3 Lerp(const Vector3& _v1, const Vector3& _v2, float32 t);
+inline Vector3 Reflect(const Vector3& v, const Vector3& n);
 inline float32 Distance(const Vector3& v1, const Vector3& v2);
 inline Vector3 PerpendicularVector(const Vector3& normal);
 

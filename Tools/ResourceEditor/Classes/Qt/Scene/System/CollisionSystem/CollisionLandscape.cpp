@@ -47,7 +47,7 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity* entity, btCollisionWorld* w
             DAVA::float32 landHeight = landSize.z;
             DAVA::float32 landScaleH = landHeight / 65535.f;
 
-			btHMap.resize(heightmap->Size() * heightmap->Size());
+            btHMap.resize(heightmap->Size() * heightmap->Size());
 
             for (DAVA::int32 y = 0; y < heightmap->Size(); ++y)
             {

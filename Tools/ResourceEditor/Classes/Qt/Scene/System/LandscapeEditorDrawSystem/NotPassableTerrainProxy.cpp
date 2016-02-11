@@ -135,14 +135,13 @@ Texture* NotPassableTerrainProxy::GetTexture()
 
 void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const AABBox3& landscapeBoundingBox, const DAVA::Rect2i& forRect)
 {
-	const Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
+    const Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
 
     const int32 heightmapSize = uint32(heightmap->Size());
 
     const float32 angleCellDistance = landSize.x / float32(heightmapSize);
     const float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
     const float32 tanCoef = angleHeightDelta / angleCellDistance;
-
 
     const float32 targetWidth = (float32)notPassableTexture->GetWidth();
     const float32 dx = targetWidth / float32(heightmapSize);
