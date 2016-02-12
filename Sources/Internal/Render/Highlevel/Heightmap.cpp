@@ -230,7 +230,7 @@ void Heightmap::LoadNotPow2(File* file, int32 readMapSize, int32 readTileSize)
     int32 mapSize = 1 << HighestBitIndex(readMapSize);
     int32 mapTileSize = 1 << HighestBitIndex(readTileSize);
 
-    Logger::Warning("[Heightmap::Load] Heightmap was cropped to %dx%d with tile size %d", mapSize, mapSize, tileSize);
+    Logger::Warning("[Heightmap::Load] Heightmap was cropped to %dx%d with tile size %d", mapSize, mapSize, mapTileSize);
 
     ReallocateData(mapSize);
     SetTileSize(mapTileSize);

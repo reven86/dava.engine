@@ -4,8 +4,8 @@
 
 	VPROG_IN_BEGIN
 		VPROG_IN_STREAM_VERTEX
-			VPROG_IN_POSITION
 			VPROG_IN_TEXCOORD0(4)
+			VPROG_IN_TEXCOORD1(4)
 		VPROG_IN_STREAM_INSTANCE
 			VPROG_IN_TEXCOORD4(3)
 			VPROG_IN_TEXCOORD5(4)
@@ -67,9 +67,9 @@ VPROG_BEGIN
 
 #if USE_INSTANCING
 
-    float2 in_pos = VP_IN_POSITION.xy;
-    float2 morphDir = VP_IN_POSITION.zw;
-    float4 edgeMask = VP_IN_TEXCOORD0;
+    float2 in_pos = VP_IN_TEXCOORD0.xy;
+    float2 morphDir = VP_IN_TEXCOORD0.zw;
+    float4 edgeMask = VP_IN_TEXCOORD1;
     float3 patchOffsetScale = VP_IN_TEXCOORD4.xyz;
     float4 lodOffset = VP_IN_TEXCOORD5;
 

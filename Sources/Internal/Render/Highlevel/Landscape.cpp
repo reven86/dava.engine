@@ -982,8 +982,9 @@ void Landscape::AllocateGeometryDataInstancing()
     batch->vertexCount = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
 
     rhi::VertexLayout vLayout;
-    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 4);
+    vLayout.AddStream(rhi::VDF_PER_VERTEX);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 4);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 4);
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
     vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4);
