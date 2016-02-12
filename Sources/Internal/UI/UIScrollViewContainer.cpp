@@ -34,7 +34,6 @@
 
 namespace DAVA 
 {
-	
 const int32 DEFAULT_TOUCH_TRESHOLD = 15;  // Default value for finger touch tresshold
 
 UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
@@ -246,12 +245,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 
 void UIScrollViewContainer::Update(float32 timeElapsed)
 {
-
-	
 	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
 	if (scrollView)
 	{
-	
 		Vector2 posDelta = newPos - oldPos;
 		oldPos = newPos;
 	
@@ -344,5 +340,4 @@ void UIScrollViewContainer::WillDisappear()
     }
     state = STATE_NONE;
 }
-
 };

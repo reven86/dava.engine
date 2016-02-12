@@ -35,14 +35,13 @@
 
 using namespace DAVA;
 
-InsertControlCommand::InsertControlCommand(PackageNode *_root, ControlNode *_node, ControlsContainerNode *_dest, int _index, QUndoCommand *parent)
+InsertControlCommand::InsertControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _dest, int _index, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , dest(SafeRetain(_dest))
     , index(_index)
 {
-    
 }
 
 InsertControlCommand::~InsertControlCommand()
@@ -61,4 +60,3 @@ void InsertControlCommand::undo()
 {
     root->RemoveControl(node, dest);
 }
-

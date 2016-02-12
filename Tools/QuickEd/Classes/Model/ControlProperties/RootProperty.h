@@ -54,6 +54,7 @@ class RootProperty : public AbstractProperty
 {
 public:
     RootProperty(ControlNode *node, const RootProperty *sourceProperties, eCloneType cloneType);
+
 protected:
     virtual ~RootProperty();
     
@@ -61,10 +62,22 @@ public:
     virtual DAVA::uint32 GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
 
-    ClassProperty *GetClassProperty() const { return classProperty; }
-    CustomClassProperty *GetCustomClassProperty() const { return customClassProperty; }
-    PrototypeNameProperty *GetPrototypeProperty() const { return prototypeProperty; }
-    NameProperty *GetNameProperty() const { return nameProperty; }
+    ClassProperty* GetClassProperty() const
+    {
+        return classProperty;
+    }
+    CustomClassProperty* GetCustomClassProperty() const
+    {
+        return customClassProperty;
+    }
+    PrototypeNameProperty* GetPrototypeProperty() const
+    {
+        return prototypeProperty;
+    }
+    NameProperty* GetNameProperty() const
+    {
+        return nameProperty;
+    }
     VisibleValueProperty* GetVisibleProperty() const
     {
         return visibleProperty;
@@ -108,6 +121,7 @@ public:
 
     const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
+
 private:
     void AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType cloneType);

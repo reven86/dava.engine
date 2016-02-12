@@ -220,7 +220,6 @@ dx9_RenderPass_Begin(Handle pass)
     _DX9_Frame.back().pass.push_back(pass);
 
     _DX9_FrameSync.Unlock();
-    //-    _CmdQueue.push_back( pass );
 }
 
 //------------------------------------------------------------------------------
@@ -1022,8 +1021,6 @@ dx9_Present(Handle sync)
                 _DX9_FrameStarted = false;
                 Trace("\n\n-------------------------------\nframe %u generated\n", _DX9_Frame.back().number);
             }
-
-            //        _FrameStarted = false;
         }
         _DX9_FrameSync.Unlock();
 
@@ -1619,9 +1616,6 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
             }
             _DX9_PendingImmediateCmdSync.Unlock();
 
-            //            _CmdQueueSync.Lock();
-            //            cnt = _RenderQueue.size();
-            //            _CmdQueueSync.Unlock();
             _DX9_FrameSync.Lock();
             do_wait = !(_DX9_Frame.size() && _DX9_Frame.begin()->readyToExecute);
             _DX9_FrameSync.Unlock();

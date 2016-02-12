@@ -76,12 +76,12 @@ void FullscreenTest::LoadResources()
     btn->SetTag(2);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
-    
+
     currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
     currentModeText->SetFont(font);
     currentModeText->SetTextColor(Color::White);
     AddControl(currentModeText);
-    
+
     // pinning mode
     btn.reset(new UIButton(Rect(10, 110, 300, 20)));
     btn->SetStateFont(0xFF, font);
@@ -90,7 +90,7 @@ void FullscreenTest::LoadResources()
     btn->SetTag(0);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
     AddControl(btn);
-    
+
     btn.reset(new UIButton(Rect(10, 135, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mouse Capute: Pining");
@@ -98,7 +98,7 @@ void FullscreenTest::LoadResources()
     btn->SetTag(1);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
     AddControl(btn);
-    
+
     pinningText = new UIStaticText(Rect(310, 30, 300, 35));
     pinningText->SetFont(font);
     pinningText->SetMultiline(true);
@@ -202,7 +202,7 @@ void FullscreenTest::LoadResources()
     btn->SetTag(3);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
-    
+
     UpdateMode();
 }
 
@@ -303,21 +303,21 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
     }
 }
 
-void FullscreenTest::OnPinningClick(DAVA::BaseObject *sender, void *data, void *callerData)
+void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = static_cast<UIButton*>(sender);
     switch (btn->GetTag())
     {
-        case 0:
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::FRAME);
-            break;
-            
-        case 1:
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
-            break;
-            
-        default:
-            break;
+    case 0:
+        InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::FRAME);
+        break;
+
+    case 1:
+        InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
+        break;
+
+    default:
+        break;
     }
 
     UpdateMode();
@@ -342,21 +342,22 @@ void FullscreenTest::UpdateMode()
     }
 
     InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-    switch (captureMode) {
-        case InputSystem::eMouseCaptureMode::OFF:
-            pinningText->SetText(L"Mouse capture mode: OFF");
-            pinningMousePosText->SetVisible(false);
-            break;
+    switch (captureMode)
+    {
+    case InputSystem::eMouseCaptureMode::OFF:
+        pinningText->SetText(L"Mouse capture mode: OFF");
+        pinningMousePosText->SetVisible(false);
+        break;
 
-        case InputSystem::eMouseCaptureMode::FRAME:
-            pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
-            pinningMousePosText->SetVisible(true);
-            break;
-            
-        case InputSystem::eMouseCaptureMode::PINING:
-            pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
-            pinningMousePosText->SetVisible(true);
-            break;
+    case InputSystem::eMouseCaptureMode::FRAME:
+        pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
+        pinningMousePosText->SetVisible(true);
+        break;
+
+    case InputSystem::eMouseCaptureMode::PINING:
+        pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
+        pinningMousePosText->SetVisible(true);
+        break;
     }
 }
 
@@ -366,21 +367,20 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
     {
         switch (currentInput->phase)
         {
-            case UIEvent::Phase::BEGAN:
-                InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
-                break;
-                
-            case UIEvent::Phase::MOVE:
-                pinningMousePosText->SetText(Format(L"dx: %f, dy: %f", currentInput->physPoint.dx, currentInput->physPoint.dy));
-                break;
-                
-            default:
-                break;
+        case UIEvent::Phase::BEGAN:
+            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
+            break;
+
+        case UIEvent::Phase::MOVE:
+            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f", currentInput->physPoint.dx, currentInput->physPoint.dy));
+            break;
+
+        default:
+            break;
         }
-        
+
         UpdateMode();
     }
-    
+
     return BaseScreen::SystemInput(currentInput);
 }
-

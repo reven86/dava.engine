@@ -34,22 +34,21 @@
 
 using namespace DAVA;
 
-@interface OpenGLView : NSOpenGLView 
+@interface OpenGLView : NSOpenGLView
 {
     Vector<DAVA::UIEvent> allTouches;
-    
-	NSTrackingArea *trackingArea;
-	bool isFirstDraw;
-	DAVA::Cursor * activeCursor;
-	bool willQuit;
+
+    NSTrackingArea* trackingArea;
+    bool isFirstDraw;
+    bool willQuit;
 }
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-- (size_t) displayBitsPerPixel:(CGDirectDisplayID) displayId;
+- (size_t)displayBitsPerPixel:(CGDirectDisplayID)displayId;
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-@property (assign) bool willQuit;
+@property(assign) bool willQuit;
 
-- (void) enableTrackingArea;
-- (void) disableTrackingArea;
+- (void)enableTrackingArea;
+- (void)disableTrackingArea;
 
 @end

@@ -50,9 +50,10 @@ void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classt
     if (nullptr == pixels)
     {
         DAVA::JniWebView::PageLoaded(id, 0, 0, 0);
-    } else
+    }
+    else
     {
-        jboolean isCopy{JNI_FALSE};
+        jboolean isCopy{ JNI_FALSE };
         jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
 
         DVASSERT(rawData);
@@ -60,14 +61,15 @@ void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classt
         DVASSERT(height);
         DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-        DAVA::uint32 pitch{static_cast<DAVA::uint32>(width) * 4}; // 4 byte per pixel
-        DAVA::int32* pixelsCopy{nullptr};
-        DAVA::Image* image{nullptr};
+        DAVA::uint32 pitch{ static_cast<DAVA::uint32>(width) * 4 }; // 4 byte per pixel
+        DAVA::int32* pixelsCopy{ nullptr };
+        DAVA::Image* image{ nullptr };
 
-        if(JNI_TRUE == isCopy)
+        if (JNI_TRUE == isCopy)
         {
             pixelsCopy = reinterpret_cast<DAVA::int32*>(rawData);
-        } else
+        }
+        else
         {
             // we have to copy pixels from Java because different threads (Java, OpenGL)
             // and in Java main thread current pixel buffer can be rewritten
@@ -79,8 +81,8 @@ void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classt
 
         // convert on the same memory
         DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
-                DAVA::FORMAT_RGBA8888, pixelsCopy, width, height, pitch, pixelsCopy,
-                width, height, pitch);
+                                               DAVA::FORMAT_RGBA8888, pixelsCopy, width, height, pitch, pixelsCopy,
+                                               width, height, pitch);
 
         DAVA::JniWebView::PageLoaded(id, pixelsCopy, width, height);
 
@@ -108,5 +110,4 @@ void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject cl
     // http://stackoverflow.com/questions/5859673/should-you-call-releasestringutfchars-if-getstringutfchars-returned-a-copy
     env->ReleaseStringUTFChars(jResult, utf8Data);
 }
-
 };

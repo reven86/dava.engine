@@ -26,85 +26,91 @@ extern "C" {
 /*
   Compatability defines for pre X11R6 ICCCM.
 */
-#define XK_KP_Home              0xFF95
-#define XK_KP_Left              0xFF96
-#define XK_KP_Up                0xFF97
-#define XK_KP_Right             0xFF98
-#define XK_KP_Down              0xFF99
-#define XK_KP_Prior             0xFF9A
-#define XK_KP_Page_Up           0xFF9A
-#define XK_KP_Next              0xFF9B
-#define XK_KP_Page_Down         0xFF9B
-#define XK_KP_End               0xFF9C
-#define XK_KP_Delete            0xFF9F
+#define XK_KP_Home 0xFF95
+#define XK_KP_Left 0xFF96
+#define XK_KP_Up 0xFF97
+#define XK_KP_Right 0xFF98
+#define XK_KP_Down 0xFF99
+#define XK_KP_Prior 0xFF9A
+#define XK_KP_Page_Up 0xFF9A
+#define XK_KP_Next 0xFF9B
+#define XK_KP_Page_Down 0xFF9B
+#define XK_KP_End 0xFF9C
+#define XK_KP_Delete 0xFF9F
 
 extern MagickExport Status
-  XInitImage(XImage *ximage);
+XInitImage(XImage* ximage);
 #endif
 
 #if defined(PRE_R5_ICCCM)
 extern MagickExport XrmDatabase
-  XrmGetDatabase();
+XrmGetDatabase();
 #endif
 
 #if defined(PRE_R4_ICCCM)
 #if defined(vms)
-#define XMaxRequestSize(display)  16384
+#define XMaxRequestSize(display) 16384
 #endif
 
-#define WithdrawnState  0
+#define WithdrawnState 0
 
 typedef struct _XTextProperty
 {
-  unsigned char
-    *value;
+    unsigned char
+    * value;
 
-  Atom
+    Atom
     encoding;
 
-  int
+    int
     format;
 
-  size_t
+    size_t
     nitems;
 } XTextProperty;
 
 char
-  *XResourceManagerString();
+*
+XResourceManagerString();
 
 extern MagickExport int
-  XWMGeometry();
+XWMGeometry();
 
 extern MagickExport Status
-  XGetRGBColormaps(),
-  XGetWMName(),
-  XReconfigureWMWindow(),
-  XSetWMProtocols(),
-  XWithdrawWindow();
+XGetRGBColormaps(),
+XGetWMName(),
+XReconfigureWMWindow(),
+XSetWMProtocols(),
+XWithdrawWindow();
 
 extern MagickExport XClassHint
-  *XAllocClassHint();
+*
+XAllocClassHint();
 
 extern MagickExport XIconSize
-  *XAllocIconSize();
+*
+XAllocIconSize();
 
 extern MagickExport XSizeHints
-  *XAllocSizeHints();
+*
+XAllocSizeHints();
 
 extern MagickExport XStandardColormap
-  *XAllocStandardColormap();
+*
+XAllocStandardColormap();
 
 extern MagickExport XWMHints
-  *XAllocWMHints();
+*
+XAllocWMHints();
 
 extern MagickExport VisualID
-  XVisualIDFromVisual();
+XVisualIDFromVisual();
 
 extern MagickExport void
-  XrmDestroyDatabase(),
-  XSetWMIconName(),
-  XSetWMName(),
-  XSetWMProperties();
+XrmDestroyDatabase(),
+XSetWMIconName(),
+XSetWMName(),
+XSetWMProperties();
 #else
 #endif
 

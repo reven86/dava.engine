@@ -37,28 +37,60 @@
 
 using namespace DAVA;
 
-namespace
+namespace CanvasSystem_namespace
 {
-class GridControl : public UIControl
+class GridControl : public UIControl, public TrackedObject
 {
 public:
-    GridControl() = default;
+    GridControl();
     ~GridControl() override = default;
 
 private:
+    void OnBackgroundTypeChanged(eBackgroundType type);
     void Draw(const UIGeometricData& geometricData) override;
+    eBackgroundType coloredBackground = BackgroundTexture;
 };
+
+GridControl::GridControl()
+{
+    auto settings = EditorSettings::Instance();
+    OnBackgroundTypeChanged(settings->GetGridType());
+
+    settings->GridTypeChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
+    settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
+}
+
+void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
+{
+    coloredBackground = type;
+    switch (coloredBackground)
+    {
+    case BackgroundColor:
+        background->SetDrawType(UIControlBackground::DRAW_FILL);
+        background->SetColor(EditorSettings::Instance()->GetGrigColor());
+        break;
+    case BackgroundTexture:
+        background->SetDrawType(UIControlBackground::DRAW_TILED);
+        background->SetSprite("~res:/Gfx/GrayGrid", 0);
+        background->SetColor(Color());
+        break;
+    }
+}
 
 void GridControl::Draw(const UIGeometricData& geometricData)
 {
-    if (0.0f != geometricData.scale.x)
+    if (coloredBackground == BackgroundColor)
+    {
+        UIControl::Draw(geometricData);
+    }
+    else if (0.0f != geometricData.scale.x)
     {
         float32 invScale = 1.0f / geometricData.scale.x;
         UIGeometricData unscaledGd;
         unscaledGd.scale = Vector2(invScale, invScale);
         unscaledGd.size = geometricData.size * geometricData.scale.x;
         unscaledGd.AddGeometricData(geometricData);
-        GetBackground()->Draw(unscaledGd);
+        UIControl::Draw(unscaledGd);
     }
 }
 
@@ -90,7 +122,7 @@ private:
 };
 
 BackgroundController::BackgroundController(UIControl* nestedControl_)
-    : gridControl(new GridControl())
+    : gridControl(new CanvasSystem_namespace::GridControl())
     , counterpoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
     , nestedControl(nestedControl_)
@@ -104,9 +136,6 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
-
-    gridControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    gridControl->GetBackground()->SetSprite("~res:/Gfx/GreyGrid", 0);
 }
 
 UIControl* BackgroundController::GetGridControl()

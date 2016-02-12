@@ -73,7 +73,7 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
         // do you really want to print 1Mb with one call may be your format
         // string incorrect?
         DVASSERT_MSG(dynamicbuf.size() < 1024 * 1024,
-                DAVA::Format("format: {%s}", format).c_str());
+                     DAVA::Format("format: {%s}", format).c_str());
 
         dynamicbuf.resize(dynamicbuf.size() * 2);
     }
@@ -112,18 +112,20 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
 
 static const Array<const char8*, 5> logLevelString
 {
-    {
-        "framwork",
-        "debug",
-        "info",
-        "warning",
-        "error"
-    }
+  {
+  "framwork",
+  "debug",
+  "info",
+  "warning",
+  "error"
+  }
 };
 
-Logger::Logger():
-    logLevel{LEVEL_FRAMEWORK},
-    consoleModeEnabled{false}
+Logger::Logger()
+    :
+    logLevel{ LEVEL_FRAMEWORK }
+    ,
+    consoleModeEnabled{ false }
 {
     SetLogFilename(String());
 }
@@ -141,13 +143,25 @@ Logger::eLogLevel Logger::GetLogLevel() const
     return logLevel;
 }
 
-const char8 * Logger::GetLogLevelString(eLogLevel ll) const
+const char8* Logger::GetLogLevelString(eLogLevel ll) const
 {
 #ifndef __DAVAENGINE_WINDOWS__
     static_assert(logLevelString.size() == LEVEL__DISABLE,
-            "please update strings values");
+                  "please update strings values");
 #endif
     return logLevelString[ll];
+}
+
+Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll) const
+{
+    for (size_t i = 0; i < logLevelString.size(); ++i)
+    {
+        if (strcmp(ll, logLevelString[i]) == 0)
+        {
+            return static_cast<eLogLevel>(i);
+        }
+    }
+    return LEVEL__DISABLE;
 }
 
 void Logger::SetLogLevel(eLogLevel ll)
@@ -166,7 +180,7 @@ void Logger::Log(eLogLevel ll, const char8* text, ...) const
     va_end(vl);
 }
 
-void Logger::FrameworkDebug(const char8 * text, ...)
+void Logger::FrameworkDebug(const char8* text, ...)
 {
     va_list vl;
     va_start(vl, text);
@@ -176,7 +190,7 @@ void Logger::FrameworkDebug(const char8 * text, ...)
     va_end(vl);
 }
 
-void Logger::Debug(const char8 * text, ...)
+void Logger::Debug(const char8* text, ...)
 {
     va_list vl;
     va_start(vl, text);
@@ -186,7 +200,7 @@ void Logger::Debug(const char8 * text, ...)
     va_end(vl);
 }
 
-void Logger::Info(const char8 * text, ...)
+void Logger::Info(const char8* text, ...)
 {
     va_list vl;
     va_start(vl, text);
@@ -196,7 +210,7 @@ void Logger::Info(const char8 * text, ...)
     va_end(vl);
 }
 
-void Logger::Warning(const char8 * text, ...)
+void Logger::Warning(const char8* text, ...)
 {
     va_list vl;
     va_start(vl, text);
@@ -206,7 +220,7 @@ void Logger::Warning(const char8 * text, ...)
     va_end(vl);
 }
 
-void Logger::Error(const char8 * text, ...)
+void Logger::Error(const char8* text, ...)
 {
     va_list vl;
     va_start(vl, text);
@@ -216,14 +230,14 @@ void Logger::Error(const char8 * text, ...)
     va_end(vl);
 }
 
-void Logger::AddCustomOutput(DAVA::LoggerOutput *lo)
+void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
 {
     Logger* log = Logger::Instance();
     if (nullptr != log && nullptr != lo)
         log->customOutputs.push_back(lo);
 }
 
-void Logger::RemoveCustomOutput(DAVA::LoggerOutput *lo)
+void Logger::RemoveCustomOutput(DAVA::LoggerOutput* lo)
 {
     Logger* log = Logger::Instance();
     if (nullptr != log && nullptr != lo)
@@ -234,7 +248,7 @@ void Logger::RemoveCustomOutput(DAVA::LoggerOutput *lo)
     }
 }
 
-void Logger::SetLogFilename(const String & filename)
+void Logger::SetLogFilename(const String& filename)
 {
     if (filename.empty())
     {
@@ -246,7 +260,7 @@ void Logger::SetLogFilename(const String & filename)
     }
 }
 
-void Logger::SetLogPathname(const FilePath & filepath)
+void Logger::SetLogPathname(const FilePath& filepath)
 {
     logFilename = filepath;
 }
@@ -255,7 +269,7 @@ void Logger::FileLog(eLogLevel ll, const char8* text) const
 {
     if (nullptr != FileSystem::Instance())
     {
-        File *file = File::Create(logFilename, File::APPEND | File::WRITE);
+        File* file = File::Create(logFilename, File::APPEND | File::WRITE);
         if (nullptr != file)
         {
             Array<char8, 128> prefix;
@@ -289,7 +303,7 @@ void Logger::EnableConsoleMode()
     consoleModeEnabled = true;
 }
 
-void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8 *text) const
+void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8* text) const
 {
     printf("[%s] %s", GetLogLevelString(ll), text);
 }

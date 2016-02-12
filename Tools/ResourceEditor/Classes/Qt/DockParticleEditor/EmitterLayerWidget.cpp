@@ -50,9 +50,9 @@ static const float32 ANGLE_MAX_LIMIT_DEGREES = 360.0f;
 
 const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 {
-	{ParticleLayer::TYPE_SINGLE_PARTICLE, "Single Particle"},
-	{ParticleLayer::TYPE_PARTICLES, "Particles"},
-	{ParticleLayer::TYPE_SUPEREMITTER_PARTICLES, "SuperEmitter"}
+  { ParticleLayer::TYPE_SINGLE_PARTICLE, "Single Particle" },
+  { ParticleLayer::TYPE_PARTICLES, "Particles" },
+  { ParticleLayer::TYPE_SUPEREMITTER_PARTICLES, "SuperEmitter" }
 };
 
 const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[] =
@@ -65,100 +65,99 @@ const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[] =
 	{BLEND_DST_COLOR, BLEND_SRC_COLOR, "2x Multiplicative"}*/
 };
 
-EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
-	QWidget(parent),
-	BaseParticleEditorContentWidget()
+EmitterLayerWidget::EmitterLayerWidget(QWidget* parent)
+    :
+    QWidget(parent)
+    ,
+    BaseParticleEditorContentWidget()
 {
-	mainBox = new QVBoxLayout;
-	this->setLayout(mainBox);
-	
-	layerNameLineEdit = new QLineEdit();
-	mainBox->addWidget(layerNameLineEdit);
-	connect(layerNameLineEdit, SIGNAL(editingFinished()),this, SLOT(OnValueChanged()));
+    mainBox = new QVBoxLayout;
+    this->setLayout(mainBox);
 
-	QVBoxLayout* lodsLayout = new QVBoxLayout();
-	QLabel *lodsLabel = new QLabel("Active in LODs", this);
-	lodsLayout->addWidget(lodsLabel);
-	QHBoxLayout* lodsInnerLayout = new QHBoxLayout();
+    layerNameLineEdit = new QLineEdit();
+    mainBox->addWidget(layerNameLineEdit);
+    connect(layerNameLineEdit, SIGNAL(editingFinished()), this, SLOT(OnValueChanged()));
 
-	for (int32 i=0; i<LodComponent::MAX_LOD_LAYERS; ++i)
-	{
-		layerLodsCheckBox[i] = new QCheckBox(QString("LOD")+QString::number(i));
-		lodsInnerLayout->addWidget(layerLodsCheckBox[i]);
-		connect(layerLodsCheckBox[i],
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnLodsChanged()));		
-	}
-	lodsLayout->addLayout(lodsInnerLayout);
+    QVBoxLayout* lodsLayout = new QVBoxLayout();
+    QLabel* lodsLabel = new QLabel("Active in LODs", this);
+    lodsLayout->addWidget(lodsLabel);
+    QHBoxLayout* lodsInnerLayout = new QHBoxLayout();
+
+    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        layerLodsCheckBox[i] = new QCheckBox(QString("LOD") + QString::number(i));
+        lodsInnerLayout->addWidget(layerLodsCheckBox[i]);
+        connect(layerLodsCheckBox[i],
+                SIGNAL(stateChanged(int)),
+                this,
+                SLOT(OnLodsChanged()));
+    }
+    lodsLayout->addLayout(lodsInnerLayout);
 
     QHBoxLayout* lodsDegradeLayout = new QHBoxLayout();
     lodsDegradeLayout->addWidget(new QLabel("Lod0 degrade strategy"));
-    degradeStrategyComboBox = new QComboBox();    
+    degradeStrategyComboBox = new QComboBox();
     degradeStrategyComboBox->addItem("Keep everything");
     degradeStrategyComboBox->addItem("Reduce particles");
     degradeStrategyComboBox->addItem("Clear");
     connect(degradeStrategyComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
     lodsDegradeLayout->addWidget(degradeStrategyComboBox);
     lodsLayout->addLayout(lodsDegradeLayout);
-	mainBox->addLayout(lodsLayout);
+    mainBox->addLayout(lodsLayout);
 
-    
+    layerTypeLabel = new QLabel(this);
+    layerTypeLabel->setText("Layer type");
+    mainBox->addWidget(layerTypeLabel);
 
-	layerTypeLabel = new QLabel(this);
-	layerTypeLabel->setText("Layer type");
-	mainBox->addWidget(layerTypeLabel);
+    layerTypeComboBox = new QComboBox(this);
+    FillLayerTypes();
+    mainBox->addWidget(layerTypeComboBox);
+    connect(layerTypeComboBox,
+            SIGNAL(currentIndexChanged(int)),
+            this,
+            SLOT(OnValueChanged()));
 
-	layerTypeComboBox = new QComboBox(this);
-	FillLayerTypes();
-	mainBox->addWidget(layerTypeComboBox);
-	connect(layerTypeComboBox,
-			SIGNAL(currentIndexChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
+    enableCheckBox = new QCheckBox("Enable layer");
+    mainBox->addWidget(enableCheckBox);
+    connect(enableCheckBox,
+            SIGNAL(stateChanged(int)),
+            this,
+            SLOT(OnValueChanged()));
 
-	enableCheckBox = new QCheckBox("Enable layer");
-	mainBox->addWidget(enableCheckBox);
-	connect(enableCheckBox,
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
-		
+    inheritPostionCheckBox = new QCheckBox("Inherit Position");
+    mainBox->addWidget(inheritPostionCheckBox);
+    connect(inheritPostionCheckBox,
+            SIGNAL(stateChanged(int)),
+            this,
+            SLOT(OnValueChanged()));
 
-	inheritPostionCheckBox = new QCheckBox("Inherit Position");
-	mainBox->addWidget(inheritPostionCheckBox);
-	connect(inheritPostionCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnValueChanged()));
+    QHBoxLayout* longLayout = new QHBoxLayout();
+    isLongCheckBox = new QCheckBox("Long");
+    longLayout->addWidget(isLongCheckBox);
+    connect(isLongCheckBox,
+            SIGNAL(stateChanged(int)),
+            this,
+            SLOT(OnValueChanged()));
 
-	QHBoxLayout *longLayout = new QHBoxLayout();
-	isLongCheckBox = new QCheckBox("Long");
-	longLayout->addWidget(isLongCheckBox);
-	connect(isLongCheckBox,
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
-	
-	scaleVelocityBaseSpinBox = new EventFilterDoubleSpinBox();
-	scaleVelocityBaseSpinBox->setMinimum(-100);
-	scaleVelocityBaseSpinBox->setMaximum(100);	
-	scaleVelocityBaseSpinBox->setSingleStep(0.1);
-	scaleVelocityBaseSpinBox->setDecimals(3);
-	
-	scaleVelocityFactorSpinBox = new EventFilterDoubleSpinBox();
-	scaleVelocityFactorSpinBox->setMinimum(-100);
-	scaleVelocityFactorSpinBox->setMaximum(100);	
-	scaleVelocityFactorSpinBox->setSingleStep(0.1);
-	scaleVelocityFactorSpinBox->setDecimals(3);
-	scaleVelocityBaseLabel = new QLabel("Velocity scale base: ");
-	scaleVelocityFactorLabel = new QLabel("Velocity scale factor: ");
-	longLayout->addWidget(scaleVelocityBaseLabel);
-	longLayout->addWidget(scaleVelocityBaseSpinBox);
-	longLayout->addWidget(scaleVelocityFactorLabel);
-	longLayout->addWidget(scaleVelocityFactorSpinBox);
-	connect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-	connect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+    scaleVelocityBaseSpinBox = new EventFilterDoubleSpinBox();
+    scaleVelocityBaseSpinBox->setMinimum(-100);
+    scaleVelocityBaseSpinBox->setMaximum(100);
+    scaleVelocityBaseSpinBox->setSingleStep(0.1);
+    scaleVelocityBaseSpinBox->setDecimals(3);
+
+    scaleVelocityFactorSpinBox = new EventFilterDoubleSpinBox();
+    scaleVelocityFactorSpinBox->setMinimum(-100);
+    scaleVelocityFactorSpinBox->setMaximum(100);
+    scaleVelocityFactorSpinBox->setSingleStep(0.1);
+    scaleVelocityFactorSpinBox->setDecimals(3);
+    scaleVelocityBaseLabel = new QLabel("Velocity scale base: ");
+    scaleVelocityFactorLabel = new QLabel("Velocity scale factor: ");
+    longLayout->addWidget(scaleVelocityBaseLabel);
+    longLayout->addWidget(scaleVelocityBaseSpinBox);
+    longLayout->addWidget(scaleVelocityFactorLabel);
+    longLayout->addWidget(scaleVelocityFactorSpinBox);
+    connect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+    connect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
     mainBox->addLayout(longLayout);
 
     QHBoxLayout* spriteHBox2 = new QHBoxLayout;
@@ -194,40 +193,40 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterPathLabel->setReadOnly(true);
     innerEmitterLayout->addWidget(innerEmitterLabel);
     innerEmitterLayout->addWidget(innerEmitterPathLabel);
-	mainBox->addLayout(innerEmitterLayout);
-	
-	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
-	pivotPointLabel = new QLabel("Pivot Point", this);
-	pivotPointLayout->addWidget(pivotPointLabel);
-	QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
+    mainBox->addLayout(innerEmitterLayout);
 
-	pivotPointXSpinBoxLabel = new QLabel("X:", this);
-	pivotPointInnerLayout->addWidget(pivotPointXSpinBoxLabel);
-	pivotPointXSpinBox = new EventFilterDoubleSpinBox(this);
-	pivotPointXSpinBox->setMinimum(-99);
-	pivotPointXSpinBox->setMaximum(99);
-	pivotPointXSpinBox->setSingleStep(0.1);
-	pivotPointXSpinBox->setDecimals(3);
-	pivotPointInnerLayout->addWidget(pivotPointXSpinBox);
+    QVBoxLayout* pivotPointLayout = new QVBoxLayout();
+    pivotPointLabel = new QLabel("Pivot Point", this);
+    pivotPointLayout->addWidget(pivotPointLabel);
+    QHBoxLayout* pivotPointInnerLayout = new QHBoxLayout();
 
-	pivotPointYSpinBoxLabel = new QLabel("Y:", this);
-	pivotPointInnerLayout->addWidget(pivotPointYSpinBoxLabel);
-	pivotPointYSpinBox = new EventFilterDoubleSpinBox(this);
-	pivotPointYSpinBox->setMinimum(-99);
-	pivotPointYSpinBox->setMaximum(99);
-	pivotPointYSpinBox->setSingleStep(0.1);
-	pivotPointYSpinBox->setDecimals(3);
-	pivotPointInnerLayout->addWidget(pivotPointYSpinBox);
-	
-	pivotPointResetButton = new QPushButton("Reset", this);
-	pivotPointInnerLayout->addWidget(pivotPointResetButton);
-	connect(pivotPointResetButton, SIGNAL(clicked(bool)), this, SLOT(OnPivotPointReset()));
+    pivotPointXSpinBoxLabel = new QLabel("X:", this);
+    pivotPointInnerLayout->addWidget(pivotPointXSpinBoxLabel);
+    pivotPointXSpinBox = new EventFilterDoubleSpinBox(this);
+    pivotPointXSpinBox->setMinimum(-99);
+    pivotPointXSpinBox->setMaximum(99);
+    pivotPointXSpinBox->setSingleStep(0.1);
+    pivotPointXSpinBox->setDecimals(3);
+    pivotPointInnerLayout->addWidget(pivotPointXSpinBox);
 
-	connect(pivotPointXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-	connect(pivotPointYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+    pivotPointYSpinBoxLabel = new QLabel("Y:", this);
+    pivotPointInnerLayout->addWidget(pivotPointYSpinBoxLabel);
+    pivotPointYSpinBox = new EventFilterDoubleSpinBox(this);
+    pivotPointYSpinBox->setMinimum(-99);
+    pivotPointYSpinBox->setMaximum(99);
+    pivotPointYSpinBox->setSingleStep(0.1);
+    pivotPointYSpinBox->setDecimals(3);
+    pivotPointInnerLayout->addWidget(pivotPointYSpinBox);
 
-	pivotPointLayout->addLayout(pivotPointInnerLayout);
-	mainBox->addLayout(pivotPointLayout);
+    pivotPointResetButton = new QPushButton("Reset", this);
+    pivotPointInnerLayout->addWidget(pivotPointResetButton);
+    connect(pivotPointResetButton, SIGNAL(clicked(bool)), this, SLOT(OnPivotPointReset()));
+
+    connect(pivotPointXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+    connect(pivotPointYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+
+    pivotPointLayout->addLayout(pivotPointInnerLayout);
+    mainBox->addLayout(pivotPointLayout);
 
     frameBlendingCheckBox = new QCheckBox("Enable frame blending");
     connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
@@ -236,34 +235,34 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     //particle orieantation
     QVBoxLayout* orientationLayout = new QVBoxLayout();
     particleOrientationLabel = new QLabel("Particle Orientation");
-	orientationLayout->addWidget(particleOrientationLabel);
-	QHBoxLayout* facingLayout = new QHBoxLayout();
-	
-	cameraFacingCheckBox = new QCheckBox("Camera Facing");
-	facingLayout->addWidget(cameraFacingCheckBox);
-	connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));		
+    orientationLayout->addWidget(particleOrientationLabel);
+    QHBoxLayout* facingLayout = new QHBoxLayout();
 
-	xFacingCheckBox = new QCheckBox("X-Facing");
-	facingLayout->addWidget(xFacingCheckBox);
-	connect(xFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	yFacingCheckBox = new QCheckBox("Y-Facing");
-	facingLayout->addWidget(yFacingCheckBox);
-	connect(yFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	zFacingCheckBox = new QCheckBox("Z-Facing");
-	facingLayout->addWidget(zFacingCheckBox);
-	connect(zFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	orientationLayout->addLayout(facingLayout);
+    cameraFacingCheckBox = new QCheckBox("Camera Facing");
+    facingLayout->addWidget(cameraFacingCheckBox);
+    connect(cameraFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
-	worldAlignCheckBox = new QCheckBox("World Align");
-	orientationLayout->addWidget(worldAlignCheckBox);
-	connect(worldAlignCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    xFacingCheckBox = new QCheckBox("X-Facing");
+    facingLayout->addWidget(xFacingCheckBox);
+    connect(xFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    yFacingCheckBox = new QCheckBox("Y-Facing");
+    facingLayout->addWidget(yFacingCheckBox);
+    connect(yFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    zFacingCheckBox = new QCheckBox("Z-Facing");
+    facingLayout->addWidget(zFacingCheckBox);
+    connect(zFacingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    orientationLayout->addLayout(facingLayout);
 
-	mainBox->addLayout(orientationLayout);
+    worldAlignCheckBox = new QCheckBox("World Align");
+    orientationLayout->addWidget(worldAlignCheckBox);
+    connect(worldAlignCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
-	blendOptionsLabel = new QLabel("Blending Options");
-	mainBox->addWidget(blendOptionsLabel);	
-	
-	presetLabel = new QLabel("Preset");
+    mainBox->addLayout(orientationLayout);
+
+    blendOptionsLabel = new QLabel("Blending Options");
+    mainBox->addWidget(blendOptionsLabel);
+
+    presetLabel = new QLabel("Preset");
 
     presetComboBox = new QComboBox();
     int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
@@ -273,7 +272,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 
     QHBoxLayout* blendLayout = new QHBoxLayout();
-    QVBoxLayout *presetLayout = new QVBoxLayout();
+    QVBoxLayout* presetLayout = new QVBoxLayout();
 
     presetLayout->addWidget(presetLabel);
     presetLayout->addWidget(presetComboBox);
@@ -290,158 +289,158 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     lifeTimeLine = new TimeLineWidget(this);
     InitWidget(lifeTimeLine);
     numberTimeLine = new TimeLineWidget(this);
-	InitWidget(numberTimeLine);
-	sizeTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeTimeLine);
-	sizeVariationTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeVariationTimeLine);
-	sizeOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(sizeOverLifeTimeLine);
-	velocityTimeLine = new TimeLineWidget(this);
-	InitWidget(velocityTimeLine);
-	velocityOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(velocityOverLifeTimeLine);
-	spinTimeLine = new TimeLineWidget(this);
-	InitWidget(spinTimeLine);
-	spinOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(spinOverLifeTimeLine);
-		
-	randomSpinDirectionCheckBox = new QCheckBox("random spin direction", this);
-	connect(randomSpinDirectionCheckBox, SIGNAL(stateChanged(int)),
-			this, SLOT(OnValueChanged()));
-	mainBox->addWidget(randomSpinDirectionCheckBox);
+    InitWidget(numberTimeLine);
+    sizeTimeLine = new TimeLineWidget(this);
+    InitWidget(sizeTimeLine);
+    sizeVariationTimeLine = new TimeLineWidget(this);
+    InitWidget(sizeVariationTimeLine);
+    sizeOverLifeTimeLine = new TimeLineWidget(this);
+    InitWidget(sizeOverLifeTimeLine);
+    velocityTimeLine = new TimeLineWidget(this);
+    InitWidget(velocityTimeLine);
+    velocityOverLifeTimeLine = new TimeLineWidget(this);
+    InitWidget(velocityOverLifeTimeLine);
+    spinTimeLine = new TimeLineWidget(this);
+    InitWidget(spinTimeLine);
+    spinOverLifeTimeLine = new TimeLineWidget(this);
+    InitWidget(spinOverLifeTimeLine);
 
-	colorRandomGradient = new GradientPickerWidget(this);
-	InitWidget(colorRandomGradient);
-	colorOverLifeGradient = new GradientPickerWidget(this);
-	InitWidget(colorOverLifeGradient);
-	alphaOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(alphaOverLifeTimeLine);
-	
-	QHBoxLayout* frameOverlifeLayout = new QHBoxLayout();
-	frameOverlifeCheckBox = new QCheckBox("frame over life", this);
-	connect(frameOverlifeCheckBox, SIGNAL(stateChanged(int)),
-				  this, SLOT(OnValueChanged()));
+    randomSpinDirectionCheckBox = new QCheckBox("random spin direction", this);
+    connect(randomSpinDirectionCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(OnValueChanged()));
+    mainBox->addWidget(randomSpinDirectionCheckBox);
 
-	frameOverlifeFPSSpin = new QSpinBox(this);
-	frameOverlifeFPSSpin->setMinimum(0);
-	frameOverlifeFPSSpin->setMaximum(1000);
-	connect(frameOverlifeFPSSpin, SIGNAL(valueChanged(int)),
-			this, SLOT(OnValueChanged()));
+    colorRandomGradient = new GradientPickerWidget(this);
+    InitWidget(colorRandomGradient);
+    colorOverLifeGradient = new GradientPickerWidget(this);
+    InitWidget(colorOverLifeGradient);
+    alphaOverLifeTimeLine = new TimeLineWidget(this);
+    InitWidget(alphaOverLifeTimeLine);
 
-	frameOverlifeFPSLabel = new QLabel("FPS", this);
+    QHBoxLayout* frameOverlifeLayout = new QHBoxLayout();
+    frameOverlifeCheckBox = new QCheckBox("frame over life", this);
+    connect(frameOverlifeCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(OnValueChanged()));
 
-	frameOverlifeLayout->addWidget(frameOverlifeCheckBox);
-	frameOverlifeLayout->addWidget(frameOverlifeFPSSpin);
-	frameOverlifeLayout->addWidget(frameOverlifeFPSLabel);
-	mainBox->addLayout(frameOverlifeLayout);
+    frameOverlifeFPSSpin = new QSpinBox(this);
+    frameOverlifeFPSSpin->setMinimum(0);
+    frameOverlifeFPSSpin->setMaximum(1000);
+    connect(frameOverlifeFPSSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(OnValueChanged()));
 
-	randomFrameOnStartCheckBox = new QCheckBox("random frame on start", this);
-	connect(randomFrameOnStartCheckBox, SIGNAL(stateChanged(int)),
-		this, SLOT(OnValueChanged()));
-	mainBox->addWidget(randomFrameOnStartCheckBox);
-	loopSpriteAnimationCheckBox = new QCheckBox("loop sprite animation", this);
-	connect(loopSpriteAnimationCheckBox, SIGNAL(stateChanged(int)),
-		this, SLOT(OnValueChanged()));
-	mainBox->addWidget(loopSpriteAnimationCheckBox);
+    frameOverlifeFPSLabel = new QLabel("FPS", this);
 
-	animSpeedOverLifeTimeLine = new TimeLineWidget(this);
-	InitWidget(animSpeedOverLifeTimeLine);
-	
-	angleTimeLine = new TimeLineWidget(this);
-	InitWidget(angleTimeLine);
+    frameOverlifeLayout->addWidget(frameOverlifeCheckBox);
+    frameOverlifeLayout->addWidget(frameOverlifeFPSSpin);
+    frameOverlifeLayout->addWidget(frameOverlifeFPSLabel);
+    mainBox->addLayout(frameOverlifeLayout);
 
-	QHBoxLayout* startTimeHBox = new QHBoxLayout;
-	startTimeHBox->addWidget(new QLabel("startTime", this));
-	startTimeSpin = new EventFilterDoubleSpinBox(this);
-	startTimeSpin->setMinimum(-std::numeric_limits<double>::infinity());
-	startTimeSpin->setMaximum(std::numeric_limits<double>::infinity());
-	startTimeHBox->addWidget(startTimeSpin);
-	mainBox->addLayout(startTimeHBox);
-	connect(startTimeSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
+    randomFrameOnStartCheckBox = new QCheckBox("random frame on start", this);
+    connect(randomFrameOnStartCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(OnValueChanged()));
+    mainBox->addWidget(randomFrameOnStartCheckBox);
+    loopSpriteAnimationCheckBox = new QCheckBox("loop sprite animation", this);
+    connect(loopSpriteAnimationCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(OnValueChanged()));
+    mainBox->addWidget(loopSpriteAnimationCheckBox);
 
-	QHBoxLayout* endTimeHBox = new QHBoxLayout;
-	endTimeHBox->addWidget(new QLabel("endTime", this));
-	endTimeSpin = new EventFilterDoubleSpinBox(this);
-	endTimeSpin->setMinimum(-std::numeric_limits<double>::infinity());
-	endTimeSpin->setMaximum(std::numeric_limits<double>::infinity());
-	endTimeHBox->addWidget(endTimeSpin);
-	mainBox->addLayout(endTimeHBox);
-	connect(endTimeSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-			
-			
-	QHBoxLayout* loopHBox = new QHBoxLayout;	
-	isLoopedCheckBox = new QCheckBox("Loop layer");
-	loopHBox->addWidget(isLoopedCheckBox);
-	connect(isLoopedCheckBox,
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
-			
-	loopEndSpinLabel = new QLabel("loopEnd", this);
-	loopEndSpin = new EventFilterDoubleSpinBox(this);
-	loopEndSpin->setMinimum(-std::numeric_limits<double>::infinity());
-	loopEndSpin->setMaximum(std::numeric_limits<double>::infinity());
-	loopHBox->addWidget(loopEndSpinLabel);
-	loopHBox->addWidget(loopEndSpin);
-	connect(loopEndSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	
-	loopVariationSpinLabel = new QLabel("loopVariation", this);
-	loopVariationSpin = new EventFilterDoubleSpinBox(this);
-	loopVariationSpin->setMinimum(-std::numeric_limits<double>::infinity());
-	loopVariationSpin->setMaximum(std::numeric_limits<double>::infinity());
-	loopHBox->addWidget(loopVariationSpinLabel);
-	loopHBox->addWidget(loopVariationSpin);
-	connect(loopVariationSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-			
-	loopHBox->setStretch(0, 1);
-	loopHBox->setStretch(2, 1);
-	loopHBox->setStretch(4, 1);
-	mainBox->addLayout(loopHBox);
-	
-	QHBoxLayout *deltaHBox = new QHBoxLayout();
-	
-	deltaSpinLabel = new QLabel("delta", this);
-	deltaSpin = new EventFilterDoubleSpinBox(this);
-	deltaSpin->setMinimum(-std::numeric_limits<double>::infinity());
-	deltaSpin->setMaximum(std::numeric_limits<double>::infinity());
-	deltaHBox->addWidget(deltaSpinLabel);
-	deltaHBox->addWidget(deltaSpin);
-	connect(deltaSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-			
-	deltaVariationSpinLabel = new QLabel("deltaVariation", this);
-	deltaVariationSpin = new EventFilterDoubleSpinBox(this);
-	deltaVariationSpin->setMinimum(-std::numeric_limits<double>::infinity());
-	deltaVariationSpin->setMaximum(std::numeric_limits<double>::infinity());
-	deltaHBox->addWidget(deltaVariationSpinLabel);
-	deltaHBox->addWidget(deltaVariationSpin);
-	connect(deltaVariationSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	deltaHBox->setStretch(1, 1);
-	deltaHBox->setStretch(3, 1);
-	mainBox->addLayout(deltaHBox);	
-	
-	Q_FOREACH( QAbstractSpinBox * sp, findChildren<QAbstractSpinBox*>() ) {
-        sp->installEventFilter( this );
+    animSpeedOverLifeTimeLine = new TimeLineWidget(this);
+    InitWidget(animSpeedOverLifeTimeLine);
+
+    angleTimeLine = new TimeLineWidget(this);
+    InitWidget(angleTimeLine);
+
+    QHBoxLayout* startTimeHBox = new QHBoxLayout;
+    startTimeHBox->addWidget(new QLabel("startTime", this));
+    startTimeSpin = new EventFilterDoubleSpinBox(this);
+    startTimeSpin->setMinimum(-std::numeric_limits<double>::infinity());
+    startTimeSpin->setMaximum(std::numeric_limits<double>::infinity());
+    startTimeHBox->addWidget(startTimeSpin);
+    mainBox->addLayout(startTimeHBox);
+    connect(startTimeSpin,
+            SIGNAL(valueChanged(double)),
+            this,
+            SLOT(OnValueChanged()));
+
+    QHBoxLayout* endTimeHBox = new QHBoxLayout;
+    endTimeHBox->addWidget(new QLabel("endTime", this));
+    endTimeSpin = new EventFilterDoubleSpinBox(this);
+    endTimeSpin->setMinimum(-std::numeric_limits<double>::infinity());
+    endTimeSpin->setMaximum(std::numeric_limits<double>::infinity());
+    endTimeHBox->addWidget(endTimeSpin);
+    mainBox->addLayout(endTimeHBox);
+    connect(endTimeSpin,
+            SIGNAL(valueChanged(double)),
+            this,
+            SLOT(OnValueChanged()));
+
+    QHBoxLayout* loopHBox = new QHBoxLayout;
+    isLoopedCheckBox = new QCheckBox("Loop layer");
+    loopHBox->addWidget(isLoopedCheckBox);
+    connect(isLoopedCheckBox,
+            SIGNAL(stateChanged(int)),
+            this,
+            SLOT(OnValueChanged()));
+
+    loopEndSpinLabel = new QLabel("loopEnd", this);
+    loopEndSpin = new EventFilterDoubleSpinBox(this);
+    loopEndSpin->setMinimum(-std::numeric_limits<double>::infinity());
+    loopEndSpin->setMaximum(std::numeric_limits<double>::infinity());
+    loopHBox->addWidget(loopEndSpinLabel);
+    loopHBox->addWidget(loopEndSpin);
+    connect(loopEndSpin,
+            SIGNAL(valueChanged(double)),
+            this,
+            SLOT(OnValueChanged()));
+
+    loopVariationSpinLabel = new QLabel("loopVariation", this);
+    loopVariationSpin = new EventFilterDoubleSpinBox(this);
+    loopVariationSpin->setMinimum(-std::numeric_limits<double>::infinity());
+    loopVariationSpin->setMaximum(std::numeric_limits<double>::infinity());
+    loopHBox->addWidget(loopVariationSpinLabel);
+    loopHBox->addWidget(loopVariationSpin);
+    connect(loopVariationSpin,
+            SIGNAL(valueChanged(double)),
+            this,
+            SLOT(OnValueChanged()));
+
+    loopHBox->setStretch(0, 1);
+    loopHBox->setStretch(2, 1);
+    loopHBox->setStretch(4, 1);
+    mainBox->addLayout(loopHBox);
+
+    QHBoxLayout* deltaHBox = new QHBoxLayout();
+
+    deltaSpinLabel = new QLabel("delta", this);
+    deltaSpin = new EventFilterDoubleSpinBox(this);
+    deltaSpin->setMinimum(-std::numeric_limits<double>::infinity());
+    deltaSpin->setMaximum(std::numeric_limits<double>::infinity());
+    deltaHBox->addWidget(deltaSpinLabel);
+    deltaHBox->addWidget(deltaSpin);
+    connect(deltaSpin,
+            SIGNAL(valueChanged(double)),
+            this,
+            SLOT(OnValueChanged()));
+
+    deltaVariationSpinLabel = new QLabel("deltaVariation", this);
+    deltaVariationSpin = new EventFilterDoubleSpinBox(this);
+    deltaVariationSpin->setMinimum(-std::numeric_limits<double>::infinity());
+    deltaVariationSpin->setMaximum(std::numeric_limits<double>::infinity());
+    deltaHBox->addWidget(deltaVariationSpinLabel);
+    deltaHBox->addWidget(deltaVariationSpin);
+    connect(deltaVariationSpin,
+            SIGNAL(valueChanged(double)),
+            this,
+            SLOT(OnValueChanged()));
+    deltaHBox->setStretch(1, 1);
+    deltaHBox->setStretch(3, 1);
+    mainBox->addLayout(deltaHBox);
+
+    Q_FOREACH (QAbstractSpinBox* sp, findChildren<QAbstractSpinBox*>())
+    {
+        sp->installEventFilter(this);
     }
-	spritePathLabel->installEventFilter(this);
+    spritePathLabel->installEventFilter(this);
 
     spriteUpdateTimer = new QTimer(this);
     connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
@@ -449,21 +448,21 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
 void EmitterLayerWidget::InitWidget(QWidget* widget)
 {
-	mainBox->addWidget(widget);
-	connect(widget,
-			SIGNAL(ValueChanged()),
-			this,
-			SLOT(OnValueChanged()));
+    mainBox->addWidget(widget);
+    connect(widget,
+            SIGNAL(ValueChanged()),
+            this,
+            SLOT(OnValueChanged()));
 }
 
-void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, DAVA::ParticleLayer *layer, bool updateMinimized)
+void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool updateMinimized)
 {
-	if (!emitter || !layer)
-		return;		
-	
+    if (!emitter || !layer)
+        return;
+
     this->effect = effect;
-	this->emitter = emitter;
-	this->layer = layer;
+    this->emitter = emitter;
+    this->layer = layer;
 
     SetActiveScene(scene);
     Update(updateMinimized);
@@ -471,78 +470,78 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
 {
-	if (!visualStateProps)
-		return;
+    if (!visualStateProps)
+        return;
 
-	lifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_LIFE_PROPS"));
-	numberTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_NUMBER_PROPS"));
-	sizeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SIZE_PROPS"));
-	sizeVariationTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SIZE_VARIATION_PROPS"));
-	sizeOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SIZE_OVER_LIFE_PROPS"));
-	velocityTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_VELOCITY_PROPS"));
-	velocityOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_VELOCITY_OVER_LIFE"));//todo
-	spinTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SPIN_PROPS"));
-	spinOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SPIN_OVER_LIFE_PROPS"));
-	animSpeedOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ANIM_SPEED_OVER_LIFE_PROPS"));
-	alphaOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ALPHA_OVER_LIFE_PROPS"));
-	angleTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ANGLE"));	
+    lifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_LIFE_PROPS"));
+    numberTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_NUMBER_PROPS"));
+    sizeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SIZE_PROPS"));
+    sizeVariationTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SIZE_VARIATION_PROPS"));
+    sizeOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SIZE_OVER_LIFE_PROPS"));
+    velocityTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_VELOCITY_PROPS"));
+    velocityOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_VELOCITY_OVER_LIFE")); //todo
+    spinTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SPIN_PROPS"));
+    spinOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_SPIN_OVER_LIFE_PROPS"));
+    animSpeedOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ANIM_SPEED_OVER_LIFE_PROPS"));
+    alphaOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ALPHA_OVER_LIFE_PROPS"));
+    angleTimeLine->SetVisualState(visualStateProps->GetArchive("LAYER_ANGLE"));
 }
 
 void EmitterLayerWidget::StoreVisualState(KeyedArchive* visualStateProps)
 {
-	if (!visualStateProps)
-		return;
+    if (!visualStateProps)
+        return;
 
-	KeyedArchive* props = new KeyedArchive();
+    KeyedArchive* props = new KeyedArchive();
 
-	lifeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_LIFE_PROPS", props);
+    lifeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_LIFE_PROPS", props);
 
-	props->DeleteAllKeys();
-	numberTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_NUMBER_PROPS", props);
+    props->DeleteAllKeys();
+    numberTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_NUMBER_PROPS", props);
 
-	props->DeleteAllKeys();
-	sizeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_SIZE_PROPS", props);
+    props->DeleteAllKeys();
+    sizeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_SIZE_PROPS", props);
 
-	props->DeleteAllKeys();
-	sizeVariationTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_SIZE_VARIATION_PROPS", props);
+    props->DeleteAllKeys();
+    sizeVariationTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_SIZE_VARIATION_PROPS", props);
 
-	props->DeleteAllKeys();
-	sizeOverLifeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_SIZE_OVER_LIFE_PROPS", props);
+    props->DeleteAllKeys();
+    sizeOverLifeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_SIZE_OVER_LIFE_PROPS", props);
 
-	props->DeleteAllKeys();
-	velocityTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_VELOCITY_PROPS", props);
+    props->DeleteAllKeys();
+    velocityTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_VELOCITY_PROPS", props);
 
-	props->DeleteAllKeys();
-	velocityOverLifeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_VELOCITY_OVER_LIFE", props);
+    props->DeleteAllKeys();
+    velocityOverLifeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_VELOCITY_OVER_LIFE", props);
 
-	props->DeleteAllKeys();
-	spinTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_SPIN_PROPS", props);
+    props->DeleteAllKeys();
+    spinTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_SPIN_PROPS", props);
 
-	props->DeleteAllKeys();
-	spinOverLifeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_SPIN_OVER_LIFE_PROPS", props);
-	
-	props->DeleteAllKeys();
-	animSpeedOverLifeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_ANIM_SPEED_OVER_LIFE_PROPS", props);
+    props->DeleteAllKeys();
+    spinOverLifeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_SPIN_OVER_LIFE_PROPS", props);
 
-	props->DeleteAllKeys();
-	alphaOverLifeTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_ALPHA_OVER_LIFE_PROPS", props);
+    props->DeleteAllKeys();
+    animSpeedOverLifeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_ANIM_SPEED_OVER_LIFE_PROPS", props);
 
-	props->DeleteAllKeys();
-	angleTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("LAYER_ANGLE", props);
+    props->DeleteAllKeys();
+    alphaOverLifeTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_ALPHA_OVER_LIFE_PROPS", props);
 
-	SafeRelease(props);
+    props->DeleteAllKeys();
+    angleTimeLine->GetVisualState(props);
+    visualStateProps->SetArchive("LAYER_ANGLE", props);
+
+    SafeRelease(props);
 }
 
 void EmitterLayerWidget::OnSpriteBtn()
@@ -599,78 +598,77 @@ void EmitterLayerWidget::OnSpriteFolderBtn()
 
 void EmitterLayerWidget::OnValueChanged()
 {
-	if (blockSignals)
-		return;
-	
-	PropLineWrapper<float32> propLife;
-	PropLineWrapper<float32> propLifeVariation;
-	lifeTimeLine->GetValue(0, propLife.GetPropsPtr());
-	lifeTimeLine->GetValue(1, propLifeVariation.GetPropsPtr());
-	
-	PropLineWrapper<float32> propNumber;
-	PropLineWrapper<float32> propNumberVariation;
-	numberTimeLine->GetValue(0, propNumber.GetPropsPtr());
-	numberTimeLine->GetValue(1, propNumberVariation.GetPropsPtr());
-	
-	PropLineWrapper<Vector2> propSize;
-	sizeTimeLine->GetValues(propSize.GetPropsPtr());
-	
-	PropLineWrapper<Vector2> propSizeVariation;
-	sizeVariationTimeLine->GetValues(propSizeVariation.GetPropsPtr());
+    if (blockSignals)
+        return;
 
-	PropLineWrapper<Vector2> propsizeOverLife;
-	sizeOverLifeTimeLine->GetValues(propsizeOverLife.GetPropsPtr());
-	
-	PropLineWrapper<float32> propVelocity;
-	PropLineWrapper<float32> propVelocityVariation;
-	velocityTimeLine->GetValue(0, propVelocity.GetPropsPtr());
-	velocityTimeLine->GetValue(1, propVelocityVariation.GetPropsPtr());
+    PropLineWrapper<float32> propLife;
+    PropLineWrapper<float32> propLifeVariation;
+    lifeTimeLine->GetValue(0, propLife.GetPropsPtr());
+    lifeTimeLine->GetValue(1, propLifeVariation.GetPropsPtr());
 
-	PropLineWrapper<float32> propVelocityOverLife;
-	velocityOverLifeTimeLine->GetValue(0, propVelocityOverLife.GetPropsPtr());
-	
-	PropLineWrapper<float32> propSpin;
-	PropLineWrapper<float32> propSpinVariation;
-	spinTimeLine->GetValue(0, propSpin.GetPropsPtr());
-	spinTimeLine->GetValue(1, propSpinVariation.GetPropsPtr());
+    PropLineWrapper<float32> propNumber;
+    PropLineWrapper<float32> propNumberVariation;
+    numberTimeLine->GetValue(0, propNumber.GetPropsPtr());
+    numberTimeLine->GetValue(1, propNumberVariation.GetPropsPtr());
 
-	PropLineWrapper<float32> propSpinOverLife;
-	spinOverLifeTimeLine->GetValue(0, propSpinOverLife.GetPropsPtr());
+    PropLineWrapper<Vector2> propSize;
+    sizeTimeLine->GetValues(propSize.GetPropsPtr());
 
-	PropLineWrapper<float32> propAnimSpeedOverLife;
-	animSpeedOverLifeTimeLine->GetValue(0, propAnimSpeedOverLife.GetPropsPtr());
+    PropLineWrapper<Vector2> propSizeVariation;
+    sizeVariationTimeLine->GetValues(propSizeVariation.GetPropsPtr());
 
-	PropLineWrapper<Color> propColorRandom;
-	colorRandomGradient->GetValues(propColorRandom.GetPropsPtr());
+    PropLineWrapper<Vector2> propsizeOverLife;
+    sizeOverLifeTimeLine->GetValues(propsizeOverLife.GetPropsPtr());
 
-	PropLineWrapper<Color> propColorOverLife;
-	colorOverLifeGradient->GetValues(propColorOverLife.GetPropsPtr());
+    PropLineWrapper<float32> propVelocity;
+    PropLineWrapper<float32> propVelocityVariation;
+    velocityTimeLine->GetValue(0, propVelocity.GetPropsPtr());
+    velocityTimeLine->GetValue(1, propVelocityVariation.GetPropsPtr());
 
-	PropLineWrapper<float32> propAlphaOverLife;
-	alphaOverLifeTimeLine->GetValue(0, propAlphaOverLife.GetPropsPtr());
-	
-	PropLineWrapper<float32> propAngle;
-	PropLineWrapper<float32> propAngleVariation;
-	angleTimeLine->GetValue(0, propAngle.GetPropsPtr());
-	angleTimeLine->GetValue(1, propAngleVariation.GetPropsPtr());
+    PropLineWrapper<float32> propVelocityOverLife;
+    velocityOverLifeTimeLine->GetValue(0, propVelocityOverLife.GetPropsPtr());
 
-	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
+    PropLineWrapper<float32> propSpin;
+    PropLineWrapper<float32> propSpinVariation;
+    spinTimeLine->GetValue(0, propSpin.GetPropsPtr());
+    spinTimeLine->GetValue(1, propSpinVariation.GetPropsPtr());
 
+    PropLineWrapper<float32> propSpinOverLife;
+    spinOverLifeTimeLine->GetValue(0, propSpinOverLife.GetPropsPtr());
+
+    PropLineWrapper<float32> propAnimSpeedOverLife;
+    animSpeedOverLifeTimeLine->GetValue(0, propAnimSpeedOverLife.GetPropsPtr());
+
+    PropLineWrapper<Color> propColorRandom;
+    colorRandomGradient->GetValues(propColorRandom.GetPropsPtr());
+
+    PropLineWrapper<Color> propColorOverLife;
+    colorOverLifeGradient->GetValues(propColorOverLife.GetPropsPtr());
+
+    PropLineWrapper<float32> propAlphaOverLife;
+    alphaOverLifeTimeLine->GetValue(0, propAlphaOverLife.GetPropsPtr());
+
+    PropLineWrapper<float32> propAngle;
+    PropLineWrapper<float32> propAngleVariation;
+    angleTimeLine->GetValue(0, propAngle.GetPropsPtr());
+    angleTimeLine->GetValue(1, propAngleVariation.GetPropsPtr());
+
+    ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
     int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
-	if (xFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
-	if (yFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
-	if (zFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
-	if (worldAlignCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
+    if (xFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
+    if (yFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
+    if (zFacingCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
+    if (worldAlignCheckBox->isChecked())
+        particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
-    bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
+    bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
     CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
@@ -720,15 +718,15 @@ void EmitterLayerWidget::OnValueChanged()
 
     DVASSERT(activeScene);
     activeScene->Exec(updateLayerCmd);
-	activeScene->MarkAsChanged();
+    activeScene->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
     {
         if (!effect->IsStopped())
             effect->Restart(true);
-    }	
-	emit ValueChanged();
+    }
+    emit ValueChanged();
 }
 
 void EmitterLayerWidget::OnLayerMaterialValueChanged()
@@ -750,18 +748,18 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
 
 void EmitterLayerWidget::OnLodsChanged()
 {
-	if (blockSignals)
-		return;
-	Vector<bool> lods;
-	lods.resize(LodComponent::MAX_LOD_LAYERS, true);
-	for (int32 i=0; i<LodComponent::MAX_LOD_LAYERS; ++i)
-	{
-		lods[i] = layerLodsCheckBox[i]->isChecked();
-	}
-	CommandUpdateParticleLayerLods * updateLodsCmd = new CommandUpdateParticleLayerLods(layer, lods);
-	activeScene->Exec(updateLodsCmd);
-	activeScene->MarkAsChanged();
-	emit ValueChanged();
+    if (blockSignals)
+        return;
+    Vector<bool> lods;
+    lods.resize(LodComponent::MAX_LOD_LAYERS, true);
+    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        lods[i] = layerLodsCheckBox[i]->isChecked();
+    }
+    CommandUpdateParticleLayerLods* updateLodsCmd = new CommandUpdateParticleLayerLods(layer, lods);
+    activeScene->Exec(updateLodsCmd);
+    activeScene->MarkAsChanged();
+    emit ValueChanged();
 }
 
 void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
@@ -791,7 +789,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     layerNameLineEdit->setText(QString::fromStdString(layer->layerName));
     layerTypeComboBox->setCurrentIndex(LayerTypeToIndex(layer->type));
 
-    enableCheckBox->setChecked(!layer->isDisabled);	
+    enableCheckBox->setChecked(!layer->isDisabled);
     inheritPostionCheckBox->setChecked(layer->inheritPosition);
 
     isLongCheckBox->setChecked(layer->isLong);
@@ -816,17 +814,17 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     UpdateLayerSprite();
 
     //particle orientation
-    cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
-    xFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_X_FACING);
-    yFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Y_FACING);
-    zFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Z_FACING);
-    worldAlignCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
+    cameraFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
+    xFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_X_FACING);
+    yFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Y_FACING);
+    zFacingCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Z_FACING);
+    worldAlignCheckBox->setChecked(layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
 
     //blend and fog
 
-    int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
+    int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
     int32 presetId;
-    for (presetId=0; presetId<presetsCount; presetId++)
+    for (presetId = 0; presetId < presetsCount; presetId++)
     {
         if (blendPresetsMap[presetId].blending == layer->blending)
             break;
@@ -836,7 +834,6 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     fogCheckBox->setChecked(layer->enableFog);
 
     frameBlendingCheckBox->setChecked(layer->enableFrameBlend);
-
 
     //LAYER_LIFE, LAYER_LIFE_VARIATION,
     lifeTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
@@ -856,23 +853,27 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     //LAYER_SIZE, LAYER_SIZE_VARIATION, LAYER_SIZE_OVER_LIFE,
     Vector<QColor> colors;
-    colors.push_back(Qt::red); colors.push_back(Qt::darkGreen);
+    colors.push_back(Qt::red);
+    colors.push_back(Qt::darkGreen);
     Vector<QString> legends;
-    legends.push_back("size X"); legends.push_back("size Y");
+    legends.push_back("size X");
+    legends.push_back("size Y");
     sizeTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
     sizeTimeLine->SetMinLimits(0);
     sizeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->size)).GetProps(), colors, legends);
     sizeTimeLine->EnableLock(true);
 
     legends.clear();
-    legends.push_back("size variation X"); legends.push_back("size variation Y");
+    legends.push_back("size variation X");
+    legends.push_back("size variation Y");
     sizeVariationTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
     sizeVariationTimeLine->SetMinLimits(0);
     sizeVariationTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeVariation)).GetProps(), colors, legends);
     sizeVariationTimeLine->EnableLock(true);
 
     legends.clear();
-    legends.push_back("size over life X"); legends.push_back("size over life Y");
+    legends.push_back("size over life X");
+    legends.push_back("size over life Y");
     sizeOverLifeTimeLine->Init(0, 1, updateMinimized, true);
     sizeOverLifeTimeLine->SetMinLimits(0);
     sizeOverLifeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeOverLifeXY)).GetProps(), colors, legends);
@@ -889,7 +890,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     //LAYER_FORCES, LAYER_FORCES_VARIATION, LAYER_FORCES_OVER_LIFE,
 
-    //LAYER_SPIN, LAYER_SPIN_VARIATION, 
+    //LAYER_SPIN, LAYER_SPIN_VARIATION,
     spinTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
     spinTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spin)).GetProps(), Qt::blue, "spin");
     spinTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinVariation)).GetProps(), Qt::darkGreen, "spin variation");
@@ -934,26 +935,26 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     startTimeSpin->setValue(layer->startTime);
     startTimeSpin->setMaximum(layer->endTime);
     endTimeSpin->setMinimum(0);
-    endTimeSpin->setValue(layer->endTime);	
+    endTimeSpin->setValue(layer->endTime);
 
     // LAYER delta, deltaVariation, loopEnd and loopVariation
-    bool isLoopedChecked = isLoopedCheckBox->isChecked();	
+    bool isLoopedChecked = isLoopedCheckBox->isChecked();
     deltaSpin->setMinimum(0);
     deltaSpin->setValue(layer->deltaTime);
     deltaSpin->setVisible(isLoopedChecked);
     deltaSpinLabel->setVisible(isLoopedChecked);
 
-    deltaVariationSpin->setMinimum(0);	
+    deltaVariationSpin->setMinimum(0);
     deltaVariationSpin->setValue(layer->deltaVariation);
     deltaVariationSpin->setVisible(isLoopedChecked);
     deltaVariationSpinLabel->setVisible(isLoopedChecked);
 
-    loopEndSpin->setMinimum(0);	
+    loopEndSpin->setMinimum(0);
     loopEndSpin->setValue(layer->loopEndTime);
     loopEndSpin->setVisible(isLoopedChecked);
     loopEndSpinLabel->setVisible(isLoopedChecked);
 
-    loopVariationSpin->setMinimum(0);	
+    loopVariationSpin->setMinimum(0);
     loopVariationSpin->setValue(layer->loopVariation);
     loopVariationSpin->setVisible(isLoopedChecked);
     loopVariationSpinLabel->setVisible(isLoopedChecked);
@@ -963,8 +964,8 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     pivotPointYSpinBox->setValue((double)layerPivotPoint.y);
 
     blockSignals = false;
-	
-	adjustSize();
+
+    adjustSize();
 }
 
 void EmitterLayerWidget::UpdateLayerSprite()
@@ -996,38 +997,38 @@ void EmitterLayerWidget::UpdateLayerSprite()
 
 void EmitterLayerWidget::UpdateTooltip()
 {
-	QFontMetrics fm = spritePathLabel->fontMetrics();
-	if (fm.width(spritePathLabel->text()) >= spritePathLabel->width())
-	{
-		spritePathLabel->setToolTip(spritePathLabel->text());
-	}
-	else
-	{
-		spritePathLabel->setToolTip("");
-	}
+    QFontMetrics fm = spritePathLabel->fontMetrics();
+    if (fm.width(spritePathLabel->text()) >= spritePathLabel->width())
+    {
+        spritePathLabel->setToolTip(spritePathLabel->text());
+    }
+    else
+    {
+        spritePathLabel->setToolTip("");
+    }
 }
 
-bool EmitterLayerWidget::eventFilter( QObject * o, QEvent * e )
+bool EmitterLayerWidget::eventFilter(QObject* o, QEvent* e)
 {
-    if ( e->type() == QEvent::Wheel &&
-		qobject_cast<QAbstractSpinBox*>( o ) )
+    if (e->type() == QEvent::Wheel &&
+        qobject_cast<QAbstractSpinBox*>(o))
     {
         e->ignore();
         return true;
     }
 
-	if (e->type() == QEvent::Resize && qobject_cast<QLineEdit*>(o))
-	{
-		UpdateTooltip();
-		return true;
-	}
+    if (e->type() == QEvent::Resize && qobject_cast<QLineEdit*>(o))
+    {
+        UpdateTooltip();
+        return true;
+    }
 
-    return QWidget::eventFilter( o, e );
+    return QWidget::eventFilter(o, e);
 }
 
 void EmitterLayerWidget::OnSpritePathChanged(const QString& text)
 {
-	UpdateTooltip();
+    UpdateTooltip();
 }
 
 void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
@@ -1049,31 +1050,31 @@ void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 
 void EmitterLayerWidget::FillLayerTypes()
 {
-	int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
-	for (int32 i = 0; i < layerTypes; i ++)
-	{
-		layerTypeComboBox->addItem(layerTypeMap[i].layerName);
-	}
+    int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
+    for (int32 i = 0; i < layerTypes; i++)
+    {
+        layerTypeComboBox->addItem(layerTypeMap[i].layerName);
+    }
 }
 
 int32 EmitterLayerWidget::LayerTypeToIndex(ParticleLayer::eType layerType)
 {
-	int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
-	for (int32 i = 0; i < layerTypes; i ++)
-	{
-		if (layerTypeMap[i].layerType == layerType)
-		{
-			return i;
-		}
-	}
-	
-	return 0;
+    int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
+    for (int32 i = 0; i < layerTypes; i++)
+    {
+        if (layerTypeMap[i].layerType == layerType)
+        {
+            return i;
+        }
+    }
+
+    return 0;
 }
 
 void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 {
-	// Sprite has no sense for Superemitter.
-	spriteBtn->setVisible(!isSuperemitter);
+    // Sprite has no sense for Superemitter.
+    spriteBtn->setVisible(!isSuperemitter);
     spriteFolderBtn->setVisible(!isSuperemitter);
     spriteLabel->setVisible(!isSuperemitter);
     spritePathLabel->setVisible(!isSuperemitter);
@@ -1083,77 +1084,77 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     colorOverLifeGradient->setVisible(!isSuperemitter);
     alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
-	frameOverlifeCheckBox->setVisible(!isSuperemitter);
-	frameOverlifeFPSSpin->setVisible(!isSuperemitter);
-	frameOverlifeFPSLabel->setVisible(!isSuperemitter);
-	randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
-	loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
-	animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
+    frameOverlifeCheckBox->setVisible(!isSuperemitter);
+    frameOverlifeFPSSpin->setVisible(!isSuperemitter);
+    frameOverlifeFPSLabel->setVisible(!isSuperemitter);
+    randomFrameOnStartCheckBox->setVisible(!isSuperemitter);
+    loopSpriteAnimationCheckBox->setVisible(!isSuperemitter);
+    animSpeedOverLifeTimeLine->setVisible(!isSuperemitter);
 
-	// The Pivot Point must be hidden for Superemitter mode.
-	pivotPointLabel->setVisible(!isSuperemitter);
-	pivotPointXSpinBox->setVisible(!isSuperemitter);
-	pivotPointXSpinBoxLabel->setVisible(!isSuperemitter);
-	pivotPointYSpinBox->setVisible(!isSuperemitter);
-	pivotPointYSpinBoxLabel->setVisible(!isSuperemitter);
-	pivotPointResetButton->setVisible(!isSuperemitter);
+    // The Pivot Point must be hidden for Superemitter mode.
+    pivotPointLabel->setVisible(!isSuperemitter);
+    pivotPointXSpinBox->setVisible(!isSuperemitter);
+    pivotPointXSpinBoxLabel->setVisible(!isSuperemitter);
+    pivotPointYSpinBox->setVisible(!isSuperemitter);
+    pivotPointYSpinBoxLabel->setVisible(!isSuperemitter);
+    pivotPointResetButton->setVisible(!isSuperemitter);
 
-	//particle orientation would be set up in inner emitter layers
-	particleOrientationLabel->setVisible(!isSuperemitter);
-	cameraFacingCheckBox->setVisible(!isSuperemitter);
-	xFacingCheckBox->setVisible(!isSuperemitter);
-	yFacingCheckBox->setVisible(!isSuperemitter);
-	zFacingCheckBox->setVisible(!isSuperemitter);
-	worldAlignCheckBox->setVisible(!isSuperemitter);
+    //particle orientation would be set up in inner emitter layers
+    particleOrientationLabel->setVisible(!isSuperemitter);
+    cameraFacingCheckBox->setVisible(!isSuperemitter);
+    xFacingCheckBox->setVisible(!isSuperemitter);
+    yFacingCheckBox->setVisible(!isSuperemitter);
+    zFacingCheckBox->setVisible(!isSuperemitter);
+    worldAlignCheckBox->setVisible(!isSuperemitter);
 
-	//blend and fog settings are set in inner emitter layers
-	blendOptionsLabel->setVisible(!isSuperemitter);
-	presetLabel->setVisible(!isSuperemitter);
+    //blend and fog settings are set in inner emitter layers
+    blendOptionsLabel->setVisible(!isSuperemitter);
+    presetLabel->setVisible(!isSuperemitter);
     presetComboBox->setVisible(!isSuperemitter);
     fogCheckBox->setVisible(!isSuperemitter);
     frameBlendingCheckBox->setVisible(!isSuperemitter);
 
-	// Some controls are however specific for this mode only - display and update them.
-	innerEmitterLabel->setVisible(isSuperemitter);
-	innerEmitterPathLabel->setVisible(isSuperemitter);
-	
-	if (isSuperemitter && this->layer->innerEmitter)
-	{
-		innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
-	}
+    // Some controls are however specific for this mode only - display and update them.
+    innerEmitterLabel->setVisible(isSuperemitter);
+    innerEmitterPathLabel->setVisible(isSuperemitter);
+
+    if (isSuperemitter && this->layer->innerEmitter)
+    {
+        innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
+    }
 }
 
 void EmitterLayerWidget::OnPivotPointReset()
 {
-	blockSignals = true;
-	this->pivotPointXSpinBox->setValue(0);
-	this->pivotPointYSpinBox->setValue(0);
-	blockSignals = false;
-	
-	OnValueChanged();
+    blockSignals = true;
+    this->pivotPointXSpinBox->setValue(0);
+    this->pivotPointYSpinBox->setValue(0);
+    blockSignals = false;
+
+    OnValueChanged();
 }
 
 void EmitterLayerWidget::OnLayerValueChanged()
 {
-	// Start/End time and Enabled flag can be changed from external side.
-	blockSignals = true;
-	if (startTimeSpin->value() != layer->startTime || endTimeSpin->value() != layer->endTime)
-	{
-		startTimeSpin->setValue(layer->startTime);
-		endTimeSpin->setValue(layer->endTime);
-	}
-	
-	if (deltaSpin->value() != layer->deltaTime || loopEndSpin->value() != layer->loopEndTime)
-	{
-		deltaSpin->setValue(layer->deltaTime);
-		loopEndSpin->setValue(layer->loopEndTime);
-	}
-	
-	// NOTE: inverse logic here.
-	if (enableCheckBox->isChecked() == layer->isDisabled)
-	{
-		enableCheckBox->setChecked(!layer->isDisabled);
-	}
-	
-	blockSignals = false;
+    // Start/End time and Enabled flag can be changed from external side.
+    blockSignals = true;
+    if (startTimeSpin->value() != layer->startTime || endTimeSpin->value() != layer->endTime)
+    {
+        startTimeSpin->setValue(layer->startTime);
+        endTimeSpin->setValue(layer->endTime);
+    }
+
+    if (deltaSpin->value() != layer->deltaTime || loopEndSpin->value() != layer->loopEndTime)
+    {
+        deltaSpin->setValue(layer->deltaTime);
+        loopEndSpin->setValue(layer->loopEndTime);
+    }
+
+    // NOTE: inverse logic here.
+    if (enableCheckBox->isChecked() == layer->isDisabled)
+    {
+        enableCheckBox->setChecked(!layer->isDisabled);
+    }
+
+    blockSignals = false;
 }

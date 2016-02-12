@@ -51,7 +51,6 @@
 
 using namespace DAVA;
 
-
 RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourceProperties, eCloneType cloneType)
     : node(_node)
     , classProperty(nullptr)
@@ -109,7 +108,6 @@ RootProperty::~RootProperty()
         section->Release();
     }
     internalControlProperties.clear();
-
 
     for (ComponentPropertiesSection *section : componentProperties)
     {

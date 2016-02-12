@@ -36,32 +36,32 @@
 #include "Render/2D/Sprite.h"
 #include "Collision/Collisions.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
-class CollisionObject2 : public BaseObject 
+class CollisionObject2 : public BaseObject
 {
 protected:
-	virtual ~CollisionObject2();
+    virtual ~CollisionObject2();
+
 public:
-	enum eType
-	{
-		TYPE_CIRCLE,
-		TYPE_POLYGON,
-	};
-	
-	CollisionObject2(eType type);
-	
-	/*
+    enum eType
+    {
+        TYPE_CIRCLE,
+        TYPE_POLYGON,
+    };
+
+    CollisionObject2(eType type);
+
+    /*
 		Collision object do not hold polygon inside his body
 		So you should give him polygon that will be alive till the end of live of collision object
 	 */
-	void SetType(eType type);
-	
-	/// NOTE! Polygon2 pointer must be valid as long as CollisionObject2 lives!
-	void SetPolygon(Polygon2 * p);
-		
-	void Update(const Sprite::DrawState & state);
+    void SetType(eType type);
+
+    /// NOTE! Polygon2 pointer must be valid as long as CollisionObject2 lives!
+    void SetPolygon(Polygon2* p);
+
+    void Update(const Sprite::DrawState& state);
     void DebugDraw();
 
     bool IsCollideWith(CollisionObject2* collObject);
@@ -89,8 +89,8 @@ public:
     bool collisionOnLastFrame;
 
     bool forceUpdate;
-	
-/*	int pointsCount;
+
+    /*	int pointsCount;
 	float *points;
 	
 	DAVA::AABBox bbox;
@@ -106,17 +106,14 @@ public:
 	float xCoord;
 	float yCoord;
 	float angle; */
-		
-	/*bool IsPointsInsidePoints(float* points1, int cnt1, float*points2, int cnt2);
+
+    /*bool IsPointsInsidePoints(float* points1, int cnt1, float*points2, int cnt2);
 	void CalcCollisionPoints();
 	bool IsCollideWith(CollisionObject2 * collObject);
 	void DrawCollision(); */
-    
+
     void UpdatePosition(Vector2 newPos);
 };
-
-
-	
 };
 
-#endif 
+#endif

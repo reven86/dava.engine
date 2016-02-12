@@ -33,22 +33,85 @@
 #include "bullet/btBulletCollisionCommon.h"
 #include "Scene3D/Entity.h"
 
+namespace DAVA
+{
+class Entity;
+}
+
 class CollisionBaseObject
 {
 public:
-	CollisionBaseObject(DAVA::Entity *ent, btCollisionWorld *word)
-		: entity(ent)
-		, btObject(NULL)
-		, btWord(word)
-	{ }
+    enum class ClassifyPointResult
+    {
+        InFront,
+        Behind
+    };
 
-	virtual ~CollisionBaseObject()
-	{ }
+    enum class ClassifyPlaneResult
+    {
+        InFront,
+        Intersects,
+        Behind
+    };
 
-	DAVA::Entity *entity;
-	DAVA::AABBox3 boundingBox;
-	btCollisionObject *btObject;
-	btCollisionWorld *btWord;
+    enum class ClassifyPlanesResult
+    {
+        ContainsOrIntersects,
+        Outside
+    };
+
+public:
+    CollisionBaseObject(DAVA::Entity* ent, btCollisionWorld* word)
+        : entity(ent)
+        , btWord(word)
+    {
+    }
+
+    virtual ~CollisionBaseObject()
+    {
+    }
+
+    virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
+    virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;
+
+    inline CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
+    inline DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
+
+    DAVA::Entity* entity;
+    DAVA::AABBox3 boundingBox;
+    btCollisionObject* btObject = nullptr;
+    btCollisionWorld* btWord;
 };
+
+CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const
+{
+    char cornersData[8 * sizeof(DAVA::Vector3)];
+    DAVA::Vector3* corners = reinterpret_cast<DAVA::Vector3*>(cornersData);
+    bbox.GetCorners(corners);
+
+    DAVA::float32 minDistance = std::numeric_limits<float>::max();
+    DAVA::float32 maxDistance = -minDistance;
+    for (DAVA::uint32 i = 0; i < 8; ++i)
+    {
+        float d = plane.DistanceToPoint(corners[i]);
+        minDistance = std::min(minDistance, d);
+        maxDistance = std::max(maxDistance, d);
+    }
+
+    if ((minDistance > 0.0f) && (maxDistance > 0.0f))
+        return ClassifyPlaneResult::InFront;
+
+    if ((minDistance < 0.0f) && (maxDistance < 0.0f))
+        return ClassifyPlaneResult::Behind;
+
+    return ClassifyPlaneResult::Intersects;
+}
+
+inline DAVA::Plane CollisionBaseObject::TransformPlaneToLocalSpace(const DAVA::Plane& plane) const
+{
+    DAVA::Matrix4 transform = entity->GetWorldTransform();
+    transform.Transpose();
+    return DAVA::Plane(DAVA::Vector4(plane.n.x, plane.n.y, plane.n.z, plane.d) * transform);
+}
 
 #endif // __SCENE_COLLISION_BASE_OBJECT_H__

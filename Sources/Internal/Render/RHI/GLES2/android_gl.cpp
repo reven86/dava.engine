@@ -1,4 +1,5 @@
 #include "Base/Platform.h"
+#include "FileSystem/Logger.h"
 
 #ifdef __DAVAENGINE_ANDROID__
 
@@ -16,6 +17,10 @@ static EGLContext _context = EGL_NO_CONTEXT;
 static EGLint _format = 0;
 static EGLConfig _config = 0;
 static ANativeWindow* _nativeWindow = nullptr;
+
+PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced_EXT = nullptr;
+PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced_EXT = nullptr;
+PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT = nullptr;
 
 static bool needRecreateSurface = false;
 
@@ -90,6 +95,10 @@ void android_gl_init(void* _window)
     _GLES2_Context = _context;
 
     eglMakeCurrent(_display, _surface, _surface, _context);
+
+    glDrawElementsInstanced_EXT = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
+    glDrawArraysInstanced_EXT = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
+    glVertexAttribDivisor_EXT = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
 }
 
 void android_gl_reset(void* _window)
@@ -126,6 +135,7 @@ bool android_gl_end_frame()
 
     if (!ret && eglGetError() == EGL_CONTEXT_LOST)
     {
+        DAVA::Logger::Error("Context Lost");
         eglDestroyContext(_display, _context);
         _GLES2_Context = _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
 

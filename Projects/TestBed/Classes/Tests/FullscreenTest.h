@@ -44,7 +44,7 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    
+
     bool SystemInput(UIEvent* currentInput) override;
 
 private:

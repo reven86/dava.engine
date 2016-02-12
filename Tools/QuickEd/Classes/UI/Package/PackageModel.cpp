@@ -345,7 +345,6 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
                     if (style)
                         mimeData->AddStyle(style);
                 }
-                
             }
         }
     }

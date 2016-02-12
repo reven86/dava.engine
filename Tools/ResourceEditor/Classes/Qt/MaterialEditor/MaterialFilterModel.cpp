@@ -41,23 +41,54 @@
 #include <QTimer>
 #include <QDebug>
 
+namespace MFMLocal
+{
+int CompareNames(MaterialItem* left, MaterialItem* right)
+{
+    DAVA::NMaterial* leftMaterial = left->GetMaterial();
+    DAVA::NMaterial* rightMaterial = right->GetMaterial();
+    const QString lhsText = QString(leftMaterial->GetMaterialName().c_str());
+    const QString rhsText = QString(rightMaterial->GetMaterialName().c_str());
+    return lhsText.compare(rhsText, Qt::CaseInsensitive);
+}
 
-MaterialFilteringModel::MaterialFilteringModel(MaterialModel *_materialModel, QObject *parent /* = NULL */)
+int CompareLods(MaterialItem* left, MaterialItem* right)
+{
+    return left->GetLodIndex() - right->GetLodIndex();
+}
+
+int CompareSwitches(MaterialItem* left, MaterialItem* right)
+{
+    return left->GetSwitchIndex() - right->GetSwitchIndex();
+}
+
+bool Less(int value, int refValue)
+{
+    return value < refValue;
+}
+
+bool Greater(int value, int refValue)
+{
+    return value > refValue;
+}
+}
+
+MaterialFilteringModel::MaterialFilteringModel(MaterialModel* _materialModel, QObject* parent /* = NULL */)
     : QSortFilterProxyModel(parent)
     , materialModel(_materialModel)
-    , filterType( SHOW_ALL )
+    , filterType(SHOW_ALL)
 {
-	setSourceModel(materialModel);
+    setSourceModel(materialModel);
 }
 
 void MaterialFilteringModel::Sync()
 {
-	materialModel->Sync();
+    materialModel->Sync();
 }
 
-void MaterialFilteringModel::SetScene(SceneEditor2 * scene)
+void MaterialFilteringModel::SetScene(SceneEditor2* scene)
 {
-	materialModel->SetScene(scene);
+    materialModel->SetScene(scene);
 }
 
 SceneEditor2* MaterialFilteringModel::GetScene()
@@ -65,33 +96,33 @@ SceneEditor2* MaterialFilteringModel::GetScene()
     return materialModel->GetScene();
 }
 
-void MaterialFilteringModel::SetSelection(const EntityGroup *group)
+void MaterialFilteringModel::SetSelection(const EntityGroup* group)
 {
-	materialModel->SetSelection(group);
+    materialModel->SetSelection(group);
 }
 
-DAVA::NMaterial * MaterialFilteringModel::GetMaterial(const QModelIndex & index) const
+DAVA::NMaterial* MaterialFilteringModel::GetMaterial(const QModelIndex& index) const
 {
-	return materialModel->GetMaterial(mapToSource(index));
+    return materialModel->GetMaterial(mapToSource(index));
 }
 
-QModelIndex MaterialFilteringModel::GetIndex(DAVA::NMaterial *material, const QModelIndex &parent /*= QModelIndex()*/) const
+QModelIndex MaterialFilteringModel::GetIndex(DAVA::NMaterial* material, const QModelIndex& parent /*= QModelIndex()*/) const
 {
-	return mapFromSource(materialModel->GetIndex(material, mapFromSource(parent)));
+    return mapFromSource(materialModel->GetIndex(material, mapFromSource(parent)));
 }
 
-bool MaterialFilteringModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool MaterialFilteringModel::dropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-	QModelIndex target = mapToSource(index(row, column, parent));
+    QModelIndex target = mapToSource(index(row, column, parent));
     return materialModel->dropCanBeAccepted(data, action, target.row(), target.column(), target.parent());
 }
 
 void MaterialFilteringModel::setFilterType(int type)
 {
-    if ( type == filterType )
-        return ;
+    if (type == filterType)
+        return;
 
-    filterType = static_cast< eFilterType >( type );
+    filterType = static_cast<eFilterType>(type);
     invalidate();
     //invalidateFilter();
 }
@@ -101,22 +132,19 @@ int MaterialFilteringModel::getFilterType() const
     return filterType;
 }
 
-bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
-	MaterialItem *item = (MaterialItem *)materialModel->itemFromIndex(materialModel->index(sourceRow, 0, sourceParent));
-    if ( !item )
+    MaterialItem* item = (MaterialItem*)materialModel->itemFromIndex(materialModel->index(sourceRow, 0, sourceParent));
+    if (item == nullptr)
+    {
         return false;
-
-    bool isSelected = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
-    bool isMaterial = false;
+    }
 
     DAVA::NMaterial* material = item->GetMaterial();
-    if (nullptr == material->GetParent() ||
-        materialModel->GetGlobalMaterial() == material->GetParent())
-    {
-        isMaterial = true;
-    }
-    switch ( filterType )
+    bool isSelected = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
+    bool isTopLevelMaterial = (nullptr == material->GetParent()) || (materialModel->GetGlobalMaterial() == material->GetParent());
+
+    switch (filterType)
     {
     case SHOW_ALL:
         return true;
@@ -125,100 +153,116 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
         return false;
 
     case SHOW_INSTANCES_AND_MATERIALS:
-        return isMaterial || isSelected;
+        return isTopLevelMaterial || isSelected;
 
     case SHOW_ONLY_INSTANCES:
-        {
-            if ( !isMaterial )
-                return isSelected;
-            const int n = item->rowCount();
-            for ( int i = 0; i < n; i++ )
-            {
-                MaterialItem *childItem = (MaterialItem*)item->child( i, 0 );
-                if ( !childItem )
-                    continue;
-                const bool isSelected = childItem->GetFlag( MaterialItem::IS_PART_OF_SELECTION );
-                if ( isSelected )
-                    return true;
-            }
+    {
+        if (isSelected)
+            return true;
 
-            return false;
+        if (isTopLevelMaterial)
+        {
+            const int n = item->rowCount();
+            for (int i = 0; i < n; i++)
+            {
+                MaterialItem* childItem = static_cast<MaterialItem*>(item->child(i));
+                DVASSERT(childItem != nullptr);
+                if (childItem->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+                {
+                    return true;
+                }
+            }
         }
 
+        return false;
+    }
+
     default:
+        DVASSERT_MSG(0, "Invalid material editor filter used");
         break;
     }
 
-	return false;
+    return false;
 }
 
-bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+bool MaterialFilteringModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
     // global material should always be first
-    NMaterial *mLeft = materialModel->GetMaterial(left);
-    NMaterial *mRight = materialModel->GetMaterial(right);
-    bool swap = QSortFilterProxyModel::lessThan(left, right);
+    MaterialItem* lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
+    MaterialItem* rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
+    NMaterial* mLeft = lhsItem->GetMaterial();
+    NMaterial* mRight = rhsItem->GetMaterial();
 
-    if ( (mLeft == NULL) || (mRight == NULL) )
-        return swap;
+    if ((mLeft == nullptr) || (mRight == nullptr))
+        return QSortFilterProxyModel::lessThan(left, right);
 
+    bool isLess = false;
     if (mLeft == materialModel->GetGlobalMaterial())
     {
-        swap = (sortOrder() == Qt::AscendingOrder);
+        isLess = (sortOrder() == Qt::AscendingOrder);
     }
     else if (mRight == materialModel->GetGlobalMaterial())
     {
-        swap = (sortOrder() == Qt::DescendingOrder);
+        isLess = (sortOrder() == Qt::DescendingOrder);
     }
     else
     {
-        MaterialItem *lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
-        MaterialItem *rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
+        typedef int (*CompareFnSignature)(MaterialItem*, MaterialItem*);
+        DAVA::Array<CompareFnSignature, 3> comparationChain;
 
-        int compResult = 0;
-
-        switch ( sortColumn() )
+        switch (sortColumn())
         {
         case MaterialModel::TITLE_COLUMN:
-            compResult = compareNames(mLeft, mRight);
+            comparationChain[0] = &MFMLocal::CompareNames;
+            comparationChain[1] = &MFMLocal::CompareLods;
+            comparationChain[2] = &MFMLocal::CompareSwitches;
             break;
         case MaterialModel::LOD_COLUMN:
-            compResult = lhsItem->GetLodIndex() - rhsItem->GetLodIndex();
+            comparationChain[0] = &MFMLocal::CompareLods;
+            comparationChain[1] = &MFMLocal::CompareSwitches;
+            comparationChain[2] = &MFMLocal::CompareNames;
             break;
         case MaterialModel::SWITCH_COLUMN:
-            compResult = lhsItem->GetSwitchIndex() - rhsItem->GetSwitchIndex();
+            comparationChain[0] = &MFMLocal::CompareSwitches;
+            comparationChain[1] = &MFMLocal::CompareLods;
+            comparationChain[2] = &MFMLocal::CompareNames;
             break;
         default:
             break;
         }
 
-        // If sorting column data is equal then sort by text
-        if ( compResult == 0 && sortColumn() != MaterialModel::TITLE_COLUMN )
-        {
-            const int textComp = compareNames(mLeft, mRight);
-            compResult = textComp;
-        }
+        typedef bool (*LessFunctor)(int, int);
+        LessFunctor currentLessFunctor = &MFMLocal::Less;
+        LessFunctor alternativeLessFunctor = currentLessFunctor;
 
-        swap = (compResult < 0);
+        /// We have unusual requirements.
+        /// we need to sort by "sortColumn()" in "sortOrder()"
+        /// but if values in "sortColumn()" is equal, we need sort by other columns in AscendingOrder
+        /// that why we invert comparation functor for DescendingOrder
+        if (sortOrder() == Qt::DescendingOrder)
+            alternativeLessFunctor = &MFMLocal::Greater;
+
+        for (CompareFnSignature& compareFn : comparationChain)
+        {
+            int result = compareFn(lhsItem, rhsItem);
+            if (result != 0)
+            {
+                isLess = currentLessFunctor(result, 0);
+                break;
+            }
+
+            currentLessFunctor = alternativeLessFunctor;
+        }
     }
 
-    return swap;
+    return isLess;
 }
 
 bool MaterialFilteringModel::dropMimeData(QMimeData const* data, Qt::DropAction action, int row, int column, QModelIndex const& parent)
 {
-    const bool ret = QSortFilterProxyModel::dropMimeData( data, action, row, column, parent );
-    if ( ret )
+    const bool ret = QSortFilterProxyModel::dropMimeData(data, action, row, column, parent);
+    if (ret)
         invalidate();
 
     return ret;
-}
-
-int MaterialFilteringModel::compareNames(DAVA::NMaterial* left, DAVA::NMaterial* right) const
-{
-    const QString lhsText = QString(left->GetMaterialName().c_str());
-    const QString rhsText = QString(right->GetMaterialName().c_str());
-    const int textComp = lhsText.compare( rhsText, Qt::CaseInsensitive );
-
-    return textComp;
 }

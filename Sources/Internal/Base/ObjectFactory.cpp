@@ -29,38 +29,37 @@
 
 #include "Base/ObjectFactory.h"
 
-namespace DAVA 
-{	
+namespace DAVA
+{
 ObjectFactory::ObjectFactory()
     : unregisteredClassName("<Unknown class>")
 {
-    
 }
 
-ObjectRegistrator::ObjectRegistrator(const String & name, CreateObjectFunc func, const std::type_info & info, uint32 size)
+ObjectRegistrator::ObjectRegistrator(const String& name, CreateObjectFunc func, const std::type_info& info, uint32 size)
 {
-    ObjectFactory::Instance()->RegisterObjectCreator(name, func, info, size);	
-}
-    
-ObjectRegistrator::ObjectRegistrator(const String & name, CreateObjectFunc func, const std::type_info & info, uint32 size, const String & alias)
-{
-    ObjectFactory::Instance()->RegisterObjectCreator(name, func, info, size, alias);	
+    ObjectFactory::Instance()->RegisterObjectCreator(name, func, info, size);
 }
 
-void ObjectFactory::RegisterObjectCreator(const String & name, CreateObjectFunc func, const std::type_info & info, uint32 size)
+ObjectRegistrator::ObjectRegistrator(const String& name, CreateObjectFunc func, const std::type_info& info, uint32 size, const String& alias)
 {
-	creatorMap[name] = func;
+    ObjectFactory::Instance()->RegisterObjectCreator(name, func, info, size, alias);
+}
+
+void ObjectFactory::RegisterObjectCreator(const String& name, CreateObjectFunc func, const std::type_info& info, uint32 size)
+{
+    creatorMap[name] = func;
     nameMap[info.name()] = name;
     sizeMap[name] = size;
 }
 
-void ObjectFactory::RegisterObjectCreator(const String & name, CreateObjectFunc func, const std::type_info & info, uint32 size, const String & alias)
+void ObjectFactory::RegisterObjectCreator(const String& name, CreateObjectFunc func, const std::type_info& info, uint32 size, const String& alias)
 {
     creatorMap[alias] = func;
     nameMap[info.name()] = alias;
     sizeMap[alias] = size;
 }
-    
+
 void ObjectFactory::Dump()
 {
     Map<String, CreateObjectFunc>::iterator it = creatorMap.begin();

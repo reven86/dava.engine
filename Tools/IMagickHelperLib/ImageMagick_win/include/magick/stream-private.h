@@ -23,25 +23,28 @@ extern "C" {
 #endif
 
 typedef struct _StreamInfo
-  StreamInfo;
+StreamInfo;
 
 extern MagickExport const void
-  *GetStreamInfoClientData(StreamInfo *);
+*
+GetStreamInfoClientData(StreamInfo*);
 
 extern MagickExport Image
-  *StreamImage(const ImageInfo *,StreamInfo *,ExceptionInfo *);
+*
+StreamImage(const ImageInfo*, StreamInfo*, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  OpenStream(const ImageInfo *,StreamInfo *,const char *,ExceptionInfo *);
+OpenStream(const ImageInfo*, StreamInfo*, const char*, ExceptionInfo*);
 
 extern MagickExport StreamInfo
-  *AcquireStreamInfo(const ImageInfo *),
-  *DestroyStreamInfo(StreamInfo *);
+*
+AcquireStreamInfo(const ImageInfo *),
+*DestroyStreamInfo(StreamInfo *);
 
 extern MagickExport void
-  SetStreamInfoClientData(StreamInfo *,const void *),
-  SetStreamInfoMap(StreamInfo *,const char *),
-  SetStreamInfoStorageType(StreamInfo *,const StorageType);
+SetStreamInfoClientData(StreamInfo *, const void *),
+SetStreamInfoMap(StreamInfo *, const char *),
+SetStreamInfoStorageType(StreamInfo *, const StorageType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -33,19 +33,19 @@
 #include "Commands2/Command2.h"
 #include "DAVAEngine.h"
 
-class CopyLastLODToLod0Command: public Command2
+class CopyLastLODToLod0Command : public Command2
 {
-    public:
+public:
     //TODO: remove after lod editing implementation
-    DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent *lod));
+    DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent* lod));
     ~CopyLastLODToLod0Command();
 
     virtual void Undo();
     virtual void Redo();
     virtual DAVA::Entity* GetEntity() const;
 
-    DAVA::LodComponent *lodComponent;
-    DAVA::Vector<DAVA::RenderBatch *> newBatches;
+    DAVA::LodComponent* lodComponent;
+    DAVA::Vector<DAVA::RenderBatch*> newBatches;
     DAVA::Vector<DAVA::int32> switchIndices;
 };
 

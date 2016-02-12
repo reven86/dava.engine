@@ -41,6 +41,7 @@
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
 #include "Debug/Profiler.h"
+#include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
@@ -700,6 +701,16 @@ bool UIControlSystem::IsRtl() const
 void UIControlSystem::SetRtl(bool rtl)
 {
     layoutSystem->SetRtl(rtl);
+}
+
+bool UIControlSystem::IsBiDiSupportEnabled() const
+{
+    return TextBlock::IsBiDiSupportEnabled();
+}
+
+void UIControlSystem::SetBiDiSupportEnabled(bool support)
+{
+    TextBlock::SetBiDiSupportEnabled(support);
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const

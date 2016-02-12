@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>929</height>
+    <width>1205</width>
+    <height>969</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -212,7 +212,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1205</width>
      <height>21</height>
     </rect>
    </property>
@@ -351,6 +351,7 @@
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
     <addaction name="actionShowStaticOcclusion"/>
+    <addaction name="actionEnableVisibilitySystem"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -410,6 +411,16 @@
      <addaction name="actionSpeedTree"/>
      <addaction name="actionUndefinedCollision"/>
     </widget>
+    <widget class="QMenu" name="menuVisibility_Check_System">
+     <property name="title">
+      <string>Visibility Check System</string>
+     </property>
+     <addaction name="actionEnableVisibilitySystem"/>
+     <addaction name="actionRefreshVisibilitySystem"/>
+     <addaction name="separator"/>
+     <addaction name="actionFixCurrentFrame"/>
+     <addaction name="actionReleaseCurrentFrame"/>
+    </widget>
     <addaction name="actionEnableCameraLight"/>
     <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
@@ -420,7 +431,6 @@
     <addaction name="actionShowNotPassableLandscape"/>
     <addaction name="actionRulerTool"/>
     <addaction name="actionCustomColorsEditor"/>
-    <addaction name="actionVisibilityCheckTool"/>
     <addaction name="actionWayEditor"/>
     <addaction name="menuLandscape_2"/>
     <addaction name="separator"/>
@@ -428,6 +438,7 @@
     <addaction name="actionBuildStaticOcclusion"/>
     <addaction name="actionInvalidateStaticOcclusion"/>
     <addaction name="actionBeastAndSave"/>
+    <addaction name="menuVisibility_Check_System"/>
     <addaction name="separator"/>
     <addaction name="menuObjectTypes"/>
     <addaction name="actionHangingObjects"/>
@@ -733,7 +744,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>90</height>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -758,12 +769,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionForceFirstLODonLandscape"/>
    <addaction name="actionHeightMapEditor"/>
    <addaction name="actionTileMapEditor"/>
    <addaction name="actionShowNotPassableLandscape"/>
    <addaction name="actionRulerTool"/>
    <addaction name="actionCustomColorsEditor"/>
-   <addaction name="actionVisibilityCheckTool"/>
    <addaction name="actionWayEditor"/>
   </widget>
   <widget class="QToolBar" name="sceneToolBar">
@@ -863,7 +874,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>90</height>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -2172,6 +2183,69 @@
   <action name="actionDumpSprites">
    <property name="text">
     <string>Sprites</string>
+   </property>
+  </action>
+  <action name="actionAddVisibilityComponent">
+   <property name="text">
+    <string>Add Visbility Check Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Visibility Component</string>
+   </property>
+  </action>
+  <action name="actionForceFirstLODonLandscape">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIconsTextureDialog/zoom_100.png</normaloff>:/QtIconsTextureDialog/zoom_100.png</iconset>
+   </property>
+   <property name="text">
+    <string>Force first LOD on Landscape</string>
+   </property>
+  </action>
+  <action name="actionEnableVisibilitySystem">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/eye.png</normaloff>:/QtIcons/eye.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Visibility System</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+V</string>
+   </property>
+  </action>
+  <action name="actionFixCurrentFrame">
+   <property name="text">
+    <string>Fix Current Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+V</string>
+   </property>
+  </action>
+  <action name="actionReleaseCurrentFrame">
+   <property name="text">
+    <string>Release Fixed Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+V</string>
+   </property>
+  </action>
+  <action name="actionRefreshVisibilitySystem">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Visibility System</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+R</string>
    </property>
   </action>
  </widget>

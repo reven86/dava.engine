@@ -31,71 +31,70 @@
 #include "ImageTools/ImageTools.h"
 #include "Settings/SettingsManager.h"
 
-
 using namespace DAVA;
 
-void TextureDescriptorUtils::ResaveDescriptorsForFolder(const FilePath &folderPathname)
+void TextureDescriptorUtils::ResaveDescriptorsForFolder(const FilePath& folderPathname)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
-		{
-            ResaveDescriptorsForFolder(pathname);
-		}
-        else if(IsDescriptorPathname(pathname))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if (IsCorrectDirectory(fileList, fi))
         {
-			ResaveDescriptor(pathname);
+            ResaveDescriptorsForFolder(pathname);
         }
-	}
+        else if (IsDescriptorPathname(pathname))
+        {
+            ResaveDescriptor(pathname);
+        }
+    }
 }
 
-void TextureDescriptorUtils::ResaveDescriptor(const FilePath & descriptorPathname) 
+void TextureDescriptorUtils::ResaveDescriptor(const FilePath& descriptorPathname)
 {
     std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
     descriptor->Save();
 }
 
-
-void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath &folderPathname)
+void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath& folderPathname)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
-		{
-			CopyCompressionParamsForFolder(pathname);
-		}
-		else if(IsDescriptorPathname(pathname))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if (IsCorrectDirectory(fileList, fi))
+        {
+            CopyCompressionParamsForFolder(pathname);
+        }
+        else if (IsDescriptorPathname(pathname))
         {
             CopyCompressionParams(pathname);
         }
-	}
+    }
 }
 
-void TextureDescriptorUtils::CopyCompressionParams(const FilePath &descriptorPathname)
+void TextureDescriptorUtils::CopyCompressionParams(const FilePath& descriptorPathname)
 {
     std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
-    if(!descriptor) return;
+    if (!descriptor)
+        return;
 
-    const TextureDescriptor::Compression * srcCompression = &descriptor->compression[GPU_POWERVR_IOS];
-    if(srcCompression->format == FORMAT_INVALID)
-    {   //source format not set
+    const TextureDescriptor::Compression* srcCompression = &descriptor->compression[GPU_POWERVR_IOS];
+    if (srcCompression->format == FORMAT_INVALID)
+    { //source format not set
         return;
     }
-    
-    for(int32 gpu = GPU_POWERVR_ANDROID; gpu < GPU_DEVICE_COUNT; ++gpu)
+
+    for (int32 gpu = GPU_POWERVR_ANDROID; gpu < GPU_DEVICE_COUNT; ++gpu)
     {
-        if(descriptor->compression[gpu].format != FORMAT_INVALID)
+        if (descriptor->compression[gpu].format != FORMAT_INVALID)
             continue;
-        
+
         descriptor->compression[gpu].compressToWidth = srcCompression->compressToWidth;
         descriptor->compression[gpu].compressToHeight = srcCompression->compressToHeight;
         descriptor->compression[gpu].sourceFileCrc = srcCompression->sourceFileCrc;
-        
-        if((srcCompression->format == FORMAT_PVR2 || srcCompression->format == FORMAT_PVR4) && (gpu != GPU_POWERVR_ANDROID))
+
+        if ((srcCompression->format == FORMAT_PVR2 || srcCompression->format == FORMAT_PVR4) && (gpu != GPU_POWERVR_ANDROID))
         {
             PixelFormat newFormat = FORMAT_ETC1;
             switch (gpu)
@@ -118,30 +117,28 @@ void TextureDescriptorUtils::CopyCompressionParams(const FilePath &descriptorPat
             descriptor->compression[gpu].format = srcCompression->format;
         }
     }
-    
+
     descriptor->Save();
 }
 
-
-void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPathname)
+void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath& folderPathname)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
-		{
-			CreateDescriptorsForFolder(pathname);
-		}
-        else if(DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if (IsCorrectDirectory(fileList, fi))
+        {
+            CreateDescriptorsForFolder(pathname);
+        }
+        else if (DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
         {
             CreateDescriptorIfNeed(pathname);
         }
-	}
+    }
 }
 
-
-bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPathname)
+bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath& originalPathname)
 {
     const FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(originalPathname);
     const String extension = originalPathname.GetExtension();
@@ -156,7 +153,7 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
         }
 
         descriptor->Save(descriptorPathname);
-		return true;
+        return true;
     }
     else
     {
@@ -172,72 +169,69 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
     return false;
 }
 
-
-void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps)
+void TextureDescriptorUtils::SetCompressionParamsForFolder(const FilePath& folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps)
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
 
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
-		if(IsCorrectDirectory(fileList, fi))
-		{
-			SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
-		}
-		else if(IsDescriptorPathname(pathname))
-		{
-			SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
-		}
-	}
+        const FilePath& pathname = fileList->GetPathname(fi);
+        if (IsCorrectDirectory(fileList, fi))
+        {
+            SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
+        }
+        else if (IsDescriptorPathname(pathname))
+        {
+            SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
+        }
+    }
 }
 
-
-void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps)
+void TextureDescriptorUtils::SetCompressionParams(const FilePath& descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression>& compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps)
 {
-	TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPathname);
-	if(!descriptor) return;
+    TextureDescriptor* descriptor = TextureDescriptor::CreateFromFile(descriptorPathname);
+    if (!descriptor)
+        return;
 
     descriptor->dataSettings.SetGenerateMipmaps(generateMipMaps);
 
     DVASSERT(descriptor->compression);
 
     auto endIt = compressionParams.end();
-    for(auto it = compressionParams.begin(); it != endIt; ++it)
-	{
-		eGPUFamily gpu = it->first;
+    for (auto it = compressionParams.begin(); it != endIt; ++it)
+    {
+        eGPUFamily gpu = it->first;
 
-		if(force || (descriptor->compression[gpu].format == FORMAT_INVALID))
-		{
-			descriptor->compression[gpu] = it->second;
+        if (force || (descriptor->compression[gpu].format == FORMAT_INVALID))
+        {
+            descriptor->compression[gpu] = it->second;
 
-			if(convertionEnabled)
-			{
-				ImageTools::ConvertImage(descriptor, gpu, (PixelFormat)descriptor->compression[gpu].format, quality);
-			}
-		}
-	}
+            if (convertionEnabled)
+            {
+                ImageTools::ConvertImage(descriptor, gpu, (PixelFormat)descriptor->compression[gpu].format, quality);
+            }
+        }
+    }
 
-	descriptor->Save();
-	delete descriptor;
+    descriptor->Save();
+    delete descriptor;
 }
 
-bool TextureDescriptorUtils::IsCorrectDirectory( FileList *fileList, const int32 fileIndex )
+bool TextureDescriptorUtils::IsCorrectDirectory(FileList* fileList, const int32 fileIndex)
 {
-	if (fileList->IsDirectory(fileIndex))
-	{
-		String name = fileList->GetFilename(fileIndex);
-		if(0 != CompareCaseInsensitive(String(".svn"), name) && !fileList->IsNavigationDirectory(fileIndex))
-		{
-			return true;
-		}
-	}
+    if (fileList->IsDirectory(fileIndex))
+    {
+        String name = fileList->GetFilename(fileIndex);
+        if (0 != CompareCaseInsensitive(String(".svn"), name) && !fileList->IsNavigationDirectory(fileIndex))
+        {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
-bool TextureDescriptorUtils::IsDescriptorPathname( const FilePath &pathname )
+bool TextureDescriptorUtils::IsDescriptorPathname(const FilePath& pathname)
 {
-	return pathname.IsEqualToExtension(TextureDescriptor::GetDescriptorExtension());
+    return pathname.IsEqualToExtension(TextureDescriptor::GetDescriptorExtension());
 }
-
-

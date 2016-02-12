@@ -161,6 +161,14 @@ enum class Key : uint32
     RCTRL,
     RALT,
 
+    F13, // on mac - printscreen
+    F14, // on mac - scrlock
+    F15, // on mac - pause/break
+    F16,
+    F17,
+    F18,
+    F19,
+
     TOTAL_KEYS_COUNT
 };
 

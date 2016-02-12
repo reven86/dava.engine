@@ -8,21 +8,21 @@
 #include "LogModel.h"
 #include "LogFilterModel.h"
 #include "LogDelegate.h"
-
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 #include "ui_LogWidget.h"
 
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LogWidget)
 {
     ui->setupUi(this);
-    ui->toolButton_clearFilter->setIcon(QIcon(":/QtTools/Icons/reset.png"));
+    ui->toolButton_clearFilter->setIcon(SharedIcon(":/QtTools/Icons/reset.png"));
     ui->toolButton_clearFilter->setToolTip(tr("Clear filter string"));
 
-    ui->toolButton_clearConsole->setIcon(QIcon(":/QtTools/Icons/clear.png"));
+    ui->toolButton_clearConsole->setIcon(SharedIcon(":/QtTools/Icons/clear.png"));
     ui->toolButton_clearConsole->setToolTip(tr("Clear console window"));
 
     logModel = new LogModel(this);

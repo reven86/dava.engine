@@ -37,30 +37,28 @@
 
 namespace DAVA
 {
-
 class Rect;
 
 class JniExtension
 {
 public:
-	JniExtension();
-	virtual ~JniExtension();
+    JniExtension();
+    virtual ~JniExtension();
 
-	static void SetJavaClass(JNIEnv* env, const char* className, jclass* gJavaClass, const char** gJavaClassName);
-
-protected:
-	virtual jclass GetJavaClass() const = 0;
-	virtual const char* GetJavaClassName() const = 0;
-	jmethodID GetMethodID(const char *methodName, const char *paramCode) const;
-	JNIEnv* GetEnvironment() const;
-	Rect V2P(const Rect& rect) const;
+    static void SetJavaClass(JNIEnv* env, const char* className, jclass* gJavaClass, const char** gJavaClassName);
 
 protected:
-	JavaVM* vm;
+    virtual jclass GetJavaClass() const = 0;
+    virtual const char* GetJavaClassName() const = 0;
+    jmethodID GetMethodID(const char* methodName, const char* paramCode) const;
+    JNIEnv* GetEnvironment() const;
+    Rect V2P(const Rect& rect) const;
+
+protected:
+    JavaVM* vm;
 };
-
 }
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-#endif// __JNI_EXTENSIONS_H__
+#endif // __JNI_EXTENSIONS_H__

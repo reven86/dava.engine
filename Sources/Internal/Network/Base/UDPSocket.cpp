@@ -35,13 +35,12 @@ namespace DAVA
 {
 namespace Net
 {
-
-UDPSocket::UDPSocket(IOLoop* ioLoop) : UDPSocketTemplate<UDPSocket>(ioLoop)
-                                     , readBuffer()
-                                     , closeHandler()
-                                     , receiveHandler()
+UDPSocket::UDPSocket(IOLoop* ioLoop)
+    : UDPSocketTemplate<UDPSocket>(ioLoop)
+    , readBuffer()
+    , closeHandler()
+    , receiveHandler()
 {
-
 }
 
 int32 UDPSocket::StartReceive(Buffer buffer, ReceiveHandlerType handler)
@@ -63,7 +62,8 @@ void UDPSocket::Close(CloseHandlerType handler)
 {
     closeHandler = handler;
     IsOpen() ? DoClose()
-             : HandleClose();   // Execute user handle in any case
+               :
+               HandleClose(); // Execute user handle in any case
 }
 
 void UDPSocket::ReceiveHere(Buffer buffer)
@@ -95,5 +95,5 @@ void UDPSocket::HandleSend(int32 error, const Buffer* buffers, size_t bufferCoun
     sendHandler(this, error, buffers, bufferCount);
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

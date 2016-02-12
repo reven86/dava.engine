@@ -177,7 +177,6 @@ private:
     Rect unrotatedRect;
 };
 
-
     /**
      \ingroup controlsystem
      \brief Base control system unit.
@@ -230,6 +229,7 @@ class UIControl : public AnimatedObject
 {
     friend class UIControlSystem;
     friend class UIScreenTransition;
+
 public:
     /**
      \enum Control state bits.
@@ -274,9 +274,7 @@ public:
 
     friend class ControlSystem;
 
-
 public:
-
     /**
      \brief Creates control with requested size and position.
      \param[in] rect Size and coordinates of control you want.
@@ -394,7 +392,7 @@ public:
         geometric data received with GetGeometricData().
      \returns control rect.
      */
-    Rect GetAbsoluteRect();
+    Rect GetAbsoluteRect() const;
 
     /**
      \brief Sets the untransformed control rect.
@@ -422,7 +420,7 @@ public:
         geometric data received with GetGeometricData().
      \returns control absolute position.
      */
-    Vector2 GetAbsolutePosition();
+    Vector2 GetAbsolutePosition() const;
 
     /**
      \brief Sets the untransformed control position.
@@ -961,7 +959,6 @@ protected:
     void RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData);
 
 public:
-
     /**
      \brief enabling or disabling dbug draw for the control.
      \param[in] _debugDrawEnabled New debug draw value.
@@ -979,7 +976,6 @@ public:
     void SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic = false);
 
 public:
-
     /**
      \brief Called before control will be added to view hierarchy.
         Can be overrided for control additioanl functionality implementation.
@@ -1110,7 +1106,6 @@ public:
      */
     virtual void DidRemoveHovered();
 
-
     /**
      \brief Calls on every input event coming to control.
         Should be overriden to implement custom input reaction.
@@ -1156,7 +1151,6 @@ protected:
     virtual void WillBecomeInvisible();
 
 public:
-
         //TODO: Борода напиши дескрипшн.
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     /**
@@ -1168,7 +1162,6 @@ public:
      \brief Called when this control and his children are loaded.
      */
     virtual void LoadFromYamlNodeCompleted() {};
-
 
     /**
      \brief Returns control in hierarchy status.
@@ -1300,15 +1293,18 @@ public:
     int32 GetComponentIndex(const UIComponent *component) const;
     UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
-    template<class T> inline T* GetComponent(uint32 index = 0) const
+    template <class T>
+    inline T* GetComponent(uint32 index = 0) const
     {
         return DynamicTypeCheck<T*>(GetComponent(T::C_TYPE, index));
     }
-    template<class T> inline T* GetOrCreateComponent(uint32 index = 0)
+    template <class T>
+    inline T* GetOrCreateComponent(uint32 index = 0)
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
     }
-    template<class T> inline uint32 GetComponentCount() const
+    template <class T>
+    inline uint32 GetComponentCount() const
     {
         return GetComponentCount(T::C_TYPE);
     }
@@ -1318,6 +1314,7 @@ public:
     uint64 GetAvailableComponentFlags() const;
 
     const Vector<UIComponent *>& GetComponents();
+
 private:
     Vector<UIComponent *> components;
     UIControlFamily * family;
@@ -1358,6 +1355,7 @@ public:
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
+
 private:
     UIStyleSheetClassSet classes;
     UIStyleSheetPropertySet localProperties;

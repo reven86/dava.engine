@@ -36,8 +36,8 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 
-namespace DAVA {
-
+namespace DAVA
+{
 class CoreMacOSPlatformQt : public CoreMacOSPlatformBase
 {
 public:

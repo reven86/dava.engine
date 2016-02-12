@@ -35,22 +35,22 @@
 
 using namespace DAVA;
 
-class RulerToolSystem: public LandscapeEditorSystem
+class RulerToolSystem : public LandscapeEditorSystem
 {
-	static const DAVA::int32 APPROXIMATION_COUNT = 10;
+    static const DAVA::int32 APPROXIMATION_COUNT = 10;
 
 public:
-	RulerToolSystem(Scene* scene);
-	virtual ~RulerToolSystem();
+    RulerToolSystem(Scene* scene);
+    virtual ~RulerToolSystem();
 
-	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
-	bool DisableLandscapeEdititing();
+    LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
+    bool DisableLandscapeEdititing();
 
-	virtual void Process(DAVA::float32 timeElapsed);
-	virtual void Input(DAVA::UIEvent *event);
+    virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent* event);
 
-	float32 GetLength();
-	float32 GetPreviewLength();
+    float32 GetLength();
+    float32 GetPreviewLength();
 
 protected:
     Vector2 MirrorPoint(const Vector2& point) const;
@@ -71,9 +71,9 @@ protected:
     float32 GetLength(const Vector2& startPoint, const Vector2& endPoint);
     void DrawPoints();
     void DisablePreview();
-	void SendUpdatedLength();
+    void SendUpdatedLength();
 
-	void Clear();
+    void Clear();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__RULERTOOLSYSTEM__) */

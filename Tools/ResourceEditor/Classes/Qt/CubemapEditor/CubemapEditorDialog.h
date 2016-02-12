@@ -38,7 +38,8 @@
 
 class ClickableQLabel;
 
-namespace Ui {
+namespace Ui
+{
 class CubemapEditorDialog;
 }
 
@@ -47,18 +48,18 @@ class CubemapEditorDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CubemapEditorDialog(QWidget *parent = 0);
+    explicit CubemapEditorDialog(QWidget* parent = 0);
     ~CubemapEditorDialog();
 
     void InitForEditing(DAVA::FilePath& textureDescriptorPath, DAVA::FilePath& rootPath);
     void InitForCreating(DAVA::FilePath& textureDescriptorPath, DAVA::FilePath& rootPath);
 
 public slots:
-    
+
     virtual void done(int);
-    
+
 protected:
-    typedef enum{
+    typedef enum {
         eEditorModeNone,
         eEditorModeEditing,
         eEditorModeCreating
@@ -77,9 +78,9 @@ protected:
 protected:
     void ConnectSignals();
     void LoadImageFromUserFile(float rotation, int face);
-    bool VerifyFirstImage(DAVA::ImageInfo imgInfo, QString &errorString);
-    bool VerifyNextImage(DAVA::ImageInfo imgInfo, QString &errorString);
-    bool IsFormatValid(const DAVA::ImageInfo &info);
+    bool VerifyFirstImage(DAVA::ImageInfo imgInfo, QString& errorString);
+    bool VerifyNextImage(DAVA::ImageInfo imgInfo, QString& errorString);
+    bool IsFormatValid(const DAVA::ImageInfo& info);
     void UpdateFaceInfo();
     void UpdateButtonState();
     bool AnyFaceLoaded();
@@ -92,7 +93,7 @@ protected:
     ClickableQLabel* GetLabelForFace(int face);
     bool IsCubemapEdited();
 
-    void mouseMoveEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent* ev);
 
 protected slots:
     void OnPXClicked();
@@ -107,7 +108,7 @@ protected slots:
     void OnSave();
 
 private:
-    Ui::CubemapEditorDialog *ui;
+    Ui::CubemapEditorDialog* ui;
 };
 
 #endif // _QT_CUBEMAPEDITORDIALOG_H_

@@ -31,7 +31,7 @@
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 
-namespace DAVA 
+namespace DAVA
 {
 rhi::TextureFormat PixelFormatDescriptor::TEXTURE_FORMAT_INVALID = rhi::TextureFormat(-1);
 
@@ -82,6 +82,18 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     ,
     { FORMAT_BGR888, { FORMAT_BGR888, FastName("BGR888"), 24, TEXTURE_FORMAT_INVALID, false } }
 #endif
+
+#if (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+    ,
+    { FORMAT_R16F, { FORMAT_R16F, FastName("R16F"), 16, rhi::TextureFormat::TEXTURE_FORMAT_R16F, false } },
+    { FORMAT_RG16F, { FORMAT_RG16F, FastName("RG16F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_RG16F, false } },
+    { FORMAT_RGBA16F, { FORMAT_RGBA16F, FastName("RGBA16F"), 64, rhi::TextureFormat::TEXTURE_FORMAT_RGBA16F, false } },
+
+    { FORMAT_R32F, { FORMAT_R32F, FastName("R32F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_R32F, false } },
+    { FORMAT_RG32F, { FORMAT_RG32F, FastName("RG32F"), 64, rhi::TextureFormat::TEXTURE_FORMAT_RG32F, false } },
+    { FORMAT_RGBA32F, { FORMAT_RGBA32F, FastName("RGBA32F"), 128, rhi::TextureFormat::TEXTURE_FORMAT_RGBA32F, false } },
+#endif
+
 };
 
 const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(const PixelFormat formatID)
@@ -111,12 +123,12 @@ int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat formatID
 int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat formatID)
 {
     int32 bits = GetPixelFormatSizeInBits(formatID);
-    if(bits < 8)
-    {   // To detect wrong situations
+    if (bits < 8)
+    { // To detect wrong situations
         Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
     }
-    
-    return  bits / 8;
+
+    return bits / 8;
 }
 
 const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat formatID)
@@ -124,7 +136,7 @@ const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat format
     return GetPixelFormatDescriptor(formatID).name.c_str();
 }
 
-PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatName)
+PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName& formatName)
 {
     for (const auto& entry : pixelDescriptors)
     {
@@ -134,8 +146,7 @@ PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatNa
             return descr.formatID;
         }
     }
-    
+
     return FORMAT_INVALID;
 }
- 
 };
