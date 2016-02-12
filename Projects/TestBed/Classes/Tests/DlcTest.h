@@ -83,19 +83,18 @@ private:
     void Restart(BaseObject* obj, void* data, void* callerData);
 
 protected:
+    String gameVersion = "dlcdevtest";
     String currentDownloadUrl;
 
     DAVA::FilePath workingDir;
     DAVA::FilePath sourceDir;
     DAVA::FilePath destinationDir;
 
+    UITextField* gameVersionIn = nullptr;
     UIStaticText* infoText = nullptr;
     WideString infoStr;
 
     uint32 downloadTreadsCount = 4;
-
-    UIButton* returnButton = nullptr;
-    UIButton* restartButton = nullptr;
 
     UIStaticText* staticText = nullptr;
     UIControl* animControl = nullptr;
