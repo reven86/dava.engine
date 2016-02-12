@@ -38,6 +38,7 @@ NotPassableTerrainProxy::NotPassableTerrainProxy(int32 heightmapSize)
 
     notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
     notPassableTexture = Texture::CreateFBO(2048, 2048, DAVA::FORMAT_RGBA8888);
+    notPassableTexture->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
 
     rhi::Viewport viewport;
     viewport.width = viewport.height = 2048;
@@ -117,28 +118,9 @@ bool NotPassableTerrainProxy::PickColor(float32 tan, Color& color) const
     return false;
 }
 
-bool NotPassableTerrainProxy::Enable()
+void NotPassableTerrainProxy::SetEnabled(bool _enabled)
 {
-    if (enabled)
-    {
-        return true;
-    }
-
-    enabled = true;
-
-    return true;
-}
-
-bool NotPassableTerrainProxy::Disable()
-{
-    if (!enabled)
-    {
-        return true;
-    }
-
-    enabled = false;
-
-    return true;
+    enabled = _enabled;
 }
 
 bool NotPassableTerrainProxy::IsEnabled() const
