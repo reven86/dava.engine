@@ -81,7 +81,6 @@ signals:
 public slots:
     void OnCancelClicked();
     void UnpackProgress(int, int);
-    void UnpackComplete();
     void UnpackError(int);
 
 private slots:
@@ -100,25 +99,25 @@ private:
     void BreakLog();
     void CompleteLog();
 
-    Ui::UpdateDialog* ui;
+    std::unique_ptr<Ui::UpdateDialog> ui;
+    std::unique_ptr<ZipUnpacker> unpacker;
 
-    QNetworkAccessManager* networkManager;
-    QNetworkReply* currentDownload;
+    QNetworkAccessManager* networkManager = nullptr;
+    QNetworkReply* currentDownload = nullptr;
 
-    int tasksCount;
+    int tasksCount = 0;
 
     QFile outputFile;
     QQueue<UpdateTask> tasks;
 
-    QTreeWidgetItem* currentLogItem;
-    QTreeWidgetItem* currentTopLogItem;
+    QTreeWidgetItem* currentLogItem = nullptr;
+    QTreeWidgetItem* currentTopLogItem = nullptr;
 
-    ZipUnpacker* unpacker;
 
-    int lastErrorCode;
+    int lastErrorCode = -1;
     QString lastErrorDesrc;
 
-    ApplicationManager* appManager;
+    ApplicationManager* appManager = nullptr;
 };
 
 #endif // UPDATEDIALOG_H

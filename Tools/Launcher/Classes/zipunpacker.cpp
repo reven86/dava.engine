@@ -179,7 +179,5 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
         QFile::link(link.second, link.first);
     }
 
-    emit OnComplete();
-
     return true;
 }

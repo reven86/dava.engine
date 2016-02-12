@@ -43,50 +43,29 @@
 #include <QTreeView>
 
 UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
-    :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
-    ,
-    ui(new Ui::UpdateDialog)
-    ,
-    networkManager(accessManager)
-    ,
-    currentDownload(0)
-    ,
-    tasks(taskQueue)
-    ,
-    currentLogItem(0)
-    ,
-    currentTopLogItem(0)
-    ,
-    unpacker(0)
-    ,
-    lastErrorCode(0)
-    ,
-    appManager(_appManager)
+    : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    , ui(new Ui::UpdateDialog)
+    , unpacker(new ZipUnpacker())
+    , networkManager(accessManager)
+    , tasks(taskQueue)
+    , appManager(_appManager)
 {
     ui->setupUi(this);
     ui->progressBar->setValue(0);
     ui->progressBar2->setValue(0);
 
-    unpacker = new ZipUnpacker();
-
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
     connect(this, SIGNAL(UpdateDownloadProgress(int)), ui->progressBar, SLOT(setValue(int)));
     connect(this, SIGNAL(UpdateUnpackProgress(int)), ui->progressBar2, SLOT(setValue(int)));
-    connect(unpacker, SIGNAL(OnProgress(int, int)), this, SLOT(UnpackProgress(int, int)));
-    connect(unpacker, SIGNAL(OnComplete()), this, SLOT(UnpackComplete()));
-    connect(unpacker, SIGNAL(OnError(int)), this, SLOT(UnpackError(int)));
+    connect(unpacker.get(), SIGNAL(OnProgress(int, int)), this, SLOT(UnpackProgress(int, int)));
+    connect(unpacker.get(), SIGNAL(OnError(int)), this, SLOT(UnpackError(int)));
 
     tasksCount = tasks.size();
 
     StartNextTask();
 }
 
-UpdateDialog::~UpdateDialog()
-{
-    SafeDelete(ui);
-    SafeDelete(unpacker);
-}
+UpdateDialog::~UpdateDialog() = default;
 
 void UpdateDialog::OnCancelClicked()
 {
@@ -177,7 +156,7 @@ void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal)
     {
-        int percentage = ((double)bytesReceived / bytesTotal) * 100;
+        int percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100;
         emit UpdateDownloadProgress(percentage);
 
         UpdateLastLogValue(QString("Downloading file...  %1%").arg(percentage));
@@ -189,12 +168,12 @@ void UpdateDialog::DownloadFinished()
     QString filePath = outputFile.fileName();
     outputFile.close();
 
-    UpdateTask task = tasks.front();
+    const UpdateTask &task = tasks.head();
 
     if (currentDownload)
     {
         currentDownload->deleteLater();
-        currentDownload = 0;
+        currentDownload = nullptr;
 
         QString appDir = FileManager::Instance()->GetApplicationFolder(task.branchID, task.appID);
 
@@ -209,7 +188,19 @@ void UpdateDialog::DownloadFinished()
 
         ui->cancelButton->setEnabled(false);
 
-        unpacker->UnZipFile(filePath, appDir);
+        if(unpacker->UnZipFile(filePath, appDir))
+        {
+            emit AppInstalled(task.branchID, task.appID, task.version);
+            UpdateLastLogValue("Unpack Complite!");
+            CompleteLog();
+        }
+        else
+        {
+            UpdateLastLogValue("Unpack Fail!");
+            BreakLog();
+        }
+        ui->cancelButton->setEnabled(true);
+        FileManager::Instance()->ClearTempDirectory();
     }
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {
@@ -217,10 +208,10 @@ void UpdateDialog::DownloadFinished()
         BreakLog();
 
         ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
-
-        tasks.dequeue();
-        StartNextTask();
     }
+    tasks.dequeue();
+    StartNextTask();
+
 }
 
 void UpdateDialog::UnpackProgress(int current, int count)
@@ -237,31 +228,6 @@ void UpdateDialog::UnpackProgress(int current, int count)
 void UpdateDialog::UnpackError(int code)
 {
     ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, code, unpacker->GetErrorString(code));
-    ui->cancelButton->setEnabled(true);
-
-    tasks.dequeue();
-    FileManager::Instance()->ClearTempDirectory();
-
-    UpdateLastLogValue("Unpack Fail!");
-    BreakLog();
-
-    StartNextTask();
-}
-
-void UpdateDialog::UnpackComplete()
-{
-    ui->cancelButton->setEnabled(true);
-
-    UpdateTask task = tasks.dequeue();
-
-    FileManager::Instance()->ClearTempDirectory();
-
-    emit AppInstalled(task.branchID, task.appID, task.version);
-
-    UpdateLastLogValue("Unpack Complite!");
-    CompleteLog();
-
-    StartNextTask();
 }
 
 void UpdateDialog::DownloadReadyRead()
@@ -271,9 +237,10 @@ void UpdateDialog::DownloadReadyRead()
 
 void UpdateDialog::AddTopLogValue(const QString& log)
 {
-    if (currentTopLogItem)
+    if (currentTopLogItem != nullptr)
+    {
         currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
-
+    }
     currentTopLogItem = new QTreeWidgetItem();
     currentTopLogItem->setText(0, log);
     currentTopLogItem->setTextColor(0, LOG_COLOR_PROGRESS);
@@ -285,9 +252,10 @@ void UpdateDialog::AddTopLogValue(const QString& log)
 
 void UpdateDialog::AddLogValue(const QString& log)
 {
-    if (currentLogItem)
+    if (currentLogItem != nullptr)
+    {
         currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
-
+    }
     currentLogItem = new QTreeWidgetItem();
     currentLogItem->setText(0, log);
     currentLogItem->setTextColor(0, LOG_COLOR_PROGRESS);
@@ -300,30 +268,36 @@ void UpdateDialog::AddLogValue(const QString& log)
 
 void UpdateDialog::UpdateLastLogValue(const QString& log)
 {
-    if (currentLogItem)
+    if (currentLogItem != nullptr)
+    {
         currentLogItem->setText(0, log);
+    }
 }
 
 void UpdateDialog::BreakLog()
 {
-    if (currentTopLogItem)
+    if (currentTopLogItem != nullptr)
+    {
         currentTopLogItem->setTextColor(0, LOG_COLOR_FAIL);
-
-    if (currentLogItem)
+    }
+    if (currentLogItem != nullptr)
+    {
         currentLogItem->setTextColor(0, LOG_COLOR_FAIL);
-
-    currentTopLogItem = 0;
-    currentLogItem = 0;
+    }
+    currentTopLogItem = nullptr;
+    currentLogItem = nullptr;
 }
 
 void UpdateDialog::CompleteLog()
 {
-    if (currentTopLogItem)
+    if (currentTopLogItem != nullptr)
+    {
         currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
-
-    if (currentLogItem)
+    }
+    if (currentLogItem != nullptr)
+    {
         currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
-
-    currentTopLogItem = 0;
-    currentLogItem = 0;
+    }
+    currentTopLogItem = nullptr;
+    currentLogItem = nullptr;
 }

@@ -46,7 +46,6 @@ public:
 
 signals:
     void OnProgress(int current, int all);
-    void OnComplete();
     void OnError(int code);
 
 private:
