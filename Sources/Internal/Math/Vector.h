@@ -461,11 +461,11 @@ inline Vector2 Vector2::operator-() const
 //! Comparison operators
 inline bool Vector2::operator==(const Vector2& _v) const
 {
-    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y);
+    return (memcmp(data, _v.data, sizeof(Vector2)) == 0);
 }
 inline bool Vector2::operator!=(const Vector2& _v) const
 {
-    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y);
+    return (memcmp(data, _v.data, sizeof(Vector2)) != 0);
 }
 
 //! On functions
@@ -793,11 +793,11 @@ inline Vector3 Vector3::operator-() const
 //! Comparison operators
 inline bool Vector3::operator==(const Vector3& _v) const
 {
-    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y) && EQUAL_MEMORY(z, _v.z);
+    return (memcmp(data, _v.data, sizeof(Vector3)) == 0);
 }
 inline bool Vector3::operator!=(const Vector3& _v) const
 {
-    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y) || !EQUAL_MEMORY(z, _v.z);
+    return (memcmp(data, _v.data, sizeof(Vector3)) != 0);
 }
 
 //! operators
@@ -1092,11 +1092,11 @@ inline Vector4 Vector4::operator-() const
 //! Comparison operators
 inline bool Vector4::operator==(const Vector4& _v) const
 {
-    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y) && EQUAL_MEMORY(z, _v.z) && EQUAL_MEMORY(w, _v.w);
+    return (memcmp(data, _v.data, sizeof(Vector4)) == 0);
 }
 inline bool Vector4::operator!=(const Vector4& _v) const
 {
-    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y) || !EQUAL_MEMORY(z, _v.z) || !EQUAL_MEMORY(w, _v.w);
+    return (memcmp(data, _v.data, sizeof(Vector4)) != 0);
 }
 
 inline const Vector3& Vector4::GetVector3() const

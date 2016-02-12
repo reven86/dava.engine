@@ -528,11 +528,11 @@ inline void Quaternion::ConvertToAxisAngle(Vector3& axis, float32& angle) const
 //! Comparison operators
 inline bool Quaternion::operator==(const Quaternion& _v) const
 {
-    return EQUAL_MEMORY(x, _v.x) && EQUAL_MEMORY(y, _v.y) && EQUAL_MEMORY(z, _v.z) && EQUAL_MEMORY(w, _v.w);
+    return (memcmp(data, _v.data, sizeof(Quaternion)) == 0);
 }
 inline bool Quaternion::operator!=(const Quaternion& _v) const
 {
-    return !EQUAL_MEMORY(x, _v.x) || !EQUAL_MEMORY(y, _v.y) || !EQUAL_MEMORY(z, _v.z) || !EQUAL_MEMORY(w, _v.w);
+    return (memcmp(data, _v.data, sizeof(Quaternion)) != 0);
 }
 
 inline Quaternion Quaternion::MakeRotation(const Vector3& euler)

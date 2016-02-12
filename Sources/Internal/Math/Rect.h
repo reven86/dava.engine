@@ -258,7 +258,10 @@ inline Rect& Rect::operator=(const Rect& rect)
 
 inline bool Rect::operator==(const Rect& _r) const
 {
-    return EQUAL_MEMORY(x, _r.x) && EQUAL_MEMORY(y, _r.y) && EQUAL_MEMORY(dx, _r.dx) && EQUAL_MEMORY(dy, _r.dy);
+    return (memcmp(&x, &_r.x, sizeof(float32)) == 0) &&
+    (memcmp(&y, &_r.y, sizeof(float32)) == 0) &&
+    (memcmp(&dx, &_r.dx, sizeof(float32)) == 0) &&
+    (memcmp(&dy, &_r.dy, sizeof(float32)) == 0);
 }
 
 inline bool Rect::operator!=(const Rect& _r) const

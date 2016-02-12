@@ -290,8 +290,6 @@ enum class eErrorCode
     ERROR_WRITE_FAIL
 };
 
-#define EQUAL_MEMORY(a, b) (memcmp(&(a), &(b), sizeof(a)) == 0)
-
 } // namespace DAVA
 
 #endif // __DAVAENGINE_BASETYPES_H__
