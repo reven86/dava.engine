@@ -106,7 +106,7 @@
     {
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
         }
     }
 }
@@ -127,7 +127,7 @@
     {
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
         }
     }
 }

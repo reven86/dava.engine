@@ -266,7 +266,7 @@ void PackageSerializer::VisitRootProperty(RootProperty* property)
 
     for (const ComponentPropertiesSection* section : property->GetComponents())
     {
-        if (section->HasChanges() || (section->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+        if (section->HasChanges())
         {
             hasChanges = true;
             break;

@@ -2068,6 +2068,16 @@
 		15373F2E1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */; };
 		15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
 		15373F301C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
+		321CCA6A1C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA601C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
+		321CCA6B1C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */; };
+		321CCA6C1C6E1D020048FAC9 /* FocusHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */; };
+		321CCA6D1C6E1D020048FAC9 /* FocusHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA631C6E1D020048FAC9 /* FocusHelpers.h */; };
+		321CCA6E1C6E1D020048FAC9 /* UIFocusComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA641C6E1D020048FAC9 /* UIFocusComponent.cpp */; };
+		321CCA6F1C6E1D020048FAC9 /* UIFocusComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA651C6E1D020048FAC9 /* UIFocusComponent.h */; };
+		321CCA701C6E1D020048FAC9 /* UIFocusSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA661C6E1D020048FAC9 /* UIFocusSystem.cpp */; };
+		321CCA711C6E1D020048FAC9 /* UIFocusSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA671C6E1D020048FAC9 /* UIFocusSystem.h */; };
+		321CCA721C6E1D020048FAC9 /* UIKeyInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA681C6E1D020048FAC9 /* UIKeyInputSystem.cpp */; };
+		321CCA731C6E1D020048FAC9 /* UIKeyInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA691C6E1D020048FAC9 /* UIKeyInputSystem.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		5003524E1A52DC8F003418BD /* libuv_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50194DD01A52D94B00557DAB /* libuv_ios.a */; };
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
@@ -3136,6 +3146,16 @@
 		0367CFF31C4FDC8C004D42A0 /* Reachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Reachability.mm; sourceTree = "<group>"; };
 		15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
+		321CCA601C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
+		321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectionBasedNavigationAlgorithm.h; sourceTree = "<group>"; };
+		321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FocusHelpers.cpp; sourceTree = "<group>"; };
+		321CCA631C6E1D020048FAC9 /* FocusHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FocusHelpers.h; sourceTree = "<group>"; };
+		321CCA641C6E1D020048FAC9 /* UIFocusComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusComponent.cpp; sourceTree = "<group>"; };
+		321CCA651C6E1D020048FAC9 /* UIFocusComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusComponent.h; sourceTree = "<group>"; };
+		321CCA661C6E1D020048FAC9 /* UIFocusSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusSystem.cpp; sourceTree = "<group>"; };
+		321CCA671C6E1D020048FAC9 /* UIFocusSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusSystem.h; sourceTree = "<group>"; };
+		321CCA681C6E1D020048FAC9 /* UIKeyInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIKeyInputSystem.cpp; sourceTree = "<group>"; };
+		321CCA691C6E1D020048FAC9 /* UIKeyInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyInputSystem.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		5C0105D11577993400E0B939 /* libmongodb_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_ios.a; path = ../../Libs/libs/libmongodb_ios.a; sourceTree = "<group>"; };
@@ -4487,6 +4507,7 @@
 		02E7C5511BD624A6002F026D /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				321CCA5F1C6E1D020048FAC9 /* Focus */,
 				02E7C5521BD624A6002F026D /* AbstractUIPackageBuilder.cpp */,
 				02E7C5531BD624A6002F026D /* AbstractUIPackageBuilder.h */,
 				02E7CF011BD6392D002F026D /* Components */,
@@ -4796,6 +4817,23 @@
 				9A0118E18AC6866222998E4C /* GameController.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		321CCA5F1C6E1D020048FAC9 /* Focus */ = {
+			isa = PBXGroup;
+			children = (
+				321CCA601C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */,
+				321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */,
+				321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */,
+				321CCA631C6E1D020048FAC9 /* FocusHelpers.h */,
+				321CCA641C6E1D020048FAC9 /* UIFocusComponent.cpp */,
+				321CCA651C6E1D020048FAC9 /* UIFocusComponent.h */,
+				321CCA661C6E1D020048FAC9 /* UIFocusSystem.cpp */,
+				321CCA671C6E1D020048FAC9 /* UIFocusSystem.h */,
+				321CCA681C6E1D020048FAC9 /* UIKeyInputSystem.cpp */,
+				321CCA691C6E1D020048FAC9 /* UIKeyInputSystem.h */,
+			);
+			path = Focus;
 			sourceTree = "<group>";
 		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
@@ -5600,6 +5638,7 @@
 				02E7CB311BD624A7002F026D /* LibDdsHelper.h in Headers */,
 				02E7C9DD1BD624A7002F026D /* WebViewControliOS.h in Headers */,
 				02E7C8ED1BD624A7002F026D /* ParticleForce.h in Headers */,
+				321CCA6D1C6E1D020048FAC9 /* FocusHelpers.h in Headers */,
 				02E7C60D1BD624A6002F026D /* LinearAnimation.h in Headers */,
 				02E7C6131BD624A6002F026D /* NamedAnimationsList.h in Headers */,
 				02E7C6B11BD624A6002F026D /* Observable.h in Headers */,
@@ -5628,6 +5667,7 @@
 				02E7C90D1BD624A7002F026D /* MovieViewControlStub.h in Headers */,
 				02E7C9B91BD624A7002F026D /* DeviceInfoiOS.h in Headers */,
 				02E7CD331BD624A7002F026D /* SceneNodeAnimationKey.h in Headers */,
+				321CCA711C6E1D020048FAC9 /* UIFocusSystem.h in Headers */,
 				02E7CF2C1BD639A4002F026D /* DVAssert.h in Headers */,
 				02E7C8E91BD624A7002F026D /* ParticleEmitter.h in Headers */,
 				02E7CB351BD624A7002F026D /* LibJpegHelper.h in Headers */,
@@ -5700,6 +5740,7 @@
 				02E7CE2D1BD624A7002F026D /* UIStyleSheetSystem.h in Headers */,
 				02E7CBBB1BD624A7002F026D /* rhi_Pool.h in Headers */,
 				02E7CC471BD624A7002F026D /* RuntimeTextures.h in Headers */,
+				321CCA6B1C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */,
 				02E7C80F1BD624A7002F026D /* Ray.h in Headers */,
 				02E7CC531BD624A7002F026D /* Texture.h in Headers */,
 				02E7C6751BD624A6002F026D /* EventDispatcher.h in Headers */,
@@ -5806,6 +5847,8 @@
 				02E7C7571BD624A7002F026D /* FilePath.h in Headers */,
 				02E7CAA71BD624A7002F026D /* DynamicBufferAllocator.h in Headers */,
 				02E7C6B31BD624A6002F026D /* Observer.h in Headers */,
+				321CCA731C6E1D020048FAC9 /* UIKeyInputSystem.h in Headers */,
+				321CCA6F1C6E1D020048FAC9 /* UIFocusComponent.h in Headers */,
 				02E7CDC91BD624A7002F026D /* AbstractUIPackageBuilder.h in Headers */,
 				02E7CE591BD624A7002F026D /* UIEvent.h in Headers */,
 				02E7CDE11BD624A7002F026D /* ControlLayoutData.h in Headers */,
@@ -6588,6 +6631,7 @@
 				02E7C9BB1BD624A7002F026D /* DeviceInfoiOS.mm in Sources */,
 				02E7C7611BD624A7002F026D /* KeyedArchive.cpp in Sources */,
 				02E7C9CB1BD624A7002F026D /* OpenUDIDios.mm in Sources */,
+				321CCA721C6E1D020048FAC9 /* UIKeyInputSystem.cpp in Sources */,
 				02E7C1001BD6248E002F026D /* NSStringUtils.mm in Sources */,
 				02E7C8AB1BD624A7002F026D /* MMBigDataTransferService.cpp in Sources */,
 				6EC468251C58E58E0083C264 /* VisibilityCheckComponent.cpp in Sources */,
@@ -6749,6 +6793,8 @@
 				02E7CED91BD624A7002F026D /* UITextField.cpp in Sources */,
 				02E7CAAD1BD624A7002F026D /* Camera.cpp in Sources */,
 				02E7CBA71BD624A7002F026D /* support.cpp in Sources */,
+				321CCA6C1C6E1D020048FAC9 /* FocusHelpers.cpp in Sources */,
+				321CCA701C6E1D020048FAC9 /* UIFocusSystem.cpp in Sources */,
 				02E7CAF91BD624A7002F026D /* SpeedTreeObject.cpp in Sources */,
 				02E7CCDF1BD624A7002F026D /* WaypointComponent.cpp in Sources */,
 				02E7CAF51BD624A7002F026D /* SpatialTree.cpp in Sources */,
@@ -6780,6 +6826,7 @@
 				02E7CE771BD624A7002F026D /* UIList.cpp in Sources */,
 				02E7C84D1BD624A7002F026D /* IOLoop.cpp in Sources */,
 				02E7CC671BD624A7002F026D /* TextGameObject.cpp in Sources */,
+				321CCA6A1C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */,
 				02E7C8291BD624A7002F026D /* MallocHook.cpp in Sources */,
 				02E7CDBB1BD624A7002F026D /* musicios.mm in Sources */,
 				02E7CDC11BD624A7002F026D /* SoundSystemEmpty.cpp in Sources */,
@@ -6881,6 +6928,7 @@
 				02E7CA5F1BD624A7002F026D /* GraphicFont.cpp in Sources */,
 				02E7C8A31BD624A7002F026D /* ServiceRegistrar.cpp in Sources */,
 				02E7CE931BD624A7002F026D /* UIPackagesCache.cpp in Sources */,
+				321CCA6E1C6E1D020048FAC9 /* UIFocusComponent.cpp in Sources */,
 				02E7C88D1BD624A7002F026D /* NetController.cpp in Sources */,
 				02E7C9DB1BD624A7002F026D /* UITextFieldHolder.mm in Sources */,
 				02E7C6611BD624A6002F026D /* BaseObjectChecker.cpp in Sources */,
