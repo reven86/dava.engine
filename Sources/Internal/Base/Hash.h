@@ -247,38 +247,38 @@ inline DAVA::uint32 HashValue_N(const char* key, uint32 length) DAVA_NOEXCEPT
 
     case 11:
         c += (static_cast<uint32>(key[10]) << 24);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 10:
         c += (static_cast<uint32>(key[9]) << 16);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 9:
         c += (static_cast<uint32>(key[8]) << 8);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     // the first byte of c is reserved for the length
     case 8:
         b += (static_cast<uint32>(key[7]) << 24);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 7:
         b += (static_cast<uint32>(key[6]) << 16);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 6:
         b += (static_cast<uint32>(key[5]) << 8);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 5:
         b += key[4];
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 4:
         a += (static_cast<uint32>(key[3]) << 24);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 3:
         a += (static_cast<uint32>(key[2]) << 16);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 2:
         a += (static_cast<uint32>(key[1]) << 8);
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 1:
         a += key[0];
-        [[clang::fallthrough]];
+        DAVA_SWITCH_CASE_FALLTHROUGH;
     case 0:
         //  case 0: nothing left to add
         break;
