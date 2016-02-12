@@ -36,7 +36,7 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
-DeviceLogController::DeviceLogController(const DAVA::Net::PeerDescription& peerDescr, QWidget *_parentWidget, QObject* parent)
+DeviceLogController::DeviceLogController(const DAVA::Net::PeerDescription& peerDescr, QWidget* _parentWidget, QObject* parent)
     : QObject(parent)
     , parentWidget(_parentWidget)
     , peer(peerDescr)
@@ -44,16 +44,18 @@ DeviceLogController::DeviceLogController(const DAVA::Net::PeerDescription& peerD
     ShowView();
 }
 
-DeviceLogController::~DeviceLogController() {}
+DeviceLogController::~DeviceLogController()
+{
+}
 
 void DeviceLogController::ShowView()
 {
     if (NULL == view)
     {
         const QString title = QString("%1 (%2 %3)")
-            .arg(peer.GetName().c_str())
-            .arg(peer.GetPlatformString().c_str())
-            .arg(peer.GetVersion().c_str());
+                              .arg(peer.GetName().c_str())
+                              .arg(peer.GetPlatformString().c_str())
+                              .arg(peer.GetVersion().c_str());
 
         view = new LogWidget(parentWidget);
         view->setWindowFlags(Qt::Window);

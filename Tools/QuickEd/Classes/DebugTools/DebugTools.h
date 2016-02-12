@@ -34,13 +34,9 @@
 
 namespace DebugTools
 {
-
-void ConnectToUI(Ui::MainWindow * ui);
-
-
+void ConnectToUI(Ui::MainWindow* ui);
 }
 
 
 
 #endif //#ifndef __QUICKED_DEBUG_TOOLS__H__
-

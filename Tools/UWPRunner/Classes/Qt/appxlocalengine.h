@@ -49,28 +49,28 @@ class AppxLocalEnginePrivate;
 class AppxLocalEngine : public AppxEngine
 {
 public:
-    static bool canHandle(Runner *runner);
-    static RunnerEngine *create(Runner *runner);
+    static bool canHandle(Runner* runner);
+    static RunnerEngine* create(Runner* runner);
     static QStringList deviceNames();
 
     bool install(bool removeFirst = false) Q_DECL_OVERRIDE;
     bool remove() Q_DECL_OVERRIDE;
     bool start() Q_DECL_OVERRIDE;
-    bool enableDebugging(const QString &debuggerExecutable,
-                        const QString &debuggerArguments) Q_DECL_OVERRIDE;
+    bool enableDebugging(const QString& debuggerExecutable,
+                         const QString& debuggerArguments) Q_DECL_OVERRIDE;
     bool disableDebugging() Q_DECL_OVERRIDE;
     bool suspend() Q_DECL_OVERRIDE;
     bool stop() Q_DECL_OVERRIDE;
 
-    QString devicePath(const QString &relativePath) const Q_DECL_OVERRIDE;
-    bool sendFile(const QString &localFile, const QString &deviceFile) Q_DECL_OVERRIDE;
-    bool receiveFile(const QString &deviceFile, const QString &localFile) Q_DECL_OVERRIDE;
+    QString devicePath(const QString& relativePath) const Q_DECL_OVERRIDE;
+    bool sendFile(const QString& localFile, const QString& deviceFile) Q_DECL_OVERRIDE;
+    bool receiveFile(const QString& deviceFile, const QString& localFile) Q_DECL_OVERRIDE;
 
 private:
-    explicit AppxLocalEngine(Runner *runner);
+    explicit AppxLocalEngine(Runner* runner);
     ~AppxLocalEngine();
 
-    bool installPackage(IAppxManifestReader *reader, const QString &filePath) Q_DECL_OVERRIDE;
+    bool installPackage(IAppxManifestReader* reader, const QString& filePath) Q_DECL_OVERRIDE;
 
     friend struct QScopedPointerDeleter<AppxLocalEngine>;
     Q_DECLARE_PRIVATE(AppxLocalEngine)

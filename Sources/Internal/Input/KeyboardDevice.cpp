@@ -278,14 +278,14 @@ void KeyboardDevice::PrepareKeyTranslator()
         unsigned keyValue = static_cast<unsigned>(Key::F1) + i;
         keyTranslator[VK_F1 + i] = static_cast<Key>(keyValue);
     }
-    
+
     // alpha keys
     for (unsigned i = 0; i < 26; ++i)
     {
         unsigned keyValue = static_cast<unsigned>(Key::KEY_A) + i;
         keyTranslator[0x41 + i] = static_cast<Key>(keyValue);
     }
-    
+
     // numeric keys & keys at num pad
     for (unsigned i = 0; i < 10; ++i)
     {
@@ -425,7 +425,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x04] = Key::BACK;
     keyTranslator[0x52] = Key::MENU;
 #endif
-
 }
 
 void KeyboardDevice::ClearAllKeys()
@@ -433,5 +432,4 @@ void KeyboardDevice::ClearAllKeys()
     currentFrameKeyStatus.reset();
     realKeyStatus.reset();
 }
-
 };

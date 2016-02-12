@@ -39,16 +39,16 @@ using namespace DAVA;
 class LightmapsPacker : public SpriteResourcesPacker
 {
 public:
-	LightmapsPacker();
+    LightmapsPacker();
 
-	void CreateDescriptors();
-	void ParseSpriteDescriptors();
-	Vector<LightmapAtlasingData> * GetAtlasingData();
+    void CreateDescriptors();
+    void ParseSpriteDescriptors();
+    Vector<LightmapAtlasingData>* GetAtlasingData();
 
 private:
-	Vector<LightmapAtlasingData> atlasingData;
+    Vector<LightmapAtlasingData> atlasingData;
 
-	Vector2 GetTextureSize(const FilePath & filePath);
+    Vector2 GetTextureSize(const FilePath& filePath);
 };
 
 #endif //__LIGHTMAPS_PACKER_H__

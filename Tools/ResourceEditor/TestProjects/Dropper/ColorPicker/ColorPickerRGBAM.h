@@ -34,26 +34,25 @@
 
 #include "AbstractColorPicker.h"
 
-
 class ColorComponentSlider;
 
 class ColorPickerRGBAM
-    : public AbstractColorPicker
+: public AbstractColorPicker
 {
     Q_OBJECT
 
 public:
-    explicit ColorPickerRGBAM(QWidget *parent = NULL);
+    explicit ColorPickerRGBAM(QWidget* parent = NULL);
     ~ColorPickerRGBAM();
 
 private slots:
-    void OnChanging( double val );
+    void OnChanging(double val);
 
 private:
-    void SetColorInternal( QColor const& c ) override;
-    void UpdateColorInternal( ColorComponentSlider *source = NULL );
+    void SetColorInternal(QColor const& c) override;
+    void UpdateColorInternal(ColorComponentSlider* source = NULL);
 
-    QLayout *CreateSlider( const QString& text, ColorComponentSlider *w ) const;
+    QLayout* CreateSlider(const QString& text, ColorComponentSlider* w) const;
 
     QPointer<ColorComponentSlider> r;
     QPointer<ColorComponentSlider> g;

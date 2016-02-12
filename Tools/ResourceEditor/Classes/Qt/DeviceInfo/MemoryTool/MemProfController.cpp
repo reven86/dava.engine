@@ -62,7 +62,7 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     connect(this, &MemProfController::SnapshotSaved, this, &MemProfController::OnSnapshotSaved, Qt::QueuedConnection);
 }
 
-MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget_, QObject *parent)
+MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget_, QObject* parent)
     : QObject(parent)
     , mode(MODE_FILE)
     , parentWidget(parentWidget_)
@@ -80,7 +80,9 @@ MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* pare
     }
 }
 
-MemProfController::~MemProfController() {}
+MemProfController::~MemProfController()
+{
+}
 
 void MemProfController::OnSnapshotPressed()
 {
@@ -95,9 +97,9 @@ void MemProfController::ShowView()
     if (nullptr == view)
     {
         const QString title = QString("%1 (%2 %3)")
-            .arg(profiledPeer.GetName().c_str())
-            .arg(profiledPeer.GetPlatformString().c_str())
-            .arg(profiledPeer.GetVersion().c_str());
+                              .arg(profiledPeer.GetName().c_str())
+                              .arg(profiledPeer.GetPlatformString().c_str())
+                              .arg(profiledPeer.GetVersion().c_str());
 
         view = new MemProfWidget(profilingSession.get(), parentWidget);
         view->setWindowFlags(Qt::Window);
@@ -169,7 +171,7 @@ void MemProfController::NetStatRecieved(const DAVA::MMCurStat* stat, uint32 coun
 
 void MemProfController::NetSnapshotRecieved(uint32 totalSize, uint32 chunkOffset, uint32 chunkSize, const uint8* chunk)
 {
-    if (nullptr == chunk)   // Error while transferring snapshot
+    if (nullptr == chunk) // Error while transferring snapshot
     {
         SafeRelease(snapshotFile);
         FileSystem::Instance()->DeleteFile(snapshotTempName);

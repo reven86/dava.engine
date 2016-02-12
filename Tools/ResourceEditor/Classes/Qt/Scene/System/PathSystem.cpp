@@ -71,23 +71,23 @@ const DAVA::Array<DAVA::Color, 16> PathColorPallete =
 const String PATH_COLOR_PROP_NAME = "pathColor";
 }
 
-PathSystem::PathSystem(DAVA::Scene * scene)
+PathSystem::PathSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
     , currentPath(NULL)
     , isEditingEnabled(false)
 {
-    sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    sceneEditor = static_cast<SceneEditor2*>(GetScene());
 }
 
 PathSystem::~PathSystem()
 {
     currentPath = NULL;
-    
+
     pathes.clear();
     currentSelection.Clear();
 }
 
-void PathSystem::AddPath(DAVA::Entity * entity)
+void PathSystem::AddPath(DAVA::Entity* entity)
 {
     sceneEditor->BeginBatch("Add path at scene");
     sceneEditor->Exec(new EntityAddCommand(entity, sceneEditor));
@@ -98,11 +98,11 @@ void PathSystem::AddPath(DAVA::Entity * entity)
     sceneEditor->EndBatch();
 }
 
-void PathSystem::AddEntity(DAVA::Entity * entity)
+void PathSystem::AddEntity(DAVA::Entity* entity)
 {
     pathes.push_back(entity);
-    
-    if(!currentPath)
+
+    if (!currentPath)
     {
         currentPath = entity;
     }
@@ -111,7 +111,7 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
     PathComponent* pc = GetPathComponent(entity);
     if (pc && pc->GetColor() == Color())
     {
-        KeyedArchive *props = GetCustomPropertiesArchieve(entity);
+        KeyedArchive* props = GetCustomPropertiesArchieve(entity);
         if (props && props->IsKeyExists(PathSystemInternal::PATH_COLOR_PROP_NAME))
         {
             pc->SetColor(DAVA::Color(props->GetVector4(PathSystemInternal::PATH_COLOR_PROP_NAME)));
@@ -120,13 +120,13 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
     }
 }
 
-void PathSystem::RemoveEntity(DAVA::Entity * entity)
+void PathSystem::RemoveEntity(DAVA::Entity* entity)
 {
     DAVA::FindAndRemoveExchangingWithLast(pathes, entity);
-    
-    if(pathes.size())
+
+    if (pathes.size())
     {
-        if(entity == currentPath)
+        if (entity == currentPath)
         {
             currentPath = pathes[0];
         }
@@ -137,7 +137,7 @@ void PathSystem::RemoveEntity(DAVA::Entity * entity)
     }
 }
 
-void PathSystem::WillClone(DAVA::Entity *originalEntity)
+void PathSystem::WillClone(DAVA::Entity* originalEntity)
 {
     if (isEditingEnabled && GetPathComponent(originalEntity) != nullptr)
     {
@@ -145,7 +145,7 @@ void PathSystem::WillClone(DAVA::Entity *originalEntity)
     }
 }
 
-void PathSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity)
+void PathSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity)
 {
     if (isEditingEnabled)
     {
@@ -164,9 +164,10 @@ void PathSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity
 void PathSystem::Draw()
 {
     const DAVA::uint32 count = pathes.size();
-    if(!count) return;
+    if (!count)
+        return;
 
-    if(isEditingEnabled)
+    if (isEditingEnabled)
     {
         DrawInEditableMode();
     }
@@ -185,22 +186,22 @@ void PathSystem::DrawInEditableMode()
         {
             continue;
         }
-        
+
         const DAVA::uint32 childrenCount = path->GetChildrenCount();
-        for(DAVA::uint32 c = 0; c < childrenCount; ++c)
+        for (DAVA::uint32 c = 0; c < childrenCount; ++c)
         {
-            DAVA::Entity * waypoint = path->GetChild(c);
-            
+            DAVA::Entity* waypoint = path->GetChild(c);
+
             const DAVA::uint32 edgesCount = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-            if(edgesCount)
+            if (edgesCount)
             {
                 Vector3 startPosition = GetTransformComponent(waypoint)->GetWorldTransform().GetTranslationVector();
                 startPosition.z += WAYPOINTS_DRAW_LIFTING;
-                for(DAVA::uint32 e = 0; e < edgesCount; ++e)
+                for (DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
-                    DAVA::EdgeComponent * edge = static_cast<DAVA::EdgeComponent *>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, e));
-                    DAVA::Entity *nextEntity = edge->GetNextEntity();
-                    if(nextEntity && nextEntity->GetParent())
+                    DAVA::EdgeComponent* edge = static_cast<DAVA::EdgeComponent*>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, e));
+                    DAVA::Entity* nextEntity = edge->GetNextEntity();
+                    if (nextEntity && nextEntity->GetParent())
                     {
                         Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
                         finishPosition.z += WAYPOINTS_DRAW_LIFTING;
@@ -221,13 +222,13 @@ void PathSystem::DrawInViewOnlyMode()
     for (const auto& item : selection.GetContent())
     {
         DAVA::Entity* path = item.first;
-        DAVA::PathComponent *pathComponent = DAVA::GetPathComponent(path);
-        if(path->GetVisible() == false || !pathComponent)
+        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(path);
+        if (path->GetVisible() == false || !pathComponent)
         {
             continue;
         }
 
-        const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
+        const Vector<PathComponent::Waypoint*>& waypoints = pathComponent->GetPoints();
         for (auto waypoint : waypoints)
         {
             Vector3 startPosition = waypoint->position;
@@ -283,35 +284,35 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void PathSystem::ProcessCommand(const Command2 *command, bool redo)
+void PathSystem::ProcessCommand(const Command2* command, bool redo)
 {
     const int commandId = command->GetId();
-    if(CMDID_INSP_MEMBER_MODIFY == commandId)
+    if (CMDID_INSP_MEMBER_MODIFY == commandId)
     {
         const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-		if (String("name") == cmd->member->Name().c_str())
+        if (String("name") == cmd->member->Name().c_str())
         {
             const DAVA::uint32 count = pathes.size();
-            for(DAVA::uint32 p = 0; p < count; ++p)
+            for (DAVA::uint32 p = 0; p < count; ++p)
             {
-                const DAVA::PathComponent *pc = DAVA::GetPathComponent(pathes[p]);
+                const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
 
-                if(cmd->object == pc)
+                if (cmd->object == pc)
                 {
-                    FastName newPathName = (redo) ? cmd->newValue.AsFastName(): cmd->oldValue.AsFastName();
-                    FastName oldPathName = (redo) ? cmd->oldValue.AsFastName(): cmd->newValue.AsFastName();
-                    
+                    FastName newPathName = (redo) ? cmd->newValue.AsFastName() : cmd->oldValue.AsFastName();
+                    FastName oldPathName = (redo) ? cmd->oldValue.AsFastName() : cmd->newValue.AsFastName();
+
                     const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
-                    for(DAVA::uint32 c = 0; c < childrenCount; ++c)
+                    for (DAVA::uint32 c = 0; c < childrenCount; ++c)
                     {
-                        DAVA::WaypointComponent *wp = GetWaypointComponent(pathes[p]->GetChild(c));
-                        
-                        if(wp && wp->GetPathName() == oldPathName)
+                        DAVA::WaypointComponent* wp = GetWaypointComponent(pathes[p]->GetChild(c));
+
+                        if (wp && wp->GetPathName() == oldPathName)
                         {
                             wp->SetPathName(newPathName);
                         }
                     }
-                    
+
                     break;
                 }
             }
@@ -327,35 +328,34 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
     }
 }
 
-
 DAVA::FastName PathSystem::GeneratePathName() const
 {
     const DAVA::uint32 count = pathes.size();
-    
-    for(DAVA::uint32 i = 0; i <= count; ++i)
+
+    for (DAVA::uint32 i = 0; i <= count; ++i)
     {
         DAVA::FastName generatedName(DAVA::Format("path_%02d", i));
-        
+
         bool found = false;
-        
-        for(DAVA::uint32 p = 0; p < count; ++p)
+
+        for (DAVA::uint32 p = 0; p < count; ++p)
         {
-            const DAVA::PathComponent *pc = DAVA::GetPathComponent(pathes[p]);
-            if(generatedName == pc->GetName())
+            const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
+            if (generatedName == pc->GetName())
             {
                 found = true;
                 break;
             }
         }
-        
-        if(!found)
+
+        if (!found)
             return generatedName;
     }
-    
+
     return DAVA::FastName();
 }
 
-const DAVA::Color & PathSystem::GetNextPathColor() const
+const DAVA::Color& PathSystem::GetNextPathColor() const
 {
     const DAVA::uint32 count = pathes.size();
     const DAVA::uint32 index = count % PathSystemInternal::PathColorPallete.size();
@@ -415,7 +415,7 @@ void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
 
 DAVA::PathComponent* PathSystem::CreatePathComponent()
 {
-    DAVA::PathComponent *pc = new PathComponent();
+    DAVA::PathComponent* pc = new PathComponent();
     pc->SetName(GeneratePathName());
     pc->SetColor(GetNextPathColor());
     return pc;

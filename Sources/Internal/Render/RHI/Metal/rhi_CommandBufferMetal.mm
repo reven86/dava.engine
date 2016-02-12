@@ -66,22 +66,19 @@ CommandBufferMetal_t
     unsigned cur_vstream_count;
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     uint32 cur_stride;
-    
+
     void _ApplyVertexData();
 };
 
-void
-CommandBufferMetal_t::_ApplyVertexData()
+void CommandBufferMetal_t::_ApplyVertexData()
 {
-    for( unsigned s=0; s!=cur_vstream_count; ++s )
+    for (unsigned s = 0; s != cur_vstream_count; ++s)
     {
-        id<MTLBuffer> vb = VertexBufferMetal::GetBuffer( cur_vb[s] );
-        
+        id<MTLBuffer> vb = VertexBufferMetal::GetBuffer(cur_vb[s]);
+
         [encoder setVertexBuffer:vb offset:0 atIndex:s];
     }
 }
-
-
 
 struct
 SyncObjectMetal_t
@@ -181,7 +178,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
-        for( unsigned s=0; s!=countof(cb->cur_vb); ++s )
+        for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
         pass->cmdBuf[0] = cb_h;
@@ -204,7 +201,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
-            for( unsigned s=0; s!=countof(cb->cur_vb); ++s )
+            for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
 
             pass->cmdBuf[i] = cb_h;
@@ -252,7 +249,7 @@ metal_CommandBuffer_Begin(Handle cmdBuf)
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
     cb->cur_vstream_count = 0;
-    for( unsigned s=0; s!=countof(cb->cur_vb); ++s )
+    for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
         cb->cur_vb[s] = InvalidHandle;
 
     [cb->encoder setDepthStencilState:_Metal_DefDepthState];
@@ -626,7 +623,7 @@ metal_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
     }
 
     cb->_ApplyVertexData();
-    [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt instanceCount:inst_count ];
+    [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt instanceCount:inst_count];
 
     StatSet::IncStat(stat_DP, 1);
     switch (ptype)

@@ -12,4 +12,3 @@
 #include "FCDocument/FCDEmitterParticle.h"
 #include "FCDocument/FCDEmitterObject.h"
 #include "FCDocument/FCDParticleModifier.h"
-

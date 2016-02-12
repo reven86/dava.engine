@@ -33,7 +33,6 @@
 
 namespace DAVA
 {
-
 }
 
 #endif //__DAVAENGINE_AUTOTESTING__

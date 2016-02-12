@@ -15,17 +15,17 @@
 
 extern void TrickLinker3()
 {
-	FCDSceneNodeIterator it1(NULL);
-	FCDSceneNodeConstIterator it2(NULL);
-	
-	FCDSceneNodeIterator it3(it1.GetNode());
-	it1.Next();
-	it2.GetNode();
-	it2.Next();
-	++it1;
-	++it2;
-	*it1;
-	*it2;
-	it1.IsDone();
-	it2.IsDone();
+    FCDSceneNodeIterator it1(NULL);
+    FCDSceneNodeConstIterator it2(NULL);
+
+    FCDSceneNodeIterator it3(it1.GetNode());
+    it1.Next();
+    it2.GetNode();
+    it2.Next();
+    ++it1;
+    ++it2;
+    *it1;
+    *it2;
+    it1.IsDone();
+    it2.IsDone();
 }

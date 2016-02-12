@@ -35,29 +35,27 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 
-IntegerPropertyDelegate::IntegerPropertyDelegate(PropertiesTreeItemDelegate *delegate)
+IntegerPropertyDelegate::IntegerPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
-
 }
 
 IntegerPropertyDelegate::~IntegerPropertyDelegate()
 {
-
 }
 
 QWidget* IntegerPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    QSpinBox *spinBox = new QSpinBox(parent);
+    QSpinBox* spinBox = new QSpinBox(parent);
     spinBox->setObjectName(QString::fromUtf8("spinBox"));
     connect(spinBox, SIGNAL(valueChanged(int)), this, SLOT(OnValueChanged()));
 
     return spinBox;
 }
 
-void IntegerPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelIndex & index ) const 
+void IntegerPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& index) const
 {
-    QSpinBox *editor = rawEditor->findChild<QSpinBox*>("spinBox");
+    QSpinBox* editor = rawEditor->findChild<QSpinBox*>("spinBox");
 
     editor->blockSignals(true);
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
@@ -86,12 +84,12 @@ void IntegerPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelIn
     BasePropertyDelegate::SetValueModified(editor, false);
 }
 
-bool IntegerPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index ) const 
+bool IntegerPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    QSpinBox *editor = rawEditor->findChild<QSpinBox*>("spinBox");
+    QSpinBox* editor = rawEditor->findChild<QSpinBox*>("spinBox");
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
 
@@ -121,15 +119,14 @@ bool IntegerPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemMo
 
 void IntegerPropertyDelegate::OnValueChanged()
 {
-    QWidget *spinBox = qobject_cast<QWidget *>(sender());
+    QWidget* spinBox = qobject_cast<QWidget*>(sender());
     if (!spinBox)
         return;
 
-    QWidget *editor = spinBox->parentWidget();
+    QWidget* editor = spinBox->parentWidget();
     if (!editor)
         return;
 
     BasePropertyDelegate::SetValueModified(editor, true);
     itemDelegate->emitCommitData(editor);
 }
-

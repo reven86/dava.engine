@@ -42,17 +42,17 @@ public:
     virtual ~QtPropertyDataMetaObject();
 
     virtual const DAVA::MetaInfo* MetaInfo() const;
-	virtual void* CreateLastCommand() const;
+    virtual void* CreateLastCommand() const;
 
-	void *object;
-	const DAVA::MetaInfo *meta;
+    void* object;
+    const DAVA::MetaInfo* meta;
 
 protected:
-	MetaObjModifyCommand* lastCommand;
+    MetaObjModifyCommand* lastCommand;
 
-	virtual void SetValueInternal(const QVariant &value);
-	virtual bool UpdateValueInternal();
-	virtual bool EditorDoneInternal(QWidget *editor);
+    virtual void SetValueInternal(const QVariant& value);
+    virtual bool UpdateValueInternal();
+    virtual bool EditorDoneInternal(QWidget* editor);
 };
 
 #endif // __QT_PROPERTY_DATA_META_OBJECT_H__

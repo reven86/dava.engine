@@ -40,16 +40,16 @@ namespace DVAssertMessage
 {
 bool InnerShow(eModalType modalType, const char* message)
 {
-	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
+    JNI::JavaClass msg("com/dava/framework/JNIAssert");
+    auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
-	JNIEnv *env = JNI::GetEnv();
-	jstring jStrMessage = env->NewStringUTF(message);
+    JNIEnv* env = JNI::GetEnv();
+    jstring jStrMessage = env->NewStringUTF(message);
     bool waitUserInput = (ALWAYS_MODAL == modalType);
-	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
-	env->DeleteLocalRef(jStrMessage);
+    jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
+    env->DeleteLocalRef(jStrMessage);
 
-	return breakExecution == JNI_FALSE? false : true;
+    return breakExecution == JNI_FALSE ? false : true;
 }
 
 } // namespace DVAssertMessage

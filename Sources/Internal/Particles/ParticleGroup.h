@@ -37,44 +37,53 @@
 
 namespace DAVA
 {
-
-
 struct ParticleGroup
 {
-	ParticleEmitter *emitter;
-	ParticleLayer *layer;
-	NMaterial *material;
-	
-	Particle *head;
-	int32 activeParticleCount;
-	
-	bool finishingGroup;
+    ParticleEmitter* emitter;
+    ParticleLayer* layer;
+    NMaterial* material;
 
-	bool visibleLod;
+    Particle* head;
+    int32 activeParticleCount;
 
-	float32 time;	
-	float32 loopStartTime, loopLyaerStartTime, loopDuration;
-	float32 particlesToGenerate;	
+    bool finishingGroup;
 
-	int32 positionSource;
+    bool visibleLod;
+
+    float32 time;
+    float32 loopStartTime, loopLyaerStartTime, loopDuration;
+    float32 particlesToGenerate;
+
+    int32 positionSource;
 
     Vector3 spawnPosition;
 
-  	ParticleGroup() : emitter(0), layer(0), material(0), head(0), activeParticleCount(0), finishingGroup(false), visibleLod(true), time(0), particlesToGenerate(0), positionSource(0){}
+    ParticleGroup()
+        : emitter(0)
+        , layer(0)
+        , material(0)
+        , head(0)
+        , activeParticleCount(0)
+        , finishingGroup(false)
+        , visibleLod(true)
+        , time(0)
+        , particlesToGenerate(0)
+        , positionSource(0)
+    {
+    }
 };
 
 struct ParentInfo
 {
-	Vector3 position;
-	Vector2 size;
+    Vector3 position;
+    Vector2 size;
 };
 
 struct ParticleEffectData
 {
-	Vector<ParentInfo> infoSources;
-	List<ParticleGroup> groups;
+    Vector<ParentInfo> infoSources;
+    List<ParticleGroup> groups;
 };
-
 }
 
 #endif

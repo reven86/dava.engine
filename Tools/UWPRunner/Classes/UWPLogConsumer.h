@@ -53,4 +53,4 @@ private:
     bool dataReceived = false;
 };
 
-#endif  // UWP_LOG_CONSUMER_H
+#endif // UWP_LOG_CONSUMER_H
