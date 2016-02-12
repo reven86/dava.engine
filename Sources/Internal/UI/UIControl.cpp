@@ -1502,38 +1502,38 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             if (!currentInput->touchLocker && IsPointInside(currentInput->point))
             {
                 if (multiInput || !currentInputID)
+            {
+                controlState |= STATE_PRESSED_INSIDE;
+                controlState &= ~STATE_NORMAL;
+                ++touchesInside;
+                ++totalTouches;
+                currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
+
+                // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
+                // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
+                currentInput->touchLocker = this;
+                if (exclusiveInput)
                 {
-                    controlState |= STATE_PRESSED_INSIDE;
-                    controlState &= ~STATE_NORMAL;
-                    ++touchesInside;
-                    ++totalTouches;
-                    currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-
-                    // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
-                    // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
-                    currentInput->touchLocker = this;
-                    if (exclusiveInput)
-                    {
-                        UIControlSystem::Instance()->SetExclusiveInputLocker(this,
-                                                                             currentInput->touchId);
-                    }
-
-                    PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
-                    if (!multiInput)
-                    {
-                        currentInputID = currentInput->touchId;
-                    }
-
-                    Input(currentInput);
-                    return true;
+                    UIControlSystem::Instance()->SetExclusiveInputLocker(this,
+                                                                            currentInput->touchId);
                 }
-                else
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+
+                if (!multiInput)
                 {
-                    currentInput->touchLocker = this;
-                    return true;
+                    currentInputID = currentInput->touchId;
                 }
+
+                Input(currentInput);
+                return true;
             }
+            else
+            {
+                currentInput->touchLocker = this;
+                return true;
+            }
+        }
         }
         break;
         case UIEvent::Phase::DRAG:
