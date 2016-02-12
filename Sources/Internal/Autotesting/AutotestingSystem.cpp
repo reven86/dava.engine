@@ -385,7 +385,8 @@ void AutotestingSystem::MakeScreenShot()
     Logger::Info("AutotestingSystem::MakeScreenShot");
     String currentDateTime = GetCurrentTimeString();
     screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-    Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+    String log = Format("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+    AutotestingDB::Instance()->Log("INFO", log.c_str());
     Renderer::RequestGLScreenShot(this);
 }
 

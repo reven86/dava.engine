@@ -80,8 +80,6 @@ public:
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 private:
-    int compareNames(DAVA::NMaterial* left, DAVA::NMaterial* right) const;
-
     MaterialModel* materialModel;
     eFilterType filterType;
 };
