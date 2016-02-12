@@ -48,8 +48,8 @@ class UIComponent;
 class UIControlFamily;
 class UIControlPackageContext;
 
-#define CONTROL_TOUCH_AREA  15
-    /**
+#define CONTROL_TOUCH_AREA 15
+/**
      \ingroup controlsystem
      \brief Compound of geometric transformations used to draw control in the screen space.
      */
@@ -77,22 +77,22 @@ public:
     mutable float32 cosA;
     mutable float32 sinA;
 
-    void AddGeometricData(const UIGeometricData &data)
+    void AddGeometricData(const UIGeometricData& data)
     {
         position.x = data.position.x - data.pivotPoint.x * data.scale.x + position.x * data.scale.x;
         position.y = data.position.y - data.pivotPoint.y * data.scale.y + position.y * data.scale.y;
-        if(data.angle != 0)
+        if (data.angle != 0)
         {
             float tmpX = position.x;
-            position.x = (tmpX - data.position.x) * data.cosA  + (data.position.y - position.y) * data.sinA + data.position.x;
-            position.y = (tmpX - data.position.x) * data.sinA  + (position.y - data.position.y) * data.cosA + data.position.y;
+            position.x = (tmpX - data.position.x) * data.cosA + (data.position.y - position.y) * data.sinA + data.position.x;
+            position.y = (tmpX - data.position.x) * data.sinA + (position.y - data.position.y) * data.cosA + data.position.y;
         }
         scale.x *= data.scale.x;
         scale.y *= data.scale.y;
         angle += data.angle;
-        if(angle != calculatedAngle)
+        if (angle != calculatedAngle)
         {
-            if(angle != data.angle)
+            if (angle != data.angle)
             {
                 cosA = cosf(angle);
                 sinA = sinf(angle);
@@ -111,18 +111,18 @@ public:
         unrotatedRect.dy = size.y * scale.y;
     }
 
-    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData &data))
+    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData& data))
     {
         AddGeometricData(data);
     }
 
-    void BuildTransformMatrix( Matrix3 &transformMatr ) const
+    void BuildTransformMatrix(Matrix3& transformMatr) const
     {
         Matrix3 pivotMatr;
-        pivotMatr.BuildTranslation( -pivotPoint );
+        pivotMatr.BuildTranslation(-pivotPoint);
 
         Matrix3 translateMatr;
-        translateMatr.BuildTranslation( position );
+        translateMatr.BuildTranslation(position);
         // well it must be here otherwise there is a bug!
         if (calculatedAngle != angle)
         {
@@ -131,40 +131,40 @@ public:
             calculatedAngle = angle;
         }
         Matrix3 rotateMatr;
-        rotateMatr.BuildRotation( cosA, sinA );
+        rotateMatr.BuildRotation(cosA, sinA);
 
         Matrix3 scaleMatr;
-        scaleMatr.BuildScale( scale );
+        scaleMatr.BuildScale(scale);
 
         transformMatr = pivotMatr * scaleMatr * rotateMatr * translateMatr;
     }
 
-    void GetPolygon( Polygon2 &polygon ) const
+    void GetPolygon(Polygon2& polygon) const
     {
         polygon.Clear();
-        polygon.points.reserve( 4 );
-        polygon.AddPoint( Vector2() );
-        polygon.AddPoint( Vector2( size.x, 0 ) );
-        polygon.AddPoint( size );
-        polygon.AddPoint( Vector2( 0, size.y ) );
+        polygon.points.reserve(4);
+        polygon.AddPoint(Vector2());
+        polygon.AddPoint(Vector2(size.x, 0));
+        polygon.AddPoint(size);
+        polygon.AddPoint(Vector2(0, size.y));
 
         Matrix3 transformMtx;
-        BuildTransformMatrix( transformMtx );
-        polygon.Transform( transformMtx );
+        BuildTransformMatrix(transformMtx);
+        polygon.Transform(transformMtx);
     }
 
-    const Rect &GetUnrotatedRect() const
+    const Rect& GetUnrotatedRect() const
     {
         return unrotatedRect;
     }
-    
+
     Rect GetAABBox() const
     {
         Polygon2 polygon;
         GetPolygon(polygon);
 
         AABBox2 aabbox;
-        for(int32 i = 0; i < polygon.GetPointCount(); ++i)
+        for (int32 i = 0; i < polygon.GetPointCount(); ++i)
         {
             aabbox.AddPoint(polygon.GetPoints()[i]);
         }
@@ -177,7 +177,7 @@ private:
     Rect unrotatedRect;
 };
 
-    /**
+/**
      \ingroup controlsystem
      \brief Base control system unit.
         Responsible for update, draw and user input processing.
@@ -236,14 +236,14 @@ public:
      */
     enum eControlState
     {
-        STATE_NORMAL            = 1 << 0,//!<Control isn't under influence of any activities.
-        STATE_PRESSED_OUTSIDE   = 1 << 1,//!<Mouse or touch comes into control but dragged outside of control.
-        STATE_PRESSED_INSIDE    = 1 << 2,//!<Mouse or touch comes into control.
-        STATE_DISABLED          = 1 << 3,//!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
-        STATE_SELECTED          = 1 << 4,//!<Just a state for base control, nothing more.
-        STATE_HOVER             = 1 << 5,//!<This bit is rise then mouse is over the control.
+        STATE_NORMAL = 1 << 0, //!<Control isn't under influence of any activities.
+        STATE_PRESSED_OUTSIDE = 1 << 1, //!<Mouse or touch comes into control but dragged outside of control.
+        STATE_PRESSED_INSIDE = 1 << 2, //!<Mouse or touch comes into control.
+        STATE_DISABLED = 1 << 3, //!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
+        STATE_SELECTED = 1 << 4, //!<Just a state for base control, nothing more.
+        STATE_HOVER = 1 << 5, //!<This bit is rise then mouse is over the control.
 
-        STATE_COUNT             = 6
+        STATE_COUNT = 6
     };
 
     static const char* STATE_NAMES[STATE_COUNT];
@@ -253,23 +253,23 @@ public:
      */
     enum eEventType
     {
-        EVENT_TOUCH_DOWN            = 1,//!<Trigger when mouse button or touch comes down inside the control.
-        EVENT_TOUCH_UP_INSIDE       = 2,//!<Trigger when mouse pressure or touch processed by the control is released.
-        EVENT_VALUE_CHANGED         = 3,//!<Used with sliders, spinners and switches. Trigger when value of the control is changed. Non-NULL callerData means that value is changed from code, not from UI.
-        EVENT_HOVERED_SET           = 4,//!<
-        EVENT_HOVERED_REMOVED       = 5,//!<
-        EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
-        EVENT_FOCUS_LOST            = 7,//!<Trigger when control losts focus
-        EVENT_TOUCH_UP_OUTSIDE      = 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
-        EVENT_ALL_ANIMATIONS_FINISHED	= 9,//!<Trigger when all animations associated with control are ended.
+        EVENT_TOUCH_DOWN = 1, //!<Trigger when mouse button or touch comes down inside the control.
+        EVENT_TOUCH_UP_INSIDE = 2, //!<Trigger when mouse pressure or touch processed by the control is released.
+        EVENT_VALUE_CHANGED = 3, //!<Used with sliders, spinners and switches. Trigger when value of the control is changed. Non-NULL callerData means that value is changed from code, not from UI.
+        EVENT_HOVERED_SET = 4, //!<
+        EVENT_HOVERED_REMOVED = 5, //!<
+        EVENT_FOCUS_SET = 6, //!<Trigger when control becomes focused
+        EVENT_FOCUS_LOST = 7, //!<Trigger when control losts focus
+        EVENT_TOUCH_UP_OUTSIDE = 8, //!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+        EVENT_ALL_ANIMATIONS_FINISHED = 9, //!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
     enum eDebugDrawPivotMode
     {
-        DRAW_NEVER          = 1, //!<Never draw the Pivot Point.
-        DRAW_ONLY_IF_NONZERO,    //!<Draw the Pivot Point only if it is defined (nonzero).
-        DRAW_ALWAYS              //!<Always draw the Pivot Point mark.
+        DRAW_NEVER = 1, //!<Never draw the Pivot Point.
+        DRAW_ONLY_IF_NONZERO, //!<Draw the Pivot Point only if it is defined (nonzero).
+        DRAW_ALWAYS //!<Always draw the Pivot Point mark.
     };
 
     friend class ControlSystem;
@@ -313,23 +313,23 @@ public:
      \param[in] spriteName Sprite path-name.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(const FilePath &spriteName, int32 spriteFrame);
+    virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame);
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] newSprite Pointer for a Sprite.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(Sprite *newSprite, int32 spriteFrame);
+    virtual void SetSprite(Sprite* newSprite, int32 spriteFrame);
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] spriteFrame Sprite frame.
      */
     virtual void SetSpriteFrame(int32 spriteFrame);
-	 /**
+    /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] frame Sprite frame name.
      */
-	virtual void SetSpriteFrame(const FastName& frameName);
+    virtual void SetSpriteFrame(const FastName& frameName);
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
@@ -346,12 +346,12 @@ public:
         Background is cloned inside control.
      \param[in] newBg control background you want to use for draw.
      */
-    virtual void SetBackground(UIControlBackground *newBg);
+    virtual void SetBackground(UIControlBackground* newBg);
     /**
      \brief Returns current background used for draw.
      \returns background used for draw.
      */
-    virtual UIControlBackground * GetBackground() const;
+    virtual UIControlBackground* GetBackground() const;
 
     virtual void SetLeftAlign(float32 align);
     virtual float32 GetLeftAlign() const;
@@ -398,13 +398,13 @@ public:
      \brief Sets the untransformed control rect.
      \param[in] rect new control rect.
      */
-    virtual void SetRect(const Rect &rect);
+    virtual void SetRect(const Rect& rect);
 
     /**
      \brief Sets the untransformed control absolute rect.
      \param[in] rect new control absolute rect.
      */
-    void SetAbsoluteRect(const Rect &rect);
+    void SetAbsoluteRect(const Rect& rect);
 
     /**
      \brief Returns untransformed control position.
@@ -412,7 +412,7 @@ public:
         geometric data received with GetGeometricData().
      \returns control position.
      */
-    inline const Vector2 &GetPosition() const;
+    inline const Vector2& GetPosition() const;
 
     /**
      \brief Returns untransformed control position.
@@ -426,13 +426,13 @@ public:
      \brief Sets the untransformed control position.
      \param[in] position new control position.
      */
-    virtual void SetPosition(const Vector2 &position);
+    virtual void SetPosition(const Vector2& position);
 
     /**
      \brief Sets the untransformed control absolute position.
      \param[in] position new control absolute position.
      */
-    void SetAbsolutePosition(const Vector2 &position);
+    void SetAbsolutePosition(const Vector2& position);
 
     /**
      \brief Returns untransformed control size.
@@ -440,13 +440,13 @@ public:
         geometric data received with GetGeometricData().
      \returns control size.
      */
-    inline const Vector2 &GetSize() const;
+    inline const Vector2& GetSize() const;
 
     /**
      \brief Sets the untransformed control size.
      \param[in] newSize new control size.
      */
-    virtual void SetSize(const Vector2 &newSize);
+    virtual void SetSize(const Vector2& newSize);
 
     /**
      \brief Returns control pivot point.
@@ -476,19 +476,19 @@ public:
      \brief Returns control scale.
      \returns control scale.
      */
-    inline const Vector2 &GetScale() const;
+    inline const Vector2& GetScale() const;
 
     /**
      \brief Sets the control scale.
      \param[in] newScale new control scale.
      */
-    inline void SetScale(const Vector2 &newScale);
+    inline void SetScale(const Vector2& newScale);
 
     /**
      \brief Returns actual control transformation and metrics.
      \returns control geometric data.
      */
-    virtual const UIGeometricData &GetGeometricData() const;
+    virtual const UIGeometricData& GetGeometricData() const;
 
     /**
      \brief Returns actual control local transformation and metrics.
@@ -502,7 +502,7 @@ public:
      Warning, rectInAbsoluteCoordinates isn't properly works for now!
      \param[in] rect new control rect.
      */
-    virtual void SetScaledRect(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+    virtual void SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates = false);
 
     /**
      \brief Returns control rotation angle in radians.
@@ -519,8 +519,8 @@ public:
     virtual void SetAngle(float32 angleInRad);
 
     void SetAngleInDegrees(float32 angle);
-    
-    virtual Vector2 GetContentPreferredSize(const Vector2 &constraints) const; // -1.0f means no constraint for axis
+
+    virtual Vector2 GetContentPreferredSize(const Vector2& constraints) const; // -1.0f means no constraint for axis
     virtual bool IsHeightDependsOnWidth() const;
 
     /**
@@ -671,14 +671,14 @@ public:
         Later you can find control by this name.
      \param[in] _name new control name.
      */
-    void SetName(const String & _name);
+    void SetName(const String& _name);
 
     /**
      \brief Returns current name of the control.
      \returns control name.
      */
-    inline const String & GetName() const;
-    inline const FastName & GetFastName() const;
+    inline const String& GetName() const;
+    inline const FastName& GetFastName() const;
 
     /**
      \brief Sets the contol tag.
@@ -698,12 +698,12 @@ public:
      \param[in] recursive use true if you want fro recursive search.
      \returns first control with given name.
      */
-    UIControl * FindByName(const String & name, bool recursive = true) const;
+    UIControl* FindByName(const String& name, bool recursive = true) const;
 
-    UIControl * FindByPath(const String & path) const;
-    
-    template<class C>
-    C FindByPath(const String & path) const
+    UIControl* FindByPath(const String& path) const;
+
+    template <class C>
+    C FindByPath(const String& path) const
     {
         return DynamicTypeCheck<C>(FindByPath(path));
     }
@@ -724,26 +724,26 @@ public:
      \brief Returns control parent.
      \returns if contorl hasn't parent returns NULL.
      */
-    UIControl *GetParent() const;
+    UIControl* GetParent() const;
 
     /**
      \brief Returns list of control children.
      \returns list of control children.
      */
-    const List<UIControl*> &GetChildren() const;
+    const List<UIControl*>& GetChildren() const;
     /**
      \brief Add control as a child.
         Children draws in the sequence of adding. If child has another parent
         this child removes from the parrent firstly.
      \param[in] control control to add.
      */
-    virtual void AddControl(UIControl *control);
+    virtual void AddControl(UIControl* control);
     /**
      \brief Removes control from the children list.
         If child isn't present in the method owners list nothin happens.
      \param[in] control control to remove.
      */
-    virtual void RemoveControl(UIControl *control);
+    virtual void RemoveControl(UIControl* control);
     /**
      \brief Remove this control from its parent, if any.
      */
@@ -758,56 +758,56 @@ public:
         If child isn't present in the owners list nothin happens.
      \param[in] _control control to bring front.
      */
-    virtual void BringChildFront(UIControl *_control);
+    virtual void BringChildFront(UIControl* _control);
     /**
      \brief Brings given child back.
         This child will be drawn at the bottom of the control children.
         If child isn't present in the owners list nothin happens.
      \param[in] _control control to bring back.
      */
-    virtual void BringChildBack(UIControl *_control);
+    virtual void BringChildBack(UIControl* _control);
     /**
      \brief Inserts given child before the requested.
      \param[in] _control control to insert.
      \param[in] _belowThisChild control to insert before. If this control isn't present in the
         children list new child adds at the top of the list.
      */
-    virtual void InsertChildBelow(UIControl * _control, UIControl * _belowThisChild);
+    virtual void InsertChildBelow(UIControl* _control, UIControl* _belowThisChild);
     /**
      \brief Inserts given child after the requested.
      \param[in] _control control to insert.
      \param[in] _aboveThisChild control to insert after. If this control isn't present in the
      children list new child adds at the top of the list.
      */
-    virtual void InsertChildAbove(UIControl * _control, UIControl * _aboveThisChild);
+    virtual void InsertChildAbove(UIControl* _control, UIControl* _aboveThisChild);
     /**
      \brief Sends given child before the requested.
         If one of the given children isn't present in the owners list nothin happens.
      \param[in] _control control to move.
      \param[in] _belowThisChild control to sends before.
      */
-    virtual void SendChildBelow(UIControl * _control, UIControl * _belowThisChild);
+    virtual void SendChildBelow(UIControl* _control, UIControl* _belowThisChild);
     /**
      \brief Sends given child after the requested.
         If one of the given children isn't present in the owners list nothin happens.
      \param[in] _control control to move.
      \param[in] _aboveThisChild control to sends after.
      */
-    virtual void SendChildAbove(UIControl * _control, UIControl * _aboveThisChild);
+    virtual void SendChildAbove(UIControl* _control, UIControl* _aboveThisChild);
 
     /**
      \brief Adds callback message for the event trigger.
      \param[in] eventType event type you want to process.
      \param[in] msg message should be calld when the event triggered.
      */
-    void AddEvent(int32 eventType, const Message &msg);
+    void AddEvent(int32 eventType, const Message& msg);
     /**
      \brief Removes callback message for the event trigger.
      \param[in] eventType event type you want to remove.
      \param[in] msg message to remove.
      \returns true if event is removed.
      */
-    bool RemoveEvent(int32 eventType, const Message &msg);
+    bool RemoveEvent(int32 eventType, const Message& msg);
     /**
      \brief Function to remove all events from event dispatcher.
      \returns true if we removed something, false if not
@@ -824,20 +824,20 @@ public:
      \param[in] eventType event type you want to process.
      \param[in] callerData data you want to send to the all messages.
      */
-    void PerformEventWithData(int32 eventType, void *callerData);
+    void PerformEventWithData(int32 eventType, void* callerData);
 
     /**
      \brief Creates the absoulutely identic copy of the control.
      \returns control copy.
      */
-    virtual UIControl *Clone();
+    virtual UIControl* Clone();
     /**
      \brief Copies all contorl parameters from the sended control.
      \param[in] srcControl Source control to copy parameters from.
      */
-    virtual void CopyDataFrom(UIControl *srcControl);
+    virtual void CopyDataFrom(UIControl* srcControl);
 
-     //Animation helpers
+    //Animation helpers
 
     /**
      \brief Starts wait animation for the control.
@@ -845,7 +845,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     WaitAnimation(float32 time, int32 track = 0);
+    Animation* WaitAnimation(float32 time, int32 track = 0);
     /**
      \brief Starts move and size animation for the control.
      \param[in] rect New control position and size.
@@ -854,7 +854,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     MoveAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* MoveAnimation(const Rect& rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts move and scale animation for the control. Changing scale instead of size.
      \param[in] rect New control position and size.
@@ -863,7 +863,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* ScaledRectAnimation(const Rect& rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts scale animation for the control. Changing scale instead of size.
      \param[in] newSize New control size.
@@ -872,7 +872,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* ScaledSizeAnimation(const Vector2& newSize, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control position animation.
      \param[in] _position New control position.
@@ -881,7 +881,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* PositionAnimation(const Vector2& _position, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control size animation.
      \param[in] _size New control size.
@@ -890,7 +890,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* SizeAnimation(const Vector2& _size, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control scale animation.
      \param[in] newScale New control scale.
@@ -899,7 +899,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* ScaleAnimation(const Vector2& newScale, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control rotation angle animation.
      \param[in] newAngle New control rotation angle.
@@ -908,7 +908,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     AngleAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* AngleAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts input enabling switching animation. This animation changing control
         input enabling state on the next frame after the animation start.
@@ -917,7 +917,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     TouchableAnimation(bool touchable, bool hierarhic = true, int32 track = 0);
+    Animation* TouchableAnimation(bool touchable, bool hierarhic = true, int32 track = 0);
     /**
      \brief Starts control disabling animation. This animation changing control
         disable state on the next frame after the animation start.
@@ -926,7 +926,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     DisabledAnimation(bool disabled, bool hierarhic = true, int32 track = 0);
+    Animation* DisabledAnimation(bool disabled, bool hierarhic = true, int32 track = 0);
     /**
      \brief Starts control visible animation. This animation changing control visibility
         on the next frame after the animation start.
@@ -934,14 +934,14 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		VisibleAnimation(bool visible, int32 track = 0);
+    Animation* VisibleAnimation(bool visible, int32 track = 0);
     /**
      \brief Starts control removation animation. This animation removes control from the parent
      on the next frame  after the animation start.
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *     RemoveControlAnimation(int32 track = 0);
+    Animation* RemoveControlAnimation(int32 track = 0);
     /**
      \brief Starts control color animation.
      \param[in] New control color.
@@ -950,13 +950,13 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation * ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation* ColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 
 protected:
-    void TouchableAnimationCallback(BaseObject * caller, void * param, void *callerData);
-    void DisabledAnimationCallback(BaseObject * caller, void * param, void *callerData);
-    void VisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
-    void RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData);
+    void TouchableAnimationCallback(BaseObject* caller, void* param, void* callerData);
+    void DisabledAnimationCallback(BaseObject* caller, void* param, void* callerData);
+    void VisibleAnimationCallback(BaseObject* caller, void* param, void* callerData);
+    void RemoveControlAnimationCallback(BaseObject* caller, void* param, void* callerData);
 
 public:
     /**
@@ -964,9 +964,9 @@ public:
      \param[in] _debugDrawEnabled New debug draw value.
      \param[in] hierarchic Is value need to be changed in all coltrol children.
      */
-    void    SetDebugDraw(bool _debugDrawEnabled, bool hierarchic = false);
-    void    SetDebugDrawColor(const Color& color);
-    const Color &GetDebugDrawColor() const;
+    void SetDebugDraw(bool _debugDrawEnabled, bool hierarchic = false);
+    void SetDebugDrawColor(const Color& color);
+    const Color& GetDebugDrawColor() const;
 
     /**
      \brief Set the draw pivot point mode for the control.
@@ -1028,14 +1028,14 @@ public:
      \param[in] newFullScreenSize New full screen size in virtual coordinates.
         Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
      */
-    virtual void SystemScreenSizeDidChanged(const Rect &newFullScreenRect);
+    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
     /**
      \brief Called when screen size is changed.
         This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
      \param[in] newFullScreenSize New full screen size in virtual coordinates.
         Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
      */
-    virtual void ScreenSizeDidChanged(const Rect &newFullScreenRect);
+    virtual void ScreenSizeDidChanged(const Rect& newFullScreenRect);
 
     /**
      \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
@@ -1051,13 +1051,13 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem
+    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control
      \param[in] parentColor draw color of parent background.
      */
-    virtual void SetParentColor(const Color &parentColor);
+    virtual void SetParentColor(const Color& parentColor);
 
     /**
      \brief Calls on every input event. Calls SystemInput() for all control children.
@@ -1066,23 +1066,23 @@ public:
      \param[in] currentInput Input information.
      \returns true if control processed this input.
      */
-    virtual bool SystemInput(UIEvent *currentInput);
+    virtual bool SystemInput(UIEvent* currentInput);
     /**
      \brief Process incoming input and if it's necessary calls Input() method for the control.
         Internal method used by ControlSystem.
      \param[in] currentInput Input information.
      \returns true if control processed this input.
      */
-    virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
+    virtual bool SystemProcessInput(UIEvent* currentInput); // Internal method used by ControlSystem
 
-    Function<bool(UIControl*,UIEvent*)> customSystemProcessInput;
+    Function<bool(UIControl*, UIEvent*)> customSystemProcessInput;
 
     /**
      \brief Calls when input processd by control is cancelled.
         Internal method used by ControlSystem.
      \param[in] currentInput Input information.
      */
-    virtual void SystemInputCancelled(UIEvent *currentInput);
+    virtual void SystemInputCancelled(UIEvent* currentInput);
 
     /**
      \brief Called when control is set as the hovered (by the mouse) control.
@@ -1114,13 +1114,13 @@ public:
         Called only if control inputEnable is true.
      \param[in] currentInput Input information.
      */
-    virtual void Input(UIEvent *currentInput);
+    virtual void Input(UIEvent* currentInput);
     /**
      \brief Calls when input processd by control is cancelled.
         Should be overriden to implement custom input cancelling reaction.
      \param[in] currentInput Input information.
      */
-    virtual void InputCancelled(UIEvent *currentInput);
+    virtual void InputCancelled(UIEvent* currentInput);
     /**
      \brief Calls on every frame with frame delata time parameter.
         Should be overriden to implement perframe functionality.
@@ -1134,14 +1134,14 @@ public:
         Default realization is drawing UIControlBackground with requested parameters.
      \param[in] geometricData Control geometric data.
      */
-    virtual void Draw(const UIGeometricData &geometricData);
+    virtual void Draw(const UIGeometricData& geometricData);
     /**
      \brief Calls on every frame with UIGeometricData after all children is drawed.
         Can be overriden to implement after children drawing.
         Default realization is empty.
      \param[in] geometricData Control geometric data.
      */
-    virtual void DrawAfterChilds(const UIGeometricData &geometricData);
+    virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
 protected:
     virtual void SystemWillBecomeVisible();
@@ -1151,17 +1151,17 @@ protected:
     virtual void WillBecomeInvisible();
 
 public:
-        //TODO: Борода напиши дескрипшн.
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    //TODO: Борода напиши дескрипшн.
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     /**
      \brief Save the control to YAML node and return it.
      */
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
+    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
 
     /**
      \brief Called when this control and his children are loaded.
      */
-    virtual void LoadFromYamlNodeCompleted() {};
+    virtual void LoadFromYamlNodeCompleted(){};
 
     /**
      \brief Returns control in hierarchy status.
@@ -1180,20 +1180,20 @@ public:
      \param[in] expandWithFocus Is area should be expanded with focus.
      \returns True if inside the control rect.
      */
-    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false) const;
+    virtual bool IsPointInside(const Vector2& point, bool expandWithFocus = false) const;
 
-    virtual bool IsLostFocusAllowed(UIControl *newFocus);
+    virtual bool IsLostFocusAllowed(UIControl* newFocus);
 
-    virtual void SystemOnFocusLost(UIControl *newFocus);
+    virtual void SystemOnFocusLost(UIControl* newFocus);
 
     virtual void SystemOnFocused();
 
-    virtual void OnFocusLost(UIControl *newFocus);
+    virtual void OnFocusLost(UIControl* newFocus);
 
     virtual void OnFocused();
 
-	virtual void OnAllAnimationsFinished();
-	
+    virtual void OnAllAnimationsFinished();
+
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
@@ -1212,19 +1212,19 @@ private:
     FastName fastName;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
 protected:
-    UIControl *parent;
+    UIControl* parent;
     List<UIControl*> childs;
 
 public:
     //TODO: store geometric data in UIGeometricData
-    Vector2 relativePosition;//!<position in the parent control.
-    Vector2 size;//!<control size.
+    Vector2 relativePosition; //!<position in the parent control.
+    Vector2 size; //!<control size.
 
-    Vector2 scale;//!<control scale. Scale relative to pivot point.
-    float32 angle;//!<control rotation angle. Rotation around pivot point.
+    Vector2 scale; //!<control scale. Scale relative to pivot point.
+    float32 angle; //!<control rotation angle. Rotation around pivot point.
 
 protected:
-    UIControlBackground *background;
+    UIControlBackground* background;
     int32 controlState;
     int32 prevControlState;
 
@@ -1254,13 +1254,13 @@ protected:
 
     mutable UIGeometricData tempGeometricData;
 
-    EventDispatcher *eventDispatcher;
+    EventDispatcher* eventDispatcher;
 
     Color debugDrawColor;
 
     eDebugDrawPivotMode drawPivotPointMode;
 
-    void SetParent(UIControl *newParent);
+    void SetParent(UIControl* newParent);
 
     virtual ~UIControl();
 
@@ -1273,25 +1273,25 @@ protected:
     void UnregisterInputProcessor();
     void UnregisterInputProcessors(int32 processorsCount);
 
-    void DrawDebugRect(const UIGeometricData &geometricData, bool useAlpha = false);
-    void DrawPivotPoint(const Rect &drawRect);
+    void DrawDebugRect(const UIGeometricData& geometricData, bool useAlpha = false);
+    void DrawPivotPoint(const Rect& drawRect);
 
 private:
-    int32  tag;
+    int32 tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
 
-/* Components */
+    /* Components */
 public:
-    void AddComponent(UIComponent * component);
-    void InsertComponentAt(UIComponent * component, uint32 index);
-    void RemoveComponent(UIComponent * component);
+    void AddComponent(UIComponent* component);
+    void InsertComponentAt(UIComponent* component, uint32 index);
+    void RemoveComponent(UIComponent* component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
     void RemoveAllComponents();
 
-    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
-    int32 GetComponentIndex(const UIComponent *component) const;
-    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+    UIComponent* GetComponent(uint32 componentType, uint32 index = 0) const;
+    int32 GetComponentIndex(const UIComponent* component) const;
+    UIComponent* GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
     template <class T>
     inline T* GetComponent(uint32 index = 0) const
@@ -1313,16 +1313,16 @@ public:
     uint32 GetComponentCount(uint32 componentType) const;
     uint64 GetAvailableComponentFlags() const;
 
-    const Vector<UIComponent *>& GetComponents();
+    const Vector<UIComponent*>& GetComponents();
 
 private:
-    Vector<UIComponent *> components;
-    UIControlFamily * family;
-    void RemoveComponent(const Vector<UIComponent *>::iterator & it);
+    Vector<UIComponent*> components;
+    UIControlFamily* family;
+    void RemoveComponent(const Vector<UIComponent*>::iterator& it);
     void UpdateFamily();
-/* Components */
+    /* Components */
 
-/* Styles */
+    /* Styles */
 public:
     void AddClass(const FastName& clazz);
     void RemoveClass(const FastName& clazz);
@@ -1331,14 +1331,14 @@ public:
     void ResetTaggedClass(const FastName& tag);
 
     String GetClassesAsString() const;
-    void SetClassesFromString(const String &classes);
-    
+    void SetClassesFromString(const String& classes);
+
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
-    void SetLocalPropertySet(const UIStyleSheetPropertySet &set);
+    void SetLocalPropertySet(const UIStyleSheetPropertySet& set);
     void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
-    
+
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
-    void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
+    void SetStyledPropertySet(const UIStyleSheetPropertySet& set);
 
     bool IsStyleSheetInitialized() const;
     void SetStyleSheetInitialized();
@@ -1360,25 +1360,25 @@ private:
     UIStyleSheetClassSet classes;
     UIStyleSheetPropertySet localProperties;
     UIStyleSheetPropertySet styledProperties;
-    RefPtr< UIControlPackageContext > packageContext;
+    RefPtr<UIControlPackageContext> packageContext;
     UIControl* parentWithContext;
 
     void PropagateParentWithContext(UIControl* newParentWithContext);
-/* Styles */
+    /* Styles */
 
 public:
     void SystemNotifyVisibilityChanged();
-    
+
     virtual int32 GetBackgroundComponentsCount() const;
-    virtual UIControlBackground *GetBackgroundComponent(int32 index) const;
-    virtual UIControlBackground *CreateBackgroundComponent(int32 index) const;
-    virtual void SetBackgroundComponent(int32 index, UIControlBackground *bg);
+    virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
+    virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;
+    virtual void SetBackgroundComponent(int32 index, UIControlBackground* bg);
     virtual String GetBackgroundComponentName(int32 index) const;
-    
+
     virtual int32 GetInternalControlsCount() const;
-    virtual UIControl *GetInternalControl(int32 index) const;
-    virtual UIControl *CreateInternalControl(int32 index) const;
-    virtual void SetInternalControl(int32 index, UIControl *control);
+    virtual UIControl* GetInternalControl(int32 index) const;
+    virtual UIControl* CreateInternalControl(int32 index) const;
+    virtual void SetInternalControl(int32 index, UIControl* control);
     virtual String GetInternalControlName(int32 index) const;
     virtual String GetInternalControlDescriptions() const;
 
@@ -1423,22 +1423,22 @@ const Vector2& UIControl::GetPivot() const
     return pivot;
 }
 
-const Vector2 & UIControl::GetScale() const
+const Vector2& UIControl::GetScale() const
 {
     return scale;
 }
 
-void UIControl::SetScale( const Vector2 &newScale )
+void UIControl::SetScale(const Vector2& newScale)
 {
     scale = newScale;
 }
 
-const Vector2 &UIControl::GetSize() const
+const Vector2& UIControl::GetSize() const
 {
     return size;
 }
 
-const Vector2 &UIControl::GetPosition() const
+const Vector2& UIControl::GetPosition() const
 {
     return relativePosition;
 }
@@ -1453,12 +1453,12 @@ float32 UIControl::GetAngleInDegrees() const
     return RadToDeg(angle);
 }
 
-const String & UIControl::GetName() const
+const String& UIControl::GetName() const
 {
     return name;
 }
 
-const FastName & UIControl::GetFastName() const
+const FastName& UIControl::GetFastName() const
 {
     return fastName;
 }

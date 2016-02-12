@@ -613,871 +613,871 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     }
 }
 
-    Vector2 UIControl::GetContentPreferredSize(const Vector2 &constraints) const
+Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
+{
+    if (background != nullptr && background->GetSprite() != nullptr)
     {
-        if (background != nullptr && background->GetSprite() != nullptr)
+        if (constraints.dx > 0)
         {
-            if (constraints.dx > 0)
-            {
-                Vector2 size;
-                size.dx = constraints.dx;
-                size.dy = background->GetSprite()->GetHeight() * size.dx / background->GetSprite()->GetWidth();
-                return size;
-            }
-            else
-            {
-                return background->GetSprite()->GetSize();
-            }
-        }
-        return Vector2(0.0f, 0.0f);
-    }
-
-    bool UIControl::IsHeightDependsOnWidth() const
-    {
-        if (background == nullptr || background->GetSprite() == nullptr)
-        {
-            return false;
-        }
-
-        UIControlBackground::eDrawType dt = background->GetDrawType();
-        return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
-    }
-
-    void UIControl::SetVisible(bool isVisible)
-    {
-        if (visible == isVisible)
-        {
-            return;
-        }
-
-        visible = isVisible;
-
-        SetLayoutDirty();
-
-        SystemNotifyVisibilityChanged();
-    }
-
-    void UIControl::SystemNotifyVisibilityChanged()
-    {
-        if (parent && parent->IsOnScreen())
-        {
-            if (GetVisible())
-            {
-                SystemWillBecomeVisible();
-            }
-            else
-            {
-                SystemWillBecomeInvisible();
-            }
-        }
-    }
-
-    void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
-    {
-        if (isEnabled != inputEnabled)
-        {
-            inputEnabled = isEnabled;
-            if (inputEnabled)
-            {
-                RegisterInputProcessor();
-            }
-            else
-            {
-                UnregisterInputProcessor();
-            }
-        }
-        if (hierarchic)
-        {
-            List<UIControl*>::iterator it = childs.begin();
-            for (; it != childs.end(); ++it)
-            {
-                (*it)->SetInputEnabled(isEnabled, hierarchic);
-            }
-        }
-    }
-
-    void UIControl::SetFocusEnabled(bool isEnabled)
-    {
-        focusEnabled = isEnabled;
-    }
-
-    bool UIControl::GetDisabled() const
-    {
-        return ((controlState & STATE_DISABLED) != 0);
-    }
-
-    void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
-    {
-        if (isDisabled)
-        {
-            controlState |= STATE_DISABLED;
-
-            // Cancel all inputs because of DF-2943.
-            UIControlSystem::Instance()->CancelInputs(this);
+            Vector2 size;
+            size.dx = constraints.dx;
+            size.dy = background->GetSprite()->GetHeight() * size.dx / background->GetSprite()->GetWidth();
+            return size;
         }
         else
         {
-            controlState &= ~STATE_DISABLED;
-        }
-
-        if (hierarchic)
-        {
-            List<UIControl*>::iterator it = childs.begin();
-            for (; it != childs.end(); ++it)
-            {
-                (*it)->SetDisabled(isDisabled, hierarchic);
-            }
+            return background->GetSprite()->GetSize();
         }
     }
+    return Vector2(0.0f, 0.0f);
+}
 
-    bool UIControl::GetSelected() const
+bool UIControl::IsHeightDependsOnWidth() const
+{
+    if (background == nullptr || background->GetSprite() == nullptr)
     {
-        return ((controlState & STATE_SELECTED) != 0);
-    }
-
-    void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
-    {
-        if (isSelected)
-        {
-            controlState |= STATE_SELECTED;
-        }
-        else
-        {
-            controlState &= ~STATE_SELECTED;
-        }
-
-        if (hierarchic)
-        {
-            List<UIControl*>::iterator it = childs.begin();
-            for (; it != childs.end(); ++it)
-            {
-                (*it)->SetSelected(isSelected, hierarchic);
-            }
-        }
-    }
-
-    void UIControl::SetClipContents(bool isNeedToClipContents)
-    {
-        clipContents = isNeedToClipContents;
-    }
-
-    bool UIControl::GetHover() const
-    {
-        return (controlState & STATE_HOVER) != 0;
-    }
-
-    void UIControl::AddControl(UIControl* control)
-    {
-        control->Retain();
-        control->RemoveFromParent();
-
-        bool inHierarchy = InViewHierarchy();
-        if (inHierarchy)
-        {
-            control->SystemWillAppear();
-        }
-        control->isUpdated = false;
-        control->SetParent(this);
-        childs.push_back(control);
-        if (inHierarchy)
-        {
-            control->SystemDidAppear();
-        }
-
-        if (IsOnScreen() && control->GetVisible())
-            control->SystemWillBecomeVisible();
-
-        isIteratorCorrupted = true;
-        SetLayoutDirty();
-    }
-
-    void UIControl::RemoveControl(UIControl* control)
-    {
-        if (NULL == control)
-        {
-            return;
-        }
-
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == control)
-            {
-                if (IsOnScreen() && control->GetVisible())
-                    control->SystemWillBecomeInvisible();
-
-                bool inHierarchy = InViewHierarchy();
-                if (inHierarchy)
-                {
-                    control->SystemWillDisappear();
-                }
-                control->SetParent(NULL);
-                childs.erase(it);
-                if (inHierarchy)
-                {
-                    control->SystemDidDisappear();
-                }
-                control->Release();
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-    }
-
-    void UIControl::RemoveFromParent()
-    {
-        UIControl* parentControl = this->GetParent();
-        if (parentControl)
-        {
-            parentControl->RemoveControl(this);
-        }
-    }
-
-    void UIControl::RemoveAllControls()
-    {
-        while (!childs.empty())
-        {
-            RemoveControl(childs.front());
-        }
-    }
-    void UIControl::BringChildFront(UIControl* _control)
-    {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _control)
-            {
-                childs.erase(it);
-                childs.push_back(_control);
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-    }
-    void UIControl::BringChildBack(UIControl* _control)
-    {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _control)
-            {
-                childs.erase(it);
-                childs.push_front(_control);
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-    }
-
-    void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
-    {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _belowThisChild)
-            {
-                control->Retain();
-                control->RemoveFromParent();
-
-                bool inHierarchy = InViewHierarchy();
-                if (inHierarchy)
-                {
-                    control->SystemWillAppear();
-                }
-                childs.insert(it, control);
-                control->SetParent(this);
-                if (inHierarchy)
-                {
-                    control->SystemDidAppear();
-                }
-
-                if (IsOnScreen() && control->GetVisible())
-                    control->SystemWillBecomeVisible();
-
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-
-        AddControl(control);
-    }
-
-    void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
-    {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _aboveThisChild)
-            {
-                control->Retain();
-                control->RemoveFromParent();
-
-                bool inHierarchy = InViewHierarchy();
-                if (inHierarchy)
-                {
-                    control->SystemWillAppear();
-                }
-                childs.insert(++it, control);
-                control->SetParent(this);
-                if (inHierarchy)
-                {
-                    control->SystemDidAppear();
-                }
-
-                if (IsOnScreen() && control->GetVisible())
-                    control->SystemWillBecomeVisible();
-
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-
-        AddControl(control);
-    }
-
-    void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
-    {
-        //TODO: Fix situation when controls not from this hierarchy
-
-        // firstly find control in list and erase it
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _control)
-            {
-                childs.erase(it);
-                isIteratorCorrupted = true;
-                break;
-            }
-        }
-        // after that find place where we should put the control and do that
-        it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _belowThisChild)
-            {
-                childs.insert(it, _control);
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-        DVASSERT_MSG(0, "Control _belowThisChild not found");
-    }
-
-    void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
-    {
-        //TODO: Fix situation when controls not from this hierarhy
-
-        // firstly find control in list and erase it
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _control)
-            {
-                childs.erase(it);
-                isIteratorCorrupted = true;
-                break;
-            }
-        }
-        // after that find place where we should put the control and do that
-        it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            if ((*it) == _aboveThisChild)
-            {
-                childs.insert(++it, _control);
-                isIteratorCorrupted = true;
-                SetLayoutDirty();
-                return;
-            }
-        }
-
-        DVASSERT_MSG(0, "Control _aboveThisChild not found");
-    }
-
-    UIControl* UIControl::Clone()
-    {
-        UIControl* c = new UIControl(Rect(relativePosition.x, relativePosition.y, size.x, size.y));
-        c->CopyDataFrom(this);
-        return c;
-    }
-
-    void UIControl::CopyDataFrom(UIControl* srcControl)
-    {
-        relativePosition = srcControl->relativePosition;
-        size = srcControl->size;
-        pivot = srcControl->pivot;
-        scale = srcControl->scale;
-        angle = srcControl->angle;
-        SafeRelease(background);
-        background = srcControl->background->Clone();
-
-        tag = srcControl->GetTag();
-        name = srcControl->name;
-        fastName = srcControl->fastName;
-
-        controlState = srcControl->controlState;
-        visible = srcControl->visible;
-        inputEnabled = srcControl->inputEnabled;
-        clipContents = srcControl->clipContents;
-
-        drawPivotPointMode = srcControl->drawPivotPointMode;
-        debugDrawColor = srcControl->debugDrawColor;
-        debugDrawEnabled = srcControl->debugDrawEnabled;
-
-        classes = srcControl->classes;
-        localProperties = srcControl->localProperties;
-        styleSheetDirty = srcControl->styleSheetDirty;
-        styleSheetInitialized = false;
-        layoutDirty = srcControl->layoutDirty;
-        packageContext = srcControl->packageContext;
-
-        SafeRelease(eventDispatcher);
-        if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
-        {
-            Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
-                                   "Event copying is forbidden.",
-                                   srcControl->GetClassName().c_str(), srcControl->GetName().c_str());
-        }
-
-        RemoveAllComponents();
-        for (UIComponent* srcComponent : srcControl->components)
-        {
-            UIComponent *dest = srcComponent->Clone();
-            AddComponent(dest);
-            SafeRelease(dest);
-        }
-
-        RemoveAllControls();
-        if (inputEnabled)
-        {
-            inputProcessorsCount = 1;
-        }
-        else
-        {
-            inputProcessorsCount = 0;
-        }
-
-        // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
-        // unnecessary children we have on the for example UIButton.
-        const List<UIControl*>& realChildren = srcControl->GetChildren();
-        List<UIControl*>::const_iterator it = realChildren.begin();
-        for (; it != realChildren.end(); ++it)
-        {
-            UIControl* c = (*it)->Clone();
-            AddControl(c);
-            c->Release();
-        }
-    }
-
-    bool UIControl::InViewHierarchy() const
-    {
-        if (UIControlSystem::Instance()->GetScreen() == this ||
-            UIControlSystem::Instance()->GetPopupContainer() == this)
-        {
-            return true;
-        }
-
-        if (parent)
-            return parent->InViewHierarchy();
-
         return false;
     }
 
-    bool UIControl::IsOnScreen() const
+    UIControlBackground::eDrawType dt = background->GetDrawType();
+    return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
+}
+
+void UIControl::SetVisible(bool isVisible)
+{
+    if (visible == isVisible)
     {
-        if (UIControlSystem::Instance()->GetScreen() == this ||
-            UIControlSystem::Instance()->GetPopupContainer() == this)
-        {
-            return GetVisible();
-        }
-
-        if (!GetVisible() || !parent)
-            return false;
-
-        return parent->IsOnScreen();
+        return;
     }
 
-    void UIControl::SystemWillAppear()
+    visible = isVisible;
+
+    SetLayoutDirty();
+
+    SystemNotifyVisibilityChanged();
+}
+
+void UIControl::SystemNotifyVisibilityChanged()
+{
+    if (parent && parent->IsOnScreen())
     {
-        styleSheetInitialized = false;
-
-        WillAppear();
-
-        List<UIControl*>::iterator it = childs.begin();
-        while (it != childs.end())
+        if (GetVisible())
         {
-            isIteratorCorrupted = false;
-            UIControl* current = *it;
-            current->Retain();
-            current->SystemWillAppear();
-            current->Release();
-            if (isIteratorCorrupted)
-            {
-                it = childs.begin();
-                continue;
-            }
-            ++it;
-        }
-    }
-
-    void UIControl::SystemWillDisappear()
-    {
-        List<UIControl*>::iterator it = childs.begin();
-        while (it != childs.end())
-        {
-            isIteratorCorrupted = false;
-            UIControl* current = *it;
-            current->Retain();
-            current->SystemWillDisappear();
-            current->Release();
-            if (isIteratorCorrupted)
-            {
-                it = childs.begin();
-                continue;
-            }
-            ++it;
-        }
-
-        WillDisappear();
-    }
-
-    void UIControl::SystemDidAppear()
-    {
-        DidAppear();
-
-        List<UIControl*>::iterator it = childs.begin();
-        while (it != childs.end())
-        {
-            isIteratorCorrupted = false;
-            UIControl* current = *it;
-            current->Retain();
-            current->SystemDidAppear();
-            current->Release();
-            if (isIteratorCorrupted)
-            {
-                it = childs.begin();
-                continue;
-            }
-            ++it;
-        }
-    }
-
-    void UIControl::SystemDidDisappear()
-    {
-        DidDisappear();
-
-        List<UIControl*>::iterator it = childs.begin();
-        while (it != childs.end())
-        {
-            isIteratorCorrupted = false;
-            UIControl* current = *it;
-            current->Retain();
-            current->SystemDidDisappear();
-            current->Release();
-            if (isIteratorCorrupted)
-            {
-                it = childs.begin();
-                continue;
-            }
-            ++it;
-        }
-    }
-
-    void UIControl::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
-    {
-        ScreenSizeDidChanged(newFullScreenRect);
-
-        List<UIControl*>::iterator it = childs.begin();
-        while (it != childs.end())
-        {
-            isIteratorCorrupted = false;
-            UIControl* current = *it;
-            current->Retain();
-            current->SystemScreenSizeDidChanged(newFullScreenRect);
-            current->Release();
-            if (isIteratorCorrupted)
-            {
-                it = childs.begin();
-                continue;
-            }
-            ++it;
-        }
-    }
-
-    void UIControl::WillAppear()
-    {
-    }
-    void UIControl::WillDisappear()
-    {
-    }
-    void UIControl::DidAppear()
-    {
-    }
-    void UIControl::DidDisappear()
-    {
-    }
-    void UIControl::ScreenSizeDidChanged(const Rect& newFullScreenRect)
-    {
-    }
-
-    void UIControl::SystemUpdate(float32 timeElapsed)
-    {
-        UIControlSystem::Instance()->updateCounter++;
-        Update(timeElapsed);
-        isUpdated = true;
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
-        {
-            (*it)->isUpdated = false;
-        }
-
-        if (styleSheetDirty || prevControlState != controlState)
-        {
-            UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
-            prevControlState = controlState;
-        }
-
-        if (layoutDirty)
-        {
-            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            if (layoutSystem->IsAutoupdatesEnabled())
-            {
-                layoutSystem->ApplyLayout(this, true);
-            }
-        }
-        else if (layoutPositionDirty)
-        {
-            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
-            {
-                layoutSystem->ApplyLayoutNonRecursive(parent);
-            }
-        }
-
-        it = childs.begin();
-        while (it != childs.end())
-        {
-            isIteratorCorrupted = false;
-            UIControl* current = *it;
-            if (!current->isUpdated)
-            {
-                current->Retain();
-                current->SystemUpdate(timeElapsed);
-                current->Release();
-                if (isIteratorCorrupted)
-                {
-                    it = childs.begin();
-                    continue;
-                }
-            }
-            ++it;
-        }
-    }
-
-    void UIControl::SystemDraw(const UIGeometricData& geometricData)
-    {
-        if (!GetVisible())
-            return;
-
-        UIControlSystem::Instance()->drawCounter++;
-        UIGeometricData drawData = GetLocalGeometricData();
-        drawData.AddGeometricData(geometricData);
-
-        const Color& parentColor = parent ? parent->GetBackground()->GetDrawColor() : Color::White;
-
-        SetParentColor(parentColor);
-
-        const Rect& unrotatedRect = drawData.GetUnrotatedRect();
-
-        if (clipContents)
-        { //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
-            RenderSystem2D::Instance()->PushClip();
-            RenderSystem2D::Instance()->IntersectClipRect(unrotatedRect); //anyway it doesn't work with rotation
-        }
-
-        Draw(drawData);
-
-        isIteratorCorrupted = false;
-        List<UIControl*>::iterator it = childs.begin();
-        List<UIControl*>::iterator itEnd = childs.end();
-        for (; it != itEnd; ++it)
-        {
-            (*it)->SystemDraw(drawData);
-            DVASSERT(!isIteratorCorrupted);
-        }
-
-        DrawAfterChilds(drawData);
-
-        if (clipContents)
-        {
-            RenderSystem2D::Instance()->PopClip();
-        }
-
-        if (debugDrawEnabled)
-        {
-            RenderSystem2D::Instance()->PushClip();
-            RenderSystem2D::Instance()->RemoveClip();
-            DrawDebugRect(drawData, false);
-            DrawPivotPoint(unrotatedRect);
-            RenderSystem2D::Instance()->PopClip();
-        }
-    }
-
-    void UIControl::SetParentColor(const Color& parentColor)
-    {
-        GetBackground()->SetParentColor(parentColor);
-    }
-
-    void UIControl::DrawDebugRect(const UIGeometricData& gd, bool useAlpha)
-    {
-        RenderSystem2D::Instance()->PushClip();
-
-        auto drawColor = debugDrawColor;
-        if (useAlpha)
-        {
-            drawColor.a = 0.4f;
-        }
-
-        if (gd.angle != 0.0f)
-        {
-            Polygon2 poly;
-            gd.GetPolygon(poly);
-
-            RenderSystem2D::Instance()->DrawPolygon(poly, true, drawColor);
+            SystemWillBecomeVisible();
         }
         else
         {
-            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), drawColor);
+            SystemWillBecomeInvisible();
         }
+    }
+}
 
-        RenderSystem2D::Instance()->PopClip();
+void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
+{
+    if (isEnabled != inputEnabled)
+    {
+        inputEnabled = isEnabled;
+        if (inputEnabled)
+        {
+            RegisterInputProcessor();
+        }
+        else
+        {
+            UnregisterInputProcessor();
+        }
+    }
+    if (hierarchic)
+    {
+        List<UIControl*>::iterator it = childs.begin();
+        for (; it != childs.end(); ++it)
+        {
+            (*it)->SetInputEnabled(isEnabled, hierarchic);
+        }
+    }
+}
+
+void UIControl::SetFocusEnabled(bool isEnabled)
+{
+    focusEnabled = isEnabled;
+}
+
+bool UIControl::GetDisabled() const
+{
+    return ((controlState & STATE_DISABLED) != 0);
+}
+
+void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
+{
+    if (isDisabled)
+    {
+        controlState |= STATE_DISABLED;
+
+        // Cancel all inputs because of DF-2943.
+        UIControlSystem::Instance()->CancelInputs(this);
+    }
+    else
+    {
+        controlState &= ~STATE_DISABLED;
     }
 
-    void UIControl::DrawPivotPoint(const Rect& drawRect)
+    if (hierarchic)
     {
-        if (drawPivotPointMode == DRAW_NEVER)
+        List<UIControl*>::iterator it = childs.begin();
+        for (; it != childs.end(); ++it)
         {
+            (*it)->SetDisabled(isDisabled, hierarchic);
+        }
+    }
+}
+
+bool UIControl::GetSelected() const
+{
+    return ((controlState & STATE_SELECTED) != 0);
+}
+
+void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
+{
+    if (isSelected)
+    {
+        controlState |= STATE_SELECTED;
+    }
+    else
+    {
+        controlState &= ~STATE_SELECTED;
+    }
+
+    if (hierarchic)
+    {
+        List<UIControl*>::iterator it = childs.begin();
+        for (; it != childs.end(); ++it)
+        {
+            (*it)->SetSelected(isSelected, hierarchic);
+        }
+    }
+}
+
+void UIControl::SetClipContents(bool isNeedToClipContents)
+{
+    clipContents = isNeedToClipContents;
+}
+
+bool UIControl::GetHover() const
+{
+    return (controlState & STATE_HOVER) != 0;
+}
+
+void UIControl::AddControl(UIControl* control)
+{
+    control->Retain();
+    control->RemoveFromParent();
+
+    bool inHierarchy = InViewHierarchy();
+    if (inHierarchy)
+    {
+        control->SystemWillAppear();
+    }
+    control->isUpdated = false;
+    control->SetParent(this);
+    childs.push_back(control);
+    if (inHierarchy)
+    {
+        control->SystemDidAppear();
+    }
+
+    if (IsOnScreen() && control->GetVisible())
+        control->SystemWillBecomeVisible();
+
+    isIteratorCorrupted = true;
+    SetLayoutDirty();
+}
+
+void UIControl::RemoveControl(UIControl* control)
+{
+    if (NULL == control)
+    {
+        return;
+    }
+
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == control)
+        {
+            if (IsOnScreen() && control->GetVisible())
+                control->SystemWillBecomeInvisible();
+
+            bool inHierarchy = InViewHierarchy();
+            if (inHierarchy)
+            {
+                control->SystemWillDisappear();
+            }
+            control->SetParent(NULL);
+            childs.erase(it);
+            if (inHierarchy)
+            {
+                control->SystemDidDisappear();
+            }
+            control->Release();
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
             return;
         }
+    }
+}
 
-        if (drawPivotPointMode == DRAW_ONLY_IF_NONZERO && GetPivotPoint().IsZero())
+void UIControl::RemoveFromParent()
+{
+    UIControl* parentControl = this->GetParent();
+    if (parentControl)
+    {
+        parentControl->RemoveControl(this);
+    }
+}
+
+void UIControl::RemoveAllControls()
+{
+    while (!childs.empty())
+    {
+        RemoveControl(childs.front());
+    }
+}
+void UIControl::BringChildFront(UIControl* _control)
+{
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _control)
         {
+            childs.erase(it);
+            childs.push_back(_control);
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
             return;
         }
+    }
+}
+void UIControl::BringChildBack(UIControl* _control)
+{
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _control)
+        {
+            childs.erase(it);
+            childs.push_front(_control);
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
+            return;
+        }
+    }
+}
 
-        static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
-        static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
-        static const Color drawColor(1.0f, 0.0f, 0.0f, 1.0f);
+void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
+{
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _belowThisChild)
+        {
+            control->Retain();
+            control->RemoveFromParent();
 
+            bool inHierarchy = InViewHierarchy();
+            if (inHierarchy)
+            {
+                control->SystemWillAppear();
+            }
+            childs.insert(it, control);
+            control->SetParent(this);
+            if (inHierarchy)
+            {
+                control->SystemDidAppear();
+            }
+
+            if (IsOnScreen() && control->GetVisible())
+                control->SystemWillBecomeVisible();
+
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
+            return;
+        }
+    }
+
+    AddControl(control);
+}
+
+void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
+{
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _aboveThisChild)
+        {
+            control->Retain();
+            control->RemoveFromParent();
+
+            bool inHierarchy = InViewHierarchy();
+            if (inHierarchy)
+            {
+                control->SystemWillAppear();
+            }
+            childs.insert(++it, control);
+            control->SetParent(this);
+            if (inHierarchy)
+            {
+                control->SystemDidAppear();
+            }
+
+            if (IsOnScreen() && control->GetVisible())
+                control->SystemWillBecomeVisible();
+
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
+            return;
+        }
+    }
+
+    AddControl(control);
+}
+
+void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
+{
+    //TODO: Fix situation when controls not from this hierarchy
+
+    // firstly find control in list and erase it
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _control)
+        {
+            childs.erase(it);
+            isIteratorCorrupted = true;
+            break;
+        }
+    }
+    // after that find place where we should put the control and do that
+    it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _belowThisChild)
+        {
+            childs.insert(it, _control);
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
+            return;
+        }
+    }
+    DVASSERT_MSG(0, "Control _belowThisChild not found");
+}
+
+void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
+{
+    //TODO: Fix situation when controls not from this hierarhy
+
+    // firstly find control in list and erase it
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _control)
+        {
+            childs.erase(it);
+            isIteratorCorrupted = true;
+            break;
+        }
+    }
+    // after that find place where we should put the control and do that
+    it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        if ((*it) == _aboveThisChild)
+        {
+            childs.insert(++it, _control);
+            isIteratorCorrupted = true;
+            SetLayoutDirty();
+            return;
+        }
+    }
+
+    DVASSERT_MSG(0, "Control _aboveThisChild not found");
+}
+
+UIControl* UIControl::Clone()
+{
+    UIControl* c = new UIControl(Rect(relativePosition.x, relativePosition.y, size.x, size.y));
+    c->CopyDataFrom(this);
+    return c;
+}
+
+void UIControl::CopyDataFrom(UIControl* srcControl)
+{
+    relativePosition = srcControl->relativePosition;
+    size = srcControl->size;
+    pivot = srcControl->pivot;
+    scale = srcControl->scale;
+    angle = srcControl->angle;
+    SafeRelease(background);
+    background = srcControl->background->Clone();
+
+    tag = srcControl->GetTag();
+    name = srcControl->name;
+    fastName = srcControl->fastName;
+
+    controlState = srcControl->controlState;
+    visible = srcControl->visible;
+    inputEnabled = srcControl->inputEnabled;
+    clipContents = srcControl->clipContents;
+
+    drawPivotPointMode = srcControl->drawPivotPointMode;
+    debugDrawColor = srcControl->debugDrawColor;
+    debugDrawEnabled = srcControl->debugDrawEnabled;
+
+    classes = srcControl->classes;
+    localProperties = srcControl->localProperties;
+    styleSheetDirty = srcControl->styleSheetDirty;
+    styleSheetInitialized = false;
+    layoutDirty = srcControl->layoutDirty;
+    packageContext = srcControl->packageContext;
+
+    SafeRelease(eventDispatcher);
+    if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
+    {
+        Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
+                               "Event copying is forbidden.",
+                               srcControl->GetClassName().c_str(), srcControl->GetName().c_str());
+    }
+
+    RemoveAllComponents();
+    for (UIComponent* srcComponent : srcControl->components)
+    {
+        UIComponent* dest = srcComponent->Clone();
+        AddComponent(dest);
+        SafeRelease(dest);
+    }
+
+    RemoveAllControls();
+    if (inputEnabled)
+    {
+        inputProcessorsCount = 1;
+    }
+    else
+    {
+        inputProcessorsCount = 0;
+    }
+
+    // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
+    // unnecessary children we have on the for example UIButton.
+    const List<UIControl*>& realChildren = srcControl->GetChildren();
+    List<UIControl*>::const_iterator it = realChildren.begin();
+    for (; it != realChildren.end(); ++it)
+    {
+        UIControl* c = (*it)->Clone();
+        AddControl(c);
+        c->Release();
+    }
+}
+
+bool UIControl::InViewHierarchy() const
+{
+    if (UIControlSystem::Instance()->GetScreen() == this ||
+        UIControlSystem::Instance()->GetPopupContainer() == this)
+    {
+        return true;
+    }
+
+    if (parent)
+        return parent->InViewHierarchy();
+
+    return false;
+}
+
+bool UIControl::IsOnScreen() const
+{
+    if (UIControlSystem::Instance()->GetScreen() == this ||
+        UIControlSystem::Instance()->GetPopupContainer() == this)
+    {
+        return GetVisible();
+    }
+
+    if (!GetVisible() || !parent)
+        return false;
+
+    return parent->IsOnScreen();
+}
+
+void UIControl::SystemWillAppear()
+{
+    styleSheetInitialized = false;
+
+    WillAppear();
+
+    List<UIControl*>::iterator it = childs.begin();
+    while (it != childs.end())
+    {
+        isIteratorCorrupted = false;
+        UIControl* current = *it;
+        current->Retain();
+        current->SystemWillAppear();
+        current->Release();
+        if (isIteratorCorrupted)
+        {
+            it = childs.begin();
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::SystemWillDisappear()
+{
+    List<UIControl*>::iterator it = childs.begin();
+    while (it != childs.end())
+    {
+        isIteratorCorrupted = false;
+        UIControl* current = *it;
+        current->Retain();
+        current->SystemWillDisappear();
+        current->Release();
+        if (isIteratorCorrupted)
+        {
+            it = childs.begin();
+            continue;
+        }
+        ++it;
+    }
+
+    WillDisappear();
+}
+
+void UIControl::SystemDidAppear()
+{
+    DidAppear();
+
+    List<UIControl*>::iterator it = childs.begin();
+    while (it != childs.end())
+    {
+        isIteratorCorrupted = false;
+        UIControl* current = *it;
+        current->Retain();
+        current->SystemDidAppear();
+        current->Release();
+        if (isIteratorCorrupted)
+        {
+            it = childs.begin();
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::SystemDidDisappear()
+{
+    DidDisappear();
+
+    List<UIControl*>::iterator it = childs.begin();
+    while (it != childs.end())
+    {
+        isIteratorCorrupted = false;
+        UIControl* current = *it;
+        current->Retain();
+        current->SystemDidDisappear();
+        current->Release();
+        if (isIteratorCorrupted)
+        {
+            it = childs.begin();
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
+{
+    ScreenSizeDidChanged(newFullScreenRect);
+
+    List<UIControl*>::iterator it = childs.begin();
+    while (it != childs.end())
+    {
+        isIteratorCorrupted = false;
+        UIControl* current = *it;
+        current->Retain();
+        current->SystemScreenSizeDidChanged(newFullScreenRect);
+        current->Release();
+        if (isIteratorCorrupted)
+        {
+            it = childs.begin();
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::WillAppear()
+{
+}
+void UIControl::WillDisappear()
+{
+}
+void UIControl::DidAppear()
+{
+}
+void UIControl::DidDisappear()
+{
+}
+void UIControl::ScreenSizeDidChanged(const Rect& newFullScreenRect)
+{
+}
+
+void UIControl::SystemUpdate(float32 timeElapsed)
+{
+    UIControlSystem::Instance()->updateCounter++;
+    Update(timeElapsed);
+    isUpdated = true;
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        (*it)->isUpdated = false;
+    }
+
+    if (styleSheetDirty || prevControlState != controlState)
+    {
+        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
+        prevControlState = controlState;
+    }
+
+    if (layoutDirty)
+    {
+        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+        if (layoutSystem->IsAutoupdatesEnabled())
+        {
+            layoutSystem->ApplyLayout(this, true);
+        }
+    }
+    else if (layoutPositionDirty)
+    {
+        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+        if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
+        {
+            layoutSystem->ApplyLayoutNonRecursive(parent);
+        }
+    }
+
+    it = childs.begin();
+    while (it != childs.end())
+    {
+        isIteratorCorrupted = false;
+        UIControl* current = *it;
+        if (!current->isUpdated)
+        {
+            current->Retain();
+            current->SystemUpdate(timeElapsed);
+            current->Release();
+            if (isIteratorCorrupted)
+            {
+                it = childs.begin();
+                continue;
+            }
+        }
+        ++it;
+    }
+}
+
+void UIControl::SystemDraw(const UIGeometricData& geometricData)
+{
+    if (!GetVisible())
+        return;
+
+    UIControlSystem::Instance()->drawCounter++;
+    UIGeometricData drawData = GetLocalGeometricData();
+    drawData.AddGeometricData(geometricData);
+
+    const Color& parentColor = parent ? parent->GetBackground()->GetDrawColor() : Color::White;
+
+    SetParentColor(parentColor);
+
+    const Rect& unrotatedRect = drawData.GetUnrotatedRect();
+
+    if (clipContents)
+    { //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
         RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(unrotatedRect); //anyway it doesn't work with rotation
+    }
 
-        Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
+    Draw(drawData);
 
-        // Draw the cross mark.
-        Vector2 lineStartPoint = pivotPointCenter;
-        Vector2 lineEndPoint = pivotPointCenter;
-        lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
+    isIteratorCorrupted = false;
+    List<UIControl*>::iterator it = childs.begin();
+    List<UIControl*>::iterator itEnd = childs.end();
+    for (; it != itEnd; ++it)
+    {
+        (*it)->SystemDraw(drawData);
+        DVASSERT(!isIteratorCorrupted);
+    }
 
-        lineStartPoint = pivotPointCenter;
-        lineEndPoint = pivotPointCenter;
-        lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
+    DrawAfterChilds(drawData);
 
+    if (clipContents)
+    {
         RenderSystem2D::Instance()->PopClip();
     }
 
-    bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
+    if (debugDrawEnabled)
     {
-        Vector2 point = _point;
+        RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->RemoveClip();
+        DrawDebugRect(drawData, false);
+        DrawPivotPoint(unrotatedRect);
+        RenderSystem2D::Instance()->PopClip();
+    }
+}
 
-        if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
-        {
-            const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-            point.x = virtScreenSize.dx / 2.f;
-            point.y = virtScreenSize.dy / 2.f;
-        }
+void UIControl::SetParentColor(const Color& parentColor)
+{
+    GetBackground()->SetParentColor(parentColor);
+}
 
-        const UIGeometricData& gd = GetGeometricData();
-        Rect rect = gd.GetUnrotatedRect();
-        if (expandWithFocus)
-        {
-            rect.dx += CONTROL_TOUCH_AREA * 2;
-            rect.dy += CONTROL_TOUCH_AREA * 2;
-            rect.x -= CONTROL_TOUCH_AREA;
-            rect.y -= CONTROL_TOUCH_AREA;
-        }
-        if (gd.angle != 0)
-        {
-            Vector2 testPoint;
-            testPoint.x = (point.x - gd.position.x) * gd.cosA + (gd.position.y - point.y) * -gd.sinA + gd.position.x;
-            testPoint.y = (point.x - gd.position.x) * -gd.sinA + (point.y - gd.position.y) * gd.cosA + gd.position.y;
-            return rect.PointInside(testPoint);
-        }
+void UIControl::DrawDebugRect(const UIGeometricData& gd, bool useAlpha)
+{
+    RenderSystem2D::Instance()->PushClip();
 
-        return rect.PointInside(point);
+    auto drawColor = debugDrawColor;
+    if (useAlpha)
+    {
+        drawColor.a = 0.4f;
     }
 
-    bool UIControl::SystemProcessInput(UIEvent* currentInput)
+    if (gd.angle != 0.0f)
     {
-        if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
-        {
-            return false;
-        }
-        if (UIControlSystem::Instance()->GetExclusiveInputLocker() && UIControlSystem::Instance()->GetExclusiveInputLocker() != this)
-        {
-            return false;
-        }
-        if (customSystemProcessInput != nullptr && customSystemProcessInput(this, currentInput))
-        {
-        	return true;
-        }
+        Polygon2 poly;
+        gd.GetPolygon(poly);
 
-        switch (currentInput->phase)
+        RenderSystem2D::Instance()->DrawPolygon(poly, true, drawColor);
+    }
+    else
+    {
+        RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), drawColor);
+    }
+
+    RenderSystem2D::Instance()->PopClip();
+}
+
+void UIControl::DrawPivotPoint(const Rect& drawRect)
+{
+    if (drawPivotPointMode == DRAW_NEVER)
+    {
+        return;
+    }
+
+    if (drawPivotPointMode == DRAW_ONLY_IF_NONZERO && GetPivotPoint().IsZero())
+    {
+        return;
+    }
+
+    static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
+    static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
+    static const Color drawColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+    RenderSystem2D::Instance()->PushClip();
+
+    Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
+    RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
+
+    // Draw the cross mark.
+    Vector2 lineStartPoint = pivotPointCenter;
+    Vector2 lineEndPoint = pivotPointCenter;
+    lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
+
+    lineStartPoint = pivotPointCenter;
+    lineEndPoint = pivotPointCenter;
+    lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
+
+    RenderSystem2D::Instance()->PopClip();
+}
+
+bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
+{
+    Vector2 point = _point;
+
+    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+    {
+        const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+        point.x = virtScreenSize.dx / 2.f;
+        point.y = virtScreenSize.dy / 2.f;
+    }
+
+    const UIGeometricData& gd = GetGeometricData();
+    Rect rect = gd.GetUnrotatedRect();
+    if (expandWithFocus)
+    {
+        rect.dx += CONTROL_TOUCH_AREA * 2;
+        rect.dy += CONTROL_TOUCH_AREA * 2;
+        rect.x -= CONTROL_TOUCH_AREA;
+        rect.y -= CONTROL_TOUCH_AREA;
+    }
+    if (gd.angle != 0)
+    {
+        Vector2 testPoint;
+        testPoint.x = (point.x - gd.position.x) * gd.cosA + (gd.position.y - point.y) * -gd.sinA + gd.position.x;
+        testPoint.y = (point.x - gd.position.x) * -gd.sinA + (point.y - gd.position.y) * gd.cosA + gd.position.y;
+        return rect.PointInside(testPoint);
+    }
+
+    return rect.PointInside(point);
+}
+
+bool UIControl::SystemProcessInput(UIEvent* currentInput)
+{
+    if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
+    {
+        return false;
+    }
+    if (UIControlSystem::Instance()->GetExclusiveInputLocker() && UIControlSystem::Instance()->GetExclusiveInputLocker() != this)
+    {
+        return false;
+    }
+    if (customSystemProcessInput != nullptr && customSystemProcessInput(this, currentInput))
+    {
+        return true;
+    }
+
+    switch (currentInput->phase)
+    {
+    case UIEvent::Phase::CHAR:
+    case UIEvent::Phase::CHAR_REPEAT:
+    case UIEvent::Phase::KEY_DOWN:
+    case UIEvent::Phase::KEY_DOWN_REPEAT:
+    {
+        Input(currentInput);
+    }
+    break;
+
+    case UIEvent::Phase::MOVE:
+    {
+        if (!currentInput->touchLocker && IsPointInside(currentInput->point))
         {
-        case UIEvent::Phase::CHAR:
-        case UIEvent::Phase::CHAR_REPEAT:
-        case UIEvent::Phase::KEY_DOWN:
-        case UIEvent::Phase::KEY_DOWN_REPEAT:
+            UIControlSystem::Instance()->SetHoveredControl(this);
+            Input(currentInput);
+            return true;
+        }
+    }
+    break;
+    case UIEvent::Phase::WHEEL:
+    {
+        if (IsPointInside(currentInput->point))
         {
             Input(currentInput);
+            return true;
         }
-        break;
-
-        case UIEvent::Phase::MOVE:
+    }
+    break;
+    case UIEvent::Phase::BEGAN:
+    {
+        if (!currentInput->touchLocker && IsPointInside(currentInput->point))
         {
-            if (!currentInput->touchLocker && IsPointInside(currentInput->point))
-            {
-                UIControlSystem::Instance()->SetHoveredControl(this);
-                Input(currentInput);
-                return true;
-            }
-        }
-        break;
-        case UIEvent::Phase::WHEEL:
-        {
-            if (IsPointInside(currentInput->point))
-            {
-                Input(currentInput);
-                return true;
-            }
-        }
-        break;
-        case UIEvent::Phase::BEGAN:
-        {
-            if (!currentInput->touchLocker && IsPointInside(currentInput->point))
-            {
-                if (multiInput || !currentInputID)
+            if (multiInput || !currentInputID)
             {
                 controlState |= STATE_PRESSED_INSIDE;
                 controlState &= ~STATE_NORMAL;
@@ -1509,18 +1509,18 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 currentInput->touchLocker = this;
                 return true;
             }
-            }
         }
-        break;
-        case UIEvent::Phase::DRAG:
+    }
+    break;
+    case UIEvent::Phase::DRAG:
+    {
+        if (currentInput->touchLocker == this)
         {
-            if (currentInput->touchLocker == this)
+            if (multiInput || currentInputID == currentInput->touchId)
             {
-                if (multiInput || currentInputID == currentInput->touchId)
+                if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                 {
-                    if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
-                    {
-                        if (IsPointInside(currentInput->point, true))
+                    if (IsPointInside(currentInput->point, true))
                     {
                         if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                         {
@@ -1554,21 +1554,21 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 Input(currentInput);
             }
             return true;
-            }
         }
-        break;
-        case UIEvent::Phase::ENDED:
+    }
+    break;
+    case UIEvent::Phase::ENDED:
+    {
+        if (currentInput->touchLocker == this)
         {
-            if (currentInput->touchLocker == this)
+            if (multiInput || currentInputID == currentInput->touchId)
             {
-                if (multiInput || currentInputID == currentInput->touchId)
+                Input(currentInput);
+                if (currentInput->touchId == currentInputID)
                 {
-                    Input(currentInput);
-                    if (currentInput->touchId == currentInputID)
-                    {
-                        currentInputID = 0;
-                    }
-                    if (totalTouches > 0)
+                    currentInputID = 0;
+                }
+                if (totalTouches > 0)
                 {
                     --totalTouches;
                     if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
@@ -1624,1215 +1624,1215 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
             currentInput->touchLocker = NULL;
             return true;
-            }
         }
+    }
+    break;
+    case UIEvent::Phase::JOYSTICK:
+    {
+        Input(currentInput);
+    }
+    default:
         break;
-        case UIEvent::Phase::JOYSTICK:
-        {
-            Input(currentInput);
-        }
-        default:
-            break;
-        }
+    }
 
+    return false;
+}
+
+bool UIControl::SystemInput(UIEvent* currentInput)
+{
+    UIControlSystem::Instance()->inputCounter++;
+    isUpdated = true;
+
+    if (!GetVisible())
         return false;
-    }
 
-    bool UIControl::SystemInput(UIEvent *currentInput)
+    //if(currentInput->touchLocker != this)
     {
-        UIControlSystem::Instance()->inputCounter++;
-        isUpdated = true;
-
-        if (!GetVisible())
-            return false;
-
-        //if(currentInput->touchLocker != this)
+        if (clipContents &&
+            (UIEvent::Phase::BEGAN == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::CANCELLED == currentInput->phase))
         {
-            if (clipContents &&
-                (UIEvent::Phase::BEGAN == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::CANCELLED == currentInput->phase))
+            if (!IsPointInside(currentInput->point))
             {
-                if (!IsPointInside(currentInput->point))
-                {
-                    return false;
-                }
+                return false;
             }
+        }
 
-            std::for_each(begin(childs), end(childs), [](UIControl* c) {
-                c->isUpdated = false;
-            });
+        std::for_each(begin(childs), end(childs), [](UIControl* c) {
+            c->isUpdated = false;
+        });
 
-            List<UIControl*>::reverse_iterator it = childs.rbegin();
-            List<UIControl*>::reverse_iterator itEnd = childs.rend();
-            while(it != itEnd)
+        List<UIControl*>::reverse_iterator it = childs.rbegin();
+        List<UIControl*>::reverse_iterator itEnd = childs.rend();
+        while (it != itEnd)
+        {
+            isIteratorCorrupted = false;
+            UIControl* current = *it;
+            if (!current->isUpdated)
             {
-                isIteratorCorrupted = false;
-                UIControl *current = *it;
-                if(!current->isUpdated)
+                current->Retain();
+                if (current->inputProcessorsCount > 0)
                 {
-                    current->Retain();
-                    if (current->inputProcessorsCount > 0)
+                    if (current->SystemInput(currentInput))
                     {
-                        if (current->SystemInput(currentInput))
-                        {
-                            current->Release();
-                            return true;
-                        }
-                    }
-                    current->Release();
-                    if(isIteratorCorrupted)
-                    {
-                        it = childs.rbegin();
-                        continue;
+                        current->Release();
+                        return true;
                     }
                 }
-                ++it;
+                current->Release();
+                if (isIteratorCorrupted)
+                {
+                    it = childs.rbegin();
+                    continue;
+                }
             }
+            ++it;
         }
-        return SystemProcessInput(currentInput);
+    }
+    return SystemProcessInput(currentInput);
+}
+
+void UIControl::SystemInputCancelled(UIEvent* currentInput)
+{
+    if (currentInput->controlState != UIEvent::CONTROL_STATE_RELEASED)
+    {
+        --totalTouches;
+    }
+    if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
+    {
+        --touchesInside;
     }
 
-    void UIControl::SystemInputCancelled(UIEvent *currentInput)
+    if (touchesInside == 0)
     {
-        if(currentInput->controlState != UIEvent::CONTROL_STATE_RELEASED)
+        controlState &= ~STATE_PRESSED_INSIDE;
+        controlState &= ~STATE_PRESSED_OUTSIDE;
+        controlState |= STATE_NORMAL;
+        if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
         {
-            --totalTouches;
-        }
-        if(currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
-        {
-            --touchesInside;
-        }
-
-        if(touchesInside == 0)
-        {
-            controlState &= ~STATE_PRESSED_INSIDE;
-            controlState &= ~STATE_PRESSED_OUTSIDE;
-            controlState |= STATE_NORMAL;
-            if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
-            {
-                UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
-            }
-        }
-
-        currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
-        if (currentInput->touchId == currentInputID)
-        {
-            currentInputID = 0;
-        }
-        currentInput->touchLocker = NULL;
-
-        InputCancelled(currentInput);
-    }
-
-    void UIControl::SystemDidSetHovered()
-    {
-        controlState |= STATE_HOVER;
-        PerformEventWithData(EVENT_HOVERED_SET, NULL);
-        DidSetHovered();
-    }
-
-    void UIControl::SystemDidRemoveHovered()
-    {
-        PerformEventWithData(EVENT_HOVERED_REMOVED, NULL);
-        controlState &= ~STATE_HOVER;
-        DidRemoveHovered();
-    }
-
-    void UIControl::DidSetHovered()
-    {
-    }
-
-    void UIControl::DidRemoveHovered()
-    {
-    }
-
-    void UIControl::Input(UIEvent *currentInput)
-    {
-        currentInput->SetInputHandledType(UIEvent::INPUT_NOT_HANDLED);
-    }
-
-    void UIControl::InputCancelled(UIEvent *currentInput)
-    {
-    }
-
-    void UIControl::Update(float32 timeElapsed)
-    {
-    }
-    void UIControl::Draw(const UIGeometricData &geometricData)
-    {
-        background->Draw(geometricData);
-    }
-    void UIControl::DrawAfterChilds(const UIGeometricData &geometricData)
-    {
-    }
-
-    void UIControl::SystemWillBecomeVisible()
-    {
-        WillBecomeVisible();
-
-        List<UIControl*>::const_iterator it = childs.begin();
-        List<UIControl*>::const_iterator end = childs.end();
-        for (; it != end; ++it)
-        {
-            if ((*it)->GetVisible())
-                (*it)->SystemWillBecomeVisible();
+            UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
         }
     }
 
-    void UIControl::SystemWillBecomeInvisible()
+    currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
+    if (currentInput->touchId == currentInputID)
     {
-        if (GetHover())
-        {
-            UIControlSystem::Instance()->SetHoveredControl(NULL);
-        }
-        if (UIControlSystem::Instance()->GetFocusedControl() == this)
-        {
-            UIControlSystem::Instance()->SetFocusedControl(NULL, true);
-        }
-        if (GetInputEnabled())
-        {
-            UIControlSystem::Instance()->CancelInputs(this, false);
-        }
+        currentInputID = 0;
+    }
+    currentInput->touchLocker = NULL;
 
-        List<UIControl*>::const_iterator it = childs.begin();
-        List<UIControl*>::const_iterator end = childs.end();
-        for (; it != end; ++it)
-        {
-            if ((*it)->GetVisible())
-                (*it)->SystemWillBecomeInvisible();
-        }
+    InputCancelled(currentInput);
+}
 
-        WillBecomeInvisible();
+void UIControl::SystemDidSetHovered()
+{
+    controlState |= STATE_HOVER;
+    PerformEventWithData(EVENT_HOVERED_SET, NULL);
+    DidSetHovered();
+}
+
+void UIControl::SystemDidRemoveHovered()
+{
+    PerformEventWithData(EVENT_HOVERED_REMOVED, NULL);
+    controlState &= ~STATE_HOVER;
+    DidRemoveHovered();
+}
+
+void UIControl::DidSetHovered()
+{
+}
+
+void UIControl::DidRemoveHovered()
+{
+}
+
+void UIControl::Input(UIEvent* currentInput)
+{
+    currentInput->SetInputHandledType(UIEvent::INPUT_NOT_HANDLED);
+}
+
+void UIControl::InputCancelled(UIEvent* currentInput)
+{
+}
+
+void UIControl::Update(float32 timeElapsed)
+{
+}
+void UIControl::Draw(const UIGeometricData& geometricData)
+{
+    background->Draw(geometricData);
+}
+void UIControl::DrawAfterChilds(const UIGeometricData& geometricData)
+{
+}
+
+void UIControl::SystemWillBecomeVisible()
+{
+    WillBecomeVisible();
+
+    List<UIControl*>::const_iterator it = childs.begin();
+    List<UIControl*>::const_iterator end = childs.end();
+    for (; it != end; ++it)
+    {
+        if ((*it)->GetVisible())
+            (*it)->SystemWillBecomeVisible();
+    }
+}
+
+void UIControl::SystemWillBecomeInvisible()
+{
+    if (GetHover())
+    {
+        UIControlSystem::Instance()->SetHoveredControl(NULL);
+    }
+    if (UIControlSystem::Instance()->GetFocusedControl() == this)
+    {
+        UIControlSystem::Instance()->SetFocusedControl(NULL, true);
+    }
+    if (GetInputEnabled())
+    {
+        UIControlSystem::Instance()->CancelInputs(this, false);
     }
 
-    void UIControl::WillBecomeVisible()
+    List<UIControl*>::const_iterator it = childs.begin();
+    List<UIControl*>::const_iterator end = childs.end();
+    for (; it != end; ++it)
     {
+        if ((*it)->GetVisible())
+            (*it)->SystemWillBecomeInvisible();
     }
 
-    void UIControl::WillBecomeInvisible()
+    WillBecomeInvisible();
+}
+
+void UIControl::WillBecomeVisible()
+{
+}
+
+void UIControl::WillBecomeInvisible()
+{
+}
+
+YamlNode* UIControl::SaveToYamlNode(UIYamlLoader* loader)
+{
+    // Return node
+    YamlNode* node = YamlNode::CreateMapNode(false);
+    // Model UIControl to be used in comparing
+    ScopedPtr<UIControl> baseControl(new UIControl());
+
+    // Control name
+    SetPreferredNodeType(node, GetClassName());
+
+    // Transform data
+    // Position
+    const Vector2& position = GetPosition();
+    if (baseControl->GetPosition() != position)
     {
+        node->Set("position", position);
+    }
+    // Size
+    const Vector2& size = GetSize();
+    if (baseControl->GetSize() != size)
+    {
+        node->Set("size", size);
+    }
+    // Pivot
+    if (baseControl->GetPivotPoint() != GetPivotPoint())
+    {
+        node->Set("pivot", GetPivotPoint());
+    }
+    // Angle
+    if (baseControl->GetAngle() != GetAngle())
+    {
+        node->Set("angle", GetAngle());
+    }
+    // Visible
+    if (baseControl->GetVisible() != GetVisible())
+    {
+        node->Set("visible", GetVisible());
+    }
+    // Enabled
+    if (baseControl->GetDisabled() != GetDisabled())
+    {
+        node->Set("enabled", !GetDisabled());
+    }
+    // Clip contents
+    if (baseControl->GetClipContents() != GetClipContents())
+    {
+        node->Set("clip", GetClipContents());
+    }
+    // Input
+    if (baseControl->GetInputEnabled() != GetInputEnabled())
+    {
+        node->Set("noInput", !GetInputEnabled());
+    }
+    // Tag
+    if (baseControl->GetTag() != GetTag())
+    {
+        node->Set("tag", GetTag());
     }
 
-    YamlNode* UIControl::SaveToYamlNode(UIYamlLoader * loader)
+    // Anchor data
+    // Left Align
+    if (GetLeftAlignEnabled())
     {
-        // Return node
-        YamlNode *node = YamlNode::CreateMapNode(false);
-        // Model UIControl to be used in comparing
-        ScopedPtr<UIControl> baseControl(new UIControl());
-
-        // Control name
-        SetPreferredNodeType(node, GetClassName());
-
-        // Transform data
-        // Position
-        const Vector2 &position = GetPosition();
-        if (baseControl->GetPosition() != position)
-        {
-            node->Set("position", position);
-        }
-        // Size
-        const Vector2 &size = GetSize();
-        if (baseControl->GetSize() != size)
-        {
-            node->Set("size", size);
-        }
-        // Pivot
-        if (baseControl->GetPivotPoint() != GetPivotPoint())
-        {
-            node->Set("pivot", GetPivotPoint());
-        }
-        // Angle
-        if (baseControl->GetAngle() != GetAngle())
-        {
-            node->Set("angle", GetAngle());
-        }
-        // Visible
-        if (baseControl->GetVisible() != GetVisible())
-        {
-            node->Set("visible", GetVisible());
-        }
-        // Enabled
-        if (baseControl->GetDisabled() != GetDisabled())
-        {
-            node->Set("enabled", !GetDisabled());
-        }
-        // Clip contents
-        if (baseControl->GetClipContents() != GetClipContents())
-        {
-            node->Set("clip", GetClipContents());
-        }
-        // Input
-        if (baseControl->GetInputEnabled() != GetInputEnabled())
-        {
-            node->Set("noInput", !GetInputEnabled());
-        }
-        // Tag
-        if (baseControl->GetTag() != GetTag())
-        {
-            node->Set("tag", GetTag());
-        }
-
-        // Anchor data
-        // Left Align
-        if (GetLeftAlignEnabled())
-        {
-            node->Set("leftAlign", GetLeftAlign());
-        }
-        // Horizontal Center Align
-        if (GetHCenterAlignEnabled())
-        {
-            node->Set("hcenterAlign", GetHCenterAlign());
-        }
-        // Right Align
-        if (GetRightAlignEnabled())
-        {
-            node->Set("rightAlign", GetRightAlign());
-        }
-        // Top Align
-        if (GetTopAlignEnabled())
-        {
-            node->Set("topAlign", GetTopAlign());
-        }
-        // Vertical Center Align
-        if (GetVCenterAlignEnabled())
-        {
-            node->Set("vcenterAlign", GetVCenterAlign());
-        }
-        // Bottom Align
-        if (GetBottomAlignEnabled())
-        {
-            node->Set("bottomAlign", GetBottomAlign());
-        }
-        // Anchor data
-
-        UIControlBackground *baseBackground = baseControl->GetBackground();
-        if (!baseBackground->IsEqualTo(GetBackground()))
-        {
-            // Draw type, obligatory for UI controls.
-            UIControlBackground::eDrawType drawType =  GetBackground()->GetDrawType();
-            if (baseBackground->GetDrawType() != drawType)
-            {
-                node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
-            }
-            // Sprite
-            String spritePath = Sprite::GetPathString(GetBackground()->GetSprite());
-            if (Sprite::GetPathString(baseBackground->GetSprite()) != spritePath)
-            {
-                node->Set("sprite", spritePath);
-            }
-            // Frame
-            if (baseBackground->GetFrame() != GetBackground()->GetFrame())
-            {
-                node->Set("frame", GetFrame());
-            }
-            // Color
-            const Color &color =  GetBackground()->GetColor();
-            if (baseBackground->GetColor() != color)
-            {
-                node->Set("color", VariantType(color));
-            }
-            // Color inherit
-            UIControlBackground::eColorInheritType colorInheritType =  GetBackground()->GetColorInheritType();
-            if (baseBackground->GetColorInheritType() != colorInheritType)
-            {
-                node->Set("colorInherit", loader->GetColorInheritTypeNodeValue(colorInheritType));
-            }
-            // Per pixel accuracy
-            UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = GetBackground()->GetPerPixelAccuracyType();
-            if (baseBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
-            {
-                node->Set("perPixelAccuracy", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
-            }
-            // Align
-            int32 align = GetBackground()->GetAlign();
-            if (baseBackground->GetAlign() != align)
-            {
-                node->AddNodeToMap("align", loader->GetAlignNodeValue(align));
-            }
-            // LeftRightStretchCapNode
-            if (baseBackground->GetLeftRightStretchCap() != GetBackground()->GetLeftRightStretchCap())
-            {
-                node->Set("leftRightStretchCap", GetBackground()->GetLeftRightStretchCap());
-            }
-            // topBottomStretchCap
-            if (baseBackground->GetTopBottomStretchCap() != GetBackground()->GetTopBottomStretchCap())
-            {
-                node->Set("topBottomStretchCap", GetBackground()->GetTopBottomStretchCap());
-            }
-            // spriteModification
-            if (baseBackground->GetModification() != GetBackground()->GetModification())
-            {
-                node->Set("spriteModification", GetBackground()->GetModification());
-            }
-
-            // margins.
-            const UIControlBackground::UIMargins* margins = GetBackground()->GetMargins();
-            if (margins)
-            {
-                node->Set("margins", margins->AsVector4());
-            }
-        }
-        return node;
+        node->Set("leftAlign", GetLeftAlign());
     }
-
-    void UIControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
+    // Horizontal Center Align
+    if (GetHCenterAlignEnabled())
     {
-        const YamlNode * rectNode = node->Get("rect");
-        if (rectNode)
-        {
-            Rect rect = rectNode->AsRect();
-            SetRect(rect);
-        }
-        else
-        {
-            const YamlNode * positionNode = node->Get("position");
-            if (positionNode)
-                SetPosition(positionNode->AsVector2());
+        node->Set("hcenterAlign", GetHCenterAlign());
+    }
+    // Right Align
+    if (GetRightAlignEnabled())
+    {
+        node->Set("rightAlign", GetRightAlign());
+    }
+    // Top Align
+    if (GetTopAlignEnabled())
+    {
+        node->Set("topAlign", GetTopAlign());
+    }
+    // Vertical Center Align
+    if (GetVCenterAlignEnabled())
+    {
+        node->Set("vcenterAlign", GetVCenterAlign());
+    }
+    // Bottom Align
+    if (GetBottomAlignEnabled())
+    {
+        node->Set("bottomAlign", GetBottomAlign());
+    }
+    // Anchor data
 
-            const YamlNode * sizeNode = node->Get("size");
-            if (sizeNode)
-                SetSize(sizeNode->AsVector2());
-        }
-
-        const YamlNode * pivotNode = node->Get("pivot");
-        if (pivotNode)
+    UIControlBackground* baseBackground = baseControl->GetBackground();
+    if (!baseBackground->IsEqualTo(GetBackground()))
+    {
+        // Draw type, obligatory for UI controls.
+        UIControlBackground::eDrawType drawType = GetBackground()->GetDrawType();
+        if (baseBackground->GetDrawType() != drawType)
         {
-            DVASSERT(pivotNode->GetType() == YamlNode::TYPE_ARRAY);
-            SetPivotPoint(pivotNode->AsPoint());
+            node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
         }
-
-        const YamlNode * angleNode = node->Get("angle");
-        if (angleNode)
+        // Sprite
+        String spritePath = Sprite::GetPathString(GetBackground()->GetSprite());
+        if (Sprite::GetPathString(baseBackground->GetSprite()) != spritePath)
         {
-            SetAngle(angleNode->AsFloat());
+            node->Set("sprite", spritePath);
         }
-
-        const YamlNode * enabledNode = node->Get("enabled");
-        if (enabledNode)
+        // Frame
+        if (baseBackground->GetFrame() != GetBackground()->GetFrame())
         {
-            SetDisabled(!enabledNode->AsBool());
+            node->Set("frame", GetFrame());
         }
-
-        const YamlNode * clipNode = node->Get("clip");
-        if (clipNode)
+        // Color
+        const Color& color = GetBackground()->GetColor();
+        if (baseBackground->GetColor() != color)
         {
-            SetClipContents(clipNode->AsBool());
+            node->Set("color", VariantType(color));
         }
-
-        const YamlNode * inputNode = node->Get("noInput");
-        if (inputNode)
+        // Color inherit
+        UIControlBackground::eColorInheritType colorInheritType = GetBackground()->GetColorInheritType();
+        if (baseBackground->GetColorInheritType() != colorInheritType)
         {
-            SetInputEnabled(!inputNode->AsBool(), false);
+            node->Set("colorInherit", loader->GetColorInheritTypeNodeValue(colorInheritType));
         }
-
-        const YamlNode * tagNode = node->Get("tag");
-        if (tagNode)
+        // Per pixel accuracy
+        UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = GetBackground()->GetPerPixelAccuracyType();
+        if (baseBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
         {
-            SetTag(tagNode->AsInt32());
+            node->Set("perPixelAccuracy", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
         }
-
-        const YamlNode * leftAlignNode = node->Get("leftAlign");
-        if (leftAlignNode)
+        // Align
+        int32 align = GetBackground()->GetAlign();
+        if (baseBackground->GetAlign() != align)
         {
-            float32 leftAlign = leftAlignNode->AsFloat();
-            SetLeftAlignEnabled(true);
-            SetLeftAlign(leftAlign);
+            node->AddNodeToMap("align", loader->GetAlignNodeValue(align));
         }
-
-        const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
-        if (hcenterAlignNode)
+        // LeftRightStretchCapNode
+        if (baseBackground->GetLeftRightStretchCap() != GetBackground()->GetLeftRightStretchCap())
         {
-            float32 hcenterAlign = hcenterAlignNode->AsFloat();
-            SetHCenterAlignEnabled(true);
-            SetHCenterAlign(hcenterAlign);
+            node->Set("leftRightStretchCap", GetBackground()->GetLeftRightStretchCap());
         }
-
-        const YamlNode * rightAlignNode = node->Get("rightAlign");
-        if (rightAlignNode)
+        // topBottomStretchCap
+        if (baseBackground->GetTopBottomStretchCap() != GetBackground()->GetTopBottomStretchCap())
         {
-            float32 rightAlign = rightAlignNode->AsFloat();
-            SetRightAlignEnabled(true);
-            SetRightAlign(rightAlign);
+            node->Set("topBottomStretchCap", GetBackground()->GetTopBottomStretchCap());
         }
-
-        const YamlNode * topAlignNode = node->Get("topAlign");
-        if (topAlignNode)
+        // spriteModification
+        if (baseBackground->GetModification() != GetBackground()->GetModification())
         {
-            float32 topAlign = topAlignNode->AsFloat();
-            SetTopAlignEnabled(true);
-            SetTopAlign(topAlign);
+            node->Set("spriteModification", GetBackground()->GetModification());
         }
 
-        const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
-        if (vcenterAlignNode)
+        // margins.
+        const UIControlBackground::UIMargins* margins = GetBackground()->GetMargins();
+        if (margins)
         {
-            float32 vcenterAlign = vcenterAlignNode->AsFloat();
-            SetVCenterAlignEnabled(true);
-            SetVCenterAlign(vcenterAlign);
-        }
-
-        const YamlNode * bottomAlignNode = node->Get("bottomAlign");
-        if (bottomAlignNode)
-        {
-            float32 bottomAlign = bottomAlignNode->AsFloat();
-            SetBottomAlignEnabled(true);
-            SetBottomAlign(bottomAlign);
-        }
-
-        const YamlNode * visibleNode = node->Get("visible");
-        const YamlNode * recursiveVisibleNode = node->Get("recursiveVisible");
-        bool visibilityFlag = true;
-        if(visibleNode)
-        {
-            visibilityFlag = loader->GetBoolFromYamlNode(visibleNode, true);
-        }
-        if (recursiveVisibleNode)
-        {
-            visibilityFlag &= loader->GetBoolFromYamlNode(recursiveVisibleNode, true);
-        }
-
-        SetVisible(visibilityFlag);
-
-        const YamlNode * drawTypeNode = node->Get("drawType");
-        if (drawTypeNode)
-        {
-            GetBackground()->SetDrawType((UIControlBackground::eDrawType)loader->GetDrawTypeFromNode(drawTypeNode));
-        }
-
-        const YamlNode * spriteNode = node->Get("sprite");
-        if (spriteNode)
-        {
-            GetBackground()->SetSprite(spriteNode->AsString(), GetFrame());
-        }
-
-        const YamlNode * frameNode = node->Get("frame");
-        if (frameNode)
-        {
-            GetBackground()->SetFrame(frameNode->AsInt32());
-        }
-
-        const YamlNode * colorNode = node->Get("color");
-        if (colorNode)
-        {
-            GetBackground()->SetColor(loader->GetColorFromYamlNode(colorNode));
-        }
-
-        const YamlNode * perPixelAccuracyTypeNode = node->Get("perPixelAccuracy");
-        if(perPixelAccuracyTypeNode)
-        {
-            GetBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(perPixelAccuracyTypeNode));
-        }
-
-        const YamlNode * colorInheritNode = node->Get("colorInherit");
-        if (colorInheritNode)
-        {
-            GetBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode));
-        }
-
-        const YamlNode * alignNode = node->Get("align");
-        if (alignNode)
-        {
-            GetBackground()->SetAlign(loader->GetAlignFromYamlNode(alignNode));
-        }
-
-        const YamlNode * leftRightStretchCapNode = node->Get("leftRightStretchCap");
-        if (leftRightStretchCapNode)
-        {
-            GetBackground()->SetLeftRightStretchCap(leftRightStretchCapNode->AsFloat());
-        }
-
-        const YamlNode * topBottomStretchCapNode = node->Get("topBottomStretchCap");
-        if (topBottomStretchCapNode)
-        {
-            GetBackground()->SetTopBottomStretchCap(topBottomStretchCapNode->AsFloat());
-        }
-
-        const YamlNode * spriteModificationNode = node->Get("spriteModification");
-        if (spriteModificationNode)
-        {
-            GetBackground()->SetModification(spriteModificationNode->AsInt32());
-        }
-
-        const YamlNode * marginsNode = node->Get("margins");
-        if (marginsNode)
-        {
-            UIControlBackground::UIMargins margins(marginsNode->AsVector4());
-            GetBackground()->SetMargins(&margins);
+            node->Set("margins", margins->AsVector4());
         }
     }
+    return node;
+}
 
-    Animation * UIControl::WaitAnimation(float32 time, int32 track)
+void UIControl::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
+{
+    const YamlNode* rectNode = node->Get("rect");
+    if (rectNode)
     {
-        Animation * animation = new Animation(this, time, Interpolation::LINEAR);
-        animation->Start(track);
-        return animation;
+        Rect rect = rectNode->AsRect();
+        SetRect(rect);
+    }
+    else
+    {
+        const YamlNode* positionNode = node->Get("position");
+        if (positionNode)
+            SetPosition(positionNode->AsVector2());
+
+        const YamlNode* sizeNode = node->Get("size");
+        if (sizeNode)
+            SetSize(sizeNode->AsVector2());
     }
 
-    Animation * UIControl::PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* pivotNode = node->Get("pivot");
+    if (pivotNode)
     {
-        LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &relativePosition, _position, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        DVASSERT(pivotNode->GetType() == YamlNode::TYPE_ARRAY);
+        SetPivotPoint(pivotNode->AsPoint());
     }
 
-    Animation * UIControl::SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* angleNode = node->Get("angle");
+    if (angleNode)
     {
-        LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &size, _size, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        SetAngle(angleNode->AsFloat());
     }
 
-    Animation * UIControl::ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* enabledNode = node->Get("enabled");
+    if (enabledNode)
     {
-        LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &scale, newScale, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        SetDisabled(!enabledNode->AsBool());
     }
 
-    Animation * UIControl::AngleAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
+    const YamlNode* clipNode = node->Get("clip");
+    if (clipNode)
     {
-        LinearAnimation<float32> * animation = new LinearAnimation<float32>(this, &angle, newAngle, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        SetClipContents(clipNode->AsBool());
     }
 
-    Animation * UIControl::MoveAnimation(const Rect & rect, float time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* inputNode = node->Get("noInput");
+    if (inputNode)
     {
-        TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x, rect.y + GetPivotPoint().y), &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        SetInputEnabled(!inputNode->AsBool(), false);
     }
 
-    Animation * UIControl::ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* tagNode = node->Get("tag");
+    if (tagNode)
     {
-        Vector2 finalScale(rect.dx / size.x, rect.dy / size.y);
-
-        TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x * finalScale.x, rect.y + GetPivotPoint().y * finalScale.y), &scale, finalScale, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        SetTag(tagNode->AsInt32());
     }
 
-    Animation * UIControl::ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* leftAlignNode = node->Get("leftAlign");
+    if (leftAlignNode)
     {
-        Vector2 finalScale(newSize.x / size.x, newSize.y / size.y);
-        LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &scale, finalScale, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        float32 leftAlign = leftAlignNode->AsFloat();
+        SetLeftAlignEnabled(true);
+        SetLeftAlign(leftAlign);
     }
 
-    void UIControl::TouchableAnimationCallback(BaseObject * caller, void * param, void *callerData)
+    const YamlNode* hcenterAlignNode = node->Get("hcenterAlign");
+    if (hcenterAlignNode)
     {
-        bool * params = (bool*)param;
-        SetInputEnabled(params[0], params[1]);
-        delete[]params;
+        float32 hcenterAlign = hcenterAlignNode->AsFloat();
+        SetHCenterAlignEnabled(true);
+        SetHCenterAlign(hcenterAlign);
     }
 
-    Animation * UIControl::TouchableAnimation(bool touchable, bool hierarhic/* = true*/, int32 track/* = 0*/)
+    const YamlNode* rightAlignNode = node->Get("rightAlign");
+    if (rightAlignNode)
     {
-        //TODO: change to bool animation - Dizz
-        Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-        bool * params = new bool[2];
-        params[0] = touchable;
-        params[1] = hierarhic;
-        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::TouchableAnimationCallback, (void*)params));
-        animation->Start(track);
-        return animation;
+        float32 rightAlign = rightAlignNode->AsFloat();
+        SetRightAlignEnabled(true);
+        SetRightAlign(rightAlign);
     }
 
-    void UIControl::DisabledAnimationCallback(BaseObject * caller, void * param, void *callerData)
+    const YamlNode* topAlignNode = node->Get("topAlign");
+    if (topAlignNode)
     {
-        bool * params = (bool*)param;
-        SetDisabled(params[0], params[1]);
-        delete[]params;
+        float32 topAlign = topAlignNode->AsFloat();
+        SetTopAlignEnabled(true);
+        SetTopAlign(topAlign);
     }
 
-    Animation * UIControl::DisabledAnimation(bool disabled, bool hierarhic/* = true*/, int32 track/* = 0*/)
+    const YamlNode* vcenterAlignNode = node->Get("vcenterAlign");
+    if (vcenterAlignNode)
     {
-        //TODO: change to bool animation - Dizz
-        Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-        bool * params = new bool[2];
-        params[0] = disabled;
-        params[1] = hierarhic;
-        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::DisabledAnimationCallback, (void*)params));
-        animation->Start(track);
-        return animation;
+        float32 vcenterAlign = vcenterAlignNode->AsFloat();
+        SetVCenterAlignEnabled(true);
+        SetVCenterAlign(vcenterAlign);
     }
 
-    void UIControl::VisibleAnimationCallback( BaseObject * caller, void * param, void *callerData )
+    const YamlNode* bottomAlignNode = node->Get("bottomAlign");
+    if (bottomAlignNode)
     {
-        bool visible = ( pointer_size(param) > 0 );
-        SetVisible(visible);
+        float32 bottomAlign = bottomAlignNode->AsFloat();
+        SetBottomAlignEnabled(true);
+        SetBottomAlign(bottomAlign);
     }
 
-    Animation * UIControl::VisibleAnimation(bool visible, int32 track/* = 0*/)
+    const YamlNode* visibleNode = node->Get("visible");
+    const YamlNode* recursiveVisibleNode = node->Get("recursiveVisible");
+    bool visibilityFlag = true;
+    if (visibleNode)
     {
-        Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::VisibleAnimationCallback, (void*)(pointer_size)visible));
-        animation->Start(track);
-        return animation;
+        visibilityFlag = loader->GetBoolFromYamlNode(visibleNode, true);
+    }
+    if (recursiveVisibleNode)
+    {
+        visibilityFlag &= loader->GetBoolFromYamlNode(recursiveVisibleNode, true);
     }
 
-    void UIControl::RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData)
+    SetVisible(visibilityFlag);
+
+    const YamlNode* drawTypeNode = node->Get("drawType");
+    if (drawTypeNode)
     {
-        if(parent)
-        {
-            parent->RemoveControl(this);
-        }
+        GetBackground()->SetDrawType((UIControlBackground::eDrawType)loader->GetDrawTypeFromNode(drawTypeNode));
     }
 
-    Animation * UIControl::RemoveControlAnimation(int32 track)
+    const YamlNode* spriteNode = node->Get("sprite");
+    if (spriteNode)
     {
-        Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::RemoveControlAnimationCallback));
-        animation->Start(track);
-        return animation;
+        GetBackground()->SetSprite(spriteNode->AsString(), GetFrame());
     }
 
-    Animation * UIControl::ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    const YamlNode* frameNode = node->Get("frame");
+    if (frameNode)
     {
-        LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &background->color, finalColor, time, interpolationFunc);
-        animation->Start(track);
-        return animation;
+        GetBackground()->SetFrame(frameNode->AsInt32());
     }
 
-    void UIControl::OnAllAnimationsFinished()
+    const YamlNode* colorNode = node->Get("color");
+    if (colorNode)
     {
-        PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
+        GetBackground()->SetColor(loader->GetColorFromYamlNode(colorNode));
     }
 
-    void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
+    const YamlNode* perPixelAccuracyTypeNode = node->Get("perPixelAccuracy");
+    if (perPixelAccuracyTypeNode)
     {
-        debugDrawEnabled = _debugDrawEnabled;
-        if(hierarchic)
-        {
-            List<UIControl*>::iterator it = childs.begin();
-            for(; it != childs.end(); ++it)
-            {
-                (*it)->SetDebugDraw(debugDrawEnabled, hierarchic);
-            }
-        }
+        GetBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(perPixelAccuracyTypeNode));
     }
 
-    void UIControl::SetDebugDrawColor(const Color& color)
+    const YamlNode* colorInheritNode = node->Get("colorInherit");
+    if (colorInheritNode)
     {
-        debugDrawColor = color;
+        GetBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode));
     }
 
-    const Color &UIControl::GetDebugDrawColor() const
+    const YamlNode* alignNode = node->Get("align");
+    if (alignNode)
     {
-        return debugDrawColor;
+        GetBackground()->SetAlign(loader->GetAlignFromYamlNode(alignNode));
     }
 
-    void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic /*=false*/)
+    const YamlNode* leftRightStretchCapNode = node->Get("leftRightStretchCap");
+    if (leftRightStretchCapNode)
     {
-        drawPivotPointMode = mode;
-        if (hierarchic)
-        {
-            List<UIControl*>::iterator it = childs.begin();
-            for(; it != childs.end(); ++it)
-            {
-                (*it)->SetDrawPivotPointMode(mode, hierarchic);
-            }
-        }
+        GetBackground()->SetLeftRightStretchCap(leftRightStretchCapNode->AsFloat());
     }
 
-    bool UIControl::IsLostFocusAllowed( UIControl *newFocus )
+    const YamlNode* topBottomStretchCapNode = node->Get("topBottomStretchCap");
+    if (topBottomStretchCapNode)
     {
-        return true;
+        GetBackground()->SetTopBottomStretchCap(topBottomStretchCapNode->AsFloat());
     }
 
-    void UIControl::SystemOnFocusLost(UIControl *newFocus)
+    const YamlNode* spriteModificationNode = node->Get("spriteModification");
+    if (spriteModificationNode)
     {
-        PerformEvent(EVENT_FOCUS_LOST);
-        OnFocusLost(newFocus);
+        GetBackground()->SetModification(spriteModificationNode->AsInt32());
     }
 
-    void UIControl::SystemOnFocused()
+    const YamlNode* marginsNode = node->Get("margins");
+    if (marginsNode)
     {
-        PerformEvent(EVENT_FOCUS_SET);
-        OnFocused();
+        UIControlBackground::UIMargins margins(marginsNode->AsVector4());
+        GetBackground()->SetMargins(&margins);
     }
+}
 
-    void UIControl::OnFocusLost(UIControl *newFocus)
+Animation* UIControl::WaitAnimation(float32 time, int32 track)
+{
+    Animation* animation = new Animation(this, time, Interpolation::LINEAR);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::PositionAnimation(const Vector2& _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &relativePosition, _position, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::SizeAnimation(const Vector2& _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &size, _size, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::ScaleAnimation(const Vector2& newScale, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &scale, newScale, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::AngleAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
+{
+    LinearAnimation<float32>* animation = new LinearAnimation<float32>(this, &angle, newAngle, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::MoveAnimation(const Rect& rect, float time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x, rect.y + GetPivotPoint().y), &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::ScaledRectAnimation(const Rect& rect, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    Vector2 finalScale(rect.dx / size.x, rect.dy / size.y);
+
+    TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x * finalScale.x, rect.y + GetPivotPoint().y * finalScale.y), &scale, finalScale, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::ScaledSizeAnimation(const Vector2& newSize, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    Vector2 finalScale(newSize.x / size.x, newSize.y / size.y);
+    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &scale, finalScale, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+void UIControl::TouchableAnimationCallback(BaseObject* caller, void* param, void* callerData)
+{
+    bool* params = (bool*)param;
+    SetInputEnabled(params[0], params[1]);
+    delete[] params;
+}
+
+Animation* UIControl::TouchableAnimation(bool touchable, bool hierarhic /* = true*/, int32 track /* = 0*/)
+{
+    //TODO: change to bool animation - Dizz
+    Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
+    bool* params = new bool[2];
+    params[0] = touchable;
+    params[1] = hierarhic;
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::TouchableAnimationCallback, (void*)params));
+    animation->Start(track);
+    return animation;
+}
+
+void UIControl::DisabledAnimationCallback(BaseObject* caller, void* param, void* callerData)
+{
+    bool* params = (bool*)param;
+    SetDisabled(params[0], params[1]);
+    delete[] params;
+}
+
+Animation* UIControl::DisabledAnimation(bool disabled, bool hierarhic /* = true*/, int32 track /* = 0*/)
+{
+    //TODO: change to bool animation - Dizz
+    Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
+    bool* params = new bool[2];
+    params[0] = disabled;
+    params[1] = hierarhic;
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::DisabledAnimationCallback, (void*)params));
+    animation->Start(track);
+    return animation;
+}
+
+void UIControl::VisibleAnimationCallback(BaseObject* caller, void* param, void* callerData)
+{
+    bool visible = (pointer_size(param) > 0);
+    SetVisible(visible);
+}
+
+Animation* UIControl::VisibleAnimation(bool visible, int32 track /* = 0*/)
+{
+    Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::VisibleAnimationCallback, (void*)(pointer_size)visible));
+    animation->Start(track);
+    return animation;
+}
+
+void UIControl::RemoveControlAnimationCallback(BaseObject* caller, void* param, void* callerData)
+{
+    if (parent)
     {
+        parent->RemoveControl(this);
     }
+}
 
-    void UIControl::OnFocused()
+Animation* UIControl::RemoveControlAnimation(int32 track)
+{
+    Animation* animation = new Animation(this, 0.01f, Interpolation::LINEAR);
+    animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::RemoveControlAnimationCallback));
+    animation->Start(track);
+    return animation;
+}
+
+Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+{
+    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &background->color, finalColor, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
+}
+
+void UIControl::OnAllAnimationsFinished()
+{
+    PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
+}
+
+void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic /* = false*/)
+{
+    debugDrawEnabled = _debugDrawEnabled;
+    if (hierarchic)
     {
-    }
-
-    void UIControl::SetSizeFromBg(bool pivotToCenter)
-    {
-        SetSize(GetBackground()->GetSprite()->GetSize());
-
-        if (pivotToCenter)
-        {
-            SetPivot(Vector2(0.5f, 0.5f));
-        }
-    }
-
-    void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
-    {
-        node->Set("type", nodeTypeName);
-    }
-
-    void UIControl::RegisterInputProcessor()
-    {
-        inputProcessorsCount++;
-        if (parent)
-        {
-            parent->RegisterInputProcessor();
-        }
-    }
-
-    void UIControl::RegisterInputProcessors(int32 processorsCount)
-    {
-        inputProcessorsCount += processorsCount;
-        if (parent)
-        {
-            parent->RegisterInputProcessors(processorsCount);
-        }
-    }
-
-    void UIControl::UnregisterInputProcessor()
-    {
-        inputProcessorsCount--;
-        DVASSERT(inputProcessorsCount >= 0);
-        if (parent)
-        {
-            parent->UnregisterInputProcessor();
-        }
-    }
-    void UIControl::UnregisterInputProcessors(int32 processorsCount)
-    {
-        inputProcessorsCount -= processorsCount;
-        DVASSERT(inputProcessorsCount >= 0);
-        if (parent)
-        {
-            parent->UnregisterInputProcessors(processorsCount);
-        }
-    }
-
-    void UIControl::DumpInputs(int32 depthLevel)
-    {
-        String outStr;
-        for (int32 i = 0; i < depthLevel; i++)
-        {
-            outStr += "| ";
-        }
-        outStr += "\\-";
-        outStr += name;
-        if (inputProcessorsCount > 0)
-        {
-            outStr += " ";
-            outStr += Format("%d", inputProcessorsCount);
-        }
-
-        if (inputEnabled)
-        {
-            outStr += " ***";
-        }
-        Logger::Info("%s", outStr.c_str());
         List<UIControl*>::iterator it = childs.begin();
-        for(; it != childs.end(); ++it)
+        for (; it != childs.end(); ++it)
         {
-            (*it)->DumpInputs(depthLevel + 1);
+            (*it)->SetDebugDraw(debugDrawEnabled, hierarchic);
         }
     }
+}
 
-    void UIControl::DumpControls(bool onlyOrphans)
+void UIControl::SetDebugDrawColor(const Color& color)
+{
+    debugDrawColor = color;
+}
+
+const Color& UIControl::GetDebugDrawColor() const
+{
+    return debugDrawColor;
+}
+
+void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic /*=false*/)
+{
+    drawPivotPointMode = mode;
+    if (hierarchic)
     {
-        LockGuard<Mutex> lock(controlsListMutex);
-        Logger::FrameworkDebug("============================================================");
-        Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
-
-        uint32 allCount = static_cast<uint32>(controlsList.size());
-        uint32 orphansCount = 0;
-        for (auto control : controlsList)
+        List<UIControl*>::iterator it = childs.begin();
+        for (; it != childs.end(); ++it)
         {
-            if (control->GetParent() == nullptr)
-            {
-                ++orphansCount;
-            }
+            (*it)->SetDrawPivotPointMode(mode, hierarchic);
+        }
+    }
+}
 
-            if (onlyOrphans && control->GetParent() != nullptr)
-            {
-                continue;
-            }
+bool UIControl::IsLostFocusAllowed(UIControl* newFocus)
+{
+    return true;
+}
 
-            Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
+void UIControl::SystemOnFocusLost(UIControl* newFocus)
+{
+    PerformEvent(EVENT_FOCUS_LOST);
+    OnFocusLost(newFocus);
+}
+
+void UIControl::SystemOnFocused()
+{
+    PerformEvent(EVENT_FOCUS_SET);
+    OnFocused();
+}
+
+void UIControl::OnFocusLost(UIControl* newFocus)
+{
+}
+
+void UIControl::OnFocused()
+{
+}
+
+void UIControl::SetSizeFromBg(bool pivotToCenter)
+{
+    SetSize(GetBackground()->GetSprite()->GetSize());
+
+    if (pivotToCenter)
+    {
+        SetPivot(Vector2(0.5f, 0.5f));
+    }
+}
+
+void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
+{
+    node->Set("type", nodeTypeName);
+}
+
+void UIControl::RegisterInputProcessor()
+{
+    inputProcessorsCount++;
+    if (parent)
+    {
+        parent->RegisterInputProcessor();
+    }
+}
+
+void UIControl::RegisterInputProcessors(int32 processorsCount)
+{
+    inputProcessorsCount += processorsCount;
+    if (parent)
+    {
+        parent->RegisterInputProcessors(processorsCount);
+    }
+}
+
+void UIControl::UnregisterInputProcessor()
+{
+    inputProcessorsCount--;
+    DVASSERT(inputProcessorsCount >= 0);
+    if (parent)
+    {
+        parent->UnregisterInputProcessor();
+    }
+}
+void UIControl::UnregisterInputProcessors(int32 processorsCount)
+{
+    inputProcessorsCount -= processorsCount;
+    DVASSERT(inputProcessorsCount >= 0);
+    if (parent)
+    {
+        parent->UnregisterInputProcessors(processorsCount);
+    }
+}
+
+void UIControl::DumpInputs(int32 depthLevel)
+{
+    String outStr;
+    for (int32 i = 0; i < depthLevel; i++)
+    {
+        outStr += "| ";
+    }
+    outStr += "\\-";
+    outStr += name;
+    if (inputProcessorsCount > 0)
+    {
+        outStr += " ";
+        outStr += Format("%d", inputProcessorsCount);
+    }
+
+    if (inputEnabled)
+    {
+        outStr += " ***";
+    }
+    Logger::Info("%s", outStr.c_str());
+    List<UIControl*>::iterator it = childs.begin();
+    for (; it != childs.end(); ++it)
+    {
+        (*it)->DumpInputs(depthLevel + 1);
+    }
+}
+
+void UIControl::DumpControls(bool onlyOrphans)
+{
+    LockGuard<Mutex> lock(controlsListMutex);
+    Logger::FrameworkDebug("============================================================");
+    Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
+
+    uint32 allCount = static_cast<uint32>(controlsList.size());
+    uint32 orphansCount = 0;
+    for (auto control : controlsList)
+    {
+        if (control->GetParent() == nullptr)
+        {
+            ++orphansCount;
         }
 
-        Logger::FrameworkDebug("Total controls count: %d, orphans count: %d", allCount, orphansCount);
-        Logger::FrameworkDebug("============================================================");
+        if (onlyOrphans && control->GetParent() != nullptr)
+        {
+            continue;
+        }
+
+        Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
     }
 
-    int32 UIControl::GetBackgroundComponentsCount() const
+    Logger::FrameworkDebug("Total controls count: %d, orphans count: %d", allCount, orphansCount);
+    Logger::FrameworkDebug("============================================================");
+}
+
+int32 UIControl::GetBackgroundComponentsCount() const
+{
+    return 1;
+}
+
+UIControlBackground* UIControl::GetBackgroundComponent(int32 index) const
+{
+    DVASSERT(index == 0);
+    return background;
+}
+
+UIControlBackground* UIControl::CreateBackgroundComponent(int32 index) const
+{
+    DVASSERT(index == 0);
+    return new UIControlBackground();
+}
+
+void UIControl::SetBackgroundComponent(int32 index, UIControlBackground* bg)
+{
+    DVASSERT(index == 0);
+    SetBackground(bg);
+}
+
+String UIControl::GetBackgroundComponentName(int32 index) const
+{
+    DVASSERT(index == 0);
+    return "Background";
+}
+
+int32 UIControl::GetInternalControlsCount() const
+{
+    return 0;
+}
+
+UIControl* UIControl::GetInternalControl(int32 index) const
+{
+    DVASSERT(false);
+    return NULL;
+}
+
+UIControl* UIControl::CreateInternalControl(int32 index) const
+{
+    DVASSERT(false);
+    return NULL;
+}
+
+void UIControl::SetInternalControl(int32 index, UIControl* control)
+{
+    DVASSERT(false);
+}
+
+String UIControl::GetInternalControlName(int32 index) const
+{
+    DVASSERT(false);
+    return "";
+}
+
+String UIControl::GetInternalControlDescriptions() const
+{
+    DVASSERT(false);
+    return "";
+}
+
+void UIControl::UpdateLayout()
+{
+    UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+}
+
+void UIControl::OnSizeChanged()
+{
+}
+
+/* Components */
+
+void UIControl::AddComponent(UIComponent* component)
+{
+    DVASSERT(component->GetControl() == nullptr);
+    component->SetControl(this);
+    components.push_back(SafeRetain(component));
+    std::stable_sort(components.begin(), components.end(), [](UIComponent* left, UIComponent* right) {
+        return left->GetType() < right->GetType();
+    });
+    UpdateFamily();
+
+    SetLayoutDirty();
+}
+
+void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
+{
+    uint32 count = family->GetComponentsCount(component->GetType());
+    if (count == 0 || index >= count)
     {
-        return 1;
+        AddComponent(component);
     }
-
-    UIControlBackground *UIControl::GetBackgroundComponent(int32 index) const
-    {
-        DVASSERT(index == 0);
-        return background;
-    }
-
-    UIControlBackground *UIControl::CreateBackgroundComponent(int32 index) const
-    {
-        DVASSERT(index == 0);
-        return new UIControlBackground();
-    }
-
-    void UIControl::SetBackgroundComponent(int32 index, UIControlBackground *bg)
-    {
-        DVASSERT(index == 0);
-        SetBackground(bg);
-    }
-
-    String UIControl::GetBackgroundComponentName(int32 index) const
-    {
-        DVASSERT(index == 0);
-        return "Background";
-    }
-
-    int32 UIControl::GetInternalControlsCount() const
-    {
-        return 0;
-    }
-
-    UIControl *UIControl::GetInternalControl(int32 index) const
-    {
-        DVASSERT(false);
-        return NULL;
-    }
-
-    UIControl *UIControl::CreateInternalControl(int32 index) const
-    {
-        DVASSERT(false);
-        return NULL;
-    }
-
-    void UIControl::SetInternalControl(int32 index, UIControl *control)
-    {
-        DVASSERT(false);
-    }
-
-    String UIControl::GetInternalControlName(int32 index) const
-    {
-        DVASSERT(false);
-        return "";
-    }
-
-    String UIControl::GetInternalControlDescriptions() const
-    {
-        DVASSERT(false);
-        return "";
-    }
-
-    void UIControl::UpdateLayout()
-    {
-        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
-    }
-    
-    void UIControl::OnSizeChanged()
-    {
-    }
-
-    /* Components */
-
-    void UIControl::AddComponent(UIComponent * component)
+    else
     {
         DVASSERT(component->GetControl() == nullptr);
         component->SetControl(this);
-        components.push_back(SafeRetain(component));
-        std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
-            return left->GetType() < right->GetType();
-        });
+
+        uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
+        components.insert(components.begin() + insertIndex, SafeRetain(component));
+
         UpdateFamily();
 
         SetLayoutDirty();
     }
+}
 
-    void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
+UIComponent* UIControl::GetComponent(uint32 componentType, uint32 index) const
+{
+    uint32 maxCount = family->GetComponentsCount(componentType);
+    if (index < maxCount)
     {
-        uint32 count = family->GetComponentsCount(component->GetType());
-        if (count == 0 || index >= count)
-        {
-            AddComponent(component);
-        }
-        else
-        {
-            DVASSERT(component->GetControl() == nullptr);
-            component->SetControl(this);
-
-            uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
-            components.insert(components.begin() + insertIndex, SafeRetain(component));
-
-            UpdateFamily();
-
-            SetLayoutDirty();
-        }
+        return components[family->GetComponentIndex(componentType, index)];
     }
+    return nullptr;
+}
 
-    UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
+int32 UIControl::GetComponentIndex(const UIComponent* component) const
+{
+    uint32 count = family->GetComponentsCount(component->GetType());
+    uint32 index = family->GetComponentIndex(component->GetType(), 0);
+    for (uint32 i = 0; i < count; i++)
     {
-        uint32 maxCount = family->GetComponentsCount(componentType);
-        if (index < maxCount)
-        {
-            return components[family->GetComponentIndex(componentType, index)];
-        }
-        return nullptr;
+        if (components[index + i] == component)
+            return i;
     }
+    return -1;
+}
 
-    int32 UIControl::GetComponentIndex(const UIComponent *component) const
+UIComponent* UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+{
+    UIComponent* ret = GetComponent(componentType, index);
+    if (!ret)
     {
-        uint32 count = family->GetComponentsCount(component->GetType());
-        uint32 index = family->GetComponentIndex(component->GetType(), 0);
-        for (uint32 i = 0; i < count; i++)
+        DVASSERT(index == 0);
+        ret = UIComponent::CreateByType(componentType);
+        if (ret)
         {
-            if (components[index + i] == component)
-                return i;
-        }
-        return -1;
-    }
-
-    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
-    {
-        UIComponent * ret = GetComponent(componentType, index);
-        if (!ret)
-        {
-            DVASSERT(index == 0);
-            ret = UIComponent::CreateByType(componentType);
-            if (ret)
-            {
-                AddComponent(ret);
-                ret->Release(); // refCount was increased in AddComponent
-            }
-        }
-
-        return ret;
-    }
-
-    void UIControl::UpdateFamily()
-    {
-        UIControlFamily::Release(family);
-        family = UIControlFamily::GetOrCreate(components);
-    }
-
-    void UIControl::RemoveAllComponents()
-    {
-        while (!components.empty())
-        {
-            RemoveComponent(--components.end());
+            AddComponent(ret);
+            ret->Release(); // refCount was increased in AddComponent
         }
     }
 
-    void UIControl::RemoveComponent(const Vector<UIComponent *>::iterator & it)
-    {
-        if (it != components.end())
-        {
-            UIComponent * c = *it;
-            components.erase(it);
-            UpdateFamily();
-            c->SetControl(nullptr);
-            SafeRelease(c);
+    return ret;
+}
 
-            SetLayoutDirty();
-        }
+void UIControl::UpdateFamily()
+{
+    UIControlFamily::Release(family);
+    family = UIControlFamily::GetOrCreate(components);
+}
+
+void UIControl::RemoveAllComponents()
+{
+    while (!components.empty())
+    {
+        RemoveComponent(--components.end());
     }
+}
 
-    void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
+{
+    if (it != components.end())
     {
-        UIComponent * c = GetComponent(componentType, index);
-        if (c)
-        {
-            RemoveComponent(c);
-        }
+        UIComponent* c = *it;
+        components.erase(it);
+        UpdateFamily();
+        c->SetControl(nullptr);
+        SafeRelease(c);
+
+        SetLayoutDirty();
     }
+}
 
-    void UIControl::RemoveComponent(UIComponent * component)
+void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+{
+    UIComponent* c = GetComponent(componentType, index);
+    if (c)
     {
-        DVASSERT(component);
-        auto it = std::find(components.begin(), components.end(), component);
-        RemoveComponent(it);
+        RemoveComponent(c);
     }
+}
 
-    uint32 UIControl::GetComponentCount() const
+void UIControl::RemoveComponent(UIComponent* component)
+{
+    DVASSERT(component);
+    auto it = std::find(components.begin(), components.end(), component);
+    RemoveComponent(it);
+}
+
+uint32 UIControl::GetComponentCount() const
+{
+    return static_cast<uint32>(components.size());
+}
+
+uint32 UIControl::GetComponentCount(uint32 componentType) const
+{
+    return family->GetComponentsCount(componentType);
+}
+
+uint64 UIControl::GetAvailableComponentFlags() const
+{
+    return family->GetComponentsFlags();
+}
+
+const Vector<UIComponent*>& UIControl::GetComponents()
+{
+    return components;
+}
+
+/* Components */
+
+/* Styles */
+
+void UIControl::AddClass(const FastName& clazz)
+{
+    if (classes.AddClass(clazz))
     {
-        return static_cast<uint32>(components.size());
+        SetStyleSheetDirty();
     }
+}
 
-    uint32 UIControl::GetComponentCount(uint32 componentType) const
+void UIControl::RemoveClass(const FastName& clazz)
+{
+    if (classes.RemoveClass(clazz))
     {
-        return family->GetComponentsCount(componentType);
+        SetStyleSheetDirty();
     }
+}
 
-    uint64 UIControl::GetAvailableComponentFlags() const
+bool UIControl::HasClass(const FastName& clazz) const
+{
+    return classes.HasClass(clazz);
+}
+
+void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
+{
+    if (classes.SetTaggedClass(tag, clazz))
     {
-        return family->GetComponentsFlags();
+        SetStyleSheetDirty();
     }
+}
 
-    const Vector<UIComponent *>& UIControl::GetComponents()
+void UIControl::ResetTaggedClass(const FastName& tag)
+{
+    if (classes.ResetTaggedClass(tag))
     {
-        return components;
+        SetStyleSheetDirty();
     }
+}
 
-    /* Components */
+String UIControl::GetClassesAsString() const
+{
+    return classes.GetClassesAsString();
+}
 
-    /* Styles */
+void UIControl::SetClassesFromString(const String& classesStr)
+{
+    classes.SetClassesFromString(classesStr);
+    SetStyleSheetDirty();
+}
 
-    void UIControl::AddClass(const FastName& clazz)
+const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
+{
+    return localProperties;
+}
+
+void UIControl::SetLocalPropertySet(const UIStyleSheetPropertySet& set)
+{
+    localProperties = set;
+}
+
+void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
+{
+    localProperties.set(propertyIndex, value);
+    SetStyleSheetDirty();
+}
+
+const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
+{
+    return styledProperties;
+}
+
+void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet& set)
+{
+    styledProperties = set;
+}
+
+bool UIControl::IsStyleSheetInitialized() const
+{
+    return styleSheetInitialized;
+}
+
+void UIControl::SetStyleSheetInitialized()
+{
+    styleSheetInitialized = true;
+}
+
+void UIControl::SetStyleSheetDirty()
+{
+    styleSheetDirty = true;
+}
+
+void UIControl::ResetStyleSheetDirty()
+{
+    styleSheetDirty = false;
+}
+
+void UIControl::SetLayoutDirty()
+{
+    layoutDirty = true;
+}
+
+void UIControl::ResetLayoutDirty()
+{
+    layoutDirty = false;
+    layoutPositionDirty = false;
+}
+
+void UIControl::SetLayoutPositionDirty()
+{
+    layoutPositionDirty = true;
+}
+
+void UIControl::ResetLayoutPositionDirty()
+{
+    layoutPositionDirty = false;
+}
+
+void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
+{
+    if (packageContext != newPackageContext)
     {
-        if (classes.AddClass(clazz))
-        {
-            SetStyleSheetDirty();
-        }
-    }
-
-    void UIControl::RemoveClass(const FastName& clazz)
-    {
-        if (classes.RemoveClass(clazz))
-        {
-            SetStyleSheetDirty();
-        }
-    }
-
-    bool UIControl::HasClass(const FastName& clazz) const
-    {
-        return classes.HasClass(clazz);
-    }
-
-    void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
-    {
-        if (classes.SetTaggedClass(tag, clazz))
-        {
-            SetStyleSheetDirty();
-        }
-    }
-
-    void UIControl::ResetTaggedClass(const FastName& tag)
-    {
-        if (classes.ResetTaggedClass(tag))
-        {
-            SetStyleSheetDirty();
-        }
-    }
-
-    String UIControl::GetClassesAsString() const
-    {
-        return classes.GetClassesAsString();
-    }
-
-    void UIControl::SetClassesFromString(const String& classesStr)
-    {
-        classes.SetClassesFromString(classesStr);
         SetStyleSheetDirty();
     }
 
-    const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
-    {
-        return localProperties;
-    }
+    packageContext = newPackageContext;
+    for (UIControl* child : childs)
+        child->PropagateParentWithContext(packageContext ? this : parentWithContext);
+}
 
-    void UIControl::SetLocalPropertySet(const UIStyleSheetPropertySet &set)
-    {
-        localProperties = set;
-    }
+void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
+{
+    SetStyleSheetDirty();
 
-    void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
+    parentWithContext = newParentWithContext;
+    if (packageContext == nullptr)
     {
-        localProperties.set(propertyIndex, value);
-        SetStyleSheetDirty();
-    }
-
-    const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
-    {
-        return styledProperties;
-    }
-
-    void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet &set)
-    {
-        styledProperties = set;
-    }
-
-    bool UIControl::IsStyleSheetInitialized() const
-    {
-        return styleSheetInitialized;
-    }
-
-    void UIControl::SetStyleSheetInitialized()
-    {
-        styleSheetInitialized = true;
-    }
-
-    void UIControl::SetStyleSheetDirty()
-    {
-        styleSheetDirty = true;
-    }
-
-    void UIControl::ResetStyleSheetDirty()
-    {
-        styleSheetDirty = false;
-    }
-
-    void UIControl::SetLayoutDirty()
-    {
-        layoutDirty = true;
-    }
-
-    void UIControl::ResetLayoutDirty()
-    {
-        layoutDirty = false;
-        layoutPositionDirty = false;
-    }
-
-    void UIControl::SetLayoutPositionDirty()
-    {
-        layoutPositionDirty = true;
-    }
-
-    void UIControl::ResetLayoutPositionDirty()
-    {
-        layoutPositionDirty = false;
-    }
-
-    void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
-    {
-        if (packageContext != newPackageContext)
-        {
-            SetStyleSheetDirty();
-        }
-
-        packageContext = newPackageContext;
         for (UIControl* child : childs)
-            child->PropagateParentWithContext(packageContext ? this : parentWithContext);
-    }
-
-    void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
-    {
-        SetStyleSheetDirty();
-
-        parentWithContext = newParentWithContext;
-        if (packageContext == nullptr)
         {
-            for (UIControl* child : childs)
-            {
-                child->PropagateParentWithContext(newParentWithContext);
-            }
+            child->PropagateParentWithContext(newParentWithContext);
         }
     }
+}
 
-    UIControlPackageContext* UIControl::GetPackageContext() const
-    {
-        return packageContext.Valid() ?
-            packageContext.Get() :
-            (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
-    }
+UIControlPackageContext* UIControl::GetPackageContext() const
+{
+    return packageContext.Valid() ?
+    packageContext.Get() :
+    (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
+}
 
-    UIControlPackageContext* UIControl::GetLocalPackageContext() const
-    {
-        return packageContext.Get();
-    }
+UIControlPackageContext* UIControl::GetLocalPackageContext() const
+{
+    return packageContext.Get();
+}
 
-    /* Styles */
+/* Styles */
 }
