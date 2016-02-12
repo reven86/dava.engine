@@ -130,9 +130,10 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
-    target.options = 0;
     if (activeVariantInstance->wireFrame)
         target.options |= rhi::Packet::OPT_WIREFRAME;
+    else
+        target.options &= ~rhi::Packet::OPT_WIREFRAME;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
