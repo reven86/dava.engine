@@ -73,6 +73,18 @@
 
 #endif
 
+#if defined(__DAVAENGINE_ANDROID__)
+
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
+
+extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced_EXT;
+extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced_EXT;
+extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
+
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2

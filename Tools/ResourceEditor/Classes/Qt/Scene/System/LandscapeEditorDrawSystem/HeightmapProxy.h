@@ -35,19 +35,19 @@
 
 using namespace DAVA;
 
-class HeightmapProxy: public EditorHeightmap
+class HeightmapProxy : public EditorHeightmap
 {
 public:
-	HeightmapProxy(Heightmap* heightmap);
-	
-	void UpdateRect(const Rect& rect);
-	void ResetHeightmapChanged();
+    HeightmapProxy(Heightmap* heightmap);
+
+    void UpdateRect(const Rect& rect);
+    void ResetHeightmapChanged();
 
     bool IsHeightmapChanged() const;
     const Rect& GetChangedRect() const;
 
 private:
-	Rect changedRect;
+    Rect changedRect;
     bool heightmapChanged = false;
 };
 

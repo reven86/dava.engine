@@ -55,4 +55,4 @@ private:
     static void FollowRight(BranchDiff* parent, Branch* right);
 };
 
-#endif  // __BRANCHDIFF_H__
+#endif // __BRANCHDIFF_H__

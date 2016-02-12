@@ -35,42 +35,39 @@
 
 class QProgressBar;
 
-class  QResourceEditorProgressDialog
-	: public QProgressDialog
+class QResourceEditorProgressDialog
+: public QProgressDialog
 {
-
-	Q_OBJECT
+    Q_OBJECT
 
 public:
+    QResourceEditorProgressDialog(QWidget* parent = 0, Qt::WindowFlags f = 0, bool isCycled = false);
 
-	QResourceEditorProgressDialog( QWidget * parent = 0, Qt::WindowFlags f = 0, bool isCycled = false );
+    bool getCycledFlag()
+    {
+        return isCycled;
+    }
 
-	bool getCycledFlag()
-	{ 
-		return isCycled;
-	}
+    unsigned int getTimeIntervalForParcent()
+    {
+        return timeIntervalForPercent;
+    }
 
-	unsigned int getTimeIntervalForParcent() 
-	{ 
-		return timeIntervalForPercent;
-	}
-	
-	void getTimeIntervalForParcent(unsigned int value) 
-	{ 
-		timeIntervalForPercent = value;
-	}
+    void getTimeIntervalForParcent(unsigned int value)
+    {
+        timeIntervalForPercent = value;
+    }
 
 protected:
+    virtual void showEvent(QShowEvent* e);
 
-	virtual void	showEvent ( QShowEvent * e );
-
-	bool				isCycled;
-	unsigned int		timeIntervalForPercent;
-	QTimer				timer;
+    bool isCycled;
+    unsigned int timeIntervalForPercent;
+    QTimer timer;
 
 private slots:
-	
-	void UpdateProgress();
+
+    void UpdateProgress();
 };
 
 #endif // __Q_RESOURSE_EDITOR_PROGRESS_DIALOG_H__

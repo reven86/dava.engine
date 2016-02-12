@@ -38,13 +38,13 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageFormatInterface.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Texture;
 class Sprite;
 class Image;
 
-class LibPngHelper: public ImageFormatInterface
+class LibPngHelper : public ImageFormatInterface
 {
 public:
     LibPngHelper();
@@ -53,20 +53,19 @@ public:
 
     bool CanProcessFile(File* infile) const override;
 
-    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
-    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(File *infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 
-    static eErrorCode ReadPngFile(File *infile, Image *image, PixelFormat targetFormat = FORMAT_INVALID);
+    static eErrorCode ReadPngFile(File* infile, Image* image, PixelFormat targetFormat = FORMAT_INVALID);
 };
 
 inline ImageFormat LibPngHelper::GetImageFormat() const
 {
     return IMAGE_FORMAT_PNG;
 }
-
 }
 
 #endif // __PNG_IMAGE_H__

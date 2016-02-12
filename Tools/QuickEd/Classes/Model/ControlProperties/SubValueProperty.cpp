@@ -33,7 +33,7 @@
 
 using namespace DAVA;
 
-SubValueProperty::SubValueProperty(int anIndex, const DAVA::String &propName)
+SubValueProperty::SubValueProperty(int anIndex, const DAVA::String& propName)
     : index(anIndex)
     , name(propName)
 {
@@ -48,17 +48,17 @@ uint32 SubValueProperty::GetCount() const
     return 0;
 }
 
-AbstractProperty *SubValueProperty::GetProperty(int index) const
+AbstractProperty* SubValueProperty::GetProperty(int index) const
 {
     return NULL;
 }
 
-void SubValueProperty::Accept(PropertyVisitor *visitor)
+void SubValueProperty::Accept(PropertyVisitor* visitor)
 {
     DVASSERT(false);
 }
 
-const DAVA::String &SubValueProperty::GetName() const
+const DAVA::String& SubValueProperty::GetName() const
 {
     return name;
 }
@@ -73,7 +73,7 @@ VariantType SubValueProperty::GetValue() const
     return GetValueProperty()->GetSubValue(index);
 }
 
-void SubValueProperty::SetValue(const DAVA::VariantType &newValue)
+void SubValueProperty::SetValue(const DAVA::VariantType& newValue)
 {
     GetValueProperty()->SetSubValue(index, newValue);
 }
@@ -83,7 +83,7 @@ VariantType SubValueProperty::GetDefaultValue() const
     return GetValueProperty()->GetDefaultSubValue(index);
 }
 
-void SubValueProperty::SetDefaultValue(const DAVA::VariantType &newValue)
+void SubValueProperty::SetDefaultValue(const DAVA::VariantType& newValue)
 {
     GetValueProperty()->SetDefaultSubValue(index, newValue);
 }
@@ -98,7 +98,7 @@ bool SubValueProperty::IsOverriddenLocally() const
     return GetValueProperty()->IsOverriddenLocally();
 }
 
-ValueProperty *SubValueProperty::GetValueProperty() const
+ValueProperty* SubValueProperty::GetValueProperty() const
 {
     return DynamicTypeCheck<ValueProperty*>(GetParent());
 }

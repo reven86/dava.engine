@@ -37,34 +37,33 @@
 
 namespace DAVA
 {
-
 class LocalNotification : public BaseObject
 {
 protected:
-	LocalNotification();
+    LocalNotification();
     virtual ~LocalNotification();
 
 public:
     void SetAction(const Message& msg);
     inline void RunAction();
 
-	void SetTitle(const WideString &_title);
-	void SetText(const WideString &_text);
+    void SetTitle(const WideString& _title);
+    void SetText(const WideString& _text);
     void SetUseSound(const bool value);
-    
-	void Show();
+
+    void Show();
     void Hide();
     void Update();
 
     inline bool IsChanged() const;
-	inline bool IsVisible() const;
+    inline bool IsVisible() const;
     const DAVA::String& GetId() const;
 
 private:
     virtual void ImplShow() = 0;
 
 protected:
-    LocalNotificationImpl *impl = nullptr;
+    LocalNotificationImpl* impl = nullptr;
 
     bool isChanged = false;
     bool isVisible = true;
@@ -75,13 +74,12 @@ protected:
     WideString text = L"";
     bool useSound = false;
 };
-    
-    
+
 inline void LocalNotification::RunAction()
 {
     action(this);
 }
-    
+
 inline bool LocalNotification::IsChanged() const
 {
     return isChanged;
@@ -96,7 +94,6 @@ inline const DAVA::String& LocalNotification::GetId() const
 {
     return impl->GetId();
 }
-
 }
 
 #endif

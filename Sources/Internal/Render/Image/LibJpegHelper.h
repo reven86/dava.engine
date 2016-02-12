@@ -35,10 +35,9 @@
 #include "FileSystem/FilePath.h"
 #include "Render/Image/ImageFormatInterface.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class LibJpegHelper: public ImageFormatInterface
+class LibJpegHelper : public ImageFormatInterface
 {
 public:
     LibJpegHelper();
@@ -47,22 +46,21 @@ public:
 
     bool CanProcessFile(File* file) const override;
 
-    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap = 0) const override;
 
     //only RGB888 or A8
-    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
     //only RGB888 or A8
-    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(File *infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 };
 
 inline ImageFormat LibJpegHelper::GetImageFormat() const
 {
     return IMAGE_FORMAT_JPEG;
 }
-
 };
 
 #endif // __DAVAENGINE_JPEG_HELPER_H__

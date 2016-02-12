@@ -31,10 +31,13 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-class UIScrollViewTest: public BaseScreen
+class UIScrollViewTest : public BaseScreen
 {
 protected:
-    ~UIScrollViewTest(){}
+    ~UIScrollViewTest()
+    {
+    }
+
 public:
     UIScrollViewTest();
 
@@ -42,12 +45,12 @@ public:
     void UnloadResources() override;
 
 private:
-    void ButtonPressed(DAVA::BaseObject *obj, void *data, void *callerData);
-    
+    void ButtonPressed(DAVA::BaseObject* obj, void* data, void* callerData);
+
 private:
-    DAVA::UIButton*         finishTestBtn;
-    DAVA::UIStaticText*    testMessageText;
-    DAVA::UIScrollView*    scrollView;
+    DAVA::UIButton* finishTestBtn;
+    DAVA::UIStaticText* testMessageText;
+    DAVA::UIScrollView* scrollView;
 };
 
 #endif /* defined(__UISCROLL_VIEW_TEST__) */

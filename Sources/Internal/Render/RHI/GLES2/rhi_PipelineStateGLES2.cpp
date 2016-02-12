@@ -58,9 +58,9 @@ VertexDeclGLES2
 {
     VertexDeclGLES2()
         : elemCount(0)
-        , stride(0)
         , vattrInited(false)
     {
+        memset(stride, 0, sizeof(stride));
     }
 
     void Construct(const VertexLayout& layout)
@@ -71,6 +71,8 @@ VertexDeclGLES2
         {
             if (layout.ElementSemantics(i) == VS_PAD)
                 continue;
+
+            unsigned stream_i = layout.ElementStreamIndex(i);
 
             switch (layout.ElementDataType(i))
             {
@@ -154,11 +156,15 @@ VertexDeclGLES2
             elem[elemCount].count = layout.ElementDataCount(i);
             elem[elemCount].offset = (void*)(uint64(layout.ElementOffset(i)));
             elem[elemCount].index = DAVA::InvalidIndex;
+            elem[elemCount].streamIndex = stream_i;
+            elem[elemCount].attrDivisor = (layout.StreamFrequency(stream_i) == VDF_PER_INSTANCE) ? 1 : 0;
+
+            stride[stream_i] = layout.Stride(stream_i);
 
             ++elemCount;
         }
 
-        stride = layout.Stride();
+        streamCount = layout.StreamCount();
         vattrInited = false;
     }
     void InitVattr(int gl_prog, bool force_immediate = false)
@@ -179,12 +185,15 @@ VertexDeclGLES2
 
         vattrInited = true;
     }
-    void SetToRHI(uint32 firstVertex) const
+    void SetToRHI(uint32 firstVertex, uint32 vertexStreamCount, const Handle* vb) const
     {
         DVASSERT(vattrInited);
 
-        uint32 base = firstVertex * stride;
+        uint32 base[MAX_VERTEX_STREAM_COUNT];
         int attr_used[VATTR_COUNT];
+
+        for (unsigned s = 0; s != streamCount; ++s)
+            base[s] = firstVertex * stride[s];
 
         memset(attr_used, 0, sizeof(attr_used));
 
@@ -195,11 +204,13 @@ VertexDeclGLES2
             GLint size;
             GLenum type;
             GLboolean normalized;
+            int divisor;
             const GLvoid* pointer;
         };
 
         static vattr_t vattr[VATTR_COUNT];
-        static unsigned cur_stride = 0;
+        static unsigned cur_stride[MAX_VERTEX_STREAM_COUNT];
+        static unsigned cur_stream_count = 0;
         static bool needInit = true;
 
         if (needInit)
@@ -207,6 +218,7 @@ VertexDeclGLES2
             //                            for( vattr_t* a=vattr,*a_end=vattr+countof(vattr); a!=a_end; ++a )
             //                                a->enabled = false;
             memset(vattr, 0, sizeof(vattr));
+            memset(cur_stride, 0, sizeof(cur_stride));
 
             for (unsigned i = 0; i != VATTR_COUNT; ++i)
                 GL_CALL(glDisableVertexAttribArray(i));
@@ -238,8 +250,21 @@ VertexDeclGLES2
             }
         }
 
+        unsigned stream = unsigned(-1);
+
         for (unsigned i = 0; i != elemCount; ++i)
         {
+            if (cur_stream_count != streamCount)
+            {
+                if (elem[i].streamIndex != stream)
+                {
+                    stream = elem[i].streamIndex;
+                    DVASSERT(stream < streamCount);
+                    VertexBufferGLES2::SetToRHI(vb[stream]);
+                }
+            }
+            stream = elem[i].streamIndex;
+
             unsigned idx = elem[i].index;
 
             if (idx != DAVA::InvalidIndex)
@@ -252,21 +277,37 @@ VertexDeclGLES2
                     vattr[idx].enabled = true;
                 }
 
-                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != (GLboolean)(elem[i].normalized) || cur_stride != stride || vattr[idx].pointer != (const GLvoid*)(base + (uint8_t*)(elem[i].offset)))
+                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != (GLboolean)(elem[i].normalized) || cur_stride[stream] != stride[stream] || vattr[idx].pointer != (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset)))
                 {
                     //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
-                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset))));
+                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride[stream], (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset))));
 
                     vattr[idx].size = elem[i].count;
                     vattr[idx].type = elem[i].type;
                     vattr[idx].normalized = (GLboolean)(elem[i].normalized);
-                    vattr[idx].pointer = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));
+                    vattr[idx].pointer = (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset));
+                }
+
+                if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
+                {
+                    #if defined(__DAVAENGINE_IPHONE__)
+                    glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
+                    #elif defined(__DAVAENGINE_ANDROID__)
+                    glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor);
+                    #elif defined(__DAVAENGINE_MACOS__)
+                    glVertexAttribDivisorARB(idx, elem[i].attrDivisor);
+                    #else
+                    glVertexAttribDivisor(idx, elem[i].attrDivisor);
+                    #endif
+                    vattr[idx].divisor = elem[i].attrDivisor;
                 }
             }
-        }
-        VAttrCacheValid = true;
 
-        cur_stride = stride;
+            cur_stride[stream] = stride[stream];
+        }
+        cur_stream_count = streamCount;
+
+        VAttrCacheValid = true;
     }
     static void InvalidateVAttrCache()
     {
@@ -281,13 +322,16 @@ VertexDeclGLES2
 
         unsigned type;
         unsigned count;
+        unsigned streamIndex;
         int normalized;
+        int attrDivisor;
         void* offset;
     };
 
     Elem elem[VATTR_COUNT];
     unsigned elemCount;
-    unsigned stride;
+    unsigned stride[MAX_VERTEX_STREAM_COUNT];
+    unsigned streamCount;
     uint32 vattrInited : 1;
 
     static bool VAttrCacheValid;
@@ -313,11 +357,11 @@ public:
         {
         }
 
-        void SetToRHI(uint32 layoutUID, uint32 firstVertex = 0) const
+        void SetToRHI(uint32 layoutUID, uint32 firstVertex, uint32 vertexStreamCount, const Handle* vb) const
         {
             if (layoutUID == VertexLayout::InvalidUID)
             {
-                vdecl.SetToRHI(firstVertex);
+                vdecl.SetToRHI(firstVertex, vertexStreamCount, vb);
             }
             else
             {
@@ -325,7 +369,7 @@ public:
                 {
                     if (v->layoutUID == layoutUID)
                     {
-                        v->vdecl.SetToRHI(firstVertex);
+                        v->vdecl.SetToRHI(firstVertex, vertexStreamCount, vb);
                         break;
                     }
                 }
@@ -677,7 +721,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PipelineState_CreateFragmentConstBuffer = &gles2_PipelineState_CreateFragmentConstBuffer;
 }
 
-void SetToRHI(Handle ps, uint32 layoutUID)
+void SetToRHI(Handle ps)
 {
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
 
@@ -734,7 +778,7 @@ void SetToRHI(Handle ps, uint32 layoutUID)
     }
 }
 
-void SetVertexDeclToRHI(Handle ps, uint32 layoutUID, uint32 firstVertex)
+void SetVertexDeclToRHI(Handle ps, uint32 layoutUID, uint32 firstVertex, uint32 vertexStreamCount, const Handle* vb)
 {
     //Trace("SetVertexDeclToRHI  layoutUID= %u\n",layoutUID);
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
@@ -766,7 +810,7 @@ void SetVertexDeclToRHI(Handle ps, uint32 layoutUID, uint32 firstVertex)
 
     //if( layoutUID != VertexLayout::InvalidUID )
     //VertexLayout::Get( layoutUID )->Dump();
-    ps2->prog.vprog->SetToRHI(layoutUID, firstVertex);
+    ps2->prog.vprog->SetToRHI(layoutUID, firstVertex, vertexStreamCount, vb);
 }
 
 uint32

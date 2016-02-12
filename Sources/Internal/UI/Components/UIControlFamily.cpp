@@ -31,22 +31,21 @@
 
 namespace DAVA
 {
-    
-    BaseFamilyRepository<UIControlFamily> UIControlFamily::repository;
-    
-    UIControlFamily::UIControlFamily(const Vector<UIComponent*> & components) : BaseFamily<UIComponent>(components)
-    {
-    }
-    
-    UIControlFamily * UIControlFamily::GetOrCreate(const Vector<UIComponent*> & components)
-    {
-        return repository.GetOrCreate(UIControlFamily(components));
-    }
+BaseFamilyRepository<UIControlFamily> UIControlFamily::repository;
 
-    void UIControlFamily::Release(UIControlFamily *&family)
-    {
-        repository.ReleaseFamily(family);
-        family = nullptr;
-    }
+UIControlFamily::UIControlFamily(const Vector<UIComponent*>& components)
+    : BaseFamily<UIComponent>(components)
+{
+}
 
+UIControlFamily* UIControlFamily::GetOrCreate(const Vector<UIComponent*>& components)
+{
+    return repository.GetOrCreate(UIControlFamily(components));
+}
+
+void UIControlFamily::Release(UIControlFamily*& family)
+{
+    repository.ReleaseFamily(family);
+    family = nullptr;
+}
 }

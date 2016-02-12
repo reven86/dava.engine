@@ -38,7 +38,7 @@
 
 using namespace DAVA;
 
-AddRemoveStyleSelectorCommand::AddRemoveStyleSelectorCommand(PackageNode *aRoot, StyleSheetNode *aNode, StyleSheetSelectorProperty *aProperty, bool anAdd, QUndoCommand *parent)
+AddRemoveStyleSelectorCommand::AddRemoveStyleSelectorCommand(PackageNode* aRoot, StyleSheetNode* aNode, StyleSheetSelectorProperty* aProperty, bool anAdd, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(aRoot))
     , node(SafeRetain(aNode))
@@ -54,7 +54,7 @@ AddRemoveStyleSelectorCommand::AddRemoveStyleSelectorCommand(PackageNode *aRoot,
     {
         index = aNode->GetRootProperty()->GetSelectors()->GetIndex(property);
     }
-    
+
     DVASSERT(index != -1);
 }
 

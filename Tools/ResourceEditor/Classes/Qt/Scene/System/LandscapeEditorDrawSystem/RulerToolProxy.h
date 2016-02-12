@@ -34,21 +34,22 @@
 
 using namespace DAVA;
 
-class RulerToolProxy: public BaseObject
+class RulerToolProxy : public BaseObject
 {
 protected:
-	~RulerToolProxy();
+    ~RulerToolProxy();
+
 public:
-	RulerToolProxy(int32 size);
+    RulerToolProxy(int32 size);
 
-	int32 GetSize();
+    int32 GetSize();
 
-	Texture* GetTexture();
+    Texture* GetTexture();
 
 protected:
-	Texture* rulerToolTexture;
-	int32 size;
-	bool spriteChanged;
+    Texture* rulerToolTexture;
+    int32 size;
+    bool spriteChanged;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__RULERTOOLPROXY__) */

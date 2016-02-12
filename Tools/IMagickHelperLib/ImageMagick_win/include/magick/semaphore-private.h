@@ -24,51 +24,51 @@ extern "C" {
 
 #if defined(MAGICKCORE_THREAD_SUPPORT)
 static pthread_mutex_t
-  semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
+semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
 #elif defined(MAGICKCORE_HAVE_WINTHREADS)
 static LONG
-  semaphore_mutex = 0;
+semaphore_mutex = 0;
 #else
 static ssize_t
-  semaphore_mutex = 0;
+semaphore_mutex = 0;
 #endif
 
 static inline void LockMagickMutex(void)
 {
 #if defined(MAGICKCORE_THREAD_SUPPORT)
-  {
-    int
-      status;
+    {
+        int
+        status;
 
-    status=pthread_mutex_lock(&semaphore_mutex);
-    if (status != 0)
-      {
-        errno=status;
-        ThrowFatalException(ResourceLimitFatalError,"UnableToLockSemaphore");
-      }
-  }
+        status = pthread_mutex_lock(&semaphore_mutex);
+        if (status != 0)
+        {
+            errno = status;
+            ThrowFatalException(ResourceLimitFatalError, "UnableToLockSemaphore");
+        }
+    }
 #elif defined(MAGICKCORE_HAVE_WINTHREADS)
-  while (InterlockedCompareExchange(&semaphore_mutex,1L,0L) != 0)
-    Sleep(10);
+    while (InterlockedCompareExchange(&semaphore_mutex, 1L, 0L) != 0)
+        Sleep(10);
 #endif
 }
 
 static inline void UnlockMagickMutex(void)
 {
 #if defined(MAGICKCORE_THREAD_SUPPORT)
-  {
-    int
-      status;
+    {
+        int
+        status;
 
-    status=pthread_mutex_unlock(&semaphore_mutex);
-    if (status != 0)
-      {
-        errno=status;
-        ThrowFatalException(ResourceLimitFatalError,"UnableToUnlockSemaphore");
-      }
-  }
+        status = pthread_mutex_unlock(&semaphore_mutex);
+        if (status != 0)
+        {
+            errno = status;
+            ThrowFatalException(ResourceLimitFatalError, "UnableToUnlockSemaphore");
+        }
+    }
 #elif defined(MAGICKCORE_HAVE_WINTHREADS)
-  InterlockedExchange(&semaphore_mutex,0L);
+    InterlockedExchange(&semaphore_mutex, 0L);
 #endif
 }
 

@@ -41,12 +41,12 @@
 
 namespace DAVA
 {
-
 class UIStyleSheet :
-    public BaseObject
+public BaseObject
 {
 protected:
     virtual ~UIStyleSheet();
+
 public:
     UIStyleSheet();
 
@@ -57,16 +57,16 @@ public:
 
     void SetPropertyTable(UIStyleSheetPropertyTable* properties);
     void SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain);
+
 private:
     void RecalculateScore();
 
     UIStyleSheetSelectorChain selectorChain;
-        
+
     RefPtr<UIStyleSheetPropertyTable> properties;
 
     uint32 score;
 };
-
 };
 
 

@@ -39,7 +39,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
     String data(static_cast<const char8*>(buffer), length);
@@ -49,5 +48,5 @@ void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t
     newDataNotifier.Emit(output);
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

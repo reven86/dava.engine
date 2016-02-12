@@ -37,7 +37,8 @@ using namespace DAVA;
 BranchDiff::BranchDiff(Branch* leftBranch, Branch* rightBranch)
     : left(leftBranch)
     , right(rightBranch)
-{}
+{
+}
 
 BranchDiff::~BranchDiff()
 {

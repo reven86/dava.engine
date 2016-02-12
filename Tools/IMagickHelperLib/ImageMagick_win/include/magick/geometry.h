@@ -25,38 +25,38 @@ extern "C" {
 typedef enum
 {
 #undef NoValue
-  NoValue = 0x0000,
+    NoValue = 0x0000,
 #undef XValue
-  XValue = 0x0001,
-  XiValue = 0x0001,
+    XValue = 0x0001,
+    XiValue = 0x0001,
 #undef YValue
-  YValue = 0x0002,
-  PsiValue = 0x0002,
+    YValue = 0x0002,
+    PsiValue = 0x0002,
 #undef WidthValue
-  WidthValue = 0x0004,
-  RhoValue = 0x0004,
+    WidthValue = 0x0004,
+    RhoValue = 0x0004,
 #undef HeightValue
-  HeightValue = 0x0008,
-  SigmaValue = 0x0008,
-  ChiValue = 0x0010,
-  XiNegative = 0x0020,
+    HeightValue = 0x0008,
+    SigmaValue = 0x0008,
+    ChiValue = 0x0010,
+    XiNegative = 0x0020,
 #undef XNegative
-  XNegative = 0x0020,
-  PsiNegative = 0x0040,
+    XNegative = 0x0020,
+    PsiNegative = 0x0040,
 #undef YNegative
-  YNegative = 0x0040,
-  ChiNegative = 0x0080,
-  PercentValue = 0x1000,   /* '%'  percentage of something */
-  AspectValue = 0x2000,    /* '!'  resize no-aspect - special use flag */
-  NormalizeValue = 0x2000, /* '!'  ScaleKernelValue() in morphology.c */
-  LessValue = 0x4000,      /* '<'  resize smaller - special use flag */
-  GreaterValue = 0x8000,   /* '>'  resize larger - spacial use flag */
-  MinimumValue = 0x10000,  /* '^'  special handling needed */
-  CorrelateNormalizeValue = 0x10000, /* '^' see ScaleKernelValue() */
-  AreaValue = 0x20000,     /* '@'  resize to area - special use flag */
-  DecimalValue = 0x40000,  /* '.'  floating point numbers found */
+    YNegative = 0x0040,
+    ChiNegative = 0x0080,
+    PercentValue = 0x1000, /* '%'  percentage of something */
+    AspectValue = 0x2000, /* '!'  resize no-aspect - special use flag */
+    NormalizeValue = 0x2000, /* '!'  ScaleKernelValue() in morphology.c */
+    LessValue = 0x4000, /* '<'  resize smaller - special use flag */
+    GreaterValue = 0x8000, /* '>'  resize larger - spacial use flag */
+    MinimumValue = 0x10000, /* '^'  special handling needed */
+    CorrelateNormalizeValue = 0x10000, /* '^' see ScaleKernelValue() */
+    AreaValue = 0x20000, /* '@'  resize to area - special use flag */
+    DecimalValue = 0x40000, /* '.'  floating point numbers found */
 #undef AllValues
-  AllValues = 0x7fffffff
+    AllValues = 0x7fffffff
 } GeometryFlags;
 
 #if defined(ForgetGravity)
@@ -75,23 +75,23 @@ typedef enum
 
 typedef enum
 {
-  UndefinedGravity,
-  ForgetGravity = 0,
-  NorthWestGravity = 1,
-  NorthGravity = 2,
-  NorthEastGravity = 3,
-  WestGravity = 4, 
-  CenterGravity = 5,
-  EastGravity = 6,
-  SouthWestGravity = 7,
-  SouthGravity = 8,
-  SouthEastGravity = 9,
-  StaticGravity = 10 
+    UndefinedGravity,
+    ForgetGravity = 0,
+    NorthWestGravity = 1,
+    NorthGravity = 2,
+    NorthEastGravity = 3,
+    WestGravity = 4,
+    CenterGravity = 5,
+    EastGravity = 6,
+    SouthWestGravity = 7,
+    SouthGravity = 8,
+    SouthEastGravity = 9,
+    StaticGravity = 10
 } GravityType;
 
 typedef struct _AffineMatrix
 {
-  double
+    double
     sx,
     rx,
     ry,
@@ -102,7 +102,7 @@ typedef struct _AffineMatrix
 
 typedef struct _GeometryInfo
 {
-  double
+    double
     rho,
     sigma,
     xi,
@@ -112,46 +112,47 @@ typedef struct _GeometryInfo
 
 typedef struct _OffsetInfo
 {
-  ssize_t
+    ssize_t
     x,
     y;
 } OffsetInfo;
 
 typedef struct _RectangleInfo
 {
-  size_t
+    size_t
     width,
     height;
 
-  ssize_t
+    ssize_t
     x,
     y;
 } RectangleInfo;
 
 extern MagickExport char
-  *GetPageGeometry(const char *);
+*
+GetPageGeometry(const char*);
 
 extern MagickExport MagickBooleanType
-  IsGeometry(const char *),
-  IsSceneGeometry(const char *,const MagickBooleanType);
+IsGeometry(const char *),
+IsSceneGeometry(const char *, const MagickBooleanType);
 
 extern MagickExport MagickStatusType
-  GetGeometry(const char *,ssize_t *,ssize_t *,size_t *,size_t *),
-  ParseAbsoluteGeometry(const char *,RectangleInfo *),
-  ParseAffineGeometry(const char *,AffineMatrix *,ExceptionInfo *),
-  ParseGeometry(const char *,GeometryInfo *),
-  ParseGravityGeometry(const Image *,const char *,RectangleInfo *,
-    ExceptionInfo *),
-  ParseMetaGeometry(const char *,ssize_t *,ssize_t *,size_t *,size_t *),
-  ParsePageGeometry(const Image *,const char *,RectangleInfo *,ExceptionInfo *),
-  ParseRegionGeometry(const Image *,const char *,RectangleInfo *,
-    ExceptionInfo *);
+GetGeometry(const char *, ssize_t *, ssize_t *, size_t *, size_t *),
+ParseAbsoluteGeometry(const char *, RectangleInfo *),
+ParseAffineGeometry(const char *, AffineMatrix *, ExceptionInfo *),
+ParseGeometry(const char *, GeometryInfo *),
+ParseGravityGeometry(const Image *, const char *, RectangleInfo *,
+                     ExceptionInfo *),
+ParseMetaGeometry(const char *, ssize_t *, ssize_t *, size_t *, size_t *),
+ParsePageGeometry(const Image *, const char *, RectangleInfo *, ExceptionInfo *),
+ParseRegionGeometry(const Image *, const char *, RectangleInfo *,
+                    ExceptionInfo *);
 
 extern MagickExport void
-  GravityAdjustGeometry(const size_t,const size_t,
-    const GravityType,RectangleInfo *),
-  SetGeometry(const Image *,RectangleInfo *),
-  SetGeometryInfo(GeometryInfo *);
+GravityAdjustGeometry(const size_t, const size_t,
+                      const GravityType, RectangleInfo *),
+SetGeometry(const Image *, RectangleInfo *),
+SetGeometryInfo(GeometryInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

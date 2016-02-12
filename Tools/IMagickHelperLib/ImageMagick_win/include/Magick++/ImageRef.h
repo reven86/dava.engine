@@ -16,42 +16,44 @@
 
 namespace Magick
 {
-  class Options;
+class Options;
 
-  //
-  // Reference counted access to Image *
-  //
-  class MagickDLLDecl ImageRef {
-    friend class Image; 
-  private:
+//
+// Reference counted access to Image *
+//
+class MagickDLLDecl ImageRef
+{
+    friend class Image;
+
+private:
     // Construct with an image pointer and default options
-    ImageRef ( MagickCore::Image * image_ );
+    ImageRef(MagickCore::Image* image_);
     // Construct with an image pointer and options
-    ImageRef ( MagickCore::Image * image_, const Options * options_ );
+    ImageRef(MagickCore::Image* image_, const Options* options_);
     // Construct with null image and default options
-    ImageRef ( void );
+    ImageRef(void);
     // Destroy image and options
-    ~ImageRef ( void );
+    ~ImageRef(void);
 
     // Copy constructor and assignment are not supported
     ImageRef(const ImageRef&);
     ImageRef& operator=(const ImageRef&);
-    
-    void                 image ( MagickCore::Image * image_ );
-    MagickCore::Image *&  image ( void );
-    
-    void                 options ( Options * options_ );
-    Options *            options ( void );
 
-    void                 id ( const ::ssize_t id_ );
-    ::ssize_t            id ( void ) const;
-    
-    MagickCore::Image *  _image;    // ImageMagick Image
-    Options *            _options;  // User-specified options
-    ::ssize_t            _id;       // Registry ID (-1 if not registered)
-    ::ssize_t            _refCount; // Reference count
-    MutexLock            _mutexLock;// Mutex lock
-  };
+    void image(MagickCore::Image* image_);
+    MagickCore::Image*& image(void);
+
+    void options(Options* options_);
+    Options* options(void);
+
+    void id(const ::ssize_t id_);
+    ::ssize_t id(void) const;
+
+    MagickCore::Image* _image; // ImageMagick Image
+    Options* _options; // User-specified options
+    ::ssize_t _id; // Registry ID (-1 if not registered)
+    ::ssize_t _refCount; // Reference count
+    MutexLock _mutexLock; // Mutex lock
+};
 
 } // end of namespace Magick
 
@@ -60,21 +62,21 @@ namespace Magick
 //
 
 // Retrieve image from reference
-inline MagickCore::Image *& Magick::ImageRef::image ( void )
+inline MagickCore::Image*& Magick::ImageRef::image(void)
 {
-  return _image;
+    return _image;
 }
 
 // Retrieve Options from reference
-inline Magick::Options * Magick::ImageRef::options ( void )
+inline Magick::Options* Magick::ImageRef::options(void)
 {
-  return _options;
+    return _options;
 }
 
 // Retrieve registration id from reference
-inline ::ssize_t Magick::ImageRef::id ( void ) const
+inline ::ssize_t Magick::ImageRef::id(void) const
 {
-  return _id;
+    return _id;
 }
 
 #endif // Magick_ImageRef_header

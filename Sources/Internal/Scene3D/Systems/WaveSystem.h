@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WAVESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -37,16 +37,15 @@
 
 namespace DAVA
 {
-
 class Entity;
 class WaveComponent;
 class WaveSystem : public SceneSystem, public Observer
 {
     struct WaveInfo
     {
-        WaveInfo(WaveComponent * component);
+        WaveInfo(WaveComponent* component);
 
-        WaveComponent * component;
+        WaveComponent* component;
         float32 maxRadius;
         float32 maxRadiusSq;
         Vector3 center;
@@ -54,15 +53,15 @@ class WaveSystem : public SceneSystem, public Observer
     };
 
 public:
-    WaveSystem(Scene * scene);
+    WaveSystem(Scene* scene);
     virtual ~WaveSystem();
 
-    void ImmediateEvent(Component * component, uint32 event) override;
+    void ImmediateEvent(Component* component, uint32 event) override;
     virtual void Process(float32 timeElapsed);
 
-    Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;
+    Vector3 GetWaveDisturbance(const Vector3& inPosition) const;
 
-    virtual void HandleEvent(Observable * observable);
+    virtual void HandleEvent(Observable* observable);
 
 protected:
     void ClearWaves();
@@ -70,12 +69,11 @@ protected:
     bool isWavesEnabled;
     bool isVegetationAnimationEnabled;
 
-    Vector<WaveInfo *> waves;
+    Vector<WaveInfo*> waves;
 
     friend class WaveComponent;
 };
-    
+
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */

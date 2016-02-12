@@ -26,22 +26,23 @@ extern "C" {
 #include "magick/draw.h"
 
 extern MagickExport Image
-  *OilPaintImage(const Image *,const double,ExceptionInfo *);
+*
+OilPaintImage(const Image*, const double, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  FloodfillPaintImage(Image *,const ChannelType,const DrawInfo *,
-    const MagickPixelPacket *,const ssize_t,const ssize_t,
-    const MagickBooleanType),
-  GradientImage(Image *,const GradientType,const SpreadMethod,
-    const PixelPacket *,const PixelPacket *),
-  OpaquePaintImage(Image *,const MagickPixelPacket *,const MagickPixelPacket *,
-    const MagickBooleanType),
-  OpaquePaintImageChannel(Image *,const ChannelType,const MagickPixelPacket *,
-    const MagickPixelPacket *,const MagickBooleanType),
-  TransparentPaintImage(Image *,const MagickPixelPacket *,
-    const Quantum,const MagickBooleanType),
-  TransparentPaintImageChroma(Image *,const MagickPixelPacket *,
-    const MagickPixelPacket *,const Quantum,const MagickBooleanType);
+FloodfillPaintImage(Image *, const ChannelType, const DrawInfo *,
+                    const MagickPixelPacket *, const ssize_t, const ssize_t,
+                    const MagickBooleanType),
+GradientImage(Image *, const GradientType, const SpreadMethod,
+              const PixelPacket *, const PixelPacket *),
+OpaquePaintImage(Image *, const MagickPixelPacket *, const MagickPixelPacket *,
+                 const MagickBooleanType),
+OpaquePaintImageChannel(Image *, const ChannelType, const MagickPixelPacket *,
+                        const MagickPixelPacket *, const MagickBooleanType),
+TransparentPaintImage(Image *, const MagickPixelPacket *,
+                      const Quantum, const MagickBooleanType),
+TransparentPaintImageChroma(Image *, const MagickPixelPacket *,
+                            const MagickPixelPacket *, const Quantum, const MagickBooleanType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

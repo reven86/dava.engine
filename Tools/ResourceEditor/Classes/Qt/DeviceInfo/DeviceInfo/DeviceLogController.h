@@ -39,12 +39,13 @@
 class LogWidget;
 
 class DeviceLogController : public QObject
-                          , public DAVA::Net::NetService
+                            ,
+                            public DAVA::Net::NetService
 {
-    Q_OBJECT    
+    Q_OBJECT
 
 public:
-    explicit DeviceLogController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = NULL);
+    explicit DeviceLogController(const DAVA::Net::PeerDescription& peerDescr, QWidget* parentWidget, QObject* parent = NULL);
     ~DeviceLogController();
 
     void ShowView();

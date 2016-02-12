@@ -38,102 +38,99 @@
 
 namespace DAVA
 {
-
 class Scene;
 class SkeletonNode;
 class BoneNode;
-	
+
 class VertexWeight
 {
 public:
-	float32		weight[4];
-	int32		boneIndex[4];
-	int32		count;
+    float32 weight[4];
+    int32 boneIndex[4];
+    int32 count;
 };
-	
+
 class Joint
 {
 public:
-	Vector3		position;
-	Quaternion	orientation;
-	float32				length;
+    Vector3 position;
+    Quaternion orientation;
+    float32 length;
 };
-	
+
 class Bone
 {
 public:
-	Joint					joint;
-	int32					parentIndex;
-	
-	Matrix4			inverse0Transform;		// matrix 0^(-1) frame
-	Matrix4			relativeTransform;		// matrix to set current frame
-	Matrix4			absoluteTransform;
+    Joint joint;
+    int32 parentIndex;
+
+    Matrix4 inverse0Transform; // matrix 0^(-1) frame
+    Matrix4 relativeTransform; // matrix to set current frame
+    Matrix4 absoluteTransform;
 };
-	
+
 class BoneAnimationKey
 {
 public:
-	int32 frame;
-	Vector3	 translation;	
-	Quaternion	orientation;
-	Matrix4	matrix;
+    int32 frame;
+    Vector3 translation;
+    Quaternion orientation;
+    Matrix4 matrix;
 };
-	
+
 class BoneAnimation
 {
 public:
     BoneAnimation();
     ~BoneAnimation();
 
-	BoneAnimationKey &	GetKey(int32 bone, int32 frame);
-	const String &		GetName();
-	float32				GetFPS();
-	
-	void				Load(File * file, int32 boneCount, int32 frameCount);
+    BoneAnimationKey& GetKey(int32 bone, int32 frame);
+    const String& GetName();
+    float32 GetFPS();
+
+    void Load(File* file, int32 boneCount, int32 frameCount);
+
 private:
-	String						name;	//! name of bone animation
-	float32						fps;	//! frames per second (speed) NOT USED YET
-	int32						boneCount;
-	int32						frameCount;
-	BoneAnimationKey		**	keys;
+    String name; //! name of bone animation
+    float32 fps; //! frames per second (speed) NOT USED YET
+    int32 boneCount;
+    int32 frameCount;
+    BoneAnimationKey** keys;
 };
-	
+
 /*
 	TODO: Split animated mesh, to static & dynamic part
  */
-	
+
 //! Animated Mesh
 //! Used to create skeletal & morph animations
 class AnimatedMesh : public StaticMesh
 {
-public:	
-	AnimatedMesh(Scene * _scene);
-	~AnimatedMesh();
-	
-	void LoadMesh(const String & animationFilename, int32 additionalFlags = 0);
-	void SetAnimation(const String & animationName);
-	
-	void Update(float32 timeElapsed);
-	void Draw();
-	
-	Matrix4					bindShapeMatrix;		//
-	float32					currentTime;		//	
-	
-	SkeletonNode			* skeleton;
-	Vector<BoneNode*>		bones;
-	Vector<FastName>		boneNames;
-	
-	void					RestoreBonesFromNames();
-	
-	
-//	int32					boneCount;
-//	int32					frameCount;
-//
-//	Vector<Bone>			boneArray;
-//	Vector<BoneAnimation>	boneAnimationArray;
-};
+public:
+    AnimatedMesh(Scene* _scene);
+    ~AnimatedMesh();
 
+    void LoadMesh(const String& animationFilename, int32 additionalFlags = 0);
+    void SetAnimation(const String& animationName);
+
+    void Update(float32 timeElapsed);
+    void Draw();
+
+    Matrix4 bindShapeMatrix; //
+    float32 currentTime; //
+
+    SkeletonNode* skeleton;
+    Vector<BoneNode*> bones;
+    Vector<FastName> boneNames;
+
+    void RestoreBonesFromNames();
+
+    //	int32					boneCount;
+    //	int32					frameCount;
+    //
+    //	Vector<Bone>			boneArray;
+    //	Vector<BoneAnimation>	boneAnimationArray;
+};
 };
 
 #endif // __DAVAENGINE_ANIMATEDMESH_H__
-

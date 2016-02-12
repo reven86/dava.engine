@@ -36,7 +36,7 @@
 #include "UWPRunner.h"
 
 int main(int argc, char* argv[])
-{   
+{
     return DAVA::Core::RunCmdTool(0, 0, 0);
 }
 
@@ -59,6 +59,8 @@ void FrameworkDidLaunched()
     }
 }
 
-void FrameworkWillTerminate() {}
+void FrameworkWillTerminate()
+{
+}
 
 #endif // defined(__DAVAENGINE_WIN32__)

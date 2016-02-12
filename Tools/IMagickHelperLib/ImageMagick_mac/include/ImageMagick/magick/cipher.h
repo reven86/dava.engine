@@ -23,10 +23,10 @@ extern "C" {
 #endif
 
 extern MagickExport MagickBooleanType
-  DecipherImage(Image *,const char *,ExceptionInfo *),
-  EncipherImage(Image *,const char *,ExceptionInfo *),
-  PasskeyDecipherImage(Image *,const StringInfo *,ExceptionInfo *),
-  PasskeyEncipherImage(Image *,const StringInfo *,ExceptionInfo *);
+DecipherImage(Image *, const char *, ExceptionInfo *),
+EncipherImage(Image *, const char *, ExceptionInfo *),
+PasskeyDecipherImage(Image *, const StringInfo *, ExceptionInfo *),
+PasskeyEncipherImage(Image *, const StringInfo *, ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

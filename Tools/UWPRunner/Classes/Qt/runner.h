@@ -51,13 +51,13 @@ class Runner
 public:
     static QMap<QString, QStringList> deviceNames();
 
-    Runner(const QString &mainPackage,
-           const QString &app,
-           const QStringList &resources,
-           const QString &dependenciesDir,
-           const QStringList &arguments,
-           const QString &profile = QString(),
-           const QString &device = QString());
+    Runner(const QString& mainPackage,
+           const QString& app,
+           const QStringList& resources,
+           const QString& dependenciesDir,
+           const QStringList& arguments,
+           const QString& profile = QString(),
+           const QString& device = QString());
     ~Runner();
 
     bool isValid() const;
@@ -74,7 +74,7 @@ public:
     bool install(bool removeFirst = false);
     bool remove();
     bool start();
-    bool enableDebugging(const QString &debuggerExecutable, const QString &debuggerArguments);
+    bool enableDebugging(const QString& debuggerExecutable, const QString& debuggerArguments);
     bool disableDebugging();
     bool suspend();
     bool stop();

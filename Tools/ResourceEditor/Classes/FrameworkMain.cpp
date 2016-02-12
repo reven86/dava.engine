@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "Core/Core.h"
-#include "Core/PerformanceSettings.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -38,7 +37,7 @@
 
 void FrameworkDidLaunched()
 {
-	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
+    DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
 
     appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
@@ -59,8 +58,6 @@ void FrameworkDidLaunched()
     DAVA::Core::SetApplicationCore(core);
     DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
-    DAVA::PerformanceSettings::Instance()->SetPsPerformanceMinFPS(5.0f);
-    DAVA::PerformanceSettings::Instance()->SetPsPerformanceMaxFPS(10.0f);
 
     SafeRelease(appOptions);
 }

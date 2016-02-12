@@ -113,7 +113,7 @@ int32 DeviceInfo::GetHTTPProxyPort()
     return GetPrivateImpl()->GetHTTPProxyPort();
 }
 
-DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
+DeviceInfo::ScreenInfo& DeviceInfo::GetScreenInfo()
 {
     return GetPrivateImpl()->GetScreenInfo();
 }
