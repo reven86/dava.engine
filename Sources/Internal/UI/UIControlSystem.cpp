@@ -42,6 +42,8 @@
 #include "UI/UIScreenshoter.h"
 #include "Debug/Profiler.h"
 #include "Render/2D/TextBlock.h"
+#include "Platform/DPIHelper.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -89,6 +91,13 @@ UIControlSystem::UIControlSystem()
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
     screenshoter = new UIScreenshoter();
+    // calculate default radius
+    defaultDoubleClickRadiusSquared = 4.f; // default on desktop
+    if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
+    {
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 2;
+    }
+    ObserveDoubleClick(true);
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
@@ -426,8 +435,31 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         {
             Replay::Instance()->RecordEvent(newEvent);
         }
-
         UIEvent* eventToHandle = nullptr;
+
+        if (observeDoubleClick && newEvent->phase == UIEvent::Phase::BEGAN)
+        {
+            if ((lastEvent.timestamp != 0.0) && ((newEvent->timestamp - lastEvent.timestamp) < doubleClickTime))
+            {
+                float32 pointShift((lastEvent.physPoint.x - newEvent->physPoint.x) * (lastEvent.physPoint.x - newEvent->physPoint.x) + (lastEvent.physPoint.y - newEvent->physPoint.y) * (lastEvent.physPoint.y - newEvent->physPoint.y));
+                Logger::Info("!!!!! UIControlSystem %f, %f %f - %f %f", pointShift, lastEvent.physPoint.x, lastEvent.physPoint.y, newEvent->physPoint.x, newEvent->physPoint.y);
+                if (pointShift < doubleClickRadiusSquared)
+                {
+                    newEvent->tapCount = lastEvent.tapCount + 1;
+                    Logger::Info("!!!!! UIControlSystem %d", newEvent->tapCount);
+                }
+            }
+            lastEvent.timestamp = newEvent->timestamp;
+            lastEvent.physPoint = newEvent->physPoint;
+            lastEvent.point = newEvent->point;
+            lastEvent.tapCount = newEvent->tapCount;
+            lastEvent.phase = newEvent->phase;
+            lastEvent.inputHandledType = newEvent->inputHandledType;
+        }
+        else if (observeDoubleClick && newEvent->phase == UIEvent::Phase::ENDED && lastEvent.tapCount >= 2 && newEvent->touchId == lastEvent.touchId)
+        {
+            newEvent->tapCount = lastEvent.tapCount;
+        }
 
         if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
         {
@@ -736,5 +768,24 @@ void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
 void UIControlSystem::SetUseClearPass(bool use)
 {
     useClearPass = use;
+}
+
+void UIControlSystem::ObserveDoubleClick(bool observe, float32 time, float32 radius)
+{
+    if (observe)
+    {
+        if (time == 0.f && radius == 0.f)
+        {
+            doubleClickTime = defaultDoubleClickTime;
+            doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+        }
+        else
+        {
+            DVASSERT((time > 0.f) && (radius > 0.f));
+            doubleClickTime = time;
+            doubleClickRadiusSquared = radius * radius;
+        }
+    }
+    observeDoubleClick = observe;
 }
 };
