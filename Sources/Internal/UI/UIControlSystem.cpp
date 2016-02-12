@@ -105,7 +105,7 @@ void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _tran
 
     nextScreenTransition = _transition;
     nextScreen = _nextScreen;
-    
+
     if (_nextScreen == nullptr)
     {
         removeCurrentScreen = true;
