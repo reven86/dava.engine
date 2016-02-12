@@ -110,5 +110,8 @@ void SpritesPackerModule::ReloadObjects()
 {
     Sprite::ReloadSprites();
 
+    DAVA::uint32 gpu = spritesPacker->GetResourcePacker().requestedGPUFamily;
+    SettingsManager::SetValue(Settings::Internal_SpriteViewGPU, VariantType(gpu));
+
     emit SpritesReloaded();
 }

@@ -120,3 +120,8 @@ void SpritesPacker::SetRunning(bool arg)
         emit RunningStateChanged(arg);
     }
 }
+
+const DAVA::ResourcePacker2D& SpritesPacker::GetResourcePacker() const
+{
+    return resourcePacker2D;
+}
