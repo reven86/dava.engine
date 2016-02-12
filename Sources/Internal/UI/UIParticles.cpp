@@ -82,7 +82,7 @@ UIParticles::~UIParticles()
 
 void UIParticles::OnAppear()
 {
-    UIControl::OnAppear()
+    UIControl::OnAppear();
     updateTime = 0.0f;
 }
 

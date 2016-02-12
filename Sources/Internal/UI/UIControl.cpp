@@ -886,9 +886,9 @@ void UIControl::RemoveControl(UIControl* control)
     {
         if ((*it) == control)
         {
-            if (InViewHierarchy())
+            if (control->InViewHierarchy())
             {
-                if (IsOnScreen() && control->GetSystemVisible())
+                if (control->IsOnScreen())
                 {
                     control->SystemWillBecomeInvisible();
                 }

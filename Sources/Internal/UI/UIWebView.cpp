@@ -60,7 +60,7 @@ UIWebView::UIWebView(const Rect& rect)
     webViewControl->Initialize(newRect);
     UpdateControlRect();
 
-    UpdateNativeControlVisible(false); // will be displayed in WillAppear.
+    UpdateNativeControlVisible(false); // will be displayed in OnAppear.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 

@@ -248,7 +248,7 @@ public:
     /**
 	 \brief Called by the core when screen size is changed
 	 */
-    void ScreenSizeChanged();
+    void ScreenSizeChanged(const Rect& newFullscreenRect);
 
     /**
 	 \brief Called by the control to set himself as the hovered control
@@ -330,6 +330,7 @@ private:
     UIControl* focusedControl = nullptr;
 
     UIGeometricData baseGeometricData;
+    Rect fullscreenRect;
 
     Color clearColor;
     bool useClearPass = true;

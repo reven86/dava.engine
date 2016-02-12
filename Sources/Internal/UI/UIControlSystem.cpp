@@ -127,6 +127,11 @@ void UIControlSystem::AddPopup(UIPopup* newPopup)
         return;
     }
 
+    if (newPopup->GetRect() != fullscreenRect)
+    {
+        newPopup->SystemScreenSizeDidChanged(fullscreenRect);
+    }
+
     newPopup->LoadGroup();
     popupContainer->AddControl(newPopup);
 }
@@ -180,7 +185,7 @@ void UIControlSystem::ProcessScreenLogic()
     /*
 	 if next screen or we need to removecurrent screen
 	 */
-    if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
+    if (screenLockCount == 0 && (nextScreen.Valid() || removeCurrentScreen))
     {
         RefPtr<UIScreen> nextScreenProcessed;
         RefPtr<UIScreenTransition> nextScreenTransitionProcessed;
@@ -198,6 +203,11 @@ void UIControlSystem::ProcessScreenLogic()
 
         if (nextScreenTransitionProcessed)
         {
+            if (nextScreenTransitionProcessed->GetRect() != fullscreenRect)
+            {
+                nextScreenTransitionProcessed->SystemScreenSizeDidChanged(fullscreenRect);
+            }
+
             nextScreenTransitionProcessed->StartTransition();
             nextScreenTransitionProcessed->SetSourceScreen(currentScreen.Get());
         }
@@ -219,6 +229,11 @@ void UIControlSystem::ProcessScreenLogic()
         // if we have next screen we load new resources, if it equal to zero we just remove screen
         if (nextScreenProcessed)
         {
+            if (nextScreenProcessed->GetRect() != fullscreenRect)
+            {
+                nextScreenProcessed->SystemScreenSizeDidChanged(fullscreenRect);
+            }
+
             nextScreenProcessed->LoadGroup();
         }
         currentScreen = nextScreenProcessed;
@@ -561,9 +576,9 @@ UIControl* UIControlSystem::GetExclusiveInputLocker()
     return exclusiveInputLocker;
 }
 
-void UIControlSystem::ScreenSizeChanged()
+void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
 {
-    Rect fullscreenRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    fullscreenRect = newFullscreenRect;
 
     if (currentScreenTransition.Valid())
         currentScreenTransition->SystemScreenSizeDidChanged(fullscreenRect);

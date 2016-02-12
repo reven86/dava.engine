@@ -151,6 +151,7 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
     }
 
     RenderSystem2D::Instance()->ScreenSizeChanged();
+    UIControlSystem::Instance()->ScreenSizeChanged(GetFullScreenVirtualRect());
 }
 
 void VirtualCoordinatesSystem::EnableReloadResourceOnResize(bool enable)

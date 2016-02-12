@@ -185,20 +185,16 @@ private:
         Methods call sequence:
         When the control adds to the hierarchy:
 
-            -if hierarchy is allready on the screen SystemWillAppear() will be called. SystemWillAppear()
-                calls WillAppear() for the control and then calls SystemWillAppear() for all control children.
+            -if hierarchy is allready on the screen SystemAppear() will be called after adding control to hierarhy. SystemAppear()
+                calls OnAppear() for the control and then calls SystemAppear() for all control children.
 
-            -when the control adding to the hierarchy is done SystemAppear() and OnAppear() calls at the same way.
-
-            -if hierarchy is not on the screen all methods would be called only when the hierarcy parent
+            -if hierarchy is not on the screen methods would be called only when the hierarcy parent
                 be placed to the screen.
 
         When the control removes from hierarchy:
 
             -SystemDisappear() will be called. SystemDisappear()
                 calls OnDisappear() for the control and then calls SystemDisappear() for all control children.
-
-            -when the control is removed from the hierarchy SystemDisappear() and OnDisappear() calls at the same way.
 
         Every frame:
 
@@ -975,7 +971,7 @@ public:
 public:
     /**
      \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
+        This method called for the currently active screen when the screen size is changed. Or called after OnAppear() for the other screens.
         Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
      \param[in] newFullScreenSize New full screen size in virtual coordinates.
         Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
@@ -983,7 +979,7 @@ public:
     virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
     /**
      \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
+        This method called for the currently active screen when the screen size is changed. Or called after OnAppear() for the other screens.
      \param[in] newFullScreenSize New full screen size in virtual coordinates.
         Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
      */
