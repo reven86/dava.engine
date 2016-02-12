@@ -150,7 +150,6 @@ extern void FrameworkMain(int argc, char* argv[]);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        UIScreenManager::Instance()->ScreenSizeChanged();
     }
 
     [super reshape];
