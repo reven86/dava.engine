@@ -42,12 +42,19 @@
 
 #include "DebugTools/DebugTools.h"
 
-namespace
+namespace MainWindow_namespace
 {
 const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
-const char* COLOR_PROPERTY_ID = "color";
 const QString CONSOLE_STATE = "console state";
+
+void SetColoredIconToAction(QAction* action, QColor color)
+{
+    QPixmap pixmap(16, 16);
+    pixmap.fill(color);
+    action->setIcon(pixmap);
+    action->setData(color);
+}
 }
 
 using namespace DAVA;
@@ -68,8 +75,6 @@ Q_DECLARE_METATYPE(MainWindow::TabState*);
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , backgroundFrameUseCustomColorAction(nullptr)
-    , backgroundFrameSelectCustomColorAction(nullptr)
     , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
@@ -172,25 +177,25 @@ void MainWindow::SetCurrentTab(int index)
 void MainWindow::SaveMainWindowState()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(APP_GEOMETRY, saveGeometry());
-    settings.setValue(APP_STATE, saveState());
-    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
+    settings.setValue(MainWindow_namespace::APP_GEOMETRY, saveGeometry());
+    settings.setValue(MainWindow_namespace::APP_STATE, saveState());
+    settings.setValue(MainWindow_namespace::CONSOLE_STATE, logWidget->Serialize());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    auto val = settings.value(APP_GEOMETRY);
+    auto val = settings.value(MainWindow_namespace::APP_GEOMETRY);
     if (val.canConvert<QByteArray>())
     {
-        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+        restoreGeometry(settings.value(MainWindow_namespace::APP_GEOMETRY).toByteArray());
     }
-    val = settings.value(APP_STATE);
+    val = settings.value(MainWindow_namespace::APP_STATE);
     if (val.canConvert<QByteArray>())
     {
-        restoreState(settings.value(APP_STATE).toByteArray());
+        restoreState(settings.value(MainWindow_namespace::APP_STATE).toByteArray());
     }
-    val = settings.value(CONSOLE_STATE);
+    val = settings.value(MainWindow_namespace::CONSOLE_STATE);
     if (val.canConvert<QByteArray>())
     {
         logWidget->Deserialize(val.toByteArray());
@@ -380,11 +385,33 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
 
-    // Setup the Background Color menu.
-    QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
+    SetupBackgroundMenu();
+    // Another actions below the Set Background Color.
     menuView->addSeparator();
-    menuView->addMenu(setBackgroundColorMenu);
+    menuView->addAction(actionZoomIn);
+    menuView->addAction(actionZoomOut);
+}
 
+void MainWindow::SetupBackgroundMenu()
+{
+    // Setup the Background Color menu.
+    QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
+    menuView->addSeparator();
+    menuView->addMenu(backgroundColorMenu);
+
+    QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
+    QAction* defaultBackgroundColorAction = new QAction(tr("Default"), backgroundColorMenu);
+
+    actionGroup->addAction(defaultBackgroundColorAction);
+    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
+        if (toggled)
+        {
+            EditorSettings::Instance()->SetGridType(BackgroundTexture);
+        }
+    });
+
+    backgroundColorMenu->addAction(defaultBackgroundColorAction);
+    backgroundColorMenu->addSeparator();
     static const struct
     {
         QColor color;
@@ -392,51 +419,60 @@ void MainWindow::SetupViewMenu()
     } colorsMap[] =
     {
       { Qt::black, "Black" },
-      { QColor(0x33, 0x33, 0x33, 0xFF), "Default" },
-      { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
-      { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
-      { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
+      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
+      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
     };
-
-    Color curBackgroundColor = EditorSettings::Instance()->GetCurrentBackgroundFrameColor();
-    int32 itemsCount = COUNT_OF(colorsMap);
-
-    bool isCustomColor = true;
-    for (int32 i = 0; i < itemsCount; i++)
+    for (const auto& colorItem : colorsMap)
     {
-        QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
-        colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
+        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
+        QColor color(colorItem.color);
+        MainWindow_namespace::SetColoredIconToAction(colorAction, color);
 
-        Color curColor = QColorToColor(colorsMap[i].color);
-        if (curColor == curBackgroundColor)
-        {
-            isCustomColor = false;
-        }
-
-        colorAction->setCheckable(true);
-        colorAction->setChecked(curColor == curBackgroundColor);
-
-        backgroundFramePredefinedColorActions.append(colorAction);
-        setBackgroundColorMenu->addAction(colorAction);
+        actionGroup->addAction(colorAction);
+        backgroundColorMenu->addAction(colorAction);
+        connect(colorAction, &QAction::toggled, [color](bool toggled) {
+            if (toggled)
+            {
+                EditorSettings::Instance()->SetGridType(BackgroundColor);
+                EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
+            }
+        });
     }
+    QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
+    backgroundColorMenu->addAction(backgroundCustomColorAction);
+    connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
+    actionGroup->addAction(backgroundCustomColorAction);
 
-    backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
-    backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
-    backgroundFrameUseCustomColorAction->setCheckable(true);
-    backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
-    setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
+    for (auto& action : actionGroup->actions())
+    {
+        action->setCheckable(true);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
+        previousBackgroundColorAction = action;
+    });
 
-    setBackgroundColorMenu->addSeparator();
-
-    backgroundFrameSelectCustomColorAction = new QAction("Select Custom Color...", setBackgroundColorMenu);
-    setBackgroundColorMenu->addAction(backgroundFrameSelectCustomColorAction);
-
-    connect(setBackgroundColorMenu, SIGNAL(triggered(QAction*)), this, SLOT(SetBackgroundColorMenuTriggered(QAction*)));
-
-    // Another actions below the Set Background Color.
-    menuView->addAction(actionZoomIn);
-    menuView->insertSeparator(actionZoomIn);
-    menuView->addAction(actionZoomOut);
+    auto editorSettings = EditorSettings::Instance();
+    if (!editorSettings->GetGridType())
+    {
+        defaultBackgroundColorAction->trigger();
+    }
+    else
+    {
+        QColor color = ColorToQColor(editorSettings->GetGrigColor());
+        for (auto& action : actionGroup->actions())
+        {
+            if (action->data().value<QColor>() == color)
+            {
+                action->trigger();
+            }
+        }
+        if (actionGroup->checkedAction() == nullptr)
+        {
+            MainWindow_namespace::SetColoredIconToAction(backgroundCustomColorAction, color);
+            backgroundCustomColorAction->setChecked(true);
+        }
+    }
 }
 
 void MainWindow::DisableActions()
@@ -466,6 +502,24 @@ void MainWindow::RebuildRecentMenu()
         menuRecent->addAction(recentProject);
     }
     menuRecent->setEnabled(projectCount > 0);
+}
+
+void MainWindow::OnBackgroundCustomColorClicked()
+{
+    QAction* customColorAction = qobject_cast<QAction*>(sender());
+    QColor curColor = customColorAction->data().value<QColor>();
+    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
+    if (!color.isValid())
+    {
+        if (previousBackgroundColorAction != nullptr && previousBackgroundColorAction != customColorAction) //if we launch app with custom color previous color action will be nullptr
+        {
+            previousBackgroundColorAction->trigger();
+        }
+        return;
+    }
+    MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
+    EditorSettings::Instance()->SetGridType(BackgroundColor);
+    EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
 int MainWindow::AddTab(Document* document, int index)
@@ -576,54 +630,4 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     {
         logWidget->AddMessage(logLevel, output);
     }
-}
-
-void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
-{
-    Color newColor;
-
-    if (action == backgroundFrameSelectCustomColorAction)
-    {
-        // Need to select new Background Frame color.
-        QColor curColor = ColorToQColor(EditorSettings::Instance()->GetCustomBackgroundFrameColor());
-        QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
-        if (color.isValid() == false)
-        {
-            return;
-        }
-
-        newColor = QColorToColor(color);
-        EditorSettings::Instance()->SetCustomBackgroundFrameColor(newColor);
-    }
-    else if (action == backgroundFrameUseCustomColorAction)
-    {
-        // Need to use custom Background Frame Color set up earlier.
-        newColor = EditorSettings::Instance()->GetCustomBackgroundFrameColor();
-    }
-    else
-    {
-        // Need to use predefined Background Frame Color.
-        newColor = QColorToColor(action->property(COLOR_PROPERTY_ID).value<QColor>());
-    }
-
-    EditorSettings::Instance()->SetCurrentBackgroundFrameColor(newColor);
-
-    // Update the check marks.
-    bool colorFound = false;
-    foreach (QAction* colorAction, backgroundFramePredefinedColorActions)
-    {
-        Color color = QColorToColor(colorAction->property(COLOR_PROPERTY_ID).value<QColor>());
-        if (color == newColor)
-        {
-            colorAction->setChecked(true);
-            colorFound = true;
-        }
-        else
-        {
-            colorAction->setChecked(false);
-        }
-    }
-
-    // In case we don't found current color in predefined ones - select "Custom" menu item.
-    backgroundFrameUseCustomColorAction->setChecked(!colorFound);
 }

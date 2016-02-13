@@ -908,7 +908,9 @@ void PropertyEditor::ActionEditComponent()
         editor.exec();
 
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        curScene->selectionSystem->SetSelection(node);
+        auto bbox = curScene->selectionSystem->GetUntransformedBoundingBox(node);
+        curScene->selectionSystem->SetSelection(EntityGroup(node, bbox));
+
         if (editor.IsModified())
         {
             curScene->SetChanged(true);
