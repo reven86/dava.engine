@@ -113,6 +113,19 @@
       <item>
        <widget class="QProgressBar" name="progressBar2">
         <property name="whatsThis">
+         <string>Test progress</string>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar3">
+        <property name="whatsThis">
          <string>Unpack progress</string>
         </property>
         <property name="value">

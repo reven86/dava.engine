@@ -42,7 +42,6 @@
 #include <QDir>
 #include <QPushButton>
 #include <QListWidget>
-#include <QDebug>
 #include <QTreeView>
 
 UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
@@ -53,8 +52,11 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManag
     , appManager(_appManager)
 {
     ui->setupUi(this);
-    ui->progressBar->setValue(0);
-    ui->progressBar2->setValue(0);
+#ifdef Q_OS_MAC
+    //https://bugreports.qt.io/browse/QTBUG-51120
+    ui->progressBar->setTextVisible(true);
+    ui->progressBar2->setTextVisible(true);
+#endif //Q_OS_MAC
 
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
 
@@ -89,6 +91,7 @@ void UpdateDialog::StartNextTask()
     {
         ui->progressBar->setValue(0);
         ui->progressBar2->setValue(0);
+        ui->progressBar3->setValue(0);
 
         setWindowTitle(QString("Updating in progress... (%1/%2)").arg(tasksCount - tasks.size() + 1).arg(tasksCount));
 
@@ -254,11 +257,12 @@ bool UpdateDialog::TestArchive(const QString &archivePath, const ZipList::Compre
 
 bool UpdateDialog::UnpackArchive(const QString &archivePath, const QString &outDir, const ZipList::CompressedFilesAndSizes &files)
 {
+    AddLogValue(tr("Unpacking archive..."));
     ZipError zipError;
     UpdateLastLogValue(tr("Unpacking archive..."));
     ZipTest::ProgressFuntor onProgress = [this](int progress)
     {
-        ui->progressBar2->setValue(progress);
+        ui->progressBar3->setValue(progress);
         UpdateLastLogValue(tr("Unpacking archive...  %1%").arg(progress));
     };
     bool archiveUnpacked = ZipUnpack::UnpackZipArchive(archivePath, outDir, onProgress, files, &zipError);

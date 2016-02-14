@@ -44,45 +44,33 @@ bool ZipTest::TestZipArchive(const QString &archivePath, ProgressFuntor onProgre
         return false;
     }
     
-    QString processAddr = ZipUtils::GetArchiverPath();
-    QProcess zipProcess;
     bool success = false;
     qint64 matchedSize = 0;
     const auto values = files.values();
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    QObject::connect(&zipProcess, &QProcess::readyReadStandardOutput, [&success, &onProgress, &zipProcess, &files, &matchedSize, totalSize]() {
-        QString output = zipProcess.readAllStandardOutput();
-        QRegularExpression regExp("\n|\r\n", QRegularExpression::MultilineOption);
-        QStringList outputList = output.split(regExp, QString::SkipEmptyParts);
-        foreach(const QString &str, outputList)
+    ZipUtils::ReadyReadCallback callback = [&success, &onProgress, &files, &matchedSize, totalSize, err](const QByteArray &line) {
+        QString str(line);
+        QRegularExpression stringRegEx("\\s+");
+        QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
+        if(infoStringList.size() > 1)
         {
-            QRegularExpression stringRegEx("\\s+");
-            QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
-            if(infoStringList.size() > 1)
+            const auto &file = infoStringList.at(1);
+            if(files.contains(file))
             {
-                const auto &file = infoStringList.at(1);
-                if(files.contains(file))
-                {
-                    matchedSize += files[file];
-                }
+                matchedSize += files[file];
             }
         }
         
         onProgress((matchedSize * 100.0f) / totalSize);
-        if(output.contains("Everything is Ok"))
+        if(str.contains("Everything is Ok"))
         {
             success = true;
         }
-    });
+    };
     QStringList arguments;
     arguments << "t" << "-bb1" << archivePath;
-    zipProcess.start(processAddr, arguments);
-    QEventLoop loop;
-    QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit);
-    loop.exec();
-    if(zipProcess.exitStatus() == QProcess::CrashExit)
+    if(!ZipUtils::LaunchArchiver(arguments, callback, err))
     {
-        err->error = ZipError::PROCESS_FAILED_TO_FINISH;
         return false;
     }
     if(success != true)

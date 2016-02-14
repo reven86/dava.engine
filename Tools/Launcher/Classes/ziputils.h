@@ -55,8 +55,10 @@ public:
 
 namespace ZipUtils
 {
+    using ReadyReadCallback = std::function<void(const QByteArray &)>;
     const QString &GetArchiverPath();
     bool IsArchiveValid(const QString &archivePath, ZipError *err = nullptr);
+    bool LaunchArchiver(const QStringList &arguments, ReadyReadCallback callback = ReadyReadCallback(), ZipError *err = nullptr);
 
 }
 

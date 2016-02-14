@@ -76,6 +76,44 @@ bool ZipUtils::IsArchiveValid(const QString &archivePath, ZipError *err)
     return true;
 }
 
+bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback callback, ZipError *err)
+{
+    if(err == nullptr)
+    {
+        static ZipError localError;
+        err = &localError;
+    }
+    Q_ASSERT(err->error == ZipError::NO_ERRORS);
+    if(err->error != ZipError::NO_ERRORS)
+    {
+        return false;
+    }
+
+    QString processAddr = ZipUtils::GetArchiverPath();
+    QProcess zipProcess;
+    QObject::connect(&zipProcess, &QProcess::readyReadStandardOutput, [&zipProcess, callback, err]() {
+        while(zipProcess.canReadLine())
+        {
+            callback(zipProcess.readLine());
+            if(err->error != ZipError::NO_ERRORS) //callback can produce errors
+            {
+                zipProcess.kill();
+            }
+        }
+    });
+    zipProcess.start(processAddr, arguments);
+    QEventLoop loop;
+    QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit);
+    loop.exec();
+    if(zipProcess.exitStatus() == QProcess::CrashExit)
+    {
+        err->error = ZipError::PROCESS_FAILED_TO_FINISH;
+        return false;
+    }
+    return err->error == ZipError::NO_ERRORS;
+}
+
+
 QString ZipError::GetErrorString() const
 {
     switch (error)

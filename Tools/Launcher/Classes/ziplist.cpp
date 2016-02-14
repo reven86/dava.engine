@@ -44,60 +44,41 @@ void ZipList::GetFileList(const QString &archivePath, CompressedFilesAndSizes &f
     {
         return;
     }
-    QString processAddr = ZipUtils::GetArchiverPath();
-    QProcess zipProcess;
-    QStringList arguments;
-    arguments << "l" << archivePath;
-    zipProcess.start(processAddr, arguments);
-    QEventLoop loop;
-    QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit);
-    loop.exec();
-    if(zipProcess.exitStatus() == QProcess::CrashExit)
-    {
-        err->error = ZipError::PROCESS_FAILED_TO_FINISH;
-        return;
-    }
-    QString output = zipProcess.readAll();
-    QRegularExpression regExp("\n|\r\n", QRegularExpression::MultilineOption);
-    QStringList outputList = output.split(regExp, QString::SkipEmptyParts);
-
-    bool foundOutput = false;
-    foreach(const QString &str, outputList)
-    {
-        if (str.startsWith("----------"))
-        { 
-            if (foundOutput)
-            {
-                break;
-            }
-            foundOutput = true;
-            continue;
-        }
-        if (foundOutput)
+    QRegularExpression regExp("\\s+");
+    bool foundOutputData = false;
+    ZipUtils::ReadyReadCallback callback = [&regExp, &foundOutputData, err, &fileList](const QByteArray &line){
+        if (line.startsWith("----------")) //this string occurrs two times: before file list and at the and of file list
         {
-            
-            QRegularExpression stringRegEx("\\s+");
-            QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
-
-            const int SIZE_INDEX = 3;
-            const int NAME_INDEX = 5;
-            if (infoStringList.size() < NAME_INDEX + 1)
-            {
-                err->error = ZipError::PARSE_ERROR;
-                return;
-            }
-            bool ok = true;
-            qint64 size = infoStringList.at(SIZE_INDEX).toLongLong(&ok);
-            if (!ok)
-            {
-                err->error = ZipError::PARSE_ERROR;
-                return;
-            }
-            const QString &file = infoStringList.at(NAME_INDEX);
-            Q_ASSERT(!fileList.contains(file));
-            fileList[file] = size;
+            foundOutputData = !foundOutputData;
+            return;
         }
-
+        if (!foundOutputData)
+        {
+            return;
+        }
+        QString str(line);
+        QStringList infoStringList = str.split(regExp, QString::SkipEmptyParts);
+        const int SIZE_INDEX = 3;
+        const int NAME_INDEX = 5;
+        if (infoStringList.size() < NAME_INDEX + 1)
+        {
+            err->error = ZipError::PARSE_ERROR;
+            return;
+        }
+        bool ok = true;
+        qint64 size = infoStringList.at(SIZE_INDEX).toLongLong(&ok);
+        if (!ok)
+        {
+            err->error = ZipError::PARSE_ERROR;
+            return;
+        }
+        const QString &file = infoStringList.at(NAME_INDEX);
+        Q_ASSERT(!fileList.contains(file));
+        fileList[file] = size;
+    };
+    if(!ZipUtils::LaunchArchiver(QStringList() << "l" << archivePath, callback, err))
+    {
+        return;
     }
     if(fileList.empty())
     {
