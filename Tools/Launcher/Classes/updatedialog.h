@@ -31,7 +31,7 @@
 #define UPDATEDIALOG_H
 
 #include "configparser.h"
-#include "zipunpacker.h"
+#include "ziplist.h"
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -49,8 +49,7 @@ class ApplicationManager;
 struct UpdateTask
 {
     UpdateTask(const QString& branch, const QString& app, const AppVersion& _version, bool _isSelfUpdate = false, bool _isRemove = false)
-        :
-        branchID(branch)
+        : branchID(branch)
         , appID(app)
         , version(_version)
         , isSelfUpdate(_isSelfUpdate)
@@ -74,14 +73,10 @@ public:
     ~UpdateDialog();
 
 signals:
-    void UpdateDownloadProgress(int value);
-    void UpdateUnpackProgress(int value);
     void AppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 public slots:
     void OnCancelClicked();
-    void UnpackProgress(int, int);
-    void UnpackError(int);
 
 private slots:
     void NetworkError(QNetworkReply::NetworkError code);
@@ -91,6 +86,9 @@ private slots:
     void StartNextTask();
 
 private:
+    bool ListArchive(const QString &archivePath, ZipList::CompressedFilesAndSizes &files);
+    bool TestArchive(const QString &archivePath, const ZipList::CompressedFilesAndSizes &files);
+    bool UnpackArchive(const QString &archivePath, const QString &outDir, const ZipList::CompressedFilesAndSizes &files);
     void UpdateButton();
 
     void AddTopLogValue(const QString& log);
@@ -100,7 +98,6 @@ private:
     void CompleteLog();
 
     std::unique_ptr<Ui::UpdateDialog> ui;
-    std::unique_ptr<ZipUnpacker> unpacker;
 
     QNetworkAccessManager* networkManager = nullptr;
     QNetworkReply* currentDownload = nullptr;

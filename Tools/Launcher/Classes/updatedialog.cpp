@@ -35,6 +35,9 @@
 #include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
+#include "ziplist.h"
+#include "ziptest.h"
+#include "zipunpack.h"
 #include <QNetworkReply>
 #include <QDir>
 #include <QPushButton>
@@ -45,7 +48,6 @@
 UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::UpdateDialog)
-    , unpacker(new ZipUnpacker())
     , networkManager(accessManager)
     , tasks(taskQueue)
     , appManager(_appManager)
@@ -55,10 +57,6 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManag
     ui->progressBar2->setValue(0);
 
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
-    connect(this, SIGNAL(UpdateDownloadProgress(int)), ui->progressBar, SLOT(setValue(int)));
-    connect(this, SIGNAL(UpdateUnpackProgress(int)), ui->progressBar2, SLOT(setValue(int)));
-    connect(unpacker.get(), SIGNAL(OnProgress(int, int)), this, SLOT(UnpackProgress(int, int)));
-    connect(unpacker.get(), SIGNAL(OnError(int)), this, SLOT(UnpackError(int)));
 
     tasksCount = tasks.size();
 
@@ -105,7 +103,7 @@ void UpdateDialog::StartNextTask()
                 AddLogValue("Removing Complete!");
                 CompleteLog();
 
-                emit UpdateDownloadProgress(100);
+                ui->progressBar->setValue(100);
             }
             else
             {
@@ -149,7 +147,7 @@ void UpdateDialog::NetworkError(QNetworkReply::NetworkError code)
     lastErrorCode = code;
 
     currentDownload->deleteLater();
-    currentDownload = 0;
+    currentDownload = nullptr;
 }
 
 void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -157,7 +155,7 @@ void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     if (bytesTotal)
     {
         int percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100;
-        emit UpdateDownloadProgress(percentage);
+        ui->progressBar->setValue(percentage);
 
         UpdateLastLogValue(QString("Downloading file...  %1%").arg(percentage));
     }
@@ -183,12 +181,15 @@ void UpdateDialog::DownloadFinished()
 
         FileManager::Instance()->DeleteDirectory(appDir);
 
-        UpdateLastLogValue(QString("Download Complete!"));
-        AddLogValue("Unpacking archive...");
+        UpdateLastLogValue(tr("Download Complete!"));
+        
+        AddLogValue(tr("Checking archive..."));
 
         ui->cancelButton->setEnabled(false);
-
-        if(unpacker->UnZipFile(filePath, appDir))
+        ZipList::CompressedFilesAndSizes files;
+        if(ListArchive(filePath, files)
+           && TestArchive(filePath, files)
+           && UnpackArchive(filePath, appDir, files))
         {
             emit AppInstalled(task.branchID, task.appID, task.version);
             UpdateLastLogValue("Unpack Complite!");
@@ -214,20 +215,65 @@ void UpdateDialog::DownloadFinished()
 
 }
 
-void UpdateDialog::UnpackProgress(int current, int count)
+bool UpdateDialog::ListArchive(const QString &archivePath, ZipList::CompressedFilesAndSizes &files)
 {
-    if (count)
+    ZipError zipError;
+    ZipList::GetFileList(archivePath, files, &zipError);
+    if(zipError.error != ZipError::NO_ERRORS)
     {
-        int percentage = ((double)current / count) * 100;
-        emit UpdateUnpackProgress(percentage);
-
-        UpdateLastLogValue(QString("Unpacking archive...  %1%").arg(percentage));
+        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        UpdateLastLogValue(tr("Archive not found or damaged!"));
+        BreakLog();
     }
+    return zipError.error == ZipError::NO_ERRORS;
 }
 
-void UpdateDialog::UnpackError(int code)
+bool UpdateDialog::TestArchive(const QString &archivePath, const ZipList::CompressedFilesAndSizes &files)
 {
-    ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, code, unpacker->GetErrorString(code));
+    ZipError zipError;
+    UpdateLastLogValue(tr("Checking archive..."));
+    ZipTest::ProgressFuntor onProgress = [this](int progress)
+    {
+        ui->progressBar2->setValue(progress);
+        UpdateLastLogValue(tr("Checking archive...  %1%").arg(progress));
+    };
+    bool archiveTested = ZipTest::TestZipArchive(archivePath, onProgress, files, &zipError);
+    if(archiveTested)
+    {
+        UpdateLastLogValue(tr("Archive checked!"));
+    }
+    else
+    {
+        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        UpdateLastLogValue(tr("Archive not found or damaged!"));
+        BreakLog();
+    }
+    
+    return archiveTested;
+}
+
+bool UpdateDialog::UnpackArchive(const QString &archivePath, const QString &outDir, const ZipList::CompressedFilesAndSizes &files)
+{
+    ZipError zipError;
+    UpdateLastLogValue(tr("Unpacking archive..."));
+    ZipTest::ProgressFuntor onProgress = [this](int progress)
+    {
+        ui->progressBar2->setValue(progress);
+        UpdateLastLogValue(tr("Unpacking archive...  %1%").arg(progress));
+    };
+    bool archiveUnpacked = ZipUnpack::UnpackZipArchive(archivePath, outDir, onProgress, files, &zipError);
+    if(archiveUnpacked)
+    {
+        UpdateLastLogValue(tr("Archive unpacked!"));
+    }
+    else
+    {
+        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        UpdateLastLogValue(tr("Unpacking failed!"));
+        BreakLog();
+    }
+    
+    return archiveUnpacked;
 }
 
 void UpdateDialog::DownloadReadyRead()

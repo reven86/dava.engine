@@ -46,24 +46,16 @@ SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessMan
     ,
     currentDownload(0)
     ,
-    unpacker(0)
-    ,
     lastErrorCode(0)
 {
     ui->setupUi(this);
-
-    unpacker = new ZipUnpacker();
 
     connect(this, SIGNAL(StartUpdating()), this, SLOT(OnStartUpdating()));
 
     emit StartUpdating();
 }
 
-SelfUpdater::~SelfUpdater()
-{
-    SafeDelete(ui);
-    SafeDelete(unpacker);
-}
+SelfUpdater::~SelfUpdater() = default;
 
 void SelfUpdater::OnStartUpdating()
 {
@@ -102,7 +94,7 @@ void SelfUpdater::DownloadFinished()
         currentDownload->deleteLater();
         currentDownload = 0;
 
-        unpacker->UnZipFile(archiveFilePath, selfUpdateDir);
+        //!unpacker->UnZipFile(archiveFilePath, selfUpdateDir);
 
         FileManager::Instance()->MoveFilesOnlyToDirectory(appDir, tempDir);
         FileManager::Instance()->MoveFilesOnlyToDirectory(selfUpdateDir, appDir);

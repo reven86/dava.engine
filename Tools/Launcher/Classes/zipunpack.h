@@ -27,29 +27,16 @@
 =====================================================================================*/
 
 
-#ifndef ZIPHELPER_H
-#define ZIPHELPER_H
+#ifndef __LAUNCHER_ZIP_UNPACK_H__
+#define __LAUNCHER_ZIP_UNPACK_H__
 
-#include <QObject>
-#include <QString>
-#include <QMap>
-class ZipUnpacker : public QObject
+#include "ziputils.h"
+#include "ziplist.h"
+
+namespace ZipUnpack
 {
-    Q_OBJECT
-public:
-    explicit ZipUnpacker(QObject* parent = 0);
-    ~ZipUnpacker();
+    using ProgressFuntor = std::function<void(int)>;
+    bool UnpackZipArchive(const QString &archivePath, const QString &outDir, ProgressFuntor onProgress, const ZipList::CompressedFilesAndSizes &files, ZipError *err = nullptr);
+} 
 
-    bool UnZipFile(const QString& archiveFilePath, const QString& extDirPath);
-
-    const QString& GetErrorString(int errorCode);
-
-signals:
-    void OnProgress(int current, int all);
-    void OnError(int code);
-
-private:
-    QMap<int, QString> errorMap;
-};
-
-#endif // ZIPHELPER_H
+#endif // __LAUNCHER_ZIP_TEST_H__

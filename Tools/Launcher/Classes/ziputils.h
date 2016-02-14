@@ -27,31 +27,37 @@
 =====================================================================================*/
 
 
-#include "quacrc32.h"
+#ifndef __LAUNCHER_ZIP_UTILS_H__
+#define __LAUNCHER_ZIP_UTILS_H__
 
-#include "zlib.h"
+//this is private header
+#include <QObject>
 
-QuaCrc32::QuaCrc32()
+class ZipError : public QObject
 {
-    reset();
+public:
+    enum eZipListError
+    {
+        NO_ERRORS, //NO_ERROR is taken by winerror.h
+        FILE_NOT_EXISTS,
+        NOT_AN_ARCHIVE,
+        ARHIVE_DAMAGED,
+        ARCHIVER_NOT_FOUND,
+        PROCESS_FAILED_TO_START,
+        PROCESS_FAILED_TO_FINISH,
+        PARSE_ERROR,
+        ARCHIVE_IS_EMPTY,
+        OUT_DIRECTORY_NOT_EXISTS
+    };
+    eZipListError error = NO_ERRORS;
+    QString GetErrorString() const;
+};
+
+namespace ZipUtils
+{
+    const QString &GetArchiverPath();
+    bool IsArchiveValid(const QString &archivePath, ZipError *err = nullptr);
+
 }
 
-quint32 QuaCrc32::calculate(const QByteArray& data)
-{
-    return crc32(crc32(0L, Z_NULL, 0), (const Bytef*)data.data(), data.size());
-}
-
-void QuaCrc32::reset()
-{
-    checksum = crc32(0L, Z_NULL, 0);
-}
-
-void QuaCrc32::update(const QByteArray& buf)
-{
-    checksum = crc32(checksum, (const Bytef*)buf.data(), buf.size());
-}
-
-quint32 QuaCrc32::value()
-{
-    return checksum;
-}
+#endif // __LAUNCHER_ZIP_LIST_H__
