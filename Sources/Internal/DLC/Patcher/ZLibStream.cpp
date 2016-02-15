@@ -32,9 +32,8 @@
 
 namespace DAVA
 {
-
-ZLibIStream::ZLibIStream(File *_file)
-: file(_file)
+ZLibIStream::ZLibIStream(File* _file)
+    : file(_file)
 {
     SafeRetain(file);
 
@@ -43,7 +42,7 @@ ZLibIStream::ZLibIStream(File *_file)
     zstream.opaque = Z_NULL;
     zstream.avail_in = 0;
     zstream.next_in = Z_NULL;
-    
+
     int res = inflateInit(&zstream);
     DVASSERT(Z_OK == res);
 }
@@ -54,39 +53,38 @@ ZLibIStream::~ZLibIStream()
     SafeRelease(file);
 }
 
-uint32 ZLibIStream::Read(char8 *data, uint32 size)
+uint32 ZLibIStream::Read(char8* data, uint32 size)
 {
     zstream.avail_out = size;
-    zstream.next_out = (unsigned char *) data;
+    zstream.next_out = (unsigned char*)data;
 
-    while(zstream.avail_out > 0)
+    while (zstream.avail_out > 0)
     {
-        if(0 == zstream.avail_in)
+        if (0 == zstream.avail_in)
         {
             zstream.avail_in = file->Read(readBuffer, ZLIB_CHUNK_SIZE);
-            zstream.next_in = (unsigned char *) readBuffer;
+            zstream.next_in = (unsigned char*)readBuffer;
         }
 
-        if(0 != zstream.avail_in)
+        if (0 != zstream.avail_in)
         {
-            if(Z_OK != inflate(&zstream, Z_NO_FLUSH))
+            if (Z_OK != inflate(&zstream, Z_NO_FLUSH))
             {
                 break;
             }
         }
-		else
-		{
-			// we didn't read anything
-			break;
-		}
+        else
+        {
+            // we didn't read anything
+            break;
+        }
     }
 
     return (size - zstream.avail_out);
 }
 
-
-ZLibOStream::ZLibOStream(File *_file, int compressionLevel)
-: file(_file)
+ZLibOStream::ZLibOStream(File* _file, int compressionLevel)
+    : file(_file)
 {
     SafeRetain(file);
 
@@ -101,10 +99,10 @@ ZLibOStream::ZLibOStream(File *_file, int compressionLevel)
 ZLibOStream::~ZLibOStream()
 {
     int ret = Z_OK;
-    while(Z_OK == ret)
+    while (Z_OK == ret)
     {
         zstream.avail_out = ZLIB_CHUNK_SIZE;
-        zstream.next_out = (unsigned char *) writeBuffer;
+        zstream.next_out = (unsigned char*)writeBuffer;
 
         ret = deflate(&zstream, Z_FINISH);
 
@@ -116,24 +114,24 @@ ZLibOStream::~ZLibOStream()
     SafeRelease(file);
 }
 
-uint32 ZLibOStream::Write(char8 *data, uint32 size)
+uint32 ZLibOStream::Write(char8* data, uint32 size)
 {
     zstream.avail_in = size;
-    zstream.next_in = (unsigned char *) data;
+    zstream.next_in = (unsigned char*)data;
 
-    while(zstream.avail_in > 0)
+    while (zstream.avail_in > 0)
     {
         zstream.avail_out = ZLIB_CHUNK_SIZE;
-        zstream.next_out = (unsigned char *) writeBuffer;
+        zstream.next_out = (unsigned char*)writeBuffer;
 
-        if(Z_OK == deflate(&zstream, Z_NO_FLUSH))
+        if (Z_OK == deflate(&zstream, Z_NO_FLUSH))
         {
             uint32 outSize = ZLIB_CHUNK_SIZE - zstream.avail_out;
-			if(outSize != file->Write(writeBuffer, outSize))
-			{
-				// we didn't write everything
-				break;
-			}
+            if (outSize != file->Write(writeBuffer, outSize))
+            {
+                // we didn't write everything
+                break;
+            }
         }
         else
         {
@@ -143,5 +141,4 @@ uint32 ZLibOStream::Write(char8 *data, uint32 size)
 
     return (size - zstream.avail_in);
 }
-
 }

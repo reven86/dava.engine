@@ -37,12 +37,10 @@
 
 namespace DAVA
 {
-
 DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
     : id(_id)
     , status(_status)
 {
-    
 }
 
 Mutex DownloadManager::currentTaskMutex;
@@ -72,11 +70,11 @@ DownloadManager::~DownloadManager()
     SafeDelete(downloader);
 }
 
-void DownloadManager::SetDownloader(Downloader *_downloader)
+void DownloadManager::SetDownloader(Downloader* _downloader)
 {
     DVASSERT(NULL != _downloader);
-    
-    while(NULL != currentTask)
+
+    while (NULL != currentTask)
     {
         Thread::Sleep(10);
         Update();
@@ -87,7 +85,7 @@ void DownloadManager::SetDownloader(Downloader *_downloader)
     downloader->SetProgressNotificator(MakeFunction(this, &DownloadManager::OnCurrentTaskProgressChanged));
 }
 
-Downloader *DownloadManager::GetDownloader()
+Downloader* DownloadManager::GetDownloader()
 {
     return downloader;
 }
@@ -169,10 +167,10 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const uint8 partsCount , int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode, const uint8 partsCount, int32 timeout, int32 retriesCount)
 {
-    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
- 
+    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
+
     static uint32 prevId = 1;
     task->id = prevId++;
 
@@ -183,9 +181,9 @@ uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFi
     return task->id;
 }
 
-void DownloadManager::Retry(const uint32 &taskId)
+void DownloadManager::Retry(const uint32& taskId)
 {
-    DownloadTaskDescription *taskToRetry = ExtractFromQueue(doneTaskQueue, taskId);
+    DownloadTaskDescription* taskToRetry = ExtractFromQueue(doneTaskQueue, taskId);
     if (taskToRetry)
     {
         taskToRetry->error = DLE_NO_ERROR;
@@ -195,18 +193,18 @@ void DownloadManager::Retry(const uint32 &taskId)
     }
 }
 
-void DownloadManager::Cancel(const uint32 &taskId)
+void DownloadManager::Cancel(const uint32& taskId)
 {
-    DownloadTaskDescription * curTaskToDelete = currentTask;
+    DownloadTaskDescription* curTaskToDelete = currentTask;
 
     if (curTaskToDelete && taskId == curTaskToDelete->id)
     {
-       Interrupt();
-       Wait(taskId);
+        Interrupt();
+        Wait(taskId);
     }
     else
     {
-        DownloadTaskDescription *pendingTask = NULL;
+        DownloadTaskDescription* pendingTask = NULL;
         pendingTask = ExtractFromQueue(pendingTaskQueue, taskId);
         if (pendingTask)
         {
@@ -219,7 +217,7 @@ void DownloadManager::Cancel(const uint32 &taskId)
 
 void DownloadManager::CancelCurrent()
 {
-    DownloadTaskDescription * curTaskToCancel = currentTask;
+    DownloadTaskDescription* curTaskToCancel = currentTask;
     if (!curTaskToCancel)
         return;
 
@@ -231,10 +229,10 @@ void DownloadManager::CancelAll()
 {
     if (!pendingTaskQueue.empty())
     {
-        Deque<DownloadTaskDescription *>::iterator it;
+        Deque<DownloadTaskDescription*>::iterator it;
         for (it = pendingTaskQueue.begin(); it != pendingTaskQueue.end();)
         {
-            DownloadTaskDescription * task = (*it);
+            DownloadTaskDescription* task = (*it);
             task->error = DLE_CANCELLED;
             SetTaskStatus(task, DL_FINISHED);
             doneTaskQueue.push_back(task);
@@ -249,12 +247,12 @@ void DownloadManager::CancelAll()
     }
 }
 
-void DownloadManager::Clear(const uint32 &taskId)
+void DownloadManager::Clear(const uint32& taskId)
 {
     // cancel task if possible
     Cancel(taskId);
 
-    DownloadTaskDescription * task = NULL;
+    DownloadTaskDescription* task = NULL;
     task = ExtractFromQueue(pendingTaskQueue, taskId);
     if (task)
     {
@@ -270,9 +268,9 @@ void DownloadManager::Clear(const uint32 &taskId)
     }
 }
 
-void DownloadManager::ThreadFunction(BaseObject *caller, void *callerData, void *userData)
+void DownloadManager::ThreadFunction(BaseObject* caller, void* callerData, void* userData)
 {
-    while(isThreadStarted)
+    while (isThreadStarted)
     {
         Thread::Sleep(20);
 
@@ -286,7 +284,7 @@ void DownloadManager::ThreadFunction(BaseObject *caller, void *callerData, void 
         currentTask->error = Download();
 
         currentTaskMutex.Unlock();
-        
+
         // if we need to stop thread (finish current task end exit)
         if (!isThreadStarted)
             break;
@@ -298,7 +296,7 @@ void DownloadManager::ClearAll()
     ClearPending();
     ClearDone();
 
-    DownloadTaskDescription *currentTaskToClear = NULL;
+    DownloadTaskDescription* currentTaskToClear = NULL;
 
     currentTaskToClear = currentTask;
 
@@ -315,12 +313,12 @@ void DownloadManager::ClearDone()
     ClearQueue(doneTaskQueue);
 }
 
-void DownloadManager::Wait(const uint32 &taskId)
+void DownloadManager::Wait(const uint32& taskId)
 {
     // if you called it from other thread than main - you should be sured that Update() method calls periodically from Main Thread.
 
-    DownloadTaskDescription *waitTask = NULL;
-    DownloadTaskDescription *currentTaskToWait = NULL;
+    DownloadTaskDescription* waitTask = NULL;
+    DownloadTaskDescription* currentTaskToWait = NULL;
 
     currentTaskToWait = currentTask;
 
@@ -329,10 +327,10 @@ void DownloadManager::Wait(const uint32 &taskId)
 
     if (!waitTask)
     {
-        Deque<DownloadTaskDescription *>::iterator it;
+        Deque<DownloadTaskDescription*>::iterator it;
         for (it = pendingTaskQueue.begin(); it != pendingTaskQueue.end(); ++it)
         {
-            DownloadTaskDescription * task = (*it);
+            DownloadTaskDescription* task = (*it);
             if (taskId == task->id)
                 waitTask = task;
         }
@@ -344,7 +342,7 @@ void DownloadManager::Wait(const uint32 &taskId)
 
     // wait until task is finished
     while (waitTask
-       && (waitTask->status == DL_IN_PROGRESS || waitTask->status == DL_PENDING))
+           && (waitTask->status == DL_IN_PROGRESS || waitTask->status == DL_PENDING))
     {
         Thread::Sleep(20);
         Update();
@@ -367,9 +365,9 @@ void DownloadManager::WaitAll()
     }
 }
 
-bool DownloadManager::GetCurrentId(uint32 &id)
+bool DownloadManager::GetCurrentId(uint32& id)
 {
-    DownloadTaskDescription * curTaskToGet = currentTask;
+    DownloadTaskDescription* curTaskToGet = currentTask;
 
     if (curTaskToGet)
     {
@@ -380,9 +378,9 @@ bool DownloadManager::GetCurrentId(uint32 &id)
     return false;
 }
 
-bool DownloadManager::GetUrl(const uint32 &taskId, String &url)
+bool DownloadManager::GetUrl(const uint32& taskId, String& url)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -391,9 +389,9 @@ bool DownloadManager::GetUrl(const uint32 &taskId, String &url)
     return true;
 }
 
-bool DownloadManager::GetStorePath(const uint32 &taskId, FilePath &path)
+bool DownloadManager::GetStorePath(const uint32& taskId, FilePath& path)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -402,9 +400,9 @@ bool DownloadManager::GetStorePath(const uint32 &taskId, FilePath &path)
     return true;
 }
 
-bool DownloadManager::GetType(const uint32 &taskId, DownloadType &type)
+bool DownloadManager::GetType(const uint32& taskId, DownloadType& type)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -413,9 +411,9 @@ bool DownloadManager::GetType(const uint32 &taskId, DownloadType &type)
     return true;
 }
 
-bool DownloadManager::GetStatus(const uint32 &taskId, DownloadStatus &status)
+bool DownloadManager::GetStatus(const uint32& taskId, DownloadStatus& status)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -424,9 +422,9 @@ bool DownloadManager::GetStatus(const uint32 &taskId, DownloadStatus &status)
     return true;
 }
 
-bool DownloadManager::GetTotal(const uint32 &taskId, uint64 &total)
+bool DownloadManager::GetTotal(const uint32& taskId, uint64& total)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -435,9 +433,9 @@ bool DownloadManager::GetTotal(const uint32 &taskId, uint64 &total)
     return true;
 }
 
-bool DownloadManager::GetProgress(const uint32 &taskId, uint64 &progress)
+bool DownloadManager::GetProgress(const uint32& taskId, uint64& progress)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -446,9 +444,9 @@ bool DownloadManager::GetProgress(const uint32 &taskId, uint64 &progress)
     return true;
 }
 
-bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
+bool DownloadManager::GetError(const uint32& taskId, DownloadError& error)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
+    DownloadTaskDescription* task = GetTaskForId(taskId);
     if (!task)
         return false;
 
@@ -457,49 +455,49 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
     return true;
 }
 
-bool DownloadManager::GetFileErrno(const uint32 &taskId, int32 &fileErrno)
+bool DownloadManager::GetFileErrno(const uint32& taskId, int32& fileErrno)
 {
-    DownloadTaskDescription *task = GetTaskForId(taskId);
-    if(!task)
+    DownloadTaskDescription* task = GetTaskForId(taskId);
+    if (!task)
         return false;
 
     fileErrno = task->fileErrno;
 
     return true;
 }
-    
+
 DownloadStatistics DownloadManager::GetStatistics()
 {
     return downloader->GetStatistics();
 }
-    
+
 void DownloadManager::SetDownloadSpeedLimit(const uint64 limit)
 {
     downloader->SetDownloadSpeedLimit(limit);
 }
 
-void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
+void DownloadManager::ClearQueue(Deque<DownloadTaskDescription*>& queue)
 {
     if (!queue.empty())
     {
-        for (Deque<DownloadTaskDescription *>::iterator it = queue.begin(); it != queue.end();)
+        for (Deque<DownloadTaskDescription*>::iterator it = queue.begin(); it != queue.end();)
         {
-           DownloadTaskDescription *task = (*it);
-           delete task;
-           it = queue.erase(it);
+            DownloadTaskDescription* task = (*it);
+            delete task;
+            it = queue.erase(it);
         }
     }
 }
 
-DownloadTaskDescription *DownloadManager::ExtractFromQueue(Deque<DownloadTaskDescription *> &queue, const uint32 &taskId)
+DownloadTaskDescription* DownloadManager::ExtractFromQueue(Deque<DownloadTaskDescription*>& queue, const uint32& taskId)
 {
-    DownloadTaskDescription *extractedTask = NULL;
+    DownloadTaskDescription* extractedTask = NULL;
 
     if (!queue.empty())
     {
-        for (Deque<DownloadTaskDescription *>::iterator it = queue.begin(); it != queue.end();)
+        for (Deque<DownloadTaskDescription*>::iterator it = queue.begin(); it != queue.end();)
         {
-            DownloadTaskDescription *task = (*it);
+            DownloadTaskDescription* task = (*it);
             if (task->id == taskId)
             {
                 extractedTask = task;
@@ -513,14 +511,14 @@ DownloadTaskDescription *DownloadManager::ExtractFromQueue(Deque<DownloadTaskDes
     return extractedTask;
 }
 
-void DownloadManager::PlaceToQueue(Deque<DownloadTaskDescription *> &queue, DownloadTaskDescription *task)
+void DownloadManager::PlaceToQueue(Deque<DownloadTaskDescription*>& queue, DownloadTaskDescription* task)
 {
     queue.push_back(task);
 }
 
-DownloadTaskDescription *DownloadManager::GetTaskForId(const uint32 &taskId)
+DownloadTaskDescription* DownloadManager::GetTaskForId(const uint32& taskId)
 {
-    DownloadTaskDescription *retPointer = NULL;
+    DownloadTaskDescription* retPointer = NULL;
 
     if (currentTask && taskId == currentTask->id)
     {
@@ -528,17 +526,17 @@ DownloadTaskDescription *DownloadManager::GetTaskForId(const uint32 &taskId)
         return retPointer;
     }
 
-    Deque<DownloadTaskDescription *>::iterator it;
+    Deque<DownloadTaskDescription*>::iterator it;
     for (it = pendingTaskQueue.begin(); it != pendingTaskQueue.end(); ++it)
     {
-        DownloadTaskDescription *task = (*it);
+        DownloadTaskDescription* task = (*it);
         if (task->id == taskId)
             return task;
     }
 
     for (it = doneTaskQueue.begin(); it != doneTaskQueue.end(); ++it)
     {
-        DownloadTaskDescription *task = (*it);
+        DownloadTaskDescription* task = (*it);
         if (task->id == taskId)
             return task;
     }
@@ -546,7 +544,7 @@ DownloadTaskDescription *DownloadManager::GetTaskForId(const uint32 &taskId)
     return retPointer;
 }
 
-void DownloadManager::SetTaskStatus(DownloadTaskDescription *task, const DownloadStatus &status)
+void DownloadManager::SetTaskStatus(DownloadTaskDescription* task, const DownloadStatus& status)
 {
     DVASSERT(task);
     DVASSERT(status != task->status);
@@ -554,10 +552,9 @@ void DownloadManager::SetTaskStatus(DownloadTaskDescription *task, const Downloa
     task->status = status;
 
     callbackMutex.Lock();
-    callbackMessagesQueue.push_back(CallbackData(task->id, task->status));  
+    callbackMessagesQueue.push_back(CallbackData(task->id, task->status));
     callbackMutex.Unlock();
 }
-
 
 void DownloadManager::Interrupt()
 {
@@ -566,8 +563,6 @@ void DownloadManager::Interrupt()
 
     downloader->Interrupt();
 }
-
-
 
 DownloadError DownloadManager::Download()
 {
@@ -587,10 +582,10 @@ DownloadError DownloadManager::Download()
             || DLE_CANCELLED == error
             || DLE_FILE_ERROR == error)
             break;
-        
+
         currentTask->type = RESUMED;
 
-    }while (0 < currentTask->retriesLeft-- && DLE_NO_ERROR != error);
+    } while (0 < currentTask->retriesLeft-- && DLE_NO_ERROR != error);
 
     SetTaskStatus(currentTask, DL_FINISHED);
     return error;
@@ -601,8 +596,8 @@ DownloadError DownloadManager::TryDownload()
     // retrieve remote file size
     currentTask->error = downloader->GetSize(currentTask->url, currentTask->downloadTotal, currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
-    if(DLE_NO_ERROR != currentTask->error)
-    {        
+    if (DLE_NO_ERROR != currentTask->error)
+    {
         return currentTask->error;
     }
 
@@ -630,7 +625,7 @@ DownloadError DownloadManager::TryDownload()
             }
         }
     }
-    else    
+    else
     {
         MakeFullDownload();
     }
@@ -639,7 +634,7 @@ DownloadError DownloadManager::TryDownload()
     {
         return currentTask->error;
     }
-    
+
     currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
 
@@ -678,9 +673,9 @@ void DownloadManager::MakeFullDownload()
 void DownloadManager::MakeResumedDownload()
 {
     currentTask->type = RESUMED;
-    // if file is particulary downloaded, we will try to download rest part of it        
-    File *file = File::Create(currentTask->storePath, File::OPEN | File::READ);
-    if (NULL == static_cast<File *>(file))
+    // if file is particulary downloaded, we will try to download rest part of it
+    File* file = File::Create(currentTask->storePath, File::OPEN | File::READ);
+    if (NULL == static_cast<File*>(file))
     {
         // download fully if there is no file.
         MakeFullDownload();
@@ -706,5 +701,4 @@ void DownloadManager::OnCurrentTaskProgressChanged(uint64 progressDelta)
 {
     currentTask->downloadProgress += progressDelta;
 }
-    
 }

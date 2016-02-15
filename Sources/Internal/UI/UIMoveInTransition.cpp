@@ -33,34 +33,32 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-	
 UIMoveInTransition::UIMoveInTransition()
 {
-	type = FROM_TOP;
-	isOver = false;
+    type = FROM_TOP;
+    isOver = false;
 }
 
 UIMoveInTransition::~UIMoveInTransition()
 {
 }
-	
+
 void UIMoveInTransition::SetType(eType _type, bool moveOver)
 {
-	type = _type;
-	isOver = moveOver;
+    type = _type;
+    isOver = moveOver;
 }
 
 void UIMoveInTransition::Update(float32 timeElapsed)
 {
-	UIScreenTransition::Update(timeElapsed);
+    UIScreenTransition::Update(timeElapsed);
 }
 
-void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
+void UIMoveInTransition::Draw(const UIGeometricData& geometricData)
 {
-	/*
+    /*
 	 renderTargetPrevScreen->SetScale(0.5f, 1.0f);
 	 renderTargetPrevScreen->SetPosition(0, 0);
 	 renderTargetPrevScreen->Draw();
@@ -74,7 +72,7 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 	 FROM_TOP,
 	 FROM_BOTTOM,
 	 */
-	
+
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
@@ -90,11 +88,11 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         if (!isOver)
         {
             drawState.SetPosition(xPrevPosition, yPrevPosition);
-		}
-		else 
-		{
-			drawState.SetPosition(0, 0);
-		}
+        }
+        else
+        {
+            drawState.SetPosition(0, 0);
+        }
         RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 
         drawState.SetPosition(xNextPosition, yNextPosition);
@@ -124,6 +122,4 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
     }
 }
-	
 };
-

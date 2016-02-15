@@ -37,7 +37,7 @@ UIAnchorComponent::UIAnchorComponent()
     SetEnabled(true);
 }
 
-UIAnchorComponent::UIAnchorComponent(const UIAnchorComponent &src)
+UIAnchorComponent::UIAnchorComponent(const UIAnchorComponent& src)
     : flags(src.flags)
     , leftAnchor(src.leftAnchor)
     , hCenterAnchor(src.hCenterAnchor)
@@ -46,14 +46,12 @@ UIAnchorComponent::UIAnchorComponent(const UIAnchorComponent &src)
     , vCenterAnchor(src.vCenterAnchor)
     , bottomAnchor(src.bottomAnchor)
 {
-    
 }
-    
+
 UIAnchorComponent::~UIAnchorComponent()
 {
-    
 }
-    
+
 UIAnchorComponent* UIAnchorComponent::Clone() const
 {
     return new UIAnchorComponent(*this);
@@ -79,7 +77,7 @@ void UIAnchorComponent::SetLeftAnchorEnabled(bool enabled)
     flags.set(FLAG_LEFT_ENABLED, enabled);
     SetLayoutDirty();
 }
-    
+
 float32 UIAnchorComponent::GetLeftAnchor() const
 {
     return leftAnchor;
@@ -101,7 +99,7 @@ void UIAnchorComponent::SetHCenterAnchorEnabled(bool enabled)
     flags.set(FLAG_HCENTER_ENABLED, enabled);
     SetLayoutDirty();
 }
-    
+
 float32 UIAnchorComponent::GetHCenterAnchor() const
 {
     return hCenterAnchor;
@@ -123,7 +121,7 @@ void UIAnchorComponent::SetRightAnchorEnabled(bool enabled)
     flags.set(FLAG_RIGHT_ENABLED, enabled);
     SetLayoutDirty();
 }
-    
+
 float32 UIAnchorComponent::GetRightAnchor() const
 {
     return rightAnchor;
@@ -145,7 +143,7 @@ void UIAnchorComponent::SetTopAnchorEnabled(bool enabled)
     flags.set(FLAG_TOP_ENABLED, enabled);
     SetLayoutDirty();
 }
-    
+
 float32 UIAnchorComponent::GetTopAnchor() const
 {
     return topAnchor;
@@ -167,7 +165,7 @@ void UIAnchorComponent::SetVCenterAnchorEnabled(bool enabled)
     flags.set(FLAG_VCENTER_ENABLED, enabled);
     SetLayoutDirty();
 }
-    
+
 float32 UIAnchorComponent::GetVCenterAnchor() const
 {
     return vCenterAnchor;
@@ -189,7 +187,7 @@ void UIAnchorComponent::SetBottomAnchorEnabled(bool enabled)
     flags.set(FLAG_BOTTOM_ENABLED, enabled);
     SetLayoutDirty();
 }
-    
+
 float32 UIAnchorComponent::GetBottomAnchor() const
 {
     return bottomAnchor;
@@ -219,5 +217,4 @@ void UIAnchorComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
-
 }

@@ -35,30 +35,31 @@
 
 namespace DAVA
 {
-
 class SwitchNode : public Entity
 {
 protected:
-    ~SwitchNode(){}
+    ~SwitchNode()
+    {
+    }
+
 public:
-	SwitchNode();
+    SwitchNode();
 
-	virtual Entity* Clone(Entity *dstNode = NULL);
-	virtual void Update(float32 timeElapsed);
-	virtual void AddNode(Entity * node);
-	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    virtual Entity* Clone(Entity* dstNode = NULL);
+    virtual void Update(float32 timeElapsed);
+    virtual void AddNode(Entity* node);
+    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
 
-	void SetSwitchIndex(int32 switchIndex);
-	int32 GetSwitchIndex();
+    void SetSwitchIndex(int32 switchIndex);
+    int32 GetSwitchIndex();
 
 private:
-	int32 oldSwitchIndex;
-	int32 newSwitchIndex;
+    int32 oldSwitchIndex;
+    int32 newSwitchIndex;
 
-	void ReapplySwitch();
+    void ReapplySwitch();
 };
-
 };
 
 #endif //__DAVAENGINE_SWITCH_NODE_H__

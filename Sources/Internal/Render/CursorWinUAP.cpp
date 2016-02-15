@@ -60,40 +60,6 @@ bool Cursor::SetSystemCursorVisibility(bool show)
     DVASSERT("Cursor::SetSystemCursorVisibility not implemented");
     return false;
 }
-
-Cursor* Cursor::Create(const FilePath & cursorPathname, const Vector2 & hotSpot)
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    Cursor * cursor = new Cursor();
-    return cursor;
-}
-
-Cursor::Cursor() : show(true)
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-	
-Cursor::~Cursor()
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-
-void Cursor::HardwareSet()
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-
-void Cursor::Show(bool _show)
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-
-DAVA::Vector2 Cursor::GetPosition()
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return DAVA::Vector2();
-}
-
 };
 
 #endif //  (__DAVAENGINE_WIN_UAP__)

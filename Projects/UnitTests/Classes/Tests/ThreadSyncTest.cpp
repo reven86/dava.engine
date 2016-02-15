@@ -28,6 +28,9 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Concurrency/AutoResetEvent.h"
+#include "Concurrency/ManualResetEvent.h"
+#include <random>
 
 using namespace DAVA;
 
@@ -38,6 +41,17 @@ DAVA_TESTCLASS(ThreadSyncTest)
     Mutex cvMutex;
     ConditionVariable cv;
     int someValue;
+
+    volatile int autoResetValue;
+    volatile int manualResetValue;
+    std::atomic<int> autoResetWakeCounter;
+    Mutex autoResetMutex;
+
+    static const int autoResetLoopCount = 10000;
+    static const int autoResetThreadCount = 4;
+
+    AutoResetEvent are;
+    ManualResetEvent mre;
 
     DAVA_TEST(ThreadSyncTestFunction)
     {
@@ -67,7 +81,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     {
         TEST_VERIFY(true == Thread::IsMainThread());
 
-        Thread *infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
+        Thread* infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
 
         TEST_VERIFY(Thread::STATE_CREATED == infiniteThread->GetState());
         infiniteThread->SetName("Infinite test thread");
@@ -84,7 +98,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         infiniteThread->Join();
         TEST_VERIFY(Thread::STATE_ENDED == infiniteThread->GetState());
 
-        Thread *shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
+        Thread* shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
         shortThread->Start();
         shortThread->Join();
         TEST_VERIFY(Thread::STATE_ENDED == shortThread->GetState());
@@ -140,7 +154,139 @@ DAVA_TESTCLASS(ThreadSyncTest)
         */
     }
 
-    void SomeThreadFunc(BaseObject * caller, void * callerData, void * userData)
+    DAVA_TEST(TestAutoResetEvent)
+    {
+        Thread* threads[autoResetThreadCount];
+
+        autoResetValue = 0;
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::AutoResetEventThreadFunc));
+            threads[i]->Start();
+        }
+
+        // test that only one thread will wake if we signaling once
+        {
+            autoResetWakeCounter.store(0);
+            are.Signal();
+
+            // unlock threads and test
+            Thread::Sleep(500);
+            TEST_VERIFY(autoResetWakeCounter.load() == 1);
+        }
+
+        // test that only one thread will wake if we signaling multiple times
+        {
+            // make sure all thread are not waiting on autoResetMutex
+            {
+                autoResetMutex.Lock();
+                for (int i = 0; i < autoResetThreadCount; ++i)
+                {
+                    are.Signal();
+                    Thread::Sleep(500);
+                }
+            }
+
+            // signal multiple times
+            autoResetWakeCounter.store(0);
+            for (int i = 0; i < autoResetThreadCount; ++i) are.Signal();
+
+            autoResetMutex.Unlock();
+            Thread::Sleep(500);
+            TEST_VERIFY(autoResetWakeCounter.load() == 1);
+        }
+
+        // continue signaling until all thread finish their work
+        while (autoResetValue < autoResetThreadCount)
+        {
+            are.Signal();
+        }
+
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i]->Join();
+            threads[i]->Release();
+        }
+    }
+
+    void AutoResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double res = 0;
+
+        for (int i = 0; i < autoResetLoopCount; ++i)
+        {
+            res += dis(gen);
+
+            are.Wait();
+            autoResetWakeCounter++;
+
+            autoResetMutex.Lock();
+            autoResetMutex.Unlock();
+        }
+
+        autoResetValue++;
+    }
+
+    DAVA_TEST(TestManualResetEvent)
+    {
+        Thread* threads[autoResetThreadCount];
+
+        manualResetValue = 0;
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::ManualResetEventThreadFunc));
+            threads[i]->Start();
+        }
+
+        // check that wait don't hang if manualResetEvent is signaled
+        autoResetMutex.Lock();
+        Thread::Sleep(500);
+        int check = autoResetWakeCounter;
+        mre.Wait();
+        mre.Wait();
+        mre.Wait();
+        Thread::Sleep(500);
+        TEST_VERIFY(check == autoResetWakeCounter);
+        autoResetMutex.Unlock();
+
+        while (manualResetValue < autoResetThreadCount)
+        {
+            mre.Wait();
+        }
+
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i]->Join();
+            threads[i]->Release();
+        }
+    }
+
+    void ManualResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double res = 0;
+
+        for (int i = 0; i < autoResetLoopCount; ++i)
+        {
+            mre.Reset();
+            res += dis(gen);
+            mre.Signal();
+            autoResetWakeCounter++;
+
+            autoResetMutex.Lock();
+            autoResetMutex.Unlock();
+        }
+
+        manualResetValue++;
+        Logger::Info("%f", res);
+    }
+
+    void SomeThreadFunc(BaseObject * caller, void* callerData, void* userData)
     {
         someValue = 0;
         cvMutex.Lock();
@@ -148,19 +294,19 @@ DAVA_TESTCLASS(ThreadSyncTest)
         cvMutex.Unlock();
     }
 
-    void InfiniteThreadFunction(BaseObject * caller, void * callerData, void * userData)
+    void InfiniteThreadFunction(BaseObject * caller, void* callerData, void* userData)
     {
-        Thread *thread = static_cast<Thread *>(caller);
+        Thread* thread = static_cast<Thread*>(caller);
         while (thread && !thread->IsCancelling())
         {
             Thread::Sleep(200);
         }
     }
 
-    void ShortThreadFunction(BaseObject * caller, void * callerData, void * userData)
+    void ShortThreadFunction(BaseObject * caller, void* callerData, void* userData)
     {
         uint32 i = 200;
-        Thread *thread = static_cast<Thread *>(caller);
+        Thread* thread = static_cast<Thread*>(caller);
         while (thread && i-- > 0)
         {
             Thread::Sleep(1);

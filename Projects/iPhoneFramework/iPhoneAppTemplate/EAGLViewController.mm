@@ -29,7 +29,6 @@
 
 #import "EAGLViewController.h"
 
-
 @implementation EAGLViewController
 
 /*
@@ -62,38 +61,36 @@
     return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft);
 }*/
 
-
-- (void)didReceiveMemoryWarning 
+- (void)didReceiveMemoryWarning
 {
-	// Releases the view if it doesn't have a superview.
+    // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
-	
-	// Release any cached data, images, etc that aren't in use.
+
+    // Release any cached data, images, etc that aren't in use.
 }
 
-- (void)viewDidUnload 
+- (void)viewDidUnload
 {
-	// Release any retained subviews of the main view.
-	// e.g. self.myOutlet = nil;
+    // Release any retained subviews of the main view.
+    // e.g. self.myOutlet = nil;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
     [super dealloc];
 }
 
-- (void) viewWillAppear: (BOOL)animating
+- (void)viewWillAppear:(BOOL)animating
 {
-	NSLog(@"EAGLViewController viewWillAppear (startAnimation)");
-	[glView setCurrentContext];
-	[glView startAnimation];
+    NSLog(@"EAGLViewController viewWillAppear (startAnimation)");
+    [glView setCurrentContext];
+    [glView startAnimation];
 }
 
-- (void) viewDidDisappear: (BOOL)animating
+- (void)viewDidDisappear:(BOOL)animating
 {
-	NSLog(@"EAGLViewController viewDidDisappear (stopAnimation)");
-	[glView stopAnimation];
+    NSLog(@"EAGLViewController viewDidDisappear (stopAnimation)");
+    [glView stopAnimation];
 }
-
 
 @end

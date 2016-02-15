@@ -34,37 +34,33 @@
 #include "Base/BaseMath.h"
 #include "Base/AllocatorFactory.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
 struct Particle
 {
-	IMPLEMENT_POOL_ALLOCATOR(Particle, 1000);	
-		
-	Particle * next;
+    IMPLEMENT_POOL_ALLOCATOR(Particle, 1000);
 
-	float32 life;
-	float32 lifeTime;
+    Particle* next;
 
-	Vector3 position;
-	Vector3 speed;
+    float32 life;
+    float32 lifeTime;
 
-	float32 angle;
-	float32 spin;
+    Vector3 position;
+    Vector3 speed;
 
-	int32	frame;
-	float32 animTime;	
+    float32 angle;
+    float32 spin;
 
-	float currRadius; //for bbox computation
-	Vector2 baseSize, currSize;
+    int32 frame;
+    float32 animTime;
 
+    float currRadius; //for bbox computation
+    Vector2 baseSize, currSize;
 
-	Color color;	
+    Color color;
 
-	int32 positionTarget; //superemitter particles only
+    int32 positionTarget; //superemitter particles only
 };
-
-
 }
 
 #endif // __DAVAENGINE_PARTICLE_H__

@@ -26,7 +26,7 @@ extern "C" {
  * thank the POSIX regex expressions.
  */
 typedef struct _xmlRegexp xmlRegexp;
-typedef xmlRegexp *xmlRegexpPtr;
+typedef xmlRegexp* xmlRegexpPtr;
 
 /**
  * xmlRegExecCtxtPtr:
@@ -34,7 +34,7 @@ typedef xmlRegexp *xmlRegexpPtr;
  * A libxml progressive regular expression evaluation context
  */
 typedef struct _xmlRegExecCtxt xmlRegExecCtxt;
-typedef xmlRegExecCtxt *xmlRegExecCtxtPtr;
+typedef xmlRegExecCtxt* xmlRegExecCtxtPtr;
 
 #ifdef __cplusplus
 }
@@ -48,57 +48,57 @@ extern "C" {
  * The POSIX like API
  */
 XMLPUBFUN xmlRegexpPtr XMLCALL
-		    xmlRegexpCompile	(const xmlChar *regexp);
-XMLPUBFUN void XMLCALL			 xmlRegFreeRegexp(xmlRegexpPtr regexp);
-XMLPUBFUN int XMLCALL			
-		    xmlRegexpExec	(xmlRegexpPtr comp,
-					 const xmlChar *value);
-XMLPUBFUN void XMLCALL			
-    		    xmlRegexpPrint	(FILE *output,
-					 xmlRegexpPtr regexp);
-XMLPUBFUN int XMLCALL			
-		    xmlRegexpIsDeterminist(xmlRegexpPtr comp);
+xmlRegexpCompile(const xmlChar* regexp);
+XMLPUBFUN void XMLCALL xmlRegFreeRegexp(xmlRegexpPtr regexp);
+XMLPUBFUN int XMLCALL
+xmlRegexpExec(xmlRegexpPtr comp,
+              const xmlChar* value);
+XMLPUBFUN void XMLCALL
+xmlRegexpPrint(FILE* output,
+               xmlRegexpPtr regexp);
+XMLPUBFUN int XMLCALL
+xmlRegexpIsDeterminist(xmlRegexpPtr comp);
 
 /*
  * Callback function when doing a transition in the automata
  */
-typedef void (*xmlRegExecCallbacks) (xmlRegExecCtxtPtr exec,
-	                             const xmlChar *token,
-				     void *transdata,
-				     void *inputdata);
+typedef void (*xmlRegExecCallbacks)(xmlRegExecCtxtPtr exec,
+                                    const xmlChar* token,
+                                    void* transdata,
+                                    void* inputdata);
 
 /*
  * The progressive API
  */
-XMLPUBFUN xmlRegExecCtxtPtr XMLCALL	
-    		    xmlRegNewExecCtxt	(xmlRegexpPtr comp,
-					 xmlRegExecCallbacks callback,
-					 void *data);
-XMLPUBFUN void XMLCALL			
-		    xmlRegFreeExecCtxt	(xmlRegExecCtxtPtr exec);
-XMLPUBFUN int XMLCALL			
-    		    xmlRegExecPushString(xmlRegExecCtxtPtr exec,
-					 const xmlChar *value,
-					 void *data);
-XMLPUBFUN int XMLCALL			
-		    xmlRegExecPushString2(xmlRegExecCtxtPtr exec,
-					 const xmlChar *value,
-					 const xmlChar *value2,
-					 void *data);
+XMLPUBFUN xmlRegExecCtxtPtr XMLCALL
+xmlRegNewExecCtxt(xmlRegexpPtr comp,
+                  xmlRegExecCallbacks callback,
+                  void* data);
+XMLPUBFUN void XMLCALL
+xmlRegFreeExecCtxt(xmlRegExecCtxtPtr exec);
+XMLPUBFUN int XMLCALL
+xmlRegExecPushString(xmlRegExecCtxtPtr exec,
+                     const xmlChar* value,
+                     void* data);
+XMLPUBFUN int XMLCALL
+xmlRegExecPushString2(xmlRegExecCtxtPtr exec,
+                      const xmlChar* value,
+                      const xmlChar* value2,
+                      void* data);
 
 XMLPUBFUN int XMLCALL
-		    xmlRegExecNextValues(xmlRegExecCtxtPtr exec,
-		    			 int *nbval,
-		    			 int *nbneg,
-					 xmlChar **values,
-					 int *terminal);
+xmlRegExecNextValues(xmlRegExecCtxtPtr exec,
+                     int* nbval,
+                     int* nbneg,
+                     xmlChar** values,
+                     int* terminal);
 XMLPUBFUN int XMLCALL
-		    xmlRegExecErrInfo	(xmlRegExecCtxtPtr exec,
-		    			 const xmlChar **string,
-					 int *nbval,
-		    			 int *nbneg,
-					 xmlChar **values,
-					 int *terminal);
+xmlRegExecErrInfo(xmlRegExecCtxtPtr exec,
+                  const xmlChar** string,
+                  int* nbval,
+                  int* nbneg,
+                  xmlChar** values,
+                  int* terminal);
 #ifdef __cplusplus
 }
 #endif 

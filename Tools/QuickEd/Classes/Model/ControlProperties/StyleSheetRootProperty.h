@@ -44,71 +44,78 @@ class StyleSheetNode;
 
 namespace DAVA
 {
-    class UIControl;
-    class UIStyleSheetPropertyTable;
-    class UIStyleSheet;
+class UIControl;
+class UIStyleSheetPropertyTable;
+class UIStyleSheet;
 }
 
 class StyleSheetPropertiesSection : public SectionProperty<StyleSheetProperty>
 {
 public:
-    StyleSheetPropertiesSection(const DAVA::String &name) : SectionProperty<StyleSheetProperty>(name) { }
+    StyleSheetPropertiesSection(const DAVA::String& name)
+        : SectionProperty<StyleSheetProperty>(name)
+    {
+    }
 };
 
 class StyleSheetSelectorsSection : public SectionProperty<StyleSheetSelectorProperty>
 {
 public:
-    StyleSheetSelectorsSection(const DAVA::String &name) : SectionProperty<StyleSheetSelectorProperty>(name) { }
+    StyleSheetSelectorsSection(const DAVA::String& name)
+        : SectionProperty<StyleSheetSelectorProperty>(name)
+    {
+    }
 };
 
 class StyleSheetRootProperty : public AbstractProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
+    StyleSheetRootProperty(StyleSheetNode* styleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties);
+
 protected:
     virtual ~StyleSheetRootProperty();
-    
+
 public:
     DAVA::uint32 GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
+    AbstractProperty* GetProperty(int index) const override;
 
-    void Accept(PropertyVisitor *visitor) override;
+    void Accept(PropertyVisitor* visitor) override;
     bool IsReadOnly() const override;
-    
-    const DAVA::String &GetName() const override;
+
+    const DAVA::String& GetName() const override;
     ePropertyType GetType() const override;
 
-    void AddListener(PropertyListener *listener);
-    void RemoveListener(PropertyListener *listener);
-    
-    void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
+    void AddListener(PropertyListener* listener);
+    void RemoveListener(PropertyListener* listener);
+
+    void SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue);
     bool CanAddProperty(DAVA::uint32 propertyIndex) const;
     bool CanRemoveProperty(DAVA::uint32 propertyIndex) const;
-    void AddProperty(StyleSheetProperty *property);
-    void RemoveProperty(StyleSheetProperty *property);
+    void AddProperty(StyleSheetProperty* property);
+    void RemoveProperty(StyleSheetProperty* property);
     bool CanAddSelector() const;
     bool CanRemoveSelector() const;
-    void InsertSelector(StyleSheetSelectorProperty *property, int index);
-    void RemoveSelector(StyleSheetSelectorProperty *property);
-    
-    StyleSheetSelectorsSection *GetSelectors() const;
-    StyleSheetPropertiesSection *GetPropertiesSection() const;
+    void InsertSelector(StyleSheetSelectorProperty* property, int index);
+    void RemoveSelector(StyleSheetSelectorProperty* property);
 
-    StyleSheetProperty *FindPropertyByPropertyIndex(DAVA::uint32 index) const;
-    StyleSheetSelectorProperty *GetSelectorAtIndex(DAVA::int32 index) const;
+    StyleSheetSelectorsSection* GetSelectors() const;
+    StyleSheetPropertiesSection* GetPropertiesSection() const;
+
+    StyleSheetProperty* FindPropertyByPropertyIndex(DAVA::uint32 index) const;
+    StyleSheetSelectorProperty* GetSelectorAtIndex(DAVA::int32 index) const;
 
     DAVA::String GetSelectorsAsString() const;
-    
+
     DAVA::Vector<DAVA::UIStyleSheet*> CollectStyleSheets();
 
     DAVA::Vector<DAVA::UIStyleSheetSelectorChain> CollectStyleSheetSelectors() const;
     DAVA::Vector<DAVA::UIStyleSheetProperty> CollectStyleSheetProperties() const;
-    
-    DAVA::UIStyleSheetPropertyTable *GetStyleSheetPropertyTable() const;
+
+    DAVA::UIStyleSheetPropertyTable* GetStyleSheetPropertyTable() const;
 
 private:
     void UpdateStyleSheetPropertyTable();
-    
+
 private:
     enum eSection
     {
@@ -116,15 +123,15 @@ private:
         SECTION_PROPERTIES = 1,
         SECTION_COUNT = 2
     };
-    
+
 private:
-    StyleSheetNode *styleSheet = nullptr;
+    StyleSheetNode* styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
-    
-    StyleSheetSelectorsSection *selectors = nullptr;
-    StyleSheetPropertiesSection *propertiesSection = nullptr;
-    
-    DAVA::UIStyleSheetPropertyTable *propertyTable = nullptr;
+
+    StyleSheetSelectorsSection* selectors = nullptr;
+    StyleSheetPropertiesSection* propertiesSection = nullptr;
+
+    DAVA::UIStyleSheetPropertyTable* propertyTable = nullptr;
 };
 
 #endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__

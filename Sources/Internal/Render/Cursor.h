@@ -30,86 +30,20 @@
 #ifndef __DAVAENGINE_CURSOR_H__
 #define __DAVAENGINE_CURSOR_H__
 
-#include "Base/BaseObject.h"
-#include "Base/BaseMath.h"
-#include "Render/Texture.h"
-#include "Render/2D/Sprite.h"
 #include "Input/InputSystem.h"
 
 namespace DAVA
 {
-
-/**
-	\ingroup render
-	\brief Hardware cursor for platforms that support mouse
- 
-	By default there is no cursor set in framework application, if you want to set cursor for your application you need to perform the following code:
-	\code
-	Cursor * cursor = Cursor::Create("~res:/Cursors/cursor.png", Vector2(0, 0));
-
-	RenderManager::Instance()->SetCursor(cursor);  
-
-	SafeRelease(cursor);
-	\endcode
- 
-	If you want to get current active cursor you should call RenderManager::Instance()->GetCursor();
- */
-class Cursor : public BaseObject
+class Cursor
 {
 public:
-	/**
-		\brief Function to create hardware cursor object
-		This function open cursor only if it's in PNG format and it's size should be 32x32 pixels. 
-
-		\param[in] cursorPathname pathname to cursor you want to create
-		\param[in] hotSpot position inside cursor image that marks the center of the cursor. The offset is relative to the upper-left corner of the cursor. When the cursor is given a new position, the image is drawn at an offset from this new position determined by subtracting the hot spot coordinates from the position
-		\returns pointer to cursor object if it opened successfully. 
-	 */
-	static Cursor * Create(const FilePath & cursorPathname, const Vector2 & hotSpot);
-
-	/**
-	 \brief Show or hide cursor
-	 \param[in] show show cursor if true, else hide cursor
-	 */
-	void Show(bool show);
-    bool IsShow();
-	/**
-	 \brief Get current cursor position 
-	 \returns Vector2 containing position
-	 */
-	Vector2 GetPosition();
-	
-#if defined(__DAVAENGINE_MACOS__)
-	void * GetMacOSXCursor();
-#endif 
-
 #if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     static InputSystem::eMouseCaptureMode GetMouseCaptureMode();
     static bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
     static bool GetSystemCursorVisibility();
     static bool SetSystemCursorVisibility(bool show);
 #endif
-    
-private:
-	void HardwareSet();
-	
-	Cursor();
-	~Cursor();
-	
-#if defined(__DAVAENGINE_MACOS__)
-	void * macOSXCursor;
-#elif defined(__DAVAENGINE_WINDOWS__) && defined(__DAVAENGINE_DIRECTX9__)
-	Texture * cursorTexture;
-	Sprite * cursorSprite;
-	Vector2 hotSpot;
-public:
-	void SoftwareDraw(const Vector2 & pos);
-
-#endif
-    
-	bool show;
 };
-
 };
 
 #endif // __DAVAENGINE_CURSOR_H__

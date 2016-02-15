@@ -52,17 +52,17 @@ using namespace concurrency;
 
 namespace DAVA
 {
-
 PrivateMovieViewWinUAP::PrivateMovieViewWinUAP()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
-{}
+{
+}
 
 PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
 {
     if (nativeMovieView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
-        MediaElement^ p = nativeMovieView;
+        MediaElement ^ p = nativeMovieView;
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
@@ -93,7 +93,7 @@ void PrivateMovieViewWinUAP::Initialize(const Rect& rect)
 
 void PrivateMovieViewWinUAP::SetRect(const Rect& rect)
 {
-    auto self{shared_from_this()};
+    auto self{ shared_from_this() };
     core->RunOnUIThread([this, self, rect]() {
         PositionMovieView(rect);
     });
@@ -104,7 +104,7 @@ void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
     if (visible != isVisible)
     {
         visible = isVisible;
-        auto self{shared_from_this()};
+        auto self{ shared_from_this() };
         core->RunOnUIThread([this, self]() {
             nativeMovieView->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
         });
@@ -160,10 +160,10 @@ void PrivateMovieViewWinUAP::Play()
         if (!moviePlaying)
         {
             moviePlaying = true;
-            auto self{shared_from_this()};
+            auto self{ shared_from_this() };
             core->RunOnUIThread([this, self]()
                                 {
-                nativeMovieView->Play();
+                                    nativeMovieView->Play();
                                 });
         }
     }
@@ -201,7 +201,7 @@ void PrivateMovieViewWinUAP::Pause()
     moviePlaying = false;
     if (movieLoaded)
     {
-        auto self{shared_from_this()};
+        auto self{ shared_from_this() };
         core->RunOnUIThread([this, self]() {
             nativeMovieView->Pause();
         });
@@ -217,21 +217,21 @@ void PrivateMovieViewWinUAP::InstallEventHandlers()
 {
     std::weak_ptr<PrivateMovieViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
-    auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+    auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object ^, RoutedEventArgs ^ ) {
         auto self = self_weak.lock();
         if (self != nullptr)
         {
             OnMediaOpened();
         }
     });
-    auto mediaEnded = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+    auto mediaEnded = ref new RoutedEventHandler([this, self_weak](Platform::Object ^, RoutedEventArgs ^ ) {
         auto self = self_weak.lock();
         if (self != nullptr)
         {
             OnMediaEnded();
         }
     });
-    auto mediaFailed = ref new ExceptionRoutedEventHandler([this, self_weak](Platform::Object^, ExceptionRoutedEventArgs^ args) {
+    auto mediaFailed = ref new ExceptionRoutedEventHandler([this, self_weak](Platform::Object ^, ExceptionRoutedEventArgs ^ args) {
         auto self = self_weak.lock();
         if (self != nullptr)
         {
@@ -259,8 +259,8 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     controlRect.dy /= scaleFactor;
 
     // 3. set control's position and size
-    nativeMovieView->MinHeight = 0.0;       // Force minimum control sizes to zero to
-    nativeMovieView->MinWidth = 0.0;        // allow setting any control sizes
+    nativeMovieView->MinHeight = 0.0; // Force minimum control sizes to zero to
+    nativeMovieView->MinWidth = 0.0; // allow setting any control sizes
     nativeMovieView->Width = controlRect.dx;
     nativeMovieView->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
@@ -308,7 +308,7 @@ void PrivateMovieViewWinUAP::OnMediaEnded()
     moviePlaying = false;
 }
 
-void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs^ args)
+void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs ^ args)
 {
     playRequest = false;
     moviePlaying = false;
@@ -316,6 +316,6 @@ void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs^ args)
     Logger::Error("[MovieView] failed to decode media file: %s", errMessage.c_str());
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

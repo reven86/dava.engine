@@ -25,23 +25,42 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
-#include "Platform/DeviceInfo.h"
+#import "Platform/Reachability.h"
 
 #ifdef __DAVAENGINE_MACOS__
 
 #include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
 #include "Base/GlobalEnum.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
 #import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
+String GetSysCtlByName(const String& param)
+{
+    size_t len = 0;
+    sysctlbyname(param.c_str(), NULL, &len, NULL, 0);
+
+    if (len)
+    {
+        char model[len];
+        sysctlbyname(param.c_str(), model, &len, NULL, 0);
+        NSString* model_ns = [NSString stringWithUTF8String:model];
+        return String([model_ns UTF8String]);
+    }
+
+    return String("");
+}
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
@@ -49,7 +68,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-    return 	DeviceInfo::PLATFORM_MACOS;
+    return DeviceInfo::PLATFORM_MACOS;
 }
 
 String DeviceInfoPrivate::GetPlatformString()
@@ -59,81 +78,94 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-	return "Not yet implemented";
+    SInt32 versionMajor = 0, versionMinor = 0, versionBugFix = 0;
+    Gestalt(gestaltSystemVersionMajor, &versionMajor);
+    Gestalt(gestaltSystemVersionMinor, &versionMinor);
+    Gestalt(gestaltSystemVersionBugFix, &versionBugFix);
+    NSString* systemVersion = [NSString stringWithFormat:@"%d.%d.%d", versionMajor, versionMinor, versionBugFix];
+
+    return String([systemVersion UTF8String]);
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-	return "Apple inc.";
+    return "Apple inc.";
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-	return "Not yet implemented";
+    String model = GetSysCtlByName("hw.model");
+
+    if (0 < model.length())
+    {
+        return model;
+    }
+
+    return "Just an Apple Computer";
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
+    NSLocale* english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
-	NSString* langID = [[NSLocale preferredLanguages] objectAtIndex:0];
-	NSString *lang = [english displayNameForKey:NSLocaleLanguageCode value:langID];
+    NSString* langID = [[NSLocale preferredLanguages] objectAtIndex:0];
+    NSString* lang = [english displayNameForKey:NSLocaleLanguageCode value:langID];
 
-	String res = Format("%s (%s)", [langID UTF8String], [lang UTF8String]);
-	return res;
+    String res = Format("%s (%s)", [langID UTF8String], [lang UTF8String]);
+    return res;
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
+    NSLocale* english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
-	NSString *countryCode = [[NSLocale currentLocale] objectForKey: NSLocaleCountryCode];
-	NSString *country = [english displayNameForKey: NSLocaleCountryCode value: countryCode];
+    NSString* countryCode = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
+    NSString* country = [english displayNameForKey:NSLocaleCountryCode value:countryCode];
 
-	String res = Format("%s (%s)", [countryCode UTF8String], [country UTF8String]);
-	return res;
+    String res = Format("%s (%s)", [countryCode UTF8String], [country UTF8String]);
+    return res;
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-	NSTimeZone *localTime = [NSTimeZone systemTimeZone];
-    
+    NSTimeZone* localTime = [NSTimeZone systemTimeZone];
+
     String res = Format("%s", [[localTime name] UTF8String]);
-	return res;
+    return res;
 }
-    
+
 String DeviceInfoPrivate::GetUDID()
 {
-    OpenUDIDMacOS*  udid = [[[OpenUDIDMacOS alloc] init] autorelease];
+    OpenUDIDMacOS* udid = [[[OpenUDIDMacOS alloc] init] autorelease];
     return [[udid value] UTF8String];
 }
-    
+
 WideString DeviceInfoPrivate::GetName()
 {
-    NSString * deviceName = [[NSHost currentHost] localizedName];
-    
-    NSStringEncoding pEncode    =   CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE );
-    NSData* pSData              =   [ deviceName dataUsingEncoding : pEncode ];
-    
-    return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
+    NSString* deviceName = [[NSHost currentHost] localizedName];
+
+    NSStringEncoding pEncode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
+    NSData* pSData = [deviceName dataUsingEncoding:pEncode];
+
+    return WideString((wchar_t*)[pSData bytes], [pSData length] / sizeof(wchar_t));
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-	return String();
+    return String();
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-	return String();
+    return String();
 }
 
 // Not impletemted yet
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
-	return 0;
+    return 0;
 }
 
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
@@ -148,13 +180,43 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    return GPU_INVALID;
+    return GPU_POWERVR_IOS;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
-    // For now return default network info for MacOS.
-    return DeviceInfo::NetworkInfo();
+    static const struct
+    {
+        NetworkStatus platformNetworkStatus;
+        DeviceInfo::eNetworkType internalNetworkType;
+    } networkStatusMap[] =
+    {
+      { NotReachable, DeviceInfo::NETWORK_TYPE_NOT_CONNECTED },
+      { ReachableViaWiFi, DeviceInfo::NETWORK_TYPE_WIFI },
+      { ReachableViaWWAN, DeviceInfo::NETWORK_TYPE_CELLULAR }
+    };
+
+    DeviceInfo::NetworkInfo networkInfo;
+
+    Reachability* reachability = [Reachability reachabilityForInternetConnection];
+    [reachability startNotifier];
+
+    NetworkStatus networkStatus = [reachability currentReachabilityStatus];
+
+    uint32 networkStatusMapCount = COUNT_OF(networkStatusMap);
+    for (uint32 i = 0; i < networkStatusMapCount; i++)
+    {
+        if (networkStatusMap[i].platformNetworkStatus == networkStatus)
+        {
+            networkInfo.networkType = networkStatusMap[i].internalNetworkType;
+            break;
+        }
+    }
+
+    [reachability stopNotifier];
+
+    // No way to determine signal strength under iOS.
+    return networkInfo;
 }
 
 List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
@@ -165,9 +227,9 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
-	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
-	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
-	screenInfo.scale = 1;
+    screenInfo.width = [[NSScreen mainScreen] frame].size.width;
+    screenInfo.height = [[NSScreen mainScreen] frame].size.height;
+    screenInfo.scale = [[NSScreen mainScreen] backingScaleFactor];
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
@@ -182,7 +244,6 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 
 bool DeviceInfoPrivate::IsTouchPresented()
 {
-    //TODO: remove this empty realization and implement detection touch
     return false;
 }
 }

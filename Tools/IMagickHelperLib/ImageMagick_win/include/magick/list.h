@@ -23,40 +23,41 @@ extern "C" {
 #endif
 
 extern MagickExport Image
-  *CloneImageList(const Image *,ExceptionInfo *),
-  *CloneImages(const Image *,const char *,ExceptionInfo *),
-  *DestroyImageList(Image *),
-  *DuplicateImages(Image *,const size_t,const char *,ExceptionInfo *),
-  *GetFirstImageInList(const Image *),
-  *GetImageFromList(const Image *,const ssize_t),
-  *GetLastImageInList(const Image *),
-  *GetNextImageInList(const Image *),
-  *GetPreviousImageInList(const Image *),
-  **ImageListToArray(const Image *,ExceptionInfo *),
-  *NewImageList(void),
-  *RemoveImageFromList(Image **),
-  *RemoveLastImageFromList(Image **),
-  *RemoveFirstImageFromList(Image **),
-  *SpliceImageIntoList(Image **,const size_t,const Image *),
-  *SplitImageList(Image *),
-  *SyncNextImageInList(const Image *);
+*
+CloneImageList(const Image *, ExceptionInfo *),
+*CloneImages(const Image *, const char *, ExceptionInfo *),
+*DestroyImageList(Image *),
+*DuplicateImages(Image *, const size_t, const char *, ExceptionInfo *),
+*GetFirstImageInList(const Image *),
+*GetImageFromList(const Image *, const ssize_t),
+*GetLastImageInList(const Image *),
+*GetNextImageInList(const Image *),
+*GetPreviousImageInList(const Image *),
+**ImageListToArray(const Image *, ExceptionInfo *),
+*NewImageList(void),
+*RemoveImageFromList(Image **),
+*RemoveLastImageFromList(Image **),
+*RemoveFirstImageFromList(Image **),
+*SpliceImageIntoList(Image **, const size_t, const Image *),
+*SplitImageList(Image *),
+*SyncNextImageInList(const Image *);
 
 extern MagickExport size_t
-  GetImageListLength(const Image *);
+GetImageListLength(const Image*);
 
 extern MagickExport ssize_t
-  GetImageIndexInList(const Image *);
+GetImageIndexInList(const Image*);
 
 extern MagickExport void
-  AppendImageToList(Image **,const Image *),
-  DeleteImageFromList(Image **),
-  DeleteImages(Image **,const char *,ExceptionInfo *),
-  InsertImageInList(Image **,Image *),
-  PrependImageToList(Image **,Image *),
-  ReplaceImageInList(Image **,Image *),
-  ReplaceImageInListReturnLast(Image **,Image *),
-  ReverseImageList(Image **),
-  SyncImageList(Image *);
+AppendImageToList(Image **, const Image *),
+DeleteImageFromList(Image **),
+DeleteImages(Image **, const char *, ExceptionInfo *),
+InsertImageInList(Image **, Image *),
+PrependImageToList(Image **, Image *),
+ReplaceImageInList(Image **, Image *),
+ReplaceImageInListReturnLast(Image **, Image *),
+ReverseImageList(Image **),
+SyncImageList(Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

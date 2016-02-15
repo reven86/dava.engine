@@ -35,10 +35,10 @@
 
 namespace DAVA
 {
-
 MovieViewControl::MovieViewControl()
     : privateImpl(std::make_shared<PrivateMovieViewWinUAP>())
-{}
+{
+}
 
 MovieViewControl::~MovieViewControl()
 {
@@ -91,6 +91,6 @@ bool MovieViewControl::IsPlaying()
     return privateImpl->IsPlaying();
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

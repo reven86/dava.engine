@@ -104,13 +104,13 @@ QString MemoryBlocksModel::TagsToString(uint32 tags) const
 {
     QString result("tags=");
     int bit = HighestBitIndex(tags);
-    for (;bit >= 0 && tags != 0;--bit)
+    for (; bit >= 0 && tags != 0; --bit)
     {
         tags &= ~(1 << bit);
         result += session->TagName(bit).c_str();
         result += ',';
     }
-    result.chop(1);     // Remove last comma
+    result.chop(1); // Remove last comma
     return result;
 }
 
@@ -166,7 +166,8 @@ bool MemoryBlocksFilterModel::filterAcceptsRow(int source_row, const QModelIndex
         QModelIndex index = source->index(source_row, 0, source_parent);
 
         QVariant v = source->data(index, MemoryBlocksModel::ROLE_LINKITEM_POINTER);
-        const BlockLink::Item* item = static_cast<const BlockLink::Item*>(v.value<void*>());;
+        const BlockLink::Item* item = static_cast<const BlockLink::Item*>(v.value<void*>());
+        ;
         DVASSERT(item != nullptr);
         return filterPredicate(*item);
     }

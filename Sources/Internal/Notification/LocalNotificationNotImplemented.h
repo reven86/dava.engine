@@ -32,14 +32,13 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "Notification/LocalNotificationImpl.h"
 #include "Base/Message.h"
 
 namespace DAVA
 {
-    
 class LocalNotificationNotImplemented : public LocalNotificationImpl
 {
 public:
@@ -53,7 +52,6 @@ public:
     void PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound) override;
     void RemoveAllDelayedNotifications() override;
 };
-
 }
 
 #endif

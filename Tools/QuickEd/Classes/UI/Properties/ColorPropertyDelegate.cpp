@@ -63,14 +63,13 @@ QPixmap CreateIcon(const QColor& color)
 }
 }
 
-ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate *delegate)
+ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
 }
 
 ColorPropertyDelegate::~ColorPropertyDelegate()
 {
-
 }
 
 QWidget* ColorPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -95,7 +94,7 @@ void ColorPropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex
     actions.push_front(chooseColorAction);
 }
 
-void ColorPropertyDelegate::setEditorData( QWidget * editor, const QModelIndex & index ) const 
+void ColorPropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     DVASSERT(nullptr != lineEdit);
     QColor color = ColorToQColor(index.data(Qt::EditRole).value<DAVA::VariantType>().AsColor());
@@ -103,7 +102,7 @@ void ColorPropertyDelegate::setEditorData( QWidget * editor, const QModelIndex &
     lineEdit->setProperty("color", color);
 }
 
-bool ColorPropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const 
+bool ColorPropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(editor, model, index))
         return true;
@@ -111,7 +110,7 @@ bool ColorPropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel *
     DVASSERT(nullptr != lineEdit);
 
     QColor newColor = HexToQColor(lineEdit->text());
-    DAVA::VariantType color( QColorToColor(newColor) );
+    DAVA::VariantType color(QColorToColor(newColor));
     QVariant colorVariant;
     colorVariant.setValue<DAVA::VariantType>(color);
     return model->setData(index, colorVariant, Qt::EditRole);
@@ -140,7 +139,7 @@ void ColorPropertyDelegate::OnChooseColorClicked()
 void ColorPropertyDelegate::OnEditingFinished()
 {
     DVASSERT(nullptr != lineEdit);
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     DVASSERT(nullptr != editor);
 
     BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());

@@ -41,14 +41,13 @@ namespace DAVA
 {
 namespace Net
 {
-
 class MMBigDataTransferService;
 
 class MMNetClient : public NetService
 {
 public:
-    using ConnEstablishedCallback = Function<void (bool, const MMStatConfig* config)>;
-    using ConnLostCallback = Function<void (const char8* message)>;
+    using ConnEstablishedCallback = Function<void(bool, const MMStatConfig* config)>;
+    using ConnLostCallback = Function<void(const char8* message)>;
     using StatCallback = Function<void(const MMCurStat* stat, uint32 itemCount)>;
     using SnapshotCallback = Function<void(uint32 totalSize, uint32 chunkOffset, uint32 chunkSize, const uint8* chunk)>;
 
@@ -78,18 +77,18 @@ private:
 private:
     bool tokenRequested = false;
     uint32 connToken = 0;
-    
+
     bool canRequestSnapshot = false;
 
     ConnEstablishedCallback connEstablishedCallback;
     ConnLostCallback connLostCallback;
     StatCallback statCallback;
 
-    List<MMNetProto::Packet> packetQueue;                       // Queue of outgoing packets
-    std::unique_ptr<MMBigDataTransferService> transferService;  // Special service for downloading memory snapshots and other big data
+    List<MMNetProto::Packet> packetQueue; // Queue of outgoing packets
+    std::unique_ptr<MMBigDataTransferService> transferService; // Special service for downloading memory snapshots and other big data
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_MMNetClient_H__
+#endif // __DAVAENGINE_MMNetClient_H__

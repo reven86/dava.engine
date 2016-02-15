@@ -35,45 +35,42 @@
 class Command2;
 class EditorLightSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
-	friend class EditorScene;
+    friend class SceneEditor2;
+    friend class EditorScene;
 
 public:
-	EditorLightSystem(DAVA::Scene * scene);
-	virtual ~EditorLightSystem();
+    EditorLightSystem(DAVA::Scene* scene);
+    virtual ~EditorLightSystem();
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+    virtual void AddEntity(DAVA::Entity* entity);
+    virtual void RemoveEntity(DAVA::Entity* entity);
 
-	void SetCameraLightEnabled(bool enabled);
-	inline bool GetCameraLightEnabled();
+    void SetCameraLightEnabled(bool enabled);
+    inline bool GetCameraLightEnabled();
 
-	virtual void Process(DAVA::float32 timeElapsed);
-
-protected:
-	void ProcessCommand(const Command2 *command, bool redo);
-
-	void UpdateCameraLightState();
-
-	void UpdateCameraLightPosition();
-	void AddCameraLightOnScene();
-	void RemoveCameraLightFromScene();
-
-	DAVA::int32 CountLightsForEntityRecursive(DAVA::Entity *entity);
+    virtual void Process(DAVA::float32 timeElapsed);
 
 protected:
+    void ProcessCommand(const Command2* command, bool redo);
 
-	bool isEnabled;
-	DAVA::Entity *cameraLight;
+    void UpdateCameraLightState();
 
-	DAVA::int32 lightCountOnScene;    
+    void UpdateCameraLightPosition();
+    void AddCameraLightOnScene();
+    void RemoveCameraLightFromScene();
+
+    DAVA::int32 CountLightsForEntityRecursive(DAVA::Entity* entity);
+
+protected:
+    bool isEnabled;
+    DAVA::Entity* cameraLight;
+
+    DAVA::int32 lightCountOnScene;
 };
-
-
 
 inline bool EditorLightSystem::GetCameraLightEnabled()
 {
-	return isEnabled;
+    return isEnabled;
 }
 
 

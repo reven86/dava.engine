@@ -26,70 +26,72 @@ extern "C" {
   Define declarations.
 */
 #define MagickPackageName "ImageMagick"
-#define MagickCopyright  "Copyright (C) 1999-2012 ImageMagick Studio LLC"
-#define MagickSVNRevision  "6593"
-#define MagickLibVersion  0x674
-#define MagickLibVersionText  "6.7.4"
-#define MagickLibVersionNumber  5,0,0
-#define MagickLibAddendum  "-10"
-#define MagickLibInterface  5
-#define MagickLibMinInterface  5
-#define MagickReleaseDate  "2014-11-23"
-#define MagickChangeDate   "20110125"
-#define MagickAuthoritativeURL  "http://www.imagemagick.org"
+#define MagickCopyright "Copyright (C) 1999-2012 ImageMagick Studio LLC"
+#define MagickSVNRevision "6593"
+#define MagickLibVersion 0x674
+#define MagickLibVersionText "6.7.4"
+#define MagickLibVersionNumber 5, 0, 0
+#define MagickLibAddendum "-10"
+#define MagickLibInterface 5
+#define MagickLibMinInterface 5
+#define MagickReleaseDate "2014-11-23"
+#define MagickChangeDate "20110125"
+#define MagickAuthoritativeURL "http://www.imagemagick.org"
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#define MagickOpenMPFeature  "OpenMP "
+#define MagickOpenMPFeature "OpenMP "
 #else
-#define MagickOpenMPFeature  " "
+#define MagickOpenMPFeature " "
 #endif
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
-#define MagickOpenCLFeature  "OpenCL "
+#define MagickOpenCLFeature "OpenCL "
 #else
-#define MagickOpenCLFeature  " "
+#define MagickOpenCLFeature " "
 #endif
 #if defined(MAGICKCORE_HDRI_SUPPORT)
-#define MagickHDRIFeature  "HDRI "
+#define MagickHDRIFeature "HDRI "
 #else
-#define MagickHDRIFeature  " "
+#define MagickHDRIFeature " "
 #endif
 #if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
-#define MagickZeroConfigurationFeature  "Zero-Configuration "
+#define MagickZeroConfigurationFeature "Zero-Configuration "
 #else
-#define MagickZeroConfigurationFeature  " "
+#define MagickZeroConfigurationFeature " "
 #endif
 #define MagickFeatures MagickOpenMPFeature MagickOpenCLFeature MagickHDRIFeature MagickZeroConfigurationFeature
-#define MagickHomeURL  "file:///Users/i_bratchik/Documents/work/dava.framework/Libs/ImageMagick_mac/share/doc/ImageMagick//index.html"
+#define MagickHomeURL "file:///Users/i_bratchik/Documents/work/dava.framework/Libs/ImageMagick_mac/share/doc/ImageMagick//index.html"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
-#define MagickQuantumDepth  "Q8"
-#define MagickQuantumRange  "255"
+#define MagickQuantumDepth "Q8"
+#define MagickQuantumRange "255"
 #elif (MAGICKCORE_QUANTUM_DEPTH == 16)
-#define MagickQuantumDepth  "Q16"
-#define MagickQuantumRange  "65535"
+#define MagickQuantumDepth "Q16"
+#define MagickQuantumRange "65535"
 #elif (MAGICKCORE_QUANTUM_DEPTH == 32)
-#define MagickQuantumDepth  "Q32"
-#define MagickQuantumRange  "4294967295"
+#define MagickQuantumDepth "Q32"
+#define MagickQuantumRange "4294967295"
 #elif (MAGICKCORE_QUANTUM_DEPTH == 64)
-#define MagickQuantumDepth  "Q64"
-#define MagickQuantumRange  "18446744073709551615"
+#define MagickQuantumDepth "Q64"
+#define MagickQuantumRange "18446744073709551615"
 #else
-#define MagickQuantumDepth  "Q?"
-#define MagickQuantumRange  "?"
+#define MagickQuantumDepth "Q?"
+#define MagickQuantumRange "?"
 #endif
 #define MagickVersion  \
   MagickPackageName " " MagickLibVersionText MagickLibAddendum " " \
-  MagickReleaseDate " " MagickQuantumDepth " " MagickAuthoritativeURL
+    MagickReleaseDate " " MagickQuantumDepth " " MagickAuthoritativeURL
 
 extern MagickExport char
-  *GetMagickHomeURL(void);
+*
+GetMagickHomeURL(void);
 
 extern MagickExport const char
-  *GetMagickCopyright(void),
-  *GetMagickFeatures(void),
-  *GetMagickPackageName(void),
-  *GetMagickQuantumDepth(size_t *),
-  *GetMagickQuantumRange(size_t *),
-  *GetMagickReleaseDate(void),
-  *GetMagickVersion(size_t *);
+*
+GetMagickCopyright(void),
+*GetMagickFeatures(void),
+*GetMagickPackageName(void),
+*GetMagickQuantumDepth(size_t *),
+*GetMagickQuantumRange(size_t *),
+*GetMagickReleaseDate(void),
+*GetMagickVersion(size_t *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

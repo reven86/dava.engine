@@ -41,27 +41,25 @@
 
 namespace DAVA
 {
-
 /*! brief Semaphore wrapper class compatible with Thread class. Supports Win32, MacOS, iPhone, Android platforms. */
 class Semaphore
 {
 public:
-	Semaphore(uint32 value);
-	~Semaphore();
+    Semaphore(uint32 count = 0);
+    ~Semaphore();
 
-	void Post();
-	void Wait();
+    void Post(uint32 count = 1);
+    void Wait();
 
 protected:
 
 #if defined(__DAVAENGINE_WINDOWS__)
-	HANDLE semaphore;
+    HANDLE semaphore;
 #elif defined(__DAVAENGINE_APPLE__)
     dispatch_semaphore_t semaphore;
 #elif defined(__DAVAENGINE_ANDROID__)
-	sem_t semaphore;
+    sem_t semaphore;
 #endif //PLATFORMS
-
 };
 
 #if defined(__DAVAENGINE_WINDOWS__)
@@ -70,55 +68,59 @@ protected:
 // Windows implementation
 // ##########################################################################################################
 
-inline Semaphore::Semaphore(uint32 value)
+inline Semaphore::Semaphore(uint32 count)
 {
 #ifdef __DAVAENGINE_WIN32__
-    semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+    semaphore = CreateSemaphore(NULL, count, 0x0FFFFFFF, NULL);
 #else
-	semaphore = CreateSemaphoreEx(NULL, value, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+    semaphore = CreateSemaphoreEx(NULL, count, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #endif
-	DVASSERT(NULL != semaphore);
+    DVASSERT(NULL != semaphore);
 }
 
 inline Semaphore::~Semaphore()
 {
-	CloseHandle(semaphore);
+    CloseHandle(semaphore);
 }
 
-inline void Semaphore::Post()
+inline void Semaphore::Post(uint32 count)
 {
-	ReleaseSemaphore(semaphore, 1, NULL);
+    DVASSERT(count > 0);
+    ReleaseSemaphore(semaphore, count, NULL);
 }
 
 inline void Semaphore::Wait()
 {
-	WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
+    WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
 }
 
-#elif defined(__DAVAENGINE_APPLE__) 
+#elif defined(__DAVAENGINE_APPLE__)
 
 // ##########################################################################################################
 // MacOS/IOS implementation
 // ##########################################################################################################
 
-inline Semaphore::Semaphore(uint32 value)
+inline Semaphore::Semaphore(uint32 count)
 {
-	semaphore = dispatch_semaphore_create(value);
+    semaphore = dispatch_semaphore_create(count);
 }
 
 inline Semaphore::~Semaphore()
 {
-	dispatch_release(semaphore);
+    dispatch_release(semaphore);
 }
 
-inline void Semaphore::Post()
+inline void Semaphore::Post(uint32 count)
 {
-	dispatch_semaphore_signal(semaphore);
+    while (count-- > 0)
+    {
+        dispatch_semaphore_signal(semaphore);
+    }
 }
 
 inline void Semaphore::Wait()
 {
-	dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -126,27 +128,29 @@ inline void Semaphore::Wait()
 // ##########################################################################################################
 // Android implementation
 // ##########################################################################################################
-inline Semaphore::Semaphore(uint32 value)
+inline Semaphore::Semaphore(uint32 count)
 {
-	sem_init(&semaphore, 0, value);
+    sem_init(&semaphore, 0, count);
 }
 
 inline Semaphore::~Semaphore()
 {
-	sem_destroy(&semaphore);
+    sem_destroy(&semaphore);
 }
 
-inline void Semaphore::Post()
+inline void Semaphore::Post(uint32 count)
 {
-	sem_post(&semaphore);
+    while (count-- > 0)
+    {
+        sem_post(&semaphore);
+    }
 }
 
 inline void Semaphore::Wait()
 {
-	sem_wait(&semaphore);
+    sem_wait(&semaphore);
 }
 #endif
-
 };
 
 #endif // __DAVAENGINE_SEMAPHORE_H__

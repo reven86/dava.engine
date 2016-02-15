@@ -35,40 +35,40 @@
 #include "musicios.h"
 #import <AVFoundation/AVFoundation.h>
 
-@interface AvSound : NSObject <AVAudioPlayerDelegate>
+@interface AvSound : NSObject<AVAudioPlayerDelegate>
 {
 @public
-	AVAudioPlayer		*audioPlayer;
+    AVAudioPlayer* audioPlayer;
 
-    DAVA::MusicIOSSoundEvent * musicEvent;
-	
-	BOOL				playing;
-	BOOL				interruptedOnPlayback;
-    BOOL                initSuccess;
+    DAVA::MusicIOSSoundEvent* musicEvent;
+
+    BOOL playing;
+    BOOL interruptedOnPlayback;
+    BOOL initSuccess;
 }
 
-@property(nonatomic, readonly) AVAudioPlayer * audioPlayer;
+@property(nonatomic, readonly) AVAudioPlayer* audioPlayer;
 
 - (bool)play;
 - (void)stop;
 - (void)pause;
- 
+
 @end
 
 @implementation AvSound
 
 @synthesize audioPlayer;
 
-- (id)initWithFileName: (NSString*)name withMusicEvent: (DAVA::MusicIOSSoundEvent*)event
-{  
+- (id)initWithFileName:(NSString*)name withMusicEvent:(DAVA::MusicIOSSoundEvent*)event
+{
     initSuccess = true;
     musicEvent = event;
-    if(self == [super init])
-	{  
-        NSError * error = 0;
-        NSURL * url = [NSURL fileURLWithPath: name];
-		audioPlayer	= [[AVAudioPlayer alloc] initWithContentsOfURL: url error: &error];
-		if(error)
+    if (self == [super init])
+    {
+        NSError* error = 0;
+        NSURL* url = [NSURL fileURLWithPath:name];
+        audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:&error];
+        if (error)
         {
             NSLog(@"AvSound::initWithFileName error %s", [[error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
             initSuccess = false;
@@ -78,97 +78,96 @@
             audioPlayer.delegate = self;
             [audioPlayer prepareToPlay];
         }
-	}
-	
-    return self;  
-}  
+    }
 
-- (void)dealloc  
-{  
-	[audioPlayer release];
+    return self;
+}
 
-    [super dealloc];  
-} 
+- (void)dealloc
+{
+    [audioPlayer release];
+
+    [super dealloc];
+}
 
 - (bool)play
 {
-	playing = YES;
-	return [audioPlayer play];
+    playing = YES;
+    return [audioPlayer play];
 }
 
 - (void)stop
 {
-	playing = NO;
-	[audioPlayer stop];
+    playing = NO;
+    [audioPlayer stop];
     audioPlayer.currentTime = 0;
 }
 
 - (void)pause
 {
-	playing = NO;
-	[audioPlayer pause];
+    playing = NO;
+    [audioPlayer pause];
 }
 
-- (void)audioPlayerBeginInterruption: (AVAudioPlayer*)player
+- (void)audioPlayerBeginInterruption:(AVAudioPlayer*)player
 {
     if (playing)
-	{
-        playing					= NO;
-        interruptedOnPlayback	= YES;
+    {
+        playing = NO;
+        interruptedOnPlayback = YES;
     }
 }
 
-- (void)audioPlayerEndInterruption:(AVAudioPlayer *)player withOptions:(NSUInteger)flags
+- (void)audioPlayerEndInterruption:(AVAudioPlayer*)player withOptions:(NSUInteger)flags
 {
     if (interruptedOnPlayback)
-	{
+    {
         [player prepareToPlay];
         [player play];
 
-        playing					= YES;
-        interruptedOnPlayback	= NO; 
+        playing = YES;
+        interruptedOnPlayback = NO;
     }
 }
 
-- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer*)player successfully:(BOOL)flag
 {
     musicEvent->PerformEndCallback();
 }
 
 @end
 
-
-
 namespace DAVA
 {
-
-MusicIOSSoundEvent * MusicIOSSoundEvent::CreateMusicEvent(const FilePath & path)
+MusicIOSSoundEvent* MusicIOSSoundEvent::CreateMusicEvent(const FilePath& path)
 {
-    MusicIOSSoundEvent * event = new MusicIOSSoundEvent(path);
-    if(event->Init())
+    MusicIOSSoundEvent* event = new MusicIOSSoundEvent(path);
+    if (event->Init())
         return event;
-    
+
     Logger::Error("[MusicIOSSoundEvent::CreateMusicEvent] failed to create music event: %s",
-                           path.GetAbsolutePathname().c_str());
-    
+                  path.GetAbsolutePathname().c_str());
+
     SafeRelease(event);
     return 0;
 }
-    
-MusicIOSSoundEvent::MusicIOSSoundEvent(const FilePath & path) :
-    avSound(0),
+
+MusicIOSSoundEvent::MusicIOSSoundEvent(const FilePath& path)
+    :
+    avSound(0)
+    ,
     filePath(path)
 {
-
 }
 
 bool MusicIOSSoundEvent::Init()
 {
     avSound = [[AvSound alloc] initWithFileName:
-               [NSString stringWithCString:filePath.GetAbsolutePathname().c_str() encoding:NSASCIIStringEncoding]
-               withMusicEvent:this];
-    
-    if(avSound && !((AvSound *)avSound)->initSuccess)
+                               [NSString stringWithCString:filePath.GetAbsolutePathname().c_str()
+                                                  encoding:NSASCIIStringEncoding]
+                                 withMusicEvent:this];
+
+    if (avSound && !((AvSound*)avSound)->initSuccess)
     {
         [(AvSound*)avSound release];
         avSound = 0;
@@ -176,12 +175,12 @@ bool MusicIOSSoundEvent::Init()
     }
     return true;
 }
-    
+
 MusicIOSSoundEvent::~MusicIOSSoundEvent()
 {
     [(AvSound*)avSound release];
     avSound = 0;
-    
+
     SoundSystem::Instance()->RemoveSoundEventFromGroups(this);
 }
 
@@ -198,23 +197,23 @@ void MusicIOSSoundEvent::Stop(bool force /* = false */)
 
 void MusicIOSSoundEvent::SetPaused(bool paused)
 {
-    if(paused)
+    if (paused)
         [(AvSound*)avSound pause];
     else
         [(AvSound*)avSound play];
 }
-    
+
 void MusicIOSSoundEvent::SetVolume(float32 _volume)
 {
-	volume = _volume;
-	((AvSound*)avSound).audioPlayer.volume = Clamp(_volume, 0.f, 1.f);
+    volume = _volume;
+    ((AvSound*)avSound).audioPlayer.volume = Clamp(_volume, 0.f, 1.f);
 }
-    
+
 void MusicIOSSoundEvent::SetLoopCount(int32 looping)
 {
     ((AvSound*)avSound).audioPlayer.numberOfLoops = looping;
 }
-    
+
 int32 MusicIOSSoundEvent::GetLoopCount() const
 {
     return static_cast<int32>(((AvSound*)avSound).audioPlayer.numberOfLoops);
@@ -230,6 +229,5 @@ void MusicIOSSoundEvent::PerformEndCallback()
     SoundSystem::Instance()->ReleaseOnUpdate(this);
     PerformEvent(DAVA::MusicIOSSoundEvent::EVENT_END);
 }
-    
 };
 #endif //#ifdef __DAVAENGINE_IPHONE__

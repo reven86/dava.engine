@@ -29,12 +29,12 @@
 
 #include "MovieViewControlAndroid.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 JniMovieViewControl::JniMovieViewControl(uint32 id)
     : jniMovieViewControl("com/dava/framework/JNIMovieViewControl")
 {
-	this->id = id;
+    this->id = id;
 
     initialize = jniMovieViewControl.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("Initialize");
     uninitialize = jniMovieViewControl.GetStaticMethod<void, jint>("Uninitialize");
@@ -50,7 +50,7 @@ JniMovieViewControl::JniMovieViewControl(uint32 id)
 
 void JniMovieViewControl::Initialize(const Rect& _rect)
 {
-    Rect rect = JNI::V2P(_rect);
+    Rect rect = JNI::V2I(_rect);
     initialize(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
@@ -61,18 +61,18 @@ void JniMovieViewControl::Uninitialize()
 
 void JniMovieViewControl::SetRect(const Rect& _rect)
 {
-    Rect rect = JNI::V2P(_rect);
+    Rect rect = JNI::V2I(_rect);
     setRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniMovieViewControl::SetVisible(bool isVisible)
 {
-	setVisible(id, isVisible);
+    setVisible(id, isVisible);
 }
 
 void JniMovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
-    JNIEnv *env = JNI::GetEnv();
+    JNIEnv* env = JNI::GetEnv();
     jstring jMoviePath = env->NewStringUTF(moviePath.GetAbsolutePathname().c_str());
 
     openMovie(id, jMoviePath, params.scalingMode);
@@ -105,60 +105,59 @@ bool JniMovieViewControl::IsPlaying()
     return isPlaying(id);
 }
 
-MovieViewControl::MovieViewControl() :
-	jniMovieViewControl((uint32)this)
+MovieViewControl::MovieViewControl()
+    :
+    jniMovieViewControl((uint32) this)
 {
-
 }
 
 MovieViewControl::~MovieViewControl()
 {
-	jniMovieViewControl.Uninitialize();
+    jniMovieViewControl.Uninitialize();
 }
 
 void MovieViewControl::Initialize(const Rect& rect)
 {
-	jniMovieViewControl.Initialize(rect);
+    jniMovieViewControl.Initialize(rect);
 }
 
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
-	jniMovieViewControl.OpenMovie(moviePath, params);
+    jniMovieViewControl.OpenMovie(moviePath, params);
 }
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
-	jniMovieViewControl.SetRect(rect);
+    jniMovieViewControl.SetRect(rect);
 }
 
 void MovieViewControl::SetVisible(bool isVisible)
 {
-	jniMovieViewControl.SetVisible(isVisible);
+    jniMovieViewControl.SetVisible(isVisible);
 }
 
 void MovieViewControl::Play()
 {
-	jniMovieViewControl.Play();
+    jniMovieViewControl.Play();
 }
 
 void MovieViewControl::Stop()
 {
-	jniMovieViewControl.Stop();
+    jniMovieViewControl.Stop();
 }
 
 void MovieViewControl::Pause()
 {
-	jniMovieViewControl.Pause();
+    jniMovieViewControl.Pause();
 }
 
 void MovieViewControl::Resume()
 {
-	jniMovieViewControl.Resume();
+    jniMovieViewControl.Resume();
 }
 
 bool MovieViewControl::IsPlaying()
 {
-	return jniMovieViewControl.IsPlaying();
+    return jniMovieViewControl.IsPlaying();
 }
-
 }

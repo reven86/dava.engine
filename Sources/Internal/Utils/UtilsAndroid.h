@@ -36,27 +36,24 @@
 
 namespace DAVA
 {
-
 class JniUtils
 {
 public:
-	JniUtils();
-	bool DisableSleepTimer();
-	bool EnableSleepTimer();
-	void OpenURL(const String& url);
-	String GenerateGUID();
+    JniUtils();
+    bool DisableSleepTimer();
+    bool EnableSleepTimer();
+    void OpenURL(const String& url);
+    String GenerateGUID();
 
 private:
-	JNI::JavaClass jniUtils;
-	Function<void()> disableSleepTimer;
-	Function<void()> enableSleepTimer;
-	Function<void (jstring)> openURL;
-	Function<jstring ()> generateGUID;
+    JNI::JavaClass jniUtils;
+    Function<void()> disableSleepTimer;
+    Function<void()> enableSleepTimer;
+    Function<void(jstring)> openURL;
+    Function<jstring()> generateGUID;
 };
-
 };
 
 #endif //__DAVAENGINE_ANDROID__
 
 #endif // __DAVAENGINE_UTILS_H__
-

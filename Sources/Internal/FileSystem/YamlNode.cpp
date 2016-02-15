@@ -35,27 +35,26 @@
 
 namespace DAVA
 {
-
 static const String EMPTY_STRING = "";
 static const Vector<YamlNode*> EMPTY_VECTOR;
 static const MultiMap<String, YamlNode*> EMPTY_MAP = MultiMap<String, YamlNode*>();
 
-YamlNode * YamlNode::CreateStringNode()
+YamlNode* YamlNode::CreateStringNode()
 {
-    YamlNode * node = new YamlNode(TYPE_STRING);
+    YamlNode* node = new YamlNode(TYPE_STRING);
     return node;
 }
 
-YamlNode * YamlNode::CreateArrayNode(eArrayRepresentation representation/* = AR_FLOW_REPRESENTATION*/)
+YamlNode* YamlNode::CreateArrayNode(eArrayRepresentation representation /* = AR_FLOW_REPRESENTATION*/)
 {
-    YamlNode * node = new YamlNode(TYPE_ARRAY);
+    YamlNode* node = new YamlNode(TYPE_ARRAY);
     node->objectArray->style = representation;
     return node;
 }
 
-YamlNode * YamlNode::CreateMapNode(bool orderedSave/* = true*/, eMapRepresentation valRepresentation /*= MR_BLOCK_REPRESENTATION*/, eStringRepresentation keyRepresentation /*= SR_PLAIN_REPRESENTATION*/)
+YamlNode* YamlNode::CreateMapNode(bool orderedSave /* = true*/, eMapRepresentation valRepresentation /*= MR_BLOCK_REPRESENTATION*/, eStringRepresentation keyRepresentation /*= SR_PLAIN_REPRESENTATION*/)
 {
-    YamlNode * node = new YamlNode(TYPE_MAP);
+    YamlNode* node = new YamlNode(TYPE_MAP);
     node->objectMap->style = valRepresentation;
     node->objectMap->keyStyle = keyRepresentation;
     node->objectMap->orderedSave = orderedSave;
@@ -65,7 +64,7 @@ YamlNode * YamlNode::CreateMapNode(bool orderedSave/* = true*/, eMapRepresentati
 YamlNode::YamlNode(eType _type)
     : type(_type)
 {
-    switch(GetType())
+    switch (GetType())
     {
     case TYPE_STRING:
         objectString = new ObjectString();
@@ -86,37 +85,37 @@ YamlNode::YamlNode(eType _type)
 
 YamlNode::~YamlNode()
 {
-    switch(GetType())
+    switch (GetType())
     {
     case TYPE_STRING:
-        {
-            SafeDelete(objectString);
-        }
-        break;
+    {
+        SafeDelete(objectString);
+    }
+    break;
     case TYPE_ARRAY:
+    {
+        int32 size = (int32)objectArray->array.size();
+        for (int32 k = 0; k < size; ++k)
         {
-            int32 size = (int32)objectArray->array.size();
-            for (int32 k = 0; k < size; ++k)
-            {
-                SafeRelease(objectArray->array[k]);
-            }
-            objectArray->array.clear();
-            SafeDelete(objectArray);
+            SafeRelease(objectArray->array[k]);
         }
-        break;
+        objectArray->array.clear();
+        SafeDelete(objectArray);
+    }
+    break;
     case TYPE_MAP:
+    {
+        MultiMap<String, YamlNode *>::iterator iter = objectMap->ordered.begin(),
+                                               end = objectMap->ordered.end();
+        for (; iter != end; ++iter)
         {
-            MultiMap<String, YamlNode*>::iterator iter= objectMap->ordered.begin(),
-                                                  end = objectMap->ordered.end();
-            for (; iter != end; ++iter)
-            {
-                SafeRelease(iter->second);
-            }
-            objectMap->ordered.clear();
-            objectMap->unordered.clear();
-            SafeDelete(objectMap);
+            SafeRelease(iter->second);
         }
-        break;
+        objectMap->ordered.clear();
+        objectMap->unordered.clear();
+        SafeDelete(objectMap);
+    }
+    break;
     }
 }
 
@@ -124,14 +123,17 @@ uint32 YamlNode::GetCount() const
 {
     switch (GetType())
     {
-        case TYPE_MAP: return static_cast<uint32>(objectMap->unordered.size());
-        case TYPE_ARRAY: return static_cast<uint32>(objectArray->array.size());
-        default: break;
+    case TYPE_MAP:
+        return static_cast<uint32>(objectMap->unordered.size());
+    case TYPE_ARRAY:
+        return static_cast<uint32>(objectArray->array.size());
+    default:
+        break;
     }
-    return 0;//string nodes does not contain content
+    return 0; //string nodes does not contain content
 }
 
-int32  YamlNode::AsInt() const
+int32 YamlNode::AsInt() const
 {
     return AsInt32();
 }
@@ -180,7 +182,7 @@ uint64 YamlNode::AsUInt64() const
     return ret;
 }
 
-float32	YamlNode::AsFloat() const
+float32 YamlNode::AsFloat() const
 {
     DVASSERT(GetType() == TYPE_STRING);
     float32 ret = 0.0f;
@@ -191,7 +193,7 @@ float32	YamlNode::AsFloat() const
     return ret;
 }
 
-const String & YamlNode::AsString() const
+const String& YamlNode::AsString() const
 {
     DVASSERT(GetType() == TYPE_STRING);
     if (GetType() == TYPE_STRING)
@@ -221,15 +223,17 @@ WideString YamlNode::AsWString() const
     return L"";
 }
 
-Vector2	YamlNode::AsPoint() const
+Vector2 YamlNode::AsPoint() const
 {
     Vector2 result;
     if (GetType() == TYPE_ARRAY)
     {
-        const YamlNode * x = Get(0);
-        if (x)result.x = x->AsFloat();
-        const YamlNode * y = Get(1);
-        if (y)result.y = y->AsFloat();
+        const YamlNode* x = Get(0);
+        if (x)
+            result.x = x->AsFloat();
+        const YamlNode* y = Get(1);
+        if (y)
+            result.y = y->AsFloat();
     }
     return result;
 }
@@ -239,15 +243,15 @@ Vector3 YamlNode::AsVector3() const
     Vector3 result(0, 0, 0);
     if (GetType() == TYPE_ARRAY)
     {
-        const YamlNode * x = Get(0);
+        const YamlNode* x = Get(0);
         if (x)
             result.x = x->AsFloat();
 
-        const YamlNode * y = Get(1);
+        const YamlNode* y = Get(1);
         if (y)
             result.y = y->AsFloat();
 
-        const YamlNode * z = Get(2);
+        const YamlNode* z = Get(2);
         if (z)
             result.z = z->AsFloat();
     }
@@ -259,19 +263,19 @@ Vector4 YamlNode::AsVector4() const
     Vector4 result(0, 0, 0, 0);
     if (GetType() == TYPE_ARRAY)
     {
-        const YamlNode * x = Get(0);
+        const YamlNode* x = Get(0);
         if (x)
             result.x = x->AsFloat();
 
-        const YamlNode * y = Get(1);
+        const YamlNode* y = Get(1);
         if (y)
             result.y = y->AsFloat();
 
-        const YamlNode * z = Get(2);
+        const YamlNode* z = Get(2);
         if (z)
             result.z = z->AsFloat();
 
-        const YamlNode * w = Get(3);
+        const YamlNode* w = Get(3);
         if (w)
             result.w = w->AsFloat();
     }
@@ -283,19 +287,19 @@ Color YamlNode::AsColor() const
     Color result = Color::White;
     if (GetType() == TYPE_ARRAY)
     {
-        const YamlNode * r = Get(0);
+        const YamlNode* r = Get(0);
         if (r)
             result.r = r->AsFloat();
 
-        const YamlNode * g = Get(1);
+        const YamlNode* g = Get(1);
         if (g)
             result.g = g->AsFloat();
 
-        const YamlNode * b = Get(2);
+        const YamlNode* b = Get(2);
         if (b)
             result.b = b->AsFloat();
 
-        const YamlNode * a = Get(3);
+        const YamlNode* a = Get(3);
         if (a)
             result.a = a->AsFloat();
     }
@@ -307,19 +311,23 @@ Vector2 YamlNode::AsVector2() const
     return AsPoint();
 }
 
-Rect	YamlNode::AsRect() const
+Rect YamlNode::AsRect() const
 {
     Rect result;
     if (GetType() == TYPE_ARRAY)
     {
-        const YamlNode * x = Get(0);
-        if (x)result.x = x->AsFloat();
-        const YamlNode * y = Get(1);
-        if (y)result.y = y->AsFloat();
-        const YamlNode * dx = Get(2);
-        if (dx)result.dx = dx->AsFloat();
-        const YamlNode * dy = Get(3);
-        if (dy)result.dy = dy->AsFloat();
+        const YamlNode* x = Get(0);
+        if (x)
+            result.x = x->AsFloat();
+        const YamlNode* y = Get(1);
+        if (y)
+            result.y = y->AsFloat();
+        const YamlNode* dx = Get(2);
+        if (dx)
+            result.dx = dx->AsFloat();
+        const YamlNode* dy = Get(3);
+        if (dy)
+            result.dy = dy->AsFloat();
     }
     return result;
 }
@@ -328,37 +336,37 @@ VariantType YamlNode::AsVariantType() const
 {
     VariantType retValue;
 
-    const MultiMap<String, YamlNode*> & mapFromNode = AsMap();
+    const MultiMap<String, YamlNode*>& mapFromNode = AsMap();
 
-    for(MultiMap<String, YamlNode*>::const_iterator it = mapFromNode.begin(); it != mapFromNode.end(); ++it)
+    for (MultiMap<String, YamlNode*>::const_iterator it = mapFromNode.begin(); it != mapFromNode.end(); ++it)
     {
-        const String &innerTypeName = it->first;
+        const String& innerTypeName = it->first;
 
-        if(innerTypeName == DAVA::VariantType::TYPENAME_BOOLEAN)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_BOOLEAN)
         {
             retValue.SetBool(it->second->AsBool());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_INT32)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_INT32)
         {
             retValue.SetInt32(it->second->AsInt32());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_UINT32)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_UINT32)
         {
             retValue.SetUInt32(it->second->AsUInt32());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_INT64)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_INT64)
         {
             retValue.SetInt64(it->second->AsInt64());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_UINT64)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_UINT64)
         {
             retValue.SetUInt64(it->second->AsUInt64());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_FLOAT)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_FLOAT)
         {
             retValue.SetFloat(it->second->AsFloat());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_STRING)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_STRING)
         {
             retValue.SetString(it->second->AsString());
         }
@@ -366,13 +374,13 @@ VariantType YamlNode::AsVariantType() const
         {
             retValue.SetFastName(it->second->AsFastName());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_WIDESTRING)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_WIDESTRING)
         {
             retValue.SetWideString(it->second->AsWString());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
         {
-            const Vector<YamlNode*> &byteArrayNoodes = it->second->AsVector();
+            const Vector<YamlNode*>& byteArrayNoodes = it->second->AsVector();
             int32 size = static_cast<int32>(byteArrayNoodes.size());
             uint8* innerArray = new uint8[size];
             for (int32 i = 0; i < size; ++i)
@@ -381,87 +389,87 @@ VariantType YamlNode::AsVariantType() const
                 int32 retCode = sscanf(byteArrayNoodes[i]->AsString().c_str(), "%x", &val);
                 if ((val < 0) || (val > UCHAR_MAX) || (retCode == 0))
                 {
-                    delete [] innerArray;
+                    delete[] innerArray;
                     return retValue;
                 }
                 innerArray[i] = static_cast<uint8>(val);
             }
             retValue.SetByteArray(innerArray, size);
-            delete [] innerArray;
+            delete[] innerArray;
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_KEYED_ARCHIVE)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_KEYED_ARCHIVE)
         {
             ScopedPtr<KeyedArchive> innerArch(new KeyedArchive());
             innerArch->LoadFromYamlNode(this);
             retValue.SetKeyedArchive(innerArch);
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_VECTOR2)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR2)
         {
             retValue.SetVector2(it->second->AsVector2());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_VECTOR3)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR3)
         {
             retValue.SetVector3(it->second->AsVector3());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_VECTOR4)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_VECTOR4)
         {
             retValue.SetVector4(it->second->AsVector4());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_MATRIX2)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_MATRIX2)
         {
-            const YamlNode* firstRowNode  = it->second->Get(0);
+            const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
-            if(NULL == firstRowNode || NULL == secondRowNode)
+            if (NULL == firstRowNode || NULL == secondRowNode)
             {
                 return retValue;
             }
             Vector2 fRowVect = firstRowNode->AsVector2();
             Vector2 sRowVect = secondRowNode->AsVector2();
-            retValue.SetMatrix2(Matrix2(fRowVect.x,fRowVect.y,sRowVect.x,sRowVect.y));
+            retValue.SetMatrix2(Matrix2(fRowVect.x, fRowVect.y, sRowVect.x, sRowVect.y));
         }
-        if(innerTypeName == VariantType::TYPENAME_MATRIX3)
+        if (innerTypeName == VariantType::TYPENAME_MATRIX3)
         {
-            const YamlNode* firstRowNode  = it->second->Get(0);
+            const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
-            const YamlNode* thirdRowNode  = it->second->Get(2);
+            const YamlNode* thirdRowNode = it->second->Get(2);
 
-            if(NULL == firstRowNode  ||
-               NULL == secondRowNode ||
-               NULL == thirdRowNode)
+            if (NULL == firstRowNode ||
+                NULL == secondRowNode ||
+                NULL == thirdRowNode)
             {
                 return retValue;
             }
-            Vector3 fRowVect = firstRowNode ->AsVector3();
+            Vector3 fRowVect = firstRowNode->AsVector3();
             Vector3 sRowVect = secondRowNode->AsVector3();
-            Vector3 tRowVect = thirdRowNode ->AsVector3();
+            Vector3 tRowVect = thirdRowNode->AsVector3();
 
-            retValue.SetMatrix3(Matrix3(fRowVect.x,fRowVect.y,fRowVect.z,
-                               sRowVect.x,sRowVect.y,sRowVect.z,
-                               tRowVect.x,tRowVect.y,tRowVect.z));
+            retValue.SetMatrix3(Matrix3(fRowVect.x, fRowVect.y, fRowVect.z,
+                                        sRowVect.x, sRowVect.y, sRowVect.z,
+                                        tRowVect.x, tRowVect.y, tRowVect.z));
         }
-        if(innerTypeName == VariantType::TYPENAME_MATRIX4)
+        if (innerTypeName == VariantType::TYPENAME_MATRIX4)
         {
-            const YamlNode* firstRowNode  = it->second->Get(0);
+            const YamlNode* firstRowNode = it->second->Get(0);
             const YamlNode* secondRowNode = it->second->Get(1);
-            const YamlNode* thirdRowNode  = it->second->Get(2);
+            const YamlNode* thirdRowNode = it->second->Get(2);
             const YamlNode* fourthRowNode = it->second->Get(3);
 
-            if(NULL == firstRowNode || NULL == secondRowNode ||
-               NULL == thirdRowNode || NULL == fourthRowNode)
+            if (NULL == firstRowNode || NULL == secondRowNode ||
+                NULL == thirdRowNode || NULL == fourthRowNode)
             {
                 return retValue;
             }
-            Vector4 fRowVect  = firstRowNode ->AsVector4();
-            Vector4 sRowVect  = secondRowNode->AsVector4();
-            Vector4 tRowVect  = thirdRowNode ->AsVector4();
+            Vector4 fRowVect = firstRowNode->AsVector4();
+            Vector4 sRowVect = secondRowNode->AsVector4();
+            Vector4 tRowVect = thirdRowNode->AsVector4();
             Vector4 foRowVect = fourthRowNode->AsVector4();
 
-            retValue.SetMatrix4(Matrix4(fRowVect.x,fRowVect.y,fRowVect.z,fRowVect.w,
-                                        sRowVect.x,sRowVect.y,sRowVect.z,sRowVect.w,
-                                        tRowVect.x,tRowVect.y,tRowVect.z,tRowVect.w,
-                                        foRowVect.x,foRowVect.y,foRowVect.z,foRowVect.w));
+            retValue.SetMatrix4(Matrix4(fRowVect.x, fRowVect.y, fRowVect.z, fRowVect.w,
+                                        sRowVect.x, sRowVect.y, sRowVect.z, sRowVect.w,
+                                        tRowVect.x, tRowVect.y, tRowVect.z, tRowVect.w,
+                                        foRowVect.x, foRowVect.y, foRowVect.z, foRowVect.w));
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_COLOR)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_COLOR)
         {
             retValue.SetColor(it->second->AsColor());
         }
@@ -489,7 +497,7 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
         int32 val = 0;
         for (uint32 i = 0; i < GetCount(); i++)
         {
-            const YamlNode *flagNode = Get(i);
+            const YamlNode* flagNode = Get(i);
             int32 flag = 0;
             if (insp->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
             {
@@ -522,12 +530,12 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
         return VariantType(AsVector4());
     else if (insp->Type() == MetaInfo::Instance<FilePath>())
         return VariantType(FilePath(AsString()));
-        
+
     DVASSERT(false);
     return VariantType();
 }
 
-const Vector<YamlNode*> & YamlNode::AsVector() const
+const Vector<YamlNode*>& YamlNode::AsVector() const
 {
     DVASSERT(GetType() == TYPE_ARRAY);
     if (GetType() == TYPE_ARRAY)
@@ -536,7 +544,7 @@ const Vector<YamlNode*> & YamlNode::AsVector() const
     return EMPTY_VECTOR;
 }
 
-const MultiMap<String, YamlNode*> & YamlNode::AsMap() const
+const MultiMap<String, YamlNode*>& YamlNode::AsMap() const
 {
     DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
@@ -545,7 +553,7 @@ const MultiMap<String, YamlNode*> & YamlNode::AsMap() const
     return EMPTY_MAP;
 }
 
-const YamlNode * YamlNode::Get(uint32 index) const
+const YamlNode* YamlNode::Get(uint32 index) const
 {
     if (GetType() == TYPE_ARRAY)
     {
@@ -558,7 +566,7 @@ const YamlNode * YamlNode::Get(uint32 index) const
     return NULL;
 }
 
-const String &	YamlNode::GetItemKeyName(uint32 index) const
+const String& YamlNode::GetItemKeyName(uint32 index) const
 {
     DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
@@ -568,7 +576,7 @@ const String &	YamlNode::GetItemKeyName(uint32 index) const
     return EMPTY_STRING;
 }
 
-const YamlNode * YamlNode::Get(const String & name) const
+const YamlNode* YamlNode::Get(const String& name) const
 {
     //DVASSERT(GetType() == TYPE_MAP);
     if (GetType() == TYPE_MAP)
@@ -584,32 +592,35 @@ const YamlNode * YamlNode::Get(const String & name) const
 
 struct EqualToFirst
 {
-    EqualToFirst(const String &strValue):value(strValue){}
+    EqualToFirst(const String& strValue)
+        : value(strValue)
+    {
+    }
     bool operator()(const std::pair<String, YamlNode*>& val)
     {
         return val.first == value;
     }
-    const String &value;
+    const String& value;
 };
 
-void YamlNode::RemoveNodeFromMap(const String & name)
+void YamlNode::RemoveNodeFromMap(const String& name)
 {
     DVASSERT(GetType() == TYPE_MAP);
-    MultiMap<String, YamlNode*>::iterator begin = objectMap->ordered.lower_bound(name),
-                                          end= objectMap->ordered.upper_bound(name);
+    MultiMap<String, YamlNode *>::iterator begin = objectMap->ordered.lower_bound(name),
+                                           end = objectMap->ordered.upper_bound(name);
     if (begin == end)
         return;
 
     MultiMap<String, YamlNode*>::iterator it = begin;
-    for (; it!=end; ++it)
+    for (; it != end; ++it)
     {
         SafeRelease(it->second);
     }
 
     objectMap->ordered.erase(begin, end);
 
-    Vector< std::pair<String, YamlNode*> > &array = objectMap->unordered;
-    array.erase( std::remove_if( array.begin(), array.end(), EqualToFirst(name) ), array.end() );
+    Vector<std::pair<String, YamlNode*>>& array = objectMap->unordered;
+    array.erase(std::remove_if(array.begin(), array.end(), EqualToFirst(name)), array.end());
 }
 YamlNode::eStringRepresentation YamlNode::GetStringRepresentation() const
 {
@@ -641,38 +652,38 @@ bool YamlNode::GetMapOrderRepresentation() const
     return objectMap->orderedSave;
 }
 
-void YamlNode::InternalSetToString(const VariantType &varType)
+void YamlNode::InternalSetToString(const VariantType& varType)
 {
     DVVERIFY(InitStringFromVariantType(varType));
 }
 
-void YamlNode::InternalSetToString(const String &value)
+void YamlNode::InternalSetToString(const String& value)
 {
     InternalSetString(value, SR_DOUBLE_QUOTED_REPRESENTATION);
 }
 
-void YamlNode::InternalAddToMap(const String& name, const VariantType &varType, bool rewritePreviousValue)
+void YamlNode::InternalAddToMap(const String& name, const VariantType& varType, bool rewritePreviousValue)
 {
-    YamlNode * node = CreateNodeFromVariantType(varType);
+    YamlNode* node = CreateNodeFromVariantType(varType);
     InternalAddNodeToMap(name, node, rewritePreviousValue);
 }
 
-void YamlNode::InternalAddToMap(const String& name, const String &value, bool rewritePreviousValue)
+void YamlNode::InternalAddToMap(const String& name, const String& value, bool rewritePreviousValue)
 {
-    YamlNode * node = CreateStringNode();
+    YamlNode* node = CreateStringNode();
     node->InternalSetString(value, SR_DOUBLE_QUOTED_REPRESENTATION);
     InternalAddNodeToMap(name, node, rewritePreviousValue);
 }
 
-void YamlNode::InternalAddToArray(const VariantType &varType)
+void YamlNode::InternalAddToArray(const VariantType& varType)
 {
-    YamlNode * node = CreateNodeFromVariantType(varType);
+    YamlNode* node = CreateNodeFromVariantType(varType);
     InternalAddNodeToArray(node);
 }
 
-void YamlNode::InternalAddToArray(const String &value)
+void YamlNode::InternalAddToArray(const String& value)
 {
-    YamlNode * node = CreateStringNode();
+    YamlNode* node = CreateStringNode();
     node->InternalSetString(value, SR_DOUBLE_QUOTED_REPRESENTATION);
     InternalAddNodeToArray(node);
 }
@@ -683,7 +694,7 @@ void YamlNode::InternalAddNodeToArray(YamlNode* node)
     objectArray->array.push_back(node);
 }
 
-void  YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rewritePreviousValue)
+void YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool rewritePreviousValue)
 {
     DVASSERT(GetType() == TYPE_MAP);
     if (rewritePreviousValue)
@@ -695,25 +706,25 @@ void  YamlNode::InternalAddNodeToMap(const String& name, YamlNode* node, bool re
     objectMap->unordered.push_back(std::pair<String, YamlNode*>(name, node));
 }
 
-void YamlNode::InternalSetString(const String &value, eStringRepresentation style/* = SR_DOUBLE_QUOTED_REPRESENTATION*/)
+void YamlNode::InternalSetString(const String& value, eStringRepresentation style /* = SR_DOUBLE_QUOTED_REPRESENTATION*/)
 {
     DVASSERT(GetType() == TYPE_STRING);
     objectString->nwStringValue = value;
     objectString->style = style;
 }
 
-void YamlNode::InternalSetMatrix(const float32* array,uint32 dimension)
+void YamlNode::InternalSetMatrix(const float32* array, uint32 dimension)
 {
     for (uint32 i = 0; i < dimension; ++i)
     {
         YamlNode* rowNode = CreateArrayNode();
-        rowNode->InternalSetVector(&array[i*dimension], dimension);
+        rowNode->InternalSetVector(&array[i * dimension], dimension);
         InternalAddNodeToArray(rowNode);
     }
     objectArray->style = AR_FLOW_REPRESENTATION;
 }
 
-void YamlNode::InternalSetVector(const float32* array,uint32 dimension)
+void YamlNode::InternalSetVector(const float32* array, uint32 dimension)
 {
     objectArray->array.reserve(dimension);
     for (uint32 i = 0; i < dimension; ++i)
@@ -730,7 +741,7 @@ void YamlNode::InternalSetByteArray(const uint8* byteArray, int32 byteArraySize)
     for (int32 i = 0; i < byteArraySize; ++i)
     {
         YamlNode* innerNode = CreateStringNode();
-        innerNode->InternalSetString(Format("%x",byteArray[i]), SR_PLAIN_REPRESENTATION);
+        innerNode->InternalSetString(Format("%x", byteArray[i]), SR_PLAIN_REPRESENTATION);
         InternalAddNodeToArray(innerNode);
     }
     objectArray->style = AR_FLOW_REPRESENTATION;
@@ -750,62 +761,62 @@ void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
     objectMap->style = MR_BLOCK_REPRESENTATION;
 }
 
-bool YamlNode::InitStringFromVariantType(const VariantType &varType)
+bool YamlNode::InitStringFromVariantType(const VariantType& varType)
 {
     DVASSERT(GetType() == TYPE_STRING);
     bool result = true;
-    switch(varType.GetType())
+    switch (varType.GetType())
     {
     case VariantType::TYPE_BOOLEAN:
-        {
-            InternalSetString(varType.AsBool() ? "true" : "false", SR_PLAIN_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(varType.AsBool() ? "true" : "false", SR_PLAIN_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_INT32:
-        {
-            InternalSetString(Format("%d", varType.AsInt32()), SR_PLAIN_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(Format("%d", varType.AsInt32()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_FLOAT:
-        {
-            InternalSetString(Format("%f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(Format("%f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_STRING:
-        {
-            InternalSetString(varType.AsString(), SR_DOUBLE_QUOTED_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(varType.AsString(), SR_DOUBLE_QUOTED_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_WIDE_STRING:
-        {
-            InternalSetString(UTF8Utils::EncodeToUTF8(varType.AsWideString()), SR_DOUBLE_QUOTED_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(UTF8Utils::EncodeToUTF8(varType.AsWideString()), SR_DOUBLE_QUOTED_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_FILEPATH:
-        {
-            InternalSetString(varType.AsFilePath().GetStringValue(), SR_DOUBLE_QUOTED_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(varType.AsFilePath().GetStringValue(), SR_DOUBLE_QUOTED_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_UINT32:
-        {
-            InternalSetString(Format("%u", varType.AsUInt32()), SR_PLAIN_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(Format("%u", varType.AsUInt32()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_INT64:
-        {
-            InternalSetString(Format("%lld", varType.AsInt64()), SR_PLAIN_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(Format("%lld", varType.AsInt64()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
     case VariantType::TYPE_UINT64:
-        {
-            InternalSetString(Format("%llu", varType.AsUInt64()), SR_PLAIN_REPRESENTATION);
-        }
-        break;
-        case VariantType::TYPE_FASTNAME:
-        {
-            InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
-        }
-        break;
+    {
+        InternalSetString(Format("%llu", varType.AsUInt64()), SR_PLAIN_REPRESENTATION);
+    }
+    break;
+    case VariantType::TYPE_FASTNAME:
+    {
+        InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+    }
+    break;
 
     default:
         result = false;
@@ -814,67 +825,67 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
     return result;
 }
 
-bool YamlNode::InitArrayFromVariantType(const VariantType &varType)
+bool YamlNode::InitArrayFromVariantType(const VariantType& varType)
 {
     DVASSERT(GetType() == TYPE_ARRAY);
     bool result = true;
-    switch(varType.GetType())
+    switch (varType.GetType())
     {
     case VariantType::TYPE_BYTE_ARRAY:
-        {
-            const uint8* byteArray = varType.AsByteArray();
-            int32 byteArraySize = varType.AsByteArraySize();
-            InternalSetByteArray(byteArray, byteArraySize);
-        }
-        break;
+    {
+        const uint8* byteArray = varType.AsByteArray();
+        int32 byteArraySize = varType.AsByteArraySize();
+        InternalSetByteArray(byteArray, byteArraySize);
+    }
+    break;
     case VariantType::TYPE_VECTOR2:
-        {
-            const Vector2 & vector = varType.AsVector2();
-            InternalSetVector(vector.data, Vector2::AXIS_COUNT);
-        }
-        break;
+    {
+        const Vector2& vector = varType.AsVector2();
+        InternalSetVector(vector.data, Vector2::AXIS_COUNT);
+    }
+    break;
     case VariantType::TYPE_VECTOR3:
-        {
-            const Vector3& vector = varType.AsVector3();
-            InternalSetVector(vector.data, Vector3::AXIS_COUNT);
-        }
-        break;
+    {
+        const Vector3& vector = varType.AsVector3();
+        InternalSetVector(vector.data, Vector3::AXIS_COUNT);
+    }
+    break;
     case VariantType::TYPE_VECTOR4:
-        {
-            const Vector4& vector = varType.AsVector4();
-            InternalSetVector(vector.data, Vector4::AXIS_COUNT);
-        }
-        break;
+    {
+        const Vector4& vector = varType.AsVector4();
+        InternalSetVector(vector.data, Vector4::AXIS_COUNT);
+    }
+    break;
     case VariantType::TYPE_MATRIX2:
-        {
-            uint32 dimension = 2;
-            const Matrix2& matrix = varType.AsMatrix2();
-            const float32* array = &matrix._data[0][0];
-            InternalSetMatrix(array, dimension);
-        }
-        break;
+    {
+        uint32 dimension = 2;
+        const Matrix2& matrix = varType.AsMatrix2();
+        const float32* array = &matrix._data[0][0];
+        InternalSetMatrix(array, dimension);
+    }
+    break;
     case VariantType::TYPE_MATRIX3:
-        {
-            uint32 dimension = 3;
-            const Matrix3& matrix = varType.AsMatrix3();
-            const float32* array = &matrix._data[0][0];
-            InternalSetMatrix(array, dimension);
-        }
-        break;
+    {
+        uint32 dimension = 3;
+        const Matrix3& matrix = varType.AsMatrix3();
+        const float32* array = &matrix._data[0][0];
+        InternalSetMatrix(array, dimension);
+    }
+    break;
     case VariantType::TYPE_MATRIX4:
-        {
-            uint32 dimension = 4;
-            const Matrix4& matrix = varType.AsMatrix4();
-            const float32* array = &matrix._data[0][0];
-            InternalSetMatrix(array, dimension);
-        }
-        break;
+    {
+        uint32 dimension = 4;
+        const Matrix4& matrix = varType.AsMatrix4();
+        const float32* array = &matrix._data[0][0];
+        InternalSetMatrix(array, dimension);
+    }
+    break;
     case VariantType::TYPE_COLOR:
-        {
-            const Color& color = varType.AsColor();
-            InternalSetVector(color.color, Color::CHANNEL_COUNT);
-        }
-        break;
+    {
+        const Color& color = varType.AsColor();
+        InternalSetVector(color.color, Color::CHANNEL_COUNT);
+    }
+    break;
     default:
         result = false;
         break;
@@ -883,18 +894,18 @@ bool YamlNode::InitArrayFromVariantType(const VariantType &varType)
     return result;
 }
 
-bool YamlNode::InitMapFromVariantType(const VariantType &varType)
+bool YamlNode::InitMapFromVariantType(const VariantType& varType)
 {
     DVASSERT(GetType() == TYPE_MAP);
     bool result = true;
-    switch(varType.GetType())
+    switch (varType.GetType())
     {
     case VariantType::TYPE_KEYED_ARCHIVE:
-        {
-            KeyedArchive* archive = varType.AsKeyedArchive();
-            InternalSetKeyedArchive(archive);
-        }
-        break;
+    {
+        KeyedArchive* archive = varType.AsKeyedArchive();
+        InternalSetKeyedArchive(archive);
+    }
+    break;
     default:
         result = false;
         break;
@@ -903,30 +914,30 @@ bool YamlNode::InitMapFromVariantType(const VariantType &varType)
     return result;
 }
 
-YamlNode * YamlNode::CreateNodeFromVariantType(const VariantType &varType)
+YamlNode* YamlNode::CreateNodeFromVariantType(const VariantType& varType)
 {
     eType nodeType = VariantTypeToYamlNodeType(varType.GetType());
-    YamlNode * node = NULL;
-    switch(nodeType)
+    YamlNode* node = NULL;
+    switch (nodeType)
     {
     case TYPE_STRING:
-        {
-            node = CreateStringNode();
-            DVVERIFY(node->InitStringFromVariantType(varType));
-        }
-        break;
+    {
+        node = CreateStringNode();
+        DVVERIFY(node->InitStringFromVariantType(varType));
+    }
+    break;
     case TYPE_ARRAY:
-        {
-            node = CreateArrayNode();
-            DVVERIFY(node->InitArrayFromVariantType(varType));
-        }
-        break;
+    {
+        node = CreateArrayNode();
+        DVVERIFY(node->InitArrayFromVariantType(varType));
+    }
+    break;
     case TYPE_MAP:
-        {
-            node = CreateMapNode();
-            DVVERIFY(node->InitMapFromVariantType(varType));
-        }
-        break;
+    {
+        node = CreateMapNode();
+        DVVERIFY(node->InitMapFromVariantType(varType));
+    }
+    break;
     }
 
     return node;
@@ -934,7 +945,7 @@ YamlNode * YamlNode::CreateNodeFromVariantType(const VariantType &varType)
 
 DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantType variantType)
 {
-    switch(variantType)
+    switch (variantType)
     {
     case VariantType::TYPE_BOOLEAN:
     case VariantType::TYPE_INT32:
@@ -966,5 +977,4 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     DVASSERT(false);
     return TYPE_MAP;
 }
-
 }

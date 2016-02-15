@@ -23,21 +23,23 @@ extern "C" {
 #endif
 
 extern MagickExport char
-  *GetNextImageArtifact(const Image *),
-  *RemoveImageArtifact(Image *,const char *);
+*
+GetNextImageArtifact(const Image *),
+*RemoveImageArtifact(Image *, const char *);
 
 extern MagickExport const char
-  *GetImageArtifact(const Image *,const char *);
+*
+GetImageArtifact(const Image*, const char*);
 
 extern MagickExport MagickBooleanType
-  CloneImageArtifacts(Image *,const Image *),
-  DefineImageArtifact(Image *,const char *),
-  DeleteImageArtifact(Image *,const char *),
-  SetImageArtifact(Image *,const char *,const char *);
+CloneImageArtifacts(Image *, const Image *),
+DefineImageArtifact(Image *, const char *),
+DeleteImageArtifact(Image *, const char *),
+SetImageArtifact(Image *, const char *, const char *);
 
 extern MagickExport void
-  DestroyImageArtifacts(Image *),
-  ResetImageArtifactIterator(const Image *);
+DestroyImageArtifacts(Image *),
+ResetImageArtifactIterator(const Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
