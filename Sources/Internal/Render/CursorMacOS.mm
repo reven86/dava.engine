@@ -41,22 +41,49 @@
 #endif //#if defined(Q_OS_MAC)
 #include <Cocoa/Cocoa.h>
 
+int mouseMoveSkipCounter = 0;
+
 namespace DAVA
 {
 
 static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
 
+static void MovePointerToWindowCenter()
+{
+    NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
+    NSRect screenRect = [[NSScreen mainScreen] frame];
+
+    // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
+    windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
+    float x = windowRect.origin.x + windowRect.size.width / 2.0f;
+    float y = windowRect.origin.y + windowRect.size.height / 2.0f;
+    CGWarpMouseCursorPosition(CGPointMake(x, y));
+}
+
 bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
+    // If mouse pointer was outside window rectangle when enabling pinning mode then
+    // mouse clicks are forwarded to other windows and our application loses focus.
+    // So move mouse pointer to window center before enabling pinning mode.
+    // Secondly, after using CGWarpMouseCursorPosition function to center mouse pointer
+    // mouse move events arrive with big delta which causes mouse hopping.
+    // The best solution I have investigated is to skip first N mouse move events after enabling
+    // pinning mode: global variable mouseMoveSkipCounter is set to some reasonable value
+    // and is checked in OpenGLView's process method to skip mouse move events
+
+    const int SKIP_N_MOUSE_MOVE_EVENTS = 4;
     switch (mode)
     {
     case InputSystem::eMouseCaptureMode::OFF:
+        mouseMoveSkipCounter = 0;
         SetSystemCursorVisibility(true);
         CGAssociateMouseAndMouseCursorPosition(true);
         systemCursorCaptureMode = mode;
         return true;
     case InputSystem::eMouseCaptureMode::PINING:
+        mouseMoveSkipCounter = SKIP_N_MOUSE_MOVE_EVENTS;
         SetSystemCursorVisibility(false);
+        MovePointerToWindowCenter();
         CGAssociateMouseAndMouseCursorPosition(false);
         systemCursorCaptureMode = mode;
         return true;

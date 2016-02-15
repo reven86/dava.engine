@@ -319,8 +319,28 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     }
 }
 
+// For explanation of mouseMoveSkipCounter see CursorMacOS.mm file, Cursor::SetMouseCaptureMode method
+extern int mouseMoveSkipCounter;
+
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
+    NSEventType type = [touch type];
+    switch (type)
+    {
+    case NSMouseMoved:
+    case NSLeftMouseDragged:
+    case NSRightMouseDragged:
+    case NSOtherMouseDragged:
+        if (mouseMoveSkipCounter > 0)
+        {
+            mouseMoveSkipCounter -= 1;
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
