@@ -312,9 +312,15 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     // And application has no chance to release mouse capture.
 
     // Install mouse hook which determines whether Mission Control, Launchpad is active
-    // and notifies application about lost focus while mouse pinning is on
+    // and disables mouse pinning
     // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
-    CGEventMask mask = CGEventMaskBit(kCGEventMouseMoved); // It's enough to intercept mouse move event only
+    CGEventMask mask = -1; // Intercept all events except those below
+    mask &= ~(CGEventMaskBit(NX_KEYDOWN) |
+              CGEventMaskBit(NX_KEYUP) |
+              CGEventMaskBit(NX_FLAGSCHANGED) |
+              CGEventMaskBit(NX_KITDEFINED) |
+              CGEventMaskBit(NX_SYSDEFINED) |
+              CGEventMaskBit(NX_SCROLLWHEELMOVED));
     CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
                                              kCGTailAppendEventTap,
                                              kCGEventTapOptionListenOnly,
@@ -566,29 +572,28 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
 {
-    static bool restoreFocus = false;
+    static bool pinningLost = false;
     static int64_t myPid = static_cast<int64_t>(getpid());
 
     int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
     if (targetPid != myPid)
     {
-        // Notify about focus lost if event target is not our application and
+        // Disable mouse pinning if event target is not our application and
         // current capture mode is pinning
         InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
+        if (InputSystem::eMouseCaptureMode::PINING == captureMode && !pinningLost)
         {
-            Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            restoreFocus = true;
+            if (type != NX_MOUSEEXITED)
+            {
+                InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
+                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+                pinningLost = true;
+            }
         }
     }
     else
     {
-        if (restoreFocus)
-        {
-            Core::Instance()->FocusReceived();
-            restoreFocus = false;
-        }
+        pinningLost = false;
     }
     return event;
 }
