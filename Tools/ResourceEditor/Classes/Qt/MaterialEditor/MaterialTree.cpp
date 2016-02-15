@@ -236,6 +236,8 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
         case CMDID_CLONE_LAST_BATCH:
         case CMDID_CONVERT_TO_SHADOW:
         case CMDID_MATERIAL_SWITCH_PARENT:
+        case CMDID_LOD_DELETE:
+        case CMDID_LOD_CREATE_PLANE:
             Update();
             break;
         default:
