@@ -71,8 +71,8 @@ JniTextField::JniTextField(uint32_t id)
 
 void JniTextField::Create(Rect controlRect)
 {
-    Rect rect = JNI::V2P(controlRect);
-    create(id, rect.x, rect.y, rect.dx,    rect.dy);
+    Rect rect = JNI::V2I(controlRect);
+    create(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniTextField::Destroy()
@@ -80,15 +80,15 @@ void JniTextField::Destroy()
     destroy(id);
 }
 
-void JniTextField::UpdateRect(const Rect & controlRect)
+void JniTextField::UpdateRect(const Rect& controlRect)
 {
-    Rect rect = JNI::V2P(controlRect);
+    Rect rect = JNI::V2I(controlRect);
     updateRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniTextField::SetText(const char* text)
 {
-    JNIEnv *env = JNI::GetEnv();
+    JNIEnv* env = JNI::GetEnv();
     jstring jStrDefaultText = env->NewStringUTF(text);
     setText(id, jStrDefaultText);
     env->DeleteLocalRef(jStrDefaultText);
@@ -101,7 +101,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
-    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size));
+    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputY(size));
 }
 
 void JniTextField::SetIsPassword(bool isPassword)
@@ -376,7 +376,7 @@ void TextFieldPlatformImpl::SetMaxLength(DAVA::int32 value)
 
 void TextFieldPlatformImpl::SetMultiline(bool value)
 {
-	jniTextField->SetMultiline(value);
+    jniTextField->SetMultiline(value);
 }
 
 WideString TextFieldPlatformImpl::TruncateText(const WideString& text, int32 maxLength)
@@ -495,9 +495,9 @@ void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
 
 void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
 {
-    if(textField)
+    if (textField)
     {
-        if(hasFocus)
+        if (hasFocus)
         {
             if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
             {
@@ -517,7 +517,7 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
 void TextFieldPlatformImpl::TextFieldFocusChanged(uint32_t id, bool hasFocus)
 {
     TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
-    if(nullptr != control)
+    if (nullptr != control)
     {
         control->TextFieldFocusChanged(hasFocus);
     }
@@ -537,16 +537,21 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
             uint32 pitch = width * 4;
             uint8* imageData = reinterpret_cast<uint8*>(rawPixels);
             ImageConvert::ConvertImageDirect(FORMAT_BGRA8888,
-                    FORMAT_RGBA8888, imageData, width, height, pitch, imageData,
-                    width, height, pitch);
+                                             FORMAT_RGBA8888, imageData, width, height, pitch, imageData,
+                                             width, height, pitch);
 
             Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, imageData, width, height, false);
-            SCOPE_EXIT{SafeRelease(tex);};
+            SCOPE_EXIT
+            {
+                SafeRelease(tex);
+            };
 
             Rect rect = textField.GetRect();
-            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
-                    rect.dy);
-            SCOPE_EXIT{SafeRelease(spr);};
+            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
+            SCOPE_EXIT
+            {
+                SafeRelease(spr);
+            };
 
             textField.GetBackground()->SetSprite(spr, 0);
         }

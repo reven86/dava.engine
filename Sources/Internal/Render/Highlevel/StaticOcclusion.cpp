@@ -32,6 +32,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Image/Image.h"
 #include "Utils/StringFormat.h"
+#include "Utils/Random.h"
 #include "Platform/SystemTimer.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
@@ -311,7 +312,7 @@ bool StaticOcclusion::RenderCurrentBlock()
     while ((renders < maxRenders) && !renderPassConfigs.empty())
     {
         auto i = renderPassConfigs.begin();
-        std::advance(i, rand() % renderPassConfigs.size());
+        std::advance(i, DAVA::Random::Instance()->Rand() % renderPassConfigs.size());
         PerformRender(*i);
         renderPassConfigs.erase(i);
         ++renders;

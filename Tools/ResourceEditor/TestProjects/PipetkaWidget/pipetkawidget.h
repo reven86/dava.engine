@@ -38,7 +38,7 @@ class PipetkaWidget : public QWidget
     Q_OBJECT
 
 public:
-    PipetkaWidget(QWidget *parent = 0);
+    PipetkaWidget(QWidget* parent = 0);
     ~PipetkaWidget();
 
 private:

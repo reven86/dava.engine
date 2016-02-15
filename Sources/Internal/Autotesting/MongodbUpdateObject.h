@@ -39,30 +39,28 @@
 
 namespace DAVA
 {
-    
 class MongodbUpdateObject : public MongodbObject
 {
 public:
     MongodbUpdateObject();
     virtual ~MongodbUpdateObject();
-    
+
     bool LoadData();
     bool SaveData();
-    
+
     KeyedArchive* GetData();
-    
+
     MongodbObject* GetUpdateObject();
-    
+
     bool SaveToDB(MongodbClient* dbClient);
-    
+
 protected:
     void InitWithData();
-    
+
     MongodbObject* updateObject;
-    
+
     KeyedArchive* updateData;
 };
-    
 };
 
 #endif

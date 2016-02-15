@@ -24,50 +24,50 @@ extern "C" {
 
 #include "magick/thread-private.h"
 
-static inline ResampleFilter **DestroyResampleFilterThreadSet(
-  ResampleFilter **filter)
+static inline ResampleFilter** DestroyResampleFilterThreadSet(
+ResampleFilter** filter)
 {
-  register ssize_t
+    register ssize_t
     i;
 
-  assert(filter != (ResampleFilter **) NULL);
-  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
-    if (filter[i] != (ResampleFilter *) NULL)
-      filter[i]=DestroyResampleFilter(filter[i]);
-  filter=(ResampleFilter **) RelinquishAlignedMemory(filter);
-  return(filter);
+    assert(filter != (ResampleFilter**)NULL);
+    for (i = 0; i < (ssize_t)GetOpenMPMaximumThreads(); i++)
+        if (filter[i] != (ResampleFilter*)NULL)
+            filter[i] = DestroyResampleFilter(filter[i]);
+    filter = (ResampleFilter**)RelinquishAlignedMemory(filter);
+    return (filter);
 }
 
-static inline ResampleFilter **AcquireResampleFilterThreadSet(
-  const Image *image,const VirtualPixelMethod method,
-  const MagickBooleanType interpolate,ExceptionInfo *exception)
+static inline ResampleFilter** AcquireResampleFilterThreadSet(
+const Image* image, const VirtualPixelMethod method,
+const MagickBooleanType interpolate, ExceptionInfo* exception)
 {
-  register ssize_t
+    register ssize_t
     i;
 
-  ResampleFilter
-    **filter;
+    ResampleFilter
+    ** filter;
 
-  size_t
+    size_t
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
-  filter=(ResampleFilter **) AcquireAlignedMemory(number_threads,
-    sizeof(*filter));
-  if (filter == (ResampleFilter **) NULL)
-    return((ResampleFilter **) NULL);
-  (void) ResetMagickMemory(filter,0,number_threads*sizeof(*filter));
-  for (i=0; i < (ssize_t) number_threads; i++)
-  {
-    filter[i]=AcquireResampleFilter(image,exception);
-    if (filter[i] == (ResampleFilter *) NULL)
-      return(DestroyResampleFilterThreadSet(filter));
-    if (method != UndefinedVirtualPixelMethod)
-      (void) SetResampleFilterVirtualPixelMethod(filter[i],method);
-    if (interpolate != MagickFalse)
-      SetResampleFilter(filter[i],PointFilter,1.0);
-  }
-  return(filter);
+    number_threads = GetOpenMPMaximumThreads();
+    filter = (ResampleFilter**)AcquireAlignedMemory(number_threads,
+                                                    sizeof(*filter));
+    if (filter == (ResampleFilter**)NULL)
+        return ((ResampleFilter**)NULL);
+    (void)ResetMagickMemory(filter, 0, number_threads * sizeof(*filter));
+    for (i = 0; i < (ssize_t)number_threads; i++)
+    {
+        filter[i] = AcquireResampleFilter(image, exception);
+        if (filter[i] == (ResampleFilter*)NULL)
+            return (DestroyResampleFilterThreadSet(filter));
+        if (method != UndefinedVirtualPixelMethod)
+            (void)SetResampleFilterVirtualPixelMethod(filter[i], method);
+        if (interpolate != MagickFalse)
+            SetResampleFilter(filter[i], PointFilter, 1.0);
+    }
+    return (filter);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

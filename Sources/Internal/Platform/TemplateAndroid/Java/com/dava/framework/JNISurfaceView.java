@@ -30,18 +30,18 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 
 	private native void nativeSurfaceCreated(Surface surface);
-	private native void nativeSurfaceChanged(int width, int height);
+	private native void nativeSurfaceChanged(Surface surface, int width, int height);
 	private native void nativeSurfaceDestroyed();
 
     private native void nativeProcessFrame();
-	
+
     // Make surface member as static due to JNISurfaceView's lifecycle
     // System can create new JNISurfaceView instance before deleting previous instance
     // So use surface as current surface
     // TODO: work with surface in SDL way 
 	static private Surface surface = null;
 	private int surfaceWidth = 0, surfaceHeight = 0;
-	
+
 	private boolean isMultitouchEnabled = true;
 	
 	private Integer[] gamepadAxises = null;
@@ -49,17 +49,9 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
 	
 	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
-	
-	private static volatile boolean isPaused = false;
+	private volatile boolean mEventQueueReady = true;
 
 	public int lastDoubleActionIdx = -1;
-	
-	private int frameCounter = 0;
-	
-	public static boolean isPaused()
-	{
-	    return isPaused;
-	}
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
 		JNISurfaceView surfaceView;
@@ -105,21 +97,42 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         getHolder().addCallback(this);
 	}
 	
-	public void ProcessQueueEvents()
+	public void ProcessQueuedEvents()
 	{
 		ArrayList<Runnable> queueCopy = null;
-		synchronized (mEventQueue) 
-		{
+
+		synchronized (mEventQueue) {
 			queueCopy = new ArrayList<Runnable>(mEventQueue);
 			mEventQueue.clear();
 		}
 		
-		for(Runnable r : queueCopy)
-    	{
+		for(Runnable r : queueCopy) {
     		r.run();
     	}
+
+    	synchronized(mEventQueue) {
+    		mEventQueueReady = true;
+    		mEventQueue.notify();
+    	}
 	}
-	
+
+	public void WaitQueuedEvents()
+	{
+    	synchronized(mEventQueue)
+    	{
+            if(!mEventQueue.isEmpty()) {
+    		    mEventQueueReady = false;
+    		    while(!mEventQueueReady) {
+                    try {
+	    			    mEventQueue.wait();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+    		    }
+            }
+		}		
+	}
+
 	public void ProcessFrame()
 	{
         if (!JNIAssert.waitUserInputOnAssertDialog)
@@ -470,11 +483,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             	queueEvent(new Runnable() {
         			public void run() {
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
-        		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+        		    	nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
         			}
         		});
-                
+
                 // Workaround! we have to initialize keyboard after glView(OpenGL)
                 // initialization for some devices like
                 // HTC One (adreno 320, os 4.3)
@@ -485,8 +498,12 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                         activity.InitKeyboardLayout();
                     }
                 });
+
+        		WaitQueuedEvents();
             }
         }
+
+        JNIActivity.GetActivity().isSurfaceReady = true;
 
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
@@ -507,6 +524,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable out");
 			}
 		});
+
+		WaitQueuedEvents();
+
+		JNIActivity.GetActivity().isSurfaceReady = false;
+
         surface = null;
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
     }

@@ -35,8 +35,9 @@
 #include "EditorSystems/SelectionContainer.h"
 #include <UI/UIControl.h>
 
-namespace Ui {
-    class PreviewWidget;
+namespace Ui
+{
+class PreviewWidget;
 }
 
 class Document;
@@ -53,7 +54,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
     Q_OBJECT
 public:
-    explicit PreviewWidget(QWidget *parent = nullptr);
+    explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget() = default;
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
@@ -89,7 +90,7 @@ private slots:
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
-    
+
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
 

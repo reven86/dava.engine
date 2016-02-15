@@ -31,12 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 float32 WaypointsInterpolator::SPLINE_DELTA_TIME = 0.00001f;
 
 WaypointsInterpolator::WaypointsInterpolator(const Vector<PathComponent::Waypoint*>& _waypoints, float32 _time)
-    :   waypoints(_waypoints)
-    ,   segment(0)
-    ,   segmentTime(0.0f)
-    ,   targetSegmentTime(0.0f)
-    ,   splineTime(_time)
-    ,   splineLength(0.0f)
+    : waypoints(_waypoints)
+    , segment(0)
+    , segmentTime(0.0f)
+    , targetSegmentTime(0.0f)
+    , splineTime(_time)
+    , splineLength(0.0f)
 {
     Init();
 }
@@ -48,7 +48,7 @@ void WaypointsInterpolator::Init()
     spline = std::unique_ptr<BasicSpline3>(new BasicSpline3());
     Polygon3 poly;
 
-    for (auto *point : waypoints)
+    for (auto* point : waypoints)
     {
         poly.AddPoint(point->position);
     }
@@ -90,7 +90,7 @@ void WaypointsInterpolator::NextPosition(Vector3& position, Vector3& target, flo
 {
     position = currentPosition;
     target = targetPosition;
-  
+
     segmentTime += timeElapsed;
 
     if (segmentTime >= targetSegmentTime)

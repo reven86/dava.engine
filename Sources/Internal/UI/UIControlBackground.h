@@ -37,17 +37,15 @@
 #include "FileSystem/FilePath.h"
 #include "Base/GlobalEnum.h"
 
-
 namespace DAVA
 {
-
 class UIControl;
 class UIGeometricData;
 struct TiledDrawData;
 struct StretchDrawData;
 class NMaterial;
 
-    /**
+/**
      \ingroup controlsystem
      \brief Control background.
         Responsible for control graphical representation.
@@ -63,15 +61,15 @@ public:
      */
     enum eDrawType
     {
-        DRAW_ALIGNED = 0,           //!<Align sprite inside ronctrol rect.
-        DRAW_SCALE_TO_RECT,         //!<Scale sprite along the all control rect.
-        DRAW_SCALE_PROPORTIONAL,    //!<Scale sprite to fit both width and height into the control rect but with keeping sprite proportions.
-        DRAW_SCALE_PROPORTIONAL_ONE,//!<Scale sprite to fit width or height into control rect but with keeping sprite proportions.
-        DRAW_FILL,                  //!<Fill control rect with the control color.
-        DRAW_STRETCH_HORIZONTAL,    //!<Stretch sprite horizontally along the control rect.
-        DRAW_STRETCH_VERTICAL,      //!<Stretch sprite vertically along the control rect.
-        DRAW_STRETCH_BOTH,          //!<Stretch sprite along the all control rect.
-        DRAW_TILED                  //!<Fill control with sprite tiles
+        DRAW_ALIGNED = 0, //!<Align sprite inside ronctrol rect.
+        DRAW_SCALE_TO_RECT, //!<Scale sprite along the all control rect.
+        DRAW_SCALE_PROPORTIONAL, //!<Scale sprite to fit both width and height into the control rect but with keeping sprite proportions.
+        DRAW_SCALE_PROPORTIONAL_ONE, //!<Scale sprite to fit width or height into control rect but with keeping sprite proportions.
+        DRAW_FILL, //!<Fill control rect with the control color.
+        DRAW_STRETCH_HORIZONTAL, //!<Stretch sprite horizontally along the control rect.
+        DRAW_STRETCH_VERTICAL, //!<Stretch sprite vertically along the control rect.
+        DRAW_STRETCH_BOTH, //!<Stretch sprite along the all control rect.
+        DRAW_TILED //!<Fill control with sprite tiles
     };
 
     /**
@@ -79,12 +77,12 @@ public:
      */
     enum eColorInheritType
     {
-        COLOR_MULTIPLY_ON_PARENT = 0,   //!<Draw color = control color * parent color.
-        COLOR_ADD_TO_PARENT,            //!<Draw color = Min(control color + parent color, 1.0f).
-        COLOR_REPLACE_TO_PARENT,        //!<Draw color = parent color.
-        COLOR_IGNORE_PARENT,            //!<Draw color = control color.
-        COLOR_MULTIPLY_ALPHA_ONLY,      //!<Draw color = control color. Draw alpha = control alpha * parent alpha.
-        COLOR_REPLACE_ALPHA_ONLY,       //!<Draw color = control color. Draw alpha = parent alpha.
+        COLOR_MULTIPLY_ON_PARENT = 0, //!<Draw color = control color * parent color.
+        COLOR_ADD_TO_PARENT, //!<Draw color = Min(control color + parent color, 1.0f).
+        COLOR_REPLACE_TO_PARENT, //!<Draw color = parent color.
+        COLOR_IGNORE_PARENT, //!<Draw color = control color.
+        COLOR_MULTIPLY_ALPHA_ONLY, //!<Draw color = control color. Draw alpha = control alpha * parent alpha.
+        COLOR_REPLACE_ALPHA_ONLY, //!<Draw color = control color. Draw alpha = parent alpha.
         COLOR_INHERIT_TYPES_COUNT
     };
 
@@ -102,8 +100,12 @@ public:
      */
     struct UIMargins
     {
-        UIMargins() :
-            top(0.0f), right(0.0f), bottom(0.0f), left(0.0f)
+        UIMargins()
+            :
+            top(0.0f)
+            , right(0.0f)
+            , bottom(0.0f)
+            , left(0.0f)
         {
         }
 
@@ -114,13 +116,13 @@ public:
             right = value.z;
             bottom = value.w;
         }
-    
-        inline bool operator == (const UIMargins & value) const;
-        inline bool operator != (const UIMargins & value) const;
+
+        inline bool operator==(const UIMargins& value) const;
+        inline bool operator!=(const UIMargins& value) const;
         inline bool empty() const;
 
         inline Vector4 AsVector4() const;
-        
+
         float32 top;
         float32 right;
         float32 bottom;
@@ -132,39 +134,38 @@ public:
      */
     UIControlBackground();
 
-    virtual bool IsEqualTo(const UIControlBackground *back) const;
+    virtual bool IsEqualTo(const UIControlBackground* back) const;
 
     /**
      \brief Returns Sprite used for draw.
      \returns Sprite used for draw.
      */
-    virtual Sprite*	GetSprite() const;
+    virtual Sprite* GetSprite() const;
     /**
      \brief Returns Sprite frame used for draw.
      \returns Sprite frame used for draw.
      */
-    virtual int32	GetFrame() const;
+    virtual int32 GetFrame() const;
     /**
      \brief Returns Sprite align in the control rect.
      \returns Sprite eAlign bit mask used for draw.
      */
-    virtual int32	GetAlign() const;
+    virtual int32 GetAlign() const;
     /**
      \brief Returns current draw type.
      \returns Draw type used for draw.
      */
-    virtual UIControlBackground::eDrawType	GetDrawType() const;
+    virtual UIControlBackground::eDrawType GetDrawType() const;
     /**
      \brief Returns horizontal or vertical sprite flips.
      \returns eSpriteModification bits.
      */
-    virtual int32	GetModification() const;
+    virtual int32 GetModification() const;
     /**
      \brief Returns Sprite color used for draw.
      \returns Sprite color used for draw.
      */
-    inline const Color &GetColor() const;
-
+    inline const Color& GetColor() const;
 
     /**
      \brief Sets control Sprite.
@@ -177,7 +178,7 @@ public:
      \param[in] drawSprite Sprite path-name.
      \param[in] drawFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(const FilePath &drawSprite, int32 drawFrame);
+    virtual void SetSprite(const FilePath& drawSprite, int32 drawFrame);
     /**
      \brief Sets Sprite align in the control rect you want to use for draw.
      \param[in] drawAlign Sprite eAlign bit mask.
@@ -197,7 +198,7 @@ public:
      \brief Sets Sprite frame you want to use.
      \param[in] frameName Sprite frame name.
      */
-	virtual void SetFrame(const FastName& frameName);
+    virtual void SetFrame(const FastName& frameName);
     /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.
@@ -223,7 +224,6 @@ public:
      \param[in] modification eSpriteModification bit mask.
      */
     virtual void SetModification(int32 modification);
-
 
     /**
      \brief Sets color inheritance type.
@@ -261,49 +261,49 @@ public:
      \param[in] geometricData Control geometric data.
      */
 
-    virtual void Draw(const UIGeometricData &geometricData);
+    virtual void Draw(const UIGeometricData& geometricData);
 
     /**
      \brief Creates the absoulutely identic copy of the background.
      \returns UIControlBackground copy
      */
-    virtual UIControlBackground *Clone();
+    virtual UIControlBackground* Clone();
     /**
      \brief Copies all background parameters from the source.
      \param[in] srcBackground Source background to copy parameters from.
      */
-    virtual void CopyDataFrom(UIControlBackground *srcBackground);
+    virtual void CopyDataFrom(UIControlBackground* srcBackground);
 
     /**
      \brief Returns final draw color. This color is affected by the parrent color.
      \returns Real draw color.
      */
-    const Color & GetDrawColor() const;
+    const Color& GetDrawColor() const;
 
-    void SetDrawColor(const Color &c);
+    void SetDrawColor(const Color& c);
 
     /**
      \brief Sets parent control color.
      \param[in] parentColor parent control color.
      */
-    void SetParentColor(const Color &parentColor);
+    void SetParentColor(const Color& parentColor);
 
     /**
      \brief Sets draw color.
         Default color is Color(1,1,1,1).
      \param[in] color control draw color.
      */
-    inline void SetColor(const Color & color);
+    inline void SetColor(const Color& color);
 
     // WTF? Probably we should move it to protected to avoid problems in future?
-    Color color;//!<Control color. By default is Color(1,1,1,1).
+    Color color; //!<Control color. By default is Color(1,1,1,1).
 
     /**
      \brief Sets the margins for drawing background. Positive values means inner
      offset, negative ones - outer.
      */
     void SetMargins(const UIMargins* uiMargins);
-    
+
     /**
      \brief Returns the margins for drawing background. Can be NULL.
      */
@@ -313,8 +313,7 @@ public:
     NMaterial* GetMaterial() const;
 
 protected:
-
-    Sprite *spr;
+    Sprite* spr;
     int32 align;
     eDrawType type;
     int32 spriteModification;
@@ -325,18 +324,18 @@ protected:
 
     Vector2 lastDrawPos;
 
-    ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
+    ePerPixelAccuracyType perPixelAccuracyType; //!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
 private:
-	TiledDrawData *tiledData;
-    StretchDrawData *stretchData;
-    
+    TiledDrawData* tiledData;
+    StretchDrawData* stretchData;
+
     UIMargins* margins;
 
 public:
     void ReleaseDrawData(); // Delete all spec draw data
 #if defined(LOCALIZATION_DEBUG)
-    const Sprite::DrawState & GetLastDrawState()const;
+    const Sprite::DrawState& GetLastDrawState() const;
 #endif
 protected:
     ~UIControlBackground();
@@ -346,21 +345,20 @@ protected:
 #if defined(LOCALIZATION_DEBUG)
     Sprite::DrawState lastDrawState;
 #endif
-    
+
 public:
-    
     // for introspection
-    
+
     inline int GetBgDrawType() const;
     inline void SetBgDrawType(int type);
     inline FilePath GetBgSpritePath() const;
-    inline void SetBgSpriteFromPath(const FilePath &path);
+    inline void SetBgSpriteFromPath(const FilePath& path);
     inline int32 GetBgColorInherit() const;
     inline void SetBgColorInherit(int32 type);
     inline int32 GetBgPerPixelAccuracy() const;
     inline void SetBgPerPixelAccuracy(int32 type);
     Vector4 GetMarginsAsVector4() const;
-    void SetMarginsAsVector4(const Vector4 &margins);
+    void SetMarginsAsVector4(const Vector4& margins);
 
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
@@ -377,12 +375,12 @@ public:
 };
 
 // Implementation
-inline void UIControlBackground::SetColor(const Color & _color)
+inline void UIControlBackground::SetColor(const Color& _color)
 {
     color = _color;
 }
 
-inline const Color &UIControlBackground::GetColor() const
+inline const Color& UIControlBackground::GetColor() const
 {
     return color;
 }
@@ -392,20 +390,20 @@ inline const UIControlBackground::UIMargins* UIControlBackground::GetMargins() c
     return margins;
 }
 
-inline bool UIControlBackground::UIMargins::operator == (const UIControlBackground::UIMargins& value) const
+inline bool UIControlBackground::UIMargins::operator==(const UIControlBackground::UIMargins& value) const
 {
     return FLOAT_EQUAL(left, value.left) && FLOAT_EQUAL(top, value.top) &&
     FLOAT_EQUAL(right, value.right) && FLOAT_EQUAL(bottom, value.bottom);
 }
 
-inline bool UIControlBackground::UIMargins::operator != (const UIControlBackground::UIMargins& value) const
+inline bool UIControlBackground::UIMargins::operator!=(const UIControlBackground::UIMargins& value) const
 {
-    return !UIControlBackground::UIMargins::operator == (value);
+    return !UIControlBackground::UIMargins::operator==(value);
 }
 
 inline bool UIControlBackground::UIMargins::empty() const
 {
-    return FLOAT_EQUAL(left, 0.0f)  && FLOAT_EQUAL(top, 0.0f) &&
+    return FLOAT_EQUAL(left, 0.0f) && FLOAT_EQUAL(top, 0.0f) &&
     FLOAT_EQUAL(right, 0.0f) && FLOAT_EQUAL(bottom, 0.0f);
 }
 
@@ -421,7 +419,7 @@ int UIControlBackground::GetBgDrawType() const
 
 void UIControlBackground::SetBgDrawType(int type)
 { // TODO: FIXME: type
-    SetDrawType((UIControlBackground::eDrawType) type);
+    SetDrawType((UIControlBackground::eDrawType)type);
 }
 
 FilePath UIControlBackground::GetBgSpritePath() const
@@ -434,7 +432,7 @@ FilePath UIControlBackground::GetBgSpritePath() const
         return Sprite::GetPathString(GetSprite());
 }
 
-void UIControlBackground::SetBgSpriteFromPath(const FilePath &path)
+void UIControlBackground::SetBgSpriteFromPath(const FilePath& path)
 {
     if (path == "")
         SetSprite(NULL, 0);
@@ -449,7 +447,7 @@ int32 UIControlBackground::GetBgColorInherit() const
 
 void UIControlBackground::SetBgColorInherit(int32 type)
 {
-    SetColorInheritType((UIControlBackground::eColorInheritType) type);
+    SetColorInheritType((UIControlBackground::eColorInheritType)type);
 }
 
 int32 UIControlBackground::GetBgPerPixelAccuracy() const
@@ -459,10 +457,8 @@ int32 UIControlBackground::GetBgPerPixelAccuracy() const
 
 void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
 {
-    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)type);
 }
-
-
 };
 
 #endif

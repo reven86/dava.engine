@@ -41,67 +41,70 @@
 
 namespace DAVA
 {
-
 class ParticleEmitter;
 class ModifiablePropertyLineBase;
-
+struct ParticleEmitterData
+{
+    RefPtr<ParticleEmitter> emitter;
+    FilePath originalFilepath;
+    Vector3 spawnPosition;
+};
 
 class ParticleEffectComponent : public Component
 {
-	friend class ParticleEffectSystem;
-    friend class UIParticles;            
+    friend class ParticleEffectSystem;
+    friend class UIParticles;
 
     static const uint32 PARTICLE_FLAGS_SERIALIZATION_CRITERIA = RenderObject::VISIBLE | RenderObject::VISIBLE_REFLECTION | RenderObject::VISIBLE_REFRACTION;
+
 public:
-	IMPLEMENT_COMPONENT_TYPE(PARTICLE_EFFECT_COMPONENT);
+    IMPLEMENT_COMPONENT_TYPE(PARTICLE_EFFECT_COMPONENT);
 
-	enum eState
-	{
-		STATE_PLAYING,  //effect is playing
+    enum eState
+    {
+        STATE_PLAYING, //effect is playing
         STATE_STARTING, //effect is starting - on next system update it would be moved to playing state (RunEffect called)
-		STATE_STOPPING, //effect is stopping - no new particle generation, still need to update and recalculate
-		STATE_STOPPED   //effect is completely stopped and removed from active lists
-	};
+        STATE_STOPPING, //effect is stopping - no new particle generation, still need to update and recalculate
+        STATE_STOPPED //effect is completely stopped and removed from active lists
+    };
 
-	ParticleEffectComponent();
+    ParticleEffectComponent();
     ~ParticleEffectComponent();
 
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *sceneFile);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *sceneFile);
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* sceneFile);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* sceneFile);
 
-	void Start();
-	void Stop(bool isDeleteAllParticles = true);
-	void Restart(bool isDeleteAllParticles = true);
-	bool IsStopped();	
-	void Pause(bool isPaused = true);
-	bool IsPaused();
-	void Step(float32 delta);
+    void Start();
+    void Stop(bool isDeleteAllParticles = true);
+    void Restart(bool isDeleteAllParticles = true);
+    bool IsStopped();
+    void Pause(bool isPaused = true);
+    bool IsPaused();
+    void Step(float32 delta);
 
-
-    void StopAfterNRepeats(int32 numberOfRepeats);    
+    void StopAfterNRepeats(int32 numberOfRepeats);
     void StopWhenEmpty(bool value = true);
-	float32 GetPlaybackSpeed();
-	void SetPlaybackSpeed(float32 value);
-    
-	void SetDesiredLodLevel(int32 level);
-    
-    void SetPlaybackCompleteMessage(const Message & msg);		
+    float32 GetPlaybackSpeed();
+    void SetPlaybackSpeed(float32 value);
 
-	/*externals stuff*/
-	void SetExtertnalValue(const String& name, float32 value);
-	float32 GetExternalValue(const String& name);	
-	Set<String> EnumerateVariables();
-	void RebuildEffectModifiables();
-	void RegisterModifiable(ModifiablePropertyLineBase *propertyLine);
-	void UnRegisterModifiable(ModifiablePropertyLineBase *propertyLine);
+    void SetDesiredLodLevel(int32 level);
 
-	
-	int32 GetActiveParticlesCount();
+    void SetPlaybackCompleteMessage(const Message& msg);
+
+    /*externals stuff*/
+    void SetExtertnalValue(const String& name, float32 value);
+    float32 GetExternalValue(const String& name);
+    Set<String> EnumerateVariables();
+    void RebuildEffectModifiables();
+    void RegisterModifiable(ModifiablePropertyLineBase* propertyLine);
+    void UnRegisterModifiable(ModifiablePropertyLineBase* propertyLine);
+
+    int32 GetActiveParticlesCount();
 
     void SetRenderObjectVisible(bool visible);
 
-     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
+    /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
 
     bool GetReflectionVisible() const;
@@ -109,72 +112,80 @@ public:
     bool GetRefractionVisible() const;
     void SetRefractionVisible(bool visible);
 
+    void ReloadEmitters();
+
 private:
     void ClearGroup(ParticleGroup& group);
-	void ClearCurrentGroups();
+    void ClearCurrentGroups();
     void SetGroupsFinishing();
-	
-	/*effect playback setup       i bit changed logic*/	
-	bool stopWhenEmpty;			  //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
-	float32 effectDuration;       //duration for effect
-	uint32 repeatsCount;			  // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
-	bool clearOnRestart;		  // when effect is restarted repeatsCount
-	
-	float32 playbackSpeed;
-	
-	/*state*/
-	float32 time;
-	uint32 currRepeatsCont;	
-	bool isPaused;	
-	eState state;	
-	
-	
-	/*completion message stuff*/	
-	Message playbackComplete;		
 
-	/*externals setup*/	
-	MultiMap<String, ModifiablePropertyLineBase *> externalModifiables;	
-	Map<String, float32> externalValues;
-    
-	/*Emitters setup*/
-	Vector<ParticleEmitter*> emitters;
-    Vector<Vector3> spawnPositions;
-		
-	ParticleEffectData effectData;
-	ParticleRenderObject *effectRenderObject;
+    /*effect playback setup       i bit changed logic*/
+    bool stopWhenEmpty; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
+    float32 effectDuration; //duration for effect
+    uint32 repeatsCount; // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
+    bool clearOnRestart; // when effect is restarted repeatsCount
 
-	int32 desiredLodLevel, activeLodLevel;
+    float32 playbackSpeed;
+
+    /*state*/
+    float32 time;
+    uint32 currRepeatsCont;
+    bool isPaused;
+    eState state;
+
+    /*completion message stuff*/
+    Message playbackComplete;
+
+    /*externals setup*/
+    MultiMap<String, ModifiablePropertyLineBase*> externalModifiables;
+    Map<String, float32> externalValues;
+
+    /*Emitters setup*/
+    Vector<ParticleEmitterData> emitterDatas;
+
+    ParticleEffectData effectData;
+    ParticleRenderObject* effectRenderObject;
+
+    int32 desiredLodLevel, activeLodLevel;
 
 public: //mostly editor commands
-	int32 GetEmittersCount();
-	ParticleEmitter* GetEmitter(int32 id);
-    Vector3 GetSpawnPosition(int id);
-    void SetSpawnPosition(int id, Vector3 position);
-	void AddEmitter(ParticleEmitter *emitter);
-    int32 GetEmitterId(ParticleEmitter *emitter);
-    void InsertEmitterAt(ParticleEmitter *emitter, int32 position);
-	void RemoveEmitter(ParticleEmitter *emitter);
+    int32 GetEmittersCount() const;
+    ParticleEmitter* GetEmitter(int32 id) const;
+    int32 GetEmitterId(const ParticleEmitter* emitter) const;
+    void RemoveEmitter(const ParticleEmitter* emitter);
+
+    Vector3 GetSpawnPosition(int32 id) const;
+    void SetSpawnPosition(int32 id, const Vector3& position);
+
+    FilePath GetOriginalConfigPath(int32 id) const;
+    void SetOriginalConfigPath(int32 id, const FilePath& filepath);
+
+    int32 GetEmitterDataId(const ParticleEmitterData& emitter) const;
+    const ParticleEmitterData& GetEmitterData(int32 id) const;
+    void AddEmitterData(const ParticleEmitterData& emitter);
+    void InsertEmitterDataAt(const ParticleEmitterData& emitter, int32 position);
+    void RemoveEmitterData(const ParticleEmitterData& emitter);
+
     float32 GetCurrTime();
 
     /*statistics for editor*/
-    int32 GetLayerActiveParticlesCount(ParticleLayer *layer);
-    float32 GetLayerActiveParticlesSquare(ParticleLayer *layer);
+    int32 GetLayerActiveParticlesCount(ParticleLayer* layer);
+    float32 GetLayerActiveParticlesSquare(ParticleLayer* layer);
 
 public:
-	uint32 loadedVersion;
-	void CollapseOldEffect(SerializationContext *serializationContext);
+    uint32 loadedVersion;
+    void CollapseOldEffect(SerializationContext* serializationContext);
 
-	INTROSPECTION_EXTEND(ParticleEffectComponent, Component,
-		MEMBER(repeatsCount, "repeatsCount", I_VIEW | I_EDIT | I_SAVE)
-        MEMBER(stopWhenEmpty, "stopWhenEmpty",  I_VIEW | I_EDIT | I_SAVE)
-        MEMBER(effectDuration, "effectDuration",  I_VIEW | I_EDIT |I_SAVE)	
-		MEMBER(clearOnRestart, "clearOnRestart",  I_VIEW | I_EDIT |I_SAVE)	
+    INTROSPECTION_EXTEND(ParticleEffectComponent, Component,
+                         MEMBER(repeatsCount, "repeatsCount", I_VIEW | I_EDIT | I_SAVE)
+                         MEMBER(stopWhenEmpty, "stopWhenEmpty", I_VIEW | I_EDIT | I_SAVE)
+                         MEMBER(effectDuration, "effectDuration", I_VIEW | I_EDIT | I_SAVE)
+                         MEMBER(clearOnRestart, "clearOnRestart", I_VIEW | I_EDIT | I_SAVE)
 
-        PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
-    );
+                         PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
-
 }
 
 #endif //__PARTICLE_EFFECT_COMPONENT_H__

@@ -38,19 +38,12 @@
 
 namespace DAVA
 {
-
 class Drawable
 {
-public:	
-	virtual void    Draw() = 0;
-    virtual uint64  GetSortID() = 0;
+public:
+    virtual void Draw() = 0;
+    virtual uint64 GetSortID() = 0;
 };
-
 };
 
 #endif // __DAVAENGINE_SCENENODE_H__
-
-
-
-
-

@@ -38,15 +38,18 @@ TagModel::TagModel(QObject* parent)
     , profileSession(nullptr)
     , timestamp(0)
     , activeTags(0)
-{}
+{
+}
 
 TagModel::~TagModel()
-{}
+{
+}
 
 int TagModel::rowCount(const QModelIndex& parent) const
 {
     return profileSession != nullptr ? static_cast<int>(profileSession->TagCount())
-                                     : 0;
+                                       :
+                                       0;
 }
 
 int TagModel::columnCount(const QModelIndex& parent) const

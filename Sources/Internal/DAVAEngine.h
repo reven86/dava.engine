@@ -105,7 +105,6 @@
 #include "FileSystem/Parser.h"
 #include "FileSystem/FilePath.h"
 
-
 // Collisions
 #include "Collision/Collisions.h"
 
@@ -116,7 +115,6 @@
 #include "Animation/AnimationManager.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/BezierSplineAnimation.h"
-
 
 // 2D Graphics
 #include "Render/2D/Sprite.h"
@@ -275,4 +273,3 @@
 #include "Notification/LocalNotificationController.h"
 
 #endif // __DAVAENGINE_H__
-

@@ -32,9 +32,12 @@
 #include "defines.h"
 #include <QPushButton>
 
-ButtonsWidget::ButtonsWidget(int rowNum, QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::ButtonsWidget),
+ButtonsWidget::ButtonsWidget(int rowNum, QWidget* parent)
+    :
+    QWidget(parent)
+    ,
+    ui(new Ui::ButtonsWidget)
+    ,
     rowNumber(rowNum)
 {
     ui->setupUi(this);
@@ -61,10 +64,10 @@ void ButtonsWidget::SetButtonsState(int state)
     ui->runButton->setEnabled(false);
     ui->removeButton->setEnabled(false);
 
-    if(state & BUTTONS_STATE_AVALIBLE)
+    if (state & BUTTONS_STATE_AVALIBLE)
         ui->installButton->setEnabled(true);
 
-    if(state & BUTTONS_STATE_INSTALLED)
+    if (state & BUTTONS_STATE_INSTALLED)
     {
         ui->runButton->setEnabled(true);
         ui->removeButton->setEnabled(true);

@@ -35,50 +35,47 @@
 
 namespace DAVA
 {
-
 class PolygonGroup;
 
 class EdgeAdjacency
 {
 public:
+    struct TriangleData
+    {
+        int32 i0;
+        int32 i1;
+        int32 i2;
+    };
 
-	struct TriangleData
-	{
-		int32 i0;
-		int32 i1;
-		int32 i2;
-	};
+    struct Edge
+    {
+        Vector3 points[2];
 
-	struct Edge
-	{
-		Vector3 points[2];
+        Vector<TriangleData> sharedTriangles;
 
-		Vector<TriangleData> sharedTriangles;
+        bool IsEqual(const Edge& otherEdge);
+    };
 
-		bool IsEqual(const Edge & otherEdge);
-	};
+    void InitFromPolygonGroup(PolygonGroup* polygonGroup, int32 indexCount);
 
-	void InitFromPolygonGroup(PolygonGroup * polygonGroup, int32 indexCount);
+    Vector<Edge>& GetEdges();
 
-	Vector<Edge> & GetEdges();
+    int32 GetEdgesWithTwoTrianglesCount();
 
-	int32 GetEdgesWithTwoTrianglesCount();
-
-	static bool IsPointsEqual(const Vector3 & p0, const Vector3 & p1);
+    static bool IsPointsEqual(const Vector3& p0, const Vector3& p1);
 
 private:
-	PolygonGroup * polygonGroup;
-	
-	Vector<Edge> edges;
+    PolygonGroup* polygonGroup;
 
-	void AddEdge(Edge & edge);
+    Vector<Edge> edges;
 
-	void FillEdge(Edge & edge, int32 index0, int32 index1);
-	int32 GetEdgeIndex(Edge & edge);
+    void AddEdge(Edge& edge);
 
-	void CreateTriangle(int32 startingVertex);
+    void FillEdge(Edge& edge, int32 index0, int32 index1);
+    int32 GetEdgeIndex(Edge& edge);
+
+    void CreateTriangle(int32 startingVertex);
 };
-
 };
 
 #endif //__DAVAENGINE_EDGE_ADJACENCY_H__

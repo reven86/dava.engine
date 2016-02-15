@@ -66,7 +66,11 @@ DAVA_TESTCLASS(LocalizationTest)
 
     DAVA_TEST(LocaleTest)
     {
-        for (size_t i = 0;i < files.size();++i)
+        String locale = LocalizationSystem::Instance()->GetDeviceLocale();
+
+        Logger::FrameworkDebug("Current locale is %s", locale.c_str());
+
+        for (size_t i = 0; i < files.size(); ++i)
         {
             FilePath srcFile = srcDir + (files[i] + ".yaml");
             FilePath cpyFile = cpyDir + (files[i] + ".yaml");
@@ -94,7 +98,8 @@ DAVA_TESTCLASS(LocalizationTest)
 
         FilePath filePath("~res:/TestData/LocalizationTest/bidi_test.yaml");
         YamlParser* parser = YamlParser::Create(filePath);
-        SCOPE_EXIT {
+        SCOPE_EXIT
+        {
             SafeRelease(parser);
             SafeRelease(font);
         };

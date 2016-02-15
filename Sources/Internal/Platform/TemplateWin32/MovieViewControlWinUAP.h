@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 class PrivateMovieViewWinUAP;
 class MovieViewControl : public IMovieViewControl
 {
@@ -70,7 +69,7 @@ private:
     std::shared_ptr<PrivateMovieViewWinUAP> privateImpl;
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__

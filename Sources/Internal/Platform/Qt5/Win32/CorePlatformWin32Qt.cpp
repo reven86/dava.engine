@@ -37,34 +37,32 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-namespace DAVA 
+namespace DAVA
 {
-
-int Core::Run(int argc, char * argv[], AppHandle handle)
+int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	CoreWin32PlatformQt * core = new CoreWin32PlatformQt();
-	core->CreateSingletons();
-	core->InitArgs();
+    CoreWin32PlatformQt* core = new CoreWin32PlatformQt();
+    core->CreateSingletons();
+    core->InitArgs();
 
-	return 0;
+    return 0;
 }
 
-int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
+int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
 {
-	CoreWin32PlatformQt * core = new CoreWin32PlatformQt();
+    CoreWin32PlatformQt* core = new CoreWin32PlatformQt();
 
-	core->EnableConsoleMode();
-	core->CreateSingletons();
+    core->EnableConsoleMode();
+    core->CreateSingletons();
 
-	core->InitArgs();
+    core->InitArgs();
 
-	Logger::Instance()->EnableConsoleMode();
+    Logger::Instance()->EnableConsoleMode();
 
-	FrameworkDidLaunched();
-	FrameworkWillTerminate();
-	core->ReleaseSingletons();
-	return 0;
+    FrameworkDidLaunched();
+    FrameworkWillTerminate();
+    core->ReleaseSingletons();
+    return 0;
 }
-
 }
 #endif // #if defined(__DAVAENGINE_WIN32__)

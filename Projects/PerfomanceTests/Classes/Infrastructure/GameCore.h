@@ -43,38 +43,38 @@
 
 class GameCore : public ApplicationCore
 {
-public:    
+public:
     GameCore();
 
-    static GameCore * Instance() 
-    { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
+    static GameCore* Instance()
+    {
+        return (GameCore*)DAVA::Core::GetApplicationCore();
     };
-    
+
     void OnAppStarted() override;
     void OnAppFinished() override;
-    
+
     void OnSuspend() override;
     void OnResume() override;
     
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     void OnBackground() override;
     void OnForeground() override;
     void OnDeviceLocked() override;
 #endif
 
     void BeginFrame() override;
-	void EndFrame() override;
-    
+    void EndFrame() override;
+
 private:
     void InitScreenController();
-	void RegisterTests();
+    void RegisterTests();
     void ReadSingleTestParams(BaseTest::TestParams& params);
     void LoadMaps(const String& testName, Vector<std::pair<String, String>>& maps);
-    
+
     String GetDeviceName();
 
-	Vector<BaseTest*> testChain;
+    Vector<BaseTest*> testChain;
     std::unique_ptr<TestFlowController> testFlowController;
 
     TeamcityTestsOutput teamCityOutput;

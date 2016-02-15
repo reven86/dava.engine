@@ -109,21 +109,25 @@ class QuaZipPrivate;
  * detection using locale information. Does anyone know a good way to do
  * it?
  **/
-class QUAZIP_EXPORT QuaZip {
-  friend class QuaZipPrivate;
-  public:
+class QUAZIP_EXPORT QuaZip
+{
+    friend class QuaZipPrivate;
+
+public:
     /// Useful constants.
-    enum Constants {
-      MAX_FILE_NAME_LENGTH=256 /**< Maximum file name length. Taken from
+    enum Constants
+    {
+        MAX_FILE_NAME_LENGTH = 256 /**< Maximum file name length. Taken from
                                  \c UNZ_MAXFILENAMEINZIP constant in
                                  unzip.c. */
     };
     /// Open mode of the ZIP file.
-    enum Mode {
-      mdNotOpen, ///< ZIP file is not open. This is the initial mode.
-      mdUnzip, ///< ZIP file is open for reading files inside it.
-      mdCreate, ///< ZIP file was created with open() call.
-      mdAppend, /**< ZIP file was opened in append mode. This refers to
+    enum Mode
+    {
+        mdNotOpen, ///< ZIP file is not open. This is the initial mode.
+        mdUnzip, ///< ZIP file is open for reading files inside it.
+        mdCreate, ///< ZIP file was created with open() call.
+        mdAppend, /**< ZIP file was opened in append mode. This refers to
                   * \c APPEND_STATUS_CREATEAFTER mode in ZIP/UNZIP package
                   * and means that zip is appended to some existing file
                   * what is useful when that file contains
@@ -131,7 +135,7 @@ class QUAZIP_EXPORT QuaZip {
                   * you whant to use to add files to the existing ZIP
                   * archive.
                   **/
-      mdAdd ///< ZIP file was opened for adding files in the archive.
+        mdAdd ///< ZIP file was opened for adding files in the archive.
     };
     /// Case sensitivity for the file names.
     /** This is what you specify when accessing files in the archive.
@@ -139,10 +143,11 @@ class QUAZIP_EXPORT QuaZip {
      * unicode support. This is different from ZIP/UNZIP API, where
      * only US-ASCII characters was supported.
      **/
-    enum CaseSensitivity {
-      csDefault=0, ///< Default for platform. Case sensitive for UNIX, not for Windows.
-      csSensitive=1, ///< Case sensitive.
-      csInsensitive=2 ///< Case insensitive.
+    enum CaseSensitivity
+    {
+        csDefault = 0, ///< Default for platform. Case sensitive for UNIX, not for Windows.
+        csSensitive = 1, ///< Case sensitive.
+        csInsensitive = 2 ///< Case insensitive.
     };
     /// Returns the actual case sensitivity for the specified QuaZIP one.
     /**
@@ -152,14 +157,16 @@ class QUAZIP_EXPORT QuaZip {
       returns the appropriate value from the Qt::CaseSensitivity enum.
       */
     static Qt::CaseSensitivity convertCaseSensitivity(
-            CaseSensitivity cs);
-  private:
-    QuaZipPrivate *p;
+    CaseSensitivity cs);
+
+private:
+    QuaZipPrivate* p;
     // not (and will not be) implemented
     QuaZip(const QuaZip& that);
     // not (and will not be) implemented
     QuaZip& operator=(const QuaZip& that);
-  public:
+
+public:
     /// Constructs QuaZip object.
     /** Call setName() before opening constructed object. */
     QuaZip();
@@ -167,7 +174,7 @@ class QUAZIP_EXPORT QuaZip {
     QuaZip(const QString& zipName);
     /// Constructs QuaZip object associated with ZIP file represented by \a ioDevice.
     /** The IO device must be seekable, otherwise an error will occur when opening. */
-    QuaZip(QIODevice *ioDevice);
+    QuaZip(QIODevice* ioDevice);
     /// Destroys QuaZip object.
     /** Calls close() if necessary. */
     ~QuaZip();
@@ -208,7 +215,7 @@ class QUAZIP_EXPORT QuaZip {
      * In short: just forget about the \a ioApi argument and you'll be
      * fine.
      **/
-    bool open(Mode mode, zlib_filefunc_def *ioApi =NULL);
+    bool open(Mode mode, zlib_filefunc_def* ioApi = NULL);
     /// Closes ZIP file.
     /** Call getZipError() to determine if the close was successful. The
      * underlying QIODevice is also closed, regardless of whether it was
@@ -220,23 +227,23 @@ class QUAZIP_EXPORT QuaZip {
      * example, file names with cyrillic letters will be in \c IBM866
      * encoding.
      **/
-    void setFileNameCodec(QTextCodec *fileNameCodec);
+    void setFileNameCodec(QTextCodec* fileNameCodec);
     /// Sets the codec used to encode/decode file names inside archive.
     /** \overload
      * Equivalent to calling setFileNameCodec(QTextCodec::codecForName(codecName));
      **/
-    void setFileNameCodec(const char *fileNameCodecName);
+    void setFileNameCodec(const char* fileNameCodecName);
     /// Returns the codec used to encode/decode comments inside archive.
     QTextCodec* getFileNameCodec() const;
     /// Sets the codec used to encode/decode comments inside archive.
     /** This codec defaults to locale codec, which is probably ok.
      **/
-    void setCommentCodec(QTextCodec *commentCodec);
+    void setCommentCodec(QTextCodec* commentCodec);
     /// Sets the codec used to encode/decode comments inside archive.
     /** \overload
      * Equivalent to calling setCommentCodec(QTextCodec::codecForName(codecName));
      **/
-    void setCommentCodec(const char *commentCodecName);
+    void setCommentCodec(const char* commentCodecName);
     /// Returns the codec used to encode/decode comments inside archive.
     QTextCodec* getCommentCodec() const;
     /// Returns the name of the ZIP file.
@@ -258,14 +265,14 @@ class QUAZIP_EXPORT QuaZip {
      * example when opening a ZIP file by name.
      * \sa setIoDevice(), getZipName(), setZipName()
      **/
-    QIODevice *getIoDevice() const;
+    QIODevice* getIoDevice() const;
     /// Sets the device representing the ZIP file.
     /** Does nothing if the ZIP file is open.
      *
      * Does not reset error code returned by getZipError().
      * \sa getIoDevice(), getZipName(), setZipName()
      **/
-    void setIoDevice(QIODevice *ioDevice);
+    void setIoDevice(QIODevice* ioDevice);
     /// Returns the mode in which ZIP file was opened.
     Mode getMode() const;
     /// Returns \c true if ZIP file is open, \c false otherwise.
@@ -346,7 +353,7 @@ class QUAZIP_EXPORT QuaZip {
      *
      * \sa setFileNameCodec(), CaseSensitivity
      **/
-    bool setCurrentFile(const QString& fileName, CaseSensitivity cs =csDefault);
+    bool setCurrentFile(const QString& fileName, CaseSensitivity cs = csDefault);
     /// Returns \c true if the current file has been set.
     bool hasCurrentFile() const;
     /// Retrieves information about the current file.
@@ -365,7 +372,7 @@ class QUAZIP_EXPORT QuaZip {
      * In all these cases getZipError() returns \c UNZ_OK since there
      * is no ZIP/UNZIP API call.
      **/
-    bool getCurrentFileInfo(QuaZipFileInfo* info)const;
+    bool getCurrentFileInfo(QuaZipFileInfo* info) const;
     /// Returns the current file name.
     /** Equivalent to calling getCurrentFileInfo() and then getting \c
      * name field of the QuaZipFileInfo structure, but faster and more
@@ -373,7 +380,7 @@ class QUAZIP_EXPORT QuaZip {
      *
      * Should be used only in QuaZip::mdUnzip mode.
      **/
-    QString getCurrentFileName()const;
+    QString getCurrentFileName() const;
     /// Returns \c unzFile handle.
     /** You can use this handle to directly call UNZIP part of the
      * ZIP/UNZIP package functions (see unzip.h).

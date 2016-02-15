@@ -36,17 +36,15 @@
 #include "Base/ObjectCreator.h"
 #include <typeinfo>
 
-
-namespace DAVA 
+namespace DAVA
 {
-	
 /*#define REGISTER_CLASS_WITH_STRING_NAME(class_name, symbol_name) \
 static BaseObject * Create##class_name()\
 {\
 return new class_name();\
 };\
 static ObjectRegistrator registrator##class_name(symbol_name, &Create##class_name);
-*/	
+*/
 
 /**
 	\ingroup baseobjects
@@ -97,20 +95,20 @@ class ObjectFactory : public StaticSingleton<ObjectFactory>
 {
 public:
     ObjectFactory();
-    
-	/**
+
+    /**
 		\brief creates a class with given name
 		
 		\param[in] name name of class you want to create
 	 */
     template <class T>
-    T* New(const String & name)
+    T* New(const String& name)
     {
         Map<String, CreateObjectFunc>::iterator it = creatorMap.find(name);
         if (it != creatorMap.end())
         {
             CreateObjectFunc newFunc = it->second;
-            
+
             //VI: cannot use cast_if_equal since we need to cast to base types
             //VI: but cast_if_equal casts to the exact types only
             return static_cast<T*>((newFunc)());
@@ -119,25 +117,25 @@ public:
         return 0;
     }
 
-	/**
+    /**
         \brief creates a class with given name
 
         \param[in] name name of class you want to create
         \param[in] object you can pass as creation parameter
 	 */
     template <class S, class T>
-	T* New(const String & name, const S & object);
-    
+    T* New(const String& name, const S& object);
+
     //    /**
-    //        \brief 
+    //        \brief
     //     */
-    //    template <class T> 
+    //    template <class T>
     //    T * New(const String & name);
 
-    template<class T>
-    const String & GetName(T * t);
-	
-	/**
+    template <class T>
+    const String& GetName(T* t);
+
+    /**
 		\brief This function is supposed to RegisterObjectCreator
 		
 		It used internally by REGISTER_CLASS define and REGISTER_CLASS_WITH_ALIAS define.
@@ -147,22 +145,20 @@ public:
 		\param[in] func this is pointer to function that can create such class
         \param[in] alias this name can be used if you want to save object as his parent
 	*/
-	void RegisterObjectCreator(const String & name, CreateObjectFunc func, const std::type_info & typeinfo, uint32 size);
-	void RegisterObjectCreator(const String & name, CreateObjectFunc func, const std::type_info & typeinfo, uint32 size, const String & alias);
-
+    void RegisterObjectCreator(const String& name, CreateObjectFunc func, const std::type_info& typeinfo, uint32 size);
+    void RegisterObjectCreator(const String& name, CreateObjectFunc func, const std::type_info& typeinfo, uint32 size, const String& alias);
 
     void Dump();
 
 private:
-	Map<String, CreateObjectFunc> creatorMap;
+    Map<String, CreateObjectFunc> creatorMap;
     Map<String, String> nameMap;
     Map<String, uint32> sizeMap;
     String unregisteredClassName;
 };
-    
-    
-template<class T>
-const String & ObjectFactory::GetName(T * t)
+
+template <class T>
+const String& ObjectFactory::GetName(T* t)
 {
     Map<String, String>::iterator it = nameMap.find(typeid(*t).name());
     if (it != nameMap.end())
@@ -171,7 +167,6 @@ const String & ObjectFactory::GetName(T * t)
     }
     return unregisteredClassName;
 }
-
 };
 
 #endif // __DAVAENGINE_OBJECT_FACTORY_H__

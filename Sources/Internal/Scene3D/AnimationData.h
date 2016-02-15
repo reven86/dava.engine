@@ -34,52 +34,51 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Scene3D/DataNode.h"
-namespace DAVA 
+namespace DAVA
 {
-	
 class AnimationData : public DataNode
 {
 protected:
-	virtual ~AnimationData();
-public:
-	AnimationData();
-	
-	SceneNodeAnimationKey Interpolate(float32 t, uint32& startIdxCache) const;
-	
-	void AddKey(const SceneNodeAnimationKey & key);
-	
-	inline int32 GetKeyCount() const;
-	
-	void SetDuration(float32 _duration);
-	inline float32 GetDuration() const; 
-	
-	void SetInvPose(const Matrix4& mat); 
-	const Matrix4& GetInvPose() const;
-	
-	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    virtual ~AnimationData();
 
-	AnimationData* Clone() const;
+public:
+    AnimationData();
+
+    SceneNodeAnimationKey Interpolate(float32 t, uint32& startIdxCache) const;
+
+    void AddKey(const SceneNodeAnimationKey& key);
+
+    inline int32 GetKeyCount() const;
+
+    void SetDuration(float32 _duration);
+    inline float32 GetDuration() const;
+
+    void SetInvPose(const Matrix4& mat);
+    const Matrix4& GetInvPose() const;
+
+    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+
+    AnimationData* Clone() const;
 
     void BakeTransform(const Matrix4& transform);
 
     float32 duration;
 
-    DAVA::Vector< SceneNodeAnimationKey > keys;
+    DAVA::Vector<SceneNodeAnimationKey> keys;
 
-	Matrix4 invPose;
+    Matrix4 invPose;
 };
-	
+
 inline float32 AnimationData::GetDuration() const
 {
-	return duration;
+    return duration;
 }
-	
+
 inline int32 AnimationData::GetKeyCount() const
 {
-	return static_cast<int32>(keys.size());
+    return static_cast<int32>(keys.size());
 }
-	
 };
 
 #endif // __DAVAENGINE_ANIMATION_DATA_H__

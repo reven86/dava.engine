@@ -35,26 +35,25 @@
 #include "Scene3D/Components/LodComponent.h"
 
 class DeleteRenderBatchCommand;
-class DeleteLODCommand: public Command2
+class DeleteLODCommand : public Command2
 {
 public:
-	DeleteLODCommand(DAVA::LodComponent *lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex);
+    DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex);
     virtual ~DeleteLODCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
-    const DAVA::Vector<DeleteRenderBatchCommand *> & GetRenderBatchCommands() const;
-    
+    const DAVA::Vector<DeleteRenderBatchCommand*>& GetRenderBatchCommands() const;
+
 protected:
-
-	DAVA::LodComponent *lodComponent;
+    DAVA::LodComponent* lodComponent;
     DAVA::int32 deletedLodIndex;
     DAVA::int32 requestedSwitchIndex;
-    
-	DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
-    DAVA::Vector<DeleteRenderBatchCommand *> deletedBatches;
+
+    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
+    DAVA::Vector<DeleteRenderBatchCommand*> deletedBatches;
 };
 
 

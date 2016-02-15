@@ -29,65 +29,64 @@
 
 #include "Commands2/ParticleEmitterMoveCommands.h"
 
-ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent *_oldEffect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleEffectComponent *_newEffect, int _newIndex)
-	: Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
-	, emitter(_emitter)
-	, oldEffect(_oldEffect)
-	, newEffect(_newEffect)
-	, oldIndex(-1)
-	, newIndex(_newIndex)
+ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* _oldEffect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleEffectComponent* _newEffect, int _newIndex)
+    : Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
+    , oldEffect(_oldEffect)
+    , newEffect(_newEffect)
+    , oldIndex(-1)
+    , newIndex(_newIndex)
 {
-	SafeRetain(emitter);
-	if(NULL != emitter && NULL != oldEffect)
-	{
-		oldIndex = oldEffect->GetEmitterId(emitter);
-	}
+    if (nullptr != _emitter && nullptr != oldEffect)
+    {
+        oldIndex = oldEffect->GetEmitterId(_emitter);
+        emitterData = oldEffect->GetEmitterData(oldIndex);
+        DVASSERT(emitterData.emitter == _emitter);
+    }
 }
 
 ParticleEmitterMoveCommand::~ParticleEmitterMoveCommand()
 {
-	SafeRelease(emitter);
 }
 
 void ParticleEmitterMoveCommand::Undo()
 {
-	if(NULL != emitter)
-	{
-		if(NULL != newEffect)
-		{
-			newEffect->RemoveEmitter(emitter);
-		}
+    if (nullptr != emitterData.emitter.Get())
+    {
+        if (nullptr != newEffect)
+        {
+            newEffect->RemoveEmitterData(emitterData);
+        }
 
-		if(NULL != oldEffect)
-		{
-			if(-1 != oldIndex)
-			{
-				oldEffect->InsertEmitterAt(emitter, oldIndex);
-			}
-			else
-			{
-				oldEffect->AddEmitter(emitter);
-			}
-		}
-	}
+        if (nullptr != oldEffect)
+        {
+            if (-1 != oldIndex)
+            {
+                oldEffect->InsertEmitterDataAt(emitterData, oldIndex);
+            }
+            else
+            {
+                oldEffect->AddEmitterData(emitterData);
+            }
+        }
+    }
 }
 
 void ParticleEmitterMoveCommand::Redo()
 {
-	if(NULL != emitter && NULL != newEffect)
-	{
-		if(NULL != oldEffect)
-		{
-			oldEffect->RemoveEmitter(emitter);
-		}
+    if (nullptr != emitterData.emitter.Get() && nullptr != newEffect)
+    {
+        if (nullptr != oldEffect)
+        {
+            oldEffect->RemoveEmitterData(emitterData);
+        }
 
-		if(-1 != newIndex)
-		{
-			newEffect->InsertEmitterAt(emitter, newIndex);
-		}
-		else
-		{
-			newEffect->AddEmitter(emitter);
-		}
-	}
+        if (-1 != newIndex)
+        {
+            newEffect->InsertEmitterDataAt(emitterData, newIndex);
+        }
+        else
+        {
+            newEffect->AddEmitterData(emitterData);
+        }
+    }
 }

@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-class LandscapeProxy: public BaseObject
+class LandscapeProxy : public BaseObject
 {
 public:
     enum eTilemaskTextures
@@ -63,13 +63,14 @@ public:
     static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
 protected:
-	virtual ~LandscapeProxy();
+    virtual ~LandscapeProxy();
+
 public:
-	LandscapeProxy(Landscape* landscape, Entity* node);
+    LandscapeProxy(Landscape* landscape, Entity* node);
 
-	void SetMode(LandscapeProxy::eLandscapeMode mode);
+    void SetMode(LandscapeProxy::eLandscapeMode mode);
 
-	const AABBox3 & GetLandscapeBoundingBox();
+    const AABBox3& GetLandscapeBoundingBox();
     Texture* GetLandscapeTexture(const FastName& level);
     Color GetLandscapeTileColor(const FastName& level);
     void SetLandscapeTileColor(const FastName& level, const Color& color);
@@ -79,21 +80,21 @@ public:
     RenderObject* GetRenderObject();
     void SetHeightmap(Heightmap* heightmap);
 
-	void CursorEnable();
-	void CursorDisable();
-	void SetCursorTexture(Texture* texture);
+    void CursorEnable();
+    void CursorDisable();
+    void SetCursorTexture(Texture* texture);
     void SetCursorSize(float32 size);
     void SetCursorPosition(const Vector2& position);
 
     Vector3 PlacePoint(const Vector3& point);
 
-	bool IsTilemaskChanged();
-	void ResetTilemaskChanged();
-	void IncreaseTilemaskChanges();
-	void DecreaseTilemaskChanges();
+    bool IsTilemaskChanged();
+    void ResetTilemaskChanged();
+    void IncreaseTilemaskChanges();
+    void DecreaseTilemaskChanges();
 
-	void InitTilemaskImageCopy();
-	Image* GetTilemaskImageCopy();
+    void InitTilemaskImageCopy();
+    Image* GetTilemaskImageCopy();
 
     void InitTilemaskDrawTextures();
     Texture* GetTilemaskDrawTexture(int32 number);

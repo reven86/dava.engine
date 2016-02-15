@@ -274,13 +274,6 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
     triangleCount = vertexIndexCount / 3;
     unoptimizedVerteces.resize(vertexIndexCount);
 
-    printf("- submesh verteces:%ld indeces: %d %d %d\n", pVertexSource->GetDataCount(), vertexIndexCount, texIndexCount0, normalIndexCount);
-
-    if ((vertexIndexCount != texIndexCount0) || (texIndexCount0 != normalIndexCount) || (texIndexCount1 != normalIndexCount))
-    {
-        //printf("*** ERROR: Index count is different for different sources\n");
-    }
-
     for (int v = 0; v < vertexIndexCount; ++v)
     {
         ColladaVertex tv;
@@ -356,12 +349,6 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
                 tv.joint[jointi] = vertexWeightArray[vertexIndex].jointArray[jointi];
                 tv.weight[jointi] = vertexWeightArray[vertexIndex].weightArray[jointi];
             }
-            //printf("ind: %d, ", vertexIndex);
-        }
-
-        if ((vertexIndex != normalIndex || vertexIndex != tex0Index || vertexIndex != tex1Index))
-        {
-            printf("Error:: fucking Max!!!!");
         }
 
         unoptimizedVerteces[v] = tv;
@@ -390,8 +377,6 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
             indexArray[i * 3 + 2] = i * 3 + 2;
         }
     }
-
-    int vertexCountBeforeOptimization = vertexIndexCount;
 
     //	std::vector<ColladaSortVertex> vertexSortArray;
     //	time_t tm1 = time(0);
@@ -611,8 +596,6 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
     for (int k = 0; k < vertexIndexCount; ++k)
         skinVerteces[k] = unoptimizedVerteces[k];
 
-    printf("\t\tOptimization: %0.2f initial vertexes: %d opt vertexes: %d\n", ((float)vertexIndexCount / (float)vertexCountBeforeOptimization), vertexCountBeforeOptimization, vertexIndexCount);
-
 #ifdef COLLADA_GLUT_RENDER
 
     renderListId = glGenLists(1);
@@ -647,18 +630,13 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
     glEndList();
 
 #endif
-    printf("\t\tbbox: min: %0.3f %0.3f %0.3f max: %0.3f %0.3f %0.3f\n", bbox.min.x, bbox.min.y, bbox.min.z, bbox.max.x, bbox.max.y, bbox.max.z);
 }
 
 void ColladaPolygonGroup::Render(ColladaMaterial* material)
 {
-    /*#ifdef COLLADA_GLUT_RENDER
-	glCallList(renderListId);
-#endif*/
-    if (material == 0)
+    if (material == nullptr)
     {
         material = ColladaMaterial::GetDefaultMaterial();
-        //printf("default material\n");
     }
 
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -679,7 +657,6 @@ void ColladaPolygonGroup::Render(ColladaMaterial* material)
     matDiffuse[1] = material->diffuse.y;
     matDiffuse[2] = material->diffuse.z;
     matDiffuse[3] = material->transparency;
-    //	printf("%s %0.3f %0.3f %0.3f\n", material->material->GetDaeId().c_str(), matDiffuse[0], matDiffuse[1], matDiffuse[2]);
 
     matSpecular[0] = material->specular.x;
     matSpecular[1] = material->specular.y;
@@ -716,10 +693,6 @@ void ColladaPolygonGroup::Render(ColladaMaterial* material)
     // diffuse texture
     if (material->hasDiffuseTexture)
     {
-        if (material->diffuseTexture->textureId == -1)
-        {
-            printf("Trying to render missing texture\n");
-        }
         glClientActiveTextureARB(GL_TEXTURE0_ARB);
         glActiveTextureARB(GL_TEXTURE0_ARB);
         glEnable(GL_TEXTURE_2D);

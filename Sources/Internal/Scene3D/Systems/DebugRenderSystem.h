@@ -35,26 +35,24 @@
 
 namespace DAVA
 {
-
 class Camera;
 
 class DebugRenderSystem : public SceneSystem
 {
 public:
-	DebugRenderSystem(Scene * scene);
+    DebugRenderSystem(Scene* scene);
     ~DebugRenderSystem();
 
-	virtual void Process(float32 timeElapsed);
-	virtual void AddEntity(Entity * entity);
-	virtual void RemoveEntity(Entity * entity);
-    
-    void SetCamera(Camera * camera);
+    virtual void Process(float32 timeElapsed);
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+
+    void SetCamera(Camera* camera);
 
 private:
-	Vector<Entity*> entities;
+    Vector<Entity*> entities;
     Camera* camera;
 };
-
 }
 
 #endif //__DAVAENGINE_SCENE3D_DEBUGRENDERSYSTEM_H__

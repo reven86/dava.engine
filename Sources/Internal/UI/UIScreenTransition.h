@@ -33,7 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIScreen.h"
 
-
 namespace DAVA
 {
 class UI3DView;
@@ -42,16 +41,16 @@ class UIScreenshoter;
 class UIScreenTransition : public UIScreen
 {
 public:
-	UIScreenTransition();
-	virtual ~UIScreenTransition();
-	
-	static void CreateRenderTargets();
-	static void ReleaseRenderTargets();
-	
-	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
-	virtual void SetDuration(float32 timeInSeconds);
+    UIScreenTransition();
+    virtual ~UIScreenTransition();
+
+    static void CreateRenderTargets();
+    static void ReleaseRenderTargets();
+
+    virtual void StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen);
+    virtual void Update(float32 timeElapsed);
+    virtual void Draw(const UIGeometricData& geometricData);
+    virtual void SetDuration(float32 timeInSeconds);
     virtual bool IsLoadingTransition();
 
 protected:
@@ -68,9 +67,7 @@ protected:
     UIScreen* prevScreen;
     UIScreen* nextScreen;
     UIScreenshoter* shooter;
-
 };
-
 };
 
 
