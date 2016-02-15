@@ -91,7 +91,7 @@ inline void Semaphore::Post(uint32 count)
 
 inline void Semaphore::Wait()
 {
-    WaitForSingleObjectEx(semaphore, INFINITE, nullptr);
+    WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
 }
 
 #elif defined(__DAVAENGINE_APPLE__)

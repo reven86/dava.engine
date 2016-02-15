@@ -50,7 +50,7 @@ DAVA::WideString DateTime::AsWString(const wchar_t* format) const
 
     GmTimeThreadSafe(&timeinfo, &timeWithTZ);
 
-    locale_t loc = newlocale(LC_ALL_MASK, locID.c_str(), nullptr);
+    locale_t loc = newlocale(LC_ALL_MASK, locID.c_str(), 0);
     size_t size = wcsftime_l(buffer, 256, format, &timeinfo, loc);
     DVASSERT(size);
     DAVA::WideString str(buffer);
