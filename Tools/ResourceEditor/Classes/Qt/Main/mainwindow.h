@@ -62,7 +62,7 @@ class QtMainWindow
 {
     Q_OBJECT
 
-protected:
+public:
     static const int GLOBAL_INVALIDATE_TIMER_DELTA = 1000;
 
 signals:

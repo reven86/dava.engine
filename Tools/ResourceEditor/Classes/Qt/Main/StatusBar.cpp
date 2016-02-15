@@ -47,6 +47,11 @@ StatusBar::StatusBar(QWidget* parent)
     sceneGeometry->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     addPermanentWidget(sceneGeometry);
 
+    fpsCounter = new QLabel(this);
+    fpsCounter->setToolTip("Current FPS for active scene");
+    fpsCounter->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    addPermanentWidget(fpsCounter);
+
     distanceToCamera = new QLabel(this);
     distanceToCamera->setToolTip("Distance from camera to center of the selection");
     distanceToCamera->setFrameStyle(QFrame::Panel | QFrame::Sunken);
@@ -136,6 +141,7 @@ void StatusBar::StructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 void StatusBar::UpdateByTimer()
 {
     UpdateDistanceToCamera();
+    UpdateFPS();
 }
 
 void StatusBar::OnSceneGeometryChaged(int width, int height)
@@ -161,5 +167,25 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
         DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
         selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
         selectionBoxSize->setVisible(true);
+    }
+}
+
+void StatusBar::UpdateFPS()
+{
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    DAVA::uint32 frames = 0;
+    if (scene != nullptr)
+    {
+        frames = scene->GetFramesCount();
+        scene->ResetFramesCount();
+    }
+
+    if (frames > 0)
+    {
+        distanceToCamera->setText(QString::fromStdString(DAVA::Format("FPS: %d", frames)));
+    }
+    else
+    {
+        distanceToCamera->setText(QString::fromStdString("FPS: unknown"));
     }
 }

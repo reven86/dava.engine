@@ -58,13 +58,15 @@ public slots:
 
 protected:
     void UpdateDistanceToCamera();
+    void UpdateFPS();
     void SetDistanceToCamera(DAVA::float32 distance);
     void ResetDistanceToCamera();
     void UpdateSelectionBoxSize(SceneEditor2* scene);
 
-    QLabel* distanceToCamera;
-    QLabel* sceneGeometry;
-    QLabel* selectionBoxSize;
+    QLabel* distanceToCamera = nullptr;
+    QLabel* fpsCounter = nullptr;
+    QLabel* sceneGeometry = nullptr;
+    QLabel* selectionBoxSize = nullptr;
 };
 
 #endif // __STATUS_BAR_H__
