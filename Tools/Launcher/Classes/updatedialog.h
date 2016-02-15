@@ -31,13 +31,13 @@
 #define UPDATEDIALOG_H
 
 #include "configparser.h"
+#include "ziputils.h"
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QQueue>
 #include <QFile>
 #include <QTreeWidgetItem>
-#include "ziputils.h"
 
 namespace Ui
 {

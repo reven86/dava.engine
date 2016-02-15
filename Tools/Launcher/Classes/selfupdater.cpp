@@ -30,20 +30,16 @@
 #include "selfupdater.h"
 #include "ui_selfupdater.h"
 #include "filemanager.h"
+#include "ziputils.h"
 #include "processhelper.h"
 #include "errormessanger.h"
 #include <QProcess>
-#include "ziputils.h"
 
 SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent)
-    :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
-    ,
-    ui(new Ui::SelfUpdater)
-    ,
-    archiveUrl(arcUrl)
-    ,
-    networkManager(accessManager)
+    : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    , ui(new Ui::SelfUpdater)
+    , archiveUrl(arcUrl)
+    , networkManager(accessManager)
 {
     ui->setupUi(this);
 

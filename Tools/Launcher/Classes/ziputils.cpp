@@ -80,12 +80,12 @@ QString ZipError::GetErrorString() const
 
 namespace ZIP_UTILS_LOCAL
 {
-    ZipError *GetDefaultZipError()
-    {
-        static ZipError localError;
-        localError.error = ZipError::NO_ERRORS; //prevouis requester can break state of this varaiable
-        return &localError;
-    }
+ZipError *GetDefaultZipError()
+{
+    static ZipError localError;
+    localError.error = ZipError::NO_ERRORS; //prevouis requester can break state of this varaiable
+    return &localError;
+}
 }
 
 bool ZipUtils::IsArchiveValid(const QString &archivePath, ZipError *err)
@@ -121,10 +121,6 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
         err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
     Q_ASSERT(err->error == ZipError::NO_ERRORS);
-    if(err->error != ZipError::NO_ERRORS)
-    {
-        return false;
-    }
 
     QString processAddr = ZipUtils::GetArchiverPath();
     QProcess zipProcess;
@@ -139,13 +135,14 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
             }
         }
     });
+    QEventLoop loop;
+    QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
+    zipProcess.start(processAddr, arguments);
     if(!zipProcess.waitForStarted(5000))
     {
         err->error = ZipError::PROCESS_FAILED_TO_START;
         return false;
     }
-    QEventLoop loop;
-    QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit);
     loop.exec();
     if(zipProcess.exitStatus() == QProcess::CrashExit)
     {
