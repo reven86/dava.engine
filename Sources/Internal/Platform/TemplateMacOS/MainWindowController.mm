@@ -678,8 +678,11 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 
         //This magick needed to correctly 'reshape' GLView and resize back-buffer.
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
-        [mainWindowController->mainWindow setContentView:nil];
-        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+        NSSize sz = [mainWindowController->openGLView frame].size;
+        sz.width += 1;
+        [mainWindowController->mainWindow setContentSize:sz];
+        sz.width -= 1;
+        [mainWindowController->mainWindow setContentSize:sz];
     }
 }
 };
