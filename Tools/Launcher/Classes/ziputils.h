@@ -32,6 +32,7 @@
 
 //this is private header
 #include <QObject>
+#include <functional>
 
 class ZipError : public QObject
 {
@@ -56,9 +57,16 @@ public:
 namespace ZipUtils
 {
     using ReadyReadCallback = std::function<void(const QByteArray &)>;
+    using ProgressFuntor = std::function<void(int)>;
+    using CompressedFilesAndSizes = QMap < QString, qint64 >;
+
     const QString &GetArchiverPath();
     bool IsArchiveValid(const QString &archivePath, ZipError *err = nullptr);
     bool LaunchArchiver(const QStringList &arguments, ReadyReadCallback callback = ReadyReadCallback(), ZipError *err = nullptr);
+    bool GetFileList(const QString &archivePath, CompressedFilesAndSizes &files, ZipError *err = nullptr);
+    bool TestZipArchive(const QString &archivePath, const CompressedFilesAndSizes &files, ProgressFuntor onProgress = ProgressFuntor(), ZipError *err = nullptr);
+    bool UnpackZipArchive(const QString &archivePath, const QString &outDir, const CompressedFilesAndSizes &files, ProgressFuntor onProgress = ProgressFuntor(), ZipError *err = nullptr);
+
 
 }
 

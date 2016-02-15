@@ -20,13 +20,6 @@ include_directories   ( "ThirdParty/yaml/include" )
 
 link_directories      ("ThirdParty" )
 
-add_definitions       ( -DQUAZIP_STATIC )
-
-
-if ( WIN32 )
-    set( LIB_RELEASE  "msvcrt.lib"  "zlib.lib"   )
-    set( LIB_DEBUG    "msvcrtd.lib" "zlibd.lib"  )
-endif()
 
 file                  ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui           ( UI_APP_HDRS  ${UI_LIST} )

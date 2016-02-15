@@ -24,7 +24,7 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+    =====================================================================================*/
 
 
 #include "selfupdater.h"
@@ -33,6 +33,7 @@
 #include "processhelper.h"
 #include "errormessanger.h"
 #include <QProcess>
+#include "ziputils.h"
 
 SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent)
     :
@@ -43,10 +44,6 @@ SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessMan
     archiveUrl(arcUrl)
     ,
     networkManager(accessManager)
-    ,
-    currentDownload(0)
-    ,
-    lastErrorCode(0)
 {
     ui->setupUi(this);
 
@@ -63,7 +60,7 @@ void SelfUpdater::OnStartUpdating()
 
     connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
     connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+        this, SLOT(NetworkError(QNetworkReply::NetworkError)));
 }
 
 void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
@@ -72,7 +69,7 @@ void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
     lastErrorCode = code;
 
     currentDownload->deleteLater();
-    currentDownload = 0;
+    currentDownload = nullptr;
 }
 
 void SelfUpdater::DownloadFinished()
@@ -82,9 +79,9 @@ void SelfUpdater::DownloadFinished()
         FileManager::Instance()->ClearTempDirectory();
 
         const QString& archiveFilePath = FileManager::Instance()->GetTempDownloadFilepath();
-        const QString& tempDir = FileManager::Instance()->GetTempDirectory();
-        const QString& appDir = FileManager::Instance()->GetLauncherDirectory();
-        const QString& selfUpdateDir = FileManager::Instance()->GetSelfUpdateTempDirectory();
+        const QString& tempDirPath = FileManager::Instance()->GetTempDirectory();
+        const QString& appDirPath = FileManager::Instance()->GetLauncherDirectory();
+        const QString& selfUpdateDirPath = FileManager::Instance()->GetSelfUpdateTempDirectory();
 
         QFile archiveFile(archiveFilePath);
         archiveFile.open(QFile::WriteOnly);
@@ -92,17 +89,30 @@ void SelfUpdater::DownloadFinished()
         archiveFile.close();
 
         currentDownload->deleteLater();
-        currentDownload = 0;
+        currentDownload = nullptr;
 
-        //!unpacker->UnZipFile(archiveFilePath, selfUpdateDir);
+        ZipUtils::CompressedFilesAndSizes files;
+        ZipError zipError;
+        if (ZipUtils::GetFileList(archiveFilePath, files, &zipError)
+            && ZipUtils::TestZipArchive(archiveFilePath, files, ZipUtils::ProgressFuntor(), &zipError)
+            && ZipUtils::UnpackZipArchive(archiveFilePath, selfUpdateDirPath, files, ZipUtils::ProgressFuntor(), &zipError)
+            )
+        {
+            FileManager::Instance()->MoveFilesOnlyToDirectory(appDirPath, tempDirPath);
+            FileManager::Instance()->MoveFilesOnlyToDirectory(selfUpdateDirPath, appDirPath);
+            FileManager::Instance()->DeleteDirectory(selfUpdateDirPath);
+            FileManager::Instance()->ClearTempDirectory();
+            ErrorMessanger::Instance()->ShowNotificationDlg("Launcher was updated. Please, relaunch application.");
+            qApp->exit();
+        }
+        else
+        {
+            FileManager::Instance()->DeleteDirectory(selfUpdateDirPath);
+            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+            setResult(QDialog::Rejected);
+            close();
+        }
 
-        FileManager::Instance()->MoveFilesOnlyToDirectory(appDir, tempDir);
-        FileManager::Instance()->MoveFilesOnlyToDirectory(selfUpdateDir, appDir);
-        FileManager::Instance()->DeleteDirectory(selfUpdateDir);
-
-        ErrorMessanger::Instance()->ShowNotificationDlg("Launcher was updated. Please, relaunch application.");
-
-        qApp->exit();
     }
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {

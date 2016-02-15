@@ -35,9 +35,6 @@
 #include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
-#include "ziplist.h"
-#include "ziptest.h"
-#include "zipunpack.h"
 #include <QNetworkReply>
 #include <QDir>
 #include <QPushButton>
@@ -189,7 +186,7 @@ void UpdateDialog::DownloadFinished()
         AddLogValue(tr("Checking archive..."));
 
         ui->cancelButton->setEnabled(false);
-        ZipList::CompressedFilesAndSizes files;
+        ZipUtils::CompressedFilesAndSizes files;
         if(ListArchive(filePath, files)
            && TestArchive(filePath, files)
            && UnpackArchive(filePath, appDir, files))
@@ -218,12 +215,12 @@ void UpdateDialog::DownloadFinished()
 
 }
 
-bool UpdateDialog::ListArchive(const QString &archivePath, ZipList::CompressedFilesAndSizes &files)
+bool UpdateDialog::ListArchive(const QString &archivePath, ZipUtils::CompressedFilesAndSizes &files)
 {
     ZipError zipError;
-    ZipList::GetFileList(archivePath, files, &zipError);
-    if(zipError.error != ZipError::NO_ERRORS)
+    if(!ZipUtils::GetFileList(archivePath, files, &zipError))
     {
+        Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
         ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
         UpdateLastLogValue(tr("Archive not found or damaged!"));
         BreakLog();
@@ -231,16 +228,16 @@ bool UpdateDialog::ListArchive(const QString &archivePath, ZipList::CompressedFi
     return zipError.error == ZipError::NO_ERRORS;
 }
 
-bool UpdateDialog::TestArchive(const QString &archivePath, const ZipList::CompressedFilesAndSizes &files)
+bool UpdateDialog::TestArchive(const QString &archivePath, const ZipUtils::CompressedFilesAndSizes &files)
 {
     ZipError zipError;
     UpdateLastLogValue(tr("Checking archive..."));
-    ZipTest::ProgressFuntor onProgress = [this](int progress)
+    ZipUtils::ProgressFuntor onProgress = [this](int progress)
     {
         ui->progressBar2->setValue(progress);
         UpdateLastLogValue(tr("Checking archive...  %1%").arg(progress));
     };
-    bool archiveTested = ZipTest::TestZipArchive(archivePath, onProgress, files, &zipError);
+    bool archiveTested = ZipUtils::TestZipArchive(archivePath, files, onProgress, &zipError);
     if(archiveTested)
     {
         UpdateLastLogValue(tr("Archive checked!"));
@@ -255,17 +252,17 @@ bool UpdateDialog::TestArchive(const QString &archivePath, const ZipList::Compre
     return archiveTested;
 }
 
-bool UpdateDialog::UnpackArchive(const QString &archivePath, const QString &outDir, const ZipList::CompressedFilesAndSizes &files)
+bool UpdateDialog::UnpackArchive(const QString &archivePath, const QString &outDir, const ZipUtils::CompressedFilesAndSizes &files)
 {
     AddLogValue(tr("Unpacking archive..."));
     ZipError zipError;
     UpdateLastLogValue(tr("Unpacking archive..."));
-    ZipTest::ProgressFuntor onProgress = [this](int progress)
+    ZipUtils::ProgressFuntor onProgress = [this](int progress)
     {
         ui->progressBar3->setValue(progress);
         UpdateLastLogValue(tr("Unpacking archive...  %1%").arg(progress));
     };
-    bool archiveUnpacked = ZipUnpack::UnpackZipArchive(archivePath, outDir, onProgress, files, &zipError);
+    bool archiveUnpacked = ZipUtils::UnpackZipArchive(archivePath, outDir, files, onProgress, &zipError);
     if(archiveUnpacked)
     {
         UpdateLastLogValue(tr("Archive unpacked!"));

@@ -31,13 +31,13 @@
 #define UPDATEDIALOG_H
 
 #include "configparser.h"
-#include "ziplist.h"
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QQueue>
 #include <QFile>
 #include <QTreeWidgetItem>
+#include "ziputils.h"
 
 namespace Ui
 {
@@ -86,9 +86,9 @@ private slots:
     void StartNextTask();
 
 private:
-    bool ListArchive(const QString &archivePath, ZipList::CompressedFilesAndSizes &files);
-    bool TestArchive(const QString &archivePath, const ZipList::CompressedFilesAndSizes &files);
-    bool UnpackArchive(const QString &archivePath, const QString &outDir, const ZipList::CompressedFilesAndSizes &files);
+    bool ListArchive(const QString &archivePath, ZipUtils::CompressedFilesAndSizes &files);
+    bool TestArchive(const QString &archivePath, const ZipUtils::CompressedFilesAndSizes &files);
+    bool UnpackArchive(const QString &archivePath, const QString &outDir, const ZipUtils::CompressedFilesAndSizes &files);
     void UpdateButton();
 
     void AddTopLogValue(const QString& log);

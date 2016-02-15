@@ -34,6 +34,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
+#include <memory>
 
 namespace Ui
 {
@@ -60,8 +61,8 @@ private:
     std::unique_ptr<Ui::SelfUpdater> ui;
     QString archiveUrl;
 
-    QNetworkAccessManager* networkManager;
-    QNetworkReply* currentDownload;
+    QNetworkAccessManager* networkManager = nullptr;
+    QNetworkReply* currentDownload = nullptr;
 
     int lastErrorCode;
     QString lastErrorDesrc;

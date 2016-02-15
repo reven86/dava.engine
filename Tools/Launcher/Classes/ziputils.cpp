@@ -27,34 +27,79 @@
 =====================================================================================*/
 
 
-#include "ziplist.h"
+#include "ziputils.h"
 #include <QString>
 #include <QProcess>
 #include <QFile>
 #include <QRegularExpression>
 #include <QEventLoop>
+#include <QDir>
+#include <numeric>
 
 const QString &ZipUtils::GetArchiverPath()
 {
     static QString processAddr =
 #if defined(Q_OS_WIN)
-    "../../Data/7z.exe";
+#if defined(__DAVAENGINE_DEBUG__)
+        "../../Data/7z.exe";
+#else
+        "./Data/7z.exe";
+#endif //__DAVAENGINE_DEBUG__)
 #elif defined Q_OS_MAC
-#ifdef Debug
+#if defined(__DAVAENGINE_DEBUG__)
     "../../Data/7za";
 #else
-    "../../Data/7za";
-#endif //DEBUG
+    "./Data/7za";
+#endif //__DAVAENGINE_DEBUG__
 #endif //Q_OS_MAC Q_OS_WIN
     return processAddr;
+}
+
+QString ZipError::GetErrorString() const
+{
+    switch (error)
+    {
+    case NO_ERRORS:
+        return tr("No errors occurred");
+    case FILE_NOT_EXISTS:
+        return tr("Required archive not exists");
+    case NOT_AN_ARCHIVE:
+        return tr("Required file are not an zip archive");
+    case ARHIVE_DAMAGED:
+        return tr("Archive corrupted");
+    case ARCHIVER_NOT_FOUND:\
+        return tr("Archiver tool was not found. Reinstall application, please");
+    case PROCESS_FAILED_TO_START:
+        return tr("Failed to launch archiver");
+    case PROCESS_FAILED_TO_FINISH:
+        return tr("Archiver failed to get list of files from archive");
+    case PARSE_ERROR:
+        return tr("Unknown format of archiver output");
+    case ARCHIVE_IS_EMPTY:
+        return tr("Archive is empty!");
+    case OUT_DIRECTORY_NOT_EXISTS:
+        return tr("Output directory does not exist!");
+    default:
+        Q_ASSERT(false && "invalid condition passed to GetErrorString");
+        return QString();
+    }
+}
+
+namespace ZIP_UTILS_LOCAL
+{
+    ZipError *GetDefaultZipError()
+    {
+        static ZipError localError;
+        localError.error = ZipError::NO_ERRORS; //prevouis requester can break state of this varaiable
+        return &localError;
+    }
 }
 
 bool ZipUtils::IsArchiveValid(const QString &archivePath, ZipError *err)
 {
     if(err == nullptr)
     {
-        static ZipError localError;
-        err = &localError;
+        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
     QString processAddr = GetArchiverPath();
     
@@ -80,8 +125,7 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
 {
     if(err == nullptr)
     {
-        static ZipError localError;
-        err = &localError;
+        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
     Q_ASSERT(err->error == ZipError::NO_ERRORS);
     if(err->error != ZipError::NO_ERRORS)
@@ -98,6 +142,7 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
             if(err->error != ZipError::NO_ERRORS) //callback can produce errors
             {
                 zipProcess.kill();
+                return;
             }
         }
     });
@@ -114,32 +159,159 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
 }
 
 
-QString ZipError::GetErrorString() const
+bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &fileList, ZipError *err)
 {
-    switch (error)
+    if (err == nullptr)
     {
-        case NO_ERRORS:
-            return tr("No errors occurred");
-        case FILE_NOT_EXISTS:
-            return tr("Required archive not exists");
-        case NOT_AN_ARCHIVE:
-            return tr("Required file are not an zip archive");
-        case ARHIVE_DAMAGED:
-            return tr("Archive corrupted");
-        case ARCHIVER_NOT_FOUND:\
-            return tr("Archiver tool was not found. Reinstall application, please");
-        case PROCESS_FAILED_TO_START:
-            return tr("Failed to launch archiver");
-        case PROCESS_FAILED_TO_FINISH:
-            return tr("Archiver failed to get list of files from archive");
-        case PARSE_ERROR:
-            return tr("Unknown format of archiver output");
-        case ARCHIVE_IS_EMPTY:
-            return tr("Archive is empty!");
-        case OUT_DIRECTORY_NOT_EXISTS:
-            return tr("Output directory does not exist!");
-        default:
-            Q_ASSERT(false && "invalid condition passed to GetErrorString");
-            return QString();
+        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
+    if (!IsArchiveValid(archivePath, err))
+    {
+        return false;
+    }
+    QRegularExpression regExp("\\s+");
+    bool foundOutputData = false;
+    ReadyReadCallback callback = [&regExp, &foundOutputData, err, &fileList](const QByteArray &line){
+        if (line.startsWith("----------")) //this string occurrs two times: before file list and at the and of file list
+        {
+            foundOutputData = !foundOutputData;
+            return;
+        }
+        if (!foundOutputData)
+        {
+            return;
+        }
+        QString str(line);
+        QStringList infoStringList = str.split(regExp, QString::SkipEmptyParts);
+        const int SIZE_INDEX = 3;
+        const int NAME_INDEX = 5;
+        if (infoStringList.size() < NAME_INDEX + 1)
+        {
+            err->error = ZipError::PARSE_ERROR;
+            return;
+        }
+        bool ok = true;
+        qint64 size = infoStringList.at(SIZE_INDEX).toLongLong(&ok);
+        if (!ok)
+        {
+            err->error = ZipError::PARSE_ERROR;
+            return;
+        }
+        const QString &file = infoStringList.at(NAME_INDEX);
+        Q_ASSERT(!fileList.contains(file));
+        fileList[file] = size;
+    };
+    if (!LaunchArchiver(QStringList() << "l" << archivePath, callback, err))
+    {
+        return false;
+    }
+    if (fileList.empty())
+    {
+        err->error = ZipError::ARCHIVE_IS_EMPTY;
+        return false;
+    }
+    return true;
+}
+
+bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesAndSizes &files, ProgressFuntor onProgress, ZipError *err)
+{
+    if (err == nullptr)
+    {
+        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
+    }
+    if (!IsArchiveValid(archivePath, err))
+    {
+        return false;
+    }
+
+    bool success = false;
+    qint64 matchedSize = 0;
+    const auto values = files.values();
+    qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
+    ReadyReadCallback callback = [&success, &onProgress, &files, &matchedSize, totalSize, err](const QByteArray &line) {
+        QString str(line);
+        QRegularExpression stringRegEx("\\s+");
+        QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
+        if (infoStringList.size() > 1)
+        {
+            const auto &file = infoStringList.at(1);
+            if (files.contains(file))
+            {
+                matchedSize += files[file];
+            }
+        }
+
+        onProgress((matchedSize * 100.0f) / totalSize);
+        if (str.contains("Everything is Ok"))
+        {
+            success = true;
+        }
+    };
+    QStringList arguments;
+    arguments << "t" << "-bb1" << archivePath;
+    if (!LaunchArchiver(arguments, callback, err))
+    {
+        return false;
+    }
+    if (success != true)
+    {
+        err->error = ZipError::ARHIVE_DAMAGED;
+        return false;
+    }
+    return true;
+}
+
+
+bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDirPath, const CompressedFilesAndSizes &files, ProgressFuntor onProgress, ZipError *err)
+{
+    if (err == nullptr)
+    {
+        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
+    }
+    if (!IsArchiveValid(archivePath, err))
+    {
+        return false;
+    }
+    QDir outDir(outDirPath);
+    if (!outDir.mkpath(".") || !outDir.exists())
+    {
+        err->error = ZipError::OUT_DIRECTORY_NOT_EXISTS;
+        return false;
+    }
+
+    bool success = false;
+    qint64 matchedSize = 0;
+    const auto values = files.values();
+    qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
+    ReadyReadCallback callback = [&success, &onProgress, &files, &matchedSize, totalSize, err](const QByteArray &line) {
+        QString str(line);
+        QRegularExpression stringRegEx("\\s+");
+        QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
+        if (infoStringList.size() > 1)
+        {
+            const auto &file = infoStringList.at(1);
+            if (files.contains(file))
+            {
+                matchedSize += files[file];
+            }
+        }
+
+        onProgress((matchedSize * 100.0f) / totalSize);
+        if (str.contains("Everything is Ok"))
+        {
+            success = true;
+        }
+    };
+    QStringList arguments;
+    arguments << "x" << "-y" << "-bb1" << archivePath << "-o" + outDirPath;
+    if (!LaunchArchiver(arguments, callback, err))
+    {
+        return false;
+    }
+    if (success != true)
+    {
+        err->error = ZipError::ARHIVE_DAMAGED;
+        return false;
+    }
+    return true;
 }
