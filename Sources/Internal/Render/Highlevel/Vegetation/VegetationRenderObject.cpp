@@ -37,6 +37,7 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/RenderHelper.h"
+#include "Render/TextureDescriptor.h"
 #include "Platform/SystemTimer.h"
 #include "Job/JobManager.h"
 
@@ -376,10 +377,7 @@ void VegetationRenderObject::Load(KeyedArchive* archive, SerializationContext* s
         }
         else
         {
-            if (FileSystem::Instance()->Exists(lightmapTexturePath))
-            {
-                GenerateDensityMapFromTransparencyMask(lightmapTexturePath, densityBits);
-            }
+            GenerateDensityMapFromTransparencyMask(lightmapTexturePath, densityBits);
         }
 
         if (densityBits.size() == 0)
@@ -1300,39 +1298,47 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
     }
 }
 
-void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits)
+void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePath& lightmapPath, Vector<bool>& densityMapBits)
 {
-    lightmapPath.ReplaceExtension(".png");
-
-    if (FileSystem::Instance()->Exists(lightmapPath))
+    std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(lightmapPath));
+    if (!descriptor)
     {
-        ScopedPtr<Image> lightmapImage(LoadSingleImage(lightmapPath));
-        if (lightmapImage)
+        Logger::Error("[VegetationRenderObject::GenerateDensityMapFromTransparencyMask] Cannot create descriptor from %s", lightmapPath.GetAbsolutePathname().c_str());
+        return;
+    }
+
+    FilePath imagePath = descriptor->GetSourceTexturePathname();
+
+    ScopedPtr<Image> lightmapImage(LoadSingleImage(imagePath));
+    if (lightmapImage)
+    {
+        uint32 ratio = lightmapImage->width / DENSITY_MAP_SIZE;
+
+        DVASSERT(lightmapImage->GetPixelFormat() == FORMAT_RGBA8888);
+        DVASSERT(ratio > 0);
+
+        if (ratio > 0 && lightmapImage->GetPixelFormat() == FORMAT_RGBA8888)
         {
-            uint32 ratio = lightmapImage->width / DENSITY_MAP_SIZE;
-
-            DVASSERT(lightmapImage->GetPixelFormat() == FORMAT_RGBA8888);
-            DVASSERT(ratio > 0);
-
-            if (ratio > 0 && lightmapImage->GetPixelFormat() == FORMAT_RGBA8888)
+            densityMapBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
+            uint32 stride = sizeof(uint32);
+            for (uint32 y = 0; y < DENSITY_MAP_SIZE; ++y)
             {
-                densityMapBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
-                uint32 stride = sizeof(uint32);
-                for (uint32 y = 0; y < DENSITY_MAP_SIZE; ++y)
+                for (uint32 x = 0; x < DENSITY_MAP_SIZE; ++x)
                 {
-                    for (uint32 x = 0; x < DENSITY_MAP_SIZE; ++x)
-                    {
-                        //VI: flip Y in order to match landscape and vegetation light mask
-                        uint32 flippedY = DENSITY_MAP_SIZE - y - 1;
+                    //VI: flip Y in order to match landscape and vegetation light mask
+                    uint32 flippedY = DENSITY_MAP_SIZE - y - 1;
 
-                        float32 meanAlpha = GetMeanAlpha(x, flippedY, ratio, stride, lightmapImage);
+                    float32 meanAlpha = GetMeanAlpha(x, flippedY, ratio, stride, lightmapImage);
 
-                        uint32 bitIndex = x + y * DENSITY_MAP_SIZE;
-                        densityMapBits[bitIndex] = (meanAlpha > DENSITY_THRESHOLD);
-                    }
+                    uint32 bitIndex = x + y * DENSITY_MAP_SIZE;
+                    densityMapBits[bitIndex] = (meanAlpha > DENSITY_THRESHOLD);
                 }
             }
         }
+    }
+    else
+    {
+        Logger::Error("[VegetationRenderObject::GenerateDensityMapFromTransparencyMask] Cannot create image from %s", imagePath.GetAbsolutePathname().c_str());
     }
 
     /*Image* outputImage = Image::Create(DENSITY_MAP_SIZE, DENSITY_MAP_SIZE, FORMAT_RGBA8888);
