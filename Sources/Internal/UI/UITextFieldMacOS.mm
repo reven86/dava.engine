@@ -695,7 +695,7 @@ public:
         // user input so better set cursor and curcor color every time
         SetTextColor(currentColor);
 
-        // HACK fix blue border visible on close app where was UITextField
+        // HACK for (DF-9457) fix blue border visible on close app where was UITextField
         NSCell* cell = [nsTextField cell];
         if (cell != nullptr)
         {
