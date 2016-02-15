@@ -7,7 +7,7 @@
 			VPROG_IN_TEXCOORD0(4)
 			VPROG_IN_TEXCOORD1(4)
 		VPROG_IN_STREAM_INSTANCE
-			VPROG_IN_TEXCOORD4(3)
+			VPROG_IN_TEXCOORD4(4)
 			VPROG_IN_TEXCOORD5(4)
 	VPROG_IN_END
 	
@@ -68,21 +68,36 @@ VPROG_BEGIN
 #if USE_INSTANCING
 
     float2 in_pos = VP_IN_TEXCOORD0.xy;
-    float2 morphDir = VP_IN_TEXCOORD0.zw;
+    float2 gluDir = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
     float3 patchOffsetScale = VP_IN_TEXCOORD4.xyz;
     float4 lodOffset = VP_IN_TEXCOORD5;
-
-    float morphAmount = dot(edgeMask, lodOffset);
-	float2 pos_i = abs(morphDir - in_pos) * float(PATCH_SIZE_QUADS);
-	float i = dot(pos_i, abs(morphDir));
-	float f = fmod(i, morphAmount);
-	in_pos += morphDir * f / float(PATCH_SIZE_QUADS);
+	
+    float gluAmount = dot(edgeMask, lodOffset);
+	float2 pos_i = abs(gluDir - in_pos) * float(PATCH_SIZE_QUADS);
+	float i = dot(pos_i, abs(gluDir));
+	float f = fmod(i, gluAmount);
+	in_pos += gluDir * f / float(PATCH_SIZE_QUADS);
    
     float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
-    float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition);
-    float relativeHeight = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
+	
+#if LOD_MORPHING
 
+	float lodMorph = VP_IN_TEXCOORD4.w;
+	float baseLod = floor(lodMorph);
+	float morphAmount = lodMorph - baseLod;
+	
+    float4 heightmapSample0 = VP_TEXTURE2D(heightmap, relativePosition, baseLod);
+	float4 heightmapSample1 = VP_TEXTURE2D(heightmap, relativePosition, baseLod + 1.0);
+	float4 heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
+	
+#else
+	
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition, 0.0);
+	
+#endif
+
+	float relativeHeight = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
     float3 vx_position = float3( relativePosition - 0.5, relativeHeight ) * boundingBoxSize;
 	
     VP_OUT_POSITION = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewProjMatrix );

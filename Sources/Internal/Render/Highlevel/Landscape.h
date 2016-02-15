@@ -85,6 +85,7 @@ public:
 
     const static FastName FLAG_PATCH_SIZE_QUADS;
     const static FastName FLAG_USE_INSTANCING;
+    const static FastName FLAG_LOD_MORPHING;
 
     const static FastName LANDSCAPE_QUALITY_NAME;
     const static FastName LANDSCAPE_QUALITY_VALUE_HIGH;
@@ -196,7 +197,8 @@ protected:
     bool forceFirstLod = false;
     bool updatable = false;
 
-    bool isInstancingUsed = false;
+    bool useInstancing = false;
+    bool useLodMorphing = false;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Subdivision
@@ -318,6 +320,7 @@ protected:
     {
         Vector2 patchOffset;
         float32 patchScale;
+        float32 lodMorph;
         Vector4 lodOffset; // per edge
     };
 

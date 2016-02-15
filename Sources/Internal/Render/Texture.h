@@ -111,6 +111,8 @@ public:
      */
     static Texture* CreateFromData(Image* img, bool generateMipMaps);
 
+    static Texture* CreateFromData(const Vector<Image*>& images);
+
     /**
         \brief Create text texture from data arrray
         This function creates texture from given format, data pointer and width + height, but adds addInfo string to relativePathname variable for easy identification of textures

@@ -357,6 +357,25 @@ Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
     return texture;
 }
 
+Texture* Texture::CreateFromData(const Vector<Image*>& imgs)
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    Texture* texture = new Texture();
+    texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, false);
+
+    Vector<Image*>* images = new Vector<Image*>(imgs);
+    for (Image* image : (*images))
+        image->Retain();
+
+    Validator::CheckAndFixImageFormat(images);
+
+    texture->SetParamsFromImages(images);
+    texture->FlushDataToRenderer(images);
+
+    return texture;
+}
+
 void Texture::SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW)
 {
     samplerState.addrU = wrapU;

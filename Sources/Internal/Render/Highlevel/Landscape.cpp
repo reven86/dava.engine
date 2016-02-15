@@ -67,6 +67,7 @@ const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const FastName Landscape::FLAG_PATCH_SIZE_QUADS("PATCH_SIZE_QUADS");
 const FastName Landscape::FLAG_USE_INSTANCING("USE_INSTANCING");
+const FastName Landscape::FLAG_LOD_MORPHING("LOD_MORPHING");
 
 const FastName Landscape::LANDSCAPE_QUALITY_NAME("Landscape");
 const FastName Landscape::LANDSCAPE_QUALITY_VALUE_HIGH("HIGH");
@@ -92,7 +93,8 @@ Landscape::Landscape()
     zoomFov = 6.5f;
     normalFov = 70.0f;
 
-    isInstancingUsed = rhi::DeviceCaps().isInstancingSupported;
+    useInstancing = rhi::DeviceCaps().isInstancingSupported;
+    useLodMorphing = useInstancing;
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
@@ -254,7 +256,7 @@ void Landscape::AllocateGeometryData()
     uint32 heightmapSize = heightmap->Size();
     uint32 maxLevels = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
-    minSubdivLevelSize = isInstancingUsed ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
+    minSubdivLevelSize = useInstancing ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -272,11 +274,16 @@ void Landscape::AllocateGeometryData()
     patchQuadArray.resize(subdivPatchCount);
 
     if (landscapeMaterial->HasLocalFlag(FLAG_USE_INSTANCING))
-        landscapeMaterial->SetFlag(FLAG_USE_INSTANCING, isInstancingUsed ? 1 : 0);
+        landscapeMaterial->SetFlag(FLAG_USE_INSTANCING, useInstancing ? 1 : 0);
     else
-        landscapeMaterial->AddFlag(FLAG_USE_INSTANCING, isInstancingUsed ? 1 : 0);
+        landscapeMaterial->AddFlag(FLAG_USE_INSTANCING, useInstancing ? 1 : 0);
 
-    if (isInstancingUsed)
+    if (landscapeMaterial->HasLocalFlag(FLAG_LOD_MORPHING))
+        landscapeMaterial->SetFlag(FLAG_LOD_MORPHING, useLodMorphing ? 1 : 0);
+    else
+        landscapeMaterial->AddFlag(FLAG_LOD_MORPHING, useLodMorphing ? 1 : 0);
+
+    if (useInstancing)
     {
         AllocateGeometryDataInstancing();
     }
@@ -300,10 +307,17 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
 {
     uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(hmSize));
-    Texture* tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()), hmSize, hmSize, false);
+
+    Image* mip0 = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
+    Vector<Image*> textureData = mip0->CreateMipMapsImages(false, false);
+    SafeRelease(mip0);
+
+    Texture* tx = Texture::CreateFromData(textureData);
+    for (Image* img : textureData)
+        img->Release();
 
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NEAREST);
 
     return tx;
 }
@@ -602,7 +616,7 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
         if (yPos && yPos->subdivisionState != SubdivisionPatchInfo::CLIPPED)
             yPosSizePow2 = yPos->lastSubdivSizePow2;
 
-        if (isInstancingUsed)
+        if (useInstancing)
             DrawPatchInstancing(level, x, y, xNegSizePow2, xPosSizePow2, yNegSizePow2, yPosSizePow2);
         else
             DrawPatchNoInstancing(level, x, y, xNegSizePow2, xPosSizePow2, yNegSizePow2, yPosSizePow2);
@@ -992,7 +1006,7 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 4);
     vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 4);
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
-    vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4);
     vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4);
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
@@ -1068,6 +1082,7 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 x
 
     instanceDataPtr->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
     instanceDataPtr->patchScale = 1.f / levelInfo.size;
+    instanceDataPtr->lodMorph = 0.f;
     instanceDataPtr->lodOffset = Vector4(
     float32(1 << (levelInfo.sizePow2 - xNegSizePow2)),
     float32(1 << (levelInfo.sizePow2 - xPosSizePow2)),
@@ -1113,7 +1128,7 @@ void Landscape::PrepareToRender(Camera* camera)
         SubdividePatch(0, 0, 0, 0x3f);
     }
 
-    if (isInstancingUsed)
+    if (useInstancing)
         DrawLandscapeInstancing();
     else
         DrawLandscapeNoInstancing();
@@ -1451,7 +1466,7 @@ void Landscape::UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<Landsc
 void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect)
 {
     //TODO: refactor this!
-    DVASSERT(!isInstancingUsed);
+    DVASSERT(!useInstancing);
     /*
     int32 heightmapSize = fromHeightmap->Size();
     DVASSERT(heightmap->Size() == heightmapSize);

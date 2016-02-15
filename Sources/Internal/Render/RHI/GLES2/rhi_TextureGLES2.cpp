@@ -672,14 +672,6 @@ gles2_SamplerState_Create(const SamplerState::Descriptor& desc)
         state->vertexSampler[i] = desc.vertexSampler[i];
     }
 
-    // force no-filtering on vertex-textures
-    for (uint32 s = 0; s != MAX_VERTEX_TEXTURE_SAMPLER_COUNT; ++s)
-    {
-        state->vertexSampler[s].minFilter = TEXFILTER_NEAREST;
-        state->vertexSampler[s].magFilter = TEXFILTER_NEAREST;
-        state->vertexSampler[s].mipFilter = TEXMIPFILTER_NONE;
-    }
-
     return handle;
 }
 

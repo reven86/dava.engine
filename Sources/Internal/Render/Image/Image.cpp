@@ -173,7 +173,7 @@ bool Image::Normalize()
     return normalized;
 }
 
-Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
+Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */, bool useFiltering /* = true */)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -205,9 +205,18 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         Image* halfSizeImg = Image::Create(newWidth, newHeight, format);
         Memset(halfSizeImg->GetData(), 0, halfSizeImg->dataSize);
 
-        ImageConvert::DownscaleTwiceBillinear(format, format,
-                                              image0->data, imageWidth, imageHeight, imageWidth * formatSize,
-                                              halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
+        if (useFiltering)
+        {
+            ImageConvert::DownscaleTwiceBillinear(format, format,
+                                                  image0->data, imageWidth, imageHeight, imageWidth * formatSize,
+                                                  halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
+        }
+        else
+        {
+            ImageConvert::DownscaleTwiceNearest(format, format,
+                                                image0->data, imageWidth, imageHeight, imageWidth * formatSize,
+                                                halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize);
+        }
 
         halfSizeImg->cubeFaceID = image0->cubeFaceID;
         halfSizeImg->mipmapLevel = curMipMapLevel;

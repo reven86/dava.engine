@@ -82,7 +82,7 @@ public:
     void SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback = 0);
 #endif
 
-    Vector<Image*> CreateMipMapsImages(bool isNormalMap = false);
+    Vector<Image*> CreateMipMapsImages(bool isNormalMap = false, bool useFiltering = true);
 
     bool Normalize();
 
