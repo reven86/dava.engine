@@ -388,12 +388,7 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const Material
 
 void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial* material)
 {
-    auto it = materialToObjectsMap.find(material);
-    if (it == materialToObjectsMap.end())
-        return;
-
-    DAVA::SafeRelease(it->second.renderBatch);
-    materialToObjectsMap.erase(it);
+    materialToObjectsMap.erase(material);
 }
 
 bool EditorMaterialSystem::IsEditable(DAVA::NMaterial* material) const
