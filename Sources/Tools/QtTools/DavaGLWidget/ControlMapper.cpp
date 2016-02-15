@@ -61,6 +61,32 @@ ControlMapper::ControlMapper( QWindow *w )
 {
 }
 
+DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
+{
+    DAVA::Key result = DAVA::Key::UNKNOWN;
+    switch (qtKey)
+    {
+    case Qt::Key_Shift:
+        result = DAVA::Key::LSHIFT;
+        break;
+    case Qt::Key_Control:
+        result = DAVA::Key::LCTRL;
+        break;
+    case Qt::Key_Alt:
+        result = DAVA::Key::LALT;
+        break;
+    case Qt::Key_AltGr:
+        result = DAVA::Key::RALT;
+        break;
+    case Qt::Key_Meta:
+        result = DAVA::Key::LWIN;
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
 void ControlMapper::keyPressEvent(QKeyEvent *e)
 {
     using namespace DAVA;   
@@ -78,7 +104,16 @@ void ControlMapper::keyPressEvent(QKeyEvent *e)
     }
     const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
 #else
-    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+    qint32 virtKey = e->nativeVirtualKey();
+    auto davaKey = Key::UNKNOWN;
+    if (virtKey != 0)
+    {
+        davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
+    }
+    else
+    {
+        davaKey = ConvertQtCommandKeysToDava(e->key());
+    }
 #endif
 
     if (davaKey != Key::UNKNOWN)
@@ -104,7 +139,16 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
     }
     const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
 #else
-    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+    qint32 virtKey = e->nativeVirtualKey();
+    auto davaKey = Key::UNKNOWN;
+    if (virtKey != 0)
+    {
+        davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
+    }
+    else
+    {
+        davaKey = ConvertQtCommandKeysToDava(e->key());
+    }
 #endif
     if (davaKey != Key::UNKNOWN)
     {
@@ -159,8 +203,6 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
-    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
-
     DAVA::UIEvent davaEvent;
     davaEvent.wheelDelta.x = event->pixelDelta().x();
     davaEvent.wheelDelta.y = event->pixelDelta().y();
