@@ -225,6 +225,8 @@
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"
+#include "Scene3D/ParticleEmitterNode.h"
+#include "Scene3D/ParticleEffectNode.h"
 #include "Scene3D/Systems/LodSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
