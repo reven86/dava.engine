@@ -29,8 +29,6 @@
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/SceneNodeAnimation.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/StringFormat.h"

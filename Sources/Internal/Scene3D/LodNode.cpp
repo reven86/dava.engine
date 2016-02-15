@@ -33,8 +33,6 @@
 #include "Render/3D/StaticMesh.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
-#include "Scene3D/SceneNodeAnimation.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 
 namespace DAVA
 {

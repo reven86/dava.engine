@@ -31,7 +31,6 @@
 
 #include "Render/Texture.h"
 #include "Render/3D/StaticMesh.h"
-#include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/RenderOptions.h"
@@ -41,7 +40,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Debug/Stats.h"
 
-#include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/ShadowVolumeNode.h"
@@ -372,13 +370,6 @@ Scene::~Scene()
 {
     Renderer::GetOptions()->RemoveObserver(this);
 
-    for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
-    {
-        AnimatedMesh* obj = *t;
-        obj->Release();
-    }
-    animatedMeshes.clear();
-
     for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
     {
         Camera* obj = *t;
@@ -581,24 +572,6 @@ bool Scene::RemoveSystem(Vector<SceneSystem*>& storage, SceneSystem* system)
 Scene* Scene::GetScene()
 {
     return this;
-}
-
-void Scene::AddAnimatedMesh(AnimatedMesh* mesh)
-{
-    if (mesh)
-    {
-        mesh->Retain();
-        animatedMeshes.push_back(mesh);
-    }
-}
-
-void Scene::RemoveAnimatedMesh(AnimatedMesh* mesh)
-{
-}
-
-AnimatedMesh* Scene::GetAnimatedMesh(int32 index)
-{
-    return animatedMeshes[index];
 }
 
 void Scene::AddCamera(Camera* camera)
@@ -967,16 +940,7 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
     RemoveAllChildren();
     SetName(pathname.GetFilename().c_str());
 
-    if (pathname.IsEqualToExtension(".sce"))
-    {
-        ScopedPtr<SceneFile> file(new SceneFile());
-        file->SetDebugLog(true);
-        if (file->LoadScene(pathname, this))
-        {
-            ret = SceneFileV2::ERROR_NO_ERROR;
-        }
-    }
-    else if (pathname.IsEqualToExtension(".sc2"))
+    if (pathname.IsEqualToExtension(".sc2"))
     {
         ScopedPtr<SceneFileV2> file(new SceneFileV2());
         file->EnableDebugLog(false);
