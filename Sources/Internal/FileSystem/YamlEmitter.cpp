@@ -112,7 +112,7 @@ DAVA::YamlEmitter::YamlEmitter()
 bool YamlEmitter::SaveToYamlFile(const FilePath& outFileName, const YamlNode* node, uint32 attr)
 {
     ScopedPtr<File> outFile(File::Create(outFileName, attr));
-    if (outFile)
+    if (!outFile)
     {
         Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
         return false;
