@@ -331,8 +331,16 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
     {
         rc.x = 0;
         rc.y = 0;
-        rc.width = cb->rt.width;
-        rc.height = cb->rt.height;
+        if( cb->rt )
+        {
+            rc.width = cb->rt.width;
+            rc.height = cb->rt.height;
+        }
+        else
+        {
+            rc.width = _Metal_DefFrameBuf.width;
+            rc.height = _Metal_DefFrameBuf.height;
+        }
     }
 
     [encoder setScissorRect:rc];
