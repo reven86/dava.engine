@@ -36,6 +36,10 @@ set                   ( Generated  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source_folders          ( SRC_ROOT "Classes"  )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
 
+if ( MACOS )
+	set( MACOS_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
+endif ()
+
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
 
@@ -50,11 +54,8 @@ setup_main_executable()
 
 if( WIN32 )
 ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.exe $(OutDir)
-    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir)
+    file ( COPY ${DAVA_TOOLS_BIN_DIR}/7z.exe $(OutDir) )
+    file ( COPY ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir) )
 )    
-else ( MACOS )
-ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7za $(CONFIGURATION_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/7za
-)    
-endif()
+endif ()
+

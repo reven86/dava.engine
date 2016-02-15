@@ -43,7 +43,7 @@ const QString &ZipUtils::GetArchiverPath()
 #if defined(Q_OS_WIN)
     "/7z.exe";
 #elif defined Q_OS_MAC
-    "/../Frameworks/7za";
+    "/../Resources/7za";
 #endif //Q_OS_MAC Q_OS_WIN
     return processAddr;
 }
@@ -95,7 +95,6 @@ bool ZipUtils::IsArchiveValid(const QString &archivePath, ZipError *err)
         err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
     QString processAddr = GetArchiverPath();
-    
     if (!QFile::exists(processAddr))
     {
         err->error = ZipError::ARCHIVER_NOT_FOUND;
