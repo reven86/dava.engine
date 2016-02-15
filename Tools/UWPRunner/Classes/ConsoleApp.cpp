@@ -125,23 +125,29 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
         out.runOnly = true;
     }
 
+    if (parser.IsFlagSet("--dava_app"))
+    {
+        out.isDavaApplication = true;
+    }
+
     return out;
 }
 
 void ShowUsage()
 {
     String message =
-    "UWPRunner is a utility for installing, running and collection output "
-    "of universal windows applications.\n"
-    "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
-    "Usage: \n"
-    "    --package [path to appx package]\n"
-    "    --dependencies [path to package dependencies dir]\n"
-    "    --profile (local/phone) [target device for package]\n"
-    "    --arch [architecture of launching package, only for bundle]\n"
-    "    --tc_test [use teamcity test output]\n"
-    "    --install_only [only install package]\n"
-    "    --run_only [don't install, just run]\n";
+        "UWPRunner is a utility for installing, running and collection output "
+        "of universal windows applications.\n"
+        "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
+        "Usage: \n"
+        "    --package [path to appx package]\n"
+        "    --dependencies [path to package dependencies dir]\n"
+        "    --profile (local/phone) [target device for package]\n"
+        "    --arch [architecture of launching package, only for bundle]\n"
+        "    --tc_test [use teamcity test output]\n"
+        "    --install_only [only install package]\n"
+        "    --run_only [don't install, just run]\n"
+        "    --dava_app [application based on DAVA Framework]\n";
 
     std::cout << message;
 }

@@ -48,6 +48,7 @@ struct PackageOptions
     bool useTeamCityTestOutput = false;
     bool installOnly = false;
     bool runOnly = false;
+    bool isDavaApplication = false;
 };
 PackageOptions ParseCommandLine();
 bool CheckOptions(const PackageOptions& options);
@@ -60,7 +61,9 @@ class UWPRunner
 public:
     UWPRunner(const PackageOptions& opt);
     ~UWPRunner();
+
     void Run();
+    bool IsSucceed();
 
 private:
     void Run(Runner& runner);
@@ -85,6 +88,8 @@ private:
     DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
     DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
     DAVA::String qtProfile;
+    bool succeed = false;
+    bool davaApplicationTerminated = false;
 };
 
 #endif // UWP_RUNNER_H

@@ -117,6 +117,11 @@ void UWPRunner::Run()
     Run(runner);
 }
 
+bool UWPRunner::IsSucceed()
+{
+    return succeed;
+}
+
 void UWPRunner::Run(Runner& runner)
 {
     //installing and starting application
@@ -132,6 +137,7 @@ void UWPRunner::Run(Runner& runner)
 
     if (options.installOnly)
     {
+        succeed = true;
         return;
     }
 
@@ -163,6 +169,7 @@ void UWPRunner::WaitApp()
 
         if (logConsumer.IsChannelOpen())
         {
+            succeed = true;
             watchDogTimer = 0;
         }
         else
@@ -177,6 +184,11 @@ void UWPRunner::WaitApp()
 
         Thread::Sleep(sleepTimeMS);
     } while (!logConsumer.IsSessionEnded());
+
+    if (succeed && options.isDavaApplication)
+    {
+        succeed = davaApplicationTerminated;
+    }
 }
 
 void UWPRunner::ProcessPackageOptions()
@@ -394,6 +406,8 @@ bool UWPRunner::ConfigureIpOverUsb()
 
 void UWPRunner::NetLogOutput(const String& logString)
 {
+    const char* davaAppTermString = "Core::SystemAppFinished";
+
     //incoming string is formatted in style "[ip:port] date time message"
     //extract only message text
     String logLevel;
@@ -444,6 +458,11 @@ void UWPRunner::NetLogOutput(const String& logString)
         {
             printf("\n");
         }
+    }
+
+    if (message.find(davaAppTermString) != String::npos)
+    {
+        davaApplicationTerminated = true;
     }
 }
 
