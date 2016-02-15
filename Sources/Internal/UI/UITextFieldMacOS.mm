@@ -694,6 +694,13 @@ public:
         // on mac os all NSTextField controls share same NSTextView as cell for
         // user input so better set cursor and curcor color every time
         SetTextColor(currentColor);
+
+        // HACK fix blue border visible on close app where was UITextField
+        NSCell* cell = [nsTextField cell];
+        if (cell != nullptr)
+        {
+            [cell setFocusRingType:NSFocusRingTypeNone];
+        }
     }
 
     void CloseKeyboard() override
@@ -1479,8 +1486,15 @@ doCommandBySelector:(SEL)commandSelector
             else
             {
                 DAVA::WideString oldText;
+                DAVA::WideString newText;
+
                 text->ctrl->GetText(oldText);
-                delegate->TextFieldOnTextChanged(davaCtrl, replacement, oldText);
+
+                const char* cstrNew = [inputStr cStringUsingEncoding:NSUTF8StringEncoding];
+                size_t cstrNewSize = std::strlen(cstrNew);
+                DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstrNew), cstrNewSize, newText);
+
+                delegate->TextFieldOnTextChanged(davaCtrl, newText, oldText);
             }
         }
     }
