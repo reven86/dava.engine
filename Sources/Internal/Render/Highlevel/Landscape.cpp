@@ -164,12 +164,18 @@ void Landscape::ReleaseGeometryData()
     if (patchIndexBuffer)
         rhi::DeleteIndexBuffer(patchIndexBuffer);
 
-    for (InstanceDataBuffer& buffer : freeInstanceDataBuffers)
-        rhi::DeleteVertexBuffer(buffer.buffer);
+    for (InstanceDataBuffer* buffer : freeInstanceDataBuffers)
+    {
+        rhi::DeleteVertexBuffer(buffer->buffer);
+        SafeDelete(buffer);
+    }
     freeInstanceDataBuffers.clear();
 
-    for (InstanceDataBuffer& buffer : usedInstanceDataBuffers)
-        rhi::DeleteVertexBuffer(buffer.buffer);
+    for (InstanceDataBuffer* buffer : usedInstanceDataBuffers)
+    {
+        rhi::DeleteVertexBuffer(buffer->buffer);
+        SafeDelete(buffer);
+    }
     usedInstanceDataBuffers.clear();
 }
 
@@ -1004,7 +1010,7 @@ void Landscape::DrawLandscapeInstancing()
 
     for (int32 i = static_cast<int32>(usedInstanceDataBuffers.size()) - 1; i >= 0; --i)
     {
-        if (rhi::SyncObjectSignaled(usedInstanceDataBuffers[i].syncObject))
+        if (rhi::SyncObjectSignaled(usedInstanceDataBuffers[i]->syncObject))
         {
             freeInstanceDataBuffers.push_back(usedInstanceDataBuffers[i]);
             RemoveExchangingWithLast(usedInstanceDataBuffers, i);
@@ -1013,30 +1019,42 @@ void Landscape::DrawLandscapeInstancing()
 
     if (subdivPatchesDrawCount)
     {
-        rhi::HVertexBuffer instanceBuffer;
+        InstanceDataBuffer* instanceDataBuffer = nullptr;
         if (freeInstanceDataBuffers.size())
         {
-            instanceBuffer = freeInstanceDataBuffers.back().buffer;
+            instanceDataBuffer = freeInstanceDataBuffers.back();
+            if (instanceDataBuffer->bufferSize < subdivPatchesDrawCount * sizeof(InstanceData))
+            {
+                instanceDataMaxCount = Max(instanceDataMaxCount, subdivPatchesDrawCount);
+
+                rhi::DeleteVertexBuffer(instanceDataBuffer->buffer);
+                SafeDelete(instanceDataBuffer);
+            }
             freeInstanceDataBuffers.pop_back();
         }
-        else
+
+        if (!instanceDataBuffer)
         {
             rhi::VertexBuffer::Descriptor instanceBufferDesc;
-            instanceBufferDesc.size = subdivPatchCount * sizeof(InstanceData);
+            instanceBufferDesc.size = instanceDataMaxCount * sizeof(InstanceData);
             instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
-            instanceBuffer = rhi::CreateVertexBuffer(instanceBufferDesc);
-        }
-        usedInstanceDataBuffers.push_back({ instanceBuffer, rhi::GetCurrentFrameSyncObject() });
 
-        renderBatchArray[0].renderBatch->instanceBuffer = instanceBuffer;
+            instanceDataBuffer = new InstanceDataBuffer();
+            instanceDataBuffer->bufferSize = instanceBufferDesc.size;
+            instanceDataBuffer->buffer = rhi::CreateVertexBuffer(instanceBufferDesc);
+        }
+        usedInstanceDataBuffers.push_back(instanceDataBuffer);
+        instanceDataBuffer->syncObject = rhi::GetCurrentFrameSyncObject();
+
+        renderBatchArray[0].renderBatch->instanceBuffer = instanceDataBuffer->buffer;
         renderBatchArray[0].renderBatch->instanceCount = subdivPatchesDrawCount;
         activeRenderBatchArray.push_back(renderBatchArray[0].renderBatch);
 
-        instanceDataPtr = static_cast<InstanceData*>(rhi::MapVertexBuffer(instanceBuffer, 0, subdivPatchesDrawCount * sizeof(InstanceData)));
+        instanceDataPtr = static_cast<InstanceData*>(rhi::MapVertexBuffer(instanceDataBuffer->buffer, 0, subdivPatchesDrawCount * sizeof(InstanceData)));
 
         AddPatchToRender(0, 0, 0);
 
-        rhi::UnmapVertexBuffer(instanceBuffer);
+        rhi::UnmapVertexBuffer(instanceDataBuffer->buffer);
         instanceDataPtr = nullptr;
 
         drawIndices = activeRenderBatchArray[0]->indexCount;

@@ -242,7 +242,7 @@ protected:
     SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
     Vector<PatchQuadInfo> patchQuadArray;
     Vector<SubdivisionPatchInfo> subdivPatchArray;
-    uint32 subdivPatchesDrawCount = 0;
+    int32 subdivPatchesDrawCount = 0;
 
     //////Metrics
     Vector3 cameraPos;
@@ -325,6 +325,7 @@ protected:
     {
         rhi::HVertexBuffer buffer;
         rhi::HSyncObject syncObject;
+        uint32 bufferSize;
     };
 
     void AllocateGeometryDataInstancing();
@@ -337,9 +338,10 @@ protected:
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
     InstanceData* instanceDataPtr = nullptr;
+    int32 instanceDataMaxCount = 64; //64 instances - initial value. It's will automatic enhanced if needed.
 
-    Vector<InstanceDataBuffer> freeInstanceDataBuffers;
-    Vector<InstanceDataBuffer> usedInstanceDataBuffers;
+    Vector<InstanceDataBuffer*> freeInstanceDataBuffers;
+    Vector<InstanceDataBuffer*> usedInstanceDataBuffers;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
