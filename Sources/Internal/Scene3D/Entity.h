@@ -47,7 +47,6 @@
 namespace DAVA
 {
 class Scene;
-class SceneNodeAnimation;
 class SceneNodeAnimationKey;
 class SceneFileV2;
 class DataNode;
@@ -283,15 +282,7 @@ public:
     void SetSceneID(uint32 sceneId);
     uint32 GetSceneID() const;
 
-    // animations
-    // 	void ExecuteAnimation(SceneNodeAnimation * animation);
-    // 	void DetachAnimation(SceneNodeAnimation * animation);
-    // 	virtual void StopAllAnimations(bool recursive = true);
-
     virtual Entity* Clone(Entity* dstNode = NULL);
-
-    // Do not use variables
-    //std::deque<SceneNodeAnimation *> nodeAnimations;
 
     // Do we need enum, or we can use virtual functions?
     enum

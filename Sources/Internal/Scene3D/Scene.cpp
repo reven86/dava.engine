@@ -683,25 +683,6 @@ void Scene::Update(float timeElapsed)
         }
     }
 
-    // 	int32 size;
-    //
-    // 	size = (int32)animations.size();
-    // 	for (int32 animationIndex = 0; animationIndex < size; ++animationIndex)
-    // 	{
-    // 		SceneNodeAnimationList * anim = animations[animationIndex];
-    // 		anim->Update(timeElapsed);
-    // 	}
-    //
-    // 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
-    // 	{
-    // 		size = (int32)animatedMeshes.size();
-    // 		for (int32 animatedMeshIndex = 0; animatedMeshIndex < size; ++animatedMeshIndex)
-    // 		{
-    // 			AnimatedMesh * mesh = animatedMeshes[animatedMeshIndex];
-    // 			mesh->Update(timeElapsed);
-    // 		}
-    // 	}
-
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
 
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
@@ -755,17 +736,6 @@ void Scene::SceneDidLoaded()
         systems[k]->SceneDidLoaded();
     }
 }
-
-// void Scene::StopAllAnimations(bool recursive )
-// {
-// 	int32 size = (int32)animations.size();
-// 	for (int32 animationIndex = 0; animationIndex < size; ++animationIndex)
-// 	{
-// 		SceneNodeAnimationList * anim = animations[animationIndex];
-// 		anim->StopAnimation();
-// 	}
-// 	Entity::StopAllAnimations(recursive);
-// }
 
 void Scene::SetCurrentCamera(Camera* _camera)
 {
