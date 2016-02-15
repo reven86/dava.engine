@@ -54,8 +54,8 @@ setup_main_executable()
 
 if( WIN32 )
 ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
-    file ( COPY ${DAVA_TOOLS_BIN_DIR}/7z.exe $(OutDir) )
-    file ( COPY ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir) )
+    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.exe $(OutDir)
+    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir)
 )    
 endif ()
 
