@@ -270,7 +270,7 @@ bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDi
         return false;
     }
     QDir outDir(outDirPath);
-    if (!outDir.mkpath(".") || !outDir.exists())
+    if (!outDir.mkpath("."))
     {
         err->error = ZipError::OUT_DIRECTORY_NOT_EXISTS;
         return false;
