@@ -2900,10 +2900,6 @@
 		D7660D3E1C4E483300E81868 /* DataStorageApple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */; };
 		D7660D3F1C4E483300E81868 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */; };
 		D7660D401C4E483300E81868 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */; };
-		D7B2CEB01C71EF5300BE0D23 /* ParticleEffectNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B2CEAC1C71EF5300BE0D23 /* ParticleEffectNode.cpp */; };
-		D7B2CEB11C71EF5300BE0D23 /* ParticleEffectNode.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B2CEAD1C71EF5300BE0D23 /* ParticleEffectNode.h */; };
-		D7B2CEB21C71EF5300BE0D23 /* ParticleEmitterNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B2CEAE1C71EF5300BE0D23 /* ParticleEmitterNode.cpp */; };
-		D7B2CEB31C71EF5300BE0D23 /* ParticleEmitterNode.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B2CEAF1C71EF5300BE0D23 /* ParticleEmitterNode.h */; };
 		D7E452CF1C50BABD00E5A97D /* LocalizationApple.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E452CD1C50BABD00E5A97D /* LocalizationApple.h */; };
 		D7E452D01C50BABD00E5A97D /* LocalizationApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = D7E452CE1C50BABD00E5A97D /* LocalizationApple.mm */; };
 		E82366CE16148EF9007B40D0 /* libPVRTexLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E82366CD16148EF9007B40D0 /* libPVRTexLib.a */; };
@@ -3941,10 +3937,6 @@
 		D7660D3B1C4E483300E81868 /* DataStorageApple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStorageApple.cpp; path = Apple/DataStorageApple.cpp; sourceTree = "<group>"; };
 		D7660D3C1C4E483300E81868 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ICloudKeyValue.cpp; path = Apple/ICloudKeyValue.cpp; sourceTree = "<group>"; };
 		D7660D3D1C4E483300E81868 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICloudKeyValue.h; path = Apple/ICloudKeyValue.h; sourceTree = "<group>"; };
-		D7B2CEAC1C71EF5300BE0D23 /* ParticleEffectNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEffectNode.cpp; sourceTree = "<group>"; };
-		D7B2CEAD1C71EF5300BE0D23 /* ParticleEffectNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleEffectNode.h; sourceTree = "<group>"; };
-		D7B2CEAE1C71EF5300BE0D23 /* ParticleEmitterNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitterNode.cpp; sourceTree = "<group>"; };
-		D7B2CEAF1C71EF5300BE0D23 /* ParticleEmitterNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleEmitterNode.h; sourceTree = "<group>"; };
 		D7E452CD1C50BABD00E5A97D /* LocalizationApple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationApple.h; sourceTree = "<group>"; };
 		D7E452CE1C50BABD00E5A97D /* LocalizationApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationApple.mm; sourceTree = "<group>"; };
 		E82366CD16148EF9007B40D0 /* libPVRTexLib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPVRTexLib.a; path = ../../Libs/libs/libPVRTexLib.a; sourceTree = "<group>"; };
@@ -5027,10 +5019,6 @@
 		028C0BC11BD66A5F00B2266F /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
-				D7B2CEAC1C71EF5300BE0D23 /* ParticleEffectNode.cpp */,
-				D7B2CEAD1C71EF5300BE0D23 /* ParticleEffectNode.h */,
-				D7B2CEAE1C71EF5300BE0D23 /* ParticleEmitterNode.cpp */,
-				D7B2CEAF1C71EF5300BE0D23 /* ParticleEmitterNode.h */,
 				028C0BC81BD66A5F00B2266F /* Components */,
 				028C0C031BD66A5F00B2266F /* Converters */,
 				028C0BC21BD66A5F00B2266F /* AnimationData.cpp */,
@@ -6416,7 +6404,6 @@
 				028C0D7E1BD66A6000B2266F /* AutotestingSystemLua.h in Headers */,
 				028C146E1BD66A6000B2266F /* TextBlockGraphicRender.h in Headers */,
 				028C10C01BD66A6000B2266F /* NeonMath.h in Headers */,
-				D7B2CEB31C71EF5300BE0D23 /* ParticleEmitterNode.h in Headers */,
 				028C182B1BD66A6000B2266F /* DataNode.h in Headers */,
 				028C0EA11BD66A6000B2266F /* ConditionVariable.h in Headers */,
 				028C17471BD66A6000B2266F /* GameObject.h in Headers */,
@@ -6575,7 +6562,6 @@
 				028C14DD1BD66A6000B2266F /* Landscape.h in Headers */,
 				03C12A941C4FD827002D4636 /* Reachability.h in Headers */,
 				028C1A7D1BD66A6100B2266F /* UILoadingTransition.h in Headers */,
-				D7B2CEB11C71EF5300BE0D23 /* ParticleEffectNode.h in Headers */,
 				028C145C1BD66A6000B2266F /* RenderSystem2D.h in Headers */,
 				028C0DFF1BD66A6000B2266F /* FastName.h in Headers */,
 				028C0E771BD66A6000B2266F /* TypeHolders.h in Headers */,
@@ -7953,7 +7939,6 @@
 				028C1A681BD66A6100B2266F /* UIJoypad.cpp in Sources */,
 				028C18AF1BD66A6000B2266F /* BaseProcessSystem.cpp in Sources */,
 				028C0DAB1BD66A6000B2266F /* Rect_wrap.cxx in Sources */,
-				D7B2CEB01C71EF5300BE0D23 /* ParticleEffectNode.cpp in Sources */,
 				028C1A381BD66A6100B2266F /* UIControlSystem.cpp in Sources */,
 				028C17D41BD66A6000B2266F /* SpeedTreeComponent.cpp in Sources */,
 				028C1A081BD66A6000B2266F /* TheoraPlayer.cpp in Sources */,
@@ -8066,7 +8051,6 @@
 				028C1B611BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				028C18221BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				028C1A981BD66A6100B2266F /* UIPackagesCache.cpp in Sources */,
-				D7B2CEB21C71EF5300BE0D23 /* ParticleEmitterNode.cpp in Sources */,
 				028C15491BD66A6000B2266F /* VegetationGeometry.cpp in Sources */,
 				028C11B01BD66A6000B2266F /* TCPServerTransport.cpp in Sources */,
 				028C0D3F1BD66A6000B2266F /* AnimationManager.cpp in Sources */,
