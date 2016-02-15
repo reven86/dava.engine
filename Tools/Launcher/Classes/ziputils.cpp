@@ -43,7 +43,7 @@ const QString &ZipUtils::GetArchiverPath()
 #if defined(Q_OS_WIN)
     "/7z.exe";
 #elif defined Q_OS_MAC
-    "/7za";
+    "/../Frameworks/7za";
 #endif //Q_OS_MAC Q_OS_WIN
     return processAddr;
 }
@@ -139,7 +139,11 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
             }
         }
     });
-    zipProcess.start(processAddr, arguments);
+    if(!zipProcess.waitForStarted(5000))
+    {
+        err->error = ZipError::PROCESS_FAILED_TO_START;
+        return false;
+    }
     QEventLoop loop;
     QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit);
     loop.exec();
