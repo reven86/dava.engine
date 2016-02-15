@@ -34,23 +34,16 @@
 #include <QRegularExpression>
 #include <QEventLoop>
 #include <QDir>
+#include <QApplication>
 #include <numeric>
 
 const QString &ZipUtils::GetArchiverPath()
 {
-    static QString processAddr =
+    static QString processAddr = qApp->applicationDirPath() +
 #if defined(Q_OS_WIN)
-#if defined(__DAVAENGINE_DEBUG__)
-        "../../Data/7z.exe";
-#else
-        "./Data/7z.exe";
-#endif //__DAVAENGINE_DEBUG__)
+    "/7z.exe";
 #elif defined Q_OS_MAC
-#if defined(__DAVAENGINE_DEBUG__)
-    "../../Data/7za";
-#else
-    "./Data/7za";
-#endif //__DAVAENGINE_DEBUG__
+    "/7za";
 #endif //Q_OS_MAC Q_OS_WIN
     return processAddr;
 }
