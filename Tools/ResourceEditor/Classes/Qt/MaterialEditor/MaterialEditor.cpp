@@ -52,6 +52,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Commands2/MaterialGlobalCommand.h"
+#include "Commands2/MaterialRemoveTexture.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
@@ -353,6 +354,11 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
 
         switch (cmdId)
         {
+        case CMDID_MATERIAL_REMOVE_TEXTURE:
+        {
+            materialPropertiesUpdater->Update();
+        }
+        break;
         case CMDID_INSP_MEMBER_MODIFY:
         {
             InspMemberModifyCommand* inspCommand = (InspMemberModifyCommand*)command;
@@ -1467,6 +1473,10 @@ void MaterialEditor::removeInvalidTexture()
     QtPropertyData* data = button->GetPropertyData();
     DAVA::FastName textureSlot = data->GetName();
 
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(curScene != nullptr);
+
+    curScene->BeginBatch("Remove invalid texture from material");
     for (int i = 0; i < curMaterials.size(); ++i)
     {
         DAVA::NMaterial* material = curMaterials[i];
@@ -1474,13 +1484,12 @@ void MaterialEditor::removeInvalidTexture()
         {
             if (material->HasLocalTexture(textureSlot))
             {
-                material->RemoveTexture(textureSlot);
+                curScene->Exec(new MaterialRemoveTexture(textureSlot, material));
                 break;
             }
 
             material = material->GetParent();
         }
     }
-
-    materialPropertiesUpdater->Update();
+    curScene->EndBatch();
 }
