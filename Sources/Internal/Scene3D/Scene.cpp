@@ -42,9 +42,7 @@
 
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
-#include "Scene3D/ShadowVolumeNode.h"
 #include "Render/Highlevel/Light.h"
-#include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderSystem.h"
 

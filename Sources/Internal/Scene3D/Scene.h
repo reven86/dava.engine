@@ -54,7 +54,6 @@ class ShadowVolumeNode;
 class Light;
 class ShadowRect;
 class QuadTree;
-class MeshInstanceNode;
 class Component;
 class SceneSystem;
 class RenderSystem;
