@@ -47,8 +47,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", 1024);
     appOptions->SetInt32("height", 768);
 
-    appOptions->SetInt32("max_index_buffer_count", 8192);
-    appOptions->SetInt32("max_vertex_buffer_count", 8192);
+    appOptions->SetInt32("max_index_buffer_count", 16384);
+    appOptions->SetInt32("max_vertex_buffer_count", 16384);
     appOptions->SetInt32("max_const_buffer_count", 32767);
     appOptions->SetInt32("max_texture_count", 2048);
 
