@@ -59,7 +59,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , hash(hash_)
 {
     changedProperties.emplace_back(
-        node, prop, newVal, GetValueFromProperty(prop)
+        node, prop, GetValueFromProperty(prop), newVal
     );
     Init();
 }
@@ -69,7 +69,8 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , root(SafeRetain(root_))
 {
     changedProperties.emplace_back(
-        node, prop, VariantType(), GetValueFromProperty(prop)
+        node, prop, GetValueFromProperty(prop), VariantType()
+                                   
     );
     Init();
 }
