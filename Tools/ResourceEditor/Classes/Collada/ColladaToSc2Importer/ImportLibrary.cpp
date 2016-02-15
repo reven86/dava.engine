@@ -261,7 +261,7 @@ NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* co
 
     NMaterial* material = new NMaterial();
     static uint32 materialInstanceNo = 0;
-    String name = Format("Instance-%d", materialInstanceNo++);
+    String name = Format("Instance-%u", materialInstanceNo++);
     material->SetMaterialName(FastName(name));
     material->SetParent(davaMaterialParent);
 

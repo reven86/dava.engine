@@ -34,15 +34,15 @@ extern "C" {
 }
 #define ThrowFatalException(severity, tag) \
 { \
-  char                                 \
+  char                                                        \
         * message; \
  \
-  ExceptionInfo                                                 \
+  ExceptionInfo                                                                        \
         exception; \
  \
   GetExceptionInfo(&exception); \
   message = GetExceptionMessage(errno); \
-  (void) ThrowMagickException(&exception, GetMagickModule(), severity,            \
+  (void) ThrowMagickException(&exception, GetMagickModule(), severity,                                   \
                                     tag == (const char*)NULL ? "unknown" : tag, "`%s'", message); \
   message = DestroyString(message); \
   CatchException(&exception); \
@@ -51,11 +51,11 @@ extern "C" {
 }
 #define ThrowFileException(exception, severity, tag, context) \
 { \
-  char              \
+  char                                     \
         * message; \
  \
   message = GetExceptionMessage(errno); \
-  (void) ThrowMagickException(exception, GetMagickModule(), severity,             \
+  (void) ThrowMagickException(exception, GetMagickModule(), severity,                                    \
                                     tag == (const char*)NULL ? "unknown" : tag, "`%s': %s", context, message); \
   message = DestroyString(message); \
 }
