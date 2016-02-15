@@ -39,9 +39,8 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
 PolygonGroupWithMaterial::~PolygonGroupWithMaterial()
 {
     SafeRelease(mesh);
@@ -55,17 +54,17 @@ void PolygonGroupWithMaterial::Setup(StaticMesh* _mesh, int32 _polygroupIndex, N
     transform = _transform;
 }
 
-StaticMesh * PolygonGroupWithMaterial::GetMesh()
+StaticMesh* PolygonGroupWithMaterial::GetMesh()
 {
     return mesh;
 }
-    
+
 int32 PolygonGroupWithMaterial::GetPolygroupIndex()
 {
     return polygroupIndex;
 }
 
-PolygonGroup * PolygonGroupWithMaterial::GetPolygonGroup()
+PolygonGroup* PolygonGroupWithMaterial::GetPolygonGroup()
 {
     return mesh->GetPolygonGroup(polygroupIndex);
 }
@@ -76,13 +75,13 @@ uint64 PolygonGroupWithMaterial::GetSortID()
 }
 
 MeshInstanceNode::MeshInstanceNode()
-:	Entity()
+    : Entity()
 {
 }
-	
+
 MeshInstanceNode::~MeshInstanceNode()
 {
-	ClearLightmaps();
+    ClearLightmaps();
 
     for (int32 idx = 0; idx < (int32)polygroups.size(); ++idx)
     {
@@ -93,61 +92,60 @@ MeshInstanceNode::~MeshInstanceNode()
 
 void MeshInstanceNode::AddPolygonGroup(StaticMesh* mesh, int32 polygonGroupIndex, NMaterial* material)
 {
-    PolygonGroupWithMaterial * polygroup = new PolygonGroupWithMaterial();
+    PolygonGroupWithMaterial* polygroup = new PolygonGroupWithMaterial();
     polygroup->Setup(mesh, polygonGroupIndex, material, (TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT));
-	polygroups.push_back(polygroup);
-	
-	PolygonGroup * group = polygroup->GetPolygonGroup();
-	bbox.AddAABBox(group->GetBoundingBox());
+    polygroups.push_back(polygroup);
+
+    PolygonGroup* group = polygroup->GetPolygonGroup();
+    bbox.AddAABBox(group->GetBoundingBox());
 }
-    
+
 uint32 MeshInstanceNode::GetRenderBatchCount()
 {
     return (uint32)polygroups.size();
 }
 
-RenderBatch * MeshInstanceNode::GetRenderBatch(uint32 batchIndex)
+RenderBatch* MeshInstanceNode::GetRenderBatch(uint32 batchIndex)
 {
     return polygroups[batchIndex];
 }
-    
+
 void MeshInstanceNode::Update(float32 timeElapsed)
 {
     //Stats::Instance()->BeginTimeMeasure("Scene.Update.MeshInstanceNode.Update", this);
 
     bool needUpdateTransformBox = false;
-    if (!(flags & NODE_WORLD_MATRIX_ACTUAL)) 
+    if (!(flags & NODE_WORLD_MATRIX_ACTUAL))
     {
         needUpdateTransformBox = true;
         UpdateLights();
     }
     else
     {
-        if(GetScene()->GetFlags() & SCENE_LIGHTS_MODIFIED)
-		{
-			UpdateLights();
-		}
+        if (GetScene()->GetFlags() & SCENE_LIGHTS_MODIFIED)
+        {
+            UpdateLights();
+        }
     }
     if (needUpdateTransformBox)
-	{
+    {
         bbox.GetTransformedBox(GetWorldTransform(), transformedBox);
-		//entity->SetData("meshAABox", transformedBox);
-	}
-	//entity->SetData("meshInstanceNode", this);
-	//entity->SetData("transform", worldTransform);
+        //entity->SetData("meshAABox", transformedBox);
+    }
+    //entity->SetData("meshInstanceNode", this);
+    //entity->SetData("transform", worldTransform);
 
     //Stats::Instance()->EndTimeMeasure("Scene.Update.MeshInstanceNode.Update", this);
 }
-    
+
 uint64 MeshInstanceNode::GetSortID()
 {
-    return 0; 
+    return 0;
 }
 
-    
 void MeshInstanceNode::Draw()
 {
-    //Stats::Instance()->BeginTimeMeasure("Scene.Draw.MeshInstanceNode.Draw", this);
+//Stats::Instance()->BeginTimeMeasure("Scene.Draw.MeshInstanceNode.Draw", this);
 
 #if 0
     if (!(flags & NODE_VISIBLE) || !(flags & NODE_UPDATABLE) || (flags & NODE_INVALID))return;
@@ -327,48 +325,47 @@ void MeshInstanceNode::Draw()
     //Stats::Instance()->EndTimeMeasure("Scene.Draw.MeshInstanceNode.Draw", this);
 }
 
-
-Entity* MeshInstanceNode::Clone(Entity *dstNode)
+Entity* MeshInstanceNode::Clone(Entity* dstNode)
 {
-    if (!dstNode) 
+    if (!dstNode)
     {
-		DVASSERT_MSG(IsPointerToExactClass<MeshInstanceNode>(this), "Can clone only MeshInstanceNode");
+        DVASSERT_MSG(IsPointerToExactClass<MeshInstanceNode>(this), "Can clone only MeshInstanceNode");
         dstNode = new MeshInstanceNode();
     }
 
     Entity::Clone(dstNode);
-    MeshInstanceNode *nd = (MeshInstanceNode *)dstNode;
-    
+    MeshInstanceNode* nd = (MeshInstanceNode*)dstNode;
+
     nd->polygroups = polygroups;
-    for (int32 k = 0; k < (int32) polygroups.size(); ++k)
+    for (int32 k = 0; k < (int32)polygroups.size(); ++k)
     {
         nd->polygroups[k]->Retain();
     }
-    
+
     nd->bbox = bbox;
-    
+
     return dstNode;
 }
 
 AABBox3 MeshInstanceNode::GetWTMaximumBoundingBoxSlow()
 {
-	AABBox3 retBBox = transformedBox;
-    
-    const Vector<Entity*>::iterator & itEnd = children.end();
-	for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
+    AABBox3 retBBox = transformedBox;
+
+    const Vector<Entity*>::iterator& itEnd = children.end();
+    for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
     {
         AABBox3 box = (*it)->GetWTMaximumBoundingBoxSlow();
-        if(  (AABBOX_INFINITY != box.min.x && AABBOX_INFINITY != box.min.y && AABBOX_INFINITY != box.min.z)
-           &&(-AABBOX_INFINITY != box.max.x && -AABBOX_INFINITY != box.max.y && -AABBOX_INFINITY != box.max.z))
+        if ((AABBOX_INFINITY != box.min.x && AABBOX_INFINITY != box.min.y && AABBOX_INFINITY != box.min.z)
+            && (-AABBOX_INFINITY != box.max.x && -AABBOX_INFINITY != box.max.y && -AABBOX_INFINITY != box.max.z))
         {
             retBBox.AddAABBox(box);
         }
     }
-    
+
     return retBBox;
 }
-    
-void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+
+void MeshInstanceNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
 #if 0
     Entity::Save(archive, serializationContext);
@@ -430,31 +427,31 @@ void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * seria
 #endif
 }
 
-void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void MeshInstanceNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Entity::Load(archive, serializationContext);
 
     static const int32 errorIdx = -1;
 
-    if(serializationContext->GetVersion() >= 3)
+    if (serializationContext->GetVersion() >= 3)
     {
         int32 polygroupCount = archive->GetInt32("pgcnt", 0);
-        
-        for(int idx = 0; idx < polygroupCount; ++idx)
+
+        for (int idx = 0; idx < polygroupCount; ++idx)
         {
             uint64 matPtr = archive->GetByteArrayAsType(Format("pg%d_matptr", idx), (uint64)0);
             NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
             uint64 meshPtr = archive->GetByteArrayAsType(Format("pg%d_meshptr", idx), (uint64)0);
-            StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
+            StaticMesh* mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
             const int32 pgIndex = archive->GetInt32(Format("pg%d_pg", idx), errorIdx);
 
-            if(material && mesh)
+            if (material && mesh)
             {
                 DVASSERT(pgIndex != errorIdx);
 
                 //if(serializationContext->IsDebugLogEnabled())
                 //    Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
-                
+
                 AddPolygonGroup(mesh, pgIndex, material);
             }
         }
@@ -462,209 +459,208 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
     else
     {
         //int32 lodCount = archive->GetInt32("lodCount", 0);
-        
+
         //for (int32 lodIdx = 0; lodIdx < lodCount; ++lodIdx)
         int32 lodIdx = 0;
         {
             size_t size = archive->GetInt32(Format("lod%d_cnt", lodIdx), 0);
-            for(size_t idx = 0; idx < size; ++idx)
+            for (size_t idx = 0; idx < size; ++idx)
             {
-                if(serializationContext->GetVersion() == 2)
+                if (serializationContext->GetVersion() == 2)
                 {
                     uint64 matPtr = archive->GetByteArrayAsType(Format("l%d_%d_matptr", lodIdx, idx), (uint64)0);
                     NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
                     uint64 meshPtr = archive->GetByteArrayAsType(Format("l%d_%d_meshptr", lodIdx, idx), (uint64)0);
-                    StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
+                    StaticMesh* mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
                     const int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), errorIdx);
 
-                    if(material && mesh)
+                    if (material && mesh)
                     {
                         DVASSERT(pgIndex != errorIdx);
 
                         //if(serializationContext->IsDebugLogEnabled())
                         //    Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
-                        
+
                         AddPolygonGroup(mesh, pgIndex, material);
                     }
                 }
 
-                if(serializationContext->GetVersion() == 1)
+                if (serializationContext->GetVersion() == 1)
                 {
                     serializationContext->SetLastError(SceneFileV2::ERROR_VERSION_IS_TOO_OLD);
-    //                int32 materialIndex = archive->GetInt32(Format("l%d_%d_mat", lodIdx, idx), -1);
-    //                int32 meshIndex = archive->GetInt32(Format("l%d_%d_ms", lodIdx, idx), -1);
-    //                int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), -1);
-    //            
-    //            
-    //            
-    //                if ((materialIndex != -1) && (meshIndex != -1) && (pgIndex != -1))
-    //                {
-    //                    Material * material = sceneFile->GetMaterial(materialIndex);
-    //                    StaticMesh * mesh = sceneFile->GetStaticMesh(meshIndex);
-    //                    Logger::FrameworkDebug("+ assign material: %s index: %d", material->GetName().c_str(), materialIndex);
-    //                    
-    //                    AddPolygonGroupForLayer(mesh, pgIndex, material);
-    //                }
-    //                else
-    //                {
-    //                    DVASSERT(0 && "Negative element")
-    //                }
+                    //                int32 materialIndex = archive->GetInt32(Format("l%d_%d_mat", lodIdx, idx), -1);
+                    //                int32 meshIndex = archive->GetInt32(Format("l%d_%d_ms", lodIdx, idx), -1);
+                    //                int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), -1);
+                    //
+                    //
+                    //
+                    //                if ((materialIndex != -1) && (meshIndex != -1) && (pgIndex != -1))
+                    //                {
+                    //                    Material * material = sceneFile->GetMaterial(materialIndex);
+                    //                    StaticMesh * mesh = sceneFile->GetStaticMesh(meshIndex);
+                    //                    Logger::FrameworkDebug("+ assign material: %s index: %d", material->GetName().c_str(), materialIndex);
+                    //
+                    //                    AddPolygonGroupForLayer(mesh, pgIndex, material);
+                    //                }
+                    //                else
+                    //                {
+                    //                    DVASSERT(0 && "Negative element")
+                    //                }
                 }
-                
             }
         }
     }
 
-//    if (polygroups[0]->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP)
+    //    if (polygroups[0]->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP)
     {
         int32 lightmapsCount = archive->GetInt32("lightmapsCount", 0);
-        for(int32 i = 0; i < lightmapsCount; ++i)
+        for (int32 i = 0; i < lightmapsCount; ++i)
         {
-			LightmapData data;
+            LightmapData data;
 
             String pathname = archive->GetString(Format("lightmap%d", i), "");
             data.lightmapName = serializationContext->GetScenePath() + pathname;
-			data.uvOffset.x = archive->GetFloat(Format("lightmap%duvoX", i));
-			data.uvOffset.y = archive->GetFloat(Format("lightmap%duvoY", i));
-			data.uvScale.x = archive->GetFloat(Format("lightmap%duvsX", i));
-			data.uvScale.y = archive->GetFloat(Format("lightmap%duvsY", i));
+            data.uvOffset.x = archive->GetFloat(Format("lightmap%duvoX", i));
+            data.uvOffset.y = archive->GetFloat(Format("lightmap%duvoY", i));
+            data.uvScale.x = archive->GetFloat(Format("lightmap%duvsX", i));
+            data.uvScale.y = archive->GetFloat(Format("lightmap%duvsY", i));
 
             AddLightmap(i, data);
         }
     }
 }
-    
-Vector<PolygonGroupWithMaterial*> & MeshInstanceNode::GetPolygonGroups()
+
+Vector<PolygonGroupWithMaterial*>& MeshInstanceNode::GetPolygonGroups()
 {
     return polygroups;
 }
 
-void MeshInstanceNode::AddLightmap(int32 polygonGroupIndex, const LightmapData & lightmapData)
+void MeshInstanceNode::AddLightmap(int32 polygonGroupIndex, const LightmapData& lightmapData)
 {
-	LightmapData data = lightmapData;
-	data.lightmap = Texture::CreateFromFile(data.lightmapName);
+    LightmapData data = lightmapData;
+    data.lightmap = Texture::CreateFromFile(data.lightmapName);
 
-	if(polygonGroupIndex > ((int32)lightmaps.size()-1))
-	{
-		lightmaps.resize(polygonGroupIndex+1);
-	}
+    if (polygonGroupIndex > ((int32)lightmaps.size() - 1))
+    {
+        lightmaps.resize(polygonGroupIndex + 1);
+    }
 
-	lightmaps[polygonGroupIndex] = data;
+    lightmaps[polygonGroupIndex] = data;
 }
 
-void MeshInstanceNode::AddLightmap(const LightmapData & lightmapData)
+void MeshInstanceNode::AddLightmap(const LightmapData& lightmapData)
 {
-	AddLightmap(static_cast<int32>(lightmaps.size()), lightmapData);
+    AddLightmap(static_cast<int32>(lightmaps.size()), lightmapData);
 }
 
 void MeshInstanceNode::ClearLightmaps()
 {
-	Vector<LightmapData>::iterator lighmapsEnd = lightmaps.end();
-	for(Vector<LightmapData>::iterator lightmapsIterator = lightmaps.begin(); lightmapsIterator != lighmapsEnd; ++lightmapsIterator)
-	{
-		LightmapData & data = (*lightmapsIterator);
-		SafeRelease(data.lightmap);
-	}
+    Vector<LightmapData>::iterator lighmapsEnd = lightmaps.end();
+    for (Vector<LightmapData>::iterator lightmapsIterator = lightmaps.begin(); lightmapsIterator != lighmapsEnd; ++lightmapsIterator)
+    {
+        LightmapData& data = (*lightmapsIterator);
+        SafeRelease(data.lightmap);
+    }
 
-	lightmaps.clear();
+    lightmaps.clear();
 }
 
-MeshInstanceNode::LightmapData * MeshInstanceNode::GetLightmapDataForIndex(int32 index)
+MeshInstanceNode::LightmapData* MeshInstanceNode::GetLightmapDataForIndex(int32 index)
 {
-	if(index < (int32)lightmaps.size())
-	{
-		return &(lightmaps[index]);
-	}
-	else
-	{
-		return 0;
-	}
+    if (index < (int32)lightmaps.size())
+    {
+        return &(lightmaps[index]);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int32 MeshInstanceNode::GetLightmapCount()
 {
     return static_cast<int32>(lightmaps.size());
 }
-    
+
 void MeshInstanceNode::CreateDynamicShadowNode()
 {
-	ShadowVolumeNode * shadowVolume = new ShadowVolumeNode();
-	shadowVolume->SetName("dynamicshadow.shadowvolume");
+    ShadowVolumeNode* shadowVolume = new ShadowVolumeNode();
+    shadowVolume->SetName("dynamicshadow.shadowvolume");
 
-	shadowVolume->CopyGeometryFrom(this);
+    shadowVolume->CopyGeometryFrom(this);
 
-	AddNode(shadowVolume);
-	shadowVolume->Release();
+    AddNode(shadowVolume);
+    shadowVolume->Release();
 }
 
 void MeshInstanceNode::DeleteDynamicShadowNode()
 {
-	ShadowVolumeNode * shadowVolume = (ShadowVolumeNode*)FindByName(FastName("dynamicshadow.shadowvolume"));
-	RemoveNode(shadowVolume);
+    ShadowVolumeNode* shadowVolume = (ShadowVolumeNode*)FindByName(FastName("dynamicshadow.shadowvolume"));
+    RemoveNode(shadowVolume);
 }
 
 void MeshInstanceNode::ConvertToShadowVolume()
 {
-	ShadowVolumeNode * shadowVolume = new ShadowVolumeNode();
-	shadowVolume->SetName("dynamicshadow.shadowvolume");
+    ShadowVolumeNode* shadowVolume = new ShadowVolumeNode();
+    shadowVolume->SetName("dynamicshadow.shadowvolume");
 
-	shadowVolume->CopyGeometryFrom(this);
+    shadowVolume->CopyGeometryFrom(this);
 
-	GetParent()->AddNode(shadowVolume);
-	shadowVolume->Release();
+    GetParent()->AddNode(shadowVolume);
+    shadowVolume->Release();
 }
 
-void MeshInstanceNode::GetDataNodes(Set<DataNode*> & dataNodes)
+void MeshInstanceNode::GetDataNodes(Set<DataNode*>& dataNodes)
 {
-//    const List<LodData>::iterator & end = lodLayers.end();
-//    for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
-//    {
-//        LodData & ld = *it;
-//        for (int k = 0; k < ld.meshes.size(); ++k)
-//        {
-//            dataNodes.push_back(ld.meshes[k]->GetPolygonGroup(ld.polygonGroupIndexes[k]));
-//        }
-        for (int k = 0; k < (int32)polygroups.size(); ++k)
-        {
-            dataNodes.insert(polygroups[k]->GetMesh());
-        }
-        for (int k = 0; k < (int32)polygroups.size(); ++k)
-        {
-            dataNodes.insert(polygroups[k]->GetMaterial());
-        }
-//    }
+    //    const List<LodData>::iterator & end = lodLayers.end();
+    //    for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
+    //    {
+    //        LodData & ld = *it;
+    //        for (int k = 0; k < ld.meshes.size(); ++k)
+    //        {
+    //            dataNodes.push_back(ld.meshes[k]->GetPolygonGroup(ld.polygonGroupIndexes[k]));
+    //        }
+    for (int k = 0; k < (int32)polygroups.size(); ++k)
+    {
+        dataNodes.insert(polygroups[k]->GetMesh());
+    }
+    for (int k = 0; k < (int32)polygroups.size(); ++k)
+    {
+        dataNodes.insert(polygroups[k]->GetMaterial());
+    }
+    //    }
     Entity::GetDataNodes(dataNodes);
 }
-    
+
 void MeshInstanceNode::BakeTransforms()
 {
-    const Matrix4 & localTransform = GetLocalTransform();
+    const Matrix4& localTransform = GetLocalTransform();
 
     Set<PolygonGroup*> groupsToBatch;
-    
+
     bool canBakeEverything = true;
     for (int k = 0; k < (int32)polygroups.size(); ++k)
     {
         //Logger::FrameworkDebug("%d - mesh: %d pg: %d", k, polygroups[k]->GetMesh()->GetRetainCount(), polygroups[k]->GetPolygonGroup()->GetRetainCount());
-     
-        StaticMesh * mesh = polygroups[k]->GetMesh();
-        PolygonGroup * polygroup = polygroups[k]->GetPolygonGroup();
+
+        StaticMesh* mesh = polygroups[k]->GetMesh();
+        PolygonGroup* polygroup = polygroups[k]->GetPolygonGroup();
         if ((mesh->GetRetainCount() == 1) && (polygroup->GetRetainCount() == 1))
         {
             groupsToBatch.insert(polygroup);
         }
         else
         {
-            canBakeEverything = false; 
-//            Logger::Warning("WARNING: Can't batch object because it has multiple instances: %s", GetFullName().c_str());
+            canBakeEverything = false;
+            //            Logger::Warning("WARNING: Can't batch object because it has multiple instances: %s", GetFullName().c_str());
         }
-    }   
+    }
     if (canBakeEverything)
     {
         bbox = AABBox3(); // reset bbox
         for (Set<PolygonGroup*>::iterator it = groupsToBatch.begin(); it != groupsToBatch.end(); ++it)
         {
-            PolygonGroup * polygroup = *it;
+            PolygonGroup* polygroup = *it;
             polygroup->ApplyMatrix(localTransform);
             polygroup->BuildBuffers();
             bbox.AddAABBox(polygroup->GetBoundingBox());
@@ -673,28 +669,26 @@ void MeshInstanceNode::BakeTransforms()
         AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
     }
 }
-    
+
 void MeshInstanceNode::UpdateLights()
 {
     Vector3 meshPosition = Vector3() * GetWorldTransform();
-    Light * nearestLight = scene->GetNearestDynamicLight(Light::TYPE_COUNT, meshPosition);
+    Light* nearestLight = scene->GetNearestDynamicLight(Light::TYPE_COUNT, meshPosition);
 
     RegisterNearestLight(nearestLight);
 }
 
-void MeshInstanceNode::RegisterNearestLight(Light * node)
+void MeshInstanceNode::RegisterNearestLight(Light* node)
 {
 }
 
 bool MeshInstanceNode::HasLightmaps()
 {
-	return lightmaps.size() > 0;
+    return lightmaps.size() > 0;
 }
-
 
 //String MeshInstanceNode::GetDebugDescription()
 //{
 //    /return Format(": %d ", GetChildrenCount());
 //}
-    
 };

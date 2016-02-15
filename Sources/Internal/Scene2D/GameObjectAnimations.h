@@ -37,21 +37,20 @@
 
 namespace DAVA
 {
-	
 class RemoveFromManagerGameObjectAnimation : public Animation
 {
 protected:
-	~RemoveFromManagerGameObjectAnimation();
+    ~RemoveFromManagerGameObjectAnimation();
+
 public:
-	RemoveFromManagerGameObjectAnimation(GameObject * object);
-	
-	virtual void Update(float32 timeElapsed);
-	virtual void OnStart();
+    RemoveFromManagerGameObjectAnimation(GameObject* object);
+
+    virtual void Update(float32 timeElapsed);
+    virtual void OnStart();
+
 private:
-	GameObject * object;
+    GameObject* object;
+};
 };
 
-	
-};
-
-#endif 
+#endif

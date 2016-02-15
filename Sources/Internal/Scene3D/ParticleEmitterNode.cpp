@@ -31,82 +31,79 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 
-
 namespace DAVA
 {
-
-
 ParticleEmitterNode::ParticleEmitterNode()
-:	emitter(0)
+    : emitter(0)
 {
-	SetName("Particle Emitter");
+    SetName("Particle Emitter");
 }
 
 ParticleEmitterNode::~ParticleEmitterNode()
 {
-	SafeRelease(emitter);
+    SafeRelease(emitter);
 }
 
 void ParticleEmitterNode::Update(float32 timeElapsed)
 {
-	// Yuri Coder, 2013/04/10. This method isn't called anymore.
+    // Yuri Coder, 2013/04/10. This method isn't called anymore.
 }
 
 void ParticleEmitterNode::Draw()
 {
-	// Yuri Coder, 2013/04/10. This method isn't called anymore.
+    // Yuri Coder, 2013/04/10. This method isn't called anymore.
 }
 
 void ParticleEmitterNode::LoadFromYaml(const FilePath& _yamlPath)
 {
-	yamlPath = _yamlPath;
-	SafeRelease(emitter);
-	emitter = new ParticleEmitter();
-	emitter->LoadFromYaml(yamlPath);
+    yamlPath = _yamlPath;
+    SafeRelease(emitter);
+    emitter = new ParticleEmitter();
+    emitter->LoadFromYaml(yamlPath);
 }
 
-ParticleEmitter * ParticleEmitterNode::GetEmitter()
+ParticleEmitter* ParticleEmitterNode::GetEmitter()
 {
-	return emitter;
+    return emitter;
 }
 
-Entity* ParticleEmitterNode::Clone(Entity *dstNode /*= NULL*/)
+Entity* ParticleEmitterNode::Clone(Entity* dstNode /*= NULL*/)
 {
-	if (!dstNode) 
-	{
-		DVASSERT_MSG(IsPointerToExactClass<ParticleEmitterNode>(this), "Can clone only ParticleEmitterNode");
-		dstNode = new ParticleEmitterNode();
-	}
+    if (!dstNode)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<ParticleEmitterNode>(this), "Can clone only ParticleEmitterNode");
+        dstNode = new ParticleEmitterNode();
+    }
 
-	Entity::Clone(dstNode);
-	ParticleEmitterNode *nd = (ParticleEmitterNode *)dstNode;
+    Entity::Clone(dstNode);
+    ParticleEmitterNode* nd = (ParticleEmitterNode*)dstNode;
 
-	nd->yamlPath = yamlPath;
-	nd->LoadFromYaml(yamlPath);
+    nd->yamlPath = yamlPath;
+    nd->LoadFromYaml(yamlPath);
 
-	return dstNode;
+    return dstNode;
 }
 
-void ParticleEmitterNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void ParticleEmitterNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Entity::Save(archive, serializationContext);
+    Entity::Save(archive, serializationContext);
 
-	archive->SetString("yamlPath", yamlPath.GetRelativePathname(serializationContext->GetScenePath()));
+    archive->SetString("yamlPath", yamlPath.GetRelativePathname(serializationContext->GetScenePath()));
 }
 
-void ParticleEmitterNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void ParticleEmitterNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Entity::Load(archive, serializationContext);
-	
-	String path = archive->GetString("yamlPath");
-	yamlPath = serializationContext->GetScenePath() + path;
-	LoadFromYaml(yamlPath);
+    Entity::Load(archive, serializationContext);
+
+    String path = archive->GetString("yamlPath");
+    yamlPath = serializationContext->GetScenePath() + path;
+    LoadFromYaml(yamlPath);
 }
 
-void ParticleEmitterNode::GetDataNodes(Set<DataNode*> & dataNodes)
+void ParticleEmitterNode::GetDataNodes(Set<DataNode*>& dataNodes)
 {
-	//VI: NMaterial is not a DataNode anymore
-	/*if(emitter)
+    //VI: NMaterial is not a DataNode anymore
+    /*if(emitter)
 	{
 		int32 layersCount = emitter->GetLayers().size();
 		for(int32 i = 0; i < layersCount; ++i)
@@ -115,10 +112,7 @@ void ParticleEmitterNode::GetDataNodes(Set<DataNode*> & dataNodes)
 			dataNodes.insert(layer->GetMaterial());
 		}
 	}*/
-	
 
-	Entity::GetDataNodes(dataNodes);
+    Entity::GetDataNodes(dataNodes);
 }
-
 };
-

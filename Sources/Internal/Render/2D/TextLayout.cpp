@@ -32,9 +32,8 @@
 #include "Systems/VirtualCoordinatesSystem.h"
 #include "Utils/StringUtils.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 TextLayout::TextLayout()
     : TextLayout(false)
 {
@@ -55,7 +54,7 @@ void TextLayout::Reset(const WideString& _input)
 {
     if (inputText != _input)
     {
-        // Update prepared text and line breaks only if input text was changed 
+        // Update prepared text and line breaks only if input text was changed
         inputText = _input;
         preparedText = _input;
         if (useBiDi)
@@ -138,7 +137,7 @@ bool TextLayout::NextByWords(const float32 lineWidth)
             if (canBreak == StringUtils::LB_MUSTBREAK) // If symbol is line breaker then split string
             {
                 preparedLine = preparedText.substr(fromPos, pos - fromPos + 1);
-                
+
                 currentWidth = 0.f;
                 lastPossibleBreak = 0;
                 fromPos = pos + 1;
@@ -154,7 +153,7 @@ bool TextLayout::NextByWords(const float32 lineWidth)
         if (lastPossibleBreak > 0) // If we have any breakable symbol in current substring then split by it
         {
             pos = lastPossibleBreak;
-            
+
             preparedLine = preparedText.substr(fromPos, pos - fromPos + 1);
             currentWidth = 0.f;
             lastPossibleBreak = 0;
@@ -199,7 +198,7 @@ bool TextLayout::NextBySymbols(const float32 lineWidth)
             fromPos = pos;
             return true;
         }
-        
+
         currentLineDx += characterSize;
     }
 
@@ -244,5 +243,4 @@ const WideString TextLayout::BuildVisualString(const WideString& _input, const b
     }
     return output;
 }
-
 }

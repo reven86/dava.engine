@@ -18,12 +18,13 @@ FMSkew::FMSkew()
 }
 
 FMSkew::FMSkew(const FMVector3& _rotateAxis, const FMVector3& _aroundAxis, float _angle)
-:	rotateAxis(_rotateAxis), aroundAxis(_aroundAxis), angle(_angle)
+    : rotateAxis(_rotateAxis)
+    , aroundAxis(_aroundAxis)
+    , angle(_angle)
 {
 }
 
 bool operator==(const FMSkew& first, const FMSkew& other)
 {
-	return IsEquivalent(first.rotateAxis, other.rotateAxis) && IsEquivalent(first.aroundAxis, other.aroundAxis) && IsEquivalent(first.angle, other.angle);
+    return IsEquivalent(first.rotateAxis, other.rotateAxis) && IsEquivalent(first.aroundAxis, other.aroundAxis) && IsEquivalent(first.angle, other.angle);
 }
-

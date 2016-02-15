@@ -38,171 +38,168 @@
 #include <cstdlib>
 namespace DAVA
 {
-
 struct FastNameDB : public StaticSingleton<FastNameDB>
 {
-	FastNameDB()
-		: namesHash(HashMap<const char *, int>(8192 * 2, -1))
-	{};
+    FastNameDB()
+        : namesHash(HashMap<const char*, int>(8192 * 2, -1))
+          {};
 
-	~FastNameDB()
-	{
-		const size_t count = namesTable.size();
-		for(size_t i = 0; i < count; ++i)
-		{
-			if(NULL != namesTable[i])
-			{
-				free((void *) namesTable[i]);
-				namesTable[i] = NULL;
-			}
-		}
-	}
+    ~FastNameDB()
+    {
+        const size_t count = namesTable.size();
+        for (size_t i = 0; i < count; ++i)
+        {
+            if (NULL != namesTable[i])
+            {
+                free((void*)namesTable[i]);
+                namesTable[i] = NULL;
+            }
+        }
+    }
 
-	Vector<const char *> namesTable;
-	Vector<int> namesRefCounts;
-	Vector<int> namesEmptyIndexes;
-	HashMap<const char *, int> namesHash;
+    Vector<const char*> namesTable;
+    Vector<int> namesRefCounts;
+    Vector<int> namesEmptyIndexes;
+    HashMap<const char*, int> namesHash;
 
-	Mutex dbMutex;
+    Mutex dbMutex;
 };
 
 class FastName
 {
 public:
-	FastName();
-	explicit FastName(const char * name);
-	FastName(const FastName & _name);
-    explicit FastName(const String & name);
-	~FastName();
+    FastName();
+    explicit FastName(const char* name);
+    FastName(const FastName& _name);
+    explicit FastName(const String& name);
+    ~FastName();
 
-	inline const char* c_str() const;
-	
-	inline FastName& operator=(const FastName &_name);
+    inline const char* c_str() const;
 
-	inline bool operator==(const FastName &_name) const;
-	
-	inline bool operator!=(const FastName &_name) const;
-	
+    inline FastName& operator=(const FastName& _name);
+
+    inline bool operator==(const FastName& _name) const;
+
+    inline bool operator!=(const FastName& _name) const;
+
     /**
         \brief This operator doesn't compare strings, it compares only FastName index.
      */
-    inline bool operator <(const FastName &_name) const;
+    inline bool operator<(const FastName& _name) const;
 
     inline size_t find(const char* s, size_t pos = 0) const;
-    
+
     inline size_t find(const String& str, size_t pos = 0) const;
-    
+
     inline size_t find(const FastName& fn, size_t pos = 0) const;
-	
-	inline const char* operator*() const;
-	
-	inline int Index() const;
-	
-	inline bool IsValid() const;
+
+    inline const char* operator*() const;
+
+    inline int Index() const;
+
+    inline bool IsValid() const;
 
 private:
-    void Init(const char * name);
-	int index;
+    void Init(const char* name);
+    int index;
 
 #ifdef __DAVAENGINE_DEBUG__
-	const char* debug_str_ptr;
+    const char* debug_str_ptr;
 #endif
 
-	void AddRef(int i) const;
-	void RemRef(int i) const;
+    void AddRef(int i) const;
+    void RemRef(int i) const;
 };
-	
-FastName& FastName::operator=(const FastName &_name)
+
+FastName& FastName::operator=(const FastName& _name)
 {
-    if((*this) == _name)
+    if ((*this) == _name)
         return *this;
 
-	RemRef(index);
-		
-	index = _name.index;
+    RemRef(index);
+
+    index = _name.index;
 		
 #ifdef __DAVAENGINE_DEBUG__
-	debug_str_ptr = _name.debug_str_ptr;
+    debug_str_ptr = _name.debug_str_ptr;
 #endif
-		
-	AddRef(index);
-	return *this;
+
+    AddRef(index);
+    return *this;
 }
 
-bool FastName::operator==(const FastName &_name) const
+bool FastName::operator==(const FastName& _name) const
 {
-	return index == _name.index;
+    return index == _name.index;
 }
-	
-bool FastName::operator!=(const FastName &_name) const
+
+bool FastName::operator!=(const FastName& _name) const
 {
-	return index != _name.index;
+    return index != _name.index;
 }
-	
-bool FastName::operator <(const FastName &_name) const
+
+bool FastName::operator<(const FastName& _name) const
 {
-	return index < _name.index;
+    return index < _name.index;
 }
 
 size_t FastName::find(const char* s, size_t pos) const
 {
-    if(c_str() && s)
+    if (c_str() && s)
     {
         const char* q = strstr(c_str() + pos, s);
         return q ? q - c_str() : String::npos;
     }
     return String::npos;
 }
-    
+
 size_t FastName::find(const String& str, size_t pos) const
 {
     return find(str.c_str(), pos);
 }
-    
+
 size_t FastName::find(const FastName& fn, size_t pos) const
 {
     return find(fn.c_str(), pos);
 }
-	
+
 const char* FastName::operator*() const
 {
-	return c_str();
+    return c_str();
 }
-	
+
 int FastName::Index() const
 {
-	return index;
+    return index;
 }
-	
+
 bool FastName::IsValid() const
 {
-	return (index >= 0);
+    return (index >= 0);
 }
 
 const char* FastName::c_str() const
 {
-	DVASSERT(index >= -1 && index < (int)FastNameDB::Instance()->namesTable.size());
-	if(index >= 0)
-	{
-		return FastNameDB::Instance()->namesTable[index];
-	}
+    DVASSERT(index >= -1 && index < (int)FastNameDB::Instance()->namesTable.size());
+    if (index >= 0)
+    {
+        return FastNameDB::Instance()->namesTable[index];
+    }
 
-	return NULL;
+    return NULL;
 }
-
-
 };
 
 namespace std
 {
-    template <>
-    struct hash<DAVA::FastName>
+template <>
+struct hash<DAVA::FastName>
+{
+    std::size_t operator()(const DAVA::FastName& k) const
     {
-        std::size_t operator()(const DAVA::FastName& k) const
-        {
-            return k.Index();
-        }
-    };
+        return k.Index();
+    }
+};
 }
 
 #endif // __DAVAENGINE_FAST_NAME__

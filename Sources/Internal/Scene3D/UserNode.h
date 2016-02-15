@@ -34,26 +34,19 @@
 
 namespace DAVA
 {
-
 class UserNode : public Entity
 {
 protected:
-	virtual ~UserNode();
-public:	
-	UserNode();
-	virtual void	Draw();
+    virtual ~UserNode();
 
-	AABBox3 drawBox;
-	
-	virtual AABBox3 GetWTMaximumBoundingBox();
-	virtual Entity* Clone(Entity *dstNode = NULL);
+public:
+    UserNode();
+    virtual void Draw();
 
+    AABBox3 drawBox;
+
+    virtual AABBox3 GetWTMaximumBoundingBox();
+    virtual Entity* Clone(Entity* dstNode = NULL);
 };
-
 }
 #endif // __DAVAENGINE_USERNODE_H__
-
-
-
-
-

@@ -58,10 +58,11 @@ public:
     QString id() const;
     bool isEmulator() const;
     Qt::HANDLE handle() const;
+
 private:
     QScopedPointer<CoreConDevicePrivate> d_ptr;
     Q_DECLARE_PRIVATE(CoreConDevice)
-friend class CoreConServerPrivate;
+    friend class CoreConServerPrivate;
 };
 
 class CoreConServerPrivate;
@@ -72,8 +73,9 @@ public:
     ~CoreConServer();
     bool initialize();
     Qt::HANDLE handle() const;
-    QList<CoreConDevice *> devices() const;
+    QList<CoreConDevice*> devices() const;
     QString formatError(HRESULT hr) const;
+
 private:
     QScopedPointer<CoreConServerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(CoreConServer)

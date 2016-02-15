@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class TCPSocket provides a TCP socket.
  TCPSocket allows to establish connection and transfer data.
@@ -78,8 +77,8 @@ namespace Net
 class TCPAcceptor;
 class TCPSocket : public TCPSocketTemplate<TCPSocket>
 {
-    friend TCPSocketTemplate<TCPSocket>;    // Make base class friend to allow it to call my Handle... methods
-    friend TCPAcceptor;                     // Make TCPAcceptor friend to allow it to do useful work in its Accept
+    friend TCPSocketTemplate<TCPSocket>; // Make base class friend to allow it to call my Handle... methods
+    friend TCPAcceptor; // Make TCPAcceptor friend to allow it to do useful work in its Accept
 
 public:
     // Handler types
@@ -117,7 +116,7 @@ private:
     WriteHandlerType writeHandler;
 };
 
-}   // namespace Net
-}	// namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TCPSOCKET_H__
+#endif // __DAVAENGINE_TCPSOCKET_H__

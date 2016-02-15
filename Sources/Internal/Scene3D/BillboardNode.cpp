@@ -29,34 +29,18 @@
 
 #include "Scene3D/BillboardNode.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-
 BillboardNode::BillboardNode()
     : Entity()
 {
-
 }
-    
+
 BillboardNode::~BillboardNode()
 {
-    
 }
-    
+
 void BillboardNode::Draw()
 {
-    
 }
-
 };
-
-
-
-
-
-
-
-
-
-

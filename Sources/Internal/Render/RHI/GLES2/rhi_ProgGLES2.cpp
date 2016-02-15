@@ -511,9 +511,9 @@ ProgGLES2::ConstBuf::Instance() const
         else
         {
 #endif
-        //SCOPED_NAMED_TIMING("gl.cb-inst");
-        inst = _GLES2_DefaultConstRingBuffer.Alloc(count * 4);
-        memcpy(inst, data, 4 * count * sizeof(float));
+            //SCOPED_NAMED_TIMING("gl.cb-inst");
+            inst = _GLES2_DefaultConstRingBuffer.Alloc(count * 4);
+            memcpy(inst, data, 4 * count * sizeof(float));
 #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
         }
 #endif
@@ -585,7 +585,7 @@ void ProgGLES2::InvalidateAllConstBufferInstances()
     unsigned altDataCnt = 0;
     unsigned altDataSz = 0;
 
-    for( ConstBufGLES2Pool::Iterator b=ConstBufGLES2Pool::Begin(),b_end=ConstBufGLES2Pool::End(); b!=b_end; ++b )
+    for (ConstBufGLES2Pool::Iterator b = ConstBufGLES2Pool::Begin(), b_end = ConstBufGLES2Pool::End(); b != b_end; ++b)
     {
         ++totalCnt;
         if (ProgGLES2::ConstBuf::CurFrame - b->lastmodifiedFrame > 3)
@@ -611,18 +611,18 @@ void ProgGLES2::InvalidateAllConstBufferInstances()
             staticInstCnt += b->instCount;
             if (b->instCount)
                 staticInstSz += b->count * 4 * sizeof(float);
-    }
-    else
+        }
+        else
 #endif
-    {
-        ++dynCnt;
-        dynInstCnt += b->instCount;
-        dynInstSz += b->instCount * b->count * 4 * sizeof(float);
-    }
+        {
+            ++dynCnt;
+            dynInstCnt += b->instCount;
+            dynInstSz += b->instCount * b->count * 4 * sizeof(float);
+        }
 
-    totalSz += b->count * 4 * sizeof(float);
+        totalSz += b->count * 4 * sizeof(float);
 
-    b->instCount = 0;
+        b->instCount = 0;
     }
 
     Logger::Info("'static' const-buffers: %u ( %.2fKb in %u instances )", staticCnt, float(staticInstSz) / 1024.0f, staticInstCnt);

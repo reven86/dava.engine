@@ -32,11 +32,11 @@
 #include <QApplication>
 #include "MainWindow.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-#if defined (__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
-#elif defined (__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__)
     DAVA::Core::Run(argc, argv);
 #else
     static_assert(!"Wrong platform");

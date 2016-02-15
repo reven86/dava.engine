@@ -35,7 +35,7 @@
 class TextureDescriptorUtils
 {
 public:
-    static bool CreateDescriptorIfNeed(const DAVA::FilePath &pngPathname);
+    static bool CreateDescriptorIfNeed(const DAVA::FilePath& pngPathname);
 };
 
 

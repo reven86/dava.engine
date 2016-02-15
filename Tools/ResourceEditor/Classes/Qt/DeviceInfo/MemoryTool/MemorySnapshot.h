@@ -42,7 +42,7 @@ class MemorySnapshot final
 public:
     MemorySnapshot(const ProfilingSession* profilingSession, const DAVA::FilePath& filename, const DAVA::MMSnapshot* msnapshot);
     MemorySnapshot(MemorySnapshot&& other);
-    MemorySnapshot& operator = (MemorySnapshot&& other);
+    MemorySnapshot& operator=(MemorySnapshot&& other);
     ~MemorySnapshot() = default;
 
     const DAVA::FilePath& FileName() const;
@@ -58,8 +58,11 @@ public:
 
     const BacktraceSymbolTable* SymbolTable() const;
     const ProfilingSession* Session() const;
-    const DAVA::Vector<DAVA::MMBlock>& MemoryBlocks() const { return mblocks; }
-    
+    const DAVA::Vector<DAVA::MMBlock>& MemoryBlocks() const
+    {
+        return mblocks;
+    }
+
     // Create call tree branch starting from given names
     Branch* CreateBranch(const DAVA::Vector<const DAVA::String*>& startNames) const;
 
@@ -67,7 +70,7 @@ private:
     void Init(const DAVA::MMSnapshot* msnapshot);
     bool LoadFile();
     void BuildBlockMap();
-    
+
     Branch* BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const DAVA::String*>& bktraceNames) const;
     int FindNamesInBacktrace(const DAVA::Vector<const DAVA::String*>& namesToFind, const DAVA::Vector<const DAVA::String*>& bktraceNames) const;
 
@@ -81,8 +84,8 @@ private:
     size_t totalSize = 0;
 
     BacktraceSymbolTable* symbolTable = nullptr;
-    DAVA::Vector<DAVA::MMBlock> mblocks;                                // All memory blocks contained in snapshot
-    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock*>> blockMap;     // Map of memory blocks allocated at backtrace identified by its hash
+    DAVA::Vector<DAVA::MMBlock> mblocks; // All memory blocks contained in snapshot
+    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock*>> blockMap; // Map of memory blocks allocated at backtrace identified by its hash
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -147,4 +150,4 @@ inline void MemorySnapshot::Init(const DAVA::MMSnapshot* msnapshot)
     totalSize = msnapshot->size;
 }
 
-#endif  // __MEMORYSNAPSHOT_H__
+#endif // __MEMORYSNAPSHOT_H__

@@ -49,26 +49,25 @@ QtLayer::QtLayer()
     , isDAVAEngineEnabled(true)
 {
 }
-    
+
 QtLayer::~QtLayer()
 {
     AppFinished();
 }
-    
-    
+
 void QtLayer::Quit()
 {
-    if(delegate)
+    if (delegate)
     {
         delegate->Quit();
     }
 }
 
-void QtLayer::SetDelegate(QtLayerDelegate *delegate)
+void QtLayer::SetDelegate(QtLayerDelegate* delegate)
 {
     this->delegate = delegate;
 }
-    
+
 void QtLayer::AppStarted()
 {
     FrameworkDidLaunched();
@@ -82,7 +81,6 @@ void QtLayer::AppFinished()
     Core::Instance()->ReleaseSingletons();
 }
 
-    
 void QtLayer::OnSuspend()
 {
     SoundSystem::Instance()->Suspend();
@@ -95,7 +93,6 @@ void QtLayer::OnResume()
     Core::Instance()->SetIsActive(true);
 }
 
-    
 void QtLayer::ProcessFrame()
 {
     rhi::InvalidateCache(); //as QT itself can break gl states
@@ -111,7 +108,7 @@ void QtLayer::Resize(int32 width, int32 height, float64 dpr)
     resetParams.height = realHeight;
     Renderer::Reset(resetParams);
 
-    VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
     DVASSERT(nullptr != vcs)
 
     vcs->SetInputScreenAreaSize(realWidth, realHeight);
@@ -151,25 +148,24 @@ void QtLayer::KeyReleased(Key key, uint64 timestamp)
     InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(key);
 }
 
-void QtLayer::MouseEvent(const UIEvent & event)
+void QtLayer::MouseEvent(const UIEvent& event)
 {
     UIEvent evCopy(event);
     UIControlSystem::Instance()->OnInput(&evCopy);
 }
 
     
-#if defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
 
 void* QtLayer::CreateAutoreleasePool()
 {
     return nullptr;
 }
 
-void QtLayer::ReleaseAutoreleasePool(void *pool)
+void QtLayer::ReleaseAutoreleasePool(void* pool)
 {
     (void)pool;
 }
     
 #endif
-
 };

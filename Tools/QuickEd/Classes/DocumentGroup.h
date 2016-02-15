@@ -42,7 +42,7 @@ class DocumentGroup : public QObject
 {
     Q_OBJECT
 public:
-    explicit DocumentGroup(QObject *parent = nullptr);
+    explicit DocumentGroup(QObject* parent = nullptr);
     ~DocumentGroup();
 
     void InsertDocument(int index, Document*);
@@ -74,9 +74,9 @@ protected:
     bool hasPixalization = false;
     float scale = 100.0f;
 
-    Document *active;
+    Document* active;
     QList<Document*> documentList;
-    QUndoGroup *undoGroup;
+    QUndoGroup* undoGroup;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

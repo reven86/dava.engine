@@ -23,19 +23,20 @@ extern "C" {
 #endif
 
 typedef struct _ResizeFilter
-  ResizeFilter;
+ResizeFilter;
 
 extern MagickExport MagickRealType
-  GetResizeFilterSupport(const ResizeFilter *),
-  GetResizeFilterWeight(const ResizeFilter *,const MagickRealType);
+GetResizeFilterSupport(const ResizeFilter *),
+GetResizeFilterWeight(const ResizeFilter *, const MagickRealType);
 
 extern MagickExport ResizeFilter
-  *AcquireResizeFilter(const Image *,const FilterTypes,const MagickRealType,
-     const MagickBooleanType,ExceptionInfo *),
-  *DestroyResizeFilter(ResizeFilter *);
+*
+AcquireResizeFilter(const Image *, const FilterTypes, const MagickRealType,
+                    const MagickBooleanType, ExceptionInfo *),
+*DestroyResizeFilter(ResizeFilter *);
 
 extern MagickExport void
-  SetResizeFilterSupport(ResizeFilter *,const MagickRealType);
+SetResizeFilterSupport(ResizeFilter*, const MagickRealType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
