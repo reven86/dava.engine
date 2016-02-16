@@ -33,10 +33,13 @@
 #include "FileSystem/Logger.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterial.h"
+#include "Utils/StringFormat.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
 #include "Project/ProjectManager.h"
+
+#include <QMessageBox>
 
 namespace Preset
 {
@@ -48,20 +51,23 @@ static const QString presetFilter = "Preset (*.preset)";
 
 namespace Internal
 {
-bool ValidateTexturePreset(const TextureDescriptor* descriptor, const KeyedArchive* preset)
+
+bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const KeyedArchive* preset, List<String>& warnings)
 {
-    if (descriptor->IsCompressedFile())
-    {
-        return false;
-    }
+    DVASSERT(descriptor);
+    DVASSERT(preset);
 
     const FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
     const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
     if (imageInfo.isEmpty())
     {
+        String warn = DAVA::Format("Can't get image info for %s", sourceImagePath.GetAbsolutePathname().c_str());
+        Logger::Warning("%s", warn.c_str());
+        warnings.emplace_back(warn);
         return false;
     }
 
+    bool dimensionsAreCorrect = true;
     bool imageIsSquare = (imageInfo.width == imageInfo.height);
 
     for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
@@ -78,13 +84,17 @@ bool ValidateTexturePreset(const TextureDescriptor* descriptor, const KeyedArchi
             {
                 if (imageIsSquare != compressIsSquare || (compressToWidth >= imageInfo.width) || (compressToHeight >= imageInfo.height))
                 {
-                    return false;
+                    String warn = DAVA::Format("Preset compression size %u x %u for gpu %s doesn't fit for image size %u x %u", 
+                        compressToWidth, compressToHeight, gpuName.c_str(), imageInfo.width, imageInfo.height);
+                    Logger::Warning("%s", warn.c_str());
+                    warnings.emplace_back(warn);
+                    dimensionsAreCorrect = false;
                 }
             }
         }
     }
 
-    return true;
+    return dimensionsAreCorrect;
 }
 
 FilePath CreatePresetFolderPathname(const String& folder)
@@ -128,11 +138,22 @@ KeyedArchive* LoadArchive(const FilePath& path)
     return archive;
 }
 
-bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* preset)
+bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* preset, bool applyWithWarnings)
 {
     DVASSERT(descriptor != nullptr);
     DVASSERT(preset != nullptr);
-    return (Internal::ValidateTexturePreset(descriptor, preset) && descriptor->DeserializeFromPreset(preset));
+
+    if (descriptor->IsPresetValid(preset) == false)
+        return false;
+
+    List<String> warnings;
+    if (Internal::ArePresetDimensionsCorrect(descriptor, preset, warnings) == false && !applyWithWarnings)
+        return false;
+    
+    if (!descriptor->DeserializeFromPreset(preset))
+        return false;
+
+    return true;
 }
 
 bool DialogSavePresetForTexture(const TextureDescriptor* descriptor)
@@ -161,19 +182,41 @@ bool DialogLoadPresetForTexture(TextureDescriptor* descriptor)
     }
 
     ScopedPtr<KeyedArchive> presetArchive(LoadArchive(inputFile.toStdString()));
-    if (!presetArchive)
+    if (!presetArchive || !descriptor->IsPresetValid(presetArchive))
     {
         return false;
     }
 
-    bool applied = ApplyTexturePreset(descriptor, presetArchive);
-    if (!applied)
+    bool toApply = true;
+    List<String> warnings;
+    if (Internal::ArePresetDimensionsCorrect(descriptor, presetArchive, warnings) == false)
+    {
+        QMessageBox msgBox;
+        QString msg;
+        for (String& warn : warnings)
+        {
+            msg.append(warn.c_str());
+            msg.append("\n");
+        }
+        msg.append("\n");
+        msg.append("Do you want to apply this preset?");
+        msgBox.setText(msg);
+        msgBox.setStandardButtons(QMessageBox::Apply | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        msgBox.setIcon(QMessageBox::Warning);
+        int ret = msgBox.exec();
+        toApply = (ret == QMessageBox::Apply);
+    }
+
+    if (toApply && descriptor->DeserializeFromPreset(presetArchive))
+    {
+        descriptor->Save();
+        return true;
+    }
+    else
     {
         return false;
     }
-
-    descriptor->Save();
-    return true;
 }
 
 bool DialogLoadPresetForMaterial(NMaterial* material)

@@ -43,7 +43,7 @@ namespace Preset
 bool SaveArchive(const DAVA::KeyedArchive* presetArchive, const DAVA::FilePath& path);
 DAVA::KeyedArchive* LoadArchive(const DAVA::FilePath& path);
 
-bool ApplyTexturePreset(DAVA::TextureDescriptor* descriptor, const DAVA::KeyedArchive* preset);
+bool ApplyTexturePreset(DAVA::TextureDescriptor* descriptor, const DAVA::KeyedArchive* preset, bool applyWithWarnings = true);
 
 bool DialogSavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
 bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor);

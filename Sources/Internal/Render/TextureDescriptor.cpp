@@ -1106,7 +1106,7 @@ uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
     return CRC32::ForBuffer((const char8*)crcBuffer.data(), CRC_BUFFER_SIZE);
 }
 
-bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
+bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive)
 {
     DVASSERT(IsCompressedFile() == false);
     DVASSERT(presetArchive);
@@ -1136,6 +1136,14 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
         return false;
     }
 
+    return true;
+}
+
+bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
+{
+    if (!IsPresetValid(presetArchive))
+        return false;
+
     drawSettings.wrapModeS = static_cast<int8>(presetArchive->GetInt32("wrapModeS", rhi::TEXADDR_WRAP));
     drawSettings.wrapModeT = static_cast<int8>(presetArchive->GetInt32("wrapModeT", rhi::TEXADDR_WRAP));
     drawSettings.minFilter = static_cast<int8>(presetArchive->GetInt32("minFilter", rhi::TEXFILTER_LINEAR));
@@ -1147,21 +1155,23 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
     for (uint32 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
         String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
-        const KeyedArchive* compressionArchieve = presetArchive->GetArchive(gpuName);
+        const KeyedArchive* compressionArchive = presetArchive->GetArchive(gpuName);
 
         TextureDescriptor::Compression& compressionGPU = compression[gpu];
-        if (compressionArchieve != nullptr)
+        if (compressionArchive != nullptr)
         {
-            auto format = compressionArchieve->GetInt32("format", FORMAT_INVALID);
-            int32 compressToWidth = compressionArchieve->GetInt32("width");
-            int32 compressToHeight = compressionArchieve->GetInt32("height");
+            auto format = compressionArchive->GetInt32("format", FORMAT_INVALID);
+            int32 compressToWidth = compressionArchive->GetInt32("width");
+            int32 compressToHeight = compressionArchive->GetInt32("height");
 
-            if (format != FORMAT_INVALID &&
-                (format != compressionGPU.format ||
-                 compressToWidth != compressionGPU.compressToWidth ||
-                 compressToHeight != compressionGPU.compressToHeight))
+            if (format != FORMAT_INVALID && format != compressionGPU.format)
             {
                 compressionGPU.format = format;
+                compressionGPU.convertedFileCrc = 0;
+            }
+
+            if (compressToWidth != compressionGPU.compressToWidth || compressToHeight != compressionGPU.compressToHeight)
+            {
                 compressionGPU.compressToHeight = compressToHeight;
                 compressionGPU.compressToWidth = compressToWidth;
                 compressionGPU.convertedFileCrc = 0;

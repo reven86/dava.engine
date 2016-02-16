@@ -216,6 +216,7 @@ public:
 
     bool Reload();
 
+    bool IsPresetValid(const KeyedArchive* presetArchive);
     bool DeserializeFromPreset(const KeyedArchive* presetArchive);
     void SerializeToPreset(KeyedArchive* presetArchive) const;
 
