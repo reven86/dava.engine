@@ -182,10 +182,10 @@ void StatusBar::UpdateFPS()
 
     if (frames > 0)
     {
-        distanceToCamera->setText(QString::fromStdString(DAVA::Format("FPS: %d", frames)));
+        fpsCounter->setText(QString::fromStdString(DAVA::Format("FPS: %d", frames)));
     }
     else
     {
-        distanceToCamera->setText(QString::fromStdString("FPS: unknown"));
+        fpsCounter->setText(QString::fromStdString("FPS: unknown"));
     }
 }
