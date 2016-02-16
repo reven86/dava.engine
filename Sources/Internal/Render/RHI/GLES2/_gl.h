@@ -218,8 +218,8 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
 
 #ifdef __DAVAENGINE_ARM_7__
 
-extern DAVA::uint8 pre_call_registers[64];
-extern DAVA::uint8 post_call_registers[64];
+extern volatile DAVA::uint8 pre_call_registers[64];
+extern volatile DAVA::uint8 post_call_registers[64];
 
 #define GL_CALL(expr) \
 { \
@@ -229,7 +229,7 @@ extern DAVA::uint8 post_call_registers[64];
     asm volatile("vstmia %0, { q4-q7 }" ::"r"(post_call_registers)               \
                      : "memory"); \
     \
-    DVASSERT_MSG(memcmp(pre_call_registers, post_call_registers, 64 * sizeof(DAVA::uint8)) == 0, #expr); \
+    DVASSERT_MSG(memcmp((const void*)pre_call_registers, (const void*)post_call_registers, 64 * sizeof(DAVA::uint8)) == 0, #expr); \
 }
 
 #else
