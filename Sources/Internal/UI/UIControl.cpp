@@ -1647,7 +1647,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         }
                     }
                 }
-
+            }
             currentInput->touchLocker = NULL;
             return true;
         }
