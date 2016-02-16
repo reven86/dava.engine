@@ -24,7 +24,7 @@
             }
         },
         "Windows 10" : {
-            "string" : "$DAVA_FRAMEWORK_PATH/\Tools\WinStoreCMake\mk_project.bat $PATH_TO_BUILD_FOLDER/.. %1",
+            "string" : "$DAVA_FRAMEWORK_PATH\\Tools\\WinStoreCMake\\mk_project.bat $PATH_TO_BUILD_FOLDER/.. %1",
             "default substring 1" : "",
             "radiobuttons" : {
                 "ARM" : {
@@ -39,7 +39,7 @@
             }
         }
     },
-    "Options" : {
-        "Unity build" : "-DUNITY_BUILD=true"
-    }
+    "Options" : [
+        { "name" : "Unity11111 build", "innerValue" : "-DUNITY_BUILD=true" }
+    ]
 }

@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
     id: applicationWindow
@@ -7,6 +8,14 @@ ApplicationWindow {
     width: 400
     height: 350
     title: qsTr("CMake tool")
+
+    MessageDialog {
+        id: errorDialog;
+        text: "error occurred!"
+        visible: false
+        icon: StandardIcon.Warning
+
+    }
 
     TextField {
         id: textField_buildFolder
@@ -125,9 +134,36 @@ ApplicationWindow {
         anchors.verticalCenterOffset: 0
         anchors.verticalCenter: label_platforms.verticalCenter
     }
+    GridView {
+        id: globalOptionsView
+        Component.onCompleted: {
+            try {
+                var object = JSON.parse(configuration);
+                var array = object["Options"];
+                if(array !== undefined && Array.isArray(array))
+                {
+                    console.log(array[0]["name"])
+                    globalOptionsModel.append(array[0])
 
-    Flow {
-        id: flow_globalOptions
+                    for(var obj in array)
+                    {
+                        globalOptionsModel.append(obj)
+                    }
+                }
+            }
+            catch(error) {
+                errorDialog.informativeText = error.message;
+                errorDialog.open();
+            }
+        }
+        delegate: CheckBox {
+            text: name
+            property string innerValue : innerValue
+        }
+        model: ListModel {
+            id: globalOptionsModel
+        }
+
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
         anchors.right: column_options.right
@@ -136,7 +172,6 @@ ApplicationWindow {
         anchors.topMargin: 6
         anchors.left: label_globalOptions.left
         anchors.leftMargin: 0
-        spacing: 10
     }
 
     Label {

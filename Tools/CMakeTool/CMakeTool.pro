@@ -2,8 +2,7 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
-SOURCES += main.cpp \
-    configreader.cpp
+SOURCES += main.cpp
 
 RESOURCES += qml.qrc \
     resources.qrc
@@ -13,7 +12,3 @@ QML_IMPORT_PATH =
 
 # Default rules for deployment.
 include(deployment.pri)
-
-HEADERS += \
-    configreader.h
-

@@ -1,8 +1,10 @@
 #include <QApplication>
+#include <QString>
 #include <QQmlApplicationEngine>
 #include <QFile>
 #include <QJsonDocument>
 #include <QMessageBox>
+#include <QQmlContext>
 
 int main(int argc, char *argv[])
 {
@@ -18,10 +20,11 @@ int main(int argc, char *argv[])
 #endif //platform
     if(!QFile::exists(configPath))
     {
-        QMessageBox::critical(nullptr, tr("Config file not available!"), tr("Can not find config file %1").arg(configPath));
-        return;
+        QMessageBox::critical(nullptr, QObject::tr("Config file not available!"), QObject::tr("Can not find config file %1").arg(configPath));
+        return 0;
     }
-    QFile configFile(fileName);
+    QFile configFile(configPath);
+    QVariant configuration;
     if(configFile.open(QIODevice::ReadOnly))
     {
         QByteArray data = configFile.readAll();
@@ -29,18 +32,19 @@ int main(int argc, char *argv[])
         QJsonDocument::fromJson(data, &err);
         if(err.error != QJsonParseError::NoError)
         {
-            QMessageBox::critical(nullptr, tr("Config file corrupted!"), tr("Failed to parse config file: error %1").arg(err.errorString()));
-            return;
+            QMessageBox::critical(nullptr, QObject::tr("Config file corrupted!"), QObject::tr("Failed to parse config file: error %1").arg(err.errorString()));
+            return 0;
         }
+        configuration.setValue(data);
     }
     else
     {
-        QMessageBox::critical(nullptr, tr("Failed to open config file!"), tr("Failed to open config file %1").arg(configPath));
-        return;
+        QMessageBox::critical(nullptr, QObject::tr("Failed to open config file!"), QObject::tr("Failed to open config file %1").arg(configPath));
+        return 0;
     }
     QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("configuration", configuration);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-
 
     return app.exec();
 }
