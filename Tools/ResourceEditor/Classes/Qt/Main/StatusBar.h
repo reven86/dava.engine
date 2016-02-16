@@ -67,6 +67,8 @@ protected:
     QLabel* fpsCounter = nullptr;
     QLabel* sceneGeometry = nullptr;
     QLabel* selectionBoxSize = nullptr;
+
+    DAVA::uint64 lastTimeMS = 0;
 };
 
 #endif // __STATUS_BAR_H__

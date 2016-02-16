@@ -29,6 +29,8 @@
 
 #include "StatusBar.h"
 
+#include "Platform/SystemTimer.h"
+
 #include "Main/mainwindow.h"
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
@@ -180,12 +182,17 @@ void StatusBar::UpdateFPS()
         scene->ResetFramesCount();
     }
 
-    if (frames > 0)
+    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::Instance()->AbsoluteMS();
+
+    if (frames > 0 && lastTimeMS != 0 && lastTimeMS != currentTimeMS)
     {
-        fpsCounter->setText(QString::fromStdString(DAVA::Format("FPS: %d", frames)));
+        DAVA::uint64 deltaTime = currentTimeMS - lastTimeMS;
+        fpsCounter->setText(QString::fromStdString(DAVA::Format("FPS: %lld", frames * 1000 / deltaTime)));
     }
     else
     {
         fpsCounter->setText(QString::fromStdString("FPS: unknown"));
     }
+
+    lastTimeMS = currentTimeMS;
 }
