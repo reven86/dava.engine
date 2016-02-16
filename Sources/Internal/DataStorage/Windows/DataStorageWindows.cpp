@@ -35,7 +35,7 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WINDOWS__)
 
-IDataStorage *DataStorage::Create()
+IDataStorage* DataStorage::Create()
 {
     return new DataStorageWin();
 }
@@ -49,11 +49,10 @@ DataStorageWin::DataStorageWin()
     DVASSERT(nullptr != roamingSettings); // something goes wrong
 }
 
-String DataStorageWin::GetStringValue(const String &key)
+String DataStorageWin::GetStringValue(const String& key)
 {
-
     auto values = roamingSettings->Values;
-    IPropertyValue^ value = safe_cast<IPropertyValue^>(values->Lookup(StringToRTString(key)));
+    IPropertyValue ^ value = safe_cast<IPropertyValue ^>(values->Lookup(StringToRTString(key)));
 
     if (nullptr != value && PropertyType::String == value->Type)
     {
@@ -65,10 +64,10 @@ String DataStorageWin::GetStringValue(const String &key)
     }
 }
 
-int64 DataStorageWin::GetLongValue(const String &key)
+int64 DataStorageWin::GetLongValue(const String& key)
 {
     auto values = roamingSettings->Values;
-    IPropertyValue^ value = safe_cast<IPropertyValue^>(values->Lookup(StringToRTString(key)));
+    IPropertyValue ^ value = safe_cast<IPropertyValue ^>(values->Lookup(StringToRTString(key)));
     if (nullptr != value && PropertyType::Int64 == value->Type)
     {
         return value->GetInt64();
@@ -79,19 +78,19 @@ int64 DataStorageWin::GetLongValue(const String &key)
     }
 }
 
-void DataStorageWin::SetStringValue(const String &key, const String &value)
+void DataStorageWin::SetStringValue(const String& key, const String& value)
 {
     auto values = roamingSettings->Values;
-    values->Insert(StringToRTString(key), dynamic_cast<PropertyValue^>(PropertyValue::CreateString(StringToRTString(value))));
+    values->Insert(StringToRTString(key), dynamic_cast<PropertyValue ^>(PropertyValue::CreateString(StringToRTString(value))));
 }
 
-void DataStorageWin::SetLongValue(const String &key, int64 value)
+void DataStorageWin::SetLongValue(const String& key, int64 value)
 {
     auto values = roamingSettings->Values;
-    values->Insert(StringToRTString(key), dynamic_cast<PropertyValue^>(PropertyValue::CreateInt64(value)));
+    values->Insert(StringToRTString(key), dynamic_cast<PropertyValue ^>(PropertyValue::CreateInt64(value)));
 }
 
-void DataStorageWin::RemoveEntry(const String &key)
+void DataStorageWin::RemoveEntry(const String& key)
 {
     auto values = roamingSettings->Values;
     values->Remove(StringToRTString(key));

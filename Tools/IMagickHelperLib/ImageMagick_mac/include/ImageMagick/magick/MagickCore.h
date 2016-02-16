@@ -24,24 +24,24 @@ extern "C" {
 #endif
 
 #if !defined(_MAGICKCORE_CONFIG_H)
-# define _MAGICKCORE_CONFIG_H
-# if !defined(vms) && !defined(macintosh)
-#  include "magick/magick-config.h"
-# else
-#  include "magick-config.h"
-# endif
+#define _MAGICKCORE_CONFIG_H
+#if !defined(vms) && !defined(macintosh)
+#include "magick/magick-config.h"
+#else
+#include "magick-config.h"
+#endif
 #if defined(_magickcore_const) && !defined(const)
-# define const _magickcore_const
+#define const _magickcore_const
 #endif
 #if defined(_magickcore_inline) && !defined(inline)
-# define inline _magickcore_inline
+#define inline _magickcore_inline
 #endif
 #if defined(_magickcore_restrict) && !defined(restrict)
-# define restrict  _magickcore_restrict
+#define restrict _magickcore_restrict
 #endif
-# if defined(__cplusplus) || defined(c_plusplus)
-#  undef inline
-# endif
+#if defined(__cplusplus) || defined(c_plusplus)
+#undef inline
+#endif
 #endif
 
 #include <stdio.h>
@@ -50,99 +50,99 @@ extern "C" {
 #include <sys/types.h>
 
 #if defined(WIN32) || defined(WIN64)
-#  define MAGICKCORE_WINDOWS_SUPPORT
+#define MAGICKCORE_WINDOWS_SUPPORT
 #else
-#  define MAGICKCORE_POSIX_SUPPORT
+#define MAGICKCORE_POSIX_SUPPORT
 #endif 
 
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__)
-# define MagickPrivate
-# if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
-#  define _MAGICKDLL_
-# endif
-# if defined(_MAGICKDLL_)
-#  if defined(_VISUALC_)
-#   pragma warning( disable: 4273 )  /* Disable the dll linkage warnings */
-#  endif
-#  if !defined(_MAGICKLIB_)
-#   if defined(__GNUC__)
-#    define MagickExport __attribute__ ((dllimport))
-#   else
-#    define MagickExport __declspec(dllimport)
-#   endif
-#   if defined(_VISUALC_)
-#    pragma message( "MagickCore lib DLL import interface" )
-#   endif
-#  else
-#   if defined(__GNUC__)
-#    define MagickExport __attribute__ ((dllexport))
-#   else
-#    define MagickExport __declspec(dllexport)
-#   endif
-#   if defined(_VISUALC_)
-#    pragma message( "MagickCore lib DLL export interface" )
-#   endif
-#  endif
-# else
-#  define MagickExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickCore lib static interface" )
-#  endif
-# endif
-
-# if defined(_DLL) && !defined(_LIB)
-#   if defined(__GNUC__)
-#    define ModuleExport __attribute__ ((dllexport))
-#   else
-#    define ModuleExport __declspec(dllexport)
-#   endif
-#  if defined(_VISUALC_)
-#   pragma message( "MagickCore module DLL export interface" )
-#  endif
-# else
-#  define ModuleExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickCore module static interface" )
-#  endif
-
-# endif
-# define MagickGlobal __declspec(thread)
-# if defined(_VISUALC_)
-#  pragma warning(disable : 4018)
-#  pragma warning(disable : 4068)
-#  pragma warning(disable : 4244)
-#  pragma warning(disable : 4142)
-#  pragma warning(disable : 4800)
-#  pragma warning(disable : 4786)
-#  pragma warning(disable : 4996)
-# endif
+#define MagickPrivate
+#if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
+#define _MAGICKDLL_
+#endif
+#if defined(_MAGICKDLL_)
+#if defined(_VISUALC_)
+#pragma warning(disable : 4273) /* Disable the dll linkage warnings */
+#endif
+#if !defined(_MAGICKLIB_)
+#if defined(__GNUC__)
+#define MagickExport __attribute__((dllimport))
 #else
-# if __GNUC__ >= 4
-#  define MagickExport __attribute__ ((visibility ("default")))
-#  define MagickPrivate  __attribute__ ((visibility ("hidden")))
-# else
-#   define MagickExport
-#   define MagickPrivate
-# endif
-# define ModuleExport  MagickExport
-# define MagickGlobal
+#define MagickExport __declspec(dllimport)
+#endif
+#if defined(_VISUALC_)
+#pragma message("MagickCore lib DLL import interface")
+#endif
+#else
+#if defined(__GNUC__)
+#define MagickExport __attribute__((dllexport))
+#else
+#define MagickExport __declspec(dllexport)
+#endif
+#if defined(_VISUALC_)
+#pragma message("MagickCore lib DLL export interface")
+#endif
+#endif
+#else
+#define MagickExport
+#if defined(_VISUALC_)
+#pragma message("MagickCore lib static interface")
+#endif
+#endif
+
+#if defined(_DLL) && !defined(_LIB)
+#if defined(__GNUC__)
+#define ModuleExport __attribute__((dllexport))
+#else
+#define ModuleExport __declspec(dllexport)
+#endif
+#if defined(_VISUALC_)
+#pragma message("MagickCore module DLL export interface")
+#endif
+#else
+#define ModuleExport
+#if defined(_VISUALC_)
+#pragma message("MagickCore module static interface")
+#endif
+
+#endif
+#define MagickGlobal __declspec(thread)
+#if defined(_VISUALC_)
+#pragma warning(disable : 4018)
+#pragma warning(disable : 4068)
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4142)
+#pragma warning(disable : 4800)
+#pragma warning(disable : 4786)
+#pragma warning(disable : 4996)
+#endif
+#else
+#if __GNUC__ >= 4
+#define MagickExport __attribute__((visibility("default")))
+#define MagickPrivate __attribute__((visibility("hidden")))
+#else
+#define MagickExport
+#define MagickPrivate
+#endif
+#define ModuleExport MagickExport
+#define MagickGlobal
 #endif
 
 #if !defined(MaxTextExtent)
-#  define MaxTextExtent  4096
+#define MaxTextExtent 4096
 #endif
-#define MagickSignature  0xabacadabUL
+#define MagickSignature 0xabacadabUL
 
 #if !defined(magick_attribute)
-#  if !defined(__GNUC__)
-#    define magick_attribute(x)  /* nothing */
-#  else
-#    define magick_attribute  __attribute__
-#  endif
+#if !defined(__GNUC__)
+#define magick_attribute(x) /* nothing */
+#else
+#define magick_attribute __attribute__
+#endif
 #endif
 
 #if defined(MAGICKCORE_NAMESPACE_PREFIX)
-# include "magick/methods.h"
+#include "magick/methods.h"
 #endif
 #include "magick/magick-type.h"
 #include "magick/accelerate.h"

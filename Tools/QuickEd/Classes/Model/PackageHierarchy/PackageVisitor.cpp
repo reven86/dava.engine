@@ -2,10 +2,8 @@
 
 PackageVisitor::PackageVisitor()
 {
-    
 }
 
 PackageVisitor::~PackageVisitor()
 {
-    
 }

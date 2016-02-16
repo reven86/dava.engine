@@ -36,13 +36,13 @@
 
 class QTreeView;
 
-
-namespace Ui {
-    class DeviceListWidget;
+namespace Ui
+{
+class DeviceListWidget;
 } // namespace Ui
 
 class DeviceListWidget
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
@@ -57,10 +57,10 @@ public slots:
     void OnDeviceDiscover();
 
 public:
-    explicit DeviceListWidget( QWidget *parent = NULL );
+    explicit DeviceListWidget(QWidget* parent = NULL);
     ~DeviceListWidget();
 
-    QTreeView *ItemView();
+    QTreeView* ItemView();
 
     QScopedPointer<Ui::DeviceListWidget> ui;
 };

@@ -188,7 +188,7 @@ inline void DavaDebugBreak()
     {                                                                                  \
         DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__, backtrace);       \
-        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT",   \
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
                             #expr, "", __FILE__, __LINE__, backtrace))                 \
         {                                                                              \
             DavaDebugBreak();                                                          \
@@ -201,7 +201,7 @@ inline void DavaDebugBreak()
     {                                                                                  \
         DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__, backtrace);      \
-        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT",   \
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
                             #expr, msg, __FILE__, __LINE__, backtrace))                \
         {                                                                              \
             DavaDebugBreak();                                                          \
@@ -214,7 +214,7 @@ inline void DavaDebugBreak()
     {                                                                                  \
         DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
         LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__, backtrace);   \
-        MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING",      \
+        MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING",    \
                         #expr, msg, __FILE__, __LINE__, backtrace);                    \
     }
 

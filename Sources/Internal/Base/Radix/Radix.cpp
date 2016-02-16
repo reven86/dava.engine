@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Copyright 2011 Erik Gorset. All rights reserved.
 
@@ -66,51 +65,60 @@ permitted provided that the following conditions are met:
 
 namespace DAVA
 {
-
-void insertion_sort_32(int32 * array, int offset, int end)
+void insertion_sort_32(int32* array, int offset, int end)
 {
     int32 x, y, temp;
-    for (x=offset; x<end; ++x) {
-        for (y=x; y>offset && array[y-1]>array[y]; y--) {
+    for (x = offset; x < end; ++x)
+    {
+        for (y = x; y > offset && array[y - 1] > array[y]; y--)
+        {
             temp = array[y];
-            array[y] = array[y-1];
-            array[y-1] = temp;
-        }
-    }
-}
-    
-void insertion_sort_64(int64 * array, int offset, int end)
-{
-    int64 x, y, temp;
-    for (x=offset; x<end; ++x) {
-        for (y=x; y>offset && array[y-1]>array[y]; y--) {
-            temp = array[y];
-            array[y] = array[y-1];
-            array[y-1] = temp;
+            array[y] = array[y - 1];
+            array[y - 1] = temp;
         }
     }
 }
 
-void RadixSort(int32 *array, int offset, int end, int shift) {
+void insertion_sort_64(int64* array, int offset, int end)
+{
+    int64 x, y, temp;
+    for (x = offset; x < end; ++x)
+    {
+        for (y = x; y > offset && array[y - 1] > array[y]; y--)
+        {
+            temp = array[y];
+            array[y] = array[y - 1];
+            array[y - 1] = temp;
+        }
+    }
+}
+
+void RadixSort(int32* array, int offset, int end, int shift)
+{
     int32 x, y, value, temp;
     int32 last[256] = { 0 }, pointer[256];
 
-    for (x=offset; x<end; ++x) {
+    for (x = offset; x < end; ++x)
+    {
         ++last[(array[x] >> shift) & 0xFF];
     }
 
     last[0] += offset;
     pointer[0] = offset;
-    for (x=1; x<256; ++x) {
-        pointer[x] = last[x-1];
-        last[x] += last[x-1];
+    for (x = 1; x < 256; ++x)
+    {
+        pointer[x] = last[x - 1];
+        last[x] += last[x - 1];
     }
 
-    for (x=0; x<256; ++x) {
-        while (pointer[x] != last[x]) {
+    for (x = 0; x < 256; ++x)
+    {
+        while (pointer[x] != last[x])
+        {
             value = array[pointer[x]];
             y = (value >> shift) & 0xFF;
-            while (x != y) {
+            while (x != y)
+            {
                 temp = array[pointer[y]];
                 array[pointer[y]++] = value;
                 value = temp;
@@ -120,41 +128,51 @@ void RadixSort(int32 *array, int offset, int end, int shift) {
         }
     }
 
-    if (shift > 0) {
+    if (shift > 0)
+    {
         shift -= 8;
-        for (x=0; x<256; ++x) {
-            temp = x > 0 ? pointer[x] - pointer[x-1] : pointer[0] - offset;
-            if (temp > 64) {
+        for (x = 0; x < 256; ++x)
+        {
+            temp = x > 0 ? pointer[x] - pointer[x - 1] : pointer[0] - offset;
+            if (temp > 64)
+            {
                 RadixSort(array, pointer[x] - temp, pointer[x], shift);
-            } else if (temp > 1) {
+            }
+            else if (temp > 1)
+            {
                 // std::sort(array + (pointer[x] - temp), array + pointer[x]);
                 insertion_sort_32(array, pointer[x] - temp, pointer[x]);
             }
         }
     }
 }
-    
-void RadixSort(int64 *array, int offset, int end, int shift)
+
+void RadixSort(int64* array, int offset, int end, int shift)
 {
     int64 x, y, value, temp;
     int64 last[256] = { 0 }, pointer[256];
-    
-    for (x=offset; x<end; ++x) {
+
+    for (x = offset; x < end; ++x)
+    {
         ++last[(array[x] >> shift) & 0xFF];
     }
-    
+
     last[0] += offset;
     pointer[0] = offset;
-    for (x=1; x<256; ++x) {
-        pointer[x] = last[x-1];
-        last[x] += last[x-1];
+    for (x = 1; x < 256; ++x)
+    {
+        pointer[x] = last[x - 1];
+        last[x] += last[x - 1];
     }
-    
-    for (x=0; x<256; ++x) {
-        while (pointer[x] != last[x]) {
+
+    for (x = 0; x < 256; ++x)
+    {
+        while (pointer[x] != last[x])
+        {
             value = array[pointer[x]];
             y = (value >> shift) & 0xFF;
-            while (x != y) {
+            while (x != y)
+            {
                 temp = array[pointer[y]];
                 array[pointer[y]++] = value;
                 value = temp;
@@ -163,14 +181,19 @@ void RadixSort(int64 *array, int offset, int end, int shift)
             array[pointer[x]++] = value;
         }
     }
-    
-    if (shift > 0) {
+
+    if (shift > 0)
+    {
         shift -= 8;
-        for (x=0; x<256; ++x) {
-            temp = x > 0 ? pointer[x] - pointer[x-1] : pointer[0] - offset;
-            if (temp > 64) {
+        for (x = 0; x < 256; ++x)
+        {
+            temp = x > 0 ? pointer[x] - pointer[x - 1] : pointer[0] - offset;
+            if (temp > 64)
+            {
                 RadixSort(array, (int)(pointer[x] - temp), (int)pointer[x], shift);
-            } else if (temp > 1) {
+            }
+            else if (temp > 1)
+            {
                 // std::sort(array + (pointer[x] - temp), array + pointer[x]);
                 insertion_sort_64(array, (int)(pointer[x] - temp), (int)pointer[x]);
             }
@@ -178,8 +201,7 @@ void RadixSort(int64 *array, int offset, int end, int shift)
     }
 }
 
-
-int intcmp(const void *aa, const void *bb)
+int intcmp(const void* aa, const void* bb)
 {
     const int *a = (int *)aa, *b = (int *)bb;
     return (*a < *b) ? -1 : (*a > *b);

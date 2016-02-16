@@ -32,74 +32,71 @@
 
 namespace DAVA
 {
-
-
 SwitchNode::SwitchNode()
-:	oldSwitchIndex(0),
-	newSwitchIndex(0)
+    : oldSwitchIndex(0)
+    ,
+    newSwitchIndex(0)
 {
-
 }
 
-Entity* SwitchNode::Clone(Entity *dstNode /*= NULL*/)
+Entity* SwitchNode::Clone(Entity* dstNode /*= NULL*/)
 {
-	if (!dstNode) 
-	{
-		dstNode = new SwitchNode();
-	}
+    if (!dstNode)
+    {
+        dstNode = new SwitchNode();
+    }
 
-	return Entity::Clone(dstNode);
+    return Entity::Clone(dstNode);
 }
 
 void SwitchNode::SetSwitchIndex(int32 _switchIndex)
 {
-	newSwitchIndex = _switchIndex;
+    newSwitchIndex = _switchIndex;
 }
 
 int32 SwitchNode::GetSwitchIndex()
 {
-	return newSwitchIndex;
+    return newSwitchIndex;
 }
 
 void SwitchNode::Update(float32 timeElapsed)
 {
-	if(oldSwitchIndex != newSwitchIndex)
-	{
-		int32 childrenCound = GetChildrenCount();
-		for(int32 i = 0; i < childrenCound; ++i)
-		{
-			GetChild(i)->SetUpdatable(newSwitchIndex == i);
-		}
+    if (oldSwitchIndex != newSwitchIndex)
+    {
+        int32 childrenCound = GetChildrenCount();
+        for (int32 i = 0; i < childrenCound; ++i)
+        {
+            GetChild(i)->SetUpdatable(newSwitchIndex == i);
+        }
 
-		oldSwitchIndex = newSwitchIndex;
-	}
+        oldSwitchIndex = newSwitchIndex;
+    }
 }
 
-void SwitchNode::AddNode(Entity * node)
+void SwitchNode::AddNode(Entity* node)
 {
-	Entity::AddNode(node);
+    Entity::AddNode(node);
 
-	ReapplySwitch();
+    ReapplySwitch();
 }
 
 void SwitchNode::ReapplySwitch()
 {
-	oldSwitchIndex = -1;
+    oldSwitchIndex = -1;
 }
 
-void SwitchNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void SwitchNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Entity::Save(archive, serializationContext);
+    Entity::Save(archive, serializationContext);
 
-	archive->SetInt32("switchIndex", newSwitchIndex);
+    archive->SetInt32("switchIndex", newSwitchIndex);
 }
 
-void SwitchNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void SwitchNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Entity::Load(archive, serializationContext);
+    Entity::Load(archive, serializationContext);
 
-	int32 loadedSwitchIndex = archive->GetInt32("switchIndex");
-	SetSwitchIndex(loadedSwitchIndex);
+    int32 loadedSwitchIndex = archive->GetInt32("switchIndex");
+    SetSwitchIndex(loadedSwitchIndex);
 }
-
 }

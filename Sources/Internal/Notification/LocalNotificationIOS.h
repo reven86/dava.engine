@@ -40,13 +40,12 @@
 
 namespace DAVA
 {
-    
 struct UILocalNotificationWrapper;
 
 class LocalNotificationIOS : public LocalNotificationImpl
 {
 public:
-	LocalNotificationIOS(const String &_id);
+    LocalNotificationIOS(const String& _id);
     ~LocalNotificationIOS() override;
 
     void SetAction(const WideString& action) override;
@@ -57,9 +56,8 @@ public:
     void RemoveAllDelayedNotifications() override;
 
 public:
-    UILocalNotificationWrapper *notification;
+    UILocalNotificationWrapper* notification;
 };
-
 }
 
 #endif

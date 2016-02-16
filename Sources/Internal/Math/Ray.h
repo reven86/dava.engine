@@ -33,9 +33,8 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 /**	
 	\ingroup math
 	\brief Ray in 2D space.
@@ -43,8 +42,8 @@ namespace DAVA
 class Ray2
 {
 public:
-	Vector2 origin;
-	Vector2 direction;
+    Vector2 origin;
+    Vector2 direction;
 };
 
 /**	
@@ -54,10 +53,9 @@ public:
 class Ray3
 {
 public:
-	Vector3 origin;
-	Vector3 direction;
+    Vector3 origin;
+    Vector3 direction;
 };
-	
 };
 
 #endif // __DAVAENGINE_RAY_H__

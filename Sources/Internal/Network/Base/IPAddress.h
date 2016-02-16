@@ -37,7 +37,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class IPAddress represents IPv4 address.
  IPAddress can be constructed from 32-bit integer or from string.
@@ -65,16 +64,16 @@ public:
     static IPAddress FromString(const char8* addr);
     static IPAddress FromString(const String& addr);
 
-    friend bool operator == (const IPAddress& left, const IPAddress& right);
+    friend bool operator==(const IPAddress& left, const IPAddress& right);
 
 private:
     uint32 addr;
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline IPAddress::IPAddress(uint32 address) : addr(htonl(address))
+inline IPAddress::IPAddress(uint32 address)
+    : addr(htonl(address))
 {
-
 }
 
 inline uint32 IPAddress::ToUInt() const
@@ -92,17 +91,17 @@ inline bool IPAddress::IsMulticast() const
     return 0xE0000000 == (ToUInt() & 0xF0000000);
 }
 
-inline bool operator == (const IPAddress& left, const IPAddress& right)
+inline bool operator==(const IPAddress& left, const IPAddress& right)
 {
     return left.addr == right.addr;
 }
 
-inline bool operator < (const IPAddress& left, const IPAddress& right)
+inline bool operator<(const IPAddress& left, const IPAddress& right)
 {
     return left.ToUInt() < right.ToUInt();
 }
 
-}   // namespace Net
+} // namespace Net
 } // namespace DAVA
 
-#endif  // __DAVAENGINE_IPADDRESS_H__
+#endif // __DAVAENGINE_IPADDRESS_H__

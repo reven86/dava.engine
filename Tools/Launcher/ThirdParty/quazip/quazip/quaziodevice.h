@@ -43,19 +43,20 @@ class QuaZIODevicePrivate;
   decompress it back. Compressing data sent over a QTcpSocket is a good
   example.
   */
-class QUAZIP_EXPORT QuaZIODevice: public QIODevice {
-  Q_OBJECT
+class QUAZIP_EXPORT QuaZIODevice : public QIODevice
+{
+    Q_OBJECT
 public:
-  /// Constructor.
-  /**
+    /// Constructor.
+    /**
     \param io The QIODevice to read/write.
     \param parent The parent object, as per QObject logic.
     */
-  QuaZIODevice(QIODevice *io, QObject *parent = NULL);
-  /// Destructor.
-  ~QuaZIODevice();
-  /// Flushes data waiting to be written.
-  /**
+    QuaZIODevice(QIODevice* io, QObject* parent = NULL);
+    /// Destructor.
+    ~QuaZIODevice();
+    /// Flushes data waiting to be written.
+    /**
     Unfortunately, as QIODevice doesn't support flush() by itself, the
     only thing this method does is write the compressed data into the
     device using Z_SYNC_FLUSH mode. If you need the compressed data to
@@ -75,29 +76,31 @@ public:
     flush()-supporting subclasses, and calling flush if the resulting
     pointer is not zero.
     */
-  virtual bool flush();
-  /// Opens the device.
-  /**
+    virtual bool flush();
+    /// Opens the device.
+    /**
     \param mode Neither QIODevice::ReadWrite nor QIODevice::Append are
     not supported.
     */
-  virtual bool open(QIODevice::OpenMode mode);
-  /// Closes this device, but not the underlying one.
-  /**
+    virtual bool open(QIODevice::OpenMode mode);
+    /// Closes this device, but not the underlying one.
+    /**
     The underlying QIODevice is not closed in case you want to write
     something else to it.
     */
-  virtual void close();
-  /// Returns the underlying device.
-  QIODevice *getIoDevice() const;
-  /// Returns true.
-  virtual bool isSequential() const;
+    virtual void close();
+    /// Returns the underlying device.
+    QIODevice* getIoDevice() const;
+    /// Returns true.
+    virtual bool isSequential() const;
+
 protected:
-  /// Implementation of QIODevice::readData().
-  virtual qint64 readData(char *data, qint64 maxSize);
-  /// Implementation of QIODevice::writeData().
-  virtual qint64 writeData(const char *data, qint64 maxSize);
+    /// Implementation of QIODevice::readData().
+    virtual qint64 readData(char* data, qint64 maxSize);
+    /// Implementation of QIODevice::writeData().
+    virtual qint64 writeData(const char* data, qint64 maxSize);
+
 private:
-  QuaZIODevicePrivate *d;
+    QuaZIODevicePrivate* d;
 };
 #endif // QUAZIP_QUAZIODEVICE_H

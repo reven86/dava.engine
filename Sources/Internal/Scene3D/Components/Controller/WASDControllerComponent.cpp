@@ -31,15 +31,11 @@
 
 namespace DAVA
 {
-
-Component * WASDControllerComponent::Clone(Entity * toEntity)
+Component* WASDControllerComponent::Clone(Entity* toEntity)
 {
-    WASDControllerComponent * component = new WASDControllerComponent();
+    WASDControllerComponent* component = new WASDControllerComponent();
     component->SetEntity(toEntity);
-    
+
     return component;
 }
-
-  
 };
-

@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 // Freestanding allocation functions that can be used where MemoryManager.h cannot be included (e.g. in allocators)
 
 // For general use
@@ -46,7 +45,7 @@ void TrackingDealloc(void* ptr);
 void* InternalAlloc(size_t size);
 void InternalDealloc(void* ptr);
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
-#endif  // __DAVAENGINE_ALLOCATORBRIDGE_H__
+#endif // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // __DAVAENGINE_ALLOCATORBRIDGE_H__

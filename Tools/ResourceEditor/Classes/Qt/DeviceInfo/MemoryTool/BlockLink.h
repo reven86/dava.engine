@@ -33,7 +33,7 @@
 
 namespace DAVA
 {
-    struct MMBlock;
+struct MMBlock;
 }
 
 class MemorySnapshot;
@@ -59,7 +59,7 @@ struct BlockLink
 
     BlockLink();
     BlockLink(BlockLink&& other);
-    BlockLink& operator = (BlockLink&& other);
+    BlockLink& operator=(BlockLink&& other);
 
     DAVA::Vector<Item> items;
     DAVA::uint32 linkCount = 0;
@@ -68,4 +68,4 @@ struct BlockLink
     const MemorySnapshot* sourceSnapshots[2];
 };
 
-#endif  // __MEMORYTOOL_BLOCKLINK_H__
+#endif // __MEMORYTOOL_BLOCKLINK_H__

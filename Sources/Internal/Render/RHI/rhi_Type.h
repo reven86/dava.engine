@@ -200,6 +200,16 @@ VertexDataTypeName(VertexDataType t)
     }
 }
 
+//------------------------------------------------------------------------------
+
+enum VertexDataFrequency
+{
+    VDF_PER_VERTEX = 1,
+    VDF_PER_INSTANCE = 2
+};
+
+//------------------------------------------------------------------------------
+
 class
 VertexLayout
 {
@@ -207,8 +217,12 @@ public:
     VertexLayout();
     ~VertexLayout();
 
-    unsigned Stride() const;
+    unsigned Stride(unsigned stream_i = 0) const;
+    unsigned StreamCount() const;
+    VertexDataFrequency StreamFrequency(unsigned stream_i) const;
     unsigned ElementCount() const;
+
+    unsigned ElementStreamIndex(unsigned elem_i) const;
     VertexSemantics ElementSemantics(unsigned elem_i) const;
     unsigned ElementSemanticsIndex(unsigned elem_i) const;
     VertexDataType ElementDataType(unsigned elem_i) const;
@@ -220,6 +234,7 @@ public:
     VertexLayout& operator=(const VertexLayout& src);
 
     void Clear();
+    void AddStream(VertexDataFrequency freq = VDF_PER_VERTEX);
     void AddElement(VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
     void InsertElement(unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
 
@@ -238,7 +253,8 @@ public:
 private:
     enum
     {
-        MaxElemCount = 8
+        MaxElemCount = 8,
+        MaxStreamCount = 2
     };
 
     struct
@@ -249,6 +265,18 @@ private:
         uint32 data_type : 8;
         uint32 data_count : 8;
     };
+
+    struct
+    Stream
+    {
+        uint32 first_elem : 8;
+        uint32 elem_count : 8;
+        uint32 freq : 8;
+        uint32 __pad : 8;
+    };
+
+    Stream _stream[MaxStreamCount];
+    uint32 _stream_count;
 
     Element _elem[MaxElemCount];
     uint32 _elem_count;

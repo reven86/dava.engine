@@ -32,21 +32,27 @@
 
 namespace DAVA
 {
+class NullType
+{
+};
 
-class NullType{};
-
-template<typename U>
+template <typename U>
 struct IsNullType
 {
-	enum{ result = false };
+    enum
+    {
+        result = false
+    };
 };
 
-template<>
+template <>
 struct IsNullType<NullType>
 {
-	enum{ result = true };
+    enum
+    {
+        result = true
+    };
 };
-
 }
 
 #endif // __DAVAENGINE_NULLTYPE_H__

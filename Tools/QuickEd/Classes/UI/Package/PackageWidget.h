@@ -50,10 +50,10 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
     Q_OBJECT
 public:
-    explicit PackageWidget(QWidget *parent = 0);
+    explicit PackageWidget(QWidget* parent = 0);
     ~PackageWidget() = default;
 
-    using ExpandedIndexes = QModelIndexList ;
+    using ExpandedIndexes = QModelIndexList;
 
 signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -90,13 +90,13 @@ private:
     void RefreshActions();
 
     void SelectNodeImpl(PackageBaseNode* node);
-    void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
-    void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
-    void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
-    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
+    void CollectSelectedControls(DAVA::Vector<ControlNode*>& nodes, bool forCopy, bool forRemove);
+    void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*>& nodes, bool forCopy, bool forRemove);
+    void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*>& nodes, bool forCopy, bool forRemove);
+    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*>& controls, const DAVA::Vector<StyleSheetNode*>& styles);
 
     ExpandedIndexes GetExpandedIndexes() const;
-    void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
+    void RestoreExpandedIndexes(const ExpandedIndexes& indexes);
 
     Document* document = nullptr;
     QAction* importPackageAction = nullptr;

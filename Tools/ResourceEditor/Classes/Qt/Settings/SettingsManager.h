@@ -44,36 +44,42 @@ struct SettingsNode
     DAVA::InspDesc desc;
 };
 
-class SettingsManager: public DAVA::Singleton<SettingsManager>
+class SettingsManager : public DAVA::Singleton<SettingsManager>
 {
 public:
-	SettingsManager();
-	~SettingsManager();
+    SettingsManager();
+    ~SettingsManager();
 
     static DAVA::VariantType GetValue(const DAVA::FastName& path);
-	static void SetValue(const DAVA::FastName& path, const DAVA::VariantType &value);
+    static void SetValue(const DAVA::FastName& path, const DAVA::VariantType& value);
 
-    static DAVA::VariantType GetValue(const DAVA::String& path) { return GetValue(DAVA::FastName(path)); }
-    static void SetValue(const DAVA::String& path, const DAVA::VariantType &value) { SetValue(DAVA::FastName(path), value); } 
+    static DAVA::VariantType GetValue(const DAVA::String& path)
+    {
+        return GetValue(DAVA::FastName(path));
+    }
+    static void SetValue(const DAVA::String& path, const DAVA::VariantType& value)
+    {
+        SetValue(DAVA::FastName(path), value);
+    }
 
     static size_t GetSettingsCount();
     static DAVA::FastName GetSettingsName(size_t index);
-    static SettingsNode* GetSettingsNode(const DAVA::FastName &name);
+    static SettingsNode* GetSettingsNode(const DAVA::FastName& name);
 
     static void ResetPerProjectSettings();
 
     static void ResetToDefault();
 
     DAVA_DEPRECATED(static void UpdateGPUSettings());
-    
+
 protected:
     DAVA::Vector<DAVA::FastName> settingsOrder;
     DAVA::FastNameMap<SettingsNode> settingsMap;
 
     void Init();
     void Save();
-	void Load();
-    void CreateValue(const DAVA::FastName& path, const DAVA::VariantType &defaultValue, const DAVA::InspDesc &description = DAVA::InspDesc(""));
+    void Load();
+    void CreateValue(const DAVA::FastName& path, const DAVA::VariantType& defaultValue, const DAVA::InspDesc& description = DAVA::InspDesc(""));
     DAVA_DEPRECATED(bool CustomTextureViewGPULoad(const DAVA::String& paramName, const DAVA::VariantType& src_value, DAVA::VariantType& dstValue));
 };
 

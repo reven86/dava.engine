@@ -42,7 +42,6 @@
 
 namespace DAVA
 {
-
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
 }
@@ -59,46 +58,46 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
-	return 0;
+    return 0;
 }
 
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
@@ -144,7 +143,7 @@ String DeviceInfoPrivate::GetUDID()
     {
         PIP_ADAPTER_ADDRESSES curAddress = buf;
 
-        if(curAddress)
+        if (curAddress)
         {
             if (curAddress->PhysicalAddressLength)
             {
@@ -169,14 +168,13 @@ String DeviceInfoPrivate::GetUDID()
         HKEY key;
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key) == ERROR_SUCCESS)
         {
-
             if (RegQueryValueEx(key, L"MachineGuid", 0, 0, buf, &bufSize) == ERROR_SUCCESS)
             {
                 idOk = true;
             }
             else
             {
-                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY,  &key) == ERROR_SUCCESS)
+                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY, &key) == ERROR_SUCCESS)
                 {
                     if (RegQueryValueEx(key, L"MachineGuid", 0, 0, buf, &bufSize) == ERROR_SUCCESS)
                     {
@@ -209,17 +207,17 @@ String DeviceInfoPrivate::GetUDID()
 
 WideString DeviceInfoPrivate::GetName()
 {
-	//http://msdn.microsoft.com/en-us/library/windows/desktop/ms724295(v=vs.85).aspx
-	char16 compName[MAX_COMPUTERNAME_LENGTH + 1];
-	uint32 length = MAX_COMPUTERNAME_LENGTH + 1;
+    //http://msdn.microsoft.com/en-us/library/windows/desktop/ms724295(v=vs.85).aspx
+    char16 compName[MAX_COMPUTERNAME_LENGTH + 1];
+    uint32 length = MAX_COMPUTERNAME_LENGTH + 1;
 
-	bool nameRecieved = GetComputerNameW(compName, (LPDWORD) &length) != FALSE;
-	if(nameRecieved)
-	{
-		return WideString(compName, length);
-	}
+    bool nameRecieved = GetComputerNameW(compName, (LPDWORD)&length) != FALSE;
+    if (nameRecieved)
+    {
+        return WideString(compName, length);
+    }
 
-    return WideString ();
+    return WideString();
 }
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
@@ -235,9 +233,9 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
-	screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
-	screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
-	screenInfo.scale = 1;
+    screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
+    screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
+    screenInfo.scale = 1;
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)

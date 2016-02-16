@@ -35,23 +35,21 @@
 
 namespace DAVA
 {
-
 class SwitchSystem : public SceneSystem
 {
 public:
-	SwitchSystem(Scene * scene);
+    SwitchSystem(Scene* scene);
 
-	virtual void Process(float32 timeElapsed);
-    void ImmediateEvent(Component * component, uint32 event) override;
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+    virtual void Process(float32 timeElapsed);
+    void ImmediateEvent(Component* component, uint32 event) override;
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
 
 private:
-	Set<Entity*> updatableEntities;
+    Set<Entity*> updatableEntities;
 
-    void SetSwitchHierarchy(Entity * entity, int32 switchIndex);
+    void SetSwitchHierarchy(Entity* entity, int32 switchIndex);
 };
-
 }
 
 #endif //__DAVAENGINE_SCENE3D_SWITCHSYSTEM_H__

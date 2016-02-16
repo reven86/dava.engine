@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 class Color;
 class Sprite;
 class UITextField;
@@ -191,7 +190,7 @@ private:
     void RenderToTexture(bool moveOffScreenOnCompletion);
     Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
 
-private:    // Event handlers
+private: // Event handlers
     void OnKeyDown(Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args);
     void OnGotFocus();
     void OnLostFocus();
@@ -210,9 +209,9 @@ private:
     UITextFieldDelegate* textFieldDelegate = nullptr;
     // Windows UAP has two different controls for text input and password input
     // So we should switch internal implementation depending on user's wishes
-    Windows::UI::Xaml::Controls::TextBox^ nativeText = nullptr;
-    Windows::UI::Xaml::Controls::PasswordBox^ nativePassword = nullptr;
-    Windows::UI::Xaml::Controls::Control^ nativeControl = nullptr;      // Points either to nativeText or nativePassword
+    Windows::UI::Xaml::Controls::TextBox ^ nativeText = nullptr;
+    Windows::UI::Xaml::Controls::PasswordBox ^ nativePassword = nullptr;
+    Windows::UI::Xaml::Controls::Control ^ nativeControl = nullptr; // Points either to nativeText or nativePassword
     Windows::UI::Xaml::Controls::Border ^ nativeControlHolder = nullptr;
 
     // Tokens to unsubscribe from touch keyboard event handlers
@@ -222,8 +221,8 @@ private:
     bool ignoreTextChange = false;
     bool waitRenderToTextureComplete = false; // If flag is set do not move native control offscreen to get rid of some flickering
 
-    int32 caretPosition = 0;                // Current caret position
-    int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing
+    int32 caretPosition = 0; // Current caret position
+    int32 savedCaretPosition = 0; // Saved caret position to restore it when delegate declines text changing
 
     Rect rectInWindowSpace;
 
@@ -259,7 +258,7 @@ inline uint32 PrivateTextFieldWinUAP::GetCursorPos() const
     return caretPosition;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__

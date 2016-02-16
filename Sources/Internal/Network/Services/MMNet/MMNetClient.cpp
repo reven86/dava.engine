@@ -42,7 +42,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 MMNetClient::MMNetClient()
     : NetService()
     , transferService(new MMBigDataTransferService(CLIENT_ROLE))
@@ -77,7 +76,7 @@ void MMNetClient::ChannelOpen()
 void MMNetClient::ChannelClosed(const char8* message)
 {
     tokenRequested = false;
-    
+
     packetQueue.clear();
     transferService->Stop();
     connLostCallback(message);
@@ -91,17 +90,17 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
     {
         switch (header->type)
         {
-            case MMNetProto::TYPE_REPLY_TOKEN:
-                ProcessReplyToken(header, static_cast<const void*>(header + 1), dataLength);
-                break;
-            case MMNetProto::TYPE_REPLY_SNAPSHOT:
-                ProcessReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
-                break;
-            case MMNetProto::TYPE_AUTO_STAT:
-                ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
-                break;
-            default:
-                break;
+        case MMNetProto::TYPE_REPLY_TOKEN:
+            ProcessReplyToken(header, static_cast<const void*>(header + 1), dataLength);
+            break;
+        case MMNetProto::TYPE_REPLY_SNAPSHOT:
+            ProcessReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
+            break;
+        case MMNetProto::TYPE_AUTO_STAT:
+            ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
+            break;
+        default:
+            break;
         }
     }
 }
@@ -121,14 +120,14 @@ void MMNetClient::PacketDelivered()
 void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     bool newSession = dataLength > 0;
-    if (newSession)     // Config has come, new profiling session
+    if (newSession) // Config has come, new profiling session
     {
         connToken = inHeader->token;
         const MMStatConfig* config = static_cast<const MMStatConfig*>(packetData);
         DVASSERT(config->size == dataLength);
         connEstablishedCallback(false, config);
     }
-    else    // Resume previous profiling session
+    else // Resume previous profiling session
     {
         connEstablishedCallback(true, nullptr);
     }
@@ -170,5 +169,5 @@ MMNetProto::Packet MMNetClient::CreateHeaderOnlyPacket(uint16 type, uint16 statu
     return packet;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

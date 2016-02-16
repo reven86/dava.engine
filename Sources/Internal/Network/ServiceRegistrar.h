@@ -37,10 +37,9 @@ namespace DAVA
 {
 namespace Net
 {
-
 struct IChannelListener;
 
-using ServiceCreator = Function<IChannelListener* (uint32 serviceId, void* context)>;
+using ServiceCreator = Function<IChannelListener*(uint32 serviceId, void* context)>;
 using ServiceDeleter = Function<void(IChannelListener* obj, void* context)>;
 
 class ServiceRegistrar
@@ -58,7 +57,7 @@ private:
         ServiceDeleter deleter;
     };
 
-    friend bool operator == (const Entry& entry, uint32 serviceId);
+    friend bool operator==(const Entry& entry, uint32 serviceId);
 
 public:
     bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name = NULL);
@@ -97,12 +96,12 @@ inline bool ServiceRegistrar::IsRegistered(uint32 serviceId) const
     return std::find(registrar.begin(), registrar.end(), serviceId) != registrar.end();
 }
 
-inline bool operator == (const ServiceRegistrar::Entry& entry, uint32 serviceId)
+inline bool operator==(const ServiceRegistrar::Entry& entry, uint32 serviceId)
 {
     return entry.serviceId == serviceId;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_SERVICEREGISTRAR_H__
+#endif // __DAVAENGINE_SERVICEREGISTRAR_H__

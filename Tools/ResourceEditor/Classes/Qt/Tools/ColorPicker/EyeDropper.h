@@ -35,11 +35,10 @@
 #include <QPixmap>
 #include <QList>
 
-
 class DropperShade;
 
 class EyeDropper
-    : public QObject
+: public QObject
 {
     Q_OBJECT
 
@@ -49,8 +48,8 @@ private:
         int id;
         QRect rc;
     };
-    typedef QVector< QPointer<DropperShade> > Shades;
-    typedef QVector< ScreenData > ScreenArray;
+    typedef QVector<QPointer<DropperShade>> Shades;
+    typedef QVector<ScreenData> ScreenArray;
 
 signals:
     void canceled();

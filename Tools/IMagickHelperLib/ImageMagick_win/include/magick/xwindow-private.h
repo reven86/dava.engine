@@ -36,9 +36,9 @@ extern "C" {
 #include "magick/quantize.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
-# define klass  c_class
+#define klass c_class
 #else
-# define klass  class
+#define klass class
 #endif
 
 /*
@@ -62,159 +62,159 @@ extern "C" {
 #define PRE_R4_ICCCM
 #endif
 
-#define MaxIconSize  96
-#define MaxNumberPens  11
-#define MaxNumberFonts  11
-#define MaxXWindows  12
+#define MaxIconSize 96
+#define MaxNumberPens 11
+#define MaxNumberFonts 11
+#define MaxXWindows 12
 #undef index
 
-#define ThrowXWindowException(severity,tag,context) \
+#define ThrowXWindowException(severity, tag, context) \
 { \
-  ExceptionInfo \
-    exception; \
+  ExceptionInfo                          \
+        exception; \
  \
   GetExceptionInfo(&exception); \
-  (void) ThrowMagickException(&exception,GetMagickModule(),severity, \
-    tag == (const char *) NULL ? "unknown" : tag,"`%s': %s",context, \
-    strerror(errno)); \
+  (void) ThrowMagickException(&exception, GetMagickModule(), severity,                         \
+                                    tag == (const char*)NULL ? "unknown" : tag, "`%s': %s", context, \
+                                    strerror(errno)); \
   CatchException(&exception); \
   (void) DestroyExceptionInfo(&exception); \
 }
-#define ThrowXWindowFatalException(severity,tag,context) \
+#define ThrowXWindowFatalException(severity, tag, context) \
 { \
-   ThrowXWindowException(severity,tag,context); \
+   ThrowXWindowException(severity, tag, context); \
   _exit(1); \
 }
 
 typedef enum
 {
-  ForegroundStencil,
-  BackgroundStencil,
-  OpaqueStencil,
-  TransparentStencil
+    ForegroundStencil,
+    BackgroundStencil,
+    OpaqueStencil,
+    TransparentStencil
 } AnnotationStencil;
 
 typedef enum
 {
-  UndefinedElement,
-  PointElement,
-  LineElement,
-  RectangleElement,
-  FillRectangleElement,
-  CircleElement,
-  FillCircleElement,
-  EllipseElement,
-  FillEllipseElement,
-  PolygonElement,
-  FillPolygonElement,
-  ColorElement,
-  MatteElement,
-  TextElement,
-  ImageElement
+    UndefinedElement,
+    PointElement,
+    LineElement,
+    RectangleElement,
+    FillRectangleElement,
+    CircleElement,
+    FillCircleElement,
+    EllipseElement,
+    FillEllipseElement,
+    PolygonElement,
+    FillPolygonElement,
+    ColorElement,
+    MatteElement,
+    TextElement,
+    ImageElement
 } ElementType;
 
 typedef enum
 {
-  UndefinedColormap,
-  PrivateColormap,
-  SharedColormap
+    UndefinedColormap,
+    PrivateColormap,
+    SharedColormap
 } XColormapType;
 
 typedef struct _XDrawInfo
 {
-  int
+    int
     x,
     y;
 
-  unsigned int
+    unsigned int
     width,
     height;
 
-  double
+    double
     degrees;
 
-  AnnotationStencil
+    AnnotationStencil
     stencil;
 
-  ElementType
+    ElementType
     element;
 
-  Pixmap
+    Pixmap
     stipple;
 
-  unsigned int
+    unsigned int
     line_width;
 
-  XSegment
+    XSegment
     line_info;
 
-  unsigned int
+    unsigned int
     number_coordinates;
 
-  RectangleInfo
+    RectangleInfo
     rectangle_info;
 
-  XPoint
-    *coordinate_info;
+    XPoint
+    * coordinate_info;
 
-  char
+    char
     geometry[MaxTextExtent];
 } XDrawInfo;
 
 typedef enum
 {
-  DefaultState = 0x0000,
-  EscapeState = 0x0001,
-  ExitState = 0x0002,
-  FormerImageState = 0x0004,
-  ModifierState = 0x0008,
-  MontageImageState = 0x0010,
-  NextImageState = 0x0020,
-  RetainColorsState = 0x0040,
-  SuspendTime = 50,
-  UpdateConfigurationState = 0x0080,
-  UpdateRegionState = 0x0100
+    DefaultState = 0x0000,
+    EscapeState = 0x0001,
+    ExitState = 0x0002,
+    FormerImageState = 0x0004,
+    ModifierState = 0x0008,
+    MontageImageState = 0x0010,
+    NextImageState = 0x0020,
+    RetainColorsState = 0x0040,
+    SuspendTime = 50,
+    UpdateConfigurationState = 0x0080,
+    UpdateRegionState = 0x0100
 } XState;
 
 typedef struct _XAnnotateInfo
 {
-  int
+    int
     x,
     y;
 
-  unsigned int
+    unsigned int
     width,
     height;
 
-  double
+    double
     degrees;
 
-  XFontStruct
-    *font_info;
+    XFontStruct
+    * font_info;
 
-  char
-    *text;
+    char
+    * text;
 
-  AnnotationStencil
+    AnnotationStencil
     stencil;
 
-  char
+    char
     geometry[MaxTextExtent];
 
-  struct _XAnnotateInfo
+    struct _XAnnotateInfo
     *next,
     *previous;
 } XAnnotateInfo;
 
 typedef struct _XPixelInfo
 {
-  ssize_t
+    ssize_t
     colors;
 
-  unsigned long
-    *pixels;
+    unsigned long
+    * pixels;
 
-  XColor
+    XColor
     foreground_color,
     background_color,
     border_color,
@@ -227,174 +227,174 @@ typedef struct _XPixelInfo
     pen_color,
     pen_colors[MaxNumberPens];
 
-  GC
+    GC
     annotate_context,
     highlight_context,
     widget_context;
 
-  unsigned short
+    unsigned short
     box_index,
     pen_index;
 } XPixelInfo;
 
 typedef struct _XResourceInfo
 {
-  XrmDatabase
+    XrmDatabase
     resource_database;
 
-  ImageInfo
-    *image_info;
+    ImageInfo
+    * image_info;
 
-  QuantizeInfo
-    *quantize_info;
+    QuantizeInfo
+    * quantize_info;
 
-  size_t
+    size_t
     colors;
 
-  MagickBooleanType
+    MagickBooleanType
     close_server,
     backdrop;
 
-  char
+    char
     *background_color,
     *border_color;
 
-  char
-    *client_name;
+    char
+    * client_name;
 
-  XColormapType
+    XColormapType
     colormap;
 
-  unsigned int
+    unsigned int
     border_width;
 
-  size_t
+    size_t
     delay;
 
-  MagickBooleanType
+    MagickBooleanType
     color_recovery,
     confirm_exit,
     confirm_edit;
 
-  char
-    *display_gamma;
+    char
+    * display_gamma;
 
-  char
+    char
     *font,
     *font_name[MaxNumberFonts],
     *foreground_color;
 
-  MagickBooleanType
+    MagickBooleanType
     display_warnings,
     gamma_correct;
 
-  char
-    *icon_geometry;
+    char
+    * icon_geometry;
 
-  MagickBooleanType
+    MagickBooleanType
     iconic,
     immutable;
 
-  char
-    *image_geometry;
+    char
+    * image_geometry;
 
-  char
+    char
     *map_type,
     *matte_color,
     *name;
 
-  unsigned int
+    unsigned int
     magnify,
     pause;
 
-  char
-    *pen_colors[MaxNumberPens];
+    char
+    * pen_colors[MaxNumberPens];
 
-  char
+    char
     *text_font,
     *title;
 
-  int
+    int
     quantum;
 
-  unsigned int
+    unsigned int
     update;
 
-  MagickBooleanType
+    MagickBooleanType
     use_pixmap,
     use_shared_memory;
 
-  size_t
+    size_t
     undo_cache;
 
-  char
+    char
     *visual_type,
     *window_group,
     *window_id,
     *write_filename;
 
-  Image
-    *copy_image;
+    Image
+    * copy_image;
 
-  int
+    int
     gravity;
 
-  char
+    char
     home_directory[MaxTextExtent];
 } XResourceInfo;
 
 typedef struct _XWindowInfo
 {
-  Window
+    Window
     id;
 
-  Window
+    Window
     root;
 
-  Visual
-    *visual;
+    Visual
+    * visual;
 
-  unsigned int
+    unsigned int
     storage_class,
     depth;
 
-  XVisualInfo
-    *visual_info;
+    XVisualInfo
+    * visual_info;
 
-  XStandardColormap
-    *map_info;
+    XStandardColormap
+    * map_info;
 
-  XPixelInfo
-    *pixel_info;
+    XPixelInfo
+    * pixel_info;
 
-  XFontStruct
-    *font_info;
+    XFontStruct
+    * font_info;
 
-  GC
+    GC
     annotate_context,
     highlight_context,
     widget_context;
 
-  Cursor
+    Cursor
     cursor,
     busy_cursor;
 
-  char
+    char
     *name,
     *geometry,
     *icon_name,
     *icon_geometry,
     *crop_geometry;
 
-  size_t
+    size_t
     data,
     flags;
 
-  int
+    int
     x,
     y;
 
-  unsigned int
+    unsigned int
     width,
     height,
     min_width,
@@ -403,20 +403,20 @@ typedef struct _XWindowInfo
     height_inc,
     border_width;
 
-  MagickBooleanType
+    MagickBooleanType
     use_pixmap,
     immutable,
     shape,
     shared_memory;
 
-  int
+    int
     screen;
 
-  XImage
+    XImage
     *ximage,
     *matte_image;
 
-  Pixmap
+    Pixmap
     highlight_stipple,
     shadow_stipple,
     pixmap,
@@ -424,60 +424,60 @@ typedef struct _XWindowInfo
     matte_pixmap,
     *matte_pixmaps;
 
-  XSetWindowAttributes
+    XSetWindowAttributes
     attributes;
 
-  XWindowChanges
+    XWindowChanges
     window_changes;
 
-  void
-    *segment_info;
+    void
+    * segment_info;
 
-  long
+    long
     mask;
 
-  MagickBooleanType
+    MagickBooleanType
     orphan,
     mapped,
     stasis;
 
-  Image
-    *image;
+    Image
+    * image;
 
-  MagickBooleanType
+    MagickBooleanType
     destroy;
 } XWindowInfo;
 
 typedef struct _XWindows
 {
-  Display
-    *display;
+    Display
+    * display;
 
-  XStandardColormap
+    XStandardColormap
     *map_info,
     *icon_map;
 
-  XVisualInfo
+    XVisualInfo
     *visual_info,
     *icon_visual;
 
-  XPixelInfo
+    XPixelInfo
     *pixel_info,
     *icon_pixel;
 
-  XFontStruct
-    *font_info;
+    XFontStruct
+    * font_info;
 
-  XResourceInfo
-    *icon_resources;
+    XResourceInfo
+    * icon_resources;
 
-  XClassHint
-    *class_hints;
+    XClassHint
+    * class_hints;
 
-  XWMHints
-    *manager_hints;
+    XWMHints
+    * manager_hints;
 
-  XWindowInfo
+    XWindowInfo
     context,
     group_leader,
     backdrop,
@@ -490,7 +490,7 @@ typedef struct _XWindows
     widget,
     popup;
 
-  Atom
+    Atom
     wm_protocols,
     wm_delete_window,
     wm_take_focus,
@@ -506,93 +506,97 @@ typedef struct _XWindows
 } XWindows;
 
 extern MagickExport char
-  *XGetResourceClass(XrmDatabase,const char *,const char *,char *),
-  *XGetResourceInstance(XrmDatabase,const char *,const char *,const char *),
-  *XGetScreenDensity(Display *);
+*
+XGetResourceClass(XrmDatabase, const char *, const char *, char *),
+*XGetResourceInstance(XrmDatabase, const char *, const char *, const char *),
+*XGetScreenDensity(Display *);
 
 extern MagickExport Cursor
-  XMakeCursor(Display *,Window,Colormap,char *,char *);
+XMakeCursor(Display*, Window, Colormap, char*, char*);
 
 extern MagickExport int
-  XCheckDefineCursor(Display *,Window,Cursor),
-  XError(Display *,XErrorEvent *);
+XCheckDefineCursor(Display *, Window, Cursor),
+XError(Display *, XErrorEvent *);
 
 extern MagickExport MagickBooleanType
-  XAnnotateImage(Display *,const XPixelInfo *,XAnnotateInfo *,Image *),
-  XComponentGenesis(void),
-  XDrawImage(Display *,const XPixelInfo *,XDrawInfo *,Image *),
-  XGetWindowColor(Display *,XWindows *,char *),
-  XMagickProgressMonitor(const char *,const MagickOffsetType,
-    const MagickSizeType,void *),
-  XMakeImage(Display *,const XResourceInfo *,XWindowInfo *,Image *,unsigned int,
-    unsigned int),
-  XQueryColorDatabase(const char *,XColor *),
-  XRemoteCommand(Display *,const char *,const char *);
+XAnnotateImage(Display *, const XPixelInfo *, XAnnotateInfo *, Image *),
+XComponentGenesis(void),
+XDrawImage(Display *, const XPixelInfo *, XDrawInfo *, Image *),
+XGetWindowColor(Display *, XWindows *, char *),
+XMagickProgressMonitor(const char *, const MagickOffsetType,
+                       const MagickSizeType, void *),
+XMakeImage(Display *, const XResourceInfo *, XWindowInfo *, Image *, unsigned int,
+           unsigned int),
+XQueryColorDatabase(const char *, XColor *),
+XRemoteCommand(Display *, const char *, const char *);
 
 extern MagickExport void
-  DestroyXResources(void),
-  XBestIconSize(Display *,XWindowInfo *,Image *),
-  XBestPixel(Display *,const Colormap,XColor *,unsigned int,XColor *),
-  XCheckRefreshWindows(Display *,XWindows *),
-  XClientMessage(Display *,const Window,const Atom,const Atom,const Time),
-  XComponentTerminus(void),
-  XConfigureImageColormap(Display *,XResourceInfo *,XWindows *,Image *),
-  XConstrainWindowPosition(Display *,XWindowInfo *),
-  XDelay(Display *,const size_t),
-  XDisplayImageInfo(Display *,const XResourceInfo *,XWindows *,Image *,Image *),
-  XDestroyResourceInfo(XResourceInfo *),
-  XDestroyWindowColors(Display *,Window),
-  XFreeResources(Display *,XVisualInfo *,XStandardColormap *,XPixelInfo *,
-    XFontStruct *,XResourceInfo *,XWindowInfo *),
-  XFreeStandardColormap(Display *,const XVisualInfo *,XStandardColormap *,
-    XPixelInfo *),
-  XHighlightEllipse(Display *,Window,GC,const RectangleInfo *),
-  XHighlightLine(Display *,Window,GC,const XSegment *),
-  XHighlightRectangle(Display *,Window,GC,const RectangleInfo *),
-  XGetAnnotateInfo(XAnnotateInfo *),
-  XGetPixelPacket(Display *,const XVisualInfo *,const XStandardColormap *,
-    const XResourceInfo *,Image *,XPixelInfo *),
-  XGetMapInfo(const XVisualInfo *,const Colormap,XStandardColormap *),
-  XGetResourceInfo(const ImageInfo *,XrmDatabase,const char *,XResourceInfo *),
-  XGetWindowInfo(Display *,XVisualInfo *,XStandardColormap *,XPixelInfo *,
-    XFontStruct *,XResourceInfo *,XWindowInfo *),
-  XMakeMagnifyImage(Display *,XWindows *),
-  XMakeStandardColormap(Display *,XVisualInfo *,XResourceInfo *,Image *,
-    XStandardColormap *,XPixelInfo *),
-  XMakeWindow(Display *,Window,char **,int,XClassHint *,XWMHints *,
-    XWindowInfo *),
-  XQueryPosition(Display *,const Window,int *,int *),
-  XRefreshWindow(Display *,const XWindowInfo *,const XEvent *),
-  XRetainWindowColors(Display *,const Window),
-  XSetCursorState(Display *,XWindows *,const MagickStatusType),
-  XUserPreferences(XResourceInfo *),
-  XWarning(const ExceptionType,const char *,const char *);
+DestroyXResources(void),
+XBestIconSize(Display *, XWindowInfo *, Image *),
+XBestPixel(Display *, const Colormap, XColor *, unsigned int, XColor *),
+XCheckRefreshWindows(Display *, XWindows *),
+XClientMessage(Display *, const Window, const Atom, const Atom, const Time),
+XComponentTerminus(void),
+XConfigureImageColormap(Display *, XResourceInfo *, XWindows *, Image *),
+XConstrainWindowPosition(Display *, XWindowInfo *),
+XDelay(Display *, const size_t),
+XDisplayImageInfo(Display *, const XResourceInfo *, XWindows *, Image *, Image *),
+XDestroyResourceInfo(XResourceInfo *),
+XDestroyWindowColors(Display *, Window),
+XFreeResources(Display *, XVisualInfo *, XStandardColormap *, XPixelInfo *,
+               XFontStruct *, XResourceInfo *, XWindowInfo *),
+XFreeStandardColormap(Display *, const XVisualInfo *, XStandardColormap *,
+                      XPixelInfo *),
+XHighlightEllipse(Display *, Window, GC, const RectangleInfo *),
+XHighlightLine(Display *, Window, GC, const XSegment *),
+XHighlightRectangle(Display *, Window, GC, const RectangleInfo *),
+XGetAnnotateInfo(XAnnotateInfo *),
+XGetPixelPacket(Display *, const XVisualInfo *, const XStandardColormap *,
+                const XResourceInfo *, Image *, XPixelInfo *),
+XGetMapInfo(const XVisualInfo *, const Colormap, XStandardColormap *),
+XGetResourceInfo(const ImageInfo *, XrmDatabase, const char *, XResourceInfo *),
+XGetWindowInfo(Display *, XVisualInfo *, XStandardColormap *, XPixelInfo *,
+               XFontStruct *, XResourceInfo *, XWindowInfo *),
+XMakeMagnifyImage(Display *, XWindows *),
+XMakeStandardColormap(Display *, XVisualInfo *, XResourceInfo *, Image *,
+                      XStandardColormap *, XPixelInfo *),
+XMakeWindow(Display *, Window, char **, int, XClassHint *, XWMHints *,
+            XWindowInfo *),
+XQueryPosition(Display *, const Window, int *, int *),
+XRefreshWindow(Display *, const XWindowInfo *, const XEvent *),
+XRetainWindowColors(Display *, const Window),
+XSetCursorState(Display *, XWindows *, const MagickStatusType),
+XUserPreferences(XResourceInfo *),
+XWarning(const ExceptionType, const char *, const char *);
 
 extern MagickExport Window
-  XWindowByID(Display *,const Window,const size_t),
-  XWindowByName(Display *,const Window,const char *),
-  XWindowByProperty(Display *,const Window,const Atom);
+XWindowByID(Display *, const Window, const size_t),
+XWindowByName(Display *, const Window, const char *),
+XWindowByProperty(Display *, const Window, const Atom);
 
 extern MagickExport XFontStruct
-  *XBestFont(Display *,const XResourceInfo *,const MagickBooleanType);
+*
+XBestFont(Display*, const XResourceInfo*, const MagickBooleanType);
 
 extern MagickExport XrmDatabase
-  XGetResourceDatabase(Display *,const char *);
+XGetResourceDatabase(Display*, const char*);
 
 extern MagickExport XVisualInfo
-  *XBestVisualInfo(Display *,XStandardColormap *,XResourceInfo *);
+*
+XBestVisualInfo(Display*, XStandardColormap*, XResourceInfo*);
 
 extern MagickExport XWindows
-  *XInitializeWindows(Display *,XResourceInfo *),
-  *XSetWindows(XWindows *);
+*
+XInitializeWindows(Display *, XResourceInfo *),
+*XSetWindows(XWindows *);
 
-static inline MagickRealType XPixelIntensity(const XColor *pixel)
+static inline MagickRealType XPixelIntensity(const XColor* pixel)
 {
-  MagickRealType
+    MagickRealType
     intensity;
 
-  intensity=0.299*pixel->red+0.587*pixel->green+0.114*pixel->blue;
-  return(intensity);
+    intensity = 0.299 * pixel->red + 0.587 * pixel->green + 0.114 * pixel->blue;
+    return (intensity);
 }
 
 #endif

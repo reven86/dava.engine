@@ -40,16 +40,15 @@
 #include <sstream>
 
 #ifdef __DAVAENGINE_WIN_UAP__
-#   include <ppltasks.h>
+#include <ppltasks.h>
 #endif
 
-namespace DAVA 
+namespace DAVA
 {
-int read_handler(void *ext, unsigned char *buffer, size_t size, size_t *length);
+int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length);
 
-WideString WcharToWString(const wchar_t *s);
+WideString WcharToWString(const wchar_t* s);
 bool IsEqual(const WideString& s1, const WideString& s2);
-
 
 bool IsDrawThread();
 
@@ -57,22 +56,22 @@ inline WideString StringToWString(const String& s);
 inline String WStringToString(const WideString& s);
 
 WideString GetDeviceName();
-	
+
 void DisableSleepTimer();
 void EnableSleepTimer();
-	
-void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated = false, bool addEmptyTokens = false);
-void Merge(const Vector<String> & tokens, const char delim, String & outString);
-void ReplaceBundleName(const String &newBundlePath);
-    
-template<class T>
-T ParseStringTo(const String & str); 
 
-template<class T>
-bool ParseFromString(const String & str, T& res);
+void Split(const String& inputString, const String& delims, Vector<String>& tokens, bool skipDuplicated = false, bool addEmptyTokens = false);
+void Merge(const Vector<String>& tokens, const char delim, String& outString);
+void ReplaceBundleName(const String& newBundlePath);
 
-template<class T>
-void Swap(T & v1, T & v2);
+template <class T>
+T ParseStringTo(const String& str);
+
+template <class T>
+bool ParseFromString(const String& str, T& res);
+
+template <class T>
+void Swap(T& v1, T& v2);
 
 /**
  \brief Function to compare strings case-insensitive
@@ -80,51 +79,51 @@ void Swap(T & v1, T & v2);
  \param[in] ext2 - second string 
  \param[out] result of comparision 
  */
-int32 CompareCaseInsensitive(const String &str1, const String &str2);
+int32 CompareCaseInsensitive(const String& str1, const String& str2);
 
 //implementation
 
 inline WideString StringToWString(const String& s)
 {
-	WideString temp(s.length(),L' ');
-	std::copy(s.begin(), s.end(), temp.begin());
-	return temp; 
+    WideString temp(s.length(), L' ');
+    std::copy(s.begin(), s.end(), temp.begin());
+    return temp;
 }
 
-inline void StringReplace(String & repString,const String & needle, const String & s)
+inline void StringReplace(String& repString, const String& needle, const String& s)
 {
-	String::size_type lastpos = 0, thispos;
-	while ((thispos = repString.find(needle, lastpos)) != String::npos)
-	{
-		repString.replace(thispos, needle.length(), s);
-		lastpos = thispos + s.length();
-	}
+    String::size_type lastpos = 0, thispos;
+    while ((thispos = repString.find(needle, lastpos)) != String::npos)
+    {
+        repString.replace(thispos, needle.length(), s);
+        lastpos = thispos + s.length();
+    }
 }
 
 inline String WStringToString(const WideString& s)
 {
-	size_t len = s.length();
-	String temp(len, ' ');
-	//std::copy(s.begin(), s.end(), temp.begin());
-	for (size_t i = 0; i < len; ++i)
-		temp[i] = (char)s[i];
-	return temp; 
+    size_t len = s.length();
+    String temp(len, ' ');
+    //std::copy(s.begin(), s.end(), temp.begin());
+    for (size_t i = 0; i < len; ++i)
+        temp[i] = (char)s[i];
+    return temp;
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-inline  Platform::String^ StringToRTString(const String & s)
+inline Platform::String ^ StringToRTString(const String& s)
 {
     return ref new Platform::String(StringToWString(s).c_str());
 }
 
-inline String RTStringToString(Platform::String^ s)
+inline String RTStringToString(Platform::String ^ s)
 {
     return WStringToString(s->Data());
 }
 #endif
-    
-template<class T>
-bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
+
+template <class T>
+bool FindAndRemoveExchangingWithLast(Vector<T>& array, const T& object)
 {
     uint32 size = (uint32)array.size();
     for (uint32 k = 0; k < size; ++k)
@@ -134,7 +133,7 @@ bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
             array.pop_back();
             return true;
         }
-    
+
     return false;
 }
 
@@ -145,8 +144,8 @@ void RemoveExchangingWithLast(Vector<T>& array, size_t index)
     array.pop_back();
 }
 
-template<class T>
-T ParseStringTo(const String & str)
+template <class T>
+T ParseStringTo(const String& str)
 {
     T result;
     std::stringstream stream(str);
@@ -154,16 +153,16 @@ T ParseStringTo(const String & str)
     return result;
 }
 
-template<class T>
-bool ParseFromString(const String & str, T& result)
+template <class T>
+bool ParseFromString(const String& str, T& result)
 {
-    std::stringstream stream (str);
+    std::stringstream stream(str);
     stream >> result;
     return (stream.eof() == true && stream.fail() == false);
 }
 
-template<class T>
-void Swap(T & v1, T & v2)
+template <class T>
+void Swap(T& v1, T& v2)
 {
     T temp = v1;
     v1 = v2;
@@ -191,7 +190,7 @@ protected:
 };
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	
+
 uint64 EglGetCurrentContext();
 	
 #endif
@@ -203,13 +202,11 @@ String GenerateGUID();
 
 #ifdef __DAVAENGINE_WIN_UAP__
 template <typename T>
-T WaitAsync(Windows::Foundation::IAsyncOperation<T>^ async_operation)
+T WaitAsync(Windows::Foundation::IAsyncOperation<T> ^ async_operation)
 {
     return concurrency::create_task(async_operation).get();
 }
 #endif
-
 };
 
 #endif // __DAVAENGINE_UTILS_H__
-

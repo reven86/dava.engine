@@ -37,8 +37,14 @@ class RegKey
 public:
     RegKey(HKEY scope, const char* keyName, bool createIfNotExist = false);
 
-    bool IsExist() const { return isExist; }
-    bool IsCreated() const { return isCreated; }
+    bool IsExist() const
+    {
+        return isExist;
+    }
+    bool IsCreated() const
+    {
+        return isCreated;
+    }
 
     //TODO: replace on Optional<String>
     DAVA::String QueryString(const char* valueName) const;
@@ -70,4 +76,4 @@ inline DWORD RegKey::QueryValue<DWORD>(const char* valueName)
     return QueryDWORD(valueName);
 }
 
-#endif  // REGKEY_H
+#endif // REGKEY_H

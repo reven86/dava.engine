@@ -39,13 +39,13 @@
 
 using namespace DAVA;
 
-PlaneLODDialog::PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath & defaultTexturePath, QWidget *parent /*= 0*/)
-	: QDialog(parent)
-	, ui(new Ui::QtPlaneLODDialog)
+PlaneLODDialog::PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath& defaultTexturePath, QWidget* parent /*= 0*/)
+    : QDialog(parent)
+    , ui(new Ui::QtPlaneLODDialog)
     , selectedLayer(-1)
     , selectedTextureSize(0)
 {
-	ui->setupUi(this);
+    ui->setupUi(this);
 
     connect(this, SIGNAL(accepted()), this, SLOT(OnOk()));
     connect(this, SIGNAL(rejected()), this, SLOT(OnCancel()));
@@ -54,14 +54,14 @@ PlaneLODDialog::PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath & 
 
     connect(ui->textureButton, SIGNAL(clicked()), this, SLOT(OnTextureSelect()));
 
-    for(uint32 i = 0; i < layersCount; i++)
+    for (uint32 i = 0; i < layersCount; i++)
         ui->lodLevelBox->addItem(QString("LOD %1").arg(i));
-    ui->lodLevelBox->setCurrentIndex(layersCount-1);
+    ui->lodLevelBox->setCurrentIndex(layersCount - 1);
 
     texturePath = QString(defaultTexturePath.GetAbsolutePathname().c_str());
     ui->textureLineEdit->setText(texturePath);
 
-	setWindowModality(Qt::WindowModal);
+    setWindowModality(Qt::WindowModal);
 }
 
 PlaneLODDialog::~PlaneLODDialog()
@@ -78,14 +78,14 @@ void PlaneLODDialog::OnOk()
 
     bool isOK = false;
     uint32 selectedSize = ui->textureSizeBox->currentText().toUInt(&isOK);
-    if(isOK)
+    if (isOK)
         selectedTextureSize = selectedSize;
 }
 
 void PlaneLODDialog::OnTextureSelect()
 {
     QString selectedPath = FileDialog::getSaveFileName(this, QString("Save texture"), texturePath, PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-    if(selectedPath.isEmpty())
+    if (selectedPath.isEmpty())
         return;
 
     texturePath = selectedPath;

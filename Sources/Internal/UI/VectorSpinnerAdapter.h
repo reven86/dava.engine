@@ -34,19 +34,19 @@
 
 namespace DAVA
 {
-
 /*
  * It's an abstract class: you need to implement your display logic in DisplaySelectedData(UISpinner * spinner) to use it.
  */
-template<typename T> class VectorSpinnerAdapter : public SpinnerAdapter
+template <typename T>
+class VectorSpinnerAdapter : public SpinnerAdapter
 {
 public:
-    VectorSpinnerAdapter(const Vector<T> &aCollection, uint32 aSelectedIndex = 0)
+    VectorSpinnerAdapter(const Vector<T>& aCollection, uint32 aSelectedIndex = 0)
         : data(aCollection)
         , selectedIndex(aSelectedIndex)
-    {};
+          {};
 
-    virtual ~VectorSpinnerAdapter() {};
+    virtual ~VectorSpinnerAdapter(){};
 
     virtual bool IsSelectedLast() const
     {
@@ -58,7 +58,10 @@ public:
         return selectedIndex == 0;
     }
 
-    uint32 GetSelected() {return selectedIndex;}
+    uint32 GetSelected()
+    {
+        return selectedIndex;
+    }
 
     void SetSelected(uint32 aSelectedIndex)
     {
@@ -100,7 +103,6 @@ protected:
 
     uint32 selectedIndex;
 };
-
 }
 
 #endif //__DAVAENGINE_UI_VECTOR_SPINNER_ADAPTER_H__

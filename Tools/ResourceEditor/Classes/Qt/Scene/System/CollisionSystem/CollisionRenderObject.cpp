@@ -29,9 +29,8 @@
 
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
 
-
-CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWorld *word, DAVA::RenderObject *renderObject)
-	: CollisionBaseObject(entity, word)
+CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWorld* word, DAVA::RenderObject* renderObject)
+    : CollisionBaseObject(entity, word)
 {
     if ((renderObject != nullptr) && (word != nullptr))
     {
@@ -64,7 +63,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 
             if ((batchLodIndex == bestLodIndex) && (batchSwitchIndex == curSwitchIndex))
             {
-			    DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
+                DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
                 if (pg != nullptr)
                 {
                     // is this the first polygon in cycle
@@ -100,7 +99,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
                     boundingBox.AddAABBox(pg->GetBoundingBox());
                 }
             }
-		}
+        }
 
         if (anyPolygonAdded)
         {

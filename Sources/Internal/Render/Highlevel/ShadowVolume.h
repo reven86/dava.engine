@@ -38,19 +38,17 @@
 
 namespace DAVA
 {
-
 class PolygonGroup;
 class Light;
-    
+
 class ShadowVolume : public RenderBatch
 {
 protected:
-	virtual ~ShadowVolume();
+    virtual ~ShadowVolume();
 
 public:
     ShadowVolume();
 };
-
 }
 
 #endif //__DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__

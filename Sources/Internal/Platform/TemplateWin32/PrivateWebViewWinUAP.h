@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 class Sprite;
 class CorePlatformWinUAP;
 
@@ -117,9 +116,9 @@ private:
     void RenderToTexture();
     Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
 
-private:    // WebView event handlers
-    void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
-    void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
+private: // WebView event handlers
+    void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args);
+    void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args);
 
 private:
     // clang-format off
@@ -137,7 +136,7 @@ private:
     // clang-format on
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__

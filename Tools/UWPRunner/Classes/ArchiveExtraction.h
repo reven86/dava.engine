@@ -32,10 +32,10 @@
 
 #include "Base/BaseTypes.h"
 
-bool ExtractFileFromArchive(const DAVA::String& zipFile, 
-                            const DAVA::String& file, 
+bool ExtractFileFromArchive(const DAVA::String& zipFile,
+                            const DAVA::String& file,
                             const DAVA::String& outFile);
 
 bool ExtractAllFromArchive(const DAVA::String& zipFile, const DAVA::String& outPath);
 
-#endif  // ARCHIVE_EXTRACTION_H
+#endif // ARCHIVE_EXTRACTION_H

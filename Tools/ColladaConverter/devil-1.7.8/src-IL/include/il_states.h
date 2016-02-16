@@ -16,13 +16,12 @@
 
 #include "il_internal.h"
 
-
 ILboolean ilAble(ILenum Mode, ILboolean Flag);
 
 
 #define IL_ATTRIB_STACK_MAX 32
 
-ILuint ilCurrentPos = 0;  // Which position on the stack
+ILuint ilCurrentPos = 0; // Which position on the stack
 
 //
 // Various states
@@ -30,88 +29,82 @@ ILuint ilCurrentPos = 0;  // Which position on the stack
 
 typedef struct IL_STATES
 {
-	// Origin states
-	ILboolean	ilOriginSet;
-	ILenum		ilOriginMode;
-	// Format and type states
-	ILboolean	ilFormatSet;
-	ILboolean	ilTypeSet;
-	ILenum		ilFormatMode;
-	ILenum		ilTypeMode;
-	// File mode states
-	ILboolean	ilOverWriteFiles;
-	// Palette states
-	ILboolean	ilAutoConvPal;
-	// Load fail states
-	ILboolean	ilDefaultOnFail;
-	// Key colour states
-	ILboolean	ilUseKeyColour;
-	// Alpha blend states
-	ILboolean	ilBlitBlend;
-	// Compression states
-	ILenum		ilCompression;
-	// Interlace states
-	ILenum		ilInterlace;
-	// Quantization states
-	ILenum		ilQuantMode;
-	ILuint		ilNeuSample;
-	ILuint		ilQuantMaxIndexs;
-	// DXTC states
-	ILboolean	ilKeepDxtcData;
-	ILboolean	ilUseNVidiaDXT;
-	ILboolean	ilUseSquishDXT;
+    // Origin states
+    ILboolean ilOriginSet;
+    ILenum ilOriginMode;
+    // Format and type states
+    ILboolean ilFormatSet;
+    ILboolean ilTypeSet;
+    ILenum ilFormatMode;
+    ILenum ilTypeMode;
+    // File mode states
+    ILboolean ilOverWriteFiles;
+    // Palette states
+    ILboolean ilAutoConvPal;
+    // Load fail states
+    ILboolean ilDefaultOnFail;
+    // Key colour states
+    ILboolean ilUseKeyColour;
+    // Alpha blend states
+    ILboolean ilBlitBlend;
+    // Compression states
+    ILenum ilCompression;
+    // Interlace states
+    ILenum ilInterlace;
+    // Quantization states
+    ILenum ilQuantMode;
+    ILuint ilNeuSample;
+    ILuint ilQuantMaxIndexs;
+    // DXTC states
+    ILboolean ilKeepDxtcData;
+    ILboolean ilUseNVidiaDXT;
+    ILboolean ilUseSquishDXT;
 
+    //
+    // Format-specific states
+    //
 
-	//
-	// Format-specific states
-	//
+    ILboolean ilTgaCreateStamp;
+    ILuint ilJpgQuality;
+    ILboolean ilPngInterlace;
+    ILboolean ilTgaRle;
+    ILboolean ilBmpRle;
+    ILboolean ilSgiRle;
+    ILenum ilJpgFormat;
+    ILboolean ilJpgProgressive;
+    ILenum ilDxtcFormat;
+    ILenum ilPcdPicNum;
 
-	ILboolean	ilTgaCreateStamp;
-	ILuint		ilJpgQuality;
-	ILboolean	ilPngInterlace;
-	ILboolean	ilTgaRle;
-	ILboolean	ilBmpRle;
-	ILboolean	ilSgiRle;
-	ILenum		ilJpgFormat;
-	ILboolean	ilJpgProgressive;
-	ILenum		ilDxtcFormat;
-	ILenum		ilPcdPicNum;
+    ILint ilPngAlphaIndex; // this index should be treated as an alpha key (most formats use this rather than having alpha in the palette), -1 for none
+    // currently only used when writing out .png files and should obviously be set to -1 most of the time
+    ILenum ilVtfCompression;
 
-	ILint		ilPngAlphaIndex;	// this index should be treated as an alpha key (most formats use this rather than having alpha in the palette), -1 for none
-									// currently only used when writing out .png files and should obviously be set to -1 most of the time
-	ILenum		ilVtfCompression;
+    //
+    // Format-specific strings
+    //
 
-
-	//
-	// Format-specific strings
-	//
-
-	char*		ilTgaId;
-	char*		ilTgaAuthName;
-	char*		ilTgaAuthComment;
-	char*		ilPngAuthName;
-	char*		ilPngTitle;
-	char*		ilPngDescription;
-	char*		ilTifDescription;
-	char*		ilTifHostComputer;
-	char*		ilTifDocumentName;
-	char*		ilTifAuthName;
-	char*		ilCHeader;
-
-
-
+    char* ilTgaId;
+    char* ilTgaAuthName;
+    char* ilTgaAuthComment;
+    char* ilPngAuthName;
+    char* ilPngTitle;
+    char* ilPngDescription;
+    char* ilTifDescription;
+    char* ilTifHostComputer;
+    char* ilTifDocumentName;
+    char* ilTifAuthName;
+    char* ilCHeader;
 
 } IL_STATES;
 
 IL_STATES ilStates[IL_ATTRIB_STACK_MAX];
 
-
 typedef struct IL_HINTS
 {
-	// Memory vs. Speed trade-off
-	ILenum		MemVsSpeedHint;
-	// Compression hints
-	ILenum		CompressHint;
+    // Memory vs. Speed trade-off
+    ILenum MemVsSpeedHint;
+    // Compression hints
+    ILenum CompressHint;
 
 } IL_HINTS;
 
@@ -396,4 +389,4 @@ IL_HINTS ilHints;
 
 
 
-#endif//STATES_H
+#endif //STATES_H

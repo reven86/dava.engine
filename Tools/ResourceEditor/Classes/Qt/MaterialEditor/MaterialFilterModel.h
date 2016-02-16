@@ -58,11 +58,11 @@ public:
     };
 
 public:
-	MaterialFilteringModel(MaterialModel *treeModel, QObject *parent = NULL);
+    MaterialFilteringModel(MaterialModel* treeModel, QObject* parent = NULL);
 
-	void Sync();
+    void Sync();
 
-	void SetScene(SceneEditor2 * scene);
+    void SetScene(SceneEditor2* scene);
     SceneEditor2* GetScene();
     void SetSelection(const EntityGroup* group);
     DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
@@ -80,8 +80,6 @@ public:
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 private:
-    int compareNames(DAVA::NMaterial* left, DAVA::NMaterial* right) const;
-
     MaterialModel* materialModel;
     eFilterType filterType;
 };

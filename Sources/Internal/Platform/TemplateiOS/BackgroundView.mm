@@ -39,9 +39,9 @@
     DAVA::NativeViewPool<UITextFieldHolder> textFieldPool;
 }
 
-- (UIView *) PrepareView: (UIView *)view
+- (UIView*)PrepareView:(UIView*)view
 {
-    if([view superview] == nil)
+    if ([view superview] == nil)
     {
         [self addSubview:view];
     }
@@ -50,29 +50,27 @@
     return view;
 }
 
-
-- (UIWebView *) CreateWebView
+- (UIWebView*)CreateWebView
 {
-    return  (UIWebView *) [self PrepareView:webViewPool.GetOrCreateView()];
+    return (UIWebView*)[self PrepareView:webViewPool.GetOrCreateView()];
 }
 
-- (UITextFieldHolder *) CreateTextField
+- (UITextFieldHolder*)CreateTextField
 {
-    return (UITextFieldHolder *)[self PrepareView:textFieldPool.GetOrCreateView()];
+    return (UITextFieldHolder*)[self PrepareView:textFieldPool.GetOrCreateView()];
 }
 
-- (void) ReleaseWebView: (UIWebView *)webView
+- (void)ReleaseWebView:(UIWebView*)webView
 {
     [webView setHidden:YES];
     webViewPool.ReleaseView(webView);
 }
 
-- (void) ReleaseTextField: (UITextFieldHolder *)textField
+- (void)ReleaseTextField:(UITextFieldHolder*)textField
 {
     [textField setHidden:YES];
     textFieldPool.ReleaseView(textField);
 }
-
 
 @end
 
