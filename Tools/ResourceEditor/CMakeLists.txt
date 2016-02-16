@@ -8,11 +8,21 @@ set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+set                   ( QML_SCAN_DIR ${CMAKE_CURRENT_LIST_DIR} )
 include               ( CMake-common )
 
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
+
+if (DEPLOY)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+    if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/ResourceEditor)
+        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/ResourceEditor)
+    endif()
+endif()
 
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
@@ -105,5 +115,14 @@ DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/con
 
 setup_main_executable()
 
-
-
+if (DEPLOY)
+    set(BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR})
+    if (NOT WIN32)
+        set(BEAST_DIR "")
+    endif()
+    ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/postDeploy.py"
+            "${DEPLOY_ROOT}"
+            "${BEAST_DIR}"
+        )
+endif()
