@@ -216,7 +216,7 @@ private:
     VegetationGeometryDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
     void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationGeometryDataPtr& data);
 
-    void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits);
+    void GenerateDensityMapFromTransparencyMask(const FilePath& lightmapPath, Vector<bool>& densityMapBits);
     Image* LoadSingleImage(const FilePath& path) const;
     float32 GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, uint32 stride, Image* src) const;
 
