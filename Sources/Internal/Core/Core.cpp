@@ -216,7 +216,7 @@ void DisableFloatingPointExceptions()
 void Core::CreateSingletons()
 {
     new Logger();
-    
+
 #ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
     fpu_exceptions::EnableFloatingPointExceptions();
 #else
@@ -249,6 +249,8 @@ void Core::CreateSingletons()
          */
         Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
     }
+
+    DeviceInfo::InitializeScreenInfo();
 
     new LocalizationSystem();
 
@@ -284,8 +286,6 @@ void Core::CreateSingletons()
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
     new LocalNotificationController();
-
-    DeviceInfo::InitializeScreenInfo();
 
     RegisterDAVAClasses();
 

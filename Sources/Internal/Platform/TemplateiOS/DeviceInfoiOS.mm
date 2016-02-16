@@ -394,7 +394,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     //TODO: remove this empty realization and implement detection of HID connection
-    return false;
+    return DeviceInfo::eHIDType::HID_TOUCH_TYPE == type;
 }
 
 bool DeviceInfoPrivate::IsTouchPresented()
