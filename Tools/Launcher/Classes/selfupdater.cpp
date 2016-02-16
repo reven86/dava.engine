@@ -35,6 +35,22 @@
 #include "errormessanger.h"
 #include <QProcess>
 
+namespace SelfUpdater_local
+{
+class SelfUpdaterZipFunctor : public ZipUtils::ZipOperationFunctor
+{
+public:
+    SelfUpdaterZipFunctor() = default;
+    ~SelfUpdaterZipFunctor() override = default;
+
+private:
+    void OnError(const ZipError & zipError) override
+    {
+        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+    }
+};
+}
+
 SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::SelfUpdater)
@@ -88,10 +104,10 @@ void SelfUpdater::DownloadFinished()
         currentDownload = nullptr;
 
         ZipUtils::CompressedFilesAndSizes files;
-        ZipError zipError;
-        if (ZipUtils::GetFileList(archiveFilePath, files, &zipError)
-            && ZipUtils::TestZipArchive(archiveFilePath, files, ZipUtils::ProgressFuntor(), &zipError)
-            && ZipUtils::UnpackZipArchive(archiveFilePath, selfUpdateDirPath, files, ZipUtils::ProgressFuntor(), &zipError)
+        SelfUpdater_local::SelfUpdaterZipFunctor functor;
+        if (ZipUtils::GetFileList(archiveFilePath, files, functor)
+            && ZipUtils::TestZipArchive(archiveFilePath, files, functor)
+            && ZipUtils::UnpackZipArchive(archiveFilePath, selfUpdateDirPath, files, functor)
             )
         {
             FileManager::Instance()->MoveFilesOnlyToDirectory(appDirPath, tempDirPath);
@@ -104,7 +120,6 @@ void SelfUpdater::DownloadFinished()
         else
         {
             FileManager::Instance()->DeleteDirectory(selfUpdateDirPath);
-            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
             setResult(QDialog::Rejected);
             close();
         }

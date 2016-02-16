@@ -55,13 +55,13 @@ QString ZipError::GetErrorString() const
     case NO_ERRORS:
         return tr("No errors occurred");
     case FILE_NOT_EXISTS:
-        return tr("Required archive not exists");
+        return tr("Required archive is not existing");
     case NOT_AN_ARCHIVE:
-        return tr("Required file are not an zip archive");
+        return tr("Required file is not a zip archive");
     case ARHIVE_DAMAGED:
-        return tr("Archive corrupted");
-    case ARCHIVER_NOT_FOUND:\
-        return tr("Archiver tool was not found. Reinstall application, please");
+        return tr("Archive is corrupted");
+    case ARCHIVER_NOT_FOUND:
+        return tr("Archiver tool was not found. Please, reinstall application");
     case PROCESS_FAILED_TO_START:
         return tr("Failed to launch archiver");
     case PROCESS_FAILED_TO_FINISH:
@@ -71,7 +71,7 @@ QString ZipError::GetErrorString() const
     case ARCHIVE_IS_EMPTY:
         return tr("Archive is empty!");
     case OUT_DIRECTORY_NOT_EXISTS:
-        return tr("Output directory does not exist!");
+        return tr("Output directory is not existing!");
     default:
         Q_ASSERT(false && "invalid condition passed to GetErrorString");
         return QString();
@@ -152,19 +152,17 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
 }
 
 
-bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &fileList, ZipError *err)
+bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &fileList, ZipOperationFunctor &functor)
 {
-    if (err == nullptr)
+    ZipError err;
+    if (!IsArchiveValid(archivePath, &err))
     {
-        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
-    }
-    if (!IsArchiveValid(archivePath, err))
-    {
+        functor.OnError(err);
         return false;
     }
     QRegularExpression regExp("\\s+");
     bool foundOutputData = false;
-    ReadyReadCallback callback = [&regExp, &foundOutputData, err, &fileList](const QByteArray &line){
+    ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray &line) {
         if (line.startsWith("----------")) //this string occurrs two times: before file list and at the and of file list
         {
             foundOutputData = !foundOutputData;
@@ -180,40 +178,40 @@ bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &
         const int NAME_INDEX = 5;
         if (infoStringList.size() < NAME_INDEX + 1)
         {
-            err->error = ZipError::PARSE_ERROR;
+            functor.OnError(ZipError::PARSE_ERROR);
             return;
         }
         bool ok = true;
         qint64 size = infoStringList.at(SIZE_INDEX).toLongLong(&ok);
         if (!ok)
         {
-            err->error = ZipError::PARSE_ERROR;
+            functor.OnError(ZipError::PARSE_ERROR);
             return;
         }
         const QString &file = infoStringList.at(NAME_INDEX);
         Q_ASSERT(!fileList.contains(file));
         fileList[file] = size;
     };
-    if (!LaunchArchiver(QStringList() << "l" << archivePath, callback, err))
+    if (!LaunchArchiver(QStringList() << "l" << archivePath, callback, &err))
     {
+        functor.OnError(err);
         return false;
     }
     if (fileList.empty())
     {
-        err->error = ZipError::ARCHIVE_IS_EMPTY;
+        functor.OnError(ZipError::ARCHIVE_IS_EMPTY);
         return false;
     }
+    functor.OnSuccess();
     return true;
 }
 
-bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesAndSizes &files, ProgressFuntor onProgress, ZipError *err)
+bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesAndSizes &files, ZipOperationFunctor &functor)
 {
-    if (err == nullptr)
+    ZipError err;
+    if (!IsArchiveValid(archivePath, &err))
     {
-        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
-    }
-    if (!IsArchiveValid(archivePath, err))
-    {
+        functor.OnError(err);
         return false;
     }
 
@@ -221,7 +219,7 @@ bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesA
     qint64 matchedSize = 0;
     const auto values = files.values();
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &onProgress, &files, &matchedSize, totalSize, err](const QByteArray &line) {
+    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray &line) {
         QString str(line);
         QRegularExpression stringRegEx("\\s+");
         QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
@@ -234,7 +232,7 @@ bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesA
             }
         }
 
-        onProgress((matchedSize * 100.0f) / totalSize);
+        functor.OnProgress((matchedSize * 100.0f) / totalSize);
         if (str.contains("Everything is Ok"))
         {
             success = true;
@@ -242,33 +240,34 @@ bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesA
     };
     QStringList arguments;
     arguments << "t" << "-bb1" << archivePath;
-    if (!LaunchArchiver(arguments, callback, err))
+    functor.OnStart();
+    if (!LaunchArchiver(arguments, callback, &err))
     {
+        functor.OnError(err);
         return false;
     }
     if (success != true)
     {
-        err->error = ZipError::ARHIVE_DAMAGED;
+        functor.OnError(ZipError::ARHIVE_DAMAGED);
         return false;
     }
+    functor.OnSuccess();
     return true;
 }
 
 
-bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDirPath, const CompressedFilesAndSizes &files, ProgressFuntor onProgress, ZipError *err)
+bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDirPath, const CompressedFilesAndSizes &files, ZipOperationFunctor &functor)
 {
-    if (err == nullptr)
+    ZipError err;
+    if (!IsArchiveValid(archivePath, &err))
     {
-        err = ZIP_UTILS_LOCAL::GetDefaultZipError();
-    }
-    if (!IsArchiveValid(archivePath, err))
-    {
+        functor.OnError(err);
         return false;
     }
     QDir outDir(outDirPath);
     if (!outDir.mkpath("."))
     {
-        err->error = ZipError::OUT_DIRECTORY_NOT_EXISTS;
+        functor.OnError(ZipError::OUT_DIRECTORY_NOT_EXISTS);
         return false;
     }
 
@@ -276,7 +275,7 @@ bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDi
     qint64 matchedSize = 0;
     const auto values = files.values();
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &onProgress, &files, &matchedSize, totalSize, err](const QByteArray &line) {
+    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray &line) {
         QString str(line);
         QRegularExpression stringRegEx("\\s+");
         QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
@@ -289,7 +288,7 @@ bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDi
             }
         }
 
-        onProgress((matchedSize * 100.0f) / totalSize);
+        functor.OnProgress((matchedSize * 100.0f) / totalSize);
         if (str.contains("Everything is Ok"))
         {
             success = true;
@@ -297,14 +296,16 @@ bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDi
     };
     QStringList arguments;
     arguments << "x" << "-y" << "-bb1" << archivePath << "-o" + outDirPath;
-    if (!LaunchArchiver(arguments, callback, err))
+    if (!LaunchArchiver(arguments, callback, &err))
     {
+        functor.OnError(err);
         return false;
     }
     if (success != true)
     {
-        err->error = ZipError::ARHIVE_DAMAGED;
+        functor.OnError(ZipError::ARHIVE_DAMAGED);
         return false;
     }
+    functor.OnSuccess();
     return true;
 }

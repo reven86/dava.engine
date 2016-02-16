@@ -41,6 +41,60 @@
 #include <QListWidget>
 #include <QTreeView>
 
+namespace UpdateDialog_local
+{
+class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
+{
+public:
+    UpdateDialogZipFunctor(const QString& progressMessage_
+        , const QString& finishMessage_
+        , const QString& errorMessage_
+        , UpdateDialog* dialog_
+        , QProgressBar* progressBar_)
+        : progressMessage(progressMessage_)
+        , finishMessage(finishMessage_)
+        , errorMessage(errorMessage_)
+        , dialog(dialog_)
+        , progressBar(progressBar_)
+    {
+    }
+
+    ~UpdateDialogZipFunctor() override = default;
+
+private:
+    void OnStart() override
+    {
+        dialog->UpdateLastLogValue(progressMessage);
+    }
+
+    void OnProgress(int progress) override
+    {
+        progressBar->setValue(progress);
+        dialog->UpdateLastLogValue(QString("%1...  %2%").arg(progressMessage).arg(progress));
+    }
+
+    void OnSuccess() override
+    {
+        dialog->UpdateLastLogValue(finishMessage);
+    }
+
+    void OnError(const ZipError & zipError) override
+    {
+        Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
+        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        dialog->UpdateLastLogValue(errorMessage);
+        dialog->BreakLog();
+    }
+
+private:
+    QString progressMessage;
+    QString finishMessage;
+    QString errorMessage;
+    UpdateDialog * dialog = nullptr;
+    QProgressBar * progressBar = nullptr;
+};
+}
+
 UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::UpdateDialog)
@@ -86,9 +140,9 @@ void UpdateDialog::StartNextTask()
 {
     if (!tasks.isEmpty())
     {
-        ui->progressBar->setValue(0);
-        ui->progressBar2->setValue(0);
-        ui->progressBar3->setValue(0);
+        ui->progressBar_downloading->setValue(0);
+        ui->progressBar_testing->setValue(0);
+        ui->progressBar_unpacking->setValue(0);
 
         setWindowTitle(QString("Updating in progress... (%1/%2)").arg(tasksCount - tasks.size() + 1).arg(tasksCount));
 
@@ -103,7 +157,7 @@ void UpdateDialog::StartNextTask()
                 AddLogValue("Removing Complete!");
                 CompleteLog();
 
-                ui->progressBar->setValue(100);
+                ui->progressBar_downloading->setValue(100);
             }
             else
             {
@@ -155,7 +209,7 @@ void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     if (bytesTotal)
     {
         int percentage = (static_cast<double>(bytesReceived) / bytesTotal) * 100;
-        ui->progressBar->setValue(percentage);
+        ui->progressBar_downloading->setValue(percentage);
 
         UpdateLastLogValue(QString("Downloading file...  %1%").arg(percentage));
     }
@@ -192,7 +246,7 @@ void UpdateDialog::DownloadFinished()
            && UnpackArchive(filePath, appDir, files))
         {
             emit AppInstalled(task.branchID, task.appID, task.version);
-            UpdateLastLogValue("Unpack Complite!");
+            UpdateLastLogValue("Unpack Complete!");
             CompleteLog();
         }
         else
@@ -217,64 +271,22 @@ void UpdateDialog::DownloadFinished()
 
 bool UpdateDialog::ListArchive(const QString &archivePath, ZipUtils::CompressedFilesAndSizes &files)
 {
-    ZipError zipError;
-    if(!ZipUtils::GetFileList(archivePath, files, &zipError))
-    {
-        Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
-        UpdateLastLogValue(tr("Archive not found or damaged!"));
-        BreakLog();
-    }
-    return zipError.error == ZipError::NO_ERRORS;
+    UpdateDialog_local::UpdateDialogZipFunctor functor("", "", tr("Archive not found or damaged!"), this, nullptr);
+    return ZipUtils::GetFileList(archivePath, files, functor);
 }
 
 bool UpdateDialog::TestArchive(const QString &archivePath, const ZipUtils::CompressedFilesAndSizes &files)
 {
-    ZipError zipError;
     UpdateLastLogValue(tr("Checking archive..."));
-    ZipUtils::ProgressFuntor onProgress = [this](int progress)
-    {
-        ui->progressBar2->setValue(progress);
-        UpdateLastLogValue(tr("Checking archive...  %1%").arg(progress));
-    };
-    bool archiveTested = ZipUtils::TestZipArchive(archivePath, files, onProgress, &zipError);
-    if(archiveTested)
-    {
-        UpdateLastLogValue(tr("Archive checked!"));
-    }
-    else
-    {
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
-        UpdateLastLogValue(tr("Archive not found or damaged!"));
-        BreakLog();
-    }
-    
-    return archiveTested;
+    UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Checking archive..."), tr("Archive checked!"), tr("Archive not found or damaged!"), this, ui->progressBar_testing);
+    return ZipUtils::TestZipArchive(archivePath, files, functor);   
 }
 
 bool UpdateDialog::UnpackArchive(const QString &archivePath, const QString &outDir, const ZipUtils::CompressedFilesAndSizes &files)
 {
     AddLogValue(tr("Unpacking archive..."));
-    ZipError zipError;
-    UpdateLastLogValue(tr("Unpacking archive..."));
-    ZipUtils::ProgressFuntor onProgress = [this](int progress)
-    {
-        ui->progressBar3->setValue(progress);
-        UpdateLastLogValue(tr("Unpacking archive...  %1%").arg(progress));
-    };
-    bool archiveUnpacked = ZipUtils::UnpackZipArchive(archivePath, outDir, files, onProgress, &zipError);
-    if(archiveUnpacked)
-    {
-        UpdateLastLogValue(tr("Archive unpacked!"));
-    }
-    else
-    {
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
-        UpdateLastLogValue(tr("Unpacking failed!"));
-        BreakLog();
-    }
-    
-    return archiveUnpacked;
+    UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);
+    return ZipUtils::UnpackZipArchive(archivePath, outDir, files, functor);
 }
 
 void UpdateDialog::DownloadReadyRead()
@@ -326,13 +338,13 @@ void UpdateDialog::BreakLog()
     if (currentTopLogItem != nullptr)
     {
         currentTopLogItem->setTextColor(0, LOG_COLOR_FAIL);
+        currentTopLogItem = nullptr;
     }
     if (currentLogItem != nullptr)
     {
         currentLogItem->setTextColor(0, LOG_COLOR_FAIL);
+        currentLogItem = nullptr;
     }
-    currentTopLogItem = nullptr;
-    currentLogItem = nullptr;
 }
 
 void UpdateDialog::CompleteLog()
@@ -340,11 +352,11 @@ void UpdateDialog::CompleteLog()
     if (currentTopLogItem != nullptr)
     {
         currentTopLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
+        currentTopLogItem = nullptr;
     }
     if (currentLogItem != nullptr)
     {
         currentLogItem->setTextColor(0, LOG_COLOR_COMPLETE);
+        currentLogItem = nullptr;
     }
-    currentTopLogItem = nullptr;
-    currentLogItem = nullptr;
 }

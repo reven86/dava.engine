@@ -64,7 +64,7 @@ private:
     QNetworkAccessManager* networkManager = nullptr;
     QNetworkReply* currentDownload = nullptr;
 
-    int lastErrorCode;
+    int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
 };
 

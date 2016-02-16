@@ -72,6 +72,9 @@ public:
     explicit UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent = 0);
     ~UpdateDialog();
 
+    void UpdateLastLogValue(const QString& log);
+    void BreakLog();
+
 signals:
     void AppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
@@ -93,8 +96,6 @@ private:
 
     void AddTopLogValue(const QString& log);
     void AddLogValue(const QString& log);
-    void UpdateLastLogValue(const QString& log);
-    void BreakLog();
     void CompleteLog();
 
     std::unique_ptr<Ui::UpdateDialog> ui;
@@ -111,7 +112,7 @@ private:
     QTreeWidgetItem* currentTopLogItem = nullptr;
 
 
-    int lastErrorCode = -1;
+    int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
 
     ApplicationManager* appManager = nullptr;
