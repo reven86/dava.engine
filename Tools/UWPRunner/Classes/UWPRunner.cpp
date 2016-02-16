@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include <iostream>
 #include <QFile>
 #include <QXmlStreamReader>
 
@@ -404,15 +405,8 @@ bool UWPRunner::ConfigureIpOverUsb()
     return true;
 }
 
-void UWPRunner::NetLogOutput(const String& logString)
+void SplitLoggerMessage(const String& logString, String& logLevel, String& message)
 {
-    const char* davaAppTermString = "Core::SystemAppFinished";
-
-    //incoming string is formatted in style "[ip:port] date time message"
-    //extract only message text
-    String logLevel;
-    String message;
-
     size_t spaces = 0;
     for (auto i : logString)
     {
@@ -430,6 +424,29 @@ void UWPRunner::NetLogOutput(const String& logString)
             message += i;
         }
     }
+}
+
+void TeamcityTestOutputFunc(const char* logLevelStr, const char* messageStr)
+{
+    Logger* logger = Logger::Instance();
+    Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevelStr);
+
+    if (ll != Logger::LEVEL__DISABLE)
+    {
+        TeamcityTestsOutput testOutput;
+        testOutput.Output(ll, messageStr);
+    }
+}
+
+void UWPRunner::NetLogOutput(const String& logString)
+{
+    const char* davaAppTermString = "Core::SystemAppFinished";
+
+    //incoming string is formatted in style "[ip:port] date time message"
+    //extract only message text
+    String logLevel;
+    String message;
+    SplitLoggerMessage(logString, logLevel, message);
 
     if (logLevel.empty())
     {
@@ -437,26 +454,38 @@ void UWPRunner::NetLogOutput(const String& logString)
     }
 
     //remove first space
-    logLevel = logLevel.substr(1);
-    message = message.substr(1);
+    const char* logLevelStr = logLevel.c_str() + 1;
+    const char* messageStr = message.c_str() + 1;
 
     if (options.useTeamCityTestOutput)
     {
-        Logger* logger = Logger::Instance();
-        Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevel.c_str());
-
-        if (ll != Logger::LEVEL__DISABLE)
-        {
-            TeamcityTestsOutput testOutput;
-            testOutput.Output(ll, message.c_str());
-        }
+        TeamcityTestOutputFunc(logLevelStr, messageStr);
     }
-    else
+    else if (!options.useTeamCityTestOutput || !options.outputFile.empty())
     {
-        printf("[%s] %s", logLevel.c_str(), message.c_str());
+        StringStream ss; 
+        ss << "[" << logLevelStr << "] " << messageStr;
         if (message.back() != '\n' || message.back() != '\r')
         {
-            printf("\n");
+            ss << "\n";
+        }
+
+        if (!options.useTeamCityTestOutput)
+        {
+            std::cout << ss.str();
+        }
+
+        if (!options.outputFile.empty())
+        {
+            if (!outputFile)
+            {
+                FileSystem::Instance()->DeleteFile(options.outputFile);
+                uint32 attributes = File::WRITE | File::APPEND;
+                outputFile.Set(File::Create(options.outputFile, attributes));
+            }
+
+            outputFile->WriteString(ss.str(), false);
+            outputFile->Flush();
         }
     }
 

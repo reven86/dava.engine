@@ -31,6 +31,7 @@
 #define UWP_RUNNER_H
 
 #include "Base/BaseTypes.h"
+#include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 #include "Network/NetCore.h"
 
@@ -44,6 +45,7 @@ struct PackageOptions
     DAVA::String architecture;
     DAVA::String profile;
     DAVA::String dependencies;
+    DAVA::String outputFile;
     DAVA::Vector<DAVA::String> resources;
     bool useTeamCityTestOutput = false;
     bool installOnly = false;
@@ -88,6 +90,7 @@ private:
     DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
     DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
     DAVA::String qtProfile;
+    DAVA::RefPtr<DAVA::File> outputFile;
     bool succeed = false;
     bool davaApplicationTerminated = false;
 };

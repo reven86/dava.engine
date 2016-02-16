@@ -130,6 +130,11 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
         out.isDavaApplication = true;
     }
 
+    if (parser.IsFlagSet("--output"))
+    {
+        out.outputFile = parser.GetParamForFlag("--output");;
+    }
+
     return out;
 }
 
@@ -147,7 +152,8 @@ void ShowUsage()
         "    --tc_test [use teamcity test output]\n"
         "    --install_only [only install package]\n"
         "    --run_only [don't install, just run]\n"
-        "    --dava_app [application based on DAVA Framework]\n";
+        "    --dava_app [application based on DAVA Framework, detects its abnormal termination]\n"
+        "    --output [path to output file for logs]\n";
 
     std::cout << message;
 }
