@@ -26,36 +26,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
-
-#include "CommandLineParser.h"
+#ifndef __QTTOOLS_VARIANTCONVERTER_H__
+#define __QTTOOLS_VARIANTCONVERTER_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/StaticSingleton.h"
+#include "FileSystem/VariantType.h"
+#include "Functional/Function.h"
 
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
+#include "core_variant/variant.hpp"
 
-class QMainWindow;
-class NGTBaseApplication
+namespace DAVA
+{
+class VariantConverter : public StaticSingleton<VariantConverter>
 {
 public:
-    NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication();
+    VariantConverter();
 
-    void LoadPlugins();
-    IComponentContext& GetComponentContext();
-    int StartApplication(QMainWindow* appMainWindow);
-
-protected:
-    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
+    VariantType Convert(Variant const& v, MetaInfo const* info) const;
+    Variant Convert(VariantType const& value) const;
 
 private:
-    DAVA::WideString GetPluginsFolder() const;
+    using TVtoDV = Function<VariantType(Variant const&)>;
+    using TDVtoV = Function<Variant(VariantType const&)>;
+    struct ConvertNode
+    {
+        TVtoDV vToDvFn;
+        TDVtoV dvToVFn;
+    };
 
-private:
-    GenericPluginManager pluginManager;
-    CommandLineParser commandLineParser;
+    Array<ConvertNode, VariantType::TYPES_COUNT> convertFunctions;
 };
+}
 
-#endif // __QTTOOLS_NGTAPPLICATION_H__
+#endif // __QTTOOLS_VARIANTCONVERTER_H__

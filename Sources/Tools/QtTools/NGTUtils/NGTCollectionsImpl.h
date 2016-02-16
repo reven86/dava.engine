@@ -26,36 +26,59 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
-
-#include "CommandLineParser.h"
+#ifndef __QTTOOLS_NGTCOLLECTIONSIMPL_H__
+#define __QTTOOLS_NGTCOLLECTIONSIMPL_H__
 
 #include "Base/BaseTypes.h"
 
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
+#include "core_variant/collection.hpp"
 
-class QMainWindow;
-class NGTBaseApplication
+namespace DAVA
 {
+class InspColl;
+struct MetaInfo;
+
+class NGTCollection : public CollectionImplBase
+{
+    class Iterator;
+
 public:
-    NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication();
+    NGTCollection(void* object_, const InspColl* collectionImpl_);
 
-    void LoadPlugins();
-    IComponentContext& GetComponentContext();
-    int StartApplication(QMainWindow* appMainWindow);
+    bool empty() const override;
+    size_t size() const override;
 
-protected:
-    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
+    CollectionIteratorImplPtr begin() override;
+    CollectionIteratorImplPtr end() override;
+
+    std::pair<CollectionIteratorImplPtr, bool> get(const Variant& key, GetPolicy policy) override;
+
+    CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& pos) override;
+    CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last) override;
+    size_t erase(const Variant& key) override;
+
+    const TypeId& keyType() const override;
+    const TypeId& valueType() const override;
+
+    const TypeId& containerType() const override;
+    void* containerData() const override;
+
+    bool isMapping() const override
+    {
+        return false;
+    }
+    bool canResize() const override
+    {
+        return false;
+    }
 
 private:
-    DAVA::WideString GetPluginsFolder() const;
-
-private:
-    GenericPluginManager pluginManager;
-    CommandLineParser commandLineParser;
+    void* object;
+    const InspColl* collectionImpl;
+    TypeId keyId;
+    TypeId valueId;
+    TypeId containerId;
 };
+} // NGT
 
-#endif // __QTTOOLS_NGTAPPLICATION_H__
+#endif // __QTTOOLS_NGTCOLLECTIONSIMPL_H__

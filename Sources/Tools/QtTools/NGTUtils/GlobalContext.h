@@ -26,36 +26,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
+#ifndef __QTTOOLS_GLOBALCONTEXT_H__
+#define __QTTOOLS_GLOBALCONTEXT_H__
 
-#include "CommandLineParser.h"
-
-#include "Base/BaseTypes.h"
-
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
+#include "Debug/DVAssert.h"
 #include "core_generic_plugin/interfaces/i_component_context.hpp"
 
-class QMainWindow;
-class NGTBaseApplication
+namespace DAVA
 {
-public:
-    NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication();
+void SetGlobalContext(IComponentContext* context);
+IComponentContext* GetGlobalContext();
 
-    void LoadPlugins();
-    IComponentContext& GetComponentContext();
-    int StartApplication(QMainWindow* appMainWindow);
+template <class T>
+T* queryInterface()
+{
+    IComponentContext* context = GetGlobalContext();
+    DVASSERT(context != nullptr);
+    return context->queryInterface<T>();
+}
+}
 
-protected:
-    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
-
-private:
-    DAVA::WideString GetPluginsFolder() const;
-
-private:
-    GenericPluginManager pluginManager;
-    CommandLineParser commandLineParser;
-};
-
-#endif // __QTTOOLS_NGTAPPLICATION_H__
+#endif // __QTTOOLS_GLOBALCONTEXT_H__

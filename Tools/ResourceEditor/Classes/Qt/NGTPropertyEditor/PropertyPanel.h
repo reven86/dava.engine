@@ -26,36 +26,48 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
+#ifndef __RESOURCEEDITOR_PROPERTYPANEL_H__
+#define __RESOURCEEDITOR_PROPERTYPANEL_H__
 
-#include "CommandLineParser.h"
+#include "core_ui_framework/i_view.hpp"
+#include "core_ui_framework/i_ui_framework.hpp"
+#include "core_ui_framework/i_ui_application.hpp"
 
-#include "Base/BaseTypes.h"
+#include <memory>
+#include <QObject>
 
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
-
-class QMainWindow;
-class NGTBaseApplication
+namespace DAVA
 {
+class InspBase;
+class InspInfo;
+}
+
+class SceneEditor2;
+class EntityGroup;
+
+class PropertyPanel : public QObject
+{
+    Q_OBJECT
+
 public:
-    NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication();
+    PropertyPanel();
+    ~PropertyPanel();
 
-    void LoadPlugins();
-    IComponentContext& GetComponentContext();
-    int StartApplication(QMainWindow* appMainWindow);
+    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
+    void Finalize();
 
-protected:
-    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
+    Q_PROPERTY(QVariant PropertyTree READ GetPropertyTree NOTIFY EntityChanged)
+
+    Q_INVOKABLE QVariant GetPropertyTree();
+    Q_SIGNAL void EntityChanged();
+
+    Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+
+    void SetObject(DAVA::InspBase* object);
 
 private:
-    DAVA::WideString GetPluginsFolder() const;
-
-private:
-    GenericPluginManager pluginManager;
-    CommandLineParser commandLineParser;
+    std::unique_ptr<IView> view;
+    std::shared_ptr<IObjectHandleStorage> objectHandleStorage;
 };
 
-#endif // __QTTOOLS_NGTAPPLICATION_H__
+#endif // __RESOURCEEDITOR_PROPERTYPANEL_H__

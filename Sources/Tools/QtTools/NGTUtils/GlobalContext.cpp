@@ -26,36 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
+#include "GlobalContext.h"
 
-#include "CommandLineParser.h"
-
-#include "Base/BaseTypes.h"
-
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
-
-class QMainWindow;
-class NGTBaseApplication
+namespace DAVA
 {
-public:
-    NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication();
+static IComponentContext* s_context = nullptr;
+void SetGlobalContext(IComponentContext* context)
+{
+    s_context = context;
+}
 
-    void LoadPlugins();
-    IComponentContext& GetComponentContext();
-    int StartApplication(QMainWindow* appMainWindow);
-
-protected:
-    virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
-
-private:
-    DAVA::WideString GetPluginsFolder() const;
-
-private:
-    GenericPluginManager pluginManager;
-    CommandLineParser commandLineParser;
-};
-
-#endif // __QTTOOLS_NGTAPPLICATION_H__
+IComponentContext* GetGlobalContext()
+{
+    return s_context;
+}
+}

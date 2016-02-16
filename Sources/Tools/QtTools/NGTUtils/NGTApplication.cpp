@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "NGTApplication.h"
+#include "GlobalContext.h"
 
 #include "Debug/DVAssert.h"
 
@@ -55,6 +56,11 @@ NGTBaseApplication::NGTBaseApplication(int argc, char** argv)
 {
 }
 
+NGTBaseApplication::~NGTBaseApplication()
+{
+    DAVA::SetGlobalContext(nullptr);
+}
+
 void NGTBaseApplication::LoadPlugins()
 {
     DAVA::Vector<DAVA::WideString> pluginList;
@@ -68,6 +74,15 @@ void NGTBaseApplication::LoadPlugins()
 
     pluginManager.getContextManager().getGlobalContext()->registerInterface<ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
     pluginManager.loadPlugins(pluginList);
+
+    DAVA::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
+}
+
+IComponentContext& NGTBaseApplication::GetComponentContext()
+{
+    IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
+    DVASSERT(context != nullptr);
+    return *context;
 }
 
 int NGTBaseApplication::StartApplication(QMainWindow* appMainWindow)
