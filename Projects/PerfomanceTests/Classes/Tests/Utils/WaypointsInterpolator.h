@@ -46,11 +46,10 @@ public:
     float32 GetStep() const;
 
 private:
-
     void Init();
 
     static float32 SPLINE_DELTA_TIME;
-  
+
     Vector<PathComponent::Waypoint*> waypoints;
     Vector<float32> segmentsLength;
 

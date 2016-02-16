@@ -23,23 +23,23 @@ extern "C" {
 #endif
 
 typedef MagickBooleanType
-  (*MagickProgressMonitor)(const char *,const MagickOffsetType,
-    const MagickSizeType,void *);
+(*MagickProgressMonitor)(const char*, const MagickOffsetType,
+                         const MagickSizeType, void*);
 
 MagickExport MagickProgressMonitor
-  SetImageProgressMonitor(Image *,const MagickProgressMonitor,void *),
-  SetImageInfoProgressMonitor(ImageInfo *,const MagickProgressMonitor,void *);
+SetImageProgressMonitor(Image *, const MagickProgressMonitor, void *),
+SetImageInfoProgressMonitor(ImageInfo *, const MagickProgressMonitor, void *);
 
 static inline MagickBooleanType QuantumTick(const MagickOffsetType offset,
-  const MagickSizeType span)
+                                            const MagickSizeType span)
 {
-  if (span <= 100)
-    return(MagickTrue);
-  if (offset == (MagickOffsetType) (span-1))
-    return(MagickTrue);
-  if ((offset % (span/100)) == 0)
-    return(MagickTrue);
-  return(MagickFalse);
+    if (span <= 100)
+        return (MagickTrue);
+    if (offset == (MagickOffsetType)(span - 1))
+        return (MagickTrue);
+    if ((offset % (span / 100)) == 0)
+        return (MagickTrue);
+    return (MagickFalse);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

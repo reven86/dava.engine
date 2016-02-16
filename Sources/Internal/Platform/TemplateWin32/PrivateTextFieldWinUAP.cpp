@@ -66,26 +66,25 @@ using namespace concurrency;
 
 namespace DAVA
 {
-
 namespace
 {
-
 struct StringDiffResult
 {
     StringDiffResult() = default;
 
-    enum eDiffType {
-        NO_CHANGE = 0,      // No changes between original string and new string
-        INSERTION,          // Character range was inserted into new string
-        DELETION,           // Character range was deleted from original string
-        REPLACEMENT         // Character range in original string was replaced by another character range in new string
+    enum eDiffType
+    {
+        NO_CHANGE = 0, // No changes between original string and new string
+        INSERTION, // Character range was inserted into new string
+        DELETION, // Character range was deleted from original string
+        REPLACEMENT // Character range in original string was replaced by another character range in new string
     };
 
     eDiffType diffType = NO_CHANGE;
-    int32 originalStringDiffPosition = 0;   // Position in original string where difference starts
-    int32 newStringDiffPosition = 0;        // Position in new string where difference starts
-    WideString originalStringDiff;          // What was changed in original string
-    WideString newStringDiff;               // What was changed in new string
+    int32 originalStringDiffPosition = 0; // Position in original string where difference starts
+    int32 newStringDiffPosition = 0; // Position in new string where difference starts
+    WideString originalStringDiff; // What was changed in original string
+    WideString newStringDiff; // What was changed in new string
 
     // Explanation of originalStringDiff, newStringDiff and diff positions:
     // diffType is INSERTION:
@@ -143,7 +142,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
         newDiffEnd -= 1;
     }
 
-    if (origDiffEnd < origDiffBegin)    // Insertion took place
+    if (origDiffEnd < origDiffBegin) // Insertion took place
     {
         result.diffType = StringDiffResult::INSERTION;
         result.originalStringDiffPosition = origDiffBegin;
@@ -151,7 +150,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
         result.newStringDiffPosition = newDiffBegin;
         result.newStringDiff = WideString(newString, newDiffBegin, newDiffEnd - newDiffBegin + 1);
     }
-    else if (newDiffEnd < origDiffBegin)    // Deletion took place
+    else if (newDiffEnd < origDiffBegin) // Deletion took place
     {
         result.diffType = StringDiffResult::DELETION;
         result.originalStringDiffPosition = origDiffBegin;
@@ -159,7 +158,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
         result.originalStringDiffPosition = newDiffBegin;
         result.newStringDiff = WideString();
     }
-    else    // Replacement took place
+    else // Replacement took place
     {
         result.diffType = StringDiffResult::REPLACEMENT;
         result.originalStringDiffPosition = origDiffBegin;
@@ -169,7 +168,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
     }
 }
 
-}   // unnamed namespace
+} // unnamed namespace
 
 PrivateTextFieldWinUAP::TextFieldProperties::TextFieldProperties()
     : createNew(false)
@@ -328,7 +327,7 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
         if (properties.textChanged && properties.focusChanged && properties.focus)
             uiTextField->SetSprite(nullptr, 0);
 
-        auto self{shared_from_this()};
+        auto self{ shared_from_this() };
         TextFieldProperties props(properties);
         core->RunOnUIThread([this, self, props] {
             ProcessProperties(props);
@@ -605,27 +604,27 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
         savedCaretPosition += 1;
         break;
     case VirtualKey::Escape:
+    {
+        auto self{ shared_from_this() };
+        core->RunOnMainThread([this, self]()
+                              {
+                                  if (textFieldDelegate != nullptr)
+                                      textFieldDelegate->TextFieldShouldCancel(uiTextField);
+                              });
+    }
+    break;
+    case VirtualKey::Enter:
+        // Known XAML bug: native TextBox generates two OnKeyDown events
+        // So use RepeatCount field to filter out extra event: second event comes with RepeatCount > 0
+        if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
         {
-            auto self{shared_from_this()};
-            core->RunOnMainThread([this, self]()
-            {
+            auto self{ shared_from_this() };
+            core->RunOnMainThread([this, self]() {
                 if (textFieldDelegate != nullptr)
-                    textFieldDelegate->TextFieldShouldCancel(uiTextField);
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
             });
         }
         break;
-        case VirtualKey::Enter:
-            // Known XAML bug: native TextBox generates two OnKeyDown events
-            // So use RepeatCount field to filter out extra event: second event comes with RepeatCount > 0
-            if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
-            {
-                auto self{ shared_from_this() };
-                core->RunOnMainThread([this, self]() {
-                    if (textFieldDelegate != nullptr)
-                        textFieldDelegate->TextFieldShouldReturn(uiTextField);
-                });
-            }
-            break;
     default:
         break;
     }
@@ -1107,8 +1106,8 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
 
 void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 {
-    auto self{shared_from_this()};
-    RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
+    auto self{ shared_from_this() };
+    RenderTargetBitmap ^ renderTarget = ref new RenderTargetBitmap;
 
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
         int32 imageWidth = renderTarget->PixelWidth;
@@ -1162,6 +1161,6 @@ Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, in
     return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

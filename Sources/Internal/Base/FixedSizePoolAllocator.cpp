@@ -34,20 +34,20 @@
 
 #include <cstdlib>
 
-namespace DAVA 
+namespace DAVA
 {
 FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockArraySize)
 {
     DVASSERT(_blockSize >= sizeof(uint8*));
-    
+
     blockSize = _blockSize;
     blockArraySize = _blockArraySize;
     allocatedBlockArrays = 0;
     nextFreeBlock = 0;
 #ifdef __DAVAENGINE_DEBUG__
-	totalBlockCount = 0;
-	freeItemCount = 0;
-	maxItemCount = 0;
+    totalBlockCount = 0;
+    freeItemCount = 0;
+    maxItemCount = 0;
 #endif
     CreateNewDataBlock();
 }
@@ -55,22 +55,22 @@ FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockA
 void FixedSizePoolAllocator::CreateNewDataBlock()
 {
     DVASSERT(blockSize >= sizeof(uint8*));
-    void * block = ::malloc(blockArraySize * blockSize + sizeof(uint8*));
+    void* block = ::malloc(blockArraySize * blockSize + sizeof(uint8*));
     //Logger::FrameworkDebug("Allocated new data block: %p pointer size: %d", block, sizeof(uint8*));
     // insert to list
     *(uint8**)block = (uint8*)allocatedBlockArrays;
     allocatedBlockArrays = block;
 #ifdef __DAVAENGINE_DEBUG__
-	totalBlockCount++;
-	freeItemCount += blockArraySize;
-#endif 
-    
+    totalBlockCount++;
+    freeItemCount += blockArraySize;
+#endif
+
     InsertBlockToFreeNodes(block);
 }
 
-void FixedSizePoolAllocator::InsertBlockToFreeNodes(void * block)
+void FixedSizePoolAllocator::InsertBlockToFreeNodes(void* block)
 {
-    uint8 * blockItem = (uint8*)block + sizeof(uint8*) + blockSize * (blockArraySize - 1);
+    uint8* blockItem = (uint8*)block + sizeof(uint8*) + blockSize * (blockArraySize - 1);
     for (uint32 k = 0; k < blockArraySize; ++k)
     {
         //Logger::FrameworkDebug("Free block added: %p", blockItem);
@@ -78,17 +78,17 @@ void FixedSizePoolAllocator::InsertBlockToFreeNodes(void * block)
         *(uint8**)blockItem = (uint8*)nextFreeBlock;
         nextFreeBlock = blockItem;
         blockItem -= blockSize;
-    }    
+    }
 }
 
 void FixedSizePoolAllocator::Reset()
 {
     nextFreeBlock = 0;
-    void * currentBlock = allocatedBlockArrays;
-    while(currentBlock)
+    void* currentBlock = allocatedBlockArrays;
+    while (currentBlock)
     {
-        uint8 * next = *(uint8**)currentBlock;
-        InsertBlockToFreeNodes(currentBlock);  
+        uint8* next = *(uint8**)currentBlock;
+        InsertBlockToFreeNodes(currentBlock);
         currentBlock = next;
     }
 }
@@ -99,20 +99,20 @@ void FixedSizePoolAllocator::DeallocateMemory()
 //	DVASSERT(freeItemCount == (totalBlockCount*blockArraySize));
 #endif
 
-    while(allocatedBlockArrays)
+    while (allocatedBlockArrays)
     {
-        uint8 * next = *(uint8**)allocatedBlockArrays;
+        uint8* next = *(uint8**)allocatedBlockArrays;
         ::free(allocatedBlockArrays);
 #ifdef __DAVAENGINE_DEBUG__
-		totalBlockCount--;
+        totalBlockCount--;
 #endif
         //Logger::FrameworkDebug("Deallocated data block: %p pointer size: %d", allocatedBlockArrays, sizeof(uint8*));
         allocatedBlockArrays = next;
     }
 
 #ifdef __DAVAENGINE_DEBUG__
-	DVASSERT(0 == totalBlockCount);
-	freeItemCount = 0;
+    DVASSERT(0 == totalBlockCount);
+    freeItemCount = 0;
 #endif
 }
 
@@ -121,41 +121,41 @@ FixedSizePoolAllocator::~FixedSizePoolAllocator()
     DeallocateMemory();
 }
 
-void * FixedSizePoolAllocator::New()
+void* FixedSizePoolAllocator::New()
 {
-    void * object = 0;
+    void* object = 0;
     if (nextFreeBlock == 0)
-	{
+    {
         CreateNewDataBlock();
-	}
+    }
        
 #ifdef __DAVAENGINE_DEBUG__
-	freeItemCount--;
-	maxItemCount = Max(maxItemCount, (blockArraySize * blockSize)-freeItemCount);
+    freeItemCount--;
+    maxItemCount = Max(maxItemCount, (blockArraySize * blockSize) - freeItemCount);
 #endif
     object = nextFreeBlock;
     nextFreeBlock = *(uint8**)nextFreeBlock;
     return object;
 }
 
-void FixedSizePoolAllocator::Delete(void * block)
+void FixedSizePoolAllocator::Delete(void* block)
 {
-	*(uint8**)block = (uint8*)nextFreeBlock;
-	nextFreeBlock = block;
+    *(uint8**)block = (uint8*)nextFreeBlock;
+    nextFreeBlock = block;
 
 #ifdef __DAVAENGINE_DEBUG__
-	freeItemCount++;
+    freeItemCount++;
 #endif
 }
-    
-bool FixedSizePoolAllocator::CheckIsPointerValid(void * blockvoid)
+
+bool FixedSizePoolAllocator::CheckIsPointerValid(void* blockvoid)
 {
-    uint8 * block = (uint8*)blockvoid;
-    uint8 * currentAllocatedBlockArray = (uint8*)allocatedBlockArrays; 
-    while(currentAllocatedBlockArray)
+    uint8* block = (uint8*)blockvoid;
+    uint8* currentAllocatedBlockArray = (uint8*)allocatedBlockArrays;
+    while (currentAllocatedBlockArray)
     {
-        uint8 * next = *(uint8**)currentAllocatedBlockArray;
-        
+        uint8* next = *(uint8**)currentAllocatedBlockArray;
+
         if ((block >= (uint8*)currentAllocatedBlockArray + sizeof(uint8*)) && (block < (uint8*)currentAllocatedBlockArray + sizeof(uint8*) + blockSize * blockArraySize))
         {
             // we are inside check is block correct.
@@ -165,7 +165,7 @@ bool FixedSizePoolAllocator::CheckIsPointerValid(void * blockvoid)
             {
                 return true;
             }
-            else 
+            else
             {
                 return false;
             }
@@ -174,6 +174,4 @@ bool FixedSizePoolAllocator::CheckIsPointerValid(void * blockvoid)
     }
     return false;
 }
-
-	
 }

@@ -36,8 +36,8 @@
 #include "../Qt/Main/QtUtils.h"
 
 ActionEnableCustomColors::ActionEnableCustomColors(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_CUSTOM_COLORS_ENABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_CUSTOM_COLORS_ENABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
@@ -57,16 +57,16 @@ void ActionEnableCustomColors::Redo()
     sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
     bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	if (!success )
-	{
-		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->customColorsSystem->EnableLandscapeEditing();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-	}
+    if (!success)
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->customColorsSystem->EnableLandscapeEditing();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+    }
     else
     {
         if (!sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->IsTextureLoaded())
@@ -74,21 +74,21 @@ void ActionEnableCustomColors::Redo()
             ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
             sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->ResetLoadedState();
         }
-        
-        if(success &&
-           LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+
+        if (success &&
+            LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
         {
             sceneEditor->foliageSystem->SetFoliageVisible(false);
         }
     }
 
-	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
+    SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
 
 ActionDisableCustomColors::ActionDisableCustomColors(SceneEditor2* forSceneEditor, bool textureSavingNeeded)
-:	CommandAction(CMDID_CUSTOM_COLORS_DISABLE)
-,	sceneEditor(forSceneEditor)
-,	textureSavingNeeded(textureSavingNeeded)
+    : CommandAction(CMDID_CUSTOM_COLORS_DISABLE)
+    , sceneEditor(forSceneEditor)
+    , textureSavingNeeded(textureSavingNeeded)
 {
 }
 
@@ -107,16 +107,16 @@ void ActionDisableCustomColors::Redo()
 
     bool success = sceneEditor->customColorsSystem->DisableLandscapeEdititing(textureSavingNeeded);
     if (!success)
-	{
-		ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
-	}
-    
-    if(success)
+    {
+        ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
+    }
+
+    if (success)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(true);
     }
-    
-	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
+
+    SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
 
 ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage,
@@ -138,25 +138,25 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
 {
-	SafeRelease(undoImage);
-	SafeRelease(redoImage);
-	SafeRelease(customColorsProxy);
+    SafeRelease(undoImage);
+    SafeRelease(redoImage);
+    SafeRelease(customColorsProxy);
     SafeRelease(texture);
 }
 
 void ModifyCustomColorsCommand::Undo()
 {
-	ApplyImage(undoImage);
-	customColorsProxy->DecrementChanges();
+    ApplyImage(undoImage);
+    customColorsProxy->DecrementChanges();
 }
 
 void ModifyCustomColorsCommand::Redo()
 {
-	ApplyImage(redoImage);
-	customColorsProxy->IncrementChanges();
+    ApplyImage(redoImage);
+    customColorsProxy->IncrementChanges();
 }
 
-void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
+void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
 {
     SafeRelease(texture);
 

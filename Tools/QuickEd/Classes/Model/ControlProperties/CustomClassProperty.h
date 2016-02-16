@@ -37,27 +37,30 @@ class ControlNode;
 class CustomClassProperty : public ValueProperty
 {
 public:
-    CustomClassProperty(ControlNode *control, const CustomClassProperty *sourceProperty, eCloneType cloneType);
-    
+    CustomClassProperty(ControlNode* control, const CustomClassProperty* sourceProperty, eCloneType cloneType);
+
 protected:
     virtual ~CustomClassProperty();
-    
+
 public:
-    void Accept(PropertyVisitor *visitor) override;
-    
+    void Accept(PropertyVisitor* visitor) override;
+
     bool IsReadOnly() const override;
-    
+
     ePropertyType GetType() const override;
-    DAVA::uint32 GetFlags() const  override { return EF_CAN_RESET; };
+    DAVA::uint32 GetFlags() const override
+    {
+        return EF_CAN_RESET;
+    };
     DAVA::VariantType GetValue() const override;
-    
-    const DAVA::String &GetCustomClassName() const;
-    
+
+    const DAVA::String& GetCustomClassName() const;
+
 protected:
-    virtual void ApplyValue(const DAVA::VariantType &value) override;
-    
+    virtual void ApplyValue(const DAVA::VariantType& value) override;
+
 private:
-    ControlNode *control; // weak
+    ControlNode* control; // weak
     DAVA::String customClass;
 };
 

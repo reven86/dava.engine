@@ -28,58 +28,56 @@
 
 
 #include "Core/PerformanceSettings.h"
-namespace DAVA 
+namespace DAVA
 {
-
 PerformanceSettings::PerformanceSettings()
 {
-	//init with some default values
-	psPerformanceMinFPS = 35;
-	psPerformanceMaxFPS = 50;
-	psPerformanceLodOffset = 11.7f;
-	psPerformanceLodMult = 3.9f;
-	psPerformanceSpeedMult = 2;
+    //init with some default values
+    psPerformanceMinFPS = 35;
+    psPerformanceMaxFPS = 50;
+    psPerformanceLodOffset = 11.7f;
+    psPerformanceLodMult = 3.9f;
+    psPerformanceSpeedMult = 2;
 }
 float32 PerformanceSettings::GetPsPerformanceMinFPS()
 {
-	return psPerformanceMinFPS;
+    return psPerformanceMinFPS;
 }
 float32 PerformanceSettings::GetPsPerformanceMaxFPS()
 {
-	return psPerformanceMaxFPS;
+    return psPerformanceMaxFPS;
 }
 float32 PerformanceSettings::GetPsPerformanceSpeedMult()
 {
-	return psPerformanceSpeedMult;
+    return psPerformanceSpeedMult;
 }
 float32 PerformanceSettings::GetPsPerformanceLodOffset()
 {
-	return psPerformanceLodOffset;
+    return psPerformanceLodOffset;
 }
 float32 PerformanceSettings::GetPsPerformanceLodMult()
 {
-	return psPerformanceLodMult;
+    return psPerformanceLodMult;
 }
 
 void PerformanceSettings::SetPsPerformanceMinFPS(float32 minFPS)
 {
-	psPerformanceMinFPS = minFPS;
+    psPerformanceMinFPS = minFPS;
 }
 void PerformanceSettings::SetPsPerformanceMaxFPS(float32 maxFPS)
 {
-	psPerformanceMaxFPS = maxFPS;
+    psPerformanceMaxFPS = maxFPS;
 }
 void PerformanceSettings::SetPsPerformanceSpeedMult(float32 speedMult)
 {
-	psPerformanceSpeedMult = speedMult;
+    psPerformanceSpeedMult = speedMult;
 }
 void PerformanceSettings::SetPsPerformanceLodOffset(float32 lodOffset)
 {
-	psPerformanceLodOffset = lodOffset;
+    psPerformanceLodOffset = lodOffset;
 }
 void PerformanceSettings::SetPsPerformanceLodMult(float32 lodMult)
 {
-	psPerformanceLodMult = lodMult;
+    psPerformanceLodMult = lodMult;
 }
-
 }

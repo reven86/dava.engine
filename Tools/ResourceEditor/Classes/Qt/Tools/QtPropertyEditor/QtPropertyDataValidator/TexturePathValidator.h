@@ -32,13 +32,13 @@
 
 #include "PathValidator.h"
 
-class TexturePathValidator: public PathValidator
+class TexturePathValidator : public PathValidator
 {
 public:
     TexturePathValidator(const QStringList& value);
 
 protected:
-    virtual bool ValidateInternal(const QVariant &v);
+    virtual bool ValidateInternal(const QVariant& v);
     virtual void FixupInternal(QVariant& v) const;
 };
 

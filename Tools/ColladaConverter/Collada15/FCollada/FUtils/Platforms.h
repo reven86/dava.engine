@@ -19,7 +19,7 @@
 #ifdef WIN32
 // Disable the "private member not available for export" warning,
 // because I don't feel like writing interfaces
-#pragma warning(disable:4251) 
+#pragma warning(disable : 4251) 
 #ifdef FCOLLADA_INTERNAL
 #define FCOLLADA_EXPORT __declspec(dllexport)
 #define FCOLLADA_LOCAL
@@ -57,9 +57,9 @@
 
 #ifdef WIN32
 
-#pragma warning(disable:4702)
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
+#pragma warning(disable : 4702)
+#ifndef _WIN32_WINNT // Allow use of features specific to Windows XP or later.                   
+#define _WIN32_WINNT 0x0501 // Change this to the appropriate value to target other versions of Windows.
 #endif
 
 #include <windows.h>
@@ -123,10 +123,45 @@ typedef uint8_t byte;
 #endif // PLATFORMS
 
 // Important functions that some OSes have missing!
-#if defined(__APPLE__) || defined (LINUX)
-inline char* strlower(char* str) { char* it = str; while (*it != 0) { *it = tolower(*it); ++it; } return str; }
-inline wchar_t* wcslwr(wchar_t* str) { wchar_t* it = str; while (*it != 0) { *it = towlower(*it); ++it; } return str; }
-inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 = *s2; while (c1 != 0 && c2 != 0) { if (c1 >= 'a' && c1 <= 'z') c1 -= 'a' + 'A'; if (c2 >= 'a' && c2 <= 'z') c2 -= 'a' + 'A'; if (c2 < c1) return -1; else if (c2 > c1) return 1; c1 = *(++s1); c2 = *(++s2); } return 0; }
+#if defined(__APPLE__) || defined(LINUX)
+inline char* strlower(char* str)
+{
+    char* it = str;
+    while (*it != 0)
+    {
+        *it = tolower(*it);
+        ++it;
+    }
+    return str;
+}
+inline wchar_t* wcslwr(wchar_t* str)
+{
+    wchar_t* it = str;
+    while (*it != 0)
+    {
+        *it = towlower(*it);
+        ++it;
+    }
+    return str;
+}
+inline int wcsicmp(const wchar_t* s1, const wchar_t* s2)
+{
+    wchar_t c1 = *s1, c2 = *s2;
+    while (c1 != 0 && c2 != 0)
+    {
+        if (c1 >= 'a' && c1 <= 'z')
+            c1 -= 'a' + 'A';
+        if (c2 >= 'a' && c2 <= 'z')
+            c2 -= 'a' + 'A';
+        if (c2 < c1)
+            return -1;
+        else if (c2 > c1)
+            return 1;
+        c1 = *(++s1);
+        c2 = *(++s2);
+    }
+    return 0;
+}
 #ifndef isinf
 #define isinf __isinff
 #endif
@@ -166,7 +201,7 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 #ifdef UNICODE
 
 	#define fchar wchar_t
-	#define FC(a) L ## a
+	#define FC(a) L##a
 
 	#define fstrlen wcslen
 	#define fstrcmp wcscmp
@@ -178,7 +213,7 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 	#define fstrup _wcsupr
 
 	#ifdef __PPU__
-		#define fstricmp wcscmp		// [claforte] TODO: Implement __PPU__ version of wcsicmp
+		#define fstricmp wcscmp // [claforte] TODO: Implement __PPU__ version of wcsicmp
 	#elif defined(WIN32)
 		#define fstricmp _wcsicmp
 	#else
@@ -199,7 +234,7 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 
 #else // UNICODE
 
-	typedef char fchar;
+typedef char fchar;
 	#define FC(a) a
 
 	#define fstrlen strlen

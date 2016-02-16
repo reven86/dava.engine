@@ -34,20 +34,19 @@
 
 namespace DAVA
 {
-
 class SceneSystem;
 class Component;
 class EventSystem
 {
 public:
-	enum eEventType
-	{
-		LOCAL_TRANSFORM_CHANGED = 0,
-		TRANSFORM_PARENT_CHANGED,
-		WORLD_TRANSFORM_CHANGED,
-		SWITCH_CHANGED,
-		START_PARTICLE_EFFECT,
-		STOP_PARTICLE_EFFECT,
+    enum eEventType
+    {
+        LOCAL_TRANSFORM_CHANGED = 0,
+        TRANSFORM_PARENT_CHANGED,
+        WORLD_TRANSFORM_CHANGED,
+        SWITCH_CHANGED,
+        START_PARTICLE_EFFECT,
+        STOP_PARTICLE_EFFECT,
         START_ANIMATION,
         STOP_ANIMATION,
         SPEED_TREE_MAX_ANIMATED_LOD_CHANGED,
@@ -58,19 +57,18 @@ public:
         ANIMATION_TRANSFORM_CHANGED,
         SNAP_TO_LANDSCAPE_HEIGHT_CHANGED,
 
-		EVENTS_COUNT
-	};
+        EVENTS_COUNT
+    };
 
-	void RegisterSystemForEvent(SceneSystem * system, uint32 event);
-	void UnregisterSystemForEvent(SceneSystem * system, uint32 event);
-	void NotifySystem(SceneSystem * system, Component * component, uint32 event);
-    void NotifyAllSystems(Component * component, uint32 event);
-    void GroupNotifyAllSystems(Vector<Component*> & components, uint32 event);
+    void RegisterSystemForEvent(SceneSystem* system, uint32 event);
+    void UnregisterSystemForEvent(SceneSystem* system, uint32 event);
+    void NotifySystem(SceneSystem* system, Component* component, uint32 event);
+    void NotifyAllSystems(Component* component, uint32 event);
+    void GroupNotifyAllSystems(Vector<Component*>& components, uint32 event);
 
 private:
-	Vector<SceneSystem*> registeredSystems[EVENTS_COUNT];
+    Vector<SceneSystem*> registeredSystems[EVENTS_COUNT];
 };
-
 }
 
 #endif //__DAVAENGINE_SCENE3D_EVENTSYSTEM_H__

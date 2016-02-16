@@ -12,28 +12,27 @@
 FUCriticalSection::FUCriticalSection()
 {
 #ifdef WIN32
-	InitializeCriticalSection(&criticalSection);
+    InitializeCriticalSection(&criticalSection);
 #endif
 }
 
 FUCriticalSection::~FUCriticalSection()
 {
 #ifdef WIN32
-	DeleteCriticalSection(&criticalSection);
+    DeleteCriticalSection(&criticalSection);
 #endif
 }
 
 void FUCriticalSection::Enter()
 {
 #ifdef WIN32
-	EnterCriticalSection(&criticalSection);
+    EnterCriticalSection(&criticalSection);
 #endif
 }
 
 void FUCriticalSection::Leave()
 {
 #ifdef WIN32
-	LeaveCriticalSection(&criticalSection);
+    LeaveCriticalSection(&criticalSection);
 #endif
 }
-

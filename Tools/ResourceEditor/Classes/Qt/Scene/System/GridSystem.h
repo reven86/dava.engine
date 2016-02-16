@@ -36,22 +36,20 @@
 #include "UI/UIEvent.h"
 #include "Base/Introspection.h"
 
-
 class SceneGridSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
-	SceneGridSystem(DAVA::Scene * scene);
-	~SceneGridSystem();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
+    SceneGridSystem(DAVA::Scene* scene);
+    ~SceneGridSystem();
+
+    virtual void Process(DAVA::float32 timeElapsed);
 
 protected:
-	void Draw();
+    void Draw();
 
-	void ProcessCommand(const Command2 *command, bool redo);
-	
+    void ProcessCommand(const Command2* command, bool redo);
 };
 
 #endif

@@ -32,10 +32,9 @@
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
-const int32 DEFAULT_TOUCH_TRESHOLD = 15;  // Default value for finger touch tresshold
+const int32 DEFAULT_TOUCH_TRESHOLD = 15; // Default value for finger touch tresshold
 
 UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
     : UIControl(rect)
@@ -50,8 +49,8 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
     , enableHorizontalScroll(true)
     , enableVerticalScroll(true)
 {
-	this->SetInputEnabled(true);
-	this->SetMultiInput(true);
+    this->SetInputEnabled(true);
+    this->SetMultiInput(true);
     SetFocusEnabled(false);
 }
 
@@ -61,14 +60,14 @@ UIScrollViewContainer::~UIScrollViewContainer()
 
 UIScrollViewContainer* UIScrollViewContainer::Clone()
 {
-	UIScrollViewContainer *t = new UIScrollViewContainer(GetRect());
-	t->CopyDataFrom(this);
-	return t;
+    UIScrollViewContainer* t = new UIScrollViewContainer(GetRect());
+    t->CopyDataFrom(this);
+    return t;
 }
-	
-void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
+
+void UIScrollViewContainer::CopyDataFrom(UIControl* srcControl)
 {
-	UIControl::CopyDataFrom(srcControl);
+    UIControl::CopyDataFrom(srcControl);
 }
 
 void UIScrollViewContainer::SetSize(const Vector2& size)
@@ -119,14 +118,14 @@ void UIScrollViewContainer::ApplySizeChanges()
 
 void UIScrollViewContainer::SetTouchTreshold(int32 holdDelta)
 {
-	touchTreshold = holdDelta;
+    touchTreshold = holdDelta;
 }
 int32 UIScrollViewContainer::GetTouchTreshold()
 {
-	return touchTreshold;
+    return touchTreshold;
 }
 
-void UIScrollViewContainer::Input(UIEvent *currentTouch)
+void UIScrollViewContainer::Input(UIEvent* currentTouch)
 {
     if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
@@ -168,26 +167,26 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
     }
 }
 
-bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
+bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
 {
-	if(!GetInputEnabled() || !visible || !visibleForUIEditor || (controlState & STATE_DISABLED))
-	{
-		return false;
-	}
+    if (!GetInputEnabled() || !visible || !visibleForUIEditor || (controlState & STATE_DISABLED))
+    {
+        return false;
+    }
 
-	if (currentTouch->touchLocker != this)
-	{
-		controlState |= STATE_DISABLED; //this funny code is written to fix bugs with calling Input() twice.
-	}
-	bool systemInput = UIControl::SystemInput(currentTouch);
+    if (currentTouch->touchLocker != this)
+    {
+        controlState |= STATE_DISABLED; //this funny code is written to fix bugs with calling Input() twice.
+    }
+    bool systemInput = UIControl::SystemInput(currentTouch);
     controlState &= ~STATE_DISABLED; //All this control must be reengeneried
 
-	if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
-	{
-		// Can't scroll - some child control already processed this input.
+    if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
+    {
+        // Can't scroll - some child control already processed this input.
         mainTouch = -1;
-		return systemInput;
-	}
+        return systemInput;
+    }
 
     if (currentTouch->phase == UIEvent::Phase::BEGAN && mainTouch == -1)
     {
@@ -205,17 +204,17 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
         if ((Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold) ||
             (Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold))
         {
-            UIScrollView *scrollView = DynamicTypeCheck<UIScrollView*>(this->GetParent());
+            UIScrollView* scrollView = DynamicTypeCheck<UIScrollView*>(this->GetParent());
             DVASSERT(scrollView);
-            if(enableHorizontalScroll
-               && Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold
-               && (!currentScroll || currentScroll == scrollView->GetHorizontalScroll()))
+            if (enableHorizontalScroll
+                && Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold
+                && (!currentScroll || currentScroll == scrollView->GetHorizontalScroll()))
             {
                 currentScroll = scrollView->GetHorizontalScroll();
             }
-            else if(enableVerticalScroll
-                    && (Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold)
-                    && (!currentScroll || currentScroll == scrollView->GetVerticalScroll()))
+            else if (enableVerticalScroll
+                     && (Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold)
+                     && (!currentScroll || currentScroll == scrollView->GetVerticalScroll()))
             {
                 currentScroll = scrollView->GetVerticalScroll();
             }
@@ -223,9 +222,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
             {
                 UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
             }
-			Input(currentTouch);
-		}
-	}
+            Input(currentTouch);
+        }
+    }
     else if (currentTouch->touchId == mainTouch && currentTouch->phase == UIEvent::Phase::ENDED)
     {
         Input(currentTouch);
@@ -246,16 +245,13 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 
 void UIScrollViewContainer::Update(float32 timeElapsed)
 {
+    UIScrollView* scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
+    if (scrollView)
+    {
+        Vector2 posDelta = newPos - oldPos;
+        oldPos = newPos;
 
-	
-	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
-	if (scrollView)
-	{
-	
-		Vector2 posDelta = newPos - oldPos;
-		oldPos = newPos;
-	
-		// Get scrolls positions and change scroll container relative position
+        // Get scrolls positions and change scroll container relative position
         if (enableHorizontalScroll)
         {
             if (scrollView->GetHorizontalScroll() == currentScroll)
@@ -323,7 +319,7 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
     }
 }
 
-void UIScrollViewContainer::InputCancelled( UIEvent *currentInput )
+void UIScrollViewContainer::InputCancelled(UIEvent* currentInput)
 {
     if (currentInput->touchId == mainTouch)
     {
@@ -336,7 +332,7 @@ void UIScrollViewContainer::WillDisappear()
 {
     mainTouch = -1;
     lockTouch = false;
-    UIScrollView *scrollView = dynamic_cast<UIScrollView*>(GetParent());
+    UIScrollView* scrollView = dynamic_cast<UIScrollView*>(GetParent());
     if (scrollView)
     {
         scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
@@ -344,5 +340,4 @@ void UIScrollViewContainer::WillDisappear()
     }
     state = STATE_NONE;
 }
-
 };

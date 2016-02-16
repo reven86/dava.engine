@@ -38,15 +38,15 @@ class DraggableDialog : public UIControl
 {
 protected:
     ~DraggableDialog();
-public:
-    
-    DraggableDialog(const Rect &rect);
-    
-	virtual void DidAppear(); 
-	virtual void DidDisappear();
 
-	virtual void Input(UIEvent *currentInput);
-    
+public:
+    DraggableDialog(const Rect& rect);
+
+    virtual void DidAppear();
+    virtual void DidDisappear();
+
+    virtual void Input(UIEvent* currentInput);
+
 protected:
     Vector2 originalPosition;
     Vector2 basePoint;

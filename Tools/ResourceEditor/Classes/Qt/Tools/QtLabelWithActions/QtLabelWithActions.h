@@ -34,34 +34,30 @@
 
 class QMenu;
 class QAction;
-class QtLabelWithActions: public QLabel
+class QtLabelWithActions : public QLabel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QtLabelWithActions(QWidget *parent = 0);
-	~QtLabelWithActions();
+    QtLabelWithActions(QWidget* parent = 0);
+    ~QtLabelWithActions();
 
-	void setMenu(QMenu *menu);
-	void setDefaultAction(QAction *action);
+    void setMenu(QMenu* menu);
+    void setDefaultAction(QAction* action);
 
-	void SetTextColor(const QColor &color);
+    void SetTextColor(const QColor& color);
 
 protected slots:
-	
-	void MenuTriggered(QAction *action);
 
-
-protected:
-
-	void mousePressEvent ( QMouseEvent * event );
-	void enterEvent(QEvent *event);
-	void leaveEvent(QEvent *event);
-
+    void MenuTriggered(QAction* action);
 
 protected:
+    void mousePressEvent(QMouseEvent* event);
+    void enterEvent(QEvent* event);
+    void leaveEvent(QEvent* event);
 
-	QMenu *menu;
+protected:
+    QMenu* menu;
 };
 
 #endif // __QT_LABEL_WITH_ACTIONS_H__

@@ -37,37 +37,34 @@
 
 #include <cstdlib>
 
-namespace DAVA 
+namespace DAVA
 {
-	
 template <class ITEM>
 class Allocator
 {
 public:
-	Allocator()
-	{
-	}
-	
-	~Allocator()
-	{
-	}
-	
-	ITEM * Alloc()
-	{
-		void * p = ::malloc(sizeof(ITEM));
-		//ITEM * item = new (p) ITEM;
-		return (ITEM*)p;
-	}
-	
-	void Dealloc(ITEM * node)
-	{
-		//node->~ITEM();
-		::free(node);
-	}
+    Allocator()
+    {
+    }
 
+    ~Allocator()
+    {
+    }
+
+    ITEM* Alloc()
+    {
+        void* p = ::malloc(sizeof(ITEM));
+        //ITEM * item = new (p) ITEM;
+        return (ITEM*)p;
+    }
+
+    void Dealloc(ITEM* node)
+    {
+        //node->~ITEM();
+        ::free(node);
+    }
 };
-	
-	
+
 /*template <class ITEM>
 class Allocator
 {
@@ -140,7 +137,6 @@ private:
 
 	AllocBlock * allocBlockList;
 };*/
-	
 };
 
 #endif // __DAVAENGINE_LIST_ALLOCATOR_H__

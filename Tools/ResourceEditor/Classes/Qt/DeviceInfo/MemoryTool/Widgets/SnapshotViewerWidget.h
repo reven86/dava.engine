@@ -57,4 +57,4 @@ private:
     QTreeView* branchTree = nullptr;
 };
 
-#endif  // __SNAPSHOTVIEWERWIDGET_H__
+#endif // __SNAPSHOTVIEWERWIDGET_H__

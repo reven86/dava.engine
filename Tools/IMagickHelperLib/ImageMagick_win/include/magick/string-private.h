@@ -24,55 +24,55 @@ extern "C" {
 
 #include <magick/locale_.h>
 
-static inline double SiPrefixToDoubleInterval(const char *string,
-  const double interval)
+static inline double SiPrefixToDoubleInterval(const char* string,
+                                              const double interval)
 {
-  char
-    *q;
+    char
+    * q;
 
-  double
+    double
     value;
 
-  value=InterpretSiPrefixValue(string,&q);
-  if (*q == '%')
-    value*=interval/100.0;
-  return(value);
+    value = InterpretSiPrefixValue(string, &q);
+    if (*q == '%')
+        value *= interval / 100.0;
+    return (value);
 }
 
-static inline double StringToDouble(const char *restrict string,
-  char **restrict sentinal)
+static inline double StringToDouble(const char* restrict string,
+                                    char** restrict sentinal)
 {
-  return(InterpretLocaleValue(string,sentinal));
+    return (InterpretLocaleValue(string, sentinal));
 }
 
-static inline double StringToDoubleInterval(const char *string,
-  const double interval)
+static inline double StringToDoubleInterval(const char* string,
+                                            const double interval)
 {
-  char
-    *q;
+    char
+    * q;
 
-  double
+    double
     value;
 
-  value=InterpretLocaleValue(string,&q);
-  if (*q == '%')
-    value*=interval/100.0;
-  return(value);
+    value = InterpretLocaleValue(string, &q);
+    if (*q == '%')
+        value *= interval / 100.0;
+    return (value);
 }
 
-static inline int StringToInteger(const char *restrict value)
+static inline int StringToInteger(const char* restrict value)
 {
-  return((int) strtol(value,(char **) NULL,10));
+    return ((int)strtol(value, (char**)NULL, 10));
 }
 
-static inline long StringToLong(const char *restrict value)
+static inline long StringToLong(const char* restrict value)
 {
-  return(strtol(value,(char **) NULL,10));
+    return (strtol(value, (char**)NULL, 10));
 }
 
-static inline unsigned long StringToUnsignedLong(const char *restrict value)
+static inline unsigned long StringToUnsignedLong(const char* restrict value)
 {
-  return(strtoul(value,(char **) NULL,10));
+    return (strtoul(value, (char**)NULL, 10));
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

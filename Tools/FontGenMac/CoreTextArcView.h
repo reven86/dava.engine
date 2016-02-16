@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  
  File: CoreTextArcView.h
@@ -81,66 +80,67 @@
 #import <Cocoa/Cocoa.h>
 #import "CharacterTablePanel.h"
 
-@interface CoreTextArcView : NSView {
+@interface CoreTextArcView : NSView
+{
 @private
-	NSFont *			_font;
-	NSString *			_string;
-	CGFloat				_radius;
+    NSFont* _font;
+    NSString* _string;
+    CGFloat _radius;
 
-	struct {
-		unsigned int	showsGlyphBounds:1;
-		unsigned int	showsLineMetrics:1;
-		unsigned int	dimsSubstitutedGlyphs:1;
-		unsigned int	reserved:28;
-	}					_flags;
+    struct
+    {
+        unsigned int showsGlyphBounds : 1;
+        unsigned int showsLineMetrics : 1;
+        unsigned int dimsSubstitutedGlyphs : 1;
+        unsigned int reserved : 28;
+    } _flags;
 
-	
-	NSString * symbolTable;
-	
-	CGFloat distanceTable[2048][2048];
-	CGFloat kerningTable[2048][2048];
-	CGFloat kerningBaseShift[2048];
-	signed char	fixedKerningTable[2048][2048];
-	int kerningPairCount;
-	Float32 defaultShiftValue;
-	Float32 fontAscent;
-	Float32 fontDescent;
-	Float32 fontLeading;
-	Float32 fontXHeight;
-	Float32 fontWidth;
-	Float32 fontHeight;
-	
-	CGContextRef symbolTableContext;
-	CGImageRef symbolTableImage;
-	
-	CGRect	symbolTypoBounds[2048];
-	CGRect  symbolBounds[2048];
+    NSString* symbolTable;
 
-	CGFloat maxSymbolWidth;
-	
-	float leftRightPadding;
-	float topBottomPadding;
-	float exportWidth;
-	float exportHeight;
-	
-	bool isPrecisionKerning; 
-	
-	BOOL enableShadow;
-	
-	IBOutlet CharacterTablePanel * characterTablePanel;
+    CGFloat distanceTable[2048][2048];
+    CGFloat kerningTable[2048][2048];
+    CGFloat kerningBaseShift[2048];
+    signed char fixedKerningTable[2048][2048];
+    int kerningPairCount;
+    Float32 defaultShiftValue;
+    Float32 fontAscent;
+    Float32 fontDescent;
+    Float32 fontLeading;
+    Float32 fontXHeight;
+    Float32 fontWidth;
+    Float32 fontHeight;
+
+    CGContextRef symbolTableContext;
+    CGImageRef symbolTableImage;
+
+    CGRect symbolTypoBounds[2048];
+    CGRect symbolBounds[2048];
+
+    CGFloat maxSymbolWidth;
+
+    float leftRightPadding;
+    float topBottomPadding;
+    float exportWidth;
+    float exportHeight;
+
+    bool isPrecisionKerning;
+
+    BOOL enableShadow;
+
+    IBOutlet CharacterTablePanel* characterTablePanel;
 }
 
-@property(retain, nonatomic) NSFont *font;
-@property(retain, nonatomic) NSString *string;
-@property(readonly, nonatomic) NSAttributedString *attributedString;
+@property(retain, nonatomic) NSFont* font;
+@property(retain, nonatomic) NSString* string;
+@property(readonly, nonatomic) NSAttributedString* attributedString;
 @property(assign, nonatomic) CGFloat radius;
 @property(nonatomic) BOOL showsGlyphBounds;
 @property(nonatomic) BOOL showsLineMetrics;
 @property(nonatomic) BOOL dimsSubstitutedGlyphs;
 @property(nonatomic) BOOL enableShadow;
 
-- (void) exportStringToContext:(NSString *) exportString context: (CGContextRef)context export: (bool) export;
-- (void) exportFontToFile;
-- (void) extractKerningValues;
-- (void) setSymbolTable: (NSString*)newSymbolTable;
+- (void)exportStringToContext:(NSString*)exportString context:(CGContextRef)context export:(bool) export;
+- (void)exportFontToFile;
+- (void)extractKerningValues;
+- (void)setSymbolTable:(NSString*)newSymbolTable;
 @end

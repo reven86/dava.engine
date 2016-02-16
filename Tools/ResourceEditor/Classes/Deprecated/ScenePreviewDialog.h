@@ -36,21 +36,20 @@
 
 using namespace DAVA;
 
-
-class ScenePreviewDialog: public ExtendedDialog
+class ScenePreviewDialog : public ExtendedDialog
 {
 public:
     ScenePreviewDialog();
     virtual ~ScenePreviewDialog();
-    
-    void Show(const FilePath &scenePathname);
+
+    void Show(const FilePath& scenePathname);
     void Close() override;
 
 protected:
     const Rect GetDialogRect() const override;
     void UpdateSize() override;
 
-    void OnClose(BaseObject *, void *, void *);
+    void OnClose(BaseObject*, void*, void*);
 
     ScopedPtr<ScenePreviewControl> preview;
     ScopedPtr<UIStaticText> errorMessage;

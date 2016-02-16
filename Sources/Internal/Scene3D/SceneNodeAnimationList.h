@@ -34,62 +34,55 @@
 #include "Scene3D/SceneNodeAnimation.h"
 #include "Base/EventDispatcher.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
 class SceneNodeAnimationList : public Entity
 {
 protected:
-	virtual ~SceneNodeAnimationList();
+    virtual ~SceneNodeAnimationList();
+
 public:
-	enum
-	{
-		ANIMATION_ENDED = 1,
-	};
-	
-	
-	SceneNodeAnimationList();
+    enum
+    {
+        ANIMATION_ENDED = 1,
+    };
 
-	void AddAnimation(SceneNodeAnimation * node);
-	
-	// stop animation at the current moment
-	void StopAnimation();
-	
-	// cycle animation
-	void CycleAnimation();
-	void Execute(float32 fadeInTime = 0.0f, float32 fadeOutTime = 0.0f, float32 timeFactor = 1.0f);
-	void BlendTo(SceneNodeAnimationList * next, float32 blendTime, float32 timeFactor = 1.0f);
+    SceneNodeAnimationList();
 
-	SceneNodeAnimation * GetNode(const FastName & name);
-		
-	void Update(float32 timeElapsed);
-	
-	float32 GetDuration();
-	float32 GetCurrentTime();
-	
-	void SetWeight(float32 weight);
-	
+    void AddAnimation(SceneNodeAnimation* node);
 
-	
-//private:	
-	bool	isDestination;
-	bool	active;
-	bool	cycled;
-	float32 fadeInTime;
-	float32 fadeOutTime;
-	float32 timeFactor;
-	float32 currentTime;
-	float32 duration;							// in seconds
-	SceneNodeAnimationList * blendTo;
-	float32 blendTime;
-	Vector<SceneNodeAnimation*> animations;		// animations for all nodes
-	
-	
-	IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
+    // stop animation at the current moment
+    void StopAnimation();
+
+    // cycle animation
+    void CycleAnimation();
+    void Execute(float32 fadeInTime = 0.0f, float32 fadeOutTime = 0.0f, float32 timeFactor = 1.0f);
+    void BlendTo(SceneNodeAnimationList* next, float32 blendTime, float32 timeFactor = 1.0f);
+
+    SceneNodeAnimation* GetNode(const FastName& name);
+
+    void Update(float32 timeElapsed);
+
+    float32 GetDuration();
+    float32 GetCurrentTime();
+
+    void SetWeight(float32 weight);
+
+    //private:
+    bool isDestination;
+    bool active;
+    bool cycled;
+    float32 fadeInTime;
+    float32 fadeOutTime;
+    float32 timeFactor;
+    float32 currentTime;
+    float32 duration; // in seconds
+    SceneNodeAnimationList* blendTo;
+    float32 blendTime;
+    Vector<SceneNodeAnimation*> animations; // animations for all nodes
+
+    IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
 };
-	
-	
-
 };
 
 #endif // __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__

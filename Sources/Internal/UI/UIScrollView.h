@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class UIScrollViewContainer;
 class ScrollHelper;
 
@@ -49,17 +48,17 @@ protected:
     virtual ~UIScrollView();
 
 public:
-	virtual void AddControl(UIControl *control);
-    virtual void RemoveControl(UIControl *control);
-    
-	// Add the control directly to the Scroll View Container.
-	void AddControlToContainer(UIControl* control);
+    virtual void AddControl(UIControl* control);
+    virtual void RemoveControl(UIControl* control);
 
-	// Access to the Scroll View Container.
-	UIScrollViewContainer* GetContainer();
-	ScrollHelper* GetHorizontalScroll();
-	ScrollHelper* GetVerticalScroll();
-	
+    // Add the control directly to the Scroll View Container.
+    void AddControlToContainer(UIControl* control);
+
+    // Access to the Scroll View Container.
+    UIScrollViewContainer* GetContainer();
+    ScrollHelper* GetHorizontalScroll();
+    ScrollHelper* GetVerticalScroll();
+
     // Scroll Position getter/setters.
     float32 GetHorizontalScrollPosition() const;
     float32 GetVerticalScrollPosition() const;
@@ -93,12 +92,12 @@ public:
 
     // UIScrollBarDelegate implementation.
     virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
-    virtual float32 ViewPosition(UIScrollBar *forScrollBar);
-    virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
+    virtual float32 TotalAreaSize(UIScrollBar* forScrollBar);
+    virtual float32 ViewPosition(UIScrollBar* forScrollBar);
+    virtual void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition);
     void OnScrollViewContainerSizeChanged();
 
-    virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
+    virtual const String GetDelegateControlPath(const UIControl* rootControl) const;
 
     bool IsAutoUpdate() const;
     void SetAutoUpdate(bool auto_);
@@ -107,26 +106,26 @@ public:
     void SetCenterContent(bool center_);
 
 protected:
-	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual void LoadFromYamlNodeCompleted();
-	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
 
-	Vector2 GetMaxSize(UIControl *control, Vector2 currentMaxSize, Vector2 parentShift);	
-	void PushContentToBounds(UIControl *control);
-	Vector2 GetControlOffset(UIControl *control, Vector2 currentContentOffset);
+    Vector2 GetMaxSize(UIControl* control, Vector2 currentMaxSize, Vector2 parentShift);
+    void PushContentToBounds(UIControl* control);
+    Vector2 GetControlOffset(UIControl* control, Vector2 currentContentOffset);
 
-	// Get the X or Y parameter from the vector depending on the scrollbar orientation.
-	float32 GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam);
+    // Get the X or Y parameter from the vector depending on the scrollbar orientation.
+    float32 GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam);
 
-	UIScrollViewContainer *scrollContainer;
-	ScrollHelper *scrollHorizontal;
-	ScrollHelper *scrollVertical;
+    UIScrollViewContainer* scrollContainer;
+    ScrollHelper* scrollHorizontal;
+    ScrollHelper* scrollVertical;
 
     bool autoUpdate;
     bool centerContent;
 
 private:
-	void FindRequiredControls();
+    void FindRequiredControls();
 
 public:
     INTROSPECTION_EXTEND(UIScrollView, UIControl,

@@ -44,7 +44,7 @@ class Command2;
 
 using namespace DAVA;
 
-class LandscapeEditorDrawSystem: public DAVA::SceneSystem
+class LandscapeEditorDrawSystem : public DAVA::SceneSystem
 {
 public:
     enum eErrorType
@@ -70,12 +70,12 @@ public:
     eErrorType EnableCustomDraw();
     void DisableCustomDraw();
 
-	eErrorType EnableTilemaskEditing();
-	void DisableTilemaskEditing();
+    eErrorType EnableTilemaskEditing();
+    void DisableTilemaskEditing();
 
-	bool IsNotPassableTerrainEnabled();
-	eErrorType EnableNotPassableTerrain();
-	void DisableNotPassableTerrain();
+    bool IsNotPassableTerrainEnabled();
+    eErrorType EnableNotPassableTerrain();
+    void DisableNotPassableTerrain();
 
     void EnableCursor();
     void DisableCursor();
@@ -85,7 +85,7 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const Command2 *command, bool redo);
+    void ProcessCommand(const Command2* command, bool redo);
 
     float32 GetTextureSize(const FastName& level);
     Vector3 GetLandscapeSize();
@@ -124,12 +124,12 @@ public:
 private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
-    
+
     eErrorType InitLandscape(Entity* landscapeEntity, Landscape* landscape);
     void DeinitLandscape();
-    
+
     eErrorType IsNotPassableTerrainCanBeEnabled();
-    
+
     bool UpdateTilemaskPathname();
 
 private:

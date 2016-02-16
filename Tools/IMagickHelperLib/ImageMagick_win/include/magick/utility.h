@@ -24,50 +24,52 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedPath,
-  MagickPath,
-  RootPath,
-  HeadPath,
-  TailPath,
-  BasePath,
-  ExtensionPath,
-  SubimagePath,
-  CanonicalPath
+    UndefinedPath,
+    MagickPath,
+    RootPath,
+    HeadPath,
+    TailPath,
+    BasePath,
+    ExtensionPath,
+    SubimagePath,
+    CanonicalPath
 } PathType;
 
 extern MagickExport char
-  *Base64Encode(const unsigned char *,const size_t,size_t *),
-  **GetPathComponents(const char *,size_t *),
-  **ListFiles(const char *,const char *,size_t *);
+*
+Base64Encode(const unsigned char *, const size_t, size_t *),
+**GetPathComponents(const char *, size_t *),
+**ListFiles(const char *, const char *, size_t *);
 
 extern MagickExport int
-  SystemCommand(const MagickBooleanType,const MagickBooleanType,const char *,
-    ExceptionInfo *);
+SystemCommand(const MagickBooleanType, const MagickBooleanType, const char*,
+              ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  AcquireUniqueFilename(char *),
-  AcquireUniqueSymbolicLink(const char *,char *),
-  ExpandFilenames(int *,char ***),
-  GetPathAttributes(const char *,void *),
-  GetExecutionPath(char *,const size_t),
-  IsMagickTrue(const char *),
-  IsPathAccessible(const char *);
+AcquireUniqueFilename(char *),
+AcquireUniqueSymbolicLink(const char *, char *),
+ExpandFilenames(int *, char ***),
+GetPathAttributes(const char *, void *),
+GetExecutionPath(char *, const size_t),
+IsMagickTrue(const char *),
+IsPathAccessible(const char *);
 
 extern MagickExport size_t
-  MultilineCensus(const char *);
+MultilineCensus(const char*);
 
 extern MagickExport ssize_t
-  GetMagickPageSize(void);
+GetMagickPageSize(void);
 
 extern MagickExport unsigned char
-  *Base64Decode(const char *, size_t *);
+*
+Base64Decode(const char*, size_t*);
 
 extern MagickExport void
-  AppendImageFormat(const char *,char *),
-  ChopPathComponents(char *,const size_t),
-  ExpandFilename(char *),
-  GetPathComponent(const char *,PathType,char *),
-  MagickDelay(const MagickSizeType);
+AppendImageFormat(const char *, char *),
+ChopPathComponents(char *, const size_t),
+ExpandFilename(char *),
+GetPathComponent(const char *, PathType, char *),
+MagickDelay(const MagickSizeType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

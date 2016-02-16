@@ -34,7 +34,7 @@
 #include "TextureCompression/TextureConverter.h"
 
 class SceneExporter;
-class SceneExporterTool: public CommandLineTool
+class SceneExporterTool : public CommandLineTool
 {
     enum eAction : DAVA::int8
     {

@@ -34,8 +34,9 @@
 #include <QModelIndex>
 #include <memory>
 
-namespace Ui {
-    class FileSystemDockWidget;
+namespace Ui
+{
+class FileSystemDockWidget;
 }
 
 class QFileSystemModel;
@@ -45,20 +46,20 @@ class QItemSelection;
 class FileSystemDockWidget : public QDockWidget
 {
     Q_OBJECT
-    
+
 public:
     explicit FileSystemDockWidget(QWidget* parent = nullptr);
     ~FileSystemDockWidget();
 
-    void SetProjectDir(const QString &path);
+    void SetProjectDir(const QString& path);
 
 signals:
-    void OpenPackageFile(const QString &path);
+    void OpenPackageFile(const QString& path);
 
 private slots:
-    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-    void onDoubleClicked(const QModelIndex &index);
-    void setFilterFixedString(const QString &filterStr);
+    void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    void onDoubleClicked(const QModelIndex& index);
+    void setFilterFixedString(const QString& filterStr);
     void onNewFolder();
     void onNewFile();
     void onDeleteFile();

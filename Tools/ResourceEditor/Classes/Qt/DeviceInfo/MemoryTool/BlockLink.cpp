@@ -39,21 +39,20 @@ using namespace DAVA;
 
 namespace
 {
-
 // Helper template functions to return pointer from reference or pointer
-template<typename T>
+template <typename T>
 T* ToPointer(T& ref)
 {
     return &ref;
 }
 
-template<typename T>
+template <typename T>
 T* ToPointer(T* ptr)
 {
     return ptr;
 }
 
-template<typename T>
+template <typename T>
 BlockLink CreateBlockLinkT(const Vector<T>& blocks, const MemorySnapshot* snapshot)
 {
     // Memory blocks should be sorted by orderNo in ascending order
@@ -81,7 +80,7 @@ BlockLink CreateBlockLinkT(const Vector<T>& blocks, const MemorySnapshot* snapsh
     return link;
 }
 
-template<typename T>
+template <typename T>
 BlockLink CreateBlockLinkT(const Vector<T>& blocks1, const MemorySnapshot* snapshot1, const Vector<T>& blocks2, const MemorySnapshot* snapshot2)
 {
     // Memory blocks should be sorted by orderNo in ascending order
@@ -147,7 +146,7 @@ BlockLink CreateBlockLinkT(const Vector<T>& blocks1, const MemorySnapshot* snaps
     return link;
 }
 
-}   // unnamed namespace
+} // unnamed namespace
 
 BlockLink::BlockLink()
 {
@@ -172,7 +171,7 @@ BlockLink::BlockLink(BlockLink&& other)
     other.linkCount = 0;
 }
 
-BlockLink& BlockLink::operator = (BlockLink&& other)
+BlockLink& BlockLink::operator=(BlockLink&& other)
 {
     if (this != &other)
     {
