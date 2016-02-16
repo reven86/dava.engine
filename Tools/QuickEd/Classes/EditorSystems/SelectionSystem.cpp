@@ -152,7 +152,7 @@ void SelectionSystem::FocusToChild(bool next)
     }
     PackageBaseNode* nextNode = nullptr;
     Vector<PackageBaseNode*> allNodes;
-    systemManager->CollectControlNodes(std::back_inserter(allNodes), [](const UIControl*) { return true; });
+    systemManager->CollectControlNodes(std::back_inserter(allNodes), [](const ControlNode*) { return true; });
     if (allNodes.empty())
     {
         return;
