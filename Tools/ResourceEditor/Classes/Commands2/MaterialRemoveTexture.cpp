@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,46 +26,41 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Core/Core.h"
-#include "Core/PerformanceSettings.h"
-#include "FileSystem/KeyedArchive.h"
-#include "Render/RHI/rhi_Type.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "MaterialRemoveTexture.h"
 
-#include "GameCore.h"
-#include "Version.h"
+#include "Debug/DVAssert.h"
+#include "Base/FastName.h"
+#include "Render/Material/NMaterial.h"
 
-void FrameworkDidLaunched()
+MaterialRemoveTexture::MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_)
+    : Command2(CMDID_MATERIAL_REMOVE_TEXTURE, "Remove invalid texture from material")
 {
-    DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
+    DVASSERT(material_ != nullptr);
+    DVASSERT(textureSlot_.IsValid());
+    DVASSERT(material_->HasLocalTexture(textureSlot_));
 
-    appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
-
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
-
-    appOptions->SetInt32("max_index_buffer_count", 8192);
-    appOptions->SetInt32("max_vertex_buffer_count", 8192);
-    appOptions->SetInt32("max_const_buffer_count", 32767);
-    appOptions->SetInt32("max_texture_count", 2048);
-
-    appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
-
-    GameCore* core = new GameCore();
-    DAVA::Core::SetApplicationCore(core);
-    DAVA::Core::Instance()->SetOptions(appOptions);
-    DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
-    DAVA::PerformanceSettings::Instance()->SetPsPerformanceMinFPS(5.0f);
-    DAVA::PerformanceSettings::Instance()->SetPsPerformanceMaxFPS(10.0f);
-
-    SafeRelease(appOptions);
+    textureSlot = textureSlot_;
+    material = DAVA::SafeRetain(material_);
+    texture = DAVA::SafeRetain(material->GetLocalTexture(textureSlot));
 }
 
-void FrameworkWillTerminate()
+MaterialRemoveTexture::~MaterialRemoveTexture()
 {
-    VisibilityCheckSystem::ReleaseCubemapRenderTargets();
+    DAVA::SafeRelease(texture);
+    DAVA::SafeRelease(material);
+}
+
+void MaterialRemoveTexture::Undo()
+{
+    material->AddTexture(textureSlot, texture);
+}
+
+void MaterialRemoveTexture::Redo()
+{
+    material->RemoveTexture(textureSlot);
+}
+
+DAVA::Entity* MaterialRemoveTexture::GetEntity() const
+{
+    return nullptr;
 }
