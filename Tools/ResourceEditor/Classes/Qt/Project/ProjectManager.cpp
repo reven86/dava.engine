@@ -85,7 +85,7 @@ const QVector<ProjectManager::AvailableMaterialQuality>* ProjectManager::GetAvai
 FilePath ProjectManager::ProjectOpenDialog() const
 {
     QString newPathStr = FileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
-    if(!newPathStr.isEmpty())
+    if (!newPathStr.isEmpty())
     {
         FilePath path = FilePath(PathnameToDAVAStyle(newPathStr));
         path.MakeDirectoryPathname();
@@ -126,13 +126,12 @@ void ProjectManager::OpenProject(const FilePath& incomePath)
                 UpdateParticleSprites();
             }
 
-
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
             emit ProjectOpened(projectPath.GetAbsolutePathname().c_str());
         }
-	}
+    }
 }
 
 void ProjectManager::UpdateParticleSprites()
@@ -166,9 +165,9 @@ void ProjectManager::CloseProject()
 
         SettingsManager::ResetPerProjectSettings();
         SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(DAVA::FilePath())); // reset last project path
-        
+
         emit ProjectClosed();
-	}
+    }
 }
 
 void ProjectManager::OnSceneViewInitialized()
@@ -191,19 +190,19 @@ void ProjectManager::LoadMaterialsSettings()
     if (FileSystem::Instance()->Exists(materialsListPath))
     {
         ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
-        DAVA::YamlNode *rootNode = parser->GetRootNode();
+        DAVA::YamlNode* rootNode = parser->GetRootNode();
 
         if (nullptr != rootNode)
         {
             DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
 
-            for(uint32 i = 0; i < rootNode->GetCount(); ++i)
+            for (uint32 i = 0; i < rootNode->GetCount(); ++i)
             {
-                const DAVA::YamlNode *templateNode = rootNode->Get(i);
+                const DAVA::YamlNode* templateNode = rootNode->Get(i);
                 if (nullptr != templateNode)
                 {
-                    const DAVA::YamlNode *name = templateNode->Get("name");
-                    const DAVA::YamlNode *path = templateNode->Get("path");
+                    const DAVA::YamlNode* name = templateNode->Get("name");
+                    const DAVA::YamlNode* path = templateNode->Get("path");
 
                     if (nullptr != name && nullptr != path &&
                         name->GetType() == DAVA::YamlNode::TYPE_STRING &&
@@ -241,4 +240,16 @@ void ProjectManager::UpdateInternalValues()
         particlesDataPath = projectPath + "Data/Gfx/Particles/";
         workspacePath = "~doc:/ResourceEditor/" + projectPath.GetLastDirectoryName() + "/";
     }
+}
+
+DAVA::FilePath ProjectManager::CreateProjectPathFromPath(const DAVA::FilePath& pathname)
+{
+    DAVA::String fullPath = pathname.GetAbsolutePathname();
+    DAVA::String::size_type pos = fullPath.find("/Data");
+    if (pos != DAVA::String::npos)
+    {
+        return fullPath.substr(0, pos + 1);
+    }
+
+    return DAVA::FilePath();
 }

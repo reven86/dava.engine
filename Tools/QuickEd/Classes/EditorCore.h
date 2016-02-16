@@ -42,24 +42,26 @@ class DocumentGroup;
 class Project;
 class PackageNode;
 class SpritesPacker;
+class QFileSystemWatcher;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:
-    explicit EditorCore(QObject *parent = nullptr);
+    explicit EditorCore(QObject* parent = nullptr);
     ~EditorCore();
     MainWindow* GetMainWindow() const;
-    Project *GetProject() const;
+    Project* GetProject() const;
     SpritesPacker* GetSpritesPacker() const;
-
     void Start();
 
-protected slots:
+private slots:
     void OnReloadSprites();
-    void OnCleanChanged(bool clean);
-    void OnOpenPackageFile(const QString &path);
-    void OnProjectPathChanged(const QString &path);
+    void OnFilesChanged(const QStringList& changedFiles);
+    void OnFilesRemoved(const QStringList& removedFiles);
+
+    void OnOpenPackageFile(const QString& path);
+    void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
 
     bool CloseAllDocuments();
@@ -68,23 +70,28 @@ protected slots:
     void SaveAllDocuments();
 
     void Exit();
-    void RecentMenu(QAction *);
+    void RecentMenu(QAction*);
     void OnCurrentTabChanged(int index);
-    
-    void UpdateLanguage();
-   
-    void OnRtlChanged(bool isRtl);
-    void OnGlobalStyleClassesChanged(const QString &classesStr);
 
-protected:
-    void OpenProject(const QString &path);
-    bool CloseProject();
-    int CreateDocument(PackageNode *package);
-    void SaveDocument(Document *document);
+    void UpdateLanguage();
+
+    void OnRtlChanged(bool isRtl);
+    void OnBiDiSupportChanged(bool support);
+    void OnGlobalStyleClassesChanged(const QString& classesStr);
+
+    void OnApplicationStateChanged(Qt::ApplicationState state);
+    void OnFileChanged(const QString& path);
 
 private:
+    void ApplyFileChanges();
+    Document* GetDocument(const QString& path) const;
+    void OpenProject(const QString& path);
+    bool CloseProject();
+    int CreateDocument(int index, PackageNode* package);
+    void SaveDocument(Document* document);
+
     void CloseDocument(int index);
-    int GetIndexByPackagePath(const QString &fileName) const;
+    int GetIndexByPackagePath(const DAVA::FilePath& davaPath) const;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
@@ -92,9 +99,11 @@ private:
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
     DAVA::UIControl* rootControl = nullptr;
+    QFileSystemWatcher* fileSystemWatcher = nullptr;
+    QSet<QString> changedFiles;
 };
 
-inline EditorFontSystem *GetEditorFontSystem()
+inline EditorFontSystem* GetEditorFontSystem()
 {
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
 }

@@ -44,7 +44,6 @@
 #include "UI/mainwindow.h"
 #include "Project/Project.h"
 
-
 /* 
 	Project folders structure:
 	
@@ -105,36 +104,42 @@ const QString PROJECT_TITLE = "QuickEd";
 const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
 
 //Available fonts extensions
-const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
-
+const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
+                                                           << "*.otf"
+                                                           << "*.fon"
+                                                           << "*.fnt"
+                                                           << "*.def"
+                                                           << "*.df");
 }
 QString ResourcesManageHelper::projectTitle;
 
 QString ResourcesManageHelper::projectPath;
 
 QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
-{	
+{
     QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
-									: QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
+                                      :
+                                      QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     fontPath += resourceFileName;
-	
-    return fontPath;    
+
+    return fontPath;
 }
 
 QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
 {
     QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
-									: QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
+                                      :
+                                      QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     fontPath += resourceFileName;
-	
+
     return fontPath;
 }
 
 bool ResourcesManageHelper::ValidateResourcePath(const QString& resourcePath)
 {
-	const QString& resourceFolder = GetResourceRootDirectory();
-	// Check if given resource is located inside resource folder
-	return resourcePath.contains(resourceFolder);
+    const QString& resourceFolder = GetResourceRootDirectory();
+    // Check if given resource is located inside resource folder
+    return resourcePath.contains(resourceFolder);
 }
 
 QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
@@ -146,45 +151,45 @@ QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
         Texture* fontTexture = gFont->GetTexture();
         if (fontTexture)
         {
-			// Save graphics font sprite path
+            // Save graphics font sprite path
             return QString::fromStdString(fontTexture->GetPathname().GetAbsolutePathname());
         }
     }
 
-	return QString();
+    return QString();
 }
 
 QString ResourcesManageHelper::GetDefaultSpritesPath(const QString& currentSpritePath)
 {
-	// If sprite is already set - we should use its directory as default for file dialog
-	if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
-	{
-		FilePath spriteAbsolutePath(currentSpritePath.toStdString() + ".txt");
-		QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
-		return fileInfo.absoluteDir().absolutePath();
-	}
+    // If sprite is already set - we should use its directory as default for file dialog
+    if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
+    {
+        FilePath spriteAbsolutePath(currentSpritePath.toStdString() + ".txt");
+        QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
+        return fileInfo.absoluteDir().absolutePath();
+    }
 
-	return GetSpritesDirectory();
+    return GetSpritesDirectory();
 }
 
 QString ResourcesManageHelper::GetDefaultFontSpritesPath(const QString& currentSpritePath)
 {
-	// If sprite is already set - we should use its directory as default for file dialog
-	if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
-	{
-		FilePath spriteAbsolutePath(currentSpritePath.toStdString());
-		QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
-		return fileInfo.absoluteDir().absolutePath();
-	}
-	
-	return GetFontSpritesDirectory();
+    // If sprite is already set - we should use its directory as default for file dialog
+    if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
+    {
+        FilePath spriteAbsolutePath(currentSpritePath.toStdString());
+        QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
+        return fileInfo.absoluteDir().absolutePath();
+    }
+
+    return GetFontSpritesDirectory();
 }
 
 QString ResourcesManageHelper::GetResourceRelativePath(const QString& resourceAbsolutePath, bool keepFileExtension)
 {
     QFileInfo fileInfo(resourceAbsolutePath);
     QString processedResourcePath = resourceAbsolutePath;
-    
+
     if (fileInfo.exists())
     {
         //We should keep file extension if needed
@@ -196,12 +201,12 @@ QString ResourcesManageHelper::GetResourceRelativePath(const QString& resourceAb
             QString resourceExtension = QString(".%1").arg(fileInfo.suffix());
             processedResourcePath = TruncateFileExtension(resourceAbsolutePath, resourceExtension);
         }
-		//Convert absolute path to relative one, if possible.
+        //Convert absolute path to relative one, if possible.
         const QString& resourceFolder = GetResourceRootDirectory();
         if (processedResourcePath.startsWith(resourceFolder, Qt::CaseInsensitive))
         {
-        	processedResourcePath.replace(resourceFolder, RES_HEADER, Qt::CaseInsensitive);
-		}
+            processedResourcePath.replace(resourceFolder, RES_HEADER, Qt::CaseInsensitive);
+        }
     }
 
     return processedResourcePath;
@@ -210,38 +215,38 @@ QString ResourcesManageHelper::GetResourceRelativePath(const QString& resourceAb
 QStringList ResourcesManageHelper::GetFontsList()
 {
     QStringList filesNamesList;
-	// Get true type fonts
+    // Get true type fonts
     // Get absoulute path
     QString fontsPath = QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     QDir dir(fontsPath);
     // Get the list of files in fonts directory - both true type fonts and graphics fonts
     filesNamesList = dir.entryList(FONTS_EXTENSIONS_FILTER, QDir::Files);
-	fontsPath.clear();
+    fontsPath.clear();
     return filesNamesList;
 }
 
 void ResourcesManageHelper::InitInternalResources()
 {
-	// Save project default title
-    if(DAVA::Core::Instance())
+    // Save project default title
+    if (DAVA::Core::Instance())
     {
-        DAVA::KeyedArchive *options = DAVA::Core::Instance()->GetOptions();
-        if(options)
+        DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
+        if (options)
         {
-			projectTitle = options->GetString("title", PROJECT_TITLE.toStdString()).c_str();
+            projectTitle = options->GetString("title", PROJECT_TITLE.toStdString()).c_str();
         }
     }
-	// If project name wasn't set - create default name
-	if (projectTitle.isNull() || projectTitle.isEmpty())
-		projectTitle = PROJECT_TITLE;
+    // If project name wasn't set - create default name
+    if (projectTitle.isNull() || projectTitle.isEmpty())
+        projectTitle = PROJECT_TITLE;
 }
 
 QString ResourcesManageHelper::GetDocumentationPath()
 {
-	return DOCUMENTATION_PATH;
+    return DOCUMENTATION_PATH;
 }
 
-void ResourcesManageHelper::SetProjectPath(const QString &path)
+void ResourcesManageHelper::SetProjectPath(const QString& path)
 {
     projectPath = path;
 }
@@ -253,88 +258,88 @@ QString ResourcesManageHelper::GetProjectPath()
 
 QString ResourcesManageHelper::GetProjectTitle()
 {
-	// Set default project title
-	QString projectTitleString = projectTitle;
-	// Get active project path
-	QString projectPath = GetProjectPath();
-	if (!projectPath.isNull() && !projectPath.isEmpty())
-	{
-		projectTitleString = GetProjectTitle(GetProjectFilePath(projectPath));
-	}
+    // Set default project title
+    QString projectTitleString = projectTitle;
+    // Get active project path
+    QString projectPath = GetProjectPath();
+    if (!projectPath.isNull() && !projectPath.isEmpty())
+    {
+        projectTitleString = GetProjectTitle(GetProjectFilePath(projectPath));
+    }
 
-	return projectTitleString;
+    return projectTitleString;
 }
 
 QString ResourcesManageHelper::GetProjectTitle(const QString& projectFilePath)
 {
-	return QString("%1 | Project %2").arg(projectTitle).arg(projectFilePath);
+    return QString("%1 | Project %2").arg(projectTitle).arg(projectFilePath);
 }
 
 QString ResourcesManageHelper::GetDefaultDirectory()
 {
-	QString defaultDir = QString::fromStdString(EditorSettings::Instance()->GetProjectPath());
-	//If default directory path is not available in project settings - use current working path
-	if ( defaultDir.isNull() || defaultDir.isEmpty() )
-	{
-  		defaultDir = QDir::currentPath();
-	}
-	return defaultDir;
+    QString defaultDir = QString::fromStdString(EditorSettings::Instance()->GetProjectPath());
+    //If default directory path is not available in project settings - use current working path
+    if (defaultDir.isNull() || defaultDir.isEmpty())
+    {
+        defaultDir = QDir::currentPath();
+    }
+    return defaultDir;
 }
 
 QString ResourcesManageHelper::GetResourceRootDirectory()
 {
-	QString projectPath = GetProjectPath();
-	if (projectPath.isNull() || projectPath.isEmpty())
-	{
-		return QString();
-	}
-	return GetDataPath(projectPath);
+    QString projectPath = GetProjectPath();
+    if (projectPath.isNull() || projectPath.isEmpty())
+    {
+        return QString();
+    }
+    return GetDataPath(projectPath);
 }
 
 QString ResourcesManageHelper::GetResourceFolder(const QString& resourcePath)
 {
-	QString projectPath = GetProjectPath();
-	if (projectPath.isNull() || projectPath.isEmpty())
-	{
-		return QString();
-	}
-	return QString(resourcePath).arg(projectPath);
+    QString projectPath = GetProjectPath();
+    if (projectPath.isNull() || projectPath.isEmpty())
+    {
+        return QString();
+    }
+    return QString(resourcePath).arg(projectPath);
 }
 
 QString ResourcesManageHelper::GetSpritesDirectory()
 {
-	return GetResourceFolder(PROJECT_DATA_GFX);
+    return GetResourceFolder(PROJECT_DATA_GFX);
 }
 
 QString ResourcesManageHelper::GetFontSpritesDirectory()
 {
-	return GetResourceFolder(PROJECT_DATA_GRAPHICS_FONTS);
+    return GetResourceFolder(PROJECT_DATA_GRAPHICS_FONTS);
 }
 
 QString ResourcesManageHelper::GetFontSpritesDatasourceDirectory()
 {
-	return GetResourceFolder(PROJECT_DATASOURCE_GRAPHICS_FONTS);
+    return GetResourceFolder(PROJECT_DATASOURCE_GRAPHICS_FONTS);
 }
 
 QString ResourcesManageHelper::GetDataPath(const QString& projectPath)
 {
-	return QString(PROJECT_DATA).arg(projectPath);
+    return QString(PROJECT_DATA).arg(projectPath);
 }
 
 QString ResourcesManageHelper::GetPlatformRootPath(const QString& projectPath)
 {
-	return QString(PROJECT_PLATFORM_PATH).arg(projectPath);
+    return QString(PROJECT_PLATFORM_PATH).arg(projectPath);
 }
-	
+
 QString ResourcesManageHelper::GetProjectFilePath(const QString& projectPath)
-{	
-	return QString(PROJECT_FILE_PATH).arg(projectPath);
+{
+    return QString(PROJECT_FILE_PATH).arg(projectPath);
 }
 
 void ResourcesManageHelper::ShowErrorMessage(const QString& messageParam)
 {
-	QMessageBox messageBox;
-	messageBox.setText(QString(RES_WRONG_LOCATION_ERROR_MESSAGE).arg(messageParam));
-	messageBox.setStandardButtons(QMessageBox::Ok);
-	messageBox.exec();
+    QMessageBox messageBox;
+    messageBox.setText(QString(RES_WRONG_LOCATION_ERROR_MESSAGE).arg(messageParam));
+    messageBox.setStandardButtons(QMessageBox::Ok);
+    messageBox.exec();
 }

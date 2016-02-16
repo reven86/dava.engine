@@ -42,11 +42,16 @@
 
 #include "Document.h"
 
+#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/HUDSystem.h"
+#include "Ruler/RulerWidget.h"
+#include "Ruler/RulerController.h"
+
 using namespace DAVA;
 
 namespace
 {
-QString ScaleStringFromInt(qreal scale)
+QString ScaleStringFromReal(qreal scale)
 {
     return QString("%1 %").arg(static_cast<int>(scale * 100.0f + 0.5f));
 }
@@ -60,36 +65,45 @@ struct PreviewContext : WidgetContext
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
+    , rulerController(new RulerController(this))
 {
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     setupUi(this);
+
+    connect(this, &PreviewWidget::ScaleChanged, rulerController, &RulerController::SetScale);
+    connect(rulerController, &RulerController::HorisontalRulerSettingsChanged, horizontalRuler, &RulerWidget::OnRulerSettingsChanged);
+    connect(rulerController, &RulerController::VerticalRulerSettingsChanged, verticalRuler, &RulerWidget::OnRulerSettingsChanged);
+
+    connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
+    connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
+
+    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
+
+    verticalRuler->SetRulerOrientation(Qt::Vertical);
     davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
     davaGLWidget->GetGLView()->installEventFilter(this);
 
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
-    connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
-
+    connect(davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
-        scaleCombo->addItem(ScaleStringFromInt(percentage));
+        scaleCombo->addItem(ScaleStringFromReal(percentage));
     }
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
     connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::OnScaleChanged);
 
-    connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
+    connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
-
-    connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //100%
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
@@ -151,6 +165,11 @@ ScrollAreaController* PreviewWidget::GetScrollAreaController()
     return scrollAreaController;
 }
 
+RulerController* PreviewWidget::GetRulerController()
+{
+    return rulerController;
+}
+
 float PreviewWidget::GetScale() const
 {
     // Firstly verify whether the value is already set.
@@ -163,14 +182,9 @@ float PreviewWidget::GetScale() const
     return scaleValue;
 }
 
-qreal PreviewWidget::GetDPR() const
-{
-    return davaGLWidget->devicePixelRatio();
-}
-
 ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
 {
-    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y) / davaGLWidget->devicePixelRatio());
+    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y));
     QMenu menu;
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
@@ -201,12 +215,12 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     if (nullptr != document)
     {
         EditorSystemsManager* systemManager = document->GetSystemManager();
-        UIControl* root = systemManager->GetRootControl();
-        DVASSERT(nullptr != root);
-        scrollAreaController->SetNestedControl(root);
+        scrollAreaController->SetNestedControl(systemManager->GetRootControl());
+        scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
     }
     else
     {
+        scrollAreaController->SetMovableControl(nullptr);
         scrollAreaController->SetNestedControl(nullptr);
     }
 }
@@ -239,9 +253,22 @@ void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     selectionContainer.MergeSelection(selected, deselected);
 }
 
-void PreviewWidget::OnMonitorChanged()
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
-    SetDPR(davaGLWidget->devicePixelRatio());
+    rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    ApplyPosChanges();
+}
+
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
+{
+    canvasPos = pos;
+    ApplyPosChanges();
+}
+
+void PreviewWidget::ApplyPosChanges()
+{
+    QPoint viewPos = canvasPos + rootControlPos;
+    rulerController->SetViewPos(-viewPos);
 }
 
 void PreviewWidget::UpdateScrollArea()
@@ -264,7 +291,7 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 
 void PreviewWidget::OnScaleChanged(qreal scale)
 {
-    scaleCombo->lineEdit()->setText(ScaleStringFromInt((scale + EPSILON) / davaGLWidget->devicePixelRatio()));
+    scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
     emit ScaleChanged(scale);
 }
 
@@ -272,18 +299,18 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     float scale = static_cast<float>(percentages.at(index));
-    scrollAreaController->SetScale(scale * davaGLWidget->devicePixelRatio());
+    scrollAreaController->SetScale(scale);
 }
 
 void PreviewWidget::OnScaleByComboText()
 {
     float scale = GetScale();
-    scrollAreaController->SetScale(scale / 100.0f * davaGLWidget->devicePixelRatio());
+    scrollAreaController->SetScale(scale / 100.0f);
 }
 
-void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
+void PreviewWidget::OnGLWidgetResized(int width, int height)
 {
-    scrollAreaController->SetViewSize(QSize(width * dpr, height * dpr));
+    scrollAreaController->SetViewSize(QSize(width, height));
     UpdateScrollArea();
 }
 
@@ -361,7 +388,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
             return;
         }
         qreal scale = GetScaleFromWheelEvent(ticksCount);
-        QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
+        QPoint pos = event->pos();
         scrollAreaController->AdjustScale(scale, pos);
     }
 #endif //Q_OS_WIN
@@ -376,14 +403,14 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     const qreal normalScale = 1.0f;
     const qreal expandedScale = 1.5f;
     qreal scale = scrollAreaController->GetScale();
-    QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
+    QPoint pos = event->pos();
     switch (event->gestureType())
     {
     case Qt::ZoomNativeGesture:
-        scrollAreaController->AdjustScale(scale + event->value() * davaGLWidget->devicePixelRatio(), pos);
+        scrollAreaController->AdjustScale(scale + event->value(), pos);
         break;
     case Qt::SmartZoomNativeGesture:
-        scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale) * davaGLWidget->devicePixelRatio(), pos);
+        scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
         //event->value() returns 1 or 0
         break;
     default:
@@ -393,10 +420,10 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
         QPoint delta(event->pos() - lastMousePos);
-        delta *= davaGLWidget->devicePixelRatio();
         lastMousePos = event->pos();
 
         int horizontalScrollBarValue = horizontalScrollBar->value();
@@ -448,13 +475,4 @@ qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
     ticksCount = std::max(ticksCount, distance);
     std::advance(iter, ticksCount);
     return *iter;
-}
-
-void PreviewWidget::SetDPR(qreal arg)
-{
-    if (dpr != arg)
-    {
-        dpr = arg;
-        DPRChanged(dpr);
-    }
 }

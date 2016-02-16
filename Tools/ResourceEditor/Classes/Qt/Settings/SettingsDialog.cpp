@@ -37,17 +37,17 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 
-SettingsDialog::SettingsDialog(QWidget* parent) 
-: QDialog(parent)
+SettingsDialog::SettingsDialog(QWidget* parent)
+    : QDialog(parent)
 {
     setWindowFlags(Qt::Tool);
     setWindowTitle("ResourceEditor Settings");
-    
-    QVBoxLayout *dlgLayout = new QVBoxLayout();
+
+    QVBoxLayout* dlgLayout = new QVBoxLayout();
     editor = new QtPropertyEditor(this);
 
-    QPushButton *defaultsBtn = new QPushButton("Defaults");
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, Qt::Horizontal, this);
+    QPushButton* defaultsBtn = new QPushButton("Defaults");
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, Qt::Horizontal, this);
     buttonBox->addButton(defaultsBtn, QDialogButtonBox::ResetRole);
 
     QObject::connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
@@ -61,128 +61,129 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     InitProperties();
 
     posSaver.Attach(this, "SettingsDialog");
-	DAVA::VariantType v = posSaver.LoadValue("splitPos");
-	if(v.GetType() == DAVA::VariantType::TYPE_INT32) editor->header()->resizeSection(0, v.AsInt32());
+    DAVA::VariantType v = posSaver.LoadValue("splitPos");
+    if (v.GetType() == DAVA::VariantType::TYPE_INT32)
+        editor->header()->resizeSection(0, v.AsInt32());
 }
 
 SettingsDialog::~SettingsDialog()
 {
     DAVA::VariantType v(editor->header()->sectionSize(0));
-	posSaver.SaveValue("splitPos", v);
+    posSaver.SaveValue("splitPos", v);
 }
 
 void SettingsDialog::InitProperties()
 {
     editor->RemovePropertyAll();
 
-    for(size_t i = 0; i < SettingsManager::GetSettingsCount(); ++i)
+    for (size_t i = 0; i < SettingsManager::GetSettingsCount(); ++i)
     {
         DAVA::FastName name = SettingsManager::GetSettingsName(i);
-        SettingsNode *node = SettingsManager::GetSettingsNode(name);
+        SettingsNode* node = SettingsManager::GetSettingsNode(name);
 
         DAVA::String key;
-        QVector<QString> keys;
+        DAVA::Vector<DAVA::FastName> keys;
 
         std::stringstream ss(name.c_str());
-        while(std::getline(ss, key, Settings::Delimiter))
+        while (std::getline(ss, key, Settings::Delimiter))
         {
-            keys.push_back(key.c_str());
+            keys.emplace_back(key);
         }
 
-        if( keys.size() > 0 && 
-            keys[0] != QString(Settings::InternalGroup.c_str())) // skip internal settings
+        if (keys.empty() == false && keys[0] != Settings::InternalGroup) // skip internal settings
         {
             // go deep into tree to find penultimate propertyData
-            QtPropertyData *parent = editor->GetRootProperty();
-            for(int i = 0; i < keys.size() - 1; ++i)
+            QtPropertyData* parent = editor->GetRootProperty();
+            for (size_t i = 0; i < keys.size() - 1; ++i)
             {
-                QtPropertyData *prop = parent->ChildGet(keys[i]);
-                if(NULL == prop)
+                const DAVA::FastName& currentKey = keys[i];
+                QtPropertyData* prop = parent->ChildGet(currentKey);
+                if (NULL == prop)
                 {
-                    prop = new QtPropertyData();
+                    prop = new QtPropertyData(currentKey);
                     QFont boldFont = prop->GetFont();
-				    boldFont.setBold(true);
+                    boldFont.setBold(true);
                     prop->SetFont(boldFont);
-				    prop->SetBackground(QBrush(QColor(Qt::lightGray)));
+                    prop->SetBackground(QBrush(QColor(Qt::lightGray)));
                     prop->SetEnabled(false);
 
-                    parent->ChildAdd(keys[i], prop);
+                    parent->ChildAdd(std::unique_ptr<QtPropertyData>(prop));
                 }
 
                 parent = prop;
             }
 
-            if(NULL != parent)
+            if (NULL != parent)
             {
-                QtPropertyDataSettingsNode *settingProp = new QtPropertyDataSettingsNode(name);
+                QtPropertyDataSettingsNode* settingProp = new QtPropertyDataSettingsNode(name, keys.back());
                 settingProp->SetInspDescription(node->desc);
 
-                parent->ChildAdd(keys.last(), settingProp);
+                parent->ChildAdd(std::unique_ptr<QtPropertyData>(settingProp));
             }
         }
     }
 
+    editor->GetRootProperty()->FinishTreeCreation();
     editor->expandToDepth(0);
 }
 
 void SettingsDialog::OnResetPressed()
 {
-    if(QMessageBox::Yes == QMessageBox::question(this, "Reseting settings", "Are you sure you want to reset settings to their default values?", (QMessageBox::Yes | QMessageBox::No), QMessageBox::Yes))
+    if (QMessageBox::Yes == QMessageBox::question(this, "Reseting settings", "Are you sure you want to reset settings to their default values?", (QMessageBox::Yes | QMessageBox::No), QMessageBox::Yes))
     {
         SettingsManager::ResetToDefault();
         InitProperties();
     }
 }
 
-QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(DAVA::FastName path)
-: QtPropertyDataDavaVariant(DAVA::VariantType())
-, settingPath(path)
-{ 
-    SetVariantValue(SettingsManager::GetValue(path));
+QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(const DAVA::FastName& path, const DAVA::FastName& name)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , settingPath(path)
+{
+    SetVariantValue(SettingsManager::GetValue(settingPath));
 }
 
 QtPropertyDataSettingsNode::~QtPropertyDataSettingsNode()
-{ }
+{
+}
 
-void QtPropertyDataSettingsNode::SetValueInternal(const QVariant &value)
+void QtPropertyDataSettingsNode::SetValueInternal(const QVariant& value)
 {
     QtPropertyDataDavaVariant::SetValueInternal(value);
 
-	// also save value to settings
+    // also save value to settings
     SettingsManager::SetValue(settingPath, QtPropertyDataDavaVariant::GetVariantValue());
 }
 
 bool QtPropertyDataSettingsNode::UpdateValueInternal()
 {
-	bool ret = false;
+    bool ret = false;
 
-	// load current value from meta-object
-	// we should do this because meta-object may change at any time 
-	DAVA::VariantType v = SettingsManager::GetValue(settingPath);
+    // load current value from meta-object
+    // we should do this because meta-object may change at any time
+    DAVA::VariantType v = SettingsManager::GetValue(settingPath);
 
-	// if current variant value not equal to the real meta-object value
-	// we should update current variant value
-	if(v != GetVariantValue())
-	{
-		QtPropertyDataDavaVariant::SetVariantValue(v);
-		ret = true;
-	}
+    // if current variant value not equal to the real meta-object value
+    // we should update current variant value
+    if (v != GetVariantValue())
+    {
+        QtPropertyDataDavaVariant::SetVariantValue(v);
+        ret = true;
+    }
 
-	return ret;
+    return ret;
 }
 
-bool QtPropertyDataSettingsNode::EditorDoneInternal(QWidget *editor)
+bool QtPropertyDataSettingsNode::EditorDoneInternal(QWidget* editor)
 {
-	bool ret = QtPropertyDataDavaVariant::EditorDoneInternal(editor);
+    bool ret = QtPropertyDataDavaVariant::EditorDoneInternal(editor);
 
-	// if there was some changes in current value, done by editor
-	// we should save them into meta-object
-	if(ret)
-	{
+    // if there was some changes in current value, done by editor
+    // we should save them into meta-object
+    if (ret)
+    {
         SettingsManager::SetValue(settingPath, QtPropertyDataDavaVariant::GetVariantValue());
-	}
+    }
 
-	return ret;
+    return ret;
 }
-
-

@@ -32,47 +32,86 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Platform/DeviceInfo.h"
+#include "Core/Core.h"
 
 #import <UIKit/UIKit.h>
 #import "HelperAppDelegate.h"
 
-extern  void FrameworkWillTerminate();
-extern  void FrameworkDidLaunched();
+extern void FrameworkWillTerminate();
+extern void FrameworkDidLaunched();
 
 static RenderView* renderView = nil;
 
-int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
+class CoreIOS : public DAVA::Core
 {
-	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	DAVA::Core * core = new DAVA::Core();
+public:
+    void SetScreenScaleMultiplier(DAVA::float32 multiplier) override
+    {
+        if (fabsf(GetScreenScaleMultiplier() - multiplier) >= DAVA::EPSILON)
+        {
+            Core::SetScreenScaleMultiplier(multiplier);
+
+            if (renderView)
+            {
+                ProcessResize();
+
+                rhi::ResetParam params;
+                params.width = rendererParams.width;
+                params.height = rendererParams.height;
+                params.window = [renderView layer];
+
+                DAVA::Renderer::Reset(params);
+            }
+        }
+    }
+
+    void ProcessResize()
+    {
+        DAVA::float32 screenScale = GetScreenScaleFactor();
+
+        [renderView setContentScaleFactor:screenScale];
+
+        //detecting physical screen size and initing core system with this size
+        const DAVA::DeviceInfo::ScreenInfo& screenInfo = DAVA::DeviceInfo::GetScreenInfo();
+        DAVA::int32 width = screenInfo.width;
+        DAVA::int32 height = screenInfo.height;
+
+        eScreenOrientation orientation = GetScreenOrientation();
+        if ((orientation == SCREEN_ORIENTATION_LANDSCAPE_LEFT) ||
+            (orientation == SCREEN_ORIENTATION_LANDSCAPE_RIGHT) ||
+            (orientation == SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
+        {
+            width = screenInfo.height;
+            height = screenInfo.width;
+        }
+
+        DAVA::int32 physicalWidth = width * screenScale;
+        DAVA::int32 physicalHeight = height * screenScale;
+
+        DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+        DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+
+        rendererParams.window = [renderView layer];
+        rendererParams.width = physicalWidth;
+        rendererParams.height = physicalHeight;
+    }
+};
+
+int DAVA::Core::Run(int argc, char* argv[], AppHandle handle)
+{
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+    CoreIOS* core = new CoreIOS();
     core->SetCommandLine(argc, argv);
-	core->CreateSingletons();
-	
+    core->CreateSingletons();
+
     FrameworkDidLaunched();
-    
-	//detecting physical screen size and initing core system with this size
-    const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
-    int32 width = screenInfo.width;
-    int32 height = screenInfo.height;
-    
-	eScreenOrientation orientation = Instance()->GetScreenOrientation();
-	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
-		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
-		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
-	{
-        width = screenInfo.height;
-        height = screenInfo.width;
-	}
-		
-    float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
-		
-	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
-		
-	int retVal = UIApplicationMain(argc, argv, nil, @"iOSAppDelegate");
-	
-	[pool release];
-	return retVal;
+
+    core->ProcessResize();
+
+    int retVal = UIApplicationMain(argc, argv, nil, @"iOSAppDelegate");
+
+    [pool release];
+    return retVal;
 }
 
 DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
@@ -93,11 +132,10 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 #include "Core/ApplicationCore.h"
 #include "UI/UIScreenManager.h"
 
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-	UIWindow *wnd = application.keyWindow;
-	wnd.frame = [::UIScreen mainScreen].bounds;
+    UIWindow* wnd = application.keyWindow;
+    wnd.frame = [ ::UIScreen mainScreen].bounds;
 
     renderViewController = [[RenderViewController alloc] init];
 
@@ -112,11 +150,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
         renderView = [renderViewController createMetalView];
     }
 
-    DAVA::Core::Instance()->rendererParams.window = [renderView layer];
-
-    DAVA::Size2i screenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
-    DAVA::Core::Instance()->rendererParams.width = screenSize.dx;
-    DAVA::Core::Instance()->rendererParams.height = screenSize.dy;
+    ((CoreIOS*)DAVA::Core::Instance())->ProcessResize();
 
     DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, renderViewController);
     DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);
@@ -128,58 +162,58 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     return YES;
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
+- (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
-    if(core)
+    DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
+    if (core)
     {
         core->OnResume();
     }
-    else 
+    else
     {
-       DAVA::Core::Instance()->SetIsActive(true);
+        DAVA::Core::Instance()->SetIsActive(true);
     }
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void)applicationWillResignActive:(UIApplication*)application
 {
-    DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
-    if(core)
+    DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
+    if (core)
     {
         core->OnSuspend();
     }
-    else 
+    else
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
+- (void)applicationDidEnterBackground:(UIApplication*)application
 {
     bool isLock = false;
     UIApplicationState state = [application applicationState];
     if (state == UIApplicationStateInactive)
     {
-//        NSLog(@"Sent to background by locking screen");
+        //        NSLog(@"Sent to background by locking screen");
         isLock = true;
     }
-//    else if (state == UIApplicationStateBackground)
-//    {
-//        NSLog(@"Sent to background by home button/switching to other app");
-//    }
-	DAVA::Core::Instance()->GoBackground(isLock);
+    //    else if (state == UIApplicationStateBackground)
+    //    {
+    //        NSLog(@"Sent to background by home button/switching to other app");
+    //    }
+    DAVA::Core::Instance()->GoBackground(isLock);
 
     rhi::SuspendRendering();
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
+- (void)applicationWillEnterForeground:(UIApplication*)application
 {
-    DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
-    if(core)
+    DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
+    if (core)
     {
-		DAVA::Core::Instance()->GoForeground();
+        DAVA::Core::Instance()->GoForeground();
     }
-    else 
+    else
     {
         DAVA::Core::Instance()->SetIsActive(true);
     }
@@ -187,25 +221,24 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     rhi::ResumeRendering();
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
+- (void)applicationWillTerminate:(UIApplication*)application
 {
-	NSLog(@"Application termination started");
-	DAVA::Core::Instance()->SystemAppFinished();
-	NSLog(@"System release started");
-    
-    if(DAVA::Logger::Instance())
+    NSLog(@"Application termination started");
+    DAVA::Core::Instance()->SystemAppFinished();
+    NSLog(@"System release started");
+
+    if (DAVA::Logger::Instance())
     {
         DAVA::Logger::Instance()->SetLogFilename("");
     }
-    
-//	DAVA::Core::Instance()->ReleaseSingletons();
-    
 
-//	DAVA::Sprite::DumpSprites();
-//	DAVA::Texture::DumpTextures();
+    //	DAVA::Core::Instance()->ReleaseSingletons();
 
-	FrameworkWillTerminate();
-	NSLog(@"Application termination finished");
+    //	DAVA::Sprite::DumpSprites();
+    //	DAVA::Texture::DumpTextures();
+
+    FrameworkWillTerminate();
+    NSLog(@"Application termination finished");
 }
 
 @end

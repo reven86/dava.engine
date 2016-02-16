@@ -12,8 +12,8 @@
 
 char _Copyright[] = "Public Domain 1991 by Dale Schumacher";
 
-#define	WHITE_PIXEL	(255)
-#define	BLACK_PIXEL	(0)
+#define WHITE_PIXEL (255)
+#define BLACK_PIXEL (0)
 
 /*
  *	generic image access and i/o support routines
@@ -95,7 +95,7 @@ Pixel data;
  *	filter function definitions
  */
 
-#define	filter_support		(1.0)
+#define filter_support (1.0)
 
 double filter( double t) {
 	/* f(t) = 2|t|^3 - 3|t|^2 + 1, -1 <= t <= 1 */
@@ -104,14 +104,14 @@ double filter( double t) {
 	return(0.0);
 }
 
-#define	box_support		(0.5)
+#define box_support (0.5)
 
 double box_filter( double t) {
 	if((t > -0.5) && (t <= 0.5)) return(1.0);
 	return(0.0);
 }
 
-#define	triangle_support	(1.0)
+#define triangle_support (1.0)
 
 double triangle_filter( double t ) {
 	if(t < 0.0) t = -t;
@@ -119,7 +119,7 @@ double triangle_filter( double t ) {
 	return(0.0);
 }
 
-#define	bell_support		(1.5)
+#define bell_support (1.5)
 
 double bell_filter( double t) {		/* box (*) box (*) box */
 	if(t < 0) t = -t;
@@ -131,7 +131,7 @@ double bell_filter( double t) {		/* box (*) box (*) box */
 	return(0.0);
 }
 
-#define	B_spline_support	(2.0)
+#define B_spline_support (2.0)
 
 double
 B_spline_filter(t)	/* box (*) box (*) box (*) box */
@@ -159,7 +159,7 @@ double x;
 	return(1.0);
 }
 
-#define	Lanczos3_support	(3.0)
+#define Lanczos3_support (3.0)
 
 double
 Lanczos3_filter(t)
@@ -170,10 +170,10 @@ double t;
 	return(0.0);
 }
 
-#define	Mitchell_support	(2.0)
+#define Mitchell_support (2.0)
 
-#define	B	(1.0 / 3.0)
-#define	C	(1.0 / 3.0)
+#define B (1.0 / 3.0)
+#define C (1.0 / 3.0)
 
 double
 Mitchell_filter(t)
@@ -462,5 +462,3 @@ char *argv[];
 }
 
 #endif
-
-

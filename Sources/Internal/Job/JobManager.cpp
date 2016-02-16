@@ -37,25 +37,32 @@
 
 namespace DAVA
 {
-
-JobManager::JobManager() 
-: mainJobIDCounter(1)
-, mainJobLastExecutedID(0)
-, workerDoneSem(0)
+JobManager::JobManager()
+    : mainJobIDCounter(1)
+    , mainJobLastExecutedID(0)
+    , workerDoneSem(0)
 {
     uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
     workerThreads.reserve(cpuCoresCount);
 
-    for(uint32 i = 0; i < cpuCoresCount; ++i)
+    for (uint32 i = 0; i < cpuCoresCount; ++i)
     {
-        JobThread * thread = new JobThread(&workerQueue, &workerDoneSem);
+        JobThread* thread = new JobThread(&workerQueue, &workerDoneSem);
         workerThreads.push_back(thread);
     }
 }
 
 JobManager::~JobManager()
 {
-    for(uint32 i = 0; i < workerThreads.size(); ++i)
+    {
+        LockGuard<Mutex> guard(mainQueueMutex);
+        mainJobs.clear();
+    }
+    mainJobLastExecutedID = mainJobIDCounter;
+    mainJobIDCounter = 0;
+    mainCV.NotifyAll();
+
+    for (uint32 i = 0; i < workerThreads.size(); ++i)
     {
         SafeDelete(workerThreads[i]);
     }
@@ -68,15 +75,15 @@ void JobManager::Update()
     bool hasFinishedJobs = false;
 
     mainQueueMutex.Lock();
-    if(!mainJobs.empty())
+    if (!mainJobs.empty())
     {
         // extract all jobs from queue
-        while(!mainJobs.empty())
+        while (!mainJobs.empty())
         {
             curMainJob = mainJobs.front();
             mainJobs.pop_front();
 
-            if(curMainJob.type == JOB_MAINBG)
+            if (curMainJob.type == JOB_MAINBG)
             {
                 // TODO:
                 // need implementation
@@ -86,7 +93,7 @@ void JobManager::Update()
                 DVASSERT(false);
             }
 
-            if(curMainJob.invokerThreadId != Thread::Id() && curMainJob.fn != nullptr)
+            if (curMainJob.invokerThreadId != Thread::Id() && curMainJob.fn != nullptr)
             {
                 // unlock queue mutex until function execution finished
                 mainQueueMutex.Unlock();
@@ -103,7 +110,7 @@ void JobManager::Update()
     mainQueueMutex.Unlock();
 
     // signal that jobs are finished
-    if(hasFinishedJobs)
+    if (hasFinishedJobs)
     {
         LockGuard<Mutex> cvguard(mainCVMutex);
         mainCV.NotifyAll();
@@ -121,11 +128,11 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
 
     // if we are already in main thread and requested job shouldn't executed lazy
     // perform that job immediately
-    if(Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
+    if (Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
     {
         fn();
     }
-    else
+    else if (mainJobIDCounter > 0)
     {
         // reserve job ID
         jobID = ++mainJobIDCounter;
@@ -148,12 +155,12 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
 
 void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
-    if(Thread::IsMainThread())
+    if (Thread::IsMainThread())
     {
-        // if wait was invoked from main-thread 
+        // if wait was invoked from main-thread
         // and there are some jobs user is waiting for
-        // we should immediately execute them 
-        if(HasMainJobs())
+        // we should immediately execute them
+        if (HasMainJobs())
         {
             // just run update, it will execute all of main-thread jobs
             Update();
@@ -170,7 +177,7 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
         // Now check if there are some jobs in the queue and wait for them
         UniqueLock<Mutex> lock(mainCVMutex);
-        while(HasMainJobs())
+        while (HasMainJobs())
         {
             mainCV.Wait(lock);
         }
@@ -179,12 +186,12 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
 void JobManager::WaitMainJobID(uint32 mainJobID)
 {
-    if(Thread::IsMainThread())
+    if (Thread::IsMainThread())
     {
-        // if wait was invoked from main-thread 
+        // if wait was invoked from main-thread
         // and there are some jobs user is waiting for
-        // we should immediately execute them 
-        if(HasMainJobID(mainJobID))
+        // we should immediately execute them
+        if (HasMainJobID(mainJobID))
         {
             // just run update, it will execute all of main-thread jobs
             Update();
@@ -201,7 +208,7 @@ void JobManager::WaitMainJobID(uint32 mainJobID)
 
         // Now check if there are some jobs in the queue and wait for them
         UniqueLock<Mutex> lock(mainCVMutex);
-        while(HasMainJobID(mainJobID))
+        while (HasMainJobID(mainJobID))
         {
             mainCV.Wait(lock);
         }
@@ -213,14 +220,14 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
     bool ret = false;
 
     // tread id = 0 as current thread id, so we should get it
-    if(Thread::Id() == invokerThreadId)
+    if (Thread::Id() == invokerThreadId)
     {
         invokerThreadId = Thread::GetCurrentId();
     }
 
     {
         LockGuard<Mutex> guard(mainQueueMutex);
-        if(curMainJob.invokerThreadId == invokerThreadId)
+        if (curMainJob.invokerThreadId == invokerThreadId)
         {
             ret = true;
         }
@@ -228,9 +235,9 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
         {
             Deque<MainJob>::const_iterator i = mainJobs.begin();
             Deque<MainJob>::const_iterator end = mainJobs.end();
-            for(; i != end; ++i)
+            for (; i != end; ++i)
             {
-                if(i->invokerThreadId == invokerThreadId)
+                if (i->invokerThreadId == invokerThreadId)
                 {
                     ret = true;
                     break;
@@ -255,15 +262,15 @@ void JobManager::CreateWorkerJob(const Function<void()>& fn)
 
 void JobManager::WaitWorkerJobs()
 {
-    while(HasWorkerJobs())
+    while (HasWorkerJobs())
     {
-        if(Thread::IsMainThread())
+        if (Thread::IsMainThread())
         {
             // We want to be able to wait worker jobs, but at the same time
             // allow any worker job execute main job. Potentially this will cause
             // dead lock, but there is a simple solution:
-            // 
-            // Every time, worker job is trying to execute WaitMainJobs it will 
+            //
+            // Every time, worker job is trying to execute WaitMainJobs it will
             // post workerDoneSem semaphore, that will give a chance to execute main jobs
             // in the following Update() call
             //
@@ -278,5 +285,4 @@ bool JobManager::HasWorkerJobs()
 {
     return !workerQueue.IsEmpty();
 }
-
 }

@@ -26,68 +26,57 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "StaticOcclusionTool.h"
+#include "CommandLine/StaticOcclusion/StaticOcclusionTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
-#include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-void StaticOcclusionTool::PrintUsage() const
+StaticOcclusionTool::StaticOcclusionTool()
+    : CommandLineTool("-staticocclusion")
 {
-    printf("\n");
-    printf("-staticocclusion -build [-processfile]\n");
-    printf("\twill build static occlusion for scene file\n");
-    printf("\t-build - will build static occlusion\n");
-    printf("\t-processfile - pathname to scene file\n");
-
-    printf("\n");
-    printf("Samples:\n");
-    printf("-staticocclusion -build -processfile /Users/User/Project/DataSource/3dMaps/level.sc2\n");
+    options.AddOption(OptionName::Build, VariantType(false), "Enables build of static occlusion");
+    options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
-DAVA::String StaticOcclusionTool::GetCommandLineKey() const
+void StaticOcclusionTool::ConvertOptionsToParamsInternal()
 {
-    return "-staticocclusion";
-}
-
-bool StaticOcclusionTool::InitializeFromCommandLine()
-{
-    commandAction = ACTION_NONE;
-    
-    if(CommandLineParser::CommandIsFound(String("-build")))
+    if (options.GetOption(OptionName::Build).AsBool())
     {
         commandAction = ACTION_BUILD;
-        scenePathname = CommandLineParser::GetCommandParam(String("-processfile"));
-        if(scenePathname.IsEmpty())
-        {
-            errors.insert("[StaticOcclusionTool] Filename is not set");
-            return false;
-        }
     }
-    else
+
+    scenePathname = options.GetOption(OptionName::ProcessFile).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
+}
+
+bool StaticOcclusionTool::InitializeInternal()
+{
+    if (commandAction == ACTION_NONE)
     {
-        errors.insert("[StaticOcclusionTool] Incorrect action");
+        AddError("Wrong action was selected");
         return false;
     }
-    
+
+    if (scenePathname.IsEmpty())
+    {
+        AddError("Filename was not set");
+        return false;
+    }
+
     return true;
 }
 
-void StaticOcclusionTool::DumpParams() const
-{ 
-    Logger::Info("StaticOcclusionTool started with params:\n\tFilename: %s", scenePathname.GetStringValue().c_str());
-}
-
-void StaticOcclusionTool::Process() 
+void StaticOcclusionTool::ProcessInternal()
 {
     const rhi::HTexture nullTexture;
     const rhi::Viewport nullViewport(0, 0, 1, 1);
 
     if (commandAction == ACTION_BUILD)
     {
-        SceneEditor2* scene = new SceneEditor2();
+        ScopedPtr<SceneEditor2> scene(new SceneEditor2());
         if (scene->Load(scenePathname))
         {
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
@@ -104,13 +93,16 @@ void StaticOcclusionTool::Process()
 
             scene->Save();
         }
-        SafeRelease(scene);
         RenderObjectsFlusher::Flush();
     }
 }
 
 DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(scenePathname);
-}
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(scenePathname);
+    }
 
+    return qualityConfigPath;
+}

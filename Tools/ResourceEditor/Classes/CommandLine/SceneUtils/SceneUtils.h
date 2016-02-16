@@ -35,33 +35,30 @@
 class SceneUtils
 {
 public:
-
-	SceneUtils();
+    SceneUtils();
     ~SceneUtils();
-    
-    void CleanFolder(const DAVA::FilePath &folderPathname, DAVA::Set<DAVA::String> &errorLog);
-    
-    void SetInFolder(const DAVA::FilePath &folderPathname);
-    void SetOutFolder(const DAVA::FilePath &folderPathname);
-    
-    bool CopyFile(const DAVA::FilePath &filePathname, DAVA::Set<DAVA::String> &errorLog);
-    void PrepareFolderForCopyFile(const DAVA::String &filename, DAVA::Set<DAVA::String> &errorLog);
 
+    void CleanFolder(const DAVA::FilePath& folderPathname, DAVA::Set<DAVA::String>& errorLog);
 
-    DAVA::FilePath GetNewFilePath(const DAVA::FilePath &oldPathname) const;
-    
-    void AddFile(const DAVA::FilePath &sourcePath);
-    void CopyFiles(DAVA::Set<DAVA::String> &errorLog);
+    void SetInFolder(const DAVA::FilePath& folderPathname);
+    void SetOutFolder(const DAVA::FilePath& folderPathname);
 
-protected:
-    void PrepareDestination(DAVA::Set<DAVA::String> &errorLog);
+    bool CopyFile(const DAVA::FilePath& filePathname, DAVA::Set<DAVA::String>& errorLog);
+    void PrepareFolderForCopyFile(const DAVA::String& filename, DAVA::Set<DAVA::String>& errorLog);
+
+    DAVA::FilePath GetNewFilePath(const DAVA::FilePath& oldPathname) const;
+
+    void AddFile(const DAVA::FilePath& sourcePath);
+    void CopyFiles(DAVA::Set<DAVA::String>& errorLog);
+
+private:
+    void PrepareDestination(DAVA::Set<DAVA::String>& errorLog);
 
 public:
-
     DAVA::FilePath dataFolder;
     DAVA::FilePath dataSourceFolder;
     DAVA::String workingFolder;
-    
+
     DAVA::Map<DAVA::FilePath, DAVA::FilePath> filesForCopy;
 };
 

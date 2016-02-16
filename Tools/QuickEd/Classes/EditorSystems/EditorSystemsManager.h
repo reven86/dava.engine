@@ -93,8 +93,6 @@ class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
-
 class EditorSystemsManager : PackageListener
 {
 public:
@@ -122,12 +120,13 @@ public:
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
-    DAVA::Signal<DAVA::float32> DPRChanged;
     DAVA::Signal<> CanvasSizeChanged;
+    DAVA::Signal<DAVA::Vector2> rootControlPositionChanged;
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
     DAVA::Signal<> SelectAllControls;
+    DAVA::Signal<DAVA::Vector2 /*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
 

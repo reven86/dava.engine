@@ -35,21 +35,19 @@
 
 #include "Render/Image/ImageFormatInterface.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class LibTgaHelper: public ImageFormatInterface
+class LibTgaHelper : public ImageFormatInterface
 {
 public:
-    
     LibTgaHelper();
 
     bool CanProcessFile(const FilePtr& infile) const override;
 
     eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
 
-    eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
     ImageInfo GetImageInfo(const FilePtr& infile) const override;
 
@@ -82,20 +80,22 @@ public:
     eErrorCode ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaHeader) const;
 
 private:
+    eErrorCode ReadTgaHeader(File* infile, TgaInfo& tgaHeader) const;
 
-    eErrorCode ReadTgaHeader(File *infile, TgaInfo& tgaHeader) const;
-
-    eErrorCode ReadCompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
-    eErrorCode ReadUncompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
+    eErrorCode ReadCompressedTga(File* infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
+    eErrorCode ReadUncompressedTga(File* infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
     PixelFormat DefinePixelFormat(const TgaInfo& tgaHeader) const;
 
-    eErrorCode WriteTgaHeader(File *outfile, const TgaInfo& tgaHeader) const;
-    eErrorCode WriteUncompressedTga(File *infile, const TgaInfo& tgaHeader, const uint8* data) const;
+    eErrorCode WriteTgaHeader(File* outfile, const TgaInfo& tgaHeader) const;
+    eErrorCode WriteUncompressedTga(File* infile, const TgaInfo& tgaHeader, const uint8* data) const;
 
     struct ImageDataWriter
     {
         ImageDataWriter(Image* image, const LibTgaHelper::TgaInfo& tgaInfo);
-        inline bool AtEnd() const { return isAtEnd; }
+        inline bool AtEnd() const
+        {
+            return isAtEnd;
+        }
         void Write(uint8* pixel);
 
     private:

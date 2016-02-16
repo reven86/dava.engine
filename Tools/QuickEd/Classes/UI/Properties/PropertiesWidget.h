@@ -50,32 +50,32 @@ public slots:
     void OnDocumentChanged(Document* doc);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
-    void OnAddComponent(QAction *action);
-    void OnAddStyleProperty(QAction *action);
+    void OnAddComponent(QAction* action);
+    void OnAddStyleProperty(QAction* action);
     void OnAddStyleSelector();
     void OnRemove();
-    
-    void OnSelectionChanged(const QItemSelection &selected,
-                            const QItemSelection &deselected);
+
+    void OnSelectionChanged(const QItemSelection& selected,
+                            const QItemSelection& deselected);
     void OnModelChanged();
 
 private slots:
-    void OnExpanded(const QModelIndex &index);
-    void OnCollapsed(const QModelIndex &index);
+    void OnExpanded(const QModelIndex& index);
+    void OnCollapsed(const QModelIndex& index);
 
 private:
-    QAction *CreateAddComponentAction();
-    QAction *CreateAddStyleSelectorAction();
-    QAction *CreateAddStylePropertyAction();
-    QAction *CreateRemoveAction();
-    QAction *CreateSeparator();
+    QAction* CreateAddComponentAction();
+    QAction* CreateAddStyleSelectorAction();
+    QAction* CreateAddStylePropertyAction();
+    QAction* CreateRemoveAction();
+    QAction* CreateSeparator();
 
-    ControlNode *GetSelectedControlNode() const;
-    StyleSheetNode *GetSelectedStyleSheetNode() const;
-    
+    ControlNode* GetSelectedControlNode() const;
+    StyleSheetNode* GetSelectedStyleSheetNode() const;
+
     void UpdateSelection();
     void UpdateActions();
-    
+
     void ApplyExpanding();
 
     Document* document = nullptr;

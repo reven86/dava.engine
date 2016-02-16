@@ -33,14 +33,15 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class ScrollHelper;
 
 class UIScrollViewContainer : public UIControl
 {
 protected:
-	virtual ~UIScrollViewContainer();
+    virtual ~UIScrollViewContainer();
+
 public:
     UIScrollViewContainer(const Rect& rect = Rect());
 
@@ -48,50 +49,50 @@ public:
     virtual void CopyDataFrom(UIControl* srcControl);
 
 public:
-	virtual void Update(float32 timeElapsed);
-	virtual void Input(UIEvent *currentTouch);
-    virtual void InputCancelled(UIEvent *currentInput);
-	virtual bool SystemInput(UIEvent *currentInput);
+    virtual void Update(float32 timeElapsed);
+    virtual void Input(UIEvent* currentTouch);
+    virtual void InputCancelled(UIEvent* currentInput);
+    virtual bool SystemInput(UIEvent* currentInput);
     virtual void SetSize(const Vector2& size);
     virtual void WillDisappear();
 
+    // Set container relative position and enable*Scroll properties based on self and parent size
+    void ApplySizeChanges();
 
-	// The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
-	void SetTouchTreshold(int32 holdDelta);
-	int32 GetTouchTreshold();
-
+    // The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
+    void SetTouchTreshold(int32 holdDelta);
+    int32 GetTouchTreshold();
 
 protected:
+    enum
+    {
+        STATE_NONE = 0,
+        STATE_SCROLL,
+        STATE_ZOOM,
+        STATE_DECCELERATION,
+        STATE_SCROLL_TO_SPECIAL,
+    };
 
-	enum
-	{
-		STATE_NONE = 0,
-		STATE_SCROLL,
-		STATE_ZOOM,
-		STATE_DECCELERATION,
-		STATE_SCROLL_TO_SPECIAL,
-	};
+    int32 state;
+    // Scroll information
+    Vector2 scrollStartInitialPosition; // position of click
+    int32 touchTreshold;
 
-	int32		state;
-	// Scroll information
-	Vector2		scrollStartInitialPosition;	// position of click
-	int32		touchTreshold;
-	
-	int 		mainTouch;	
-	
-	Vector2 	oldPos;
-	Vector2		newPos;
+    int mainTouch;
+
+    Vector2 oldPos;
+    Vector2 newPos;
 
     float32 oldScroll = 0.f;
     float32 newScroll = 0.f;
 
-    ScrollHelper *currentScroll;
+    ScrollHelper* currentScroll;
 
-	// All boolean variables are grouped together because of DF-2149.
-	bool 		lockTouch : 1;
-	bool 		scrollStartMovement : 1;
-	bool		enableHorizontalScroll : 1;
-	bool		enableVerticalScroll : 1;
+    // All boolean variables are grouped together because of DF-2149.
+    bool lockTouch : 1;
+    bool scrollStartMovement : 1;
+    bool enableHorizontalScroll : 1;
+    bool enableVerticalScroll : 1;
 };
 };
 

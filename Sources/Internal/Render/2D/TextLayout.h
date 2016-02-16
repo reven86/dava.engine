@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 /**
  * \brief TextLayout class
  * \details Using for splitting text to lines with specified width
@@ -95,7 +94,7 @@ public:
      * \return current cursor position
      */
     const uint32 Tell() const;
-    
+
     /**
      * \brief Checks that text didn't finished yet
      * \return false if not all text processed
@@ -108,7 +107,7 @@ public:
      * \return true if text can be split by words
      */
     bool NextByWords(const float32 lineWidth);
-    
+
     /**
      * \brief Split text by symbols from current cursor position with specified width
      * \param[in] lineWidth maximum line width in pixels
@@ -180,7 +179,7 @@ private:
     WideString inputText;
     WideString preparedText;
     WideString preparedLine;
-    
+
     bool useBiDi;
     bool isRtl;
     Vector<float32> characterSizes;

@@ -29,8 +29,10 @@
 
 #include "stdafx.h"
 #include "ColladaDocument.h"
+#include "ColladaPolygonGroup.h"
 #include "Scene3D/SceneFile.h"
 #include "CommandLine/CommandLineParser.h"
+#include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
 ///*
 // INCLUDE DevIL
@@ -147,7 +149,6 @@ bool ColladaDocument::ExportNodeAnimations(FCDocument* exportDoc, FCDSceneNode* 
     FCDAnimationLibrary* animationLibrary = exportDoc->GetAnimationLibrary();
     if (animationLibrary->GetEntityCount() == 0)
     {
-        DAVA::Logger::Error("*** Can't find any animations in this file: %s\n", exportDoc->GetFileUrl().c_str());
         return false;
     }
 
@@ -251,6 +252,12 @@ String ColladaDocument::GetTextureName(const FilePath& scenePath, ColladaTexture
     return texPathname.GetRelativePathname(scenePath);
 }
 
+eColladaErrorCodes ColladaDocument::SaveSC2(const FilePath& scenePath) const
+{
+    ColladaToSc2Importer importer;
+    return importer.SaveSC2(colladaScene, scenePath);
+}
+
 void ColladaDocument::SaveScene(const FilePath& scenePath, const String& sceneName)
 {
     DVASSERT(scenePath.IsDirectoryPathname());
@@ -274,40 +281,6 @@ void ColladaDocument::SaveScene(const FilePath& scenePath, const String& sceneNa
     header.cameraCount = (uint32)colladaScene->colladaCameras.size();
     header.nodeAnimationsCount = (uint32)colladaScene->colladaAnimations.size();
     header.lightCount = (uint32)colladaScene->colladaLights.size();
-
-    /*for (uint32 textureIndex = 0; textureIndex < header.textureCount; ++textureIndex)
-	{
-		SceneFile::TextureDef texture;
-	
-		String textureRelativePathName = String(colladaScene->colladaTextures[textureIndex]->texturePathName.c_str());
-		CommandLineParser::RemoveFromPath(textureRelativePathName, scenePath);
-		
-		if (textureRelativePathName.c_str()[0] == '/')
-			textureRelativePathName.erase(0, 1);
-
-		if (textureRelativePathName.substr(0, 2) == "./")
-			textureRelativePathName.erase(0,2);
-		
-		texture.id = textureIndex;
-		strcpy(texture.name, textureRelativePathName.c_str());
-		
-		// HACK for .jpg into .png
-        // work for all extensions
-		std::string texname(texture.name);
-		int32 pos = texname.find(".");
-		if(-1 != pos)
-		{
-			texname.replace(pos, 4, ".png");
-		}
-		
-		
-		strcpy(texture.name, texname.c_str());
-        texture.hasOpacity = colladaScene->colladaTextures[textureIndex]->hasOpacity;
-		////
-		
-		DAVA::Logger::FrameworkDebug("- texture: %s %d\n", texture.name, texture.id);
-		WriteTexture(&texture);
-	}*/
 
     for (uint32 materialIndex = 0; materialIndex < header.materialCount; ++materialIndex)
     {

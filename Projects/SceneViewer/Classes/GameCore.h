@@ -40,41 +40,49 @@ class ViewSceneScreen;
 class GameCore : public ApplicationCore
 {
 protected:
-	virtual ~GameCore();
-public:	
-	GameCore();
+    virtual ~GameCore();
 
-	static GameCore * Instance() 
-	{ 
-		return (GameCore*) DAVA::Core::GetApplicationCore();
-	};
-	
-	virtual void OnAppStarted();
-	virtual void OnAppFinished();
-	
-	virtual void OnSuspend();
-	virtual void OnResume();
+public:
+    GameCore();
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	virtual void OnBackground();
-	virtual void OnForeground();
-	virtual void OnDeviceLocked();
+    static GameCore* Instance()
+    {
+        return (GameCore*)DAVA::Core::GetApplicationCore();
+    };
+
+    virtual void OnAppStarted();
+    virtual void OnAppFinished();
+
+    virtual void OnSuspend();
+    virtual void OnResume();
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    virtual void OnBackground();
+    virtual void OnForeground();
+    virtual void OnDeviceLocked();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
     virtual void BeginFrame();
     virtual void EndFrame();
 
-    void SetScenePath(const FilePath & path) { scenePath = path; };
-    const FilePath & GetScenePath() const { return scenePath; };
+    void SetScenePath(const FilePath& path)
+    {
+        scenePath = path;
+    };
+    const FilePath& GetScenePath() const
+    {
+        return scenePath;
+    };
 
 protected:
-
     void CreateDocumentsFolder();
 
-    SelectSceneScreen *selectSceneScreen;
-    ViewSceneScreen *viewSceneScreen;
-    
-    
+    SelectSceneScreen* selectSceneScreen;
+    ViewSceneScreen* viewSceneScreen;
+
+    rhi::HPerfQuerySet perfQuerySet;
+    bool perfQuerySetFired;
+
     FilePath scenePath;
 };
 

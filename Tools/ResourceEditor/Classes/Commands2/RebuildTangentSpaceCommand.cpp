@@ -30,16 +30,16 @@
 #include "RebuildTangentSpaceCommand.h"
 #include "Render/3D/MeshUtils.h"
 
-RebuildTangentSpaceCommand::RebuildTangentSpaceCommand(DAVA::RenderBatch *_renderBatch, bool _computeBinormal)
-	: Command2(CMDID_REBUILD_TANGENT_SPACE, "Rebuild Tangent Space")
-    , renderBatch(_renderBatch)    
+RebuildTangentSpaceCommand::RebuildTangentSpaceCommand(DAVA::RenderBatch* _renderBatch, bool _computeBinormal)
+    : Command2(CMDID_REBUILD_TANGENT_SPACE, "Rebuild Tangent Space")
+    , renderBatch(_renderBatch)
     , computeBinormal(_computeBinormal)
 {
-    DVASSERT(renderBatch);        
-    DAVA::PolygonGroup *srcGroup = renderBatch->GetPolygonGroup();
+    DVASSERT(renderBatch);
+    DAVA::PolygonGroup* srcGroup = renderBatch->GetPolygonGroup();
     DVASSERT(srcGroup);
     originalGroup = new DAVA::PolygonGroup();
-    DAVA::MeshUtils::CopyGroupData(srcGroup, originalGroup);    
+    DAVA::MeshUtils::CopyGroupData(srcGroup, originalGroup);
 }
 
 RebuildTangentSpaceCommand::~RebuildTangentSpaceCommand()
@@ -54,5 +54,5 @@ void RebuildTangentSpaceCommand::Redo()
 
 void RebuildTangentSpaceCommand::Undo()
 {
-    DAVA::MeshUtils::CopyGroupData(originalGroup, renderBatch->GetPolygonGroup());        
+    DAVA::MeshUtils::CopyGroupData(originalGroup, renderBatch->GetPolygonGroup());
 }

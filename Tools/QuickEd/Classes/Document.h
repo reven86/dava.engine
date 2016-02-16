@@ -33,9 +33,7 @@
 #include <QUndoStack>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Functional/Signal.h"
 #include "EditorSystems/SelectionContainer.h"
-#include "Math/Rect.h"
 
 struct WidgetContext
 {
@@ -46,10 +44,11 @@ inline WidgetContext::~WidgetContext()
 {
 }
 
-namespace DAVA {
-    class FilePath;
-    class UIControl;
-    class UIEvent;
+namespace DAVA
+{
+class FilePath;
+class UIControl;
+class UIEvent;
 }
 
 class PackageNode;
@@ -72,7 +71,8 @@ public:
     void Deactivate();
 
     EditorSystemsManager* GetSystemManager();
-    const DAVA::FilePath &GetPackageFilePath() const;
+    const DAVA::FilePath& GetPackageFilePath() const;
+    QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack();
     PackageNode* GetPackage();
     QtModelPackageCommandExecutor* GetCommandExecutor();
@@ -85,17 +85,18 @@ public:
 signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
+    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void SetScale(float scale);
     void SetEmulationMode(bool emulationMode);
     void SetPixelization(bool hasPixelization);
-    void SetDPR(qreal dpr);
     void RefreshAllControlProperties();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
     void OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
     DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
 
     PackageNode* package = nullptr;

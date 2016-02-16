@@ -30,13 +30,14 @@
 #include "TexturePathValidator.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Main/mainwindow.h"
 
 TexturePathValidator::TexturePathValidator(const QStringList& value)
-:   PathValidator(value)
+    : PathValidator(value)
 {
 }
 
-bool TexturePathValidator::ValidateInternal(const QVariant &v)
+bool TexturePathValidator::ValidateInternal(const QVariant& v)
 {
     bool res = RegExpValidator::ValidateInternal(v);
 
@@ -61,25 +62,25 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 
             if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
             {
-				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
-				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
-                
+                DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
+                bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
+
                 auto texDescriptor = DAVA::TextureDescriptor::CreateFromFile(texFile);
-                if(texDescriptor)
+                if (texDescriptor)
                 {
                     texDescriptor->dataSettings.sourceFileFormat = imageFormat;
                     texDescriptor->dataSettings.sourceFileExtension = extension;
                     texDescriptor->Save();
-                    
+
                     DAVA::SafeDelete(texDescriptor);
                 }
 
-				auto& texturesMap = DAVA::Texture::GetTextureMap();
-				auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
-				if(found != texturesMap.end())
-				{
-                    found->second->Reload();
-				}
+                auto& texturesMap = DAVA::Texture::GetTextureMap();
+                auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
+                if (found != texturesMap.end())
+                {
+                    found->second->ReloadAs(QtMainWindow::Instance()->GetGPUFormat());
+                }
 
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));
             }

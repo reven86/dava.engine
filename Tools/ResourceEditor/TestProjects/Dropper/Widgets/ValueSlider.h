@@ -33,7 +33,6 @@
 #include <QWidget>
 #include <QPointer>
 
-
 class QLineEdit;
 class MouseHelper;
 
@@ -42,41 +41,41 @@ class MouseHelper;
 //
 
 class ValueSlider
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
 signals:
-    void started( double );
-    void changing( double );
-    void changed( double );
+    void started(double);
+    void changing(double);
+    void changed(double);
     void canceled();
 
 public:
-    explicit ValueSlider(QWidget *parent = NULL);
+    explicit ValueSlider(QWidget* parent = NULL);
     ~ValueSlider();
 
-    void SetDigitsAfterDot( int c );
-    void SetRange( double min, double max );
-    void SetValue( double val );
+    void SetDigitsAfterDot(int c);
+    void SetRange(double min, double max);
+    void SetValue(double val);
     double GetValue() const;
 
 protected:
-    virtual void DrawBackground( QPainter *p ) const;
-    virtual void DrawForeground( QPainter *p ) const;
+    virtual void DrawBackground(QPainter* p) const;
+    virtual void DrawForeground(QPainter* p) const;
     virtual QRect PosArea() const;
 
-    void paintEvent( QPaintEvent* e ) override;
-    void resizeEvent( QResizeEvent* e ) override;
+    void paintEvent(QPaintEvent* e) override;
+    void resizeEvent(QResizeEvent* e) override;
 
-    bool eventFilter( QObject* obj, QEvent* e ) override;
+    bool eventFilter(QObject* obj, QEvent* e) override;
 
     bool IsEditorMode() const;
 
 private slots:
-    void OnMousePress( const QPoint& pos );
-    void OnMouseMove( const QPoint& pos );
-    void OnMouseRelease( const QPoint& pos );
+    void OnMousePress(const QPoint& pos);
+    void OnMouseMove(const QPoint& pos);
+    void OnMouseRelease(const QPoint& pos);
     void OnMouseClick();
 
 private:
@@ -89,7 +88,7 @@ private:
     double val;
     int digitsAfterDot;
 
-    QPointer< MouseHelper > mouse;
+    QPointer<MouseHelper> mouse;
     QPoint clickPos;
     double clickVal;
     mutable QPixmap arrows;

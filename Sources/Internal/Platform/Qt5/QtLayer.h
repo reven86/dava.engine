@@ -35,61 +35,59 @@
 
 #include "UI/UIEvent.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class QtLayerDelegate
 {
 public:
-	virtual ~QtLayerDelegate() {}
+    virtual ~QtLayerDelegate()
+    {
+    }
 
-	virtual void Quit() = 0;
+    virtual void Quit() = 0;
 };
 
-
 class QtLayer
-	: public Singleton<QtLayer>
+: public Singleton<QtLayer>
 {
 public:
     QtLayer();
     virtual ~QtLayer();
-    
+
     void OnSuspend();
     void OnResume();
-	
+
     void AppStarted();
     void AppFinished();
 
-	void Resize(int32 width, int32 height);
+    void Resize(int32 width, int32 height, float64 dpr);
     void ProcessFrame();
 
-    void * CreateAutoreleasePool();
-    void ReleaseAutoreleasePool(void *pool);
+    void* CreateAutoreleasePool();
+    void ReleaseAutoreleasePool(void* pool);
 
     void Quit();
-    void SetDelegate(QtLayerDelegate *delegate);
+    void SetDelegate(QtLayerDelegate* delegate);
 
-    bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
-    
-    void KeyPressed(char16 key, int32 count, uint64 timestamp);
-    void KeyReleased(char16 key);
+    bool IsDAVAEngineEnabled() const
+    {
+        return isDAVAEngineEnabled;
+    };
 
-    void MouseEvent(const UIEvent & event);
+    void KeyPressed(Key key, int32 count, uint64 timestamp);
+    void KeyReleased(Key key);
+
+    void MouseEvent(const UIEvent& event);
 
 #ifdef __DAVAENGINE_MACOS__
-    static void MakeAppForeground( bool foreground = true );
+    static void MakeAppForeground(bool foreground = true);
     static void RestoreMenuBar();
 #endif
-    
-protected:
-    void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);
-    void MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches);
-    
-    QtLayerDelegate *delegate;
-    Vector<UIEvent> allEvents;
+
+private:
+    QtLayerDelegate* delegate;
     bool isDAVAEngineEnabled;
 };
-
 }
 
 

@@ -65,11 +65,14 @@
 #include "Job/JobManager.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#include <cfenv>
+#pragma STDC FENV_ACCESS on
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
-// not used
+#include <cfenv>
+#pragma STDC FENV_ACCESS on
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
@@ -112,10 +115,114 @@ Core::~Core()
     SafeRelease(core);
 }
 
+namespace fpu_exceptions
+{
+#ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
+#ifdef __DAVAENGINE_WINDOWS__
+void (*SEFuncPtr)(unsigned int, PEXCEPTION_POINTERS) = nullptr;
+
+void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
+{
+    switch (exceptionCode)
+    {
+    case EXCEPTION_FLT_DENORMAL_OPERAND:
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+    case EXCEPTION_FLT_INEXACT_RESULT:
+    case EXCEPTION_FLT_INVALID_OPERATION:
+    case EXCEPTION_FLT_OVERFLOW:
+    case EXCEPTION_FLT_STACK_CHECK:
+    case EXCEPTION_FLT_UNDERFLOW:
+    // https://social.msdn.microsoft.com/Forums/en-US/48f63378-19be-413f-88a5-0f24aa72d3c8/the-exceptions-statusfloatmultipletraps-and-statusfloatmultiplefaults-is-needed-in-more
+    case STATUS_FLOAT_MULTIPLE_TRAPS:
+    case STATUS_FLOAT_MULTIPLE_FAULTS:
+    {
+        _clearfp();
+        StringStream ss;
+        ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
+           << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
+        throw std::runtime_error(ss.str());
+    }
+    default:
+        if (SEFuncPtr != nullptr)
+        {
+            SEFuncPtr(exceptionCode, pExpInfo);
+        }
+        else
+        {
+            StringStream ss;
+            ss << "structured exception: 0x" << std::hex << exceptionCode
+               << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
+            throw std::runtime_error(ss.str());
+        }
+    }
+};
+
+void EnableFloatingPointExceptions()
+{
+    // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
+    fpu_exceptions::SEFuncPtr = _set_se_translator(&fpu_exceptions::SEHandler);
+
+    unsigned int feValue = ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
+    unsigned int mask = _MCW_EM;
+    unsigned int currentWord = 0;
+    errno_t err = _controlfp_s(&currentWord, 0, 0);
+    DVASSERT(err == 0);
+    // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
+    err = _controlfp_s(&currentWord, feValue, mask);
+    DVASSERT(err == 0);
+    Logger::FrameworkDebug("FPU exceptions enabled");
+}
+#else // __DAVAENGINE_WINDOWS__
+void EnableFloatingPointExceptions()
+{
+// https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
+// http://en.cppreference.com/w/cpp/numeric/fenv
+// on iOS better in debug add flag -fsanitize=undefined
+#ifdef __DAVAENGINE_ANDROID__
+#ifndef FE_NOMASK_ENV
+    Logger::FrameworkDebug("FPU exceptions not supported");
+    // still try
+    int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
+    DVASSERT(result != -1);
+#else
+    int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
+    DVASSERT(result != -1);
+    Logger::FrameworkDebug("FPU exceptions enabled");
+#endif
+#endif // __DAVAENGINE_ANDROID__
+}
+#endif // non __DAVAENGINE_WINDOWS__
+#else // __DAVAENGINE_DEBUG__
+#ifdef __DAVAENGINE_WINDOWS__
+void DisableFloatingPointExceptions()
+{
+    // do nothing on windows fpu exceptions disabled by default
+}
+#else // non __DAVAENGINE_WINDOWS__
+void DisableFloatingPointExceptions()
+{
+    Logger::FrameworkDebug("disable FPU exceptions");
+#ifdef __DAVAENGINE_ANDROID__
+    int result = fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
+    DVASSERT(result != -1);
+#else
+// on iOS fpu exceptions disables by default
+#endif
+}
+#endif 
+#endif // not DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
+} // end namespace debug_details
+
 void Core::CreateSingletons()
 {
-    // check types size
     new Logger();
+    
+#ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
+    fpu_exceptions::EnableFloatingPointExceptions();
+#else
+    fpu_exceptions::DisableFloatingPointExceptions();
+#endif
+
     new AllocatorFactory();
     new JobManager();
     new FileSystem();
@@ -124,7 +231,16 @@ void Core::CreateSingletons()
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    new SoundSystem();
+    Logger::Info("SoundSystem init start");
+    try
+    {
+        new SoundSystem();
+    }
+    catch (std::exception& ex)
+    {
+        Logger::Info("%s", ex.what());
+    }
+    Logger::Info("SoundSystem init finish");
 
     if (isConsoleMode)
     {
@@ -501,14 +617,12 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
-#ifndef __DAVAENGINE_WIN_UAP__
+#if !defined(DAVA_NETWORK_DISABLE)
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
+#endif
     // Give memory profiler chance to notify its subscribers about new frame
     DAVA_MEMORY_PROFILER_UPDATE();
-#else
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#endif
 
     if (!core)
     {
@@ -772,4 +886,14 @@ float32 Core::GetScreenScaleFactor() const
 {
     return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
-};
+
+void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
+{
+}
+
+Vector2 Core::GetWindowMinimumSize() const
+{
+    return Vector2();
+}
+
+} // namespace DAVA

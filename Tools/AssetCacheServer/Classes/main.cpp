@@ -44,7 +44,7 @@ void FrameworkDidLaunched()
 {
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     DAVA::Core::Run(argc, argv);
     QApplication a(argc, argv);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
         if (server.Settings().IsFirstLaunch())
         {
-            mainWindow.show();
+            mainWindow.OnFirstLaunch();
         }
 
         if (server.Settings().IsAutoStart())

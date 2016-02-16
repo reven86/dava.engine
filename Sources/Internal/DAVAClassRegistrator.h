@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 	__DAVAENGINE_IPHONE__ this define must be set in preprocessor macros for all projects that compiled using DAVAEngine for iPhone
  */
@@ -36,8 +35,7 @@
 
 namespace DAVA
 {
-    void RegisterDAVAClasses();
+void RegisterDAVAClasses();
 };
 
 #endif // __DAVAENGINE_CONFIG_H__
-

@@ -42,8 +42,7 @@ using namespace Windows::UI::ViewManagement;
 
 namespace DAVA
 {
-
-int Core::Run(int /*argc*/, char* /*argv*/[], AppHandle /*handle*/)
+int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
 {
     std::unique_ptr<CorePlatformWinUAP> core = std::make_unique<CorePlatformWinUAP>();
     core->InitArgs();
@@ -59,7 +58,7 @@ void CorePlatformWinUAP::InitArgs()
 
 void CorePlatformWinUAP::Run()
 {
-    auto appStartCallback = ref new ApplicationInitializationCallback([this](ApplicationInitializationCallbackParams^) {
+    auto appStartCallback = ref new ApplicationInitializationCallback([this](ApplicationInitializationCallbackParams ^ ) {
         xamlApp = ref new WinUAPXamlApp();
     });
     Application::Start(appStartCallback);
@@ -134,13 +133,23 @@ InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetMouseCaptureMode()
 
 bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
-    RunOnUIThreadBlocked([this, mode]() {
-        if (xamlApp->SetMouseCaptureMode(mode))
-        {
+    if (xamlApp->SetMouseCaptureMode(mode))
+    {
+        RunOnUIThread([this, mode]() {
             xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
-        }
-    });
+        });
+    }
     return GetMouseCaptureMode() == mode;
+}
+
+void CorePlatformWinUAP::SetWindowMinimumSize(float32 width, float32 height)
+{
+    xamlApp->SetWindowMinimumSize(width, height);
+}
+
+Vector2 CorePlatformWinUAP::GetWindowMinimumSize() const
+{
+    return xamlApp->GetWindowMinimumSize();
 }
 
 bool CorePlatformWinUAP::IsUIThread() const
@@ -174,6 +183,6 @@ void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocke
     }
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

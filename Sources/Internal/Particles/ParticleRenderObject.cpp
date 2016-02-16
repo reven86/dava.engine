@@ -33,15 +33,14 @@
 
 namespace DAVA
 {
-
 //camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
-static Vector3 basisVectors[7*2] = {Vector3(), Vector3(), 
-									Vector3(), Vector3(), 
-									Vector3(), Vector3(), 
-									Vector3(), Vector3(), 
-									Vector3(0,1,0), Vector3(0,0,1), 
-									Vector3(1,0,0), Vector3(0,0,1), 
-									Vector3(0,1,0), Vector3(1,0,0)};
+static Vector3 basisVectors[7 * 2] = { Vector3(), Vector3(),
+                                       Vector3(), Vector3(),
+                                       Vector3(), Vector3(),
+                                       Vector3(), Vector3(),
+                                       Vector3(0, 1, 0), Vector3(0, 0, 1),
+                                       Vector3(1, 0, 0), Vector3(0, 0, 1),
+                                       Vector3(0, 1, 0), Vector3(1, 0, 0) };
 
 ParticleRenderObject::ParticleRenderObject(ParticleEffectData* effect)
     : effectData(effect)
@@ -69,8 +68,7 @@ ParticleRenderObject::~ParticleRenderObject()
     }
 }
 
-
-void ParticleRenderObject::PrepareToRender(Camera *camera)
+void ParticleRenderObject::PrepareToRender(Camera* camera)
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
         return;
@@ -80,10 +78,9 @@ void ParticleRenderObject::PrepareToRender(Camera *camera)
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
     {
         activeRenderBatchArray.clear();
-		return;
+        return;
     }
 }
-
 
 void ParticleRenderObject::SetSortingOffset(uint32 offset)
 {
@@ -92,7 +89,7 @@ void ParticleRenderObject::SetSortingOffset(uint32 offset)
         renderBatchCache[i]->SetSortingOffset(offset);
 }
 
-void ParticleRenderObject::PrepareRenderData(Camera * camera)
+void ParticleRenderObject::PrepareRenderData(Camera* camera)
 {
     activeRenderBatchArray.clear();
     currRenderBatchId = 0;
@@ -113,8 +110,10 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
     ex.Normalize();
     ey.Normalize();
     ez.Normalize();
-    basisVectors[2] = ey; basisVectors[3] = ez;
-	basisVectors[4] = ex; basisVectors[5] = ez;
+    basisVectors[2] = ey;
+    basisVectors[3] = ez;
+    basisVectors[4] = ex;
+    basisVectors[5] = ez;
     basisVectors[6] = ey;
     basisVectors[7] = ex;
 
@@ -348,5 +347,4 @@ void ParticleRenderObject::BindDynamicParameters(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 }
 
-
-}//namespace
+} //namespace

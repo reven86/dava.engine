@@ -25,14 +25,6 @@ if( ANDROID )
     set (CMAKE_MAKE_PROGRAM "${MAKE_PROGRAM}" CACHE STRING   "Program used to build from makefiles.")
     mark_as_advanced(CMAKE_MAKE_PROGRAM)
 
-elseif ( WINDOWS_UAP )
-
-    if ( DAVA_MEMORY_PROFILER )
-        message(WARNING "Windows Store platform detected. Memory profiling is disabled")
-        remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-        unset ( DAVA_MEMORY_PROFILER )
-    endif ()
-    
 endif()
 
 include ( PlatformSettings     )
@@ -41,6 +33,7 @@ include ( FileTreeCheck        )
 include ( DavaTemplate         )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
+include ( UnityBuild           )
 
 
 set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
@@ -491,117 +484,6 @@ macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
     add_dynamic_config_lib_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
     add_dynamic_config_lib_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
-endmacro ()
-
-macro( generated_unity_sources SOURCE_FILES )  
-
-    if( UNITY_BUILD )
-        cmake_parse_arguments (ARG "" "" "IGNORE_LIST;IGNORE_LIST_APPLE;IGNORE_LIST_WIN32" ${ARGN})
-        
-        foreach( TYPE_OS  APPLE IOS MACOS WIN32 ANDROID )
-            if( ${TYPE_OS} )
-                list( APPEND ARG_IGNORE_LIST ${ARG_IGNORE_LIST_${TYPE_OS}} )
-            endif()
-        endforeach()
-
-        list( REMOVE_DUPLICATES ${SOURCE_FILES} )
-
-        set( CPP_PACK_SIZE 0      )
-        set( CPP_PACK_LIST        )
-        set( CPP_LIST_SIZE 0      )
-        set( CPP_LIST             )
-        set( CPP_ALL_LIST         )
-        set( CPP_ALL_LIST_SIZE    )
-
-        set( OBJCPP_PACK_SIZE 0   )
-        set( OBJCPP_PACK_LIST     )
-        set( OBJCPP_LIST_SIZE 0   )
-        set( OBJCPP_LIST          )
-        set( OBJCPP_ALL_LIST      )
-        set( OBJCPP_ALL_LIST_SIZE )
-
-        set( OBJCPP_PACK_EXP mm   ) 
-        set( CPP_PACK_EXP    cpp  ) 
-
-        set( REMAINING_LIST       )
-
-        foreach( ITEM ${${SOURCE_FILES}} )
-            set( IGNORE_FLAG )
-            foreach( IGNORE_MASK ${ARG_IGNORE_LIST} )
-                if( ${ITEM} MATCHES ${IGNORE_MASK} )
-                    set( IGNORE_FLAG true )
-                    break()
-                endif()
-            endforeach()
-            get_filename_component( ITEM_EXT ${ITEM} EXT )
-            if( NOT IGNORE_FLAG AND "${ITEM_EXT}" STREQUAL ".cpp" )
-                list( APPEND CPP_ALL_LIST  ${ITEM} )
-            elseif( NOT IGNORE_FLAG AND ( "${ITEM_EXT}" STREQUAL ".m" OR "${ITEM_EXT}" STREQUAL ".mm" ) )
-                list( APPEND OBJCPP_ALL_LIST  ${ITEM} )                
-            else()
-                list( APPEND REMAINING_LIST ${ITEM} )
-            endif()
-        endforeach()  
-
-        foreach( PTYPE CPP OBJCPP )
-            list( LENGTH ${PTYPE}_ALL_LIST ${PTYPE}_ALL_LIST_SIZE )
-
-            if( ${${PTYPE}_ALL_LIST_SIZE} EQUAL 0 )
-                continue()
-            endif()
-
-            math( EXPR NUMBER_GEN_PACK "${${PTYPE}_ALL_LIST_SIZE} / 6" ) 
-
-            if( ${PTYPE} STREQUAL "OBJCPP" )
-                set( NUMBER_GEN_PACK ${PTYPE}_ALL_LIST_SIZE )
-            endif( )
-
-            foreach( ITEM ${${PTYPE}_ALL_LIST} )
-                list( APPEND ${PTYPE}_LIST  ${ITEM} )
-                math( EXPR ${PTYPE}_LIST_SIZE "${${PTYPE}_LIST_SIZE} + 1" )
-                if( ${${PTYPE}_LIST_SIZE} GREATER ${NUMBER_GEN_PACK} )
-                    math( EXPR ${PTYPE}_PACK_SIZE "${${PTYPE}_PACK_SIZE} + 1" )
-                    set( ${PTYPE}_PACK_${${PTYPE}_PACK_SIZE} ${${PTYPE}_LIST} )
-                    set( ${PTYPE}_LIST )
-                    set( ${PTYPE}_LIST_SIZE 0 )                
-                endif()
-            endforeach()  
-
-            if( ${PTYPE}_LIST_SIZE )
-                math( EXPR ${PTYPE}_PACK_SIZE "${${PTYPE}_PACK_SIZE} + 1" )
-                set( ${PTYPE}_PACK_${${PTYPE}_PACK_SIZE} ${${PTYPE}_LIST} )
-
-            endif()
-
-            get_property( PACK_IDX GLOBAL PROPERTY  ${PROJECT_NAME}_PACK_IDX  )
-
-            if( NOT PACK_IDX )
-                set( PACK_IDX 0 )
-            endif()
-        
-            foreach( index RANGE 1 ${${PTYPE}_PACK_SIZE}  )
-                set( HEADERS_LIST )
-                foreach( PACH ${${PTYPE}_PACK_${index}} )
-                    get_filename_component( PACH ${PACH} ABSOLUTE )
-                    list( APPEND HEADERS_LIST "#include\"${PACH}\"" ) 
-                    set_source_files_properties( ${PACH} PROPERTIES HEADER_FILE_ONLY TRUE )
-                endforeach()
-                string(REPLACE ";" "\n" HEADERS_LIST "${HEADERS_LIST}" )            
-                math( EXPR index_pack "${index} + ${PACK_IDX}" )
-                set ( ${PTYPE}_NAME ${CMAKE_BINARY_DIR}/src_pack/${PROJECT_NAME}_${index_pack}.${${PTYPE}_PACK_EXP} )
-                
-                list( APPEND ${PTYPE}_PACK_LIST ${${PTYPE}_NAME} )
-
-                file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
-            endforeach()
-
-            math( EXPR PACK_IDX "${PACK_IDX} + ${${PTYPE}_PACK_SIZE}" )
-            set_property( GLOBAL PROPERTY ${PROJECT_NAME}_PACK_IDX "${PACK_IDX}" )
-        endforeach() 
-
-        set( ${SOURCE_FILES}  ${${SOURCE_FILES}} ${CPP_PACK_LIST} ${OBJCPP_PACK_LIST} )
-
-    endif()
 endmacro ()
 
 function (ASSERT VAR_NAME MESSAGE)

@@ -111,9 +111,9 @@ FPROG_OUT_END
 
 #if PIXEL_LIT
     DECL_FP_SAMPLER2D(normalmap)        
-    property float  inSpecularity               : static,a : ;    
-    property float3 metalFresnelReflectance     : static,a : ;
-    property float  normalScale                 : static,a : ;
+    property float  inSpecularity               : static,a : def_value=1.0;    
+    property float3 metalFresnelReflectance     : static,a : def_value=0.5,0.5,0.5;
+    property float  normalScale                 : static,a : def_value=1.0;
 #endif
 
 
@@ -128,7 +128,7 @@ FPROG_OUT_END
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
     #if NORMALIZED_BLINN_PHONG && VIEW_SPECULAR
-        property float inGlossiness : static,a : ;
+        property float inGlossiness : static,a : def_value=0.5;
     #endif
 #endif
 
@@ -304,7 +304,12 @@ FPROG_BEGIN
         
             #if VIEW_DIFFUSE
                 #if MATERIAL_LIGHTMAP
-                    color = textureColor1.rgb * 2.0;
+					#if VIEW_ALBEDO
+						color = textureColor1.rgb * 2.0;
+					#else
+						//do not scale lightmap in view diffuse only case. artist request
+						color = textureColor1.rgb; 
+					#endif
                 #else
                     color += FP_IN(varDiffuseColor) * lightColor0;
                 #endif
@@ -431,7 +436,12 @@ FPROG_BEGIN
     
         #if VIEW_DIFFUSE
             #if MATERIAL_LIGHTMAP
-                color = textureColor1.rgb * 2.0;
+                #if VIEW_ALBEDO
+					color = textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color = textureColor1.rgb; 
+				#endif
             #else
                 color += diffuse * lightColor0;
             #endif
@@ -468,7 +478,12 @@ FPROG_BEGIN
 			#endif
 
 			#if VIEW_DIFFUSE
-				color *= textureColor1.rgb * 2.0;
+				#if VIEW_ALBEDO
+					color *= textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color *= textureColor1.rgb; 
+				#endif				
 			#endif
 
 		#elif MATERIAL_TEXTURE

@@ -47,7 +47,6 @@
 
 namespace DAVA
 {
-
 ImageSystem::ImageSystem()
 {
     wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
@@ -60,7 +59,7 @@ ImageSystem::ImageSystem()
 
 ImageSystem::~ImageSystem()
 {
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         delete wrapper;
     }
@@ -126,7 +125,7 @@ void ImageSystem::EnsurePowerOf2Images(Vector<Image*>& images) const
     }
 }
 
-eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode ImageSystem::SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
@@ -137,7 +136,7 @@ eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Ve
     return properWrapper->WriteFileAsCubeMap(fileName, imageSet, compressionFormat, quality);
 }
 
-eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode ImageSystem::Save(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
@@ -148,7 +147,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &i
     return properWrapper->WriteFile(fileName, imageSet, compressionFormat, quality);
 }
 
-eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode ImageSystem::Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(image != nullptr);
 
@@ -157,10 +156,10 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
     return Save(fileName, imageSet, compressionFormat, quality);
 }
 
-ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathName) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath& pathName) const
 {
     const String extension = pathName.GetExtension();
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         if (wrapper && wrapper->IsFileExtensionSupported(extension))
         {
@@ -173,7 +172,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePtr& file) const
 {
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         if (wrapper && wrapper->CanProcessFile(file))
         {
@@ -184,17 +183,15 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePtr& file) 
 
     return nullptr;
 }
-    
-    
-ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath &pathname) const
+
+ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath& pathname) const
 {
     return GetImageFormatForExtension(pathname.GetExtension());
 }
 
-    
-ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) const
+ImageFormat ImageSystem::GetImageFormatForExtension(const String& extension) const
 {
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         if (wrapper && wrapper->IsFileExtensionSupported(extension))
             return wrapper->GetImageFormat();
@@ -214,7 +211,7 @@ ImageFormat ImageSystem::GetImageFormatByName(const String& name) const
     return IMAGE_FORMAT_UNKNOWN;
 }
 
-ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
+ImageInfo ImageSystem::GetImageInfo(const FilePath& pathName) const
 {
     ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
     if (infile)
@@ -229,6 +226,19 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
         {
             return properWrapper->GetImageInfo(infile);
         }
+    }
+
+}
+
+ImageInfo ImageSystem::GetImageInfo(File* infile) const
+{
+    DVASSERT(infile != nullptr);
+
+    const ImageFormatInterface* properWrapper = GetImageFormatInterface(infile);
+    if (nullptr != properWrapper)
+    {
+        infile->Seek(0, File::SEEK_FROM_START); //reset file state after GetImageFormatInterface
+        return properWrapper->GetImageInfo(infile);
     }
 
     return ImageInfo();

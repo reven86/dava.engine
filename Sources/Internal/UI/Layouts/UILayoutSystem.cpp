@@ -83,12 +83,26 @@ void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnCh
         container = FindNotDependentOnChildrenControl(container);
     }
 
-    CollectControls(container);
+    CollectControls(container, true);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
 
     ApplySizesAndPositions();
+
+    layoutData.clear();
+}
+
+void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
+{
+    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
+
+    CollectControls(control, false);
+
+    ProcessAxis(Vector2::AXIS_X);
+    ProcessAxis(Vector2::AXIS_Y);
+
+    ApplyPositions();
 
     layoutData.clear();
 }
@@ -109,20 +123,25 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
         }
     }
 
+    if (result->GetParent())
+    {
+        result = result->GetParent();
+    }
+
     return result;
 }
 
-void UILayoutSystem::CollectControls(UIControl* control)
+void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
 {
     layoutData.clear();
     layoutData.emplace_back(ControlLayoutData(control));
-    CollectControlChildren(control, 0);
+    CollectControlChildren(control, 0, recursive);
 }
 
-void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex)
+void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
 {
     int32 index = static_cast<int32>(layoutData.size());
-    const List<UIControl*> &children = control->GetChildren();
+    const List<UIControl*>& children = control->GetChildren();
 
     layoutData[parentIndex].SetFirstChildIndex(index);
     layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
@@ -132,10 +151,13 @@ void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentInde
         layoutData.emplace_back(ControlLayoutData(child));
     }
 
-    for (UIControl* child : children)
+    if (recursive)
     {
-        CollectControlChildren(child, index);
-        index++;
+        for (UIControl* child : children)
+        {
+            CollectControlChildren(child, index, recursive);
+            index++;
+        }
     }
 }
 
@@ -197,4 +219,11 @@ void UILayoutSystem::ApplySizesAndPositions()
     }
 }
 
+void UILayoutSystem::ApplyPositions()
+{
+    for (ControlLayoutData& data : layoutData)
+    {
+        data.ApplyOnlyPositionLayoutToControl();
+    }
+}
 }

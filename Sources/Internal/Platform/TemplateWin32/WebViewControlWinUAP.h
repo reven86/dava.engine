@@ -31,13 +31,12 @@
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #include "UI/IWebViewControl.h"
 
 namespace DAVA
 {
-
 class Sprite;
 class CorePlatformWinUAP;
 class PrivateWebViewWinUAP;
@@ -51,7 +50,7 @@ public:
 
     // Initialize the control.
     void Initialize(const Rect& rect) override;
-    
+
     // Open the URL requested.
     void OpenURL(const String& url) override;
     // Load html page from string
@@ -83,7 +82,7 @@ private:
     std::shared_ptr<PrivateWebViewWinUAP> privateImpl;
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
+#endif // __DAVAENGINE_WIN_UAP__ && !__DISABLE_NATIVE_WEBVIEW__
+#endif // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__

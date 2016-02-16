@@ -57,7 +57,7 @@ protected:
     virtual int CheckOptionsInternal() const = 0;
 
 public:
-    ProgramOptions options;
+    DAVA::ProgramOptions options;
 
     DAVA::AssetCache::ClientNetProxy client;
     RequestResult requestResult;

@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/RenderCallbacks.h"
+#include "Render/Image/Image.h"
 
 namespace DAVA
 {
@@ -52,10 +53,24 @@ DynamicBindings dynamicBindings;
 RuntimeTextures runtimeTextures;
 RenderStats stats;
 
-int32 framebufferWidth;
-int32 framebufferHeight;
+rhi::ResetParam resetParams;
 
 ScreenShotCallbackDelegate* screenshotCallback = nullptr;
+
+static void
+rhiScreenShotCallback(uint32 width, uint32 height, const void* rgba)
+{
+    if (screenshotCallback)
+    {
+        DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, (const uint8*)rgba);
+
+        if (img)
+        {
+            (*screenshotCallback)(img);
+            img->Release();
+        }
+    }
+}
 }
 
 static Mutex renderCmdExecSync;
@@ -65,9 +80,6 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     DVASSERT(!ininialized);
 
     api = _api;
-
-    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
 
     if (nullptr == params.FrameCommandExecutionSync)
     {
@@ -79,7 +91,12 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
     PixelFormatDescriptor::SetHardwareSupportedFormats();
-    GPUFamilyDescriptor::SetupGPUParameters();
+
+    resetParams.width = params.width;
+    resetParams.height = params.height;
+    resetParams.vsyncEnabled = params.vsyncEnabled;
+    resetParams.window = params.window;
+    resetParams.fullScreen = params.fullScreen;
 
     ininialized = true;
 }
@@ -102,8 +119,7 @@ bool IsInitialized()
 
 void Reset(const rhi::ResetParam& params)
 {
-    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
+    resetParams = params;
 
     rhi::Reset(params);
 }
@@ -130,6 +146,20 @@ void SetDesiredFPS(int32 fps)
     desiredFPS = fps;
 }
 
+void SetVSyncEnabled(bool enable)
+{
+    if (resetParams.vsyncEnabled != enable)
+    {
+        resetParams.vsyncEnabled = enable;
+        rhi::Reset(resetParams);
+    }
+}
+
+bool IsVSyncEnabled()
+{
+    return resetParams.vsyncEnabled;
+}
+
 RenderOptions* GetOptions()
 {
     DVASSERT(ininialized);
@@ -153,18 +183,18 @@ RenderStats& GetRenderStats()
 
 int32 GetFramebufferWidth()
 {
-    return framebufferWidth;
+    return static_cast<int32>(resetParams.width);
 }
 
 int32 GetFramebufferHeight()
 {
-    return framebufferHeight;
+    return static_cast<int32>(resetParams.height);
 }
 
 void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
 {
     screenshotCallback = _screenShotCallback;
-    //RHI_COMPLETE
+    rhi::TakeScreenshot(&rhiScreenShotCallback);
 }
 
 void BeginFrame()

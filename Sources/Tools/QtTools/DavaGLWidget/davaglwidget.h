@@ -85,12 +85,12 @@ class DavaGLWidget
 public:
     explicit DavaGLWidget(QWidget *parent = nullptr);
     void MakeInvisible();
-    qreal GetDevicePixelRatio() const;
     QQuickWindow* GetGLView();
+
 signals:
     void ScreenChanged();
     void mouseScrolled(int ofs);
-    void Resized(int width, int height, int dpr);
+    void Resized(int width, int height);
     void Initialized();
     void OnDrop(const QMimeData* mimeData);
 
@@ -100,7 +100,6 @@ public slots:
 private slots:
     void OnResize();
     void OnCleanup();
-    void UpdateView();
 
 protected:
     void resizeEvent(QResizeEvent*) override;

@@ -21,21 +21,21 @@
 class FCOLLADA_EXPORT FMLookAt
 {
 public:
-	FMVector3 position; /**< The position of the viewer.
+    FMVector3 position; /**< The position of the viewer.
 						     Defines the translation. */
-	FMVector3 target; /**< The target of the viewer.
+    FMVector3 target; /**< The target of the viewer.
 					       Defines the pitch and the yaw of the transform. */
-	FMVector3 up; /**< The up-axis of the viewer.
+    FMVector3 up; /**< The up-axis of the viewer.
 				       Defines the roll of the transform. */
 
-	/** Default Constructor. */
-	FMLookAt();
+    /** Default Constructor. */
+    FMLookAt();
 
-	/** Constructor.
+    /** Constructor.
 		@param _position The position of the viewer.
 		@param _target The target of the viewer.
 		@param _up The up-axis of the viewer. */
-	FMLookAt(const FMVector3& _position, const FMVector3& _target, const FMVector3& _up);
+    FMLookAt(const FMVector3& _position, const FMVector3& _target, const FMVector3& _up);
 };
 
 /** Retrieves whether one look-at value is equivalent to a second look-at value.
@@ -44,4 +44,3 @@ public:
 bool operator==(const FMLookAt& first, const FMLookAt& other);
 
 #endif // _FM_LOOKAT_H_
-

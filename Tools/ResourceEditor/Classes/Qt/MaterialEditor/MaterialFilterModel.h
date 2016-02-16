@@ -44,8 +44,7 @@ class Command2;
 class EntityGroup;
 class MaterialModel;
 
-class MaterialFilteringModel
-    : public QSortFilterProxyModel
+class MaterialFilteringModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
@@ -59,32 +58,30 @@ public:
     };
 
 public:
-	MaterialFilteringModel(MaterialModel *treeModel, QObject *parent = NULL);
+    MaterialFilteringModel(MaterialModel* treeModel, QObject* parent = NULL);
 
-	void Sync();
+    void Sync();
 
-	void SetScene(SceneEditor2 * scene);
-    SceneEditor2 *GetScene();
-	void SetSelection(const EntityGroup *group);
-	DAVA::NMaterial * GetMaterial(const QModelIndex & index) const;
-	QModelIndex GetIndex(DAVA::NMaterial *material, const QModelIndex &parent = QModelIndex()) const ;
-	bool dropCanBeAccepted(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
-    void setFilterType( int type );
+    void SetScene(SceneEditor2* scene);
+    SceneEditor2* GetScene();
+    void SetSelection(const EntityGroup* group);
+    DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
+    QModelIndex GetIndex(DAVA::NMaterial* material, const QModelIndex& parent = QModelIndex()) const;
+
+    bool dropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+    void setFilterType(int type);
     int getFilterType() const;
-	
+
     // QSortFilterProxyModel
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
 
     // QStandardItemModel
-    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 private:
-    int compareNames( DAVA::NMaterial *left, DAVA::NMaterial *right ) const;
-
-	MaterialModel *materialModel;
+    MaterialModel* materialModel;
     eFilterType filterType;
 };
-
 
 #endif // __MATERIALS_FILTER_MODEL_H__

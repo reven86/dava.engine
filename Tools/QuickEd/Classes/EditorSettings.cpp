@@ -46,10 +46,11 @@ EditorSettings::EditorSettings()
 
 EditorSettings::~EditorSettings()
 {
+    Save();
     SafeRelease(settings);
 }
 
-KeyedArchive *EditorSettings::GetSettings()
+KeyedArchive* EditorSettings::GetSettings()
 {
     return settings;
 }
@@ -59,15 +60,15 @@ void EditorSettings::Save()
     settings->Save(EDITOR_SETTINGS_FILE);
 }
 
-void EditorSettings::SetProjectPath(const String &projectPath)
+void EditorSettings::SetProjectPath(const String& projectPath)
 {
-	settings->SetString(String("ProjectPath"), projectPath);
-	Save();
+    settings->SetString(String("ProjectPath"), projectPath);
+    Save();
 }
 
 String EditorSettings::GetProjectPath()
 {
-	return settings->GetString(String("ProjectPath"), String(""));
+    return settings->GetString(String("ProjectPath"), String(""));
 }
 
 int32 EditorSettings::GetLastOpenedCount()
@@ -79,11 +80,11 @@ String EditorSettings::GetLastOpenedFile(int32 index)
 {
     int32 count = GetLastOpenedCount();
     DVASSERT((0 <= index) && (index < count));
-    
+
     return settings->GetString(Format("LastOpenedFile_%d", index), "");
 }
 
-void EditorSettings::AddLastOpenedFile(const String & pathToFile)
+void EditorSettings::AddLastOpenedFile(const String& pathToFile)
 {
     Vector<String> filesList;
 
@@ -123,19 +124,19 @@ void EditorSettings::AddLastOpenedFile(const String & pathToFile)
 
 void EditorSettings::SetUIEditorVersion(const String& editorVersion)
 {
-	settings->SetString("editor.version", editorVersion);
-	Save();
+    settings->SetString("editor.version", editorVersion);
+    Save();
 }
 
 String EditorSettings::GetUIEditorVersion()
 {
-	return settings->GetString("editor.version");
+    return settings->GetString("editor.version");
 }
 
 void EditorSettings::SetPixelized(bool value)
 {
     settings->SetBool("editor.pixelized", value);
-	Save();
+    Save();
 }
 
 bool EditorSettings::IsPixelized() const
@@ -143,34 +144,27 @@ bool EditorSettings::IsPixelized() const
     return settings->GetBool("editor.pixelized", true);
 }
 
-Color EditorSettings::GetCurrentBackgroundFrameColor() const
-{
-    return GetColor("editor.currentBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
-}
-
-void EditorSettings::SetCurrentBackgroundFrameColor(const Color& color)
-{
-    SetColor("editor.currentBackgroundFrameColor", color);
-}
-
-Color EditorSettings::GetCustomBackgroundFrameColor() const
-{
-    return GetColor("editor.customBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
-}
-
-void EditorSettings::SetCustomBackgroundFrameColor(const Color& color)
-{
-    SetColor("editor.customBackgroundFrameColor", color);
-}
-
 Color EditorSettings::GetGrigColor() const
 {
     return GetColor("editor.gridColor", DEFAULT_BACKGROUND_FRAME_COLOR);
 }
 
-void EditorSettings::SetGrigColor( const Color& color )
+void EditorSettings::SetGrigColor(const Color& color)
 {
     SetColor("editor.gridColor", color);
+    GridColorChanged.Emit(color);
+}
+
+eBackgroundType EditorSettings::GetGridType() const
+{
+    int64 value = settings->GetInt64("editor.gridType");
+    return static_cast<eBackgroundType>(value);
+}
+
+void EditorSettings::SetGridType(eBackgroundType type)
+{
+    settings->SetInt64("editor.gridType", type);
+    GridTypeChanged.Emit(type);
 }
 
 Color EditorSettings::GetColor(const String& colorName, const Color& defaultColor) const

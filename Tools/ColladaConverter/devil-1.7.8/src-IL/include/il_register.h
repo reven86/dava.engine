@@ -20,16 +20,16 @@
 
 typedef struct iFormatL
 {
-	ILstring	Ext;
-	IL_LOADPROC	Load;
-	struct iFormatL *Next;
+    ILstring Ext;
+    IL_LOADPROC Load;
+    struct iFormatL* Next;
 } iFormatL;
 
 typedef struct iFormatS
 {
-	ILstring	Ext;
-	IL_SAVEPROC	Save;
-	struct iFormatS *Next;
+    ILstring Ext;
+    IL_SAVEPROC Save;
+    struct iFormatS* Next;
 } iFormatS;
 
 #define I_LOAD_FUNC 0
@@ -38,4 +38,4 @@ typedef struct iFormatS
 ILboolean iRegisterLoad(ILconst_string FileName);
 ILboolean iRegisterSave(ILconst_string FileName);
 
-#endif//REGISTER_H
+#endif //REGISTER_H

@@ -46,40 +46,50 @@ namespace DAVA
 //-----------------------------------------------------------------------------
 namespace Detail
 {
-
 template <size_t N>
 struct TypeSelector;
 
 template <>
-struct TypeSelector<sizeof(CHAR)> { using Type = CHAR; };
+struct TypeSelector<sizeof(CHAR)>
+{
+    using Type = CHAR;
+};
 template <>
-struct TypeSelector<sizeof(SHORT)> { using Type = SHORT; };
+struct TypeSelector<sizeof(SHORT)>
+{
+    using Type = SHORT;
+};
 template <>
-struct TypeSelector<sizeof(LONG)> { using Type = LONG; };
+struct TypeSelector<sizeof(LONG)>
+{
+    using Type = LONG;
+};
 template <>
-struct TypeSelector<sizeof(LONGLONG)> { using Type = LONGLONG; };
+struct TypeSelector<sizeof(LONGLONG)>
+{
+    using Type = LONGLONG;
+};
 
 //atomic increment overloads
 inline CHAR AtomicIncrement(volatile CHAR* value)
 {
     CHAR initial = ::_InterlockedExchangeAdd8(value, 1);
     return initial + 1;
-
 }
 inline SHORT AtomicIncrement(volatile SHORT* value)
 {
-    return ::_InterlockedIncrement16(value);
+    return ::InterlockedIncrement16(value);
 }
 inline LONG AtomicIncrement(volatile LONG* value)
 {
-    return ::_InterlockedIncrement(value);
+    return ::InterlockedIncrement(value);
 }
 inline LONGLONG AtomicIncrement(volatile LONGLONG* value)
 {
-    return ::_InterlockedIncrement64(value);
+    return ::InterlockedIncrement64(value);
 }
 
-//atomic decrement overloads 
+//atomic decrement overloads
 inline CHAR AtomicDecrement(volatile CHAR* value)
 {
     CHAR initial = ::_InterlockedExchangeAdd8(value, -1);
@@ -87,33 +97,33 @@ inline CHAR AtomicDecrement(volatile CHAR* value)
 }
 inline SHORT AtomicDecrement(volatile SHORT* value)
 {
-    return ::_InterlockedDecrement16(value);
+    return ::InterlockedDecrement16(value);
 }
 inline LONG AtomicDecrement(volatile LONG* value)
 {
-    return ::_InterlockedDecrement(value);
+    return ::InterlockedDecrement(value);
 }
 inline LONGLONG AtomicDecrement(volatile LONGLONG* value)
 {
-    return ::_InterlockedDecrement64(value);
+    return ::InterlockedDecrement64(value);
 }
 
-//atomic swap overloads 
+//atomic swap overloads
 inline CHAR AtomicSwap(volatile CHAR* target, CHAR desired)
 {
-    return ::_InterlockedExchange8(target, desired);
+    return ::InterlockedExchange8(target, desired);
 }
 inline SHORT AtomicSwap(volatile SHORT* target, SHORT desired)
 {
-    return ::_InterlockedExchange16(target, desired);
+    return ::InterlockedExchange16(target, desired);
 }
 inline LONG AtomicSwap(volatile LONG* target, LONG desired)
 {
-    return ::_InterlockedExchange(target, desired);
+    return ::InterlockedExchange(target, desired);
 }
 inline LONGLONG AtomicSwap(volatile LONGLONG* target, LONGLONG desired)
 {
-    return ::_InterlockedExchange64(target, desired);
+    return ::InterlockedExchange64(target, desired);
 }
 
 //atomic cas overloads
@@ -123,15 +133,15 @@ inline CHAR AtomicCAS(volatile CHAR* target, CHAR expected, CHAR desired)
 }
 inline SHORT AtomicCAS(volatile SHORT* target, SHORT expected, SHORT desired)
 {
-    return ::_InterlockedCompareExchange16(target, desired, expected);
+    return ::InterlockedCompareExchange16(target, desired, expected);
 }
 inline LONG AtomicCAS(volatile LONG* target, LONG expected, LONG desired)
 {
-    return ::_InterlockedCompareExchange(target, desired, expected);
+    return ::InterlockedCompareExchange(target, desired, expected);
 }
 inline LONGLONG AtomicCAS(volatile LONGLONG* target, LONGLONG expected, LONGLONG desired)
 {
-    return ::_InterlockedCompareExchange64(target, desired, expected);
+    return ::InterlockedCompareExchange64(target, desired, expected);
 }
 
 } //  namespace Detail
@@ -201,7 +211,7 @@ bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
 }
 
 template <typename T>
-template <typename Y> 
+template <typename Y>
 T Atomic<T>::Cast(Y val)
 {
     return static_cast<T>(val);

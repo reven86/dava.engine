@@ -43,11 +43,10 @@
 
 namespace DAVA
 {
-
 /**
     \defgroup scene3d 3D Engine
-  */  
-    
+  */
+
 class Texture;
 class StaticMesh;
 class AnimatedMesh;
@@ -81,9 +80,9 @@ class WindSystem;
 class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
-    
+
 class UIEvent;
-    
+
 /**
     \ingroup scene3d
     \brief This class is a code of our 3D Engine scene graph. 
@@ -97,12 +96,12 @@ class EntityCache
 public:
     ~EntityCache();
 
-    void Preload(const FilePath &path);
-    void Clear(const FilePath &path);
+    void Preload(const FilePath& path);
+    void Clear(const FilePath& path);
     void ClearAll();
 
-    Entity* GetOriginal(const FilePath &path);
-    Entity* GetClone(const FilePath &path);
+    Entity* GetOriginal(const FilePath& path);
+    Entity* GetClone(const FilePath& path);
 
 protected:
     Map<FilePath, Entity*> cachedEntities;
@@ -111,7 +110,7 @@ protected:
 class Scene : public Entity, Observer
 {
 protected:
-	virtual ~Scene();
+    virtual ~Scene();
 
 public:
     enum
@@ -150,88 +149,88 @@ public:
     /**
         \brief Function to register entity in scene. This function is called when you add entity to scene.
      */
-    void    RegisterEntity(Entity * entity);
+    void RegisterEntity(Entity* entity);
     /**
         \brief Function to unregister entity from scene. This function is called when you remove entity from scene.
      */
-    void    UnregisterEntity(Entity * entity);    
-    
+    void UnregisterEntity(Entity* entity);
+
     /**
         \brief Function to register component in scene. This function is called when you add any component to any entity in scene.
      */
-    void    RegisterComponent(Entity * entity, Component * component);
+    void RegisterComponent(Entity* entity, Component* component);
     /**
         \brief Function to unregister component from scene. This function is called when you remove any component from any entity in scene.
      */
-    void    UnregisterComponent(Entity * entity, Component * component);
-    
-    virtual void    AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem * insertBeforeSceneForProcess = NULL);
-    virtual void    RemoveSystem(SceneSystem * sceneSystem);    
-    
-	//virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
+    void UnregisterComponent(Entity* entity, Component* component);
+
+    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = NULL);
+    virtual void RemoveSystem(SceneSystem* sceneSystem);
+
+    //virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
 
     Vector<SceneSystem*> systems;
     Vector<SceneSystem*> systemsToProcess;
     Vector<SceneSystem*> systemsToInput;
     //HashMap<uint32, Set<SceneSystem*> > componentTypeMapping;
-    TransformSystem * transformSystem;
-    RenderUpdateSystem * renderUpdateSystem;
-	LodSystem * lodSystem;
-    DebugRenderSystem * debugRenderSystem;
-	EventSystem * eventSystem;
-	ParticleEffectSystem * particleEffectSystem;
-	UpdateSystem * updatableSystem;
-    LightUpdateSystem * lightUpdateSystem;
-	SwitchSystem * switchSystem;
-	RenderSystem * renderSystem;
-	SoundUpdateSystem * soundSystem;
+    TransformSystem* transformSystem;
+    RenderUpdateSystem* renderUpdateSystem;
+    LodSystem* lodSystem;
+    DebugRenderSystem* debugRenderSystem;
+    EventSystem* eventSystem;
+    ParticleEffectSystem* particleEffectSystem;
+    UpdateSystem* updatableSystem;
+    LightUpdateSystem* lightUpdateSystem;
+    SwitchSystem* switchSystem;
+    RenderSystem* renderSystem;
+    SoundUpdateSystem* soundSystem;
     ActionUpdateSystem* actionSystem;
     StaticOcclusionSystem* staticOcclusionSystem;
     SpeedTreeUpdateSystem* speedTreeUpdateSystem;
     FoliageSystem* foliageSystem;
     VersionInfo::SceneVersion version;
-    WindSystem * windSystem;
-    WaveSystem * waveSystem;
-    AnimationSystem * animationSystem;
-    StaticOcclusionDebugDrawSystem *staticOcclusionDebugDrawSystem;
-    SkeletonSystem *skeletonSystem;
-    
+    WindSystem* windSystem;
+    WaveSystem* waveSystem;
+    AnimationSystem* animationSystem;
+    StaticOcclusionDebugDrawSystem* staticOcclusionDebugDrawSystem;
+    SkeletonSystem* skeletonSystem;
+
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
      */
-    virtual Scene * GetScene();
-    
-	void AddAnimatedMesh(AnimatedMesh * mesh);
-	void RemoveAnimatedMesh(AnimatedMesh * mesh);
-	AnimatedMesh * GetAnimatedMesh(int32 index);
-	inline int32	GetAnimatedMeshCount();
+    virtual Scene* GetScene();
 
-    virtual void HandleEvent(Observable * observable); //Handle RenderOptions
-	
-	//virtual void StopAllAnimations(bool recursive = true);
-	
-	virtual void	Update(float timeElapsed);
-	virtual void	Draw();
-    virtual void    SceneDidLoaded();
+    void AddAnimatedMesh(AnimatedMesh* mesh);
+    void RemoveAnimatedMesh(AnimatedMesh* mesh);
+    AnimatedMesh* GetAnimatedMesh(int32 index);
+    inline int32 GetAnimatedMeshCount();
 
-	
-	virtual void	SetupTestLighting();
-	
-	Camera * GetCamera(int32 n);
-	void AddCamera(Camera * c);
-	inline int32	GetCameraCount();
-    
-    void SetCurrentCamera(Camera * camera);
-    Camera * GetCurrentCamera() const;
-    
+    virtual void HandleEvent(Observable* observable); //Handle RenderOptions
+
+    //virtual void StopAllAnimations(bool recursive = true);
+
+    virtual void Update(float timeElapsed);
+    virtual void Draw();
+    virtual void SceneDidLoaded();
+
+    virtual void SetupTestLighting();
+
+    Camera* GetCamera(int32 n);
+    void AddCamera(Camera* c);
+    bool RemoveCamera(Camera* c);
+    inline int32 GetCameraCount();
+
+    void SetCurrentCamera(Camera* camera);
+    Camera* GetCurrentCamera() const;
+
     /* 
         This camera is used for visualization setup only. Most system functions use mainCamere, draw camera is used to setup matrices for render. If you do not call this function GetDrawCamera returns currentCamera. 
         You can use SetCustomDrawCamera function if you want to test frustum clipping, and view the scene from different angles.
      */
-    void SetCustomDrawCamera(Camera * camera);
+    void SetCustomDrawCamera(Camera* camera);
     Camera* GetDrawCamera() const;
 
-    Set<Light*> & GetLights();
+    Set<Light*>& GetLights();
     Light* GetNearestDynamicLight(Light::eType type, Vector3 position);
 
     void CreateComponents();
@@ -239,20 +238,20 @@ public:
 
     EventSystem* GetEventSystem() const;
     RenderSystem* GetRenderSystem() const;
-    AnimationSystem * GetAnimationSystem() const;
+    AnimationSystem* GetAnimationSystem() const;
 
-    SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);
-	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
+    SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
+    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
 
     DAVA::NMaterial* GetGlobalMaterial() const;
     void SetGlobalMaterial(DAVA::NMaterial* globalMaterial);
-    
-    void OnSceneReady(Entity * rootNode);
-    
-    void Input(UIEvent *event);
-    
+
+    void OnSceneReady(Entity* rootNode);
+
+    void Input(UIEvent* event);
+
     /**
         \brief This functions activate and deactivate scene systems
      */
@@ -267,13 +266,11 @@ public:
 protected:
     void UpdateLights();
 
-    void RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
-    void UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
+    void RegisterEntitiesInSystemRecursively(SceneSystem* system, Entity* entity);
+    void UnregisterEntitiesInSystemRecursively(SceneSystem* system, Entity* entity);
 
-    
-    bool RemoveSystem(Vector<SceneSystem*> &storage, SceneSystem *system);
-    
-    
+    bool RemoveSystem(Vector<SceneSystem*>& storage, SceneSystem* system);
+
     uint64 updateTime;
 
     uint64 drawTime;
@@ -282,20 +279,19 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
-	Vector<AnimatedMesh*> animatedMeshes;
-	Vector<Camera*> cameras;
-    
-    NMaterial* sceneGlobalMaterial;
-    void ImportShadowColor(Entity * rootNode);
+    Vector<AnimatedMesh*> animatedMeshes;
+    Vector<Camera*> cameras;
 
-    Camera * mainCamera;
-    Camera * drawCamera;
+    NMaterial* sceneGlobalMaterial;
+    void ImportShadowColor(Entity* rootNode);
+
+    Camera* mainCamera;
+    Camera* drawCamera;
 
     Set<Light*> lights;
 
     friend class Entity;
 };
-
 
 int32 Scene::GetAnimatedMeshCount()
 {
@@ -305,13 +301,10 @@ int32 Scene::GetAnimatedMeshCount()
 int32 Scene::GetCameraCount()
 {
     return (int32)cameras.size();
-}  
-
+}
 };
 
 
 
 
 #endif // __DAVAENGINE_SCENE_H__
-
-

@@ -42,10 +42,10 @@ class DocumentGroup : public QObject
 {
     Q_OBJECT
 public:
-    explicit DocumentGroup(QObject *parent = nullptr);
+    explicit DocumentGroup(QObject* parent = nullptr);
     ~DocumentGroup();
 
-    void AddDocument(Document*);
+    void InsertDocument(int index, Document*);
     void RemoveDocument(Document*);
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
@@ -57,6 +57,7 @@ signals:
     void DocumentDeactivated(Document*);
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
+    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void SetActiveDocument(Document* document);
@@ -64,7 +65,6 @@ public slots:
     void SetEmulationMode(bool emulationMode);
     void SetPixelization(bool hasPixelization);
     void SetScale(float scale);
-    void SetDPR(qreal dpr);
     void OnSelectAllRequested();
     void FocusNextChild();
     void FocusPreviousChild();
@@ -73,11 +73,10 @@ protected:
     bool emulationMode = false;
     bool hasPixalization = false;
     float scale = 100.0f;
-    qreal dpr = 1.0f;
 
-    Document *active;
+    Document* active;
     QList<Document*> documentList;
-    QUndoGroup *undoGroup;
+    QUndoGroup* undoGroup;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

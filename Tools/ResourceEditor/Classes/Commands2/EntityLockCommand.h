@@ -35,15 +35,15 @@
 class EntityLockCommand : public Command2
 {
 public:
-	EntityLockCommand(DAVA::Entity* entity, bool lock);
-	~EntityLockCommand();
+    EntityLockCommand(DAVA::Entity* entity, bool lock);
+    ~EntityLockCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
-    DAVA::Entity *entity;
-	bool oldState;
+    DAVA::Entity* entity;
+    bool oldState;
     bool newState;
 };
 

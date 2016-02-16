@@ -32,29 +32,28 @@
 
 #include <QWidget>
 
-
 class AbstractColorPicker
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
 signals:
     void begin();
-    void changing( const QColor& c );
-    void changed( const QColor& c );
+    void changing(const QColor& c);
+    void changed(const QColor& c);
     void canceled();
 
 public:
-    explicit AbstractColorPicker( QWidget *parent );
+    explicit AbstractColorPicker(QWidget* parent);
     ~AbstractColorPicker();
 
     QColor GetColor() const;
 
 public slots:
-    void SetColor( const QColor& c );
+    void SetColor(const QColor& c);
 
 protected:
-    virtual void SetColorInternal( const QColor& c ) = 0;
+    virtual void SetColorInternal(const QColor& c) = 0;
     QColor color;
 };
 

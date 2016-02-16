@@ -26,79 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "ImageSplitterTool.h"
+#include "CommandLine/ImageSplitter/ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
-#include "CommandLine/CommandLineParser.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-
-void ImageSplitterTool::PrintUsage() const
+ImageSplitterTool::ImageSplitterTool()
+    : CommandLineTool("-imagesplitter")
 {
-    printf("\n");
-    printf("-imagesplitter -split [-file [file]]\n");
-    printf("-imagesplitter -merge [-folder [directory]]\n");
-    printf("\twill split one image at four channels or merge four channels to one image\n");
-    printf("\t-file - filename of the splitting file\n");
-    printf("\t-folder - path for folder with four channels\n");
-
-    printf("\n");
-    printf("Samples:\n");
-    printf("-imagesplitter -split -file /Users/User/Project/Data/3d/image.png\n");
-    printf("-imagesplitter -merge -folder /Users/User/Project/Data/3d/\n");
+    options.AddOption(OptionName::Split, VariantType(false), "Action is splitting image file on channels");
+    options.AddOption(OptionName::Merge, VariantType(false), "Action is merging channels into one file");
+    options.AddOption(OptionName::File, VariantType(String("")), "Full pathname of the image file");
+    options.AddOption(OptionName::Folder, VariantType(String("")), "full pathname of the folder with channels");
 }
 
-DAVA::String ImageSplitterTool::GetCommandLineKey() const
+void ImageSplitterTool::ConvertOptionsToParamsInternal()
 {
-    return "-imagesplitter";
-}
+    filename = options.GetOption(OptionName::File).AsString();
+    foldername = options.GetOption(OptionName::Folder).AsString();
 
-bool ImageSplitterTool::InitializeFromCommandLine()
-{
-    commandAction = ACTION_NONE;
-    
-    if(CommandLineParser::CommandIsFound(String("-split")))
+    if (options.GetOption(OptionName::Split).AsBool())
     {
         commandAction = ACTION_SPLIT;
-        filename = CommandLineParser::GetCommandParam(String("-file"));
-        if(filename.IsEmpty())
+    }
+    else if (options.GetOption(OptionName::Merge).AsBool())
+    {
+        commandAction = ACTION_MERGE;
+    }
+}
+
+bool ImageSplitterTool::InitializeInternal()
+{
+    if (commandAction == ACTION_SPLIT)
+    {
+        if (filename.IsEmpty())
         {
-            errors.insert(String("Incorrect params for splitting of the file"));
+            AddError("Pathname of image file was not selected");
             return false;
         }
     }
-    else if(CommandLineParser::CommandIsFound(String("-merge")))
+    else if (commandAction == ACTION_MERGE)
     {
-        commandAction = ACTION_MERGE;
-  
-        foldername = CommandLineParser::GetCommandParam(String("-folder"));
-        if(foldername.IsEmpty())
+        if (foldername.IsEmpty())
         {
-            errors.insert(String("Incorrect params for merging of the files"));
+            AddError("Input folder was not selected");
             return false;
         }
         foldername.MakeDirectoryPathname();
     }
     else
     {
-        errors.insert(String("Incorrect params for merging of the files"));
+        AddError("Wrong action was selected");
         return false;
     }
-    
+
     return true;
 }
 
-void ImageSplitterTool::Process() 
+void ImageSplitterTool::ProcessInternal()
 {
-    if(commandAction == ACTION_SPLIT)
+    if (commandAction == ACTION_SPLIT)
     {
         ImageTools::SplitImage(filename, errors);
     }
-    else if(commandAction == ACTION_MERGE)
+    else if (commandAction == ACTION_MERGE)
     {
         ImageTools::MergeImages(foldername, errors);
     }
 }
-
-

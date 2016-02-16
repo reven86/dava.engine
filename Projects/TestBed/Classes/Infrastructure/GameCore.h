@@ -57,24 +57,25 @@ class GameCore : public DAVA::ApplicationCore
 
 protected:
     virtual ~GameCore();
-public:    
+
+public:
     GameCore();
 
-    static GameCore * Instance() 
-    { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
+    static GameCore* Instance()
+    {
+        return (GameCore*)DAVA::Core::GetApplicationCore();
     };
-    
+
     void OnAppStarted() override;
     void OnAppFinished() override;
 
     void BeginFrame() override;
 
-    void RegisterScreen(BaseScreen *screen);
+    void RegisterScreen(BaseScreen* screen);
     void ShowStartScreen();
-    
+
 protected:
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     void OnBackground() override{};
 
     void OnForeground() override{};
@@ -84,10 +85,10 @@ protected:
 
     void RegisterTests();
     void RunTests();
-    
+
     void CreateDocumentsFolder();
-    DAVA::File * CreateDocumentsFile(const DAVA::String &filePathname);
-    
+    DAVA::File* CreateDocumentsFile(const DAVA::String& filePathname);
+
 private:
     void RunOnlyThisTest();
     void OnError();
@@ -95,12 +96,11 @@ private:
 
     DAVA::String runOnlyThisTest;
 
-    BaseScreen *currentScreen;
-    TestListScreen *testListScreen;
-    
-    DAVA::Vector<BaseScreen *> screens;
+    BaseScreen* currentScreen;
+    TestListScreen* testListScreen;
 
-#if !defined(__DAVAENGINE_WIN_UAP__)
+    DAVA::Vector<BaseScreen*> screens;
+
     // Network support
     void InitNetwork();
 
@@ -112,17 +112,11 @@ private:
     DAVA::Net::NetLogger netLogger;
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     DAVA::Net::MMNetServer memprofServer;
+    bool memprofInUse = false;
 #endif
     DAVA::Net::PeerDescription peerDescr;
 
     bool loggerInUse = false;
-    bool memprofInUse = false;
-
-    static const DAVA::uint16 ANNOUNCE_PORT = 9999;
-    static const DAVA::uint32 ANNOUNCE_TIME_PERIOD = 5;
-    static const DAVA::char8 announceMulticastGroup[];
-    static const DAVA::uint16 LOGGER_PORT = 9999;
-#endif // !defined(__DAVAENGINE_WIN_UAP__)
 };
 
 

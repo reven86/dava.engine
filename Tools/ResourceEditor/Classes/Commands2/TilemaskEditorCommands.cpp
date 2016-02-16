@@ -35,85 +35,85 @@
 #include "../Qt/Main/QtUtils.h"
 
 ActionEnableTilemaskEditor::ActionEnableTilemaskEditor(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_TILEMASK_EDITOR_ENABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_TILEMASK_EDITOR_ENABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionEnableTilemaskEditor::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool enabled = sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
-	if (enabled)
-	{
-		return;
-	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	
-	if (!success )
-	{
-		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->tilemaskEditorSystem->EnableLandscapeEditing();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-	}
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
+
+    bool enabled = sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
+    if (enabled)
+    {
+        return;
+    }
+
+    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    if (!success)
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->tilemaskEditorSystem->EnableLandscapeEditing();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+    }
+
+    if (success &&
+        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(false);
     }
-	
-	SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
+
+    SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
 }
 
 ActionDisableTilemaskEditor::ActionDisableTilemaskEditor(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_TILEMASK_EDITOR_DISABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_TILEMASK_EDITOR_DISABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionDisableTilemaskEditor::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool disabled = !sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
-	if (disabled)
-	{
-		return;
-	}
-	
-	disabled = sceneEditor->tilemaskEditorSystem->DisableLandscapeEdititing();
-	if (!disabled)
-	{
-		ShowErrorDialog(ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
-	}
-    
-    if(disabled)
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
+
+    bool disabled = !sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
+    if (disabled)
+    {
+        return;
+    }
+
+    disabled = sceneEditor->tilemaskEditorSystem->DisableLandscapeEdititing();
+    if (!disabled)
+    {
+        ShowErrorDialog(ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
+    }
+
+    if (disabled)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(true);
     }
-	
-	SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
+
+    SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
 }
 
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* _landscapeProxy, const Rect& _updatedRect)
     : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
 {
-    updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+    updatedRect = Rect(std::floor(_updatedRect.x), std::floor(_updatedRect.y), std::ceil(_updatedRect.dx), std::ceil(_updatedRect.dy));
     landscapeProxy = SafeRetain(_landscapeProxy);
 
     texture[0] = texture[1] = nullptr;
@@ -129,9 +129,9 @@ ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* _landscapeProxy, co
 
 ModifyTilemaskCommand::~ModifyTilemaskCommand()
 {
-	SafeRelease(undoImageMask);
-	SafeRelease(redoImageMask);
-	SafeRelease(landscapeProxy);
+    SafeRelease(undoImageMask);
+    SafeRelease(redoImageMask);
+    SafeRelease(landscapeProxy);
 
     SafeRelease(texture[0]);
     SafeRelease(texture[1]);
@@ -145,8 +145,8 @@ void ModifyTilemaskCommand::Undo()
     landscapeProxy->DecreaseTilemaskChanges();
 
     Rect r = Rect(Vector2(0, 0), Vector2(undoImageMask->GetWidth(), undoImageMask->GetHeight()));
-	Image* mask = landscapeProxy->GetTilemaskImageCopy();
-	mask->InsertImage(undoImageMask, updatedRect.GetPosition(), r);
+    Image* mask = landscapeProxy->GetTilemaskImageCopy();
+    mask->InsertImage(undoImageMask, updatedRect.GetPosition(), r);
 }
 
 void ModifyTilemaskCommand::Redo()
@@ -157,13 +157,13 @@ void ModifyTilemaskCommand::Redo()
     landscapeProxy->IncreaseTilemaskChanges();
 
     Rect r = Rect(Vector2(0, 0), Vector2(redoImageMask->GetWidth(), redoImageMask->GetHeight()));
-	Image* mask = landscapeProxy->GetTilemaskImageCopy();
-	mask->InsertImage(redoImageMask, updatedRect.GetPosition(), r);
+    Image* mask = landscapeProxy->GetTilemaskImageCopy();
+    mask->InsertImage(redoImageMask, updatedRect.GetPosition(), r);
 }
 
 Entity* ModifyTilemaskCommand::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }
 
 void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, int32 internalHandleIndex)
@@ -173,8 +173,14 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, i
     texture[internalHandleIndex] = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
                                                            image->GetWidth(), image->GetHeight(), false);
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(dstTex, false);
-    RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
+    auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
+
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = dstTex;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], material, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -185,26 +191,26 @@ SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy,
     , level(level)
     , redoColor(color)
 {
-	this->landscapeProxy = SafeRetain(landscapeProxy);
-	undoColor = landscapeProxy->GetLandscapeTileColor(level);
+    this->landscapeProxy = SafeRetain(landscapeProxy);
+    undoColor = landscapeProxy->GetLandscapeTileColor(level);
 }
 
 SetTileColorCommand::~SetTileColorCommand()
 {
-	SafeRelease(landscapeProxy);
+    SafeRelease(landscapeProxy);
 }
 
 void SetTileColorCommand::Undo()
 {
-	landscapeProxy->SetLandscapeTileColor(level, undoColor);
+    landscapeProxy->SetLandscapeTileColor(level, undoColor);
 }
 
 void SetTileColorCommand::Redo()
 {
-	landscapeProxy->SetLandscapeTileColor(level, redoColor);
+    landscapeProxy->SetLandscapeTileColor(level, redoColor);
 }
 
 Entity* SetTileColorCommand::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }

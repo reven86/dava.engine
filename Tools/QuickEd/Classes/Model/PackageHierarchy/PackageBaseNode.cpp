@@ -41,7 +41,7 @@ PackageBaseNode::~PackageBaseNode()
     parent = nullptr;
 }
 
-int PackageBaseNode::GetIndex(const PackageBaseNode *node) const
+int PackageBaseNode::GetIndex(const PackageBaseNode* node) const
 {
     for (int i = 0; i < GetCount(); i++)
     {
@@ -51,12 +51,12 @@ int PackageBaseNode::GetIndex(const PackageBaseNode *node) const
     return -1;
 }
 
-PackageBaseNode *PackageBaseNode::GetParent() const
+PackageBaseNode* PackageBaseNode::GetParent() const
 {
     return parent;
 }
 
-void PackageBaseNode::SetParent(PackageBaseNode *parent)
+void PackageBaseNode::SetParent(PackageBaseNode* parent)
 {
     this->parent = parent;
 }
@@ -66,17 +66,17 @@ String PackageBaseNode::GetName() const
     return "Unknown";
 }
 
-PackageNode *PackageBaseNode::GetPackage()
+PackageNode* PackageBaseNode::GetPackage()
 {
     return parent ? parent->GetPackage() : nullptr;
 }
 
-const PackageNode *PackageBaseNode::GetPackage() const
+const PackageNode* PackageBaseNode::GetPackage() const
 {
     return parent ? parent->GetPackage() : nullptr;
 }
 
-UIControl *PackageBaseNode::GetControl() const
+UIControl* PackageBaseNode::GetControl() const
 {
     return NULL;
 }
@@ -111,17 +111,17 @@ bool PackageBaseNode::IsInsertingStylesSupported() const
     return false;
 }
 
-bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+bool PackageBaseNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
 {
     return false;
 }
 
-bool PackageBaseNode::CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const
+bool PackageBaseNode::CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) const
 {
     return false;
 }
 
-bool PackageBaseNode::CanInsertImportedPackage(PackageNode *package) const
+bool PackageBaseNode::CanInsertImportedPackage(PackageNode* package) const
 {
     return false;
 }
@@ -139,4 +139,84 @@ bool PackageBaseNode::CanCopy() const
 bool PackageBaseNode::IsReadOnly() const
 {
     return parent ? parent->IsReadOnly() : true;
+}
+
+namespace
+{
+uint32 CalculateDepth(PackageBaseNode* node)
+{
+    DVASSERT(nullptr != node);
+    uint32 depth = 0;
+    PackageBaseNode* parent = node->GetParent();
+    while (nullptr != parent)
+    {
+        ++depth;
+        parent = parent->GetParent();
+    }
+    return depth;
+}
+
+PackageBaseNode* ReduceDepth(PackageBaseNode* node, uint32 reduceValue)
+{
+    for (uint32 i = 0; i < reduceValue; ++i)
+    {
+        DVASSERT(node != nullptr);
+        node = node->GetParent();
+    }
+    return node;
+}
+} //unnamed namepace
+
+bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
+{
+    DVASSERT(nullptr != left && nullptr != right);
+    if (left == right)
+    {
+        return false;
+    }
+    int depthLeft = CalculateDepth(left);
+    int depthRight = CalculateDepth(right);
+
+    PackageBaseNode* leftParent = left;
+    PackageBaseNode* rightParent = right;
+
+    if (depthLeft > depthRight)
+    {
+        leftParent = ReduceDepth(leftParent, depthLeft - depthRight);
+        if (leftParent == right) // if left is child of right
+        {
+            return false;
+        }
+        left = leftParent;
+    }
+    else
+    {
+        rightParent = ReduceDepth(rightParent, depthRight - depthLeft);
+        if (rightParent == left) //if right is child of left
+        {
+            return true;
+        }
+        right = rightParent;
+    }
+
+    while (true)
+    {
+        leftParent = left->GetParent();
+        rightParent = right->GetParent();
+        if (nullptr == leftParent) //parent can be nullptr if we remove package and than remove it imported package
+        {
+            return false;
+        }
+        else if (nullptr == rightParent)
+        {
+            return true;
+        }
+
+        if (leftParent == rightParent)
+        {
+            return leftParent->GetIndex(left) < leftParent->GetIndex(right);
+        }
+        left = leftParent;
+        right = rightParent;
+    }
 }

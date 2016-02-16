@@ -71,18 +71,29 @@ struct PackageContext : WidgetContext
 };
 
 template <typename NodeType>
-void CollectSelectedNodes(const SelectedNodes &selectedNodes, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
+void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
-    for (PackageBaseNode *node : selectedNodes)
+    DAVA::Set<PackageBaseNode*> sortedNodes;
+    std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node) {
+        return (dynamic_cast<NodeType*>(node) != nullptr);
+    });
+    for (PackageBaseNode* node : sortedNodes)
     {
-        NodeType *convertedNode = dynamic_cast<NodeType*>(node);
-
-        if (convertedNode && node->GetParent() != nullptr)
+        DVASSERT(nullptr != node);
+        if (node->GetParent() != nullptr)
         {
-            if ((!forCopy || convertedNode->CanCopy()) &&
-                (!forRemove || convertedNode->CanRemove()))
+            if ((!forCopy || node->CanCopy()) &&
+                (!forRemove || node->CanRemove()))
             {
-                nodes.push_back(convertedNode);
+                PackageBaseNode* parent = node->GetParent();
+                while (nullptr != parent && sortedNodes.find(parent) == sortedNodes.end())
+                {
+                    parent = parent->GetParent();
+                }
+                if (nullptr == parent)
+                {
+                    nodes.push_back(DynamicTypeCheck<NodeType*>(node));
+                }
             }
         }
     }
@@ -161,11 +172,11 @@ bool CanMoveRight(PackageBaseNode* node)
 }
 } //unnamed namespace
 
-PackageWidget::PackageWidget(QWidget *parent)
+PackageWidget::PackageWidget(QWidget* parent)
     : QDockWidget(parent)
 {
     setupUi(this);
-    treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
+    treeView->header()->setSectionResizeMode /*setResizeMode*/ (QHeaderView::ResizeToContents);
 
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
@@ -214,7 +225,7 @@ void PackageWidget::CreateActions()
 
     renameAction = new QAction(tr("Rename"), this);
     connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
-    
+
     delAction = new QAction(tr("Delete"), this);
     delAction->setShortcut(QKeySequence::Delete);
     delAction->setShortcutContext(Qt::WidgetShortcut);
@@ -371,38 +382,36 @@ void PackageWidget::RefreshActions()
     moveLeftAction->setEnabled(canMoveLeft);
 }
 
-void PackageWidget::CollectSelectedControls(Vector<ControlNode*> &nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedControls(Vector<ControlNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*> &nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedStyles(DAVA::Vector<StyleSheetNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, const Vector<StyleSheetNode*> &styles)
+void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, const Vector<StyleSheetNode*>& styles)
 {
-    QClipboard *clipboard = QApplication::clipboard();
+    QClipboard* clipboard = QApplication::clipboard();
     if (!controls.empty() || !styles.empty())
     {
         YamlPackageSerializer serializer;
         serializer.SerializePackageNodes(document->GetPackage(), controls, styles);
         String str = serializer.WriteToString();
-        QMimeData *data = new QMimeData();
+        QMimeData* data = new QMimeData();
         data->setText(QString(str.c_str()));
         clipboard->setMimeData(data);
     }
 }
 
-
-
-void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
+void PackageWidget::OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
     {
@@ -447,11 +456,11 @@ void PackageWidget::OnImport()
 
     PackageNode* root = document->GetPackage();
     Vector<FilePath> packages;
-    for (const auto &fileName : fileNames)
+    for (const auto& fileName : fileNames)
     {
         packages.push_back(FilePath(fileName.toStdString()));
     }
-    
+
     if (!packages.empty())
     {
         document->GetCommandExecutor()->AddImportedPackagesIntoPackage(packages, root);
@@ -465,7 +474,7 @@ void PackageWidget::OnCopy()
 
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, true, false);
-    
+
     CopyNodesToClipboard(controls, styles);
 }
 
@@ -473,14 +482,14 @@ void PackageWidget::OnPaste()
 {
     QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
-    QClipboard *clipboard = QApplication::clipboard();
-    
+    QClipboard* clipboard = QApplication::clipboard();
+
     if (!selectedIndexList.empty() && clipboard && clipboard->mimeData())
     {
-        const QModelIndex &index = selectedIndexList.first();
-        
-        PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
-        
+        const QModelIndex& index = selectedIndexList.first();
+
+        PackageBaseNode* baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
+
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
@@ -496,7 +505,7 @@ void PackageWidget::OnCut()
 
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, true, true);
-    
+
     CopyNodesToClipboard(controls, styles);
 
     document->GetCommandExecutor()->Remove(controls, styles);
@@ -506,9 +515,10 @@ void PackageWidget::OnDelete()
 {
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
-    
+
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, false, true);
+
     if (!controls.empty() || !styles.empty())
     {
         document->GetCommandExecutor()->Remove(controls, styles);
@@ -517,13 +527,14 @@ void PackageWidget::OnDelete()
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
+
         document->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, document->GetPackage());
     }
 }
 
 void PackageWidget::OnRename()
 {
-    const auto &selected = treeView->selectionModel()->selectedIndexes();
+    const auto& selected = treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() == 1);
     treeView->edit(selected.first());
 }
@@ -533,7 +544,7 @@ void PackageWidget::OnAddStyle()
     DAVA::Vector<DAVA::UIStyleSheetSelectorChain> selectorChains;
     selectorChains.push_back(UIStyleSheetSelectorChain("?"));
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
-    
+
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
     StyleSheetsNode* styleSheets = document->GetPackage()->GetStyleSheets();
     document->GetCommandExecutor()->InsertStyle(style, styleSheets, styleSheets->GetCount());
@@ -628,7 +639,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
     }
 }
 
-void PackageWidget::filterTextChanged(const QString &filterText)
+void PackageWidget::filterTextChanged(const QString& filterText)
 {
     if (nullptr != document)
     {
@@ -715,7 +726,7 @@ void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 
 void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
 {
-    for (auto &index : indexes)
+    for (auto& index : indexes)
     {
         QModelIndex mappedIndex = filteredPackageModel->mapFromSource(index);
         if (mappedIndex.isValid())

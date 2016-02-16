@@ -34,10 +34,6 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
-
-#include "Scene/System/VisibilityToolSystem.h"
-
-// framework
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
 
@@ -49,26 +45,26 @@ class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
 
 signals:
     // scene
-    void Opened(SceneEditor2 *scene);
-    void Closed(SceneEditor2 *scene);
+    void Opened(SceneEditor2* scene);
+    void Closed(SceneEditor2* scene);
 
-    void Loaded(SceneEditor2 *scene);
-    void Saved(SceneEditor2 *scene);
+    void Loaded(SceneEditor2* scene);
+    void Saved(SceneEditor2* scene);
 
-    void Activated(SceneEditor2 *scene);
-    void Deactivated(SceneEditor2 *scene);
+    void Activated(SceneEditor2* scene);
+    void Deactivated(SceneEditor2* scene);
 
-    void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
-    void StructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
-    void ModifyStatusChanged(SceneEditor2 *scene, bool modified);
+    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
+    void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
     // entities
-    void SelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
+    void SelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
 
-    void SolidChanged(SceneEditor2 *scene, const DAVA::Entity *entity, bool value);
+    void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     // mouse
-    void MouseOver(SceneEditor2 *scene, const EntityGroup *entities);
-    void MouseOverSelection(SceneEditor2 *scene, const EntityGroup *entities);
+    void MouseOver(SceneEditor2* scene, const EntityGroup* entities);
+    void MouseOverSelection(SceneEditor2* scene, const EntityGroup* entities);
 
     // particles - selection
     void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
@@ -88,18 +84,16 @@ signals:
     // particles - loading/saving.
     void ParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
     void ParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
-    
+
     // particles - structure changes.
-    void ParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer* layer);
+    void ParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
     void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
-    void VisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state);
     void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
 
-    void VisibilityToolToggled(SceneEditor2* scene);
     void CustomColorsToggled(SceneEditor2* scene);
     void HeightmapEditorToggled(SceneEditor2* scene);
     void TilemaskEditorToggled(SceneEditor2* scene);
@@ -109,49 +103,114 @@ signals:
     void EditorLightEnabled(bool enabled);
 
 public:
-    void EmitOpened(SceneEditor2 *scene) { emit Opened(scene); }
-    void EmitClosed(SceneEditor2 *scene) { emit Closed(scene); }
-
-    void EmitLoaded(SceneEditor2 *scene) { emit Loaded(scene); }
-    void EmitSaved(SceneEditor2 *scene) { emit Saved(scene); }
-
-    void EmitActivated(SceneEditor2 *scene) { emit Activated(scene); }
-    void EmitDeactivated(SceneEditor2 *scene) { emit Deactivated(scene); }
-
-    void EmitCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo) { emit CommandExecuted(scene, command, redo); };
-    void EmitStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent) { emit StructureChanged(scene, parent); }
-
-    void EmitSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected) { emit SelectionChanged(scene, selected, deselected); }
-    void EmitSolidChanged(SceneEditor2 *scene, const Entity *entity, bool value) { emit SolidChanged(scene, entity, value); }
-
-    void EmitModifyStatusChanged(SceneEditor2 *scene, bool modified) { emit ModifyStatusChanged(scene, modified); }
-
-    void EmitVisibilityToolToggled(SceneEditor2* scene) { emit VisibilityToolToggled(scene); }
-    void EmitCustomColorsToggled(SceneEditor2* scene) { emit CustomColorsToggled(scene); }
-    void EmitHeightmapEditorToggled(SceneEditor2* scene) { emit HeightmapEditorToggled(scene); }
-    void EmitTilemaskEditorToggled(SceneEditor2* scene) { emit TilemaskEditorToggled(scene); }
-    void EmitRulerToolToggled(SceneEditor2* scene) { emit RulerToolToggled(scene); }
-    void EmitNotPassableTerrainToggled(SceneEditor2* scene) { emit NotPassableTerrainToggled(scene); }
-
-    void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height) { emit DropperHeightChanged(scene, (double)height); };
-    void EmitVisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state)
+    void EmitOpened(SceneEditor2* scene)
     {
-        emit VisibilityToolStateChanged(scene, state);
+        emit Opened(scene);
+    }
+    void EmitClosed(SceneEditor2* scene)
+    {
+        emit Closed(scene);
+    }
+
+    void EmitLoaded(SceneEditor2* scene)
+    {
+        emit Loaded(scene);
+    }
+    void EmitSaved(SceneEditor2* scene)
+    {
+        emit Saved(scene);
+    }
+
+    void EmitActivated(SceneEditor2* scene)
+    {
+        emit Activated(scene);
+    }
+    void EmitDeactivated(SceneEditor2* scene)
+    {
+        emit Deactivated(scene);
+    }
+
+    void EmitCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+    {
+        emit CommandExecuted(scene, command, redo);
     };
-    void EmitCustomColorsTextureShouldBeSaved(SceneEditor2* scene) { emit CustomColorsTextureShouldBeSaved(scene); };
+    void EmitStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
+    {
+        emit StructureChanged(scene, parent);
+    }
+
+    void EmitSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+    {
+        emit SelectionChanged(scene, selected, deselected);
+    }
+    void EmitSolidChanged(SceneEditor2* scene, const Entity* entity, bool value)
+    {
+        emit SolidChanged(scene, entity, value);
+    }
+
+    void EmitModifyStatusChanged(SceneEditor2* scene, bool modified)
+    {
+        emit ModifyStatusChanged(scene, modified);
+    }
+
+    void EmitCustomColorsToggled(SceneEditor2* scene)
+    {
+        emit CustomColorsToggled(scene);
+    }
+    void EmitHeightmapEditorToggled(SceneEditor2* scene)
+    {
+        emit HeightmapEditorToggled(scene);
+    }
+    void EmitTilemaskEditorToggled(SceneEditor2* scene)
+    {
+        emit TilemaskEditorToggled(scene);
+    }
+    void EmitRulerToolToggled(SceneEditor2* scene)
+    {
+        emit RulerToolToggled(scene);
+    }
+    void EmitNotPassableTerrainToggled(SceneEditor2* scene)
+    {
+        emit NotPassableTerrainToggled(scene);
+    }
+
+    void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height)
+    {
+        emit DropperHeightChanged(scene, (double)height);
+    };
+
+    void EmitCustomColorsTextureShouldBeSaved(SceneEditor2* scene)
+    {
+        emit CustomColorsTextureShouldBeSaved(scene);
+    };
     void EmitRulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength)
     {
         emit RulerToolLengthChanged(scene, length, previewLength);
     }
 
-    void EmitMouseOver(SceneEditor2 *scene, const EntityGroup *entities) { emit MouseOver(scene, entities); }
-    void EmitMouseOverSelection(SceneEditor2 *scene, const EntityGroup *entities) { emit MouseOverSelection(scene, entities); }
+    void EmitMouseOver(SceneEditor2* scene, const EntityGroup* entities)
+    {
+        emit MouseOver(scene, entities);
+    }
+    void EmitMouseOverSelection(SceneEditor2* scene, const EntityGroup* entities)
+    {
+        emit MouseOverSelection(scene, entities);
+    }
 
     // Particle Editor Selection signals.
-    void EmitEffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect) { emit EffectSelected(scene, effect); };
-    void EmitEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter) { emit EmitterSelected(scene, effect, emitter); };
-    void EmitInnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter) { emit InnerEmitterSelected(scene, effect, emitter); };
-    void EmitLayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
+    void EmitEffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect)
+    {
+        emit EffectSelected(scene, effect);
+    };
+    void EmitEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+    {
+        emit EmitterSelected(scene, effect, emitter);
+    };
+    void EmitInnerEmitterSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
+    {
+        emit InnerEmitterSelected(scene, effect, emitter);
+    };
+    void EmitLayerSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
     {
         emit LayerSelected(scene, effect, emitter, layer, forceRefresh);
     };
@@ -159,7 +218,7 @@ public:
     {
         emit ForceSelected(scene, layer, forceIndex);
     };
-    
+
     // Particle Editor Value Changed signals.
     void EmitParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
     {
@@ -180,12 +239,12 @@ public:
     {
         emit ParticleEffectStateChanged(scene, effect, isStarted);
     }
-    
+
     void EmitParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
     {
         emit ParticleEmitterLoaded(scene, emitter);
     }
-    
+
     void EmitParticleEmitterSaved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
     {
         emit ParticleEmitterSaved(scene, emitter);
@@ -195,7 +254,7 @@ public:
     {
         emit ParticleLayerAdded(scene, emitter, layer);
     }
-    
+
     void EmitParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
     {
         emit ParticleLayerRemoved(scene, emitter);
@@ -210,7 +269,6 @@ public:
     {
         emit SnapToLandscapeChanged(scene, isSpanToLandscape);
     }
-
 };
 
 #endif // __SCENE_MANAGER_H__

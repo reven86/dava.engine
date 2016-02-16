@@ -48,7 +48,8 @@ public:
 
     DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs = DEFERRED_INTERVAL_MSEC);
 
-    void TrackWindowMinimumSize(int32 minWidth, int32 minHeight);
+    void SetWindowMinimumSize(float32 minWidth, float32 minHeight);
+    Vector2 GetWindowMinimumSize() const;
 
     void CoreWindowSizeChanged(Windows::UI::Core::CoreWindow^ coreWindow, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
     void SwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ args);
@@ -74,7 +75,7 @@ private:
     UpdateMetricCallback updateCallback;
 };
 
-DeferredScreenMetricEvents::DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs)
+inline DeferredScreenMetricEvents::DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs)
     : timer(ref new Windows::UI::Xaml::DispatcherTimer)
     , isPhoneApiDetected(isPhoneApi)
     , updateCallback(callback)
@@ -89,13 +90,18 @@ DeferredScreenMetricEvents::DeferredScreenMetricEvents(bool isPhoneApi, UpdateMe
     timer->Tick += tick;
 }
 
-void DeferredScreenMetricEvents::TrackWindowMinimumSize(int32 minWidth, int32 minHeight)
+inline void DeferredScreenMetricEvents::SetWindowMinimumSize(float32 minWidth, float32 minHeight)
 {
-    minWindowWidth = static_cast<float32>(minWidth);
-    minWindowHeight = static_cast<float32>(minHeight);
+    minWindowWidth = minWidth;
+    minWindowHeight = minHeight;
 }
 
-void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core::CoreWindow^ coreWindow, Windows::UI::Core::WindowSizeChangedEventArgs^ args)
+inline Vector2 DeferredScreenMetricEvents::GetWindowMinimumSize() const
+{
+    return Vector2(minWindowWidth, minWindowHeight);
+}
+
+inline void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core::CoreWindow^ coreWindow, Windows::UI::Core::WindowSizeChangedEventArgs^ args)
 {
     if (!isPhoneApiDetected)
     {
@@ -104,7 +110,7 @@ void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core::CoreWi
     }
 }
 
-void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^, Windows::UI::Xaml::SizeChangedEventArgs^ args)
+inline void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^, Windows::UI::Xaml::SizeChangedEventArgs^ args)
 {
     isSizeUpdate = true;
     width = args->NewSize.Width;
@@ -112,7 +118,7 @@ void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^, Wi
     timer->Start();
 }
 
-void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChain, Platform::Object^)
+inline void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChain, Platform::Object^)
 {
     isScaleUpdate = true;
     scaleX = swapChain->CompositionScaleX;
@@ -120,7 +126,7 @@ void DeferredScreenMetricEvents::SwapChainPanelCompositionScaleChanged(Windows::
     timer->Start();
 }
 
-void DeferredScreenMetricEvents::DeferredTick()
+inline void DeferredScreenMetricEvents::DeferredTick()
 {
     Windows::Foundation::Rect windowRect = Windows::UI::Xaml::Window::Current->CoreWindow->Bounds;
     float32 w = windowRect.Width;
@@ -132,7 +138,18 @@ void DeferredScreenMetricEvents::DeferredTick()
         w = std::max(w, minWindowWidth);
         h = std::max(h, minWindowHeight);
         Windows::Foundation::Size size(w, h);
-        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->TryResizeView(size);
+        auto currentView = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView();
+
+        bool success = currentView->TryResizeView(size);
+        if (!success)
+        {
+            size.Width = minWindowWidth;
+            size.Height = minWindowHeight;
+            if (!currentView->TryResizeView(size))
+            {
+                Logger::FrameworkDebug("[DeferredScreenMetricEvents::DeferredTick]: Unable to resize window to minimum size");
+            }
+        }
     }
     else
     {

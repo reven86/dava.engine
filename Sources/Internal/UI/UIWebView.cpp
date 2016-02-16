@@ -32,7 +32,9 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DISABLE_NATIVE_WEBVIEW__)
+#include "WebViewControlStub.h"
+#elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Platform/TemplateiOS/WebViewControliOS.h"
@@ -46,7 +48,8 @@
 #error UIWEbView control is not implemented for this platform yet!
 #endif
 
-namespace DAVA {
+namespace DAVA
+{
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
     , webViewControl(0)
@@ -63,15 +66,15 @@ UIWebView::UIWebView(const Rect& rect)
 
 UIWebView::~UIWebView()
 {
-	SafeDelete(webViewControl);
+    SafeDelete(webViewControl);
 };
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 {
-	webViewControl->SetDelegate(delegate, this);
+    webViewControl->SetDelegate(delegate, this);
 }
 
-void UIWebView::OpenFile(const FilePath &path)
+void UIWebView::OpenFile(const FilePath& path)
 {
     // Open files in a browser via a buffer necessary because
     // the reference type file:// is not supported in Windows 10
@@ -91,32 +94,32 @@ void UIWebView::OpenFile(const FilePath &path)
 
 void UIWebView::OpenURL(const String& urlToOpen)
 {
-	webViewControl->OpenURL(urlToOpen);
+    webViewControl->OpenURL(urlToOpen);
 }
 
 void UIWebView::LoadHtmlString(const WideString& htmlString)
 {
-	webViewControl->LoadHtmlString(htmlString);
+    webViewControl->LoadHtmlString(htmlString);
 }
 
 String UIWebView::GetCookie(const String& targetUrl, const String& name) const
 {
-	return webViewControl->GetCookie(targetUrl, name);
+    return webViewControl->GetCookie(targetUrl, name);
 }
 
 Map<String, String> UIWebView::GetCookies(const String& targetUrl) const
 {
-	return webViewControl->GetCookies(targetUrl);
+    return webViewControl->GetCookies(targetUrl);
 }
 
 void UIWebView::DeleteCookies(const String& targetUrl)
 {
-	webViewControl->DeleteCookies(targetUrl);
+    webViewControl->DeleteCookies(targetUrl);
 }
 
 void UIWebView::ExecuteJScript(const String& scriptString)
 {
-	webViewControl->ExecuteJScript(scriptString);
+    webViewControl->ExecuteJScript(scriptString);
 }
 
 void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
@@ -142,43 +145,42 @@ void UIWebView::DidAppear()
     UpdateControlRect();
 }
 
-void UIWebView::SetPosition(const Vector2 &position)
+void UIWebView::SetPosition(const Vector2& position)
 {
-	UIControl::SetPosition(position);
+    UIControl::SetPosition(position);
     UpdateControlRect();
 }
 
-void UIWebView::SetSize(const Vector2 &newSize)
+void UIWebView::SetSize(const Vector2& newSize)
 {
-	UIControl::SetSize(newSize);
+    UIControl::SetSize(newSize);
     UpdateControlRect();
 }
-
 
 void UIWebView::SetScalesPageToFit(bool isScalesToFit)
 {
-	webViewControl->SetScalesPageToFit(isScalesToFit);
+    webViewControl->SetScalesPageToFit(isScalesToFit);
 }
 
 void UIWebView::SetBackgroundTransparency(bool enabled)
 {
-	webViewControl->SetBackgroundTransparency(enabled);
+    webViewControl->SetBackgroundTransparency(enabled);
 }
 
 // Enable/disable bounces.
 void UIWebView::SetBounces(bool value)
 {
-	webViewControl->SetBounces(value);
+    webViewControl->SetBounces(value);
 }
 
 bool UIWebView::GetBounces() const
 {
-	return webViewControl->GetBounces();
+    return webViewControl->GetBounces();
 }
 
 void UIWebView::SetGestures(bool value)
 {
-	webViewControl->SetGestures(value);    
+    webViewControl->SetGestures(value);
 }
 
 void UIWebView::UpdateControlRect()
@@ -219,39 +221,38 @@ void UIWebView::UpdateNativeControlVisible(bool value)
 void UIWebView::SetDataDetectorTypes(int32 value)
 {
     dataDetectorTypes = value;
-	webViewControl->SetDataDetectorTypes(value);
+    webViewControl->SetDataDetectorTypes(value);
 }
-
 
 int32 UIWebView::GetDataDetectorTypes() const
 {
     return dataDetectorTypes;
 }
 
-void UIWebView::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *loader)
+void UIWebView::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader* loader)
 {
     UIControl::LoadFromYamlNode(node, loader);
-    
-    const YamlNode * dataDetectorTypesNode = node->Get("dataDetectorTypes");
+
+    const YamlNode* dataDetectorTypesNode = node->Get("dataDetectorTypes");
     if (dataDetectorTypesNode)
     {
         eDataDetectorType dataDetectorTypes = static_cast<eDataDetectorType>(
-            dataDetectorTypesNode->AsInt32());
+        dataDetectorTypesNode->AsInt32());
         SetDataDetectorTypes(dataDetectorTypes);
     }
 }
 
-YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader *loader)
+YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader* loader)
 {
     ScopedPtr<UIWebView> baseControl(new UIWebView());
-    YamlNode *node = UIControl::SaveToYamlNode(loader);
-    
+    YamlNode* node = UIControl::SaveToYamlNode(loader);
+
     // Data Detector Types.
     if (baseControl->GetDataDetectorTypes() != GetDataDetectorTypes())
     {
         node->Set("dataDetectorTypes", GetDataDetectorTypes());
     }
-    
+
     return node;
 }
 
@@ -262,7 +263,7 @@ UIWebView* UIWebView::Clone()
     return webView;
 }
 
-void UIWebView::CopyDataFrom(UIControl *srcControl)
+void UIWebView::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
 
@@ -271,7 +272,7 @@ void UIWebView::CopyDataFrom(UIControl *srcControl)
     SetDataDetectorTypes(webView->GetDataDetectorTypes());
 }
 
-void UIWebView::SystemDraw(const DAVA::UIGeometricData &geometricData)
+void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData)
 {
     webViewControl->WillDraw();
     UIControl::SystemDraw(geometricData);

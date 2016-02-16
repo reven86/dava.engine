@@ -44,8 +44,6 @@ struct IChannel;
 
 namespace AssetCache
 {
-#pragma pack(1)
-
 #pragma pack(push, 1) // exact fit - no padding
 struct CachePacketHeader
 {

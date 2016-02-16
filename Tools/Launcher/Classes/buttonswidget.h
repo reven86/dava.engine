@@ -33,14 +33,15 @@
 #include <QWidget>
 #include <QString>
 
-namespace Ui {
+namespace Ui
+{
 class ButtonsWidget;
 }
 
 class ButtonsWidget : public QWidget
 {
     Q_OBJECT
-    
+
 public:
     enum ButtonsState
     {
@@ -51,9 +52,9 @@ public:
         BUTTONS_STATE_COUNT
     };
 
-    explicit ButtonsWidget(int rowNum, QWidget *parent = 0);
+    explicit ButtonsWidget(int rowNum, QWidget* parent = 0);
     ~ButtonsWidget();
-    
+
     void SetButtonsState(int state);
 
 signals:
@@ -67,7 +68,7 @@ public slots:
     void OnInstallClicked();
 
 private:
-    Ui::ButtonsWidget *ui;
+    Ui::ButtonsWidget* ui;
     int rowNumber;
 };
 

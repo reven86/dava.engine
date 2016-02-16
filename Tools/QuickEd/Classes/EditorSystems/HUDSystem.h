@@ -55,7 +55,6 @@ private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
-    void OnDPRChanged(DAVA::float32 dpr);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
@@ -77,7 +76,6 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
-    DAVA::float32 dpr = 1.0f;
     bool hudVisible = false;
     SelectionContainer selectionContainer;
 };

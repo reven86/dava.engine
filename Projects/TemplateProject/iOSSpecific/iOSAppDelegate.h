@@ -35,7 +35,7 @@
 
 @interface iOSAppDelegate : HelperAppDelegate
 {
-    UIWindow *window;
+    UIWindow* window;
 }
 
 @end

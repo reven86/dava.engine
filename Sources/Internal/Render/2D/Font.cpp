@@ -38,99 +38,96 @@
 
 namespace DAVA
 {
-	
-	
 int32 Font::globalFontDPI = 72;
 
 void Font::SetDPI(int32 dpi)
 {
-	globalFontDPI = dpi;
+    globalFontDPI = dpi;
 }
 
 int32 Font::GetDPI()
 {
-	return globalFontDPI;
+    return globalFontDPI;
 }
-	
+
 Font::Font()
-:	size(14.0f)
-,	verticalSpacing(0)
+    : size(14.0f)
+    , verticalSpacing(0)
 {
-	FontManager::Instance()->RegisterFont(this);
+    FontManager::Instance()->RegisterFont(this);
 }
 
 Font::~Font()
 {
-	FontManager::Instance()->UnregisterFont(this);
+    FontManager::Instance()->UnregisterFont(this);
 }
 
-
-bool Font::IsEqual(const Font *font) const
+bool Font::IsEqual(const Font* font) const
 {
-    if(!font)
+    if (!font)
     {
         return false;
     }
-    
-	if (fontType != font->fontType) 
-	{
-		return false;
-	}
-	if (size != font->size || verticalSpacing != font->verticalSpacing)
-	{
-		return false;
-	}
-	
-	return true;
+
+    if (fontType != font->fontType)
+    {
+        return false;
+    }
+    if (size != font->size || verticalSpacing != font->verticalSpacing)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 uint32 Font::GetHashCode()
 {
-	String rawHashString = GetRawHashString();
-	return CRC32::ForBuffer(rawHashString.c_str(), static_cast<uint32>(rawHashString.length()));
+    String rawHashString = GetRawHashString();
+    return CRC32::ForBuffer(rawHashString.c_str(), static_cast<uint32>(rawHashString.length()));
 }
 
 String Font::GetRawHashString()
 {
-	return Format("%i_%.0f_%i", fontType, size, verticalSpacing);
+    return Format("%i_%.0f_%i", fontType, size, verticalSpacing);
 }
 
 void Font::SetSize(float32 _size)
 {
-	size = _size;
+    size = _size;
 }
 
-float32	Font::GetSize() const
+float32 Font::GetSize() const
 {
-	return size;
+    return size;
 }
 
 void Font::SetVerticalSpacing(int32 _verticalSpacing)
 {
-	verticalSpacing = _verticalSpacing;
+    verticalSpacing = _verticalSpacing;
 }
 
 int32 Font::GetVerticalSpacing() const
 {
-	return verticalSpacing;
+    return verticalSpacing;
 }
 
-Size2i Font::GetStringSize(const WideString &str, Vector<float32> *charSizes)
+Size2i Font::GetStringSize(const WideString& str, Vector<float32>* charSizes)
 {
-	StringMetrics metrics = GetStringMetrics(str, charSizes);
-	return Size2i(metrics.width, metrics.height);
+    StringMetrics metrics = GetStringMetrics(str, charSizes);
+    return Size2i(metrics.width, metrics.height);
 }
 
 Font::eFontType Font::GetFontType() const
 {
-    return  fontType;
+    return fontType;
 }
 
-YamlNode * Font::SaveToYamlNode() const
+YamlNode* Font::SaveToYamlNode() const
 {
-    YamlNode *node = new YamlNode(YamlNode::TYPE_MAP);
-    
-    VariantType *nodeValue = new VariantType();
+    YamlNode* node = new YamlNode(YamlNode::TYPE_MAP);
+
+    VariantType* nodeValue = new VariantType();
     //Type
     node->Set("type", "Font");
     //Font size
@@ -143,7 +140,7 @@ YamlNode * Font::SaveToYamlNode() const
     node->Set("descendScale", this->GetDescendScale());
 
     SafeDelete(nodeValue);
-    
+
     return node;
 }
 
@@ -166,5 +163,4 @@ DAVA::float32 Font::GetDescendScale() const
 {
     return 1.f;
 }
-
 };

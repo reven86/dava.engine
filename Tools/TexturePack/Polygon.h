@@ -34,104 +34,102 @@
 #include "Vector.h"
 #include "Plane.h"
 
-
 namespace Log
 {
 namespace Math
 {
-
 //! Class convex polygon in 3D-space (lay in one plane)
 class Polygon
 {
-	const float32 POLYGON_EPSILON;
+    const float32 POLYGON_EPSILON;
+
 public:
-	int32			pointCount;
-	Vector<Vector3> points;
-	Plane			plane;
-	
-	//! Construct base polygon with 0 points
-	inline Polygon();
+    int32 pointCount;
+    Vector<Vector3> points;
+    Plane plane;
 
-	//! Add point to polygon
-	inline void AddPoint(const Vector3 & pt);
-	
-	//! Clip poly by plane
-	inline void ClipByPlane(const Plane & plane);
+    //! Construct base polygon with 0 points
+    inline Polygon();
 
-	//! Check if polygon contains point
-	inline bool Contains(const Math::Vector3 & point);
+    //! Add point to polygon
+    inline void AddPoint(const Vector3& pt);
+
+    //! Clip poly by plane
+    inline void ClipByPlane(const Plane& plane);
+
+    //! Check if polygon contains point
+    inline bool Contains(const Math::Vector3& point);
 };
-
 
 // Implementation
 
-
 //! Construct base polygon with 0 points
 inline Polygon::Polygon()
-: POLYGON_EPSILON(0.000001f),
-pointCount(0)
+    : POLYGON_EPSILON(0.000001f)
+    ,
+    pointCount(0)
 {
 }
 
 //! Add point to polygon
-inline void Polygon::AddPoint(const Vector3 & pt)
+inline void Polygon::AddPoint(const Vector3& pt)
 {
-	points.push_back(pt);
-	++pointCount;
+    points.push_back(pt);
+    ++pointCount;
 }
 
 //! Clip poly by plane
-inline void Polygon::ClipByPlane(const Plane & plane)
+inline void Polygon::ClipByPlane(const Plane& plane)
 {
-	// TODO: test / check performance / optimize
-	Vector<Vector3> resultVector;
-	int32 i2;
-	int32 count;
-	for(int32 i = 0; i < pointCount;++i)
-	{
-		i2 = i + 1;
-		if (i2 >= pointCount) i2 = 0;
-		
-		float32 d1 = plane.DistanceToPoint(points[i]);
-		float32 d2 = plane.DistanceToPoint(points[i2]);
-		if ((d1 >= POLYGON_EPSILON) && (d2 >= POLYGON_EPSILON))
-		{
-			resultVector.push_back(points[i]);
-			resultVector.push_back(points[i2]);
-			count += 2;
-		}else if ((d1 >= POLYGON_EPSILON) && (d2 <= -POLYGON_EPSILON))
-		{	
-			Vector3 res;
-			res.Lerp(points[i], points[i2], d1 / (d1 - d2));
+    // TODO: test / check performance / optimize
+    Vector<Vector3> resultVector;
+    int32 i2;
+    int32 count;
+    for (int32 i = 0; i < pointCount; ++i)
+    {
+        i2 = i + 1;
+        if (i2 >= pointCount)
+            i2 = 0;
 
-			resultVector.push_back(points[i]);
-			resultVector.push_back(res);
-			count += 2;
-		}else if ((d1 <= -POLYGON_EPSILON) && (d2 >= POLYGON_EPSILON))
-		{
-			Vector3 res;
-			res.Lerp(points[i], points[i2], -d1 / (-d1 + d2));
-			resultVector.push_back(res);
-			//resultVector.push_back(points[i]);
-			count += 1;
-		}
-	}
-	points.clear();
-	for (i = 0; i < count; ++i)
-		points.push_back(resultVector[i]);
+        float32 d1 = plane.DistanceToPoint(points[i]);
+        float32 d2 = plane.DistanceToPoint(points[i2]);
+        if ((d1 >= POLYGON_EPSILON) && (d2 >= POLYGON_EPSILON))
+        {
+            resultVector.push_back(points[i]);
+            resultVector.push_back(points[i2]);
+            count += 2;
+        }
+        else if ((d1 >= POLYGON_EPSILON) && (d2 <= -POLYGON_EPSILON))
+        {
+            Vector3 res;
+            res.Lerp(points[i], points[i2], d1 / (d1 - d2));
+
+            resultVector.push_back(points[i]);
+            resultVector.push_back(res);
+            count += 2;
+        }
+        else if ((d1 <= -POLYGON_EPSILON) && (d2 >= POLYGON_EPSILON))
+        {
+            Vector3 res;
+            res.Lerp(points[i], points[i2], -d1 / (-d1 + d2));
+            resultVector.push_back(res);
+            //resultVector.push_back(points[i]);
+            count += 1;
+        }
+    }
+    points.clear();
+    for (i = 0; i < count; ++i)
+        points.push_back(resultVector[i]);
 }
 
 //! \todo Add this function
 //! Check if polygon contains point
-inline bool Contains(const Math::Vector3 & point)
+inline bool Contains(const Math::Vector3& point)
 {
-	return false; 
+    return false;
 }
-
-
 };
 };
 
 
 #endif // __LOGENGINE_POLYGON_H__
-

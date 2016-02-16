@@ -196,15 +196,6 @@ function GetParameter(name, default)
     OnError("Couldn't find value for variable " .. name)
 end
 
-function ReadString(name)
-    return autotestingSystem:ReadString(name)
-end
-
-function WriteString(name, text)
-    autotestingSystem:WriteString(name, text)
-    coroutine.yield()
-end
-
 function MakeScreenshot()
     local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
@@ -218,41 +209,49 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Multiplayer API
 ----------------------------------------------------------------------------------------------------
+MP_STATE = {READY="ready", NO_DEVICE="not_found"}
+
+STATE_RECORD = "State"
+COMMAND_RECORD = "Command"
+
 -- mark current device as ready to work in DB
 function ReadState(name)
-    return autotestingSystem:ReadState(name)
+    return autotestingSystem:ReadState(name, STATE_RECORD)
 end
 
 function ReadCommand(name)
-    return autotestingSystem:ReadCommand(name)
+    return autotestingSystem:ReadState(name, COMMAND_RECORD)
 end
 
 function WriteState(name, state)
-    autotestingSystem:WriteState(name, state)
+    autotestingSystem:WriteState(name, STATE_RECORD , state)
     coroutine.yield()
 end
 
 function WriteCommand(name, command)
-    autotestingSystem:WriteCommand(name, command)
+    autotestingSystem:WriteState(name, COMMAND_RECORD, command)
     coroutine.yield()
 end
 
-function InitializeDevice(name)
-    DEVICE = name
-    Log("Mark " .. name .. " device as Ready")
+function InitializeDevice()
+    Log("Mark " .. DEVICE_NAME .. " device as Ready")
+    autotestingSystem:InitializeDevice()
+    WriteState(DEVICE_NAME, MP_STATE['READY'])
     Yield()
-    autotestingSystem:InitializeDevice(DEVICE)
-    Yield()
-    WriteState(DEVICE, "ready")
 end
 
 function WaitForDevice(name)
     Log("Wait while " .. name .. " device become Ready")
     Yield()
+	local currentStatus = ""
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-        if ReadState(name) == "ready" then
-            return
-        end
+		currentStatus = ReadState(name)
+        if currentStatus == MP_STATE['READY'] then
+			Log("Device " .. name .. " is ready")
+            return true
+        elseif currentStatus == MP_STATE['NO_DEVICE'] then
+			OnError("Could not find device " .. name)
+		end
         Wait(1)
     end
     OnError("Device " .. name .. " is not ready during timeout")
@@ -277,8 +276,9 @@ end
 
 function WaitJob(name)
     Log("Wait for job on slave " .. name)
+	local state
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-        local state = ReadState(name)
+        state = ReadState(name)
         if state == "execution_completed" then
             WriteState(name, "ready")
             Log("Device " .. name .. " finish his job")
@@ -563,9 +563,7 @@ function SelectItemInList(listName, item)
     end
     local listControl = GetControl(listName)
     local startPoint, __scroll = listControl:GetPivotPoint(), nil
-    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
     local finalPoint = autotestingSystem:GetMaxListOffsetSize(listControl)
-    print(string.format('Final point: ' .. finalPoint))
     if autotestingSystem:IsListHorisontal(listControl) then
         __scroll, startPoint = HorizontalScroll, startPoint.y
     else
@@ -620,36 +618,40 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         end
         return false
     end
+	local oldPosition = Vector.Vector2()
+	local function __isChanged(newPosition)
+		local result = true
+		if (oldPosition.x == newPosition.x) and (oldPosition.y == newPosition.y) then
+			result = false
+		end
+		oldPosition.x = newPosition.x
+		oldPosition.y = newPosition.y
+		return result
+	end
 
     if __click() then
         return true
     end
-    local containerCtrl, position, invert = GetControl(containerName)
-    local startPoint = containerCtrl:GetPivotPoint()
-    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
-    local finalPoint = autotestingSystem:GetMaxContainerOffsetSize(containerCtrl)
-    print(string.format('Final point: X: %f; Y: %f', finalPoint.x, finalPoint.y))
+    local containerCtrl, invert = GetControl(containerName)
 
     local function __getPosition() return autotestingSystem:GetContainerScrollPosition(containerCtrl) end
-
+	oldPosition = __getPosition()
     -- move to start of list and check cell
     for _ = 0, MAX_LIST_COUNT do -- move to up side
-        position = __getPosition()
-        if position.y <= startPoint.y then
-            break
-        end
         VerticalScroll(containerName, true, notInCenter)
+		if not __isChanged(__getPosition()) then
+			break
+		end
         if __click() then
             return true
         end
     end
     -- move to left side
     for _ = 0, MAX_LIST_COUNT do
-        position = __getPosition()
-        if position.x <= startPoint.x then
-            break
-        end
         HorizontalScroll(containerName, true)
+		if not __isChanged(__getPosition()) then
+			break
+		end
         if __click() then
             return true
         end
@@ -659,27 +661,18 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         invert = _ % 2 ~= 0 -- if true - right side, else - left
         -- move to right/left side
         for __ = 0, MAX_LIST_COUNT do
-            position = __getPosition()
-            if invert then
-                if position.x <= startPoint.x then
-                    break
-                end
-            else
-                if position.x >= finalPoint.x then
-                    break
-                end
-            end
             HorizontalScroll(containerName, invert)
+			if not __isChanged(__getPosition()) then
+				break
+			end
             if __click() then
                 return true
             end
         end
-        -- move to down side
-        position = __getPosition()
-        if position.y >= finalPoint.y then
-            break
-        end
         VerticalScroll(containerName, false, notInCenter)
+		if not __isChanged(__getPosition()) then
+				break
+		end
         if __click() then
             return true
         end
@@ -741,6 +734,7 @@ function KeyPress(key, control)
         ClickControl(control)
     end
     autotestingSystem:KeyPress(key)
+    Wait(TIMECLICK)
 end
 
 function ClickControl(name, waitTime, touchId)

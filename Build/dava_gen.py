@@ -13,14 +13,37 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
+g_add_definitions = ""
+g_generation_dir = ""
 g_supported_platforms = ["macos", "ios", "android", "windows"]
 g_supported_additional_parameters = ["console", "uap"]
 g_is_console = False
 g_is_uap = False
+g_is_unity_build = False
+
+def is_exe(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+def search_program(program):
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        folders = os.environ["PATH"].split(os.pathsep)
+        folders.append("/Applications/CMake.app/Contents/bin")
+        for path in folders:
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return False
 
 def parse_additional_params(additional):
     global g_is_console
     global g_is_uap
+    global g_is_unity_build
 
     if not additional:
         return True;
@@ -29,12 +52,14 @@ def parse_additional_params(additional):
         param = param.lower()
         if "console" == param:
             g_is_console = True
+        elif "uap" == param:
+            g_is_uap = True
+        elif "ub" == param:
+            g_is_unity_build = True                
         else:
-            if "uap" == param:
-                g_is_uap = True
-            else:
-                print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
-                return False
+            print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
+            return False
+
     return True
 
 
@@ -45,7 +70,7 @@ def setup_framework_env():
     global g_cmake_file_path
 
     # take current path and make it easier understandable
-    path = os.getcwd()
+    path = os.path.realpath(sys.argv[0])
     path = path.replace('\\', '/')
     path = os.path.normpath(path)
     path = path if path.endswith('/') else path + '/'
@@ -63,7 +88,8 @@ def setup_framework_env():
     if "" == g_framework_path:
         return False
 
-    g_toolchains_full_path = g_framework_path + g_toolchains_relative_framework_path
+    g_toolchains_full_path = os.path.realpath( g_framework_path + g_toolchains_relative_framework_path )
+    g_toolchains_full_path = g_toolchains_full_path + '/'
 
     return True
 
@@ -83,7 +109,7 @@ def get_project_type(dst_platform, is_console):
 
         if "MinGW" == current_platform:
             project_string += "Mingw Makefiles"
-        if "Windows" == current_platform:
+        elif "Windows" == current_platform:
             project_string += "NMake Makefiles"
         else:
             project_string += "Unix Makefiles"
@@ -113,6 +139,8 @@ def main():
     parser.add_argument('platform_name', help='One of ' + str(g_supported_platforms))
     parser.add_argument('additional_params', nargs='*', help= 'One of ' + str(g_supported_additional_parameters))
     parser.add_argument('cmake_path', help='relative path to cmake list')
+    parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
+    parser.add_argument('--add_definitions', '-defs', default="", help="add definitions" )
 
     options = parser.parse_args()
 
@@ -127,7 +155,7 @@ def main():
         parser.print_help()
         exit();
     else:
-        destination_platform = options.platform_name
+        destination_platform = options.platform_name.lower()
 
     project_type = get_project_type(destination_platform, g_is_console)
     if project_type == "":
@@ -140,14 +168,34 @@ def main():
 
     toolchain = get_toolchain(destination_platform)
 
-    g_cmake_file_path = options.cmake_path
+    g_cmake_file_path = os.path.realpath(options.cmake_path)
+    g_generation_dir  = options.generation_dir
+    g_add_definitions = options.add_definitions.replace(',',' ')
 
-    call_string = ['cmake', '-G', project_type, toolchain, g_cmake_file_path]
+    if len(g_generation_dir) :
+        if not os.path.exists(g_generation_dir):
+            os.makedirs(g_generation_dir)
+        os.chdir( g_generation_dir )
 
+    cmake_program = search_program("cmake")
+
+    if False == cmake_program:
+        print "cmake command not found."
+        exit()
+
+    call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
+
+    if len(g_add_definitions) :
+        call_string +=  g_add_definitions.split(' ') 
+    
+    if g_is_unity_build:
+        call_string.append("-DUNITY_BUILD=true")
     print call_string
 
     subprocess.check_output(call_string)
-    subprocess.check_output(call_string)
+    
+    if "android" == destination_platform:
+        subprocess.check_output(call_string)    
 
 if __name__ == '__main__':
     main()

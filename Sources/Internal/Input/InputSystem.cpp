@@ -94,12 +94,11 @@ void InputSystem::RemoveAllInputCallbacks()
 
 void InputSystem::OnBeforeUpdate()
 {
-    keyboard->OnBeforeUpdate();
 }
 
 void InputSystem::OnAfterUpdate()
 {
-    keyboard->OnAfterUpdate();
+    keyboard->OnFinishFrame();
 }
 
 InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()

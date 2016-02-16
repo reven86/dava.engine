@@ -35,18 +35,19 @@
 class LocalizedTextValueProperty : public IntrospectionProperty
 {
 public:
-    LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType cloneType);
+    LocalizedTextValueProperty(DAVA::BaseObject* object, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
 protected:
     virtual ~LocalizedTextValueProperty();
-    
+
 public:
     void Refresh(DAVA::int32 refreshFlags) override;
 
     DAVA::VariantType GetValue() const override;
+
 protected:
-    void ApplyValue(const DAVA::VariantType &value) override;
-    
+    void ApplyValue(const DAVA::VariantType& value) override;
+
 protected:
     DAVA::WideString text;
 };

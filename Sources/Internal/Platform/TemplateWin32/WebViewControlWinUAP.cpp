@@ -28,7 +28,7 @@
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #include "Utils/Utils.h"
 
@@ -43,10 +43,10 @@ using namespace Windows::Web::Http::Filters;
 
 namespace DAVA
 {
-
 WebViewControl::WebViewControl(UIWebView& uiWebView)
     : privateImpl(std::make_shared<PrivateWebViewWinUAP>(&uiWebView))
-{}
+{
+}
 
 WebViewControl::~WebViewControl()
 {
@@ -119,15 +119,15 @@ void WebViewControl::Update()
 
 void WebViewControl::DeleteCookies(const String& url)
 {
-    Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
-    HttpCookieManager^ cookieManager = httpObj.CookieManager;
-    HttpCookieCollection^ cookies = cookieManager->GetCookies(uri);
+    HttpCookieManager ^ cookieManager = httpObj.CookieManager;
+    HttpCookieCollection ^ cookies = cookieManager->GetCookies(uri);
 
-    IIterator<HttpCookie^>^ it = cookies->First();
+    IIterator<HttpCookie ^> ^ it = cookies->First();
     while (it->HasCurrent)
     {
-        HttpCookie^ cookie = it->Current;
+        HttpCookie ^ cookie = it->Current;
         cookieManager->DeleteCookie(cookie);
         it->MoveNext();
     }
@@ -137,15 +137,15 @@ String WebViewControl::GetCookie(const String& url, const String& name) const
 {
     String result;
 
-    Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
-    HttpCookieCollection^ cookies = httpObj.CookieManager->GetCookies(uri);
+    HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
 
-    Platform::String^ cookieName = ref new Platform::String(StringToWString(name).c_str());
-    IIterator<HttpCookie^>^ it = cookies->First();
+    Platform::String ^ cookieName = ref new Platform::String(StringToWString(name).c_str());
+    IIterator<HttpCookie ^> ^ it = cookies->First();
     while (it->HasCurrent)
     {
-        HttpCookie^ cookie = it->Current;
+        HttpCookie ^ cookie = it->Current;
         if (cookie->Name == cookieName)
         {
             result = WStringToString(cookie->Value->Data());
@@ -160,20 +160,20 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 {
     Map<String, String> result;
 
-    Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
-    HttpCookieCollection^ cookies = httpObj.CookieManager->GetCookies(uri);
+    HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
 
-    IIterator<HttpCookie^>^ it = cookies->First();
+    IIterator<HttpCookie ^> ^ it = cookies->First();
     while (it->HasCurrent)
     {
-        HttpCookie^ cookie = it->Current;
+        HttpCookie ^ cookie = it->Current;
         result.emplace(WStringToString(cookie->Name->Data()), WStringToString(cookie->Value->Data()));
         it->MoveNext();
     }
     return result;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+#endif // (__DAVAENGINE_WIN_UAP__) && !(__DISABLE_NATIVE_WEBVIEW__)

@@ -45,8 +45,8 @@
 
 namespace DAVA
 {
-LightUpdateSystem::LightUpdateSystem(Scene * scene)
-:	SceneSystem(scene)
+LightUpdateSystem::LightUpdateSystem(Scene* scene)
+    : SceneSystem(scene)
 {
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
 }
@@ -55,14 +55,14 @@ LightUpdateSystem::~LightUpdateSystem()
 {
 }
 
-void LightUpdateSystem::ImmediateEvent(Component * component, uint32 event)
+void LightUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 {
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
-        Entity * entity = component->GetEntity();
+        Entity* entity = component->GetEntity();
         RecalcLight(entity);
     }
-    
+
     //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
     {
         // entity->GetCameraComponent();
@@ -70,19 +70,20 @@ void LightUpdateSystem::ImmediateEvent(Component * component, uint32 event)
     }
 }
 
-void LightUpdateSystem::RecalcLight(Entity *entity)
+void LightUpdateSystem::RecalcLight(Entity* entity)
 {
     // Update new transform pointer, and mark that transform is changed
-    Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-    Light * light = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
+    Matrix4* worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+    Light* light = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
     light->SetPositionDirectionFromMatrix(*worldTransformPointer);
     entity->GetScene()->renderSystem->MarkForUpdate(light);
 }
-    
-void LightUpdateSystem::AddEntity(Entity * entity)
+
+void LightUpdateSystem::AddEntity(Entity* entity)
 {
-    Light * lightObject = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
-    if (!lightObject)return;
+    Light* lightObject = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
+    if (!lightObject)
+        return;
 
     entityObjectMap.insert(entity, lightObject);
     GetScene()->GetRenderSystem()->AddLight(lightObject);
@@ -90,16 +91,15 @@ void LightUpdateSystem::AddEntity(Entity * entity)
     RecalcLight(entity);
 }
 
-void LightUpdateSystem::RemoveEntity(Entity * entity)
+void LightUpdateSystem::RemoveEntity(Entity* entity)
 {
-    Light * lightObject = entityObjectMap.at(entity);
+    Light* lightObject = entityObjectMap.at(entity);
     if (!lightObject)
-	{
-		return;
-	}
-    
+    {
+        return;
+    }
+
     GetScene()->GetRenderSystem()->RemoveLight(lightObject);
-	entityObjectMap.erase(entity);
+    entityObjectMap.erase(entity);
 }
-       
 };

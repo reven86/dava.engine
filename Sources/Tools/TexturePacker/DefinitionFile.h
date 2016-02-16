@@ -47,19 +47,19 @@ public:
     ~DefinitionFile();
 
     void ClearPackedFrames();
-	void LoadPNG(const FilePath & fullname, const FilePath & processDirectoryPath);
+    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
 
-	Size2i GetFrameSize(int frame) const;
-	int GetFrameWidth(int frame) const;
-	int GetFrameHeight(int frame) const;
+    Size2i GetFrameSize(int frame) const;
+    int GetFrameWidth(int frame) const;
+    int GetFrameHeight(int frame) const;
 
-	FilePath    filename;
-	int			frameCount;
-	int			spriteWidth;
-	int			spriteHeight;
-	Rect2i		* frameRects;
+    FilePath filename;
+    int frameCount;
+    int spriteWidth;
+    int spriteHeight;
+    Rect2i* frameRects;
 
-	Vector<String> pathsInfo;
+    Vector<String> pathsInfo;
     Vector<String> frameNames;
 };
 

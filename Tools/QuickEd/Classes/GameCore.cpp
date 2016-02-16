@@ -30,7 +30,6 @@
 #include "GameCore.h"
 
 #include "Grid/GridVisualizer.h"
-#include "Ruler/RulerController.h"
 
 //#include "ScreenManager.h"
 #include "EditorSettings.h"
@@ -44,29 +43,28 @@
 
 #include "UI/Layouts/UILayoutSystem.h"
 
+#include <QString>
+
 using namespace DAVA;
 
 GameCore::GameCore()
-    : cursor(nullptr)
 {
     new GridVisualizer();
-    new RulerController();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
 
     // Unpack the help data, if needed.
-	UnpackHelp();
+    UnpackHelp();
 
-	//Initialize internal resources of application
-	ResourcesManageHelper::InitInternalResources();
+    //Initialize internal resources of application
+    ResourcesManageHelper::InitInternalResources();
     UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }
 
 GameCore::~GameCore()
 {
-    RulerController::Instance()->Release();
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
@@ -78,13 +76,11 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-    cursor = nullptr;
     Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
 {
-	SafeRelease(cursor);
 }
 
 void GameCore::OnSuspend()
@@ -99,34 +95,28 @@ void GameCore::OnResume()
 
 void GameCore::OnBackground()
 {
-	
 }
 
 void GameCore::BeginFrame()
 {
-	ApplicationCore::BeginFrame();
+    ApplicationCore::BeginFrame();
 }
 
 void GameCore::Update(float32 timeElapsed)
-{	
-//	if (!cursor)
-//	{
-//		cursor = Cursor::Create("~res:/Cursor/cursor1.png", Vector2(6, 0));
-//		RenderManager::Instance()->SetCursor(cursor);
-//	}
-	ApplicationCore::Update(timeElapsed);
+{
+    ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::Draw()
 {
-	ApplicationCore::Draw();
+    ApplicationCore::Draw();
 }
 
 void GameCore::UnpackHelp()
 {
-	//Unpack Help to Documents.
+    //Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
-	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
+    FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();
@@ -134,8 +124,8 @@ void GameCore::UnpackHelp()
         {
             FileSystem::Instance()->DeleteDirectory(docsPath);
             FileSystem::Instance()->CreateDirectory(docsPath, true);
-		
-			helpRA->UnpackToFolder(docsPath);
+
+            helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 

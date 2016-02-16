@@ -32,31 +32,27 @@
 
 namespace DAVA
 {
-
-
 SkinnedMesh::SkinnedMesh()
 {
     type = TYPE_SKINNED_MESH;
-    bbox = AABBox3(Vector3(0,0,0), Vector3(0,0,0));
+    bbox = AABBox3(Vector3(0, 0, 0), Vector3(0, 0, 0));
     jointsCount = 0;
     positionArray = NULL;
     quaternionArray = NULL;
 }
 
-
-RenderObject * SkinnedMesh::Clone(RenderObject *newObject)
+RenderObject* SkinnedMesh::Clone(RenderObject* newObject)
 {
-
-    if(!newObject)
+    if (!newObject)
     {
         DVASSERT_MSG(IsPointerToExactClass<SkinnedMesh>(this), "Can clone only SkinnedMesh");
         newObject = new SkinnedMesh();
     }
-    RenderObject::Clone(newObject);   
+    RenderObject::Clone(newObject);
     return newObject;
 }
 
-void SkinnedMesh::BindDynamicParameters(Camera * camera)
+void SkinnedMesh::BindDynamicParameters(Camera* camera)
 {
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINTS_COUNT, &jointsCount, (pointer_size)(&jointsCount));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_POSITIONS, &positionArray[0], (pointer_size)positionArray);
@@ -64,5 +60,4 @@ void SkinnedMesh::BindDynamicParameters(Camera * camera)
 
     RenderObject::BindDynamicParameters(camera);
 }
-
 }

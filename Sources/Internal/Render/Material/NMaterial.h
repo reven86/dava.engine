@@ -148,6 +148,7 @@ public:
     Texture* GetEffectiveTexture(const FastName& slotName);
     void CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const;
     bool ContainsTexture(Texture* texture) const;
+    const HashMap<FastName, MaterialTextureInfo*>& GetLocalTextures() const;
 
     // flags
     void AddFlag(const FastName& flagName, int32 value);
@@ -176,6 +177,8 @@ public:
     // RHI_COMPLETE - it's temporary solution to avoid FX loading and shaders compilation after loading
     void PreCacheFX();
     void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
+
+    static const float32 DEFAULT_LIGHTMAP_SIZE;
 
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);

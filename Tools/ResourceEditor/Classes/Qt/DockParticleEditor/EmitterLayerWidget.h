@@ -47,33 +47,36 @@
 
 using namespace DAVA;
 
-class EmitterLayerWidget: public QWidget, public BaseParticleEditorContentWidget
+class EmitterLayerWidget : public QWidget, public BaseParticleEditorContentWidget
 {
     Q_OBJECT
-    
+
 public:
-    explicit EmitterLayerWidget(QWidget *parent = 0);
+    explicit EmitterLayerWidget(QWidget* parent = 0);
 
-	void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
-	ParticleLayer* GetLayer() const {return layer;};
-	void Update(bool updateMinimized);
-	
-	virtual bool eventFilter(QObject *, QEvent *);
+    void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
+    ParticleLayer* GetLayer() const
+    {
+        return layer;
+    };
+    void Update(bool updateMinimized);
 
-	virtual void StoreVisualState(KeyedArchive* visualStateProps);
-	virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    virtual bool eventFilter(QObject*, QEvent*);
 
-	// Switch from/to SuperEmitter mode.
-	void SetSuperemitterMode(bool isSuperemitter);
+    virtual void StoreVisualState(KeyedArchive* visualStateProps);
+    virtual void RestoreVisualState(KeyedArchive* visualStateProps);
 
-	// Notify yhe widget layer value is changed.
-	void OnLayerValueChanged();
+    // Switch from/to SuperEmitter mode.
+    void SetSuperemitterMode(bool isSuperemitter);
+
+    // Notify yhe widget layer value is changed.
+    void OnLayerValueChanged();
 
 signals:
-	void ValueChanged();
-	
+    void ValueChanged();
+
 protected slots:
-	void OnLodsChanged();
+    void OnLodsChanged();
     void OnValueChanged();
     void OnLayerMaterialValueChanged();
     void OnSpriteBtn();
@@ -85,22 +88,22 @@ protected slots:
     void OnSpriteUpdateTimerExpired();
 
 private:
-	void InitWidget(QWidget* );
-	void UpdateTooltip();
+    void InitWidget(QWidget*);
+    void UpdateTooltip();
     void UpdateLayerSprite();
-	
-	void FillLayerTypes();
-	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
+
+    void FillLayerTypes();
+    int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
 private:
-	struct LayerTypeMap
-	{
-		ParticleLayer::eType layerType;
-		QString layerName;
-	};
+    struct LayerTypeMap
+    {
+        ParticleLayer::eType layerType;
+        QString layerName;
+    };
 
-	struct BlendPreset
-	{
+    struct BlendPreset
+    {
         eBlending blending;
         QString presetName;
     };

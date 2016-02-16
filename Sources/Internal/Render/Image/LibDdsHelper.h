@@ -37,11 +37,11 @@
 #include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/CRCAdditionInterface.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class File;
 
-class LibDdsHelper: public ImageFormatInterface, public CRCAdditionInterface
+class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
 {
 public:
     LibDdsHelper();

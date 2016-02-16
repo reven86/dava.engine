@@ -32,9 +32,11 @@
 
 #include "Utils/Utils.h"
 
-void ProgramOptions::Option::SetValue(const DAVA::VariantType& value)
+namespace DAVA
 {
-    if (multipleValuesSuported || values.size() == 0)
+void ProgramOptions::Option::SetValue(const VariantType& value)
+{
+    if (multipleValuesSuported || values.empty())
     {
         values.push_back(value);
     }
@@ -44,27 +46,23 @@ void ProgramOptions::Option::SetValue(const DAVA::VariantType& value)
     }
 }
 
-ProgramOptions::ProgramOptions(const DAVA::String& _commandName)
+ProgramOptions::ProgramOptions(const String& _commandName)
     : commandName(_commandName)
 {
 }
 
-void ProgramOptions::AddOption(const char* optionName, const DAVA::VariantType& defaultValue, const char* description, bool canBeMultiple)
+void ProgramOptions::AddOption(const String& optionName, const VariantType& defaultValue, const String& description, bool canBeMultiple)
 {
     Option op;
     op.name = optionName;
     op.multipleValuesSuported = canBeMultiple;
     op.defaultValue = defaultValue;
-
-    if (nullptr != description)
-    {
-        op.descr = description;
-    }
+    op.descr = description;
 
     options.push_back(op);
 }
 
-void ProgramOptions::AddArgument(const char* argumentName, bool required)
+void ProgramOptions::AddArgument(const String& argumentName, bool required)
 {
     Argument ar;
     ar.name = argumentName;
@@ -73,31 +71,41 @@ void ProgramOptions::AddArgument(const char* argumentName, bool required)
     arguments.push_back(ar);
 }
 
-bool ProgramOptions::Parse(int argc, char* argv[], size_t start)
+bool ProgramOptions::Parse(uint32 argc, char* argv[])
 {
-    bool ret = true;
-    size_t curParamPos = 0;
+    // if first argument equal command name we should skip it else we should stop parsing
+    uint32 argIndex = 1; //skip executable pathname in params
+    if (argIndex < argc && commandName == String(argv[argIndex]))
+    {
+        argIndex++;
+    }
+    else
+    {
+        return false;
+    }
 
-    argValues = argv;
-    argCount = (size_t)argc;
-    argIndex = start;
-
-    while (ret && argIndex < argCount)
+    uint32 curParamPos = 0;
+    while (argIndex < argc)
     {
         // search if there is options with such name
-        if (!ParseOption())
+        if (!ParseOption(argIndex, argc, argv))
         {
             // set required
             if (curParamPos < arguments.size())
             {
-                arguments[curParamPos].value = argValues[argIndex];
+                arguments[curParamPos].value = argv[argIndex];
                 arguments[curParamPos].set = true;
                 curParamPos++;
             }
+            else if (argIndex < argc)
+            {
+                printf("Error - unknown argument: [%d] %s\n", argIndex, argv[argIndex]);
+                return false;
+            }
             else
             {
-                printf("Error - unknown argument: %s\n", argValues[argIndex]);
-                ret = false;
+                printf("Error of parsing command line\n");
+                return false;
             }
         }
 
@@ -110,11 +118,119 @@ bool ProgramOptions::Parse(int argc, char* argv[], size_t start)
         if (arg.required && !arg.set)
         {
             printf("Error - required argument not specified: %s\n", arg.name.c_str());
-            ret = false;
+            return false;
         }
     }
 
-    return ret;
+    return true;
+}
+
+bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
+{
+    const String argString = argv[argIndex];
+    for (auto& opt : options)
+    {
+        if (opt.name == argString)
+        {
+            if (opt.defaultValue.GetType() == VariantType::TYPE_BOOLEAN)
+            {
+                // bool option don't need any arguments
+                opt.SetValue(VariantType(true));
+                return true;
+            }
+            else
+            {
+                argIndex++;
+                if (argIndex < argc)
+                {
+                    const String valueStr = argv[argIndex];
+                    Vector<String> tokens; //one or more params
+
+                    if (opt.multipleValuesSuported)
+                    {
+                        Split(valueStr, ",", tokens, true, false);
+                    }
+                    else
+                    {
+                        tokens.push_back(valueStr);
+                    }
+
+                    const VariantType::eVariantType optionType = opt.defaultValue.GetType();
+                    switch (optionType)
+                    {
+                    case VariantType::TYPE_STRING:
+                    case VariantType::TYPE_NONE:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            opt.SetValue(VariantType(t));
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_INT32:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            int32 value = 0;
+                            if (1 == sscanf(t.c_str(), "%d", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_UINT32:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            uint32 value = 0;
+                            if (1 == sscanf(t.c_str(), "%u", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_UINT64:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            uint64 value = 0;
+                            if (1 == sscanf(t.c_str(), "%llu", &value))
+                            {
+                                opt.SetValue(VariantType(value));
+                            }
+                        }
+                        break;
+                    }
+                    case VariantType::TYPE_BOOLEAN:
+                    {
+                        for (auto& t : tokens)
+                        {
+                            if (strcmp(t.c_str(), "true"))
+                            {
+                                opt.SetValue(VariantType(true));
+                            }
+                            else if (strcmp(t.c_str(), "false"))
+                            {
+                                opt.SetValue(VariantType(false));
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        DVASSERT(0 && "Not implemented");
+                        break;
+                    }
+
+                    return true;
+                }
+                break;
+            }
+        }
+    }
+
+    return false;
 }
 
 void ProgramOptions::PrintUsage() const
@@ -145,7 +261,7 @@ void ProgramOptions::PrintUsage() const
         printf("\t%s", opt.name.c_str());
 
         int optionType = opt.defaultValue.GetType();
-        if (optionType != DAVA::VariantType::TYPE_BOOLEAN)
+        if (optionType != VariantType::TYPE_BOOLEAN)
         {
             printf(" <value>");
             if (opt.multipleValuesSuported)
@@ -168,13 +284,13 @@ void ProgramOptions::PrintUsage() const
     }
 }
 
-DAVA::uint32 ProgramOptions::GetOptionsCount(const char* optionName) const
+uint32 ProgramOptions::GetOptionsCount(const String& optionName) const
 {
     for (auto& opt : options)
     {
         if (opt.name == optionName)
         {
-            DAVA::uint32 count = static_cast<DAVA::uint32>(opt.values.size());
+            uint32 count = static_cast<uint32>(opt.values.size());
             return (count > 0) ? count : 1; //real arguments or default
         }
     }
@@ -182,7 +298,7 @@ DAVA::uint32 ProgramOptions::GetOptionsCount(const char* optionName) const
     return 1; //default
 }
 
-DAVA::VariantType ProgramOptions::GetOption(const char* optionName, size_t pos) const
+VariantType ProgramOptions::GetOption(const String& optionName, uint32 pos) const
 {
     for (auto& opt : options)
     {
@@ -202,10 +318,10 @@ DAVA::VariantType ProgramOptions::GetOption(const char* optionName, size_t pos) 
         }
     }
 
-    return DAVA::VariantType();
+    return VariantType();
 }
 
-DAVA::String ProgramOptions::GetArgument(const char* argumentName) const
+String ProgramOptions::GetArgument(const String& argumentName) const
 {
     for (auto& arg : arguments)
     {
@@ -215,136 +331,13 @@ DAVA::String ProgramOptions::GetArgument(const char* argumentName) const
         }
     }
 
-    return DAVA::String();
+    return String();
 }
 
-const DAVA::String& ProgramOptions::GetCommand() const
+const String& ProgramOptions::GetCommand() const
 {
     return commandName;
 }
 
-bool ProgramOptions::ParseOption()
-{
-    bool ret = false;
-    const char* str = argValues[argIndex];
 
-    for (size_t i = 0; i < options.size(); ++i)
-    {
-        const char* optionName = options[i].name.c_str();
-        size_t optionNameLen = options[i].name.length();
-        size_t index = 0;
-
-        for (index = 0; index < optionNameLen; ++index)
-        {
-            if (optionName[index] != str[index])
-            {
-                break;
-            }
-        }
-
-        // found
-        if (index == optionNameLen)
-        {
-            if (optionNameLen == strlen(str))
-            {
-                if (options[i].defaultValue.GetType() == DAVA::VariantType::TYPE_BOOLEAN)
-                {
-                    // bool option don't need any arguments
-                    options[i].SetValue(DAVA::VariantType(true));
-                    ret = true;
-                }
-                else
-                {
-                    argIndex++;
-                    if (argIndex < argCount)
-                    {
-                        const DAVA::String valueStr = DAVA::String(argValues[argIndex]);
-                        DAVA::Vector<DAVA::String> tokens; //one or more params
-
-                        if (options[i].multipleValuesSuported)
-                        {
-                            DAVA::Split(valueStr, ",", tokens, true, false);
-                        }
-                        else
-                        {
-                            tokens.push_back(valueStr);
-                        }
-
-                        int optionType = options[i].defaultValue.GetType();
-                        switch (optionType)
-                        {
-                        case DAVA::VariantType::TYPE_STRING:
-                        case DAVA::VariantType::TYPE_NONE:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                options[i].SetValue(DAVA::VariantType(t));
-                            }
-                            break;
-                        }
-                        case DAVA::VariantType::TYPE_INT32:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                DAVA::int32 value = 0;
-                                if (1 == sscanf(t.c_str(), "%d", &value))
-                                {
-                                    options[i].SetValue(DAVA::VariantType(value));
-                                }
-                            }
-                        }
-                        break;
-                        case DAVA::VariantType::TYPE_UINT32:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                DAVA::uint32 value = 0;
-                                if (1 == sscanf(t.c_str(), "%u", &value))
-                                {
-                                    options[i].SetValue(DAVA::VariantType(value));
-                                }
-                            }
-                        }
-                        break;
-                        case DAVA::VariantType::TYPE_UINT64:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                DAVA::uint64 value = 0;
-                                if (1 == sscanf(t.c_str(), "%llu", &value))
-                                {
-                                    options[i].SetValue(DAVA::VariantType(value));
-                                }
-                            }
-                        }
-                        break;
-                        case DAVA::VariantType::TYPE_BOOLEAN:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                if (strcmp(t.c_str(), "true"))
-                                {
-                                    options[i].SetValue(DAVA::VariantType(true));
-                                }
-                                else if (strcmp(t.c_str(), "false"))
-                                {
-                                    options[i].SetValue(DAVA::VariantType(false));
-                                }
-                            }
-                            break;
-                        }
-                        default:
-                            DVASSERT(0 && "Not implemented")
-                            break;
-                        }
-
-                        ret = true;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    return ret;
-}
+} //END of DAVA

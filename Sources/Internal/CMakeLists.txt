@@ -88,6 +88,7 @@ elseif( MACOS )
                     QuartzCore
                     CoreMedia
                     WebKit
+                    SystemConfiguration
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
@@ -102,7 +103,10 @@ elseif( MACOS )
     set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( IOS )  
-    find_package( ZLIB )
+
+    if ( NOT NOT_TARGET_EXECUTABLE )
+        find_package( ZLIB )
+    endif()
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
@@ -139,7 +143,16 @@ elseif( IOS )
 elseif ( WINDOWS_UAP )
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
 
-    list ( APPEND LIST_SHARED_LIBRARIES "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "dxguid.lib" "dwrite.lib" )
+    # list each library on its own line to ease library addition
+    list ( APPEND LIST_SHARED_LIBRARIES
+            "d2d1.lib"
+            "d3d11.lib"
+            "d3dcompiler.lib"
+            "dxgi.lib"
+            "dxguid.lib"
+            "dwrite.lib"
+            "iphlpapi.lib"
+    )
     set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
 elseif( WIN32 ) 
@@ -155,8 +168,27 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" "delayimp.lib" "dxgi.lib" )
-#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+    # list each library on its own line to ease library addition
+    list ( APPEND LIST_SHARED_LIBRARIES
+            "Wininet.lib"
+            "opengl32.lib"
+            "ws2_32.lib"
+            "winmm.lib"
+            "wldap32.lib"
+            "iphlpapi.lib"
+            "Gdi32.lib"
+            "glu32.lib"
+            "psapi.lib"
+            "dbghelp.lib"
+            "userenv.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
+            "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
+            "delayimp.lib"
+            "dxgi.lib"
+    )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
@@ -182,14 +214,17 @@ set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
                                                    IGNORE_LIST_APPLE  
+                                                        "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                                        "iOS/ICloudKeyValue.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
+                                                        "Notification/LocalNotificationMac.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
+                                                        "TemplateMacOS/MovieViewControlMacOS.mm"
                                                     IGNORE_LIST_IOS
+                                                        "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
                                                         "TemplateiOS/HelperAppDelegate.mm"
                                                         "TemplateiOS/DPIHelperiOS.mm"

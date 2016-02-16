@@ -32,55 +32,54 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 
+namespace DAVA
+{
 class ProgramOptions
 {
 public:
-    ProgramOptions(const DAVA::String& _commandName);
+    ProgramOptions(const String& _commandName);
 
-    void AddOption(const char* optionName, const DAVA::VariantType& defaultValue, const char* description = nullptr, bool canBeMultiple = false);
-    void AddArgument(const char* argumentName, bool required = true);
+    void AddOption(const String& optionName, const VariantType& defaultValue, const String& description = nullptr, bool canBeMultiple = false);
+    void AddArgument(const String& argumentName, bool required = true);
 
-    DAVA::uint32 GetOptionsCount(const char* optionName) const;
-    DAVA::VariantType GetOption(const char* optionName, size_t pos = 0) const;
+    uint32 GetOptionsCount(const String& optionName) const;
+    VariantType GetOption(const String& optionName, uint32 pos = 0) const;
 
-    DAVA::String GetArgument(const char* argumentName) const;
-    const DAVA::String& GetCommand() const;
+    String GetArgument(const String& argumentName) const;
+    const String& GetCommand() const;
 
-    bool Parse(int argc, char* argv[], size_t start = 1);
+    bool Parse(uint32 argc, char* argv[]);
     void PrintUsage() const;
 
 private:
-    bool ParseOption();
+    bool ParseOption(uint32& argIndex, uint32 argc, char* argv[]);
 
 private:
     struct Option
     {
-        void SetValue(const DAVA::VariantType& value);
+        void SetValue(const VariantType& value);
 
-        DAVA::String name;
-        DAVA::String alias;
-        DAVA::String descr;
+        String name;
+        String alias;
+        String descr;
         bool multipleValuesSuported = false;
-        DAVA::VariantType defaultValue;
-        DAVA::Vector<DAVA::VariantType> values;
+        VariantType defaultValue;
+        Vector<VariantType> values;
     };
 
     struct Argument
     {
         bool required = false;
         bool set = false;
-        DAVA::String name;
-        DAVA::String value;
+        String name;
+        String value;
     };
 
-    char** argValues = nullptr;
-    size_t argCount = 0;
-    size_t argIndex = 0;
+    Vector<Argument> arguments;
+    Vector<Option> options;
 
-    DAVA::Vector<Argument> arguments;
-    DAVA::Vector<Option> options;
-
-    DAVA::String commandName;
+    String commandName;
 };
 
+} //END of DAVA
 #endif //__PROGRAM_OPTIONS_H__

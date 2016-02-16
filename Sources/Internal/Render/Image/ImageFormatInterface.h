@@ -37,7 +37,7 @@
 #include "Utils/Utils.h"
 #include "Render/PixelFormatDescriptor.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Image;
 
@@ -56,9 +56,9 @@ struct ImageInfo
     bool operator==(const ImageInfo& another) const
     {
         return (
-            width == another.width && 
-            height == another.height && 
-            format == another.format);
+        width == another.width &&
+        height == another.height &&
+        format == another.format);
     }
 
     uint32 width = 0;
@@ -67,7 +67,6 @@ struct ImageInfo
     uint32 dataSize = 0;
     uint32 mipmapsCount = 0;
 };
-
 
 class ImageFormatInterface
 {
@@ -84,13 +83,6 @@ public:
     inline bool IsFileExtensionSupported(const String& extension) const;
 
     virtual bool CanProcessFile(const FilePtr& file) const = 0;
-
-    virtual eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const = 0;
-
-    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
-
-    virtual ImageInfo GetImageInfo(const FilePtr& infile) const = 0;
 
 protected:
     ImageFormat imageFormat;
@@ -146,7 +138,6 @@ inline const char* ImageFormatInterface::GetFormatName() const
 {
     return name.c_str();
 }
-
 };
 
 #endif // __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__

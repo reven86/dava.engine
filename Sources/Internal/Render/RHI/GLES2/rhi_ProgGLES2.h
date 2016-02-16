@@ -85,14 +85,15 @@ public:
 
         const void* Instance() const;
         void SetToRHI(uint32 progUid, const void* instData) const;
-        void InvalidateInstance();
 
         static void AdvanceFrame();
 
     private:
+        void ReallocIfneeded();
+
         uint32 glProg;
         uint16 location;
-        #if DV_USE_UNIFORMBUFFER_OBJECT
+        #if RHI_GL__USE_UNIFORMBUFFER_OBJECT
         unsigned ubo;
         #endif
 
@@ -102,6 +103,20 @@ public:
         mutable void** lastInst;
         mutable uint32 frame;
 
+        #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+        mutable uint32 isStatic : 1;
+        mutable uint32 isUsedInDrawCall : 1;
+        mutable uint32 lastmodifiedFrame;
+        mutable std::vector<float*> altData;
+        mutable std::vector<uint32> altDataAllocationFrame;
+        #endif
+
+        #if RHI_GL__DEBUG_CONST_BUFFERS
+        mutable uint32 isTrueStatic : 1;
+        mutable uint32 instCount;
+        #endif
+
+        friend class ProgGLES2;
         static uint32 CurFrame;
     };
 

@@ -244,7 +244,6 @@ DAVA_TESTCLASS(StaticTextTest)
         }
 
         TEST_VERIFY(testSuccess);
-
     }
 
     DAVA_TEST(CleanLineTest)

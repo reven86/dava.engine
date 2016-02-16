@@ -25,8 +25,8 @@ extern "C" {
 #include <magick/morphology.h>
 
 extern MagickExport MagickBooleanType
-  AccelerateConvolveImage(const Image *,const KernelInfo *,Image *,
-    ExceptionInfo *);
+AccelerateConvolveImage(const Image*, const KernelInfo*, Image*,
+                        ExceptionInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

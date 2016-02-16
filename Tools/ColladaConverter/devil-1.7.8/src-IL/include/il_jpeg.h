@@ -19,11 +19,11 @@ ILboolean iCheckJpg(ILubyte Header[2]);
 ILboolean iIsValidJpg(void);
 
 #ifndef IL_USE_IJL
-	ILboolean iLoadJpegInternal(void);
-	ILboolean iSaveJpegInternal(void);
+ILboolean iLoadJpegInternal(void);
+ILboolean iSaveJpegInternal(void);
 #else
-	ILboolean iLoadJpegInternal(ILconst_string FileName, ILvoid *Lump, ILuint Size);
-	ILboolean iSaveJpegInternal(ILconst_string FileName, ILvoid *Lump, ILuint Size);
+ILboolean iLoadJpegInternal(ILconst_string FileName, ILvoid* Lump, ILuint Size);
+ILboolean iSaveJpegInternal(ILconst_string FileName, ILvoid* Lump, ILuint Size);
 #endif
 
-#endif//JPEG_H
+#endif //JPEG_H

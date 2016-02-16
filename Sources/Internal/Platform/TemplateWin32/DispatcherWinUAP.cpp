@@ -39,17 +39,16 @@
 
 namespace DAVA
 {
-
 namespace
 {
-
 // Wrapper to prepare task for running in DispatcherWinUAP's thread context and waiting task completion
 class TaskWrapper final
 {
 public:
     TaskWrapper(std::function<void()>&& task_)
         : task(std::move(task_))
-    {}
+    {
+    }
 
     void RunTask()
     {
@@ -64,7 +63,7 @@ public:
     void WaitTaskComplete()
     {
         UniqueLock<Mutex> lock(mutex);
-        cv.Wait(lock, [this](){ return taskDone; });
+        cv.Wait(lock, [this]() { return taskDone; });
     }
 
 private:
@@ -74,7 +73,7 @@ private:
     bool taskDone = false;
 };
 
-}   // unnamed namespace
+} // unnamed namespace
 
 DispatcherWinUAP::BlockingTaskWrapper::BlockingTaskWrapper(BlockingTaskWrapper&& other)
     : dispatcher(std::move(other.dispatcher))
@@ -125,7 +124,8 @@ void DispatcherWinUAP::BlockingTaskWrapper::WaitTaskComplete()
 
 DispatcherWinUAP::DispatcherWinUAP()
     : boundThreadId(Thread::GetCurrentId())
-{}
+{
+}
 
 void DispatcherWinUAP::BindToCurrentThread()
 {
@@ -158,11 +158,18 @@ void DispatcherWinUAP::ProcessTasks()
     }
 }
 
-void DispatcherWinUAP::ScheduleTask(std::function<void()>&& task)
+void DispatcherWinUAP::ScheduleTask(std::function<void()>&& task, bool scheduleFirst)
 {
     {
         LockGuard<Mutex> guard(mutex);
-        taskQueue.emplace_back(std::move(task));
+        if (scheduleFirst)
+        {
+            taskQueue.emplace_front(std::move(task));
+        }
+        else
+        {
+            taskQueue.emplace_back(std::move(task));
+        }
     }
     cv.NotifyAll();
 }
@@ -175,11 +182,22 @@ void DispatcherWinUAP::ScheduleTaskAndWait(std::function<void()>&& task)
 
     blockingCall.test_and_set();
     TaskWrapper taskWrapper(std::move(task));
-    ScheduleTask(std::function<void()>([&taskWrapper]() { taskWrapper.RunTask(); }));
+    // To avoid some deadlock place blocking calls to main thread first in queue
+    // How deadlock appears:
+    //  1. WinUAPXamlApp::OnWindowVisibilityChanged occurs which calls main thread and makes blocking call back to UI
+    //  2. PrivateTextFieldWinUAP::OnTextChanged occurs which ask delegate and blocks UI thread
+    //  3. now main thread's dispatcher begins executing tasks
+    //    3.1 execute task placed at step 1 which makes blocking call back to UI thread
+    //    3.2 but UI thread already blocked in step 2
+    //    3.3 ta-dam - and here is deadlock
+    // !!! We MUST avoid interthread blocking calls !!!
+    // Placing blocking call first in queue allows task in step 2 run before task 1
+    // but such shuffling leads to violating task order, ups
+    ScheduleTask(std::function<void()>([&taskWrapper]() { taskWrapper.RunTask(); }), true);
     taskWrapper.WaitTaskComplete();
     blockingCall.clear();
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

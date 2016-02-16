@@ -36,8 +36,7 @@ namespace DAVA
 {
 namespace Net
 {
-
-Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback)
+Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndp)
     : loop(ioLoop)
     , socket(ioLoop)
     , timer(ioLoop)
@@ -46,6 +45,8 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , isTerminating(false)
     , runningObjects(0)
     , dataCallback(needDataCallback)
+    , tcpEndpoint(tcpEndp)
+    , acceptor(ioLoop)
 {
     DVASSERT(true == endpoint.Address().IsMulticast());
     DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
@@ -63,7 +64,7 @@ void Announcer::Start()
     loop->Post(MakeFunction(this, &Announcer::DoStart));
 }
 
-void Announcer::Stop(Function<void (IController*)> callback)
+void Announcer::Stop(Function<void(IController*)> callback)
 {
     DVASSERT(false == isTerminating);
     DVASSERT(callback != nullptr);
@@ -86,7 +87,15 @@ void Announcer::DoStart()
         if (0 == error)
             error = timer.Wait(0, MakeFunction(this, &Announcer::TimerHandleTimer));
     }
-    if (error != 0 && false == isTerminating)
+
+    int32 errorA = acceptor.Bind(tcpEndpoint);
+    if (0 == errorA)
+    {
+        errorA = acceptor.StartListen(MakeFunction(this, &Announcer::AcceptorHandleConnect));
+    }
+
+    // Restart only if both UDP socket and TCP acceptor failed
+    if (error != 0 && errorA != 0 && false == isTerminating)
     {
         DoStop();
     }
@@ -94,15 +103,20 @@ void Announcer::DoStart()
 
 void Announcer::DoStop()
 {
-    if (true == socket.IsOpen() && false == socket.IsClosing())
+    if (socket.IsOpen() && !socket.IsClosing())
     {
         runningObjects += 1;
-        socket.Close(MakeFunction(this, &Announcer::SocketHandleClose));
+        socket.Close([this](UDPSocket*) { DoObjectClose(); });
     }
-    if (true == timer.IsOpen() && false == timer.IsClosing())
+    if (timer.IsOpen() && !timer.IsClosing())
     {
         runningObjects += 1;
-        timer.Close(MakeFunction(this, &Announcer::TimerHandleClose));
+        timer.Close([this](DeadlineTimer*) { DoObjectClose(); });
+    }
+    if (acceptor.IsOpen() && !acceptor.IsClosing())
+    {
+        runningObjects += 1;
+        acceptor.Close([this](TCPAcceptor*) { DoObjectClose(); });
     }
 }
 
@@ -117,30 +131,21 @@ void Announcer::DoObjectClose()
         }
         else
         {
-            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &Announcer::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, [this](DeadlineTimer*) { DoStart(); });
         }
     }
 }
 
 void Announcer::DoBye()
 {
-	isTerminating = false;
-	stopCallback(this);
-}
-
-void Announcer::TimerHandleClose(DeadlineTimer* timer)
-{
-    DoObjectClose();
-}
-
-void Announcer::SocketHandleClose(UDPSocket* socket)
-{
-    DoObjectClose();
+    isTerminating = false;
+    stopCallback(this);
 }
 
 void Announcer::TimerHandleTimer(DeadlineTimer* timer)
 {
-    if (true == isTerminating) return;
+    if (true == isTerminating)
+        return;
 
     size_t length = dataCallback(sizeof(buffer), buffer);
     if (length > 0)
@@ -156,15 +161,11 @@ void Announcer::TimerHandleTimer(DeadlineTimer* timer)
         timer->Wait(announcePeriod, MakeFunction(this, &Announcer::TimerHandleTimer));
 }
 
-void Announcer::TimerHandleDelay(DeadlineTimer* timer)
-{
-    DoStart();
-}
-
 void Announcer::SocketHandleSend(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)
 {
-    if (true == isTerminating) return;
-    
+    if (true == isTerminating)
+        return;
+
     if (0 == error)
     {
         timer.Wait(announcePeriod, MakeFunction(this, &Announcer::TimerHandleTimer));
@@ -175,5 +176,32 @@ void Announcer::SocketHandleSend(UDPSocket* socket, int32 error, const Buffer* b
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+void Announcer::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
+{
+    if (!error)
+    {
+        auto socketCloseHandler = [](TCPSocket* socket) { delete socket; };
+
+        // Socket will be deleted later through callback system
+        TCPSocket* socket = new TCPSocket(loop);
+        acceptor->Accept(socket);
+
+        size_t length = dataCallback(sizeof(tcpBuffer), tcpBuffer);
+        if (length > 0)
+        {
+            auto socketWriteHandler = [this, socketCloseHandler](TCPSocket* socket, int32, const Buffer*, size_t) {
+                socket->Close(socketCloseHandler);
+            };
+
+            Buffer buf = CreateBuffer(tcpBuffer, length);
+            socket->Write(&buf, 1, socketWriteHandler);
+        }
+        else
+        {
+            socket->Close(socketCloseHandler);
+        }
+    }
+}
+
+} // namespace Net
+} // namespace DAVA

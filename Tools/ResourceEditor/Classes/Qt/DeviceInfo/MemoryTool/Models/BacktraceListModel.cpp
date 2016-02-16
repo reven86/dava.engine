@@ -34,7 +34,8 @@ using namespace DAVA;
 BacktraceListModel::BacktraceListModel(const BacktraceSymbolTable& symbolTable_, QObject* parent)
     : QAbstractListModel(parent)
     , symbolTable(symbolTable_)
-{}
+{
+}
 
 BacktraceListModel::~BacktraceListModel() = default;
 

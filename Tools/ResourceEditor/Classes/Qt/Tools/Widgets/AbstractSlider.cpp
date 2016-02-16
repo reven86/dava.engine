@@ -34,14 +34,13 @@
 
 #include "../Helpers/MouseHelper.h"
 
-
 AbstractSlider::AbstractSlider(QWidget* parent)
     : QWidget(parent)
-      , mouse(new MouseHelper(this))
+    , mouse(new MouseHelper(this))
 {
-    connect(mouse, SIGNAL( mousePress( const QPoint& ) ), SLOT( OnMousePress( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseMove( const QPoint& ) ), SLOT( OnMouseMove( const QPoint& ) ));
-    connect(mouse, SIGNAL( mouseRelease( const QPoint& ) ), SLOT( OnMouseRelease( const QPoint& ) ));
+    connect(mouse, SIGNAL(mousePress(const QPoint&)), SLOT(OnMousePress(const QPoint&)));
+    connect(mouse, SIGNAL(mouseMove(const QPoint&)), SLOT(OnMouseMove(const QPoint&)));
+    connect(mouse, SIGNAL(mouseRelease(const QPoint&)), SLOT(OnMouseRelease(const QPoint&)));
 
     setFocusPolicy(Qt::ClickFocus);
 }
@@ -63,7 +62,7 @@ void AbstractSlider::SetPosF(const QPointF& _posF)
 
 void AbstractSlider::paintEvent(QPaintEvent* e)
 {
-    Q_UNUSED( e );
+    Q_UNUSED(e);
 
     QPainter p(this);
 
@@ -82,12 +81,12 @@ void AbstractSlider::resizeEvent(QResizeEvent* e)
 
 void AbstractSlider::DrawBackground(QPainter* p) const
 {
-    Q_UNUSED( p );
+    Q_UNUSED(p);
 }
 
 void AbstractSlider::DrawForeground(QPainter* p) const
 {
-    Q_UNUSED( p );
+    Q_UNUSED(p);
 }
 
 QRect AbstractSlider::PosArea() const

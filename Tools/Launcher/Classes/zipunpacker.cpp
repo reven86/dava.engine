@@ -37,10 +37,11 @@
 #define PERM_OTHER_EXEC 1 << 0
 #define PERM_OWNER_EXEC 1 << 3
 #define PERM_GROUP_EXEC 1 << 6
-#define PERM_DIRECTORY  1 << 8
+#define PERM_DIRECTORY 1 << 8
 #define ATTRIBUTE_SYMLINK 0xA0000000 // on macos this value equal S_IFLNK from stat.st_mode
 
-ZipUnpacker::ZipUnpacker(QObject *parent) :
+ZipUnpacker::ZipUnpacker(QObject* parent)
+    :
     QObject(parent)
 {
     errorMap[0] = "UNZ_OK";
@@ -54,12 +55,11 @@ ZipUnpacker::ZipUnpacker(QObject *parent) :
 
 ZipUnpacker::~ZipUnpacker()
 {
-
 }
 
-const QString & ZipUnpacker::GetErrorString(int errorCode)
+const QString& ZipUnpacker::GetErrorString(int errorCode)
 {
-    if(errorMap.contains(errorCode))
+    if (errorMap.contains(errorCode))
         return errorMap[errorCode];
     else
         return errorMap[-1];
@@ -109,7 +109,7 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
         }
 
         uint attr = info.externalAttr;
-        attr = attr >> 16;  //leave only file permision info
+        attr = attr >> 16; //leave only file permision info
 
         bool isSymLink = (info.externalAttr & ATTRIBUTE_SYMLINK) == ATTRIBUTE_SYMLINK;
 
@@ -142,7 +142,7 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
                 perm |= QFile::ExeOther;
 
                 if (!out.setPermissions(perm))
-                  qDebug("[ZipUnpacker::UnZipFile] Error set file permision");
+                    qDebug("[ZipUnpacker::UnZipFile] Error set file permision");
 
                 out.write(file.readAll());
                 out.close();
@@ -155,8 +155,10 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
             return false;
         }
 
-        if (!file.atEnd()) {
+        if (!file.atEnd())
+        {
             qWarning("[ZipUnpacker::UnZipFile]: read all but not EOF");
+            emit OnError(UNZ_INTERNALERROR);
             return false;
         }
 

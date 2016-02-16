@@ -198,6 +198,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp" />
     <ClCompile Include="..\..\Sources\Tools\CommandLine\CommandLineParser.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\CommandLine\ProgramOptions.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\DXTConverter.cpp" />

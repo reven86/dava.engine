@@ -99,6 +99,8 @@ static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
 static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
 DAVA::Mutex sheduledDeleteMutex;
 
+static Handle CurFramePerfQuerySet = InvalidHandle;
+
 inline void AddSheduletDeleteResource(Handle handle, ResourceType resourceType)
 {
     sheduledDeleteMutex.Lock();
@@ -276,6 +278,37 @@ bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex)
 int QueryValue(HQueryBuffer buf, uint32 objectIndex)
 {
     return QueryBuffer::Value(buf, objectIndex);
+}
+HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount)
+{
+    return HPerfQuerySet(PerfQuerySet::Create(maxTimestampCount));
+}
+void ResetPerfQuerySet(HPerfQuerySet set)
+{
+    PerfQuerySet::Reset(set);
+}
+void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid)
+{
+    PerfQuerySet::GetStatus(hset, isReady, isValid);
+}
+void DeletePerfQuerySet(HPerfQuerySet set, bool forceImmediate)
+{
+    if (forceImmediate)
+        PerfQuerySet::Delete(set);
+    else
+        AddSheduletDeleteResource(set, RESOURCE_PERFQUERY_SET);
+}
+bool GetPerfQuerySetFreq(HPerfQuerySet set, uint64* freq)
+{
+    return PerfQuerySet::GetFreq(set, freq);
+}
+bool GetPerfQuerySetTimestamp(HPerfQuerySet set, uint32 timestampIndex, uint64* timestamp)
+{
+    return PerfQuerySet::GetTimestamp(set, timestampIndex, timestamp);
+}
+bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
+{
+    return PerfQuerySet::GetFrameTimestamps(hset, t0, t1);
 }
 
 //------------------------------------------------------------------------------
@@ -702,6 +735,11 @@ bool SyncObjectSignaled(HSyncObject obj)
 {
     return SyncObject::IsSygnaled(obj);
 }
+void SetFramePerfQuerySet(HPerfQuerySet hset)
+{
+    CurFramePerfQuerySet = hset;
+    PerfQuerySet::SetCurrent(hset);
+}
 
 //------------------------------------------------------------------------------
 
@@ -831,7 +869,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         #if 0
         if (p->debugMarker)
         {
-            rhi::CommandBuffer::SetMarker(cmdBuf, p->debugMarker);
+            ///            rhi::CommandBuffer::SetMarker( cmdBuf, p->debugMarker );
         }
         #endif
 
@@ -879,7 +917,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         {
             //-            if( p->vertexStream[i] != pl->curVertexStream[i] )
             {
-                rhi::CommandBuffer::SetVertexData(cmdBuf, p->vertexStream[i]);
+                rhi::CommandBuffer::SetVertexData(cmdBuf, p->vertexStream[i], i);
                 pl->curVertexStream[i] = p->vertexStream[i];
             }
         }
@@ -955,14 +993,29 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
             rhi::CommandBuffer::SetQueryIndex(cmdBuf, p->queryIndex);
         }
 
-        if (p->indexBuffer != InvalidHandle)
+        if (p->instanceCount)
         {
-            DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
-            rhi::CommandBuffer::DrawIndexedPrimitive(cmdBuf, p->primitiveType, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex);
+            if (p->indexBuffer != InvalidHandle)
+            {
+                DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
+                rhi::CommandBuffer::DrawInstancedIndexedPrimitive(cmdBuf, p->primitiveType, p->instanceCount, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex, p->baseInstance);
+            }
+            else
+            {
+                rhi::CommandBuffer::DrawInstancedPrimitive(cmdBuf, p->primitiveType, p->instanceCount, p->primitiveCount);
+            }
         }
         else
         {
-            rhi::CommandBuffer::DrawPrimitive(cmdBuf, p->primitiveType, p->primitiveCount);
+            if (p->indexBuffer != InvalidHandle)
+            {
+                DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
+                rhi::CommandBuffer::DrawIndexedPrimitive(cmdBuf, p->primitiveType, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex);
+            }
+            else
+            {
+                rhi::CommandBuffer::DrawPrimitive(cmdBuf, p->primitiveType, p->primitiveCount);
+            }
         }
 
         ++pl->batchIndex;

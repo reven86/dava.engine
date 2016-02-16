@@ -30,14 +30,14 @@
 #include <Functional/Function.h>
 #include <Debug/DVAssert.h>
 
-#include <Network/Private/Discoverer.h>
+#include "Network/Private/Discoverer.h"
+#include "Network/Base/NetworkUtils.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
-Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
+Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback)
     : loop(ioLoop)
     , socket(ioLoop)
     , timer(ioLoop)
@@ -45,6 +45,7 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size
     , isTerminating(false)
     , runningObjects(0)
     , dataCallback(dataReadyCallback)
+    , tcpSocket(ioLoop)
 {
     DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
     DVASSERT(true == endpoint.Address().IsMulticast());
@@ -53,7 +54,6 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size
 
 Discoverer::~Discoverer()
 {
-
 }
 
 void Discoverer::Start()
@@ -62,7 +62,7 @@ void Discoverer::Start()
     loop->Post(MakeFunction(this, &Discoverer::DoStart));
 }
 
-void Discoverer::Stop(Function<void (IController*)> callback)
+void Discoverer::Stop(Function<void(IController*)> callback)
 {
     DVASSERT(false == isTerminating);
     DVASSERT(callback != nullptr);
@@ -74,6 +74,19 @@ void Discoverer::Stop(Function<void (IController*)> callback)
 void Discoverer::Restart()
 {
     loop->Post(MakeFunction(this, &Discoverer::DoStop));
+}
+
+bool Discoverer::TryDiscoverDevice(const Endpoint& endpoint)
+{
+    DVASSERT(!isTerminating);
+    if (!(tcpSocket.IsOpen() || tcpSocket.IsClosing()))
+    {
+        tcpEndpoint = endpoint;
+        loop->Post(MakeFunction(this, &Discoverer::DiscoverDevice));
+        return true;
+    }
+    tcpSocket.Close();
+    return false;
 }
 
 void Discoverer::DoStart()
@@ -93,15 +106,20 @@ void Discoverer::DoStart()
 
 void Discoverer::DoStop()
 {
-    if (true == socket.IsOpen() && false == socket.IsClosing())
+    if (socket.IsOpen() && !socket.IsClosing())
     {
         runningObjects += 1;
-        socket.Close(MakeFunction(this, &Discoverer::SocketHandleClose));
+        socket.Close([this](UDPSocket*) { DoObjectClose(); });
     }
-    if (true == timer.IsOpen() && false == timer.IsClosing())
+    if (timer.IsOpen() && !timer.IsClosing())
     {
         runningObjects += 1;
-        timer.Close(MakeFunction(this, &Discoverer::TimerHandleClose));
+        timer.Close([this](DeadlineTimer*) { DoObjectClose(); });
+    }
+    if (tcpSocket.IsOpen() && !tcpSocket.IsClosing())
+    {
+        runningObjects += 1;
+        tcpSocket.Close([this](TCPSocket*) { DoObjectClose(); });
     }
 }
 
@@ -116,7 +134,7 @@ void Discoverer::DoObjectClose()
         }
         else
         {
-            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &Discoverer::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, [this](DeadlineTimer*) { DoStart(); });
         }
     }
 }
@@ -126,25 +144,28 @@ void Discoverer::DoBye()
     isTerminating = false;
     stopCallback(this);
 }
-    
-void Discoverer::TimerHandleClose(DeadlineTimer* timer)
-{
-    DoObjectClose();
-}
 
-void Discoverer::TimerHandleDelay(DeadlineTimer* timer)
+void Discoverer::DiscoverDevice()
 {
-    DoStart();
-}
-    
-void Discoverer::SocketHandleClose(UDPSocket* socket)
-{
-    DoObjectClose();
+    auto connectHandler = [this](TCPSocket* socket, int32 error) {
+        if (0 == error)
+        {
+            socket->StartRead(CreateBuffer(tcpInbuf, sizeof(tcpInbuf)), MakeFunction(this, &Discoverer::TcpSocketHandleRead));
+        }
+        else
+        {
+            Logger::Error("[Discoverer] failed to discover device %s: %s", tcpEndpoint.ToString().c_str(), ErrorToString(error));
+            socket->Close();
+        }
+    };
+
+    tcpSocket.Connect(tcpEndpoint, connectHandler);
 }
 
 void Discoverer::SocketHandleReceive(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial)
 {
-    if (true == isTerminating) return;
+    if (true == isTerminating)
+        return;
 
     if (0 == error)
     {
@@ -159,5 +180,16 @@ void Discoverer::SocketHandleReceive(UDPSocket* socket, int32 error, size_t nrea
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+void Discoverer::TcpSocketHandleRead(TCPSocket* socket, int32 error, size_t nread)
+{
+    if (0 == error && nread > 0)
+    {
+        Endpoint remoteEndpoint;
+        socket->RemoteEndpoint(remoteEndpoint);
+        dataCallback(nread, tcpInbuf, remoteEndpoint);
+    }
+    socket->Close();
+}
+
+} // namespace Net
+} // namespace DAVA

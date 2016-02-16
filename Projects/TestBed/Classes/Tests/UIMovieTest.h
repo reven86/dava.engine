@@ -54,8 +54,8 @@ private:
     UIButton* CreateUIButton(Font* font, const Rect& rect, const String& text,
                              void (UIMovieTest::*onClick)(BaseObject*, void*, void*));
 
-    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
-    void ScaleButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void ButtonPressed(BaseObject* obj, void* data, void* callerData);
+    void ScaleButtonPressed(BaseObject* obj, void* data, void* callerData);
 
 private:
     UIMovieView* movieView = nullptr;
@@ -76,4 +76,4 @@ private:
     UIStaticText* playerStateText = nullptr;
 };
 
-#endif  // __UIMOVIE_TEST_H__
+#endif // __UIMOVIE_TEST_H__

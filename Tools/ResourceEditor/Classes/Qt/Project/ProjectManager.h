@@ -35,10 +35,11 @@
 #include "DAVAEngine.h"
 
 class ProjectManager
-    : public QObject
-    , public DAVA::Singleton<ProjectManager>
+: public QObject
+  ,
+  public DAVA::Singleton<ProjectManager>
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     struct AvailableMaterialTemplate
@@ -69,6 +70,8 @@ public:
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
     const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
+    static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
+
 public slots:
     DAVA::FilePath ProjectOpenDialog() const;
     void OpenProject(const QString& path);
@@ -79,9 +82,9 @@ public slots:
     void UpdateParticleSprites();
 
 signals:
-	void ProjectOpened(const QString &path);
-	void ProjectClosed();
-    
+    void ProjectOpened(const QString& path);
+    void ProjectClosed();
+
 private:
     void LoadProjectSettings();
     void LoadMaterialsSettings();
@@ -100,4 +103,4 @@ private:
     bool isParticleSpritesUpdated = false;
 };
 
-#endif // __PROJECT_MANAGER_H__ 
+#endif // __PROJECT_MANAGER_H__

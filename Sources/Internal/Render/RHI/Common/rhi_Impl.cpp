@@ -40,7 +40,7 @@
     #elif defined(__DAVAENGINE_IPHONE__)
         #include "../Metal/rhi_Metal.h"
         #include "../GLES2/rhi_GLES2.h"
-	#elif defined(__DAVAENGINE_ANDROID__)
+    #elif defined(__DAVAENGINE_ANDROID__)
         #include "../GLES2/rhi_GLES2.h"
     #else
     #endif
@@ -160,6 +160,12 @@ void InvalidateCache()
         (*_Impl.impl_InvalidateCache)();
 }
 
+void TakeScreenshot(ScreenShotCallback callback)
+{
+    if (_Impl.impl_TakeScreenshot)
+        (*_Impl.impl_TakeScreenshot)(callback);
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer
@@ -181,15 +187,13 @@ Create(const Descriptor& desc)
 
 void Delete(Handle vb)
 {
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_VertexBuffer_Delete)(vb);
-#else
     if (vb != rhi::InvalidHandle)
     {
-        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);        
+        #endif
+        (*_Impl.impl_VertexBuffer_Delete)(vb);
     }
-    return (*_Impl.impl_VertexBuffer_Delete)(vb);
-#endif
 }
 
 bool Update(Handle vb, const void* data, uint32 offset, uint32 size)
@@ -234,17 +238,15 @@ Create(const Descriptor& desc)
 #endif
 }
 
-void Delete(Handle vb)
+void Delete(Handle ib)
 {
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_IndexBuffer_Delete)(vb);
-#else
-    if (vb != rhi::InvalidHandle)
+    if (ib != InvalidHandle)
     {
-        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_INDEX);
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(ib, DAVA::ALLOC_GPU_RDO_INDEX);        
+        #endif
+        (*_Impl.impl_IndexBuffer_Delete)(ib);
     }
-    return (*_Impl.impl_IndexBuffer_Delete)(vb);
-#endif
 }
 
 bool Update(Handle vb, const void* data, uint32 offset, uint32 size)
@@ -302,6 +304,43 @@ int Value(Handle buf, uint32 objectIndex)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace PerfQuerySet
+{
+Handle Create(uint32 maxTimestampCount)
+{
+    return (*_Impl.impl_PerfQuerySet_Create)(maxTimestampCount);
+}
+void Reset(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Reset)(set);
+}
+void SetCurrent(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_SetCurrent)(set);
+}
+void Delete(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Delete)(set);
+}
+
+void GetStatus(Handle set, bool* isReady, bool* isValid)
+{
+    (*_Impl.impl_PerfQuerySet_GetStatus)(set, isReady, isValid);
+}
+bool GetFreq(Handle set, uint64* freq)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFreq)(set, freq);
+}
+bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp)
+{
+    return (*_Impl.impl_PerfQuerySet_GetTimestamp)(set, timestampIndex, timestamp);
+}
+bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFrameTimestamps)(set, t0, t1);
+}
+}
+////////////////////////////////////////////////////////////////////////////////
 
 namespace Texture
 {
@@ -344,15 +383,13 @@ Create(const Texture::Descriptor& desc)
 
 void Delete(Handle tex)
 {
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_Texture_Delete)(tex);
-#else
-    if (tex != rhi::InvalidHandle)
+    if (tex != InvalidHandle)
     {
-        DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);    
+        #endif
+        (*_Impl.impl_Texture_Delete)(tex);
     }
-    return (*_Impl.impl_Texture_Delete)(tex);
-#endif
 }
 
 void* Map(Handle tex, unsigned level, TextureFace face)
@@ -462,7 +499,8 @@ bool SetConst(Handle cb, uint32 constIndex, uint32 constSubIndex, const float* d
 
 void Delete(Handle cb)
 {
-    return (*_Impl.impl_ConstBuffer_Delete)(cb);
+    if (cb != InvalidHandle)
+        (*_Impl.impl_ConstBuffer_Delete)(cb);
 }
 
 } // namespace ConstBuffer
@@ -609,6 +647,10 @@ void SetQueryIndex(Handle cmdBuf, uint32 index)
 {
     (*_Impl.impl_CommandBuffer_SetQueryIndex)(cmdBuf, index);
 }
+void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex)
+{
+    (*_Impl.impl_CommandBuffer_IssueTimestampQuery)(cmdBuf, pqset, timestampIndex);
+}
 
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf)
 {
@@ -638,6 +680,16 @@ void DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 void DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
 {
     (*_Impl.impl_CommandBuffer_DrawIndexedPrimitive)(cmdBuf, type, primCount, vertexCount, firstVertex, startIndex);
+}
+
+void DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedPrimitive)(cmdBuf, type, instCount, count);
+}
+
+void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedIndexedPrimitive)(cmdBuf, type, instCount, primCount, vertexCount, firstVertex, startIndex, baseInstance);
 }
 
 void SetMarker(Handle cmdBuf, const char* text)

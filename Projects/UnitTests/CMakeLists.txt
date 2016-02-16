@@ -31,8 +31,6 @@ elseif( WIN32 )
 
 endif()
 
-file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/*.xib" )
-
 define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER}  )
 generate_source_groups_project( SRC_ROOT "Classes" )
 
@@ -40,8 +38,8 @@ set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )
 
+set( MACOS_XIB                  ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainMenu.xib)
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
-set( MACOS_XIB                  ${XIB_LIST} )
 
 set( ANDROID_PACKAGE            "com.dava.unittests" )
 set( ANDROID_APP_NAME           "UnitTestApp" )

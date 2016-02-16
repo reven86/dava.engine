@@ -46,14 +46,15 @@ namespace DAVA
 #ifdef DAVA_FMOD
 
 SoundComponent::SoundComponent()
-{}
+{
+}
 
 SoundComponent::~SoundComponent()
 {
     RemoveAllEvents();
 }
 
-void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags /*= 0*/, const Vector3 & direction /*= Vector3(1.f, 0.f, 0.f)*/)
+void SoundComponent::AddSoundEvent(SoundEvent* _event, uint32 flags /*= 0*/, const Vector3& direction /*= Vector3(1.f, 0.f, 0.f)*/)
 {
     DVASSERT(_event);
 
@@ -63,12 +64,12 @@ void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags /*= 0*/, co
     GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
-void SoundComponent::RemoveSoundEvent(SoundEvent * event)
+void SoundComponent::RemoveSoundEvent(SoundEvent* event)
 {
     uint32 eventCount = static_cast<uint32>(events.size());
-    for(uint32 i = 0; i < eventCount; ++i)
+    for (uint32 i = 0; i < eventCount; ++i)
     {
-        if(events[i].soundEvent == event)
+        if (events[i].soundEvent == event)
         {
             events[i].soundEvent->Stop(true);
             SafeRelease(events[i].soundEvent);
@@ -82,7 +83,7 @@ void SoundComponent::RemoveSoundEvent(SoundEvent * event)
 void SoundComponent::RemoveAllEvents()
 {
     uint32 eventsCount = static_cast<uint32>(events.size());
-    for(uint32 i = 0; i < eventsCount; ++i)
+    for (uint32 i = 0; i < eventsCount; ++i)
     {
         events[i].soundEvent->Stop(true);
         SafeRelease(events[i].soundEvent);
@@ -94,14 +95,14 @@ void SoundComponent::RemoveAllEvents()
 void SoundComponent::Trigger()
 {
     uint32 eventsCount = static_cast<uint32>(events.size());
-    for(uint32 i = 0; i < eventsCount; ++i)
+    for (uint32 i = 0; i < eventsCount; ++i)
         Trigger(i);
 }
 
 void SoundComponent::Stop()
 {
     uint32 eventsCount = static_cast<uint32>(events.size());
-    for(uint32 i = 0; i < eventsCount; ++i)
+    for (uint32 i = 0; i < eventsCount; ++i)
         Stop(i);
 }
 
@@ -109,10 +110,10 @@ void SoundComponent::Trigger(uint32 index)
 {
     DVASSERT(index < events.size());
 
-    SoundComponentElement & sound = events[index];
+    SoundComponentElement& sound = events[index];
     sound.soundEvent->Trigger();
 
-    if((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
+    if ((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
     {
         entity->GetScene()->soundSystem->AddAutoTriggerSound(entity, sound.soundEvent);
     }
@@ -122,10 +123,10 @@ void SoundComponent::Stop(uint32 index)
 {
     DVASSERT(index < events.size());
 
-    SoundComponentElement & sound = events[index];
+    SoundComponentElement& sound = events[index];
     sound.soundEvent->Stop();
 
-    if((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
+    if ((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
     {
         entity->GetScene()->soundSystem->RemoveAutoTriggerSound(entity, sound.soundEvent);
     }
@@ -135,7 +136,7 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 {
     DVASSERT(index < (uint32)events.size());
 
-    if(events[index].flags != flags)
+    if (events[index].flags != flags)
     {
         Stop(index);
         events[index].flags = flags;
@@ -144,29 +145,29 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
     }
 }
 
-void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3 & direction)
+void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3& direction)
 {
     DVASSERT(eventIndex < (uint32)events.size());
     events[eventIndex].localDirection = direction;
 }
 
-void SoundComponent::SetLocalDirection(const DAVA::Vector3 &direction)
+void SoundComponent::SetLocalDirection(const DAVA::Vector3& direction)
 {
     uint32 eventsCount = static_cast<uint32>(events.size());
-    for(uint32 i = 0; i < eventsCount; ++i)
+    for (uint32 i = 0; i < eventsCount; ++i)
         SetLocalDirection(i, direction);
 }
-    
-Component * SoundComponent::Clone(Entity * toEntity)
+
+Component* SoundComponent::Clone(Entity* toEntity)
 {
-    SoundComponent * soundComponent = new SoundComponent();
+    SoundComponent* soundComponent = new SoundComponent();
     soundComponent->SetEntity(toEntity);
-    
-    SoundSystem * soundSystem = SoundSystem::Instance();
+
+    SoundSystem* soundSystem = SoundSystem::Instance();
     int32 eventCount = static_cast<int32>(events.size());
-    for(int32 i = 0; i < eventCount; ++i)
+    for (int32 i = 0; i < eventCount; ++i)
     {
-        SoundEvent * clonedEvent = soundSystem->CloneEvent(events[i].soundEvent);
+        SoundEvent* clonedEvent = soundSystem->CloneEvent(events[i].soundEvent);
         soundComponent->AddSoundEvent(clonedEvent, events[i].flags, events[i].localDirection);
         clonedEvent->Release();
     }
@@ -174,15 +175,15 @@ Component * SoundComponent::Clone(Entity * toEntity)
     return soundComponent;
 }
 
-void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SoundComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Serialize(archive, serializationContext);
 
-    if(archive)
+    if (archive)
     {
         uint32 eventsCount = static_cast<uint32>(events.size());
         archive->SetUInt32("sc.eventCount", eventsCount);
-        for(uint32 i = 0; i < eventsCount; ++i)
+        for (uint32 i = 0; i < eventsCount; ++i)
         {
             KeyedArchive* eventArchive = new KeyedArchive();
 
@@ -196,17 +197,17 @@ void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *seri
     }
 }
 
-void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SoundComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     events.clear();
 
-    if(archive)
+    if (archive)
     {
         uint32 eventsCount = archive->GetUInt32("sc.eventCount");
-        for(uint32 i = 0; i < eventsCount; ++i)
+        for (uint32 i = 0; i < eventsCount; ++i)
         {
             KeyedArchive* eventArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-            SoundEvent * sEvent = SoundSystem::Instance()->DeserializeEvent(eventArchive);
+            SoundEvent* sEvent = SoundSystem::Instance()->DeserializeEvent(eventArchive);
             AddSoundEvent(sEvent, eventArchive->GetUInt32("sce.flags"), eventArchive->GetVector3("sce.localDirection", Vector3(1.f, 0.f, 0.f)));
             SafeRelease(sEvent);
         }
@@ -218,28 +219,58 @@ void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *se
 #else
 
 //no FMOD, no sound component
-SoundComponent::SoundComponent() {}
-SoundComponent::~SoundComponent() {}
+SoundComponent::SoundComponent()
+{
+}
+SoundComponent::~SoundComponent()
+{
+}
 
-Component * SoundComponent::Clone(Entity * toEntity) { return nullptr; }
+Component* SoundComponent::Clone(Entity* toEntity)
+{
+    return nullptr;
+}
 
-void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext) {}
-void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext) {}
+void SoundComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+}
+void SoundComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+}
 
-void SoundComponent::Trigger() {}
-void SoundComponent::Stop() {}
-void SoundComponent::Trigger(uint32 index) {}
-void SoundComponent::Stop(uint32 index) {}
+void SoundComponent::Trigger()
+{
+}
+void SoundComponent::Stop()
+{
+}
+void SoundComponent::Trigger(uint32 index)
+{
+}
+void SoundComponent::Stop(uint32 index)
+{
+}
 
-void SoundComponent::SetSoundEventFlags(uint32 eventIndex, uint32 flags) {}
+void SoundComponent::SetSoundEventFlags(uint32 eventIndex, uint32 flags)
+{
+}
 
-void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags, const Vector3 & direction) {}
-void SoundComponent::RemoveSoundEvent(SoundEvent * event) {}
-void SoundComponent::RemoveAllEvents() {}
+void SoundComponent::AddSoundEvent(SoundEvent* _event, uint32 flags, const Vector3& direction)
+{
+}
+void SoundComponent::RemoveSoundEvent(SoundEvent* event)
+{
+}
+void SoundComponent::RemoveAllEvents()
+{
+}
 
-void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3 & direction) {}
-void SoundComponent::SetLocalDirection(const DAVA::Vector3 &direction) {}
+void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3& direction)
+{
+}
+void SoundComponent::SetLocalDirection(const DAVA::Vector3& direction)
+{
+}
 
 #endif // !DAVA_FMOD
-
 };

@@ -120,7 +120,7 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libwebp_debug.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;TextureConverterD.lib;libuvd.lib;psapi.lib;detours.lib;dbghelp.lib;d3d9.lib;d3dx9.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libwebp_debug.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;TextureConverterD.lib;libuvd.lib;psapi.lib;detours.lib;dbghelp.lib;d3d9.lib;d3dx9.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;dxgi.lib;userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/lib_CMake/win;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;./../../Tools/Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
@@ -142,7 +142,7 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libwebp_debug.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libcurl.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libwebp_debug.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libcurl.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuvd.lib;psapi.lib;userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
@@ -161,7 +161,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libwebp.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;detours.lib;dbghelp.lib;d3d9.lib;d3dx9.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libwebp.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;detours.lib;dbghelp.lib;d3d9.lib;d3dx9.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;dxgi.lib;userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/lib_CMake/win;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -180,7 +180,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libwebp.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libwebp.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -199,7 +199,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libwebp.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libcurl.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libwebp.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libcurl.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -214,7 +214,6 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\GameAPI.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Bind.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Data.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\EnumMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FastName.h" />
@@ -261,7 +260,6 @@
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h" />
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h" />
@@ -295,7 +293,6 @@
     <ClInclude Include="..\..\Sources\Internal\Collision\Collisions.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\ApplicationCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h" />
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\DisplayMode.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\List.h" />
@@ -322,7 +319,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationIPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
@@ -577,6 +573,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\TransformComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\UpdatableComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\UserComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\WaveComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.h" />
@@ -618,6 +615,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h" />
@@ -751,7 +749,6 @@
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAClassRegistrator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp" />
@@ -773,8 +770,6 @@
     <ClCompile Include="..\..\Sources\Internal\Collision\Collisions.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\ApplicationCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\Core.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessageWin.cpp">
@@ -976,6 +971,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DepthStencilStateDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_IndexBufferDX11.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PerfQuerySetDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PipelineStateDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_QueryBufferDX11.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_SamplerStateDX11.cpp" />
@@ -986,6 +982,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DepthStencilStateDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_IndexBufferDX9.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PerfQuerySetDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PipelineStateDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_QueryBufferDX9.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_SamplerStateDX9.cpp" />
@@ -996,6 +993,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_DepthStencilStateGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_GLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_IndexBufferGLES2.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PipelineStateGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_ProgGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_QueryBufferGLES2.cpp" />
@@ -1040,6 +1038,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\TransformComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\UpdatableComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\UserComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\WaveComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.cpp" />
@@ -1080,6 +1079,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticlesQualitySettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp" />

@@ -40,29 +40,29 @@ class SceneEditor2;
 
 using namespace DAVA;
 
-class ActionEnableCustomColors: public CommandAction
+class ActionEnableCustomColors : public CommandAction
 {
 public:
-	ActionEnableCustomColors(SceneEditor2* forSceneEditor);
-	
+    ActionEnableCustomColors(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
-class ActionDisableCustomColors: public CommandAction
+class ActionDisableCustomColors : public CommandAction
 {
 public:
-	ActionDisableCustomColors(SceneEditor2* forSceneEditor,  bool textureSavingNeeded);
-	
+    ActionDisableCustomColors(SceneEditor2* forSceneEditor, bool textureSavingNeeded);
+
 protected:
-	SceneEditor2*	sceneEditor;
-	bool			textureSavingNeeded;
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+    bool textureSavingNeeded;
+    virtual void Redo();
 };
 
-class ModifyCustomColorsCommand: public Command2
+class ModifyCustomColorsCommand : public Command2
 {
 public:
     ModifyCustomColorsCommand(Image* originalImage, Image* currentImage,
@@ -71,14 +71,14 @@ public:
     ~ModifyCustomColorsCommand();
 
     virtual void Undo();
-	virtual void Redo();
-	virtual Entity* GetEntity() const;
+    virtual void Redo();
+    virtual Entity* GetEntity() const;
 
 protected:
-	CustomColorsProxy* customColorsProxy;
-	Image* undoImage;
-	Image* redoImage;
-	Rect updatedRect;
+    CustomColorsProxy* customColorsProxy;
+    Image* undoImage;
+    Image* redoImage;
+    Rect updatedRect;
 
     Texture* texture;
 

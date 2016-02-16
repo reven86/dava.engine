@@ -41,14 +41,11 @@
 #include "Input/KeyboardDevice.h"
 #include "UI/UIEvent.h"
 
-
-
 namespace DAVA
 {
 const float32 RotationControllerSystem::maxViewAngle = 89.0f;
-    
-    
-RotationControllerSystem::RotationControllerSystem(Scene * scene)
+
+RotationControllerSystem::RotationControllerSystem(Scene* scene)
     : SceneSystem(scene)
     , curViewAngleZ(0)
     , curViewAngleY(0)
@@ -56,44 +53,45 @@ RotationControllerSystem::RotationControllerSystem(Scene * scene)
     , oldCamera(NULL)
 {
     inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
-//    InputSystem::Instance()->AddInputCallback(*inputCallback);
+    //    InputSystem::Instance()->AddInputCallback(*inputCallback);
 }
 
 RotationControllerSystem::~RotationControllerSystem()
 {
-//    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
+    //    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
     SafeDelete(inputCallback);
 }
 
-void RotationControllerSystem::AddEntity(Entity * entity)
+void RotationControllerSystem::AddEntity(Entity* entity)
 {
     DVASSERT(GetCamera(entity) != NULL && "Right now system works with camera only");
 
     entities.push_back(entity);
 }
 
-void RotationControllerSystem::RemoveEntity(Entity * entity)
+void RotationControllerSystem::RemoveEntity(Entity* entity)
 {
     DVVERIFY(FindAndRemoveExchangingWithLast(entities, entity));
 }
 
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
-    Camera *camera = GetScene()->GetDrawCamera();
-    if(camera != oldCamera)
+    Camera* camera = GetScene()->GetDrawCamera();
+    if (camera != oldCamera)
     {
         oldCamera = camera;
         RecalcCameraViewAngles(camera);
     }
 }
 
-void RotationControllerSystem::Input(UIEvent *event)
+void RotationControllerSystem::Input(UIEvent* event)
 {
     const uint32 size = static_cast<uint32>(entities.size());
-    if(0 == size) return;
+    if (0 == size)
+        return;
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    if(event->tid == UIEvent::BUTTON_2 || event->tid == UIEvent::BUTTON_3)
+    if (event->mouseButton == UIEvent::MouseButton::RIGHT || event->mouseButton == UIEvent::MouseButton::MIDDLE)
 #endif
     {
         if (UIEvent::Phase::BEGAN == event->phase)
@@ -105,26 +103,27 @@ void RotationControllerSystem::Input(UIEvent *event)
         {
             rotateStartPoint = rotateStopPoint;
             rotateStopPoint = event->point;
-            
-            Camera * camera = GetScene()->GetDrawCamera();
-            if(!camera) return;
-            
+
+            Camera* camera = GetScene()->GetDrawCamera();
+            if (!camera)
+                return;
+
             //Find active wasd component
-            for(uint32 i = 0; i < size; ++i)
+            for (uint32 i = 0; i < size; ++i)
             {
-                if(GetCamera(entities[i]) == camera)
+                if (GetCamera(entities[i]) == camera)
                 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
                     RotateDirection(camera);
 #else
-                    if(event->tid == DAVA::UIEvent::BUTTON_2)
+                    if (event->mouseButton == DAVA::UIEvent::MouseButton::RIGHT)
                     {
                         RotateDirection(camera);
                     }
-                    else if(event->tid == DAVA::UIEvent::BUTTON_3)
+                    else if (event->mouseButton == DAVA::UIEvent::MouseButton::MIDDLE)
                     {
-                        KeyboardDevice &keyboard = InputSystem::Instance()->GetKeyboard();
-                        if(keyboard.IsKeyPressed(DVKEY_ALT))
+                        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+                        if (keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT))
                         {
                             RotatePositionAroundPoint(camera, rotationPoint);
                         }
@@ -140,69 +139,69 @@ void RotationControllerSystem::Input(UIEvent *event)
     }
 }
 
-void RotationControllerSystem::RotateDirection(Camera * camera)
+void RotationControllerSystem::RotateDirection(Camera* camera)
 {
-    if(!camera->GetIsOrtho())
+    if (!camera->GetIsOrtho())
     {
         DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
         curViewAngleZ += dp.x * rotationSpeed;
         curViewAngleY = Clamp(curViewAngleY + dp.y * rotationSpeed, -maxViewAngle, maxViewAngle);
-        
+
         DAVA::Matrix4 mt, mt2;
-        mt.CreateRotation(DAVA::Vector3(0.f,0.f,1.f), DAVA::DegToRad(curViewAngleZ));
-        mt2.CreateRotation(DAVA::Vector3(1.f,0.f,0.f), DAVA::DegToRad(curViewAngleY));
+        mt.CreateRotation(DAVA::Vector3(0.f, 0.f, 1.f), DAVA::DegToRad(curViewAngleZ));
+        mt2.CreateRotation(DAVA::Vector3(1.f, 0.f, 0.f), DAVA::DegToRad(curViewAngleY));
         mt2 *= mt;
-        
+
         DAVA::Vector3 dir = DAVA::Vector3(0.f, 10.f, 0.f) * mt2;
         camera->SetDirection(dir);
     }
 }
 
-void RotationControllerSystem::RotatePosition(Camera *camera)
+void RotationControllerSystem::RotatePosition(Camera* camera)
 {
     DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
     DAVA::Matrix4 mt, mt1, mt2, mt3;
-    
+
     mt1.CreateTranslation(DAVA::Vector3(-dp.x * rotationSpeed, 0.f, dp.y * rotationSpeed));
-    mt2.CreateRotation(DAVA::Vector3(1.f,0.f,0.f), DAVA::DegToRad(curViewAngleY));
-    mt3.CreateRotation(DAVA::Vector3(0.f,0.f,1.f), DAVA::DegToRad(curViewAngleZ));
-    
+    mt2.CreateRotation(DAVA::Vector3(1.f, 0.f, 0.f), DAVA::DegToRad(curViewAngleY));
+    mt3.CreateRotation(DAVA::Vector3(0.f, 0.f, 1.f), DAVA::DegToRad(curViewAngleZ));
+
     mt = mt1 * mt2 * mt3;
-    
+
     DAVA::Vector3 pos = camera->GetPosition() + (DAVA::Vector3(0, 0, 0) * mt);
     DAVA::Vector3 dir = camera->GetDirection();
-    
+
     camera->SetPosition(pos);
     camera->SetDirection(dir);
 }
 
-void RotationControllerSystem::RotatePositionAroundPoint(Camera * camera, const Vector3 & pos)
+void RotationControllerSystem::RotatePositionAroundPoint(Camera* camera, const Vector3& pos)
 {
     curViewAngleZ += (rotateStopPoint.x - rotateStartPoint.x);
     curViewAngleY = Clamp(curViewAngleY + (rotateStopPoint.y - rotateStartPoint.y), -maxViewAngle, maxViewAngle);
-    
+
     DAVA::Matrix4 mt, mt2;
-    mt.CreateRotation(DAVA::Vector3(0,0,1), DAVA::DegToRad(curViewAngleZ));
-    mt2.CreateRotation(DAVA::Vector3(1,0,0), DAVA::DegToRad(curViewAngleY));
+    mt.CreateRotation(DAVA::Vector3(0, 0, 1), DAVA::DegToRad(curViewAngleZ));
+    mt2.CreateRotation(DAVA::Vector3(1, 0, 0), DAVA::DegToRad(curViewAngleY));
     mt2 *= mt;
-    
+
     DAVA::Vector3 curPos = camera->GetPosition();
     DAVA::float32 radius = (pos - curPos).Length();
     DAVA::Vector3 newPos = pos - DAVA::Vector3(0, radius, 0) * mt2;
-    
+
     camera->SetPosition(newPos);
     camera->SetTarget(pos);
 }
 
-void RotationControllerSystem::RecalcCameraViewAngles(Camera *camera)
+void RotationControllerSystem::RecalcCameraViewAngles(Camera* camera)
 {
-    if(NULL != camera)
+    if (NULL != camera)
     {
         DAVA::Vector3 dir = camera->GetDirection();
         DAVA::Vector2 dirXY(dir.x, dir.y);
         DAVA::Vector3 dirXY0(dir.x, dir.y, 0.0f);
-        
-        if(!dirXY.IsZero())
+
+        if (!dirXY.IsZero())
         {
             dirXY.Normalize();
             curViewAngleZ = -(DAVA::RadToDeg(dirXY.Angle()) - 90.0f);
@@ -211,8 +210,8 @@ void RotationControllerSystem::RecalcCameraViewAngles(Camera *camera)
         {
             curViewAngleZ = 0;
         }
-        
-        if(!dirXY0.IsZero())
+
+        if (!dirXY0.IsZero())
         {
             dirXY0.Normalize();
             DAVA::float32 cosA = dirXY0.DotProduct(dir);
@@ -222,11 +221,11 @@ void RotationControllerSystem::RecalcCameraViewAngles(Camera *camera)
         {
             curViewAngleY = 0;
         }
-        
-        if(curViewAngleY > maxViewAngle)
+
+        if (curViewAngleY > maxViewAngle)
             curViewAngleY -= 360;
-        
-        if(curViewAngleY < -maxViewAngle)
+
+        if (curViewAngleY < -maxViewAngle)
             curViewAngleY += 360;
     }
     else
@@ -235,5 +234,4 @@ void RotationControllerSystem::RecalcCameraViewAngles(Camera *camera)
         curViewAngleZ = 0;
     }
 }
-    
 };

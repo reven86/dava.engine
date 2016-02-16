@@ -37,34 +37,35 @@ using namespace DAVA;
 class SceneSaver
 {
 public:
-	SceneSaver();
-	virtual ~SceneSaver();
-    
-    void SetInFolder(const FilePath &folderPathname);
-    void SetOutFolder(const FilePath &folderPathname);
-    
-    void SaveFile(const String &fileName, Set<String> &errorLog);
-	void ResaveFile(const String &fileName, Set<String> &errorLog);
-    void SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
-    
+    SceneSaver();
+    virtual ~SceneSaver();
+
+    void SetInFolder(const FilePath& folderPathname);
+    void SetOutFolder(const FilePath& folderPathname);
+
+    void SaveFile(const String& fileName, Set<String>& errorLog);
+    void ResaveFile(const String& fileName, Set<String>& errorLog);
+    void SaveScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
+
     void EnableCopyConverted(bool enabled);
 
-    void ResaveYamlFilesRecursive(const DAVA::FilePath & folder, DAVA::Set<DAVA::String> &errorLog) const;
+    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
 
-    
-protected:
+private:
     void ReleaseTextures();
 
-    void CopyTextures(Scene *scene);
-    void CopyTexture(const FilePath &texturePathname);
+    void CopyTextures(Scene* scene);
+    void CopyTexture(const FilePath& texturePathname);
 
-	void CopyReferencedObject(Entity *node);
-	void CopyEffects(Entity *node);
-	void CopyEmitter(ParticleEmitter *emitter);
+    void CopyReferencedObject(Entity* node);
+    void CopyEffects(Entity* node);
+    void CopyAllParticlesEmitters(const ParticleEmitterData& emitterData);
+    void CopyEmitterByPath(const FilePath& emitterConfigPath);
+    void CopyEmitter(ParticleEmitter* emitter);
+    Set<FilePath> EnumAlternativeEmittersFilepaths(const FilePath& originalFilepath) const;
 
-	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
+    void CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolder, Set<String>& errorLog);
 
-protected:
     SceneUtils sceneUtils;
     TexturesMap texturesForSave;
     DAVA::Set<DAVA::FilePath> effectFolders;

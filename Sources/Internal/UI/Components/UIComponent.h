@@ -53,12 +53,12 @@ public:
 
 public:
     UIComponent();
-    UIComponent(const UIComponent &src);
+    UIComponent(const UIComponent& src);
     virtual ~UIComponent();
-    
-    UIComponent &operator=(const UIComponent &src);
 
-    static UIComponent * CreateByType(uint32 componentType);
+    UIComponent& operator=(const UIComponent& src);
+
+    static UIComponent* CreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);
 
     virtual uint32 GetType() const = 0;
@@ -72,10 +72,9 @@ private:
     UIControl* control;
 
 public:
-    INTROSPECTION_EXTEND(UIComponent, BaseObject, 
-        nullptr
-    );
-
+    INTROSPECTION_EXTEND(UIComponent, BaseObject,
+                         nullptr
+                         );
 };
 
 #define IMPLEMENT_UI_COMPONENT_TYPE(TYPE) \
@@ -91,8 +90,6 @@ inline UIControl* UIComponent::GetControl() const
 {
     return control;
 }
-    
-
 }
 
 

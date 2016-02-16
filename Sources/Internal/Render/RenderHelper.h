@@ -87,7 +87,7 @@ public:
 
     static void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport);
 
-protected:
+private:
     enum eDrawCommandID
     {
         COMMAND_DRAW_LINE = 0,
@@ -102,10 +102,15 @@ protected:
     };
     struct DrawCommand
     {
-        DrawCommand(eDrawCommandID _id, eDrawType _drawType, const Vector<float32>& _params)
+        DrawCommand(eDrawCommandID _id)
+            : id(_id)
+        {
+        }
+
+        DrawCommand(eDrawCommandID _id, eDrawType _drawType, Vector<float32>&& _params)
             : id(_id)
             , drawType(_drawType)
-            , params(_params)
+            , params(std::move(_params))
         {
         }
 
@@ -119,7 +124,24 @@ protected:
         uint32 color;
     };
 
-    void QueueCommand(const DrawCommand&& command);
+    struct RenderStruct
+    {
+        rhi::HPacketList packetList;
+        rhi::Packet packet[DRAW_TYPE_COUNT];
+        ColoredVertex* vBufferPtr[DRAW_TYPE_COUNT];
+        uint16* iBufferPtr[DRAW_TYPE_COUNT];
+        uint32 vBufferOffset[DRAW_TYPE_COUNT];
+        bool valid = true;
+
+        RenderStruct()
+        {
+            memset(vBufferPtr, 0, sizeof(vBufferPtr));
+            memset(iBufferPtr, 0, sizeof(iBufferPtr));
+            memset(vBufferOffset, 0, sizeof(vBufferOffset));
+        }
+    };
+
+    void QueueCommand(const DrawCommand& command);
     void GetRequestedVertexCount(const DrawCommand& command, uint32& vertexCount, uint32& indexCount);
     bool PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr);
 
@@ -133,13 +155,21 @@ protected:
     void FillCircleVBuffer(ColoredVertex* buffer, const Vector3& center, const Vector3& direction, float32 radius, uint32 pointCount, uint32 nativeColor);
     void FillArrowVBuffer(ColoredVertex* buffer, const Vector3& from, const Vector3& to, uint32 nativeColor);
 
+    RenderStruct AllocateRenderStruct(rhi::HPacketList packetList);
+    void CommitRenderStruct(const RenderStruct&);
+
     uint32 coloredVertexLayoutUID;
 
     Vector<DrawCommand> commandQueue;
-    std::array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
+    Array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
     NMaterial* materials[DRAW_TYPE_COUNT];
+
+    DrawCommand drawLineCommand;
+    DrawCommand drawIcosahedronCommand;
+    DrawCommand drawArrowCommand;
+    DrawCommand drawCircleCommand;
+    DrawCommand drawBoxCommand;
 };
 }
 
 #endif // __DAVAENGINE_OBJC_FRAMEWORK_RENDER_HELPER_H__
-

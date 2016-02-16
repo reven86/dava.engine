@@ -50,7 +50,11 @@ class MemProfController;
 // For now only one service - log receiver
 struct DeviceServices
 {
-    DeviceServices() : log(nullptr), memprof(nullptr) {}
+    DeviceServices()
+        : log(nullptr)
+        , memprof(nullptr)
+    {
+    }
 
     DeviceLogController* log;
     MemProfController* memprof;
@@ -65,29 +69,20 @@ class DeviceListController : public QObject
 {
     Q_OBJECT
 
-    enum
-    {
-        SERVICE_LOG = 0,
-        SERVICE_MEMPROF = 1
-    };
-
     enum DeviceDataRole
     {
         // Roles for each item in QStandardItemModel
-        ROLE_CONNECTION_ID = Qt::UserRole + 1,  // Store NetCore::TrackId to track whether device is connected or no
-        ROLE_SOURCE_ADDRESS,                    // Store endpoint announce has arrived from
-        ROLE_PEER_DESCRIPTION,                  // Store device description recieved from announce
-        ROLE_PEER_SERVICES                      // Store network services to communicate with remote device
+        ROLE_CONNECTION_ID = Qt::UserRole + 1, // Store NetCore::TrackId to track whether device is connected or no
+        ROLE_SOURCE_ADDRESS, // Store endpoint announce has arrived from
+        ROLE_PEER_DESCRIPTION, // Store device description recieved from announce
+        ROLE_PEER_SERVICES // Store network services to communicate with remote device
     };
 
-    static const DAVA::uint16 ANNOUNCE_PORT = 9999;
-    static const DAVA::char8 announceMulticastGroup[];
-
 public:
-    explicit DeviceListController(QObject *parent = NULL);
+    explicit DeviceListController(QObject* parent = NULL);
     ~DeviceListController();
 
-    void SetView(DeviceListWidget *view);
+    void SetView(DeviceListWidget* view);
     void ShowView();
 
     // Method invoked when announce packet arrived
@@ -99,6 +94,7 @@ private slots:
     void OnConnectButtonPressed();
     void OnDisconnectButtonPressed();
     void OnShowLogButtonPressed();
+    void OnDeviceDiscover(const QString& addr);
 
 private:
     void ConnectDeviceInternal(QModelIndex& index, size_t ifIndex);
@@ -107,7 +103,7 @@ private:
     // Methods to create and delete network services
     DAVA::Net::IChannelListener* CreateLogger(DAVA::uint32 serviceId, void* context);
     void DeleteLogger(DAVA::Net::IChannelListener*, void* context);
-    
+
     DAVA::Net::IChannelListener* CreateMemProfiler(DAVA::uint32 serviceId, void* context);
     void DeleteMemProfiler(DAVA::Net::IChannelListener* obj, void* context);
 
@@ -119,7 +115,7 @@ private:
     QPointer<DeviceListWidget> view;
 
 private:
-    static QStandardItem *CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
+    static QStandardItem* CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
 };
 
 

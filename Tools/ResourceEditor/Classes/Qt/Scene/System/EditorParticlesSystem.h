@@ -35,40 +35,38 @@
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 
-
 class EditorParticlesSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
-	EditorParticlesSystem(DAVA::Scene * scene);
-	~EditorParticlesSystem();
+    EditorParticlesSystem(DAVA::Scene* scene);
+    ~EditorParticlesSystem();
 
-    void SetEmitterSelected(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter);
+    void SetEmitterSelected(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter);
     void RestartParticleEffects();
 
 private:
     void Draw();
 
-    virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+    virtual void AddEntity(DAVA::Entity* entity);
+    virtual void RemoveEntity(DAVA::Entity* entity);
 
-	void ProcessCommand(const Command2 *command, bool redo);
-	
+    void ProcessCommand(const Command2* command, bool redo);
+
 private:
-	DAVA::Vector<DAVA::Entity*> entities;
-	
-	void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
-	
-	void DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
-	void DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter,DAVA::Vector3 center);
-	void DrawSizeBox(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
-	void DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
+    DAVA::Vector<DAVA::Entity*> entities;
+
+    void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
+
+    void DrawSizeCircle(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
+    void DrawSizeCircleShockWave(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
+    void DrawSizeBox(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
+    void DrawVectorArrow(DAVA::Entity* effectEntity, DAVA::ParticleEmitter* emitter, DAVA::Vector3 center);
 
     DAVA::Entity* selectedEffectEntity;
-    DAVA::ParticleEmitter *selectedEmitter;
+    DAVA::ParticleEmitter* selectedEmitter;
 };
 
 
 #endif /* defined(__EDITOR_PARTICLES_SYSTEM_H__) */
-

@@ -33,16 +33,14 @@
 #include <QWidget>
 #include <QPointer>
 
-
 class MouseHelper;
 
-
 class AbstractSlider
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
-    signals:
+signals:
     void started(const QPointF&);
     void changing(const QPointF&);
     void changed(const QPointF&);
