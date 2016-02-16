@@ -138,7 +138,7 @@ KeyedArchive* LoadArchive(const FilePath& path)
     return archive;
 }
 
-bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* preset, bool applyWithWarnings)
+bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* preset, bool applyWithCorrectDimensionsOnly)
 {
     DVASSERT(descriptor != nullptr);
     DVASSERT(preset != nullptr);
@@ -147,11 +147,11 @@ bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* prese
         return false;
 
     List<String> warnings;
-    if (Internal::ArePresetDimensionsCorrect(descriptor, preset, warnings) == false && !applyWithWarnings)
+    if (Internal::ArePresetDimensionsCorrect(descriptor, preset, warnings) == false && applyWithCorrectDimensionsOnly)
         return false;
     
-    if (!descriptor->DeserializeFromPreset(preset))
-        return false;
+    bool applied = descriptor->DeserializeFromPreset(preset);
+    DVASSERT(applied);
 
     return true;
 }
@@ -208,8 +208,10 @@ bool DialogLoadPresetForTexture(TextureDescriptor* descriptor)
         toApply = (ret == QMessageBox::Apply);
     }
 
-    if (toApply && descriptor->DeserializeFromPreset(presetArchive))
+    if (toApply)
     {
+        bool applied = descriptor->DeserializeFromPreset(presetArchive);
+        DVASSERT(applied);
         descriptor->Save();
         return true;
     }
