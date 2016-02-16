@@ -31,6 +31,7 @@
 
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
+#include "VisibleValueProperty.h"
 
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
@@ -47,6 +48,7 @@ const FastName INTROSPECTION_PROPERTY_NAME_POSITION("position");
 const FastName INTROSPECTION_PROPERTY_NAME_TEXT("text");
 const FastName INTROSPECTION_PROPERTY_NAME_FONT("font");
 const FastName INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
+const FastName INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::InspMember* aMember, const IntrospectionProperty* sourceProperty, eCloneType copyType)
@@ -141,6 +143,10 @@ IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const I
     else if (member->Name() == INTROSPECTION_PROPERTY_NAME_FONT)
     {
         return new FontValueProperty(control, member, sourceProperty, cloneType);
+    }
+    else if (member->Name() == INTROSPECTION_PROPERTY_NAME_VISIBLE)
+    {
+        return new VisibleValueProperty(control, member, sourceProperty, cloneType);
     }
     else
     {
