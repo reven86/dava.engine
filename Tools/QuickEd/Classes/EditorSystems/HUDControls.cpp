@@ -28,6 +28,8 @@
 
 
 #include "EditorSystems/HUDControls.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -54,11 +56,15 @@ void ControlContainer::SetSystemVisible(bool visible)
     systemVisible = visible;
 }
 
-HUDContainer::HUDContainer(UIControl* container)
+HUDContainer::HUDContainer(ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
-    , control(container)
+    , node(node_)
 {
-    SetName("HudContainer of " + container->GetName());
+    DVASSERT(nullptr != node);
+    control = node->GetControl();
+    visibleProperty = node->GetRootProperty()->GetVisibleProperty();
+    DVASSERT(nullptr != control && nullptr != visibleProperty);
+    SetName("HudContainer of " + control->GetName());
 }
 
 void HUDContainer::AddChild(ControlContainer* container)
@@ -73,19 +79,19 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-
     bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    bool valid = contolIsInValidState && control->GetVisibleForUIEditor();
+    bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
     if(valid)
     {
-        auto parent = control->GetParent();
+        auto parent = node->GetParent();
         while(valid && nullptr != parent)
         {
-            valid &= parent->GetVisibleForUIEditor();
+            valid &= node->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
             parent = parent->GetParent();
         }
     }
     SetVisible(valid);
+
     if (valid)
     {
         for (auto child : childs)

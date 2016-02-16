@@ -38,6 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "EditorSystems/HUDControls.h"
 #include "EditorSystems/KeyboardProxy.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -86,7 +88,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)
-    , container(new HUDContainer(control))
+    , container(new HUDContainer(node_))
 {
     container->SetName("Container for HUD controls of node " + node_->GetName());
     DAVA::Vector<HUDAreaInfo::eArea> areas;
@@ -198,8 +200,10 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;
-        auto predicate = [point](const UIControl* control) -> bool {
-            return control->GetVisibleForUIEditor() && control->IsPointInside(point);
+        auto predicate = [point](const ControlNode* node) -> bool {
+            const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
+            DVASSERT(node->GetControl() != nullptr);
+            return visibleProp->GetVisibleInEditor() && node->GetControl()->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);

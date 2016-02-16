@@ -42,7 +42,7 @@
 
 using namespace DAVA;
 
-EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](DAVA::UIControl* ) {return false;};
+EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode* ) {return false;};
 
 class EditorSystemsManager::RootControl : public UIControl
 {

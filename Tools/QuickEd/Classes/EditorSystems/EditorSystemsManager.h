@@ -107,7 +107,7 @@ class PackageNode;
 
 class EditorSystemsManager : PackageListener
 {
-    using StopPredicate = std::function<bool(DAVA::UIControl*)>;
+    using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
 public:
     using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
@@ -180,13 +180,12 @@ void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate pred
 template <class OutIt, class Predicate>
 void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const
 {
-    auto control = node->GetControl();
-    if (predicate(control))
+    if (predicate(node))
     {
         *destination++ = node;
     }
 
-    if(!stopPredicate(control))
+    if (!stopPredicate(node))
     {
         int count = node->GetCount();
         for (int i = 0; i < count; ++i)
