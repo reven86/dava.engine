@@ -169,7 +169,7 @@ void UIScrollViewContainer::Input(UIEvent* currentTouch)
 
 bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
 {
-    if (!GetInputEnabled() || !visible || !visibleForUIEditor || (controlState & STATE_DISABLED))
+    if (!GetInputEnabled() || !visible || (controlState & STATE_DISABLED))
     {
         return false;
     }
