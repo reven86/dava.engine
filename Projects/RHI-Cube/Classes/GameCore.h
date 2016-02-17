@@ -73,10 +73,15 @@ public:
     virtual void Draw();
     virtual void EndFrame();
 
+    void OnKeyUp(UIEvent* evt);
+
 protected:
     void SetupTriangle();
     void SetupCube();
     void SetupRT();
+
+    void SetupInstancedCube();
+    void DrawInstancedCube();
 
     void SetupTank();
     void DrawTank();
@@ -85,6 +90,8 @@ protected:
     void rhiDraw();
     void rtDraw();
     void visibilityTestDraw();
+
+    static void ScreenShotCallback(uint32 width, uint32 height, const void* rgba);
 
     bool inited;
 
@@ -122,6 +129,7 @@ protected:
     Object
     {
         rhi::HVertexBuffer vb;
+        rhi::HVertexBuffer vb2;
         uint32 vb_layout;
         uint32 v_cnt;
         rhi::HIndexBuffer ib;
@@ -138,6 +146,10 @@ protected:
     Object cube;
     uint64 cube_t0;
     float cube_angle;
+
+    Object icube;
+    uint64 icube_t0;
+    float icube_angle;
 
     Object rtQuad;
     rhi::Packet rtQuadBatch;
@@ -156,6 +168,16 @@ protected:
     };
 
     Tank tank;
+
+    /*
+    rhi::HPerfQuerySet  perfQuerySet[3];
+    bool                perfQuerySetUsed[3];
+    bool                perfQuerySetReady[3];
+    unsigned            curPerfQuerySet;
+    unsigned            firedPerfQuerySet;
+*/
+    rhi::HPerfQuerySet perfQuerySet;
+    bool perfQuerySetFired;
 
     //    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;
 };

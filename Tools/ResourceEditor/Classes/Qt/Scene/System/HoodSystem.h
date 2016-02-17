@@ -48,74 +48,74 @@ class SceneCameraSystem;
 
 class HoodSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
-	HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys);
-	~HoodSystem();
+    HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys);
+    ~HoodSystem();
 
-	void SetModifMode(ST_ModifMode mode);
-	ST_ModifMode GetModifMode() const;
+    void SetModifMode(ST_ModifMode mode);
+    ST_ModifMode GetModifMode() const;
 
-	DAVA::Vector3 GetPosition() const;
-	void SetPosition(const DAVA::Vector3 &pos);
-	
-	void SetModifOffset(const DAVA::Vector3 &offset);
-	void SetModifRotate(const DAVA::float32 &angle);
-	void SetModifScale(const DAVA::float32 &scale);
+    DAVA::Vector3 GetPosition() const;
+    void SetPosition(const DAVA::Vector3& pos);
 
-	void SetModifAxis(ST_Axis axis);
-	ST_Axis GetModifAxis() const;
-	ST_Axis GetPassingAxis() const;
+    void SetModifOffset(const DAVA::Vector3& offset);
+    void SetModifRotate(const DAVA::float32& angle);
+    void SetModifScale(const DAVA::float32& scale);
 
-	void SetScale(DAVA::float32 scale);
-	DAVA::float32 GetScale() const;
+    void SetModifAxis(ST_Axis axis);
+    ST_Axis GetModifAxis() const;
+    ST_Axis GetPassingAxis() const;
 
-	void LockScale(bool lock);
-	void LockModif(bool lock);
-	void LockAxis(bool lock);
+    void SetScale(DAVA::float32 scale);
+    DAVA::float32 GetScale() const;
 
-	void SetVisible(bool visible);
-	bool IsVisible() const;
+    void LockScale(bool lock);
+    void LockModif(bool lock);
+    void LockAxis(bool lock);
+
+    void SetVisible(bool visible);
+    bool IsVisible() const;
 
     virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
+    virtual void Input(DAVA::UIEvent* event);
 
 protected:
-	bool lockedScale;
-	bool lockedModif;
-	bool lockedAxis;
-	bool isVisible;
+    bool lockedScale;
+    bool lockedModif;
+    bool lockedAxis;
+    bool isVisible;
 
-	ST_ModifMode curMode;
-	ST_Axis curAxis;
-	ST_Axis moseOverAxis;
-	DAVA::Vector3 curPos;
-	DAVA::float32 curScale;
-	DAVA::Vector3 modifOffset;
+    ST_ModifMode curMode;
+    ST_Axis curAxis;
+    ST_Axis moseOverAxis;
+    DAVA::Vector3 curPos;
+    DAVA::float32 curScale;
+    DAVA::Vector3 modifOffset;
 
-	SceneCameraSystem *cameraSystem;
+    SceneCameraSystem* cameraSystem;
 
-	void Draw();
+    void Draw();
 
-	void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
-	void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
+    void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
+    void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
 
-	void ResetModifValues();
+    void ResetModifValues();
 
 private:
-	btCollisionWorld* collWorld;
-	btAxisSweep3* collBroadphase;
-	btDefaultCollisionConfiguration* collConfiguration;
-	btCollisionDispatcher* collDispatcher;
-	btIDebugDraw* collDebugDraw;
+    btCollisionWorld* collWorld;
+    btAxisSweep3* collBroadphase;
+    btDefaultCollisionConfiguration* collConfiguration;
+    btCollisionDispatcher* collDispatcher;
+    btIDebugDraw* collDebugDraw;
 
-	HoodObject *curHood;
+    HoodObject* curHood;
 
-	NormalHood normalHood;
-	MoveHood moveHood;
-	RotateHood rotateHood;
-	ScaleHood scaleHood;
+    NormalHood normalHood;
+    MoveHood moveHood;
+    RotateHood rotateHood;
+    ScaleHood scaleHood;
 };
 
 #endif // __ENTITY_MODIFICATION_SYSTEM_HOOD_H__

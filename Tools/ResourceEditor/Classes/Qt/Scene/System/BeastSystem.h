@@ -30,28 +30,29 @@
 #ifndef __BEASTSYSTEM_H__
 #define __BEASTSYSTEM_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
 
-using namespace DAVA;
-
-class BeastSystem: public DAVA::SceneSystem
+namespace DAVA
 {
+class Entity;
+class Scene;
+class KeyedArchive;
+}
 
+class BeastSystem : public DAVA::SceneSystem
+{
 public:
+    BeastSystem(DAVA::Scene* scene);
 
-	BeastSystem(Scene* scene);
-    ~BeastSystem() = default;
+    void static SetDefaultPropertyValues(DAVA::Entity* entity);
 
-    void static SetDefaultPropertyValues(Entity * entity);
-	
-	void AddEntity(Entity * entity);
+    void AddEntity(DAVA::Entity* entity) override;
 
 private:
-
-	static void SetBool(KeyedArchive* propertyList, const String & key, bool value);
-	static void SetFloat(KeyedArchive* propertyList, const String & key, float32 value);
-	static void SetInt32(KeyedArchive* propertyList, const String & key, int32 value);
+    static void SetBool(DAVA::KeyedArchive* propertyList, const DAVA::String& key, bool value);
+    static void SetFloat(DAVA::KeyedArchive* propertyList, const DAVA::String& key, DAVA::float32 value);
+    static void SetInt32(DAVA::KeyedArchive* propertyList, const DAVA::String& key, DAVA::int32 value);
 };
 
 

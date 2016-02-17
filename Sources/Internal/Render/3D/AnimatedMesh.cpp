@@ -31,9 +31,8 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/BoneNode.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
 BoneAnimation::BoneAnimation()
 {
     boneCount = 0;
@@ -49,93 +48,89 @@ BoneAnimation::~BoneAnimation()
     SafeDeleteArray(keys);
 }
 
-BoneAnimationKey &	BoneAnimation::GetKey(int32 bone, int32 frame)
+BoneAnimationKey& BoneAnimation::GetKey(int32 bone, int32 frame)
 {
-	if (frame >= frameCount)frame = frameCount - 1;
-	
-	// \TODO: We suppose that every animation frame exported
-	// so we have keys for every frame
-	// Need to add interpolation beetween keys
-	return keys[bone][frame];
+    if (frame >= frameCount)
+        frame = frameCount - 1;
+
+    // \TODO: We suppose that every animation frame exported
+    // so we have keys for every frame
+    // Need to add interpolation beetween keys
+    return keys[bone][frame];
 }
 
 /// not used
-void BoneAnimation::Load(File * file, int32 _boneCount, int32 _frameCount)
+void BoneAnimation::Load(File* file, int32 _boneCount, int32 _frameCount)
 {
-	if (!file)return;
-	boneCount = _boneCount;
-	frameCount = _frameCount;
-	
-	keys = new BoneAnimationKey*[boneCount];
-	for (int bi = 0; bi < boneCount; ++bi)
-	{
-		keys[bi] = new BoneAnimationKey[frameCount];
-		
-		for (int f = 0; f < frameCount; ++f)
-		{
-			keys[bi][f].frame = f;
-			
-			keys[bi][f].matrix.Identity();
-			file->Read(&keys[bi][f].matrix, 4 * 4 * 3);
-			keys[bi][f].matrix.Transpose();
-			
-			file->Read(&keys[bi][f].orientation.w, 4);
-			file->Read(&keys[bi][f].orientation.x, 4);
-			file->Read(&keys[bi][f].orientation.y, 4);
-			file->Read(&keys[bi][f].orientation.z, 4);
-			
-			
-			file->Read(&keys[bi][f].translation.x, 4);
-			file->Read(&keys[bi][f].translation.y, 4);
-			file->Read(&keys[bi][f].translation.z, 4);		
-		}
-	}
+    if (!file)
+        return;
+    boneCount = _boneCount;
+    frameCount = _frameCount;
+
+    keys = new BoneAnimationKey*[boneCount];
+    for (int bi = 0; bi < boneCount; ++bi)
+    {
+        keys[bi] = new BoneAnimationKey[frameCount];
+
+        for (int f = 0; f < frameCount; ++f)
+        {
+            keys[bi][f].frame = f;
+
+            keys[bi][f].matrix.Identity();
+            file->Read(&keys[bi][f].matrix, 4 * 4 * 3);
+            keys[bi][f].matrix.Transpose();
+
+            file->Read(&keys[bi][f].orientation.w, 4);
+            file->Read(&keys[bi][f].orientation.x, 4);
+            file->Read(&keys[bi][f].orientation.y, 4);
+            file->Read(&keys[bi][f].orientation.z, 4);
+
+            file->Read(&keys[bi][f].translation.x, 4);
+            file->Read(&keys[bi][f].translation.y, 4);
+            file->Read(&keys[bi][f].translation.z, 4);
+        }
+    }
 }
 
-const String &		BoneAnimation::GetName()
+const String& BoneAnimation::GetName()
 {
-	return name;
+    return name;
 }
 
-float32				BoneAnimation::GetFPS()
+float32 BoneAnimation::GetFPS()
 {
-	return fps;
+    return fps;
 }
 
-AnimatedMesh::AnimatedMesh(Scene * _scene)
-	: StaticMesh(_scene)
-{		
+AnimatedMesh::AnimatedMesh(Scene* _scene)
+    : StaticMesh(_scene)
+{
 }
 
 AnimatedMesh::~AnimatedMesh()
 {
-
 }
-	
+
 // structure for fast joint access
 struct JointWeight
 {
-	int32 index[4];
-	float32 weight[4];
+    int32 index[4];
+    float32 weight[4];
 };
 
-	
-inline void BlendedMul(Vector3 * res, const Vector3 & _v, const Matrix4 & _m, float32 w)
+inline void BlendedMul(Vector3* res, const Vector3& _v, const Matrix4& _m, float32 w)
 {
-	res->x += (_v.x * _m._00 + _v.y * _m._10 + _v.z * _m._20 + _m._30) * w;
-	res->y += (_v.x * _m._01 + _v.y * _m._11 + _v.z * _m._21 + _m._31) * w;
-	res->z += (_v.x * _m._02 + _v.y * _m._12 + _v.z * _m._22 + _m._32) * w;
+    res->x += (_v.x * _m._00 + _v.y * _m._10 + _v.z * _m._20 + _m._30) * w;
+    res->y += (_v.x * _m._01 + _v.y * _m._11 + _v.z * _m._21 + _m._31) * w;
+    res->z += (_v.x * _m._02 + _v.y * _m._12 + _v.z * _m._22 + _m._32) * w;
 }
-	
 
 void AnimatedMesh::Update(float32 timeElapsed)
 {
-	
-	//if (mesh == 0)return;
-	//if (joints[0].node == 0)return;
-	
+    //if (mesh == 0)return;
+    //if (joints[0].node == 0)return;
 
-	/* 
+    /* 
 	for (int k = 0; k < (int)joints.size(); ++k)
 	{
 		Joint & currentJoint = joints[k];
@@ -154,8 +149,8 @@ void AnimatedMesh::Update(float32 timeElapsed)
 		}
 	}
 	*/
-	
-	/*int32 boneCount = (int32)bones.size();
+
+    /*int32 boneCount = (int32)bones.size();
 	for (int b = 0; b < boneCount; ++b)
 	{
 		bones[b]->finalMatrix = bindShapeMatrix * bones[b]->inverse0Matrix * bones[b]->GetWorldTransform();
@@ -211,22 +206,20 @@ void AnimatedMesh::Update(float32 timeElapsed)
 
 void AnimatedMesh::RestoreBonesFromNames()
 {
-	for (int32 b = 0; b < (int32)boneNames.size(); ++b)
-	{
-		BoneNode * bone = dynamic_cast<BoneNode*>(scene->FindByName(boneNames[b]));
-		if (!bone)
-		{
-			printf("-- error: can't find bone node: %s", boneNames[b].c_str());
-		}
-		bones.push_back(bone);
-	}	
-}
-	
-void AnimatedMesh::Draw()
-{
-		
+    for (int32 b = 0; b < (int32)boneNames.size(); ++b)
+    {
+        BoneNode* bone = dynamic_cast<BoneNode*>(scene->FindByName(boneNames[b]));
+        if (!bone)
+        {
+            printf("-- error: can't find bone node: %s", boneNames[b].c_str());
+        }
+        bones.push_back(bone);
+    }
 }
 
+void AnimatedMesh::Draw()
+{
+}
 
 /*
 void AnimatedMesh::Load(const String & animationFilename, int32 additionalFlags)
@@ -303,30 +296,30 @@ void AnimatedMesh::Load(const String & animationFilename, int32 additionalFlags)
 //	for (int32 bi = 0; bi < boneCount; ++bi)
 //	{
 //		Bone & bone = boneArray[bi];
-//		
+//
 //		BoneAnimationKey & key0 = currentAnimation->GetKey(bi, 0);
-//		
+//
 //		Matrix4 base0matrix;
 //		Matrix4 base0trans;
 //		Matrix4 transform;
-//		
+//
 //		// \TODO : Matrix functions to set angles & translations
 //		// we use fact that R * T = R set T
-//		
+//
 //		key0.orientation.GetMatrix(&base0matrix);
 //		base0trans.CreateTranslation(key0.translation);
 //        transform = base0matrix * base0trans;
-//		
-//		// transform relative matrix transform 
+//
+//		// transform relative matrix transform
 //		// using absolute parent transformation.
-//		
+//
 //		if (bone.parentIndex != -1)
 //			bone.inverse0Transform = transform * boneArray[bone.parentIndex].inverse0Transform;
 //		else
 //			bone.inverse0Transform = transform;
-//		
+//
 //	}
-//	// inverse only after full computation of 
+//	// inverse only after full computation of
 //	// all matrixes (because matrixes is used as parent transformations)
 //	for (int32 bi = 0; bi < boneCount; ++bi)
 //	{
@@ -343,24 +336,24 @@ void AnimatedMesh::Load(const String & animationFilename, int32 additionalFlags)
 //	for (int32 bi = 0; bi < boneCount; ++bi)
 //	{
 //		Bone & bone = boneArray[bi];
-//		
+//
 //		BoneAnimationKey & keyCurrent = currentAnimation->GetKey(bi, currentFrame);
-//		
+//
 //		Matrix4 currentRotation;
 //		Matrix4 currentTranslation;
-//		
+//
 //		// \TODO : Matrix functions to set angles & translations
 //		// we use fact that R * T = R set T
-//		
+//
 //		keyCurrent.orientation.GetMatrix(&currentRotation);
 //		currentTranslation.CreateTranslation(keyCurrent.translation);
 //		bone.relativeTransform = currentRotation * currentTranslation;
-//		
+//
 //		if (bone.parentIndex != -1)
 //		{
-//			// transform relative matrix transform 
+//			// transform relative matrix transform
 //			// using absolute parent transformation.
-//			
+//
 //			bone.absoluteTransform = bone.relativeTransform * boneArray[bone.parentIndex].absoluteTransform;
 //		}else bone.absoluteTransform = bone.relativeTransform;
 //	}
@@ -371,7 +364,7 @@ void AnimatedMesh::Load(const String & animationFilename, int32 additionalFlags)
 //	currentFrame++;
 //	if (currentFrame >= frameCount)
 //		currentFrame = 0;
-//	
+//
 //	PrepareMesh();
 ///*	for (int v = 0; v < baseMesh.GetVertexCount(); ++v)
 //	{
@@ -383,7 +376,7 @@ void AnimatedMesh::Load(const String & animationFilename, int32 additionalFlags)
 //			if (boneIndex != -1)
 //			{
 //				Bone & bone = boneArray[boneIndex];
-//				
+//
 //				Vector3 r1 = vertexArray[v] * bone.inverse0Transform;
 //				Vector3 r2 = r1 * bone.absoluteTransform;
 //
@@ -394,10 +387,8 @@ void AnimatedMesh::Load(const String & animationFilename, int32 additionalFlags)
 //		baseMesh.Coord(v, resultVert);
 //	}
 //*/
-//	//! 
+//	//!
 //	// IRenderSystem * rs = Global::GetRenderSystem();
 //	// rs->RenderBaseMesh(&baseMesh);
 //}
-
 };
-

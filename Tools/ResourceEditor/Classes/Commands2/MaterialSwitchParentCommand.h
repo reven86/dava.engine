@@ -35,22 +35,21 @@
 #include "Base/FastName.h"
 
 class EntityGroup;
-class MaterialSwitchParentCommand: public Command2
+class MaterialSwitchParentCommand : public Command2
 {
 public:
-	MaterialSwitchParentCommand(DAVA::NMaterial *instance, DAVA::NMaterial *newParent);
-	~MaterialSwitchParentCommand();
+    MaterialSwitchParentCommand(DAVA::NMaterial* instance, DAVA::NMaterial* newParent);
+    ~MaterialSwitchParentCommand();
 
-	virtual void Undo();
-	virtual void Redo();
+    virtual void Undo();
+    virtual void Redo();
 
-	virtual DAVA::Entity* GetEntity() const;
-    
+    virtual DAVA::Entity* GetEntity() const;
+
 protected:
-    
-    DAVA::NMaterial *oldParent;
-    DAVA::NMaterial *newParent;
-    DAVA::NMaterial *currentInstance;
+    DAVA::NMaterial* oldParent;
+    DAVA::NMaterial* newParent;
+    DAVA::NMaterial* currentInstance;
 };
 
 #endif // __MATERIAL_ASSIGN_COMMAND_H__

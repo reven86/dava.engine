@@ -9,21 +9,20 @@
 #include "StdAfx.h"
 #include "FCDObject.h"
 
-// 
+//
 // FCDObject
 //
 
 ImplementObjectType(FCDObject);
 
 FCDObject::FCDObject(FCDocument* _document)
-:	FUParameterizable(), document(_document)
-,	userHandle(NULL)
+    : FUParameterizable()
+    , document(_document)
+    , userHandle(NULL)
 {
-	SetDirtyFlag();
+    SetDirtyFlag();
 }
 
 FCDObject::~FCDObject()
 {
 }
-
-

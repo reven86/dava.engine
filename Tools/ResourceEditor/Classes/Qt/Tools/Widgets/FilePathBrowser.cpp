@@ -37,12 +37,12 @@
 #include <QKeyEvent>
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace
 {
-    const QSize cButtonSize = QSize(24, 24);
+const QSize cButtonSize = QSize(24, 24);
 }
-
 
 FilePathBrowser::FilePathBrowser(QWidget* parent)
     : LineEditEx(parent)
@@ -51,14 +51,14 @@ FilePathBrowser::FilePathBrowser(QWidget* parent)
 {
     InitButtons();
 
-    QBoxLayout *l = qobject_cast<QBoxLayout *>( layout() );
-    if ( l != NULL )
+    QBoxLayout* l = qobject_cast<QBoxLayout*>(layout());
+    if (l != NULL)
     {
-        l->setContentsMargins( 2, 2, 2, 2 );
+        l->setContentsMargins(2, 2, 2, 2);
     }
 
-    connect( this, SIGNAL( returnPressed() ), SLOT( OnReturnPressed() ) );
-    connect( this, SIGNAL( textUpdated( const QString& ) ), SLOT( ValidatePath() ) );
+    connect(this, SIGNAL(returnPressed()), SLOT(OnReturnPressed()));
+    connect(this, SIGNAL(textUpdated(const QString&)), SLOT(ValidatePath()));
 }
 
 FilePathBrowser::~FilePathBrowser()
@@ -97,11 +97,11 @@ QSize FilePathBrowser::sizeHint() const
     {
         hint.rheight() = cButtonSize.height();
 
-        QBoxLayout *l = qobject_cast<QBoxLayout *>( layout() );
-        if ( l != NULL )
+        QBoxLayout* l = qobject_cast<QBoxLayout*>(layout());
+        if (l != NULL)
         {
             int top, left, right, bottom;
-            l->getContentsMargins( &left, &top, &right, &bottom );
+            l->getContentsMargins(&left, &top, &right, &bottom);
             hint.rheight() += top + bottom;
         }
     }
@@ -125,7 +125,7 @@ QString FilePathBrowser::DefaultBrowsePath()
 
 void FilePathBrowser::OnBrowse()
 {
-    const QString newPath = FileDialog::getOpenFileName( this, hintText, DefaultBrowsePath(), filter, NULL, 0 );
+    const QString newPath = FileDialog::getOpenFileName(this, hintText, DefaultBrowsePath(), filter, NULL, 0);
     TryToAcceptPath(newPath);
 }
 
@@ -136,11 +136,11 @@ void FilePathBrowser::OnReturnPressed()
 
 void FilePathBrowser::ValidatePath()
 {
-    const bool isValid = QFileInfo(text()).isFile();    
+    const bool isValid = QFileInfo(text()).isFile();
 
     // Icon
-    QPixmap *pix = NULL;
-    if ( iconCache.contains(isValid) )
+    QPixmap* pix = NULL;
+    if (iconCache.contains(isValid))
     {
         pix = iconCache.object(isValid);
     }
@@ -164,17 +164,17 @@ void FilePathBrowser::InitButtons()
     validIcon->setAlignment(Qt::AlignCenter);
     AddCustomWidget(validIcon);
 
-    QAction *browse = new QAction(this);
+    QAction* browse = new QAction(this);
     browse->setToolTip("Browse...");
-    browse->setIcon(QIcon(":/QtIcons/openscene.png"));
-    connect( browse, SIGNAL( triggered() ), SLOT( OnBrowse() ) );
+    browse->setIcon(SharedIcon(":/QtIcons/openscene.png"));
+    connect(browse, SIGNAL(triggered()), SLOT(OnBrowse()));
     addAction(browse);
 }
 
 void FilePathBrowser::TryToAcceptPath(const QString& _path)
 {
-    QFileInfo newInfo( _path );
-    
+    QFileInfo newInfo(_path);
+
     if (allowInvalidPath || newInfo.isFile())
     {
         SetPath(_path);
@@ -182,7 +182,7 @@ void FilePathBrowser::TryToAcceptPath(const QString& _path)
     }
 }
 
-QSize FilePathBrowser::ButtonSizeHint(const QAction * action) const
+QSize FilePathBrowser::ButtonSizeHint(const QAction* action) const
 {
     Q_UNUSED(action);
     return cButtonSize;
@@ -192,7 +192,7 @@ void FilePathBrowser::keyPressEvent(QKeyEvent* event)
 {
     LineEditEx::keyPressEvent(event);
 
-    switch ( event->key() )
+    switch (event->key())
     {
     case Qt::Key_Enter:
     case Qt::Key_Return:

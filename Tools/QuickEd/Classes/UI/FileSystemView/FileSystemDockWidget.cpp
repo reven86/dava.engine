@@ -107,11 +107,11 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
-void FileSystemDockWidget::SetProjectDir(const QString &path)
+void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
     if (ui->treeView->selectionModel())
     {
-        disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
+        disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(OnSelectionChanged(const QItemSelection&, const QItemSelection&)));
     }
     QDir dir(path);
     dir.cdUp();
@@ -122,12 +122,12 @@ void FileSystemDockWidget::SetProjectDir(const QString &path)
     ui->treeView->hideColumn(1);
     ui->treeView->hideColumn(2);
     ui->treeView->hideColumn(3);
-    
-    connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
+
+    connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(OnSelectionChanged(const QItemSelection&, const QItemSelection&)));
     ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 }
 
-void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
+void FileSystemDockWidget::RefreshActions(const QModelIndexList& indexList)
 {
     bool canCreateDir = true;
     bool canRemove = !indexList.empty();
@@ -172,20 +172,20 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
     return true;
 }
 
-void FileSystemDockWidget::OnSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected )
+void FileSystemDockWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
     RefreshActions(selected.indexes());
 }
 
-void FileSystemDockWidget::onDoubleClicked(const QModelIndex &index)
+void FileSystemDockWidget::onDoubleClicked(const QModelIndex& index)
 {
-    if(!model->isDir(index))
+    if (!model->isDir(index))
     {
         emit OpenPackageFile(model->filePath(index));
     }
 }
 
-void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
+void FileSystemDockWidget::setFilterFixedString(const QString& filterStr)
 {
     QStringList filters;
     filters << QString("*%1*" + FileSystemModel::GetYamlExtensionString()).arg(filterStr);

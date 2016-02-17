@@ -53,6 +53,7 @@ public:
 
 protected:
     virtual ~UIJoypad();
+
 public:
     UIJoypad* Clone() override;
     void CopyDataFrom(DAVA::UIControl* srcControl) override;
@@ -103,9 +104,9 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UIJoypad, UIControl,
-        PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
-        );
+                         PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
+                         );
 };
 };
 

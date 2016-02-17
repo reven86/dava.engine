@@ -33,16 +33,16 @@
 #include <QObject>
 #include <QString>
 #include <QMap>
-class ZipUnpacker: public QObject
+class ZipUnpacker : public QObject
 {
     Q_OBJECT
 public:
-    explicit ZipUnpacker(QObject *parent = 0);
+    explicit ZipUnpacker(QObject* parent = 0);
     ~ZipUnpacker();
 
     bool UnZipFile(const QString& archiveFilePath, const QString& extDirPath);
 
-    const QString & GetErrorString(int errorCode);
+    const QString& GetErrorString(int errorCode);
 
 signals:
     void OnProgress(int current, int all);

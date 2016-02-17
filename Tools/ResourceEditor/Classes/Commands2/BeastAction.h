@@ -33,36 +33,35 @@
 #include "Commands2/Base/CommandAction.h"
 #include "Beast/BeastProxy.h"
 
-#if defined (__DAVAENGINE_BEAST__)
+#if defined(__DAVAENGINE_BEAST__)
 
 class SceneEditor2;
 class BeastManager;
 class QtWaitDialog;
 
-class BeastAction: public CommandAction
+class BeastAction : public CommandAction
 {
 public:
-    BeastAction(SceneEditor2 *scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog *_waitDialog);
-	~BeastAction();
+    BeastAction(SceneEditor2* scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog);
+    ~BeastAction();
 
-	virtual void Redo();
+    virtual void Redo();
 
 private:
+    void Start();
+    bool Process();
+    void Finish(bool canceled);
 
-	void Start();
-	bool Process();
-	void Finish(bool canceled);
+    void PackLightmaps();
+    DAVA::FilePath GetLightmapDirectoryPath();
 
-	void PackLightmaps();
-	DAVA::FilePath GetLightmapDirectoryPath();
+    BeastManager* beastManager;
+    QtWaitDialog* waitDialog;
 
-	BeastManager * beastManager;
-	QtWaitDialog * waitDialog;
-
-	SceneEditor2 *workingScene;
+    SceneEditor2* workingScene;
     DAVA::FilePath outputPath;
 
-	DAVA::uint64 startTime;
+    DAVA::uint64 startTime;
 
     BeastProxy::eBeastMode beastMode;
 };

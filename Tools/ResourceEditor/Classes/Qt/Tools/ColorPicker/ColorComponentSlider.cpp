@@ -35,7 +35,6 @@
 #include "../Widgets/ValueSlider.h"
 #include "GradientSlider.h"
 
-
 ColorComponentSlider::ColorComponentSlider(QWidget* parent)
     : QWidget(parent)
 {
@@ -60,10 +59,10 @@ ColorComponentSlider::ColorComponentSlider(QWidget* parent)
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
     updateGeometry();
 
-    connect(value, SIGNAL( started( double ) ), SIGNAL( started( double ) ));
-    connect(value, SIGNAL( changing( double ) ), SIGNAL( changing( double ) ));
-    connect(value, SIGNAL( changed( double ) ), SIGNAL( changed( double ) ));
-    connect(value, SIGNAL( canceled() ), SIGNAL( canceled() ));
+    connect(value, SIGNAL(started(double)), SIGNAL(started(double)));
+    connect(value, SIGNAL(changing(double)), SIGNAL(changing(double)));
+    connect(value, SIGNAL(changed(double)), SIGNAL(changed(double)));
+    connect(value, SIGNAL(canceled()), SIGNAL(canceled()));
 }
 
 ColorComponentSlider::~ColorComponentSlider()

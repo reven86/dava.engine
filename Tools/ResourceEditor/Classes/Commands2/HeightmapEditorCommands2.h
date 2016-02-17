@@ -40,50 +40,49 @@ class HeightmapProxy;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ActionEnableHeightmapEditor: public CommandAction
+class ActionEnableHeightmapEditor : public CommandAction
 {
 public:
-	ActionEnableHeightmapEditor(SceneEditor2* forSceneEditor);
-	
+    ActionEnableHeightmapEditor(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
-class ActionDisableHeightmapEditor: public CommandAction
+class ActionDisableHeightmapEditor : public CommandAction
 {
 public:
-	ActionDisableHeightmapEditor(SceneEditor2* forSceneEditor);
-	
+    ActionDisableHeightmapEditor(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
-
-class ModifyHeightmapCommand: public Command2
+class ModifyHeightmapCommand : public Command2
 {
 public:
-	ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
-						   Heightmap* originalHeightmap,
-						   const Rect& updatedRect);
-	virtual ~ModifyHeightmapCommand();
+    ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
+                           Heightmap* originalHeightmap,
+                           const Rect& updatedRect);
+    virtual ~ModifyHeightmapCommand();
 
 protected:
-	HeightmapProxy* heightmapProxy;
-	uint16* undoRegion;
-	uint16* redoRegion;
-	Rect updatedRect;
+    HeightmapProxy* heightmapProxy;
+    uint16* undoRegion;
+    uint16* redoRegion;
+    Rect updatedRect;
 
-	virtual void Redo();
-	virtual void Undo();
+    virtual void Redo();
+    virtual void Undo();
 
-	virtual Entity* GetEntity() const;
+    virtual Entity* GetEntity() const;
 
-	uint16* GetHeightmapRegion(Heightmap* heightmap);
-	void ApplyHeightmapRegion(uint16* region);
+    uint16* GetHeightmapRegion(Heightmap* heightmap);
+    void ApplyHeightmapRegion(uint16* region);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__) */

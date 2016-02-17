@@ -40,51 +40,51 @@
 #include "UI/UIEvent.h"
 
 #include "Render/UniqueStateSet.h"
+#include "Render/RenderHelper.h"
 
 class SceneCollisionSystem;
 class HoodSystem;
 
 enum SelectionSystemDrawMode
 {
-	SS_DRAW_NOTHING = 0x0,
+    SS_DRAW_NOTHING = 0x0,
 
-	SS_DRAW_SHAPE          = 0x1,
-	SS_DRAW_CORNERS	    = 0x2,
-	SS_DRAW_BOX            = 0x4,
-	SS_DRAW_NO_DEEP_TEST   = 0x10,
+    SS_DRAW_SHAPE = 0x1,
+    SS_DRAW_CORNERS = 0x2,
+    SS_DRAW_BOX = 0x4,
+    SS_DRAW_NO_DEEP_TEST = 0x10,
 
     SS_DRAW_DEFAULT = SS_DRAW_CORNERS | SS_DRAW_BOX,
-	SS_DRAW_ALL = 0xFFFFFFFF
+    SS_DRAW_ALL = 0xFFFFFFFF
 };
 
 class SceneSelectionSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
-	friend class EntityModificationSystem;
-    
     static const DAVA::uint64 ALL_COMPONENTS_MASK = 0xFFFFFFFFFFFFFFFF;
 
 public:
-    SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys);
-	~SceneSelectionSystem();
+    SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
+    ~SceneSelectionSystem();
 
-	void SetSelection(DAVA::Entity *entity);
-    void SetSelection(const EntityGroup &newSelection);
-	void AddSelection(DAVA::Entity *entity);
-    void AddSelection(const EntityGroup &entities);
-	void RemSelection(DAVA::Entity *entity);
-    void RemSelection(const EntityGroup &entities);
-	void Clear();
-    
-    bool IsEntitySelectable(DAVA::Entity *entity) const;
+    void SetSelection(const EntityGroup& newSelection);
 
-	EntityGroup GetSelection() const;
+    void AddEntityToSelection(DAVA::Entity* entity);
+    void AddSelection(const EntityGroup& entities);
 
-	size_t GetSelectionCount() const;
-	DAVA::Entity* GetSelectionEntity(int index) const;
+    void ExcludeEntityFromSelection(DAVA::Entity* entity);
+    void ExcludeSelection(const EntityGroup& entities);
 
-	void SetPivotPoint(ST_PivotPoint pp);
-	ST_PivotPoint GetPivotPoint() const;
+    void Clear();
+
+    bool IsEntitySelectable(DAVA::Entity* entity) const;
+
+    const EntityGroup& GetSelection() const;
+
+    size_t GetSelectionCount() const;
+    DAVA::Entity* GetFirstSelectionEntity() const;
+
+    void SetPivotPoint(ST_PivotPoint pp);
+    ST_PivotPoint GetPivotPoint() const;
 
     void ResetSelectionComponentMask();
     void SetSelectionComponentMask(DAVA::uint64 mask);
@@ -92,72 +92,92 @@ public:
 
     void SetSelectionAllowed(bool allowed);
     bool IsSelectionAllowed() const;
-    
-    
-	virtual void SetLocked(bool lock);
 
-	DAVA::AABBox3 GetSelectionAABox(int index) const;
-	DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity) const;
-	DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity, const DAVA::Matrix4 &transform) const;
+    void SetLocked(bool lock) override;
 
-	void ForceEmitSignals();
+    DAVA::AABBox3 GetUntransformedBoundingBox(DAVA::Entity* entity) const;
+    DAVA::AABBox3 GetTransformedBoundingBox(const EntityGroup& group) const;
+
+    void ForceEmitSignals();
 
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
-	void Process(DAVA::float32 timeElapsed) override;
-    void Input(DAVA::UIEvent *event) override;
+    void Process(DAVA::float32 timeElapsed) override;
+    void ProcessCommand(const Command2* command, bool redo);
+
+    void Input(DAVA::UIEvent* event) override;
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
 
     void Activate() override;
     void Deactivate() override;
-    
-    
-    bool IsEntitySelected(DAVA::Entity *entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 
     void EnableSystem();
 
-protected:
-    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
-
     void Draw();
-
-	void UpdateHoodPos() const;
-	void SelectedItemsWereModified();
-
-	EntityGroup GetSelecetableFromCollision(const EntityGroup *collisionEntities);
+    void CancelSelection();
 
 private:
-    bool selectionAllowed = true;
-    DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
 
-    bool applyOnPhaseEnd = false;
-    bool invalidSelectionBoxes = false;
+    bool IsEntitySelected(DAVA::Entity* entity);
+    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
 
+    DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
+
+    void UpdateHoodPos() const;
+
+    void PerformSelectionAtPoint(const DAVA::Vector2&);
+
+    void PerformSelectionInCurrentBox();
+
+    void ProcessSelectedGroup(const EntityGroup::EntityVector&);
+
+    void UpdateGroupSelectionMode();
+
+    void UpdateSelectionGroup(const EntityGroup& newSelection);
+    void FinishSelection();
+
+    void ExcludeSingleItem(DAVA::Entity*);
+
+    void DrawItem(DAVA::Entity* item, const DAVA::AABBox3& bbox, DAVA::int32 drawMode,
+                  DAVA::RenderHelper::eDrawType wireDrawType, DAVA::RenderHelper::eDrawType solidDrawType,
+                  const DAVA::Color& color);
+
+    enum class GroupSelectionMode
+    {
+        Replace,
+        Add,
+        Remove
+    };
+
+private:
     SceneCollisionSystem* collisionSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
-
-    bool selectionHasChanges = false;
     EntityGroup curSelections;
-	EntityGroup curDeselections;
-
-    DAVA::Entity* lastSelection = nullptr;
-
-    ST_PivotPoint curPivotPoint;
-
+    EntityGroup curDeselections;
+    EntityGroup lastGroupSelection;
+    EntityGroup objectsToSelect;
     DAVA::List<DAVA::Entity*> entitiesForSelection;
-
+    DAVA::Vector2 selectionStartPoint;
+    DAVA::Vector2 selectionEndPoint;
+    DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
+    ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
+    GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
+    bool selectionAllowed = true;
+    bool applyOnPhaseEnd = false;
+    bool invalidSelectionBoxes = false;
+    bool selectionHasChanges = false;
+    bool selecting = false;
     bool systemIsEnabled = false;
-};
 
+};
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()
 {
     SetSelectionComponentMask(ALL_COMPONENTS_MASK);
 }
-
 
 inline DAVA::uint64 SceneSelectionSystem::GetSelectionComponentMask() const
 {
@@ -173,6 +193,5 @@ inline bool SceneSelectionSystem::IsSelectionAllowed() const
 {
     return selectionAllowed;
 }
-
 
 #endif //__SCENE_SELECTION_SYSTEM_H__

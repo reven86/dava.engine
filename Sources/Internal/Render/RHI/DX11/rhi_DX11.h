@@ -33,6 +33,7 @@
 #include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Impl.h"
+#include "_dx11.h"
 
 struct ID3D11DeviceContext;
 struct ID3D11Buffer;
@@ -63,10 +64,23 @@ void BeginQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
 void EndQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
 }
 
+namespace PerfQuerySetDX11
+{
+void SetupDispatch(Dispatch* dispatch);
+void BeginFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
+void EndFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
+void IssueTimestampQuery(Handle handle, uint32 timestampIndex, ID3D11DeviceContext* context);
+void IssueFrameBeginQuery(Handle handle, ID3D11DeviceContext* context);
+void IssueFrameEndQuery(Handle handle, ID3D11DeviceContext* context);
+Handle Current();
+void ObtainResults(Handle handle);
+}
+
 namespace PipelineStateDX11
 {
 void SetupDispatch(Dispatch* dispatch);
-unsigned VertexLayoutStride(Handle ps);
+unsigned VertexLayoutStride(Handle ps, unsigned stream_i);
+unsigned VertexLayoutStreamCount(Handle ps);
 void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount);
 void SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context);
 }
@@ -76,7 +90,13 @@ namespace ConstBufferDX11
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer);
+#else
+void SetToRHI(Handle cb, const void* instData);
+const void* Instance(Handle cb);
+void InvalidateAllInstances();
+#endif
 }
 
 namespace TextureDX11

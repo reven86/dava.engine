@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 class CoreWin32PlatformBase : public Core
 {
 public:
@@ -53,7 +52,6 @@ public:
 protected:
     static void SetCursorPosCenterInternal(HWND hWnd);
 };
-
 };
 
 #endif // #if defined(__DAVAENGINE_WIN32__)

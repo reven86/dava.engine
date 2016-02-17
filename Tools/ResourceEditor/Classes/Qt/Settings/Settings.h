@@ -75,6 +75,7 @@ public:
     static const DAVA::FastName Scene_CameraHeightOnLandscape;
     static const DAVA::FastName Scene_CameraHeightOnLandscapeStep;
     static const DAVA::FastName Scene_SelectionSequent;
+    static const DAVA::FastName Scene_SelectionOnClick;
     static const DAVA::FastName Scene_SelectionDrawMode;
     static const DAVA::FastName Scene_CollisionDrawMode;
     static const DAVA::FastName Scene_ModificationByGizmoOnly;

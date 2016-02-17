@@ -40,22 +40,20 @@ namespace DAVA
 class Entity;
 }
 
-class SaveEntityAsAction: public CommandAction
+class SaveEntityAsAction : public CommandAction
 {
 public:
-	SaveEntityAsAction(const EntityGroup *entities, const DAVA::FilePath &path);
-	~SaveEntityAsAction();
+    SaveEntityAsAction(const EntityGroup* entities, const DAVA::FilePath& path);
+    ~SaveEntityAsAction();
 
-	virtual void Redo();
-
-protected:
-
-	void RemoveLightmapsRecursive(DAVA::Entity *entity) const;
-
+    virtual void Redo();
 
 protected:
-	const EntityGroup *entities;
-	DAVA::FilePath sc2Path;
+    void RemoveLightmapsRecursive(DAVA::Entity* entity) const;
+
+protected:
+    const EntityGroup* entities;
+    DAVA::FilePath sc2Path;
 };
 
 #endif // __RESOURCEEDITORQT__SAVEENTITYASACTION__

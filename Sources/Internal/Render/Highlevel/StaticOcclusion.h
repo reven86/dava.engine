@@ -48,21 +48,21 @@ class RenderSystem;
 class Scene;
 class Sprite;
 class Landscape;
-    
+
 class StaticOcclusionData
 {
 public:
     StaticOcclusionData();
     ~StaticOcclusionData();
-    
-    void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox, const float32 *_cellHeightOffset);
+
+    void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3& bbox, const float32* _cellHeightOffset);
     void EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     void DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
 
     bool IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex) const;
 
     uint32* GetBlockVisibilityData(uint32 blockIndex);
-    StaticOcclusionData & operator= (const StaticOcclusionData & other);
+    StaticOcclusionData& operator=(const StaticOcclusionData& other);
 
     void SetData(const uint32* _data, uint32 dataSize);
     const uint32* GetData() const;

@@ -38,21 +38,21 @@
 class QtPropertyDataMetaObject : public QtPropertyDataDavaVariant
 {
 public:
-	QtPropertyDataMetaObject(void *_object, const DAVA::MetaInfo *_meta);
-	virtual ~QtPropertyDataMetaObject();
+    QtPropertyDataMetaObject(const DAVA::FastName& name, void* _object, const DAVA::MetaInfo* _meta);
+    virtual ~QtPropertyDataMetaObject();
 
-	const DAVA::MetaInfo* MetaInfo() const override;
+    const DAVA::MetaInfo* MetaInfo() const override;
     std::unique_ptr<Command2> CreateLastCommand() const override;
 
-	void *object;
-	const DAVA::MetaInfo *meta;
+    void* object;
+    const DAVA::MetaInfo* meta;
 
 protected:
-	MetaObjModifyCommand* lastCommand;
+    MetaObjModifyCommand* lastCommand;
 
-	virtual void SetValueInternal(const QVariant &value);
-	virtual bool UpdateValueInternal();
-	virtual bool EditorDoneInternal(QWidget *editor);
+    virtual void SetValueInternal(const QVariant& value);
+    virtual bool UpdateValueInternal();
+    virtual bool EditorDoneInternal(QWidget* editor);
 };
 
 #endif // __QT_PROPERTY_DATA_META_OBJECT_H__

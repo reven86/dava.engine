@@ -35,8 +35,8 @@
 class Command2;
 class EditorLightSystem final : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
-	friend class EditorScene;
+    friend class SceneEditor2;
+    friend class EditorScene;
 
 public:
 	EditorLightSystem(DAVA::Scene * scene);
@@ -67,7 +67,7 @@ private:
 
 inline bool EditorLightSystem::GetCameraLightEnabled() const
 {
-	return isEnabled;
+    return isEnabled;
 }
 
 

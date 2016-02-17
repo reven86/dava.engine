@@ -32,13 +32,11 @@
 
 namespace DAVA
 {
-
 namespace StringConstants
 {
-    // Property Names for different Properties.
-    static const char* NO_SPRITE_IS_SET = "<No sprite is set>";
+// Property Names for different Properties.
+static const char* NO_SPRITE_IS_SET = "<No sprite is set>";
 }
-
 };
 
 

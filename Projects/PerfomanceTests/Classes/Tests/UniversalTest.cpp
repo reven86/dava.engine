@@ -38,22 +38,22 @@ const String UniversalTest::TEST_NAME = "UniversalTest";
 const float32 UniversalTest::TANK_ROTATION_ANGLE = 45.0f;
 
 UniversalTest::UniversalTest(const TestParams& params)
-    :   BaseTest(TEST_NAME, params)
-    ,   camera(new Camera())
-    ,   time(0.0f)
+    : BaseTest(TEST_NAME, params)
+    , camera(new Camera())
+    , time(0.0f)
 {
 }
 
 void UniversalTest::LoadResources()
 {
     BaseTest::LoadResources();
-    
+
     SceneFileV2::eError error = GetScene()->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
     DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
-    
+
     Entity* cameraEntity = GetScene()->FindByName(CAMERA);
-    
-    if(cameraEntity != nullptr)
+
+    if (cameraEntity != nullptr)
     {
         Camera* camera = static_cast<CameraComponent*>(cameraEntity->GetComponent(Component::CAMERA_COMPONENT))->GetCamera();
         GetScene()->SetCurrentCamera(camera);
@@ -62,54 +62,54 @@ void UniversalTest::LoadResources()
     {
         Entity* cameraPathEntity = GetScene()->FindByName(CAMERA_PATH);
         DVASSERT_MSG(cameraPathEntity != nullptr, "Can't get path component");
-        
+
         PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
-        
+
         const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;
         const Vector3& destinationPoint = pathComponent->GetStartWaypoint()->edges[0]->destination->position;
-        
+
         camera->SetPosition(startPosition);
         camera->SetTarget(destinationPoint);
         camera->SetUp(Vector3::UnitZ);
         camera->SetLeft(Vector3::UnitY);
-        
+
         GetScene()->SetCurrentCamera(camera);
-        
+
         waypointInterpolator = std::unique_ptr<WaypointsInterpolator>(new WaypointsInterpolator(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f));
     }
-    
+
     Entity* tanksEntity = GetScene()->FindByName(TANKS);
-    
-    if(tanksEntity != nullptr)
+
+    if (tanksEntity != nullptr)
     {
         Vector<Entity*> tanks;
-        
+
         uint32 childrenCount = tanksEntity->GetChildrenCount();
-        
+
         for (uint32 i = 0; i < childrenCount; i++)
         {
             tanks.push_back(tanksEntity->GetChild(i));
         }
-        
-        for (auto *tank : tanks)
+
+        for (auto* tank : tanks)
         {
             Vector<uint16> jointsInfo;
-            
+
             TankUtils::MakeSkinnedTank(tank, jointsInfo);
             skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
         }
-        
+
         GetScene()->FindNodesByNamePart(TANK_STUB.c_str(), tankStubs);
-        
+
         auto tankIt = skinnedTankData.cbegin();
         auto tankEnd = skinnedTankData.cend();
-        
-        for (auto *tankStub : tankStubs)
+
+        for (auto* tankStub : tankStubs)
         {
             Entity* tank = tankIt->second.first;
-            
+
             tankStub->AddNode(ScopedPtr<Entity>(tank->Clone()));
-            
+
             tankIt++;
             if (tankIt == tankEnd)
             {
@@ -122,19 +122,18 @@ void UniversalTest::LoadResources()
 void UniversalTest::PerformTestLogic(float32 timeElapsed)
 {
     time += timeElapsed;
-    
-    if(waypointInterpolator)
+
+    if (waypointInterpolator)
     {
         waypointInterpolator->NextPosition(camPos, camDst, timeElapsed);
-        
+
         camera->SetPosition(camPos);
         camera->SetTarget(camDst);
     }
-    
-    for (auto *tank : tankStubs)
+
+    for (auto* tank : tankStubs)
     {
         const Vector<uint16>& jointIndexes = skinnedTankData.at(tank->GetChild(0)->GetName()).second;
         TankUtils::Animate(tank, jointIndexes, DegToRad(time * TANK_ROTATION_ANGLE));
     }
 }
-

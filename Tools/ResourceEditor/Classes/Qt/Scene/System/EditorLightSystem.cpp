@@ -36,8 +36,8 @@
 
 using namespace DAVA;
 
-EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
-	: DAVA::SceneSystem(scene)
+EditorLightSystem::EditorLightSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
 {
 	ScopedPtr<Light> light(new Light());
 	light->SetType(Light::TYPE_POINT);
@@ -58,7 +58,7 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 
 EditorLightSystem::~EditorLightSystem()
 {
-	SafeRelease(cameraLight);
+    SafeRelease(cameraLight);
 }
 
 void EditorLightSystem::UpdateCameraLightState()
@@ -73,7 +73,6 @@ void EditorLightSystem::UpdateCameraLightState()
 	}
 }
 
-
 void EditorLightSystem::UpdateCameraLightPosition()
 {
 	if(cameraLight && cameraLight->GetParent())
@@ -81,15 +80,15 @@ void EditorLightSystem::UpdateCameraLightPosition()
         Camera *camera = GetScene()->GetCurrentCamera();
 		if(!camera) return;
 
-		Matrix4 m = Matrix4::MakeTranslation(camera->GetPosition() + camera->GetLeft() * 20.f + camera->GetUp() * 20.f);
-        if(m != cameraLight->GetLocalTransform())
+        Matrix4 m = Matrix4::MakeTranslation(camera->GetPosition() + camera->GetLeft() * 20.f + camera->GetUp() * 20.f);
+        if (m != cameraLight->GetLocalTransform())
         {
             cameraLight->SetLocalTransform(m);
         }
-	}
+    }
 }
 
-void EditorLightSystem::SetCameraLightEnabled( bool enabled )
+void EditorLightSystem::SetCameraLightEnabled(bool enabled)
 {
 	if(enabled != isEnabled)
 	{
@@ -97,7 +96,6 @@ void EditorLightSystem::SetCameraLightEnabled( bool enabled )
 		UpdateCameraLightState();
 	}
 }
-
 
 void EditorLightSystem::AddCameraLightOnScene()
 {
@@ -108,13 +106,12 @@ void EditorLightSystem::AddCameraLightOnScene()
 	}
 }
 
-
 void EditorLightSystem::RemoveCameraLightFromScene()
 {
-	if(cameraLight && cameraLight->GetParent())
-	{
-		cameraLight->GetParent()->RemoveNode(cameraLight);
-	}
+    if (cameraLight && cameraLight->GetParent())
+    {
+        cameraLight->GetParent()->RemoveNode(cameraLight);
+    }
 }
 
 void EditorLightSystem::SceneDidLoaded()
@@ -137,7 +134,7 @@ void EditorLightSystem::AddEntity( DAVA::Entity * entity )
     RemoveCameraLightFromScene();
 }
 
-void EditorLightSystem::RemoveEntity( DAVA::Entity * entity )
+void EditorLightSystem::RemoveEntity(DAVA::Entity* entity)
 {
     if (entity == cameraLight)
 	{
@@ -157,5 +154,5 @@ void EditorLightSystem::Process(float32 timeElapsed)
 	if(isEnabled)
 	{
         UpdateCameraLightPosition();
-	}
+    }
 }

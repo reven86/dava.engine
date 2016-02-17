@@ -8,7 +8,6 @@ VPROG_OUT_END
 
 VPROG_BEGIN
 
-    float3 in_pos   = VP_IN_POSITION;
-    VP_OUT_POSITION = float4(in_pos.x, in_pos.y, in_pos.z, 1.0);
+    VP_OUT_POSITION = float4(VP_IN_POSITION.xyz, 1.0);
     
 VPROG_END

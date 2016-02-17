@@ -48,17 +48,18 @@ public:
     };
 
     ~ErrorMessanger();
-    static ErrorMessanger * Instance();
+    static ErrorMessanger* Instance();
 
-    void ShowErrorMessage(ErrorID id, int errorCode = 0, const QString & addInfo = "");
+    void ShowErrorMessage(ErrorID id, int errorCode = 0, const QString& addInfo = "");
     int ShowRetryDlg(bool canCancel);
-    void ShowNotificationDlg(const QString & info);
+    void ShowNotificationDlg(const QString& info);
 
-    void LogMessage(QtMsgType, const QString & msg);
+    void LogMessage(QtMsgType, const QString& msg);
+
 private:
     ErrorMessanger();
 
-    static ErrorMessanger * instatnce;
+    static ErrorMessanger* instatnce;
 
     QFile logFile;
 };

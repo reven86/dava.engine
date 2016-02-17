@@ -64,8 +64,8 @@ public:
     DAVA::GraphicFont* GetFont() const;
 
 protected:
-	struct TextToDraw
-	{
+    struct TextToDraw
+    {
         TextToDraw(DAVA::Vector2 _pos, const DAVA::String& _text, const DAVA::Color& _color, Align _align)
             : pos(_pos)
             , text(_text)
@@ -76,9 +76,9 @@ protected:
 
         DAVA::Vector2 pos;
         DAVA::String text;
-		DAVA::Color color;
-		Align align;
-	};
+        DAVA::Color color;
+        Align align;
+    };
 
     using GraphicFontVertexVector = DAVA::Vector<DAVA::GraphicFont::GraphicFontVertex>;
 

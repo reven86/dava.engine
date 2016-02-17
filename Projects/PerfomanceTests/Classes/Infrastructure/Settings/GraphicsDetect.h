@@ -41,20 +41,23 @@ public:
     void OverrideSettings(const DAVA::String group);
     DAVA::String GetLevelString();
     void ReloadSettings();
-    GraphicsLevel * GetLevel(void) { return activeGroup->level; };
+    GraphicsLevel* GetLevel(void)
+    {
+        return activeGroup->level;
+    };
 
 private:
     struct Group
     {
         DAVA::String base;
         DAVA::Set<DAVA::String> devices;
-        GraphicsLevel * level;
+        GraphicsLevel* level;
     };
 
-    Group * GetAutoDetected();
+    Group* GetAutoDetected();
     void Init();
 
     DAVA::Map<DAVA::String, Group> groupsMap;
-    Group * activeGroup;
+    Group* activeGroup;
 };
 #endif

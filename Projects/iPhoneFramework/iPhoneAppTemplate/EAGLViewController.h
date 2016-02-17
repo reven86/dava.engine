@@ -30,10 +30,9 @@
 #import <UIKit/UIKit.h>
 #import "EAGLView.h"
 
-@interface EAGLViewController : UIViewController 
+@interface EAGLViewController : UIViewController
 {
-	IBOutlet EAGLView * glView; 
+    IBOutlet EAGLView* glView;
 }
 
 @end
- 

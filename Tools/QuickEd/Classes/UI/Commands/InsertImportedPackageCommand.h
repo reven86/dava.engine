@@ -38,15 +38,15 @@ class PackageControlsNode;
 class InsertImportedPackageCommand : public QUndoCommand
 {
 public:
-    InsertImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, int anIndex, QUndoCommand *parent = nullptr);
+    InsertImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, int anIndex, QUndoCommand* parent = nullptr);
     virtual ~InsertImportedPackageCommand();
-    
+
     void redo() override;
     void undo() override;
-    
+
 private:
-    PackageNode *root;
-    PackageNode *importedPackage;
+    PackageNode* root;
+    PackageNode* importedPackage;
     int index;
 };
 

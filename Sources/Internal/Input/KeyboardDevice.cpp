@@ -153,6 +153,14 @@ static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames 
   "RSHIFT",
   "RCTRL",
   "RALT",
+
+  "F13", // on mac - printscreen
+  "F14", // on mac - scrlock
+  "F15", // on mac - pause/break
+  "F16",
+  "F17",
+  "F18",
+  "F19"
 };
 
 KeyboardDevice::KeyboardDevice()
@@ -270,14 +278,14 @@ void KeyboardDevice::PrepareKeyTranslator()
         unsigned keyValue = static_cast<unsigned>(Key::F1) + i;
         keyTranslator[VK_F1 + i] = static_cast<Key>(keyValue);
     }
-    
+
     // alpha keys
     for (unsigned i = 0; i < 26; ++i)
     {
         unsigned keyValue = static_cast<unsigned>(Key::KEY_A) + i;
         keyTranslator[0x41 + i] = static_cast<Key>(keyValue);
     }
-    
+
     // numeric keys & keys at num pad
     for (unsigned i = 0; i < 10; ++i)
     {
@@ -350,8 +358,8 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x26] = Key::KEY_J;
     keyTranslator[0x28] = Key::KEY_K;
     keyTranslator[0x25] = Key::KEY_L;
-    keyTranslator[0x2D] = Key::KEY_M;
-    keyTranslator[0x2E] = Key::KEY_N;
+    keyTranslator[0x2D] = Key::KEY_N;
+    keyTranslator[0x2E] = Key::KEY_M;
     keyTranslator[0x1F] = Key::KEY_O;
     keyTranslator[0x23] = Key::KEY_P;
     keyTranslator[0x0C] = Key::KEY_Q;
@@ -391,6 +399,12 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x67] = Key::F11;
     keyTranslator[0x6F] = Key::F12;
 
+    keyTranslator[113] = Key::F15;
+    keyTranslator[0x6A] = Key::F16;
+    keyTranslator[0x40] = Key::F17;
+    keyTranslator[0x4F] = Key::F18;
+    keyTranslator[0x50] = Key::F19;
+
     // numeric keys at numpad
     for (unsigned i = 0; i < 8; ++i)
     {
@@ -411,7 +425,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x04] = Key::BACK;
     keyTranslator[0x52] = Key::MENU;
 #endif
-
 }
 
 void KeyboardDevice::ClearAllKeys()
@@ -419,5 +432,4 @@ void KeyboardDevice::ClearAllKeys()
     currentFrameKeyStatus.reset();
     realKeyStatus.reset();
 }
-
 };

@@ -44,6 +44,7 @@ public:
 
     DAVA::int32 GetId() const;
     const DAVA::String & GetText() const;
+//    void SetText(const DAVA::String& text);
 
     virtual void Undo() = 0;
     virtual void Redo() = 0;

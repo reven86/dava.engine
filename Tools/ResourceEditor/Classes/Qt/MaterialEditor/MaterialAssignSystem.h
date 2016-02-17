@@ -39,11 +39,10 @@ class SceneEditor2;
 class MaterialAssignSystem
 {
 public:
-
-    static void AssignMaterial(SceneEditor2 *scene, DAVA::NMaterial *instance, DAVA::NMaterial *newMaterialParent);
+    static void AssignMaterial(SceneEditor2* scene, DAVA::NMaterial* instance, DAVA::NMaterial* newMaterialParent);
 
 protected:
-    static DAVA::NMaterial * SelectMaterial(const DAVA::Set<DAVA::NMaterial *> & materials);
+    static DAVA::NMaterial* SelectMaterial(const DAVA::Set<DAVA::NMaterial*>& materials);
 };
 
 #endif // __MATERIALS_DROP_SYSTEM_H__

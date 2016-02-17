@@ -54,7 +54,7 @@ private:
     	FUAssert(singleton == NULL, return singleton); \
 		return singleton = new _SingletonClass(); } \
 	void _SingletonClass::DestroySingleton() { \
-		FUAssert(singleton != NULL, return); \
+		FUAssert(singleton != NULL, return ); \
 		SAFE_DELETE(singleton); } \
 	_SingletonClass* _SingletonClass::singleton = NULL
 

@@ -40,6 +40,7 @@
 #include <QTimer>
 #include <QBoxLayout>
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QAction>
 
 namespace
@@ -185,6 +186,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, davaGLView, &DavaGLView::update);
     timer->start(16); //62.5 fps :)
+
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
     connect(davaGLView, &QQuickWindow::beforeSynchronizing, this, &DavaGLWidget::OnSync, Qt::DirectConnection);
@@ -227,17 +229,36 @@ void DavaGLWidget::OnResize()
 {
     if (nullptr != renderer)
     {
-        int screenIndex = qApp->screens().indexOf(davaGLView->screen());
-        DVASSERT(-1 != screenIndex);
-        DAVA::QtLayer::Instance()->Resize(width(), height(), screenIndex);
+        auto dpr = davaGLView->devicePixelRatio();
+        DAVA::QtLayer::Instance()->Resize(width(), height(), dpr);
         emit Resized(width(), height());
     }
 }
+
+namespace DAVAGLWidget_namespace
+{
+//there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
+void Kostil_ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
+{
+    auto desktop = qApp->desktop();
+    int screenNumber = desktop->screenNumber(davaGLWidget);
+    DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
+
+    QWindow* parent = davaGLWidget->GetGLView();
+    while (parent->parent() != nullptr)
+    {
+        parent = parent->parent();
+    }
+    parent->setScreen(qApp->screens().at(screenNumber));
+}
+} //unnamed namespace
 
 void DavaGLWidget::OnSync()
 {
     if (nullptr == renderer)
     {
+        DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
+
         renderer = new DavaRenderer();
         OnResize();
         connect(davaGLView, &QQuickWindow::beforeRendering, renderer, &DavaRenderer::paint, Qt::DirectConnection);

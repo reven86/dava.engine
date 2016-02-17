@@ -35,48 +35,47 @@
 #include <android/log.h>
 #include "Utils/StringFormat.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-static DAVA::String androidLogTag = "";    
+static DAVA::String androidLogTag = "";
 
 int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 {
-	int32 androidLL = ANDROID_LOG_DEFAULT;
-	switch (ll)
-	{
-		case Logger::LEVEL_FRAMEWORK:
-		case Logger::LEVEL_DEBUG:
-			androidLL = ANDROID_LOG_DEBUG;
-			break;
+    int32 androidLL = ANDROID_LOG_DEFAULT;
+    switch (ll)
+    {
+    case Logger::LEVEL_FRAMEWORK:
+    case Logger::LEVEL_DEBUG:
+        androidLL = ANDROID_LOG_DEBUG;
+        break;
 
-		case Logger::LEVEL_INFO:
-			androidLL = ANDROID_LOG_INFO;
-			break;
+    case Logger::LEVEL_INFO:
+        androidLL = ANDROID_LOG_INFO;
+        break;
 
-		case Logger::LEVEL_WARNING:
-			androidLL = ANDROID_LOG_WARN;
-			break;
+    case Logger::LEVEL_WARNING:
+        androidLL = ANDROID_LOG_WARN;
+        break;
 
-		case Logger::LEVEL_ERROR:
-			androidLL = ANDROID_LOG_ERROR;
-			break;
-		default:
-		    break;
-	}
+    case Logger::LEVEL_ERROR:
+        androidLL = ANDROID_LOG_ERROR;
+        break;
+    default:
+        break;
+    }
 
-	return androidLL;
+    return androidLL;
 }
 
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
     size_t len = strlen(text);
     // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages
-    const size_t limit{4000};
+    const size_t limit{ 4000 };
 
     char8* str = const_cast<char*>(text);
 
-    while(len > limit)
+    while (len > limit)
     {
         char8 lastChar = str[limit];
         str[limit] = '\0';
@@ -89,9 +88,9 @@ void Logger::PlatformLog(eLogLevel ll, const char8* text) const
     __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
 }
 
-void Logger::SetTag(const char8 *logTag)
+void Logger::SetTag(const char8* logTag)
 {
-	androidLogTag = Format("%s", logTag);
+    androidLogTag = Format("%s", logTag);
 }
 
 } // end namespace DAVA

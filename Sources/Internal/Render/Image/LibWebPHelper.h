@@ -35,10 +35,9 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class LibWebPHelper: public ImageFormatInterface
+class LibWebPHelper : public ImageFormatInterface
 {
 public:
     LibWebPHelper();
@@ -47,22 +46,21 @@ public:
 
     bool CanProcessFile(File* file) const override;
 
-    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap = 0) const override;
 
     //only RGBA8888 or RGB888
-    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
     //only RGBA8888 or RGB888
-    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(File *infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 };
 
 inline ImageFormat LibWebPHelper::GetImageFormat() const
 {
     return IMAGE_FORMAT_WEBP;
 }
-
 };
 
 #endif // __DAVAENGINE_WEB_P_HELPER_H__

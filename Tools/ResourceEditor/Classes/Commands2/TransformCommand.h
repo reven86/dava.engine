@@ -35,17 +35,17 @@
 class TransformCommand : public Command2
 {
 public:
-	TransformCommand(DAVA::Entity* _entity, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform);
-	~TransformCommand();
+    TransformCommand(DAVA::Entity* _entity, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform);
+    ~TransformCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
 protected:
-	DAVA::Entity* entity;
-	DAVA::Matrix4 undoTransform;
-	DAVA::Matrix4 redoTransform;
+    DAVA::Entity* entity;
+    DAVA::Matrix4 undoTransform;
+    DAVA::Matrix4 redoTransform;
 };
 
 #endif // __COMMAND_BATCH_H__

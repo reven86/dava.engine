@@ -31,16 +31,18 @@
 #define __SCENE_COLLISION_BOX_H__
 
 #include "Scene/System/CollisionSystem/CollisionBaseObject.h"
-#include "Render/Highlevel/Camera.h"
 
 class CollisionBox : public CollisionBaseObject
 {
 public:
-	CollisionBox(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Vector3 position, DAVA::float32 boxSize);
-	virtual ~CollisionBox();
+    CollisionBox(DAVA::Entity* entity, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize);
+    ~CollisionBox();
 
-protected:
-	btCollisionShape* btShape;
+    CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;
+    CollisionBaseObject::ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) override;
+
+private:
+    btCollisionShape* btShape = nullptr;
 };
 
 #endif // __SCENE_COLLISION_BOX_H__

@@ -37,26 +37,26 @@ using namespace DAVA;
 
 class SceneEditor2;
 
-class ActionEnableRulerTool: public CommandAction
+class ActionEnableRulerTool : public CommandAction
 {
 public:
-	ActionEnableRulerTool(SceneEditor2* forSceneEditor);
-	
+    ActionEnableRulerTool(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
-class ActionDisableRulerTool: public CommandAction
+class ActionDisableRulerTool : public CommandAction
 {
 public:
-	ActionDisableRulerTool(SceneEditor2* forSceneEditor);
-	
+    ActionDisableRulerTool(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__RULERTOOLACTIONS__) */

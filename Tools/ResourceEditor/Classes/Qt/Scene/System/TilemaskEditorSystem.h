@@ -40,46 +40,46 @@
 
 using namespace DAVA;
 
-class TilemaskEditorSystem: public LandscapeEditorSystem
+class TilemaskEditorSystem : public LandscapeEditorSystem
 {
 public:
-	enum eTilemaskDrawType
-	{
-		TILEMASK_DRAW_NORMAL = 0,
-		TILEMASK_DRAW_COPY_PASTE,
-		
-		TILEMASK_DRAW_TYPES_COUNT
-	};
+    enum eTilemaskDrawType
+    {
+        TILEMASK_DRAW_NORMAL = 0,
+        TILEMASK_DRAW_COPY_PASTE,
 
-	TilemaskEditorSystem(Scene* scene);
-	virtual ~TilemaskEditorSystem();
-	
-	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
-	bool DisableLandscapeEdititing();
+        TILEMASK_DRAW_TYPES_COUNT
+    };
 
-	void Process(DAVA::float32 timeElapsed) override;
-	void Input(DAVA::UIEvent *event) override;
-	void Draw();
-	
-	void SetBrushSize(int32 brushSize);
-	int32 GetBrushSize();
-	void SetStrength(float32 strength);
-	float32 GetStrength();
-	void SetToolImage(const FilePath& toolImagePath, int32 index);
-	int32 GetToolImage();
-	void SetTileTexture(uint32 tileTexture);
-	uint32 GetTileTextureIndex();
+    TilemaskEditorSystem(Scene* scene);
+    virtual ~TilemaskEditorSystem();
 
-	uint32 GetTileTextureCount() const;
+    LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
+    bool DisableLandscapeEdititing();
+
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent* event) override;
+    void Draw();
+
+    void SetBrushSize(int32 brushSize);
+    int32 GetBrushSize();
+    void SetStrength(float32 strength);
+    float32 GetStrength();
+    void SetToolImage(const FilePath& toolImagePath, int32 index);
+    int32 GetToolImage();
+    void SetTileTexture(uint32 tileTexture);
+    uint32 GetTileTextureIndex();
+
+    uint32 GetTileTextureCount() const;
     Texture* GetTileTexture();
     Color GetTileColor(uint32 index);
     void SetTileColor(int32 index, const Color& color);
 
-	void SetDrawingType(eTilemaskDrawType type);
-	eTilemaskDrawType GetDrawingType();
+    void SetDrawingType(eTilemaskDrawType type);
+    eTilemaskDrawType GetDrawingType();
 
 protected:
-	uint32 curToolSize;
+    uint32 curToolSize;
 
     Texture* toolImageTexture;
     Texture* landscapeTilemaskTexture;
@@ -90,9 +90,9 @@ protected:
 
     eTilemaskDrawType drawingType;
     eTilemaskDrawType activeDrawingType;
-	float32 strength;
-	FilePath toolImagePath;
-	int32 toolImageIndex;
+    float32 strength;
+    FilePath toolImagePath;
+    int32 toolImageIndex;
 
     rhi::HVertexBuffer quadBuffer;
     rhi::Packet quadPacket;
@@ -104,11 +104,11 @@ protected:
     Rect updatedRectAccumulator;
 
     bool editingIsEnabled;
-	
-	Texture * toolTexture;
-	bool toolSpriteUpdated;
-    
-	bool needCreateUndo;
+
+    Texture* toolTexture;
+    bool toolSpriteUpdated;
+
+    bool needCreateUndo;
 
     const FastName& textureLevel;
 
@@ -117,16 +117,16 @@ protected:
 
     void AddRectToAccumulator(const Rect& rect);
     void ResetAccumulatorRect();
-	Rect GetUpdatedRect();
-	
-	void CreateMaskTexture();
-	void CreateMaskFromTexture(Texture* texture);
+    Rect GetUpdatedRect();
 
-	void CreateUndoPoint();
+    void CreateMaskTexture();
+    void CreateMaskFromTexture(Texture* texture);
 
-	void InitSprites();
+    void CreateUndoPoint();
 
-	void FinishEditing();
+    void InitSprites();
+
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

@@ -32,7 +32,7 @@
 
 #include "FileSystem/YamlParser.h"
 
-namespace DAVA 
+namespace DAVA
 {
 /** 
 	\ingroup yaml
@@ -42,16 +42,12 @@ namespace DAVA
 class YamlArchive : public BaseObject
 {
 protected:
-	~YamlArchive(){}
+    ~YamlArchive()
+    {
+    }
+
 public:
-	
-	
 }
 };
 
 #endif // __DAVAENGINE_YAML_ARCHIVE_H__
-
-
-
-
-

@@ -32,24 +32,23 @@
 
 #include "Scene3D/Entity.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
 class SkeletonNode;
 class BoneNode : public Entity
 {
 protected:
-	virtual ~BoneNode();
+    virtual ~BoneNode();
+
 public:
-	BoneNode(SkeletonNode * owner = 0);
-	
-	virtual void Draw();
-	
-	Matrix4 finalMatrix;
-	Matrix4 inverse0Matrix;	//	inverse 0 matrix
-	Matrix4 bindPoseMatrix;	//	bindPos matrix
-	
-};	
+    BoneNode(SkeletonNode* owner = 0);
+
+    virtual void Draw();
+
+    Matrix4 finalMatrix;
+    Matrix4 inverse0Matrix; //	inverse 0 matrix
+    Matrix4 bindPoseMatrix; //	bindPos matrix
+};
 };
 
 #endif // __DAVAENGINE_BONE_NODE_H__

@@ -106,4 +106,3 @@ DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const
 
     return qualityConfigPath;
 }
-

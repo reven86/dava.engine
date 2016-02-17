@@ -38,22 +38,22 @@
 class QtPropertyDataInspMember : public QtPropertyDataDavaVariant
 {
 public:
-	QtPropertyDataInspMember(void *_object, const DAVA::InspMember *_member);
-	virtual ~QtPropertyDataInspMember();
+    QtPropertyDataInspMember(const DAVA::FastName& name, void* _object, const DAVA::InspMember* _member);
+    virtual ~QtPropertyDataInspMember();
 
-	const DAVA::MetaInfo * MetaInfo() const override;
+    const DAVA::MetaInfo * MetaInfo() const override;
     std::unique_ptr<Command2> CreateLastCommand() const override;
 
-	void *object;
-	const DAVA::InspMember *member;
+    void* object;
+    const DAVA::InspMember* member;
 
 protected:
-	InspMemberModifyCommand* lastCommand;
+    InspMemberModifyCommand* lastCommand;
 
-	virtual void SetValueInternal(const QVariant &value);
-    virtual void SetTempValueInternal(const QVariant &value);
-	virtual bool UpdateValueInternal();
-	virtual bool EditorDoneInternal(QWidget *editor);
+    virtual void SetValueInternal(const QVariant& value);
+    virtual void SetTempValueInternal(const QVariant& value);
+    virtual bool UpdateValueInternal();
+    virtual bool EditorDoneInternal(QWidget* editor);
 };
 
 #endif // __QT_PROPERTY_DATA_INSP_MEMBER_H__

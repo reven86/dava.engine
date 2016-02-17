@@ -35,17 +35,18 @@
 #include <QWidget>
 #include <QScopedPointer>
 
-
-namespace Ui { class HeightDeltaTool; }
-
+namespace Ui
+{
+class HeightDeltaTool;
+}
 
 class HeightDeltaTool
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit HeightDeltaTool(QWidget *p = NULL);
+    explicit HeightDeltaTool(QWidget* p = NULL);
     ~HeightDeltaTool();
 
     void SetDefaultDir(const QString& path);

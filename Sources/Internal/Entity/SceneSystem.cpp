@@ -30,22 +30,21 @@
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Entity.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
-SceneSystem::SceneSystem(Scene * _scene)
-:	requiredComponents(0),
-	scene(_scene)
-,	locked(false)
+SceneSystem::SceneSystem(Scene* _scene)
+    : requiredComponents(0)
+    ,
+    scene(_scene)
+    , locked(false)
 {
 }
 
 SceneSystem::~SceneSystem()
 {
-    
 }
-    
-void SceneSystem::RegisterEntity(Entity * entity)
+
+void SceneSystem::RegisterEntity(Entity* entity)
 {
     uint64 requiredComponents = this->GetRequiredComponents();
     bool needAdd = ((requiredComponents & entity->GetAvailableComponentFlags()) == requiredComponents);
@@ -53,8 +52,8 @@ void SceneSystem::RegisterEntity(Entity * entity)
     if (needAdd)
         this->AddEntity(entity);
 }
-    
-void SceneSystem::UnregisterEntity(Entity * entity)
+
+void SceneSystem::UnregisterEntity(Entity* entity)
 {
     uint64 requiredComponents = this->GetRequiredComponents();
     bool needRemove = ((requiredComponents & entity->GetAvailableComponentFlags()) == requiredComponents);
@@ -62,8 +61,8 @@ void SceneSystem::UnregisterEntity(Entity * entity)
     if (needRemove)
         this->RemoveEntity(entity);
 }
-    
-bool SceneSystem::IsEntityComponentFitsToSystem(Entity * entity, Component * component)
+
+bool SceneSystem::IsEntityComponentFitsToSystem(Entity* entity, Component* component)
 {
     uint64 entityComponentFlags = entity->GetAvailableComponentFlags();
     uint64 componentToCheckType = MAKE_COMPONENT_MASK(component->GetType());
@@ -74,8 +73,8 @@ bool SceneSystem::IsEntityComponentFitsToSystem(Entity * entity, Component * com
 
     return (isAllRequiredComponentsAvailable && isComponentMarkedForCheckAvailable);
 }
-    
-void SceneSystem::RegisterComponent( Entity * entity, Component * component )
+
+void SceneSystem::RegisterComponent(Entity* entity, Component* component)
 {
     if (IsEntityComponentFitsToSystem(entity, component))
     {
@@ -89,8 +88,8 @@ void SceneSystem::RegisterComponent( Entity * entity, Component * component )
         }
     }
 }
-    
-void SceneSystem::UnregisterComponent( Entity * entity, Component * component )
+
+void SceneSystem::UnregisterComponent(Entity* entity, Component* component)
 {
     if (IsEntityComponentFitsToSystem(entity, component))
     {
@@ -105,39 +104,32 @@ void SceneSystem::UnregisterComponent( Entity * entity, Component * component )
     }
 }
 
-void SceneSystem::AddEntity(Entity * entity)
+void SceneSystem::AddEntity(Entity* entity)
 {
-    
 }
 
-void SceneSystem::RemoveEntity(Entity * entity)
+void SceneSystem::RemoveEntity(Entity* entity)
 {
-    
-}
-    
-void SceneSystem::AddComponent(Entity * entity, Component * component)
-{
-    
 }
 
-void SceneSystem::RemoveComponent(Entity * entity, Component * component)
+void SceneSystem::AddComponent(Entity* entity, Component* component)
 {
-    
 }
-    
+
+void SceneSystem::RemoveComponent(Entity* entity, Component* component)
+{
+}
+
 void SceneSystem::SceneDidLoaded()
 {
-    
 }
 
-void SceneSystem::ImmediateEvent(Component * component, uint32 event)
+void SceneSystem::ImmediateEvent(Component* component, uint32 event)
 {
-
 }
 
 void SceneSystem::Process(float32 timeElapsed)
 {
-    
 }
 
 void SceneSystem::SetLocked(bool locked_)
@@ -147,7 +139,6 @@ void SceneSystem::SetLocked(bool locked_)
 
 bool SceneSystem::IsLocked() const
 {
-	return locked;
+    return locked;
 }
-
 };

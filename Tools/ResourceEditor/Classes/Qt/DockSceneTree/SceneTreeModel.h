@@ -42,101 +42,101 @@
 #include "Scene3D/Scene.h"
 
 class SceneTreeModel
-	: public QStandardItemModel
+: public QStandardItemModel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum DropType
-	{
-		DropingUnknown = -1,
-		DropingMixed = 0,
+    enum DropType
+    {
+        DropingUnknown = -1,
+        DropingMixed = 0,
 
-		DropingEntity,
-		DropingLayer,
+        DropingEntity,
+        DropingLayer,
         DropingEmitter,
-		DropingForce,
+        DropingForce,
         DropingMaterial
-	};
+    };
 
-	enum CustomFlags
-	{
-		CF_None			= 0x0000,
-		CF_Disabled		= 0x0001,
-		CF_Invisible	= 0x0002,
-	};
+    enum CustomFlags
+    {
+        CF_None = 0x0000,
+        CF_Disabled = 0x0001,
+        CF_Invisible = 0x0002,
+    };
 
-	SceneTreeModel(QObject* parent = 0);
-	~SceneTreeModel();
+    SceneTreeModel(QObject* parent = 0);
+    ~SceneTreeModel();
 
-	void SetScene(SceneEditor2 *scene);
-	SceneEditor2* GetScene() const;
+    void SetScene(SceneEditor2* scene);
+    SceneEditor2* GetScene() const;
 
-	QModelIndex GetIndex(DAVA::Entity *entity) const;
-    QModelIndex GetIndex(DAVA::ParticleEmitter *emitter) const;
-	QModelIndex GetIndex(DAVA::ParticleLayer *layer) const;
-	QModelIndex GetIndex(DAVA::ParticleForce *force) const;
+    QModelIndex GetIndex(DAVA::Entity* entity) const;
+    QModelIndex GetIndex(DAVA::ParticleEmitter* emitter) const;
+    QModelIndex GetIndex(DAVA::ParticleLayer* layer) const;
+    QModelIndex GetIndex(DAVA::ParticleForce* force) const;
 
-	SceneTreeItem* GetItem(const QModelIndex &index) const;
+    SceneTreeItem* GetItem(const QModelIndex& index) const;
 
-	void SetSolid(const QModelIndex &index, bool solid);
-	bool GetSolid(const QModelIndex &index) const;
+    void SetSolid(const QModelIndex& index, bool solid);
+    bool GetSolid(const QModelIndex& index) const;
 
-	void SetLocked(const QModelIndex &index, bool locked);
-	bool GetLocked(const QModelIndex &index) const;
+    void SetLocked(const QModelIndex& index, bool locked);
+    bool GetLocked(const QModelIndex& index) const;
 
-	QVector<QIcon> GetCustomIcons(const QModelIndex &index) const;
-	int GetCustomFlags(const QModelIndex &index) const;
+    QVector<QIcon> GetCustomIcons(const QModelIndex& index) const;
+    int GetCustomFlags(const QModelIndex& index) const;
 
-	// drag and drop support
-	Qt::DropActions supportedDropActions() const override;
-	QMimeData *	mimeData(const QModelIndexList & indexes) const override;
-	QStringList	mimeTypes() const override;
-	bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
-	bool DropCanBeAccepted(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const;
-	bool DropAccepted() const;
-	int GetDropType(const QMimeData *data) const;
+    // drag and drop support
+    Qt::DropActions supportedDropActions() const override;
+    QMimeData* mimeData(const QModelIndexList& indexes) const override;
+    QStringList mimeTypes() const override;
+    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+    bool DropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
+    bool DropAccepted() const;
+    int GetDropType(const QMimeData* data) const;
 
-	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
+    void ResyncStructure(QStandardItem* item, DAVA::Entity* entity);
 
     void SetFilter(const QString& text);
     void ReloadFilter();
     bool IsFilterSet() const;
 
-    Qt::ItemFlags flags ( const QModelIndex & index ) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-    
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
+
 private slots:
-	void ItemChanged(QStandardItem * item);
+    void ItemChanged(QStandardItem* item);
 
 private:
     void RebuildIndexesCache();
-	void AddIndexesCache(SceneTreeItem *item);
-	bool AreSameType(const QModelIndexList & indexes) const;
+    void AddIndexesCache(SceneTreeItem* item);
+    bool AreSameType(const QModelIndexList& indexes) const;
     void SetFilterInternal(const QModelIndex& parent, const QString& text);
     void ResetFilter(const QModelIndex& parent = QModelIndex());
 
     Qt::DropActions supportedDragActions() const;
 
-    SceneEditor2 * curScene;
-	bool dropAccepted;
+    SceneEditor2* curScene;
+    bool dropAccepted;
     QString filterText;
 
-	QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
+    QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
     QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
-	QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
-	QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
+    QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
+    QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel
 {
 public:
-    SceneTreeFilteringModel(SceneTreeModel *treeModel, QObject *parent = NULL);
-	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    SceneTreeFilteringModel(SceneTreeModel* treeModel, QObject* parent = NULL);
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
 protected:
-	SceneTreeModel *treeModel;
+    SceneTreeModel* treeModel;
 };
 
 #endif // __QT_SCENE_TREE_MODEL_H__

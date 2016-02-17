@@ -34,13 +34,20 @@
 #include "errormessanger.h"
 #include <QProcess>
 
-SelfUpdater::SelfUpdater(const QString & arcUrl, QNetworkAccessManager * accessManager, QWidget *parent) :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
-    ui(new Ui::SelfUpdater),
-    archiveUrl(arcUrl),
-    networkManager(accessManager),
-    currentDownload(0),
-    unpacker(0),
+SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent)
+    :
+    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    ,
+    ui(new Ui::SelfUpdater)
+    ,
+    archiveUrl(arcUrl)
+    ,
+    networkManager(accessManager)
+    ,
+    currentDownload(0)
+    ,
+    unpacker(0)
+    ,
     lastErrorCode(0)
 {
     ui->setupUi(this);
@@ -78,14 +85,14 @@ void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
 
 void SelfUpdater::DownloadFinished()
 {
-    if(currentDownload)
+    if (currentDownload)
     {
         FileManager::Instance()->ClearTempDirectory();
 
-        const QString & archiveFilePath = FileManager::Instance()->GetTempDownloadFilepath();
-        const QString & tempDir = FileManager::Instance()->GetTempDirectory();
-        const QString & appDir = FileManager::Instance()->GetLauncherDirectory();
-        const QString & selfUpdateDir = FileManager::Instance()->GetSelfUpdateTempDirectory();
+        const QString& archiveFilePath = FileManager::Instance()->GetTempDownloadFilepath();
+        const QString& tempDir = FileManager::Instance()->GetTempDirectory();
+        const QString& appDir = FileManager::Instance()->GetLauncherDirectory();
+        const QString& selfUpdateDir = FileManager::Instance()->GetSelfUpdateTempDirectory();
 
         QFile archiveFile(archiveFilePath);
         archiveFile.open(QFile::WriteOnly);
@@ -105,7 +112,7 @@ void SelfUpdater::DownloadFinished()
 
         qApp->exit();
     }
-    else if(lastErrorCode != QNetworkReply::OperationCanceledError)
+    else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {
         setResult(QDialog::Rejected);
         ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);

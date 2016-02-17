@@ -37,26 +37,26 @@ using namespace DAVA;
 
 class SceneEditor2;
 
-class ActionEnableNotPassable: public CommandAction
+class ActionEnableNotPassable : public CommandAction
 {
 public:
-	ActionEnableNotPassable(SceneEditor2* forSceneEditor);
-	
+    ActionEnableNotPassable(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
-class ActionDisableNotPassable: public CommandAction
+class ActionDisableNotPassable : public CommandAction
 {
 public:
-	ActionDisableNotPassable(SceneEditor2* forSceneEditor);
-	
+    ActionDisableNotPassable(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEMACTIONS__) */

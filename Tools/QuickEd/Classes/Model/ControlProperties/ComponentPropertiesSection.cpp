@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl, DAVA::UIComponent::eType type, int32 _index, const ComponentPropertiesSection *sourceSection, eCloneType cloneType)
+ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* aControl, DAVA::UIComponent::eType type, int32 _index, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
     : SectionProperty("")
     , control(SafeRetain(aControl))
     , component(nullptr)
@@ -53,13 +53,13 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl
 
     RefreshName();
 
-    const InspInfo *insp = component->GetTypeInfo();
+    const InspInfo* insp = component->GetTypeInfo();
     for (int j = 0; j < insp->MembersCount(); j++)
     {
-        const InspMember *member = insp->Member(j);
-        
-        const IntrospectionProperty *sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
-        IntrospectionProperty *prop = new IntrospectionProperty(component, member, sourceProp, cloneType);
+        const InspMember* member = insp->Member(j);
+
+        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
+        IntrospectionProperty* prop = new IntrospectionProperty(component, member, sourceProp, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }
@@ -72,7 +72,7 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
     prototypeSection = nullptr; // weak
 }
 
-UIComponent *ComponentPropertiesSection::GetComponent() const
+UIComponent* ComponentPropertiesSection::GetComponent() const
 {
     return component;
 }
@@ -82,17 +82,17 @@ DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
     return component->GetType();
 }
 
-void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSection *section)
+void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSection* section)
 {
     if (prototypeSection == nullptr)
     {
         prototypeSection = section;
-        const InspInfo *insp = component->GetTypeInfo();
+        const InspInfo* insp = component->GetTypeInfo();
         for (int j = 0; j < insp->MembersCount(); j++)
         {
-            const InspMember *member = insp->Member(j);
-            ValueProperty *value = FindProperty(member);
-            ValueProperty *prototypeValue = prototypeSection->FindProperty(member);
+            const InspMember* member = insp->Member(j);
+            ValueProperty* value = FindProperty(member);
+            ValueProperty* prototypeValue = prototypeSection->FindProperty(member);
             value->AttachPrototypeProperty(prototypeValue);
         }
     }
@@ -102,14 +102,14 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
     }
 }
 
-void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSection *section)
+void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSection* section)
 {
     if (prototypeSection == section)
     {
         prototypeSection = nullptr; // weak
         for (int i = 0; i < GetCount(); i++)
         {
-            ValueProperty *value = GetProperty(i);
+            ValueProperty* value = GetProperty(i);
             if (value->GetPrototypeProperty())
             {
                 DVASSERT(value->GetPrototypeProperty()->GetParent() == section);
@@ -135,15 +135,15 @@ bool ComponentPropertiesSection::HasChanges() const
 uint32 ComponentPropertiesSection::GetFlags() const
 {
     bool readOnly = IsReadOnly();
-    
+
     uint32 flags = 0;
-    
+
     if (!readOnly && prototypeSection == nullptr)
         flags |= EF_CAN_REMOVE;
-    
+
     if (prototypeSection)
         flags |= EF_INHERITED;
-    
+
     return flags;
 }
 
@@ -157,7 +157,7 @@ void ComponentPropertiesSection::InstallComponent()
 
 void ComponentPropertiesSection::UninstallComponent()
 {
-    UIComponent *installedComponent = control->GetComponent(component->GetType(), index);
+    UIComponent* installedComponent = control->GetComponent(component->GetType(), index);
     if (installedComponent)
     {
         DVASSERT(installedComponent == component);
@@ -179,7 +179,7 @@ void ComponentPropertiesSection::RefreshIndex()
     }
 }
 
-void ComponentPropertiesSection::Accept(PropertyVisitor *visitor)
+void ComponentPropertiesSection::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitComponentSection(this);
 }

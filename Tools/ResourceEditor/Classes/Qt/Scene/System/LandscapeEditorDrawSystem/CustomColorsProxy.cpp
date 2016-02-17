@@ -61,7 +61,7 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
     brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
-void CustomColorsProxy::ResetLoadedState( bool isLoaded )
+void CustomColorsProxy::ResetLoadedState(bool isLoaded)
 {
     textureLoaded = isLoaded;
 }
@@ -83,59 +83,59 @@ Texture* CustomColorsProxy::GetTexture()
 
 void CustomColorsProxy::ResetTargetChanged()
 {
-	spriteChanged = false;
+    spriteChanged = false;
 }
 
 bool CustomColorsProxy::IsTargetChanged()
 {
-	return spriteChanged;
+    return spriteChanged;
 }
 
 Rect CustomColorsProxy::GetChangedRect()
 {
-	if (IsTargetChanged())
-	{
-		return changedRect;
-	}
-	
-	return Rect();
+    if (IsTargetChanged())
+    {
+        return changedRect;
+    }
+
+    return Rect();
 }
 
-void CustomColorsProxy::UpdateRect(const DAVA::Rect &rect)
+void CustomColorsProxy::UpdateRect(const DAVA::Rect& rect)
 {
-	DAVA::Rect bounds(0.f, 0.f, (float32)size, (float32)size);
-	changedRect = rect;
-	bounds.ClampToRect(changedRect);
+    DAVA::Rect bounds(0.f, 0.f, (float32)size, (float32)size);
+    changedRect = rect;
+    bounds.ClampToRect(changedRect);
 
-	spriteChanged = true;
+    spriteChanged = true;
 }
 
 int32 CustomColorsProxy::GetChangesCount() const
 {
-	return changes;
+    return changes;
 }
 
 void CustomColorsProxy::ResetChanges()
 {
-	changes = 0;
+    changes = 0;
 }
 
 void CustomColorsProxy::IncrementChanges()
 {
-	++changes;
+    ++changes;
 }
 
 void CustomColorsProxy::DecrementChanges()
 {
-	--changes;
+    --changes;
 }
 
 void CustomColorsProxy::UpdateSpriteFromConfig()
 {
     if (NULL == customColorsRenderTarget)
-	{
-		return;
-	}
+    {
+        return;
+    }
 
     rhi::Viewport viewport;
     viewport.x = viewport.y = 0;

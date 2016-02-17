@@ -35,7 +35,12 @@ using namespace DAVA;
 
 struct JobManagerTestData
 {
-    JobManagerTestData() : mainThreadVar(0), testThreadVar(0), ownedMainJobsVar(-1) {}
+    JobManagerTestData()
+        : mainThreadVar(0)
+        , testThreadVar(0)
+        , ownedMainJobsVar(-1)
+    {
+    }
     uint32 mainThreadVar;
     uint32 testThreadVar;
 
@@ -45,17 +50,27 @@ struct JobManagerTestData
 class TestJobOwner : public BaseObject
 {
 public:
-    TestJobOwner(int32 * _outData) : resultData(_outData), anyData(0) {}
-    virtual ~TestJobOwner() { (*resultData) = anyData; };
+    TestJobOwner(int32* _outData)
+        : resultData(_outData)
+        , anyData(0)
+    {
+    }
+    virtual ~TestJobOwner()
+    {
+        (*resultData) = anyData;
+    };
 
-    void AnyFunction() { anyData++; };
+    void AnyFunction()
+    {
+        anyData++;
+    };
 
 protected:
-    int32 * resultData;
+    int32* resultData;
     Atomic<int32> anyData;
 };
 
-static void testCalc(uint32 *var)
+static void testCalc(uint32* var)
 {
     (*var)++;
 
@@ -74,69 +89,70 @@ static void testCalc(uint32 *var)
 
 DAVA_TESTCLASS(JobManagerTest)
 {
-    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+  DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
-    DAVA_TEST(TestMainJobs)
+  DAVA_TEST(TestMainJobs)
+  {
+  JobManagerTestData testData;
+
+Thread* thread = Thread::Create(Message(this, &JobManagerTest::ThreadFunc, &testData));
+thread->Start();
+
+while (thread->GetState() != Thread::STATE_ENDED)
+{
+    JobManager::Instance()->Update();
+}
+
+thread->Join();
+
+TEST_VERIFY((testData.mainThreadVar == testData.testThreadVar));
+TEST_VERIFY((testData.ownedMainJobsVar == JOBS_COUNT));
+}
+
+DAVA_TEST(TestWorkerJobs)
+{
+    // TODO:
+    // ...
+}
+
+void ThreadFunc(BaseObject* bo, void* userParam, void* callerParam)
+{
+    JobManagerTestData* data = (JobManagerTestData*)userParam;
+
+    for (uint32 i = 0; i < JOBS_COUNT; i++)
     {
-        JobManagerTestData testData;
+        uint32 count = 50;
+        uint32 n = Random::Instance()->Rand(count);
+        uint32 jobId = 0;
 
-        Thread* thread = Thread::Create(Message(this, &JobManagerTest::ThreadFunc, &testData));
-        thread->Start();
-
-        while (thread->GetState() != Thread::STATE_ENDED)
+        for (uint32 j = 0; j < count; ++j)
         {
-            JobManager::Instance()->Update();
-        }
+            // calculate in main thread
+            Function<void()> fn = std::bind(&testCalc, &data->mainThreadVar);
+            uint32 id = JobManager::Instance()->CreateMainJob(fn);
 
-        thread->Join();
-
-        TEST_VERIFY((testData.mainThreadVar == testData.testThreadVar));
-        TEST_VERIFY((testData.ownedMainJobsVar == JOBS_COUNT));
-    }
-
-    DAVA_TEST(TestWorkerJobs)
-    {
-        // TODO:
-        // ...
-    }
-
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
-    {
-        JobManagerTestData *data = (JobManagerTestData*)userParam;
-
-        for (uint32 i = 0; i < JOBS_COUNT; i++)
-        {
-            uint32 count = 50;
-            uint32 n = Random::Instance()->Rand(count);
-            uint32 jobId = 0;
-
-            for (uint32 j = 0; j < count; ++j)
+            if (j == n)
             {
-                // calculate in main thread
-                Function<void()> fn = std::bind(&testCalc, &data->mainThreadVar);
-                uint32 id = JobManager::Instance()->CreateMainJob(fn);
-
-                if (j == n)
-                {
-                    jobId = id;
-                }
-            }
-
-            JobManager::Instance()->WaitMainJobID(jobId);
-
-            for (uint32 j = 0; j < count; ++j)
-            {
-                // calculate in this thread
-                testCalc(&data->testThreadVar);
+                jobId = id;
             }
         }
 
-        TestJobOwner * jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
-        for (uint32 i = 0; i < JOBS_COUNT; ++i)
+        JobManager::Instance()->WaitMainJobID(jobId);
+
+        for (uint32 j = 0; j < count; ++j)
         {
-            JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(jobOwner), &TestJobOwner::AnyFunction));
+            // calculate in this thread
+            testCalc(&data->testThreadVar);
         }
-        jobOwner->Release();
-        JobManager::Instance()->WaitMainJobs();
     }
-};
+
+    TestJobOwner* jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
+    for (uint32 i = 0; i < JOBS_COUNT; ++i)
+    {
+        JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(jobOwner), &TestJobOwner::AnyFunction));
+    }
+    jobOwner->Release();
+    JobManager::Instance()->WaitMainJobs();
+}
+}
+;

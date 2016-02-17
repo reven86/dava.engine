@@ -40,14 +40,13 @@
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
-#define FRAME_SKIP	5
+#define FRAME_SKIP 5
 
 /**
 	\defgroup controlsystem	UI System
 */
 namespace DAVA
 {
-
 class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
@@ -56,11 +55,15 @@ class UIScreenshoter;
 class ScreenSwitchListener
 {
 public:
-	virtual void OnScreenWillSwitch(UIScreen* newScreen) {}
-    virtual void OnScreenDidSwitch(UIScreen* newScreen) {}
+    virtual void OnScreenWillSwitch(UIScreen* newScreen)
+    {
+    }
+    virtual void OnScreenDidSwitch(UIScreen* newScreen)
+    {
+    }
 };
 
-	/**
+/**
 	 \brief	UIControlSystem it's a core of the all controls work.
 		ControlSystem managed all update, draw, appearence and disappearence of the controls.
 		ControlSystem works with th UIScreenManager to process screen setting and switching.
@@ -79,12 +82,12 @@ class UIControlSystem : public Singleton<UIControlSystem>
     Vector<UIEvent> touchEvents;
 
 protected:
-	~UIControlSystem();
-	/**
+    ~UIControlSystem();
+    /**
 	 \brief Don't call this constructor!
 	 */
-	UIControlSystem();
-			
+    UIControlSystem();
+
 public:
     /* 
        Player + 6 ally bots. All visible on the screen
@@ -100,87 +103,87 @@ public:
     int32 drawCounter;
     int32 inputCounter;
 
-	/**
+    /**
 	 \brief Sets the requested screen as current.
 		Screen will be seted only on the next frame.
 		Previous seted screen will be removed.
 	 \param[in] Screen you want to set as current
 	 \param[in] Transition you want to use for the screen setting.
 	 */
-	void SetScreen(UIScreen *newMainControl, UIScreenTransition * transition = 0);
+    void SetScreen(UIScreen* newMainControl, UIScreenTransition* transition = 0);
 
-	/**
+    /**
 	 \brief Sets the requested screen as current.
 	 \returns currently seted screen
 	 */
-	UIScreen *GetScreen();
+    UIScreen* GetScreen();
 
-	/**
+    /**
 	 \brief Adds new popup to the popup container.
 	 \param[in] Popup control to add.
 	 */
-	void AddPopup(UIPopup *newPopup);
+    void AddPopup(UIPopup* newPopup);
 
-	/**
+    /**
 	 \brief Removes popup from the popup container.
 	 \param[in] Popup control to remove.
 	 */
-	void RemovePopup(UIPopup *newPopup);
+    void RemovePopup(UIPopup* newPopup);
 
-	/**
+    /**
 	 \brief Removes all popups from the popup container.
 	 */
-	void RemoveAllPopups();
-	
-	/**
+    void RemoveAllPopups();
+
+    /**
 	 \brief Returns popups container.
 		User can manage this container manually (change popup sequence, removes or adds popups)
 	 \returns popup container
 	 */
-	UIControl *GetPopupContainer();
-	
-	/**
+    UIControl* GetPopupContainer();
+
+    /**
 	 \brief Disabled all controls inputs.
 		Locking all inputs if input is unlocked or incrementing lock counter.
 	 \returns current lock input counter
 	 */
-	int32 LockInput();
-	
-	/**
+    int32 LockInput();
+
+    /**
 	 \brief Enabling all controls inputs.
 	 Decrementing lock counter if counter is zero unlocking all inputs.
 	 \returns current lock input counter
 	 */
-	int32 UnlockInput();
-	
-	/**
+    int32 UnlockInput();
+
+    /**
 	 \brief Returns lock input counter.
 	 \returns current lock input counter
 	 */
-	int32 GetLockInputCounter() const;
+    int32 GetLockInputCounter() const;
 
-	/**
+    /**
 	 \brief Cancel all inputs for the requested control.
 	 \param[in] control to cancel inputs for.
 	 */
-	void CancelInputs(UIControl *control, bool hierarchical = true);
+    void CancelInputs(UIControl* control, bool hierarchical = true);
 
-	/**
+    /**
 	 \brief Cancel requested input.
 	 \param[in] event to cancel.
 	 */
-	void CancelInput(UIEvent *touch);
+    void CancelInput(UIEvent* touch);
 
-	/**
+    /**
 	 \brief Cancelling all current inputs.
 	 */
-	void CancelAllInputs();
-	
-	/**
+    void CancelAllInputs();
+
+    /**
 	 \brief Sets the current screen to 0 LOL.
 	 */
-	void Reset();
-	/**
+    void Reset();
+    /**
 	 \brief Calls by the system for input processing.
 	 */
     void OnInput(UIEvent* newEvent);
@@ -196,30 +199,29 @@ public:
 	 */
     void Draw();
 
-//	void SetTransitionType(int newTransitionType);
-	
-			
-	/**
+    //	void SetTransitionType(int newTransitionType);
+
+    /**
 	 \brief Returns all currently active inputs.
 	 \returns all inputs active in the system
 	 */
-	const Vector<UIEvent>  &GetAllInputs(); 
-	
-	/**
+    const Vector<UIEvent>& GetAllInputs();
+
+    /**
 	 \brief Sets requested control as a exclusive input locker.
 	 All inputs goes only to the exclusive input locker if input locker is present.
 	 \param[in] control to set the input locker.
 	 \param[in] event id to cause a lock. All other events will be cancelled(excepts the locker == NULL situation).
 	 */
-	void SetExclusiveInputLocker(UIControl *locker, int32 lockEventId);
+    void SetExclusiveInputLocker(UIControl* locker, int32 lockEventId);
 
-	/**
+    /**
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
 	 \returns exclusive input locker
 	 */
-	UIControl *GetExclusiveInputLocker();
+    UIControl* GetExclusiveInputLocker();
 
-	/**
+    /**
 	 \brief Returns base geometric data seted in the system.
 		Base GeometricData is usually has parameters looks a like:
 		baseGeometricData.position = Vector2(0, 0);
@@ -232,68 +234,70 @@ public:
 	 
 	 \returns GeometricData uset for the base draw
 	 */
-	const UIGeometricData &GetBaseGeometricData() const;
-	
-	/**
+    const UIGeometricData& GetBaseGeometricData() const;
+
+    /**
 	 \brief Sets input with the requested ID to the required control.
 		Input removes from the current owner. OnInputCancel() calls for the old control.  
 		New control starts to handle all input activities.
 	 \param[in] Input ID. Can be found in the UIEvent:tid.
 	 \param[in] Control that should handle the input.
 	 */
-	void SwitchInputToControl(int32 eventID, UIControl *targetControl);
+    void SwitchInputToControl(int32 eventID, UIControl* targetControl);
 
-	/**
+    /**
 	 \brief Used internally by Replay class
 	 */
-	void ReplayEvents();
+    void ReplayEvents();
 
-	/**
+    /**
 	 \brief Called by the core when screen size is changed
 	 */
     void ScreenSizeChanged();
 
-
-	/**
+    /**
 	 \brief Called by the control to set himself as the hovered control
 	 */
-    void SetHoveredControl(UIControl *newHovered);
+    void SetHoveredControl(UIControl* newHovered);
 
-	/**
+    /**
 	 \brief Returns control hovered by the mnouse for now
 	 */
-    UIControl *GetHoveredControl(UIControl *newHovered);
+    UIControl* GetHoveredControl(UIControl* newHovered);
 
     /**
 	 \brief Called by the control to set himself as the focused control
 	 */
-    void SetFocusedControl(UIControl *newFocused, bool forceSet);
-    
-	/**
+    void SetFocusedControl(UIControl* newFocused, bool forceSet);
+
+    /**
 	 \brief Returns currently focused control
 	 */
-    UIControl *GetFocusedControl();
-	
-	void AddScreenSwitchListener(ScreenSwitchListener * listener);
-	void RemoveScreenSwitchListener(ScreenSwitchListener * listener);
+    UIControl* GetFocusedControl();
 
-	/**
+    void AddScreenSwitchListener(ScreenSwitchListener* listener);
+    void RemoveScreenSwitchListener(ScreenSwitchListener* listener);
+
+    /**
 	 \brief Disallow screen switch.
 	 Locking screen switch or incrementing lock counter.
 	 \returns current screen switch lock counter
 	 */
-	int32 LockSwitch();
+    int32 LockSwitch();
 
-	/**
+    /**
 	 \brief Allow screen switch.
 	 Decrementing lock counter if counter is zero unlocking screen switch.
 	 \returns current screen switch lock counter
 	 */
-	int32 UnlockSwitch();
-    
+    int32 UnlockSwitch();
+
     bool IsRtl() const;
     void SetRtl(bool rtl);
-    UILayoutSystem *GetLayoutSystem() const;
+
+    bool IsBiDiSupportEnabled() const;
+    void SetBiDiSupportEnabled(bool support);
+    UILayoutSystem* GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
@@ -301,21 +305,21 @@ public:
     void SetUseClearPass(bool use);
 
 private:
-	/**
+    /**
 	 \brief Instantly replace one screen to enother.
 		Call this only on your own risk if you are really know what you need. 
 		May cause to abnormal behavior!
 		Internally used by UITransition.
 	 \param[in] Screen you want to set as current.
 	 */
-	void ReplaceScreen(UIScreen *newMainControl);
+    void ReplaceScreen(UIScreen* newMainControl);
 
-	void ProcessScreenLogic();
+    void ProcessScreenLogic();
 
-    void NotifyListenersWillSwitch( UIScreen* screen );
-    void NotifyListenersDidSwitch( UIScreen* screen );
+    void NotifyListenersWillSwitch(UIScreen* screen);
+    void NotifyListenersDidSwitch(UIScreen* screen);
 
-    UILayoutSystem *layoutSystem;
+    UILayoutSystem* layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
     UIScreenshoter* screenshoter;
 
@@ -330,18 +334,18 @@ private:
     bool removeCurrentScreen;
 
     UIControl* exclusiveInputLocker;
-    UIControl *hovered;
-    
-    UIControl *focusedControl;
+    UIControl* hovered;
 
-	UIControl * popupContainer;
-	Set<UIPopup*> popupsToRemove;
-	
-	int32 lockInputCounter;
-	
-	UIScreenTransition * nextScreenTransition;
-	
-	UIGeometricData baseGeometricData;
+    UIControl* focusedControl;
+
+    UIControl* popupContainer;
+    Set<UIPopup*> popupsToRemove;
+
+    int32 lockInputCounter;
+
+    UIScreenTransition* nextScreenTransition;
+
+    UIGeometricData baseGeometricData;
 
     bool useClearPass = true;
     Color clearColor;

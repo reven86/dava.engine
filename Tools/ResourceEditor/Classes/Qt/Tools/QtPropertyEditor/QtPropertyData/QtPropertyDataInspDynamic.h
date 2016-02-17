@@ -40,21 +40,21 @@
 class QtPropertyDataInspDynamic : public QtPropertyDataDavaVariant
 {
 public:
-    QtPropertyDataInspDynamic(DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata, DAVA::FastName name);
+    QtPropertyDataInspDynamic(const DAVA::FastName& name, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata);
     virtual ~QtPropertyDataInspDynamic();
 
     int InspFlags() const;
 
-	const DAVA::MetaInfo * MetaInfo() const override;
+    const DAVA::MetaInfo * MetaInfo() const override;
     std::unique_ptr<Command2> CreateLastCommand() const override;
 
-	DAVA::InspInfoDynamic* GetDynamicInfo() const 
-	{ 
-		return dynamicInfo; 
-	}
+    DAVA::InspInfoDynamic* GetDynamicInfo() const
+    {
+        return dynamicInfo;
+    }
 
-	DAVA::VariantType GetVariant() const
-	{
+    DAVA::VariantType GetVariant() const
+    {
         return dynamicInfo->MemberValueGet(ddata, name);
     }
 
@@ -64,19 +64,18 @@ public:
     }
 
     DAVA::FastName name;
-	DAVA::InspInfoDynamic *dynamicInfo;
+    DAVA::InspInfoDynamic* dynamicInfo;
     DAVA::InspInfoDynamic::DynamicData ddata;
 
 protected:
-	int inspFlags;
-	InspDynamicModifyCommand* lastCommand;
+    int inspFlags;
+    InspDynamicModifyCommand* lastCommand;
 
-
-	virtual QVariant GetValueAlias() const;
-	virtual void SetValueInternal(const QVariant &value);
+    virtual QVariant GetValueAlias() const;
+    virtual void SetValueInternal(const QVariant& value);
     virtual void SetTempValueInternal(const QVariant& value);
-	virtual bool UpdateValueInternal();
-	virtual bool EditorDoneInternal(QWidget *editor);
+    virtual bool UpdateValueInternal();
+    virtual bool EditorDoneInternal(QWidget* editor);
 };
 
 #endif // __QT_PROPERTY_DATA_INSP_DYNAMIC_H__
