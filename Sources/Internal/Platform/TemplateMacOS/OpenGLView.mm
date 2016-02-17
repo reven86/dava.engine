@@ -426,9 +426,17 @@ extern int mouseMoveSkipCounter;
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
+void OSXShowCursor();
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
-    [NSCursor unhide];
+    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
+    if (captureMode != InputSystem::eMouseCaptureMode::PINING)
+    {
+        // This event is sometimes delivered when mouse pinning is on
+        // So do not show cursor while pinning is on
+        OSXShowCursor();
+    }
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent

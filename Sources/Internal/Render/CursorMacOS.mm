@@ -43,14 +43,32 @@
 
 int mouseMoveSkipCounter = 0;
 
-namespace DAVA
-{
+// This variable is used to control cursor hide/unhide balancing
+// See Apple doc for NSCursor's hide and unhide methods
+// https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Classes/NSCursor_Class/
+static bool cursorVisible = true;
 
-static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
-
-static void MovePointerToWindowCenter()
+void OSXShowCursor()
 {
-    NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
+    if (!cursorVisible)
+    {
+        [NSCursor unhide];
+        cursorVisible = true;
+    }
+}
+
+void OSXHideCursor()
+{
+    if (cursorVisible)
+    {
+        [NSCursor hide];
+        cursorVisible = false;
+    }
+}
+
+void MovePointerToWindowCenter()
+{
+    NSRect windowRect = [[static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView()) window] frame];
     NSRect screenRect = [[NSScreen mainScreen] frame];
 
     // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
@@ -60,7 +78,7 @@ static void MovePointerToWindowCenter()
     CGWarpMouseCursorPosition(CGPointMake(x, y));
 }
 
-bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
+void OSXEnablePinning()
 {
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
@@ -72,19 +90,34 @@ bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
     // and is checked in OpenGLView's process method to skip mouse move events
 
     const int SKIP_N_MOUSE_MOVE_EVENTS = 4;
+
+    mouseMoveSkipCounter = SKIP_N_MOUSE_MOVE_EVENTS;
+    OSXHideCursor();
+    MovePointerToWindowCenter();
+    CGAssociateMouseAndMouseCursorPosition(false);
+}
+
+void OSXDisablePinning()
+{
+    mouseMoveSkipCounter = 0;
+    OSXShowCursor();
+    CGAssociateMouseAndMouseCursorPosition(true);
+}
+
+namespace DAVA
+{
+static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
+
+bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
+{
     switch (mode)
     {
     case InputSystem::eMouseCaptureMode::OFF:
-        mouseMoveSkipCounter = 0;
-        SetSystemCursorVisibility(true);
-        CGAssociateMouseAndMouseCursorPosition(true);
+        OSXDisablePinning();
         systemCursorCaptureMode = mode;
         return true;
     case InputSystem::eMouseCaptureMode::PINING:
-        mouseMoveSkipCounter = SKIP_N_MOUSE_MOVE_EVENTS;
-        SetSystemCursorVisibility(false);
-        MovePointerToWindowCenter();
-        CGAssociateMouseAndMouseCursorPosition(false);
+        OSXEnablePinning();
         systemCursorCaptureMode = mode;
         return true;
     case InputSystem::eMouseCaptureMode::FRAME:
@@ -104,22 +137,14 @@ static bool systemCursorVisibility = false;
 
 bool Cursor::SetSystemCursorVisibility(bool show)
 {
-#ifdef __DAVAENGINE_NPAPI__
-	CGDirectDisplayID displayID = 0; //this parameter is ignored on MacOS.
-	if (show)
-	{
-		CGDisplayShowCursor(displayID);
-	}
-	else
-	{
-		CGDisplayHideCursor(displayID);
-	}
-#else
     if(show)
-        [NSCursor unhide];
+    {
+        OSXShowCursor();
+    }
     else
-        [NSCursor hide];
-#endif
+    {
+        OSXHideCursor();
+    }
     systemCursorVisibility = show;
     return true;
 }
