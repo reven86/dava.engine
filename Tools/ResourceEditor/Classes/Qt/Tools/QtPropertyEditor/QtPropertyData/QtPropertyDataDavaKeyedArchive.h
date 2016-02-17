@@ -47,7 +47,7 @@ public:
     QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* archive);
     ~QtPropertyDataDavaKeyedArcive() override;
 
-    const DAVA::MetaInfo * MetaInfo() const override;
+    const DAVA::MetaInfo* MetaInfo() const override;
     std::unique_ptr<Command2> CreateLastCommand() const override;
 
     void FinishTreeCreation() override;

@@ -927,7 +927,7 @@ void MaterialEditor::OnTemplateChanged(int index)
             if (nullptr != templateMember)
             {
                 QtMainWindow::Instance()->GetCurrentScene()->Exec(std::unique_ptr<Command2>(new InspMemberModifyCommand(templateMember, material,
-                                                                    DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str())))));
+                                                                                                                        DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str())))));
             }
         }
     }
@@ -1483,4 +1483,3 @@ void MaterialEditor::removeInvalidTexture()
     }
     curScene->EndBatch();
 }
-

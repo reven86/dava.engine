@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 
-enum CommandID: DAVA::int32
+enum CommandID : DAVA::int32
 {
     CMDID_UNKNOWN = -1,
     CMDID_BATCH = 0,

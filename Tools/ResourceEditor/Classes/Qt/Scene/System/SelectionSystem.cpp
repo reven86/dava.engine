@@ -100,7 +100,6 @@ void SceneSelectionSystem::UpdateGroupSelectionMode()
     }
 }
 
-
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
     ForceEmitSignals();
@@ -303,7 +302,6 @@ void SceneSelectionSystem::RemoveEntity(Entity* entity)
     ExcludeEntityFromSelection(entity);
     invalidSelectionBoxes = true;
 }
-
 
 void SceneSelectionSystem::Input(DAVA::UIEvent* event)
 {

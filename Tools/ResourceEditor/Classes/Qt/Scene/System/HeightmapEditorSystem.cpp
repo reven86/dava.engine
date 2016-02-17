@@ -356,10 +356,10 @@ void HeightmapEditorSystem::StoreOriginalHeightmap()
 
 void HeightmapEditorSystem::CreateHeightmapUndo()
 {
-	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-	DVASSERT(scene);
+    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+    DVASSERT(scene);
     scene->Exec(std::unique_ptr<Command2>(new ModifyHeightmapCommand(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect())));
-	SafeRelease(originalHeightmap);
+    SafeRelease(originalHeightmap);
 }
 
 void HeightmapEditorSystem::SetBrushSize(int32 brushSize)

@@ -249,18 +249,18 @@ void EditorParticlesSystem::RestartParticleEffects()
 void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
 {
     // Notify that the Particles-related value is changed.
-    SceneEditor2* activeScene = static_cast<SceneEditor2 *>(GetScene());
+    SceneEditor2* activeScene = static_cast<SceneEditor2*>(GetScene());
     const int32 commandID = command->GetId();
     if (commandID == CMDID_BATCH)
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
         if (batch->MatchCommandIDs({ CMDID_PARTICLE_EMITTER_UPDATE, CMDID_PARTICLE_LAYER_UPDATE, CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES,
-            CMDID_PARTILCE_LAYER_UPDATE_TIME, CMDID_PARTICLE_LAYER_UPDATE_ENABLED, CMDID_PARTICLE_FORCE_UPDATE,
-            CMDID_PARTICLE_EFFECT_START_STOP, CMDID_PARTICLE_EFFECT_RESTART, CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
-            CMDID_PARTICLE_EMITTER_SAVE_TO_YAML,
-            CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML, CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML,
-//            CMDID_REMOVE_PARTICLE_EMITTER_LAYER, 
-            CMDID_PARTICLE_EMITTER_LAYER_ADD }))
+                                     CMDID_PARTILCE_LAYER_UPDATE_TIME, CMDID_PARTICLE_LAYER_UPDATE_ENABLED, CMDID_PARTICLE_FORCE_UPDATE,
+                                     CMDID_PARTICLE_EFFECT_START_STOP, CMDID_PARTICLE_EFFECT_RESTART, CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
+                                     CMDID_PARTICLE_EMITTER_SAVE_TO_YAML,
+                                     CMDID_PARTICLE_INNER_EMITTER_LOAD_FROM_YAML, CMDID_PARTICLE_INNER_EMITTER_SAVE_TO_YAML,
+                                     //            CMDID_REMOVE_PARTICLE_EMITTER_LAYER,
+                                     CMDID_PARTICLE_EMITTER_LAYER_ADD }))
         {
             uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
@@ -377,4 +377,3 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
         }
     }
 }
-

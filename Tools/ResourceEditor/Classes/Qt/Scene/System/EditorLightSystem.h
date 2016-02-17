@@ -39,11 +39,11 @@ class EditorLightSystem final : public DAVA::SceneSystem
     friend class EditorScene;
 
 public:
-	EditorLightSystem(DAVA::Scene * scene);
+    EditorLightSystem(DAVA::Scene* scene);
     ~EditorLightSystem() override;
 
-    void AddEntity(DAVA::Entity * entity) override;
-	void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     void SceneDidLoaded() override;
 
@@ -54,7 +54,7 @@ public:
 
 private:
     void UpdateCameraLightState();
-	void UpdateCameraLightPosition();
+    void UpdateCameraLightPosition();
 
     void AddCameraLightOnScene();
     void RemoveCameraLightFromScene();

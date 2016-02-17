@@ -421,8 +421,8 @@ Texture* TilemaskEditorSystem::GetTileTexture()
 
 Color TilemaskEditorSystem::GetTileColor(uint32 index)
 {
-	if (index < GetTileTextureCount())
-	{
+    if (index < GetTileTextureCount())
+    {
         return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
     }
 
@@ -487,8 +487,8 @@ void TilemaskEditorSystem::Draw()
 
 void TilemaskEditorSystem::CreateUndoPoint()
 {
-	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-	DVASSERT(scene);
+    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+    DVASSERT(scene);
     scene->Exec(std::unique_ptr<Command2>(new ModifyTilemaskCommand(drawSystem->GetLandscapeProxy(), GetUpdatedRect())));
 }
 

@@ -1124,7 +1124,7 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const Command2* com
         LoadUndoRedoState(scene);
         UpdateModificationActionsState();
 
-        auto UpdateCameraState = [this, scene](const Entity *entity)
+        auto UpdateCameraState = [this, scene](const Entity* entity)
         {
             if (entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
             {
@@ -1140,7 +1140,7 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const Command2* com
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const Command2 *cmd = batch->GetCommand(i);
+                const Command2* cmd = batch->GetCommand(i);
                 if (UpdateCameraState(cmd->GetEntity()))
                 {
                     break;
@@ -1738,7 +1738,7 @@ void QtMainWindow::OnAddLandscape()
         ScopedPtr<Entity> entityToProcess(new Entity());
         entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
         entityToProcess->SetLocked(true);
-    
+
         ScopedPtr<Landscape> newLandscape(new Landscape());
 
         RenderComponent* component = new RenderComponent();
@@ -1748,9 +1748,9 @@ void QtMainWindow::OnAddLandscape()
         AABBox3 bboxForLandscape;
         float32 defaultLandscapeSize = 600.0f;
         float32 defaultLandscapeHeight = 50.0f;
-    
-        bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize/2.f, -defaultLandscapeSize/2.f, 0.f));
-        bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize/2.f, defaultLandscapeSize/2.f, defaultLandscapeHeight));
+
+        bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize / 2.f, -defaultLandscapeSize / 2.f, 0.f));
+        bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize / 2.f, defaultLandscapeSize / 2.f, defaultLandscapeHeight));
         newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
 
         sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(entityToProcess, sceneEditor)));
@@ -1777,14 +1777,14 @@ void QtMainWindow::OnAddVegetation()
 
 void QtMainWindow::OnLightDialog()
 {
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(sceneEditor)
-	{
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (sceneEditor)
+    {
         ScopedPtr<Entity> sceneNode(new Entity());
         sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
         sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
         sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
-	}
+    }
 }
 
 void QtMainWindow::OnCameraDialog()
@@ -1793,23 +1793,23 @@ void QtMainWindow::OnCameraDialog()
     if (sceneEditor)
     {
         ScopedPtr<Entity> sceneNode(new Entity());
-	    ScopedPtr<Camera> camera(new Camera());
+        ScopedPtr<Camera> camera(new Camera());
 
-	    camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
-	    camera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
-	    camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
-	    camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
-	    camera->SetAspect(1.0f);
+        camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
+        camera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
+        camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
+        camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+        camera->SetAspect(1.0f);
         camera->RebuildCameraFromValues();
 
-	    sceneNode->AddComponent(new CameraComponent(camera));
+        sceneNode->AddComponent(new CameraComponent(camera));
         sceneNode->AddComponent(new WASDControllerComponent());
         sceneNode->AddComponent(new RotationControllerComponent());
-    
-	    sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
+
+        sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
 
         sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
-	}
+    }
 }
 
 void QtMainWindow::OnUserNodeDialog()
@@ -1818,10 +1818,10 @@ void QtMainWindow::OnUserNodeDialog()
     if (sceneEditor)
     {
         ScopedPtr<Entity> sceneNode(new Entity());
-	    sceneNode->AddComponent(new UserComponent());
-	    sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
+        sceneNode->AddComponent(new UserComponent());
+        sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
         sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
-	}
+    }
 }
 
 void QtMainWindow::OnParticleEffectDialog()
@@ -1830,11 +1830,11 @@ void QtMainWindow::OnParticleEffectDialog()
     if (sceneEditor)
     {
         ScopedPtr<Entity> sceneNode(new Entity());
-	    sceneNode->AddComponent(new ParticleEffectComponent());
+        sceneNode->AddComponent(new ParticleEffectComponent());
         sceneNode->AddComponent(new LodComponent());
-	    sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
+        sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
         sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
-	}
+    }
 }
 
 void QtMainWindow::On2DCameraDialog()
@@ -1844,16 +1844,16 @@ void QtMainWindow::On2DCameraDialog()
     {
         ScopedPtr<Entity> sceneNode(new Entity());
         ScopedPtr<Camera> camera(new Camera());
-    
+
         float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
         float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
         float32 aspect = w / h;
-        camera->SetupOrtho(w, aspect, 1, 1000);        
-        camera->SetPosition(Vector3(0,0, -10000));
+        camera->SetupOrtho(w, aspect, 1, 1000);
+        camera->SetPosition(Vector3(0, 0, -10000));
         camera->SetZFar(10000);
-        camera->SetTarget(Vector3(0, 0, 0));  
+        camera->SetTarget(Vector3(0, 0, 0));
         camera->SetUp(Vector3(0, -1, 0));
-        camera->RebuildCameraFromValues();        
+        camera->RebuildCameraFromValues();
 
         sceneNode->AddComponent(new CameraComponent(camera));
         sceneNode->SetName("Camera 2D");
@@ -2843,8 +2843,8 @@ void QtMainWindow::OnEmptyEntity()
     if (!scene)
         return;
 
-	ScopedPtr<Entity> newEntity(new Entity());
-	newEntity->SetName(ResourceEditor::ENTITY_NAME);
+    ScopedPtr<Entity> newEntity(new Entity());
+    newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
     scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(newEntity, scene)));
 }
@@ -2855,8 +2855,8 @@ void QtMainWindow::OnAddWindEntity()
     if (!scene)
         return;
 
-	ScopedPtr<Entity> windEntity(new Entity());
-	windEntity->SetName(ResourceEditor::WIND_NODE_NAME);
+    ScopedPtr<Entity> windEntity(new Entity());
+    windEntity->SetName(ResourceEditor::WIND_NODE_NAME);
 
     Matrix4 ltMx = Matrix4::MakeTranslation(Vector3(0.f, 0.f, 20.f));
     GetTransformComponent(windEntity)->SetLocalTransform(&ltMx);
@@ -2900,91 +2900,91 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 
 bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 {
-	SceneTabWidget *sceneWidget = GetSceneWidget();
-	
-	int lastSceneTab = sceneWidget->GetCurrentTab();
-	int answer = QMessageBox::Cancel;
-	bool needQuestion = true;
+    SceneTabWidget* sceneWidget = GetSceneWidget();
 
-	// tabs range where tilemask should be saved
-	int32 firstTab = forAllTabs ? 0 : sceneWidget->GetCurrentTab();
-	int32 lastTab = forAllTabs ? sceneWidget->GetTabCount() : sceneWidget->GetCurrentTab() + 1;
+    int lastSceneTab = sceneWidget->GetCurrentTab();
+    int answer = QMessageBox::Cancel;
+    bool needQuestion = true;
 
-	for(int i = firstTab; i < lastTab; ++i)
-	{
-		SceneEditor2 *tabEditor = sceneWidget->GetTabScene(i);
-		if(nullptr != tabEditor)
-		{
-			const CommandStack *cmdStack = tabEditor->GetCommandStack();
-			for(DAVA::int32 j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
-			{
-				const Command2 *cmd = cmdStack->GetCommand(j);
+    // tabs range where tilemask should be saved
+    int32 firstTab = forAllTabs ? 0 : sceneWidget->GetCurrentTab();
+    int32 lastTab = forAllTabs ? sceneWidget->GetTabCount() : sceneWidget->GetCurrentTab() + 1;
+
+    for (int i = firstTab; i < lastTab; ++i)
+    {
+        SceneEditor2* tabEditor = sceneWidget->GetTabScene(i);
+        if (nullptr != tabEditor)
+        {
+            const CommandStack* cmdStack = tabEditor->GetCommandStack();
+            for (DAVA::int32 j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
+            {
+                const Command2* cmd = cmdStack->GetCommand(j);
                 if (cmd->MatchCommandID(CMDID_TILEMASK_MODIFY))
                 {
-					// ask user about saving tilemask changes
-					sceneWidget->SetCurrentTab(i);
+                    // ask user about saving tilemask changes
+                    sceneWidget->SetCurrentTab(i);
 
-					if(needQuestion)
-					{
-						QString message = tabEditor->GetScenePath().GetFilename().c_str();
-						message += " has unsaved tilemask changes.\nDo you want to save?";
+                    if (needQuestion)
+                    {
+                        QString message = tabEditor->GetScenePath().GetFilename().c_str();
+                        message += " has unsaved tilemask changes.\nDo you want to save?";
 
-						// if more than one scene to precess
-						if((lastTab - firstTab) > 1)
-						{
-							answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | QMessageBox::YesToAll | QMessageBox::NoToAll, QMessageBox::Cancel);
-						}
-						else
-						{
-							answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
-						}
-					}
+                        // if more than one scene to precess
+                        if ((lastTab - firstTab) > 1)
+                        {
+                            answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel | QMessageBox::YesToAll | QMessageBox::NoToAll, QMessageBox::Cancel);
+                        }
+                        else
+                        {
+                            answer = QMessageBox::warning(this, "", message, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
+                        }
+                    }
 
-					switch(answer)
-					{
-					case QMessageBox::YesAll:
-						needQuestion = false;
-					case QMessageBox::Yes:
-						{
-							// turn off editor
-							tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                    switch (answer)
+                    {
+                    case QMessageBox::YesAll:
+                        needQuestion = false;
+                    case QMessageBox::Yes:
+                    {
+                        // turn off editor
+                        tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
-							// save
-							tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
-						}
-						break;
+                        // save
+                        tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
+                    }
+                    break;
 
-					case QMessageBox::NoAll:
-						needQuestion = false;
-					case QMessageBox::No:
-						{
-							// turn off editor
-							tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-						}
-						break;
+                    case QMessageBox::NoAll:
+                        needQuestion = false;
+                    case QMessageBox::No:
+                    {
+                        // turn off editor
+                        tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                    }
+                    break;
 
-					case QMessageBox::Cancel:
-					default:
-						{
-							// cancel save process
-							return false;
-						}
-						break;
-					}
+                    case QMessageBox::Cancel:
+                    default:
+                    {
+                        // cancel save process
+                        return false;
+                    }
+                    break;
+                    }
 
-					// finish for cycle going through commands
-					break;
-				}
-			}
+                    // finish for cycle going through commands
+                    break;
+                }
+            }
 
-			//reset tilemask
-			tabEditor->landscapeEditorDrawSystem->ResetTileMaskTexture();
+            //reset tilemask
+            tabEditor->landscapeEditorDrawSystem->ResetTileMaskTexture();
 
-			// clear all tilemask commands in commandStack because they will be
-			// invalid after tilemask reloading
-			tabEditor->RemoveCommands(CMDID_TILEMASK_MODIFY);
-		}
-	}
+            // clear all tilemask commands in commandStack because they will be
+            // invalid after tilemask reloading
+            tabEditor->RemoveCommands(CMDID_TILEMASK_MODIFY);
+        }
+    }
 
     sceneWidget->SetCurrentTab(lastSceneTab);
 

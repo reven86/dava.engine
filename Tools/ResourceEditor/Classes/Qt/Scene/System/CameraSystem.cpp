@@ -372,7 +372,7 @@ void SceneCameraSystem::Draw()
 
         if (nullptr != collSystem)
         {
-            for (auto & entity : sceneCameras)
+            for (auto& entity : sceneCameras)
             {
                 DVASSERT(entity != nullptr);
                 DAVA::Camera* camera = GetCamera(entity);
@@ -392,7 +392,7 @@ void SceneCameraSystem::Draw()
     }
 }
 
-void SceneCameraSystem::AddEntity(DAVA::Entity * entity)
+void SceneCameraSystem::AddEntity(DAVA::Entity* entity)
 {
     DVASSERT(GetCamera(entity) != nullptr);
     sceneCameras.push_back(entity);
@@ -405,25 +405,25 @@ void SceneCameraSystem::RemoveEntity(DAVA::Entity* entity)
 
 void SceneCameraSystem::CreateDebugCameras()
 {
-	DAVA::Scene *scene = GetScene();
+    DAVA::Scene* scene = GetScene();
 
-	// add debug cameras
-	// there already can be other cameras in scene
-	if(nullptr != scene)
-	{
-		ScopedPtr<Camera> topCamera(new DAVA::Camera());
-		topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
-		topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
-		topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
-		DAVA::float32 cameraFov = SettingsManager::GetValue(Settings::Scene_CameraFOV).AsFloat();
-		DAVA::float32 cameraNear = SettingsManager::GetValue(Settings::Scene_CameraNear).AsFloat();
-		DAVA::float32 cameraFar = SettingsManager::GetValue(Settings::Scene_CameraFar).AsFloat();
-		topCamera->SetupPerspective(cameraFov, 320.0f / 480.0f, cameraNear, cameraFar);
-		topCamera->SetAspect(1.0f);
+    // add debug cameras
+    // there already can be other cameras in scene
+    if (nullptr != scene)
+    {
+        ScopedPtr<Camera> topCamera(new DAVA::Camera());
+        topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
+        topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
+        topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
+        DAVA::float32 cameraFov = SettingsManager::GetValue(Settings::Scene_CameraFOV).AsFloat();
+        DAVA::float32 cameraNear = SettingsManager::GetValue(Settings::Scene_CameraNear).AsFloat();
+        DAVA::float32 cameraFar = SettingsManager::GetValue(Settings::Scene_CameraFar).AsFloat();
+        topCamera->SetupPerspective(cameraFov, 320.0f / 480.0f, cameraNear, cameraFar);
+        topCamera->SetAspect(1.0f);
 
-        ScopedPtr<Entity>topCameraEntity(new DAVA::Entity());
-		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
-		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
+        ScopedPtr<Entity> topCameraEntity(new DAVA::Entity());
+        topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
+        topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
         if (scene->GetChildrenCount() > 0)
@@ -442,7 +442,7 @@ void SceneCameraSystem::CreateDebugCameras()
         }
 
         scene->AddCamera(topCamera);
-	}
+    }
 }
 
 void SceneCameraSystem::RecalcCameraAspect()
@@ -529,7 +529,7 @@ DAVA::float32 SceneCameraSystem::GetDistanceToCamera() const
 
 DAVA::Entity* SceneCameraSystem::GetEntityFromCamera(DAVA::Camera* c) const
 {
-    for (auto & entity : sceneCameras)
+    for (auto& entity : sceneCameras)
     {
         if (GetCamera(entity) == c)
         {
@@ -639,4 +639,3 @@ void SceneCameraSystem::EnableSystem()
 {
     CreateDebugCameras();
 }
-

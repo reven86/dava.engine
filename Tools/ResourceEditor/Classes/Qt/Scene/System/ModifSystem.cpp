@@ -1043,7 +1043,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
                 transform.Inverse();
                 for (uint32 i = 0; i < count; ++i)
                 {
-                    DAVA::Entity *childEntity = entity->GetChild(i);
+                    DAVA::Entity* childEntity = entity->GetChild(i);
                     sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform)));
                 }
 

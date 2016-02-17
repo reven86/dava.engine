@@ -174,7 +174,7 @@ public:
 
     void Activate() override;
     void Deactivate() override;
-    
+
     void EnableEditorSystems();
 
     uint32 GetFramesCount() const;
@@ -195,7 +195,7 @@ protected:
     bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack *commandStack = nullptr;
+    CommandStack* commandStack = nullptr;
     RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
@@ -220,9 +220,10 @@ private:
     class EditorCommandNotify : public CommandNotify
     {
     public:
-        EditorCommandNotify(SceneEditor2 *_editor);
-        void Notify(const Command2 *command, bool redo) override;
+        EditorCommandNotify(SceneEditor2* _editor);
+        void Notify(const Command2* command, bool redo) override;
         void CleanChanged(bool clean) override;
+
     private:
         SceneEditor2* editor = nullptr;
     };

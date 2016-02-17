@@ -108,7 +108,7 @@ public:
     void Input(DAVA::UIEvent* event) override;
 
     void AddEntity(DAVA::Entity* entity) override;
-    void RemoveEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
     void Activate() override;
     void Deactivate() override;
@@ -171,7 +171,6 @@ private:
     bool selectionHasChanges = false;
     bool selecting = false;
     bool systemIsEnabled = false;
-
 };
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()

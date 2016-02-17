@@ -55,7 +55,6 @@ void CommandBatch::Undo()
     }
 }
 
-
 DAVA::Entity* CommandBatch::GetEntity() const
 {
     return nullptr;
@@ -65,7 +64,7 @@ void CommandBatch::AddAndExec(std::unique_ptr<Command2>&& command)
 {
     DVASSERT(command);
 
-    Command2 *actualCommand = command.get();
+    Command2* actualCommand = command.get();
     commandList.emplace_back(std::move(command));
     commandIDs.insert(actualCommand->GetId());
     actualCommand->Redo();

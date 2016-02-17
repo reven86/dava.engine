@@ -209,12 +209,12 @@ void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 
 void BaseAddEntityDialog::OnItemEdited(const QModelIndex& index)
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    
-    QtPropertyData *data = propEditor->GetProperty(index);
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+
+    QtPropertyData* data = propEditor->GetProperty(index);
     std::unique_ptr<Command2> command = data->CreateLastCommand();
-	if(command && nullptr != curScene)
-	{
+    if (command && nullptr != curScene)
+    {
         curScene->Exec(std::move(command));
     }
 }

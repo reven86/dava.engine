@@ -43,8 +43,8 @@ public:
     ~Command2() override;
 
     DAVA::int32 GetId() const;
-    const DAVA::String & GetText() const;
-//    void SetText(const DAVA::String& text);
+    const DAVA::String& GetText() const;
+    //    void SetText(const DAVA::String& text);
 
     virtual void Undo() = 0;
     virtual void Redo() = 0;
@@ -62,13 +62,12 @@ protected:
     DAVA::int32 id;
 };
 
-
 inline DAVA::int32 Command2::GetId() const
 {
     return id;
 }
 
-inline const DAVA::String & Command2::GetText() const
+inline const DAVA::String& Command2::GetText() const
 {
     return text;
 }

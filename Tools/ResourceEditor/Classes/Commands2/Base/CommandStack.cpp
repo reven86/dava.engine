@@ -60,15 +60,15 @@ void CommandStack::Clear()
 void CommandStack::RemoveCommands(DAVA::int32 commandId)
 {
     DAVA::int32 index = 0;
-    for (auto it = commandList.begin(), endIt = commandList.end(); it != endIt; )
+    for (auto it = commandList.begin(), endIt = commandList.end(); it != endIt;)
     {
-        Command2 *command = (*it).get();
+        Command2* command = (*it).get();
         DVASSERT(command != nullptr);
 
         bool shouldRemoveCommand = (command->GetId() == commandId);
         if (!shouldRemoveCommand && (command->GetId() == CMDID_BATCH))
         {
-            CommandBatch* batch = static_cast<CommandBatch *> (command);
+            CommandBatch* batch = static_cast<CommandBatch*>(command);
             batch->RemoveCommands(commandId);
             shouldRemoveCommand = batch->Empty();
         }
@@ -141,7 +141,7 @@ void CommandStack::Exec(std::unique_ptr<Command2>&& command)
         EmitNotify(command.get(), true);
     }
     else
-    {   //command
+    { //command
         if (curBatchCommand)
         {
             curBatchCommand->AddAndExec(std::move(command));
@@ -262,7 +262,7 @@ void CommandStack::ExecInternal(std::unique_ptr<Command2>&& command, bool runCom
 {
     ClearRedoCommands();
 
-    Command2 *actualCommand = command.get();
+    Command2* actualCommand = command.get();
 
     commandList.emplace_back(std::move(command));
     nextCommandIndex++;
@@ -311,7 +311,6 @@ void CommandStack::ClearLimitedCommands()
 
     CleanCheck();
 }
-
 
 void CommandStack::CleanCheck()
 {

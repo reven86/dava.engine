@@ -81,4 +81,3 @@ void SceneGridSystem::Draw()
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), grid0Color);
     }
 }
-

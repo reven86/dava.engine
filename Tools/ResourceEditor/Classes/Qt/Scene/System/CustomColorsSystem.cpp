@@ -345,7 +345,7 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
             scene->BeginBatch("Load custom colors texture", 2);
             StoreSaveFileName(filePath);
-            scene->Exec(std::unique_ptr<Command2>(new ModifyCustomColorsCommand(originalImage, image,drawSystem->GetCustomColorsProxy(), GetUpdatedRect())));
+            scene->Exec(std::unique_ptr<Command2>(new ModifyCustomColorsCommand(originalImage, image, drawSystem->GetCustomColorsProxy(), GetUpdatedRect())));
             scene->EndBatch();
 
             SafeRelease(originalImage);
@@ -406,28 +406,28 @@ void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)
     std::unique_ptr<Command2> command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
     if (command)
     {
-        SceneEditor2 *sc = static_cast<SceneEditor2 *>(GetScene());
-		sc->Exec(std::move(command));
+        SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+        sc->Exec(std::move(command));
     }
 }
 
 std::unique_ptr<Command2> CustomColorsSystem::CreateSaveFileNameCommand(const String& filePath)
 {
-	KeyedArchive* customProps = drawSystem->GetLandscapeCustomProperties();
-	bool keyExists = customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
+    KeyedArchive* customProps = drawSystem->GetLandscapeCustomProperties();
+    bool keyExists = customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 
-	if (keyExists)
-	{
-		String curPath = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
-		if (curPath != filePath)
-		{
+    if (keyExists)
+    {
+        String curPath = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
+        if (curPath != filePath)
+        {
             return std::unique_ptr<Command2>(new KeyeadArchiveSetValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, VariantType(filePath)));
-		}
-	}
-	else
-	{
+        }
+    }
+    else
+    {
         return std::unique_ptr<Command2>(new KeyedArchiveAddValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, VariantType(filePath)));
-	}
+    }
 
     return std::unique_ptr<Command2>();
 }

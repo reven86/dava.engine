@@ -41,7 +41,7 @@ public:
     QtPropertyDataInspMember(const DAVA::FastName& name, void* _object, const DAVA::InspMember* _member);
     virtual ~QtPropertyDataInspMember();
 
-    const DAVA::MetaInfo * MetaInfo() const override;
+    const DAVA::MetaInfo* MetaInfo() const override;
     std::unique_ptr<Command2> CreateLastCommand() const override;
 
     void* object;

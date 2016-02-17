@@ -374,7 +374,6 @@ void HoodSystem::Draw()
     }
 }
 
-
 void HoodSystem::SetModifAxis(ST_Axis axis)
 {
     if (ST_AXIS_NONE != axis)

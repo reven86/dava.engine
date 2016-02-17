@@ -57,33 +57,33 @@ public:
         }
     }
 
-    static void OnDeleteLOD(EditorMaterialSystem *system, const DeleteLODCommand *command, bool redo)
+    static void OnDeleteLOD(EditorMaterialSystem* system, const DeleteLODCommand* command, bool redo)
     {
         const Vector<DeleteRenderBatchCommand*> batchCommands = command->GetRenderBatchCommands();
-        for (auto & cmd : batchCommands)
+        for (auto& cmd : batchCommands)
         {
             ProcessOperation(system, cmd->GetRenderBatch(), command->GetEntity(), redo);
         }
     }
 
-    static void OnCreatePlaneLOD(EditorMaterialSystem *system, const CreatePlaneLODCommand *command, bool redo)
+    static void OnCreatePlaneLOD(EditorMaterialSystem* system, const CreatePlaneLODCommand* command, bool redo)
     {
         ProcessOperation(system, command->GetRenderBatch(), command->GetEntity(), !redo);
     }
 
-    static void OnDeleteRenderBatch(EditorMaterialSystem *system, const DeleteRenderBatchCommand *command, bool redo)
+    static void OnDeleteRenderBatch(EditorMaterialSystem* system, const DeleteRenderBatchCommand* command, bool redo)
     {
         ProcessOperation(system, command->GetRenderBatch(), command->GetEntity(), redo);
     }
 
-    static void OnConvertToShadow(EditorMaterialSystem *system, const ConvertToShadowCommand *command, bool redo)
+    static void OnConvertToShadow(EditorMaterialSystem* system, const ConvertToShadowCommand* command, bool redo)
     {
         ProcessOperation(system, command->oldBatch, command->GetEntity(), redo);
     }
 
-    static void OnCopyLastLOD(EditorMaterialSystem *system, const CopyLastLODToLod0Command *command, bool redo)
+    static void OnCopyLastLOD(EditorMaterialSystem* system, const CopyLastLODToLod0Command* command, bool redo)
     {
-        for (auto & batch : command->newBatches)
+        for (auto& batch : command->newBatches)
         {
             ProcessOperation(system, batch, command->GetEntity(), !redo);
         }
@@ -317,7 +317,7 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
     const int32 commandID = command->GetId();
     if (commandID == CMDID_BATCH)
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
         if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD }))
         {
             const uint32 count = batch->Size();
@@ -333,32 +333,32 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
         {
         case CMDID_LOD_DELETE:
         {
-            const DeleteLODCommand* lodCommand = static_cast<const DeleteLODCommand *>(command);
+            const DeleteLODCommand* lodCommand = static_cast<const DeleteLODCommand*>(command);
             EditorMaterialSystemCommands::OnDeleteLOD(this, lodCommand, redo);
             break;
         }
 
         case CMDID_LOD_CREATE_PLANE:
         {
-            const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand *>(command);
+            const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand*>(command);
             EditorMaterialSystemCommands::OnCreatePlaneLOD(this, lodCommand, redo);
             break;
         }
         case CMDID_DELETE_RENDER_BATCH:
         {
-            const DeleteRenderBatchCommand* lodCommand = static_cast<const DeleteRenderBatchCommand *>(command);
+            const DeleteRenderBatchCommand* lodCommand = static_cast<const DeleteRenderBatchCommand*>(command);
             EditorMaterialSystemCommands::OnDeleteRenderBatch(this, lodCommand, redo);
             break;
         }
         case CMDID_CONVERT_TO_SHADOW:
         {
-            const ConvertToShadowCommand* lodCommand = static_cast<const ConvertToShadowCommand *>(command);
+            const ConvertToShadowCommand* lodCommand = static_cast<const ConvertToShadowCommand*>(command);
             EditorMaterialSystemCommands::OnConvertToShadow(this, lodCommand, redo);
             break;
         }
         case CMDID_LOD_COPY_LAST_LOD:
         {
-            const CopyLastLODToLod0Command* lodCommand = static_cast<const CopyLastLODToLod0Command *>(command);
+            const CopyLastLODToLod0Command* lodCommand = static_cast<const CopyLastLODToLod0Command*>(command);
             EditorMaterialSystemCommands::OnCopyLastLOD(this, lodCommand, redo);
             break;
         }

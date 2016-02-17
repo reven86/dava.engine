@@ -35,7 +35,7 @@
 #include "Commands2/Base/Command2.h"
 #include "Commands2/Base/CommandNotify.h"
 
-class CommandBatch final: public Command2
+class CommandBatch final : public Command2
 {
 public:
     CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
@@ -59,10 +59,9 @@ public:
     bool IsMultiCommandBatch() const;
 
 protected:
-
     using CommandsContainer = DAVA::Vector<std::unique_ptr<Command2>>;
     CommandsContainer commandList;
-   
+
     DAVA::UnorderedSet<DAVA::int32> commandIDs;
 };
 

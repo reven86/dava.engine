@@ -401,7 +401,7 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
             }
         }
 
-            curScene->EndBatch();
+        curScene->EndBatch();
     }
 }
 
@@ -473,7 +473,7 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
                 curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
             }
         }
-            curScene->EndBatch();
+        curScene->EndBatch();
     }
 }
 

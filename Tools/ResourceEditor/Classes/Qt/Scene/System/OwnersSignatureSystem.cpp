@@ -36,7 +36,7 @@ namespace OwnersSignatureSystemInternal
 {
 static const DAVA::Array<DAVA::int32, 2> validIDs =
 {
-    { CMDID_ENTITY_ADD, CMDID_ENTITY_CHANGE_PARENT }
+  { CMDID_ENTITY_ADD, CMDID_ENTITY_CHANGE_PARENT }
 };
 
 bool IsCommandIdValid(DAVA::int32 _id)
@@ -58,8 +58,8 @@ DAVA::String GetCurrentTime()
     tm* utcTime = localtime(&now);
 
     DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
-        utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
-        utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
+                                     utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
+                                     utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
 
     return timeString;
 }
@@ -102,4 +102,3 @@ void OwnersSignatureSystem::ImmediateEvent(DAVA::Component* component, DAVA::uin
         break;
     }
 }
-

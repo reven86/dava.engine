@@ -134,7 +134,7 @@ void SceneSystem::Process(float32 timeElapsed)
 
 void SceneSystem::SetLocked(bool locked_)
 {
-	locked = locked_;
+    locked = locked_;
 }
 
 bool SceneSystem::IsLocked() const

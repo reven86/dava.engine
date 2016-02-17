@@ -82,7 +82,7 @@ public:
     bool IsEditorCameraSnappedToLandscape() const;
 
     void MoveToSelection();
-    void MoveToStep( int ofs );
+    void MoveToStep(int ofs);
 
     void EnableSystem();
 
@@ -108,7 +108,7 @@ protected:
     DAVA::Vector3 newPos;
     DAVA::Vector3 newTar;
 
-    DAVA::Vector<DAVA::Entity *> sceneCameras;
+    DAVA::Vector<DAVA::Entity*> sceneCameras;
 
     DAVA::float32 distanceToCamera;
 

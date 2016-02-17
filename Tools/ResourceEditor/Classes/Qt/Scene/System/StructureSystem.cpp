@@ -426,26 +426,26 @@ void StructureSystem::RemoveDelegate(StructureSystemDelegate* delegate)
     delegates.remove(delegate);
 }
 
-void StructureSystem::AddEntity(DAVA::Entity * entity)
+void StructureSystem::AddEntity(DAVA::Entity* entity)
 {
     EmitChanged();
 }
 
-void StructureSystem::RemoveEntity(DAVA::Entity * entity)
+void StructureSystem::RemoveEntity(DAVA::Entity* entity)
 {
     EmitChanged();
 }
 
 void StructureSystem::Process(DAVA::float32 timeElapsed)
 {
-    if(structureChanged)
+    if (structureChanged)
     {
-        SceneSignals::Instance()->EmitStructureChanged((SceneEditor2 *) GetScene(), nullptr);
+        SceneSignals::Instance()->EmitStructureChanged((SceneEditor2*)GetScene(), nullptr);
         structureChanged = false;
     }
 }
 
-void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
+void StructureSystem::ProcessCommand(const Command2* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_PARTICLE_LAYER_REMOVE, CMDID_PARTICLE_LAYER_MOVE, CMDID_PARTICLE_FORCE_REMOVE, CMDID_PARTICLE_FORCE_MOVE }))
     {

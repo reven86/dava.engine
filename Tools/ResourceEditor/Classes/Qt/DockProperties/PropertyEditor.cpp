@@ -734,18 +734,18 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const EntityGrou
 void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
     static const Vector<int32> idsForUpdate =
-    {{
-        CMDID_COMPONENT_ADD,
-        CMDID_COMPONENT_REMOVE,
-        CMDID_CONVERT_TO_SHADOW,
-        CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
-        CMDID_SOUND_ADD_EVENT,
-        CMDID_SOUND_REMOVE_EVENT,
-        CMDID_DELETE_RENDER_BATCH,
-        CMDID_CLONE_LAST_BATCH,
-        CMDID_EXPAND_PATH,
-        CMDID_COLLAPSE_PATH,
-    }};
+    { {
+    CMDID_COMPONENT_ADD,
+    CMDID_COMPONENT_REMOVE,
+    CMDID_CONVERT_TO_SHADOW,
+    CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
+    CMDID_SOUND_ADD_EVENT,
+    CMDID_SOUND_REMOVE_EVENT,
+    CMDID_DELETE_RENDER_BATCH,
+    CMDID_CLONE_LAST_BATCH,
+    CMDID_EXPAND_PATH,
+    CMDID_COLLAPSE_PATH,
+    } };
 
     auto ShouldResetPanel = [this](const Command2* cmd) {
         if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetId()) > 0)
@@ -800,11 +800,11 @@ void PropertyEditor::OnItemEdited(const QModelIndex& index) // TODO: fix undo/re
 {
     QtPropertyEditor::OnItemEdited(index);
 
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (curScene == nullptr)
         return;
 
-    QtPropertyData *propData = GetProperty(index);
+    QtPropertyData* propData = GetProperty(index);
     if (nullptr != propData)
     {
         const int nMerged = propData->GetMergedItemCount();
@@ -964,14 +964,14 @@ void PropertyEditor::ConvertToShadow()
 
 void PropertyEditor::RebuildTangentSpace()
 {
-    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
-    if(nullptr != btn)
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
+    if (nullptr != btn)
     {
-        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-        if(nullptr != data && nullptr != curScene)
-        {            
-            RenderBatch *batch = (RenderBatch *)data->object;
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+        if (nullptr != data && nullptr != curScene)
+        {
+            RenderBatch* batch = (RenderBatch*)data->object;
             curScene->Exec(std::unique_ptr<Command2>(new RebuildTangentSpaceCommand(batch, true)));
         }
     }
@@ -1332,11 +1332,11 @@ QtPropertyToolButton* PropertyEditor::CreateButton(QtPropertyData* data, const Q
 
 void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 {
-    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
-    if(nullptr != btn)
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
+    if (nullptr != btn)
     {
-        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        if(nullptr != data)
+        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+        if (nullptr != data)
         {
             DAVA::RenderObject* renderObject = (DAVA::RenderObject*)data->object;
 
@@ -1351,14 +1351,14 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     int32 size = curNodes.size();
-    if(size > 0)
+    if (size > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", type), size);
         for (int32 i = 0; i < size; ++i)
         {
-            Component *c = Component::CreateByType(type);
+            Component* c = Component::CreateByType(type);
             curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
         }
         curScene->EndBatch();
@@ -1368,12 +1368,12 @@ void PropertyEditor::OnAddComponent(Component::eType type)
 void PropertyEditor::OnAddComponent(DAVA::Component* component)
 {
     DVASSERT(component);
-    if(!component)
+    if (!component)
         return;
-    
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     int32 size = curNodes.size();
-    if(size > 0)
+    if (size > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", component->GetType()), size);
         for (int32 i = 0; i < size; ++i)
@@ -1382,7 +1382,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
 
             if (node->GetComponentCount(component->GetType()) == 0)
             {
-                Component *c = component->Clone(node);
+                Component* c = component->Clone(node);
                 curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
             }
         }
@@ -1422,7 +1422,7 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     int32 count = curNodes.size();
     if (count > 0)
     {

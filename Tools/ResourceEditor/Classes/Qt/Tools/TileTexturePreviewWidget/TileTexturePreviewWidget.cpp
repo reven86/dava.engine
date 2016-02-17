@@ -170,8 +170,8 @@ uint32 TileTexturePreviewWidget::GetSelectedTexture()
 
 void TileTexturePreviewWidget::SetSelectedTexture(uint32 number)
 {
-	if (number < (uint32)images.size())
-	{
+    if (number < (uint32)images.size())
+    {
         selectedTexture = number;
         UpdateSelection();
 
@@ -181,9 +181,9 @@ void TileTexturePreviewWidget::SetSelectedTexture(uint32 number)
 
 void TileTexturePreviewWidget::UpdateImage(uint32 number)
 {
-	DVASSERT(number < (uint32)images.size());
+    DVASSERT(number < (uint32)images.size());
 
-	QTreeWidgetItem* item = topLevelItem(number);
+    QTreeWidgetItem* item = topLevelItem(number);
 
     Image* image;
     if (mode == MODE_WITH_COLORS)
@@ -210,12 +210,12 @@ void TileTexturePreviewWidget::UpdateImage(uint32 number)
 
 void TileTexturePreviewWidget::UpdateColor(uint32 number)
 {
-	DVASSERT(number < (uint32)images.size());
-    
+    DVASSERT(number < (uint32)images.size());
+
     bool blocked = blockSignals(true);
 
     QTreeWidgetItem* item = topLevelItem(number);
-	QColor color = ColorToQColor(colors[number]);
+    QColor color = ColorToQColor(colors[number]);
     color.setAlpha(255);
 
     QPalette palette = labels[number]->palette();

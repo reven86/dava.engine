@@ -42,7 +42,6 @@
 
 #include "Debug/DVAssert.h"
 
-
 WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* _selectionSystem, SceneCollisionSystem* _collisionSystem)
     : DAVA::SceneSystem(scene)
     , isEnabled(false)
@@ -343,9 +342,9 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
 
                     sceneEditor->BeginBatch("Add Waypoint");
 
-                    Entity *newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
+                    Entity* newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
                     sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(newWaypoint, currentWayParent)));
-                    
+
                     if (!validPrevPoints.IsEmpty())
                     {
                         AddEdges(validPrevPoints, newWaypoint);

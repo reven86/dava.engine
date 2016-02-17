@@ -193,7 +193,7 @@ SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
     return ret;
 }
 
-SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath & path, bool saveForGame /*= false*/)
+SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
     ExtractEditorEntities();
 
@@ -324,7 +324,7 @@ void SceneEditor2::Redo()
     commandStack->Redo();
 }
 
-void SceneEditor2::BeginBatch(const DAVA::String &text, DAVA::uint32 commandsCount /*= 1*/)
+void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)
 {
     commandStack->BeginBatch(text, commandsCount);
 }
@@ -406,9 +406,9 @@ void SceneEditor2::Draw()
 
         if (collisionSystem)
             collisionSystem->Draw();
-	}
- 
-	tilemaskEditorSystem->Draw();
+    }
+
+    tilemaskEditorSystem->Draw();
 
     //VI: restore 3d camera state
     Setup3DDrawing();
@@ -444,14 +444,13 @@ void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 
     particlesSystem->ProcessCommand(command, redo);
 
-
     materialSystem->ProcessCommand(command, redo);
 
     if (landscapeEditorDrawSystem)
     {
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
     }
-    
+
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
 }
@@ -476,18 +475,18 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
 {
     if (nullptr != editor)
-	{
-		editor->EditorCommandProcess(command, redo);
-		SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
-	}
+    {
+        editor->EditorCommandProcess(command, redo);
+        SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
+    }
 }
 
 void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 {
-	if(nullptr != editor)
-	{
-		SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
-	}
+    if (nullptr != editor)
+    {
+        SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
+    }
 }
 
 const RenderStats& SceneEditor2::GetRenderStats() const
@@ -707,4 +706,3 @@ void SceneEditor2::ResetFramesCount()
 {
     framesCount = 0;
 }
-

@@ -121,10 +121,10 @@ bool QtPropertyDataInspMember::EditorDoneInternal(QWidget* editor)
 
 std::unique_ptr<Command2> QtPropertyDataInspMember::CreateLastCommand() const
 {
-	if(nullptr != lastCommand)
-	{
+    if (nullptr != lastCommand)
+    {
         return std::unique_ptr<Command2>(new InspMemberModifyCommand(*lastCommand));
-	}
+    }
 
     return std::unique_ptr<Command2>();
 }

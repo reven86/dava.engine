@@ -378,7 +378,7 @@ bool EditorLODSystem::CopyLastLodToLod0()
 
     auto lods = GetCurrentLODs();
     sceneEditor2->BeginBatch("LOD Added", lods.size());
-    for (auto &lod : lods)
+    for (auto& lod : lods)
     {
         sceneEditor2->Exec(std::unique_ptr<Command2>(new CopyLastLODToLod0Command(lod)));
     }
@@ -445,7 +445,7 @@ bool EditorLODSystem::DeleteFirstLOD()
 
     auto lods = GetCurrentLODs();
     sceneEditor2->BeginBatch("Delete First LOD", lods.size());
-    for (auto &lod : lods)
+    for (auto& lod : lods)
     {
         if (GetLodLayersCount(lod) > 1)
         {
@@ -465,7 +465,7 @@ bool EditorLODSystem::DeleteLastLOD()
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
     auto lods = GetCurrentLODs();
     sceneEditor2->BeginBatch("Delete Last LOD", lods.size());
-    for (auto &lod : lods)
+    for (auto& lod : lods)
     {
         if (GetLodLayersCount(lod) > 1)
         {
@@ -488,7 +488,7 @@ void EditorLODSystem::SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 dista
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
     auto lods = GetCurrentLODs();
     sceneEditor2->BeginBatch("LOD Distance Changed", lods.size());
-    for (auto &lod : lods)
+    for (auto& lod : lods)
     {
         sceneEditor2->Exec(std::unique_ptr<Command2>(new ChangeLODDistanceCommand(lod, layerNum, distance)));
     }
