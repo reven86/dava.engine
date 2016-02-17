@@ -304,7 +304,7 @@ public:
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool use);
 
-    void ObserveDoubleClick(bool observe, float32 time = 0.f, float32 radius = 0.f);
+    void SetTapCountSettings(float32 time = 0.f, float32 radius = 0.f);
 
 private:
     /**
@@ -352,7 +352,6 @@ private:
     bool useClearPass = true;
     Color clearColor;
 
-    bool observeDoubleClick = false;
     float32 doubleClickTime = 0.f;
     float32 doubleClickRadiusSquared = 0.f;
     const float32 defaultDoubleClickTime = 0.5f; // seconds

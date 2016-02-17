@@ -51,26 +51,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
 	private volatile boolean mEventQueueReady = true;
 
-	public int lastDoubleActionIdx = -1;
-	
-	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNISurfaceView surfaceView;
-		
-		DoubleTapListener(JNISurfaceView view) {
-			this.surfaceView = view;
-		}
-		
-		@Override
-		public boolean onDoubleTap(MotionEvent e) {
-			lastDoubleActionIdx = e.getActionIndex();
-			
-			surfaceView.queueEvent(new InputRunnable(e, 2));
-			return true;
-		}
-	}
-	
-	GestureDetector doubleTapDetector = null;
-
 	public JNISurfaceView(Context context) 
 	{
 		super(context);
@@ -87,8 +67,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	{
 		getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		
-		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
-
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
@@ -196,7 +174,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			int tid;
 			float x;
 			float y;
-			int tapCount;
 			double time;
 
 			InputEvent(int tid, float x, float y, double time)
@@ -204,16 +181,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				this.tid = tid;
 				this.x = x;
 				this.y = y;
-				this.tapCount = 1;
-				this.time = time;
-			}
-			
-			InputEvent(int tid, float x, float y, int tapCount, double time)
-			{
-				this.tid = tid;
-				this.x = x;
-				this.y = y;
-				this.tapCount = tapCount;
 				this.time = time;
 			}
 		}
@@ -229,7 +196,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			return pointerId + 1;
 		}
 
-		public InputRunnable(final android.view.MotionEvent event, final int tapCount) {
+		public InputRunnable(final android.view.MotionEvent event) {
 			allEvents = new ArrayList<InputEvent>();
 
 			action = event.getActionMasked();
@@ -246,7 +213,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 					for (int i = 0; i < pointerCount; i++) {
 						for (int a = 0; a < gamepadAxises.length; ++a) {
 							InputEvent ev = new InputEvent(gamepadAxises[a],
-									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount,
+									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0,
 									event.getHistoricalEventTime(historyStep));
 
 							allEvents.add(ev);
@@ -257,7 +224,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				for (int i = 0; i < pointerCount; i++) {
 					for (int a = 0; a < gamepadAxises.length; ++a) {
 						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0,
-								tapCount, event.getEventTime());
+								event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -273,13 +240,13 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 						pointerId = event.getPointerId(i);
 						if (isMultitouchEnabled) {
 							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i),
-									tapCount, event.getEventTime());
+									event.getEventTime());
 							allEvents.add(ev);
 						}
 					}
 				} else {
 					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIndex),
-							event.getY(actionIndex), tapCount, event.getEventTime());
+							event.getY(actionIndex), event.getEventTime());
 					allEvents.add(ev);
 				}
 			} else
@@ -381,23 +348,14 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public boolean onTouchEvent(MotionEvent event) 
     {
-        boolean isDoubleTap = doubleTapDetector.onTouchEvent(event);
-        if (lastDoubleActionIdx >= 0 &&
-        	lastDoubleActionIdx == event.getActionIndex() &&
-        	event.getAction() == MotionEvent.ACTION_UP) {
-        	lastDoubleActionIdx = -1;
-        	queueEvent(new InputRunnable(event, 2));
-        	isDoubleTap = true;
-        }
-        if (!isDoubleTap)
-            queueEvent(new InputRunnable(event, 1));
+        queueEvent(new InputRunnable(event));
         return true;
     }
     
     @Override
     public boolean onGenericMotionEvent(MotionEvent event)
     {
-    	queueEvent(new InputRunnable(event, 1));
+    	queueEvent(new InputRunnable(event));
     	return true;
     }
     

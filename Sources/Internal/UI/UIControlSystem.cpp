@@ -92,12 +92,15 @@ UIControlSystem::UIControlSystem()
     styleSheetSystem = new UIStyleSheetSystem();
     screenshoter = new UIScreenshoter();
     // calculate default radius
-    defaultDoubleClickRadiusSquared = 4.f; // default on desktop
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
         defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 2;
     }
-    ObserveDoubleClick(true);
+    else
+    {
+        defaultDoubleClickRadiusSquared = 4.f; // default, if touch didn't detect, 4 - default pixels in windows desktop
+    }
+    SetTapCountSettings(defaultDoubleClickTime, defaultDoubleClickRadiusSquared);
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
@@ -437,8 +440,11 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         }
         UIEvent* eventToHandle = nullptr;
 
-        if (observeDoubleClick && newEvent->phase == UIEvent::Phase::BEGAN)
+        // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
+        if (newEvent->phase == UIEvent::Phase::BEGAN)
         {
+            DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
+            newEvent->tapCount = 1;
             if ((lastEvent.timestamp != 0.0) && ((newEvent->timestamp - lastEvent.timestamp) < doubleClickTime))
             {
                 float32 pointShift((lastEvent.physPoint.x - newEvent->physPoint.x) * (lastEvent.physPoint.x - newEvent->physPoint.x) + (lastEvent.physPoint.y - newEvent->physPoint.y) * (lastEvent.physPoint.y - newEvent->physPoint.y));
@@ -764,22 +770,18 @@ void UIControlSystem::SetUseClearPass(bool use)
     useClearPass = use;
 }
 
-void UIControlSystem::ObserveDoubleClick(bool observe, float32 time, float32 radius)
+void UIControlSystem::SetTapCountSettings(float32 time, float32 radius)
 {
-    if (observe)
+    if (time == 0.f && radius == 0.f)
     {
-        if (time == 0.f && radius == 0.f)
-        {
-            doubleClickTime = defaultDoubleClickTime;
-            doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
-        }
-        else
-        {
-            DVASSERT((time > 0.f) && (radius > 0.f));
-            doubleClickTime = time;
-            doubleClickRadiusSquared = radius * radius;
-        }
+        doubleClickTime = defaultDoubleClickTime;
+        doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
     }
-    observeDoubleClick = observe;
+    else
+    {
+        DVASSERT((time > 0.f) && (radius > 0.f));
+        doubleClickTime = time;
+        doubleClickRadiusSquared = radius * radius;
+    }
 }
 };
