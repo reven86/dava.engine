@@ -34,7 +34,7 @@
 #include <QObject>
 #include <functional>
 
-class ZipError : public QObject
+class ZipError 
 {
 public:
     enum eZipListError

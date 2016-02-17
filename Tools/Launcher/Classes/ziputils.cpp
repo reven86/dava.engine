@@ -53,25 +53,25 @@ QString ZipError::GetErrorString() const
     switch (error)
     {
     case NO_ERRORS:
-        return tr("No errors occurred");
+        return QObject::tr("No errors occurred");
     case FILE_NOT_EXISTS:
-        return tr("Required archive is not existing");
+        return QObject::tr("Required archive is not existing");
     case NOT_AN_ARCHIVE:
-        return tr("Required file is not a zip archive");
+        return QObject::tr("Required file is not a zip archive");
     case ARHIVE_DAMAGED:
-        return tr("Archive is corrupted");
+        return QObject::tr("Archive is corrupted");
     case ARCHIVER_NOT_FOUND:
-        return tr("Archiver tool was not found. Please, reinstall application");
+        return QObject::tr("Archiver tool was not found. Please, reinstall application");
     case PROCESS_FAILED_TO_START:
-        return tr("Failed to launch archiver");
+        return QObject::tr("Failed to launch archiver");
     case PROCESS_FAILED_TO_FINISH:
-        return tr("Archiver failed to get list of files from archive");
+        return QObject::tr("Archiver failed to get list of files from archive");
     case PARSE_ERROR:
-        return tr("Unknown format of archiver output");
+        return QObject::tr("Unknown format of archiver output");
     case ARCHIVE_IS_EMPTY:
-        return tr("Archive is empty!");
+        return QObject::tr("Archive is empty!");
     case OUT_DIRECTORY_NOT_EXISTS:
-        return tr("Output directory is not existing!");
+        return QObject::tr("Output directory is not existing!");
     default:
         Q_ASSERT(false && "invalid condition passed to GetErrorString");
         return QString();

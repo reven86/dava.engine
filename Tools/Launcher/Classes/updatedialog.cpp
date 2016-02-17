@@ -105,8 +105,9 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManag
     ui->setupUi(this);
 #ifdef Q_OS_MAC
     //https://bugreports.qt.io/browse/QTBUG-51120
-    ui->progressBar->setTextVisible(true);
-    ui->progressBar2->setTextVisible(true);
+    ui->progressBar_downloading->setTextVisible(true);
+    ui->progressBar_testing->setTextVisible(true);
+    ui->progressBar_unpacking->setTextVisible(true);
 #endif //Q_OS_MAC
 
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
