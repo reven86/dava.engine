@@ -164,6 +164,9 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 #endif
 
     QApplication a(argc, argv);
+    a.setOrganizationName("DAVA");
+    a.setApplicationName("Resource Editor");
+
 
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
     const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
@@ -206,7 +209,7 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
                            glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
 
                            ProjectManager::Instance()->OpenLastProject();
-                           QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
+                           QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites, Qt::QueuedConnection);
                            QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
                            QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
                            QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);

@@ -31,6 +31,8 @@
 #define __SPRITES_PACKER_MODULE_H__
 
 #include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
 #include <QObject>
 
@@ -64,8 +66,6 @@ private:
 private:
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
-
-    DAVA::uint32 acceptableLoggerFlags = 0xFFFFFFFF;
 };
 
 #endif // __SPRITES_PACKER_MODULE_H__

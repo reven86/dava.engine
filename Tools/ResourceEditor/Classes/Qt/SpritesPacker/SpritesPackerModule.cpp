@@ -31,12 +31,15 @@
 
 #include "SpritesPacker/SpritesPackerModule.h"
 
+#include "Project/ProjectManager.h"
+
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 
 #include "Main/mainwindow.h"
 
 #include <QAction>
+#include <QDir>
 
 SpritesPackerModule::SpritesPackerModule()
     : QObject(nullptr)
@@ -86,12 +89,8 @@ void SpritesPackerModule::SetupSpritesPacker(const DAVA::FilePath& projectPath)
 
 void SpritesPackerModule::ShowPackerDialog()
 {
-    DAVA::uint32 lastFlags = acceptableLoggerFlags;
-    acceptableLoggerFlags = (1 << DAVA::Logger::LEVEL_ERROR) | (1 << DAVA::Logger::LEVEL_WARNING);
-
     DialogReloadSprites dialogReloadSprites(spritesPacker.get(), QtMainWindow::Instance());
     dialogReloadSprites.exec();
-    acceptableLoggerFlags = lastFlags;
 }
 
 void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
@@ -110,6 +109,9 @@ void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA
 void SpritesPackerModule::ReloadObjects()
 {
     Sprite::ReloadSprites();
+
+    DAVA::uint32 gpu = spritesPacker->GetResourcePacker().requestedGPUFamily;
+    SettingsManager::SetValue(Settings::Internal_SpriteViewGPU, VariantType(gpu));
 
     emit SpritesReloaded();
 }

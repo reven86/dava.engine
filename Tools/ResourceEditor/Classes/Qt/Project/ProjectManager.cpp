@@ -145,7 +145,7 @@ void ProjectManager::UpdateParticleSprites()
     useDelayInitialization = false;
     if (!isParticleSpritesUpdated && spritesPacker != nullptr)
     {
-        spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+        spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
         isParticleSpritesUpdated = true;
     }
 }
