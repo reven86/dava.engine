@@ -547,7 +547,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 
     int32 newVertexStride = GetVertexSize(newVertexFormat);
     uint8* newMeshData = new uint8[newVertexStride * vertexCount];
-    memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
+    memset(newMeshData, 0, newVertexStride * vertexCount);
 
     const uint8* tmpMesh = meshData;
     uint8* tmpNewMesh = newMeshData;
