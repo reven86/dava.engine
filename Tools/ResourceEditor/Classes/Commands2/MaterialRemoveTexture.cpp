@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,39 +26,41 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "MaterialRemoveTexture.h"
 
-#ifndef __COLLADA_TO_SC2_IMPORTER_H__
-#define __COLLADA_TO_SC2_IMPORTER_H__
+#include "Debug/DVAssert.h"
+#include "Base/FastName.h"
+#include "Render/Material/NMaterial.h"
 
-#include "Collada/ColladaToSc2Importer/ImportLibrary.h"
-#include "Collada/ColladaErrorCodes.h"
-
-namespace DAVA
+MaterialRemoveTexture::MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_)
+    : Command2(CMDID_MATERIAL_REMOVE_TEXTURE, "Remove invalid texture from material")
 {
-class Entity;
-class ColladaSceneNode;
-class ImportLibrary;
+    DVASSERT(material_ != nullptr);
+    DVASSERT(textureSlot_.IsValid());
+    DVASSERT(material_->HasLocalTexture(textureSlot_));
 
-class ColladaToSc2Importer
+    textureSlot = textureSlot_;
+    material = DAVA::SafeRetain(material_);
+    texture = DAVA::SafeRetain(material->GetLocalTexture(textureSlot));
+}
+
+MaterialRemoveTexture::~MaterialRemoveTexture()
 {
-public:
-    eColladaErrorCodes SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath);
+    DAVA::SafeRelease(texture);
+    DAVA::SafeRelease(material);
+}
 
-private:
-    void ImportAnimation(ColladaSceneNode* colladaNode, Entity* nodeEntity);
-    void LoadMaterialParents(ColladaScene* colladaScene);
-    void LoadAnimations(ColladaScene* colladaScene);
-    bool VerifyColladaMesh(ColladaMeshInstance* mesh, const FastName& nodeName);
-    eColladaErrorCodes VerifyDavaMesh(RenderObject* mesh, const FastName name);
-    eColladaErrorCodes ImportMeshes(const Vector<ColladaMeshInstance*>& meshInstances, Entity* node);
-    eColladaErrorCodes BuildSceneAsCollada(Entity* root, ColladaSceneNode* colladaNode);
-    Mesh* GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow);
+void MaterialRemoveTexture::Undo()
+{
+    material->AddTexture(textureSlot, texture);
+}
 
-    ImportLibrary library;
+void MaterialRemoveTexture::Redo()
+{
+    material->RemoveTexture(textureSlot);
+}
 
-    void ReportError(const String& errMessage);
-    Set<String> errorLogs;
-};
-};
-
-#endif
+DAVA::Entity* MaterialRemoveTexture::GetEntity() const
+{
+    return nullptr;
+}

@@ -250,6 +250,11 @@ bool NMaterial::ContainsTexture(Texture* texture) const
     return false;
 }
 
+const HashMap<FastName, MaterialTextureInfo*>& NMaterial::GetLocalTextures() const
+{
+    return localTextures;
+}
+
 void NMaterial::SetFXName(const FastName& fx)
 {
     fxName = fx;
