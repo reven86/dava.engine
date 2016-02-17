@@ -52,6 +52,7 @@ RenderPassMetal_t
     id<MTLParallelRenderCommandEncoder> encoder;
     std::vector<Handle> cmdBuf;
     int priority;
+    uint32 do_present:1;
 };
 
 struct
@@ -162,6 +163,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passConf.priority;
+    pass->do_present = passConf.colorBuffer[0].texture == InvalidHandle;
 
     if (cmdBufCount == 1)
     {
@@ -791,20 +793,28 @@ metal_Present(Handle syncObject)
         }];
     }
 
+    id<MTLCommandBuffer> pbuf;
+
+    for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    {
+        RenderPassMetal_t* pass = *p;
+        
+        if( pass->do_present )
+            pbuf = pass->buf;
+    }    
+
+    [pbuf presentDrawable:_CurDrawable];
+    
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassMetal_t* pass = *p;
 
         for (unsigned b = 0; b != pass->cmdBuf.size(); ++b)
-        {
-            Handle cb_h = pass->cmdBuf[b];
+            CommandBufferPool::Free( pass->cmdBuf[b] );
 
-            CommandBufferPool::Free(cb_h);
-        }
-
-        [pass->buf presentDrawable:_CurDrawable];
         [pass->buf commit];
     }
+
 
     for (unsigned i = 0; i != _CmdQueue.size(); ++i)
         RenderPassPool::Free(_CmdQueue[i]);
