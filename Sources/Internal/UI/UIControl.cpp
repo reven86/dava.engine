@@ -1447,6 +1447,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::CHAR:
     case UIEvent::Phase::CHAR_REPEAT:
+    case UIEvent::Phase::KEY_UP:
     case UIEvent::Phase::KEY_DOWN:
     case UIEvent::Phase::KEY_DOWN_REPEAT:
     {
