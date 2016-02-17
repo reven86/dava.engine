@@ -31,7 +31,7 @@
 #include "errormessanger.h"
 #include <QFile>
 
-AppVersion AppVersion::LoadFromYamlNode(const YAML::Node * node)
+AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)
 {
     AppVersion version;
     version.runPath = GetStringValueFromYamlNode(node->FindValue(CONFIG_APPVERSION_RUNPATH_KEY));
@@ -41,11 +41,11 @@ AppVersion AppVersion::LoadFromYamlNode(const YAML::Node * node)
     return version;
 }
 
-Application Application::LoadFromYamlNode(const YAML::Node * node)
+Application Application::LoadFromYamlNode(const YAML::Node* node)
 {
     Application app;
     YAML::Iterator it = node->begin();
-    while(it != node->end())
+    while (it != node->end())
     {
         AppVersion version = AppVersion::LoadFromYamlNode(&it.second());
         version.id = GetStringValueFromYamlNode(&it.first());
@@ -56,63 +56,63 @@ Application Application::LoadFromYamlNode(const YAML::Node * node)
     return app;
 }
 
-AppVersion * Application::GetVersion(const QString & versionID)
+AppVersion* Application::GetVersion(const QString& versionID)
 {
     int versCount = versions.size();
-    for(int i = 0; i < versCount; ++i)
-        if(versions[i].id == versionID)
+    for (int i = 0; i < versCount; ++i)
+        if (versions[i].id == versionID)
             return &versions[i];
 
     return 0;
 }
 
-void Application::RemoveVersion(const QString &versionID)
+void Application::RemoveVersion(const QString& versionID)
 {
     int index = -1;
     int versCount = versions.size();
-    for(int i = 0; i < versCount; ++i)
+    for (int i = 0; i < versCount; ++i)
     {
-        if(versions[i].id == versionID)
+        if (versions[i].id == versionID)
         {
             index = i;
             break;
         }
     }
-    if(index != -1)
+    if (index != -1)
         versions.remove(index);
 }
 
-Application * Branch::GetApplication(const QString & appID)
+Application* Branch::GetApplication(const QString& appID)
 {
     int appCount = applications.size();
-    for(int i = 0; i < appCount; ++i)
-        if(applications[i].id == appID)
+    for (int i = 0; i < appCount; ++i)
+        if (applications[i].id == appID)
             return &applications[i];
 
     return 0;
 }
 
-void Branch::RemoveApplication(const QString &appID)
+void Branch::RemoveApplication(const QString& appID)
 {
     int index = -1;
     int appCount = applications.size();
-    for(int i = 0; i < appCount; ++i)
+    for (int i = 0; i < appCount; ++i)
     {
-        if(applications[i].id == appID)
+        if (applications[i].id == appID)
         {
             index = i;
             break;
         }
     }
-    if(index != -1)
+    if (index != -1)
         applications.remove(index);
 }
 
-Branch Branch::LoadFromYamlNode(const YAML::Node * node)
+Branch Branch::LoadFromYamlNode(const YAML::Node* node)
 {
     Branch branch;
     YAML::Iterator it = node->begin();
-    while(it != node->end())
+    while (it != node->end())
     {
         Application app = Application::LoadFromYamlNode(&it.second());
         app.id = GetStringValueFromYamlNode(&it.first());
@@ -123,28 +123,32 @@ Branch Branch::LoadFromYamlNode(const YAML::Node * node)
     return branch;
 }
 
-ConfigParser::ConfigParser(const QByteArray & configData) :
-    launcherVersion(LAUNCHER_VER),
-    webPageURL(""),
-    remoteConfigURL(""),
+ConfigParser::ConfigParser(const QByteArray& configData)
+    :
+    launcherVersion(LAUNCHER_VER)
+    ,
+    webPageURL("")
+    ,
+    remoteConfigURL("")
+    ,
     newsID("0")
 {
-    if(configData.size())
+    if (configData.size())
     {
         YAML::Parser parser;
 
         YAML::Node configRoot;
         YAML::Iterator it;
-        const YAML::Node * launcherNode;
-        const YAML::Node * stringsNode;
-        const YAML::Node * branchesNode;
+        const YAML::Node* launcherNode;
+        const YAML::Node* stringsNode;
+        const YAML::Node* branchesNode;
 
         std::istringstream fileStream(configData.data());
         parser.Load(fileStream);
 
         try
         {
-            if(parser.GetNextDocument(configRoot))
+            if (parser.GetNextDocument(configRoot))
             {
                 launcherNode = configRoot.FindValue(CONFIG_LAUNCHER_KEY);
                 stringsNode = configRoot.FindValue(CONFIG_STRINGS_KEY);
@@ -157,10 +161,10 @@ ConfigParser::ConfigParser(const QByteArray & configData) :
                 newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
                 favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
 
-                if(stringsNode)
+                if (stringsNode)
                 {
                     it = stringsNode->begin();
-                    while(it != stringsNode->end())
+                    while (it != stringsNode->end())
                     {
                         QString key = GetStringValueFromYamlNode(&it.first());
                         QString value = GetStringValueFromYamlNode(&it.second());
@@ -169,10 +173,10 @@ ConfigParser::ConfigParser(const QByteArray & configData) :
                     }
                 }
 
-                if(branchesNode)
+                if (branchesNode)
                 {
                     it = branchesNode->begin();
-                    while(it != branchesNode->end())
+                    while (it != branchesNode->end())
                     {
                         Branch branch = Branch::LoadFromYamlNode(&it.second());
                         branch.id = GetStringValueFromYamlNode(&it.first());
@@ -186,24 +190,24 @@ ConfigParser::ConfigParser(const QByteArray & configData) :
                 ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_CONFIG);
             }
         }
-        catch(YAML::ParserException& e)
+        catch (YAML::ParserException& e)
         {
             ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
         }
     }
 }
 
-void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser & parser)
+void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser& parser)
 {
     QMap<QString, QString>::ConstIterator it = parser.strings.begin();
     QMap<QString, QString>::ConstIterator itEnd = parser.strings.end();
-    for(; it != itEnd; ++it)
+    for (; it != itEnd; ++it)
         strings[it.key()] = it.value();
 
     favorites = parser.favorites;
 }
 
-void ConfigParser::SaveToYamlFile(const QString & filePath)
+void ConfigParser::SaveToYamlFile(const QString& filePath)
 {
     YAML::Emitter emitter;
     emitter.SetIndent(4);
@@ -216,11 +220,11 @@ void ConfigParser::SaveToYamlFile(const QString & filePath)
     emitter << YAML::Key << CONFIG_LAUNCHER_NEWSID_KEY << YAML::Value << newsID.toStdString();
 
     int favCount = favorites.size();
-    if(favCount)
+    if (favCount)
     {
         emitter << YAML::Key << CONFIG_LAUNCHER_FAVORITES_KEY << YAML::Value;
         emitter << YAML::BeginSeq;
-        for(int i = 0; i < favCount; i++)
+        for (int i = 0; i < favCount; i++)
             emitter << favorites[i].toStdString();
         emitter << YAML::EndSeq;
     }
@@ -231,23 +235,23 @@ void ConfigParser::SaveToYamlFile(const QString & filePath)
     emitter << YAML::Key << CONFIG_STRINGS_KEY << YAML::Value << YAML::BeginMap;
     QMap<QString, QString>::Iterator it = strings.begin();
     QMap<QString, QString>::Iterator itEnd = strings.end();
-    for(; it != itEnd; ++it)
+    for (; it != itEnd; ++it)
         emitter << YAML::Key << it.key().toStdString() << YAML::Value << it.value().toStdString();
     emitter << YAML::EndMap;
 
     //Applications
     emitter << YAML::Key << CONFIG_BRANCHES_KEY << YAML::Value << YAML::BeginMap;
-    for(int i = 0; i < branches.size(); ++i)
+    for (int i = 0; i < branches.size(); ++i)
     {
-        Branch * branch = GetBranch(i);
+        Branch* branch = GetBranch(i);
         emitter << YAML::Key << branch->id.toStdString() << YAML::Value << YAML::BeginMap;
-        for(int j = 0; j < branch->GetAppCount(); ++j)
+        for (int j = 0; j < branch->GetAppCount(); ++j)
         {
-            Application * app = branch->GetApplication(j);
+            Application* app = branch->GetApplication(j);
             emitter << YAML::Key << app->id.toStdString() << YAML::Value << YAML::BeginMap;
-            for(int k = 0; k < app->GetVerionsCount(); ++k)
+            for (int k = 0; k < app->GetVerionsCount(); ++k)
             {
-                AppVersion * ver = app->GetVersion(k);
+                AppVersion* ver = app->GetVersion(k);
                 emitter << YAML::Key << ver->id.toStdString() << YAML::Value << YAML::BeginMap;
                 emitter << YAML::Key << CONFIG_APPVERSION_RUNPATH_KEY << YAML::Value << ver->runPath.toStdString();
                 emitter << YAML::Key << CONFIG_APPVERSION_CMD_KEY << YAML::Value << ver->cmd.toStdString();
@@ -268,33 +272,33 @@ void ConfigParser::SaveToYamlFile(const QString & filePath)
     file.close();
 }
 
-void ConfigParser::RemoveBranch(const QString & branchID)
+void ConfigParser::RemoveBranch(const QString& branchID)
 {
     int index = -1;
     int branchesCount = branches.size();
-    for(int i = 0; i < branchesCount; ++i)
+    for (int i = 0; i < branchesCount; ++i)
     {
-        if(branches[i].id == branchID)
+        if (branches[i].id == branchID)
         {
             index = i;
             break;
         }
     }
-    if(index != -1)
+    if (index != -1)
         branches.remove(index);
 }
 
-void ConfigParser::InsertApplication(const QString & branchID, const QString & appID, const AppVersion & version)
+void ConfigParser::InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version)
 {
-    Branch * branch = GetBranch(branchID);
-    if(!branch)
+    Branch* branch = GetBranch(branchID);
+    if (!branch)
     {
         branches.push_back(Branch(branchID));
         branch = GetBranch(branchID);
     }
 
-    Application * app = branch->GetApplication(appID);
-    if(!app)
+    Application* app = branch->GetApplication(appID);
+    if (!app)
     {
         branch->applications.push_back(Application(appID));
         app = branch->GetApplication(appID);
@@ -304,25 +308,25 @@ void ConfigParser::InsertApplication(const QString & branchID, const QString & a
     app->versions.push_back(version);
 }
 
-void ConfigParser::RemoveApplication(const QString & branchID, const QString & appID, const QString & versionID)
+void ConfigParser::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    Branch * branch = GetBranch(branchID);
-    if(!branch)
+    Branch* branch = GetBranch(branchID);
+    if (!branch)
         return;
 
-    Application * app = branch->GetApplication(appID);
-    if(!app)
+    Application* app = branch->GetApplication(appID);
+    if (!app)
         return;
 
-    AppVersion * appVersion = app->GetVersion(versionID);
-    if(!appVersion)
+    AppVersion* appVersion = app->GetVersion(versionID);
+    if (!appVersion)
         return;
 
     app->RemoveVersion(versionID);
-    if(!app->GetVerionsCount())
+    if (!app->GetVerionsCount())
         branch->RemoveApplication(appID);
 
-    if(!branch->GetAppCount())
+    if (!branch->GetAppCount())
         RemoveBranch(branchID);
 }
 
@@ -333,126 +337,126 @@ int ConfigParser::GetBranchCount()
 
 QString ConfigParser::GetBranchID(int branchIndex)
 {
-    if(branchIndex >= 0 && branchIndex < branches.size())
+    if (branchIndex >= 0 && branchIndex < branches.size())
         return branches[branchIndex].id;
 
     return QString();
 }
 
-Branch * ConfigParser::GetBranch(int branchIndex)
+Branch* ConfigParser::GetBranch(int branchIndex)
 {
-    if(branchIndex >= 0 && branchIndex < branches.size())
+    if (branchIndex >= 0 && branchIndex < branches.size())
         return &branches[branchIndex];
 
     return 0;
 }
 
-Branch * ConfigParser::GetBranch(const QString &branch)
+Branch* ConfigParser::GetBranch(const QString& branch)
 {
     int branchCount = branches.size();
-    for(int i = 0; i < branchCount; ++i)
-        if(branches[i].id == branch)
+    for (int i = 0; i < branchCount; ++i)
+        if (branches[i].id == branch)
             return &branches[i];
 
     return 0;
 }
 
-Application * ConfigParser::GetApplication(const QString &branchID, const QString &appID)
+Application* ConfigParser::GetApplication(const QString& branchID, const QString& appID)
 {
-    Branch * branch = GetBranch(branchID);
-    if(branch)
+    Branch* branch = GetBranch(branchID);
+    if (branch)
     {
         int appCount = branch->applications.size();
-        for(int i = 0; i < appCount; ++i)
-            if(branch->applications[i].id == appID)
+        for (int i = 0; i < appCount; ++i)
+            if (branch->applications[i].id == appID)
                 return &branch->applications[i];
     }
 
     return 0;
 }
 
-AppVersion * ConfigParser::GetAppVersion(const QString &branchID, const QString &appID, const QString &ver)
+AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& appID, const QString& ver)
 {
-    Application * app = GetApplication(branchID, appID);
-    if(app)
+    Application* app = GetApplication(branchID, appID);
+    if (app)
     {
         int versCount = app->versions.size();
-        for(int i = 0; i < versCount; ++i)
-            if(app->versions[i].id == ver)
+        for (int i = 0; i < versCount; ++i)
+            if (app->versions[i].id == ver)
                 return &app->versions[i];
     }
 
     return 0;
 }
 
-const QString & ConfigParser::GetString(const QString & stringID)
+const QString& ConfigParser::GetString(const QString& stringID)
 {
-    if(strings.contains(stringID))
+    if (strings.contains(stringID))
         return strings[stringID];
 
     return stringID;
 }
 
-const QString & ConfigParser::GetLauncherVersion()
+const QString& ConfigParser::GetLauncherVersion()
 {
     return launcherVersion;
 }
 
-const QString & ConfigParser::GetLauncherURL()
+const QString& ConfigParser::GetLauncherURL()
 {
     return launcherURL;
 }
 
-const QString & ConfigParser::GetWebpageURL()
+const QString& ConfigParser::GetWebpageURL()
 {
     return webPageURL;
 }
 
-const QString & ConfigParser::GetRemoteConfigURL()
+const QString& ConfigParser::GetRemoteConfigURL()
 {
     return remoteConfigURL;
 }
 
-const QString & ConfigParser::GetNewsID()
+const QString& ConfigParser::GetNewsID()
 {
     return newsID;
 }
 
-void ConfigParser::SetLauncherURL(const QString & url)
+void ConfigParser::SetLauncherURL(const QString& url)
 {
     launcherURL = url;
 }
 
-void ConfigParser::SetWebpageURL(const QString & url)
+void ConfigParser::SetWebpageURL(const QString& url)
 {
     webPageURL = url;
 }
 
-void ConfigParser::SetRemoteConfigURL(const QString & url)
+void ConfigParser::SetRemoteConfigURL(const QString& url)
 {
     remoteConfigURL = url;
 }
 
-void ConfigParser::MergeBranchesIDs(QSet<QString> & branchIDs)
+void ConfigParser::MergeBranchesIDs(QSet<QString>& branchIDs)
 {
     int branchCount = branches.size();
-    for(int i = 0; i < branchCount; ++i)
+    for (int i = 0; i < branchCount; ++i)
         branchIDs.insert(branches[i].id);
 }
 
-void ConfigParser::SetLastNewsID(const QString & id)
+void ConfigParser::SetLastNewsID(const QString& id)
 {
     newsID = id;
 }
 
-const QVector<QString> & ConfigParser::GetFavorites()
+const QVector<QString>& ConfigParser::GetFavorites()
 {
     return favorites;
 }
 
-QString GetStringValueFromYamlNode(const YAML::Node * node, QString defaultValue /* "" */)
+QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue /* "" */)
 {
-    if(!node)
+    if (!node)
         return defaultValue;
 
     std::string stdStr;
@@ -460,20 +464,20 @@ QString GetStringValueFromYamlNode(const YAML::Node * node, QString defaultValue
     return QString(stdStr.c_str());
 }
 
-QVector<QString> GetArrayValueFromYamlNode(const YAML::Node * node)
+QVector<QString> GetArrayValueFromYamlNode(const YAML::Node* node)
 {
     QVector<QString> array;
 
-    if(!node)
+    if (!node)
         return array;
 
-    if(node->Type() == YAML::NodeType::Scalar)
+    if (node->Type() == YAML::NodeType::Scalar)
         array.push_back(GetStringValueFromYamlNode(node));
 
-    if(node->Type() == YAML::NodeType::Sequence)
+    if (node->Type() == YAML::NodeType::Sequence)
     {
         YAML::Iterator it = node->begin();
-        while(it != node->end())
+        while (it != node->end())
         {
             array.push_back(GetStringValueFromYamlNode(&(*it)));
             ++it;

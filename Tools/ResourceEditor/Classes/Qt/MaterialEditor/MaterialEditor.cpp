@@ -52,6 +52,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Commands2/MaterialGlobalCommand.h"
+#include "Commands2/MaterialRemoveTexture.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
@@ -111,19 +112,19 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     texturesRoot = AddSection(UIName::Textures);
 
     // global scene manager signals
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(autoExpand()));
 
     // material tree
-    QObject::connect(ui->materialTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(materialSelected(const QItemSelection &, const QItemSelection &)));
+    QObject::connect(ui->materialTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(materialSelected(const QItemSelection&, const QItemSelection&)));
     QObject::connect(ui->materialTree, SIGNAL(Updated()), this, SLOT(autoExpand()));
-    QObject::connect(ui->materialTree, SIGNAL(ContextMenuPrepare(QMenu *)), this, SLOT(onContextMenuPrepare(QMenu *)));
+    QObject::connect(ui->materialTree, SIGNAL(ContextMenuPrepare(QMenu*)), this, SLOT(onContextMenuPrepare(QMenu*)));
 
     // material properties
-    QObject::connect(ui->materialProperty, SIGNAL(PropertyEdited(const QModelIndex &)), this, SLOT(OnPropertyEdited(const QModelIndex &)));
-    QObject::connect(ui->materialProperty, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(OnMaterialPropertyEditorContextMenuRequest(const QPoint &)));
+    QObject::connect(ui->materialProperty, SIGNAL(PropertyEdited(const QModelIndex&)), this, SLOT(OnPropertyEdited(const QModelIndex&)));
+    QObject::connect(ui->materialProperty, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(OnMaterialPropertyEditorContextMenuRequest(const QPoint&)));
     QObject::connect(ui->templateBox, SIGNAL(activated(int)), this, SLOT(OnTemplateChanged(int)));
     QObject::connect(ui->templateButton, SIGNAL(clicked()), this, SLOT(OnTemplateButton()));
     QObject::connect(ui->actionAddGlobalMaterial, SIGNAL(triggered(bool)), this, SLOT(OnMaterialAddGlobal(bool)));
@@ -133,7 +134,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
 
     posSaver.Attach(this);
     new QtPosSaver(ui->splitter);
-    treeStateHelper = new PropertyEditorStateHelper(ui->materialProperty, (QtPropertyModel *) ui->materialProperty->model());
+    treeStateHelper = new PropertyEditorStateHelper(ui->materialProperty, (QtPropertyModel*)ui->materialProperty->model());
 
     DAVA::VariantType v1 = posSaver.LoadValue("splitPosProperties");
     DAVA::VariantType v2 = posSaver.LoadValue("splitPosPreview");
@@ -157,7 +158,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
 }
 
 MaterialEditor::~MaterialEditor()
-{ 
+{
     delete treeStateHelper;
 
     DAVA::VariantType v1(ui->materialProperty->header()->sectionSize(0));
@@ -182,8 +183,8 @@ void MaterialEditor::initActions()
     ui->actionInstances->setData(MaterialFilteringModel::SHOW_ONLY_INSTANCES);
     ui->actionMaterialsInstances->setData(MaterialFilteringModel::SHOW_INSTANCES_AND_MATERIALS);
 
-    const int filterType =  MaterialFilteringModel::SHOW_ALL;
-    foreach(QAction *action, ui->filterType->actions())
+    const int filterType = MaterialFilteringModel::SHOW_ALL;
+    foreach (QAction* action, ui->filterType->actions())
     {
         QObject::connect(action, SIGNAL(triggered()), SLOT(onFilterChanged()));
 
@@ -200,15 +201,15 @@ void MaterialEditor::initTemplates()
 {
     if (nullptr == templatesFilterModel)
     {
-        QStandardItemModel *templatesModel = new QStandardItemModel(this);
+        QStandardItemModel* templatesModel = new QStandardItemModel(this);
 
-        const QVector<ProjectManager::AvailableMaterialTemplate> *templates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
+        const QVector<ProjectManager::AvailableMaterialTemplate>* templates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
         QStandardItem* emptyItem = new QStandardItem(QString());
         templatesModel->appendRow(emptyItem);
 
-        for(int i = 0; i < templates->size(); ++i)
+        for (int i = 0; i < templates->size(); ++i)
         {
-            QStandardItem *item = new QStandardItem();
+            QStandardItem* item = new QStandardItem();
             item->setText(templates->at(i).name);
             item->setData(templates->at(i).path, Qt::UserRole);
             templatesModel->appendRow(item);
@@ -223,14 +224,14 @@ void MaterialEditor::initTemplates()
 
 void MaterialEditor::setTemplatePlaceholder(const QString& text)
 {
-    QAbstractItemModel *model = ui->templateBox->model();
+    QAbstractItemModel* model = ui->templateBox->model();
     const QModelIndex index = model->index(0, 0);
     model->setData(index, text, Qt::DisplayRole);
 }
 
 void MaterialEditor::autoExpand()
 {
-    QAction *action = ui->filterType->checkedAction();
+    QAction* action = ui->filterType->checkedAction();
     if (nullptr == action)
         return;
 
@@ -242,7 +243,7 @@ void MaterialEditor::autoExpand()
 
 void MaterialEditor::onFilterChanged()
 {
-    QAction *action = ui->filterType->checkedAction();
+    QAction* action = ui->filterType->checkedAction();
     if (nullptr == action)
         return;
 
@@ -253,30 +254,31 @@ void MaterialEditor::onFilterChanged()
     onCurrentExpandModeChange(expandMap[filterType]);
 }
 
-void MaterialEditor::SelectMaterial(DAVA::NMaterial *material)
+void MaterialEditor::SelectMaterial(DAVA::NMaterial* material)
 {
     ui->materialTree->SelectMaterial(material);
 }
 
-void MaterialEditor::SelectEntities(DAVA::NMaterial *material)
+void MaterialEditor::SelectEntities(DAVA::NMaterial* material)
 {
-    QList<DAVA::NMaterial *> materials;
+    QList<DAVA::NMaterial*> materials;
     materials << material;
     ui->materialTree->SelectEntities(materials);
 }
 
-void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
+void MaterialEditor::SetCurMaterial(const QList<DAVA::NMaterial*>& materials)
 {
     int curScrollPos = ui->materialProperty->verticalScrollBar()->value();
 
     curMaterials = materials;
     treeStateHelper->SaveTreeViewState(false);
-    
+
     FillBase();
     FillDynamic(flagsRoot, NMaterialSectionName::LocalFlags);
     FillIllumination();
     FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
     FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
+    FillInvalidTextures();
     FillTemplates(materials);
     FinishCreation();
 
@@ -292,7 +294,7 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     }
 
     // check if there is global material and enable appropriate actions
-    SceneEditor2 *sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != sceneEditor)
     {
         bool isGlobalMaterialPresent = (nullptr != sceneEditor->GetGlobalMaterial());
@@ -308,26 +310,26 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     ui->materialProperty->verticalScrollBar()->setValue(curScrollPos);
 }
 
-void MaterialEditor::sceneActivated(SceneEditor2 *scene)
+void MaterialEditor::sceneActivated(SceneEditor2* scene)
 {
     if (isVisible())
     {
-        SetCurMaterial(QList< DAVA::NMaterial *>());
+        SetCurMaterial(QList<DAVA::NMaterial*>());
         ui->materialTree->SetScene(scene);
         autoExpand();
     }
 }
 
-void MaterialEditor::sceneDeactivated(SceneEditor2 *scene)
+void MaterialEditor::sceneDeactivated(SceneEditor2* scene)
 {
     ui->materialTree->SetScene(nullptr);
-    SetCurMaterial(QList< DAVA::NMaterial *>());
+    SetCurMaterial(QList<DAVA::NMaterial*>());
 }
 
-void MaterialEditor::materialSelected(const QItemSelection & selected, const QItemSelection & deselected)
+void MaterialEditor::materialSelected(const QItemSelection& selected, const QItemSelection& deselected)
 {
-    QList< DAVA::NMaterial *> materials;
-    QItemSelectionModel *selection = ui->materialTree->selectionModel();
+    QList<DAVA::NMaterial*> materials;
+    QItemSelectionModel* selection = ui->materialTree->selectionModel();
     const QModelIndexList selectedRows = selection->selectedRows();
 
     foreach (const QModelIndex& index, selectedRows)
@@ -343,7 +345,7 @@ void MaterialEditor::materialSelected(const QItemSelection & selected, const QIt
     SetCurMaterial(materials);
 }
 
-void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo)
+void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
     if (scene == QtMainWindow::Instance()->GetCurrentScene())
     {
@@ -352,54 +354,59 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
         switch (cmdId)
         {
+        case CMDID_MATERIAL_REMOVE_TEXTURE:
+        {
+            materialPropertiesUpdater->Update();
+        }
+        break;
         case CMDID_INSP_MEMBER_MODIFY:
-            {
-                InspMemberModifyCommand* inspCommand = (InspMemberModifyCommand*)command;
+        {
+            InspMemberModifyCommand* inspCommand = (InspMemberModifyCommand*)command;
 
-                const String memberName(inspCommand->member->Name().c_str());
-                if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
-                {
-                    for (auto& m : curMaterials)
-                    {
-                        m->InvalidateRenderVariants();
-                    }
-                    materialPropertiesUpdater->Update();
-                }
-            }
-            break;
-        case CMDID_INSP_DYNAMIC_MODIFY:
+            const String memberName(inspCommand->member->Name().c_str());
+            if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
             {
-                InspDynamicModifyCommand *inspCommand = (InspDynamicModifyCommand *) command;
-
-                // if material flag was changed we should rebuild list of all properties
-                // because their set can be changed
-                if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
+                for (auto& m : curMaterials)
                 {
-                    if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED)
-                    {
-                        NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
-                        if (material->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED) && material->GetLocalFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) == 1)
-                        {
-                            AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-                            AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
-                            material->InvalidateRenderVariants();
-                        }
-                    }
-
-                    materialPropertiesUpdater->Update();
+                    m->InvalidateRenderVariants();
                 }
-                else
-                {
-                    UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
-                }
-            }
-            break;
-        case CMDID_MATERIAL_GLOBAL_SET:
-            {
-                sceneActivated(scene);
                 materialPropertiesUpdater->Update();
             }
-            break;
+        }
+        break;
+        case CMDID_INSP_DYNAMIC_MODIFY:
+        {
+            InspDynamicModifyCommand* inspCommand = (InspDynamicModifyCommand*)command;
+
+            // if material flag was changed we should rebuild list of all properties
+            // because their set can be changed
+            if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
+            {
+                if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED)
+                {
+                    NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
+                    if (material->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED) && material->GetLocalFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) == 1)
+                    {
+                        AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+                        AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+                        material->InvalidateRenderVariants();
+                    }
+                }
+
+                materialPropertiesUpdater->Update();
+            }
+            else
+            {
+                UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+            }
+        }
+        break;
+        case CMDID_MATERIAL_GLOBAL_SET:
+        {
+            sceneActivated(scene);
+            materialPropertiesUpdater->Update();
+        }
+        break;
         default:
             break;
         }
@@ -451,7 +458,7 @@ void MaterialEditor::OnQualityChanged()
 
 void MaterialEditor::onCurrentExpandModeChange(bool mode)
 {
-    QAction *action = ui->filterType->checkedAction();
+    QAction* action = ui->filterType->checkedAction();
     if (nullptr == action)
         return;
 
@@ -468,9 +475,9 @@ void MaterialEditor::onCurrentExpandModeChange(bool mode)
     }
 }
 
-void MaterialEditor::showEvent(QShowEvent * event)
+void MaterialEditor::showEvent(QShowEvent* event)
 {
-    FillTemplates(QList<DAVA::NMaterial *>());
+    FillTemplates(QList<DAVA::NMaterial*>());
     sceneActivated(QtMainWindow::Instance()->GetCurrentScene());
 }
 
@@ -481,9 +488,9 @@ void MaterialEditor::FillBase()
     auto scene = QtMainWindow::Instance()->GetCurrentScene();
     auto globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
 
-    foreach(DAVA::NMaterial *material, curMaterials)
+    foreach (DAVA::NMaterial* material, curMaterials)
     {
-        const DAVA::InspInfo *info = material->GetTypeInfo();
+        const DAVA::InspInfo* info = material->GetTypeInfo();
 
         // fill material name
         const DAVA::InspMember* nameMember = info->Member(DAVA::FastName("materialName"));
@@ -512,7 +519,7 @@ void MaterialEditor::FillBase()
     }
 }
 
-void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicName)
+void MaterialEditor::FillDynamic(QtPropertyData* root, const FastName& dynamicName)
 {
     DAVA::NMaterial* globalMaterial = nullptr;
     root->ChildRemoveAll();
@@ -523,21 +530,91 @@ void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicNa
         globalMaterial = sceneEditor->GetGlobalMaterial();
     }
 
-    foreach(DAVA::NMaterial *material, curMaterials)
+    foreach (DAVA::NMaterial* material, curMaterials)
     {
         if (material == globalMaterial && dynamicName == NMaterialSectionName::LocalTextures)
         {
             continue;
         }
 
-        const DAVA::InspInfo *info = material->GetTypeInfo();
-        const DAVA::InspMember *materialMember = info->Member(dynamicName);
+        const DAVA::InspInfo* info = material->GetTypeInfo();
+        const DAVA::InspMember* materialMember = info->Member(dynamicName);
 
         // fill material flags
         if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
         {
-            DAVA::InspInfoDynamic *dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
+            DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
             FillDynamicMembers(root, dynamicInfo, material, material == globalMaterial);
+        }
+    }
+}
+
+namespace MELocal
+{
+struct InvalidTexturesCollector
+{
+    DAVA::Set<DAVA::FastName> validTextures;
+    DAVA::Map<DAVA::FastName, DAVA::Vector<DAVA::FilePath>> invalidTextures;
+
+    void CollectValidTextures(QtPropertyData* data)
+    {
+        DVASSERT(data != nullptr);
+        validTextures.insert(data->GetName());
+        for (int i = 0; i < data->ChildCount(); ++i)
+        {
+            CollectValidTextures(data->ChildGet(i));
+        }
+    }
+
+    void CollectInvalidTextures(DAVA::NMaterial* material)
+    {
+        while (material != nullptr)
+        {
+            using TTexturesMap = HashMap<FastName, MaterialTextureInfo*>;
+            using TTextureItem = TTexturesMap::HashMapItem;
+
+            const TTexturesMap& localTextures = material->GetLocalTextures();
+            for (const TTextureItem& lc : localTextures)
+            {
+                if (validTextures.count(lc.first) == 0)
+                {
+                    invalidTextures[lc.first].push_back(lc.second->path);
+                }
+            }
+
+            material = material->GetParent();
+        }
+    }
+};
+}
+
+void MaterialEditor::FillInvalidTextures()
+{
+    MELocal::InvalidTexturesCollector collector;
+    collector.CollectValidTextures(texturesRoot);
+    for (int i = 0; i < curMaterials.size(); ++i)
+    {
+        collector.CollectInvalidTextures(curMaterials[i]);
+    }
+
+    for (const auto& t : collector.invalidTextures)
+    {
+        DVASSERT(!t.second.empty());
+        for (size_t i = 0; i < t.second.size(); ++i)
+        {
+            QVariant qValue(QString::fromStdString(t.second[i].GetAbsolutePathname()));
+            std::unique_ptr<QtPropertyData> textureSlot(new QtPropertyData(t.first, qValue));
+
+            QtPropertyToolButton* addRemoveButton = textureSlot->AddButton();
+            addRemoveButton->setObjectName("dynamicAddRemoveButton");
+            addRemoveButton->setIconSize(QSize(14, 14));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
+            addRemoveButton->setToolTip("Remove property");
+            QObject::connect(addRemoveButton, SIGNAL(clicked()), this, SLOT(removeInvalidTexture()));
+
+            textureSlot->SetEnabled(false);
+            textureSlot->SetBackground(QBrush(QColor(255, 0, 0, 25)));
+            texturesRoot->MergeChild(std::move(textureSlot));
         }
     }
 }
@@ -587,7 +664,7 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData* root, DAVA::InspInfoDyna
     DAVA::Vector<DAVA::FastName> membersList = dynamic->MembersList(ddata);
 
     // enumerate dynamic members and add them
-    for(size_t i = 0; i < membersList.size(); ++i)
+    for (size_t i = 0; i < membersList.size(); ++i)
     {
         const FastName& name = membersList[i];
 
@@ -622,7 +699,7 @@ void MaterialEditor::FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspI
     root->MergeChild(std::unique_ptr<QtPropertyData>(dynamicData));
 }
 
-void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
+void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic* data)
 {
     QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
     FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
@@ -645,17 +722,17 @@ void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
 
     // create validator
     data->SetDefaultOpenDialogPath(defaultPath);
-    
+
     data->SetOpenDialogFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_TEXTURE).fileFilter);
     QStringList path;
     path.append(dataSourcePath.GetAbsolutePathname().c_str());
     data->SetValidator(new TexturePathValidator(path));
 }
 
-void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
+void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic* data)
 {
     // don't create/update buttons for global material
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene /*&& data->object != curScene->GetGlobalMaterial()*/)
     {
         // extract member flags from dynamic info
@@ -664,9 +741,9 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         QtPropertyToolButton* addRemoveButton = nullptr;
 
         // check if there is already our button
-        for(int i = 0; i < data->GetButtonsCount(); ++i)
+        for (int i = 0; i < data->GetButtonsCount(); ++i)
         {
-            QtPropertyToolButton *btn = data->GetButton(i);
+            QtPropertyToolButton* btn = data->GetButton(i);
             if (btn->objectName() == "dynamicAddRemoveButton")
             {
                 addRemoveButton = btn;
@@ -711,7 +788,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         // don't allow editing for members that are inherited
         data->SetEnabled(editEnabled);
         data->SetBackground(bgColor);
-        for(int m = 0; m < data->ChildCount(); ++m)
+        for (int m = 0; m < data->ChildCount(); ++m)
         {
             data->ChildGet(m)->SetEnabled(editEnabled);
             data->ChildGet(m)->SetBackground(bgColor);
@@ -719,9 +796,9 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
     }
 }
 
-void MaterialEditor::UpdateAllAddRemoveButtons(QtPropertyData *root)
+void MaterialEditor::UpdateAllAddRemoveButtons(QtPropertyData* root)
 {
-    QtPropertyDataInspDynamic *dynamicData = dynamic_cast<QtPropertyDataInspDynamic *>(root);
+    QtPropertyDataInspDynamic* dynamicData = dynamic_cast<QtPropertyDataInspDynamic*>(root);
     if (nullptr != dynamicData)
     {
         UpdateAddRemoveButtonState(dynamicData);
@@ -733,7 +810,7 @@ void MaterialEditor::UpdateAllAddRemoveButtons(QtPropertyData *root)
     }
 }
 
-void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
+void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial*>& materials)
 {
     initTemplates();
 
@@ -830,7 +907,7 @@ void MaterialEditor::OnTemplateChanged(int index)
 {
     if (curMaterials.size() == 1 && index > 0)
     {
-        DAVA::NMaterial *material = curMaterials.at(0);
+        DAVA::NMaterial* material = curMaterials.at(0);
         QString newTemplatePath = GetTemplatePath(index);
         if (!newTemplatePath.isEmpty())
         {
@@ -838,8 +915,8 @@ void MaterialEditor::OnTemplateChanged(int index)
 
             if (nullptr != templateMember)
             {
-                QtMainWindow::Instance()->GetCurrentScene()->Exec(new InspMemberModifyCommand(templateMember, material, 
-                    DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
+                QtMainWindow::Instance()->GetCurrentScene()->Exec(new InspMemberModifyCommand(templateMember, material,
+                                                                                              DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
             }
         }
     }
@@ -881,10 +958,10 @@ QString MaterialEditor::GetTemplatePath(int index) const
 
 void MaterialEditor::OnAddRemoveButton()
 {
-    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
     if (nullptr != btn)
     {
-        QtPropertyDataInspDynamic *data = (QtPropertyDataInspDynamic *) btn->GetPropertyData();
+        QtPropertyDataInspDynamic* data = (QtPropertyDataInspDynamic*)btn->GetPropertyData();
         if (nullptr != data)
         {
             int memberFlags = data->dynamicInfo->MemberFlags(data->ddata, data->name);
@@ -906,21 +983,21 @@ void MaterialEditor::OnAddRemoveButton()
     }
 }
 
-void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
+void MaterialEditor::OnPropertyEdited(const QModelIndex& index)
 {
-    QtPropertyEditor *editor = dynamic_cast<QtPropertyEditor *>(QObject::sender());
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    QtPropertyEditor* editor = dynamic_cast<QtPropertyEditor*>(QObject::sender());
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (editor != nullptr && curScene != nullptr)
     {
-        QtPropertyData *propData = editor->GetProperty(index);
+        QtPropertyData* propData = editor->GetProperty(index);
 
         if (nullptr != propData)
         {
-            DAVA::Vector<Command2 *> commands;
+            DAVA::Vector<Command2*> commands;
             commands.reserve(propData->GetMergedItemCount());
 
             auto commandsAccumulateFn = [&commands](QtPropertyData* item) {
-                Command2 *command = reinterpret_cast<Command2 *>(item->CreateLastCommand());
+                Command2* command = reinterpret_cast<Command2*>(item->CreateLastCommand());
                 if (command != nullptr)
                 {
                     commands.push_back(command);
@@ -935,19 +1012,19 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
             bool useBatch = commands.size() > 1;
             if (useBatch)
             {
-                QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
+                QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
                 curScene->BeginBatch("Property multiedit");
             }
 
-            for (Command2 * cmd : commands)
+            for (Command2* cmd : commands)
             {
                 curScene->Exec(cmd);
             }
-            
+
             if (useBatch)
             {
                 curScene->EndBatch();
-                QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
+                QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
 
                 // emulate that only one signal was emited, after batch of commands executed
                 commandExecuted(curScene, commands.back(), true);
@@ -958,7 +1035,7 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
 
 void MaterialEditor::OnMaterialAddGlobal(bool checked)
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene)
     {
         ScopedPtr<DAVA::NMaterial> global(new DAVA::NMaterial());
@@ -973,7 +1050,7 @@ void MaterialEditor::OnMaterialAddGlobal(bool checked)
 
 void MaterialEditor::OnMaterialRemoveGlobal(bool checked)
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene)
     {
         curScene->Exec(new MaterialGlobalSetCommand(curScene, nullptr));
@@ -981,7 +1058,7 @@ void MaterialEditor::OnMaterialRemoveGlobal(bool checked)
     }
 }
 
-void MaterialEditor::onContextMenuPrepare(QMenu *menu)
+void MaterialEditor::onContextMenuPrepare(QMenu* menu)
 {
     if (curMaterials.size() > 0)
     {
@@ -992,22 +1069,22 @@ void MaterialEditor::onContextMenuPrepare(QMenu *menu)
     }
 }
 
-void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint & pos)
+void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint& pos)
 {
-    SceneEditor2 *sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != sceneEditor && curMaterials.size() == 1)
     {
-        DAVA::NMaterial *globalMaterial = sceneEditor->GetGlobalMaterial();
-        DAVA::NMaterial *material = curMaterials[0];
+        DAVA::NMaterial* globalMaterial = sceneEditor->GetGlobalMaterial();
+        DAVA::NMaterial* material = curMaterials[0];
 
         QModelIndex index = ui->materialProperty->indexAt(pos);
 
         if (globalMaterial != material && index.column() == 0 && (nullptr != globalMaterial))
         {
-            QtPropertyData *data = ui->materialProperty->GetProperty(index);
+            QtPropertyData* data = ui->materialProperty->GetProperty(index);
             if (nullptr != data && data->Parent() == propertiesRoot)
             {
-                QtPropertyDataInspDynamic *dynamicData = (QtPropertyDataInspDynamic *) data;
+                QtPropertyDataInspDynamic* dynamicData = (QtPropertyDataInspDynamic*)data;
                 if (nullptr != dynamicData)
                 {
                     const DAVA::FastName& propertyName = dynamicData->name;
@@ -1016,7 +1093,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint & p
                     {
                         QMenu menu;
                         menu.addAction("Add to Global Material");
-                        QAction *resultAction = menu.exec(ui->materialProperty->viewport()->mapToGlobal(pos));
+                        QAction* resultAction = menu.exec(ui->materialProperty->viewport()->mapToGlobal(pos));
 
                         if (nullptr != resultAction)
                         {
@@ -1037,7 +1114,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
         QString outputFile = FileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(),
                                                          "Material Preset (*.mpreset)");
 
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
         if (!outputFile.isEmpty() && (nullptr != curScene))
         {
@@ -1070,7 +1147,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
         QString inputFile = FileDialog::getOpenFileName(this, "Load Material Preset",
                                                         lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
 
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
         if (!inputFile.isEmpty() && (nullptr != curScene))
         {
@@ -1104,26 +1181,26 @@ void MaterialEditor::OnMaterialLoad(bool checked)
     RefreshMaterialProperties();
 }
 
-void MaterialEditor::ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicMember)
+void MaterialEditor::ClearDynamicMembers(DAVA::NMaterial* material, const DAVA::InspMemberDynamic* dynamicMember)
 {
     if (nullptr != dynamicMember)
     {
         DAVA::InspInfoDynamic* dynamicInfo = dynamicMember->GetDynamicInfo();
         DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material);
         DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); // this function can be slow
-        for(size_t i = 0; i < membersList.size(); ++i)
+        for (size_t i = 0; i < membersList.size(); ++i)
         {
             dynamicInfo->MemberValueSet(ddata, membersList[i], DAVA::VariantType());
         }
     }
 }
 
-DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile)
+DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString& inputFile)
 {
     DAVA::uint32 ret = 0;
 
-    QDialog *dlg = new QDialog(this);
-    QVBoxLayout *dlgLayout = new QVBoxLayout();
+    QDialog* dlg = new QDialog(this);
+    QVBoxLayout* dlgLayout = new QVBoxLayout();
     dlgLayout->setMargin(10);
     dlgLayout->setSpacing(15);
 
@@ -1137,7 +1214,7 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     pathLine->setToolTip(inputFile);
     dlgLayout->addWidget(pathLine);
 
-    QGroupBox *groupbox = new QGroupBox("Load parameters", dlg);
+    QGroupBox* groupbox = new QGroupBox("Load parameters", dlg);
     dlgLayout->addWidget(groupbox);
 
     QCheckBox* templateChBox = new QCheckBox(QString(UIName::Template.c_str()), groupbox);
@@ -1145,12 +1222,12 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     QCheckBox* propertiesChBox = new QCheckBox(QString(UIName::Properties.c_str()), groupbox);
     QCheckBox* texturesChBox = new QCheckBox(QString(UIName::Textures.c_str()), groupbox);
 
-    templateChBox->setChecked((bool) (initialState & CHECKED_TEMPLATE));
-    groupChBox->setChecked((bool) (initialState & CHECKED_GROUP));
-    propertiesChBox->setChecked((bool) (initialState & CHECKED_PROPERTIES));
-    texturesChBox->setChecked((bool) (initialState & CHECKED_TEXTURES));
+    templateChBox->setChecked((bool)(initialState & CHECKED_TEMPLATE));
+    groupChBox->setChecked((bool)(initialState & CHECKED_GROUP));
+    propertiesChBox->setChecked((bool)(initialState & CHECKED_PROPERTIES));
+    texturesChBox->setChecked((bool)(initialState & CHECKED_TEXTURES));
 
-    QGridLayout *gridLayout = new QGridLayout();
+    QGridLayout* gridLayout = new QGridLayout();
     groupbox->setLayout(gridLayout);
     gridLayout->setHorizontalSpacing(50);
     gridLayout->addWidget(templateChBox, 0, 0);
@@ -1158,7 +1235,7 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     gridLayout->addWidget(propertiesChBox, 0, 1);
     gridLayout->addWidget(texturesChBox, 1, 1);
 
-    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
     dlgLayout->addWidget(buttons);
 
     QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
@@ -1388,4 +1465,31 @@ void MaterialEditor::FinishCreation()
     illuminationRoot->FinishTreeCreation();
     propertiesRoot->FinishTreeCreation();
     texturesRoot->FinishTreeCreation();
+}
+
+void MaterialEditor::removeInvalidTexture()
+{
+    QtPropertyToolButton* button = dynamic_cast<QtPropertyToolButton*>(sender());
+    QtPropertyData* data = button->GetPropertyData();
+    DAVA::FastName textureSlot = data->GetName();
+
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(curScene != nullptr);
+
+    curScene->BeginBatch("Remove invalid texture from material");
+    for (int i = 0; i < curMaterials.size(); ++i)
+    {
+        DAVA::NMaterial* material = curMaterials[i];
+        while (material != nullptr)
+        {
+            if (material->HasLocalTexture(textureSlot))
+            {
+                curScene->Exec(new MaterialRemoveTexture(textureSlot, material));
+                break;
+            }
+
+            material = material->GetParent();
+        }
+    }
+    curScene->EndBatch();
 }

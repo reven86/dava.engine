@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 class UIStyleSheetSelectorChain
 {
 public:
@@ -48,10 +47,10 @@ public:
 
     Vector<UIStyleSheetSelector>::const_reverse_iterator rbegin() const;
     Vector<UIStyleSheetSelector>::const_reverse_iterator rend() const;
+
 private:
     Vector<UIStyleSheetSelector> selectors;
 };
-
 };
 
 

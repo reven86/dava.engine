@@ -36,25 +36,23 @@
 
 namespace DAVA
 {
-
 class JobThread
 {
 public:
-    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
+    JobThread(JobQueueWorker* workerQueue, Semaphore* workerDoneSem);
     ~JobThread();
 
     void Cancel();
 
 protected:
-    Thread *thread;
-    JobQueueWorker *workerQueue;
-    Semaphore *workerDoneSem;
+    Thread* thread;
+    JobQueueWorker* workerQueue;
+    Semaphore* workerDoneSem;
     volatile bool threadCancel;
     volatile bool threadFinished;
 
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
+    void ThreadFunc(BaseObject* bo, void* userParam, void* callerParam);
 };
-
 }
 
 #endif // __DAVAENGINE_JOB_THREAD_H__

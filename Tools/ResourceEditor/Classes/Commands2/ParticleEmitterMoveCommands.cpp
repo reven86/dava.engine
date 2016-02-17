@@ -29,12 +29,12 @@
 
 #include "Commands2/ParticleEmitterMoveCommands.h"
 
-ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent *_oldEffect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleEffectComponent *_newEffect, int _newIndex)
-	: Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
-	, oldEffect(_oldEffect)
-	, newEffect(_newEffect)
-	, oldIndex(-1)
-	, newIndex(_newIndex)
+ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* _oldEffect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleEffectComponent* _newEffect, int _newIndex)
+    : Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
+    , oldEffect(_oldEffect)
+    , newEffect(_newEffect)
+    , oldIndex(-1)
+    , newIndex(_newIndex)
 {
     if (nullptr != _emitter && nullptr != oldEffect)
     {

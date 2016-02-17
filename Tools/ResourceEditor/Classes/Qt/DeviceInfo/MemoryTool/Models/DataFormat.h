@@ -33,4 +33,4 @@
 
 DAVA::String FormatNumberWithDigitGroups(DAVA::uint32 value);
 
-#endif  // __DATAFORMAT_H__
+#endif // __DATAFORMAT_H__

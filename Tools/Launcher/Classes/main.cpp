@@ -32,16 +32,16 @@
 #include "errormessanger.h"
 #include <QApplication>
 
-void LogMessageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
+void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
     ErrorMessanger::Instance()->LogMessage(type, msg);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 #ifdef Q_OS_WIN
-    char **argv1 = new char *[argc + 2];
-    memcpy(argv1, argv, argc * sizeof(char *));
+    char** argv1 = new char*[argc + 2];
+    memcpy(argv1, argv, argc * sizeof(char*));
 
     argv1[argc] = "-platformpluginpath";
     argv1[argc + 1] = ".";

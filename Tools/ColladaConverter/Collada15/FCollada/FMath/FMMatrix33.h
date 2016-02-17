@@ -23,9 +23,9 @@
 class FCOLLADA_EXPORT FMMatrix33
 {
 public:
-	float m[3][3];	/**< The matrix elements stored in a 2D array. */
+    float m[3][3]; /**< The matrix elements stored in a 2D array. */
 
-	/**
+    /**
 	 * Creates a FMMatrix33 from the \c float array.
 	 *
 	 * The float array stores the elements in the following order: m[0][0], 
@@ -33,20 +33,25 @@ public:
 	 *
 	 * @param _m The \c float array to create the matrix from.
 	 */
-	FMMatrix33(float* _m);
-	
-	/**
+    FMMatrix33(float* _m);
+
+/**
 	 * Creates an empty FMMatrix33.
 	 *
 	 * The default values are non deterministic.
 	 */
 	#ifndef _DEBUG
-	FMMatrix33() {}
+    FMMatrix33()
+    {
+    }
 	#else
-	FMMatrix33() { memset(m, 55, 3 * 3 * sizeof(float)); }
-	#endif 
+    FMMatrix33()
+    {
+        memset(m, 55, 3 * 3 * sizeof(float));
+    }
+	#endif
 
-	/**
+    /**
 	 * Get this FMMatrix33 as an array of \c floats.
 	 *
 	 * The array contains the elements in the following order: m[0][0], 
@@ -54,9 +59,12 @@ public:
 	 *
 	 * @return The \c float array.
 	 */
-	operator float*() { return &m[0][0]; }
+    operator float*()
+    {
+        return &m[0][0];
+    }
 
-	/**
+    /**
 	 * Get this FMMatrix as an array of \c floats.
 	 *
 	 * The array contains the elements in the following order: m[0][0], 
@@ -64,70 +72,76 @@ public:
 	 *
 	 * @return The \c float array.
 	 */
-	operator const float*() const { return &m[0][0]; }
+    operator const float*() const
+    {
+        return &m[0][0];
+    }
 
-	/**
+    /**
 	 * Get a specified row of FMMatrix33 as an array of \c floats.
 	 *
 	 * @param a The row index, starting at 0, of the row to get.
 	 * @return The \c float array of the elements in the specified row.
 	 */
-	float* operator[](int a) { return m[a]; }
+    float* operator[](int a)
+    {
+        return m[a];
+    }
 
-	/**
+    /**
 	 * Assign this FMMatrix33's elements to be the same as that of the given 
 	 * FMMatrix33.
 	 *
 	 * @param copy The FMMatrix to copy elements from.
 	 * @return This FMMatrix.
 	 */
-	FMMatrix33& operator=(const FMMatrix33& copy);
+    FMMatrix33& operator=(const FMMatrix33& copy);
 
-	/**
+    /**
 	 * Gets the transposed of this FMMatrix33.
 	 *
 	 * @return The transposed of this FMMatrix.
 	 */
-	FMMatrix33 Transposed() const;
+    FMMatrix33 Transposed() const;
 
-	/**
+    /**
 	 * Gets the inversion of this FMMatrix33.
 	 *
 	 * @return The inversion of this FMMatrix.
 	 */
-	FMMatrix33 Inverted() const;
+    FMMatrix33 Inverted() const;
 
 public:
-	static FMMatrix33 identity;	/**< The identity FMMatrix33. */
+    static FMMatrix33 identity; /**< The identity FMMatrix33. */
 
-	/**
+    /**
 	 * Gets the FMMatrix33 representation of a 2D counter-clockwise rotation
 	 * about the z-axis.
 	 *
 	 * @param angle The angle of rotation in radians.
 	 * @return The rotation FMMatrix.
 	 */
-	static FMMatrix33 RotationMatrix(float angle);
+    static FMMatrix33 RotationMatrix(float angle);
 
-	/**
+    /**
 	 * Gets the FMMatrix33 representation of a 2D translation.
 	 *
 	 * @param tx The translation in the x direction.
 	 * @param ty The translation in the y direction.
 	 * @return The translation FMMatrix.
 	 */
-	static FMMatrix33 TranslationMatrix(float tx, float ty);
-	
-	/**
+    static FMMatrix33 TranslationMatrix(float tx, float ty);
+
+    /**
 	 * Gets the FMMatrix33 representation of a 2D scale.
 	 *
 	 * @param sx The scale factor in the x direction.
 	 * @param sy The scale factor in the y direction.
 	 * @return The scale FMMatrix.
 	 */
-	static FMMatrix33 ScaleMatrix(float sx, float sy);
+    static FMMatrix33 ScaleMatrix(float sx, float sy);
 
-	/**
+    /**
 	 * Gets the FMMatrix33 representation of a 2D translation.
 	 *
 	 * The translation in the x direction is the \a u componenet of the given
@@ -136,9 +150,12 @@ public:
 	 * @param translation The FMVector2 to get the translation components from.
 	 * @return The translation FMMatrix33.
 	 */
-	static inline FMMatrix33 TranslationMatrix(FMVector2 translation) { return TranslationMatrix(translation.u, translation.v); }
+    static inline FMMatrix33 TranslationMatrix(FMVector2 translation)
+    {
+        return TranslationMatrix(translation.u, translation.v);
+    }
 
-	/**
+    /**
 	 * Gets the FMMatrix33 representation of a 2D scale.
 	 *
 	 * The scale in the x direction is the \a u componenet of the given
@@ -147,7 +164,10 @@ public:
 	 * @param scale The FMVector2 to get the scale components from.
 	 * @return The scale FMMatrix33.
 	 */
-	static inline FMMatrix33 ScaleMatrix(FMVector2 scale) { return ScaleMatrix(scale.u, scale.v); }
+    static inline FMMatrix33 ScaleMatrix(FMVector2 scale)
+    {
+        return ScaleMatrix(scale.u, scale.v);
+    }
 };
 
 /**

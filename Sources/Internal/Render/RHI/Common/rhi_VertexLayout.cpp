@@ -44,6 +44,7 @@ namespace rhi
 
 VertexLayout::VertexLayout()
     : _elem_count(0)
+    , _stream_count(0)
 {
 }
 
@@ -58,6 +59,21 @@ VertexLayout::~VertexLayout()
 void VertexLayout::Clear()
 {
     _elem_count = 0;
+    _stream_count = 0;
+}
+
+//------------------------------------------------------------------------------
+
+void VertexLayout::AddStream(VertexDataFrequency freq)
+{
+    DVASSERT(_stream_count < MaxStreamCount);
+
+    _stream[_stream_count].elem_count = 0;
+    _stream[_stream_count].first_elem = _elem_count;
+    _stream[_stream_count].freq = freq;
+    _stream[_stream_count].__pad = 0;
+
+    ++_stream_count;
 }
 
 //------------------------------------------------------------------------------
@@ -67,12 +83,16 @@ void VertexLayout::AddElement(VertexSemantics usage, unsigned usage_i, VertexDat
     DVASSERT(_elem_count < MaxElemCount);
     Element* e = _elem + _elem_count;
 
+    if (_stream_count == 0)
+        AddStream(VDF_PER_VERTEX);
+
     e->usage = usage;
     e->usage_index = usage_i;
     e->data_type = type;
     e->data_count = dimension;
 
     ++_elem_count;
+    ++_stream[_stream_count - 1].elem_count;
 }
 
 //------------------------------------------------------------------------------
@@ -92,11 +112,11 @@ VertexLayout::insert_elem( unsigned pos, VertexSemantics usage, unsigned usage_i
 //------------------------------------------------------------------------------
 
 unsigned
-VertexLayout::Stride() const
+VertexLayout::Stride(unsigned stream_i) const
 {
     unsigned sz = 0;
 
-    for (unsigned e = 0; e != _elem_count; ++e)
+    for (unsigned e = _stream[stream_i].first_elem; e != _stream[stream_i].first_elem + _stream[stream_i].elem_count; ++e)
         sz += ElementSize(e);
 
     return sz;
@@ -105,9 +125,42 @@ VertexLayout::Stride() const
 //------------------------------------------------------------------------------
 
 unsigned
+VertexLayout::StreamCount() const
+{
+    return _stream_count;
+}
+
+//------------------------------------------------------------------------------
+
+VertexDataFrequency
+VertexLayout::StreamFrequency(unsigned stream_i) const
+{
+    DVASSERT(stream_i < _stream_count);
+    return (VertexDataFrequency)(_stream[stream_i].freq);
+}
+
+//------------------------------------------------------------------------------
+
+unsigned
 VertexLayout::ElementCount() const
 {
     return _elem_count;
+}
+
+//------------------------------------------------------------------------------
+
+unsigned
+VertexLayout::ElementStreamIndex(unsigned elem_i) const
+{
+    unsigned s = 0;
+
+    for (; s != _stream_count; ++s)
+    {
+        if (elem_i >= _stream[s].first_elem && elem_i < _stream[s].first_elem + _stream[s].elem_count)
+            break;
+    }
+
+    return s;
 }
 
 //------------------------------------------------------------------------------
@@ -148,8 +201,9 @@ unsigned
 VertexLayout::ElementOffset(unsigned elem_i) const
 {
     unsigned off = 0;
+    unsigned s = ElementStreamIndex(elem_i);
 
-    for (unsigned e = 0; e < elem_i; ++e)
+    for (unsigned e = _stream[s].first_elem; e < elem_i; ++e)
         off += ElementSize(e);
 
     return off;
@@ -185,22 +239,25 @@ VertexLayout::ElementSize(unsigned elem_i) const
 
 void VertexLayout::Dump() const
 {
-    for (unsigned e = 0; e != _elem_count; ++e)
+    for (unsigned s = 0; s != _stream_count; ++s)
     {
-        Logger::Info(
-        "[%u] +%02u  %s%u  %s x%u",
-        e, ElementOffset(e),
-        VertexSemanticsName(VertexSemantics(_elem[e].usage)), _elem[e].usage_index,
-        VertexDataTypeName(VertexDataType(_elem[e].data_type)), _elem[e].data_count);
+        Logger::Info("stream[%u]  stride= %u", s, Stride(s));
+        for (unsigned a = _stream[s].first_elem, a_end = _stream[s].first_elem + _stream[s].elem_count; a != a_end; ++a)
+        {
+            Logger::Info(
+            "  [%u] +%02u  %s%u  %s x%u",
+            a, ElementOffset(a),
+            VertexSemanticsName(VertexSemantics(_elem[a].usage)), _elem[a].usage_index,
+            VertexDataTypeName(VertexDataType(_elem[a].data_type)), _elem[a].data_count);
+        }
     }
-    Logger::Info("stride = %u\n", Stride());
 }
 
 //------------------------------------------------------------------------------
 
 bool VertexLayout::operator==(const VertexLayout& vl) const
 {
-    return (this->_elem_count == vl._elem_count) ? !memcmp(_elem, vl._elem, _elem_count * sizeof(Element)) : false;
+    return (this->_elem_count == vl._elem_count && this->_stream_count == vl._stream_count) ? (memcmp(_elem, vl._elem, _elem_count * sizeof(Element)) == 0 && memcmp(_stream, vl._stream, _stream_count * sizeof(Stream)) == 0) : false;
 }
 
 //------------------------------------------------------------------------------
@@ -212,6 +269,11 @@ VertexLayout::operator=(const VertexLayout& src)
 
     for (unsigned e = 0; e != _elem_count; ++e)
         this->_elem[e] = src._elem[e];
+
+    this->_stream_count = src._stream_count;
+
+    for (unsigned s = 0; s != _stream_count; ++s)
+        this->_stream[s] = src._stream[s];
 
     return *this;
 }
@@ -356,6 +418,9 @@ void VertexLayout::Save(DAVA::File* out) const
 {
     out->Write(&_elem_count);
     out->Write(_elem, _elem_count * sizeof(Element));
+
+    out->Write(&_stream_count);
+    out->Write(_stream, _stream_count * sizeof(Stream));
 }
 
 //------------------------------------------------------------------------------
@@ -364,6 +429,9 @@ void VertexLayout::Load(DAVA::File* in)
 {
     in->Read(&_elem_count);
     in->Read(&_elem, _elem_count * sizeof(Element));
+
+    in->Read(&_stream_count);
+    in->Read(&_stream, _stream_count * sizeof(Stream));
 }
 
 //==============================================================================

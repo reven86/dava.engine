@@ -38,8 +38,8 @@
 
 struct RotateHood : public HoodObject
 {
-	RotateHood();
-	~RotateHood();
+    RotateHood();
+    ~RotateHood();
 
     virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem);
 
@@ -49,12 +49,12 @@ struct RotateHood : public HoodObject
 
     HoodCollObject* axisXc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
     HoodCollObject* axisYc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
-	HoodCollObject* axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
+    HoodCollObject* axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];
 
-	DAVA::float32 modifRotate;
+    DAVA::float32 modifRotate;
 
 private:
-	DAVA::float32 radius;
+    DAVA::float32 radius;
 };
 
 #endif // __ROTATE_HOOD_H__

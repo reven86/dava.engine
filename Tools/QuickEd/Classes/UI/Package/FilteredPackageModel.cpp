@@ -31,18 +31,16 @@
 #include <QColor>
 #include "DAVAEngine.h"
 
-FilteredPackageModel::FilteredPackageModel(QObject *parent)
+FilteredPackageModel::FilteredPackageModel(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
-    
 }
 
 FilteredPackageModel::~FilteredPackageModel()
 {
-    
 }
 
-bool FilteredPackageModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+bool FilteredPackageModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
     if (QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent))
     {
@@ -51,7 +49,7 @@ bool FilteredPackageModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     return hasAcceptedChildren(sourceRow, sourceParent);
 }
 
-QVariant FilteredPackageModel::data(const QModelIndex &index, int role) const
+QVariant FilteredPackageModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::TextColorRole)
     {
@@ -63,23 +61,23 @@ QVariant FilteredPackageModel::data(const QModelIndex &index, int role) const
                 return QColor(Qt::lightGray);
         }
     }
-    
+
     return QSortFilterProxyModel::data(index, role);
 }
 
-bool FilteredPackageModel::hasAcceptedChildren(int sourceRow, const QModelIndex &sourceParent) const
+bool FilteredPackageModel::hasAcceptedChildren(int sourceRow, const QModelIndex& sourceParent) const
 {
     QModelIndex item = sourceModel()->index(sourceRow, 0, sourceParent);
     int rowCount = sourceModel()->rowCount(item);
-    
+
     if (rowCount == 0)
         return false;
-    
+
     for (int row = 0; row < rowCount; ++row)
     {
         if (filterAcceptsRow(row, item))
             return true;
     }
-    
+
     return false;
 }

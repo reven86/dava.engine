@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_RENDER_PASS_H__
-#define	__DAVAENGINE_SCENE3D_RENDER_PASS_H__
+#define __DAVAENGINE_SCENE3D_RENDER_PASS_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
@@ -43,8 +43,8 @@ class RenderPass
 public:
     RenderPass(const FastName& name);
     virtual ~RenderPass();
-    
-    inline const FastName & GetName() const;
+
+    inline const FastName& GetName() const;
 
     void AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID afterLayer = RenderLayer::RENDER_LAYER_INVALID_ID);
     void RemoveRenderLayer(RenderLayer* layer);
@@ -52,7 +52,7 @@ public:
     virtual void Draw(RenderSystem* renderSystem);
 
     inline uint32 GetRenderLayerCount() const;
-    inline RenderLayer * GetRenderLayer(uint32 index) const;
+    inline RenderLayer* GetRenderLayer(uint32 index) const;
 
     inline rhi::RenderPassConfig& GetPassConfig();
     inline void SetViewport(const Rect& viewPort);
@@ -65,12 +65,12 @@ protected:
     Vector2 viewportSize, rcpViewportSize, viewportOffset; //storage fro dynamic bindings
 
     /*convinience*/
-    void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
+    void PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem);
     void PrepareLayersArrays(const Vector<RenderObject*> objectsArray, Camera* camera);
     void ClearLayersArrays();
 
     void SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4* externalClipPlane = NULL);
-    void DrawLayers(Camera *camera);
+    void DrawLayers(Camera* camera);
     void DrawDebug(Camera* camera, RenderSystem* renderSystem);
 
     void BeginRenderPass();
@@ -104,7 +104,7 @@ inline void RenderPass::SetViewport(const Rect& _viewport)
     passConfig.viewport.height = (int32)viewport.dy;
 }
 
-inline const FastName & RenderPass::GetName() const
+inline const FastName& RenderPass::GetName() const
 {
     return passName;
 }
@@ -113,58 +113,60 @@ inline uint32 RenderPass::GetRenderLayerCount() const
 {
     return (uint32)renderLayers.size();
 }
-    
-inline RenderLayer * RenderPass::GetRenderLayer(uint32 index) const
+
+inline RenderLayer* RenderPass::GetRenderLayer(uint32 index) const
 {
     return renderLayers[index];
 }
 
 class WaterPrePass : public RenderPass
-{    
+{
 public:
-    inline void SetWaterLevel(float32 level){waterLevel = level;}
+    inline void SetWaterLevel(float32 level)
+    {
+        waterLevel = level;
+    }
     WaterPrePass(const FastName& name);
     ~WaterPrePass();
+
 protected:
     Camera *passMainCamera, *passDrawCamera;
     float32 waterLevel;
 };
-class WaterReflectionRenderPass  : public WaterPrePass
+class WaterReflectionRenderPass : public WaterPrePass
 {
 public:
     WaterReflectionRenderPass(const FastName& name);
     virtual void Draw(RenderSystem* renderSystem);
 
 private:
-    void UpdateCamera(Camera *camera);
+    void UpdateCamera(Camera* camera);
 };
 
-class WaterRefractionRenderPass  : public WaterPrePass
-{       
+class WaterRefractionRenderPass : public WaterPrePass
+{
 public:
     WaterRefractionRenderPass(const FastName& name);
     virtual void Draw(RenderSystem* renderSystem);
 };
 
 class MainForwardRenderPass : public RenderPass
-{	
-
+{
 public:
     MainForwardRenderPass(const FastName& name);
     ~MainForwardRenderPass();
     virtual void Draw(RenderSystem* renderSystem);
 
 private:
-	WaterReflectionRenderPass *reflectionPass;
+    WaterReflectionRenderPass* reflectionPass;
     WaterRefractionRenderPass* refractionPass;
 
     AABBox3 waterBox;
 
     void InitReflectionRefraction();
-    void PrepareReflectionRefractionTextures(RenderSystem * renderSystem);
+    void PrepareReflectionRefractionTextures(RenderSystem* renderSystem);
 };
 
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */

@@ -43,44 +43,44 @@ UIAggregatorControl::UIAggregatorControl(const Rect& rect)
 
 UIAggregatorControl* UIAggregatorControl::Clone()
 {
-	UIAggregatorControl* c = new UIAggregatorControl(Rect(relativePosition.x, relativePosition.y, size.x, size.y));
-	c->CopyDataFrom(this);
-	return c;
+    UIAggregatorControl* c = new UIAggregatorControl(Rect(relativePosition.x, relativePosition.y, size.x, size.y));
+    c->CopyDataFrom(this);
+    return c;
 }
 
-YamlNode* UIAggregatorControl::SaveToYamlNode(UIYamlLoader * loader)
+YamlNode* UIAggregatorControl::SaveToYamlNode(UIYamlLoader* loader)
 {
-	YamlNode* node = UIControl::SaveToYamlNode(loader);
-	node->Set(AGGREGATOR_PATH, aggregatorPath.GetFrameworkPath());
-	return node;
+    YamlNode* node = UIControl::SaveToYamlNode(loader);
+    node->Set(AGGREGATOR_PATH, aggregatorPath.GetFrameworkPath());
+    return node;
 }
 
-void UIAggregatorControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
+void UIAggregatorControl::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
 {
-	UIControl::LoadFromYamlNode(node, loader);
-	
-	const YamlNode * pathNode = node->Get(AGGREGATOR_PATH);
-	if (pathNode)
-	{
-		aggregatorPath = FilePath(pathNode->AsString());
-		// DF-2230 - Pass relative path to loader
-		UIYamlLoader::Load(this, aggregatorPath, loader->GetAssertIfCustomControlNotFound());
-	}
+    UIControl::LoadFromYamlNode(node, loader);
+
+    const YamlNode* pathNode = node->Get(AGGREGATOR_PATH);
+    if (pathNode)
+    {
+        aggregatorPath = FilePath(pathNode->AsString());
+        // DF-2230 - Pass relative path to loader
+        UIYamlLoader::Load(this, aggregatorPath, loader->GetAssertIfCustomControlNotFound());
+    }
 }
 
 void UIAggregatorControl::AddAggregatorChild(UIControl* uiControl)
 {
-	//AddControl(uiControl);
-	//BringChildFront(uiControl);
-	aggregatorControls.push_back(uiControl);
+    //AddControl(uiControl);
+    //BringChildFront(uiControl);
+    aggregatorControls.push_back(uiControl);
 }
 
 void UIAggregatorControl::SetAggregatorPath(const FilePath& path)
 {
-	aggregatorPath = path;
+    aggregatorPath = path;
 }
 
-const FilePath & UIAggregatorControl::GetAggregatorPath() const
+const FilePath& UIAggregatorControl::GetAggregatorPath() const
 {
-	return aggregatorPath;
+    return aggregatorPath;
 }

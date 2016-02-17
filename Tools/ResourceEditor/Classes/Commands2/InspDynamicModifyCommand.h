@@ -45,8 +45,8 @@ public:
         return NULL;
     };
 
-    DAVA::InspInfoDynamic *dynamicInfo;
-	DAVA::FastName key;
+    DAVA::InspInfoDynamic* dynamicInfo;
+    DAVA::FastName key;
 
     DAVA::InspInfoDynamic::DynamicData ddata;
 

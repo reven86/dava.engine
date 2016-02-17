@@ -29,9 +29,8 @@
 
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
 
-
-CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWorld *word, DAVA::RenderObject *renderObject)
-	: CollisionBaseObject(entity, word)
+CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWorld* word, DAVA::RenderObject* renderObject)
+    : CollisionBaseObject(entity, word)
 {
     if ((renderObject != nullptr) && (word != nullptr))
     {
@@ -64,7 +63,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 
             if ((batchLodIndex == bestLodIndex) && (batchSwitchIndex == curSwitchIndex))
             {
-			    DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
+                DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
                 if (pg != nullptr)
                 {
                     // is this the first polygon in cycle
@@ -78,7 +77,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
                     {
                         DAVA::uint16 index0 = pg->indexArray[i];
                         DAVA::uint16 index1 = pg->indexArray[i + 1];
-                        DAVA::uint16 index2 = pg->indexArray[i+2];
+                        DAVA::uint16 index2 = pg->indexArray[i + 2];
 
                         DAVA::Vector3 v0;
                         DAVA::Vector3 v1;
@@ -100,7 +99,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
                     boundingBox.AddAABBox(pg->GetBoundingBox());
                 }
             }
-		}
+        }
 
         if (anyPolygonAdded)
         {
@@ -123,8 +122,8 @@ CollisionRenderObject::~CollisionRenderObject()
         btWord->removeCollisionObject(btObject);
         DAVA::SafeDelete(btObject);
         DAVA::SafeDelete(btShape);
-		DAVA::SafeDelete(btTriangles);
-	}
+        DAVA::SafeDelete(btTriangles);
+    }
 }
 
 struct ClassifyTrianglesToSinglePlaneCallback : public btInternalTriangleIndexCallback

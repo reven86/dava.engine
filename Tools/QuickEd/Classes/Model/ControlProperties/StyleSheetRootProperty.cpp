@@ -39,38 +39,38 @@
 
 using namespace DAVA;
 
-StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
+StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode* aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
     : styleSheet(aStyleSheet) // weak
 {
     propertyTable = new UIStyleSheetPropertyTable();
 
     selectors = new StyleSheetSelectorsSection("Selectors");
     selectors->SetParent(this);
-    for (const UIStyleSheetSelectorChain &chain : selectorChains)
+    for (const UIStyleSheetSelectorChain& chain : selectorChains)
     {
         ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(chain));
         selector->SetStyleSheetPropertyTable(propertyTable);
         selectors->AddProperty(selector);
     }
-    
+
     propertiesSection = new StyleSheetPropertiesSection("Properties");
     propertiesSection->SetParent(this);
-    for (const UIStyleSheetProperty &p : properties)
+    for (const UIStyleSheetProperty& p : properties)
     {
         ScopedPtr<StyleSheetProperty> prop(new StyleSheetProperty(p));
         propertiesSection->AddProperty(prop);
     }
-    
+
     UpdateStyleSheetPropertyTable();
 }
 
 StyleSheetRootProperty::~StyleSheetRootProperty()
 {
     styleSheet = nullptr; // weak
-    
+
     selectors->SetParent(nullptr);
     SafeRelease(selectors);
-    
+
     propertiesSection->SetParent(nullptr);
     SafeRelease(propertiesSection);
 
@@ -82,20 +82,20 @@ uint32 StyleSheetRootProperty::GetCount() const
     return SECTION_COUNT;
 }
 
-AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
+AbstractProperty* StyleSheetRootProperty::GetProperty(int index) const
 {
     switch (index)
     {
-        case SECTION_SELECTORS:
-            return selectors;
-        case SECTION_PROPERTIES:
-            return propertiesSection;
+    case SECTION_SELECTORS:
+        return selectors;
+    case SECTION_PROPERTIES:
+        return propertiesSection;
     }
     DVASSERT(false);
     return nullptr;
 }
 
-void StyleSheetRootProperty::Accept(PropertyVisitor *visitor)
+void StyleSheetRootProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitStyleSheetRoot(this);
 }
@@ -105,7 +105,7 @@ bool StyleSheetRootProperty::IsReadOnly() const
     return styleSheet->IsReadOnly();
 }
 
-const DAVA::String &StyleSheetRootProperty::GetName() const
+const DAVA::String& StyleSheetRootProperty::GetName() const
 {
     static String rootName = "Style Sheets Properties";
     return rootName;
@@ -116,12 +116,12 @@ AbstractProperty::ePropertyType StyleSheetRootProperty::GetType() const
     return TYPE_HEADER;
 }
 
-void StyleSheetRootProperty::AddListener(PropertyListener *listener)
+void StyleSheetRootProperty::AddListener(PropertyListener* listener)
 {
     listeners.push_back(listener);
 }
 
-void StyleSheetRootProperty::RemoveListener(PropertyListener *listener)
+void StyleSheetRootProperty::RemoveListener(PropertyListener* listener)
 {
     auto it = std::find(listeners.begin(), listeners.end(), listener);
     if (it != listeners.end())
@@ -134,12 +134,12 @@ void StyleSheetRootProperty::RemoveListener(PropertyListener *listener)
     }
 }
 
-void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
+void StyleSheetRootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
 {
     property->SetValue(newValue);
     UpdateStyleSheetPropertyTable();
 
-    for (PropertyListener *listener : listeners)
+    for (PropertyListener* listener : listeners)
         listener->PropertyChanged(property);
 }
 
@@ -153,17 +153,17 @@ bool StyleSheetRootProperty::CanRemoveProperty(DAVA::uint32 propertyIndex) const
     return !IsReadOnly() && FindPropertyByPropertyIndex(propertyIndex) != nullptr;
 }
 
-void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
+void StyleSheetRootProperty::AddProperty(StyleSheetProperty* property)
 {
     if (CanAddProperty(property->GetPropertyIndex()) && property->GetParent() == nullptr)
     {
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StylePropertyWillBeAdded(propertiesSection, property, property->GetPropertyIndex());
 
         uint32 index = 0;
         while (index < propertiesSection->GetCount())
         {
-            StyleSheetProperty *p = propertiesSection->GetProperty(index);
+            StyleSheetProperty* p = propertiesSection->GetProperty(index);
             if (p->GetPropertyIndex() > property->GetPropertyIndex())
                 break;
             index++;
@@ -171,23 +171,23 @@ void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
         propertiesSection->InsertProperty(property, index);
         UpdateStyleSheetPropertyTable();
 
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StylePropertyWasAdded(propertiesSection, property, property->GetPropertyIndex());
     }
 }
 
-void StyleSheetRootProperty::RemoveProperty(StyleSheetProperty *property)
+void StyleSheetRootProperty::RemoveProperty(StyleSheetProperty* property)
 {
     uint32 index = propertiesSection->GetIndex(property);
     if (!IsReadOnly() && index != -1)
     {
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StylePropertyWillBeRemoved(propertiesSection, property, index);
-        
+
         propertiesSection->RemoveProperty(property);
         UpdateStyleSheetPropertyTable();
 
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StylePropertyWasRemoved(propertiesSection, property, index);
     }
 }
@@ -202,17 +202,17 @@ bool StyleSheetRootProperty::CanRemoveSelector() const
     return !IsReadOnly() && selectors->GetCount() > 1;
 }
 
-void StyleSheetRootProperty::InsertSelector(StyleSheetSelectorProperty *property, int index)
+void StyleSheetRootProperty::InsertSelector(StyleSheetSelectorProperty* property, int index)
 {
     if (CanAddSelector() && selectors->GetIndex(property) == -1)
     {
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StyleSelectorWillBeAdded(selectors, property, index);
 
         selectors->InsertProperty(property, index);
         property->SetStyleSheetPropertyTable(propertyTable);
 
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StyleSelectorWasAdded(selectors, property, index);
     }
     else
@@ -221,18 +221,18 @@ void StyleSheetRootProperty::InsertSelector(StyleSheetSelectorProperty *property
     }
 }
 
-void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty *property)
+void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty* property)
 {
     int32 index = selectors->GetIndex(property);
     if (CanRemoveSelector() && index != -1)
     {
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StyleSelectorWillBeRemoved(selectors, property, index);
-        
+
         selectors->RemoveProperty(property);
         property->SetStyleSheetPropertyTable(nullptr);
 
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->StyleSelectorWasRemoved(selectors, property, index);
     }
     else
@@ -241,28 +241,28 @@ void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty *property
     }
 }
 
-StyleSheetSelectorsSection *StyleSheetRootProperty::GetSelectors() const
+StyleSheetSelectorsSection* StyleSheetRootProperty::GetSelectors() const
 {
     return selectors;
 }
 
-StyleSheetPropertiesSection *StyleSheetRootProperty::GetPropertiesSection() const
+StyleSheetPropertiesSection* StyleSheetRootProperty::GetPropertiesSection() const
 {
     return propertiesSection;
 }
 
-StyleSheetProperty *StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::uint32 propertyIndex) const
+StyleSheetProperty* StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::uint32 propertyIndex) const
 {
     for (uint32 i = 0; i < propertiesSection->GetCount(); i++)
     {
-        StyleSheetProperty *p = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(i));
+        StyleSheetProperty* p = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(i));
         if (p->GetPropertyIndex() == propertyIndex)
             return p;
     }
     return nullptr;
 }
 
-StyleSheetSelectorProperty *StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int32 index) const
+StyleSheetSelectorProperty* StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int32 index) const
 {
     if (0 <= index && index < (int32)selectors->GetCount())
     {
@@ -317,7 +317,7 @@ DAVA::Vector<DAVA::UIStyleSheetProperty> StyleSheetRootProperty::CollectStyleShe
     return properties;
 }
 
-DAVA::UIStyleSheetPropertyTable *StyleSheetRootProperty::GetStyleSheetPropertyTable() const
+DAVA::UIStyleSheetPropertyTable* StyleSheetRootProperty::GetStyleSheetPropertyTable() const
 {
     return propertyTable;
 }

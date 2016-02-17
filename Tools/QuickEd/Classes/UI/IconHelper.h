@@ -35,7 +35,7 @@
 class IconHelper
 {
 public:
-	static QString GetIconPathForClassName(const QString& className);
+    static QString GetIconPathForClassName(const QString& className);
     static QString GetCustomIconPath();
 };
 

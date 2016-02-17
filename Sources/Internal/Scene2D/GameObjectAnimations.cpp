@@ -34,29 +34,25 @@
 
 namespace DAVA
 {
-	
-RemoveFromManagerGameObjectAnimation::RemoveFromManagerGameObjectAnimation(GameObject * _object)
-	: Animation(_object, 0.0f, Interpolation::LINEAR)
+RemoveFromManagerGameObjectAnimation::RemoveFromManagerGameObjectAnimation(GameObject* _object)
+    : Animation(_object, 0.0f, Interpolation::LINEAR)
 {
-	object = _object;
+    object = _object;
 }
 
 RemoveFromManagerGameObjectAnimation::~RemoveFromManagerGameObjectAnimation()
 {
-	
 }
 
 void RemoveFromManagerGameObjectAnimation::OnStart()
 {
-	state |= STATE_FINISHED;
-	GameObjectManager * man = object->GetManager();
-	if (man)
-		man->RemoveObject(object);
+    state |= STATE_FINISHED;
+    GameObjectManager* man = object->GetManager();
+    if (man)
+        man->RemoveObject(object);
 }
 
 void RemoveFromManagerGameObjectAnimation::Update(float32 timeElapsed)
 {
-
 }
-	
 };

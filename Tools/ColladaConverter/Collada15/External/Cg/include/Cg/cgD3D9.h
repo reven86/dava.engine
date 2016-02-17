@@ -63,18 +63,18 @@
 #include <windows.h>
 #ifdef CGD3D9DLL_EXPORTS
 #define CGD3D9DLL_API __declspec(dllexport)
-#elif defined (CG_LIB)
+#elif defined(CG_LIB)
 #define CGD3D9DLL_API
 #else
 #define CGD3D9DLL_API __declspec(dllimport)
 #endif
 
 #ifndef CGD3D9ENTRY
-# ifdef _WIN32
-#  define CGD3D9ENTRY __cdecl
-# else
-#  define CGD3D9ENTRY
-# endif
+#ifdef _WIN32
+#define CGD3D9ENTRY __cdecl
+#else
+#define CGD3D9ENTRY
+#endif
 #endif
 
 /*---------------------------------------------------------------------------
@@ -92,15 +92,15 @@ enum cgD3D9Errors
 // cgD3D9GetLastError will return an HRESULT that could be one these.
 // Use cgD3D9TranslateHRESULT() to translate these errors into strings.
 ---------------------------------------------------------------------------*/
-static const HRESULT CGD3D9ERR_NOTLOADED       = MAKE_HRESULT(1, 0x877,  1);
-static const HRESULT CGD3D9ERR_NODEVICE        = MAKE_HRESULT(1, 0x877,  2);
-static const HRESULT CGD3D9ERR_NOTSAMPLER      = MAKE_HRESULT(1, 0x877,  3);
-static const HRESULT CGD3D9ERR_INVALIDPROFILE  = MAKE_HRESULT(1, 0x877,  4);
-static const HRESULT CGD3D9ERR_NULLVALUE       = MAKE_HRESULT(1, 0x877,  5);
-static const HRESULT CGD3D9ERR_OUTOFRANGE      = MAKE_HRESULT(1, 0x877,  6);
-static const HRESULT CGD3D9ERR_NOTUNIFORM      = MAKE_HRESULT(1, 0x877,  7);
-static const HRESULT CGD3D9ERR_NOTMATRIX       = MAKE_HRESULT(1, 0x877,  8);
-static const HRESULT CGD3D9ERR_INVALIDPARAM    = MAKE_HRESULT(1, 0x877,  9);
+static const HRESULT CGD3D9ERR_NOTLOADED = MAKE_HRESULT(1, 0x877, 1);
+static const HRESULT CGD3D9ERR_NODEVICE = MAKE_HRESULT(1, 0x877, 2);
+static const HRESULT CGD3D9ERR_NOTSAMPLER = MAKE_HRESULT(1, 0x877, 3);
+static const HRESULT CGD3D9ERR_INVALIDPROFILE = MAKE_HRESULT(1, 0x877, 4);
+static const HRESULT CGD3D9ERR_NULLVALUE = MAKE_HRESULT(1, 0x877, 5);
+static const HRESULT CGD3D9ERR_OUTOFRANGE = MAKE_HRESULT(1, 0x877, 6);
+static const HRESULT CGD3D9ERR_NOTUNIFORM = MAKE_HRESULT(1, 0x877, 7);
+static const HRESULT CGD3D9ERR_NOTMATRIX = MAKE_HRESULT(1, 0x877, 8);
+static const HRESULT CGD3D9ERR_INVALIDPARAM = MAKE_HRESULT(1, 0x877, 9);
 
 /*---------------------------------------------------------------------------
 // Other error return values
@@ -113,31 +113,31 @@ extern "C"
 #endif
 
 #ifndef CGD3D9_EXPLICIT
-    
+
 /*---------------------------------------------------------------------------
 // Minimal Interface
 ---------------------------------------------------------------------------*/
 
 CGD3D9DLL_API DWORD CGD3D9ENTRY
 cgD3D9TypeToSize(
-  CGtype type
+CGtype type
 );
 
 CGD3D9DLL_API BYTE CGD3D9ENTRY
 cgD3D9ResourceToDeclUsage(
-  CGresource resource
+CGresource resource
 );
 
 CGD3D9DLL_API CGbool CGD3D9ENTRY
 cgD3D9GetVertexDeclaration(
-  CGprogram prog,
-  D3DVERTEXELEMENT9 decl[MAXD3DDECLLENGTH]
+CGprogram prog,
+D3DVERTEXELEMENT9 decl[MAXD3DDECLLENGTH]
 );
 
 CGD3D9DLL_API CGbool CGD3D9ENTRY
 cgD3D9ValidateVertexDeclaration(
-  CGprogram    prog,
-  const D3DVERTEXELEMENT9* decl
+CGprogram prog,
+const D3DVERTEXELEMENT9* decl
 );
 
 /*---------------------------------------------------------------------------
@@ -145,96 +145,96 @@ cgD3D9ValidateVertexDeclaration(
 ---------------------------------------------------------------------------*/
 
 /* ----- D3D Device Control ----------- */
-CGD3D9DLL_API IDirect3DDevice9 * CGD3D9ENTRY
+CGD3D9DLL_API IDirect3DDevice9* CGD3D9ENTRY
 cgD3D9GetDevice();
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetDevice(
-  IDirect3DDevice9* pDevice
+IDirect3DDevice9* pDevice
 );
 
 /* ----- Shader Management ----------- */
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9LoadProgram(
-  CGprogram    prog,
-  CGbool       paramShadowing,
-  DWORD        assemFlags
+CGprogram prog,
+CGbool paramShadowing,
+DWORD assemFlags
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9UnloadProgram(
-  CGprogram prog
+CGprogram prog
 );
 
 CGD3D9DLL_API CGbool CGD3D9ENTRY
 cgD3D9IsProgramLoaded(
-  CGprogram prog
+CGprogram prog
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9BindProgram(
-  CGprogram prog
+CGprogram prog
 );
 
 /* ----- Parameter Management ----------- */
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetUniform(
-  CGparameter param,
-  const void* floats
+CGparameter param,
+const void* floats
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetUniformArray(
-  CGparameter param,
-  DWORD       offset,
-  DWORD       numItems,
-  const void* values
+CGparameter param,
+DWORD offset,
+DWORD numItems,
+const void* values
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetUniformMatrix(
-  CGparameter      param,
-  const D3DMATRIX* matrix
+CGparameter param,
+const D3DMATRIX* matrix
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetUniformMatrixArray(
-  CGparameter      param,
-  DWORD            offset,
-  DWORD            numItems,
-  const D3DMATRIX* matrices
+CGparameter param,
+DWORD offset,
+DWORD numItems,
+const D3DMATRIX* matrices
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetTexture(
-  CGparameter            param,
-  IDirect3DBaseTexture9* tex
+CGparameter param,
+IDirect3DBaseTexture9* tex
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetSamplerState(
-  CGparameter         param,
-  D3DSAMPLERSTATETYPE type,
-  DWORD               value 
+CGparameter param,
+D3DSAMPLERSTATETYPE type,
+DWORD value
 );
 
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9SetTextureWrapMode(
-  CGparameter param,
-  DWORD       value 
+CGparameter param,
+DWORD value
 );
 
 /* ----- Parameter Management (Shadowing) ----------- */
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9EnableParameterShadowing(
-  CGprogram prog,
-  CGbool enable
+CGprogram prog,
+CGbool enable
 );
 
 CGD3D9DLL_API CGbool CGD3D9ENTRY
 cgD3D9IsParameterShadowingEnabled(
-  CGprogram prog
+CGprogram prog
 );
 
 /* --------- Profile Options ----------------- */
@@ -244,63 +244,63 @@ cgD3D9GetLatestVertexProfile();
 CGD3D9DLL_API CGprofile CGD3D9ENTRY
 cgD3D9GetLatestPixelProfile();
 
-CGD3D9DLL_API const char * * CGD3D9ENTRY
+CGD3D9DLL_API const char** CGD3D9ENTRY
 cgD3D9GetOptimalOptions(
-  CGprofile profile
+CGprofile profile
 );
 
 CGD3D9DLL_API CGbool CGD3D9ENTRY
 cgD3D9IsProfileSupported(
-  CGprofile profile
+CGprofile profile
 );
 
 /* --------- Error reporting ----------------- */
 CGD3D9DLL_API HRESULT CGD3D9ENTRY
 cgD3D9GetLastError();
 
-CGD3D9DLL_API const char * CGD3D9ENTRY
+CGD3D9DLL_API const char* CGD3D9ENTRY
 cgD3D9TranslateCGerror(
-  CGerror error
+CGerror error
 );
 
-CGD3D9DLL_API const char * CGD3D9ENTRY
+CGD3D9DLL_API const char* CGD3D9ENTRY
 cgD3D9TranslateHRESULT(
-  HRESULT hr
+HRESULT hr
 );
 
 CGD3D9DLL_API void CGD3D9ENTRY
 cgD3D9EnableDebugTracing(
-  CGbool enable
+CGbool enable
 );
 
 /* --------- CgFX support -------------------- */
 
 CGD3D9DLL_API void CGD3D9ENTRY
 cgD3D9RegisterStates(
-    CGcontext ctx 
+CGcontext ctx
 );
 
 CGD3D9DLL_API void CGD3D9ENTRY
 cgD3D9SetManageTextureParameters(
-    CGcontext ctx, 
-    CGbool flag 
+CGcontext ctx,
+CGbool flag
 );
 
 CGD3D9DLL_API CGbool CGD3D9ENTRY
 cgD3D9GetManageTextureParameters(
-     CGcontext ctx 
+CGcontext ctx
 );
 
-CGD3D9DLL_API IDirect3DBaseTexture9 * CGD3D9ENTRY
+CGD3D9DLL_API IDirect3DBaseTexture9* CGD3D9ENTRY
 cgD3D9GetTextureParameter(
-    CGparameter param 
+CGparameter param
 );
 
 CGD3D9DLL_API void CGD3D9ENTRY
 cgD3D9SetTextureParameter(
-    CGparameter param, 
-    IDirect3DBaseTexture9 *tex 
-); 
+CGparameter param,
+IDirect3DBaseTexture9* tex
+);
 
 CGD3D9DLL_API void CGD3D9ENTRY
 cgD3D9UnloadAllPrograms(void);

@@ -39,15 +39,12 @@ namespace Log
 {
 namespace Math
 {
-	static const float32 PI = 3.14159265358979323846f;
+static const float32 PI = 3.14159265358979323846f;
 
-
-	void	AnglesToVectors(const Vector3 & _angles, Vector3 & _vx, Vector3 & _vy, Vector3 & _vz);
-	
-
+void AnglesToVectors(const Vector3& _angles, Vector3& _vx, Vector3& _vy, Vector3& _vz);
 
 } // end of namespace Math
 } // end of namespace Log
 
 
-#endif 
+#endif

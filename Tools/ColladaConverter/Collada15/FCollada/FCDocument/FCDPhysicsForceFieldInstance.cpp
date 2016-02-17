@@ -18,8 +18,8 @@
 ImplementObjectType(FCDPhysicsForceFieldInstance);
 
 FCDPhysicsForceFieldInstance::FCDPhysicsForceFieldInstance(
-		FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType)
-:	FCDEntityInstance(document, parent, entityType)
+FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType)
+    : FCDEntityInstance(document, parent, entityType)
 {
 }
 
@@ -28,19 +28,21 @@ FCDPhysicsForceFieldInstance::~FCDPhysicsForceFieldInstance()
 }
 
 FCDEntityInstance* FCDPhysicsForceFieldInstance::Clone(
-		FCDEntityInstance* _clone) const
+FCDEntityInstance* _clone) const
 {
-	FCDPhysicsForceFieldInstance* clone = NULL;
-	if (_clone == NULL) clone = new FCDPhysicsForceFieldInstance(
-			const_cast<FCDocument*>(GetDocument()), 
-			const_cast<FCDSceneNode*>(GetParent()), GetEntityType());
-	else if (!_clone->HasType(FCDPhysicsForceFieldInstance::GetClassType())) 
-		return Parent::Clone(_clone);
-	else clone = (FCDPhysicsForceFieldInstance*) _clone;
+    FCDPhysicsForceFieldInstance* clone = NULL;
+    if (_clone == NULL)
+        clone = new FCDPhysicsForceFieldInstance(
+        const_cast<FCDocument*>(GetDocument()),
+        const_cast<FCDSceneNode*>(GetParent()), GetEntityType());
+    else if (!_clone->HasType(FCDPhysicsForceFieldInstance::GetClassType()))
+        return Parent::Clone(_clone);
+    else
+        clone = (FCDPhysicsForceFieldInstance*)_clone;
 
-	Parent::Clone(clone);
+    Parent::Clone(clone);
 
-	// nothing interesting in force field instance to copy
+    // nothing interesting in force field instance to copy
 
-	return clone;
+    return clone;
 }
