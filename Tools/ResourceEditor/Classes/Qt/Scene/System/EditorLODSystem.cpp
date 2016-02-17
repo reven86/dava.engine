@@ -67,6 +67,9 @@ void LODComponentHolder::SummarizeValues()
     Array<float32, LodComponent::MAX_LOD_LAYERS> lodDistances;
     lodDistances.fill(0.f);
 
+    Array<uint32, LodComponent::MAX_LOD_LAYERS> lodCounts;
+    lodCounts.fill(0);
+
     maxLodLayerIndex = LodComponent::INVALID_LOD_LAYER;
 
     uint32 count = static_cast<uint32>(lodComponents.size());
@@ -74,20 +77,28 @@ void LODComponentHolder::SummarizeValues()
     {
         for (auto& lc : lodComponents)
         {
-            maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(GetLodLayersCount(lc)) - 1);
+            uint32 layersCount = GetLodLayersCount(lc);
 
-            for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+            maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(layersCount)-1);
+
+            for (uint32 i = 0; i < layersCount; ++i)
             {
                 lodDistances[i] += lc->GetLodLayerDistance(i);
+                lodCounts[i]++;
             }
         }
 
         for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
-        {
-            lodDistances[i] /= count;
+        { 
+            if (lodCounts[i] != 0)
+            {
+                lodDistances[i] /= lodCounts[i];
+            }
         }
 
-        std::sort(lodDistances.begin(), lodDistances.end());
+        auto endOfRange = lodDistances.begin();
+        std::advance(endOfRange, maxLodLayerIndex + 1);
+        std::sort(lodDistances.begin(), endOfRange);
     }
 
     for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
