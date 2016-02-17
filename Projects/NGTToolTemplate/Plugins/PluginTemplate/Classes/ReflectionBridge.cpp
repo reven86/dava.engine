@@ -527,25 +527,25 @@ VariantConverter::VariantConverter()
     using namespace std;
     using namespace std::placeholders;
 
-    convertFunctions[VariantType::TYPE_NONE] = {bind(&VtoDV<void>, _1), bind(&DVtoV_void, _1)};
-    convertFunctions[VariantType::TYPE_BOOLEAN] = {bind(&VtoDV<bool>, _1), bind(&DVtoV_bool, _1)};
-    convertFunctions[VariantType::TYPE_INT32] = {bind(&VtoDV<int32>, _1), bind(&DVtoV_int32, _1)};
-    convertFunctions[VariantType::TYPE_FLOAT] = {bind(&VtoDV<float32>, _1), bind(&DVtoV_float, _1)};
-    convertFunctions[VariantType::TYPE_STRING] = {bind(&VtoDV<String>, _1), bind(&DVtoV_string, _1)};
-    convertFunctions[VariantType::TYPE_WIDE_STRING] = {bind(&VtoDV<WideString>, _1), bind(&DVtoV_wideString, _1)};
-    convertFunctions[VariantType::TYPE_UINT32] = {bind(&VtoDV<uint32>, _1), bind(&DVtoV_uint32, _1)};
-    convertFunctions[VariantType::TYPE_INT64] = {bind(&VtoDV<int64>, _1), bind(&DVtoV_int64, _1)};
-    convertFunctions[VariantType::TYPE_UINT64] = {bind(&VtoDV<uint64>, _1), bind(&DVtoV_uint64, _1)};
-    convertFunctions[VariantType::TYPE_VECTOR2] = {bind(&VtoDV<Vector2>, _1), bind(&DVtoV_vector2, _1)};
-    convertFunctions[VariantType::TYPE_VECTOR3] = {bind(&VtoDV<Vector3>, _1), bind(&DVtoV_vector3, _1)};
-    convertFunctions[VariantType::TYPE_VECTOR4] = {bind(&VtoDV<Vector4>, _1), bind(&DVtoV_vector4, _1)};
-    convertFunctions[VariantType::TYPE_MATRIX2] = {bind(&VtoDV<Matrix2>, _1), bind(&DVtoV_matrix2, _1)};
-    convertFunctions[VariantType::TYPE_MATRIX3] = {bind(&VtoDV<Matrix3>, _1), bind(&DVtoV_matrix3, _1)};
-    convertFunctions[VariantType::TYPE_MATRIX4] = {bind(&VtoDV<Matrix4>, _1), bind(&DVtoV_matrix4, _1)};
-    convertFunctions[VariantType::TYPE_COLOR] = {bind(&VtoDV<Color>, _1), bind(&DVtoV_color, _1)};
-    convertFunctions[VariantType::TYPE_FASTNAME] = {bind(&VtoDV<FastName>, _1), bind(&DVtoV_fastName, _1)};
-    convertFunctions[VariantType::TYPE_AABBOX3] = {bind(&VtoDV<AABBox3>, _1), bind(&DVtoV_aabbox3, _1)};
-    convertFunctions[VariantType::TYPE_FILEPATH] = {bind(&VtoDV<FilePath>, _1), bind(&DVtoV_filePath, _1)};
+    convertFunctions[VariantType::TYPE_NONE] = { bind(&VtoDV<void>, _1), bind(&DVtoV_void, _1) };
+    convertFunctions[VariantType::TYPE_BOOLEAN] = { bind(&VtoDV<bool>, _1), bind(&DVtoV_bool, _1) };
+    convertFunctions[VariantType::TYPE_INT32] = { bind(&VtoDV<int32>, _1), bind(&DVtoV_int32, _1) };
+    convertFunctions[VariantType::TYPE_FLOAT] = { bind(&VtoDV<float32>, _1), bind(&DVtoV_float, _1) };
+    convertFunctions[VariantType::TYPE_STRING] = { bind(&VtoDV<String>, _1), bind(&DVtoV_string, _1) };
+    convertFunctions[VariantType::TYPE_WIDE_STRING] = { bind(&VtoDV<WideString>, _1), bind(&DVtoV_wideString, _1) };
+    convertFunctions[VariantType::TYPE_UINT32] = { bind(&VtoDV<uint32>, _1), bind(&DVtoV_uint32, _1) };
+    convertFunctions[VariantType::TYPE_INT64] = { bind(&VtoDV<int64>, _1), bind(&DVtoV_int64, _1) };
+    convertFunctions[VariantType::TYPE_UINT64] = { bind(&VtoDV<uint64>, _1), bind(&DVtoV_uint64, _1) };
+    convertFunctions[VariantType::TYPE_VECTOR2] = { bind(&VtoDV<Vector2>, _1), bind(&DVtoV_vector2, _1) };
+    convertFunctions[VariantType::TYPE_VECTOR3] = { bind(&VtoDV<Vector3>, _1), bind(&DVtoV_vector3, _1) };
+    convertFunctions[VariantType::TYPE_VECTOR4] = { bind(&VtoDV<Vector4>, _1), bind(&DVtoV_vector4, _1) };
+    convertFunctions[VariantType::TYPE_MATRIX2] = { bind(&VtoDV<Matrix2>, _1), bind(&DVtoV_matrix2, _1) };
+    convertFunctions[VariantType::TYPE_MATRIX3] = { bind(&VtoDV<Matrix3>, _1), bind(&DVtoV_matrix3, _1) };
+    convertFunctions[VariantType::TYPE_MATRIX4] = { bind(&VtoDV<Matrix4>, _1), bind(&DVtoV_matrix4, _1) };
+    convertFunctions[VariantType::TYPE_COLOR] = { bind(&VtoDV<Color>, _1), bind(&DVtoV_color, _1) };
+    convertFunctions[VariantType::TYPE_FASTNAME] = { bind(&VtoDV<FastName>, _1), bind(&DVtoV_fastName, _1) };
+    convertFunctions[VariantType::TYPE_AABBOX3] = { bind(&VtoDV<AABBox3>, _1), bind(&DVtoV_aabbox3, _1) };
+    convertFunctions[VariantType::TYPE_FILEPATH] = { bind(&VtoDV<FilePath>, _1), bind(&DVtoV_filePath, _1) };
 }
 
 VariantType VariantConverter::Convert(Variant const& v, MetaInfo const* info) const

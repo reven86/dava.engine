@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -53,56 +52,52 @@ class btDispatcher;
 class btManifoldResult;
 class btCollisionObject;
 struct btDispatcherInfo;
-class	btPersistentManifold;
+class btPersistentManifold;
 
-typedef btAlignedObjectArray<btPersistentManifold*>	btManifoldArray;
+typedef btAlignedObjectArray<btPersistentManifold*> btManifoldArray;
 
 struct btCollisionAlgorithmConstructionInfo
 {
-	btCollisionAlgorithmConstructionInfo()
-		:m_dispatcher1(0),
-		m_manifold(0)
-	{
-	}
-	btCollisionAlgorithmConstructionInfo(btDispatcher* dispatcher,int temp)
-		:m_dispatcher1(dispatcher)
-	{
-		(void)temp;
-	}
+    btCollisionAlgorithmConstructionInfo()
+        : m_dispatcher1(0)
+        ,
+        m_manifold(0)
+    {
+    }
+    btCollisionAlgorithmConstructionInfo(btDispatcher* dispatcher, int temp)
+        : m_dispatcher1(dispatcher)
+    {
+        (void)temp;
+    }
 
-	btDispatcher*	m_dispatcher1;
-	btPersistentManifold*	m_manifold;
+    btDispatcher* m_dispatcher1;
+    btPersistentManifold* m_manifold;
 
-//	int	getDispatcherId();
-
+    //	int	getDispatcherId();
 };
-
 
 ///btCollisionAlgorithm is an collision interface that is compatible with the Broadphase and btDispatcher.
 ///It is persistent over frames
 class btCollisionAlgorithm
 {
+protected:
+    btDispatcher* m_dispatcher;
 
 protected:
+    //	int	getDispatcherId();
 
-	btDispatcher*	m_dispatcher;
-
-protected:
-//	int	getDispatcherId();
-	
 public:
+    btCollisionAlgorithm(){};
 
-	btCollisionAlgorithm() {};
+    btCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
 
-	btCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
+    virtual ~btCollisionAlgorithm(){};
 
-	virtual ~btCollisionAlgorithm() {};
+    virtual void processCollision(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut) = 0;
 
-	virtual void processCollision (btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut) = 0;
+    virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut) = 0;
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut) = 0;
-
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray) = 0;
+    virtual void getAllContactManifolds(btManifoldArray& manifoldArray) = 0;
 };
 
 

@@ -39,52 +39,53 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 namespace DAVA
-{	
+{
 /**
 	\ingroup render_3d
 	\brief Group of polygons with same data type & structure
  */
-    
-class SceneFileV2;    
+
+class SceneFileV2;
 class PolygonGroup : public DataNode
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_POLYGONGROUP)
 
 public:
-	enum VertexDataType
-	{
-		VERTEX_FLOAT = 1,
-		//		VERTEX_FIXED16_16,
-		//		VERTEX_SHORT,
-	};
-        	
-    enum 
+    enum VertexDataType
     {
-        PACKING_NONE = 0, 
+        VERTEX_FLOAT = 1,
+        //		VERTEX_FIXED16_16,
+        //		VERTEX_SHORT,
+    };
+
+    enum
+    {
+        PACKING_NONE = 0,
         PACKING_DEFAULT,
     };
-    
+
 protected:
-	virtual ~PolygonGroup();
+    virtual ~PolygonGroup();
+
 public:
-	PolygonGroup();
-	
-	//! Getters
-    inline int32 GetFormat(); 
-    
-	inline void	GetCoord(int32 i, Vector3 & v);
-	inline void	GetNormal(int32 i, Vector3 & v);
-	inline void	GetTangent(int32 i, Vector3 & v);
-	inline void	GetBinormal(int32 i, Vector3 & v);
-	
-	inline void	GetColor(int32 i, uint32 & v);
-	inline void	GetTexcoord(int32 ti, int32 i, Vector2 & v);
-	inline void	GetCubeTexcoord(int32 ti, int32 i, Vector3 & v);
-	inline void	GetIndex(int32 i, int32 & index);
-    
-    inline void GetPivot(int32 i, Vector3 & v);
-    inline void GetFlexibility(int32 i, float32 & v);
-    inline void GetAngle(int32 i, Vector2 & v);
+    PolygonGroup();
+
+    //! Getters
+    inline int32 GetFormat();
+
+    inline void GetCoord(int32 i, Vector3& v);
+    inline void GetNormal(int32 i, Vector3& v);
+    inline void GetTangent(int32 i, Vector3& v);
+    inline void GetBinormal(int32 i, Vector3& v);
+
+    inline void GetColor(int32 i, uint32& v);
+    inline void GetTexcoord(int32 ti, int32 i, Vector2& v);
+    inline void GetCubeTexcoord(int32 ti, int32 i, Vector3& v);
+    inline void GetIndex(int32 i, int32& index);
+
+    inline void GetPivot(int32 i, Vector3& v);
+    inline void GetFlexibility(int32 i, float32& v);
+    inline void GetAngle(int32 i, Vector2& v);
 
     inline rhi::PrimitiveType GetPrimitiveType();
 
@@ -103,14 +104,14 @@ public:
 
     inline void SetIndex(int32 i, int16 index);
 
-    inline void SetPivot(int32 i, const Vector3 & v);
-    inline void SetFlexibility(int32 i, const float32 & v);
-    inline void SetAngle(int32 i, const Vector2 & v);
+    inline void SetPivot(int32 i, const Vector3& v);
+    inline void SetFlexibility(int32 i, const float32& v);
+    inline void SetAngle(int32 i, const Vector2& v);
 
-	inline int32 GetVertexCount();
-	inline int32 GetIndexCount();
-	
-	inline const AABBox3 & GetBoundingBox() const;
+    inline int32 GetVertexCount();
+    inline int32 GetIndexCount();
+
+    inline const AABBox3& GetBoundingBox() const;
 
     inline void SetPrimitiveType(rhi::PrimitiveType type);
 
@@ -134,44 +135,44 @@ public:
 
     uint32* jointCountArray;
 
-    Vector3     *pivotArray;
-    float32     *flexArray;
-    Vector2     *angleArray;
+    Vector3* pivotArray;
+    float32* flexArray;
+    Vector2* angleArray;
 
-	uint32	    *colorArray;
-	int16		*indexArray; // Boroda: why int16? should be uint16? 
-	uint8		*meshData;
-	
-	AABBox3		aabbox;
-	
-	/*
+    uint32* colorArray;
+    int16* indexArray; // Boroda: why int16? should be uint16?
+    uint8* meshData;
+
+    AABBox3 aabbox;
+
+    /*
 		Used for animated meshes to hold original vertexes in array that suitable for fast access
 	 */
-	void		CreateBaseVertexArray();
-	Vector3		* baseVertexArray;
-	
-	//meshFormat is EVF_VERTEX etc.
-	void    AllocateData( int32 meshFormat, int32 vertexCount, int32 indexCount);
-	void	ReleaseData();
-    void    RecalcAABBox();
-    
-    uint32  ReleaseGeometryData();
-    
+    void CreateBaseVertexArray();
+    Vector3* baseVertexArray;
+
+    //meshFormat is EVF_VERTEX etc.
+    void AllocateData(int32 meshFormat, int32 vertexCount, int32 indexCount);
+    void ReleaseData();
+    void RecalcAABBox();
+
+    uint32 ReleaseGeometryData();
+
     /*
         Apply matrix to polygon group. If polygon group is used with vertex buffers 
         you should call BuildBuffers to refresh buffers in memory. 
         TODO: refresh buffers function??? 
      */
-    void    ApplyMatrix(const Matrix4 & matrix);
+    void ApplyMatrix(const Matrix4& matrix);
     /*
         Go through all vertices and optimize it, remove redundant vertices. 
-     */ 
-    void    OptimizeVertices(uint32 newVertexFormat, float32 eplison = 1e-6f);
-    
+     */
+    void OptimizeVertices(uint32 newVertexFormat, float32 eplison = 1e-6f);
+
     /*
         Use greedy algorithm to convert mesh from triangle lists to triangle strips
      */
-    void    ConvertToStrips();
+    void ConvertToStrips();
 
     void BuildBuffers();
     void RestoreBuffers();
@@ -184,10 +185,10 @@ public:
     uint32 vertexLayoutId;
 
 private:
-    void    UpdateDataPointersAndStreams();
-	void	CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
-	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
- 	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
+    void UpdateDataPointersAndStreams();
+    void CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
+    bool IsFloatDataEqual(const float32** meshData, const float32** optData, uint32 vertexFormat, uint32 format) const;
+    int32 OptimazeVertexes(const uint8* meshData, Vector<uint8>& optMeshData, uint32 vertexFormat) const;
 
 public:
     INTROSPECTION_EXTEND(PolygonGroup, DataNode,
@@ -206,196 +207,187 @@ public:
 
 // Static Mesh Implementation
 
-inline void	PolygonGroup::SetCoord(int32 i, const Vector3 & _v)
+inline void PolygonGroup::SetCoord(int32 i, const Vector3& _v)
 {
-	Vector3 * v = (Vector3 *)((uint8 *)vertexArray + i * vertexStride);  
-	*v = _v;
-	aabbox.AddPoint(_v);
+    Vector3* v = (Vector3*)((uint8*)vertexArray + i * vertexStride);
+    *v = _v;
+    aabbox.AddPoint(_v);
 }
 
-inline void	PolygonGroup::SetNormal(int32 i, const Vector3 & _v)
+inline void PolygonGroup::SetNormal(int32 i, const Vector3& _v)
 {
-	Vector3 * v = (Vector3 *)((uint8 *)normalArray + i * vertexStride);  
-	*v = _v;
+    Vector3* v = (Vector3*)((uint8*)normalArray + i * vertexStride);
+    *v = _v;
     (*v).Normalize();
 }
 
-inline void	PolygonGroup::SetTangent(int32 i, const Vector3 & _v)
+inline void PolygonGroup::SetTangent(int32 i, const Vector3& _v)
 {
-	Vector3 * v = (Vector3 *)((uint8 *)tangentArray + i * vertexStride);  
-	*v = _v;
-}
-
-inline void	PolygonGroup::SetBinormal(int32 i, const Vector3 & _v)
-{
-	Vector3 * v = (Vector3 *)((uint8 *)binormalArray + i * vertexStride);  
-	*v = _v;
-}
-
-inline void	PolygonGroup::SetColor(int32 i, const uint32 & _c)
-{
-	uint32 * c = (uint32 *)((uint8 *)colorArray + i * vertexStride);  
-	*c = _c;
-}
-
-inline void	PolygonGroup::SetTexcoord(int32 ti, int32 i, const Vector2 & _t)
-{
-	Vector2 * t = (Vector2 *)((uint8 *)textureCoordArray[ti] + i * vertexStride);  
-	*t = _t;
-}
-	
-inline void	PolygonGroup::SetCubeTexcoord(int32 ti, int32 i, const Vector3 & _t)
-{
-	Vector3 * t = (Vector3 *)((uint8 *)cubeTextureCoordArray[ti] + i * vertexStride);
-	*t = _t;
-}
-
-inline void PolygonGroup::SetPivot(int32 i, const Vector3 & _v)
-{
-    Vector3 * v = (Vector3 *)((uint8 *)pivotArray + i * vertexStride);  
+    Vector3* v = (Vector3*)((uint8*)tangentArray + i * vertexStride);
     *v = _v;
 }
 
-inline void PolygonGroup::SetFlexibility(int32 i, const float32 & _v)
+inline void PolygonGroup::SetBinormal(int32 i, const Vector3& _v)
 {
-    float32 * v = (float32 *)((uint8 *)flexArray + i * vertexStride);  
+    Vector3* v = (Vector3*)((uint8*)binormalArray + i * vertexStride);
     *v = _v;
 }
 
-inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
+inline void PolygonGroup::SetColor(int32 i, const uint32& _c)
 {
-    Vector2* v = (Vector2 *)((uint8 *)angleArray + i * vertexStride);  
+    uint32* c = (uint32*)((uint8*)colorArray + i * vertexStride);
+    *c = _c;
+}
+
+inline void PolygonGroup::SetTexcoord(int32 ti, int32 i, const Vector2& _t)
+{
+    Vector2* t = (Vector2*)((uint8*)textureCoordArray[ti] + i * vertexStride);
+    *t = _t;
+}
+
+inline void PolygonGroup::SetCubeTexcoord(int32 ti, int32 i, const Vector3& _t)
+{
+    Vector3* t = (Vector3*)((uint8*)cubeTextureCoordArray[ti] + i * vertexStride);
+    *t = _t;
+}
+
+inline void PolygonGroup::SetPivot(int32 i, const Vector3& _v)
+{
+    Vector3* v = (Vector3*)((uint8*)pivotArray + i * vertexStride);
     *v = _v;
 }
 
-inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
+inline void PolygonGroup::SetFlexibility(int32 i, const float32& _v)
+{
+    float32* v = (float32*)((uint8*)flexArray + i * vertexStride);
+    *v = _v;
+}
+
+inline void PolygonGroup::SetAngle(int32 i, const Vector2& _v)
+{
+    Vector2* v = (Vector2*)((uint8*)angleArray + i * vertexStride);
+    *v = _v;
+}
+
+inline void PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
     *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneIndexValue);
     //	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
     //	t[jointIndex] = boneIndexValue;
 }
-	
-inline void	PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
+
+inline void PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
     *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);
     //    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
     //	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }
-	
+
 inline void PolygonGroup::SetJointCount(int32 vIndex, int32 jointCount)
 {
-	jointCountArray[vIndex] = jointCount;
+    jointCountArray[vIndex] = jointCount;
 }
 
-inline void	PolygonGroup::SetIndex(int32 i, int16 index)
+inline void PolygonGroup::SetIndex(int32 i, int16 index)
 {
-	indexArray[i] = index;
+    indexArray[i] = index;
 }
 
 inline void PolygonGroup::SetPrimitiveType(rhi::PrimitiveType type)
 {
     primitiveType = type;
 }
-    
+
 inline int32 PolygonGroup::GetFormat()
 {
     return vertexFormat;
 }
 
-inline void	PolygonGroup::GetCoord(int32 i, Vector3 & _v)
+inline void PolygonGroup::GetCoord(int32 i, Vector3& _v)
 {
-	Vector3 * v = (Vector3 *)((uint8 *)vertexArray + i * vertexStride);  
-	_v = *v;
-}
-
-inline void	PolygonGroup::GetNormal(int32 i, Vector3 & _v)
-{
-	Vector3 * v = (Vector3 *)((uint8 *)normalArray + i * vertexStride);  
-	_v = *v;
-}
-
-inline void	PolygonGroup::GetTangent(int32 i, Vector3 & _v)
-{
-	Vector3 * v = (Vector3 *)((uint8 *)tangentArray + i * vertexStride);  
-	_v = *v;
-}
-
-inline void	PolygonGroup::GetBinormal(int32 i, Vector3 & _v)
-{
-	Vector3 * v = (Vector3 *)((uint8 *)binormalArray + i * vertexStride);  
-	_v = *v;
-}
-
-inline void	PolygonGroup::GetColor(int32 i, uint32 & _c)
-{
-	uint32 * c = (uint32 *)((uint8 *)colorArray + i * vertexStride);  
-	_c = *c;
-}
-
-inline void	PolygonGroup::GetTexcoord(int32 ti, int32 i, Vector2 & _t)
-{
-	Vector2 * t = (Vector2 *)((uint8 *)textureCoordArray[ti] + i * vertexStride);  
-	_t = *t;
-}
-
-inline void	PolygonGroup::GetCubeTexcoord(int32 ti, int32 i, Vector3 & _t)
-{
-	Vector3 * t = (Vector3 *)((uint8 *)cubeTextureCoordArray[ti] + i * vertexStride);
-	_t = *t;
-}
-
-inline void PolygonGroup::GetPivot(int32 i, Vector3 & _v)
-{
-    Vector3 * v = (Vector3 *)((uint8 *)pivotArray + i * vertexStride);  
+    Vector3* v = (Vector3*)((uint8*)vertexArray + i * vertexStride);
     _v = *v;
 }
 
-inline void PolygonGroup::GetFlexibility(int32 i, float32 & _v)
+inline void PolygonGroup::GetNormal(int32 i, Vector3& _v)
 {
-    float32 * v = (float32 *)((uint8 *)flexArray + i * vertexStride);  
+    Vector3* v = (Vector3*)((uint8*)normalArray + i * vertexStride);
     _v = *v;
 }
 
-inline void PolygonGroup::GetAngle(int32 i, Vector2 & _v)
+inline void PolygonGroup::GetTangent(int32 i, Vector3& _v)
 {
-    Vector2 * v = (Vector2 *)((uint8 *)angleArray + i * vertexStride);
+    Vector3* v = (Vector3*)((uint8*)tangentArray + i * vertexStride);
     _v = *v;
 }
-	
-inline void	PolygonGroup::GetIndex(int32 i, int32 &index)
+
+inline void PolygonGroup::GetBinormal(int32 i, Vector3& _v)
 {
-	index = (uint16)indexArray[i];
+    Vector3* v = (Vector3*)((uint8*)binormalArray + i * vertexStride);
+    _v = *v;
 }
-	
+
+inline void PolygonGroup::GetColor(int32 i, uint32& _c)
+{
+    uint32* c = (uint32*)((uint8*)colorArray + i * vertexStride);
+    _c = *c;
+}
+
+inline void PolygonGroup::GetTexcoord(int32 ti, int32 i, Vector2& _t)
+{
+    Vector2* t = (Vector2*)((uint8*)textureCoordArray[ti] + i * vertexStride);
+    _t = *t;
+}
+
+inline void PolygonGroup::GetCubeTexcoord(int32 ti, int32 i, Vector3& _t)
+{
+    Vector3* t = (Vector3*)((uint8*)cubeTextureCoordArray[ti] + i * vertexStride);
+    _t = *t;
+}
+
+inline void PolygonGroup::GetPivot(int32 i, Vector3& _v)
+{
+    Vector3* v = (Vector3*)((uint8*)pivotArray + i * vertexStride);
+    _v = *v;
+}
+
+inline void PolygonGroup::GetFlexibility(int32 i, float32& _v)
+{
+    float32* v = (float32*)((uint8*)flexArray + i * vertexStride);
+    _v = *v;
+}
+
+inline void PolygonGroup::GetAngle(int32 i, Vector2& _v)
+{
+    Vector2* v = (Vector2*)((uint8*)angleArray + i * vertexStride);
+    _v = *v;
+}
+
+inline void PolygonGroup::GetIndex(int32 i, int32& index)
+{
+    index = (uint16)indexArray[i];
+}
+
 inline int32 PolygonGroup::GetVertexCount()
 {
-	return vertexCount;
+    return vertexCount;
 }
 inline int32 PolygonGroup::GetIndexCount()
 {
-	return indexCount;
+    return indexCount;
 }
 
-inline const AABBox3 & PolygonGroup::GetBoundingBox() const
+inline const AABBox3& PolygonGroup::GetBoundingBox() const
 {
-	return aabbox;
+    return aabbox;
 }
 
 inline rhi::PrimitiveType PolygonGroup::GetPrimitiveType()
 {
     return primitiveType;
 }
-
-
-
-
 };
 
 #endif // __DAVAENGINE_POLYGONGROUPGLES_H__
-
-
-
-
-

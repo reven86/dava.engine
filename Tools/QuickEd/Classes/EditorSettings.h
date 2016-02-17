@@ -32,28 +32,33 @@
 
 #include "DAVAEngine.h"
 
-class EditorSettings: public DAVA::Singleton<EditorSettings>
+enum eBackgroundType : DAVA::int64
 {
+    BackgroundTexture,
+    BackgroundColor
+};
 
-public: 
+class EditorSettings : public DAVA::Singleton<EditorSettings>
+{
+public:
     enum eDefaultSettings
     {
         RECENT_FILES_COUNT = 5,
     };
-	
+
 public:
-	EditorSettings();
+    EditorSettings();
     virtual ~EditorSettings();
 
-    DAVA::KeyedArchive *GetSettings();
+    DAVA::KeyedArchive* GetSettings();
     void Save();
-	
-    void SetProjectPath(const DAVA::String &projectPath);
+
+    void SetProjectPath(const DAVA::String& projectPath);
     DAVA::String GetProjectPath();
-	
+
     DAVA::int32 GetLastOpenedCount();
     DAVA::String GetLastOpenedFile(DAVA::int32 index);
-    void AddLastOpenedFile(const DAVA::String & pathToFile);
+    void AddLastOpenedFile(const DAVA::String& pathToFile);
 
     void SetUIEditorVersion(const DAVA::String& editorVersion);
     DAVA::String GetUIEditorVersion();
@@ -64,13 +69,11 @@ public:
 
     DAVA::Color GetGrigColor() const;
     void SetGrigColor(const DAVA::Color& color);
+    DAVA::Signal<const DAVA::Color&> GridColorChanged;
 
-    // Background Frame colors.
-    DAVA::Color GetCurrentBackgroundFrameColor() const;
-    void SetCurrentBackgroundFrameColor(const DAVA::Color& color);
-    
-    DAVA::Color GetCustomBackgroundFrameColor() const;
-    void SetCustomBackgroundFrameColor(const DAVA::Color& color);
+    eBackgroundType GetGridType() const;
+    void SetGridType(eBackgroundType type);
+    DAVA::Signal<eBackgroundType> GridTypeChanged;
 
     bool IsUsingAssetCache() const;
     DAVA::String GetAssetCacheIp() const;
@@ -82,7 +85,9 @@ protected:
     void SetColor(const DAVA::String& colorName, const DAVA::Color& color);
 
 private:
-    DAVA::KeyedArchive *settings;
+    using HashType = size_t;
+
+    DAVA::KeyedArchive* settings;
 };
 
 #endif //UIEditor_EditorSettings_h

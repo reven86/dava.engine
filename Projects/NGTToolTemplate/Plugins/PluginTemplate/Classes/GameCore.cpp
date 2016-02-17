@@ -41,5 +41,9 @@ GameCore::~GameCore()
 {
 }
 
-void GameCore::OnAppStarted() {}
-void GameCore::OnAppFinished() {}
+void GameCore::OnAppStarted()
+{
+}
+void GameCore::OnAppFinished()
+{
+}

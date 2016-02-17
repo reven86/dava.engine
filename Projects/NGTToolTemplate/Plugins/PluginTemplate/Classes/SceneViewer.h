@@ -39,9 +39,9 @@ class PluginGLWidget;
 
 namespace DAVA
 {
-    class UI3DView;
-    class Scene;
-    class Entity;
+class UI3DView;
+class Scene;
+class Entity;
 }
 
 class SceneViewer : public QObject
@@ -53,10 +53,10 @@ public:
 
     void Finalise();
 
-    IView & GetView();
-    Q_SLOT void OnOpenScene(std::string const & scenePath);
+    IView& GetView();
+    Q_SLOT void OnOpenScene(std::string const& scenePath);
 
-    Q_SIGNAL void SceneLoaded(DAVA::Scene * scene);
+    Q_SIGNAL void SceneLoaded(DAVA::Scene* scene);
 
     void SetSelection(DAVA::Entity* entity);
 
@@ -66,7 +66,7 @@ private:
 
 private:
     std::unique_ptr<PluginGLWidget> glWidget;
-    DAVA::UI3DView * uiView = nullptr;
+    DAVA::UI3DView* uiView = nullptr;
 };
 
 #endif // DAVAPLUGIN_SCENEVIEWER_H

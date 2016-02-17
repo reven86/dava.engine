@@ -19,14 +19,15 @@
 
 #ifdef LIBXML_MODULES_ENABLED
 
-struct _xmlModule {
-    unsigned char *name;
-    void *handle;
+struct _xmlModule
+{
+    unsigned char* name;
+    void* handle;
 };
 
-static void *xmlModulePlatformOpen(const char *name);
-static int xmlModulePlatformClose(void *handle);
-static int xmlModulePlatformSymbol(void *handle, const char *name, void **result);
+static void* xmlModulePlatformOpen(const char* name);
+static int xmlModulePlatformClose(void* handle);
+static int xmlModulePlatformSymbol(void* handle, const char* name, void** result);
 
 /************************************************************************
  *									*
@@ -41,12 +42,13 @@ static int xmlModulePlatformSymbol(void *handle, const char *name, void **result
  * Handle an out of memory condition
  */
 static void
-xmlModuleErrMemory(xmlModulePtr module, const char *extra)
+xmlModuleErrMemory(xmlModulePtr module, const char* extra)
 {
-    const char *name = NULL;
+    const char* name = NULL;
 
-    if (module != NULL) {
-        name = (const char *) module->name;
+    if (module != NULL)
+    {
+        name = (const char*)module->name;
     }
 
     __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
@@ -66,12 +68,13 @@ xmlModuleErrMemory(xmlModulePtr module, const char *extra)
  * Returns a handle for the module or NULL in case of error
  */
 xmlModulePtr
-xmlModuleOpen(const char *name, int options ATTRIBUTE_UNUSED)
+xmlModuleOpen(const char* name, int options ATTRIBUTE_UNUSED)
 {
     xmlModulePtr module;
 
-    module = (xmlModulePtr) xmlMalloc(sizeof(xmlModule));
-    if (module == NULL) {
+    module = (xmlModulePtr)xmlMalloc(sizeof(xmlModule));
+    if (module == NULL)
+    {
         xmlModuleErrMemory(NULL, "creating module");
         return (NULL);
     }
@@ -80,7 +83,8 @@ xmlModuleOpen(const char *name, int options ATTRIBUTE_UNUSED)
 
     module->handle = xmlModulePlatformOpen(name);
 
-    if (module->handle == NULL) {
+    if (module->handle == NULL)
+    {
         xmlFree(module);
         __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
                         XML_MODULE_OPEN, XML_ERR_FATAL, NULL, 0, 0,
@@ -88,7 +92,7 @@ xmlModuleOpen(const char *name, int options ATTRIBUTE_UNUSED)
         return 0;
     }
 
-    module->name = xmlStrdup((const xmlChar *) name);
+    module->name = xmlStrdup((const xmlChar*)name);
     return (module);
 }
 
@@ -103,11 +107,12 @@ xmlModuleOpen(const char *name, int options ATTRIBUTE_UNUSED)
  * Returns 0 if the symbol was found, or -1 in case of error
  */
 int
-xmlModuleSymbol(xmlModulePtr module, const char *name, void **symbol)
+xmlModuleSymbol(xmlModulePtr module, const char* name, void** symbol)
 {
     int rc = -1;
-	
-    if ((NULL == module) || (symbol == NULL)) {
+
+    if ((NULL == module) || (symbol == NULL))
+    {
         __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
                         XML_MODULE_OPEN, XML_ERR_FATAL, NULL, 0, 0,
                         NULL, NULL, 0, 0, "null parameter\n");
@@ -116,12 +121,13 @@ xmlModuleSymbol(xmlModulePtr module, const char *name, void **symbol)
 
     rc = xmlModulePlatformSymbol(module->handle, name, symbol);
 
-    if (rc == -1) {
+    if (rc == -1)
+    {
         __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
                         XML_MODULE_OPEN, XML_ERR_FATAL, NULL, 0, 0,
                         name, NULL, 0, 0,
                         "failed to find symbol: %s\n",
-			(name == NULL ? "NULL" : name));
+                        (name == NULL ? "NULL" : name));
         return rc;
     }
 
@@ -143,7 +149,8 @@ xmlModuleClose(xmlModulePtr module)
 {
     int rc;
 
-    if (NULL == module) {
+    if (NULL == module)
+    {
         __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
                         XML_MODULE_CLOSE, XML_ERR_FATAL, NULL, 0, 0,
                         NULL, NULL, 0, 0, "null module pointer\n");
@@ -152,10 +159,11 @@ xmlModuleClose(xmlModulePtr module)
 
     rc = xmlModulePlatformClose(module->handle);
 
-    if (rc != 0) {
+    if (rc != 0)
+    {
         __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
                         XML_MODULE_CLOSE, XML_ERR_FATAL, NULL, 0, 0,
-                        (const char *) module->name, NULL, 0, 0,
+                        (const char*)module->name, NULL, 0, 0,
                         "failed to close: %s\n", module->name);
         return -2;
     }
@@ -177,7 +185,8 @@ xmlModuleClose(xmlModulePtr module)
 int
 xmlModuleFree(xmlModulePtr module)
 {
-    if (NULL == module) {
+    if (NULL == module)
+    {
         __xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_MODULE,
                         XML_MODULE_CLOSE, XML_ERR_FATAL, NULL, 0, 0,
                         NULL, NULL, 0, 0, "null module pointer\n");
@@ -202,8 +211,8 @@ xmlModuleFree(xmlModulePtr module)
  * returns a handle on success, and zero on error.
  */
 
-static void *
-xmlModulePlatformOpen(const char *name)
+static void*
+xmlModulePlatformOpen(const char* name)
 {
     return dlopen(name, RTLD_GLOBAL | RTLD_NOW);
 }
@@ -216,7 +225,7 @@ xmlModulePlatformOpen(const char *name)
  */
 
 static int
-xmlModulePlatformClose(void *handle)
+xmlModulePlatformClose(void* handle)
 {
     return dlclose(handle);
 }
@@ -228,18 +237,19 @@ xmlModulePlatformClose(void *handle)
  */
 
 static int
-xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
+xmlModulePlatformSymbol(void* handle, const char* name, void** symbol)
 {
     *symbol = dlsym(handle, name);
-    if (dlerror() != NULL) {
-	return -1;
+    if (dlerror() != NULL)
+    {
+        return -1;
     }
     return 0;
 }
 
 #else /* ! HAVE_DLOPEN */
 
-#ifdef HAVE_SHLLOAD             /* HAVE_SHLLOAD */
+#ifdef HAVE_SHLLOAD /* HAVE_SHLLOAD */
 #ifdef HAVE_DL_H
 #include <dl.h>
 #endif
@@ -248,8 +258,8 @@ xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
  * returns a handle on success, and zero on error.
  */
 
-static void *
-xmlModulePlatformOpen(const char *name)
+static void*
+xmlModulePlatformOpen(const char* name)
 {
     return shl_load(name, BIND_IMMEDIATE, 0L);
 }
@@ -260,7 +270,7 @@ xmlModulePlatformOpen(const char *name)
  */
 
 static int
-xmlModulePlatformClose(void *handle)
+xmlModulePlatformClose(void* handle)
 {
     return shl_unload(handle);
 }
@@ -272,13 +282,14 @@ xmlModulePlatformClose(void *handle)
  */
 
 static int
-xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
+xmlModulePlatformSymbol(void* handle, const char* name, void** symbol)
 {
     int rc;
 
     errno = 0;
     rc = shl_findsym(handle, name, TYPE_PROCEDURE, symbol);
-    if ((-1 == rc) && (0 == errno)) {
+    if ((-1 == rc) && (0 == errno))
+    {
         rc = shl_findsym(handle, name, TYPE_DATA, symbol);
     }
     return rc;
@@ -296,8 +307,8 @@ xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
  * returns a handle on success, and zero on error.
  */
 
-static void *
-xmlModulePlatformOpen(const char *name)
+static void*
+xmlModulePlatformOpen(const char* name)
 {
     return LoadLibrary(name);
 }
@@ -308,7 +319,7 @@ xmlModulePlatformOpen(const char *name)
  */
 
 static int
-xmlModulePlatformClose(void *handle)
+xmlModulePlatformClose(void* handle)
 {
     int rc;
 
@@ -323,7 +334,7 @@ xmlModulePlatformClose(void *handle)
  */
 
 static int
-xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
+xmlModulePlatformSymbol(void* handle, const char* name, void** symbol)
 {
     *symbol = GetProcAddress(handle, name);
     return (NULL == *symbol) ? -1 : 0;
@@ -341,10 +352,10 @@ xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
  * returns a handle on success, and zero on error.
  */
 
-static void *
-xmlModulePlatformOpen(const char *name)
+static void*
+xmlModulePlatformOpen(const char* name)
 {
-    return (void *) load_add_on(name);
+    return (void*)load_add_on(name);
 }
 
 /*
@@ -354,11 +365,11 @@ xmlModulePlatformOpen(const char *name)
  */
 
 static int
-xmlModulePlatformClose(void *handle)
+xmlModulePlatformClose(void* handle)
 {
     status_t rc;
 
-    rc = unload_add_on((image_id) handle);
+    rc = unload_add_on((image_id)handle);
 
     if (rc == B_OK)
         return 0;
@@ -373,11 +384,11 @@ xmlModulePlatformClose(void *handle)
  */
 
 static int
-xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
+xmlModulePlatformSymbol(void* handle, const char* name, void** symbol)
 {
     status_t rc;
 
-    rc = get_image_symbol((image_id) handle, name, B_SYMBOL_TYPE_ANY, symbol);
+    rc = get_image_symbol((image_id)handle, name, B_SYMBOL_TYPE_ANY, symbol);
 
     return (rc == B_OK) ? 0 : -1;
 }
@@ -394,11 +405,11 @@ xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
  * returns a handle on success, and zero on error.
  */
 
-static void *
-xmlModulePlatformOpen(const char *name)
+static void*
+xmlModulePlatformOpen(const char* name)
 {
     char errbuf[256];
-    void *handle;
+    void* handle;
     int rc;
 
     rc = DosLoadModule(errbuf, sizeof(errbuf) - 1, name, &handle);
@@ -416,7 +427,7 @@ xmlModulePlatformOpen(const char *name)
  */
 
 static int
-xmlModulePlatformClose(void *handle)
+xmlModulePlatformClose(void* handle)
 {
     return DosFreeModule(handle);
 }
@@ -428,7 +439,7 @@ xmlModulePlatformClose(void *handle)
  */
 
 static int
-xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
+xmlModulePlatformSymbol(void* handle, const char* name, void** symbol)
 {
     int rc;
 

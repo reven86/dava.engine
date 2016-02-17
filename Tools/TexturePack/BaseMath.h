@@ -41,4 +41,3 @@ using namespace Log;
 using namespace Math;
 
 #endif // __LOGENGINE_MATH_H__
-

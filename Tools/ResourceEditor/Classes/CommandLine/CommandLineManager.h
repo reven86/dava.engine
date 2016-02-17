@@ -35,7 +35,7 @@
 #include "CommandLine/CommandLineTool.h"
 
 class CommandLineManager
-{    
+{
 public:
     CommandLineManager(int argc, char* argv[]);
     ~CommandLineManager() = default;

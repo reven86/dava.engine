@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -100,96 +99,97 @@ subject to the following restrictions:
 class btHeightfieldTerrainShape : public btConcaveShape
 {
 protected:
-	btVector3	m_localAabbMin;
-	btVector3	m_localAabbMax;
-	btVector3	m_localOrigin;
+    btVector3 m_localAabbMin;
+    btVector3 m_localAabbMax;
+    btVector3 m_localOrigin;
 
-	///terrain data
-	int	m_heightStickWidth;
-	int m_heightStickLength;
-	btScalar	m_minHeight;
-	btScalar	m_maxHeight;
-	
-	btScalar m_width;
-	btScalar m_length;
+    ///terrain data
+    int m_heightStickWidth;
+    int m_heightStickLength;
+    btScalar m_minHeight;
+    btScalar m_maxHeight;
 
-	btScalar m_width2;
-	btScalar m_length2;
-	
-	btScalar m_heightScale;
-	union
-	{
-		const unsigned char*	m_heightfieldDataUnsignedChar;
-		const short*		m_heightfieldDataShort;
-		const btScalar*			m_heightfieldDataFloat;
-		const void*	m_heightfieldDataUnknown;
-	};
+    btScalar m_width;
+    btScalar m_length;
 
-	PHY_ScalarType	m_heightDataType;	
-	bool	m_flipQuadEdges;
-  bool  m_useDiamondSubdivision;
+    btScalar m_width2;
+    btScalar m_length2;
 
-	int	m_upAxis;
-	
-	btVector3	m_localScaling;
+    btScalar m_heightScale;
+    union
+    {
+        const unsigned char* m_heightfieldDataUnsignedChar;
+        const short* m_heightfieldDataShort;
+        const btScalar* m_heightfieldDataFloat;
+        const void* m_heightfieldDataUnknown;
+    };
 
-	virtual btScalar	getRawHeightFieldValue(int x,int y) const;
-	void		quantizeWithClamp(int* out, const btVector3& point,int isMax) const;
-	void		getVertex(int x,int y,btVector3& vertex) const;
+    PHY_ScalarType m_heightDataType;
+    bool m_flipQuadEdges;
+    bool m_useDiamondSubdivision;
 
+    int m_upAxis;
 
+    btVector3 m_localScaling;
 
-	/// protected initialization
-	/**
+    virtual btScalar getRawHeightFieldValue(int x, int y) const;
+    void quantizeWithClamp(int* out, const btVector3& point, int isMax) const;
+    void getVertex(int x, int y, btVector3& vertex) const;
+
+    /// protected initialization
+    /**
 	  Handles the work of constructors so that public constructors can be
 	  backwards-compatible without a lot of copy/paste.
 	 */
-	void initialize(int heightStickWidth, int heightStickLength,
-	                const void* heightfieldData, btScalar heightScale,
-	                btScalar minHeight, btScalar maxHeight, int upAxis,
-	                PHY_ScalarType heightDataType, bool flipQuadEdges);
+    void initialize(int heightStickWidth, int heightStickLength,
+                    const void* heightfieldData, btScalar heightScale,
+                    btScalar minHeight, btScalar maxHeight, int upAxis,
+                    PHY_ScalarType heightDataType, bool flipQuadEdges);
 
 public:
-	/// preferred constructor
-	/**
+    /// preferred constructor
+    /**
 	  This constructor supports a range of heightfield
 	  data types, and allows for a non-zero minimum height value.
 	  heightScale is needed for any integer-based heightfield data types.
 	 */
-	btHeightfieldTerrainShape(int heightStickWidth,int heightStickLength,
-	                          const void* heightfieldData, btScalar heightScale,
-	                          btScalar minHeight, btScalar maxHeight,
-	                          int upAxis, PHY_ScalarType heightDataType,
-	                          bool flipQuadEdges);
+    btHeightfieldTerrainShape(int heightStickWidth, int heightStickLength,
+                              const void* heightfieldData, btScalar heightScale,
+                              btScalar minHeight, btScalar maxHeight,
+                              int upAxis, PHY_ScalarType heightDataType,
+                              bool flipQuadEdges);
 
-	/// legacy constructor
-	/**
+    /// legacy constructor
+    /**
 	  The legacy constructor assumes the heightfield has a minimum height
 	  of zero.  Only unsigned char or floats are supported.  For legacy
 	  compatibility reasons, heightScale is calculated as maxHeight / 65535 
 	  (and is only used when useFloatData = false).
  	 */
-	btHeightfieldTerrainShape(int heightStickWidth,int heightStickLength,const void* heightfieldData, btScalar maxHeight,int upAxis,bool useFloatData,bool flipQuadEdges);
+    btHeightfieldTerrainShape(int heightStickWidth, int heightStickLength, const void* heightfieldData, btScalar maxHeight, int upAxis, bool useFloatData, bool flipQuadEdges);
 
-	virtual ~btHeightfieldTerrainShape();
+    virtual ~btHeightfieldTerrainShape();
 
+    void setUseDiamondSubdivision(bool useDiamondSubdivision = true)
+    {
+        m_useDiamondSubdivision = useDiamondSubdivision;
+    }
 
-	void setUseDiamondSubdivision(bool useDiamondSubdivision=true) { m_useDiamondSubdivision = useDiamondSubdivision;}
+    virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
+    virtual void processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+    virtual void calculateLocalInertia(btScalar mass, btVector3& inertia) const;
 
-	virtual void	processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const;
+    virtual void setLocalScaling(const btVector3& scaling);
 
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+    virtual const btVector3& getLocalScaling() const;
 
-	virtual void	setLocalScaling(const btVector3& scaling);
-	
-	virtual const btVector3& getLocalScaling() const;
-	
-	//debugging
-	virtual const char*	getName()const {return "HEIGHTFIELD";}
-
+    //debugging
+    virtual const char* getName() const
+    {
+        return "HEIGHTFIELD";
+    }
 };
 
 #endif //BT_HEIGHTFIELD_TERRAIN_SHAPE_H

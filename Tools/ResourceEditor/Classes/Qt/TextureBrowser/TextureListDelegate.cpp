@@ -64,13 +64,13 @@ QIcon loadPresetIcon;
 QIcon savePresetIcon;
 }
 
-TextureListDelegate::TextureListDelegate(QObject *parent /* = 0 */)
-	: QAbstractItemDelegate(parent)
-	, nameFont("Arial", 10, QFont::Bold)
-	, nameFontMetrics(nameFont)
-	, drawRule(DRAW_PREVIEW_BIG)
+TextureListDelegate::TextureListDelegate(QObject* parent /* = 0 */)
+    : QAbstractItemDelegate(parent)
+    , nameFont("Arial", 10, QFont::Bold)
+    , nameFontMetrics(nameFont)
+    , drawRule(DRAW_PREVIEW_BIG)
 {
-	QObject::connect(TextureCache::Instance(), SIGNAL(ThumbnailLoaded(const DAVA::TextureDescriptor *, const TextureInfo &)), this, SLOT(textureReadyThumbnail(const DAVA::TextureDescriptor *, const TextureInfo &)));
+    QObject::connect(TextureCache::Instance(), SIGNAL(ThumbnailLoaded(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyThumbnail(const DAVA::TextureDescriptor*, const TextureInfo&)));
 
     if (ActionIcon::loadPresetIcon.isNull())
     {
@@ -82,188 +82,188 @@ TextureListDelegate::TextureListDelegate(QObject *parent /* = 0 */)
     }
 };
 
-void TextureListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void TextureListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-	switch(drawRule)
-	{
-	case DRAW_PREVIEW_SMALL:
-		drawPreviewSmall(painter, option, index);
-		break;
+    switch (drawRule)
+    {
+    case DRAW_PREVIEW_SMALL:
+        drawPreviewSmall(painter, option, index);
+        break;
 
-	case DRAW_PREVIEW_BIG:
-	default:
-		drawPreviewBig(painter, option, index);
-		break;
-	}
+    case DRAW_PREVIEW_BIG:
+    default:
+        drawPreviewBig(painter, option, index);
+        break;
+    }
 }
 
-QSize TextureListDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize TextureListDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-	switch(drawRule)
-	{
-	case DRAW_PREVIEW_SMALL:
-		return QSize(option.rect.x(), TEXTURE_PREVIEW_SIZE_SMALL);
-		break;
+    switch (drawRule)
+    {
+    case DRAW_PREVIEW_SMALL:
+        return QSize(option.rect.x(), TEXTURE_PREVIEW_SIZE_SMALL);
+        break;
 
-	case DRAW_PREVIEW_BIG:
-	default:
-		return QSize(option.rect.x(), TEXTURE_PREVIEW_SIZE);
-		break;
-	}
+    case DRAW_PREVIEW_BIG:
+    default:
+        return QSize(option.rect.x(), TEXTURE_PREVIEW_SIZE);
+        break;
+    }
 }
 
-void TextureListDelegate::textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor, const TextureInfo & images)
+void TextureListDelegate::textureReadyThumbnail(const DAVA::TextureDescriptor* descriptor, const TextureInfo& images)
 {
-	if(nullptr != descriptor)
-	{
-		if(descriptorIndexes.contains(descriptor->pathname))
-		{
-			QModelIndex index = descriptorIndexes[descriptor->pathname];
-			descriptorIndexes.remove(descriptor->pathname);
-            
-			// this will force item with given index to redraw
-			emit sizeHintChanged(index);
-		}
-	}
+    if (nullptr != descriptor)
+    {
+        if (descriptorIndexes.contains(descriptor->pathname))
+        {
+            QModelIndex index = descriptorIndexes[descriptor->pathname];
+            descriptorIndexes.remove(descriptor->pathname);
+
+            // this will force item with given index to redraw
+            emit sizeHintChanged(index);
+        }
+    }
 }
 
 void TextureListDelegate::setDrawRule(DrawRule rule)
 {
-	drawRule = rule;
+    drawRule = rule;
 }
 
-void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-	const TextureListModel *curModel = (TextureListModel *) index.model();
-	DAVA::TextureDescriptor *curTextureDescriptor = curModel->getDescriptor(index);
+    const TextureListModel* curModel = (TextureListModel*)index.model();
+    DAVA::TextureDescriptor* curTextureDescriptor = curModel->getDescriptor(index);
 
-	if(nullptr != curTextureDescriptor)
-	{
-		DAVA::Texture *curTexture = curModel->getTexture(index);
+    if (nullptr != curTextureDescriptor)
+    {
+        DAVA::Texture* curTexture = curModel->getTexture(index);
 
-		QString texturePath = curTextureDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str();
-		QString textureName = QFileInfo(texturePath).fileName();
-		QSize textureDimension = QSize();
-		QString textureDataSize = 0;
+        QString texturePath = curTextureDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str();
+        QString textureName = QFileInfo(texturePath).fileName();
+        QSize textureDimension = QSize();
+        QString textureDataSize = 0;
 
-		if(nullptr != curTexture)
-		{
-			textureDimension = QSize(curTexture->width, curTexture->height);
+        if (nullptr != curTexture)
+        {
+            textureDimension = QSize(curTexture->width, curTexture->height);
             textureDataSize = QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
-		}
+        }
 
-		painter->save();
-		painter->setClipRect(option.rect);
+        painter->save();
+        painter->setClipRect(option.rect);
 
-		// draw border
-		QRect borderRect = option.rect;
-		borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
-		if(curModel->isHighlited(index))
-		{
-			// draw highlight
-			painter->setBrush(option.palette.toolTipBase());
-		}
-		painter->setPen(BORDER_COLOR);
-		painter->drawRect(borderRect);
+        // draw border
+        QRect borderRect = option.rect;
+        borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
+        if (curModel->isHighlited(index))
+        {
+            // draw highlight
+            painter->setBrush(option.palette.toolTipBase());
+        }
+        painter->setPen(BORDER_COLOR);
+        painter->drawRect(borderRect);
 
-		const QList<QImage>& images = TextureCache::Instance()->getThumbnail(curTextureDescriptor);
-		if(images.size() > 0 &&
-		   !images[0].isNull())
-		{
-			QSize imageSize = images[0].rect().size();
-			int imageX =  option.rect.x() + (TEXTURE_PREVIEW_SIZE - imageSize.width())/2;
-			int imageY =  option.rect.y() + (TEXTURE_PREVIEW_SIZE - imageSize.height())/2;
-			painter->drawImage(QRect(QPoint(imageX, imageY), imageSize), images[0]);
-		}
-		else
-		{
-			// there is no image for this texture in cache
-			// so load it async
+        const QList<QImage>& images = TextureCache::Instance()->getThumbnail(curTextureDescriptor);
+        if (images.size() > 0 &&
+            !images[0].isNull())
+        {
+            QSize imageSize = images[0].rect().size();
+            int imageX = option.rect.x() + (TEXTURE_PREVIEW_SIZE - imageSize.width()) / 2;
+            int imageY = option.rect.y() + (TEXTURE_PREVIEW_SIZE - imageSize.height()) / 2;
+            painter->drawImage(QRect(QPoint(imageX, imageY), imageSize), images[0]);
+        }
+        else
+        {
+            // there is no image for this texture in cache
+            // so load it async
             TextureConvertor::Instance()->GetThumbnail(curTextureDescriptor);
-			descriptorIndexes.insert(curTextureDescriptor->pathname, index);
-		}
+            descriptorIndexes.insert(curTextureDescriptor->pathname, index);
+        }
 
-		// draw formats info
-        int infoLen  = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
+        // draw formats info
+        int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
 
-		// draw text info
-		{
-			QRectF textRect = option.rect;
-			textRect.adjust(TEXTURE_PREVIEW_SIZE, option.decorationSize.height() / 2, -infoLen, 0);
+        // draw text info
+        {
+            QRectF textRect = option.rect;
+            textRect.adjust(TEXTURE_PREVIEW_SIZE, option.decorationSize.height() / 2, -infoLen, 0);
 
-			QFont origFont = painter->font();
-			painter->setPen(option.palette.text().color());
-			painter->setFont(nameFont);
-			painter->drawText(textRect, textureName);
+            QFont origFont = painter->font();
+            painter->setPen(option.palette.text().color());
+            painter->setFont(nameFont);
+            painter->drawText(textRect, textureName);
 
-			painter->setFont(origFont);
-			textRect.adjust(0, nameFontMetrics.height(), 0, 0);
+            painter->setFont(origFont);
+            textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
             QString infoText = CreateInfoString(index);
-			painter->drawText(textRect, infoText);
-		}
+            painter->drawText(textRect, infoText);
+        }
 
-		// draw selected item
-		if(option.state & QStyle::State_Selected)
-		{
-			QBrush br = option.palette.highlight();
-			QColor cl = br.color();
-			cl.setAlpha(SELECTION_COLOR_ALPHA);
-			br.setColor(cl);
-			painter->setBrush(br);
-			painter->setPen(SELECTION_BORDER_COLOR);
-			painter->drawRect(borderRect);
-		}
+        // draw selected item
+        if (option.state & QStyle::State_Selected)
+        {
+            QBrush br = option.palette.highlight();
+            QColor cl = br.color();
+            cl.setAlpha(SELECTION_COLOR_ALPHA);
+            br.setColor(cl);
+            painter->setBrush(br);
+            painter->setPen(SELECTION_BORDER_COLOR);
+            painter->drawRect(borderRect);
+        }
 
-		painter->restore();
-	}
+        painter->restore();
+    }
 }
 
-bool TextureListDelegate::helpEvent(QHelpEvent *event,
-               QAbstractItemView *view,
-               const QStyleOptionViewItem &option,
-               const QModelIndex &index)
+bool TextureListDelegate::helpEvent(QHelpEvent* event,
+                                    QAbstractItemView* view,
+                                    const QStyleOptionViewItem& option,
+                                    const QModelIndex& index)
 {
     if (nullptr == event || nullptr == view)
     {
         return false;
     }
-    
+
     if (event->type() == QEvent::ToolTip)
     {
-        auto tooltip = index.data( Qt::DisplayRole );
-        if ( tooltip.canConvert<QString>() )
+        auto tooltip = index.data(Qt::DisplayRole);
+        if (tooltip.canConvert<QString>())
         {
             QString infoText = CreateInfoString(index);
-            if(!infoText.isEmpty())
+            if (!infoText.isEmpty())
             {
-                QToolTip::showText( event->globalPos(), infoText, view);
+                QToolTip::showText(event->globalPos(), infoText, view);
                 return true;
             }
         }
     }
-    
-    return QAbstractItemDelegate::helpEvent( event, view, option, index );
+
+    return QAbstractItemDelegate::helpEvent(event, view, option, index);
 }
 
-QString TextureListDelegate::CreateInfoString(const QModelIndex & index) const
+QString TextureListDelegate::CreateInfoString(const QModelIndex& index) const
 {
-    if(!index.isValid())
+    if (!index.isValid())
     {
         return QString();
     }
-    
-    auto curModel = static_cast<const TextureListModel *>(index.model());
+
+    auto curModel = static_cast<const TextureListModel*>(index.model());
     auto curTextureDescriptor = curModel->getDescriptor(index);
-    
-    if(nullptr != curTextureDescriptor)
+
+    if (nullptr != curTextureDescriptor)
     {
         auto curTexture = curModel->getTexture(index);
-        if(nullptr != curTexture)
+        if (nullptr != curTexture)
         {
             QString infoText;
             char dimen[64];
-            
+
             sprintf(dimen, "Size: %dx%d", curTexture->width, curTexture->height);
             infoText += dimen;
             infoText += "\nData size: ";
@@ -273,71 +273,69 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex & index) const
 
             infoText += "\nPath: ";
             infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
-            
+
             return infoText;
         }
     }
- 
+
     return QString();
 }
 
-
-void TextureListDelegate::drawPreviewSmall(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-	const TextureListModel *curModel = (TextureListModel *) index.model();
-	DAVA::TextureDescriptor *curTextureDescriptor = curModel->getDescriptor(index);
-	DAVA::Texture *curTexture = curModel->getTexture(index);
+    const TextureListModel* curModel = (TextureListModel*)index.model();
+    DAVA::TextureDescriptor* curTextureDescriptor = curModel->getDescriptor(index);
+    DAVA::Texture* curTexture = curModel->getTexture(index);
 
-	if(nullptr != curTextureDescriptor)
-	{
-		painter->save();
-		painter->setClipRect(option.rect);
+    if (nullptr != curTextureDescriptor)
+    {
+        painter->save();
+        painter->setClipRect(option.rect);
 
+        // draw border
+        QRect borderRect = option.rect;
+        borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
+        if (curModel->isHighlited(index))
+        {
+            // draw highlight
+            painter->setBrush(QBrush(QColor(255, 255, 200)));
+        }
+        painter->setPen(BORDER_COLOR);
+        painter->drawRect(borderRect);
 
-		// draw border
-		QRect borderRect = option.rect;
-		borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
-		if(curModel->isHighlited(index))
-		{
-			// draw highlight
-			painter->setBrush(QBrush(QColor(255, 255, 200)));
-		}
-		painter->setPen(BORDER_COLOR);
-		painter->drawRect(borderRect);
+        // draw preview
+        QRect previewRect = borderRect;
+        previewRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN * 2, -BORDER_MARGIN * 2);
+        previewRect.setWidth(previewRect.height());
+        painter->setBrush(QBrush(QColor(100, 100, 100)));
+        painter->drawRect(previewRect);
 
-		// draw preview
-		QRect previewRect = borderRect;
-		previewRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN*2, -BORDER_MARGIN*2);
-		previewRect.setWidth(previewRect.height());
-		painter->setBrush(QBrush(QColor(100, 100, 100)));
-		painter->drawRect(previewRect);
+        // draw formats info
+        int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
 
-		// draw formats info
-		int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
+        // draw text
+        QRectF textRect = option.rect;
+        textRect.adjust(TEXTURE_PREVIEW_SIZE_SMALL, (option.rect.height() - option.fontMetrics.height()) / 2, -infoLen, 0);
+        painter->setPen(option.palette.text().color());
+        painter->drawText(textRect, curModel->data(index).toString());
 
-		// draw text
-		QRectF textRect = option.rect;
-		textRect.adjust(TEXTURE_PREVIEW_SIZE_SMALL, (option.rect.height() - option.fontMetrics.height())/2, -infoLen, 0);
-		painter->setPen(option.palette.text().color());
-		painter->drawText(textRect, curModel->data(index).toString());
+        // draw selected item
+        if (option.state & QStyle::State_Selected)
+        {
+            QBrush br = option.palette.highlight();
+            QColor cl = br.color();
+            cl.setAlpha(SELECTION_COLOR_ALPHA);
+            br.setColor(cl);
+            painter->setBrush(br);
+            painter->setPen(SELECTION_BORDER_COLOR);
+            painter->drawRect(borderRect);
+        }
 
-		// draw selected item
-		if(option.state & QStyle::State_Selected)
-		{
-			QBrush br = option.palette.highlight();
-			QColor cl = br.color();
-			cl.setAlpha(SELECTION_COLOR_ALPHA);
-			br.setColor(cl);
-			painter->setBrush(br);
-			painter->setPen(SELECTION_BORDER_COLOR);
-			painter->drawRect(borderRect);
-		}
-
-		painter->restore();
-	}
+        painter->restore();
+    }
 }
 
-int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const
+int TextureListDelegate::drawFormatInfo(QPainter* painter, QRect rect, const DAVA::Texture* texture, const DAVA::TextureDescriptor* descriptor) const
 {
     int ret = 0;
     QRect r = rect;
@@ -346,14 +344,14 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
     {
         r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
         r.setX(rect.x() + rect.width());
-		r.setWidth(FORMAT_INFO_WIDTH);
+        r.setWidth(FORMAT_INFO_WIDTH);
 
-		QColor gpuInfoColors[DAVA::GPU_DEVICE_COUNT];
-		gpuInfoColors[DAVA::GPU_POWERVR_IOS] = TextureBrowser::gpuColor_PVR_ISO;
-		gpuInfoColors[DAVA::GPU_POWERVR_ANDROID] = TextureBrowser::gpuColor_PVR_Android;
-		gpuInfoColors[DAVA::GPU_TEGRA] = TextureBrowser::gpuColor_Tegra;
-		gpuInfoColors[DAVA::GPU_MALI] = TextureBrowser::gpuColor_MALI;
-		gpuInfoColors[DAVA::GPU_ADRENO] = TextureBrowser::gpuColor_Adreno;
+        QColor gpuInfoColors[DAVA::GPU_DEVICE_COUNT];
+        gpuInfoColors[DAVA::GPU_POWERVR_IOS] = TextureBrowser::gpuColor_PVR_ISO;
+        gpuInfoColors[DAVA::GPU_POWERVR_ANDROID] = TextureBrowser::gpuColor_PVR_Android;
+        gpuInfoColors[DAVA::GPU_TEGRA] = TextureBrowser::gpuColor_Tegra;
+        gpuInfoColors[DAVA::GPU_MALI] = TextureBrowser::gpuColor_MALI;
+        gpuInfoColors[DAVA::GPU_ADRENO] = TextureBrowser::gpuColor_Adreno;
         gpuInfoColors[DAVA::GPU_DX11] = TextureBrowser::gpuColor_DX11;
 
         // format lines
@@ -374,9 +372,9 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
         }
 
         // error icon
-        if(texture->width != texture->height)
-		{
-			r.moveLeft(r.x() - 16);
+        if (texture->width != texture->height)
+        {
+            r.moveLeft(r.x() - 16);
             SharedIcon(":/QtIcons/error.png").paint(painter, r.x(), r.y(), 16, 16);
         }
 
@@ -386,44 +384,44 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
     return ret;
 }
 
-bool TextureListDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+bool TextureListDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    switch ( event->type() )
+    switch (event->type())
     {
     case QEvent::MouseButtonRelease:
+    {
+        if (!index.isValid())
         {
-            if ( !index.isValid() )
-            {
-                break;
-            }
-
-            QMouseEvent *me = static_cast<QMouseEvent *>(event);
-            if (me->button() != Qt::RightButton)
-            {
-                break;
-            }
-
-            const TextureListModel *curModel = qobject_cast<const TextureListModel *>(index.model());
-            DVASSERT(curModel);
-            lastSelectedTextureDescriptor = curModel->getDescriptor(index);
-            if (lastSelectedTextureDescriptor == nullptr)
-            {
-                break;
-            }
-
-            QMenu menu;
-            QAction* openTextureFolder = menu.addAction("Open texture folder");
-            QObject::connect(openTextureFolder, &QAction::triggered, this, &TextureListDelegate::onOpenTexturePath);
-
-            QAction* savePresetAction = menu.addAction(ActionIcon::savePresetIcon, "Save Preset");
-            QObject::connect(savePresetAction, &QAction::triggered, this, &TextureListDelegate::onSavePreset);
-
-            QAction* loadPresetAction = menu.addAction(ActionIcon::loadPresetIcon, "Load Preset");
-            QObject::connect(loadPresetAction, &QAction::triggered, this, &TextureListDelegate::onLoadPreset);
-
-            menu.exec( QCursor::pos() );
+            break;
         }
-        break;
+
+        QMouseEvent* me = static_cast<QMouseEvent*>(event);
+        if (me->button() != Qt::RightButton)
+        {
+            break;
+        }
+
+        const TextureListModel* curModel = qobject_cast<const TextureListModel*>(index.model());
+        DVASSERT(curModel);
+        lastSelectedTextureDescriptor = curModel->getDescriptor(index);
+        if (lastSelectedTextureDescriptor == nullptr)
+        {
+            break;
+        }
+
+        QMenu menu;
+        QAction* openTextureFolder = menu.addAction("Open texture folder");
+        QObject::connect(openTextureFolder, &QAction::triggered, this, &TextureListDelegate::onOpenTexturePath);
+
+        QAction* savePresetAction = menu.addAction(ActionIcon::savePresetIcon, "Save Preset");
+        QObject::connect(savePresetAction, &QAction::triggered, this, &TextureListDelegate::onSavePreset);
+
+        QAction* loadPresetAction = menu.addAction(ActionIcon::loadPresetIcon, "Load Preset");
+        QObject::connect(loadPresetAction, &QAction::triggered, this, &TextureListDelegate::onLoadPreset);
+
+        menu.exec(QCursor::pos());
+    }
+    break;
 
     default:
         break;

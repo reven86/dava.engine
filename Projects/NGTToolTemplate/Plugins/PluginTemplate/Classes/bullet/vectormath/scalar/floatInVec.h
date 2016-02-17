@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
    Copyright (C) 2009 Sony Computer Entertainment Inc.
    All rights reserved.
@@ -46,8 +45,8 @@ subject to the following restrictions:
 #define _FLOATINVEC_H
 
 #include <math.h>
-namespace Vectormath {
-
+namespace Vectormath
+{
 class boolInVec;
 
 //--------------------------------------------------------------------------------------------------
@@ -64,7 +63,7 @@ private:
 public:
     // Default constructor; does no initialization
     //
-    inline floatInVec( ) { };
+    inline floatInVec(){};
 
     // Construct from a value converted from bool
     //
@@ -86,93 +85,90 @@ public:
 
     // Post increment (add 1.0f)
     //
-    inline const floatInVec operator ++ (int);
+    inline const floatInVec operator++(int);
 
     // Post decrement (subtract 1.0f)
     //
-    inline const floatInVec operator -- (int);
+    inline const floatInVec operator--(int);
 
     // Pre increment (add 1.0f)
     //
-    inline floatInVec& operator ++ ();
+    inline floatInVec& operator++();
 
     // Pre decrement (subtract 1.0f)
     //
-    inline floatInVec& operator -- ();
+    inline floatInVec& operator--();
 
     // Negation operator
     //
-    inline const floatInVec operator - () const;
+    inline const floatInVec operator-() const;
 
     // Assignment operator
     //
-    inline floatInVec& operator = (floatInVec vec);
+    inline floatInVec& operator=(floatInVec vec);
 
     // Multiplication assignment operator
     //
-    inline floatInVec& operator *= (floatInVec vec);
+    inline floatInVec& operator*=(floatInVec vec);
 
     // Division assignment operator
     //
-    inline floatInVec& operator /= (floatInVec vec);
+    inline floatInVec& operator/=(floatInVec vec);
 
     // Addition assignment operator
     //
-    inline floatInVec& operator += (floatInVec vec);
+    inline floatInVec& operator+=(floatInVec vec);
 
     // Subtraction assignment operator
     //
-    inline floatInVec& operator -= (floatInVec vec);
-
+    inline floatInVec& operator-=(floatInVec vec);
 };
 
 // Multiplication operator
 //
-inline const floatInVec operator * (floatInVec vec0, floatInVec vec1);
+inline const floatInVec operator*(floatInVec vec0, floatInVec vec1);
 
 // Division operator
 //
-inline const floatInVec operator / (floatInVec vec0, floatInVec vec1);
+inline const floatInVec operator/(floatInVec vec0, floatInVec vec1);
 
 // Addition operator
 //
-inline const floatInVec operator + (floatInVec vec0, floatInVec vec1);
+inline const floatInVec operator+(floatInVec vec0, floatInVec vec1);
 
 // Subtraction operator
 //
-inline const floatInVec operator - (floatInVec vec0, floatInVec vec1);
+inline const floatInVec operator-(floatInVec vec0, floatInVec vec1);
 
 // Less than operator
 //
-inline const boolInVec operator < (floatInVec vec0, floatInVec vec1);
+inline const boolInVec operator<(floatInVec vec0, floatInVec vec1);
 
 // Less than or equal operator
 //
-inline const boolInVec operator <= (floatInVec vec0, floatInVec vec1);
+inline const boolInVec operator<=(floatInVec vec0, floatInVec vec1);
 
 // Greater than operator
 //
-inline const boolInVec operator > (floatInVec vec0, floatInVec vec1);
+inline const boolInVec operator>(floatInVec vec0, floatInVec vec1);
 
 // Greater than or equal operator
 //
-inline const boolInVec operator >= (floatInVec vec0, floatInVec vec1);
+inline const boolInVec operator>=(floatInVec vec0, floatInVec vec1);
 
 // Equal operator
 //
-inline const boolInVec operator == (floatInVec vec0, floatInVec vec1);
+inline const boolInVec operator==(floatInVec vec0, floatInVec vec1);
 
 // Not equal operator
 //
-inline const boolInVec operator != (floatInVec vec0, floatInVec vec1);
+inline const boolInVec operator!=(floatInVec vec0, floatInVec vec1);
 
 // Conditionally select between two values
 //
 inline const floatInVec select(floatInVec vec0, floatInVec vec1, boolInVec select_vec1);
 
-
 } // namespace Vectormath
-
 
 //--------------------------------------------------------------------------------------------------
 // floatInVec implementation
@@ -180,8 +176,8 @@ inline const floatInVec select(floatInVec vec0, floatInVec vec1, boolInVec selec
 
 #include "boolInVec.h"
 
-namespace Vectormath {
-
+namespace Vectormath
+{
 inline
 floatInVec::floatInVec(boolInVec vec)
 {
@@ -211,25 +207,25 @@ floatInVec::operator float() const
 
 inline
 const floatInVec
-floatInVec::operator ++ (int)
+floatInVec::operator++(int)
 {
     float olddata = mData;
-    operator ++();
+    operator++();
     return floatInVec(olddata);
 }
 
 inline
 const floatInVec
-floatInVec::operator -- (int)
+floatInVec::operator--(int)
 {
     float olddata = mData;
-    operator --();
+    operator--();
     return floatInVec(olddata);
 }
 
 inline
 floatInVec&
-floatInVec::operator ++ ()
+floatInVec::operator++()
 {
     *this += floatInVec(1.0f);
     return *this;
@@ -237,7 +233,7 @@ floatInVec::operator ++ ()
 
 inline
 floatInVec&
-floatInVec::operator -- ()
+floatInVec::operator--()
 {
     *this -= floatInVec(1.0f);
     return *this;
@@ -245,14 +241,14 @@ floatInVec::operator -- ()
 
 inline
 const floatInVec
-floatInVec::operator - () const
+floatInVec::operator-() const
 {
     return floatInVec(-mData);
 }
 
 inline
 floatInVec&
-floatInVec::operator = (floatInVec vec)
+floatInVec::operator=(floatInVec vec)
 {
     mData = vec.mData;
     return *this;
@@ -260,7 +256,7 @@ floatInVec::operator = (floatInVec vec)
 
 inline
 floatInVec&
-floatInVec::operator *= (floatInVec vec)
+floatInVec::operator*=(floatInVec vec)
 {
     *this = *this * vec;
     return *this;
@@ -268,7 +264,7 @@ floatInVec::operator *= (floatInVec vec)
 
 inline
 floatInVec&
-floatInVec::operator /= (floatInVec vec)
+floatInVec::operator/=(floatInVec vec)
 {
     *this = *this / vec;
     return *this;
@@ -276,7 +272,7 @@ floatInVec::operator /= (floatInVec vec)
 
 inline
 floatInVec&
-floatInVec::operator += (floatInVec vec)
+floatInVec::operator+=(floatInVec vec)
 {
     *this = *this + vec;
     return *this;
@@ -284,7 +280,7 @@ floatInVec::operator += (floatInVec vec)
 
 inline
 floatInVec&
-floatInVec::operator -= (floatInVec vec)
+floatInVec::operator-=(floatInVec vec)
 {
     *this = *this - vec;
     return *this;
@@ -292,70 +288,70 @@ floatInVec::operator -= (floatInVec vec)
 
 inline
 const floatInVec
-operator * (floatInVec vec0, floatInVec vec1)
+operator*(floatInVec vec0, floatInVec vec1)
 {
     return floatInVec(vec0.getAsFloat() * vec1.getAsFloat());
 }
 
 inline
 const floatInVec
-operator / (floatInVec num, floatInVec den)
+operator/(floatInVec num, floatInVec den)
 {
     return floatInVec(num.getAsFloat() / den.getAsFloat());
 }
 
 inline
 const floatInVec
-operator + (floatInVec vec0, floatInVec vec1)
+operator+(floatInVec vec0, floatInVec vec1)
 {
     return floatInVec(vec0.getAsFloat() + vec1.getAsFloat());
 }
 
 inline
 const floatInVec
-operator - (floatInVec vec0, floatInVec vec1)
+operator-(floatInVec vec0, floatInVec vec1)
 {
     return floatInVec(vec0.getAsFloat() - vec1.getAsFloat());
 }
 
 inline
 const boolInVec
-operator < (floatInVec vec0, floatInVec vec1)
+operator<(floatInVec vec0, floatInVec vec1)
 {
     return boolInVec(vec0.getAsFloat() < vec1.getAsFloat());
 }
 
 inline
 const boolInVec
-operator <= (floatInVec vec0, floatInVec vec1)
+operator<=(floatInVec vec0, floatInVec vec1)
 {
     return !(vec0 > vec1);
 }
 
 inline
 const boolInVec
-operator > (floatInVec vec0, floatInVec vec1)
+operator>(floatInVec vec0, floatInVec vec1)
 {
     return boolInVec(vec0.getAsFloat() > vec1.getAsFloat());
 }
 
 inline
 const boolInVec
-operator >= (floatInVec vec0, floatInVec vec1)
+operator>=(floatInVec vec0, floatInVec vec1)
 {
     return !(vec0 < vec1);
 }
 
 inline
 const boolInVec
-operator == (floatInVec vec0, floatInVec vec1)
+operator==(floatInVec vec0, floatInVec vec1)
 {
     return boolInVec(vec0.getAsFloat() == vec1.getAsFloat());
 }
 
 inline
 const boolInVec
-operator != (floatInVec vec0, floatInVec vec1)
+operator!=(floatInVec vec0, floatInVec vec1)
 {
     return !(vec0 == vec1);
 }

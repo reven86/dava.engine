@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -56,150 +55,142 @@ subject to the following restrictions:
 #define MAX_ITERATIONS 32
 #endif
 
-btGjkConvexCast::btGjkConvexCast(const btConvexShape* convexA,const btConvexShape* convexB,btSimplexSolverInterface* simplexSolver)
-:m_simplexSolver(simplexSolver),
-m_convexA(convexA),
-m_convexB(convexB)
+btGjkConvexCast::btGjkConvexCast(const btConvexShape* convexA, const btConvexShape* convexB, btSimplexSolverInterface* simplexSolver)
+    : m_simplexSolver(simplexSolver)
+    ,
+    m_convexA(convexA)
+    ,
+    m_convexB(convexB)
 {
 }
 
-bool	btGjkConvexCast::calcTimeOfImpact(
-					const btTransform& fromA,
-					const btTransform& toA,
-					const btTransform& fromB,
-					const btTransform& toB,
-					CastResult& result)
+bool btGjkConvexCast::calcTimeOfImpact(
+const btTransform& fromA,
+const btTransform& toA,
+const btTransform& fromB,
+const btTransform& toB,
+CastResult& result)
 {
+    m_simplexSolver->reset();
 
+    /// compute linear velocity for this interval, to interpolate
+    //assume no rotation/angular velocity, assert here?
+    btVector3 linVelA, linVelB;
+    linVelA = toA.getOrigin() - fromA.getOrigin();
+    linVelB = toB.getOrigin() - fromB.getOrigin();
 
-	m_simplexSolver->reset();
+    btScalar radius = btScalar(0.001);
+    btScalar lambda = btScalar(0.);
+    btVector3 v(1, 0, 0);
 
-	/// compute linear velocity for this interval, to interpolate
-	//assume no rotation/angular velocity, assert here?
-	btVector3 linVelA,linVelB;
-	linVelA = toA.getOrigin()-fromA.getOrigin();
-	linVelB = toB.getOrigin()-fromB.getOrigin();
+    int maxIter = MAX_ITERATIONS;
 
-	btScalar radius = btScalar(0.001);
-	btScalar lambda = btScalar(0.);
-	btVector3 v(1,0,0);
+    btVector3 n;
+    n.setValue(btScalar(0.), btScalar(0.), btScalar(0.));
+    bool hasResult = false;
+    btVector3 c;
+    btVector3 r = (linVelA - linVelB);
 
-	int maxIter = MAX_ITERATIONS;
+    btScalar lastLambda = lambda;
+    //btScalar epsilon = btScalar(0.001);
 
-	btVector3 n;
-	n.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
-	bool hasResult = false;
-	btVector3 c;
-	btVector3 r = (linVelA-linVelB);
+    int numIter = 0;
+    //first solution, using GJK
 
-	btScalar lastLambda = lambda;
-	//btScalar epsilon = btScalar(0.001);
+    btTransform identityTrans;
+    identityTrans.setIdentity();
 
-	int numIter = 0;
-	//first solution, using GJK
+    //	result.drawCoordSystem(sphereTr);
 
+    btPointCollector pointCollector;
 
-	btTransform identityTrans;
-	identityTrans.setIdentity();
+    btGjkPairDetector gjk(m_convexA, m_convexB, m_simplexSolver, 0); //m_penetrationDepthSolver);
+    btGjkPairDetector::ClosestPointInput input;
 
+    //we don't use margins during CCD
+    //	gjk.setIgnoreMargin(true);
 
-//	result.drawCoordSystem(sphereTr);
+    input.m_transformA = fromA;
+    input.m_transformB = fromB;
+    gjk.getClosestPoints(input, pointCollector, 0);
 
-	btPointCollector	pointCollector;
+    hasResult = pointCollector.m_hasResult;
+    c = pointCollector.m_pointInWorld;
 
-		
-	btGjkPairDetector gjk(m_convexA,m_convexB,m_simplexSolver,0);//m_penetrationDepthSolver);		
-	btGjkPairDetector::ClosestPointInput input;
+    if (hasResult)
+    {
+        btScalar dist;
+        dist = pointCollector.m_distance;
+        n = pointCollector.m_normalOnBInWorld;
 
-	//we don't use margins during CCD
-	//	gjk.setIgnoreMargin(true);
+        //not close enough
+        while (dist > radius)
+        {
+            numIter++;
+            if (numIter > maxIter)
+            {
+                return false; //todo: report a failure
+            }
+            btScalar dLambda = btScalar(0.);
 
-	input.m_transformA = fromA;
-	input.m_transformB = fromB;
-	gjk.getClosestPoints(input,pointCollector,0);
+            btScalar projectedLinearVelocity = r.dot(n);
 
-	hasResult = pointCollector.m_hasResult;
-	c = pointCollector.m_pointInWorld;
+            dLambda = dist / (projectedLinearVelocity);
 
-	if (hasResult)
-	{
-		btScalar dist;
-		dist = pointCollector.m_distance;
-		n = pointCollector.m_normalOnBInWorld;
+            lambda = lambda - dLambda;
 
-	
+            if (lambda > btScalar(1.))
+                return false;
 
-		//not close enough
-		while (dist > radius)
-		{
-			numIter++;
-			if (numIter > maxIter)
-			{
-				return false; //todo: report a failure
-			}
-			btScalar dLambda = btScalar(0.);
+            if (lambda < btScalar(0.))
+                return false;
 
-			btScalar projectedLinearVelocity = r.dot(n);
-			
-			dLambda = dist / (projectedLinearVelocity);
+            //todo: next check with relative epsilon
+            if (lambda <= lastLambda)
+            {
+                return false;
+                //n.setValue(0,0,0);
+                break;
+            }
+            lastLambda = lambda;
 
-			lambda = lambda - dLambda;
+            //interpolate to next lambda
+            result.DebugDraw(lambda);
+            input.m_transformA.getOrigin().setInterpolate3(fromA.getOrigin(), toA.getOrigin(), lambda);
+            input.m_transformB.getOrigin().setInterpolate3(fromB.getOrigin(), toB.getOrigin(), lambda);
 
-			if (lambda > btScalar(1.))
-				return false;
+            gjk.getClosestPoints(input, pointCollector, 0);
+            if (pointCollector.m_hasResult)
+            {
+                if (pointCollector.m_distance < btScalar(0.))
+                {
+                    result.m_fraction = lastLambda;
+                    n = pointCollector.m_normalOnBInWorld;
+                    result.m_normal = n;
+                    result.m_hitPoint = pointCollector.m_pointInWorld;
+                    return true;
+                }
+                c = pointCollector.m_pointInWorld;
+                n = pointCollector.m_normalOnBInWorld;
+                dist = pointCollector.m_distance;
+            }
+            else
+            {
+                //??
+                return false;
+            }
+        }
 
-			if (lambda < btScalar(0.))
-				return false;
+        //is n normalized?
+        //don't report time of impact for motion away from the contact normal (or causes minor penetration)
+        if (n.dot(r) >= -result.m_allowedPenetration)
+            return false;
 
-			//todo: next check with relative epsilon
-			if (lambda <= lastLambda)
-			{
-				return false;
-				//n.setValue(0,0,0);
-				break;
-			}
-			lastLambda = lambda;
+        result.m_fraction = lambda;
+        result.m_normal = n;
+        result.m_hitPoint = c;
+        return true;
+    }
 
-			//interpolate to next lambda
-			result.DebugDraw( lambda );
-			input.m_transformA.getOrigin().setInterpolate3(fromA.getOrigin(),toA.getOrigin(),lambda);
-			input.m_transformB.getOrigin().setInterpolate3(fromB.getOrigin(),toB.getOrigin(),lambda);
-			
-			gjk.getClosestPoints(input,pointCollector,0);
-			if (pointCollector.m_hasResult)
-			{
-				if (pointCollector.m_distance < btScalar(0.))
-				{
-					result.m_fraction = lastLambda;
-					n = pointCollector.m_normalOnBInWorld;
-					result.m_normal=n;
-					result.m_hitPoint = pointCollector.m_pointInWorld;
-					return true;
-				}
-				c = pointCollector.m_pointInWorld;		
-				n = pointCollector.m_normalOnBInWorld;
-				dist = pointCollector.m_distance;
-			} else
-			{
-				//??
-				return false;
-			}
-
-		}
-
-		//is n normalized?
-		//don't report time of impact for motion away from the contact normal (or causes minor penetration)
-		if (n.dot(r)>=-result.m_allowedPenetration)
-			return false;
-
-		result.m_fraction = lambda;
-		result.m_normal = n;
-		result.m_hitPoint = c;
-		return true;
-	}
-
-	return false;
-
-
+    return false;
 }
-

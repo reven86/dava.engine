@@ -65,15 +65,15 @@ public:
     {
     }
 
-    bool PostLoad(IComponentContext & context) override
+    bool PostLoad(IComponentContext& context) override
     {
         return true;
     }
 
-    void Initialise(IComponentContext & context) override
+    void Initialise(IComponentContext& context) override
     {
-        IUIFramework * uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication * uiApplication = context.queryInterface<IUIApplication>();
+        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
+        IUIApplication* uiApplication = context.queryInterface<IUIApplication>();
 
         if (uiFramework == nullptr)
         {
@@ -87,7 +87,7 @@ public:
             return;
         }
 
-        IMetaTypeManager * metaTypeMng = context.queryInterface<IMetaTypeManager>();
+        IMetaTypeManager* metaTypeMng = context.queryInterface<IMetaTypeManager>();
         if (metaTypeMng == nullptr)
         {
             DAVA::Logger::Error("Can't query IMetaTypeManager interface");
@@ -108,7 +108,7 @@ public:
         uiFramework->loadActionData(":/default/actions.xml", IUIFramework::ResourceType::File);
         mainWindow = uiFramework->createWindow(":/default/MainWindow.ui", IUIFramework::ResourceType::File);
 
-		SharedControls::initDefs(*definitionMng);
+        SharedControls::initDefs(*definitionMng);
         uiApplication->addWindow(*mainWindow);
         mainWindow->show();
 
@@ -135,7 +135,7 @@ public:
         sceneTree->SelectedEntityChanged.Connect(sceneWidget.get(), &SceneViewer::SetSelection);
         sceneTree->SelectedEntityChanged.Connect([this](DAVA::Entity* entity)
                                                  {
-            propertyPanel->SetObject(entity);
+                                                     propertyPanel->SetObject(entity);
                                                  });
 
         AssetPaths paths;
@@ -173,7 +173,7 @@ public:
         uiApplication->addAction(*endBatch);
     }
 
-    bool Finalise(IComponentContext & context) override
+    bool Finalise(IComponentContext& context) override
     {
         propertyPanel->Finalize();
         sceneTree->Finilize();
@@ -192,7 +192,7 @@ public:
         return true;
     }
 
-    void Unload(IComponentContext & context) override
+    void Unload(IComponentContext& context) override
     {
     }
 

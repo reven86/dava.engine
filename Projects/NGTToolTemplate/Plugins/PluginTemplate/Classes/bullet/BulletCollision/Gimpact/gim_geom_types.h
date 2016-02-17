@@ -65,8 +65,6 @@ email: projectileman@yahoo.com
 
 #include "gim_math.h"
 
-
-
 //! Short Integer vector 2D
 typedef GSHORT vec2s[2];
 //! Integer vector 3D

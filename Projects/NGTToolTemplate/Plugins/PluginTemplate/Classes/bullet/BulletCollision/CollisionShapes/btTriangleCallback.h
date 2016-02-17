@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -47,23 +46,20 @@ subject to the following restrictions:
 
 #include "bullet/LinearMath/btVector3.h"
 
-
 ///The btTriangleCallback provides a callback for each overlapping triangle when calling processAllTriangles.
 ///This callback is called by processAllTriangles for all btConcaveShape derived class, such as  btBvhTriangleMeshShape, btStaticPlaneShape and btHeightfieldTerrainShape.
 class btTriangleCallback
 {
 public:
-
-	virtual ~btTriangleCallback();
-	virtual void processTriangle(btVector3* triangle, int partId, int triangleIndex) = 0;
+    virtual ~btTriangleCallback();
+    virtual void processTriangle(btVector3* triangle, int partId, int triangleIndex) = 0;
 };
 
 class btInternalTriangleIndexCallback
 {
 public:
-
-	virtual ~btInternalTriangleIndexCallback();
-	virtual void internalProcessTriangleIndex(btVector3* triangle,int partId,int  triangleIndex) = 0;
+    virtual ~btInternalTriangleIndexCallback();
+    virtual void internalProcessTriangleIndex(btVector3* triangle, int partId, int triangleIndex) = 0;
 };
 
 

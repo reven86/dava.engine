@@ -25,14 +25,6 @@ if( ANDROID )
     set (CMAKE_MAKE_PROGRAM "${MAKE_PROGRAM}" CACHE STRING   "Program used to build from makefiles.")
     mark_as_advanced(CMAKE_MAKE_PROGRAM)
 
-elseif ( WINDOWS_UAP )
-
-    if ( DAVA_MEMORY_PROFILER )
-        message(WARNING "Windows Store platform detected. Memory profiling is disabled")
-        remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-        unset ( DAVA_MEMORY_PROFILER )
-    endif ()
-
 endif()
 
 include ( PlatformSettings     )

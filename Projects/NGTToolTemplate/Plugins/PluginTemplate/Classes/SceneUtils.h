@@ -32,11 +32,11 @@
 #include "Scene3D/Scene.h"
 
 template <typename T>
-T * findSystem(DAVA::Scene * scene)
+T* findSystem(DAVA::Scene* scene)
 {
-    for (DAVA::SceneSystem * system : scene->systems)
+    for (DAVA::SceneSystem* system : scene->systems)
     {
-        T * result = dynamic_cast<T *>(system);
+        T* result = dynamic_cast<T*>(system);
         if (result != nullptr)
             return result;
     }

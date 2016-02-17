@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  *  GameCore.h
  *  TemplateProjectMacOS
@@ -43,16 +42,17 @@
 class GameCore : public DAVA::ApplicationCore
 {
 protected:
-	virtual ~GameCore();
-public:	
-	GameCore();
-	
-	virtual void OnAppStarted();
-	virtual void OnAppFinished();
-	
-	virtual void OnSuspend();
-	virtual void OnBackground();
-	
+    virtual ~GameCore();
+
+public:
+    GameCore();
+
+    virtual void OnAppStarted();
+    virtual void OnAppFinished();
+
+    virtual void OnSuspend();
+    virtual void OnBackground();
+
 private:
 };
 

@@ -36,11 +36,11 @@
 class CollisionBox : public CollisionBaseObject
 {
 public:
-	CollisionBox(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Vector3 position, DAVA::float32 boxSize);
-	virtual ~CollisionBox();
+    CollisionBox(DAVA::Entity* entity, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize);
+    virtual ~CollisionBox();
 
 protected:
-	btCollisionShape* btShape;
+    btCollisionShape* btShape;
 };
 
 #endif // __SCENE_COLLISION_BOX_H__

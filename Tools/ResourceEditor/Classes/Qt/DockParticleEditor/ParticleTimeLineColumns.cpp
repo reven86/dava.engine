@@ -30,423 +30,430 @@
 #include "ParticleTimeLineColumns.h"
 
 ParticlesExtraInfoColumn::ParticlesExtraInfoColumn(const ParticleTimeLineWidget* timeLineWidget,
-												   QWidget *parent) :
-QWidget(parent)
+                                                   QWidget* parent)
+    :
+    QWidget(parent)
 {
-	this->timeLineWidget = timeLineWidget;
+    this->timeLineWidget = timeLineWidget;
 }
 
-void ParticlesExtraInfoColumn::paintEvent(QPaintEvent *)
+void ParticlesExtraInfoColumn::paintEvent(QPaintEvent*)
 {
-	if (!this->timeLineWidget)
-	{
-		return;
-	}
-	
-	QPainter painter(this);
-	painter.setPen(Qt::black);
-	
-	QRect ourRect = rect();
-	ourRect.adjust(0, 0, -1, -1);
-	painter.drawRect(ourRect);
-	
-	// Draw the header.
-	painter.setFont(timeLineWidget->nameFont);
-	painter.setPen(Qt::black);
-	QRect textRect(0, 0, rect().width(), TOP_INDENT);
-	painter.drawRect(textRect);
+    if (!this->timeLineWidget)
+    {
+        return;
+    }
+
+    QPainter painter(this);
+    painter.setPen(Qt::black);
+
+    QRect ourRect = rect();
+    ourRect.adjust(0, 0, -1, -1);
+    painter.drawRect(ourRect);
+
+    // Draw the header.
+    painter.setFont(timeLineWidget->nameFont);
+    painter.setPen(Qt::black);
+    QRect textRect(0, 0, rect().width(), TOP_INDENT);
+    painter.drawRect(textRect);
     painter.setPen(Qt::white);
-	painter.drawText(textRect, Qt::AlignHCenter | Qt::AlignVCenter, GetExtraInfoHeader());
-	
-	// Draw the per-layer particles count.
-	OnBeforeGetExtraInfoLoop();
-	
-	QFontMetrics fontMetrics(timeLineWidget->nameFont);
-	painter.setFont(timeLineWidget->nameFont);
-	
-	int32 i = 0;
-	for (ParticleTimeLineWidget::LINE_MAP::const_iterator iter = timeLineWidget->lines.begin();
-		 iter != timeLineWidget->lines.end(); ++iter, ++i)
-	{
-		const ParticleTimeLineWidget::LINE& line = iter->second;
-		
-		painter.setPen(QPen(line.color, LINE_WIDTH));
-		int startY = i * LINE_STEP + LINE_STEP / 2;
-		QRect textRect (EXTRA_INFO_LEFT_PADDING, TOP_INDENT + startY,
-						rect().width() - EXTRA_INFO_LEFT_PADDING, LINE_STEP);
-		painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter,
-						 GetExtraInfoForLayerLine(timeLineWidget->selectedEffect, line));
-	}
-	
-	OnAfterGetExtraInfoLoop();
-	
-	// Draw the "Total" box.
-	QPoint totalPoint(EXTRA_INFO_LEFT_PADDING, rect().bottom() - 3);
-	QFont totalFont = timeLineWidget->nameFont;
-	totalFont.setBold(true);
-	
-	painter.setPen(QPen(Qt::white, LINE_WIDTH));
-	painter.drawText(totalPoint, GetExtraInfoFooter());
+    painter.drawText(textRect, Qt::AlignHCenter | Qt::AlignVCenter, GetExtraInfoHeader());
+
+    // Draw the per-layer particles count.
+    OnBeforeGetExtraInfoLoop();
+
+    QFontMetrics fontMetrics(timeLineWidget->nameFont);
+    painter.setFont(timeLineWidget->nameFont);
+
+    int32 i = 0;
+    for (ParticleTimeLineWidget::LINE_MAP::const_iterator iter = timeLineWidget->lines.begin();
+         iter != timeLineWidget->lines.end(); ++iter, ++i)
+    {
+        const ParticleTimeLineWidget::LINE& line = iter->second;
+
+        painter.setPen(QPen(line.color, LINE_WIDTH));
+        int startY = i * LINE_STEP + LINE_STEP / 2;
+        QRect textRect(EXTRA_INFO_LEFT_PADDING, TOP_INDENT + startY,
+                       rect().width() - EXTRA_INFO_LEFT_PADDING, LINE_STEP);
+        painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter,
+                         GetExtraInfoForLayerLine(timeLineWidget->selectedEffect, line));
+    }
+
+    OnAfterGetExtraInfoLoop();
+
+    // Draw the "Total" box.
+    QPoint totalPoint(EXTRA_INFO_LEFT_PADDING, rect().bottom() - 3);
+    QFont totalFont = timeLineWidget->nameFont;
+    totalFont.setBold(true);
+
+    painter.setPen(QPen(Qt::white, LINE_WIDTH));
+    painter.drawText(totalPoint, GetExtraInfoFooter());
 }
 
 QString ParticlesExtraInfoColumn::FormatFloat(float32 value)
 {
-	QString strValue;
-	if (fabs(value) < 10)
-	{
-		strValue = "%.4f";
-	}
-	else if (fabs(value) < 100)
-	{
-		strValue = "%.2f";
-	}
-	else
-	{
-		strValue = "%.0f";
-	}
-	
-	strValue.sprintf(strValue.toLatin1(), value);
-	return strValue;
+    QString strValue;
+    if (fabs(value) < 10)
+    {
+        strValue = "%.4f";
+    }
+    else if (fabs(value) < 100)
+    {
+        strValue = "%.2f";
+    }
+    else
+    {
+        strValue = "%.0f";
+    }
+
+    strValue.sprintf(strValue.toLatin1(), value);
+    return strValue;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 ParticlesExtraInfoCumulativeColumn::ParticlesExtraInfoCumulativeColumn(const ParticleTimeLineWidget* timeLineWidget,
-																	   QWidget *parent) :
-	ParticlesExtraInfoColumn(timeLineWidget, parent)
+                                                                       QWidget* parent)
+    :
+    ParticlesExtraInfoColumn(timeLineWidget, parent)
 {
-	CleanupCumulativeData();
+    CleanupCumulativeData();
 }
 
 void ParticlesExtraInfoCumulativeColumn::OnLayersListChanged()
 {
-	CleanupCumulativeData();
+    CleanupCumulativeData();
 }
 
 void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeData(ParticleLayer* layer, float32 value)
 {
-	if (!layer)
-	{
-		return;
-	}
-	
-	if (cumulativeData.find(layer) == cumulativeData.end())
-	{
-		cumulativeData[layer] = value;
-	}
-	else
-	{
-		cumulativeData[layer] += value;
-	}
+    if (!layer)
+    {
+        return;
+    }
+
+    if (cumulativeData.find(layer) == cumulativeData.end())
+    {
+        cumulativeData[layer] = value;
+    }
+    else
+    {
+        cumulativeData[layer] += value;
+    }
 }
 
 void ParticlesExtraInfoCumulativeColumn::UpdateCumulativeDataIfMaximum(ParticleLayer* layer, float32 value)
 {
-	if (!layer)
-	{
-		return;
-	}
+    if (!layer)
+    {
+        return;
+    }
 
-	if ((cumulativeData.find(layer) == cumulativeData.end()) ||
-		(value > cumulativeData[layer]))
-	{
-		cumulativeData[layer] =  value;
-	}
+    if ((cumulativeData.find(layer) == cumulativeData.end()) ||
+        (value > cumulativeData[layer]))
+    {
+        cumulativeData[layer] = value;
+    }
 }
 
 void ParticlesExtraInfoCumulativeColumn::CleanupCumulativeData()
 {
-	this->totalParticlesCount = 0;
-	this->totalUpdatesCount = 0;
-	this->totalParticlesArea = 0.0f;
+    this->totalParticlesCount = 0;
+    this->totalUpdatesCount = 0;
+    this->totalParticlesArea = 0.0f;
 
-	cumulativeData.clear();
+    cumulativeData.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 ParticlesCountColumn::ParticlesCountColumn(const ParticleTimeLineWidget* timeLineWidget,
-										   QWidget *parent) :
-ParticlesExtraInfoColumn(timeLineWidget, parent)
+                                           QWidget* parent)
+    :
+    ParticlesExtraInfoColumn(timeLineWidget, parent)
 {
-	this->totalParticlesCount = 0;
+    this->totalParticlesCount = 0;
 }
 
 void ParticlesCountColumn::OnBeforeGetExtraInfoLoop()
 {
-	this->totalParticlesCount = 0;
+    this->totalParticlesCount = 0;
 }
 
-QString ParticlesCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
-	if (!line.layer)
-	{
-		return QString();
-	}
-		
-	int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
-	this->totalParticlesCount += particlesNumber;
-	
-	return QString::number(particlesNumber);
+    if (!line.layer)
+    {
+        return QString();
+    }
+
+    int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
+    this->totalParticlesCount += particlesNumber;
+
+    return QString::number(particlesNumber);
 }
 
 QString ParticlesCountColumn::GetExtraInfoHeader()
 {
-	return "Count";
+    return "Count";
 }
 
 QString ParticlesCountColumn::GetExtraInfoFooter()
 {
-	return QString::number(this->totalParticlesCount);
+    return QString::number(this->totalParticlesCount);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 ParticlesAverageCountColumn::ParticlesAverageCountColumn(const ParticleTimeLineWidget* timeLineWidget,
-												 QWidget *parent) :
-ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
+                                                         QWidget* parent)
+    :
+    ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
 {
 }
 
 void ParticlesAverageCountColumn::Reset()
 {
-	CleanupCumulativeData();
+    CleanupCumulativeData();
 }
 
-QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
-	if (!line.layer)
-	{
-		return QString();
-	}
+    if (!line.layer)
+    {
+        return QString();
+    }
 
-	// Calculate the cumulative info.
-	this->totalUpdatesCount ++;
-	
-	int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
-	UpdateCumulativeData(line.layer, particlesNumber);
-	this->totalParticlesCount += particlesNumber;
+    // Calculate the cumulative info.
+    this->totalUpdatesCount++;
 
-	return FormatFloat(cumulativeData[line.layer] / (float)totalUpdatesCount);
+    int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
+    UpdateCumulativeData(line.layer, particlesNumber);
+    this->totalParticlesCount += particlesNumber;
+
+    return FormatFloat(cumulativeData[line.layer] / (float)totalUpdatesCount);
 }
 
 QString ParticlesAverageCountColumn::GetExtraInfoHeader()
 {
-	return "Avg Cnt";
+    return "Avg Cnt";
 }
 
 QString ParticlesAverageCountColumn::GetExtraInfoFooter()
 {
-	if (this->totalUpdatesCount == 0)
-	{
-		return FormatFloat(0);
-	}
-	else
-	{
-		return FormatFloat((float)totalParticlesCount / (float)totalUpdatesCount);
-	}
+    if (this->totalUpdatesCount == 0)
+    {
+        return FormatFloat(0);
+    }
+    else
+    {
+        return FormatFloat((float)totalParticlesCount / (float)totalUpdatesCount);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 ParticlesMaxCountColumn::ParticlesMaxCountColumn(const ParticleTimeLineWidget* timeLineWidget,
-														 QWidget *parent) :
-ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
+                                                 QWidget* parent)
+    :
+    ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
 {
-	Reset();
+    Reset();
 }
 
 void ParticlesMaxCountColumn::OnLayersListChanged()
 {
-	ParticlesExtraInfoCumulativeColumn::OnLayersListChanged();
-	Reset();
+    ParticlesExtraInfoCumulativeColumn::OnLayersListChanged();
+    Reset();
 }
 
 void ParticlesMaxCountColumn::Reset()
 {
-	CleanupCumulativeData();
-	this->maxParticlesCount = 0;
-	this->totalParticlesCountOnThisLoop = 0;
+    CleanupCumulativeData();
+    this->maxParticlesCount = 0;
+    this->totalParticlesCountOnThisLoop = 0;
 }
 
 void ParticlesMaxCountColumn::OnBeforeGetExtraInfoLoop()
 {
-	this->totalParticlesCountOnThisLoop = 0;
+    this->totalParticlesCountOnThisLoop = 0;
 }
 
-QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
-	if (!line.layer)
-	{
-		return QString();
-	}
+    if (!line.layer)
+    {
+        return QString();
+    }
 
-	// Calculate the cumulative info.
-	
-	int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
-	UpdateCumulativeDataIfMaximum(line.layer, particlesNumber);
-	totalParticlesCountOnThisLoop += particlesNumber;
-	
-	return QString::number((int)cumulativeData[line.layer]);
+    // Calculate the cumulative info.
+
+    int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
+    UpdateCumulativeDataIfMaximum(line.layer, particlesNumber);
+    totalParticlesCountOnThisLoop += particlesNumber;
+
+    return QString::number((int)cumulativeData[line.layer]);
 }
 
 void ParticlesMaxCountColumn::OnAfterGetExtraInfoLoop()
 {
-	if (maxParticlesCount < totalParticlesCountOnThisLoop)
-	{
-		maxParticlesCount = totalParticlesCountOnThisLoop;
-	}
+    if (maxParticlesCount < totalParticlesCountOnThisLoop)
+    {
+        maxParticlesCount = totalParticlesCountOnThisLoop;
+    }
 }
 
 QString ParticlesMaxCountColumn::GetExtraInfoHeader()
 {
-	return "Max Cnt";
+    return "Max Cnt";
 }
 
 QString ParticlesMaxCountColumn::GetExtraInfoFooter()
 {
-	return QString::number((int)maxParticlesCount);
+    return QString::number((int)maxParticlesCount);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 ParticlesAreaColumn::ParticlesAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
-										 QWidget *parent) :
-ParticlesExtraInfoColumn(timeLineWidget, parent)
+                                         QWidget* parent)
+    :
+    ParticlesExtraInfoColumn(timeLineWidget, parent)
 {
-	this->totalParticlesArea = 0.0f;
+    this->totalParticlesArea = 0.0f;
 }
 
 void ParticlesAreaColumn::OnBeforeGetExtraInfoLoop()
 {
-	this->totalParticlesArea = 0;
+    this->totalParticlesArea = 0;
 }
 
-QString ParticlesAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
-	if (!line.layer)
-	{
-		return QString();
-	}
-	
-	
-	float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
-	this->totalParticlesArea += area;
-	
-	return FormatFloat(area);
+    if (!line.layer)
+    {
+        return QString();
+    }
+
+    float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
+    this->totalParticlesArea += area;
+
+    return FormatFloat(area);
 }
 
 QString ParticlesAreaColumn::GetExtraInfoHeader()
 {
-	return "Area";
+    return "Area";
 }
 
 QString ParticlesAreaColumn::GetExtraInfoFooter()
 {
-	return FormatFloat(this->totalParticlesArea);
+    return FormatFloat(this->totalParticlesArea);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 ParticlesAverageAreaColumn::ParticlesAverageAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
-														 QWidget *parent) :
-ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
+                                                       QWidget* parent)
+    :
+    ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
 {
 }
 
 void ParticlesAverageAreaColumn::Reset()
 {
-	CleanupCumulativeData();
+    CleanupCumulativeData();
 }
 
-QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
-	if (!line.layer)
-	{
-		return QString();
-	}
-	
-	// Calculate the cumulative info.
-	this->totalUpdatesCount ++;
+    if (!line.layer)
+    {
+        return QString();
+    }
 
-	float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
-	UpdateCumulativeData(line.layer, area);
-	this->totalParticlesArea += area;
+    // Calculate the cumulative info.
+    this->totalUpdatesCount++;
 
-	return FormatFloat(cumulativeData[line.layer] / (float)totalUpdatesCount);
+    float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
+    UpdateCumulativeData(line.layer, area);
+    this->totalParticlesArea += area;
+
+    return FormatFloat(cumulativeData[line.layer] / (float)totalUpdatesCount);
 }
 
 QString ParticlesAverageAreaColumn::GetExtraInfoHeader()
 {
-	return "Avg Area";
+    return "Avg Area";
 }
 
 QString ParticlesAverageAreaColumn::GetExtraInfoFooter()
 {
-	if (this->totalUpdatesCount == 0)
-	{
-		return FormatFloat(0);
-	}
-	else
-	{
-		return FormatFloat(totalParticlesArea / (float)totalUpdatesCount);
-	}
+    if (this->totalUpdatesCount == 0)
+    {
+        return FormatFloat(0);
+    }
+    else
+    {
+        return FormatFloat(totalParticlesArea / (float)totalUpdatesCount);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 ParticlesMaxAreaColumn::ParticlesMaxAreaColumn(const ParticleTimeLineWidget* timeLineWidget,
-											   QWidget *parent) :
-ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
+                                               QWidget* parent)
+    :
+    ParticlesExtraInfoCumulativeColumn(timeLineWidget, parent)
 {
-	Reset();
+    Reset();
 }
 
 void ParticlesMaxAreaColumn::OnLayersListChanged()
 {
-	ParticlesExtraInfoCumulativeColumn::OnLayersListChanged();
-	Reset();
+    ParticlesExtraInfoCumulativeColumn::OnLayersListChanged();
+    Reset();
 }
 
 void ParticlesMaxAreaColumn::Reset()
 {
-	CleanupCumulativeData();
-	maxParticlesArea = 0;
-	totalParticlesAreaOnThisLoop = 0;
+    CleanupCumulativeData();
+    maxParticlesArea = 0;
+    totalParticlesAreaOnThisLoop = 0;
 }
 
 void ParticlesMaxAreaColumn::OnBeforeGetExtraInfoLoop()
 {
-	totalParticlesAreaOnThisLoop = 0;
+    totalParticlesAreaOnThisLoop = 0;
 }
 
-QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
+QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent* effect, const ParticleTimeLineWidget::LINE& line)
 {
-	if (!line.layer)
-	{
-		return QString();
-	}
-	
-	// Calculate the cumulative info.
-	float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
-	UpdateCumulativeDataIfMaximum(line.layer, area);
-	totalParticlesAreaOnThisLoop += area;
-	
-	return FormatFloat((float)cumulativeData[line.layer]);
+    if (!line.layer)
+    {
+        return QString();
+    }
+
+    // Calculate the cumulative info.
+    float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
+    UpdateCumulativeDataIfMaximum(line.layer, area);
+    totalParticlesAreaOnThisLoop += area;
+
+    return FormatFloat((float)cumulativeData[line.layer]);
 }
 
 void ParticlesMaxAreaColumn::OnAfterGetExtraInfoLoop()
 {
-	if (maxParticlesArea < totalParticlesAreaOnThisLoop)
-	{
-		maxParticlesArea = totalParticlesAreaOnThisLoop;
-	}
+    if (maxParticlesArea < totalParticlesAreaOnThisLoop)
+    {
+        maxParticlesArea = totalParticlesAreaOnThisLoop;
+    }
 }
 
 QString ParticlesMaxAreaColumn::GetExtraInfoHeader()
 {
-	return "Max Area";
+    return "Max Area";
 }
 
 QString ParticlesMaxAreaColumn::GetExtraInfoFooter()
 {
-	return FormatFloat(maxParticlesArea);
+    return FormatFloat(maxParticlesArea);
 }

@@ -35,20 +35,20 @@
 class StyleSheetsNode : public PackageBaseNode
 {
 public:
-    StyleSheetsNode(PackageBaseNode *parent);
+    StyleSheetsNode(PackageBaseNode* parent);
     virtual ~StyleSheetsNode();
-    
-    void Add(StyleSheetNode *node);
-    void InsertAtIndex(DAVA::int32 index, StyleSheetNode *node);
-    void Remove(StyleSheetNode *node);
+
+    void Add(StyleSheetNode* node);
+    void InsertAtIndex(DAVA::int32 index, StyleSheetNode* node);
+    void Remove(StyleSheetNode* node);
     int GetCount() const override;
-    StyleSheetNode *Get(DAVA::int32 index) const override;
-    void Accept(PackageVisitor *visitor) override;
-    
+    StyleSheetNode* Get(DAVA::int32 index) const override;
+    void Accept(PackageVisitor* visitor) override;
+
     DAVA::String GetName() const override;
 
     bool IsInsertingStylesSupported() const override;
-    bool CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const override;
+    bool CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) const override;
 
 private:
     DAVA::Vector<StyleSheetNode*> styleSheets;

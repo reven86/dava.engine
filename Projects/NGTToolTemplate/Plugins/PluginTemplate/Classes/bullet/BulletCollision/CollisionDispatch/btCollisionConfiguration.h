@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -53,25 +52,21 @@ class btPoolAllocator;
 ///btCollisionConfiguration allows to configure Bullet collision detection
 ///stack allocator size, default collision algorithms and persistent manifold pool size
 ///@todo: describe the meaning
-class	btCollisionConfiguration
+class btCollisionConfiguration
 {
-
 public:
+    virtual ~btCollisionConfiguration()
+    {
+    }
 
-	virtual ~btCollisionConfiguration()
-	{
-	}
+    ///memory pools
+    virtual btPoolAllocator* getPersistentManifoldPool() = 0;
 
-	///memory pools
-	virtual btPoolAllocator* getPersistentManifoldPool() = 0;
+    virtual btPoolAllocator* getCollisionAlgorithmPool() = 0;
 
-	virtual btPoolAllocator* getCollisionAlgorithmPool() = 0;
+    virtual btStackAlloc* getStackAllocator() = 0;
 
-	virtual btStackAlloc*	getStackAllocator() = 0;
-
-	virtual btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0,int proxyType1) =0;
-
+    virtual btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1) = 0;
 };
 
 #endif //BT_COLLISION_CONFIGURATION
-

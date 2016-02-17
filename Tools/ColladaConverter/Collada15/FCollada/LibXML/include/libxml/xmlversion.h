@@ -369,5 +369,3 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 }
 #endif /* __cplusplus */
 #endif
-
-

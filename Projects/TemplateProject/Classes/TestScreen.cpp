@@ -45,7 +45,7 @@ void TestScreen::WillDisappear()
 {
 }
 
-void TestScreen::Input(UIEvent * event)
+void TestScreen::Input(UIEvent* event)
 {
 }
 
@@ -53,6 +53,6 @@ void TestScreen::Update(float32 timeElapsed)
 {
 }
 
-void TestScreen::Draw(const UIGeometricData &geometricData)
+void TestScreen::Draw(const UIGeometricData& geometricData)
 {
 }

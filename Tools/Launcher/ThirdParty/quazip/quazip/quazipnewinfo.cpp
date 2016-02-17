@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Copyright (C) 2005-2011 Sergey A. Tachenov
 
@@ -54,8 +53,8 @@ quazip/(un)zip.h files for details, basically it's zlib license.
 
 #include "quazipnewinfo.h"
 
-static void QuaZipNewInfo_setPermissions(QuaZipNewInfo *info,
-        QFile::Permissions perm, bool isDir)
+static void QuaZipNewInfo_setPermissions(QuaZipNewInfo* info,
+                                         QFile::Permissions perm, bool isDir)
 {
     quint32 uPerm = isDir ? 0040000 : 0100000;
     if ((perm & QFile::ReadOwner) != 0)
@@ -79,33 +78,43 @@ static void QuaZipNewInfo_setPermissions(QuaZipNewInfo *info,
     info->externalAttr = (info->externalAttr & ~0xFFFF0000u) | (uPerm << 16);
 }
 
-QuaZipNewInfo::QuaZipNewInfo(const QString& name):
-  name(name), dateTime(QDateTime::currentDateTime()), internalAttr(0), externalAttr(0)
+QuaZipNewInfo::QuaZipNewInfo(const QString& name)
+    :
+    name(name)
+    , dateTime(QDateTime::currentDateTime())
+    , internalAttr(0)
+    , externalAttr(0)
 {
 }
 
-QuaZipNewInfo::QuaZipNewInfo(const QString& name, const QString& file):
-  name(name), internalAttr(0), externalAttr(0)
+QuaZipNewInfo::QuaZipNewInfo(const QString& name, const QString& file)
+    :
+    name(name)
+    , internalAttr(0)
+    , externalAttr(0)
 {
-  QFileInfo info(file);
-  QDateTime lm = info.lastModified();
-  if (!info.exists()) {
-    dateTime = QDateTime::currentDateTime();
-  } else {
-    dateTime = lm;
-    QuaZipNewInfo_setPermissions(this, info.permissions(), info.isDir());
-  }
+    QFileInfo info(file);
+    QDateTime lm = info.lastModified();
+    if (!info.exists())
+    {
+        dateTime = QDateTime::currentDateTime();
+    }
+    else
+    {
+        dateTime = lm;
+        QuaZipNewInfo_setPermissions(this, info.permissions(), info.isDir());
+    }
 }
 
 void QuaZipNewInfo::setFileDateTime(const QString& file)
 {
-  QFileInfo info(file);
-  QDateTime lm = info.lastModified();
-  if (info.exists())
-    dateTime = lm;
+    QFileInfo info(file);
+    QDateTime lm = info.lastModified();
+    if (info.exists())
+        dateTime = lm;
 }
 
-void QuaZipNewInfo::setFilePermissions(const QString &file)
+void QuaZipNewInfo::setFilePermissions(const QString& file)
 {
     QFileInfo info = QFileInfo(file);
     QFile::Permissions perm = info.permissions();

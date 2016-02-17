@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -58,31 +57,27 @@ class btStaticPlaneShape;
 /// It uses GJK at the moment. Future improvement would use minkowski sum / supporting vertex, merging innerloops
 class btContinuousConvexCollision : public btConvexCast
 {
-	btSimplexSolverInterface* m_simplexSolver;
-	btConvexPenetrationDepthSolver*	m_penetrationDepthSolver;
-	const btConvexShape*	m_convexA;
-	//second object is either a convex or a plane (code sharing)
-	const btConvexShape*	m_convexB1;
-	const btStaticPlaneShape*	m_planeShape;
+    btSimplexSolverInterface* m_simplexSolver;
+    btConvexPenetrationDepthSolver* m_penetrationDepthSolver;
+    const btConvexShape* m_convexA;
+    //second object is either a convex or a plane (code sharing)
+    const btConvexShape* m_convexB1;
+    const btStaticPlaneShape* m_planeShape;
 
-	void computeClosestPoints( const btTransform& transA, const btTransform& transB,struct btPointCollector& pointCollector);
+    void computeClosestPoints(const btTransform& transA, const btTransform& transB, struct btPointCollector& pointCollector);
 
 public:
+    btContinuousConvexCollision(const btConvexShape* shapeA, const btConvexShape* shapeB, btSimplexSolverInterface* simplexSolver, btConvexPenetrationDepthSolver* penetrationDepthSolver);
 
-	btContinuousConvexCollision (const btConvexShape*	shapeA,const btConvexShape*	shapeB ,btSimplexSolverInterface* simplexSolver,btConvexPenetrationDepthSolver* penetrationDepthSolver);
+    btContinuousConvexCollision(const btConvexShape* shapeA, const btStaticPlaneShape* plane);
 
-	btContinuousConvexCollision(const btConvexShape*	shapeA,const btStaticPlaneShape*	plane );
-
-	virtual bool	calcTimeOfImpact(
-				const btTransform& fromA,
-				const btTransform& toA,
-				const btTransform& fromB,
-				const btTransform& toB,
-				CastResult& result);
-
-
+    virtual bool calcTimeOfImpact(
+    const btTransform& fromA,
+    const btTransform& toA,
+    const btTransform& fromB,
+    const btTransform& toB,
+    CastResult& result);
 };
 
 
 #endif //BT_CONTINUOUS_COLLISION_CONVEX_CAST_H
-

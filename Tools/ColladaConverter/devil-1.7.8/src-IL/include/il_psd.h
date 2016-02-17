@@ -21,36 +21,36 @@
 #endif
 typedef struct PSDHEAD
 {
-	ILubyte		Signature[4];
-	ILushort	Version;
-	ILubyte		Reserved[6];
-	ILushort	Channels;
-	ILuint		Height;
-	ILuint		Width;
-	ILushort	Depth;
-	ILushort	Mode;
+    ILubyte Signature[4];
+    ILushort Version;
+    ILubyte Reserved[6];
+    ILushort Channels;
+    ILuint Height;
+    ILuint Width;
+    ILushort Depth;
+    ILushort Mode;
 } IL_PACKSTRUCT PSDHEAD;
 
 #ifdef _MSC_VER
-#pragma pack(pop,  packed_struct)
+#pragma pack(pop, packed_struct)
 #endif
 
-ILushort	ChannelNum;
+ILushort ChannelNum;
 
-ILboolean	iIsValidPsd(void);
-ILboolean	iCheckPsd(PSDHEAD *Header);
-ILboolean	iLoadPsdInternal(void);
-ILboolean	ReadPsd(PSDHEAD *Head);
-ILboolean	ReadGrey(PSDHEAD *Head);
-ILboolean	ReadIndexed(PSDHEAD *Head);
-ILboolean	ReadRGB(PSDHEAD *Head);
-ILboolean	ReadCMYK(PSDHEAD *Head);
-ILuint		*GetCompChanLen(PSDHEAD *Head);
-ILboolean	PsdGetData(PSDHEAD *Head, void *Buffer, ILboolean Compressed);
-ILboolean	ParseResources(ILuint ResourceSize, ILubyte *Resources);
-ILboolean	GetSingleChannel(PSDHEAD *Head, ILubyte *Buffer, ILboolean Compressed);
-ILboolean	iSavePsdInternal(void);
+ILboolean iIsValidPsd(void);
+ILboolean iCheckPsd(PSDHEAD* Header);
+ILboolean iLoadPsdInternal(void);
+ILboolean ReadPsd(PSDHEAD* Head);
+ILboolean ReadGrey(PSDHEAD* Head);
+ILboolean ReadIndexed(PSDHEAD* Head);
+ILboolean ReadRGB(PSDHEAD* Head);
+ILboolean ReadCMYK(PSDHEAD* Head);
+ILuint* GetCompChanLen(PSDHEAD* Head);
+ILboolean PsdGetData(PSDHEAD* Head, void* Buffer, ILboolean Compressed);
+ILboolean ParseResources(ILuint ResourceSize, ILubyte* Resources);
+ILboolean GetSingleChannel(PSDHEAD* Head, ILubyte* Buffer, ILboolean Compressed);
+ILboolean iSavePsdInternal(void);
 
 
 
-#endif//PSD_H
+#endif //PSD_H

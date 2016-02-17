@@ -22,64 +22,66 @@ ImplementObjectType(FCDAnimationClip);
 ImplementParameterObjectNoCtr(FCDAnimationClip, FCDEntityInstance, animations);
 
 FCDAnimationClip::FCDAnimationClip(FCDocument* document)
-:	FCDEntity(document, "AnimationClip")
-,	InitializeParameter(start, 0.0f)
-,	InitializeParameter(end, 0.0f)
-,	InitializeParameterNoArg(animations)
+    : FCDEntity(document, "AnimationClip")
+    , InitializeParameter(start, 0.0f)
+    , InitializeParameter(end, 0.0f)
+    , InitializeParameterNoArg(animations)
 {
 }
 
 FCDAnimationClip::~FCDAnimationClip()
 {
-	curves.clear();
+    curves.clear();
 }
 
 void FCDAnimationClip::AddClipCurve(FCDAnimationCurve* curve)
 {
-	curve->RegisterAnimationClip(this);
-	curves.push_back(curve);
-	SetNewChildFlag();
+    curve->RegisterAnimationClip(this);
+    curves.push_back(curve);
+    SetNewChildFlag();
 }
 
 FCDEntity* FCDAnimationClip::Clone(FCDEntity* _clone, bool cloneChildren) const
 {
-	FCDAnimationClip* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDAnimationClip(const_cast<FCDocument*>(GetDocument()));
-	else if (_clone->HasType(FCDAnimationClip::GetClassType())) clone = (FCDAnimationClip*) _clone;
+    FCDAnimationClip* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDAnimationClip(const_cast<FCDocument*>(GetDocument()));
+    else if (_clone->HasType(FCDAnimationClip::GetClassType()))
+        clone = (FCDAnimationClip*)_clone;
 
-	Parent::Clone(_clone, cloneChildren);
+    Parent::Clone(_clone, cloneChildren);
 
-	if (clone != NULL)
-	{
-		// Copy the generic animation clip parameters
-		clone->start = start;
-		clone->end = end;
+    if (clone != NULL)
+    {
+        // Copy the generic animation clip parameters
+        clone->start = start;
+        clone->end = end;
 
-		// If requested, clone the animation curves as well.
-		for (FCDAnimationCurveTrackList::const_iterator it = curves.begin(); it != curves.end(); ++it)
-		{
-			if (cloneChildren)
-			{
-				FCDAnimationCurve* clonedCurve = (*it)->Clone(NULL, false);
-				clonedCurve->AddClip(clone);
-				clone->AddClipCurve(clonedCurve);
-			}
-		}
-	}
+        // If requested, clone the animation curves as well.
+        for (FCDAnimationCurveTrackList::const_iterator it = curves.begin(); it != curves.end(); ++it)
+        {
+            if (cloneChildren)
+            {
+                FCDAnimationCurve* clonedCurve = (*it)->Clone(NULL, false);
+                clonedCurve->AddClip(clone);
+                clone->AddClipCurve(clonedCurve);
+            }
+        }
+    }
 
-	return _clone;
+    return _clone;
 }
 
 FCDEntityInstance* FCDAnimationClip::AddInstanceAnimation()
-{ 
-	FCDEntityInstance* newInstance = FCDEntityInstanceFactory::CreateInstance(GetDocument(), NULL, FCDEntity::ANIMATION);
-	animations.push_back(newInstance);
-	return newInstance;
+{
+    FCDEntityInstance* newInstance = FCDEntityInstanceFactory::CreateInstance(GetDocument(), NULL, FCDEntity::ANIMATION);
+    animations.push_back(newInstance);
+    return newInstance;
 }
 
 FCDEntityInstance* FCDAnimationClip::AddInstanceAnimation(FCDAnimation* animation)
 {
-	FCDEntityInstance* newInstance = FCDEntityInstanceFactory::CreateInstance(GetDocument(), NULL, animation);
-	animations.push_back(newInstance);
-	return newInstance;
+    FCDEntityInstance* newInstance = FCDEntityInstanceFactory::CreateInstance(GetDocument(), NULL, animation);
+    animations.push_back(newInstance);
+    return newInstance;
 }

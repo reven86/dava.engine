@@ -34,30 +34,35 @@
 #include "Base/Platform.h"
 
 #ifdef USE_CPP11_CONCURRENCY
-#   include <atomic> //for std::atomic
+#include <atomic> //for std::atomic
 #endif
 
 namespace DAVA
 {
-
 //-----------------------------------------------------------------------------
-//Atomic template class. 
+//Atomic template class.
 //-----------------------------------------------------------------------------
 template <typename T>
 class Atomic
 {
-    static_assert(std::is_integral<T>::value || 
-                  std::is_pointer<T>::value  ||
-                  std::is_enum<T>::value, 
+    static_assert(std::is_integral<T>::value ||
+                  std::is_pointer<T>::value ||
+                  std::is_enum<T>::value,
                   "Not valid type for atomic operations");
+
 public:
-    Atomic(T val = T()) DAVA_NOEXCEPT : value(val) {}
+    Atomic(T val = T()) DAVA_NOEXCEPT : value(val)
+    {
+    }
 
     Atomic(const Atomic& other) = delete;
     Atomic& operator=(const Atomic& other) = delete;
 
     Atomic& operator=(T val) DAVA_NOEXCEPT;
-    operator T() DAVA_NOEXCEPT { return Get(); }
+    operator T() DAVA_NOEXCEPT
+    {
+        return Get();
+    }
 
     void Set(T val) DAVA_NOEXCEPT;
     T Get() const DAVA_NOEXCEPT;
@@ -66,10 +71,22 @@ public:
     T Increment() DAVA_NOEXCEPT;
     T Decrement() DAVA_NOEXCEPT;
 
-    T operator++() DAVA_NOEXCEPT { return Increment(); }
-    T operator++(int) DAVA_NOEXCEPT { return Increment() - 1; }
-    T operator--() DAVA_NOEXCEPT { return Decrement(); }
-    T operator--(int) DAVA_NOEXCEPT { return Decrement() + 1; }
+    T operator++() DAVA_NOEXCEPT
+    {
+        return Increment();
+    }
+    T operator++(int)DAVA_NOEXCEPT
+    {
+        return Increment() - 1;
+    }
+    T operator--() DAVA_NOEXCEPT
+    {
+        return Decrement();
+    }
+    T operator--(int)DAVA_NOEXCEPT
+    {
+        return Decrement() + 1;
+    }
 
     T Swap(T desired) DAVA_NOEXCEPT;
     bool CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT;
@@ -80,12 +97,13 @@ private:
     std::atomic<T> value;
 #else
 
-#   ifdef __DAVAENGINE_WINDOWS__
-    template <typename Y> T Cast(Y val);
+#ifdef __DAVAENGINE_WINDOWS__
+    template <typename Y>
+    T Cast(Y val);
     T value;
-#   else
+#else
     DAVA_ALIGNED(T value, sizeof(T));
-#   endif
+#endif
 
 #endif
 };
@@ -105,22 +123,21 @@ Atomic<T>& Atomic<T>::operator=(T val) DAVA_NOEXCEPT
 //-----------------------------------------------------------------------------
 //Specific platform realization
 //-----------------------------------------------------------------------------
-#if defined (__DAVAENGINE_WINDOWS__) && !defined(USE_CPP11_CONCURRENCY)
-#   include "Concurrency/AtomicWindows.h"
-#elif defined (__GNUC__) && !defined(USE_CPP11_CONCURRENCY)
-#   include "Concurrency/AtomicGNU.h"
+#if defined(__DAVAENGINE_WINDOWS__) && !defined(USE_CPP11_CONCURRENCY)
+#include "Concurrency/AtomicWindows.h"
+#elif defined(__GNUC__) && !defined(USE_CPP11_CONCURRENCY)
+#include "Concurrency/AtomicGNU.h"
 #elif defined(USE_CPP11_CONCURRENCY)
 
 namespace DAVA
 {
-
 //-----------------------------------------------------------------------------
 //Atomic template class realization using std::atomic
 //-----------------------------------------------------------------------------
 template <typename T>
 void Atomic<T>::Set(T val) DAVA_NOEXCEPT
 {
-    value = val; 
+    value = val;
 }
 
 template <typename T>

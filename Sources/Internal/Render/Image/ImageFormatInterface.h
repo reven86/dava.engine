@@ -37,7 +37,7 @@
 #include "Utils/Utils.h"
 #include "Render/PixelFormatDescriptor.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Image;
 
@@ -56,9 +56,9 @@ struct ImageInfo
     bool operator==(const ImageInfo& another) const
     {
         return (
-            width == another.width && 
-            height == another.height && 
-            format == another.format);
+        width == another.width &&
+        height == another.height &&
+        format == another.format);
     }
 
     uint32 width = 0;
@@ -68,7 +68,6 @@ struct ImageInfo
     uint32 mipmapsCount = 0;
 };
 
-
 class ImageFormatInterface
 {
 public:
@@ -77,29 +76,29 @@ public:
     virtual ImageFormat GetImageFormat() const = 0;
     virtual bool CanProcessFile(File* file) const = 0;
 
-    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
+    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap) const = 0;
 
-    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+    virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
 
-    virtual ImageInfo GetImageInfo(File *infile) const = 0;
-    inline ImageInfo GetImageInfo(const FilePath &path) const;
+    virtual ImageInfo GetImageInfo(File* infile) const = 0;
+    inline ImageInfo GetImageInfo(const FilePath& path) const;
 
     inline bool IsFormatSupported(PixelFormat format) const;
     inline bool IsFileExtensionSupported(const String& extension) const;
 
     inline const Vector<String>& Extensions() const;
     inline const char* Name() const;
-    
+
 protected:
     Vector<PixelFormat> supportedFormats;
     Vector<String> supportedExtensions;
     String name;
 };
 
-ImageInfo ImageFormatInterface::GetImageInfo(const FilePath &path) const
+ImageInfo ImageFormatInterface::GetImageInfo(const FilePath& path) const
 {
-    File *infile = File::Create(path, File::OPEN | File::READ);
+    File* infile = File::Create(path, File::OPEN | File::READ);
     if (nullptr == infile)
     {
         return ImageInfo();
@@ -137,7 +136,6 @@ inline const char* ImageFormatInterface::Name() const
 {
     return name.c_str();
 }
-
 };
 
 #endif // __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__

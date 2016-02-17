@@ -30,12 +30,10 @@
 #include "AddParticleEmitterDialog.h"
 
 AddParticleEmitterDialog::AddParticleEmitterDialog(QWidget* parent /* = 0 */)
-	: QDialog(parent)
+    : QDialog(parent)
 {
-	
 }
 
 AddParticleEmitterDialog::~AddParticleEmitterDialog()
 {
-
 }

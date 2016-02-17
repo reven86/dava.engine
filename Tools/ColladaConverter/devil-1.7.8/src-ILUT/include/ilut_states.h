@@ -15,13 +15,12 @@
 
 #include "ilut_internal.h"
 
-
 ILboolean ilutAble(ILenum Mode, ILboolean Flag);
 
 
 #define ILUT_ATTRIB_STACK_MAX 32
 
-ILuint ilutCurrentPos = 0;  // Which position on the stack
+ILuint ilutCurrentPos = 0; // Which position on the stack
 
 //
 // Various states
@@ -29,29 +28,28 @@ ILuint ilutCurrentPos = 0;  // Which position on the stack
 
 typedef struct ILUT_STATES
 {
+    // ILUT states
+    ILboolean ilutUsePalettes;
+    ILboolean ilutOglConv;
+    ILboolean ilutForceIntegerFormat;
+    ILenum ilutDXTCFormat;
 
-	// ILUT states
-	ILboolean	ilutUsePalettes;
-	ILboolean	ilutOglConv;
-	ILboolean	ilutForceIntegerFormat;
-	ILenum		ilutDXTCFormat;
+    // GL states
+    ILboolean ilutUseS3TC;
+    ILboolean ilutGenS3TC;
+    ILboolean ilutAutodetectTextureTarget;
+    ILint MaxTexW;
+    ILint MaxTexH;
+    ILint MaxTexD;
 
-	// GL states
-	ILboolean	ilutUseS3TC;
-	ILboolean	ilutGenS3TC;
-	ILboolean	ilutAutodetectTextureTarget;
-	ILint		MaxTexW;
-	ILint		MaxTexH;
-	ILint		MaxTexD;
-
-	// D3D states
-	ILuint		D3DMipLevels;
-	ILenum		D3DPool;
-	ILint		D3DAlphaKeyColor; // 0x00rrggbb format , -1 for none
+    // D3D states
+    ILuint D3DMipLevels;
+    ILenum D3DPool;
+    ILint D3DAlphaKeyColor; // 0x00rrggbb format , -1 for none
 
 } ILUT_STATES;
 
 ILUT_STATES ilutStates[ILUT_ATTRIB_STACK_MAX];
 
 
-#endif//STATES_H
+#endif //STATES_H

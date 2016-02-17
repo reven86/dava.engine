@@ -88,16 +88,16 @@ DAVA_TESTCLASS(FormatsTest)
             const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
             continue;
 #endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
 
-            const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
+            const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
             if (descriptor.isHardwareSupported)
                 continue;
 
-            DAVA::Vector<DAVA::Image *> pngImages;
-            DAVA::Vector<DAVA::Image *> compressedImages;
+            DAVA::Vector<DAVA::Image*> pngImages;
+            DAVA::Vector<DAVA::Image*> compressedImages;
             const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
@@ -111,8 +111,10 @@ DAVA_TESTCLASS(FormatsTest)
             else
             {
                 const DAVA::PixelFormat comparedFormat = ((DAVA::FORMAT_A8 == requestedFormat) || (DAVA::FORMAT_A16 == requestedFormat))
-                    ? (const DAVA::PixelFormat)requestedFormat
-                    : DAVA::FORMAT_RGBA8888;
+                ?
+                (const DAVA::PixelFormat)requestedFormat
+                :
+                DAVA::FORMAT_RGBA8888;
 
                 const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], compressedImages[0], comparedFormat);
                 float32 differencePercentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
@@ -149,12 +151,12 @@ DAVA_TESTCLASS(FormatsTest)
             continue;
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
-            const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
+            const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
             if (descriptor.isHardwareSupported)
                 continue;
 
-            DAVA::Vector<DAVA::Image *> pngImages;
-            DAVA::Vector<DAVA::Image *> compressedImages;
+            DAVA::Vector<DAVA::Image*> pngImages;
+            DAVA::Vector<DAVA::Image*> compressedImages;
             const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
@@ -168,8 +170,10 @@ DAVA_TESTCLASS(FormatsTest)
             else
             {
                 const DAVA::PixelFormat comparedFormat = ((DAVA::FORMAT_A8 == requestedFormat) || (DAVA::FORMAT_A16 == requestedFormat))
-                    ? (const DAVA::PixelFormat)requestedFormat
-                    : DAVA::FORMAT_RGBA8888;
+                ?
+                (const DAVA::PixelFormat)requestedFormat
+                :
+                DAVA::FORMAT_RGBA8888;
 
                 const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], compressedImages[0], comparedFormat);
 
@@ -194,7 +198,7 @@ DAVA_TESTCLASS(FormatsTest)
         }
     }
 
-    void TestImageInfo(const DAVA::FilePath &fileName, DAVA::PixelFormat &requestedFormat)
+    void TestImageInfo(const DAVA::FilePath& fileName, DAVA::PixelFormat& requestedFormat)
     {
         // NOTE: if file is generated in DXT1A format then lib returned new file in DXT1
         switch (requestedFormat)

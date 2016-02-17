@@ -33,31 +33,29 @@
 #include "Base/BaseTypes.h"
 #include "Scene3D/Entity.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class SceneNodeAnimationKey
 {
 public:
-	float32 time;
-	Vector3 translation;
-	Quaternion rotation;
-	Vector3 scale;
-	
-	inline void GetMatrix(Matrix4 & matrix) const;
+    float32 time;
+    Vector3 translation;
+    Quaternion rotation;
+    Vector3 scale;
+
+    inline void GetMatrix(Matrix4& matrix) const;
 };
-	
-	
-inline void SceneNodeAnimationKey::GetMatrix(Matrix4 & result) const
+
+inline void SceneNodeAnimationKey::GetMatrix(Matrix4& result) const
 {
-	Matrix4 localTransformRot;
-	Matrix4 localTransformScale;
-	localTransformRot = rotation.GetMatrix();
-	localTransformScale.CreateScale(scale);
+    Matrix4 localTransformRot;
+    Matrix4 localTransformScale;
+    localTransformRot = rotation.GetMatrix();
+    localTransformScale.CreateScale(scale);
 
-	result = localTransformRot * localTransformScale;	 
-	result.SetTranslationVector(translation);
+    result = localTransformRot * localTransformScale;
+    result.SetTranslationVector(translation);
 }
-
 };
 
 #endif // __DAVAENGINE_SCENE_NODE_ANIMATION_KEY_H__

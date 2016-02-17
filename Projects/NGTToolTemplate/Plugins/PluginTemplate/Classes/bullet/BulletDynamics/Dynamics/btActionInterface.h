@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -55,21 +54,16 @@ class btCollisionWorld;
 class btActionInterface
 {
 protected:
+    static btRigidBody& getFixedBody();
 
-	static btRigidBody& getFixedBody();
-	
-	
 public:
+    virtual ~btActionInterface()
+    {
+    }
 
-	virtual ~btActionInterface()
-	{
-	}
+    virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep) = 0;
 
-	virtual void updateAction( btCollisionWorld* collisionWorld, btScalar deltaTimeStep)=0;
-
-	virtual void debugDraw(btIDebugDraw* debugDrawer) = 0;
-
+    virtual void debugDraw(btIDebugDraw* debugDrawer) = 0;
 };
 
 #endif //_BT_ACTION_INTERFACE_H
-

@@ -41,14 +41,13 @@
 
 namespace
 {
-
-using TFlushNodeFn = std::function<void (DAVA::Entity *)>;
-void EnumerateSceneNodes(DAVA::Entity * entity, TFlushNodeFn const & flushFn)
+using TFlushNodeFn = std::function<void(DAVA::Entity*)>;
+void EnumerateSceneNodes(DAVA::Entity* entity, TFlushNodeFn const& flushFn)
 {
     DVASSERT(flushFn != nullptr);
     for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); ++i)
     {
-        DAVA::Entity * childEntity = entity->GetChild(i);
+        DAVA::Entity* childEntity = entity->GetChild(i);
         flushFn(childEntity);
     }
 }
@@ -56,22 +55,22 @@ void EnumerateSceneNodes(DAVA::Entity * entity, TFlushNodeFn const & flushFn)
 class EntitySceneItem : public GenericTreeItem
 {
 public:
-    EntitySceneItem(DAVA::Entity * entity_, EntitySceneItem * parent_)
+    EntitySceneItem(DAVA::Entity* entity_, EntitySceneItem* parent_)
         : entity(entity_)
         , parent(parent_)
     {
-        EnumerateSceneNodes(entity, [this](DAVA::Entity * childEntity)
-        {
-            children.push_back(new EntitySceneItem(childEntity, this));
-        });
+        EnumerateSceneNodes(entity, [this](DAVA::Entity* childEntity)
+                            {
+                                children.push_back(new EntitySceneItem(childEntity, this));
+                            });
     }
 
-    GenericTreeItem * getParent() const override
+    GenericTreeItem* getParent() const override
     {
         return parent;
     }
 
-    GenericTreeItem * getChild(size_t index) const override
+    GenericTreeItem* getChild(size_t index) const override
     {
         DVASSERT(index < children.size());
         return children[index];
@@ -87,7 +86,7 @@ public:
         return 1;
     }
 
-    const char * getDisplayText(int column) const override
+    const char* getDisplayText(int column) const override
     {
         if (entity)
             return entity->GetName().c_str();
@@ -105,22 +104,24 @@ public:
         return Variant();
     }
 
-    bool setData(int column, size_t roleId, const Variant & data) override
+    bool setData(int column, size_t roleId, const Variant& data) override
     {
         return false;
     }
 
-    DAVA::Entity * GetEntity() { return entity; }
+    DAVA::Entity* GetEntity()
+    {
+        return entity;
+    }
 
 private:
-    EntitySceneItem * parent;
-    DAVA::Entity * entity;
-    DAVA::Vector<EntitySceneItem *> children;
+    EntitySceneItem* parent;
+    DAVA::Entity* entity;
+    DAVA::Vector<EntitySceneItem*> children;
 };
-
 }
 
-void SceneTree::Initialize(IUIFramework & uiFramework, IUIApplication & uiApplication)
+void SceneTree::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
 {
     sceneTreeView = uiFramework.createView("qrc:/default/SceneTree.qml", IUIFramework::ResourceType::Url, this);
 
@@ -138,10 +139,10 @@ QVariant SceneTree::GetSceneTree()
     return QtHelpers::toQVariant(ObjectHandle(objectHandleStorage));
 }
 
-void SceneTree::OnSelectionChanged(QList<QVariant> const & selection)
+void SceneTree::OnSelectionChanged(QList<QVariant> const& selection)
 {
     DVASSERT(scene != nullptr);
-    foreach(QVariant s, selection)
+    foreach (QVariant s, selection)
     {
         if (!s.canConvert<QModelIndex>())
             continue;
@@ -150,8 +151,8 @@ void SceneTree::OnSelectionChanged(QList<QVariant> const & selection)
         if (!index.isValid())
             continue;
 
-        EntitySceneItem * item = static_cast<EntitySceneItem *>(index.internalPointer());
-        DAVA::Entity * entity = item->GetEntity();
+        EntitySceneItem* item = static_cast<EntitySceneItem*>(index.internalPointer());
+        DAVA::Entity* entity = item->GetEntity();
         DVASSERT(entity != nullptr);
 
         SelectedEntityChanged.Emit(std::move(entity));
@@ -159,7 +160,7 @@ void SceneTree::OnSelectionChanged(QList<QVariant> const & selection)
     }
 }
 
-void SceneTree::SetScene(DAVA::Scene * scene_)
+void SceneTree::SetScene(DAVA::Scene* scene_)
 {
     SafeRelease(scene);
     scene = scene_;
@@ -175,7 +176,7 @@ void SceneTree::SetScene(DAVA::Scene * scene_)
     emit SceneChanged();
 }
 
-void SceneTree::OnSceneSelectionChanged(DAVA::Scene * scene_, const EntityGroup * selected, const EntityGroup * deselected)
+void SceneTree::OnSceneSelectionChanged(DAVA::Scene* scene_, const EntityGroup* selected, const EntityGroup* deselected)
 {
     DVASSERT(scene == scene_);
     DVASSERT(selected->Size() < 2);
@@ -184,14 +185,14 @@ void SceneTree::OnSceneSelectionChanged(DAVA::Scene * scene_, const EntityGroup 
         return;
     }
 
-    DAVA::Entity * entity = selected->GetEntity(0);
+    DAVA::Entity* entity = selected->GetEntity(0);
     SelectedEntityChanged.Emit(std::move(entity));
 }
 
-ITreeModel * SceneTree::CreateSceneModel()
+ITreeModel* SceneTree::CreateSceneModel()
 {
     DVASSERT(scene != nullptr);
-    GenericTreeModel * model = new GenericTreeModel();
+    GenericTreeModel* model = new GenericTreeModel();
     model->addRootItem(new EntitySceneItem(scene, nullptr));
 
     return model;

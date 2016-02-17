@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -48,68 +47,64 @@ subject to the following restrictions:
 #include "btConcaveShape.h"
 #include "btStridingMeshInterface.h"
 
-
 ///The btTriangleMeshShape is an internal concave triangle mesh interface. Don't use this class directly, use btBvhTriangleMeshShape instead.
 class btTriangleMeshShape : public btConcaveShape
 {
 protected:
-	btVector3	m_localAabbMin;
-	btVector3	m_localAabbMax;
-	btStridingMeshInterface* m_meshInterface;
+    btVector3 m_localAabbMin;
+    btVector3 m_localAabbMax;
+    btStridingMeshInterface* m_meshInterface;
 
-	///btTriangleMeshShape constructor has been disabled/protected, so that users will not mistakenly use this class.
-	///Don't use btTriangleMeshShape but use btBvhTriangleMeshShape instead!
-	btTriangleMeshShape(btStridingMeshInterface* meshInterface);
+    ///btTriangleMeshShape constructor has been disabled/protected, so that users will not mistakenly use this class.
+    ///Don't use btTriangleMeshShape but use btBvhTriangleMeshShape instead!
+    btTriangleMeshShape(btStridingMeshInterface* meshInterface);
 
 public:
+    virtual ~btTriangleMeshShape();
 
-	virtual ~btTriangleMeshShape();
+    virtual btVector3 localGetSupportingVertex(const btVector3& vec) const;
 
-	virtual btVector3 localGetSupportingVertex(const btVector3& vec) const;
+    virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const
+    {
+        btAssert(0);
+        return localGetSupportingVertex(vec);
+    }
 
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const
-	{
-		btAssert(0);
-		return localGetSupportingVertex(vec);
-	}
+    void recalcLocalAabb();
 
-	void	recalcLocalAabb();
+    virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+    virtual void processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
 
-	virtual void	processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const;
+    virtual void calculateLocalInertia(btScalar mass, btVector3& inertia) const;
 
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+    virtual void setLocalScaling(const btVector3& scaling);
+    virtual const btVector3& getLocalScaling() const;
 
-	virtual void	setLocalScaling(const btVector3& scaling);
-	virtual const btVector3& getLocalScaling() const;
-	
-	btStridingMeshInterface* getMeshInterface()
-	{
-		return m_meshInterface;
-	}
+    btStridingMeshInterface* getMeshInterface()
+    {
+        return m_meshInterface;
+    }
 
-	const btStridingMeshInterface* getMeshInterface() const
-	{
-		return m_meshInterface;
-	}
+    const btStridingMeshInterface* getMeshInterface() const
+    {
+        return m_meshInterface;
+    }
 
-	const btVector3& getLocalAabbMin() const
-	{
-		return m_localAabbMin;
-	}
-	const btVector3& getLocalAabbMax() const
-	{
-		return m_localAabbMax;
-	}
+    const btVector3& getLocalAabbMin() const
+    {
+        return m_localAabbMin;
+    }
+    const btVector3& getLocalAabbMax() const
+    {
+        return m_localAabbMax;
+    }
 
-
-
-	//debugging
-	virtual const char*	getName()const {return "TRIANGLEMESH";}
-
-	
-
+    //debugging
+    virtual const char* getName() const
+    {
+        return "TRIANGLEMESH";
+    }
 };
 
 

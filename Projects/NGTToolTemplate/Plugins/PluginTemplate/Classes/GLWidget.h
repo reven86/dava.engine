@@ -37,10 +37,10 @@ class PluginGLWidget : public IView,
                        public DavaGLWidget
 {
 public:
-    PluginGLWidget(QWidget * parent = nullptr);
+    PluginGLWidget(QWidget* parent = nullptr);
 
-    const char * title() const override;
-    const char * windowId() const override;
+    const char* title() const override;
+    const char* windowId() const override;
     const LayoutHint& hint() const override;
     void update() override;
 

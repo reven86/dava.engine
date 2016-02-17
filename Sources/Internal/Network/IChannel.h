@@ -30,13 +30,13 @@
 #ifndef __DAVAENGINE_ICHANNEL_H__
 #define __DAVAENGINE_ICHANNEL_H__
 
-#include "NetworkCommon.h"
+#include "Base/BaseTypes.h"
+#include "Network/NetworkCommon.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
 /*
  Interface should be implemented by objects which want to know what is going on in channel.
 */
@@ -44,7 +44,9 @@ struct IChannel;
 struct IChannelListener
 {
     // There should be a virtual destructor defined as objects may be deleted through this interface
-    virtual ~IChannelListener() {}
+    virtual ~IChannelListener()
+    {
+    }
 
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
     virtual void OnChannelOpen(IChannel* channel) = 0;
@@ -68,7 +70,7 @@ struct IChannel
     virtual const Endpoint& RemoteEndpoint() const = 0;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_ICHANNEL_H__
+#endif // __DAVAENGINE_ICHANNEL_H__

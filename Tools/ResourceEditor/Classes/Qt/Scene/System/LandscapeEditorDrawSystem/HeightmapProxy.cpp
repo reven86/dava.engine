@@ -30,38 +30,33 @@
 #include "HeightmapProxy.h"
 
 HeightmapProxy::HeightmapProxy(Heightmap* heightmap)
-:	EditorHeightmap(heightmap)
+    : EditorHeightmap(heightmap)
 {
 }
 
-void HeightmapProxy::UpdateRect(const DAVA::Rect &rect)
+void HeightmapProxy::UpdateRect(const DAVA::Rect& rect)
 {
-	int32 size = Size();
+    int32 size = Size();
 
-	Rect bounds(0.f, 0.f, (float32)size, (float32)size);
+    Rect bounds(0.f, 0.f, (float32)size, (float32)size);
 
-	changedRect = rect;
-	bounds.ClampToRect(changedRect);
+    changedRect = rect;
+    bounds.ClampToRect(changedRect);
 
-	heightmapChanged = true;
+    heightmapChanged = true;
 }
 
 void HeightmapProxy::ResetHeightmapChanged()
 {
-	heightmapChanged = false;
+    heightmapChanged = false;
 }
 
-bool HeightmapProxy::IsHeightmapChanged()
+bool HeightmapProxy::IsHeightmapChanged() const
 {
-	return heightmapChanged;
+    return heightmapChanged;
 }
 
-Rect HeightmapProxy::GetChangedRect()
+const Rect& HeightmapProxy::GetChangedRect() const
 {
-	if (IsHeightmapChanged())
-	{
-		return changedRect;
-	}
-	
-	return Rect();
+    return changedRect;
 }

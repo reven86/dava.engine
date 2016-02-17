@@ -36,19 +36,21 @@
 class CollisionBaseObject
 {
 public:
-	CollisionBaseObject(DAVA::Entity *ent, btCollisionWorld *word)
-		: entity(ent)
-		, btObject(NULL)
-		, btWord(word)
-	{ }
+    CollisionBaseObject(DAVA::Entity* ent, btCollisionWorld* word)
+        : entity(ent)
+        , btObject(NULL)
+        , btWord(word)
+    {
+    }
 
-	virtual ~CollisionBaseObject()
-	{ }
+    virtual ~CollisionBaseObject()
+    {
+    }
 
-	DAVA::Entity *entity;
-	DAVA::AABBox3 boundingBox;
-	btCollisionObject *btObject;
-	btCollisionWorld *btWord;
+    DAVA::Entity* entity;
+    DAVA::AABBox3 boundingBox;
+    btCollisionObject* btObject;
+    btCollisionWorld* btWord;
 };
 
 #endif // __SCENE_COLLISION_BASE_OBJECT_H__

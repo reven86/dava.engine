@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -57,55 +56,48 @@ subject to the following restrictions:
 
 /// The btConvexShape is an abstract shape interface, implemented by all convex shapes such as btBoxShape, btConvexHullShape etc.
 /// It describes general convex shapes using the localGetSupportingVertex interface, used by collision detectors such as btGjkPairDetector.
-ATTRIBUTE_ALIGNED16(class) btConvexShape : public btCollisionShape
+ATTRIBUTE_ALIGNED16(class)
+btConvexShape : public btCollisionShape
 {
-
-
 public:
+    BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	BT_DECLARE_ALIGNED_ALLOCATOR();
+    btConvexShape();
 
-	btConvexShape ();
+    virtual ~btConvexShape();
 
-	virtual ~btConvexShape();
+    virtual btVector3 localGetSupportingVertex(const btVector3& vec) const = 0;
 
-	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const = 0;
-
-	////////
+////////
 	#ifndef __SPU__
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec) const=0;
+    virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const = 0;
 	#endif //#ifndef __SPU__
 
-	btVector3 localGetSupportVertexWithoutMarginNonVirtual (const btVector3& vec) const;
-	btVector3 localGetSupportVertexNonVirtual (const btVector3& vec) const;
-	btScalar getMarginNonVirtual () const;
-	void getAabbNonVirtual (const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
+    btVector3 localGetSupportVertexWithoutMarginNonVirtual(const btVector3& vec) const;
+    btVector3 localGetSupportVertexNonVirtual(const btVector3& vec) const;
+    btScalar getMarginNonVirtual() const;
+    void getAabbNonVirtual(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
-	virtual void project(const btTransform& trans, const btVector3& dir, btScalar& min, btScalar& max) const;
+    virtual void project(const btTransform& trans, const btVector3& dir, btScalar& min, btScalar& max) const;
 
-	
-	//notice that the vectors should be unit length
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const= 0;
+    //notice that the vectors should be unit length
+    virtual void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const = 0;
 
-	///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
-	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
+    ///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
+    void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const = 0;
 
-	virtual void getAabbSlow(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
+    virtual void getAabbSlow(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const = 0;
 
-	virtual void	setLocalScaling(const btVector3& scaling) =0;
-	virtual const btVector3& getLocalScaling() const =0;
+    virtual void setLocalScaling(const btVector3& scaling) = 0;
+    virtual const btVector3& getLocalScaling() const = 0;
 
-	virtual void	setMargin(btScalar margin)=0;
+    virtual void setMargin(btScalar margin) = 0;
 
-	virtual btScalar	getMargin() const=0;
+    virtual btScalar getMargin() const = 0;
 
-	virtual int		getNumPreferredPenetrationDirections() const=0;
-	
-	virtual void	getPreferredPenetrationDirection(int index, btVector3& penetrationVector) const=0;
+    virtual int getNumPreferredPenetrationDirections() const = 0;
 
-
-	
-	
+    virtual void getPreferredPenetrationDirection(int index, btVector3& penetrationVector) const = 0;
 };
 
 

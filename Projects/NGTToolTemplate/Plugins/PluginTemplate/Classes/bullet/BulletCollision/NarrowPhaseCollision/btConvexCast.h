@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -56,45 +55,54 @@ class btMinkowskiSumShape;
 class btConvexCast
 {
 public:
-	virtual ~btConvexCast();
+    virtual ~btConvexCast();
 
-	///RayResult stores the closest result
-	/// alternatively, add a callback method to decide about closest/all results
-	struct	CastResult
-	{
-		//virtual bool	addRayResult(const btVector3& normal,btScalar	fraction) = 0;
-				
-		virtual void	DebugDraw(btScalar	fraction) {(void)fraction;}
-		virtual void	drawCoordSystem(const btTransform& trans) {(void)trans;}
-		virtual void	reportFailure(int errNo, int numIterations) {(void)errNo;(void)numIterations;}
-		CastResult()
-			:m_fraction(btScalar(BT_LARGE_FLOAT)),
-			m_debugDrawer(0),
-			m_allowedPenetration(btScalar(0))
-		{
-		}
+    ///RayResult stores the closest result
+    /// alternatively, add a callback method to decide about closest/all results
+    struct CastResult
+    {
+        //virtual bool	addRayResult(const btVector3& normal,btScalar	fraction) = 0;
 
+        virtual void DebugDraw(btScalar fraction)
+        {
+            (void)fraction;
+        }
+        virtual void drawCoordSystem(const btTransform& trans)
+        {
+            (void)trans;
+        }
+        virtual void reportFailure(int errNo, int numIterations)
+        {
+            (void)errNo;
+            (void)numIterations;
+        }
+        CastResult()
+            : m_fraction(btScalar(BT_LARGE_FLOAT))
+            ,
+            m_debugDrawer(0)
+            ,
+            m_allowedPenetration(btScalar(0))
+        {
+        }
 
-		virtual ~CastResult() {};
+        virtual ~CastResult(){};
 
-		btTransform	m_hitTransformA;
-		btTransform	m_hitTransformB;
-		btVector3	m_normal;
-		btVector3   m_hitPoint;
-		btScalar	m_fraction; //input and output
-		btIDebugDraw* m_debugDrawer;
-		btScalar	m_allowedPenetration;
+        btTransform m_hitTransformA;
+        btTransform m_hitTransformB;
+        btVector3 m_normal;
+        btVector3 m_hitPoint;
+        btScalar m_fraction; //input and output
+        btIDebugDraw* m_debugDrawer;
+        btScalar m_allowedPenetration;
+    };
 
-	};
-
-
-	/// cast a convex against another convex object
-	virtual bool	calcTimeOfImpact(
-					const btTransform& fromA,
-					const btTransform& toA,
-					const btTransform& fromB,
-					const btTransform& toB,
-					CastResult& result) = 0;
+    /// cast a convex against another convex object
+    virtual bool calcTimeOfImpact(
+    const btTransform& fromA,
+    const btTransform& toA,
+    const btTransform& fromB,
+    const btTransform& toB,
+    CastResult& result) = 0;
 };
 
 #endif //BT_CONVEX_CAST_H

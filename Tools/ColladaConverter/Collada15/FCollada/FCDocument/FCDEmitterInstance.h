@@ -35,21 +35,20 @@ class FCOLLADA_EXPORT FCDEmitterInstance : public FCDEntityInstance
 {
 private:
     DeclareObjectType(FCDEntityInstance);
-	friend class FCDEntityInstanceFactory;
+    friend class FCDEntityInstanceFactory;
 
 protected:
-	/** Constructor: do not use directly.
+    /** Constructor: do not use directly.
 		Instead, use the FCDSceneNode::AddInstance function.
 		@param document The COLLADA document that owns the emitter instance.
 		@param parent The parent visual scene node.
 		@param entityType The type of the entity to instantiate. Unless this class
 			is overwritten, FCDEntity::EMITTER should be given. */
-	FCDEmitterInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType = FCDEntity::EMITTER);
+    FCDEmitterInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType = FCDEntity::EMITTER);
 
 public:
-	/** Destructor. */
-	virtual ~FCDEmitterInstance();
-
+    /** Destructor. */
+    virtual ~FCDEmitterInstance();
 };
 
 #endif // _FCD_EMITTER_INSTANCE_H_

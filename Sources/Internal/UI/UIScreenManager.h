@@ -39,7 +39,7 @@
 #elif defined(__DAVAENGINE_ANDROID__)
     #include "UI/UIScreenManagerAndroid.h"
 #else //PLATFORMS
-	//other platforms
+//other platforms
 #endif //PLATFORMS
 
 #endif // __DAVAENGINE_SCREENMANAGER_C_H__

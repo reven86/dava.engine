@@ -34,7 +34,6 @@
 #include <QString>
 #include "Base/BaseTypes.h"
 
-
 class PathDescriptor
 {
 public:
@@ -47,16 +46,22 @@ public:
         PATH_SCENE,
         PATH_NOT_SPECIFIED
     };
-    
-    PathDescriptor(const QString & name, const QString &filter, eType type) : pathName(name), fileFilter(filter), pathType(type) {;};
-    
+
+    PathDescriptor(const QString& name, const QString& filter, eType type)
+        : pathName(name)
+        , fileFilter(filter)
+        , pathType(type)
+    {
+        ;
+    };
+
     QString pathName;
     QString fileFilter;
     eType pathType;
-    
+
     static void InitializePathDescriptors();
     static DAVA::Vector<PathDescriptor> descriptors;
-    static PathDescriptor & GetPathDescriptor(eType type);
+    static PathDescriptor& GetPathDescriptor(eType type);
 };
 
 

@@ -167,7 +167,6 @@ elseif ( WINDOWS_UAP )
 
     set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES}
         ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
-
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
@@ -242,6 +241,20 @@ if( DAVA_FOUND )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp
                                     ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
+        elseif( MACOS )
+        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.h
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.mm
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
+                        )
+
+
+
         endif()
 
     endif()
@@ -307,20 +320,14 @@ if( ANDROID )
     add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${REMAINING_LIST} )
 
 else()
-    if (BUILD_AS_PLUGIN)
-        add_library( ${PROJECT_NAME} STATIC
-                             ${ADDED_SRC} ${PLATFORM_ADDED_SRC}
-                             ${PROJECT_SOURCE_FILES} ${RESOURCES_LIST})
-    else()
-        if( NOT MAC_DISABLE_BUNDLE )
-            set( BUNDLE_FLAG  MACOSX_BUNDLE )
-        endif()
-
-        add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
-            ${PROJECT_SOURCE_FILES}
-            ${RESOURCES_LIST}
-        )
+    if( NOT MAC_DISABLE_BUNDLE )
+        set( BUNDLE_FLAG  MACOSX_BUNDLE )
     endif()
+
+    add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
+        ${PROJECT_SOURCE_FILES}
+        ${RESOURCES_LIST}
+    )
 
 endif()
 
@@ -328,14 +335,19 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( QT5_FOUND AND NOT NOT_DEPLOY_QT)
-    if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
-    elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+if ( QT5_FOUND )
+    set (QTCONF_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    if (DEPLOY_DIR AND DEPLOY)
+        set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
     endif()
 
-    if     ( TEAMCITY_DEPLOY AND WIN32 )
+    if ( WIN32 )
+        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
+    elseif ( APPLE )
+        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    endif()
+
+     if ( TEAMCITY_DEPLOY AND WIN32 )
         set ( PLUGINS_PATH .)
         set ( QML_IMPORT_PATH .)
         set ( QML2_IMPORT_PATH .)
@@ -351,7 +363,7 @@ if ( QT5_FOUND AND NOT NOT_DEPLOY_QT)
     endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
+                             ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
@@ -561,9 +573,6 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
-if ( QT_LIBRARIES )
-    qt5_use_modules(${PROJECT_NAME} ${QT_LIBRARIES})
-endif()
 
 ###
 
@@ -621,7 +630,7 @@ if( DEPLOY )
 
     endif()
 
-    if( QT5_FOUND AND NOT NOT_DEPLOY_QT)
+    if( QT5_FOUND )
         qt_deploy( )
 
     endif()
@@ -660,3 +669,4 @@ macro( DEPLOY_SCRIPT )
 
     endif()
 endmacro ()
+

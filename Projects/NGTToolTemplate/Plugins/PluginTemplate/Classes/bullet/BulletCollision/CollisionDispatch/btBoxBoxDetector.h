@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  * Box-Box collision detection re-distributed under the ZLib license with permission from Russell L. Smith
  * Original version is from Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.
@@ -48,26 +47,22 @@ subject to the following restrictions:
 #ifndef BT_BOX_BOX_DETECTOR_H
 #define BT_BOX_BOX_DETECTOR_H
 
-
 class btBoxShape;
 #include "bullet/BulletCollision/NarrowPhaseCollision/btDiscreteCollisionDetectorInterface.h"
-
 
 /// btBoxBoxDetector wraps the ODE box-box collision detector
 /// re-distributed under the Zlib license with permission from Russell L. Smith
 struct btBoxBoxDetector : public btDiscreteCollisionDetectorInterface
 {
-	btBoxShape* m_box1;
-	btBoxShape* m_box2;
+    btBoxShape* m_box1;
+    btBoxShape* m_box2;
 
 public:
+    btBoxBoxDetector(btBoxShape* box1, btBoxShape* box2);
 
-	btBoxBoxDetector(btBoxShape* box1,btBoxShape* box2);
+    virtual ~btBoxBoxDetector(){};
 
-	virtual ~btBoxBoxDetector() {};
-
-	virtual void	getClosestPoints(const ClosestPointInput& input,Result& output,class btIDebugDraw* debugDraw,bool swapResults=false);
-
+    virtual void getClosestPoints(const ClosestPointInput& input, Result& output, class btIDebugDraw* debugDraw, bool swapResults = false);
 };
 
 #endif //BT_BOX_BOX_DETECTOR_H

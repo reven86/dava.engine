@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2011 Advanced Micro Devices, Inc.  http://bulletphysics.org
@@ -41,7 +40,6 @@ subject to the following restrictions:
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
 
 ///This file was written by Erwin Coumans
 
@@ -61,15 +59,13 @@ typedef btAlignedObjectArray<btVector3> btVertexArray;
 // Clips a face to the back of a plane
 struct btPolyhedralContactClipping
 {
-	static void clipHullAgainstHull(const btVector3& separatingNormal, const btConvexPolyhedron& hullA, const btConvexPolyhedron& hullB, const btTransform& transA,const btTransform& transB, const btScalar minDist, btScalar maxDist, btDiscreteCollisionDetectorInterface::Result& resultOut);
-	static void	clipFaceAgainstHull(const btVector3& separatingNormal, const btConvexPolyhedron& hullA,  const btTransform& transA, btVertexArray& worldVertsB1, const btScalar minDist, btScalar maxDist,btDiscreteCollisionDetectorInterface::Result& resultOut);
+    static void clipHullAgainstHull(const btVector3& separatingNormal, const btConvexPolyhedron& hullA, const btConvexPolyhedron& hullB, const btTransform& transA, const btTransform& transB, const btScalar minDist, btScalar maxDist, btDiscreteCollisionDetectorInterface::Result& resultOut);
+    static void clipFaceAgainstHull(const btVector3& separatingNormal, const btConvexPolyhedron& hullA, const btTransform& transA, btVertexArray& worldVertsB1, const btScalar minDist, btScalar maxDist, btDiscreteCollisionDetectorInterface::Result& resultOut);
 
-	static bool findSeparatingAxis(	const btConvexPolyhedron& hullA, const btConvexPolyhedron& hullB, const btTransform& transA,const btTransform& transB, btVector3& sep);
+    static bool findSeparatingAxis(const btConvexPolyhedron& hullA, const btConvexPolyhedron& hullB, const btTransform& transA, const btTransform& transB, btVector3& sep);
 
-	///the clipFace method is used internally
-	static void clipFace(const btVertexArray& pVtxIn, btVertexArray& ppVtxOut, const btVector3& planeNormalWS,btScalar planeEqWS);
-
+    ///the clipFace method is used internally
+    static void clipFace(const btVertexArray& pVtxIn, btVertexArray& ppVtxOut, const btVector3& planeNormalWS, btScalar planeEqWS);
 };
 
 #endif // BT_POLYHEDRAL_CONTACT_CLIPPING_H
-

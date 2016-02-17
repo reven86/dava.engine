@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -47,47 +46,42 @@ subject to the following restrictions:
 
 #include "btDiscreteCollisionDetectorInterface.h"
 
-
-
 struct btPointCollector : public btDiscreteCollisionDetectorInterface::Result
 {
-	
-	
-	btVector3 m_normalOnBInWorld;
-	btVector3 m_pointInWorld;
-	btScalar	m_distance;//negative means penetration
+    btVector3 m_normalOnBInWorld;
+    btVector3 m_pointInWorld;
+    btScalar m_distance; //negative means penetration
 
-	bool	m_hasResult;
+    bool m_hasResult;
 
-	btPointCollector () 
-		: m_distance(btScalar(BT_LARGE_FLOAT)),m_hasResult(false)
-	{
-	}
+    btPointCollector()
+        : m_distance(btScalar(BT_LARGE_FLOAT))
+        , m_hasResult(false)
+    {
+    }
 
-	virtual void setShapeIdentifiersA(int partId0,int index0)
-	{
-		(void)partId0;
-		(void)index0;
-			
-	}
-	virtual void setShapeIdentifiersB(int partId1,int index1)
-	{
-		(void)partId1;
-		(void)index1;
-	}
+    virtual void setShapeIdentifiersA(int partId0, int index0)
+    {
+        (void)partId0;
+        (void)index0;
+    }
+    virtual void setShapeIdentifiersB(int partId1, int index1)
+    {
+        (void)partId1;
+        (void)index1;
+    }
 
-	virtual void addContactPoint(const btVector3& normalOnBInWorld,const btVector3& pointInWorld,btScalar depth)
-	{
-		if (depth< m_distance)
-		{
-			m_hasResult = true;
-			m_normalOnBInWorld = normalOnBInWorld;
-			m_pointInWorld = pointInWorld;
-			//negative means penetration
-			m_distance = depth;
-		}
-	}
+    virtual void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar depth)
+    {
+        if (depth < m_distance)
+        {
+            m_hasResult = true;
+            m_normalOnBInWorld = normalOnBInWorld;
+            m_pointInWorld = pointInWorld;
+            //negative means penetration
+            m_distance = depth;
+        }
+    }
 };
 
 #endif //BT_POINT_COLLECTOR_H
-

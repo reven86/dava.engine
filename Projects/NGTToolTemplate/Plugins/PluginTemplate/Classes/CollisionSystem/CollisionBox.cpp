@@ -29,33 +29,33 @@
 
 #include "CollisionSystem/CollisionBox.h"
 
-CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::Vector3 position, DAVA::float32 boxSize)
-	: CollisionBaseObject(entity, word)
+CollisionBox::CollisionBox(DAVA::Entity* entity, btCollisionWorld* word, DAVA::Vector3 position, DAVA::float32 boxSize)
+    : CollisionBaseObject(entity, word)
 {
-	if(NULL != word)
-	{
-		btObject = new btCollisionObject();
-		btShape = new btBoxShape(btVector3(boxSize / 2, boxSize / 2, boxSize / 2));
+    if (NULL != word)
+    {
+        btObject = new btCollisionObject();
+        btShape = new btBoxShape(btVector3(boxSize / 2, boxSize / 2, boxSize / 2));
 
-		btObject->setCollisionShape(btShape);
+        btObject->setCollisionShape(btShape);
 
-		btTransform trans;
-		trans.setIdentity();
-		trans.setOrigin(btVector3(position.x, position.y, position.z));
-		btObject->setWorldTransform(trans);
+        btTransform trans;
+        trans.setIdentity();
+        trans.setOrigin(btVector3(position.x, position.y, position.z));
+        btObject->setWorldTransform(trans);
 
-		btWord->addCollisionObject(btObject);
+        btWord->addCollisionObject(btObject);
 
-		boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxSize);
-	}
+        boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxSize);
+    }
 }
 
 CollisionBox::~CollisionBox()
 {
-	if(NULL != btObject)
-	{
-		btWord->removeCollisionObject(btObject);
-		DAVA::SafeDelete(btObject);
-		DAVA::SafeDelete(btShape);
-	}
+    if (NULL != btObject)
+    {
+        btWord->removeCollisionObject(btObject);
+        DAVA::SafeDelete(btObject);
+        DAVA::SafeDelete(btShape);
+    }
 }

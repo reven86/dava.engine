@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -58,22 +57,20 @@ class btMinkowskiSumShape;
 ///GjkConvexCast performs a raycast on a convex object using support mapping.
 class btGjkConvexCast : public btConvexCast
 {
-	btSimplexSolverInterface*	m_simplexSolver;
-	const btConvexShape*	m_convexA;
-	const btConvexShape*	m_convexB;
+    btSimplexSolverInterface* m_simplexSolver;
+    const btConvexShape* m_convexA;
+    const btConvexShape* m_convexB;
 
 public:
+    btGjkConvexCast(const btConvexShape* convexA, const btConvexShape* convexB, btSimplexSolverInterface* simplexSolver);
 
-	btGjkConvexCast(const btConvexShape*	convexA,const btConvexShape* convexB,btSimplexSolverInterface* simplexSolver);
-
-	/// cast a convex against another convex object
-	virtual bool	calcTimeOfImpact(
-					const btTransform& fromA,
-					const btTransform& toA,
-					const btTransform& fromB,
-					const btTransform& toB,
-					CastResult& result);
-
+    /// cast a convex against another convex object
+    virtual bool calcTimeOfImpact(
+    const btTransform& fromA,
+    const btTransform& toA,
+    const btTransform& fromB,
+    const btTransform& toB,
+    CastResult& result);
 };
 
 #endif //BT_GJK_CONVEX_CAST_H

@@ -38,7 +38,10 @@
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
 
-namespace DAVA { class Scene; }
+namespace DAVA
+{
+class Scene;
+}
 
 class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
 {
@@ -46,39 +49,68 @@ class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
 
 signals:
     // scene
-    void Opened(DAVA::Scene *scene);
-    void Closed(DAVA::Scene *scene);
+    void Opened(DAVA::Scene* scene);
+    void Closed(DAVA::Scene* scene);
 
-    void Loaded(DAVA::Scene *scene);
-    void Saved(DAVA::Scene *scene);
+    void Loaded(DAVA::Scene* scene);
+    void Saved(DAVA::Scene* scene);
 
-    void Activated(DAVA::Scene *scene);
-    void Deactivated(DAVA::Scene *scene);
+    void Activated(DAVA::Scene* scene);
+    void Deactivated(DAVA::Scene* scene);
 
     // entities
-    void SelectionChanged(DAVA::Scene *scene, const EntityGroup *selected, const EntityGroup *deselected);
+    void SelectionChanged(DAVA::Scene* scene, const EntityGroup* selected, const EntityGroup* deselected);
 
-    void SolidChanged(DAVA::Scene *scene, const DAVA::Entity *entity, bool value);
+    void SolidChanged(DAVA::Scene* scene, const DAVA::Entity* entity, bool value);
     // mouse
-    void MouseOver(DAVA::Scene *scene, const EntityGroup *entities);
-    void MouseOverSelection(DAVA::Scene *scene, const EntityGroup *entities);
+    void MouseOver(DAVA::Scene* scene, const EntityGroup* entities);
+    void MouseOverSelection(DAVA::Scene* scene, const EntityGroup* entities);
 
-    
 public:
-    void EmitOpened(DAVA::Scene *scene) { emit Opened(scene); }
-    void EmitClosed(DAVA::Scene *scene) { emit Closed(scene); }
+    void EmitOpened(DAVA::Scene* scene)
+    {
+        emit Opened(scene);
+    }
+    void EmitClosed(DAVA::Scene* scene)
+    {
+        emit Closed(scene);
+    }
 
-    void EmitLoaded(DAVA::Scene *scene) { emit Loaded(scene); }
-    void EmitSaved(DAVA::Scene *scene) { emit Saved(scene); }
+    void EmitLoaded(DAVA::Scene* scene)
+    {
+        emit Loaded(scene);
+    }
+    void EmitSaved(DAVA::Scene* scene)
+    {
+        emit Saved(scene);
+    }
 
-    void EmitActivated(DAVA::Scene *scene) { emit Activated(scene); }
-    void EmitDeactivated(DAVA::Scene *scene) { emit Deactivated(scene); }
+    void EmitActivated(DAVA::Scene* scene)
+    {
+        emit Activated(scene);
+    }
+    void EmitDeactivated(DAVA::Scene* scene)
+    {
+        emit Deactivated(scene);
+    }
 
-    void EmitSelectionChanged(DAVA::Scene *scene, const EntityGroup *selected, const EntityGroup *deselected) { emit SelectionChanged(scene, selected, deselected); }
-    void EmitSolidChanged(DAVA::Scene *scene, const DAVA::Entity *entity, bool value) { emit SolidChanged(scene, entity, value); }
+    void EmitSelectionChanged(DAVA::Scene* scene, const EntityGroup* selected, const EntityGroup* deselected)
+    {
+        emit SelectionChanged(scene, selected, deselected);
+    }
+    void EmitSolidChanged(DAVA::Scene* scene, const DAVA::Entity* entity, bool value)
+    {
+        emit SolidChanged(scene, entity, value);
+    }
 
-    void EmitMouseOver(DAVA::Scene *scene, const EntityGroup *entities) { emit MouseOver(scene, entities); }
-    void EmitMouseOverSelection(DAVA::Scene *scene, const EntityGroup *entities) { emit MouseOverSelection(scene, entities); }
+    void EmitMouseOver(DAVA::Scene* scene, const EntityGroup* entities)
+    {
+        emit MouseOver(scene, entities);
+    }
+    void EmitMouseOverSelection(DAVA::Scene* scene, const EntityGroup* entities)
+    {
+        emit MouseOverSelection(scene, entities);
+    }
 };
 
 #endif // __SCENE_MANAGER_H__

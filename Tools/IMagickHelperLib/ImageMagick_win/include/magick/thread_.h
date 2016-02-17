@@ -35,16 +35,16 @@ typedef pthread_key_t MagickThreadKey;
 #elif defined(MAGICKCORE_HAVE_WINTHREADS)
 typedef DWORD MagickThreadKey;
 #else
-typedef size_t *MagickThreadKey;
+typedef size_t* MagickThreadKey;
 #endif
 
 extern MagickExport MagickBooleanType
-  MagickCreateThreadKey(MagickThreadKey *),
-  MagickDeleteThreadKey(MagickThreadKey),
-  MagickSetThreadValue(MagickThreadKey,const void *);
+MagickCreateThreadKey(MagickThreadKey *),
+MagickDeleteThreadKey(MagickThreadKey),
+MagickSetThreadValue(MagickThreadKey, const void *);
 
 extern MagickExport void
-  *MagickGetThreadValue(MagickThreadKey);
+* MagickGetThreadValue(MagickThreadKey);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

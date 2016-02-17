@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -51,129 +50,124 @@ subject to the following restrictions:
 #include "bullet/BulletCollision/BroadphaseCollision/btBroadphaseProxy.h" //for the shape types
 class btSerializer;
 
-
 ///The btCollisionShape class provides an interface for collision shapes that can be shared among btCollisionObjects.
 class btCollisionShape
 {
 protected:
-	int m_shapeType;
-	void* m_userPointer;
+    int m_shapeType;
+    void* m_userPointer;
 
 public:
+    btCollisionShape()
+        : m_shapeType(INVALID_SHAPE_PROXYTYPE)
+        , m_userPointer(0)
+    {
+    }
 
-	btCollisionShape() : m_shapeType (INVALID_SHAPE_PROXYTYPE), m_userPointer(0)
-	{
-	}
+    virtual ~btCollisionShape()
+    {
+    }
 
-	virtual ~btCollisionShape()
-	{
-	}
+    ///getAabb returns the axis aligned bounding box in the coordinate frame of the given transform t.
+    virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const = 0;
 
-	///getAabb returns the axis aligned bounding box in the coordinate frame of the given transform t.
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
+    virtual void getBoundingSphere(btVector3& center, btScalar& radius) const;
 
-	virtual void	getBoundingSphere(btVector3& center,btScalar& radius) const;
+    ///getAngularMotionDisc returns the maximus radius needed for Conservative Advancement to handle time-of-impact with rotations.
+    virtual btScalar getAngularMotionDisc() const;
 
-	///getAngularMotionDisc returns the maximus radius needed for Conservative Advancement to handle time-of-impact with rotations.
-	virtual btScalar	getAngularMotionDisc() const;
+    virtual btScalar getContactBreakingThreshold(btScalar defaultContactThresholdFactor) const;
 
-	virtual btScalar	getContactBreakingThreshold(btScalar defaultContactThresholdFactor) const;
+    ///calculateTemporalAabb calculates the enclosing aabb for the moving object over interval [0..timeStep)
+    ///result is conservative
+    void calculateTemporalAabb(const btTransform& curTrans, const btVector3& linvel, const btVector3& angvel, btScalar timeStep, btVector3& temporalAabbMin, btVector3& temporalAabbMax) const;
 
+    SIMD_FORCE_INLINE bool isPolyhedral() const
+    {
+        return btBroadphaseProxy::isPolyhedral(getShapeType());
+    }
 
-	///calculateTemporalAabb calculates the enclosing aabb for the moving object over interval [0..timeStep)
-	///result is conservative
-	void calculateTemporalAabb(const btTransform& curTrans,const btVector3& linvel,const btVector3& angvel,btScalar timeStep, btVector3& temporalAabbMin,btVector3& temporalAabbMax) const;
+    SIMD_FORCE_INLINE bool isConvex2d() const
+    {
+        return btBroadphaseProxy::isConvex2d(getShapeType());
+    }
 
+    SIMD_FORCE_INLINE bool isConvex() const
+    {
+        return btBroadphaseProxy::isConvex(getShapeType());
+    }
+    SIMD_FORCE_INLINE bool isNonMoving() const
+    {
+        return btBroadphaseProxy::isNonMoving(getShapeType());
+    }
+    SIMD_FORCE_INLINE bool isConcave() const
+    {
+        return btBroadphaseProxy::isConcave(getShapeType());
+    }
+    SIMD_FORCE_INLINE bool isCompound() const
+    {
+        return btBroadphaseProxy::isCompound(getShapeType());
+    }
 
+    SIMD_FORCE_INLINE bool isSoftBody() const
+    {
+        return btBroadphaseProxy::isSoftBody(getShapeType());
+    }
 
-	SIMD_FORCE_INLINE bool	isPolyhedral() const
-	{
-		return btBroadphaseProxy::isPolyhedral(getShapeType());
-	}
-
-	SIMD_FORCE_INLINE bool	isConvex2d() const
-	{
-		return btBroadphaseProxy::isConvex2d(getShapeType());
-	}
-
-	SIMD_FORCE_INLINE bool	isConvex() const
-	{
-		return btBroadphaseProxy::isConvex(getShapeType());
-	}
-	SIMD_FORCE_INLINE bool	isNonMoving() const
-	{
-		return btBroadphaseProxy::isNonMoving(getShapeType());
-	}
-	SIMD_FORCE_INLINE bool	isConcave() const
-	{
-		return btBroadphaseProxy::isConcave(getShapeType());
-	}
-	SIMD_FORCE_INLINE bool	isCompound() const
-	{
-		return btBroadphaseProxy::isCompound(getShapeType());
-	}
-
-	SIMD_FORCE_INLINE bool	isSoftBody() const
-	{
-		return btBroadphaseProxy::isSoftBody(getShapeType());
-	}
-
-	///isInfinite is used to catch simulation error (aabb check)
-	SIMD_FORCE_INLINE bool isInfinite() const
-	{
-		return btBroadphaseProxy::isInfinite(getShapeType());
-	}
+    ///isInfinite is used to catch simulation error (aabb check)
+    SIMD_FORCE_INLINE bool isInfinite() const
+    {
+        return btBroadphaseProxy::isInfinite(getShapeType());
+    }
 
 #ifndef __SPU__
-	virtual void	setLocalScaling(const btVector3& scaling) =0;
-	virtual const btVector3& getLocalScaling() const =0;
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const = 0;
+    virtual void setLocalScaling(const btVector3& scaling) = 0;
+    virtual const btVector3& getLocalScaling() const = 0;
+    virtual void calculateLocalInertia(btScalar mass, btVector3& inertia) const = 0;
 
-
-//debugging support
-	virtual const char*	getName()const =0 ;
+    //debugging support
+    virtual const char* getName() const = 0;
 #endif //__SPU__
 
-	
-	int		getShapeType() const { return m_shapeType; }
-	virtual void	setMargin(btScalar margin) = 0;
-	virtual btScalar	getMargin() const = 0;
+    int getShapeType() const
+    {
+        return m_shapeType;
+    }
+    virtual void setMargin(btScalar margin) = 0;
+    virtual btScalar getMargin() const = 0;
 
-	
-	///optional user data pointer
-	void	setUserPointer(void*  userPtr)
-	{
-		m_userPointer = userPtr;
-	}
+    ///optional user data pointer
+    void setUserPointer(void* userPtr)
+    {
+        m_userPointer = userPtr;
+    }
 
-	void*	getUserPointer() const
-	{
-		return m_userPointer;
-	}
+    void* getUserPointer() const
+    {
+        return m_userPointer;
+    }
 
-	virtual	int	calculateSerializeBufferSize() const;
+    virtual int calculateSerializeBufferSize() const;
 
-	///fills the dataBuffer and returns the struct name (and 0 on failure)
-	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+    ///fills the dataBuffer and returns the struct name (and 0 on failure)
+    virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 
-	virtual void	serializeSingleShape(btSerializer* serializer) const;
-
-};	
-
-///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	btCollisionShapeData
-{
-	char	*m_name;
-	int		m_shapeType;
-	char	m_padding[4];
+    virtual void serializeSingleShape(btSerializer* serializer) const;
 };
 
-SIMD_FORCE_INLINE	int	btCollisionShape::calculateSerializeBufferSize() const
+///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+struct btCollisionShapeData
 {
-	return sizeof(btCollisionShapeData);
+    char* m_name;
+    int m_shapeType;
+    char m_padding[4];
+};
+
+SIMD_FORCE_INLINE int btCollisionShape::calculateSerializeBufferSize() const
+{
+    return sizeof(btCollisionShapeData);
 }
 
 
 
 #endif //BT_COLLISION_SHAPE_H
-

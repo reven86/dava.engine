@@ -32,9 +32,8 @@
 
 #include "../Widgets/AbstractSlider.h"
 
-
 class PaletteHSV
-    : public AbstractSlider
+: public AbstractSlider
 {
     Q_OBJECT
 

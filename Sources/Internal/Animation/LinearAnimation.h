@@ -35,9 +35,8 @@
 #include "Animation/Animation.h"
 #include "Animation/AnimatedObject.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 /**
 	\ingroup animationsystem
 	\brief Template class to make linear animations of objects
@@ -62,35 +61,39 @@ namespace DAVA
 	// Releasing of all animations is handled by AnimationManager itself
 	\endcode
  */
-template<class T>
+template <class T>
 class LinearAnimation : public Animation
 {
 protected:
-    ~LinearAnimation(){}
+    ~LinearAnimation()
+    {
+    }
+
 public:
-	LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::Func _iFunc);
-	LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
-	// TODO: 
-	//LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _fixedSpeed);
-	
-	virtual void Update(float32 timeElapsed);
-	virtual void OnStart();
+    LinearAnimation(AnimatedObject* _owner, T* _var, T _endValue, float32 _animationTimeLength, Interpolation::Func _iFunc);
+    LinearAnimation(AnimatedObject* _owner, T* _var, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
+    // TODO:
+    //LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _fixedSpeed);
+
+    virtual void Update(float32 timeElapsed);
+    virtual void OnStart();
+
 protected:
-	T * var;
-	T endValue;
-	T startValue;
+    T* var;
+    T endValue;
+    T startValue;
 };
 
-template<class T>
-LinearAnimation<T>::LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
-	: Animation(_owner, _animationTimeLength, _iType)
+template <class T>
+LinearAnimation<T>::LinearAnimation(AnimatedObject* _owner, T* _var, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
+    : Animation(_owner, _animationTimeLength, _iType)
 {
-	var = _var;
-	endValue = _endValue;
+    var = _var;
+    endValue = _endValue;
 }
 
-template<class T>
-LinearAnimation<T>::LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::Func _iFunc)
+template <class T>
+LinearAnimation<T>::LinearAnimation(AnimatedObject* _owner, T* _var, T _endValue, float32 _animationTimeLength, Interpolation::Func _iFunc)
     : Animation(_owner, _animationTimeLength, _iFunc)
 {
     var = _var;
@@ -107,62 +110,67 @@ LinearAnimation<T>::LinearAnimation(AnimatedObject * _owner, T * _var, T _endVal
 }
 */
 
-template<class T>
+template <class T>
 void LinearAnimation<T>::OnStart()
 {
-	startValue = *var;
+    startValue = *var;
 }
 
-template<class T>
+template <class T>
 void LinearAnimation<T>::Update(float32 timeElapsed)
 {
-	Animation::Update(timeElapsed);
-	*var = startValue + (endValue - startValue) * normalizedTime;
+    Animation::Update(timeElapsed);
+    *var = startValue + (endValue - startValue) * normalizedTime;
 }
 
-template<>
+template <>
 inline //Dizz: inline tells compiler that symbol will be present in multiple object files
-void LinearAnimation<int32>::Update(float32 timeElapsed)
+void
+LinearAnimation<int32>::Update(float32 timeElapsed)
 {
-	Animation::Update(timeElapsed);
-	*var = startValue + (int32)((float32)(endValue - startValue) * normalizedTime);
+    Animation::Update(timeElapsed);
+    *var = startValue + (int32)((float32)(endValue - startValue) * normalizedTime);
 }
-	
+
 //template<Rect>
-	
+
 class RectLinearAnimation : public Animation
 {
 protected:
-    ~RectLinearAnimation(){}
-public:
-	RectLinearAnimation(AnimatedObject * _owner, Rect * _var, Rect _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
-	virtual void Update(float32 timeElapsed);
-	virtual void OnStart();
-private:
-	Rect * var;
-	Rect endValue;
-	Rect startValue;
-};
+    ~RectLinearAnimation()
+    {
+    }
 
+public:
+    RectLinearAnimation(AnimatedObject* _owner, Rect* _var, Rect _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
+    virtual void Update(float32 timeElapsed);
+    virtual void OnStart();
+
+private:
+    Rect* var;
+    Rect endValue;
+    Rect startValue;
+};
 
 class TwoVector2LinearAnimation : public Animation
 {
 protected:
-    ~TwoVector2LinearAnimation(){}
-public:
-	TwoVector2LinearAnimation(AnimatedObject * _owner, Vector2 * _var1, Vector2 _endValue1, Vector2 * _var2, Vector2 _endValue2, float32 _animationTimeLength, Interpolation::FuncType _iType);
-	virtual void Update(float32 timeElapsed);
-	virtual void OnStart();
-private:
-	Vector2 * var1;
-	Vector2 endValue1;
-	Vector2 startValue1;
-	Vector2 * var2;
-	Vector2 endValue2;
-	Vector2 startValue2;
-};
-	
+    ~TwoVector2LinearAnimation()
+    {
+    }
 
-	
+public:
+    TwoVector2LinearAnimation(AnimatedObject* _owner, Vector2* _var1, Vector2 _endValue1, Vector2* _var2, Vector2 _endValue2, float32 _animationTimeLength, Interpolation::FuncType _iType);
+    virtual void Update(float32 timeElapsed);
+    virtual void OnStart();
+
+private:
+    Vector2* var1;
+    Vector2 endValue1;
+    Vector2 startValue1;
+    Vector2* var2;
+    Vector2 endValue2;
+    Vector2 startValue2;
+};
 };
 #endif // __DAVAENGINE_LINEAR_ANIMATION_H__

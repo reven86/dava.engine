@@ -37,41 +37,44 @@
 class FileSystemModel : public ITreeModel
 {
 public:
-    using TCheckFile = std::function < bool(std::string const &) > ;
-    explicit FileSystemModel(std::string const & rootPath, TCheckFile const & checkFileFn);
+    using TCheckFile = std::function<bool(std::string const&)>;
+    explicit FileSystemModel(std::string const& rootPath, TCheckFile const& checkFileFn);
     ~FileSystemModel();
 
-    IItem * item(size_t index, const IItem * parent) const override;
-    ItemIndex index(const IItem * item) const override;
-    size_t size(const IItem * item) const override;
+    IItem* item(size_t index, const IItem* parent) const override;
+    ItemIndex index(const IItem* item) const override;
+    size_t size(const IItem* item) const override;
 
     class Item : public IItem
     {
     public:
         using TCheckFile = FileSystemModel::TCheckFile;
 
-        Item(FileInfo const & info, IFileSystem & fileSystem, TCheckFile const & checkFileFn);
+        Item(FileInfo const& info, IFileSystem& fileSystem, TCheckFile const& checkFileFn);
 
         int columnCount() const override;
-        const char * getDisplayText(int column) const override;
+        const char* getDisplayText(int column) const override;
         ThumbnailData getThumbnail(int column) const override;
         Variant getData(int column, size_t roleId) const override;
-        bool setData(int column, size_t roleId, const Variant & data) override;
+        bool setData(int column, size_t roleId, const Variant& data) override;
 
-        std::string const & getFilePath() const { return fileInfo.fullPath; }
+        std::string const& getFilePath() const
+        {
+            return fileInfo.fullPath;
+        }
 
         size_t getChildCount() const;
-        Item * getChild(size_t index) const;
+        Item* getChild(size_t index) const;
         ITreeModel::ItemIndex getIndex() const;
 
     private:
-        Item(FileInfo && info, IFileSystem & fileSystem, TCheckFile const & checkFileFn, Item * parent, int index);
-        void CollectChildren(IFileSystem & fileSystem, TCheckFile const & checkFileFn);
+        Item(FileInfo&& info, IFileSystem& fileSystem, TCheckFile const& checkFileFn, Item* parent, int index);
+        void CollectChildren(IFileSystem& fileSystem, TCheckFile const& checkFileFn);
 
     private:
         FileInfo fileInfo;
-        std::vector<std::unique_ptr<Item> > children;
-        Item * parent = nullptr;
+        std::vector<std::unique_ptr<Item>> children;
+        Item* parent = nullptr;
         int index = 0;
     };
 

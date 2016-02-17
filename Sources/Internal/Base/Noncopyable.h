@@ -32,21 +32,24 @@
 
 namespace DAVA
 {
-
 /*
  Class Noncopyable insures that derived classes cannot be copied or copy constructed.
 */
 class Noncopyable
 {
 protected:
-    Noncopyable () {}
-    ~Noncopyable () {}
+    Noncopyable()
+    {
+    }
+    ~Noncopyable()
+    {
+    }
 
 private:
-    Noncopyable (const Noncopyable&);
-    Noncopyable& operator = (const Noncopyable&);
+    Noncopyable(const Noncopyable&);
+    Noncopyable& operator=(const Noncopyable&);
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_NONCOPYABLE_H__
+#endif // __DAVAENGINE_NONCOPYABLE_H__
