@@ -32,10 +32,8 @@
 
 namespace DAVA
 {
-
 namespace
 {
-
 const String startSuiteMarker = "start suite";
 const String finishSuiteMarker = "finish suite";
 const String disabledSuiteMarker = "disable suite";
@@ -43,9 +41,9 @@ const String startTestMarker = "start test ";
 const String finishTestMarker = "finish test ";
 const String errorTestMarker = "test error ";
 
-}   // unnamed namespace
+} // unnamed namespace
 
-void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
+void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8* text)
 {
     String textStr = text;
     Vector<String> lines;
@@ -87,9 +85,9 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
         const String& testName = lines.at(1);
         String condition = NormalizeString(lines.at(2).c_str());
         String errorFileLine = NormalizeString(lines.at(3).c_str());
-        output = "##teamcity[testFailed name='" + testName 
-            + "' message='" + condition 
-            + "' details='" + errorFileLine + "']\n";
+        output = "##teamcity[testFailed name='" + testName
+        + "' message='" + condition
+        + "' details='" + errorFileLine + "']\n";
     }
     else
     {

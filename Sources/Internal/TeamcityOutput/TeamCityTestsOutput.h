@@ -33,7 +33,6 @@
 
 namespace DAVA
 {
-
 class TeamcityTestsOutput : public TeamcityOutput
 {
 public:
@@ -54,7 +53,7 @@ private:
     void TestOutput(const String& data);
 
 private:
-    bool captureStdoutFlag = false;     // Flag controls whether TeamCity attribute 'captureStandardOutput=true' is set on test start
+    bool captureStdoutFlag = false; // Flag controls whether TeamCity attribute 'captureStandardOutput=true' is set on test start
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,6 +67,6 @@ inline void TeamcityTestsOutput::SetCaptureStdoutFlag(bool value)
     captureStdoutFlag = value;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
 #endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__

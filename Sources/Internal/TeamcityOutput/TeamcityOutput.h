@@ -35,20 +35,19 @@
 
 #include "FileSystem/Logger.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
-class TeamcityOutput: public LoggerOutput
+class TeamcityOutput : public LoggerOutput
 {
 public:
     void Output(Logger::eLogLevel ll, const char8* text) override;
-    
-protected:
-    void PlatformOutput(const String & text) const;
 
-    String NormalizeString(const char8 *text) const;
+protected:
+    void PlatformOutput(const String& text) const;
+
+    String NormalizeString(const char8* text) const;
 };
 
-}   // namespace DAVA 
+} // namespace DAVA 
 
 #endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
