@@ -443,7 +443,7 @@ void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& for
 
     const LODComponentHolder* lodData = forSystem->GetActiveLODData();
     const uint32 layerItemsCount = lodData->GetLODLayersCount();
-    if (ui->forceLayer->count() != layerItemsCount + 1)
+    if (ui->forceLayer->count() != layerItemsCount + 2)
     {
         CreateForceLayerValues(layerItemsCount);
     }
