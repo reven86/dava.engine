@@ -34,6 +34,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "EditorSettings.h"
 
 using namespace DAVA;
 
@@ -168,7 +169,7 @@ namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
-    if (!control->GetSystemVisible())
+    if (!control->GetVisible())
     {
         return;
     }
