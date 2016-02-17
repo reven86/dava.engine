@@ -42,7 +42,20 @@ macro ( qt_deploy )
 
     endif()
 
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+    is_deploy_qt_delayed(IS_DELAYED_DEPLOY)
+    if (${IS_DELAYED_DEPLOY})
+        set(DEPLOY_PROJECT "QT_DEPLOY_${PROJECT_NAME}")
+        ADD_CUSTOM_TARGET ( ${DEPLOY_PROJECT} ALL)
+
+        get_deploy_dependencies(DEPENDENCIES_LIST)
+        foreach(DEPENDENCY ${DEPENDENCIES_LIST})
+            add_dependencies( ${DEPLOY_PROJECT} ${DEPENDENCY} )
+        endforeach()
+    else()
+        set(DEPLOY_PROJECT ${PROJECT_NAME})
+    endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${DEPLOY_PROJECT}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
                     "-p" "${DEPLOY_PLATFORM}"
