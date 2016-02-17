@@ -99,7 +99,7 @@ void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA
 
     QtMainWindow::Instance()->WaitStart("Reload Particles particles for project", "Reload Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()));
 
-    spritesPacker->ReloadSprites(false, false, gpu, DAVA::TextureConverter::ECQ_DEFAULT);
+    spritesPacker->ReloadSprites(false, true, gpu, DAVA::TextureConverter::ECQ_DEFAULT);
 
     QtMainWindow::Instance()->WaitStop();
 
