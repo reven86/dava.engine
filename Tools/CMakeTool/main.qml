@@ -8,6 +8,49 @@ ApplicationWindow {
     width: 400
     height: 350
     title: qsTr("CMake tool")
+    signal syncFile();
+    ListModel {
+        id: listModel_platforms
+    }
+
+    ListModel {
+        id: listModel_localOptions
+    }
+
+    ListModel {
+        id: listModel_globalOptions
+    }
+
+    property string platfromsOptionName: "platforms";
+    property string globalOptionsOptionName: "options";
+    property var mainObject;
+    Component.onCompleted: {
+        try {
+            mainObject = JSON.parse(configuration);
+
+            var arrayPlatforms = mainObject[platfromsOptionName];
+            if(arrayPlatforms !== undefined && Array.isArray(arrayPlatforms))
+            {
+                for(var i = 0, length = arrayPlatforms.length; i < length; ++i)
+                {
+                    listModel_platforms.append(arrayPlatforms[i]);
+                }
+            }
+
+            var arrayGlobalOptions = mainObject[globalOptionsOptionName];
+            if(arrayGlobalOptions !== undefined && Array.isArray(arrayGlobalOptions))
+            {
+                for(var i = 0, length = arrayGlobalOptions.length; i < length; ++i)
+                {
+                    listModel_globalOptions.append(arrayGlobalOptions[i]);
+                }
+            }
+        }
+        catch(error) {
+            errorDialog.informativeText = error.message;
+            errorDialog.open();
+        }
+    }
 
     MessageDialog {
         id: errorDialog;
@@ -93,8 +136,36 @@ ApplicationWindow {
         anchors.leftMargin: 6
     }
 
-    Column {
-        id: column_platfroms
+    ListView {
+        id: listView_platforms
+        orientation: Qt.Vertical
+        model: listModel_platforms
+        ExclusiveGroup {
+            id: exclusiveGroup_platforms
+        }
+        delegate: RadioButton {
+            text: model.name
+            checked: model.checked
+            exclusiveGroup: exclusiveGroup_platforms
+            onCheckedChanged: {
+                console.log(model.name, model.checked, checked, this.checked)
+                listModel_platforms.setProperty(index, "checked", checked)
+                if(checked)
+                {
+                    listModel_localOptions.clear();
+                    var localObject = mainObject[platfromsOptionName][index];
+                    var options = localObject["options"];
+                    if(options !== undefined && Array.isArray(options))
+                    {
+                        for(var i = 0, length = options.length; i < length; ++i)
+                        {
+                            listModel_localOptions.append(options[i]);
+                        }
+                    }
+                }
+            }
+        }
+
         width: 181
         height: 126
         anchors.top: label_platforms.bottom
@@ -113,14 +184,42 @@ ApplicationWindow {
         anchors.topMargin: 16
     }
 
-    Column {
-        id: column_options
+
+    Component {
+        id: loaderDelegate
+        Loader {
+            sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
+            property variant modelData: listModel_localOptions.get(index);
+        }
+    }
+    ExclusiveGroup {
+        id: exclusiveGroup_localOptions
+    }
+    Component {
+        id: radioDelegate
+        RadioButton {
+            text: modelData ? modelData.name : ""
+            exclusiveGroup: exclusiveGroup_localOptions
+        }
+    }
+    Component {
+        id: checkboxDelegate
+        CheckBox {
+            text: modelData ? modelData.name : ""
+        }
+    }
+    ListView {
+        id: listView_localOptions
+        orientation: Qt.Vertical
+        model: listModel_localOptions
+        delegate: loaderDelegate
+
         y: 112
         height: 126
-        anchors.verticalCenter: column_platfroms.verticalCenter
+        anchors.verticalCenter: listView_platforms.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: 10
-        anchors.left: column_platfroms.right
+        anchors.left: listView_platforms.right
         anchors.leftMargin: 6
         spacing: 10
     }
@@ -129,44 +228,23 @@ ApplicationWindow {
         id: label_options
         y: 93
         text: qsTr("Options")
-        anchors.left: column_options.left
+        anchors.left: listView_localOptions.left
         anchors.leftMargin: 0
         anchors.verticalCenterOffset: 0
         anchors.verticalCenter: label_platforms.verticalCenter
     }
     GridView {
-        id: globalOptionsView
-        Component.onCompleted: {
-            try {
-                var object = JSON.parse(configuration);
-                var array = object["Options"];
-                if(array !== undefined && Array.isArray(array))
-                {
-                    console.log(array[0]["name"])
-                    globalOptionsModel.append(array[0])
+        id: gridView_globalOptions
 
-                    for(var obj in array)
-                    {
-                        globalOptionsModel.append(obj)
-                    }
-                }
-            }
-            catch(error) {
-                errorDialog.informativeText = error.message;
-                errorDialog.open();
-            }
-        }
         delegate: CheckBox {
             text: name
-            property string innerValue : innerValue
         }
-        model: ListModel {
-            id: globalOptionsModel
-        }
+
+        model: listModel_globalOptions
 
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
-        anchors.right: column_options.right
+        anchors.right: listView_localOptions.right
         anchors.rightMargin: 0
         anchors.top: label_globalOptions.bottom
         anchors.topMargin: 6
@@ -179,8 +257,8 @@ ApplicationWindow {
         text: qsTr("global options")
         anchors.left: label_platforms.left
         anchors.leftMargin: 0
-        anchors.top: column_platfroms.bottom
-        anchors.topMargin: 6
+        anchors.top: listView_platforms.bottom
+        anchors.topMargin: 15
     }
 }
 
