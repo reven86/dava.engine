@@ -221,7 +221,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
                                                         "TemplateMacOS/MovieViewControlMacOS.mm"
-                                                        "TeamcityOutput/TeamcityOutput.cpp"
+                                                        "UnitTests/TeamcityOutput.cpp"
                                                     IGNORE_LIST_IOS
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"
