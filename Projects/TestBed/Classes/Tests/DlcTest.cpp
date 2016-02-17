@@ -53,7 +53,7 @@ const DAVA::String localServerUrl = "http://by1-builddlc-01/DLC_Blitz";
 const DAVA::String localServerUrl = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz";
 #endif
 
-const DAVA::String cdnServerUrl = "http://dl.wargaming.net/wotblitz/dlc/";
+const DAVA::String cdnServerUrl = "http://dl-wotblitz.wargaming.net/dlc/";
 
 DlcTest::DlcTest()
     : BaseScreen("DlcTest")
