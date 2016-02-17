@@ -32,26 +32,24 @@
 
 #include "Settings/SettingsManager.h"
 
-
 namespace
 {
 }
 
-
-LicenceDialog::LicenceDialog( QWidget* parent )
-    : QDialog( parent, Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint )
-    , ui( new Ui::LicenceDialog )
-    , accepted( false )
+LicenceDialog::LicenceDialog(QWidget* parent)
+    : QDialog(parent, Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint)
+    , ui(new Ui::LicenceDialog)
+    , accepted(false)
 {
-    ui->setupUi( this );
+    ui->setupUi(this);
 
     onAcceptCheckbox();
 
-    connect( ui->accept, SIGNAL( clicked() ), SLOT( onAccept() ) );
-    connect( ui->decline, SIGNAL( clicked() ), SLOT( onDecline() ) );
-    connect( ui->accept, SIGNAL( clicked() ), SLOT( close() ) );
-    connect( ui->decline, SIGNAL( clicked() ), SLOT( close() ) );
-    connect( ui->accepted, SIGNAL( stateChanged( int ) ), SLOT( onAcceptCheckbox() ) );
+    connect(ui->accept, SIGNAL(clicked()), SLOT(onAccept()));
+    connect(ui->decline, SIGNAL(clicked()), SLOT(onDecline()));
+    connect(ui->accept, SIGNAL(clicked()), SLOT(close()));
+    connect(ui->decline, SIGNAL(clicked()), SLOT(close()));
+    connect(ui->accepted, SIGNAL(stateChanged(int)), SLOT(onAcceptCheckbox()));
 }
 
 LicenceDialog::~LicenceDialog()
@@ -60,10 +58,10 @@ LicenceDialog::~LicenceDialog()
 
 bool LicenceDialog::process()
 {
-    return true;    // ;)
+    return true; // ;)
 
     accepted = SettingsManager::GetValue(Settings::Internal_LicenceAccepted).AsBool();
-    if ( !accepted )
+    if (!accepted)
     {
         exec();
     }

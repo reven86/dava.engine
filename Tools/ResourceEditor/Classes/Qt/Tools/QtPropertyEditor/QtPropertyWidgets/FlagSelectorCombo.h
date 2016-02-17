@@ -38,12 +38,11 @@
 #include <QStandardItem>
 #include <QListView>
 
-
 class EnumMap;
 class QStandardItem;
 
 class FlagSelectorCombo
-    : public QComboBox
+: public QComboBox
 {
     Q_OBJECT
 
@@ -54,10 +53,10 @@ private:
     };
 
 signals:
-    void done( quint64 flags );
+    void done(quint64 flags);
 
 public:
-    FlagSelectorCombo(QWidget *parent = NULL);
+    FlagSelectorCombo(QWidget* parent = NULL);
     ~FlagSelectorCombo();
 
     void AddFlagItem(const quint64 value, const QString& hint);
@@ -65,12 +64,12 @@ public:
     quint64 GetFlags() const;
 
 private slots:
-    void onItemChanged(QStandardItem *item);
+    void onItemChanged(QStandardItem* item);
     void updateText();
 
 private:
-    bool eventFilter(QObject *obj, QEvent *e);
-    void paintEvent(QPaintEvent *event);
+    bool eventFilter(QObject* obj, QEvent* e);
+    void paintEvent(QPaintEvent* event);
 
     QString text;
     quint64 extraMask;

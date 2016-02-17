@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2011 Advanced Micro Devices, Inc.  http://bulletphysics.org
@@ -42,7 +41,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 ///This file was written by Erwin Coumans
 
 
@@ -54,38 +52,34 @@ subject to the following restrictions:
 
 #define TEST_INTERNAL_OBJECTS 1
 
-
 struct btFace
 {
-	btAlignedObjectArray<int>	m_indices;
-//	btAlignedObjectArray<int>	m_connectedFaces;
-	btScalar	m_plane[4];
+    btAlignedObjectArray<int> m_indices;
+    //	btAlignedObjectArray<int>	m_connectedFaces;
+    btScalar m_plane[4];
 };
-
 
 class btConvexPolyhedron
 {
-	public:
-	btConvexPolyhedron();
-	virtual	~btConvexPolyhedron();
+public:
+    btConvexPolyhedron();
+    virtual ~btConvexPolyhedron();
 
-	btAlignedObjectArray<btVector3>	m_vertices;
-	btAlignedObjectArray<btFace>	m_faces;
-	btAlignedObjectArray<btVector3> m_uniqueEdges;
+    btAlignedObjectArray<btVector3> m_vertices;
+    btAlignedObjectArray<btFace> m_faces;
+    btAlignedObjectArray<btVector3> m_uniqueEdges;
 
-	btVector3		m_localCenter;
-	btVector3		m_extents;
-	btScalar		m_radius;
-	btVector3		mC;
-	btVector3		mE;
+    btVector3 m_localCenter;
+    btVector3 m_extents;
+    btScalar m_radius;
+    btVector3 mC;
+    btVector3 mE;
 
-	void	initialize();
-	bool testContainment() const;
+    void initialize();
+    bool testContainment() const;
 
-	void project(const btTransform& trans, const btVector3& dir, btScalar& min, btScalar& max) const;
+    void project(const btTransform& trans, const btVector3& dir, btScalar& min, btScalar& max) const;
 };
 
 	
 #endif //_BT_POLYHEDRAL_FEATURES_H
-
-

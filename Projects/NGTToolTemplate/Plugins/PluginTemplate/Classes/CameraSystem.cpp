@@ -291,7 +291,7 @@ void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
     case DVKEY_EQUALS:
     case DVKEY_SUBTRACT:
     case DVKEY_MINUS:
-    break;
+        break;
 
     case DVKEY_T:
         MoveTo(Vector3(0, 0, 200), Vector3(1, 0, 0));

@@ -34,10 +34,9 @@
 
 #include "../Helpers/PaintingHelper.h"
 
-
 PaletteHSV::PaletteHSV(QWidget* parent)
     : AbstractSlider(parent)
-      , cursorSize(8, 8)
+    , cursorSize(8, 8)
 {
 }
 

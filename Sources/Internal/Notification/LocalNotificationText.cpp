@@ -31,11 +31,8 @@
 
 namespace DAVA
 {
-
 void LocalNotificationText::ImplShow()
 {
-	impl->ShowText(title, text, useSound);
+    impl->ShowText(title, text, useSound);
 }
-
 }
-

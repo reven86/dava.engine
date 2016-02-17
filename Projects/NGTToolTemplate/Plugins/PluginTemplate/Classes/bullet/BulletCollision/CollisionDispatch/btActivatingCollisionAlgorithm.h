@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2008 Erwin Coumans  http://bulletphysics.com
@@ -50,16 +49,14 @@ subject to the following restrictions:
 ///This class is not enabled yet (work-in-progress) to more aggressively activate objects.
 class btActivatingCollisionAlgorithm : public btCollisionAlgorithm
 {
-//	btCollisionObject* m_colObj0;
-//	btCollisionObject* m_colObj1;
+    //	btCollisionObject* m_colObj0;
+    //	btCollisionObject* m_colObj1;
 
 public:
+    btActivatingCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
 
-	btActivatingCollisionAlgorithm (const btCollisionAlgorithmConstructionInfo& ci);
+    btActivatingCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* colObj0, btCollisionObject* colObj1);
 
-	btActivatingCollisionAlgorithm (const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* colObj0,btCollisionObject* colObj1);
-
-	virtual ~btActivatingCollisionAlgorithm();
-
+    virtual ~btActivatingCollisionAlgorithm();
 };
 #endif //__BT_ACTIVATING_COLLISION_ALGORITHM_H

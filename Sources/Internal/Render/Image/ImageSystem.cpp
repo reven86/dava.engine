@@ -47,7 +47,6 @@
 
 namespace DAVA
 {
-
 ImageSystem::ImageSystem()
 {
     wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
@@ -60,13 +59,13 @@ ImageSystem::ImageSystem()
 
 ImageSystem::~ImageSystem()
 {
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         delete wrapper;
     }
 }
 
-eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, int32 baseMipmap) const
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -78,7 +77,7 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
     return result;
 }
 
-eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(File* file, Vector<Image*>& imageSet, int32 baseMipmap) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -126,7 +125,7 @@ void ImageSystem::EnsurePowerOf2Images(Vector<Image*>& images) const
     }
 }
 
-eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode ImageSystem::SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
@@ -137,7 +136,7 @@ eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Ve
     return properWrapper->WriteFileAsCubeMap(fileName, imageSet, compressionFormat, quality);
 }
 
-eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode ImageSystem::Save(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
@@ -148,7 +147,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &i
     return properWrapper->WriteFile(fileName, imageSet, compressionFormat, quality);
 }
 
-eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode ImageSystem::Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(image != nullptr);
 
@@ -157,10 +156,10 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
     return Save(fileName, imageSet, compressionFormat, quality);
 }
 
-ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathName) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath& pathName) const
 {
     const String extension = pathName.GetExtension();
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         if (wrapper && wrapper->IsFileExtensionSupported(extension))
         {
@@ -171,9 +170,9 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
     return nullptr;
 }
 
-ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(File* file) const
 {
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         if (wrapper && wrapper->CanProcessFile(file))
         {
@@ -184,17 +183,15 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 
     return nullptr;
 }
-    
-    
-ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath &pathname) const
+
+ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath& pathname) const
 {
     return GetImageFormatForExtension(pathname.GetExtension());
 }
 
-    
-ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) const
+ImageFormat ImageSystem::GetImageFormatForExtension(const String& extension) const
 {
-    for(auto wrapper : wrappers)
+    for (auto wrapper : wrappers)
     {
         if (wrapper && wrapper->IsFileExtensionSupported(extension))
             return wrapper->GetImageFormat();
@@ -214,7 +211,7 @@ ImageFormat ImageSystem::GetImageFormatByName(const String& name) const
     return IMAGE_FORMAT_UNKNOWN;
 }
 
-ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
+ImageInfo ImageSystem::GetImageInfo(const FilePath& pathName) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName); //fast by pathname
     if (nullptr == properWrapper)
@@ -231,7 +228,7 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
     return properWrapper->GetImageInfo(pathName);
 }
 
-ImageInfo ImageSystem::GetImageInfo(File *infile) const
+ImageInfo ImageSystem::GetImageInfo(File* infile) const
 {
     DVASSERT(infile != nullptr);
 
@@ -243,5 +240,5 @@ ImageInfo ImageSystem::GetImageInfo(File *infile) const
     }
 
     return ImageInfo();
-}    
+}
 };

@@ -45,10 +45,7 @@
 
 namespace
 {
-
 int NUMBER_OF_SCREEN = 0;
-
-
 }
 
 class PluginScene : public DAVA::Scene
@@ -63,7 +60,7 @@ public:
 SceneViewer::SceneViewer()
 {
     glWidget.reset(new PluginGLWidget());
-    DavaGLWidget * davaGl = glWidget.get();
+    DavaGLWidget* davaGl = glWidget.get();
     DVVERIFY(QObject::connect(davaGl, &DavaGLWidget::Initialized, this, &SceneViewer::OnGlInitialized, Qt::QueuedConnection));
     DVVERIFY(QObject::connect(davaGl, &DavaGLWidget::Resized, this, &SceneViewer::OnGlResized));
 }
@@ -79,13 +76,13 @@ void SceneViewer::Finalise()
     SafeRelease(uiView);
 }
 
-IView & SceneViewer::GetView()
+IView& SceneViewer::GetView()
 {
     DVASSERT(glWidget != nullptr);
     return *glWidget;
 }
 
-void SceneViewer::OnOpenScene(std::string const & scenePath)
+void SceneViewer::OnOpenScene(std::string const& scenePath)
 {
     using namespace DAVA;
 
@@ -98,26 +95,26 @@ void SceneViewer::OnOpenScene(std::string const & scenePath)
     SceneFileV2::eError result = scene->LoadScene(FilePath(scenePath));
     if (result == DAVA::SceneFileV2::ERROR_NO_ERROR)
     {
-        WASDControllerSystem * wasdSystem = new WASDControllerSystem(scene);
+        WASDControllerSystem* wasdSystem = new WASDControllerSystem(scene);
         wasdSystem->SetMoveSpeed(10.0f);
         uint64 wasdComponentFlag = MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT);
         uint32 wasdProcessFlag = Scene::SCENE_SYSTEM_REQUIRE_PROCESS;
         scene->AddSystem(wasdSystem, wasdComponentFlag, wasdProcessFlag);
 
-        RotationControllerSystem * rotationSystem = new RotationControllerSystem(scene);
+        RotationControllerSystem* rotationSystem = new RotationControllerSystem(scene);
         uint64 rotationComponentFlag = MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT);
         uint32 rotationProcessFlag = Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT;
         scene->AddSystem(rotationSystem, rotationComponentFlag, rotationProcessFlag);
 
-        SceneCameraSystem * cameraSystem = new SceneCameraSystem(scene);
+        SceneCameraSystem* cameraSystem = new SceneCameraSystem(scene);
         cameraSystem->SetViewportRect(uiView->GetRect());
         scene->AddSystem(cameraSystem, MAKE_COMPONENT_MASK(DAVA::Component::CAMERA_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT, scene->renderUpdateSystem);
 
-        SceneCollisionSystem * collisionSystem = new SceneCollisionSystem(scene);
+        SceneCollisionSystem* collisionSystem = new SceneCollisionSystem(scene);
         uint32_t collisionProcessFlag = Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT;
         scene->AddSystem(collisionSystem, 0, collisionProcessFlag);
 
-        SceneSelectionSystem * selectionSystem = new SceneSelectionSystem(scene, collisionSystem);
+        SceneSelectionSystem* selectionSystem = new SceneSelectionSystem(scene, collisionSystem);
         scene->AddSystem(selectionSystem, 0, Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT, scene->renderUpdateSystem);
 
         uiView->SetScene(scene);
@@ -144,17 +141,17 @@ void SceneViewer::SetSelection(DAVA::Entity* entity)
 void SceneViewer::OnGlInitialized()
 {
     using namespace DAVA;
-    
+
     ScopedPtr<UIScreen> screen(new UIScreen());
     DVASSERT(nullptr == uiView);
     uiView = new DAVA::UI3DView(screen->GetAbsoluteRect());
     uiView->SetInputEnabled(true, true);
-    
+
     screen->AddControl(uiView);
     screen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     screen->GetBackground()->SetColor(DAVA::Color(1.0f, 0.65f, 0.65f, 1.f));
     screen->GetBackground()->SetDrawColor(DAVA::Color(0.65f, 0.65f, 0.65f, 1.f));
-    
+
     UIScreenManager::Instance()->RegisterScreen(NUMBER_OF_SCREEN, screen);
     UIScreenManager::Instance()->SetFirst(NUMBER_OF_SCREEN);
 }
@@ -162,12 +159,12 @@ void SceneViewer::OnGlInitialized()
 void SceneViewer::OnGlResized(int width, int height, int dpr)
 {
     using namespace DAVA;
-    UIScreen * screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
+    UIScreen* screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
     if (screen == nullptr)
     {
         return;
     }
-    
+
     qint64 scaleWidth = width * dpr;
     qint64 scaleHeight = height * dpr;
     screen->SetSize(Vector2(scaleWidth, scaleHeight));
@@ -175,4 +172,3 @@ void SceneViewer::OnGlResized(int width, int height, int dpr)
     if (uiView->GetScene() != nullptr)
         findSystem<SceneCameraSystem>(uiView->GetScene())->SetViewportRect(uiView->GetRect());
 }
-

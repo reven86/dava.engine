@@ -38,12 +38,12 @@ const FastName LandscapeProxy::LANSDCAPE_FLAG_TOOL_MIX("LANDSCAPE_TOOL_MIX");
 const FastName LandscapeProxy::LANDSCAPE_PARAM_CURSOR_COORD_SIZE("cursorCoordSize");
 
 LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
-:   tilemaskImageCopy(NULL)
-,	tilemaskWasChanged(0)
-,	mode(MODE_ORIGINAL_LANDSCAPE)
-,	cursorTexture(NULL)
+    : tilemaskImageCopy(NULL)
+    , tilemaskWasChanged(0)
+    , mode(MODE_ORIGINAL_LANDSCAPE)
+    , cursorTexture(NULL)
 {
-	DVASSERT(landscape != NULL);
+    DVASSERT(landscape != NULL);
 
     tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = NULL;
     tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = NULL;
@@ -96,9 +96,9 @@ void LandscapeProxy::SetMode(LandscapeProxy::eLandscapeMode _mode)
     }
 }
 
-const AABBox3 & LandscapeProxy::GetLandscapeBoundingBox()
+const AABBox3& LandscapeProxy::GetLandscapeBoundingBox()
 {
-	return baseLandscape->GetBoundingBox();
+    return baseLandscape->GetBoundingBox();
 }
 
 Texture* LandscapeProxy::GetLandscapeTexture(const FastName& level)
@@ -148,7 +148,7 @@ void LandscapeProxy::SetToolTexture(Texture* texture, bool mixColors)
     }
 }
 
-void LandscapeProxy::SetHeightmap(DAVA::Heightmap *heightmap)
+void LandscapeProxy::SetHeightmap(DAVA::Heightmap* heightmap)
 {
     baseLandscape->SetHeightmap(heightmap);
 }
@@ -165,7 +165,7 @@ void LandscapeProxy::CursorDisable()
 
 void LandscapeProxy::SetCursorTexture(Texture* texture)
 {
-    if(cursorTexture != texture)
+    if (cursorTexture != texture)
     {
         SafeRelease(cursorTexture);
         cursorTexture = SafeRetain(texture);
@@ -192,7 +192,7 @@ void LandscapeProxy::SetCursorPosition(const Vector2& position)
 
 Vector3 LandscapeProxy::PlacePoint(const Vector3& point)
 {
-	Vector3 landscapePoint;
+    Vector3 landscapePoint;
     baseLandscape->PlacePoint(point, landscapePoint);
 
     return landscapePoint;
@@ -200,27 +200,27 @@ Vector3 LandscapeProxy::PlacePoint(const Vector3& point)
 
 bool LandscapeProxy::IsTilemaskChanged()
 {
-	return (tilemaskWasChanged != 0);
+    return (tilemaskWasChanged != 0);
 }
 
 void LandscapeProxy::ResetTilemaskChanged()
 {
-	tilemaskWasChanged = 0;
+    tilemaskWasChanged = 0;
 }
 
 void LandscapeProxy::IncreaseTilemaskChanges()
 {
-	++tilemaskWasChanged;
+    ++tilemaskWasChanged;
 }
 
 void LandscapeProxy::DecreaseTilemaskChanges()
 {
-	--tilemaskWasChanged;
+    --tilemaskWasChanged;
 }
 
 void LandscapeProxy::InitTilemaskImageCopy()
 {
-	SafeRelease(tilemaskImageCopy);
+    SafeRelease(tilemaskImageCopy);
 
     Vector<Image*> imgs;
     ImageSystem::Instance()->Load(sourceTilemaskPath, imgs);
@@ -246,7 +246,7 @@ DAVA::FilePath LandscapeProxy::GetPathForSourceTexture() const
 
 Image* LandscapeProxy::GetTilemaskImageCopy()
 {
-	return tilemaskImageCopy;
+    return tilemaskImageCopy;
 }
 
 void LandscapeProxy::InitTilemaskDrawTextures()

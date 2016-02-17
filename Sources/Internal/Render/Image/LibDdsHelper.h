@@ -36,12 +36,12 @@
 #include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/CRCAdditionInterface.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Image;
 class File;
 
-class LibDdsHelper: public ImageFormatInterface, public CRCAdditionInterface
+class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
 {
 public:
     LibDdsHelper();
@@ -59,14 +59,13 @@ public:
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
-    static eErrorCode ReadFile(File *file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
-    static bool DecompressImageToRGBA(const DAVA::Image & image, Vector<DAVA::Image*> &imageSet, bool forceSoftwareConvertation = false);
+    static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
+    static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
 
 private:
-
-    static bool WriteDxtFile(const FilePath & fileNameOriginal, const Vector<Vector<Image *>> &imageSets, PixelFormat compressionFormat, bool isCubemap);
-    static bool WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat);
-    static bool WriteAtcFileAsCubemap(const FilePath & fileNameOriginal, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat);
+    static bool WriteDxtFile(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSets, PixelFormat compressionFormat, bool isCubemap);
+    static bool WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat);
+    static bool WriteAtcFileAsCubemap(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat);
 };
 
 inline ImageFormat LibDdsHelper::GetImageFormat() const

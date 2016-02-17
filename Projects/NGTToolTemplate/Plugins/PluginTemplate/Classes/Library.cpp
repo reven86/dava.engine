@@ -41,12 +41,12 @@
 namespace
 {
 std::string SCENE_EXTENSION = ".sc2";
-char const * SCENE_FILE_FILTER = "Scene (*.sc2)";
+char const* SCENE_FILE_FILTER = "Scene (*.sc2)";
 // if you set here some real folder path, application can starts very long
 // FileSystem model will accumulate all files recursively
 char const* FILE_SYSTEM_ROOT = "";
 
-bool IsSceneFile(std::string const & filePath)
+bool IsSceneFile(std::string const& filePath)
 {
     return std::equal(SCENE_EXTENSION.rbegin(), SCENE_EXTENSION.rend(), filePath.rbegin());
 }
@@ -58,7 +58,7 @@ Library::Library()
 {
 }
 
-void Library::Initialize(IUIFramework & uiFramework, IUIApplication & uiApplication)
+void Library::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
 {
     model = new FileSystemModel(FILE_SYSTEM_ROOT, std::bind(&IsSceneFile, std::placeholders::_1));
     openSceneAction = uiFramework.createAction("OpenScene", std::bind(&Library::OnOpenSceneMenu, this));
@@ -73,7 +73,7 @@ void Library::Finilize()
     openSceneAction.reset();
 }
 
-IView & Library::GetView()
+IView& Library::GetView()
 {
     return *libraryView;
 }
@@ -84,7 +84,7 @@ void Library::OnOpenSceneMenu()
                                                      QString(FILE_SYSTEM_ROOT), QString(SCENE_FILE_FILTER));
     if (scenePath.isEmpty())
         return;
-        
+
     emit OpenScene(scenePath.toStdString());
 }
 
@@ -100,9 +100,9 @@ void Library::OnOpenSceneButton()
     emit OpenScene(selectedScene);
 }
 
-void Library::OnSelectionChanged(const QList<QVariant> & selections)
+void Library::OnSelectionChanged(const QList<QVariant>& selections)
 {
-    foreach(QVariant s, selections)
+    foreach (QVariant s, selections)
     {
         if (!s.canConvert<QModelIndex>())
             continue;
@@ -111,8 +111,8 @@ void Library::OnSelectionChanged(const QList<QVariant> & selections)
         if (!index.isValid())
             continue;
 
-        FileSystemModel::Item * item = reinterpret_cast<FileSystemModel::Item *>(index.internalPointer());
-        std::string const & selectedFile = item->getFilePath();
+        FileSystemModel::Item* item = reinterpret_cast<FileSystemModel::Item*>(index.internalPointer());
+        std::string const& selectedFile = item->getFilePath();
         if (IsSceneFile(selectedFile))
             selectedScene = selectedFile;
         else

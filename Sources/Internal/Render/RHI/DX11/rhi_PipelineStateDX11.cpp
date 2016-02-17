@@ -64,11 +64,22 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
         if (layout.ElementSemantics(i) == VS_PAD)
             continue;
 
+        unsigned stream_i = layout.ElementStreamIndex(i);
+
         elem[elemCount].AlignedByteOffset = (UINT)(layout.ElementOffset(i));
         elem[elemCount].SemanticIndex = layout.ElementSemanticsIndex(i);
-        elem[elemCount].InputSlot = 0;
-        elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-        elem[elemCount].InstanceDataStepRate = 0;
+        elem[elemCount].InputSlot = stream_i;
+
+        if (layout.StreamFrequency(stream_i) == VDF_PER_INSTANCE)
+        {
+            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+            elem[elemCount].InstanceDataStepRate = 1;
+        }
+        else
+        {
+            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+            elem[elemCount].InstanceDataStepRate = 0;
+        }
 
         switch (layout.ElementSemantics(i))
         {
@@ -1020,11 +1031,19 @@ ps11->vertexLayout.Dump();
 }
 
 unsigned
-VertexLayoutStride(Handle ps)
+VertexLayoutStride(Handle ps, unsigned stream_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
 
-    return ps11->vertexLayout.Stride();
+    return ps11->vertexLayout.Stride(stream_i);
+}
+
+unsigned
+VertexLayoutStreamCount(Handle ps)
+{
+    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
+
+    return ps11->vertexLayout.StreamCount();
 }
 
 void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount)

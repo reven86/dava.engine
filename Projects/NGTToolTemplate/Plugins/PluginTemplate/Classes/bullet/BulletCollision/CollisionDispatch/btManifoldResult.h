@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -54,104 +53,102 @@ class btManifoldPoint;
 
 #include "bullet/LinearMath/btTransform.h"
 
-typedef bool (*ContactAddedCallback)(btManifoldPoint& cp,	const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1);
-extern ContactAddedCallback		gContactAddedCallback;
+typedef bool (*ContactAddedCallback)(btManifoldPoint& cp, const btCollisionObject* colObj0, int partId0, int index0, const btCollisionObject* colObj1, int partId1, int index1);
+extern ContactAddedCallback gContactAddedCallback;
 
 //#define DEBUG_PART_INDEX 1
-
 
 ///btManifoldResult is a helper class to manage  contact results.
 class btManifoldResult : public btDiscreteCollisionDetectorInterface::Result
 {
 protected:
+    btPersistentManifold* m_manifoldPtr;
 
-	btPersistentManifold* m_manifoldPtr;
+    //we need this for compounds
+    btTransform m_rootTransA;
+    btTransform m_rootTransB;
 
-	//we need this for compounds
-	btTransform	m_rootTransA;
-	btTransform	m_rootTransB;
-
-	btCollisionObject* m_body0;
-	btCollisionObject* m_body1;
-	int	m_partId0;
-	int m_partId1;
-	int m_index0;
-	int m_index1;
-	
+    btCollisionObject* m_body0;
+    btCollisionObject* m_body1;
+    int m_partId0;
+    int m_partId1;
+    int m_index0;
+    int m_index1;
 
 public:
-
-	btManifoldResult()
+    btManifoldResult()
 #ifdef DEBUG_PART_INDEX
-		:
-	m_partId0(-1),
-	m_partId1(-1),
-	m_index0(-1),
-	m_index1(-1)
+        :
+        m_partId0(-1)
+        ,
+        m_partId1(-1)
+        ,
+        m_index0(-1)
+        ,
+        m_index1(-1)
 #endif //DEBUG_PART_INDEX
-	{
-	}
+    {
+    }
 
-	btManifoldResult(btCollisionObject* body0,btCollisionObject* body1);
+    btManifoldResult(btCollisionObject* body0, btCollisionObject* body1);
 
-	virtual ~btManifoldResult() {};
+    virtual ~btManifoldResult(){};
 
-	void	setPersistentManifold(btPersistentManifold* manifoldPtr)
-	{
-		m_manifoldPtr = manifoldPtr;
-	}
+    void setPersistentManifold(btPersistentManifold* manifoldPtr)
+    {
+        m_manifoldPtr = manifoldPtr;
+    }
 
-	const btPersistentManifold*	getPersistentManifold() const
-	{
-		return m_manifoldPtr;
-	}
-	btPersistentManifold*	getPersistentManifold()
-	{
-		return m_manifoldPtr;
-	}
+    const btPersistentManifold* getPersistentManifold() const
+    {
+        return m_manifoldPtr;
+    }
+    btPersistentManifold* getPersistentManifold()
+    {
+        return m_manifoldPtr;
+    }
 
-	virtual void setShapeIdentifiersA(int partId0,int index0)
-	{
-		m_partId0=partId0;
-		m_index0=index0;
-	}
+    virtual void setShapeIdentifiersA(int partId0, int index0)
+    {
+        m_partId0 = partId0;
+        m_index0 = index0;
+    }
 
-	virtual void setShapeIdentifiersB(	int partId1,int index1)
-	{
-		m_partId1=partId1;
-		m_index1=index1;
-	}
+    virtual void setShapeIdentifiersB(int partId1, int index1)
+    {
+        m_partId1 = partId1;
+        m_index1 = index1;
+    }
 
+    virtual void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar depth);
 
-	virtual void addContactPoint(const btVector3& normalOnBInWorld,const btVector3& pointInWorld,btScalar depth);
+    SIMD_FORCE_INLINE void refreshContactPoints()
+    {
+        btAssert(m_manifoldPtr);
+        if (!m_manifoldPtr->getNumContacts())
+            return;
 
-	SIMD_FORCE_INLINE	void refreshContactPoints()
-	{
-		btAssert(m_manifoldPtr);
-		if (!m_manifoldPtr->getNumContacts())
-			return;
+        bool isSwapped = m_manifoldPtr->getBody0() != m_body0;
 
-		bool isSwapped = m_manifoldPtr->getBody0() != m_body0;
+        if (isSwapped)
+        {
+            m_manifoldPtr->refreshContactPoints(m_rootTransB, m_rootTransA);
+        }
+        else
+        {
+            m_manifoldPtr->refreshContactPoints(m_rootTransA, m_rootTransB);
+        }
+    }
 
-		if (isSwapped)
-		{
-			m_manifoldPtr->refreshContactPoints(m_rootTransB,m_rootTransA);
-		} else
-		{
-			m_manifoldPtr->refreshContactPoints(m_rootTransA,m_rootTransB);
-		}
-	}
+    const btCollisionObject* getBody0Internal() const
+    {
+        return m_body0;
+    }
 
-	const btCollisionObject* getBody0Internal() const
-	{
-		return m_body0;
-	}
-
-	const btCollisionObject* getBody1Internal() const
-	{
-		return m_body1;
-	}
-	
+    const btCollisionObject* getBody1Internal() const
+    {
+        return m_body1;
+    }
 };
 
 #endif //BT_MANIFOLD_RESULT_H

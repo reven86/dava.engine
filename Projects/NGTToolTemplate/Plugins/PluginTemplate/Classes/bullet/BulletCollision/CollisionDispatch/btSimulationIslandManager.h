@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -55,56 +54,51 @@ class btCollisionWorld;
 class btDispatcher;
 class btPersistentManifold;
 
-
 ///SimulationIslandManager creates and handles simulation islands, using btUnionFind
 class btSimulationIslandManager
 {
-	btUnionFind m_unionFind;
+    btUnionFind m_unionFind;
 
-	btAlignedObjectArray<btPersistentManifold*>  m_islandmanifold;
-	btAlignedObjectArray<btCollisionObject* >  m_islandBodies;
-	
-	bool m_splitIslands;
-	
+    btAlignedObjectArray<btPersistentManifold*> m_islandmanifold;
+    btAlignedObjectArray<btCollisionObject*> m_islandBodies;
+
+    bool m_splitIslands;
+
 public:
-	btSimulationIslandManager();
-	virtual ~btSimulationIslandManager();
+    btSimulationIslandManager();
+    virtual ~btSimulationIslandManager();
 
+    void initUnionFind(int n);
 
-	void initUnionFind(int n);	
-	
-		
-	btUnionFind& getUnionFind() { return m_unionFind;}
+    btUnionFind& getUnionFind()
+    {
+        return m_unionFind;
+    }
 
-	virtual	void	updateActivationState(btCollisionWorld* colWorld,btDispatcher* dispatcher);
-	virtual	void	storeIslandActivationState(btCollisionWorld* world);
+    virtual void updateActivationState(btCollisionWorld* colWorld, btDispatcher* dispatcher);
+    virtual void storeIslandActivationState(btCollisionWorld* world);
 
+    void findUnions(btDispatcher* dispatcher, btCollisionWorld* colWorld);
 
-	void	findUnions(btDispatcher* dispatcher,btCollisionWorld* colWorld);
+    struct IslandCallback
+    {
+        virtual ~IslandCallback(){};
 
-	
+        virtual void processIsland(btCollisionObject** bodies, int numBodies, class btPersistentManifold** manifolds, int numManifolds, int islandId) = 0;
+    };
 
-	struct	IslandCallback
-	{
-		virtual ~IslandCallback() {};
+    void buildAndProcessIslands(btDispatcher* dispatcher, btCollisionWorld* collisionWorld, IslandCallback* callback);
 
-		virtual	void	processIsland(btCollisionObject** bodies,int numBodies,class btPersistentManifold**	manifolds,int numManifolds, int islandId) = 0;
-	};
+    void buildIslands(btDispatcher* dispatcher, btCollisionWorld* colWorld);
 
-	void	buildAndProcessIslands(btDispatcher* dispatcher,btCollisionWorld* collisionWorld, IslandCallback* callback);
-
-	void buildIslands(btDispatcher* dispatcher,btCollisionWorld* colWorld);
-
-	bool getSplitIslands()
-	{
-		return m_splitIslands;
-	}
-	void setSplitIslands(bool doSplitIslands)
-	{
-		m_splitIslands = doSplitIslands;
-	}
-
+    bool getSplitIslands()
+    {
+        return m_splitIslands;
+    }
+    void setSplitIslands(bool doSplitIslands)
+    {
+        m_splitIslands = doSplitIslands;
+    }
 };
 
 #endif //BT_SIMULATION_ISLAND_MANAGER_H
-

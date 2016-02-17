@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -44,20 +43,16 @@ subject to the following restrictions:
 
 #include "btEmptyCollisionAlgorithm.h"
 
-
-
 btEmptyAlgorithm::btEmptyAlgorithm(const btCollisionAlgorithmConstructionInfo& ci)
-	: btCollisionAlgorithm(ci)
+    : btCollisionAlgorithm(ci)
 {
 }
 
-void btEmptyAlgorithm::processCollision (btCollisionObject* ,btCollisionObject* ,const btDispatcherInfo& ,btManifoldResult* )
+void btEmptyAlgorithm::processCollision(btCollisionObject*, btCollisionObject*, const btDispatcherInfo&, btManifoldResult*)
 {
 }
 
-btScalar btEmptyAlgorithm::calculateTimeOfImpact(btCollisionObject* ,btCollisionObject* ,const btDispatcherInfo& ,btManifoldResult* )
+btScalar btEmptyAlgorithm::calculateTimeOfImpact(btCollisionObject*, btCollisionObject*, const btDispatcherInfo&, btManifoldResult*)
 {
-	return btScalar(1.);
+    return btScalar(1.);
 }
-
-

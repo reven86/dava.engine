@@ -36,7 +36,8 @@ namespace DAVA
 {
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
     : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
-{}
+{
+}
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
@@ -188,6 +189,6 @@ void TextFieldPlatformImpl::SystemDraw(const UIGeometricData&)
 {
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

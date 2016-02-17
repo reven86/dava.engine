@@ -49,11 +49,11 @@ class Library : public QObject
 public:
     Library();
 
-    void Initialize(IUIFramework & uiFramework, IUIApplication & uiApplication);
+    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
     void Finilize();
 
-    IView & GetView();
-    Q_SIGNAL void OpenScene(std::string const & scenePath);
+    IView& GetView();
+    Q_SIGNAL void OpenScene(std::string const& scenePath);
 
     Q_PROPERTY(bool canBeLoaded READ CanBeLoaded NOTIFY CanBeLoadedChanged);
 
@@ -61,7 +61,7 @@ public:
 
     Q_INVOKABLE bool CanBeLoaded() const;
     Q_INVOKABLE void OnOpenSceneButton();
-    Q_INVOKABLE void OnSelectionChanged(const QList<QVariant> & selections);
+    Q_INVOKABLE void OnSelectionChanged(const QList<QVariant>& selections);
     Q_INVOKABLE QVariant GetFileSystemModel();
 
 private:
@@ -73,7 +73,7 @@ private:
 
     std::string selectedScene;
 
-    FileSystemModel * model = nullptr;
+    FileSystemModel* model = nullptr;
 };
 
 #endif // DAVAPLUGIN_LIBRARY_H

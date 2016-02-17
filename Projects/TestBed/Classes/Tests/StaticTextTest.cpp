@@ -41,7 +41,7 @@ public:
     {
     }
 
-    void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText) override
+    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override
     {
         test->SetPreviewText(newText);
     }
@@ -53,7 +53,8 @@ private:
 static const Color RED = Color(1.f, 0.f, 0.f, 1.f);
 static const Color GREEN = Color(0.f, 1.f, 0.f, 1.f);
 
-struct ButtonInfo {
+struct ButtonInfo
+{
     WideString caption;
     int32 tag;
     Rect rect;
@@ -87,7 +88,7 @@ static const ButtonInfo multilineButtonsInfo[] = {
 };
 
 StaticTextTest::StaticTextTest()
-: BaseScreen("TextAlignTest")
+    : BaseScreen("TextAlignTest")
 {
 }
 
@@ -98,14 +99,14 @@ void StaticTextTest::LoadResources()
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
     ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
     bigFont->SetSize(24.f);
-    
+
     ScopedPtr<UIStaticText> label(new UIStaticText(Rect(20, 5, 400, 20)));
     label->SetFont(font);
     label->SetTextColor(Color::White);
     label->SetText(L"Preview:");
     label->SetTextAlign(ALIGN_LEFT);
     AddControl(label);
-    
+
     previewText = new UIStaticText(Rect(20, 30, 400, 200));
     previewText->SetFont(bigFont);
     previewText->SetTextColor(Color::White);
@@ -276,24 +277,24 @@ UIButton* StaticTextTest::CreateButton(const WideString& caption, const Rect& re
     return button;
 }
 
-void StaticTextTest::OnAlignButtonClick(BaseObject* sender, void * data, void * callerData)
+void StaticTextTest::OnAlignButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = DynamicTypeCheck<UIButton*>(sender);
     SetPreviewAlign(btn->GetTag());
 }
 
-void StaticTextTest::OnFittingButtonClick(BaseObject* sender, void * data, void * callerData)
+void StaticTextTest::OnFittingButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = DynamicTypeCheck<UIButton*>(sender);
     SetPreviewFitting(btn->GetTag());
 }
 
-void StaticTextTest::OnRequireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData)
+void StaticTextTest::OnRequireTextSizeButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     SetPreviewRequiredTextSize(!needRequiredSize);
 }
 
-void StaticTextTest::OnMultilineButtonClick(BaseObject* sender, void * data, void * callerData)
+void StaticTextTest::OnMultilineButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = DynamicTypeCheck<UIButton*>(sender);
     SetPreviewMultiline(btn->GetTag());

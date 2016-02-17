@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -57,57 +56,56 @@ class btPersistentManifold;
 /// Other features are frame-coherency (persistent data) and collision response.
 class btConvexPlaneCollisionAlgorithm : public btCollisionAlgorithm
 {
-	bool		m_ownManifold;
-	btPersistentManifold*	m_manifoldPtr;
-	bool		m_isSwapped;
-	int			m_numPerturbationIterations;
-	int			m_minimumPointsPerturbationThreshold;
+    bool m_ownManifold;
+    btPersistentManifold* m_manifoldPtr;
+    bool m_isSwapped;
+    int m_numPerturbationIterations;
+    int m_minimumPointsPerturbationThreshold;
 
 public:
+    btConvexPlaneCollisionAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* col0, btCollisionObject* col1, bool isSwapped, int numPerturbationIterations, int minimumPointsPerturbationThreshold);
 
-	btConvexPlaneCollisionAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,btCollisionObject* col0,btCollisionObject* col1, bool isSwapped, int numPerturbationIterations,int minimumPointsPerturbationThreshold);
+    virtual ~btConvexPlaneCollisionAlgorithm();
 
-	virtual ~btConvexPlaneCollisionAlgorithm();
+    virtual void processCollision(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual void processCollision (btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    void collideSingleContact(const btQuaternion& perturbeRot, btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	void collideSingleContact (const btQuaternion& perturbeRot, btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
+    {
+        if (m_manifoldPtr && m_ownManifold)
+        {
+            manifoldArray.push_back(m_manifoldPtr);
+        }
+    }
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
-	{
-		if (m_manifoldPtr && m_ownManifold)
-		{
-			manifoldArray.push_back(m_manifoldPtr);
-		}
-	}
+    struct CreateFunc : public btCollisionAlgorithmCreateFunc
+    {
+        int m_numPerturbationIterations;
+        int m_minimumPointsPerturbationThreshold;
 
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
-	{
-		int	m_numPerturbationIterations;
-		int m_minimumPointsPerturbationThreshold;
-			
-		CreateFunc() 
-			: m_numPerturbationIterations(1),
-			m_minimumPointsPerturbationThreshold(0)
-		{
-		}
-		
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0,btCollisionObject* body1)
-		{
-			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexPlaneCollisionAlgorithm));
-			if (!m_swapped)
-			{
-				return new(mem) btConvexPlaneCollisionAlgorithm(0,ci,body0,body1,false,m_numPerturbationIterations,m_minimumPointsPerturbationThreshold);
-			} else
-			{
-				return new(mem) btConvexPlaneCollisionAlgorithm(0,ci,body0,body1,true,m_numPerturbationIterations,m_minimumPointsPerturbationThreshold);
-			}
-		}
-	};
+        CreateFunc()
+            : m_numPerturbationIterations(1)
+            ,
+            m_minimumPointsPerturbationThreshold(0)
+        {
+        }
 
+        virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1)
+        {
+            void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexPlaneCollisionAlgorithm));
+            if (!m_swapped)
+            {
+                return new (mem) btConvexPlaneCollisionAlgorithm(0, ci, body0, body1, false, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold);
+            }
+            else
+            {
+                return new (mem) btConvexPlaneCollisionAlgorithm(0, ci, body0, body1, true, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold);
+            }
+        }
+    };
 };
 
 #endif //BT_CONVEX_PLANE_COLLISION_ALGORITHM_H
-

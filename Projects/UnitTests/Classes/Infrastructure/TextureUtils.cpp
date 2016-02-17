@@ -32,23 +32,23 @@
 
 using namespace DAVA;
 
-Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
+Sprite* TextureUtils::CreateSpriteFromTexture(const String& texturePathname)
 {
-    Sprite *createdSprite = NULL;
-    
-    Texture *texture = Texture::CreateFromFile(texturePathname);
-    if(texture)
+    Sprite* createdSprite = NULL;
+
+    Texture* texture = Texture::CreateFromFile(texturePathname);
+    if (texture)
     {
         createdSprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)texture->GetWidth(), (float32)texture->GetHeight());
         texture->Release();
     }
-    
+
     return createdSprite;
 }
 
-TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, const Image *second, PixelFormat format)
+TextureUtils::CompareResult TextureUtils::CompareImages(const Image* first, const Image* second, PixelFormat format)
 {
-    CompareResult compareResult = {0};
+    CompareResult compareResult = { 0 };
 
     if (first->GetWidth() != second->GetWidth() ||
         first->GetHeight() != second->GetHeight())
@@ -63,8 +63,8 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, cons
 
     int32 step = 1;
     int32 startIndex = 0;
-    
-    if(FORMAT_A8 == format)
+
+    if (FORMAT_A8 == format)
     {
         compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
         step = 4;
@@ -75,7 +75,7 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, cons
         compareResult.bytesCount = imageSizeInBytes;
     }
 
-    for(int32 i = startIndex; i < imageSizeInBytes; i += step)
+    for (int32 i = startIndex; i < imageSizeInBytes; i += step)
     {
         compareResult.difference += abs(first->GetData()[i] - second->GetData()[i]);
     }

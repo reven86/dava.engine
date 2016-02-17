@@ -30,51 +30,48 @@
 #ifndef __DAVAENGINE_SPINLOCK_H__
 #define __DAVAENGINE_SPINLOCK_H__
 
-#include "Base/Platform.h"
 #include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
-    
 //-----------------------------------------------------------------------------
 //Spinlock class - non-blocking sync primitive
-//Direct using of spinlock is inadvisable. 
-//Use LockGuard or ConcurrentObject instead 
+//Direct using of spinlock is inadvisable.
+//Use LockGuard or ConcurrentObject instead
 //-----------------------------------------------------------------------------
 class Spinlock
 {
 public:
-    Spinlock() = default;
-
-    void Lock() DAVA_NOEXCEPT;
-    bool TryLock() DAVA_NOEXCEPT;
-    void Unlock() DAVA_NOEXCEPT;
+    void Lock();
+    bool TryLock();
+    void Unlock();
 
 private:
-    Atomic<int32> flag;
+    Atomic<size_t> flag;
 };
 
 //-----------------------------------------------------------------------------
 //Realization
 //-----------------------------------------------------------------------------
-inline void Spinlock::Lock() DAVA_NOEXCEPT
+inline void Spinlock::Lock()
 {
-    while (!flag.CompareAndSwap(0, 1)) 
+    while (!flag.CompareAndSwap(0, 1))
     {
-        while (0 != flag.GetRelaxed()) {}
+        while (0 != flag.GetRelaxed())
+        {
+        }
     }
 }
 
-inline bool Spinlock::TryLock() DAVA_NOEXCEPT
+inline bool Spinlock::TryLock()
 {
     return flag.CompareAndSwap(0, 1);
 }
 
-inline void Spinlock::Unlock() DAVA_NOEXCEPT
+inline void Spinlock::Unlock()
 {
     flag.Set(0);
 }
-
 }
 
 #endif //  __DAVAENGINE_SPINLOCK_H__

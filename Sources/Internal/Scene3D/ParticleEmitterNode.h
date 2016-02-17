@@ -37,33 +37,32 @@
 
 namespace DAVA
 {
-
 class ParticleEmitterNode : public Entity
 {
 protected:
-	virtual ~ParticleEmitterNode();
+    virtual ~ParticleEmitterNode();
+
 public:
-	ParticleEmitterNode();
+    ParticleEmitterNode();
 
-	ParticleEmitter * GetEmitter();
+    ParticleEmitter* GetEmitter();
 
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw();
+    virtual void Update(float32 timeElapsed);
+    virtual void Draw();
 
-	virtual Entity* Clone(Entity *dstNode = NULL);
-	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    virtual Entity* Clone(Entity* dstNode = NULL);
+    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
 
-	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
+    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
 
 protected:
-	void LoadFromYaml(const FilePath & yamlPath);
+    void LoadFromYaml(const FilePath& yamlPath);
 
 private:
-	ParticleEmitter * emitter;
-	FilePath yamlPath;
+    ParticleEmitter* emitter;
+    FilePath yamlPath;
 };
-
 };
 
 #endif //__DAVAENGINE_PARTCLEEMITTER_NODE_H__

@@ -40,7 +40,8 @@ class MemoryStatItem;
 class GeneralStatModel : public QAbstractTableModel
 {
 public:
-    enum {
+    enum
+    {
         CLM_VALUE = 0,
         NCOLUMNS = 1
     };
@@ -74,4 +75,4 @@ private:
     DAVA::GeneralAllocStat curValues;
 };
 
-#endif  // __GENERALSTATMODEL_H__
+#endif // __GENERALSTATMODEL_H__

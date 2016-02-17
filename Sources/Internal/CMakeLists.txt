@@ -233,6 +233,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
                                                         "TemplateMacOS/MainWindowController.mm"
+                                                        "TemplateMacOS/MovieViewControlMacOS.mm"
                                                     IGNORE_LIST_IOS
                                                         "DataStorage/Apple/ICloudKeyValue.cpp"
                                                         "TemplateiOS/BackgroundView.mm"

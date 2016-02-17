@@ -281,7 +281,7 @@ void GameCore::SetupCube()
     "\n"
     "VPROG_BEGIN\n"
     "\n"
-    "    float4 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
     "    float3 in_normal   = VP_IN_NORMAL;\n"
     "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
     "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
@@ -650,7 +650,7 @@ void GameCore::OnAppStarted()
     };
 
     //    profiler::Start();
-
+    /*
     for (unsigned i = 0; i != countof(src); ++i)
     {
         File* file = File::CreateFromSystemPath(src[i].file, File::OPEN | File::READ);
@@ -696,7 +696,7 @@ void GameCore::OnAppStarted()
             }
         }
     }
-
+*/
     //    profiler::Stop();
     //    profiler::Dump();
 
@@ -780,9 +780,10 @@ void GameCore::OnAppStarted()
     #endif
 
     //    SetupTriangle();
-    SetupCube();
+    //SetupCube();
+    SetupInstancedCube();
     //    SetupTank();
-    SetupRT();
+    //SetupRT();
 
     perfQuerySet = rhi::CreatePerfQuerySet(16);
     perfQuerySetFired = false;
@@ -976,7 +977,7 @@ void GameCore::Update(float32 timeElapsed)
     screenshot_ttw -= timeElapsed;
     if (screenshot_ttw < 0)
     {
-        rhi::TakeScreenshot(&ScreenShotCallback);
+        //        rhi::TakeScreenshot(&ScreenShotCallback);
         screenshot_ttw = 5.0f;
     }
 
@@ -1089,14 +1090,345 @@ void GameCore::DrawTank()
 */
 }
 
+void GameCore::SetupInstancedCube()
+{
+    icube.vb = rhi::HVertexBuffer(rhi::VertexBuffer::Create(3 * 2 * 6 * sizeof(VertexPNT)));
+
+    float sz = 0.2f;
+    float u0 = 0.0f;
+    float u1 = 1.0f;
+    float v0 = 0.0f;
+    float v1 = 1.0f;
+
+    VertexPNT v[36] =
+    {
+      { -sz, -sz, -sz, 0, 0, -1, u0, v1 }, { -sz, sz, -sz, 0, 0, -1, u0, v0 }, { sz, -sz, -sz, 0, 0, -1, u1, v1 }, { -sz, sz, -sz, 0, 0, -1, u0, v0 }, { sz, sz, -sz, 0, 0, -1, u1, v0 }, { sz, -sz, -sz, 0, 0, -1, u1, v1 },
+
+      { sz, -sz, -sz, 1, 0, 0, u0, v1 },
+      { sz, sz, -sz, 1, 0, 0, u0, v0 },
+      { sz, -sz, sz, 1, 0, 0, u1, v1 },
+      { sz, sz, -sz, 1, 0, 0, u0, v0 },
+      { sz, sz, sz, 1, 0, 0, u1, v0 },
+      { sz, -sz, sz, 1, 0, 0, u1, v1 },
+
+      { sz, -sz, sz, 0, 0, 1, u0, v1 },
+      { sz, sz, sz, 0, 0, 1, u0, v0 },
+      { -sz, -sz, sz, 0, 0, 1, u1, v1 },
+      { sz, sz, sz, 0, 0, 1, u0, v0 },
+      { -sz, sz, sz, 0, 0, 1, u1, v0 },
+      { -sz, -sz, sz, 0, 0, 1, u1, v1 },
+
+      { -sz, -sz, sz, -1, 0, 0, u0, v1 },
+      { -sz, sz, sz, -1, 0, 0, u0, v0 },
+      { -sz, sz, -sz, -1, 0, 0, u1, v0 },
+      { -sz, sz, -sz, -1, 0, 0, u1, v0 },
+      { -sz, -sz, -sz, -1, 0, 0, u1, v1 },
+      { -sz, -sz, sz, -1, 0, 0, u0, v1 },
+
+      { -sz, sz, -sz, 0, 1, 0, u0, v1 },
+      { -sz, sz, sz, 0, 1, 0, u0, v0 },
+      { sz, sz, -sz, 0, 1, 0, u1, v1 },
+      { -sz, sz, sz, 0, 1, 0, u0, v0 },
+      { sz, sz, sz, 0, 1, 0, u1, v0 },
+      { sz, sz, -sz, 0, 1, 0, u1, v1 },
+
+      { -sz, -sz, -sz, 0, -1, 0, u0, v0 },
+      { sz, -sz, -sz, 0, -1, 0, u1, v0 },
+      { -sz, -sz, sz, 0, -1, 0, u0, v1 },
+      { sz, -sz, -sz, 0, -1, 0, u1, v0 },
+      { sz, -sz, sz, 0, -1, 0, u1, v1 },
+      { -sz, -sz, sz, 0, -1, 0, u0, v1 }
+    };
+    rhi::VertexBuffer::Update(icube.vb, v, 0, sizeof(v));
+
+    {
+        icube.vb2 = rhi::HVertexBuffer(rhi::VertexBuffer::Create(10000 * (4 * 4 * sizeof(float) + sizeof(uint32))));
+    }
+
+    rhi::Texture::Descriptor tdesc(128, 128, rhi::TEXTURE_FORMAT_R8G8B8A8);
+
+    //    tdesc.autoGenMipmaps = true;
+    icube.tex = rhi::HTexture(rhi::Texture::Create(tdesc));
+
+    uint8* tex = (uint8*)(rhi::Texture::Map(icube.tex));
+
+    if (tex)
+    {
+        uint8 color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+        uint8 color2[4] = { 0x80, 0x80, 0x80, 0xFF };
+        //        uint8   color1[4] = { 0xFF, 0x00, 0x00, 0xFF };
+        //        uint8   color2[4] = { 0x80, 0x00, 0x00, 0xFF };
+        uint32 cell_size = 8;
+
+        for (unsigned y = 0; y != 128; ++y)
+        {
+            for (unsigned x = 0; x != 128; ++x)
+            {
+                uint8* p = tex + y * sizeof(uint32) * 128 + x * sizeof(uint32);
+                uint8* c = (((y / cell_size) & 0x1) ^ ((x / cell_size) & 0x1)) ? color1 : color2;
+
+                memcpy(p, c, sizeof(uint32));
+            }
+        }
+
+        rhi::Texture::Unmap(icube.tex);
+    }
+
+    rhi::SamplerState::Descriptor sdesc;
+
+    sdesc.fragmentSamplerCount = 1;
+    sdesc.fragmentSampler[0].addrU = rhi::TEXADDR_WRAP;
+    sdesc.fragmentSampler[0].addrV = rhi::TEXADDR_WRAP;
+    sdesc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
+    sdesc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
+    sdesc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
+
+    icube.samplerState = rhi::HSamplerState(rhi::SamplerState::Create(sdesc));
+
+    rhi::ShaderCache::UpdateProg(
+    rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-i-shaded"),
+    "VPROG_IN_BEGIN\n"
+    "    VPROG_IN_STREAM_VERTEX\n"
+    "      VPROG_IN_POSITION\n"
+    "      VPROG_IN_NORMAL\n"
+    "      VPROG_IN_TEXCOORD\n"
+    "    VPROG_IN_STREAM_INSTANCE\n"
+    "      VPROG_IN_TEXCOORD4(4)\n"
+    "      VPROG_IN_TEXCOORD5(4)\n"
+    "      VPROG_IN_TEXCOORD6(4)\n"
+    "      VPROG_IN_TEXCOORD7(4)\n"
+    "      VPROG_IN_COLOR\n"
+    "VPROG_IN_END\n"
+    "\n"
+    "VPROG_OUT_BEGIN\n"
+    "    VPROG_OUT_POSITION\n"
+    "    VPROG_OUT_TEXCOORD0(uv,2)\n"
+    "    VPROG_OUT_TEXCOORD1(color,4)\n"
+    "VPROG_OUT_END\n"
+    "\n"
+    "DECL_VPROG_BUFFER(0,16)\n"
+    "\n"
+    "VPROG_BEGIN\n"
+    "\n"
+    "    float3 in_pos      = VP_IN_POSITION.xyz;\n"
+    "    float3 in_normal   = VP_IN_NORMAL;\n"
+    "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
+    "    float4 in_color    = VP_IN_COLOR;\n"
+    "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
+    "    float4x4 World = float4x4( VP_IN_TEXCOORD4, VP_IN_TEXCOORD5, VP_IN_TEXCOORD6, VP_IN_TEXCOORD7 );\n"
+    "    float3x3 World3 = float3x3( VP_IN_TEXCOORD4.xyz, VP_IN_TEXCOORD5.xyz, VP_IN_TEXCOORD6.xyz );"
+    "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
+    "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
+    "    VP_OUT_POSITION   = mul( wpos, ViewProjection );\n"
+    "    VP_OUT(uv)        = in_texcoord;\n"
+    "    VP_OUT(color)     = float4(i,i,i,1.0) * in_color;\n"
+    "\n"
+    "VPROG_END\n");
+    rhi::ShaderCache::UpdateProg(
+    rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-i-shaded"),
+    "FPROG_IN_BEGIN\n"
+    "FPROG_IN_TEXCOORD0(uv,2)\n"
+    "FPROG_IN_TEXCOORD1(color,4)\n"
+    "FPROG_IN_END\n"
+    "\n"
+    "FPROG_OUT_BEGIN\n"
+    "    FPROG_OUT_COLOR\n"
+    "FPROG_OUT_END\n"
+    "\n"
+    "DECL_FP_SAMPLER2D(0)\n"
+    "\n"
+    "\n"
+    //    "DECL_FPROG_BUFFER(0,4)\n"
+    "\n"
+    "FPROG_BEGIN\n"
+    "    float4  diffuse = FP_TEXTURE2D( 0, FP_IN(uv) );\n"
+    "    FP_OUT_COLOR = diffuse * FP_IN(color);\n"
+    "FPROG_END\n");
+
+    rhi::PipelineState::Descriptor psDesc;
+
+    psDesc.vertexLayout.Clear();
+    psDesc.vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    psDesc.vertexLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    psDesc.vertexLayout.AddStream(rhi::VDF_PER_INSTANCE);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 4);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 7, rhi::VDT_FLOAT, 4);
+    psDesc.vertexLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    psDesc.vertexLayout.Dump();
+    psDesc.vprogUid = FastName("vp-i-shaded");
+    psDesc.fprogUid = FastName("fp-i-shaded");
+
+    icube.ps = rhi::HPipelineState(rhi::PipelineState::Create(psDesc));
+    icube.vp_const[0] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer(icube.ps, 0));
+    //    icube.vp_const[1] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer(icube.ps, 1));
+    //    icube.fp_const = rhi::HConstBuffer(rhi::PipelineState::CreateFragmentConstBuffer(icube.ps, 0));
+
+    rhi::TextureSetDescriptor td;
+    td.fragmentTextureCount = 1;
+    td.fragmentTexture[0] = icube.tex;
+    icube.texSet = rhi::AcquireTextureSet(td);
+
+    icube_t0 = SystemTimer::Instance()->AbsoluteMS();
+    icube_angle = 0;
+}
+
+void GameCore::DrawInstancedCube()
+{
+    SCOPED_NAMED_TIMING("app-draw");
+    #define USE_SECOND_CB 1
+
+    rhi::RenderPassConfig pass_desc;
+    float clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
+    Matrix4 view;
+    Matrix4 projection;
+
+    StatSet::ResetAll();
+
+    projection.Identity();
+    view.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
+
+    DbgDraw::SetScreenSize(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx, VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy);
+
+    {
+        char title[128] = "RHI Cube  -  ";
+
+        switch (rhi::HostApi())
+        {
+        case rhi::RHI_DX9:
+            strcat(title, "DX9");
+            break;
+        case rhi::RHI_DX11:
+            strcat(title, "DX11");
+            break;
+        case rhi::RHI_GLES2:
+            strcat(title, "GL");
+            break;
+        case rhi::RHI_METAL:
+            strcat(title, "Metal");
+            break;
+        }
+        DbgDraw::SetNormalTextSize();
+        //    DbgDraw::SetSmallTextSize();
+        DbgDraw::Text2D(10, 50, 0xFFFFFFFF, title);
+    }
+
+    pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    pass_desc.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+    pass_desc.colorBuffer[0].clearColor[0] = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[1] = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[2] = 0.35f;
+    pass_desc.colorBuffer[0].clearColor[3] = 1.0f;
+    pass_desc.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
+    rhi::HPacketList pl[2];
+    #if USE_SECOND_CB
+    rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 2, pl);
+    #else
+    rhi::HRenderPass pass = rhi::AllocateRenderPass(pass_desc, 1, pl);
+    #endif
+
+    rhi::RenderPass::Begin(pass);
+    rhi::BeginPacketList(pl[0]);
+
+    uint64 icube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64 dt = icube_t1 - icube_t0;
+
+    icube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);
+    icube_t0 = icube_t1;
+
+    Matrix4 world;
+    Matrix4 view_proj;
+
+    world.Identity();
+    world.CreateRotation(Vector3(0, 1, 0), icube_angle);
+    //    world.CreateRotation( Vector3(1,0,0), icube_angle );
+    world.SetTranslationVector(Vector3(0, -0.7f, 5));
+    //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
+
+    view_proj.Identity();
+    view_proj.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
+
+    //    rhi::ConstBuffer::SetConst(icube.fp_const, 0, 1, clr);
+    rhi::ConstBuffer::SetConst(icube.vp_const[0], 0, 4, view_proj.data);
+    //    rhi::ConstBuffer::SetConst(icube.vp_const[1], 0, 4, world.data);
+
+    rhi::Packet packet;
+
+    packet.vertexStreamCount = 2;
+    packet.vertexStream[0] = icube.vb;
+    packet.vertexStream[1] = icube.vb2;
+    packet.renderPipelineState = icube.ps;
+    packet.vertexConstCount = 1;
+    packet.vertexConst[0] = icube.vp_const[0];
+    //    packet.vertexConst[1] = icube.vp_const[1];
+    packet.fragmentConstCount = 0;
+    //    packet.fragmentConst[0] = icube.fp_const;
+    packet.textureSet = icube.texSet;
+    packet.samplerState = icube.samplerState;
+    packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    packet.primitiveCount = 12;
+
+    //    rhi::UpdateConstBuffer4fv(icube.fp_const, 0, clr, 1);
+    rhi::UpdateConstBuffer4fv(icube.vp_const[0], 0, view_proj.data, 4);
+//    rhi::UpdateConstBuffer4fv(icube.vp_const[1], 0, world.data, 4);
+//    rhi::AddPacket(pl[0], packet);
+
+    #if USE_SECOND_CB
+    {
+        const unsigned row_cnt = 200;
+        const unsigned col_cnt = 12;
+        const float w = 0.5f * float(col_cnt);
+
+        rhi::BeginPacketList(pl[1]);
+
+        packet.instanceCount = row_cnt * col_cnt;
+
+        unsigned inst_sz = (4 * 4 * sizeof(float) + sizeof(uint32));
+        uint8* inst = (uint8*)rhi::MapVertexBuffer(icube.vb2, 0, packet.instanceCount * inst_sz);
+        for (unsigned z = 0; z != row_cnt; ++z)
+        {
+            for (unsigned i = 0; i != col_cnt; ++i)
+            {
+                const uint32 clr = (z * row_cnt + i + 1) * 0x775511; // 0x15015
+
+                world.Identity();
+                world.CreateRotation(Vector3(1, 0, 0), icube_angle);
+                world.SetTranslationVector(Vector3(-0.5f * w + float(i) * (w / float(col_cnt)), 1 - z * 0.4f, 10 + float(z) * w));
+
+                memcpy(inst, world.data, 4 * 4 * sizeof(float));
+                memcpy(inst + 4 * 4 * sizeof(float), &clr, sizeof(uint32));
+
+                inst += inst_sz;
+            }
+        }
+        rhi::UnmapVertexBuffer(icube.vb2);
+        rhi::AddPacket(pl[1], packet);
+        rhi::EndPacketList(pl[1]);
+    }
+    #endif
+
+    DbgDraw::FlushBatched(pl[0], view, projection);
+
+    rhi::EndPacketList(pl[0]);
+
+    rhi::RenderPass::End(pass);
+
+    #undef USE_SECOND_CB
+}
+
 void GameCore::Draw()
 {
     if (!inited)
         return;
 
     //    sceneRenderTest->Render();
-    //    rhiDraw();
-    manticoreDraw();
+    //        rhiDraw();
+    //manticoreDraw();
+    DrawInstancedCube();
     //    rtDraw();
     //    visibilityTestDraw();
 }
@@ -1356,7 +1688,7 @@ void GameCore::manticoreDraw()
 
     packet.vertexStreamCount = 1;
     packet.vertexStream[0] = cube.vb;
-    packet.vertexLayoutUID = cube.vb_layout;
+    ///    packet.vertexLayoutUID = cube.vb_layout;
     packet.renderPipelineState = cube.ps;
     packet.vertexConstCount = 2;
     packet.vertexConst[0] = cube.vp_const[0];
@@ -1409,7 +1741,7 @@ void GameCore::manticoreDraw()
 
 #endif
 
-    DbgDraw::FlushBatched(pl[0], view, projection);
+    ///    DbgDraw::FlushBatched(pl[0], view, projection);
 
     rhi::EndPacketList(pl[0]);
 

@@ -40,7 +40,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class PeerDescription
 {
 public:
@@ -140,7 +139,7 @@ inline const Vector<IfAddress>& PeerDescription::NetworkInterfaces() const
     return ifaddr;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_PEERDESRIPTION_H__
+#endif // __DAVAENGINE_PEERDESRIPTION_H__

@@ -47,7 +47,6 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QDebug>
-#include <QTimer>
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
@@ -69,27 +68,28 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     tabBar->setExpanding(false);
 
     // davawidget to display DAVAEngine content
-    davaWidget = new DavaGLWidget();
+    davaWidget = new DavaGLWidget(this);
     tabBar->setMinimumWidth(davaWidget->minimumWidth());
     setMinimumWidth(davaWidget->minimumWidth());
     setMinimumHeight(davaWidget->minimumHeight() + tabBar->sizeHint().height());
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    // put tab bar and davawidget into vertical layout
+    QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(tabBar);
-    QTimer::singleShot(0, [layout, this]() {
-        layout->addWidget(davaWidget);
-    });
+    layout->addWidget(davaWidget);
     layout->setMargin(0);
     layout->setSpacing(1);
-
+    setLayout(layout);
     setAcceptDrops(true);
+
+    // create DAVA UI
+    InitDAVAUI();
 
     QObject::connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(TabBarCurrentChanged(int)));
     QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
     QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(TabBarDataDropped(const QMimeData*)));
     QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(DAVAWidgetDataDropped(const QMimeData*)));
     QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
-    QObject::connect(davaWidget, SIGNAL(Initialized()), this, SLOT(InitDAVAUI()));
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
@@ -97,7 +97,8 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
     SetCurrentTab(0);
 
-    auto mouseWheelHandler = [&](int ofs) {
+    auto mouseWheelHandler = [&](int ofs)
+    {
         if (curScene == nullptr)
             return;
         const auto moveCamera = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveCamera).AsBool();
@@ -115,7 +116,8 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     };
     connect(davaWidget, &DavaGLWidget::mouseScrolled, mouseWheelHandler);
 
-    auto moveToSelectionHandler = [&] {
+    auto moveToSelectionHandler = [&]
+    {
         if (curScene == nullptr)
             return;
         curScene->cameraSystem->MoveToSelection();
@@ -470,9 +472,6 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified
 
 void SceneTabWidget::OnDavaGLWidgetResized(int width, int height)
 {
-    if (davaUIScreen == nullptr)
-        return;
-
     davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 

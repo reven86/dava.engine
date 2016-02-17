@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -51,49 +50,44 @@ subject to the following restrictions:
 #include "BulletCollision/NarrowPhaseCollision/btPersistentManifold.h"
 
 ///btContactConstraint can be automatically created to solve contact constraints using the unified btTypedConstraint interface
-ATTRIBUTE_ALIGNED16(class) btContactConstraint : public btTypedConstraint
+ATTRIBUTE_ALIGNED16(class)
+btContactConstraint : public btTypedConstraint
 {
 protected:
-
-	btPersistentManifold m_contactManifold;
+    btPersistentManifold m_contactManifold;
 
 public:
+    btContactConstraint(btPersistentManifold * contactManifold, btRigidBody & rbA, btRigidBody & rbB);
 
+    void setContactManifold(btPersistentManifold * contactManifold);
 
-	btContactConstraint(btPersistentManifold* contactManifold,btRigidBody& rbA,btRigidBody& rbB);
+    btPersistentManifold* getContactManifold()
+    {
+        return &m_contactManifold;
+    }
 
-	void	setContactManifold(btPersistentManifold* contactManifold);
+    const btPersistentManifold* getContactManifold() const
+    {
+        return &m_contactManifold;
+    }
 
-	btPersistentManifold* getContactManifold()
-	{
-		return &m_contactManifold;
-	}
+    virtual ~btContactConstraint();
 
-	const btPersistentManifold* getContactManifold() const
-	{
-		return &m_contactManifold;
-	}
+    virtual void getInfo1(btConstraintInfo1 * info);
 
-	virtual ~btContactConstraint();
+    virtual void getInfo2(btConstraintInfo2 * info);
 
-	virtual void getInfo1 (btConstraintInfo1* info);
-
-	virtual void getInfo2 (btConstraintInfo2* info);
-
-	///obsolete methods
-	virtual void	buildJacobian();
-
-
+    ///obsolete methods
+    virtual void buildJacobian();
 };
 
 ///very basic collision resolution without friction
-btScalar resolveSingleCollision(btRigidBody* body1, class btCollisionObject* colObj2, const btVector3& contactPositionWorld,const btVector3& contactNormalOnB, const struct btContactSolverInfo& solverInfo,btScalar distance);
-
+btScalar resolveSingleCollision(btRigidBody* body1, class btCollisionObject* colObj2, const btVector3& contactPositionWorld, const btVector3& contactNormalOnB, const struct btContactSolverInfo& solverInfo, btScalar distance);
 
 ///resolveSingleBilateral is an obsolete methods used for vehicle friction between two dynamic objects
 void resolveSingleBilateral(btRigidBody& body1, const btVector3& pos1,
-                      btRigidBody& body2, const btVector3& pos2,
-                      btScalar distance, const btVector3& normal,btScalar& impulse ,btScalar timeStep);
+                            btRigidBody& body2, const btVector3& pos2,
+                            btScalar distance, const btVector3& normal, btScalar& impulse, btScalar timeStep);
 
 
 

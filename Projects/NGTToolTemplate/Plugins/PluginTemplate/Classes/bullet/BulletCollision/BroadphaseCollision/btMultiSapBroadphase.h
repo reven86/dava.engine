@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -48,10 +47,8 @@ subject to the following restrictions:
 #include "bullet/LinearMath/btAlignedObjectArray.h"
 #include "btOverlappingPairCache.h"
 
-
 class btBroadphaseInterface;
 class btSimpleBroadphase;
-
 
 typedef btAlignedObjectArray<btBroadphaseInterface*> btSapBroadphaseArray;
 
@@ -61,120 +58,112 @@ typedef btAlignedObjectArray<btBroadphaseInterface*> btSapBroadphaseArray;
 ///A btQuantizedBvh acceleration structures finds overlapping SAPs for each btBroadphaseProxy.
 ///See http://www.continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=328
 ///and http://www.continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=1329
-class btMultiSapBroadphase :public btBroadphaseInterface
+class btMultiSapBroadphase : public btBroadphaseInterface
 {
-	btSapBroadphaseArray	m_sapBroadphases;
-	
-	btSimpleBroadphase*		m_simpleBroadphase;
+    btSapBroadphaseArray m_sapBroadphases;
 
-	btOverlappingPairCache*	m_overlappingPairs;
+    btSimpleBroadphase* m_simpleBroadphase;
 
-	class btQuantizedBvh*			m_optimizedAabbTree;
+    btOverlappingPairCache* m_overlappingPairs;
 
+    class btQuantizedBvh* m_optimizedAabbTree;
 
-	bool					m_ownsPairCache;
-	
-	btOverlapFilterCallback*	m_filterCallback;
+    bool m_ownsPairCache;
 
-	int			m_invalidPair;
+    btOverlapFilterCallback* m_filterCallback;
 
-	struct	btBridgeProxy
-	{
-		btBroadphaseProxy*		m_childProxy;
-		btBroadphaseInterface*	m_childBroadphase;
-	};
+    int m_invalidPair;
 
+    struct btBridgeProxy
+    {
+        btBroadphaseProxy* m_childProxy;
+        btBroadphaseInterface* m_childBroadphase;
+    };
 
 public:
+    struct btMultiSapProxy : public btBroadphaseProxy
+    {
+        ///array with all the entries that this proxy belongs to
+        btAlignedObjectArray<btBridgeProxy*> m_bridgeProxies;
+        btVector3 m_aabbMin;
+        btVector3 m_aabbMax;
 
-	struct	btMultiSapProxy	: public btBroadphaseProxy
-	{
+        int m_shapeType;
 
-		///array with all the entries that this proxy belongs to
-		btAlignedObjectArray<btBridgeProxy*> m_bridgeProxies;
-		btVector3	m_aabbMin;
-		btVector3	m_aabbMax;
-
-		int	m_shapeType;
-
-/*		void*	m_userPtr;
+        /*		void*	m_userPtr;
 		short int	m_collisionFilterGroup;
 		short int	m_collisionFilterMask;
 */
-		btMultiSapProxy(const btVector3& aabbMin,  const btVector3& aabbMax,int shapeType,void* userPtr, short int collisionFilterGroup,short int collisionFilterMask)
-			:btBroadphaseProxy(aabbMin,aabbMax,userPtr,collisionFilterGroup,collisionFilterMask),
-			m_aabbMin(aabbMin),
-			m_aabbMax(aabbMax),
-			m_shapeType(shapeType)
-		{
-			m_multiSapParentProxy =this;
-		}
-
-		
-	};
+        btMultiSapProxy(const btVector3& aabbMin, const btVector3& aabbMax, int shapeType, void* userPtr, short int collisionFilterGroup, short int collisionFilterMask)
+            : btBroadphaseProxy(aabbMin, aabbMax, userPtr, collisionFilterGroup, collisionFilterMask)
+            ,
+            m_aabbMin(aabbMin)
+            ,
+            m_aabbMax(aabbMax)
+            ,
+            m_shapeType(shapeType)
+        {
+            m_multiSapParentProxy = this;
+        }
+    };
 
 protected:
-
-
-	btAlignedObjectArray<btMultiSapProxy*> m_multiSapProxies;
+    btAlignedObjectArray<btMultiSapProxy*> m_multiSapProxies;
 
 public:
+    btMultiSapBroadphase(int maxProxies = 16384, btOverlappingPairCache* pairCache = 0);
 
-	btMultiSapBroadphase(int maxProxies = 16384,btOverlappingPairCache* pairCache=0);
+    btSapBroadphaseArray& getBroadphaseArray()
+    {
+        return m_sapBroadphases;
+    }
 
+    const btSapBroadphaseArray& getBroadphaseArray() const
+    {
+        return m_sapBroadphases;
+    }
 
-	btSapBroadphaseArray&	getBroadphaseArray()
-	{
-		return m_sapBroadphases;
-	}
+    virtual ~btMultiSapBroadphase();
 
-	const btSapBroadphaseArray&	getBroadphaseArray() const
-	{
-		return m_sapBroadphases;
-	}
+    virtual btBroadphaseProxy* createProxy(const btVector3& aabbMin, const btVector3& aabbMax, int shapeType, void* userPtr, short int collisionFilterGroup, short int collisionFilterMask, btDispatcher* dispatcher, void* multiSapProxy);
+    virtual void destroyProxy(btBroadphaseProxy* proxy, btDispatcher* dispatcher);
+    virtual void setAabb(btBroadphaseProxy* proxy, const btVector3& aabbMin, const btVector3& aabbMax, btDispatcher* dispatcher);
+    virtual void getAabb(btBroadphaseProxy* proxy, btVector3& aabbMin, btVector3& aabbMax) const;
 
-	virtual ~btMultiSapBroadphase();
+    virtual void rayTest(const btVector3& rayFrom, const btVector3& rayTo, btBroadphaseRayCallback& rayCallback, const btVector3& aabbMin = btVector3(0, 0, 0), const btVector3& aabbMax = btVector3(0, 0, 0));
 
-	virtual btBroadphaseProxy*	createProxy(  const btVector3& aabbMin,  const btVector3& aabbMax,int shapeType,void* userPtr, short int collisionFilterGroup,short int collisionFilterMask, btDispatcher* dispatcher,void* multiSapProxy);
-	virtual void	destroyProxy(btBroadphaseProxy* proxy,btDispatcher* dispatcher);
-	virtual void	setAabb(btBroadphaseProxy* proxy,const btVector3& aabbMin,const btVector3& aabbMax, btDispatcher* dispatcher);
-	virtual void	getAabb(btBroadphaseProxy* proxy,btVector3& aabbMin, btVector3& aabbMax ) const;
+    void addToChildBroadphase(btMultiSapProxy* parentMultiSapProxy, btBroadphaseProxy* childProxy, btBroadphaseInterface* childBroadphase);
 
-	virtual void	rayTest(const btVector3& rayFrom,const btVector3& rayTo, btBroadphaseRayCallback& rayCallback,const btVector3& aabbMin=btVector3(0,0,0),const btVector3& aabbMax=btVector3(0,0,0));
+    ///calculateOverlappingPairs is optional: incremental algorithms (sweep and prune) might do it during the set aabb
+    virtual void calculateOverlappingPairs(btDispatcher* dispatcher);
 
-	void	addToChildBroadphase(btMultiSapProxy* parentMultiSapProxy, btBroadphaseProxy* childProxy, btBroadphaseInterface*	childBroadphase);
+    bool testAabbOverlap(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1);
 
-	///calculateOverlappingPairs is optional: incremental algorithms (sweep and prune) might do it during the set aabb
-	virtual void	calculateOverlappingPairs(btDispatcher* dispatcher);
+    virtual btOverlappingPairCache* getOverlappingPairCache()
+    {
+        return m_overlappingPairs;
+    }
+    virtual const btOverlappingPairCache* getOverlappingPairCache() const
+    {
+        return m_overlappingPairs;
+    }
 
-	bool	testAabbOverlap(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1);
+    ///getAabb returns the axis aligned bounding box in the 'global' coordinate frame
+    ///will add some transform later
+    virtual void getBroadphaseAabb(btVector3& aabbMin, btVector3& aabbMax) const
+    {
+        aabbMin.setValue(-BT_LARGE_FLOAT, -BT_LARGE_FLOAT, -BT_LARGE_FLOAT);
+        aabbMax.setValue(BT_LARGE_FLOAT, BT_LARGE_FLOAT, BT_LARGE_FLOAT);
+    }
 
-	virtual	btOverlappingPairCache*	getOverlappingPairCache()
-	{
-		return m_overlappingPairs;
-	}
-	virtual	const btOverlappingPairCache*	getOverlappingPairCache() const
-	{
-		return m_overlappingPairs;
-	}
+    void buildTree(const btVector3& bvhAabbMin, const btVector3& bvhAabbMax);
 
-	///getAabb returns the axis aligned bounding box in the 'global' coordinate frame
-	///will add some transform later
-	virtual void getBroadphaseAabb(btVector3& aabbMin,btVector3& aabbMax) const
-	{
-		aabbMin.setValue(-BT_LARGE_FLOAT,-BT_LARGE_FLOAT,-BT_LARGE_FLOAT);
-		aabbMax.setValue(BT_LARGE_FLOAT,BT_LARGE_FLOAT,BT_LARGE_FLOAT);
-	}
+    virtual void printStats();
 
-	void	buildTree(const btVector3& bvhAabbMin,const btVector3& bvhAabbMax);
+    void quicksort(btBroadphasePairArray& a, int lo, int hi);
 
-	virtual void	printStats();
-
-	void quicksort (btBroadphasePairArray& a, int lo, int hi);
-
-	///reset broadphase internal structures, to ensure determinism/reproducability
-	virtual void resetPool(btDispatcher* dispatcher);
-
+    ///reset broadphase internal structures, to ensure determinism/reproducability
+    virtual void resetPool(btDispatcher* dispatcher);
 };
 
 #endif //BT_MULTI_SAP_BROADPHASE

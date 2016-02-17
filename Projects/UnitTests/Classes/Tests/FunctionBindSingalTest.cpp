@@ -38,46 +38,109 @@ using namespace DAVA;
 
 static String functionBindSignalResultString;
 
-int staticFn0() { return 100; }
-int staticFn3(int i1, int i2, int i3) { return i1 + i2 + i3; }
+int staticFn0()
+{
+    return 100;
+}
+int staticFn3(int i1, int i2, int i3)
+{
+    return i1 + i2 + i3;
+}
 
-void* exStaticFnV(void *a) { return a; }
-void* exStaticFnVV(void **a) { return *a; }
-const char* exStaticFnCC(const char *a, int b) { return a + b; }
-const char* exStaticFnCCC(const char **a, int b) { return *a + b; }
+void* exStaticFnV(void* a)
+{
+    return a;
+}
+void* exStaticFnVV(void** a)
+{
+    return *a;
+}
+const char* exStaticFnCC(const char* a, int b)
+{
+    return a + b;
+}
+const char* exStaticFnCCC(const char** a, int b)
+{
+    return *a + b;
+}
 
 struct A
 {
-    int classFn0() { return 100; }
-    int classFn3(int i1, int i2, int i3) { return i1 + i2 + i3; }
+    int classFn0()
+    {
+        return 100;
+    }
+    int classFn3(int i1, int i2, int i3)
+    {
+        return i1 + i2 + i3;
+    }
 
-    int classFn0_const() const { return 100; }
-    int classFn3_const(int i1, int i2, int i3) const { return i1 + i2 + i3; }
+    int classFn0_const() const
+    {
+        return 100;
+    }
+    int classFn3_const(int i1, int i2, int i3) const
+    {
+        return i1 + i2 + i3;
+    }
 
-    int incomingFunction(Function<int()> fn) { return fn(); }
-    int incomingFunctionRef(Function<int()> &fn) { return fn(); }
-    int incomingFunctionConstRef(const Function<int()> &fn) { return fn(); }
+    int incomingFunction(Function<int()> fn)
+    {
+        return fn();
+    }
+    int incomingFunctionRef(Function<int()>& fn)
+    {
+        return fn();
+    }
+    int incomingFunctionConstRef(const Function<int()>& fn)
+    {
+        return fn();
+    }
 
-    void setV(int value) { v = value; }
-    int getV() { return v; }
+    void setV(int value)
+    {
+        v = value;
+    }
+    int getV()
+    {
+        return v;
+    }
 
     int v;
 };
 
 struct B : public A
-{ 
-    A* exClassFn(A* a) { return a; }
-    const A* exClassFn1(const A* a) { return a; }
-    A* exClassFn2(A** a) { return *a; }
-    const A* exClassFn3(const A** a) { return *a; }
+{
+    A* exClassFn(A* a)
+    {
+        return a;
+    }
+    const A* exClassFn1(const A* a)
+    {
+        return a;
+    }
+    A* exClassFn2(A** a)
+    {
+        return *a;
+    }
+    const A* exClassFn3(const A** a)
+    {
+        return *a;
+    }
 
-    int getV() { return v*v; }
+    int getV()
+    {
+        return v * v;
+    }
 };
 
 struct M
 {
     char c_[128];
-    int getV() { return 10; }
+    int getV()
+    {
+        return 10;
+    }
 };
 
 struct V
@@ -88,12 +151,22 @@ struct V
 
 struct C : public M, virtual public V, virtual public A
 {
-    virtual void f2() { }
-    virtual int f2defvirt(int i, long j) { return static_cast<int>(i + j + 1); }
-    int f2def(int i, long j) { return static_cast<int>(i + j + 3); }
-    virtual int f2virt(int i, long j) { return static_cast<int>(i + j + 2); }
+    virtual void f2()
+    {
+    }
+    virtual int f2defvirt(int i, long j)
+    {
+        return static_cast<int>(i + j + 1);
+    }
+    int f2def(int i, long j)
+    {
+        return static_cast<int>(i + j + 3);
+    }
+    virtual int f2virt(int i, long j)
+    {
+        return static_cast<int>(i + j + 2);
+    }
 };
-
 
 // =======================================================================================================================================
 // =======================================================================================================================================
@@ -128,8 +201,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         // ==================================================================================
         // std::swap test
         // ==================================================================================
-        auto sw_la1 = []{ return 1; };
-        auto sw_la2 = []{ return 2; };
+        auto sw_la1 = [] { return 1; };
+        auto sw_la2 = [] { return 2; };
         Function<int()> fn_swap1(sw_la1);
         Function<int()> fn_swap2(sw_la2);
 
@@ -175,13 +248,20 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         Function<int(B*)> b4_class_getV = &B::getV;
         Function<int(B*)> b5_class_getV = &A::getV;
 
-        b0_class_setV(&b, 100); TEST_VERIFY(b.getV() == (100 * 100));
-        b1_class_setV(&b, 200); TEST_VERIFY(b.getV() == (200 * 200));
-        b1_class_setV(&a, 100); TEST_VERIFY(a.getV() == 100);
-        b.setV(300); TEST_VERIFY(b3_class_getV(&b) == 300);
-        a.setV(300); TEST_VERIFY(b3_class_getV(&a) == 300);
-        b.setV(400); TEST_VERIFY(b4_class_getV(&b) == (400 * 400));
-        b.setV(500); TEST_VERIFY(b5_class_getV(&b) == 500);
+        b0_class_setV(&b, 100);
+        TEST_VERIFY(b.getV() == (100 * 100));
+        b1_class_setV(&b, 200);
+        TEST_VERIFY(b.getV() == (200 * 200));
+        b1_class_setV(&a, 100);
+        TEST_VERIFY(a.getV() == 100);
+        b.setV(300);
+        TEST_VERIFY(b3_class_getV(&b) == 300);
+        a.setV(300);
+        TEST_VERIFY(b3_class_getV(&a) == 300);
+        b.setV(400);
+        TEST_VERIFY(b4_class_getV(&b) == (400 * 400));
+        b.setV(500);
+        TEST_VERIFY(b5_class_getV(&b) == 500);
 
         Function<void(int)> b0_obj_setV(&b, &B::setV);
         Function<void(int)> b1_obj_setV(&b, &A::setV);
@@ -212,7 +292,6 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         Logger::Info("%u\n", sizeof(&C::f2defvirt));
         Logger::Info("%u\n", sizeof(&C::f2def));
         Logger::Info("%u\n", sizeof(&C::f2virt));
-
 
         c_f2(&c);
         TEST_VERIFY(c_f2defvirt(&c, 2000, 4454656) == c.f2defvirt(2000, 4454656));
@@ -274,24 +353,25 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
 
     DAVA_TEST(TestFunctionExtended)
     {
-        B b; A* a_pt = nullptr;
-        void *void_test = nullptr;
-        const char *char_test = nullptr;
+        B b;
+        A* a_pt = nullptr;
+        void* void_test = nullptr;
+        const char* char_test = nullptr;
 
-        Function<void* (void *)> sta0(&exStaticFnV);
-        Function<void* (void **)> sta1(&exStaticFnVV);
-        Function<const char* (const char *, int)> sta2(&exStaticFnCC);
-        Function<const char* (const char **, int)> sta3(&exStaticFnCCC);
+        Function<void*(void*)> sta0(&exStaticFnV);
+        Function<void*(void**)> sta1(&exStaticFnVV);
+        Function<const char*(const char*, int)> sta2(&exStaticFnCC);
+        Function<const char*(const char**, int)> sta3(&exStaticFnCCC);
 
         TEST_VERIFY(sta0(void_test) == exStaticFnV(void_test));
         TEST_VERIFY(sta1(&void_test) == exStaticFnVV(&void_test));
         TEST_VERIFY(sta2(char_test, 5) == exStaticFnCC(char_test, 5));
         TEST_VERIFY(sta3(&char_test, 10) == exStaticFnCCC(&char_test, 10));
 
-        Function<A* (B*, A*)> cla0(&B::exClassFn);
-        Function<const A* (B*, const A*)> cla1(&B::exClassFn1);
-        Function<A* (B*, A**)> cla2(&B::exClassFn2);
-        Function<const A* (B*, const A**)> cla3(&B::exClassFn3);
+        Function<A*(B*, A*)> cla0(&B::exClassFn);
+        Function<const A*(B*, const A*)> cla1(&B::exClassFn1);
+        Function<A*(B*, A**)> cla2(&B::exClassFn2);
+        Function<const A*(B*, const A**)> cla3(&B::exClassFn3);
 
         TEST_VERIFY(cla0(&b, a_pt) == b.exClassFn(a_pt));
         TEST_VERIFY(cla1(&b, a_pt) == b.exClassFn1(a_pt));
@@ -299,27 +379,36 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(cla3(&b, (const A**)&a_pt) == b.exClassFn3((const A**)&a_pt));
     }
 
-
     class TestObjA : public TrackedObject
     {
     public:
         int v1 = 0;
         int v2 = 0;
-        void Slot1(int v) { v1 = v; }
-        void Slot2(int v) { v2 = v; }
+        void Slot1(int v)
+        {
+            v1 = v;
+        }
+        void Slot2(int v)
+        {
+            v2 = v;
+        }
     };
 
     class TestObjB
     {
     public:
         int v1 = 0;
-        void Slot1(int v) { v1 = v; }
+        void Slot1(int v)
+        {
+            v1 = v;
+        }
 
-        virtual ~TestObjB() { };
+        virtual ~TestObjB(){};
     };
 
     class TestObjC : public TestObjB, public TrackedObject
-    { };
+    {
+    };
 
     DAVA_TEST(TestSignals)
     {
@@ -329,7 +418,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         Signal<int> testSignal;
 
         {
-            TestObjA *objA = new TestObjA();
+            TestObjA* objA = new TestObjA();
 
             SigConnectionID connA1 = testSignal.Connect(objA, &TestObjA::Slot1);
             // connA1 will be automatically tracked
@@ -339,7 +428,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             SigConnectionID connA2 = testSignal.Connect([objA](int v) {
                 objA->Slot2(v);
             });
-            // connA2 wont be automatically tracked 
+            // connA2 wont be automatically tracked
             // we should add it manually
             testSignal.Track(connA2, objA);
             int emitValue_1 = 20;
@@ -361,17 +450,17 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             testSignal.Emit(10);
 
             TEST_VERIFY(objB.v1 == 10);
-            
+
             // TestObjB isn't derived from TrackedObject, so we
             // should disconnect it manually
-            testSignal.Disconnect(connB1);  // <-- if we don't do this there can be crash, 
-                                            // when user invokes Emmit after objB becomes out of scope
+            testSignal.Disconnect(connB1); // <-- if we don't do this there can be crash,
+            // when user invokes Emmit after objB becomes out of scope
         }
 
         testSignal.Emit(10); // <-- this should crash, because we already disconnect from dead objB
 
         {
-            TestObjC *objC = new TestObjC();
+            TestObjC* objC = new TestObjC();
             Signal<int>* testSignal1 = new Signal<int>();
 
             // track signal deletion, while tracking object exists

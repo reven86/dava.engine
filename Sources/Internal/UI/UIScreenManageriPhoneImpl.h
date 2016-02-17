@@ -34,33 +34,32 @@
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
-@interface ScreenManagerImpl : NSObject 
+@interface ScreenManagerImpl : NSObject
 {
-@private	
+@private
 
-	UIViewController			* loadingViewController;
-	
-	UIWindow					* appWindow;
-	UIViewController			* activeController;
-	
-	bool						applyAnimationTransition;
-	UIViewAnimationTransition	transition;
-	bool						applyAnimationTransition2;
-	NSString *					type;
-	NSString *					subtype;
-	bool						inTransition;
-	// End of screen switching data
-	
-	UIViewController			* lastActiveController;
+    UIViewController* loadingViewController;
+
+    UIWindow* appWindow;
+    UIViewController* activeController;
+
+    bool applyAnimationTransition;
+    UIViewAnimationTransition transition;
+    bool applyAnimationTransition2;
+    NSString* type;
+    NSString* subtype;
+    bool inTransition;
+    // End of screen switching data
+
+    UIViewController* lastActiveController;
 }
 
-// 
-+ (ScreenManagerImpl*) instance;
+//
++ (ScreenManagerImpl*)instance;
 
-- (void) applicationLaunched: (UIViewController*)firstController;
-- (void) setViewController: (UIViewController *) viewController;
+- (void)applicationLaunched:(UIViewController*)firstController;
+- (void)setViewController:(UIViewController*)viewController;
 
 @end
 
 #endif // #include "BaseTypes.h"
-

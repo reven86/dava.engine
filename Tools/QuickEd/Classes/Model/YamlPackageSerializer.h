@@ -32,8 +32,9 @@
 
 #include "PackageSerializer.h"
 
-namespace DAVA {
-    class YamlNode;
+namespace DAVA
+{
+class YamlNode;
 }
 
 class YamlPackageSerializer : public PackageSerializer
@@ -41,25 +42,25 @@ class YamlPackageSerializer : public PackageSerializer
 public:
     YamlPackageSerializer();
     virtual ~YamlPackageSerializer();
-    
-    virtual void PutValue(const DAVA::String &name, const DAVA::VariantType &value) override;
-    virtual void PutValue(const DAVA::String &name, const DAVA::String &value) override;
-    virtual void PutValue(const DAVA::String &name, const DAVA::Vector<DAVA::String> &value) override;
-    virtual void PutValue(const DAVA::VariantType &value) override;
-    virtual void PutValue(const DAVA::String &value) override;
-    
+
+    virtual void PutValue(const DAVA::String& name, const DAVA::VariantType& value) override;
+    virtual void PutValue(const DAVA::String& name, const DAVA::String& value) override;
+    virtual void PutValue(const DAVA::String& name, const DAVA::Vector<DAVA::String>& value) override;
+    virtual void PutValue(const DAVA::VariantType& value) override;
+    virtual void PutValue(const DAVA::String& value) override;
+
     virtual void BeginMap() override;
-    virtual void BeginMap(const DAVA::String &name, bool quotes = false) override;
+    virtual void BeginMap(const DAVA::String& name, bool quotes = false) override;
     virtual void EndMap() override;
-    
+
     virtual void BeginArray() override;
-    virtual void BeginArray(const DAVA::String &name, bool flow = false) override;
+    virtual void BeginArray(const DAVA::String& name, bool flow = false) override;
     virtual void EndArray() override;
-    
-    DAVA::YamlNode *GetYamlNode() const;
-    void WriteToFile(const DAVA::FilePath &path);
+
+    DAVA::YamlNode* GetYamlNode() const;
+    void WriteToFile(const DAVA::FilePath& path);
     DAVA::String WriteToString() const;
-    
+
 private:
     DAVA::Vector<DAVA::YamlNode*> nodesStack;
 };

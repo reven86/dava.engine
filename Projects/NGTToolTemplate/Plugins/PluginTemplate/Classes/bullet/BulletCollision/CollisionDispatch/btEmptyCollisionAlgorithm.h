@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -54,29 +53,27 @@ subject to the following restrictions:
 ///The dispatcher can dispatch a persistent btEmptyAlgorithm to avoid a search every frame.
 class btEmptyAlgorithm : public btCollisionAlgorithm
 {
-
 public:
-	
-	btEmptyAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
+    btEmptyAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
 
-	virtual void processCollision (btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual void processCollision(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
-	{
-	}
+    virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
+    {
+    }
 
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
-	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0,btCollisionObject* body1)
-		{
-			(void)body0;
-			(void)body1;
-			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btEmptyAlgorithm));
-			return new(mem) btEmptyAlgorithm(ci);
-		}
-	};
+    struct CreateFunc : public btCollisionAlgorithmCreateFunc
+    {
+        virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1)
+        {
+            (void)body0;
+            (void)body1;
+            void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btEmptyAlgorithm));
+            return new (mem) btEmptyAlgorithm(ci);
+        }
+    };
 
 } ATTRIBUTE_ALIGNED(16);
 

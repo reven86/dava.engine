@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class IfAddress represents network interface address.
  Also it provides static member for retrieving addresses of all installed interfaces
@@ -62,7 +61,7 @@ public:
 
     static Vector<IfAddress> GetInstalledInterfaces(bool withInternal = false);
 
-    friend bool operator < (const IfAddress& left, const IfAddress& right);
+    friend bool operator<(const IfAddress& left, const IfAddress& right);
 
 private:
     bool isInternal;
@@ -84,7 +83,6 @@ inline IfAddress::IfAddress(bool isInternal_, const PhysAddress& physAddr_, cons
     , addr(addr_)
     , mask(mask_)
 {
-
 }
 
 inline bool IfAddress::IsInternal() const
@@ -107,14 +105,15 @@ inline const IPAddress& IfAddress::Mask() const
     return mask;
 }
 
-inline bool operator < (const IfAddress& left, const IfAddress& right)
+inline bool operator<(const IfAddress& left, const IfAddress& right)
 {
     // Order by address, internal interfaces moves to back
     return left.isInternal == right.isInternal ? left.addr < right.addr
-                                               : left.isInternal == right.isInternal;
+                                                 :
+                                                 left.isInternal == right.isInternal;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_IFADDRESS_H__
+#endif // __DAVAENGINE_IFADDRESS_H__

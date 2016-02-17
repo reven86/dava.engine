@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
    Copyright (C) 2009 Sony Computer Entertainment Inc.
    All rights reserved.
@@ -47,8 +46,8 @@ subject to the following restrictions:
 #define _BOOLINVEC_H
 
 #include <math.h>
-namespace Vectormath {
-
+namespace Vectormath
+{
 class floatInVec;
 
 //--------------------------------------------------------------------------------------------------
@@ -63,7 +62,7 @@ private:
 public:
     // Default constructor; does no initialization
     //
-    inline boolInVec( ) { };
+    inline boolInVec(){};
 
     // Construct from a value converted from float
     //
@@ -85,53 +84,50 @@ public:
 
     // Boolean negation operator
     //
-    inline const boolInVec operator ! () const;
+    inline const boolInVec operator!() const;
 
     // Assignment operator
     //
-    inline boolInVec& operator = (boolInVec vec);
+    inline boolInVec& operator=(boolInVec vec);
 
     // Boolean and assignment operator
     //
-    inline boolInVec& operator &= (boolInVec vec);
+    inline boolInVec& operator&=(boolInVec vec);
 
     // Boolean exclusive or assignment operator
     //
-    inline boolInVec& operator ^= (boolInVec vec);
+    inline boolInVec& operator^=(boolInVec vec);
 
     // Boolean or assignment operator
     //
-    inline boolInVec& operator |= (boolInVec vec);
-
+    inline boolInVec& operator|=(boolInVec vec);
 };
 
 // Equal operator
 //
-inline const boolInVec operator == (boolInVec vec0, boolInVec vec1);
+inline const boolInVec operator==(boolInVec vec0, boolInVec vec1);
 
 // Not equal operator
 //
-inline const boolInVec operator != (boolInVec vec0, boolInVec vec1);
+inline const boolInVec operator!=(boolInVec vec0, boolInVec vec1);
 
 // And operator
 //
-inline const boolInVec operator & (boolInVec vec0, boolInVec vec1);
+inline const boolInVec operator&(boolInVec vec0, boolInVec vec1);
 
 // Exclusive or operator
 //
-inline const boolInVec operator ^ (boolInVec vec0, boolInVec vec1);
+inline const boolInVec operator^(boolInVec vec0, boolInVec vec1);
 
 // Or operator
 //
-inline const boolInVec operator | (boolInVec vec0, boolInVec vec1);
+inline const boolInVec operator|(boolInVec vec0, boolInVec vec1);
 
 // Conditionally select between two values
 //
 inline const boolInVec select(boolInVec vec0, boolInVec vec1, boolInVec select_vec1);
 
-
 } // namespace Vectormath
-
 
 //--------------------------------------------------------------------------------------------------
 // boolInVec implementation
@@ -139,8 +135,8 @@ inline const boolInVec select(boolInVec vec0, boolInVec vec1, boolInVec select_v
 
 #include "floatInVec.h"
 
-namespace Vectormath {
-
+namespace Vectormath
+{
 inline
 boolInVec::boolInVec(floatInVec vec)
 {
@@ -170,14 +166,14 @@ boolInVec::operator bool() const
 
 inline
 const boolInVec
-boolInVec::operator ! () const
+boolInVec::operator!() const
 {
     return boolInVec(!mData);
 }
 
 inline
 boolInVec&
-boolInVec::operator = (boolInVec vec)
+boolInVec::operator=(boolInVec vec)
 {
     mData = vec.mData;
     return *this;
@@ -185,7 +181,7 @@ boolInVec::operator = (boolInVec vec)
 
 inline
 boolInVec&
-boolInVec::operator &= (boolInVec vec)
+boolInVec::operator&=(boolInVec vec)
 {
     *this = *this & vec;
     return *this;
@@ -193,7 +189,7 @@ boolInVec::operator &= (boolInVec vec)
 
 inline
 boolInVec&
-boolInVec::operator ^= (boolInVec vec)
+boolInVec::operator^=(boolInVec vec)
 {
     *this = *this ^ vec;
     return *this;
@@ -201,7 +197,7 @@ boolInVec::operator ^= (boolInVec vec)
 
 inline
 boolInVec&
-boolInVec::operator |= (boolInVec vec)
+boolInVec::operator|=(boolInVec vec)
 {
     *this = *this | vec;
     return *this;
@@ -209,35 +205,35 @@ boolInVec::operator |= (boolInVec vec)
 
 inline
 const boolInVec
-operator == (boolInVec vec0, boolInVec vec1)
+operator==(boolInVec vec0, boolInVec vec1)
 {
     return boolInVec(vec0.getAsBool() == vec1.getAsBool());
 }
 
 inline
 const boolInVec
-operator != (boolInVec vec0, boolInVec vec1)
+operator!=(boolInVec vec0, boolInVec vec1)
 {
     return !(vec0 == vec1);
 }
 
 inline
 const boolInVec
-operator & (boolInVec vec0, boolInVec vec1)
+operator&(boolInVec vec0, boolInVec vec1)
 {
     return boolInVec(vec0.getAsBool() & vec1.getAsBool());
 }
 
 inline
 const boolInVec
-operator | (boolInVec vec0, boolInVec vec1)
+operator|(boolInVec vec0, boolInVec vec1)
 {
     return boolInVec(vec0.getAsBool() | vec1.getAsBool());
 }
 
 inline
 const boolInVec
-operator ^ (boolInVec vec0, boolInVec vec1)
+operator^(boolInVec vec0, boolInVec vec1)
 {
     return boolInVec(vec0.getAsBool() ^ vec1.getAsBool());
 }

@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  Applied Research Associates Inc. (c)2011
 
@@ -63,10 +62,10 @@
 // Prototypes for NEON assembly implementations
 extern "C"
 {
-	// NEON assembly implementations of Vector3 functions
-	void pfxVector3DotProductNEON(const btVector3 &vec0, const btVector3 &vec1, float *result);
-	void pfxVector3CrossProductNEON(const btVector3 &vec0, const btVector3 &vec1,
-									btVector3 &result);
+// NEON assembly implementations of Vector3 functions
+void pfxVector3DotProductNEON(const btVector3& vec0, const btVector3& vec1, float* result);
+void pfxVector3CrossProductNEON(const btVector3& vec0, const btVector3& vec1,
+                                btVector3& result);
 
 //	// NEON assembly implementations of Matrix3 functions
 //	void pfxMatrix3Matrix3ProductNEON(const Vectormath::Aos::Matrix3 &mat0, const Vectormath::Aos::Matrix3 &mat1,

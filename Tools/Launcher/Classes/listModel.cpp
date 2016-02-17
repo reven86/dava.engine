@@ -5,11 +5,11 @@
 #include <QTimer>
 #include "applicationmanager.h"
 
-ListModel::ListModel(const ApplicationManager *appManager_, QObject *parent)
+ListModel::ListModel(const ApplicationManager* appManager_, QObject* parent)
     : QAbstractListModel(parent)
     , fontFavorites(QApplication::font())
     , appManager(appManager_)
-{   
+{
     fontFavorites.setPointSize(fontFavorites.pointSize() + 1);
     fontFavorites.setBold(true);
 }
@@ -24,14 +24,14 @@ void ListModel::clearItems()
     }
 }
 
-void ListModel::addItem(const QString &dataText, ListItemType type)
+void ListModel::addItem(const QString& dataText, ListItemType type)
 {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     items.push_back({ appManager->GetString(dataText), dataText, type });
     endInsertRows();
 }
 
-QVariant ListModel::data(const QModelIndex &index, int role) const
+QVariant ListModel::data(const QModelIndex& index, int role) const
 {
     ListItemType type = items.at(index.row()).type;
     switch (type)
@@ -75,7 +75,7 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-int ListModel::rowCount(const QModelIndex &parent) const
+int ListModel::rowCount(const QModelIndex& parent) const
 {
     return items.size();
 }

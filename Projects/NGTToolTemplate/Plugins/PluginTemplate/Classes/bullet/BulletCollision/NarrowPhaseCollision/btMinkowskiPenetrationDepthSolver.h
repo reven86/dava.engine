@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -52,18 +51,15 @@ subject to the following restrictions:
 class btMinkowskiPenetrationDepthSolver : public btConvexPenetrationDepthSolver
 {
 protected:
-
-	static btVector3*	getPenetrationDirections();
+    static btVector3* getPenetrationDirections();
 
 public:
-
-	virtual bool calcPenDepth( btSimplexSolverInterface& simplexSolver,
-	const btConvexShape* convexA,const btConvexShape* convexB,
-				const btTransform& transA,const btTransform& transB,
-			btVector3& v, btVector3& pa, btVector3& pb,
-			class btIDebugDraw* debugDraw,btStackAlloc* stackAlloc
-			);
+    virtual bool calcPenDepth(btSimplexSolverInterface& simplexSolver,
+                              const btConvexShape* convexA, const btConvexShape* convexB,
+                              const btTransform& transA, const btTransform& transB,
+                              btVector3& v, btVector3& pa, btVector3& pb,
+                              class btIDebugDraw* debugDraw, btStackAlloc* stackAlloc
+                              );
 };
 
 #endif //BT_MINKOWSKI_PENETRATION_DEPTH_SOLVER_H
-

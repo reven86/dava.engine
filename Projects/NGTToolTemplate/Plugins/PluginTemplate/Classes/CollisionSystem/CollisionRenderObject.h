@@ -36,12 +36,12 @@
 class CollisionRenderObject : public CollisionBaseObject
 {
 public:
-	CollisionRenderObject(DAVA::Entity *entity, btCollisionWorld *word, DAVA::RenderObject *renderObject);
-	virtual ~CollisionRenderObject();
+    CollisionRenderObject(DAVA::Entity* entity, btCollisionWorld* word, DAVA::RenderObject* renderObject);
+    virtual ~CollisionRenderObject();
 
 protected:
-	btTriangleMesh* btTriangles;
-	btCollisionShape* btShape;
+    btTriangleMesh* btTriangles;
+    btCollisionShape* btShape;
 };
 
 #endif // __SCENE_COLLISION_BASE_OBJECT_H__

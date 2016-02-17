@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -52,21 +51,18 @@ subject to the following restrictions:
 ///calculate the penetration depth between two convex shapes.
 class btGjkEpaPenetrationDepthSolver : public btConvexPenetrationDepthSolver
 {
-	public :
+public:
+    btGjkEpaPenetrationDepthSolver()
+    {
+    }
 
-		btGjkEpaPenetrationDepthSolver()
-		{
-		}
+    bool calcPenDepth(btSimplexSolverInterface& simplexSolver,
+                      const btConvexShape* pConvexA, const btConvexShape* pConvexB,
+                      const btTransform& transformA, const btTransform& transformB,
+                      btVector3& v, btVector3& wWitnessOnA, btVector3& wWitnessOnB,
+                      class btIDebugDraw* debugDraw, btStackAlloc* stackAlloc);
 
-		bool			calcPenDepth( btSimplexSolverInterface& simplexSolver,
-									  const btConvexShape* pConvexA, const btConvexShape* pConvexB,
-									  const btTransform& transformA, const btTransform& transformB,
-									  btVector3& v, btVector3& wWitnessOnA, btVector3& wWitnessOnB,
-									  class btIDebugDraw* debugDraw,btStackAlloc* stackAlloc );
-
-	private :
-
+private:
 };
 
-#endif	// BT_GJP_EPA_PENETRATION_DEPTH_H
-
+#endif // BT_GJP_EPA_PENETRATION_DEPTH_H

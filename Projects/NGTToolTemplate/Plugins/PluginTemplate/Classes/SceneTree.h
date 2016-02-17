@@ -50,26 +50,26 @@ class SceneTree : public QObject
 {
     Q_OBJECT
 public:
-    void Initialize(IUIFramework & uiFramework, IUIApplication & uiApplication);
+    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
     void Finilize();
 
     Q_PROPERTY(QVariant SceneTree READ GetSceneTree NOTIFY SceneChanged)
 
     Q_INVOKABLE QVariant GetSceneTree();
-    Q_INVOKABLE void OnSelectionChanged(QList<QVariant> const & selection);
+    Q_INVOKABLE void OnSelectionChanged(QList<QVariant> const& selection);
 
     DAVA::Signal<DAVA::Entity*> SelectedEntityChanged;
     Q_SIGNAL void SceneChanged();
 
-    Q_SLOT void SetScene(DAVA::Scene * scene);
-    Q_SLOT void OnSceneSelectionChanged(DAVA::Scene *scene, const EntityGroup *selected, const EntityGroup *deselected);
+    Q_SLOT void SetScene(DAVA::Scene* scene);
+    Q_SLOT void OnSceneSelectionChanged(DAVA::Scene* scene, const EntityGroup* selected, const EntityGroup* deselected);
 
 private:
-    ITreeModel * CreateSceneModel();
+    ITreeModel* CreateSceneModel();
 
 private:
     std::unique_ptr<IView> sceneTreeView;
-    DAVA::Scene * scene = nullptr;
+    DAVA::Scene* scene = nullptr;
     std::shared_ptr<IObjectHandleStorage> objectHandleStorage;
 };
 

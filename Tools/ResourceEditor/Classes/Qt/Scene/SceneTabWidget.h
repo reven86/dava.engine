@@ -100,9 +100,6 @@ public slots:
     void SceneSaved(SceneEditor2* scene);
     void SceneModifyStatusChanged(SceneEditor2* scene, bool modified);
 
-    void InitDAVAUI();
-    void ReleaseDAVAUI();
-
 protected:
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
 
@@ -114,6 +111,8 @@ protected:
     const int davaUIScreenID;
     const int dava3DViewMargin;
 
+    void InitDAVAUI();
+    void ReleaseDAVAUI();
     void UpdateTabName(int index);
 
     void SetTabScene(int index, SceneEditor2* scene);

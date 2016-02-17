@@ -34,9 +34,9 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	//bool IsPolygonCollidePolygon(
+//bool IsPolygonCollidePolygon(
 };
 
-#endif 
+#endif

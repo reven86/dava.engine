@@ -33,7 +33,7 @@
 #include <QDir>
 #include <QDebug>
 
-FileManager * FileManager::instance;
+FileManager* FileManager::instance;
 
 FileManager::FileManager()
 {
@@ -55,49 +55,49 @@ FileManager::FileManager()
     docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/DAVALauncher/";
 }
 
-FileManager * FileManager::Instance()
+FileManager* FileManager::Instance()
 {
-    if(!instance)
+    if (!instance)
         instance = new FileManager();
     return instance;
 }
 
-const QString & FileManager::GetDocumentsDirectory()
+const QString& FileManager::GetDocumentsDirectory()
 {
     MakeDirectory(docDir);
     return docDir;
 }
 
-const QString & FileManager::GetBaseAppsDirectory()
+const QString& FileManager::GetBaseAppsDirectory()
 {
     MakeDirectory(baseAppDir);
     return baseAppDir;
 }
 
-const QString & FileManager::GetTempDirectory()
+const QString& FileManager::GetTempDirectory()
 {
     MakeDirectory(tempDir);
     return tempDir;
 }
 
-const QString & FileManager::GetTempDownloadFilepath()
+const QString& FileManager::GetTempDownloadFilepath()
 {
     MakeDirectory(tempDir);
     return tempFile;
 }
 
-const QString & FileManager::GetLauncherDirectory()
+const QString& FileManager::GetLauncherDirectory()
 {
     return launcherDir;
 }
 
-const QString & FileManager::GetSelfUpdateTempDirectory()
+const QString& FileManager::GetSelfUpdateTempDirectory()
 {
     MakeDirectory(tempSelfUpdateDir);
     return tempSelfUpdateDir;
 }
 
-bool FileManager::DeleteDirectory(const QString & path)
+bool FileManager::DeleteDirectory(const QString& path)
 {
     bool result = true;
     QDir aDir(path);
@@ -131,20 +131,21 @@ void FileManager::ClearTempDirectory()
     FileManager::Instance()->DeleteDirectory(FileManager::Instance()->GetTempDirectory());
 }
 
-void FileManager::MakeDirectory(const QString & path)
+void FileManager::MakeDirectory(const QString& path)
 {
-    if(!QDir(path).exists())
+    if (!QDir(path).exists())
         QDir().mkpath(path);
 }
 
-void FileManager::MoveFilesOnlyToDirectory(const QString & dirFrom, const QString & dirTo)
+void FileManager::MoveFilesOnlyToDirectory(const QString& dirFrom, const QString& dirTo)
 {
     QDir fromDir(dirFrom);
 
     fromDir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-    fromDir.setNameFilters(QStringList() << "*.exe" << "*.dll");
+    fromDir.setNameFilters(QStringList() << "*.exe"
+                                         << "*.dll");
     QFileInfoList list = fromDir.entryInfoList();
-    for(int i = 0; i < list.size(); ++i)
+    for (int i = 0; i < list.size(); ++i)
     {
         QFileInfo fileInfo = list.at(i);
         QString fileName = fileInfo.fileName();
@@ -157,7 +158,7 @@ void FileManager::MoveFilesOnlyToDirectory(const QString & dirFrom, const QStrin
     fromDirMac.setFilter(QDir::Dirs | QDir::Hidden | QDir::NoSymLinks);
     fromDirMac.setNameFilters(QStringList() << "Launcher.app");
     list = fromDirMac.entryInfoList();
-    for(int i = 0; i < list.size(); ++i)
+    for (int i = 0; i < list.size(); ++i)
     {
         QFileInfo fileInfo = list.at(i);
         QString fileName = fileInfo.fileName();
@@ -166,19 +167,19 @@ void FileManager::MoveFilesOnlyToDirectory(const QString & dirFrom, const QStrin
     }
 }
 
-QString FileManager::GetApplicationFolder(const QString & branchID, const QString & appID)
+QString FileManager::GetApplicationFolder(const QString& branchID, const QString& appID)
 {
     QString path = GetBranchFolder(branchID) + appID + "/";
-    if(!QDir(path).exists())
+    if (!QDir(path).exists())
         QDir().mkpath(path);
 
     return path;
 }
 
-QString FileManager::GetBranchFolder(const QString & branchID)
+QString FileManager::GetBranchFolder(const QString& branchID)
 {
     QString path = baseAppDir + branchID + "/";
-    if(!QDir(path).exists())
+    if (!QDir(path).exists())
         QDir().mkpath(path);
 
     return path;

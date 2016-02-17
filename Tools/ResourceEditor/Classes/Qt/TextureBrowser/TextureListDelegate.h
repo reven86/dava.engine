@@ -42,44 +42,44 @@ class QPainter;
 
 class TextureListDelegate : public QAbstractItemDelegate
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum DrawRule
-	{
-		DRAW_PREVIEW_BIG,
-		DRAW_PREVIEW_SMALL
-	};
+    enum DrawRule
+    {
+        DRAW_PREVIEW_BIG,
+        DRAW_PREVIEW_SMALL
+    };
 
-	TextureListDelegate(QObject *parent = 0);
+    TextureListDelegate(QObject* parent = 0);
 
-	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
-	void setDrawRule(DrawRule rule);
-    
-    bool helpEvent(QHelpEvent *event,
-                           QAbstractItemView *view,
-                           const QStyleOptionViewItem &option,
-                           const QModelIndex &index) override;
+    void setDrawRule(DrawRule rule);
+
+    bool helpEvent(QHelpEvent* event,
+                   QAbstractItemView* view,
+                   const QStyleOptionViewItem& option,
+                   const QModelIndex& index) override;
 
 signals:
     void textureDescriptorChanged(DAVA::TextureDescriptor* descriptor);
 
 protected:
-    bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index);
+    bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index);
 
 private slots:
-	void textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor,  const TextureInfo & images);
+    void textureReadyThumbnail(const DAVA::TextureDescriptor* descriptor, const TextureInfo& images);
     void onOpenTexturePath();
 
     void onLoadPreset();
     void onSavePreset();
 
 private:
-	QFont nameFont;
-	QFontMetrics nameFontMetrics;
-	mutable QMap<DAVA::FilePath, QModelIndex> descriptorIndexes;
+    QFont nameFont;
+    QFontMetrics nameFontMetrics;
+    mutable QMap<DAVA::FilePath, QModelIndex> descriptorIndexes;
     DAVA::TextureDescriptor* lastSelectedTextureDescriptor = nullptr;
 
     DrawRule drawRule;
@@ -89,7 +89,7 @@ private:
 
     int drawFormatInfo(QPainter* painter, QRect rect, const DAVA::Texture* texture, const DAVA::TextureDescriptor* descriptor) const;
 
-    QString CreateInfoString(const QModelIndex & index) const;
+    QString CreateInfoString(const QModelIndex& index) const;
 };
 
 #endif // __TEXTURE_LIST_DELEGATE_H__

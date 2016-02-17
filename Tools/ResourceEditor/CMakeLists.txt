@@ -14,12 +14,18 @@ set                   ( USE_DYNAMIC_CRT 1)
 set                   ( TARGET_PLUGIN_APP_FOLDER_NAME ${PROJECT_NAME})
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
-if (DEPLOY_DIR)
-      set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
-endif()
-
 include               ( CMake-common )
 include               ( NGTMacro )
+
+if (DEPLOY)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+    if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/ResourceEditor)
+        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/ResourceEditor)
+    endif()
+    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
+endif()
 
 
 define_ngt_pathes("${FRAMEWORK_PATH}/Sources/External/ngt/")
@@ -153,8 +159,20 @@ foreach(NGT_PLUGIN ${NGT_PLUGINS})
 endforeach()
 
 list(APPEND TARGET_LIBRARIES core_generic_plugin_manager
-                                                              core_generic_plugin
-                                                              core_qt_common
-                                                              core_ui_framework)
+                             core_generic_plugin
+                             core_qt_common
+                             core_ui_framework)
 
 setup_main_executable()
+
+if (DEPLOY)
+    set(BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR})
+    if (NOT WIN32)
+        set(BEAST_DIR "")
+    endif()
+    ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/postDeploy.py"
+            "${DEPLOY_ROOT}"
+            "${BEAST_DIR}"
+        )
+endif()

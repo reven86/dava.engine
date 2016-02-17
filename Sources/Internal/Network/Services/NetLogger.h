@@ -43,25 +43,34 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  This is network logger
 */
 class NetLogger : public NetService
-                , public LoggerOutput
-                , private Noncopyable
+                  ,
+                  public LoggerOutput
+                  ,
+                  private Noncopyable
 {
 private:
     struct LogRecord
     {
-        LogRecord() : timestamp(), level(), message() {}
-        LogRecord(time_t tstamp, Logger::eLogLevel ll, const char8* text) : timestamp(tstamp)
-                                                                          , level(ll)
-                                                                          , message(text) {}
+        LogRecord()
+            : timestamp()
+            , level()
+            , message()
+        {
+        }
+        LogRecord(time_t tstamp, Logger::eLogLevel ll, const char8* text)
+            : timestamp(tstamp)
+            , level(ll)
+            , message(text)
+        {
+        }
 
-        time_t            timestamp;
+        time_t timestamp;
         Logger::eLogLevel level;
-        String            message;
+        String message;
     };
 
 public:
@@ -70,7 +79,9 @@ public:
 
     void Install();
     void Uninstall();
+    size_t GetMessageQueueSize() const;
 
+private:
     // IChannelListener
     void OnPacketSent(IChannel* channel, const void* buffer, size_t length) override;
     void OnPacketDelivered(IChannel* channel, uint32 packetId) override;
@@ -80,25 +91,23 @@ public:
 
     void ChannelOpen() override;
 
-private:
     void DoOutput(Logger::eLogLevel ll, const char8* text);
     void SendNextRecord();
 
     bool EnqueueMessage(Logger::eLogLevel ll, const char8* message);
     bool GetFirstMessage(LogRecord& record);
     void RemoveFirstMessage();
-    
+
     String TimestampToString(time_t timestamp) const;
 
-private:
     bool selfInstall;
     bool isInstalled;
     size_t maxQueueSize;
-    Mutex mutex;
+    mutable Mutex mutex;
     Deque<LogRecord> recordQueue;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_NETLOGGER_H__
+#endif // __DAVAENGINE_NETLOGGER_H__

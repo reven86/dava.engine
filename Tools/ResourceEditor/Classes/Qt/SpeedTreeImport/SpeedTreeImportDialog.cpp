@@ -39,11 +39,11 @@
 
 using namespace DAVA;
 
-SpeedTreeImportDialog::SpeedTreeImportDialog(QWidget *parent /*= 0*/)
-	: QDialog(parent)
-	, ui(new Ui::QtTreeImportDialog)
+SpeedTreeImportDialog::SpeedTreeImportDialog(QWidget* parent /*= 0*/)
+    : QDialog(parent)
+    , ui(new Ui::QtTreeImportDialog)
 {
-	ui->setupUi(this);
+    ui->setupUi(this);
 
     connect(this, SIGNAL(accepted()), this, SLOT(OnOk()));
     connect(this, SIGNAL(rejected()), this, SLOT(OnCancel()));
@@ -53,7 +53,7 @@ SpeedTreeImportDialog::SpeedTreeImportDialog(QWidget *parent /*= 0*/)
     connect(ui->xmlButton, SIGNAL(clicked()), this, SLOT(OnXMLSelect()));
     connect(ui->sc2Button, SIGNAL(clicked()), this, SLOT(OnSc2Select()));
 
-	setWindowModality(Qt::WindowModal);
+    setWindowModality(Qt::WindowModal);
 }
 
 SpeedTreeImportDialog::~SpeedTreeImportDialog()
@@ -63,7 +63,7 @@ SpeedTreeImportDialog::~SpeedTreeImportDialog()
 int SpeedTreeImportDialog::exec()
 {
     OnXMLSelect();
-    if(!xmlFiles.size())
+    if (!xmlFiles.size())
         return 0;
 
     return QDialog::exec();
@@ -83,34 +83,34 @@ void SpeedTreeImportDialog::OnOk()
 
     //make out files
     Vector<FilePath> outFiles = xmlFiles;
-    for(size_t i = 0; i < outFiles.size(); ++i)
+    for (size_t i = 0; i < outFiles.size(); ++i)
     {
         outFiles[i].ReplaceDirectory(sc2FolderPath);
         outFiles[i].ReplaceExtension(".sc2");
     }
 
     //import all trees
-	QtMainWindow::Instance()->WaitStart("Importing tree", "Please wait...");
+    QtMainWindow::Instance()->WaitStart("Importing tree", "Please wait...");
 
-    for(size_t i = 0; i < xmlFiles.size(); ++i)
+    for (size_t i = 0; i < xmlFiles.size(); ++i)
     {
         SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);
     }
-    
+
     QtMainWindow::Instance()->WaitStop();
 
     //make info message
     QString message("SpeedTree models: \n");
-    for(size_t i = 0; i < outFiles.size(); ++i)
+    for (size_t i = 0; i < outFiles.size(); ++i)
         message += (outFiles[i].GetFilename() + "\n").c_str();
     message += "\nwas imported to:\n" + QString(sc2FolderPath.GetAbsolutePathname().c_str());
 
     QMessageBox::information(this, "SpeedTree Import", message, QMessageBox::Ok);
 
     //open importet trees
-    if(ui->checkBox->isChecked())
+    if (ui->checkBox->isChecked())
     {
-        for(size_t i = 0; i < outFiles.size(); ++i)
+        for (size_t i = 0; i < outFiles.size(); ++i)
         {
             QtMainWindow::Instance()->OpenScene(outFiles[i].GetAbsolutePathname().c_str());
         }
@@ -121,18 +121,18 @@ void SpeedTreeImportDialog::OnOk()
 void SpeedTreeImportDialog::OnXMLSelect()
 {
     QString dialogPath;
-    if(xmlFiles.size())
+    if (xmlFiles.size())
         dialogPath = QString(xmlFiles[0].GetDirectory().GetAbsolutePathname().c_str());
 
     QStringList selectedFiles = FileDialog::getOpenFileNames(QtMainWindow::Instance(), "Import SpeedTree", dialogPath, "SpeedTree RAW File (*.xml)");
-    if(!selectedFiles.size())
+    if (!selectedFiles.size())
         return;
 
     xmlFiles.clear();
-    for(int32 i = 0; i < selectedFiles.size(); ++i)
+    for (int32 i = 0; i < selectedFiles.size(); ++i)
         xmlFiles.push_back(FilePath(selectedFiles.at(i).toStdString()));
 
-    if(sc2FolderPath.IsEmpty())
+    if (sc2FolderPath.IsEmpty())
         SetSC2FolderValue(ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str());
 
     ui->xmlListWidget->clear();
@@ -142,17 +142,17 @@ void SpeedTreeImportDialog::OnXMLSelect()
 void SpeedTreeImportDialog::OnSc2Select()
 {
     QString dialogPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
-    if(!sc2FolderPath.IsEmpty())
+    if (!sc2FolderPath.IsEmpty())
         dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
 
     QString selectedPath = FileDialog::getExistingDirectory(QtMainWindow::Instance(), "Select .sc2 file", dialogPath);
-    if(selectedPath.isEmpty())
+    if (selectedPath.isEmpty())
         return;
 
     SetSC2FolderValue(selectedPath);
 }
 
-void SpeedTreeImportDialog::SetSC2FolderValue(const QString & path)
+void SpeedTreeImportDialog::SetSC2FolderValue(const QString& path)
 {
     sc2FolderPath = path.toStdString();
     sc2FolderPath.MakeDirectoryPathname();

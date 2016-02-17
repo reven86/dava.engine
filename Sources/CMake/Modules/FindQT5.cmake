@@ -6,6 +6,9 @@ macro ( qt_deploy )
         return ()
     endif ()
 
+    set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
+    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
+
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
@@ -20,34 +23,33 @@ macro ( qt_deploy )
             set(QML_SCAN_FLAG "--qmldir ${QML_SCAN_DIR}")
         endif()
 
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
-            "${QT5_PATH_WIN}/bin/"
-            $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
-            --dir  "${DEPLOY_DIR}/"
-            "${QML_SCAN_FLAG}" "$<TARGET_FILE:${PROJECT_NAME}>"
-            ${QT_ITEMS_LIST}
-        )
+        set(DEPLOY_PLATFORM "WIN")
+        set(DEPLOY_QT_FOLDER ${QT5_PATH_WIN})
+        set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QT_ITEMS_LIST}")
 
     elseif( MACOS )
-        if (BW_BUNDLE_NAME)
-            set(BUNDLE_NAME ${BW_BUNDLE_NAME})
-        else()
-            set(BUNDLE_NAME ${PROJECT_NAME})
-        endif()
 
         if (QML_SCAN_DIR)
             set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
         endif()
 
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
-                    ${DEPLOY_DIR}/${BUNDLE_NAME}.app
-                    -always-overwrite
-                    "${QML_SCAN_FLAG}"
-        )
+        set(DEPLOY_PLATFORM "MAC")
+        set(DEPLOY_QT_FOLDER ${QT5_PATH_MAC})
+        set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+            COMMAND "python"
+                    ${DEPLOY_SCRIPT_PATH}
+                    "-p" "${DEPLOY_PLATFORM}"
+                    "-q" "${DEPLOY_QT_FOLDER}"
+                    "-d" "${DEPLOY_ROOT_FOLDER}"
+                    "-a" "${DEPLOY_ARGUMENTS}"
+        )
 
 endmacro ()
 
@@ -73,7 +75,6 @@ macro(resolve_qt_pathes)
 
     endif()
 endmacro()
-
 
 #################################################################
 

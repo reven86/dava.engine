@@ -36,11 +36,11 @@
 class CollisionParticleEffect : public CollisionBaseObject
 {
 public:
-	CollisionParticleEffect(DAVA::Entity *entity, btCollisionWorld *world, DAVA::float32 boxSize);
-	virtual ~CollisionParticleEffect();
+    CollisionParticleEffect(DAVA::Entity* entity, btCollisionWorld* world, DAVA::float32 boxSize);
+    virtual ~CollisionParticleEffect();
 
 protected:
-	btCollisionShape* btShape;
+    btCollisionShape* btShape;
 };
 
 #endif // __SCENE_COLLISION_PARTICLE_EMITTER_H__

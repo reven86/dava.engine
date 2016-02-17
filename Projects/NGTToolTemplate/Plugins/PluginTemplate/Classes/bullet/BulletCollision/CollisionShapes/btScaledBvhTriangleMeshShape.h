@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -47,75 +46,70 @@ subject to the following restrictions:
 
 #include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 
-
 ///The btScaledBvhTriangleMeshShape allows to instance a scaled version of an existing btBvhTriangleMeshShape.
 ///Note that each btBvhTriangleMeshShape still can have its own local scaling, independent from this btScaledBvhTriangleMeshShape 'localScaling'
-ATTRIBUTE_ALIGNED16(class) btScaledBvhTriangleMeshShape : public btConcaveShape
+ATTRIBUTE_ALIGNED16(class)
+btScaledBvhTriangleMeshShape : public btConcaveShape
 {
-	
-	
-	btVector3	m_localScaling;
+    btVector3 m_localScaling;
 
-	btBvhTriangleMeshShape*	m_bvhTriMeshShape;
+    btBvhTriangleMeshShape* m_bvhTriMeshShape;
 
 public:
+    btScaledBvhTriangleMeshShape(btBvhTriangleMeshShape * childShape, const btVector3& localScaling);
 
+    virtual ~btScaledBvhTriangleMeshShape();
 
-	btScaledBvhTriangleMeshShape(btBvhTriangleMeshShape* childShape,const btVector3& localScaling);
+    virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
+    virtual void setLocalScaling(const btVector3& scaling);
+    virtual const btVector3& getLocalScaling() const;
+    virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
 
-	virtual ~btScaledBvhTriangleMeshShape();
+    virtual void processAllTriangles(btTriangleCallback * callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
 
+    btBvhTriangleMeshShape* getChildShape()
+    {
+        return m_bvhTriMeshShape;
+    }
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
-	virtual void	setLocalScaling(const btVector3& scaling);
-	virtual const btVector3& getLocalScaling() const;
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+    const btBvhTriangleMeshShape* getChildShape() const
+    {
+        return m_bvhTriMeshShape;
+    }
 
-	virtual void	processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const;
+    //debugging
+    virtual const char* getName() const
+    {
+        return "SCALEDBVHTRIANGLEMESH";
+    }
 
-	btBvhTriangleMeshShape*	getChildShape()
-	{
-		return m_bvhTriMeshShape;
-	}
+    virtual int calculateSerializeBufferSize() const;
 
-	const btBvhTriangleMeshShape*	getChildShape() const
-	{
-		return m_bvhTriMeshShape;
-	}
-
-	//debugging
-	virtual const char*	getName()const {return "SCALEDBVHTRIANGLEMESH";}
-
-	virtual	int	calculateSerializeBufferSize() const;
-
-	///fills the dataBuffer and returns the struct name (and 0 on failure)
-	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
-
+    ///fills the dataBuffer and returns the struct name (and 0 on failure)
+    virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	btScaledTriangleMeshShapeData
+struct btScaledTriangleMeshShapeData
 {
-	btTriangleMeshShapeData	m_trimeshShapeData;
+    btTriangleMeshShapeData m_trimeshShapeData;
 
-	btVector3FloatData	m_localScaling;
+    btVector3FloatData m_localScaling;
 };
 
-
-SIMD_FORCE_INLINE	int	btScaledBvhTriangleMeshShape::calculateSerializeBufferSize() const
+SIMD_FORCE_INLINE int btScaledBvhTriangleMeshShape::calculateSerializeBufferSize() const
 {
-	return sizeof(btScaledTriangleMeshShapeData);
+    return sizeof(btScaledTriangleMeshShapeData);
 }
 
-
 ///fills the dataBuffer and returns the struct name (and 0 on failure)
-SIMD_FORCE_INLINE	const char*	btScaledBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* serializer) const
+SIMD_FORCE_INLINE const char* btScaledBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* serializer) const
 {
-	btScaledTriangleMeshShapeData* scaledMeshData = (btScaledTriangleMeshShapeData*) dataBuffer;
-	m_bvhTriMeshShape->serialize(&scaledMeshData->m_trimeshShapeData,serializer);
-	scaledMeshData->m_trimeshShapeData.m_collisionShapeData.m_shapeType = SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE;
-	m_localScaling.serializeFloat(scaledMeshData->m_localScaling);
-	return "btScaledTriangleMeshShapeData";
+    btScaledTriangleMeshShapeData* scaledMeshData = (btScaledTriangleMeshShapeData*)dataBuffer;
+    m_bvhTriMeshShape->serialize(&scaledMeshData->m_trimeshShapeData, serializer);
+    scaledMeshData->m_trimeshShapeData.m_collisionShapeData.m_shapeType = SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE;
+    m_localScaling.serializeFloat(scaledMeshData->m_localScaling);
+    return "btScaledTriangleMeshShapeData";
 }
 
 

@@ -33,163 +33,158 @@
 #include "libxml/parser.h"
 #include "libxml/xmlstring.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	XMLParser::XMLParser()
-	{
+XMLParser::XMLParser()
+{
+}
 
-	}
+XMLParser::~XMLParser()
+{
+}
 
-	XMLParser::~XMLParser()
-	{
+bool XMLParser::ParseFile(const FilePath& fileName, XMLParserDelegate* delegateptr)
+{
+    // 		Logger::FrameworkDebug("[XMLParser::ParseFile] fileName = %s", fileName.c_str());
+    // 		Logger::FrameworkDebug("[XMLParser::ParseFile] delegateptr = %p", delegateptr);
 
-	}
+    bool retValue = false;
+    File* xmlFile = File::Create(fileName, File::OPEN | File::READ);
+    if (xmlFile)
+    {
+        int32 dataSize = xmlFile->GetSize();
+        //			Logger::FrameworkDebug("[XMLParser::ParseFile] dataSize = %d", dataSize);
 
-	bool XMLParser::ParseFile(const FilePath &fileName, XMLParserDelegate *delegateptr)
-	{
-// 		Logger::FrameworkDebug("[XMLParser::ParseFile] fileName = %s", fileName.c_str());
-// 		Logger::FrameworkDebug("[XMLParser::ParseFile] delegateptr = %p", delegateptr);
+        uint8* data = new uint8[dataSize];
+        if (data)
+        {
+            int32 readBytes = xmlFile->Read(data, dataSize);
+            //				Logger::FrameworkDebug("[XMLParser::ParseFile] readBytes = %d", readBytes);
+            if (readBytes == dataSize)
+            {
+                retValue = XMLParser::ParseBytes(data, dataSize, delegateptr);
+            }
+            else
+            {
+                Logger::Error("[XMLParser::ParseFile] readBytes != dataSize");
+            }
 
-		bool retValue = false;
-		File *xmlFile = File::Create(fileName, File::OPEN | File::READ);
-		if(xmlFile)
-		{
-			int32 dataSize = xmlFile->GetSize();
-//			Logger::FrameworkDebug("[XMLParser::ParseFile] dataSize = %d", dataSize);
-
-			uint8 *data = new uint8[dataSize];
-			if(data)
-			{
-				int32 readBytes = xmlFile->Read(data, dataSize);
-//				Logger::FrameworkDebug("[XMLParser::ParseFile] readBytes = %d", readBytes);
-				if(readBytes == dataSize)
-				{
-					retValue = XMLParser::ParseBytes(data, dataSize, delegateptr);
-				}
-				else
-				{
-					Logger::Error("[XMLParser::ParseFile] readBytes != dataSize");
-				}
-
-				//TODO: VK: need to delete?
-				SafeDeleteArray(data);
-			}
-			else
-			{
-				Logger::Error("[XMLParser::ParseFile] can't allocate data");
-			}
-
-			//TODO: VK: need to delete?
-			SafeRelease(xmlFile);
-		}
-		else
-		{
-            Logger::Error("[XMLParser::ParseFile] can't Open file %s for read", fileName.GetStringValue().c_str());
+            //TODO: VK: need to delete?
+            SafeDeleteArray(data);
+        }
+        else
+        {
+            Logger::Error("[XMLParser::ParseFile] can't allocate data");
         }
 
-//		Logger::FrameworkDebug("[XMLParser::ParseFile] retValue = %d", retValue);
-		return retValue;
-	}
+        //TODO: VK: need to delete?
+        SafeRelease(xmlFile);
+    }
+    else
+    {
+        Logger::Error("[XMLParser::ParseFile] can't Open file %s for read", fileName.GetStringValue().c_str());
+    }
 
-	bool XMLParser::ParseBytes(const unsigned char *bytes, int length, XMLParserDelegate *delegateptr)
-	{
-//		Logger::FrameworkDebug("[XMLParser::ParseBytes] delegateptr = %p", delegateptr);
+    //		Logger::FrameworkDebug("[XMLParser::ParseFile] retValue = %d", retValue);
+    return retValue;
+}
 
-		bool retValue = false;
-		
-		xmlSAXHandler saxHandler = {0};
-		saxHandler.startDocument = XMLParser::StartDocument;
-		saxHandler.endDocument = XMLParser::EndDocument;
-		saxHandler.startElement = XMLParser::StartElement;
-		saxHandler.endElement = XMLParser::EndElement;
-		saxHandler.characters = XMLParser::Characters;
+bool XMLParser::ParseBytes(const unsigned char* bytes, int length, XMLParserDelegate* delegateptr)
+{
+    //		Logger::FrameworkDebug("[XMLParser::ParseBytes] delegateptr = %p", delegateptr);
 
-		int32 retCode = xmlSAXUserParseMemory( &saxHandler, (void*)delegateptr, (char *)bytes, length);
-//		Logger::FrameworkDebug("[XMLParser::ParseBytes] retCode = %d", retCode);
-		if(0 <= retCode)
-		{
-			retValue = true;
-		}
+    bool retValue = false;
 
-//		Logger::FrameworkDebug("[XMLParser::ParseBytes] retValue = %d", retValue);
-		return retValue;
-	}
+    xmlSAXHandler saxHandler = { 0 };
+    saxHandler.startDocument = XMLParser::StartDocument;
+    saxHandler.endDocument = XMLParser::EndDocument;
+    saxHandler.startElement = XMLParser::StartElement;
+    saxHandler.endElement = XMLParser::EndElement;
+    saxHandler.characters = XMLParser::Characters;
 
+    int32 retCode = xmlSAXUserParseMemory(&saxHandler, (void*)delegateptr, (char*)bytes, length);
+    //		Logger::FrameworkDebug("[XMLParser::ParseBytes] retCode = %d", retCode);
+    if (0 <= retCode)
+    {
+        retValue = true;
+    }
 
-	void XMLParser::StartDocument(void *user_data)
-	{
-//		Logger::FrameworkDebug("[XMLParser::StartDocument] user_data = %p", user_data);
-		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
-		if(delegateptr)
-		{
+    //		Logger::FrameworkDebug("[XMLParser::ParseBytes] retValue = %d", retValue);
+    return retValue;
+}
 
-		}
-	}
-	void XMLParser::EndDocument(void *user_data)
-	{
-//		Logger::FrameworkDebug("[XMLParser::EndDocument] user_data = %p", user_data);
-		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
-		if(delegateptr)
-		{
+void XMLParser::StartDocument(void* user_data)
+{
+    //		Logger::FrameworkDebug("[XMLParser::StartDocument] user_data = %p", user_data);
+    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    if (delegateptr)
+    {
+    }
+}
+void XMLParser::EndDocument(void* user_data)
+{
+    //		Logger::FrameworkDebug("[XMLParser::EndDocument] user_data = %p", user_data);
+    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    if (delegateptr)
+    {
+    }
+}
 
-		}
-	}
+void XMLParser::Characters(void* user_data, const xmlChar* ch, int len)
+{
+    //		Logger::FrameworkDebug("[XMLParser::Characters] user_data = %p, len = %d", user_data, len);
+    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    if (delegateptr)
+    {
+        //char *content = new char[len + 1];
+        String s((char*)ch, len);
 
-	void XMLParser::Characters(void *user_data, const xmlChar *ch, int len)
-	{
-//		Logger::FrameworkDebug("[XMLParser::Characters] user_data = %p, len = %d", user_data, len);
-		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
-		if(delegateptr)
-		{
-			//char *content = new char[len + 1];
-			String s((char *)ch, len);
+        // 			delegateptr->OnFoundCharacters(content);
+        delegateptr->OnFoundCharacters(s);
 
-// 			delegateptr->OnFoundCharacters(content);
-			delegateptr->OnFoundCharacters(s);
+        //SafeDeleteArray(content);
+    }
+}
 
-			//SafeDeleteArray(content);
-		}
-	}
+void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar** attrs)
+{
+    //		Logger::FrameworkDebug("[XMLParser::StartElement] %s, user_data = %p", name, user_data);
+    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    if (delegateptr)
+    {
+        Map<String, String> attributes;
 
-	void XMLParser::StartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
-	{
-//		Logger::FrameworkDebug("[XMLParser::StartElement] %s, user_data = %p", name, user_data);
-		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
-		if(delegateptr)
-		{
-			Map<String, String> attributes;
+        if (attrs)
+        {
+            //				Logger::FrameworkDebug("[XMLParser::StartElement] attrs in");
 
-			if(attrs)
-			{
-//				Logger::FrameworkDebug("[XMLParser::StartElement] attrs in");
+            int32 i = 0;
+            while (attrs[i])
+            {
+                char* str = (attrs[i + 1]) ? (char*)attrs[i + 1] : (char*)"";
+                attributes[(char*)attrs[i]] = str;
 
-				int32 i = 0;
-				while(attrs[i])
-				{
-					char *str = (attrs[i+1]) ? (char *)attrs[i+1] : (char *)"";
-					attributes[(char *)attrs[i]] = str;
+                //					Logger::FrameworkDebug("[XMLParser::StartElement] %s = %s", attrs[i], str);
 
-//					Logger::FrameworkDebug("[XMLParser::StartElement] %s = %s", attrs[i], str);
+                i += 2;
+            }
 
-					i += 2;
-				}
+            //				Logger::FrameworkDebug("[XMLParser::StartElement] attrs out");
+        }
 
-//				Logger::FrameworkDebug("[XMLParser::StartElement] attrs out");
-			}
+        delegateptr->OnElementStarted((char*)name, "", "", attributes);
+    }
+}
 
-			delegateptr->OnElementStarted((char *)name, "", "", attributes);
-		}
-	}
-
-	void XMLParser::EndElement(void *user_data, const xmlChar *name)
-	{
-//		Logger::FrameworkDebug("[XMLParser::EndElement] %s", name);
-		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
-		if(delegateptr)
-		{
-			delegateptr->OnElementEnded((char *)name, "", "");
-		}
-	}
+void XMLParser::EndElement(void* user_data, const xmlChar* name)
+{
+    //		Logger::FrameworkDebug("[XMLParser::EndElement] %s", name);
+    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    if (delegateptr)
+    {
+        delegateptr->OnElementEnded((char*)name, "", "");
+    }
+}
 
 // 	xmlEntityPtr XMLParser::GetEntity(void *user_data, const xmlChar *name)
 // 	{
@@ -197,8 +192,7 @@ namespace DAVA
 // 		XMLParserDelegate *delegate = (XMLParserDelegate *)user_data;
 // 		if(delegate)
 // 		{
-// 
+//
 // 		}
 // 	}
-
 };

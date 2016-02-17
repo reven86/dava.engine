@@ -29,23 +29,23 @@
 #include "DAVAEngine.h"
 #include "GLWidget.h"
 
-PluginGLWidget::PluginGLWidget(QWidget * parent /*= nullptr*/)
+PluginGLWidget::PluginGLWidget(QWidget* parent /*= nullptr*/)
     : DavaGLWidget(parent)
 {
     hints += LayoutHint("GLView", 1.0f);
 }
 
-const char * PluginGLWidget::title() const
+const char* PluginGLWidget::title() const
 {
     return "DAVA Scene";
 }
 
-const char * PluginGLWidget::windowId() const
+const char* PluginGLWidget::windowId() const
 {
     return "";
 }
 
-const LayoutHint & PluginGLWidget::hint() const
+const LayoutHint& PluginGLWidget::hint() const
 {
     return hints;
 }

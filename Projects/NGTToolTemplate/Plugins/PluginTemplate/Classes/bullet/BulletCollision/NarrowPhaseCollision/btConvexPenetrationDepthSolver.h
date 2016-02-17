@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -55,17 +54,13 @@ class btTransform;
 ///ConvexPenetrationDepthSolver provides an interface for penetration depth calculation.
 class btConvexPenetrationDepthSolver
 {
-public:	
-	
-	virtual ~btConvexPenetrationDepthSolver() {};
-	virtual bool calcPenDepth( btSimplexSolverInterface& simplexSolver,
-		const btConvexShape* convexA,const btConvexShape* convexB,
-					const btTransform& transA,const btTransform& transB,
-				btVector3& v, btVector3& pa, btVector3& pb,
-				class btIDebugDraw* debugDraw,btStackAlloc* stackAlloc
-				) = 0;
-
-
+public:
+    virtual ~btConvexPenetrationDepthSolver(){};
+    virtual bool calcPenDepth(btSimplexSolverInterface& simplexSolver,
+                              const btConvexShape* convexA, const btConvexShape* convexB,
+                              const btTransform& transA, const btTransform& transB,
+                              btVector3& v, btVector3& pa, btVector3& pb,
+                              class btIDebugDraw* debugDraw, btStackAlloc* stackAlloc
+                              ) = 0;
 };
 #endif //BT_CONVEX_PENETRATION_DEPTH_H
-

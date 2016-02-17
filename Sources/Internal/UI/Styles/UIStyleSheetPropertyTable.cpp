@@ -30,20 +30,18 @@
 
 namespace DAVA
 {
-
 void UIStyleSheetPropertyTable::SetProperties(const Vector<UIStyleSheetProperty>& newProperties)
 {
     properties = newProperties;
 
     std::sort(properties.begin(), properties.end(),
-        [](const UIStyleSheetProperty& first, const UIStyleSheetProperty& second) {
-        return first.propertyIndex < second.propertyIndex;
-    });
+              [](const UIStyleSheetProperty& first, const UIStyleSheetProperty& second) {
+                  return first.propertyIndex < second.propertyIndex;
+              });
 }
 
 const Vector<UIStyleSheetProperty>& UIStyleSheetPropertyTable::GetProperties() const
 {
     return properties;
 }
-
 }

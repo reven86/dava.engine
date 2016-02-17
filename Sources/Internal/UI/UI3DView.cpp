@@ -39,7 +39,7 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
 UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
@@ -52,7 +52,6 @@ UI3DView::UI3DView(const Rect& rect)
     , fbTexSize()
     , registeredInUIControlSystem(false)
 {
-
 }
 
 UI3DView::~UI3DView()
@@ -61,14 +60,13 @@ UI3DView::~UI3DView()
     SafeRelease(scene);
 }
 
-
-void UI3DView::SetScene(Scene * _scene)
+void UI3DView::SetScene(Scene* _scene)
 {
     SafeRelease(scene);
-    
+
     scene = SafeRetain(_scene);
-    
-    if(scene)
+
+    if (scene)
     {
         float32 aspect = size.dx / size.dy;
         for (int32 k = 0; k < scene->GetCameraCount(); ++k)
@@ -79,24 +77,23 @@ void UI3DView::SetScene(Scene * _scene)
     }
 }
 
-Scene * UI3DView::GetScene() const
+Scene* UI3DView::GetScene() const
 {
     return scene;
 }
 
-void UI3DView::AddControl(UIControl *control)
+void UI3DView::AddControl(UIControl* control)
 {
     DVASSERT(0 && "UI3DView do not support children");
 }
 
-    
 void UI3DView::Update(float32 timeElapsed)
 {
     if (scene)
         scene->Update(timeElapsed);
 }
 
-void UI3DView::Draw(const UIGeometricData & geometricData)
+void UI3DView::Draw(const UIGeometricData& geometricData)
 {
     if (!scene)
         return;
@@ -134,13 +131,13 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         RenderSystem2D::Instance()->DrawTexture(frameBuffer, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, geometricData.GetUnrotatedRect(), Rect(Vector2(), fbTexSize));
     }
 }
-    
-void UI3DView::SetSize(const DAVA::Vector2 &newSize)
+
+void UI3DView::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
     float32 aspect = size.dx / size.dy;
-    
-    if(scene)
+
+    if (scene)
     {
         for (int32 k = 0; k < scene->GetCameraCount(); ++k)
         {
@@ -172,13 +169,13 @@ void UI3DView::CopyDataFrom(UIControl* srcControl)
     needUpdateFrameBuffer = true;
 }
 
-void UI3DView::Input(UIEvent *currentInput)
+void UI3DView::Input(UIEvent* currentInput)
 {
-    if(scene)
+    if (scene)
     {
         scene->Input(currentInput);
     }
-    
+
     UIControl::Input(currentInput);
 }
 

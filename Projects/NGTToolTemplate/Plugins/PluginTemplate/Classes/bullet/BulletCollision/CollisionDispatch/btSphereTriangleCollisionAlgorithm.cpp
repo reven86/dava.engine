@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -49,65 +48,66 @@ subject to the following restrictions:
 #include "bullet/BulletCollision/CollisionDispatch/btCollisionObject.h"
 #include "SphereTriangleDetector.h"
 
-
-btSphereTriangleCollisionAlgorithm::btSphereTriangleCollisionAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,btCollisionObject* col0,btCollisionObject* col1,bool swapped)
-: btActivatingCollisionAlgorithm(ci,col0,col1),
-m_ownManifold(false),
-m_manifoldPtr(mf),
-m_swapped(swapped)
+btSphereTriangleCollisionAlgorithm::btSphereTriangleCollisionAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* col0, btCollisionObject* col1, bool swapped)
+    : btActivatingCollisionAlgorithm(ci, col0, col1)
+    ,
+    m_ownManifold(false)
+    ,
+    m_manifoldPtr(mf)
+    ,
+    m_swapped(swapped)
 {
-	if (!m_manifoldPtr)
-	{
-		m_manifoldPtr = m_dispatcher->getNewManifold(col0,col1);
-		m_ownManifold = true;
-	}
+    if (!m_manifoldPtr)
+    {
+        m_manifoldPtr = m_dispatcher->getNewManifold(col0, col1);
+        m_ownManifold = true;
+    }
 }
 
 btSphereTriangleCollisionAlgorithm::~btSphereTriangleCollisionAlgorithm()
 {
-	if (m_ownManifold)
-	{
-		if (m_manifoldPtr)
-			m_dispatcher->releaseManifold(m_manifoldPtr);
-	}
+    if (m_ownManifold)
+    {
+        if (m_manifoldPtr)
+            m_dispatcher->releaseManifold(m_manifoldPtr);
+    }
 }
 
-void btSphereTriangleCollisionAlgorithm::processCollision (btCollisionObject* col0,btCollisionObject* col1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut)
+void btSphereTriangleCollisionAlgorithm::processCollision(btCollisionObject* col0, btCollisionObject* col1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut)
 {
-	if (!m_manifoldPtr)
-		return;
+    if (!m_manifoldPtr)
+        return;
 
-	btCollisionObject* sphereObj = m_swapped? col1 : col0;
-	btCollisionObject* triObj = m_swapped? col0 : col1;
+    btCollisionObject* sphereObj = m_swapped ? col1 : col0;
+    btCollisionObject* triObj = m_swapped ? col0 : col1;
 
-	btSphereShape* sphere = (btSphereShape*)sphereObj->getCollisionShape();
-	btTriangleShape* triangle = (btTriangleShape*)triObj->getCollisionShape();
-	
-	/// report a contact. internally this will be kept persistent, and contact reduction is done
-	resultOut->setPersistentManifold(m_manifoldPtr);
-	SphereTriangleDetector detector(sphere,triangle, m_manifoldPtr->getContactBreakingThreshold());
-	
-	btDiscreteCollisionDetectorInterface::ClosestPointInput input;
-	input.m_maximumDistanceSquared = btScalar(BT_LARGE_FLOAT);///@todo: tighter bounds
-	input.m_transformA = sphereObj->getWorldTransform();
-	input.m_transformB = triObj->getWorldTransform();
+    btSphereShape* sphere = (btSphereShape*)sphereObj->getCollisionShape();
+    btTriangleShape* triangle = (btTriangleShape*)triObj->getCollisionShape();
 
-	bool swapResults = m_swapped;
+    /// report a contact. internally this will be kept persistent, and contact reduction is done
+    resultOut->setPersistentManifold(m_manifoldPtr);
+    SphereTriangleDetector detector(sphere, triangle, m_manifoldPtr->getContactBreakingThreshold());
 
-	detector.getClosestPoints(input,*resultOut,dispatchInfo.m_debugDraw,swapResults);
+    btDiscreteCollisionDetectorInterface::ClosestPointInput input;
+    input.m_maximumDistanceSquared = btScalar(BT_LARGE_FLOAT); ///@todo: tighter bounds
+    input.m_transformA = sphereObj->getWorldTransform();
+    input.m_transformB = triObj->getWorldTransform();
 
-	if (m_ownManifold)
-		resultOut->refreshContactPoints();
-	
+    bool swapResults = m_swapped;
+
+    detector.getClosestPoints(input, *resultOut, dispatchInfo.m_debugDraw, swapResults);
+
+    if (m_ownManifold)
+        resultOut->refreshContactPoints();
 }
 
-btScalar btSphereTriangleCollisionAlgorithm::calculateTimeOfImpact(btCollisionObject* col0,btCollisionObject* col1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut)
+btScalar btSphereTriangleCollisionAlgorithm::calculateTimeOfImpact(btCollisionObject* col0, btCollisionObject* col1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut)
 {
-	(void)resultOut;
-	(void)dispatchInfo;
-	(void)col0;
-	(void)col1;
+    (void)resultOut;
+    (void)dispatchInfo;
+    (void)col0;
+    (void)col1;
 
-	//not yet
-	return btScalar(1.);
+    //not yet
+    return btScalar(1.);
 }

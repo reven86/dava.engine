@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -50,39 +49,37 @@ subject to the following restrictions:
 #include "bullet/LinearMath/btAlignedObjectArray.h"
 #include "bullet/BulletCollision/CollisionShapes/btConvexShape.h"
 
-
 ///The btShapeHull class takes a btConvexShape, builds a simplified convex hull using btConvexHull and provides triangle indices and vertices.
 ///It can be useful for to simplify a complex convex object and for visualization of a non-polyhedral convex object.
 ///It approximates the convex hull using the supporting vertex of 42 directions.
 class btShapeHull
 {
 protected:
+    btAlignedObjectArray<btVector3> m_vertices;
+    btAlignedObjectArray<unsigned int> m_indices;
+    unsigned int m_numIndices;
+    const btConvexShape* m_shape;
 
-	btAlignedObjectArray<btVector3> m_vertices;
-	btAlignedObjectArray<unsigned int> m_indices;
-	unsigned int m_numIndices;
-	const btConvexShape* m_shape;
-
-	static btVector3* getUnitSpherePoints();
+    static btVector3* getUnitSpherePoints();
 
 public:
-	btShapeHull (const btConvexShape* shape);
-	~btShapeHull ();
+    btShapeHull(const btConvexShape* shape);
+    ~btShapeHull();
 
-	bool buildHull (btScalar margin);
+    bool buildHull(btScalar margin);
 
-	int numTriangles () const;
-	int numVertices () const;
-	int numIndices () const;
+    int numTriangles() const;
+    int numVertices() const;
+    int numIndices() const;
 
-	const btVector3* getVertexPointer() const
-	{
-		return &m_vertices[0];
-	}
-	const unsigned int* getIndexPointer() const
-	{
-		return &m_indices[0];
-	}
+    const btVector3* getVertexPointer() const
+    {
+        return &m_vertices[0];
+    }
+    const unsigned int* getIndexPointer() const
+    {
+        return &m_indices[0];
+    }
 };
 
 #endif //BT_SHAPE_HULL_H

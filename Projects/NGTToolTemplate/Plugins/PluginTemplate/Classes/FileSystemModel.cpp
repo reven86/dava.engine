@@ -31,10 +31,10 @@
 #include "FileSystem/Logger.h"
 #include "Debug/DVAssert.h"
 
-FileSystemModel::FileSystemModel(std::string const & rootPath, TCheckFile const & checkFileFn_)
+FileSystemModel::FileSystemModel(std::string const& rootPath, TCheckFile const& checkFileFn_)
     : checkFileFn(checkFileFn_)
 {
-    IFileSystem * fileSystem = Context::queryInterface<IFileSystem>();
+    IFileSystem* fileSystem = Context::queryInterface<IFileSystem>();
     if (fileSystem == nullptr)
     {
         DAVA::Logger::Error("Can't query IFileSystem interface");
@@ -51,41 +51,41 @@ FileSystemModel::~FileSystemModel()
 {
 }
 
-IItem * FileSystemModel::item(size_t index, const IItem * parent) const
+IItem* FileSystemModel::item(size_t index, const IItem* parent) const
 {
     if (parent == nullptr)
     {
         DVASSERT(index == 0);
         return root.get();
     }
-    return static_cast<Item const *>(parent)->getChild(index);
+    return static_cast<Item const*>(parent)->getChild(index);
 }
 
-ITreeModel::ItemIndex FileSystemModel::index(const IItem * item) const
+ITreeModel::ItemIndex FileSystemModel::index(const IItem* item) const
 {
-    Item const * i = static_cast<Item const *>(item);
+    Item const* i = static_cast<Item const*>(item);
     return i->getIndex();
 }
 
-size_t FileSystemModel::size(const IItem * item) const
+size_t FileSystemModel::size(const IItem* item) const
 {
     if (item == nullptr)
         return root != nullptr ? 1 : 0;
 
-    Item const * i = static_cast<Item const *>(item);
+    Item const* i = static_cast<Item const*>(item);
 
     return i->getChildCount();
 }
 
 /////////////////////////////////////////////////////////////////////
 
-FileSystemModel::Item::Item(FileInfo const & info, IFileSystem & fileSystem, TCheckFile const & checkFileFn)
+FileSystemModel::Item::Item(FileInfo const& info, IFileSystem& fileSystem, TCheckFile const& checkFileFn)
     : fileInfo(info)
 {
     CollectChildren(fileSystem, checkFileFn);
 }
 
-FileSystemModel::Item::Item(FileInfo && info, IFileSystem & fileSystem, TCheckFile const & checkFileFn, Item * parent_, int index_)
+FileSystemModel::Item::Item(FileInfo&& info, IFileSystem& fileSystem, TCheckFile const& checkFileFn, Item* parent_, int index_)
     : fileInfo(std::move(info))
     , parent(parent_)
     , index(index_)
@@ -93,18 +93,18 @@ FileSystemModel::Item::Item(FileInfo && info, IFileSystem & fileSystem, TCheckFi
     CollectChildren(fileSystem, checkFileFn);
 }
 
-void FileSystemModel::Item::CollectChildren(IFileSystem & fileSystem, TCheckFile const & checkFileFn)
+void FileSystemModel::Item::CollectChildren(IFileSystem& fileSystem, TCheckFile const& checkFileFn)
 {
     if (!fileInfo.isDirectory())
         return;
 
-    fileSystem.enumerate(fileInfo.fullPath.c_str(), [this, &fileSystem, &checkFileFn](FileInfo && info)
-    {
-        if (!info.isDots() && (info.isDirectory() || checkFileFn(info.fullPath)))
-            children.emplace_back(new Item(std::move(info), fileSystem, checkFileFn, this, children.size()));
-        
-        return true;
-    });
+    fileSystem.enumerate(fileInfo.fullPath.c_str(), [this, &fileSystem, &checkFileFn](FileInfo&& info)
+                         {
+                             if (!info.isDots() && (info.isDirectory() || checkFileFn(info.fullPath)))
+                                 children.emplace_back(new Item(std::move(info), fileSystem, checkFileFn, this, children.size()));
+
+                             return true;
+                         });
 }
 
 int FileSystemModel::Item::columnCount() const
@@ -112,7 +112,7 @@ int FileSystemModel::Item::columnCount() const
     return 1;
 }
 
-const char * FileSystemModel::Item::getDisplayText(int column) const
+const char* FileSystemModel::Item::getDisplayText(int column) const
 {
     if (fileInfo.isDirectory())
     {
@@ -136,7 +136,7 @@ Variant FileSystemModel::Item::getData(int column, size_t roleId) const
     return Variant();
 }
 
-bool FileSystemModel::Item::setData(int column, size_t roleId, const Variant & data)
+bool FileSystemModel::Item::setData(int column, size_t roleId, const Variant& data)
 {
     return false;
 }
@@ -146,7 +146,7 @@ size_t FileSystemModel::Item::getChildCount() const
     return children.size();
 }
 
-FileSystemModel::Item * FileSystemModel::Item::getChild(size_t index) const
+FileSystemModel::Item* FileSystemModel::Item::getChild(size_t index) const
 {
     DVASSERT(index < children.size());
     return children[index].get();
