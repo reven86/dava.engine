@@ -127,6 +127,11 @@ EditorCore::EditorCore(QObject* parent)
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
     documentGroup->SetPixelization(mainWindow->isPixelized());
     documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
+
+    connect(spritesPacker.get(), &SpritesPacker::Finished, []()
+    {
+        Sprite::ReloadSprites();
+    });
 }
 
 EditorCore::~EditorCore() = default;

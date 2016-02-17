@@ -27,55 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __SPRITES_PACKER_H__
-#define __SPRITES_PACKER_H__
+#ifndef __RESOURCEEDITOR_LAUNCHER_H__
+#define __RESOURCEEDITOR_LAUNCHER_H__
 
-#include "Render/RenderBase.h"
-#include "TextureCompression/TextureConverter.h"
-#include "TexturePacker/ResourcePacker2D.h"
+#include "Project/ProjectManager.h"
+#include "Main/mainwindow.h"
+
 #include <QObject>
-#include <atomic>
 
-namespace DAVA {
-    class ResourcePacker2D;
-}
-class QDir;
-
-class SpritesPacker : public QObject
+class ResourceEditorLauncher : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
-public:
-    SpritesPacker(QObject *parent = nullptr);
-    ~SpritesPacker();
-
-    void SetCacheTool(const DAVA::String& ip, const DAVA::String& port, const DAVA::String& timeout);
-    void ClearCacheTool();
-
-    void AddTask(const QDir &inputDir, const QDir &outputDir);
-    void ClearTasks();
-    Q_INVOKABLE void ReloadSprites(bool clearDirs, bool forceRepack, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
-
-    const DAVA::ResourcePacker2D& GetResourcePacker() const;
 
 public slots:
-    void Cancel();
-signals:
-    void Finished();
 
-private:
-    DAVA::ResourcePacker2D resourcePacker2D;
-    QList < QPair<QDir, QDir> > tasks;
+    void Launch()
+    {
+        DVASSERT(ProjectManager::Instance() != nullptr);
+        ProjectManager::Instance()->UpdateParticleSprites();
+        ProjectManager::Instance()->OnSceneViewInitialized();
 
-    //properties section
-public:
-    bool IsRunning() const;
-public slots:
-    void SetRunning(bool arg);
-signals:
-    void RunningStateChanged(bool arg);
-private:
-    std::atomic<bool> running;
+        DVASSERT(QtMainWindow::Instance() != nullptr);
+        QtMainWindow::Instance()->SetupTitle();
+        QtMainWindow::Instance()->OnSceneNew();
+    }
 };
 
-#endif //__SPRITES_PACKER_H__
+
+#endif // __RESOURCEEDITOR_LAUNCHER_H__
