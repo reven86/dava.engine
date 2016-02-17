@@ -36,7 +36,7 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "TeamcityOutput/TeamcityOutput.h"
+#include "UnitTests/TeamcityOutput.h"
 
 using namespace DAVA;
 

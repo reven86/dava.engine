@@ -38,7 +38,7 @@
 #include "Network/Services/NetLogger.h"
 #endif
 
-#include "TeamcityOutput/TeamCityTestsOutput.h"
+#include "UnitTests/TeamCityTestsOutput.h"
 
 class GameCore : public DAVA::ApplicationCore
 {
