@@ -90,6 +90,7 @@ protected:
 
     void FillBase();
     void FillDynamic(QtPropertyData* root, const FastName& dynamicName);
+    void FillInvalidTextures();
     void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial*>& materials);
     void FinishCreation();

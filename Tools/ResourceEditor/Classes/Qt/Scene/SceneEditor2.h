@@ -112,9 +112,9 @@ public:
     EditorLODSystem* editorLODSystem;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
-    DAVA::WASDControllerSystem* wasdSystem;
-    DAVA::RotationControllerSystem* rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
+    DAVA::WASDControllerSystem* wasdSystem = nullptr;
+    DAVA::RotationControllerSystem* rotationSystem = nullptr;
+    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
 
     WayEditSystem* wayEditSystem;
     PathSystem* pathSystem;
@@ -177,6 +177,9 @@ public:
     
     void EnableEditorSystems();
 
+    uint32 GetFramesCount() const;
+    void ResetFramesCount();
+
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
     INTROSPECTION(SceneEditor2,
@@ -188,11 +191,11 @@ public:
                   )
 
 protected:
-    bool isLoaded;
-    bool isHUDVisible;
+    bool isLoaded = false;
+    bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack commandStack;
+    CommandStack *commandStack = nullptr;
     RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
@@ -208,6 +211,8 @@ protected:
     bool wasChanged; //deprecated
 
     void Setup3DDrawing();
+
+    uint32 framesCount = 0;
 
 private:
     friend struct EditorCommandNotify;

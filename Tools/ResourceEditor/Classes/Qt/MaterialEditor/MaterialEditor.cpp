@@ -278,6 +278,7 @@ void MaterialEditor::SetCurMaterial(const QList<DAVA::NMaterial*>& materials)
     FillIllumination();
     FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
     FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
+    FillInvalidTextures();
     FillTemplates(materials);
     FinishCreation();
 
@@ -363,8 +364,6 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
         sceneActivated(scene);
         materialPropertiesUpdater->Update();
     }
-
-    DVASSERT(false);
     if (command->MatchCommandID(CMDID_MATERIAL_REMOVE_TEXTURE))
     {
         materialPropertiesUpdater->Update();
@@ -561,6 +560,75 @@ void MaterialEditor::FillDynamic(QtPropertyData* root, const FastName& dynamicNa
     }
 }
 
+namespace MELocal
+{
+struct InvalidTexturesCollector
+{
+    DAVA::Set<DAVA::FastName> validTextures;
+    DAVA::Map<DAVA::FastName, DAVA::Vector<DAVA::FilePath>> invalidTextures;
+
+    void CollectValidTextures(QtPropertyData* data)
+    {
+        DVASSERT(data != nullptr);
+        validTextures.insert(data->GetName());
+        for (int i = 0; i < data->ChildCount(); ++i)
+        {
+            CollectValidTextures(data->ChildGet(i));
+        }
+    }
+
+    void CollectInvalidTextures(DAVA::NMaterial* material)
+    {
+        while (material != nullptr)
+        {
+            using TTexturesMap = HashMap<FastName, MaterialTextureInfo*>;
+            using TTextureItem = TTexturesMap::HashMapItem;
+
+            const TTexturesMap& localTextures = material->GetLocalTextures();
+            for (const TTextureItem& lc : localTextures)
+            {
+                if (validTextures.count(lc.first) == 0)
+                {
+                    invalidTextures[lc.first].push_back(lc.second->path);
+                }
+            }
+
+            material = material->GetParent();
+        }
+    }
+};
+}
+
+void MaterialEditor::FillInvalidTextures()
+{
+    MELocal::InvalidTexturesCollector collector;
+    collector.CollectValidTextures(texturesRoot);
+    for (int i = 0; i < curMaterials.size(); ++i)
+    {
+        collector.CollectInvalidTextures(curMaterials[i]);
+    }
+
+    for (const auto& t : collector.invalidTextures)
+    {
+        DVASSERT(!t.second.empty());
+        for (size_t i = 0; i < t.second.size(); ++i)
+        {
+            QVariant qValue(QString::fromStdString(t.second[i].GetAbsolutePathname()));
+            std::unique_ptr<QtPropertyData> textureSlot(new QtPropertyData(t.first, qValue));
+
+            QtPropertyToolButton* addRemoveButton = textureSlot->AddButton();
+            addRemoveButton->setObjectName("dynamicAddRemoveButton");
+            addRemoveButton->setIconSize(QSize(14, 14));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
+            addRemoveButton->setToolTip("Remove property");
+            QObject::connect(addRemoveButton, SIGNAL(clicked()), this, SLOT(removeInvalidTexture()));
+
+            textureSlot->SetEnabled(false);
+            textureSlot->SetBackground(QBrush(QColor(255, 0, 0, 25)));
+            texturesRoot->MergeChild(std::move(textureSlot));
+        }
+    }
+}
 
 void MaterialEditor::FillIllumination()
 {

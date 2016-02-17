@@ -34,7 +34,7 @@
 #include "Commands2/Base/Command2.h"
 #include "Commands2/Base/CommandBatch.h"
 
-class CommandStack : public CommandNotifyProvider, private CommandNotify
+class CommandStack : public CommandNotifyProvider, public CommandNotify
 {
 public:
     CommandStack();

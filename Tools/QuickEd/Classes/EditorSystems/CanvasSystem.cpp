@@ -169,7 +169,7 @@ namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
-    if (!control->GetSystemVisible())
+    if (!control->GetVisible())
     {
         return;
     }

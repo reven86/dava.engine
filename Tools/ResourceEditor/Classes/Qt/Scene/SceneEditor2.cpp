@@ -63,14 +63,10 @@ const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
     : Scene()
-    , wasdSystem(nullptr)
-    , rotationSystem(nullptr)
-    , snapToLandscapeSystem(nullptr)
-    , isLoaded(false)
-    , isHUDVisible(true)
+    , commandStack(new CommandStack())
 {
     EditorCommandNotify* notify = new EditorCommandNotify(this);
-    commandStack.SetNotify(notify);
+    commandStack->SetNotify(notify);
     SafeRelease(notify);
 
     gridSystem = new SceneGridSystem(this);
@@ -171,6 +167,8 @@ SceneEditor2::~SceneEditor2()
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
+
+    SafeRelease(commandStack);
 }
 
 SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
@@ -184,7 +182,7 @@ SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         }
         curScenePath = path;
         isLoaded = true;
-        commandStack.SetClean(true);
+        commandStack->SetClean(true);
     }
 
     SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
@@ -217,7 +215,7 @@ SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath & path, bool sa
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack.SetClean(true);
+        commandStack->SetClean(true);
     }
 
     if (needToRestoreTilemask)
@@ -308,52 +306,52 @@ void SceneEditor2::SetScenePath(const DAVA::FilePath& newScenePath)
 
 bool SceneEditor2::CanUndo() const
 {
-    return commandStack.CanUndo();
+    return commandStack->CanUndo();
 }
 
 bool SceneEditor2::CanRedo() const
 {
-    return commandStack.CanRedo();
+    return commandStack->CanRedo();
 }
 
 void SceneEditor2::Undo()
 {
-    commandStack.Undo();
+    commandStack->Undo();
 }
 
 void SceneEditor2::Redo()
 {
-    commandStack.Redo();
+    commandStack->Redo();
 }
 
 void SceneEditor2::BeginBatch(const DAVA::String &text, DAVA::uint32 commandsCount /*= 1*/)
 {
-	commandStack.BeginBatch(text, commandsCount);
+    commandStack->BeginBatch(text, commandsCount);
 }
 
 void SceneEditor2::EndBatch()
 {
-    commandStack.EndBatch();
+    commandStack->EndBatch();
 }
 
 void SceneEditor2::Exec(std::unique_ptr<Command2>&& command)
 {
-	commandStack.Exec(std::move(command));
+    commandStack->Exec(std::move(command));
 }
 
 void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
 {
-    commandStack.RemoveCommands(commandId);
+    commandStack->RemoveCommands(commandId);
 }
 
 void SceneEditor2::ClearAllCommands()
 {
-    commandStack.Clear();
+    commandStack->Clear();
 }
 
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
-    return (&commandStack);
+    return commandStack;
 }
 
 bool SceneEditor2::IsLoaded() const
@@ -374,16 +372,18 @@ bool SceneEditor2::IsHUDVisible() const
 
 bool SceneEditor2::IsChanged() const
 {
-    return ((!commandStack.IsClean()) || wasChanged);
+    return ((!commandStack->IsClean()) || wasChanged);
 }
 
 void SceneEditor2::SetChanged(bool changed)
 {
-    commandStack.SetClean(!changed);
+    commandStack->SetClean(!changed);
 }
 
 void SceneEditor2::Update(float timeElapsed)
 {
+    ++framesCount;
+
     renderStats = Renderer::GetRenderStats();
     Renderer::GetRenderStats().Reset();
 
@@ -422,6 +422,7 @@ void SceneEditor2::Draw()
         visibilityCheckSystem->Draw();
 
         // should be last
+        selectionSystem->Draw();
         hoodSystem->Draw();
         textDrawSystem->Draw();
     }
@@ -693,7 +694,17 @@ void SceneEditor2::EnableEditorSystems()
 {
     cameraSystem->EnableSystem();
 
-
     // must be last to enable selection after all systems add their entities
     selectionSystem->EnableSystem();
 }
+
+uint32 SceneEditor2::GetFramesCount() const
+{
+    return framesCount;
+}
+
+void SceneEditor2::ResetFramesCount()
+{
+    framesCount = 0;
+}
+
