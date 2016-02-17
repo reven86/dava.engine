@@ -1,5 +1,5 @@
-import QtQuick 2.5
-import QtQuick.Controls 1.4
+import QtQuick 2.2
+import QtQuick.Controls 1.2
 import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
@@ -24,6 +24,11 @@ ApplicationWindow {
     property string platfromsOptionName: "platforms";
     property string globalOptionsOptionName: "options";
     property var mainObject;
+    signal dataReadyToSave(string text);
+    Component.onDestruction: {
+        dataReadyToSave(JSON.stringify(mainObject, null, 4));
+    }
+
     Component.onCompleted: {
         try {
             mainObject = JSON.parse(configuration);
@@ -148,8 +153,7 @@ ApplicationWindow {
             checked: model.checked
             exclusiveGroup: exclusiveGroup_platforms
             onCheckedChanged: {
-                console.log(model.name, model.checked, checked, this.checked)
-                listModel_platforms.setProperty(index, "checked", checked)
+                mainObject[platfromsOptionName][index]["checked"] = checked;
                 if(checked)
                 {
                     listModel_localOptions.clear();
@@ -190,6 +194,7 @@ ApplicationWindow {
         Loader {
             sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
             property variant modelData: listModel_localOptions.get(index);
+            property int index : index;
         }
     }
     ExclusiveGroup {
@@ -199,6 +204,8 @@ ApplicationWindow {
         id: radioDelegate
         RadioButton {
             text: modelData ? modelData.name : ""
+            checked: modelData ? modelData.checked : false
+            onCheckedChanged: mainObject[platfromsOptionName][index]["checked"] = checked;
             exclusiveGroup: exclusiveGroup_localOptions
         }
     }
@@ -206,6 +213,7 @@ ApplicationWindow {
         id: checkboxDelegate
         CheckBox {
             text: modelData ? modelData.name : ""
+            onCheckedChanged: mainObject[platfromsOptionName][index]["checked"] = checked;
         }
     }
     ListView {
@@ -237,7 +245,9 @@ ApplicationWindow {
         id: gridView_globalOptions
 
         delegate: CheckBox {
-            text: name
+            text: model.name
+            checked: model.checked
+            onCheckedChanged: mainObject[globalOptionsOptionName][index]["checked"] = checked;
         }
 
         model: listModel_globalOptions
