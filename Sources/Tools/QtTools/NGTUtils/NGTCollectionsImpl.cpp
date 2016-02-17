@@ -51,6 +51,7 @@ public:
         : collection(collection)
         , linearKey(linearKey_)
     {
+        dbg_name = collection->collectionImpl->Name().c_str();
         iterator = collection->collectionImpl->Begin(collection->object);
         uint32 counter = linearKey;
         while (counter > 0 && iterator != nullptr)
@@ -159,20 +160,21 @@ private:
     const NGTCollection* collection;
     InspColl::Iterator iterator = nullptr;
     uint32 linearKey = 0;
+    DAVA::String dbg_name;
 };
 
 NGTCollection::NGTCollection(void* object_, const InspColl* collectionImpl_)
     : object(object_)
     , collectionImpl(collectionImpl_)
-    , keyId(collectionImpl->ItemKeyType()->GetTypeName())
-    , valueId("", 0)
+    , keyId("", 0)
+    , valueId(collectionImpl->ItemType()->GetTypeName())
     , containerId(collectionImpl->Type()->GetTypeName())
 {
-    const MetaInfo* itemType = collectionImpl->ItemType();
+    const MetaInfo* itemType = collectionImpl->ItemKeyType();
     if (itemType == nullptr)
-        valueId = getClassIdentifier<int>();
+        keyId = getClassIdentifier<int>();
     else
-        valueId = itemType->GetTypeName();
+        keyId = itemType->GetTypeName();
 }
 
 bool NGTCollection::empty() const

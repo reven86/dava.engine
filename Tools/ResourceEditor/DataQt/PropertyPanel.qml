@@ -7,7 +7,6 @@ Rectangle {
   color: palette.MainWindowColor
   property var title: "Property Panel"
   property var layoutHints: { 'dockProperties': 1.0 }
-  property var sourceModel: source
 
   Label {
     id: searchBoxLabel
@@ -25,7 +24,7 @@ Rectangle {
 
  WGFilteredTreeModel {
     id: reflectedModel
-    source: sourceModel.PropertyTree
+    source: PropertyTree
 
     filter: WGTokenizedStringFilter {
       id: stringFilter

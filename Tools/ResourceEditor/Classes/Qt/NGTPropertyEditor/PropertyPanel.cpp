@@ -39,7 +39,7 @@
 #include "core_data_model/reflection/reflected_tree_model.hpp"
 #include "core_data_model/i_tree_model.hpp"
 #include "core_qt_common/helpers/qt_helpers.hpp"
-
+#include "metainfo/PropertyPanel.mpp"
 
 #include "Debug/DVAssert.h"
 
@@ -53,6 +53,10 @@ PropertyPanel::~PropertyPanel()
 
 void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
 {
+    IDefinitionManager* defMng = DAVA::queryInterface<IDefinitionManager>();
+    DVASSERT(defMng != nullptr);
+    defMng->registerDefinition(new TypeClassDefinition<PropertyPanel>());
+
     view = uiFramework.createView("Views/PropertyPanel.qml", IUIFramework::ResourceType::Url, this);
     uiApplication.addView(*view);
 }
@@ -63,44 +67,46 @@ void PropertyPanel::Finalize()
     view.reset();
 }
 
-Q_INVOKABLE QVariant PropertyPanel::GetPropertyTree()
+ObjectHandle PropertyPanel::GetPropertyTree() const
 {
-    return QtHelpers::toQVariant(ObjectHandle(objectHandleStorage));
+    return ObjectHandleT<ITreeModel>(model.get());
+}
+
+void PropertyPanel::SetPropertyTree(const ObjectHandle& /*dummyTree*/)
+{
 }
 
 void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
 {
-    int x = 0;
-    x++;
+    if (selected->IsEmpty())
+    {
+        SetObject(nullptr);
+    }
+    else
+    {
+        SetObject(selected->GetFirstEntity());
+    }
 }
 
 void PropertyPanel::SetObject(DAVA::InspBase* object)
 {
-    using TModelPTr = std::unique_ptr<ITreeModel>;
+    std::shared_ptr<ITreeModel> tempTreeModel(model);
 
-    std::shared_ptr<IObjectHandleStorage> temporaryHandle(objectHandleStorage);
-
+    IDefinitionManager* defMng = DAVA::queryInterface<IDefinitionManager>();
+    DVASSERT(defMng != nullptr);
+    IReflectionController* controller = DAVA::queryInterface<IReflectionController>();
+    ITreeModel* newModel = nullptr;
     if (object != nullptr)
     {
-        IDefinitionManager* defMng = DAVA::queryInterface<IDefinitionManager>();
-        DVASSERT(defMng != nullptr);
-        IReflectionController* controller = DAVA::queryInterface<IReflectionController>();
         const DAVA::InspInfo* info = object->GetTypeInfo();
         DAVA::RegisterType(*defMng, info);
 
         IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
-
-        TModelPTr model(new ReflectedTreeModel(DAVA::CreateObjectHandle(*defMng, info, object), *defMng, controller));
-        objectHandleStorage.reset(new ObjectHandleStorage<TModelPTr>(std::move(model), nullptr));
-    }
-    else
-    {
-        IDefinitionManager* defMng = DAVA::queryInterface<IDefinitionManager>();
-        IReflectionController* controller = DAVA::queryInterface<IReflectionController>();
-        TModelPTr model(new ReflectedTreeModel(ObjectHandle(), *defMng, controller));
-
-        objectHandleStorage.reset(new ObjectHandleStorage<TModelPTr>(std::move(model), nullptr));
+        newModel = new ReflectedTreeModel(DAVA::CreateObjectHandle(*defMng, info, object), *defMng, controller);
     }
 
-    emit EntityChanged();
+    model.reset(newModel);
+
+    IClassDefinition* definition = defMng->getDefinition(getClassIdentifier<PropertyPanel>());
+    definition->bindProperty("PropertyTree", this).setValue(Variant());
 }

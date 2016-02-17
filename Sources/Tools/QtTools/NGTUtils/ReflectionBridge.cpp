@@ -283,6 +283,17 @@ void* NGTMemberProperty::UpCast(ObjectHandle const& pBase, const IDefinitionMana
     return reflectedCast(pBase.data(), srcID, dstID, definitionManager);
 }
 
+bool NGTMemberProperty::readOnly() const
+{
+    DVASSERT(memberInsp != nullptr);
+    return (memberInsp->Flags() & I_EDIT) == 0;
+}
+
+bool NGTMemberProperty::isValue() const
+{
+    return true;
+}
+
 void RegisterType(IDefinitionManager& mng, const InspInfo* inspInfo)
 {
     if (inspInfo == nullptr)

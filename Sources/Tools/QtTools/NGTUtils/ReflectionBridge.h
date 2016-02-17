@@ -52,6 +52,8 @@ public:
     // в PropertyTree полагаю нам надо возвращать тоже самое. пока, что я беру Type()->GetTypeName(), а дальше посмотрим
     NGTMemberProperty(const InspMember* member, const MetaInfo* objectType_);
 
+    bool readOnly() const override;
+    bool isValue() const override;
     Variant get(const ObjectHandle& pBase, const IDefinitionManager& definitionManager) const override;
     bool set(const ObjectHandle& pBase, const Variant& v, const IDefinitionManager& definitionManager) const override;
     MetaHandle getMetaData() const override;

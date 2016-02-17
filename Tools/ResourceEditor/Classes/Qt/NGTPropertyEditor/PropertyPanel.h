@@ -32,6 +32,8 @@
 #include "core_ui_framework/i_view.hpp"
 #include "core_ui_framework/i_ui_framework.hpp"
 #include "core_ui_framework/i_ui_application.hpp"
+#include "core_reflection/reflected_object.hpp"
+#include "core_data_model/i_tree_model.hpp"
 
 #include <memory>
 #include <QObject>
@@ -48,7 +50,7 @@ class EntityGroup;
 class PropertyPanel : public QObject
 {
     Q_OBJECT
-
+    DECLARE_REFLECTED
 public:
     PropertyPanel();
     ~PropertyPanel();
@@ -56,18 +58,15 @@ public:
     void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
     void Finalize();
 
-    Q_PROPERTY(QVariant PropertyTree READ GetPropertyTree NOTIFY EntityChanged)
-
-    Q_INVOKABLE QVariant GetPropertyTree();
-    Q_SIGNAL void EntityChanged();
+    ObjectHandle GetPropertyTree() const;
+    void SetPropertyTree(const ObjectHandle& dummyTree);
 
     Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
-
     void SetObject(DAVA::InspBase* object);
 
 private:
     std::unique_ptr<IView> view;
-    std::shared_ptr<IObjectHandleStorage> objectHandleStorage;
+    std::shared_ptr<ITreeModel> model;
 };
 
 #endif // __RESOURCEEDITOR_PROPERTYPANEL_H__

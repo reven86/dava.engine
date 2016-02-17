@@ -34,6 +34,7 @@
 #include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
 #include "core_generic_plugin/interfaces/i_application.hpp"
 #include "core_generic_plugin/generic_plugin.hpp"
+#include "core_variant/variant.hpp"
 #include "core_ui_framework/i_ui_application.hpp"
 #include "core_qt_common/i_qt_framework.hpp"
 
@@ -74,8 +75,8 @@ void NGTBaseApplication::LoadPlugins()
 
     pluginManager.getContextManager().getGlobalContext()->registerInterface<ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
     pluginManager.loadPlugins(pluginList);
-
     DAVA::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
+    Variant::setMetaTypeManager(DAVA::queryInterface<IMetaTypeManager>());
 }
 
 IComponentContext& NGTBaseApplication::GetComponentContext()
