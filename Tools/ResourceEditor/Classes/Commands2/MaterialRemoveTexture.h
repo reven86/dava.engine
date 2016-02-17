@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,49 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
+#define __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 
-#ifndef __STATUS_BAR_H__
-#define __STATUS_BAR_H__
+#include "Commands2/Command2.h"
 
-#include "DAVAEngine.h"
-
-#include <QStatusBar>
-
-class QLabel;
-class SceneEditor2;
-class EntityGroup;
-class Command2;
-class StatusBar : public QStatusBar
+class MaterialRemoveTexture : public Command2
 {
-    Q_OBJECT
-
 public:
-    explicit StatusBar(QWidget* parent = 0);
-    ~StatusBar();
+    MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_);
+    ~MaterialRemoveTexture() override;
 
-public slots:
-    void SceneActivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
-    void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
+    void Undo() override;
+    void Redo() override;
 
-    void UpdateByTimer();
+    DAVA::Entity* GetEntity() const override;
 
-    void OnSceneGeometryChaged(int width, int height);
-
-protected:
-    void UpdateDistanceToCamera();
-    void UpdateFPS();
-    void SetDistanceToCamera(DAVA::float32 distance);
-    void ResetDistanceToCamera();
-    void UpdateSelectionBoxSize(SceneEditor2* scene);
-
-    QLabel* distanceToCamera = nullptr;
-    QLabel* fpsCounter = nullptr;
-    QLabel* sceneGeometry = nullptr;
-    QLabel* selectionBoxSize = nullptr;
-
-    DAVA::uint64 lastTimeMS = 0;
+private:
+    DAVA::NMaterial* material = nullptr;
+    DAVA::Texture* texture = nullptr;
+    DAVA::FastName textureSlot;
 };
 
-#endif // __STATUS_BAR_H__
+
+
+#endif // __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
