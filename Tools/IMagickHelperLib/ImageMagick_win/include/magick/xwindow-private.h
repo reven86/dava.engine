@@ -70,11 +70,11 @@ extern "C" {
 
 #define ThrowXWindowException(severity, tag, context) \
 { \
-  ExceptionInfo                        \
+  ExceptionInfo \
         exception; \
  \
   GetExceptionInfo(&exception); \
-  (void) ThrowMagickException(&exception, GetMagickModule(), severity,                         \
+  (void) ThrowMagickException(&exception, GetMagickModule(), severity, \
                                     tag == (const char*)NULL ? "unknown" : tag, "`%s': %s", context, \
                                     strerror(errno)); \
   CatchException(&exception); \
