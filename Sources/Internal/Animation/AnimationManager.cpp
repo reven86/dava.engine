@@ -203,11 +203,8 @@ void AnimationManager::Update(float32 timeElapsed)
         return;
 
     // update animations first
-    uint32 size = static_cast<uint32>(animations.size());
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
-
         if (animation->state & Animation::STATE_IN_PROGRESS)
         {
             if (!(animation->state & Animation::STATE_PAUSED))
@@ -218,11 +215,8 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     // process all finish callbacks
-    size = static_cast<uint32>(animations.size());
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
-
         if (animation->state & Animation::STATE_FINISHED)
         {
             animation->Stop();
@@ -230,11 +224,8 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //check all animation and process all callbacks on delete
-    size = static_cast<uint32>(animations.size());
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
-
         if (animation->state & Animation::STATE_DELETE_ME)
         {
             if (!(animation->state & Animation::STATE_FINISHED))
@@ -251,10 +242,8 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //we need physically remove animations only after process all callbacks
-    size = static_cast<uint32>(animations.size());
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
         if (animation->state & Animation::STATE_DELETE_ME)
         {
             releaseCandidates.push_back(animation);
@@ -262,10 +251,9 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //remove all release candidates animations
-    auto endIt = releaseCandidates.end();
-    for (auto it = releaseCandidates.begin(); it != endIt; ++it)
+    for (Animation* releaseAnimation : releaseCandidates)
     {
-        SafeRelease(*it);
+        SafeRelease(releaseAnimation);
     }
     releaseCandidates.clear();
 }

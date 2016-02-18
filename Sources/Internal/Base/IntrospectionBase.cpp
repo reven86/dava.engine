@@ -116,4 +116,4 @@ InspColl::InspColl(const char* _name, const InspDesc& _desc, const size_t _offse
     : InspMember(_name, _desc, _offset, _type, _flags)
 {
 }
-};
+}

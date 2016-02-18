@@ -1630,8 +1630,6 @@ void TiledDrawData::GenerateTileData()
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
                      VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
-    int a = int(4.0);
-    a++;
     int32 vertexCount = int32(4 * cellsHeight.size() * cellsWidth.size());
     if (vertexCount >= std::numeric_limits<uint16>::max())
     {

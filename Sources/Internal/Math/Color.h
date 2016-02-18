@@ -176,11 +176,11 @@ inline const Color& Color::operator/=(float32 f)
 //! Comparison operators
 inline bool Color::operator==(const Color& _v) const
 {
-    return (memcmp(color, _v.color, sizeof(Color)) == 0);
+    return (Memcmp(color, _v.color, sizeof(Color)) == 0);
 }
 inline bool Color::operator!=(const Color& _v) const
 {
-    return (memcmp(color, _v.color, sizeof(Color)) != 0);
+    return (Memcmp(color, _v.color, sizeof(Color)) != 0);
 }
 
 inline uint32 Color::GetRGBA() const

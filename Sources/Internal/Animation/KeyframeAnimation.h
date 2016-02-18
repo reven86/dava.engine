@@ -49,7 +49,7 @@ public:
             next = 0;
         }
 
-        int frame;
+        int32 frame;
         float32 time;
         Keyframe* next;
     };

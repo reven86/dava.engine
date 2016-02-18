@@ -258,10 +258,10 @@ inline Rect& Rect::operator=(const Rect& rect)
 
 inline bool Rect::operator==(const Rect& _r) const
 {
-    return (memcmp(&x, &_r.x, sizeof(float32)) == 0) &&
-    (memcmp(&y, &_r.y, sizeof(float32)) == 0) &&
-    (memcmp(&dx, &_r.dx, sizeof(float32)) == 0) &&
-    (memcmp(&dy, &_r.dy, sizeof(float32)) == 0);
+    return (Memcmp(&x, &_r.x, sizeof(float32)) == 0) &&
+    (Memcmp(&y, &_r.y, sizeof(float32)) == 0) &&
+    (Memcmp(&dx, &_r.dx, sizeof(float32)) == 0) &&
+    (Memcmp(&dy, &_r.dy, sizeof(float32)) == 0);
 }
 
 inline bool Rect::operator!=(const Rect& _r) const
