@@ -333,12 +333,19 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     // And application has no chance to release mouse capture.
 
     // Install mouse hook which determines whether Mission Control, Launchpad is active
-    // and temporary turns off mouse pinning
+    // and disables mouse pinning
     // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
+    CGEventMask mask = -1; // Intercept all events except those below
+    mask &= ~(CGEventMaskBit(NX_KEYDOWN) |
+              CGEventMaskBit(NX_KEYUP) |
+              CGEventMaskBit(NX_FLAGSCHANGED) |
+              CGEventMaskBit(NX_KITDEFINED) |
+              CGEventMaskBit(NX_SYSDEFINED) |
+              CGEventMaskBit(NX_SCROLLWHEELMOVED));
     CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
                                              kCGTailAppendEventTap,
                                              kCGEventTapOptionListenOnly,
-                                             NSAnyEventMask,
+                                             mask,
                                              &EventTapCallback,
                                              nullptr);
 
@@ -584,28 +591,41 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
+void OSXEnablePinning();
+void OSXDisablePinning();
+
 static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
 {
     static bool restorePinning = false;
     static int64_t myPid = static_cast<int64_t>(getpid());
 
+    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
     int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
     if (targetPid != myPid)
     {
-        // Turn off mouse cature if event target is not our application and
+        // Disable mouse pinning if event target is not our application and
         // current capture mode is pinning
-        InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
+        if (!restorePinning && type != NX_MOUSEEXITED)
         {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
-            restorePinning = true;
+            if (InputSystem::eMouseCaptureMode::PINING == captureMode)
+            {
+                OSXDisablePinning();
+                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+                restorePinning = true;
+            }
         }
     }
     else
     {
-        if (restorePinning)
+        // Restore mouse pinning if events are targeted back to our application and application
+        // has not turned pinning off yet
+        // Ignore event NX_MOUSEEXITED which is generated once other application becomes an event target
+        if (restorePinning && type != NX_MOUSEEXITED)
         {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
+            if (InputSystem::eMouseCaptureMode::PINING == captureMode)
+            {
+                OSXEnablePinning();
+            }
             restorePinning = false;
         }
     }
