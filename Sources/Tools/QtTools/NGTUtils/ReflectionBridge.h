@@ -48,8 +48,6 @@ namespace DAVA
 class NGTMemberProperty : public BaseProperty
 {
 public:
-    // здесь надо сихронизироватся c NGT. Для них TypeId == typeid( T ).name() и для правильного выборе компонента
-    // в PropertyTree полагаю нам надо возвращать тоже самое. пока, что я беру Type()->GetTypeName(), а дальше посмотрим
     NGTMemberProperty(const InspMember* member, const MetaInfo* objectType_);
 
     bool readOnly() const override;

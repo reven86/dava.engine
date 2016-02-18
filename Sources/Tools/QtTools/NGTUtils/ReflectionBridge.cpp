@@ -108,9 +108,8 @@ private:
 NGTTypeDefinition::NGTTypeDefinition(const InspInfo* info_)
     : info(info_)
 {
-    if (info == nullptr)
-        return;
-
+    DVASSERT(info != nullptr);
+    
     displayName = StringToWString(info->Name().c_str());
     metaHandle = MetaDisplayName(displayName.c_str());
 
@@ -200,7 +199,11 @@ NGTMemberProperty::NGTMemberProperty(const InspMember* member, const MetaInfo* o
 
     if ((metaType->IsPointer() && metaType->GetIntrospection() == nullptr) ||
         metaType == MetaInfo::Instance<FastName>() ||
-        metaType == MetaInfo::Instance<FilePath>())
+        metaType == MetaInfo::Instance<FilePath>() ||
+        metaType == MetaInfo::Instance<Matrix2>() ||
+        metaType == MetaInfo::Instance<Matrix3>() || 
+        metaType == MetaInfo::Instance<Matrix4>() ||
+        metaType == MetaInfo::Instance<AABBox3>())
     {
         setType(TypeId(MetaInfo::Instance<String>()->GetTypeName()));
     }
@@ -218,7 +221,7 @@ NGTMemberProperty::NGTMemberProperty(const InspMember* member, const MetaInfo* o
 Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManager& definitionManager) const
 {
     void* object = UpCast(pBase, definitionManager);
-    if (object)
+    if (object != nullptr)
     {
         void* field = memberInsp->Data(object);
         const MetaInfo* memberMetaInfo = memberInsp->Type();

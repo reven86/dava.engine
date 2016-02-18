@@ -48,7 +48,7 @@ namespace DAVA
 {
 namespace VCLocal
 {
-static uint8 maxChannelValue = 255;
+static const uint8 maxChannelValue = 255;
 }
 
 template <typename T>
@@ -115,6 +115,14 @@ VariantType VtoDV<FilePath>(Variant const& v)
     return VariantType(FilePath(filePath));
 }
 
+template <>
+VariantType VtoDV<float64>(Variant const& v)
+{
+    float64 value;
+    DVVERIFY(v.tryCast(value));
+    return VariantType(value);
+}
+
 Variant DVtoV_void(VariantType const& v)
 {
     return Variant();
@@ -168,15 +176,33 @@ Variant DVtoV_vector4(VariantType const& v)
 }
 Variant DVtoV_matrix2(VariantType const& v)
 {
-    return Variant(); // Variant(v.AsMatrix2());
+    const Matrix2 & m = v.AsMatrix2();
+    StringStream ss;
+    ss.precision(7);
+    ss << "[ " << m._00 << "; " << m._01 << " ]\n[ "
+               << m._10 << "; " << m._11 << " ]";
+    return Variant(ss.str());
 }
 Variant DVtoV_matrix3(VariantType const& v)
 {
-    return Variant(); // Variant(v.AsMatrix3());
+    const Matrix4 & m = v.AsMatrix4();
+    StringStream ss;
+    ss.precision(7);
+    ss << "[ " << m._00 << "; " << m._01 << "; " << m._02 << " ]\n[ "
+        << m._10 << "; " << m._11 << "; " << m._12 << " ]\n[ "
+        << m._20 << "; " << m._21 << "; " << m._22 << " ]";
+    return Variant(ss.str());
 }
 Variant DVtoV_matrix4(VariantType const& v)
 {
-    return Variant(); //Variant(v.AsMatrix4());
+    const Matrix4 & m = v.AsMatrix4();
+    StringStream ss;
+    ss.precision(7);
+    ss << "[ " << m._00 << "; " << m._01 << "; " << m._02 << ";" << m._03 << " ]\n["
+        << m._10 << "; " << m._11 << "; " << m._12 << ";" << m._13 << " ]\n[ "
+        << m._20 << "; " << m._21 << "; " << m._22 << ";" << m._23 << " ]\n[ "
+        << m._30 << "; " << m._31 << "; " << m._32 << ";" << m._33 << " ]";
+    return Variant(ss.str());
 }
 Variant DVtoV_color(VariantType const& v)
 {
@@ -190,11 +216,22 @@ Variant DVtoV_fastName(VariantType const& v)
 }
 Variant DVtoV_aabbox3(VariantType const& v)
 {
-    return Variant(); // Variant(v.AsAABBox3());
+    const AABBox3 & m = v.AsAABBox3();
+    StringStream ss;
+    ss.precision(7);
+    ss << "[ " << m.min.x << "; " << m.min.y << "; " << m.min.z << " ]\n[ "
+               << m.max.x << "; " << m.max.y << "; " << m.max.z << " ]";
+    return Variant(ss.str());
 }
+
 Variant DVtoV_filePath(VariantType const& v)
 {
     return Variant(v.AsFilePath().GetAbsolutePathname());
+}
+
+Variant DVtoV_float64(VariantType const& v)
+{
+    return Variant(v.AsFloat64());
 }
 
 VariantConverter::VariantConverter()
@@ -222,6 +259,22 @@ VariantConverter::VariantConverter()
     convertFunctions[VariantType::TYPE_FASTNAME] = { bind(&VtoDV<FastName>, _1), bind(&DVtoV_fastName, _1) };
     convertFunctions[VariantType::TYPE_AABBOX3] = { bind(&VtoDV<AABBox3>, _1), bind(&DVtoV_aabbox3, _1) };
     convertFunctions[VariantType::TYPE_FILEPATH] = { bind(&VtoDV<FilePath>, _1), bind(&DVtoV_filePath, _1) };
+    convertFunctions[VariantType::TYPE_FLOAT64] = { bind(&VtoDV<float64>, _1), bind(&DVtoV_float64, _1) };
+
+#ifdef __DAVAENGINE_DEBUG__
+    for (int i = 0; i < VariantType::TYPES_COUNT; ++i)
+    {
+        VariantType::eVariantType type = static_cast <VariantType::eVariantType>(i);
+        if (type == VariantType::TYPE_BYTE_ARRAY || type == VariantType::TYPE_KEYED_ARCHIVE)
+        {
+            continue;
+        }
+
+        ConvertNode const & node = convertFunctions[i];
+        DVASSERT(node.dvToVFn);
+        DVASSERT(node.vToDvFn);
+    }
+#endif
 }
 
 VariantType VariantConverter::Convert(Variant const& v, MetaInfo const* info) const
