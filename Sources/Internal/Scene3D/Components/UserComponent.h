@@ -38,24 +38,25 @@
 
 namespace DAVA
 {
-	class UserComponent : public Component
-	{
-    protected:
-		~UserComponent(){};
-	public:
-		IMPLEMENT_COMPONENT_TYPE(USER_COMPONENT);
+class UserComponent : public Component
+{
+protected:
+    ~UserComponent(){};
 
-		UserComponent();
-		virtual Component * Clone(Entity * toEntity);
-		virtual void Serialize(KeyedArchive *archive, SerializationContext *sceneFile);
-		virtual void Deserialize(KeyedArchive *archive, SerializationContext *sceneFile);
+public:
+    IMPLEMENT_COMPONENT_TYPE(USER_COMPONENT);
 
-	public:
-		/*
+    UserComponent();
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* sceneFile);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* sceneFile);
+
+public:
+    /*
 		INTROSPECTION_EXTEND(UserComponent, Component,
 			NULL
 			);
 		*/
-	};
+};
 }
 #endif //__DAVAENGINE_USER_COMPONENT_H__

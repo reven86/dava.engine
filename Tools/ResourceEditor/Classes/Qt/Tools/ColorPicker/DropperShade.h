@@ -34,12 +34,10 @@
 #include <QPointer>
 #include <QImage>
 
-
 class MouseHelper;
 
-
 class DropperShade
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
@@ -50,7 +48,7 @@ signals:
     void zoonFactorChanged(int zoom);
 
 public:
-    DropperShade( const QImage& src, const QRect& rect );
+    DropperShade(const QImage& src, const QRect& rect);
     ~DropperShade();
 
 public slots:

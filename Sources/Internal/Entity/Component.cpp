@@ -63,45 +63,44 @@
 
 namespace DAVA
 {
-
-Component * Component::CreateByType(uint32 componentType)
+Component* Component::CreateByType(uint32 componentType)
 {
-	switch(componentType)
-	{
-	case TRANSFORM_COMPONENT:
-		return new TransformComponent();
-	case RENDER_COMPONENT:
-		return new RenderComponent();
-	case DEBUG_RENDER_COMPONENT: 
-		return new DebugRenderComponent();
-	case LOD_COMPONENT:
-		return new LodComponent();
-	case PARTICLE_EFFECT_COMPONENT:
-		return new ParticleEffectComponent();
-	case BULLET_COMPONENT:
-		return new BulletComponent();
-	case UPDATABLE_COMPONENT:
-		return new UpdatableComponent();
-	case CAMERA_COMPONENT:
-		return new CameraComponent();
-	case LIGHT_COMPONENT:
-		return new LightComponent();
-	case SWITCH_COMPONENT:
-		return new SwitchComponent();
-	case USER_COMPONENT:
-		return new UserComponent();
-	case SOUND_COMPONENT:
-		return new SoundComponent();
+    switch (componentType)
+    {
+    case TRANSFORM_COMPONENT:
+        return new TransformComponent();
+    case RENDER_COMPONENT:
+        return new RenderComponent();
+    case DEBUG_RENDER_COMPONENT:
+        return new DebugRenderComponent();
+    case LOD_COMPONENT:
+        return new LodComponent();
+    case PARTICLE_EFFECT_COMPONENT:
+        return new ParticleEffectComponent();
+    case BULLET_COMPONENT:
+        return new BulletComponent();
+    case UPDATABLE_COMPONENT:
+        return new UpdatableComponent();
+    case CAMERA_COMPONENT:
+        return new CameraComponent();
+    case LIGHT_COMPONENT:
+        return new LightComponent();
+    case SWITCH_COMPONENT:
+        return new SwitchComponent();
+    case USER_COMPONENT:
+        return new UserComponent();
+    case SOUND_COMPONENT:
+        return new SoundComponent();
     case SPEEDTREE_COMPONENT:
         return new SpeedTreeComponent();
     case WIND_COMPONENT:
         return new WindComponent();
     case WAVE_COMPONENT:
         return new WaveComponent();
-	case CUSTOM_PROPERTIES_COMPONENT:
-		return new CustomPropertiesComponent();
-	case ACTION_COMPONENT:
-		return new ActionComponent();
+    case CUSTOM_PROPERTIES_COMPONENT:
+        return new CustomPropertiesComponent();
+    case ACTION_COMPONENT:
+        return new ActionComponent();
     case STATIC_OCCLUSION_COMPONENT:
         return new StaticOcclusionComponent();
     case STATIC_OCCLUSION_DATA_COMPONENT:
@@ -131,46 +130,44 @@ Component * Component::CreateByType(uint32 componentType)
 
     default:
         DVASSERT(0);
-		return 0;
-	}
-
+        return 0;
+    }
 }
 
 Component::Component()
     : entity(0)
 {
-
 }
 
 Component::~Component()
-{ }
-
-void Component::SetEntity(Entity * _entity)
 {
-	entity = _entity;
 }
 
-void Component::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
+void Component::SetEntity(Entity* _entity)
+{
+    entity = _entity;
+}
+
+void Component::GetDataNodes(Set<DAVA::DataNode*>& dataNodes)
 {
     //Empty as default
 }
 
-void Component::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void Component::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	if(NULL != archive)
-	{
-		archive->SetUInt32("comp.type", GetType());
-		archive->SetString("comp.typename", ObjectFactory::Instance()->GetName(this));
-	}
+    if (NULL != archive)
+    {
+        archive->SetUInt32("comp.type", GetType());
+        archive->SetString("comp.typename", ObjectFactory::Instance()->GetName(this));
+    }
 }
 
-void Component::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void Component::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	if(NULL != archive)
-	{
-		uint32 type = archive->GetUInt32("comp.type", 0xFFFFFFFF);
-		DVASSERT(type == GetType());
-	}
+    if (NULL != archive)
+    {
+        uint32 type = archive->GetUInt32("comp.type", 0xFFFFFFFF);
+        DVASSERT(type == GetType());
+    }
 }
-
 }

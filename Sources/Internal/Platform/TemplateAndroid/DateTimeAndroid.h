@@ -35,20 +35,18 @@
 
 namespace DAVA
 {
-
 class JniDateTime
 {
 public:
     JniDateTime();
-	WideString AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset);
-	int GetLocalTimeZoneOffset();
+    WideString AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset);
+    int GetLocalTimeZoneOffset();
 
 private:
-	JNI::JavaClass jniDateTime;
-	Function<jstring (jstring, jstring, jlong, jint)> getTimeAsString;
-	Function <jint ()> getLocalTimeZoneOffset;
+    JNI::JavaClass jniDateTime;
+    Function<jstring(jstring, jstring, jlong, jint)> getTimeAsString;
+    Function<jint()> getLocalTimeZoneOffset;
 };
-
 };
 
 #endif /* defined(__FRAMEWORK__DATETIMEANDROID__) */

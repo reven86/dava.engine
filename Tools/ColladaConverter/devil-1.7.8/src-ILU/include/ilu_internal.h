@@ -9,8 +9,8 @@
 		#pragma once
 		#pragma intrinsic(memcpy)
 		#pragma intrinsic(memset)
-		//pragma comment(linker, "/NODEFAULTLIB:libc")
-		#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+//pragma comment(linker, "/NODEFAULTLIB:libc")
+		#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 
 		#ifdef _DEBUG 
 			#define _CRTDBG_MAP_ALLOC
@@ -44,7 +44,6 @@
 #include <IL/ilu.h>
 #include <IL/devil_internal_exports.h>
 
-
 // From DevIL's internal.h:
 #ifdef _WIN32_WCE
 	#include <windows.h>
@@ -57,12 +56,11 @@
 	#define TEXT(s) s
 #endif
 
-extern ILimage *iluCurImage;
-
+extern ILimage* iluCurImage;
 
 // Useful global variables
-extern const ILdouble	IL_PI;
-extern const ILdouble	IL_DEGCONV;
+extern const ILdouble IL_PI;
+extern const ILdouble IL_DEGCONV;
 
 
 #ifdef ILU_INTERNAL_C
@@ -77,24 +75,24 @@ ILfloat ilSin(ILfloat Angle);
 ILint ilRound(ILfloat Num);
 
 #ifndef NOINLINE
-INLINE ILfloat ilCos(ILfloat Angle) {
-	return (ILfloat)(cos(Angle * IL_DEGCONV));
+INLINE ILfloat ilCos(ILfloat Angle)
+{
+    return (ILfloat)(cos(Angle * IL_DEGCONV));
 }
 
-INLINE ILfloat ilSin(ILfloat Angle) {
-	return (ILfloat)(sin(Angle * IL_DEGCONV));
+INLINE ILfloat ilSin(ILfloat Angle)
+{
+    return (ILfloat)(sin(Angle * IL_DEGCONV));
 }
 
-
-INLINE ILint ilRound(ILfloat Num) {
-	return (ILint)(Num + 0.5); // this is truncating in away-from-0, not rounding
+INLINE ILint ilRound(ILfloat Num)
+{
+    return (ILint)(Num + 0.5); // this is truncating in away-from-0, not rounding
 }
 #endif
 
+ILuint iluScaleAdvanced(ILuint Width, ILuint Height, ILenum Filter);
+ILubyte* iScanFill(void);
 
 
-ILuint	iluScaleAdvanced(ILuint Width, ILuint Height, ILenum Filter);
-ILubyte	*iScanFill(void);
-
-
-#endif//INTERNAL_H
+#endif //INTERNAL_H

@@ -47,14 +47,14 @@
 #define DLC_MONGO_TEST_DB "dlc"
 #define DLC_MONGO_TEST_COLLECTION "test.exit"
 
-const DAVA::String gameVer = "1.9.0"; // "dlcdevtest";
+const DAVA::String gameVer = "2.5.0"; // "dlcdevtest";
 
 #if defined(__DAVAENGINE_IPHONE__)
 //const DAVA::String url = "http://by1-builddlc-01/DLC_Blitz";
 const DAVA::String url = "http://dl.wargaming.net/wotblitz/dlc/";
 #else
-//const DAVA::String url = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz";
-const DAVA::String url = "http://dl.wargaming.net/wotblitz/dlc/";
+const DAVA::String url = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz";
+//const DAVA::String url = "http://dl.wargaming.net/wotblitz/dlc/";
 #endif
 
 DlcTest::DlcTest()

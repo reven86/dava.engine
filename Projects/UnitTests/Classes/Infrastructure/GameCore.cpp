@@ -43,15 +43,13 @@ using namespace DAVA;
 
 namespace
 {
-
 // List of semicolon separated names specifying which test classes should run
 String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 
-bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
-bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
-
+bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
+bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 }
 
 void GameCore::ProcessCommandLine()
@@ -78,7 +76,7 @@ void GameCore::ProcessCommandLine()
 void GameCore::OnAppStarted()
 {
     ProcessCommandLine();
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     InitNetwork();
 #endif
 
@@ -117,7 +115,7 @@ void GameCore::OnAppFinished()
         DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
     }
 
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     UnInitNetwork();
 #endif
 }
@@ -134,7 +132,7 @@ void GameCore::OnResume()
     ApplicationCore::OnResume();
 }
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 void GameCore::OnForeground()
 {
     ApplicationCore::OnForeground();
@@ -146,7 +144,7 @@ void GameCore::Update(float32 timeElapsed)
     ProcessTests(timeElapsed);
     ApplicationCore::Update(timeElapsed);
 
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     FlushLogs();
 #endif
 }
@@ -224,7 +222,7 @@ void GameCore::FinishTests()
     Core::Instance()->Quit();
 }
 
-#if defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 void GameCore::InitNetwork()
 {
     using namespace Net;
@@ -239,9 +237,9 @@ void GameCore::InitNetwork()
     };
 
     NetCore::Instance()->RegisterService(
-        NetCore::SERVICE_LOG, 
-        loggerCreate,
-        [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+    NetCore::SERVICE_LOG,
+    loggerCreate,
+    [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
 
     eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
     Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();

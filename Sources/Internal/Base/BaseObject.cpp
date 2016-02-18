@@ -35,20 +35,19 @@
 
 namespace DAVA
 {
-
-const String & BaseObject::GetClassName() const
+const String& BaseObject::GetClassName() const
 {
     return ObjectFactory::Instance()->GetName(this);
 }
-    
+
 /**
     \brief virtual function to save node to KeyedArchive
  */
-void BaseObject::SaveObject(KeyedArchive * archive)
+void BaseObject::SaveObject(KeyedArchive* archive)
 {
     archive->SetString("##name", GetClassName());
-    
-//    SaveIntrospection(GetClassName(), archive, GetIntrospection(this), this);
+
+    //    SaveIntrospection(GetClassName(), archive, GetIntrospection(this), this);
 }
 
 /*
@@ -153,10 +152,10 @@ void * BaseObject::GetMemberObject(const IntrospectionMember *member, void * obj
 }
 */
 
-BaseObject * BaseObject::LoadFromArchive(KeyedArchive * archive)
+BaseObject* BaseObject::LoadFromArchive(KeyedArchive* archive)
 {
     String name = archive->GetString("##name");
-    BaseObject * object = ObjectFactory::Instance()->New<BaseObject>(name);
+    BaseObject* object = ObjectFactory::Instance()->New<BaseObject>(name);
     if (object)
     {
         object->LoadObject(archive);
@@ -167,9 +166,9 @@ BaseObject * BaseObject::LoadFromArchive(KeyedArchive * archive)
 /**
     \brief virtual function to load node to KeyedArchive
  */
-void BaseObject::LoadObject(KeyedArchive * archive)
+void BaseObject::LoadObject(KeyedArchive* archive)
 {
-//    LoadIntrospection(GetClassName(), archive, GetIntrospection(this), this);
+    //    LoadIntrospection(GetClassName(), archive, GetIntrospection(this), this);
 }
 
 /*
@@ -271,7 +270,4 @@ void BaseObject::LoadCollection(const String &key, KeyedArchive * archive, const
     }
 }
 */
-
 };
-
-

@@ -26,67 +26,72 @@
 #endif
 
 #ifndef NOINLINE
-INLINE ILuint GetPix(ILubyte *p, ILuint bpp) {
-	ILuint Pixel;
-	Pixel = (ILuint)*p++;
-	
-	while( bpp-- > 1 ) {
-		Pixel <<= 8;
-		Pixel |= (ILuint)*p++;
-	}
-	return Pixel;
+INLINE ILuint GetPix(ILubyte* p, ILuint bpp)
+{
+    ILuint Pixel;
+    Pixel = (ILuint)*p++;
+
+    while (bpp-- > 1)
+    {
+        Pixel <<= 8;
+        Pixel |= (ILuint)*p++;
+    }
+    return Pixel;
 }
 
-INLINE ILint CountDiffPixels(ILubyte *p, ILuint bpp, ILuint pixCnt) {
-	ILuint	pixel;
-	ILuint	nextPixel = 0;
-	ILint	n;
+INLINE ILint CountDiffPixels(ILubyte* p, ILuint bpp, ILuint pixCnt)
+{
+    ILuint pixel;
+    ILuint nextPixel = 0;
+    ILint n;
 
-	n = 0;
-	if (pixCnt == 1)
-		return pixCnt;
-	pixel = GetPix(p, bpp);
+    n = 0;
+    if (pixCnt == 1)
+        return pixCnt;
+    pixel = GetPix(p, bpp);
 
-	while (pixCnt > 1) {
-		p += bpp;
-		nextPixel = GetPix(p, bpp);
-		if (nextPixel == pixel)
-			break;
-		pixel = nextPixel;
-		++n;
-		--pixCnt;
-	}
+    while (pixCnt > 1)
+    {
+        p += bpp;
+        nextPixel = GetPix(p, bpp);
+        if (nextPixel == pixel)
+            break;
+        pixel = nextPixel;
+        ++n;
+        --pixCnt;
+    }
 
-	if (nextPixel == pixel)
-		return n;
-	return n + 1;
+    if (nextPixel == pixel)
+        return n;
+    return n + 1;
 }
 
+INLINE ILint CountSamePixels(ILubyte* p, ILuint bpp, ILuint pixCnt)
+{
+    ILuint pixel;
+    ILuint nextPixel;
+    ILint n;
 
-INLINE ILint CountSamePixels(ILubyte *p, ILuint bpp, ILuint pixCnt) {
-	ILuint	pixel;
-	ILuint	nextPixel;
-	ILint	n;
+    n = 1;
+    pixel = GetPix(p, bpp);
+    pixCnt--;
 
-	n = 1;
-	pixel = GetPix(p, bpp);
-	pixCnt--;
+    while (pixCnt > 0)
+    {
+        p += bpp;
+        nextPixel = GetPix(p, bpp);
+        if (nextPixel != pixel)
+            break;
+        ++n;
+        --pixCnt;
+    }
 
-	while (pixCnt > 0) {
-		p += bpp;
-		nextPixel = GetPix(p, bpp);
-		if (nextPixel != pixel)
-			break;
-		++n;
-		--pixCnt;
-	}
-
-	return n;
+    return n;
 }
 #endif
 
-ILuint GetPix(ILubyte *p, ILuint bpp);
-ILint CountDiffPixels(ILubyte *p, ILuint bpp, ILuint pixCnt);
-ILint CountSamePixels(ILubyte *p, ILuint bpp, ILuint pixCnt);
+ILuint GetPix(ILubyte* p, ILuint bpp);
+ILint CountDiffPixels(ILubyte* p, ILuint bpp, ILuint pixCnt);
+ILint CountSamePixels(ILubyte* p, ILuint bpp, ILuint pixCnt);
 
-#endif//RLE_H
+#endif //RLE_H

@@ -50,7 +50,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
 void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
 };
-
 };
 
 #endif // __DAVAENGINE_SHADER_CACHE_H__

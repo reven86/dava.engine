@@ -97,7 +97,6 @@ private:
 
     DeviceInfo::ScreenInfo screenInfo;
 };
-
 };
 
 #endif //defined(__DAVAENGINE_ANDROID__)

@@ -54,7 +54,6 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void(size_
 
 Discoverer::~Discoverer()
 {
-
 }
 
 void Discoverer::Start()
@@ -63,7 +62,7 @@ void Discoverer::Start()
     loop->Post(MakeFunction(this, &Discoverer::DoStart));
 }
 
-void Discoverer::Stop(Function<void (IController*)> callback)
+void Discoverer::Stop(Function<void(IController*)> callback)
 {
     DVASSERT(false == isTerminating);
     DVASSERT(callback != nullptr);
@@ -165,7 +164,8 @@ void Discoverer::DiscoverDevice()
 
 void Discoverer::SocketHandleReceive(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial)
 {
-    if (true == isTerminating) return;
+    if (true == isTerminating)
+        return;
 
     if (0 == error)
     {
@@ -191,5 +191,5 @@ void Discoverer::TcpSocketHandleRead(TCPSocket* socket, int32 error, size_t nrea
     socket->Close();
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

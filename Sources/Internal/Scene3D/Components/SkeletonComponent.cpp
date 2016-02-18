@@ -35,26 +35,23 @@
 
 namespace DAVA
 {
-    
 REGISTER_CLASS(SkeletonComponent)
 
-
 SkeletonComponent::SkeletonComponent()
-{   
+{
 }
 
 SkeletonComponent::~SkeletonComponent()
 {
-
 }
-        
+
 SkeletonComponent::JointConfig::JointConfig()
     : parentIndex(INVALID_JOINT_INDEX)
     , targetId(INVALID_JOINT_INDEX)
-    , orientation(0.0f,0.0f,0.0f,1.0f)
-    , position(0.0f,0.0f,0.0f)
+    , orientation(0.0f, 0.0f, 0.0f, 1.0f)
+    , position(0.0f, 0.0f, 0.0f)
     , scale(1.0f)
-{    
+{
 }
 SkeletonComponent::JointConfig::JointConfig(int32 _parentIndex, int32 _targetId, const FastName& _name, const Vector3& _position, const Quaternion& _orientation, float32 _scale, const AABBox3& _bbox)
     : parentIndex(_parentIndex)
@@ -67,8 +64,6 @@ SkeletonComponent::JointConfig::JointConfig(int32 _parentIndex, int32 _targetId,
 {
 }
 
-
-
 uint16 SkeletonComponent::GetConfigJointsCount()
 {
     return uint16(configJoints.size());
@@ -78,28 +73,27 @@ void SkeletonComponent::SetConfigJoints(const Vector<JointConfig>& config)
     configJoints = config;
 }
 
-
 void SkeletonComponent::RebuildFromConfig()
 {
-    GlobalEventSystem::Instance()->Event(this, EventSystem::SKELETON_CONFIG_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SKELETON_CONFIG_CHANGED);
 }
 
-Component * SkeletonComponent::Clone(Entity * toEntity)
+Component* SkeletonComponent::Clone(Entity* toEntity)
 {
-    SkeletonComponent * newComponent = new SkeletonComponent();      
+    SkeletonComponent* newComponent = new SkeletonComponent();
     newComponent->SetEntity(toEntity);
     newComponent->configJoints = configJoints;
     return newComponent;
 }
-void SkeletonComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SkeletonComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    Component::Serialize(archive, serializationContext);    
+    Component::Serialize(archive, serializationContext);
     archive->SetUInt32("skeletoncomponent.jointsCount", static_cast<uint32>(configJoints.size()));
-    ScopedPtr<KeyedArchive> jointsArch (new KeyedArchive());	
-    for (size_t i=0, sz = configJoints.size(); i<sz; ++i)
-    {		
+    ScopedPtr<KeyedArchive> jointsArch(new KeyedArchive());
+    for (size_t i = 0, sz = configJoints.size(); i < sz; ++i)
+    {
         const JointConfig& joint = configJoints[i];
-        ScopedPtr<KeyedArchive> jointArch (new KeyedArchive());	  
+        ScopedPtr<KeyedArchive> jointArch(new KeyedArchive());
         jointArch->SetFastName("joint.name", joint.name);
         jointArch->SetInt32("joint.parentIndex", joint.parentIndex);
         jointArch->SetInt32("joint.targetId", joint.targetId);
@@ -110,23 +104,21 @@ void SkeletonComponent::Serialize(KeyedArchive *archive, SerializationContext *s
         jointArch->SetVector3("joint.bbox.max", joint.bbox.max);
 
         jointsArch->SetArchive(KeyedArchive::GenKeyFromIndex(static_cast<int32>(i)), jointArch);
-    }     
+    }
 
     archive->SetArchive("skeletoncomponent.joints", jointsArch);
-
 }
-void SkeletonComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SkeletonComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Deserialize(archive, serializationContext);
 
-   
     uint32 configJointsCount = archive->GetUInt32("skeletoncomponent.jointsCount", static_cast<uint32>(configJoints.size()));
     configJoints.resize(configJointsCount);
-    KeyedArchive *jointsArch = archive->GetArchive("skeletoncomponent.joints");    
-    for (uint32 i=0; i<configJointsCount; ++i)
-    {		
+    KeyedArchive* jointsArch = archive->GetArchive("skeletoncomponent.joints");
+    for (uint32 i = 0; i < configJointsCount; ++i)
+    {
         JointConfig& joint = configJoints[i];
-        KeyedArchive *jointArch = jointsArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+        KeyedArchive* jointArch = jointsArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
         joint.name = jointArch->GetFastName("joint.name");
         joint.parentIndex = jointArch->GetInt32("joint.parentIndex");
         joint.targetId = jointArch->GetInt32("joint.targetId");
@@ -135,8 +127,7 @@ void SkeletonComponent::Deserialize(KeyedArchive *archive, SerializationContext 
         joint.orientation = Quaternion(qv.x, qv.y, qv.z, qv.w);
         joint.scale = jointArch->GetFloat("joint.scale");
         joint.bbox.min = jointArch->GetVector3("joint.bbox.min");
-        joint.bbox.max = jointArch->GetVector3("joint.bbox.max");      
-    } 	   
+        joint.bbox.max = jointArch->GetVector3("joint.bbox.max");
+    }
 }
-
 }

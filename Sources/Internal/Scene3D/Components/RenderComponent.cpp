@@ -30,11 +30,9 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Base/ObjectFactory.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    
-    
-RenderComponent::RenderComponent(RenderObject * _object)
+RenderComponent::RenderComponent(RenderObject* _object)
 {
     renderObject = SafeRetain(_object);
 }
@@ -43,24 +41,24 @@ RenderComponent::~RenderComponent()
 {
     SafeRelease(renderObject);
 }
-    
-void RenderComponent::SetRenderObject(RenderObject * _renderObject)
+
+void RenderComponent::SetRenderObject(RenderObject* _renderObject)
 {
-	SafeRelease(renderObject);
+    SafeRelease(renderObject);
     renderObject = SafeRetain(_renderObject);
 }
-    
-RenderObject * RenderComponent::GetRenderObject()
+
+RenderObject* RenderComponent::GetRenderObject()
 {
     return renderObject;
 }
-    
-Component * RenderComponent::Clone(Entity * toEntity)
-{
-    RenderComponent * component = new RenderComponent();
-	component->SetEntity(toEntity);
 
-    if(NULL != renderObject)
+Component* RenderComponent::Clone(Entity* toEntity)
+{
+    RenderComponent* component = new RenderComponent();
+    component->SetEntity(toEntity);
+
+    if (NULL != renderObject)
     {
         //TODO: Do not forget ot check what does it means.
         component->renderObject = renderObject->Clone(component->renderObject);
@@ -68,10 +66,10 @@ Component * RenderComponent::Clone(Entity * toEntity)
 
     return component;
 }
-	
+
 void RenderComponent::OptimizeBeforeExport()
 {
-/*
+    /*
     uint32 count = renderObject->GetRenderBatchCount();
     for(uint32 i = 0; i < count; ++i)
     {
@@ -90,46 +88,45 @@ void RenderComponent::OptimizeBeforeExport()
 */
 }
 
-void RenderComponent::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
+void RenderComponent::GetDataNodes(Set<DAVA::DataNode*>& dataNodes)
 {
-    if(NULL != renderObject)
+    if (NULL != renderObject)
     {
         renderObject->GetDataNodes(dataNodes);
     }
 }
 
-void RenderComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void RenderComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(NULL != archive && NULL != renderObject)
-	{
-		KeyedArchive *roArch = new KeyedArchive();
-		renderObject->Save(roArch, serializationContext);
-		archive->SetArchive("rc.renderObj", roArch);
-		roArch->Release();
-	}
+    if (NULL != archive && NULL != renderObject)
+    {
+        KeyedArchive* roArch = new KeyedArchive();
+        renderObject->Save(roArch, serializationContext);
+        archive->SetArchive("rc.renderObj", roArch);
+        roArch->Release();
+    }
 }
 
-void RenderComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void RenderComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	if(NULL != archive)
-	{
-		KeyedArchive *roArch = archive->GetArchive("rc.renderObj");
-		if(NULL != roArch)
-		{
-			RenderObject* ro = (RenderObject *) ObjectFactory::Instance()->New<RenderObject>(roArch->GetString("##name"));
-			if(NULL != ro)
-			{
-				ro->Load(roArch, serializationContext);
-				SetRenderObject(ro);
+    if (NULL != archive)
+    {
+        KeyedArchive* roArch = archive->GetArchive("rc.renderObj");
+        if (NULL != roArch)
+        {
+            RenderObject* ro = (RenderObject*)ObjectFactory::Instance()->New<RenderObject>(roArch->GetString("##name"));
+            if (NULL != ro)
+            {
+                ro->Load(roArch, serializationContext);
+                SetRenderObject(ro);
 
-				ro->Release();
-			}
-		}
-	}
+                ro->Release();
+            }
+        }
+    }
 
-	Component::Deserialize(archive, serializationContext);
+    Component::Deserialize(archive, serializationContext);
 }
-
 };

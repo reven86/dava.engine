@@ -35,25 +35,23 @@
 
 namespace DAVA
 {
-
 class IUpdatableBeforeTransform;
 class IUpdatableAfterTransform;
 class UpdateSystem : public SceneSystem
 {
 public:
-	UpdateSystem(Scene * scene);
-	virtual void Process(float32 timeElapsed);
-	virtual void AddEntity(Entity * entity);
-	virtual void RemoveEntity(Entity * entity);
+    UpdateSystem(Scene* scene);
+    virtual void Process(float32 timeElapsed);
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
 
-	void UpdatePreTransform(float32 timeElapsed);
-	void UpdatePostTransform(float32 timeElapsed);
+    void UpdatePreTransform(float32 timeElapsed);
+    void UpdatePostTransform(float32 timeElapsed);
 
 private:
-	Vector<IUpdatableBeforeTransform*> updatesBeforeTransform;
-	Vector<IUpdatableAfterTransform*> updatesAfterTransform;
+    Vector<IUpdatableBeforeTransform*> updatesBeforeTransform;
+    Vector<IUpdatableAfterTransform*> updatesAfterTransform;
 };
-
 }
 
 #endif //__DAVAENGINE_SCENE3D_UPDATABLESYSTEM_H__

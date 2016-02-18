@@ -60,7 +60,6 @@ private:
     void FindMaterialPropertiesRecursive(NMaterial* state, PropDataMap& props) const;
     void FillGlobalMaterialMemebers(NMaterial* state, PropDataMap& props) const;
 };
-
 };
 
 #endif /* defined(__DAVAENGINE_NMATERIALSTATEDYNAMICPROPERTYSINSP_NAMES_H__) */

@@ -30,14 +30,13 @@
 #include "UI/UIPopup.h"
 #include "UI/UIControlSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-UIPopup::UIPopup(const Rect &rect)
-	:	UIScreen(rect)
-	,	isTransparent(true)
+UIPopup::UIPopup(const Rect& rect)
+    : UIScreen(rect)
+    , isTransparent(true)
 {
-	SetFillBorderOrder(UIScreen::FILL_BORDER_NONE);
+    SetFillBorderOrder(UIScreen::FILL_BORDER_NONE);
 }
 
 void UIPopup::Show()

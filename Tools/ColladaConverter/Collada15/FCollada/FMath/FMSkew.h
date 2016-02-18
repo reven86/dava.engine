@@ -21,18 +21,18 @@
 class FCOLLADA_EXPORT FMSkew
 {
 public:
-	FMVector3 rotateAxis; /**< The axis which is rotated. */
-	FMVector3 aroundAxis; /**< The axis around which to rotate. */
-	float angle; /**< The angle of rotation. */
+    FMVector3 rotateAxis; /**< The axis which is rotated. */
+    FMVector3 aroundAxis; /**< The axis around which to rotate. */
+    float angle; /**< The angle of rotation. */
 
-	/** Default Constructor. */
-	FMSkew();
+    /** Default Constructor. */
+    FMSkew();
 
-	/** Constructor.
+    /** Constructor.
 		@param rotateAxis The axis which is rotated.
 		@param aroundAxis The axis around which to rotate.
 		@param angle The rotation angle, in degrees. */
-	FMSkew(const FMVector3& rotateAxis, const FMVector3& aroundAxis, float angle);
+    FMSkew(const FMVector3& rotateAxis, const FMVector3& aroundAxis, float angle);
 };
 
 /** Retrieves whether one skew is equivalent to a second skew.
@@ -41,4 +41,3 @@ public:
 bool operator==(const FMSkew& first, const FMSkew& other);
 
 #endif // _FM_SKEW_H_
-

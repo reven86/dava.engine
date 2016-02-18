@@ -110,7 +110,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SelectedNodes selected;
     Set<ControlNode*> areaNodes;
     auto predicate = [rect](const UIControl* control) -> bool {
-        return control->GetSystemVisible() && rect.RectContains(control->GetGeometricData().GetAABBox());
+        return control->GetVisible() && rect.RectContains(control->GetGeometricData().GetAABBox());
     };
     systemManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate);
     if (!areaNodes.empty())
@@ -185,7 +185,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     SelectedNodes deselected;
     Vector<ControlNode*> nodesUnderPoint;
     auto predicate = [point](const UIControl* control) -> bool {
-        return control->GetSystemVisible() && control->IsPointInside(point);
+        return control->GetVisible() && control->IsPointInside(point);
     };
     systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
 

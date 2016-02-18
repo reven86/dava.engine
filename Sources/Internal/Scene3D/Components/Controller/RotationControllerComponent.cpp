@@ -31,14 +31,11 @@
 
 namespace DAVA
 {
-    
-Component * RotationControllerComponent::Clone(Entity * toEntity)
+Component* RotationControllerComponent::Clone(Entity* toEntity)
 {
-    RotationControllerComponent * component = new RotationControllerComponent();
+    RotationControllerComponent* component = new RotationControllerComponent();
     component->SetEntity(toEntity);
-    
+
     return component;
 }
-
-
 };

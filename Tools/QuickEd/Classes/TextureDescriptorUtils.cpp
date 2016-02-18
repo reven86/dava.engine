@@ -31,17 +31,17 @@
 
 using namespace DAVA;
 
-bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &pngPathname)
+bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath& pngPathname)
 {
     FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(pngPathname);
-    if(false == FileSystem::Instance()->IsFile(descriptorPathname))
+    if (false == FileSystem::Instance()->IsFile(descriptorPathname))
     {
-        TextureDescriptor *descriptor = new TextureDescriptor();
+        TextureDescriptor* descriptor = new TextureDescriptor();
         descriptor->Save(descriptorPathname);
-		delete descriptor;
+        delete descriptor;
 
-		return true;
+        return true;
     }
 
-	return false;
+    return false;
 }

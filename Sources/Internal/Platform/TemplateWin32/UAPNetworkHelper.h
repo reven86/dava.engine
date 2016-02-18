@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-    
 class UAPNetworkHelper
 {
 public:
@@ -49,6 +48,6 @@ public:
     static Net::Endpoint GetEndPoint(Net::eNetworkRole role);
 };
 
-}  // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_UAP_NETWORK_HELPER_H__
+#endif // __DAVAENGINE_UAP_NETWORK_HELPER_H__

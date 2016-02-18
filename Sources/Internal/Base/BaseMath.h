@@ -64,4 +64,3 @@
 #include "Render/RGBColor.h"
 
 #endif // __DAVAENGINE_MATH_H__
-

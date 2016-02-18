@@ -62,11 +62,11 @@ public:
     static ProcessorArchitecture toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE appxArch);
 
 protected:
-    explicit AppxEngine(Runner *runner, AppxEnginePrivate *dd);
+    explicit AppxEngine(Runner* runner, AppxEnginePrivate* dd);
     ~AppxEngine();
 
     virtual QString dependenciesDirectory() const;
-    virtual bool installPackage(IAppxManifestReader *reader, const QString &filePath) = 0;
+    virtual bool installPackage(IAppxManifestReader* reader, const QString& filePath) = 0;
 
     bool installDependencies();
     bool installResources();

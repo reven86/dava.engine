@@ -43,62 +43,84 @@ class FCDocument;
 class FCOLLADA_EXPORT FCDObject : public FUParameterizable
 {
 private:
-	DeclareObjectType(FUParameterizable);
+    DeclareObjectType(FUParameterizable);
 
-	// The COLLADA document that owns this object
-	FCDocument* document;
+    // The COLLADA document that owns this object
+    FCDocument* document;
 
-	// An handle which has no meaning to FCollada but is available for users to
-	// attach objects to most FCollada objects.
-	void* userHandle;
+    // An handle which has no meaning to FCollada but is available for users to
+    // attach objects to most FCollada objects.
+    void* userHandle;
 
 public:
-	/** Declare the flags to set various states available on an FCDObject 
+    /** Declare the flags to set various states available on an FCDObject 
 		Each Declare flag requires its local index.  It is required to 
 		DeclareFlagCount, declaring the amount of flags specified locally */
-	DeclareFlag(Transient, 0); /**< [EXPERIMENTAL] This object exists for the application to use.
+    DeclareFlag(Transient, 0); /**< [EXPERIMENTAL] This object exists for the application to use.
 							        This object should be not archived/saved. */
-	DeclareFlag(NewChild, 1); /**< [EXPERIMENTAL] A new child has been assigned to this object.
+    DeclareFlag(NewChild, 1); /**< [EXPERIMENTAL] A new child has been assigned to this object.
 							       Should be replaced by the StructureChanged flag in future versions. */
-	DeclareFlagCount(2); /**< 5 flags are locally declared. */
+    DeclareFlagCount(2); /**< 5 flags are locally declared. */
 
 public:
-	/** Constructor: sets the COLLADA document object.
+    /** Constructor: sets the COLLADA document object.
 		@param document The COLLADA document which owns this object. */
-	FCDObject(FCDocument* document);
+    FCDObject(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDObject();
+    /** Destructor. */
+    virtual ~FCDObject();
 
-	/** Retrieves the COLLADA document which owns this object.
+    /** Retrieves the COLLADA document which owns this object.
 		@return The COLLADA document. */
-	inline FCDocument* GetDocument() { return document; }
-	inline const FCDocument* GetDocument() const { return document; } /**< See above. */
+    inline FCDocument* GetDocument()
+    {
+        return document;
+    }
+    inline const FCDocument* GetDocument() const
+    {
+        return document;
+    } /**< See above. */
 
-	/** Retrieves whether a given object is a local reference from this object.
+    /** Retrieves whether a given object is a local reference from this object.
 		@param object A data object.
 		@return Whether a reference from this object to the given object is local. */
-	inline bool IsLocal(const FCDObject* object) const { return document == object->document; }
+    inline bool IsLocal(const FCDObject* object) const
+    {
+        return document == object->document;
+    }
 
-	/** Retrieves whether a given object is an external reference from this object.
+    /** Retrieves whether a given object is an external reference from this object.
 		@param object A data object.
 		@return Whether a reference from this object to the given object is external. */
-	inline bool IsExternal(const FCDObject* object) const { return document != object->document; }
+    inline bool IsExternal(const FCDObject* object) const
+    {
+        return document != object->document;
+    }
 
-	/** Retrieves the object's user-specified handle.
+    /** Retrieves the object's user-specified handle.
 		This handle is available for users and has no
 		meaning to FCollada.
 		@return The object user-specified handle. */
-	inline void* GetUserHandle() const { return userHandle; }
-	
-	/** Sets the object's user-specified handle.
+    inline void* GetUserHandle() const
+    {
+        return userHandle;
+    }
+
+    /** Sets the object's user-specified handle.
 		This handle is available for users and has no
 		meaning to FCollada.
 		@param handle The user-specified handle. */
-	inline void SetUserHandle(void* handle) { userHandle = handle; SetDirtyFlag(); }
+    inline void SetUserHandle(void* handle)
+    {
+        userHandle = handle;
+        SetDirtyFlag();
+    }
 
-	/** ValueChangedFlag override, this allows objects to react if necessary. */
-	virtual void SetValueChange() { SetValueChangedFlag(); }
+    /** ValueChangedFlag override, this allows objects to react if necessary. */
+    virtual void SetValueChange()
+    {
+        SetValueChangedFlag();
+    }
 };
 
 #endif // __FCD_OBJECT_H_
