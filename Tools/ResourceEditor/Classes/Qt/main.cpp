@@ -88,6 +88,7 @@ protected:
         names.push_back(L"plg_command_system");
         names.push_back(L"plg_serialization");
         names.push_back(L"plg_file_system");
+        names.push_back(L"plg_editor_interaction");
         names.push_back(L"plg_qt_app");
         names.push_back(L"plg_qt_common");
     }
