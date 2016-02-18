@@ -426,8 +426,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         handleResume();
 
-        InitKeyboardLayout();
-
         /*
          Start of workaround
          
@@ -521,6 +519,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         if(hasFocus) {
             HideSplashScreenView();
     		HideNavigationBar(getWindow().getDecorView());
+            InitKeyboardLayout();
     	}
     	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
     }
