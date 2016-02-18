@@ -304,7 +304,7 @@ public:
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool use);
 
-    void SetTapCountSettings(float32 time = 0.f, float32 radius = 0.f);
+    void SetTapCountSettings(float32 time = 0.f, int32 radius = 0);
 
 private:
     /**
@@ -353,9 +353,9 @@ private:
     Color clearColor;
 
     float32 doubleClickTime = 0.f;
-    float32 doubleClickRadiusSquared = 0.f;
+    int32 doubleClickRadiusSquared = 0;
     const float32 defaultDoubleClickTime = 0.5f; // seconds
-    float32 defaultDoubleClickRadiusSquared = 0.f; // calculate in constructor
+    int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
     UIEvent lastEvent;
 
     friend class UIScreenTransition;

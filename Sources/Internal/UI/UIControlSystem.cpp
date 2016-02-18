@@ -98,7 +98,7 @@ UIControlSystem::UIControlSystem()
     }
     else
     {
-        defaultDoubleClickRadiusSquared = 4.f; // default, if touch didn't detect, 4 - default pixels in windows desktop
+        defaultDoubleClickRadiusSquared = 4; // default, if touch didn't detect, 4 - default pixels in windows desktop
     }
     SetTapCountSettings(defaultDoubleClickTime, defaultDoubleClickRadiusSquared);
 }
@@ -770,16 +770,16 @@ void UIControlSystem::SetUseClearPass(bool use)
     useClearPass = use;
 }
 
-void UIControlSystem::SetTapCountSettings(float32 time, float32 radius)
+void UIControlSystem::SetTapCountSettings(float32 time, int32 radius)
 {
-    if (time == 0.f && radius == 0.f)
+    if (time == 0.f && radius == 0)
     {
         doubleClickTime = defaultDoubleClickTime;
         doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
     }
     else
     {
-        DVASSERT((time > 0.f) && (radius > 0.f));
+        DVASSERT((time > 0.f) && (radius > 0));
         doubleClickTime = time;
         doubleClickRadiusSquared = radius * radius;
     }
