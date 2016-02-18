@@ -41,7 +41,7 @@ GetRequest::GetRequest()
     options.AddOption("-f", VariantType(String("")), "Folder to save files from server");
 }
 
-AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient* cacheClient)
+AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient& cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
@@ -49,7 +49,7 @@ AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient* cacheClient)
     FilePath folder = options.GetOption("-f").AsString();
     folder.MakeDirectoryPathname();
 
-    return cacheClient->RequestFromCacheBlocked(key, folder);
+    return cacheClient.RequestFromCacheBlocked(key, folder);
 }
 
 AssetCache::ErrorCodes GetRequest::CheckOptionsInternal() const

@@ -36,10 +36,25 @@ namespace DAVA
 {
 class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 {
-    struct ResultOfRequest
+    struct Request
     {
-        int32 requestID = AssetCache::PACKET_UNKNOWN;
+        void Reset()
+        {
+            outputFolder = "";
+
+            requestID = AssetCache::PACKET_UNKNOWN;
+            result = AssetCache::ERROR_OK;
+
+            recieved = false;
+            processingRequest = false;
+        }
+
+        AssetCache::CacheItemKey key;
+        FilePath outputFolder;
+
+        AssetCache::ePacketID requestID = AssetCache::PACKET_UNKNOWN;
         AssetCache::ErrorCodes result = AssetCache::ERROR_OK;
+
         bool recieved = false;
         bool processingRequest = false;
     };
@@ -79,9 +94,8 @@ private:
     uint64 timeoutms = 60u * 1000u;
 
     Mutex requestLocker;
-    ResultOfRequest requestResult;
+    Request request;
 
-    UnorderedMap<AssetCache::CacheItemKey, FilePath> requests;
     std::atomic<bool> isActive;
     std::atomic<bool> isJobStarted;
 

@@ -391,38 +391,51 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     String mergedFlags;
     Merge(currentFlags, ' ', mergedFlags);
 
+    String packingParams = mergedFlags;
+    packingParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+    packingParams += String("PackerVersion = ") + VERSION;
+
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
 
     bool inputDirHasFiles = false;
     uint64 allFilesSize = 0;
     uint32 allFilesCount = 0;
+
+    static const Vector<String> ignoredFileNames = { ".DS_Store", "flags.txt", "thumb.db" };
+    auto IsFileIgnoredByName = [](const Vector<String>& ignoredFileNames, const String& filename)
+    {
+        auto found = std::find_if(ignoredFileNames.begin(), ignoredFileNames.end(), [&filename](const String& name)
+                                  {
+                                      return (CompareCaseInsensitive(filename, name) == 0);
+                                  });
+
+        return (found != ignoredFileNames.end());
+    };
+
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
             String fileName = fileList->GetFilename(fi);
-            if (fileName == ".DS_Store" || fileName == "flags.txt")
+            if (IsFileIgnoredByName(ignoredFileNames, fileName))
             {
                 continue;
             }
 
             inputDirHasFiles = true;
 
+            packingParams += fileName;
             allFilesSize += fileList->GetFileSize(fi);
             ++allFilesCount;
         }
     }
 
-
-    String mergedParams = mergedFlags;
-    mergedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
-    mergedParams += String("PackerVersion = ") + VERSION;
-    mergedParams += Format("FilesSize = %llu", allFilesSize);
-    mergedParams += Format("FilesCount = %u", allFilesCount);
+    packingParams += Format("FilesSize = %llu", allFilesSize);
+    packingParams += Format("FilesCount = %u", allFilesCount);
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
-    bool paramsModified = RecalculateParamsMD5(mergedParams, processDir + "params.md5");
+    bool paramsModified = RecalculateParamsMD5(packingParams, processDir + "params.md5");
 
     bool modified = outputDirModified || inputDirModified || paramsModified;
     if (modified)

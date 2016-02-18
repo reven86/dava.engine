@@ -59,21 +59,19 @@ CacheRequest::CacheRequest(const String& commandLineOptionName)
     options.AddOption("-t", VariantType(static_cast<uint64>(1)), "Connection timeout seconds.");
 }
 
-AssetCache::ErrorCodes CacheRequest::Process(AssetCacheClient* cacheClient)
+AssetCache::ErrorCodes CacheRequest::Process(AssetCacheClient& cacheClient)
 {
-    DVASSERT(cacheClient);
-
     if (options.GetOption("-v").AsBool())
     {
         Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
     }
 
-    AssetCache::ErrorCodes exitCode = cacheClient->ConnectBlocked(CacheRequestInternal::GetConnectionParams(options));
+    AssetCache::ErrorCodes exitCode = cacheClient.ConnectBlocked(CacheRequestInternal::GetConnectionParams(options));
     if (AssetCache::ERROR_OK == exitCode)
     {
         exitCode = SendRequest(cacheClient);
     }
-    cacheClient->Disconnect();
+    cacheClient.Disconnect();
 
     return exitCode;
 }

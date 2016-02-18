@@ -32,7 +32,7 @@
 #include "GetRequest.h"
 
 ClientApplication::ClientApplication()
-    : cacheClient(new DAVA::AssetCacheClient(true))
+    : cacheClient(true)
 {
     requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
     requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
@@ -101,5 +101,5 @@ void ClientApplication::Process()
 {
     DVASSERT(activeRequest != nullptr);
 
-    exitCode = activeRequest->Process(cacheClient.get());
+    exitCode = activeRequest->Process(cacheClient);
 }

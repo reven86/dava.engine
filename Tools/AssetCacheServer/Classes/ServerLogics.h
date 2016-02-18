@@ -35,7 +35,7 @@ class ServerLogics : public DAVA::AssetCache::ServerNetProxyListener,
                      public DAVA::AssetCache::ClientNetProxyListener
 {
 public:
-    void Init(DAVA::AssetCache::ServerNetProxy* server, DAVA::String serverName, DAVA::AssetCache::ClientNetProxy* client, DAVA::AssetCache::CacheDB* dataBase);
+    void Init(DAVA::AssetCache::ServerNetProxy* server, const DAVA::String& serverName, DAVA::AssetCache::ClientNetProxy* client, DAVA::AssetCache::CacheDB* dataBase);
 
     //ServerNetProxyListener
     void OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value) override;

@@ -48,10 +48,8 @@ AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
 
 AssetCacheClient::~AssetCacheClient()
 {
-    if (requests.empty() == false)
-    {
-        Logger::Error("[AssetCacheClient::~AssetCacheClient] %d requests were not received", requests.size());
-    }
+    DVASSERT(isActive == false);
+    DVASSERT(isJobStarted == false);
 }
 
 AssetCache::ErrorCodes AssetCacheClient::ConnectBlocked(const ConnectionParams& connectionParams)
@@ -100,111 +98,118 @@ AssetCache::ErrorCodes AssetCacheClient::AddToCacheBlocked(const AssetCache::Cac
 {
     {
         LockGuard<Mutex> guard(requestLocker);
-        requestResult.requestID = AssetCache::PACKET_ADD_REQUEST;
-        requestResult.result = AssetCache::ERROR_CODE_NOT_INITIALIZED;
-        requestResult.recieved = false;
-        requestResult.processingRequest = false;
+        request.key = key;
+        request.outputFolder = "";
+        request.requestID = AssetCache::PACKET_ADD_REQUEST;
+        request.result = AssetCache::ERROR_CODE_NOT_INITIALIZED;
+        request.recieved = false;
+        request.processingRequest = false;
     }
+
+    AssetCache::ErrorCodes resultCode = AssetCache::ERROR_CANNOT_SEND_REQUEST_ADD;
 
     bool requestSent = client.AddToCache(key, value);
     if (requestSent)
     {
-        return WaitRequest();
+        resultCode = WaitRequest();
     }
 
-    return AssetCache::ERROR_CANNOT_SEND_REQUEST_ADD;
+    {
+        LockGuard<Mutex> guard(requestLocker);
+        request.Reset();
+    }
+
+    return resultCode;
 }
 
 AssetCache::ErrorCodes AssetCacheClient::RequestFromCacheBlocked(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
 {
     {
         LockGuard<Mutex> guard(requestLocker);
-        requestResult.requestID = AssetCache::PACKET_GET_REQUEST;
-        requestResult.result = AssetCache::ERROR_CODE_NOT_INITIALIZED;
-        requestResult.recieved = false;
-        requestResult.processingRequest = false;
-
-        DVASSERT(requests.count(key) == 0);
-        requests[key] = outputFolder;
+        request.key = key;
+        request.outputFolder = outputFolder;
+        request.requestID = AssetCache::PACKET_GET_REQUEST;
+        request.result = AssetCache::ERROR_CODE_NOT_INITIALIZED;
+        request.recieved = false;
+        request.processingRequest = false;
     }
+
+    AssetCache::ErrorCodes resultCode = AssetCache::ERROR_CANNOT_SEND_REQUEST_GET;
 
     bool requestSent = client.RequestFromCache(key);
     if (requestSent)
     {
-        return WaitRequest();
-    }
-    else
-    {
-        LockGuard<Mutex> guard(requestLocker);
-        requests.erase(key);
+        resultCode = WaitRequest();
     }
 
-    return AssetCache::ERROR_CANNOT_SEND_REQUEST_GET;
+    {
+        LockGuard<Mutex> guard(requestLocker);
+        request.Reset();
+    }
+
+    return resultCode;
 }
 
 AssetCache::ErrorCodes AssetCacheClient::WaitRequest()
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
-    ResultOfRequest currentRequestResult;
+    Request currentRequest;
     {
         LockGuard<Mutex> guard(requestLocker);
-        currentRequestResult = requestResult;
+        currentRequest = request;
     }
 
-    while (currentRequestResult.recieved == false)
+    while (currentRequest.recieved == false)
     {
         {
             LockGuard<Mutex> guard(requestLocker);
-            currentRequestResult = requestResult;
+            currentRequest = request;
         }
 
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequestResult.recieved == false) && (currentRequestResult.processingRequest == false))
+        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
         {
             return AssetCache::ERROR_OPERATION_TIMEOUT;
         }
     }
 
-    if (currentRequestResult.result == AssetCache::ERROR_OK)
+    if (currentRequest.result == AssetCache::ERROR_OK)
     {
-        while (currentRequestResult.processingRequest)
+        while (currentRequest.processingRequest)
         {
             LockGuard<Mutex> guard(requestLocker);
-            currentRequestResult = requestResult;
+            currentRequest = request;
         }
     }
 
-    return currentRequestResult.result;
+    return currentRequest.result;
 }
 
 void AssetCacheClient::OnAddedToCache(const AssetCache::CacheItemKey& key, bool added)
 {
     LockGuard<Mutex> guard(requestLocker);
-    if (requestResult.requestID == AssetCache::PACKET_ADD_REQUEST)
+    if (request.requestID == AssetCache::PACKET_ADD_REQUEST && request.key == key)
     {
-        requestResult.result = (added) ? AssetCache::ERROR_OK : AssetCache::ERROR_SERVER_ERROR;
-        requestResult.recieved = true;
-        requestResult.processingRequest = false;
+        request.result = (added) ? AssetCache::ERROR_OK : AssetCache::ERROR_SERVER_ERROR;
+        request.recieved = true;
+        request.processingRequest = false;
     }
     else
     {
-        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, requestResult.requestID);
+        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, request.requestID);
     }
 }
 
 void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
 {
-    FilePath outputFolder;
-    ResultOfRequest currentRequestResult;
+    Request currentRequest;
     {
         LockGuard<Mutex> guard(requestLocker);
-        currentRequestResult = requestResult;
-        outputFolder = requests[key];
-        requests.erase(key);
+        currentRequest = request;
     }
 
-    if (currentRequestResult.requestID == AssetCache::PACKET_GET_REQUEST)
+    if (currentRequest.requestID == AssetCache::PACKET_GET_REQUEST && currentRequest.key == key)
     {
         auto DumpInfo = [](const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
         {
@@ -216,16 +221,16 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
         if (value.IsEmpty())
         {
             LockGuard<Mutex> guard(requestLocker);
-            requestResult.result = AssetCache::ERROR_NOT_FOUND_ON_SERVER;
-            requestResult.recieved = true;
-            requestResult.processingRequest = false;
+            request.result = AssetCache::ERROR_NOT_FOUND_ON_SERVER;
+            request.recieved = true;
+            request.processingRequest = false;
         }
         else if (value.IsValid() == false)
         {
             LockGuard<Mutex> guard(requestLocker);
-            requestResult.result = AssetCache::ERROR_CORRUPTED_DATA;
-            requestResult.recieved = true;
-            requestResult.processingRequest = false;
+            request.result = AssetCache::ERROR_CORRUPTED_DATA;
+            request.recieved = true;
+            request.processingRequest = false;
 
             DumpInfo(key, value);
         }
@@ -233,25 +238,25 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
         {
             { // mark request as recieved and processed
                 LockGuard<Mutex> guard(requestLocker);
-                requestResult.result = AssetCache::ERROR_OK;
-                requestResult.recieved = true;
-                requestResult.processingRequest = true;
+                request.result = AssetCache::ERROR_OK;
+                request.recieved = true;
+                request.processingRequest = true;
             }
 
             DumpInfo(key, value);
 
-            FileSystem::Instance()->CreateDirectory(outputFolder, true);
-            value.Export(outputFolder);
+            FileSystem::Instance()->CreateDirectory(currentRequest.outputFolder, true);
+            value.Export(currentRequest.outputFolder);
 
             { // mark request as processed
                 LockGuard<Mutex> guard(requestLocker);
-                requestResult.processingRequest = false;
+                request.processingRequest = false;
             }
         }
     }
     else
     {
-        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, currentRequestResult.requestID);
+        Logger::Error("[AssetCacheClient::%s] Wrong answer. Waiting answer on %d", __FUNCTION__, currentRequest.requestID);
     }
 }
 

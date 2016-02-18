@@ -431,11 +431,11 @@ bool CachedItemValue::IsValid() const
 {
     if (isFetched)
     {
-        return (validationDetails.filesCount == dataContainer.size()) && (validationDetails.filesDataSize == size);
+        return (validationDetails.filesCount == static_cast<uint32>(dataContainer.size())) && (validationDetails.filesDataSize == size);
     }
     else
     {
-        return (validationDetails.filesCount == dataContainer.size());
+        return (validationDetails.filesCount == static_cast<uint32>(dataContainer.size()));
     }
 }
 
@@ -443,7 +443,7 @@ void CachedItemValue::FinalizeValidationData()
 {
     DVASSERT(isFetched == true);
 
-    validationDetails.filesCount = dataContainer.size();
+    validationDetails.filesCount = static_cast<uint32>(dataContainer.size());
     validationDetails.filesDataSize = size;
 }
 

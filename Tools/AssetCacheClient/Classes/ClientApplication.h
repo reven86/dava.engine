@@ -58,7 +58,7 @@ private:
     DAVA::List<std::unique_ptr<CacheRequest>> requests;
     CacheRequest* activeRequest = nullptr;
 
-    std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
+    DAVA::AssetCacheClient cacheClient;
 };
 
 #endif //__CLIENT_APPLICATION_H__

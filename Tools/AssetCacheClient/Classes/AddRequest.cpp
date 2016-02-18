@@ -44,7 +44,7 @@ AddRequest::AddRequest()
     options.AddOption("-f", VariantType(String("")), "Files list to send files to server", true);
 }
 
-DAVA::AssetCache::ErrorCodes AddRequest::SendRequest(AssetCacheClient* cacheClient)
+DAVA::AssetCache::ErrorCodes AddRequest::SendRequest(AssetCacheClient& cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
@@ -84,7 +84,7 @@ DAVA::AssetCache::ErrorCodes AddRequest::SendRequest(AssetCacheClient* cacheClie
 
     value.SetDescription(description);
     value.FinalizeValidationData();
-    return cacheClient->AddToCacheBlocked(key, value);
+    return cacheClient.AddToCacheBlocked(key, value);
 }
 
 DAVA::AssetCache::ErrorCodes AddRequest::CheckOptionsInternal() const

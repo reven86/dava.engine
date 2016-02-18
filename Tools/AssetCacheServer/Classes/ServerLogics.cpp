@@ -50,7 +50,7 @@ ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey& _key,
 {
 }
 
-void ServerLogics::Init(DAVA::AssetCache::ServerNetProxy* server_, DAVA::String serverName_, DAVA::AssetCache::ClientNetProxy* client_, DAVA::AssetCache::CacheDB* dataBase_)
+void ServerLogics::Init(DAVA::AssetCache::ServerNetProxy* server_, const DAVA::String& serverName_, DAVA::AssetCache::ClientNetProxy* client_, DAVA::AssetCache::CacheDB* dataBase_)
 {
     server = server_;
     serverName = serverName_;
