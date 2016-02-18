@@ -135,15 +135,18 @@ void Thread::Start()
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, (void*)this);
-    state = STATE_RUNNING;
-    
+    pthread_create(&handle, &attr, PthreadMain, this);
+    state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+
     pthread_attr_destroy(&attr);
 }
     
 void Thread::Join()
 {
-    pthread_join(handle, NULL);
+    if (state != STATE_ENDED && state != STATE_KILLED)
+    {
+        pthread_join(handle, nullptr);
+    }
 }
 
 Thread::Id Thread::GetCurrentId()
