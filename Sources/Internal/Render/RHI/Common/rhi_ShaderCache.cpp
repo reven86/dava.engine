@@ -478,7 +478,7 @@ static const char* _ShaderHeader_GLES2 =
 "#define mul( v, m ) ((m)*(v))\n"
 
 #if defined(__DAVAENGINE_MACOS__)
-"#define lerp(a,b,t) ( (a) + ( (b) - (a) ) * (t) )\n"
+"#define lerp(a,b,t) ( ( (b) - (a) ) * (t) + (a) )\n"
 #else
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 #endif
