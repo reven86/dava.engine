@@ -236,6 +236,8 @@
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\CommandLineParser.h" />
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\ProgramOptions.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h" />
@@ -258,7 +260,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h" />
     <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h" />
@@ -739,6 +740,8 @@
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\CommandLineParser.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\ProgramOptions.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp" />
@@ -748,7 +751,6 @@
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAClassRegistrator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp" />

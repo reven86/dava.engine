@@ -193,6 +193,9 @@
     <Filter Include="Internal\Render\RHI\DX11">
       <UniqueIdentifier>{b48afc8e-9353-403b-a35d-d68a17d86a0f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\CommandLine">
+      <UniqueIdentifier>{de111723-0223-4ea4-93a7-cc216095165c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h">
@@ -1270,9 +1273,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
-      <Filter>Internal</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
       <Filter>Internal\DataStorage</Filter>
     </ClInclude>
@@ -1716,6 +1716,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\CommandLineParser.h">
+      <Filter>Internal\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\CommandLine\ProgramOptions.h">
+      <Filter>Internal\CommandLine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2641,9 +2647,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
-      <Filter>Internal</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
       <Filter>Internal\DataStorage\Windows</Filter>
     </ClCompile>
@@ -3069,6 +3072,12 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\CommandLineParser.cpp">
+      <Filter>Internal\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\CommandLine\ProgramOptions.cpp">
+      <Filter>Internal\CommandLine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
