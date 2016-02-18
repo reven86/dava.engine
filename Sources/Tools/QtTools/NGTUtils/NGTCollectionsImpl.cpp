@@ -42,49 +42,68 @@
 
 namespace DAVA
 {
+TypeId GetItemKeyTypeId(const InspColl * collection)
+{
+    const MetaInfo* itemType = collection->ItemKeyType();
+    if (itemType == nullptr)
+        return getClassIdentifier<int>();
+    else
+        return itemType->GetTypeName();
+}
+
 class NGTCollection::Iterator : public CollectionIteratorImplBase
 {
 public:
     static const uint32 END_ITERATOR_POSITION = static_cast<uint32>(-1);
 
-    Iterator(const NGTCollection* collection, uint32 linearKey_)
-        : collection(collection)
+    Iterator(void * object_, const InspColl * collection_, uint32 linearKey_)
+        : object(object_)
+        , collection(collection_)
         , linearKey(linearKey_)
     {
-        dbg_name = collection->collectionImpl->Name().c_str();
-        iterator = collection->collectionImpl->Begin(collection->object);
-        uint32 counter = linearKey;
-        while (counter > 0 && iterator != nullptr)
+        keyTypeId = GetItemKeyTypeId(collection);
+        valueTypeId = collection->ItemType()->GetTypeName();
+
+        if (linearKey != END_ITERATOR_POSITION)
         {
-            iterator = collection->collectionImpl->Next(iterator);
-            --counter;
+            iterator = collection->Begin(object);
+            uint32 counter = linearKey;
+            while (counter > 0 && iterator != nullptr)
+            {
+                iterator = collection->Next(iterator);
+                --counter;
+            }
         }
+
+#ifdef __DAVAENGINE_DEBUG__
+        dbg_name = collection->Name().c_str();
+#endif
     }
 
     ~Iterator()
     {
-        collection->collectionImpl->Finish(iterator);
+        collection->Finish(iterator);
     }
 
     Variant key() const override
     {
-        const void* key = collection->collectionImpl->ItemKeyData(iterator);
+        const void* key = collection->ItemKeyData(iterator);
         if (key == nullptr)
         {
             return Variant(linearKey);
         }
 
-        DVASSERT(collection->collectionImpl->ItemKeyType() != nullptr);
-        return VariantConverter::Instance()->Convert(VariantType::LoadData(key, collection->collectionImpl->ItemKeyType()));
+        DVASSERT(collection->ItemKeyType() != nullptr);
+        return VariantConverter::Instance()->Convert(VariantType::LoadData(key, collection->ItemKeyType()));
     }
 
     Variant value() const override
     {
-        const MetaInfo* valueTypeInfo = collection->collectionImpl->ItemType();
+        const MetaInfo* valueTypeInfo = collection->ItemType();
         DVASSERT(valueTypeInfo != nullptr);
-        if (collection->collectionImpl->ItemType()->GetIntrospection() != nullptr)
+        if (collection->ItemType()->GetIntrospection() != nullptr)
         {
-            void* itemData = collection->collectionImpl->ItemData(iterator);
+            void* itemData = collection->ItemData(iterator);
             const InspInfo* itemInsp = valueTypeInfo->GetIntrospection(itemData);
 
             if (itemData != nullptr && itemInsp != nullptr)
@@ -95,7 +114,7 @@ public:
             }
         }
 
-        void* valuePointer = collection->collectionImpl->ItemPointer(iterator);
+        void* valuePointer = collection->ItemPointer(iterator);
         DVASSERT(valuePointer != nullptr);
 
         return VariantConverter::Instance()->Convert(VariantType::LoadData(valuePointer, valueTypeInfo));
@@ -103,26 +122,24 @@ public:
 
     bool setValue(const Variant& v) const override
     {
-        void* valuePointer = collection->collectionImpl->ItemPointer(iterator);
+        void* valuePointer = collection->ItemPointer(iterator);
         DVASSERT(valuePointer != nullptr);
-        DVASSERT(collection->collectionImpl->ItemType() != nullptr);
+        DVASSERT(collection->ItemType() != nullptr);
 
-        if ((collection->collectionImpl->Flags() & I_EDIT) == 0)
-            return false;
-
-        VariantType value = VariantConverter::Instance()->Convert(v, collection->collectionImpl->ItemType());
+        DVASSERT((collection->Flags() & I_EDIT) != 0)
+        VariantType value = VariantConverter::Instance()->Convert(v, collection->ItemType());
 
         if (value.GetType() == VariantType::TYPE_NONE)
             return false;
 
-        VariantType::SaveData(valuePointer, collection->collectionImpl->ItemType(), value);
+        VariantType::SaveData(valuePointer, collection->ItemType(), value);
 
         return true;
     }
 
     void inc() override
     {
-        iterator = collection->collectionImpl->Next(iterator);
+        iterator = collection->Next(iterator);
         ++linearKey;
     }
 
@@ -130,15 +147,15 @@ public:
     {
         DVASSERT(dynamic_cast<const Iterator*>(&that) != nullptr);
         const Iterator& thatIter = static_cast<const Iterator&>(that);
-        return collection->object == thatIter.collection->object &&
-        collection->collectionImpl == thatIter.collection->collectionImpl &&
+        return object == thatIter.object &&
+        collection == thatIter.collection &&
         iterator == thatIter.iterator &&
         linearKey == thatIter.linearKey;
     }
 
     CollectionIteratorImplPtr clone() const override
     {
-        return CollectionIteratorImplPtr(new Iterator(collection, linearKey));
+        return CollectionIteratorImplPtr(new Iterator(object, collection, linearKey));
     }
 
     bool isValid() const
@@ -148,19 +165,25 @@ public:
 
     const TypeId& keyType() const override
     {
-        return collection->keyType();
+        return keyTypeId;
     }
 
     const TypeId& valueType() const override
     {
-        return collection->valueType();
+        return valueTypeId;
     }
 
 private:
-    const NGTCollection* collection;
+    void * object;
+    const DAVA::InspColl * collection;
     InspColl::Iterator iterator = nullptr;
     uint32 linearKey = 0;
+#ifdef __DAVAENGINE_DEBUG__
     DAVA::String dbg_name;
+#endif
+
+    TypeId keyTypeId;
+    TypeId valueTypeId;
 };
 
 NGTCollection::NGTCollection(void* object_, const InspColl* collectionImpl_)
@@ -189,12 +212,12 @@ size_t NGTCollection::size() const
 
 CollectionIteratorImplPtr NGTCollection::begin()
 {
-    return CollectionIteratorImplPtr(new Iterator(this, 0));
+    return CollectionIteratorImplPtr(new Iterator(object, collectionImpl, 0));
 }
 
 CollectionIteratorImplPtr NGTCollection::end()
 {
-    return CollectionIteratorImplPtr(new Iterator(this, Iterator::END_ITERATOR_POSITION));
+    return CollectionIteratorImplPtr(new Iterator(object, collectionImpl, Iterator::END_ITERATOR_POSITION));
 }
 
 std::pair<CollectionIteratorImplPtr, bool> NGTCollection::get(const Variant& key, GetPolicy policy)
@@ -205,7 +228,7 @@ std::pair<CollectionIteratorImplPtr, bool> NGTCollection::get(const Variant& key
 
     using TRet = std::pair<CollectionIteratorImplPtr, bool>;
 
-    Iterator iter(this, 0);
+    Iterator iter(object, collectionImpl, 0);
     while (iter.isValid())
     {
         if (iter.key() == key)
