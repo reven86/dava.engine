@@ -161,7 +161,7 @@ void Heightmap::Save(const FilePath& filePathname)
         {
             for (int32 iCol = 0; iCol < blockCount; ++iCol)
             {
-                int32 tileY = iRow * (size - 1) * tileSize;
+                int32 tileY = iRow * size * tileSize;
                 int32 tileX = iCol * tileSize;
                 for (int32 iTileRow = 0; iTileRow < tileSize; ++iTileRow, tileY += size)
                 {
