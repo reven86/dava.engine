@@ -257,6 +257,7 @@ void Landscape::AllocateGeometryData()
     uint32 maxLevels = FastLog2(heightmapSize / PATCH_SIZE_QUADS) + 1;
     subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
     minSubdivLevelSize = useInstancing ? 0 : heightmapSize / RENDER_PARCEL_SIZE_QUADS;
+    heightmapSizePow2 = HighestBitIndex(heightmapSize);
 
     subdivPatchCount = 0;
     uint32 size = 1;
@@ -317,7 +318,7 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
         img->Release();
 
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NEAREST);
+    tx->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NEAREST);
 
     return tx;
 }
@@ -925,7 +926,10 @@ void Landscape::ClearQueue()
 void Landscape::AllocateGeometryDataInstancing()
 {
     ScopedPtr<Texture> heightTexture(CreateHeightTexture(heightmap));
-    landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
+    if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
+        landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
+    else
+        landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
     uint32 verticesCount = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
     VertexInstancing* patchVertices = new VertexInstancing[verticesCount];
@@ -1008,6 +1012,7 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4);
     vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 1);
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 
@@ -1082,7 +1087,11 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 x
 
     instanceDataPtr->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
     instanceDataPtr->patchScale = 1.f / levelInfo.size;
-    instanceDataPtr->lodMorph = 0.f;
+
+    uint32 baseLod = subdivLevelCount - level - 1;
+    instanceDataPtr->lodMorph = float32(baseLod);
+    instanceDataPtr->centerPixelOffset = 1.f / (1 << (heightmapSizePow2 - baseLod + 1));
+
     instanceDataPtr->lodOffset = Vector4(
     float32(1 << (levelInfo.sizePow2 - xNegSizePow2)),
     float32(1 << (levelInfo.sizePow2 - xPosSizePow2)),

@@ -192,6 +192,8 @@ protected:
     NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
 
+    uint32 heightmapSizePow2 = 0;
+
     uint32 drawIndices = 0;
 
     bool forceFirstLod = false;
@@ -322,6 +324,7 @@ protected:
         float32 patchScale;
         float32 lodMorph;
         Vector4 lodOffset; // per edge
+        float32 centerPixelOffset;
     };
 
     struct InstanceDataBuffer
