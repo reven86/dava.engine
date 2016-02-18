@@ -1447,6 +1447,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::CHAR:
     case UIEvent::Phase::CHAR_REPEAT:
+    case UIEvent::Phase::KEY_UP:
     case UIEvent::Phase::KEY_DOWN:
     case UIEvent::Phase::KEY_DOWN_REPEAT:
     {
@@ -1530,9 +1531,10 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             {
                                 controlState |= STATE_PRESSED_INSIDE;
                                 controlState &= ~STATE_PRESSED_OUTSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                controlState |= STATE_HOVER;
-#endif
+                                if (currentInput->device == UIEvent::Device::MOUSE)
+                                {
+                                    controlState |= STATE_HOVER;
+                                }
                             }
                         }
                     }
@@ -1574,12 +1576,13 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                     {
                         --touchesInside;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        if (totalTouches == 0)
+                        if (currentInput->device == UIEvent::Device::MOUSE)
                         {
-                            controlState |= STATE_HOVER;
+                            if (totalTouches == 0)
+                            {
+                                controlState |= STATE_HOVER;
+                            }
                         }
-#endif
                     }
 
                     currentInput->controlState =
@@ -1615,13 +1618,13 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     {
                         controlState |= STATE_PRESSED_OUTSIDE;
                         controlState &= ~STATE_PRESSED_INSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        controlState &= ~STATE_HOVER;
-#endif
+                        if (currentInput->device == UIEvent::Device::MOUSE)
+                        {
+                            controlState &= ~STATE_HOVER;
+                        }
                     }
                 }
             }
-
             currentInput->touchLocker = NULL;
             return true;
         }

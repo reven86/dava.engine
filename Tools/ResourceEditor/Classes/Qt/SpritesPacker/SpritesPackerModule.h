@@ -27,31 +27,45 @@
 =====================================================================================*/
 
 
-#ifndef QUAADLER32_H
-#define QUAADLER32_H
+#ifndef __SPRITES_PACKER_MODULE_H__
+#define __SPRITES_PACKER_MODULE_H__
 
-#include <QByteArray>
+#include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
-#include "quachecksum32.h"
+#include <QObject>
 
-/// Adler32 checksum
-/** \class QuaAdler32 quaadler32.h <quazip/quaadler32.h>
- * This class wrappers the adler32 function with the QuaChecksum32 interface.
- * See QuaChecksum32 for more info.
- */
-class QUAZIP_EXPORT QuaAdler32 : public QuaChecksum32
+class SpritesPacker;
+class QAction;
+class SpritesPackerModule final : public QObject
 {
+    Q_OBJECT
+
 public:
-    QuaAdler32();
+    SpritesPackerModule();
+    ~SpritesPackerModule() override;
 
-    quint32 calculate(const QByteArray& data);
+    QAction* GetReloadAction() const;
+    void SetAction(QAction* reloadSpritesAction);
 
-    void reset();
-    void update(const QByteArray& buf);
-    quint32 value();
+    void RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
+
+signals:
+    void SpritesReloaded();
+
+private slots:
+
+    void RepackWithDialog();
 
 private:
-    quint32 checksum;
+    void SetupSpritesPacker(const DAVA::FilePath& projectPath);
+    void ShowPackerDialog();
+    void ReloadObjects();
+
+private:
+    std::unique_ptr<SpritesPacker> spritesPacker;
+    QAction* reloadSpritesAction = nullptr;
 };
 
-#endif //QUAADLER32_H
+#endif // __SPRITES_PACKER_MODULE_H__
