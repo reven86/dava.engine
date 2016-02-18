@@ -100,7 +100,8 @@ UIControlSystem::UIControlSystem()
     {
         defaultDoubleClickRadiusSquared = 4; // default, if touch didn't detect, 4 - default pixels in windows desktop
     }
-    SetTapCountSettings(defaultDoubleClickTime, defaultDoubleClickRadiusSquared);
+    doubleClickTime = defaultDoubleClickTime;
+    doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
@@ -421,6 +422,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
+    CalculatedTapCount(newEvent);
 
     if (Replay::IsPlayback())
     {
@@ -439,27 +441,6 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             Replay::Instance()->RecordEvent(newEvent);
         }
         UIEvent* eventToHandle = nullptr;
-
-        // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
-        if (newEvent->phase == UIEvent::Phase::BEGAN)
-        {
-            DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
-            newEvent->tapCount = 1;
-            if ((lastEvent.timestamp != 0.0) && ((newEvent->timestamp - lastEvent.timestamp) < doubleClickTime))
-            {
-                float32 pointShift((lastEvent.physPoint.x - newEvent->physPoint.x) * (lastEvent.physPoint.x - newEvent->physPoint.x) + (lastEvent.physPoint.y - newEvent->physPoint.y) * (lastEvent.physPoint.y - newEvent->physPoint.y));
-                if (pointShift < doubleClickRadiusSquared)
-                {
-                    newEvent->tapCount = lastEvent.tapCount + 1;
-                }
-            }
-            lastEvent.timestamp = newEvent->timestamp;
-            lastEvent.physPoint = newEvent->physPoint;
-            lastEvent.point = newEvent->point;
-            lastEvent.tapCount = newEvent->tapCount;
-            lastEvent.phase = newEvent->phase;
-            lastEvent.inputHandledType = newEvent->inputHandledType;
-        }
 
         if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
         {
@@ -725,6 +706,30 @@ void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
         screenSwitchListenersCopy[i]->OnScreenDidSwitch(screen);
 }
 
+void UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
+{
+    // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
+    if ((newEvent->phase == UIEvent::Phase::BEGAN) && (lastClickData.phase == newEvent->phase))
+    {
+        DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
+        newEvent->tapCount = 1;
+        if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+        {
+            // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
+            float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
+            pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
+            if (pointShift < doubleClickRadiusSquared)
+            {
+                newEvent->tapCount = lastClickData.tapCount + 1;
+            }
+        }
+    }
+    lastClickData.timestamp = newEvent->timestamp;
+    lastClickData.physPoint = newEvent->physPoint;
+    lastClickData.tapCount = newEvent->tapCount;
+    lastClickData.phase = newEvent->phase;
+}
+
 bool UIControlSystem::IsRtl() const
 {
     return layoutSystem->IsRtl();
@@ -770,18 +775,16 @@ void UIControlSystem::SetUseClearPass(bool use)
     useClearPass = use;
 }
 
+void UIControlSystem::SetDefaultTapCountSettings()
+{
+    doubleClickTime = defaultDoubleClickTime;
+    doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+}
+
 void UIControlSystem::SetTapCountSettings(float32 time, int32 radius)
 {
-    if (time == 0.f && radius == 0)
-    {
-        doubleClickTime = defaultDoubleClickTime;
-        doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
-    }
-    else
-    {
-        DVASSERT((time > 0.f) && (radius > 0));
-        doubleClickTime = time;
-        doubleClickRadiusSquared = radius * radius;
-    }
+    DVASSERT((time > 0.f) && (radius > 0));
+    doubleClickTime = time;
+    doubleClickRadiusSquared = radius * radius;
 }
 };

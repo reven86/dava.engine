@@ -304,6 +304,7 @@ public:
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool use);
 
+    void SetDefaultTapCountSettings();
     void SetTapCountSettings(float32 time = 0.f, int32 radius = 0);
 
 private:
@@ -320,6 +321,7 @@ private:
 
     void NotifyListenersWillSwitch(UIScreen* screen);
     void NotifyListenersDidSwitch(UIScreen* screen);
+    void CalculatedTapCount(UIEvent* newEvent);
 
     UILayoutSystem* layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
@@ -356,7 +358,13 @@ private:
     int32 doubleClickRadiusSquared = 0;
     const float32 defaultDoubleClickTime = 0.5f; // seconds
     int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
-    UIEvent lastEvent;
+    struct
+    {
+        Vector2 physPoint;
+        float64 timestamp = 0.0;
+        UIEvent::Phase phase = UIEvent::Phase::ERROR;
+        int32 tapCount = 0;
+    } lastClickData;
 
     friend class UIScreenTransition;
     friend class UIScreenManager;
