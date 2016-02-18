@@ -62,6 +62,8 @@ void NEON_Matrix4Mul(const float* a, const float* b, float* output)
 {
     asm volatile
     (
+    "vpush {q4-q7} \n\t"
+
     // Store A & B leaving room at top of registers for result (q0-q3)
     "vldmia %1, { q4-q7 }  \n\t"
     "vldmia %2, { q8-q11 } \n\t"
@@ -91,7 +93,10 @@ void NEON_Matrix4Mul(const float* a, const float* b, float* output)
     "vmla.f32 q3, q11, d15[1]\n\t"
 
     // output = result registers
-    "vstmia %0, { q0-q3 }"
+    "vstmia %0, { q0-q3 } \n\t"
+
+    "vpop {q4-q7}"
+
     : // no output
     : "r"(output), "r"(a), "r"(b) // input - note *value* of pointer doesn't change
     : "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q11" //clobber
@@ -102,6 +107,8 @@ void NEON_Matrix4Vector4Mul(const float* m, const float* v, float* output)
 {
     asm volatile
     (
+    "vpush {q4-q7} \n\t"
+
     // Store m & v leaving room at top of registers for result (q0)
     "vldmia %1, {q1-q4 }   \n\t" // q2-q5 = m
     "vldmia %2, {q5}               \n\t" // q1    = v
@@ -119,7 +126,9 @@ void NEON_Matrix4Vector4Mul(const float* m, const float* v, float* output)
     "vmla.f32 q0, q4, d11[1]\n\t"
 
     // output = result registers
-    "vstmia %0, {q0}"
+    "vstmia %0, {q0} \n\t"
+
+    "vpop {q4-q7}"
 
     : // no output
     : "r"(output), "r"(m), "r"(v) // input - note *value* of pointer doesn't change
