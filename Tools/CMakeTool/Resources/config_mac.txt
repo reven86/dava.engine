@@ -1,0 +1,80 @@
+{
+  "platforms": [
+    {
+      "name": "Windows",
+      "checked": true,
+      "value": "-G\"Visual Studio 12\" $PATH_TO_BUILD_FOLDER/.."
+    },
+    {
+      "name": "OS X",
+      "checked": false,
+      "value": "-G\"Xcode\" $PATH_TO_BUILD_FOLDER"
+    },
+    {
+      "name": "IOS",
+      "checked": false,
+      "value": "-G\"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $PATH_TO_BUILD_FOLDER/.."
+    },
+    {
+      "name": "Android",
+      "checked": false,
+      "value": "-G \"%1Unix Makefiles\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $PATH_TO_BUILD_FOLDER/..",
+      "defaults": [
+        {
+          "substring number": 1,
+          "value": "Eclipse CDT4 - "
+        }
+      ],
+      "options": [
+        {
+          "name": "console",
+          "type": "checkbox",
+          "checked": true,
+          "substring number": 1,
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "Windows 10",
+      "checked": false,
+      "value": "$DAVA_FRAMEWORK_PATH\\Tools\\WinStoreCMake\\mk_project.bat $PATH_TO_BUILD_FOLDER/.. %1",
+      "defaults": [
+        {
+          "substring number": 1,
+          "value": ""
+        }
+      ],
+      "options": [
+        {
+          "name": "ARM",
+          "type": "radiobutton",
+          "checked": false,
+          "substring number": 1,
+          "value": "ARM"
+        },
+        {
+          "name": "Win32",
+          "type": "radiobutton",
+          "checked": true,
+          "substring number": 1,
+          "value": "Win32"
+        },
+        {
+          "name": "Win64",
+          "type": "radiobutton",
+          "checked": false,
+          "substring number": 1,
+          "value": "Win64"
+        }
+      ]
+    }
+  ],
+  "options": [
+    {
+      "name": "Unity build",
+      "checked": true,
+      "value": "-DUNITY_BUILD=true"
+    }
+  ]
+}
