@@ -48,7 +48,7 @@ void ConfigStorage::SaveJSONTestToConfig(QString config)
     else
     {
         auto button = QMessageBox::question(nullptr, tr("Can't open file"), tr("Can not open config file %1\n. do you want to repeat?").arg(configFilePath));
-        if(button = QMessageBox::Yes)
+        if(button == QMessageBox::Yes)
         {
             SaveJSONTestToConfig(config);
         }

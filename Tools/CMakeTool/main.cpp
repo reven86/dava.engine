@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("configuration", configuration);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    QObject::connect(engine.rootObjects().at(0), SIGNAL(dataReadyToSave(QString)), &configStorage, SLOT(SaveJSONTestToConfig(QString)));
+    //QObject::connect(engine.rootObjects().at(0), SIGNAL(dataReadyToSave(QString)), &configStorage, SLOT(SaveJSONTestToConfig(QString)));
     return app.exec();
 }
 
