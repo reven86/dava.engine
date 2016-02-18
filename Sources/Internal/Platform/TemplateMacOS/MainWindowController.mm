@@ -255,15 +255,48 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
+        
+        isDisplaySleepAllowed = true;
+        [self allowDisplaySleep:false];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [self allowDisplaySleep:true];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
+}
+
+- (void)allowDisplaySleep:(bool)sleep
+{
+    if (sleep == isDisplaySleepAllowed)
+    {
+        return;
+    }
+    
+    IOReturn result;
+    if (sleep)
+    {
+        result = IOPMAssertionRelease(assertionID);
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("DAVA display sleeping preventing"),
+                                             &assertionID);
+    }
+    
+    if (result != kIOReturnSuccess)
+    {
+        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        return;
+    }
+    
+    isDisplaySleepAllowed = sleep;
 }
 
 - (void)createWindows
@@ -614,6 +647,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnSuspend
 {
+    [self allowDisplaySleep:true];
+    
     if (core)
     {
         core->OnSuspend();
@@ -626,6 +661,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
+    [self allowDisplaySleep:false];
+    
     if (core)
     {
         core->OnResume();

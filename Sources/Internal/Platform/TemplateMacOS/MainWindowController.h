@@ -28,6 +28,8 @@
 
 
 #import <Cocoa/Cocoa.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
+
 #import "OpenGLView.h"
 #import "AppDelegate.h"
 
@@ -41,12 +43,18 @@
 
     ApplicationCore* core;
     bool fullScreen;
+    
+@private
+    IOPMAssertionID assertionID;
+    bool isDisplaySleepAllowed;
 }
 
 - (void)createWindows;
 
 - (bool)isFullScreen;
 - (bool)setFullScreen:(bool)_fullScreen;
+
+- (void)allowDisplaySleep:(bool)sleep;
 
 - (void)windowWillMiniaturize:(NSNotification*)notification;
 - (void)windowDidDeminiaturize:(NSNotification*)notification;
