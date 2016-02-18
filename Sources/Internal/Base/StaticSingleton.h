@@ -48,7 +48,7 @@ public:
         alive = true;
     }
 
-    ~StaticSingleton()
+    virtual ~StaticSingleton()
     {
         alive = false;
     }

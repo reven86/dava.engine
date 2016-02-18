@@ -125,15 +125,16 @@ inline String RTStringToString(Platform::String ^ s)
 template <class T>
 bool FindAndRemoveExchangingWithLast(Vector<T>& array, const T& object)
 {
-    uint32 size = static_cast<uint32>(array.size());
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = array.size();
+    for (size_t k = 0; k < size; ++k)
+    {
         if (array[k] == object)
         {
             array[k] = array[size - 1];
             array.pop_back();
             return true;
         }
-
+    }
     return false;
 }
 

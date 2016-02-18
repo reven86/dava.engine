@@ -52,7 +52,7 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
         {
             if (NULL != namesTable[i])
             {
-                void* p = static_cast<void*>(const_cast<char*>(namesTable[i]));
+                void* p = const_cast<char*>(namesTable[i]);
                 free(p);
                 namesTable[i] = nullptr;
             }

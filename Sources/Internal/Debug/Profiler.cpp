@@ -47,7 +47,7 @@ using namespace DAVA;
 static inline long
 CurTimeUs()
 {
-    return long(SystemTimer::Instance()->GetAbsoluteUs());
+    return static_cast<long>(SystemTimer::Instance()->GetAbsoluteUs());
 }
 
 namespace profiler
@@ -494,15 +494,13 @@ DumpAverage()
 //------------------------------------------------------------------------------
 
 static void
-CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vector<Counter*>* result)
+CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vector<const Counter*>* result)
 {
     for (const Counter *c = base, *c_end = base + maxCounterCount; c != c_end; ++c)
     {
-        if (c->IsUsed()
-            && c->GetParentId() == counter->GetId()
-            )
+        if (c->IsUsed() && c->GetParentId() == counter->GetId())
         {
-            result->push_back(const_cast<Counter*>(c));
+            result->push_back(c);
             CollectCountersWithChilds(base, c, result);
         }
     }
@@ -511,11 +509,11 @@ CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vect
 //------------------------------------------------------------------------------
 
 static void
-CollectActiveCounters(Counter* cur_counter, std::vector<Counter*>* result)
+CollectActiveCounters(Counter* cur_counter, std::vector<const Counter*>* result)
 {
     // get top-level counters, sorted by time
 
-    static std::vector<Counter*> top;
+    static std::vector<const Counter*> top;
 
     top.clear();
     for (Counter *c = cur_counter, *c_end = cur_counter + maxCounterCount; c != c_end; ++c)
@@ -557,7 +555,7 @@ CollectActiveCounters(Counter* cur_counter, std::vector<Counter*>* result)
 void
 GetCounters(std::vector<CounterInfo>* info)
 {
-    static std::vector<Counter*> result;
+    static std::vector<const Counter*> result;
 
     CollectActiveCounters(curCounter, &result);
 
@@ -621,7 +619,7 @@ GetAverageCounters(std::vector<CounterInfo>* info)
             c->t /= historyCount;
         }
 
-        static std::vector<Counter*> result;
+        static std::vector<const Counter*> result;
 
         CollectActiveCounters(profAverage, &result);
 
