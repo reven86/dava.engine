@@ -283,33 +283,17 @@ void MainWindow::FillComboboxLanguages(const Project* project)
 
 void MainWindow::InitRtlBox()
 {
-    QCheckBox* rtlBox = new QCheckBox();
-    rtlBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("Right-to-left"));
-    label->setBuddy(rtlBox);
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(rtlBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
+    rtlBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
 void MainWindow::InitBiDiSupportBox()
 {
-    QCheckBox* bidiSupportBox = new QCheckBox();
-    bidiSupportBox->setCheckState(Qt::Unchecked);
-    QLabel* label = new QLabel(tr("BiDi Support"));
-    label->setBuddy(bidiSupportBox);
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(bidiSupportBox);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
+    bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
@@ -332,7 +316,7 @@ void MainWindow::InitGlobalClasses()
 void MainWindow::InitEmulationMode()
 {
     emulationBox = new QCheckBox("Emulation", this);
-    emulationBox->setCheckState(Qt::Unchecked);
+    emulationBox->setLayoutDirection(Qt::RightToLeft);
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
     toolBarPlugins->addWidget(emulationBox);
 }
