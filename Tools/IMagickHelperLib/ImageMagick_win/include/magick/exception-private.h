@@ -34,10 +34,10 @@ extern "C" {
 }
 #define ThrowFatalException(severity, tag) \
 { \
-  char                                                        \
+  char                                                      \
         * message; \
  \
-  ExceptionInfo                                                                        \
+  ExceptionInfo                                                                      \
         exception; \
  \
   GetExceptionInfo(&exception); \
@@ -51,7 +51,7 @@ extern "C" {
 }
 #define ThrowFileException(exception, severity, tag, context) \
 { \
-  char                                     \
+  char                                   \
         * message; \
  \
   message = GetExceptionMessage(errno); \
