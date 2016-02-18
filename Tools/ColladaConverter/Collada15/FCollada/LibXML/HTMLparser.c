@@ -251,7 +251,7 @@ htmlnamePop(htmlParserCtxtPtr ctxt)
         (ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
 	xmlParserInputShrink(ctxt->input)
 
-#define GROW if ((ctxt->progressive == 0) &&                                 \
+#define GROW if ((ctxt->progressive == 0) && \
         (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK))	\
 	xmlParserInputGrow(ctxt->input, INPUT_CHUNK)
 

@@ -1572,7 +1572,7 @@ ZEXTERN int ZEXPORT inflateBackInit_ OF((z_streamp strm, int windowBits,
 #define inflateInit2(strm, windowBits) \
         inflateInit2_((strm), (windowBits), ZLIB_VERSION, sizeof(z_stream))
 #define inflateBackInit(strm, windowBits, window) \
-        inflateBackInit_((strm), (windowBits), (window),                   \
+        inflateBackInit_((strm), (windowBits), (window), \
                      ZLIB_VERSION, sizeof(z_stream))
 
 /* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
