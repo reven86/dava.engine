@@ -43,7 +43,7 @@
 QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 
 QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
-    : QDialog(parent, Qt::Dialog)
+    : QDialog(parent, Qt::Dialog | Qt::WindowStaysOnTopHint) //https://bugreports.qt.io/browse/QTBUG-34767
 {
     int mainRow = 0;
     int height = 10;
@@ -429,7 +429,7 @@ void QualitySwitcher::ApplySettings()
     }
 }
 
-QDialog* QualitySwitcher::GetDialog()
+void QualitySwitcher::ShowDialog()
 {
     if (switcherDialog == nullptr)
     {
@@ -442,7 +442,9 @@ QDialog* QualitySwitcher::GetDialog()
 
         switcherDialog->show();
     }
-    return switcherDialog;
+
+    switcherDialog->raise();
+    switcherDialog->activateWindow();
 }
 
 void QualitySwitcher::OnTxQualitySelect(int index)
