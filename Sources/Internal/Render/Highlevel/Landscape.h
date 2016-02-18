@@ -322,9 +322,12 @@ protected:
     {
         Vector2 patchOffset;
         float32 patchScale;
-        float32 lodMorph;
-        Vector4 lodOffset; // per edge
         float32 centerPixelOffset;
+
+        Vector4 lodOffset; // per edge: left, right, bottom, top
+
+        float32 morphBaseLod;
+        float32 morphAmount;
     };
 
     struct InstanceDataBuffer

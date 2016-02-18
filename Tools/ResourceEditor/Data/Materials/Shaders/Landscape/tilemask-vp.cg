@@ -9,7 +9,7 @@
 		VPROG_IN_STREAM_INSTANCE
 			VPROG_IN_TEXCOORD4(4)
 			VPROG_IN_TEXCOORD5(4)
-			VPROG_IN_TEXCOORD6(1)
+			VPROG_IN_TEXCOORD6(2)
 	VPROG_IN_END
 	
 #else
@@ -72,8 +72,8 @@ VPROG_BEGIN
     float2 gluDir = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
     float3 patchOffsetScale = VP_IN_TEXCOORD4.xyz;
+	float centerPixelOffset = VP_IN_TEXCOORD4.;
     float4 lodOffset = VP_IN_TEXCOORD5;
-	float centerPixelOffset = VP_IN_TEXCOORD6.x;
 	
     float gluAmount = dot(edgeMask, lodOffset);
 	float2 pos_i = abs(gluDir - in_pos) * float(PATCH_SIZE_QUADS);
@@ -85,9 +85,8 @@ VPROG_BEGIN
 	
 #if LOD_MORPHING
 
-	float lodMorph = VP_IN_TEXCOORD4.w;
-	float baseLod = floor(lodMorph);
-	float morphAmount = lodMorph - baseLod;
+	float baseLod = VP_IN_TEXCOORD6.x;
+	float morphAmount = VP_IN_TEXCOORD6.y;
 	
     float4 heightmapSample0 = VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset), baseLod);
 	float4 heightmapSample1 = VP_TEXTURE2D(heightmap, relativePosition, baseLod + 1.0);
@@ -95,7 +94,7 @@ VPROG_BEGIN
 	
 #else
 	
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition, 0.0);
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset), 0.0);
 	
 #endif
 

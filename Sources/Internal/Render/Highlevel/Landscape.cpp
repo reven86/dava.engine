@@ -1089,8 +1089,10 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, uint32 x
     instanceDataPtr->patchScale = 1.f / levelInfo.size;
 
     uint32 baseLod = subdivLevelCount - level - 1;
-    instanceDataPtr->lodMorph = float32(baseLod);
     instanceDataPtr->centerPixelOffset = 1.f / (1 << (heightmapSizePow2 - baseLod + 1));
+    instanceDataPtr->morphBaseLod = float32(baseLod);
+
+    instanceDataPtr->morphAmount = 0.f;
 
     instanceDataPtr->lodOffset = Vector4(
     float32(1 << (levelInfo.sizePow2 - xNegSizePow2)),
