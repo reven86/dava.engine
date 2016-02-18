@@ -72,7 +72,7 @@ VPROG_BEGIN
     float2 gluDir = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
     float3 patchOffsetScale = VP_IN_TEXCOORD4.xyz;
-	float centerPixelOffset = VP_IN_TEXCOORD4.;
+	float centerPixelOffset = VP_IN_TEXCOORD4.w;
     float4 lodOffset = VP_IN_TEXCOORD5;
 	
     float gluAmount = dot(edgeMask, lodOffset);

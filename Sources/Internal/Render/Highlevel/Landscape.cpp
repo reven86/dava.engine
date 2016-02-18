@@ -1012,7 +1012,7 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4);
     vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4);
-    vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 1);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 2);
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 
