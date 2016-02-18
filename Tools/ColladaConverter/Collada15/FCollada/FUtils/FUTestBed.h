@@ -1,3 +1,4 @@
+// clang-format off
 /*
 	Copyright (C) 2005-2007 Feeling Software Inc.
 	Portions of the code are:
@@ -125,8 +126,8 @@ public:
 FUTestSuite* _test##suiteName; \
 static class FUTestSuite##suiteName : public FUTestSuite \
 { \
-public:                         \
-        FUTestSuite##suiteName()                                                                           \
+public : \
+        FUTestSuite##suiteName() \
             : FUTestSuite() { _test##suiteName = this; } \
 	virtual ~FUTestSuite##suiteName() {} \
 	virtual bool RunTest(FUTestBed& testBed, FULogFile& fileOut, bool& __testSuiteDone, size_t testIndex) \
@@ -173,3 +174,4 @@ public:                         \
 #endif
 
 #endif // _FU_TESTBED_H_
+// clang-format on
