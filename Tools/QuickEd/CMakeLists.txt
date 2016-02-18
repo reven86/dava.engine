@@ -55,12 +55,3 @@ set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
-
-if( WIN32 AND NOT DAVA_MEGASOLUTION )
-    set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
-    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-
-endif()

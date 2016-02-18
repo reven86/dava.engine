@@ -389,6 +389,8 @@ void SceneEditor2::SetChanged(bool changed)
 
 void SceneEditor2::Update(float timeElapsed)
 {
+    ++framesCount;
+
     renderStats = Renderer::GetRenderStats();
     Renderer::GetRenderStats().Reset();
 
@@ -701,4 +703,14 @@ void SceneEditor2::Deactivate()
 {
     Scene::Deactivate();
     SceneSignals::Instance()->EmitDeactivated(this);
+}
+
+uint32 SceneEditor2::GetFramesCount() const
+{
+    return framesCount;
+}
+
+void SceneEditor2::ResetFramesCount()
+{
+    framesCount = 0;
 }
