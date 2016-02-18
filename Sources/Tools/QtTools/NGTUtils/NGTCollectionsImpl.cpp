@@ -30,11 +30,13 @@
 
 #include "ReflectionBridge.h"
 #include "VariantConverter.h"
+#include "GlobalContext.h"
 
 #include "Base/Introspection.h"
 #include "Base/IntrospectionCollection.h"
 #include "Base/IntrospectionDynamic.h"
 #include "Base/Meta.h"
+#include "FileSystem/KeyedArchive.h"
 
 #include "Debug/DVAssert.h"
 
@@ -108,7 +110,7 @@ public:
 
             if (itemData != nullptr && itemInsp != nullptr)
             {
-                IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
+                IDefinitionManager* defMng = queryInterface<IDefinitionManager>();
                 DVASSERT(defMng != nullptr);
                 return CreateObjectHandle(*defMng, itemInsp, itemData);
             }
@@ -280,4 +282,247 @@ void* NGTCollection::containerData() const
 {
     return (void*)(this);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+class NGTKeyedArchiveImpl::Iterator : public CollectionIteratorImplBase
+{
+public:
+    static const DAVA::String END_KEY_VALUE;
+    Iterator(DAVA::KeyedArchive * archive_, const DAVA::String & key_)
+        : archive(archive_)
+        , itemKey(key_)
+    {
+        keyTypeId = TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
+        if (itemKey == END_KEY_VALUE)
+        {
+            valueTypeId = getClassIdentifier<void>();
+        }
+        else
+        {
+            valueTypeId = archive->GetVariant(itemKey)->Meta()->GetTypeName();
+        }
+    }
+
+    const TypeId& keyType() const override
+    {
+        return keyTypeId;
+    }
+
+    const TypeId& valueType() const override
+    {
+        return valueTypeId;
+    }
+
+    Variant key() const override
+    {
+        return Variant(itemKey);
+    }
+
+    Variant value() const override
+    {
+        DVASSERT(itemKey != END_KEY_VALUE);
+        DVASSERT(archive->IsKeyExists(itemKey));
+        VariantType * value = archive->GetVariant(itemKey);
+        if (value->GetType() == VariantType::TYPE_KEYED_ARCHIVE)
+        {
+            IDefinitionManager* defMng = queryInterface<IDefinitionManager>();
+            DVASSERT(defMng != nullptr);
+            return CreateObjectHandle(*defMng, DAVA::GetIntrospection<DAVA::KeyedArchive>(), value->AsKeyedArchive());
+        }
+        return VariantConverter::Instance()->Convert(*archive->GetVariant(itemKey));
+    }
+
+    bool setValue(const Variant& v) const override
+    {
+        DVASSERT(itemKey != END_KEY_VALUE);
+        VariantType * oldValue = archive->GetVariant(itemKey);
+        archive->SetVariant(itemKey, VariantConverter::Instance()->Convert(v, oldValue->Meta()));
+        return true;
+    }
+
+    void inc() override
+    {
+        DVASSERT(itemKey != END_KEY_VALUE);
+        const DAVA::KeyedArchive::UnderlyingMap & data = archive->GetArchieveData();
+        DAVA::KeyedArchive::UnderlyingMap::const_iterator iter = data.find(itemKey);
+        DVASSERT(iter != data.end());
+        iter++;
+        if (iter != data.end())
+        {
+            itemKey = iter->first;
+        }
+        else
+        {
+            itemKey = END_KEY_VALUE;
+        }
+    }
+
+    bool equals(const CollectionIteratorImplBase& that) const override
+    {
+        const Iterator & other = dynamic_cast<const Iterator &>(that);
+        return archive == other.archive &&
+            itemKey == other.itemKey;
+    }
+
+    CollectionIteratorImplPtr clone() const override
+    {
+        return std::make_shared<Iterator>(archive, itemKey);
+    }
+
+    bool isValid() const
+    {
+        return archive->IsKeyExists(itemKey) && itemKey != END_KEY_VALUE;
+    }
+
+private:
+    friend class NGTKeyedArchiveImpl;
+
+    DAVA::KeyedArchive * archive;
+    DAVA::String itemKey;
+    TypeId keyTypeId;
+    TypeId valueTypeId;
+};
+
+const DAVA::String NGTKeyedArchiveImpl::Iterator::END_KEY_VALUE = "END_KEY_VALUE";
+
+NGTKeyedArchiveImpl::NGTKeyedArchiveImpl(DAVA::KeyedArchive * keyedArchive)
+    : archive(keyedArchive)
+{
+    DVASSERT(archive != nullptr);
+    containerTypeId = TypeId(DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()->GetTypeName());
+    keyTypeId = TypeId(DAVA::MetaInfo::Instance<typename KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
+    valueTypeId = getClassIdentifier<VariantType>();
+}
+
+bool NGTKeyedArchiveImpl::empty() const
+{
+    return archive->GetArchieveData().empty();
+}
+
+size_t NGTKeyedArchiveImpl::size() const
+{
+    return archive->GetArchieveData().size();
+}
+
+CollectionIteratorImplPtr NGTKeyedArchiveImpl::begin()
+{
+    if (empty())
+        return end();
+
+    return std::make_shared<Iterator>(archive, archive->GetArchieveData().begin()->first);
+}
+
+CollectionIteratorImplPtr NGTKeyedArchiveImpl::end()
+{
+    return std::make_shared<Iterator>(archive, Iterator::END_KEY_VALUE);
+}
+
+std::pair<CollectionIteratorImplPtr, bool> NGTKeyedArchiveImpl::get(const Variant& key, GetPolicy policy)
+{
+    CollectionIteratorImplPtr resultIter;
+    bool isSuccess = false;
+
+    String itemKey;
+    if (key.tryCast(itemKey))
+    {
+        switch (policy)
+        {
+        case CollectionImplBase::GET_EXISTING:
+            if (archive->IsKeyExists(itemKey))
+            {
+                resultIter.reset(new Iterator(archive, itemKey));
+                isSuccess = true;
+            }
+            break;
+        case CollectionImplBase::GET_NEW:
+            break;
+        case CollectionImplBase::GET_AUTO:
+            break;
+        default:
+            break;
+        }
+    }
+
+    return std::make_pair(resultIter, isSuccess);
+}
+
+CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImplPtr& pos)
+{
+    Iterator * iter = dynamic_cast<Iterator *>(pos.get());
+    DVASSERT(iter != nullptr);
+    DVASSERT(iter->isValid());
+
+    CollectionIteratorImplPtr result = iter->clone();
+    result->inc();
+    archive->DeleteKey(iter->itemKey);
+    return result;
+}
+
+size_t NGTKeyedArchiveImpl::erase(const Variant& key)
+{
+    String keyValue;
+    DVVERIFY(key.tryCast(keyValue));
+
+    if (!archive->IsKeyExists(keyValue))
+        return 0;
+
+    archive->DeleteKey(keyValue);
+    return 1;
+}
+
+CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last)
+{
+    Iterator * begIter = dynamic_cast<Iterator *>(first.get());
+    DVASSERT(begIter != nullptr);
+
+    Iterator * endIter = dynamic_cast<Iterator *>(last.get());
+    DVASSERT(endIter != nullptr);
+
+    Iterator eraseIter = *begIter;
+
+    CollectionIteratorImplPtr result = endIter->clone();
+    if (endIter->isValid())
+        result->inc();
+
+    while (!eraseIter.equals(*last))
+    {
+        String itemKey = eraseIter.itemKey;
+        eraseIter.inc();
+        archive->DeleteKey(itemKey);
+    }
+
+    return result;
+}
+
+const TypeId& NGTKeyedArchiveImpl::keyType() const
+{
+    return keyTypeId;
+}
+
+const TypeId& NGTKeyedArchiveImpl::valueType() const
+{
+    return valueTypeId;
+}
+
+const TypeId& NGTKeyedArchiveImpl::containerType() const
+{
+    return containerTypeId;
+}
+
+void* NGTKeyedArchiveImpl::containerData() const
+{
+    return nullptr;
+}
+
+bool NGTKeyedArchiveImpl::isMapping() const
+{
+    return true;
+}
+
+bool NGTKeyedArchiveImpl::canResize() const
+{
+    return false;
+}
+
 }

@@ -229,7 +229,7 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
 
         if (nullptr != fieldIntrospection && (fieldIntrospection->Type() == MetaInfo::Instance<KeyedArchive>()))
         {
-            return Variant();
+            return Collection(std::make_shared<NGTKeyedArchiveImpl>(reinterpret_cast<KeyedArchive *>(field)));
         }
         // introspection
         else if (nullptr != field && nullptr != fieldIntrospection)
@@ -239,7 +239,7 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
         else if (memberMetaInfo->IsPointer())
         {
             String pointerValue(64, 0);
-            sprintf(&pointerValue[0], "[%p] Pointer", field);
+            sprintf(&pointerValue[0], "[0x%p] Pointer", field);
             return pointerValue;
         }
         else if (memberInsp->Collection())
