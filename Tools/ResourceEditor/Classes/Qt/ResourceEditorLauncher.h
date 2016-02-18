@@ -27,31 +27,31 @@
 =====================================================================================*/
 
 
-#include "quacrc32.h"
+#ifndef __RESOURCEEDITOR_LAUNCHER_H__
+#define __RESOURCEEDITOR_LAUNCHER_H__
 
-#include "zlib.h"
+#include "Project/ProjectManager.h"
+#include "Main/mainwindow.h"
 
-QuaCrc32::QuaCrc32()
+#include <QObject>
+
+class ResourceEditorLauncher : public QObject
 {
-    reset();
-}
+    Q_OBJECT
 
-quint32 QuaCrc32::calculate(const QByteArray& data)
-{
-    return crc32(crc32(0L, Z_NULL, 0), (const Bytef*)data.data(), data.size());
-}
+public slots:
 
-void QuaCrc32::reset()
-{
-    checksum = crc32(0L, Z_NULL, 0);
-}
+    void Launch()
+    {
+        DVASSERT(ProjectManager::Instance() != nullptr);
+        ProjectManager::Instance()->UpdateParticleSprites();
+        ProjectManager::Instance()->OnSceneViewInitialized();
 
-void QuaCrc32::update(const QByteArray& buf)
-{
-    checksum = crc32(checksum, (const Bytef*)buf.data(), buf.size());
-}
+        DVASSERT(QtMainWindow::Instance() != nullptr);
+        QtMainWindow::Instance()->SetupTitle();
+        QtMainWindow::Instance()->OnSceneNew();
+    }
+};
 
-quint32 QuaCrc32::value()
-{
-    return checksum;
-}
+
+#endif // __RESOURCEEDITOR_LAUNCHER_H__
