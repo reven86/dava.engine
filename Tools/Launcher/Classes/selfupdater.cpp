@@ -44,7 +44,7 @@ public:
     ~SelfUpdaterZipFunctor() override = default;
 
 private:
-    void OnError(const ZipError & zipError) override
+    void OnError(const ZipError& zipError) override
     {
         ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
     }
@@ -72,7 +72,7 @@ void SelfUpdater::OnStartUpdating()
 
     connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
     connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)),
-        this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
 }
 
 void SelfUpdater::NetworkError(QNetworkReply::NetworkError code)
@@ -123,7 +123,6 @@ void SelfUpdater::DownloadFinished()
             setResult(QDialog::Rejected);
             close();
         }
-
     }
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {

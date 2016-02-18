@@ -125,7 +125,7 @@ public:
 FUTestSuite* _test##suiteName; \
 static class FUTestSuite##suiteName : public FUTestSuite \
 { \
-public :                         \
+public: \
         FUTestSuite##suiteName() \
             : FUTestSuite() { _test##suiteName = this; } \
 	virtual ~FUTestSuite##suiteName() {} \
