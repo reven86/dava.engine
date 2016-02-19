@@ -313,7 +313,7 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
     }
 
     Vector<uint8> buff(sizeToCut);
-    const bool seekSuccess = log->Seek(static_cast<int32>(-sizeToCut), File::SEEK_FROM_END);
+    const bool seekSuccess = log->Seek(-static_cast<int32>(sizeToCut), File::SEEK_FROM_END);
     if (!seekSuccess)
     {
         return false; // have enought data but seek error
