@@ -129,7 +129,8 @@ void UIScrollViewContainer::Input(UIEvent* currentTouch)
 {
     if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
-        newScroll += currentTouch->wheelDelta.y * GetWheelSensitivity();
+        newScroll += Vector2(currentTouch->wheelDelta.x * GetWheelSensitivity(),
+                             currentTouch->wheelDelta.y * GetWheelSensitivity());
     }
 
     if (currentTouch->touchId == mainTouch)
@@ -169,7 +170,7 @@ void UIScrollViewContainer::Input(UIEvent* currentTouch)
 
 bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
 {
-    if (!GetInputEnabled() || !visible || !visibleForUIEditor || (controlState & STATE_DISABLED))
+    if (!GetInputEnabled() || !visible || (controlState & STATE_DISABLED))
     {
         return false;
     }
@@ -248,19 +249,31 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
     UIScrollView* scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
     if (scrollView)
     {
+        const float32 accuracyDelta = 0.1f;
         Vector2 posDelta = newPos - oldPos;
         oldPos = newPos;
+
+        Vector2 deltaScroll = newScroll - oldScroll;
+        oldScroll = newScroll;
 
         // Get scrolls positions and change scroll container relative position
         if (enableHorizontalScroll)
         {
-            if (scrollView->GetHorizontalScroll() == currentScroll)
+            if (accuracyDelta <= Abs(deltaScroll.x))
             {
-                relativePosition.x = currentScroll->GetPosition(posDelta.x, timeElapsed, lockTouch);
+                float32 dx = scrollView->GetRect().dx;
+                scrollView->GetHorizontalScroll()->ScrollWithoutAnimation(deltaScroll.x, dx, &relativePosition.x);
             }
             else
             {
-                relativePosition.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
+                if (scrollView->GetHorizontalScroll() == currentScroll)
+                {
+                    relativePosition.x = currentScroll->GetPosition(posDelta.x, timeElapsed, lockTouch);
+                }
+                else
+                {
+                    relativePosition.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
+                }
             }
         }
         else if (scrollView->IsAutoUpdate())
@@ -277,15 +290,10 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 
         if (enableVerticalScroll)
         {
-            float32 deltaScroll = newScroll - oldScroll;
-            oldScroll = newScroll;
-
-            const float32 accuracyDelta = 0.1f;
-
-            if (accuracyDelta <= Abs(deltaScroll))
+            if (accuracyDelta <= Abs(deltaScroll.y))
             {
                 float32 dy = scrollView->GetRect().dy;
-                scrollView->GetVerticalScroll()->ScrollWithoutAnimation(deltaScroll, dy, &relativePosition.y);
+                scrollView->GetVerticalScroll()->ScrollWithoutAnimation(deltaScroll.y, dy, &relativePosition.y);
             }
             else
             {

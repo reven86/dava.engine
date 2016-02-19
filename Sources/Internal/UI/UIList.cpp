@@ -313,23 +313,23 @@ void UIList::Update(float32 timeElapsed)
     float32 d = newPos - oldPos;
     oldPos = newPos;
 
-    float32 deltaScroll = newScroll - oldScroll;
+    float32 deltaWheel = newScroll - oldScroll;
     oldScroll = newScroll;
 
     const float32 accuracyDelta = 0.1f;
 
     Rect r = scrollContainer->GetRect();
 
-    if (accuracyDelta <= Abs(deltaScroll))
+    if (accuracyDelta <= Abs(deltaWheel))
     {
         // this code works for mouse or touchpad scrolls
         if (orientation == ORIENTATION_HORIZONTAL)
         {
-            scroll->ScrollWithoutAnimation(deltaScroll, r.dx, &r.x);
+            scroll->ScrollWithoutAnimation(deltaWheel, r.dx, &r.x);
         }
         else
         {
-            scroll->ScrollWithoutAnimation(deltaScroll, r.dy, &r.y);
+            scroll->ScrollWithoutAnimation(deltaWheel, r.dy, &r.y);
         }
     }
     else
@@ -499,7 +499,21 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+        if (UIEvent::Device::MOUSE == currentInput->device)
+        {
+            newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+        }
+        else // UIEvent::Phase::TOUCH_PAD
+        {
+            if (ORIENTATION_HORIZONTAL == orientation)
+            {
+                newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
+            }
+            else
+            {
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
+        }
     }
     else
     {
@@ -661,9 +675,6 @@ void UIList::AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 ind
     cell->SetRect(r);
     cell->UpdateLayout();
 
-    // Full refresh removes the cells and adds them again, losing the IsVisibleForUIEditor flag
-    // (see please DF-2860). So need to recover it basing on what is set on parent's level.
-    cell->SetVisibleForUIEditor(GetVisibleForUIEditor());
     scrollContainer->AddControl(cell);
 }
 
