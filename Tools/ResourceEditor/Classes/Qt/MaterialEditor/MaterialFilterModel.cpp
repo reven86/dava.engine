@@ -41,6 +41,38 @@
 #include <QTimer>
 #include <QDebug>
 
+namespace MFMLocal
+{
+int CompareNames(MaterialItem* left, MaterialItem* right)
+{
+    DAVA::NMaterial* leftMaterial = left->GetMaterial();
+    DAVA::NMaterial* rightMaterial = right->GetMaterial();
+    const QString lhsText = QString(leftMaterial->GetMaterialName().c_str());
+    const QString rhsText = QString(rightMaterial->GetMaterialName().c_str());
+    return lhsText.compare(rhsText, Qt::CaseInsensitive);
+}
+
+int CompareLods(MaterialItem* left, MaterialItem* right)
+{
+    return left->GetLodIndex() - right->GetLodIndex();
+}
+
+int CompareSwitches(MaterialItem* left, MaterialItem* right)
+{
+    return left->GetSwitchIndex() - right->GetSwitchIndex();
+}
+
+bool Less(int value, int refValue)
+{
+    return value < refValue;
+}
+
+bool Greater(int value, int refValue)
+{
+    return value > refValue;
+}
+}
+
 MaterialFilteringModel::MaterialFilteringModel(MaterialModel* _materialModel, QObject* parent /* = NULL */)
     : QSortFilterProxyModel(parent)
     , materialModel(_materialModel)
@@ -156,54 +188,74 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex& 
 bool MaterialFilteringModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
     // global material should always be first
-    NMaterial* mLeft = materialModel->GetMaterial(left);
-    NMaterial* mRight = materialModel->GetMaterial(right);
-    bool swap = QSortFilterProxyModel::lessThan(left, right);
+    MaterialItem* lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
+    MaterialItem* rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
+    NMaterial* mLeft = lhsItem->GetMaterial();
+    NMaterial* mRight = rhsItem->GetMaterial();
 
-    if ((mLeft == NULL) || (mRight == NULL))
-        return swap;
+    if ((mLeft == nullptr) || (mRight == nullptr))
+        return QSortFilterProxyModel::lessThan(left, right);
 
+    bool isLess = false;
     if (mLeft == materialModel->GetGlobalMaterial())
     {
-        swap = (sortOrder() == Qt::AscendingOrder);
+        isLess = (sortOrder() == Qt::AscendingOrder);
     }
     else if (mRight == materialModel->GetGlobalMaterial())
     {
-        swap = (sortOrder() == Qt::DescendingOrder);
+        isLess = (sortOrder() == Qt::DescendingOrder);
     }
     else
     {
-        MaterialItem* lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
-        MaterialItem* rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
-
-        int compResult = 0;
+        typedef int (*CompareFnSignature)(MaterialItem*, MaterialItem*);
+        DAVA::Array<CompareFnSignature, 3> comparationChain;
 
         switch (sortColumn())
         {
         case MaterialModel::TITLE_COLUMN:
-            compResult = compareNames(mLeft, mRight);
+            comparationChain[0] = &MFMLocal::CompareNames;
+            comparationChain[1] = &MFMLocal::CompareLods;
+            comparationChain[2] = &MFMLocal::CompareSwitches;
             break;
         case MaterialModel::LOD_COLUMN:
-            compResult = lhsItem->GetLodIndex() - rhsItem->GetLodIndex();
+            comparationChain[0] = &MFMLocal::CompareLods;
+            comparationChain[1] = &MFMLocal::CompareSwitches;
+            comparationChain[2] = &MFMLocal::CompareNames;
             break;
         case MaterialModel::SWITCH_COLUMN:
-            compResult = lhsItem->GetSwitchIndex() - rhsItem->GetSwitchIndex();
+            comparationChain[0] = &MFMLocal::CompareSwitches;
+            comparationChain[1] = &MFMLocal::CompareLods;
+            comparationChain[2] = &MFMLocal::CompareNames;
             break;
         default:
             break;
         }
 
-        // If sorting column data is equal then sort by text
-        if (compResult == 0 && sortColumn() != MaterialModel::TITLE_COLUMN)
-        {
-            const int textComp = compareNames(mLeft, mRight);
-            compResult = textComp;
-        }
+        typedef bool (*LessFunctor)(int, int);
+        LessFunctor currentLessFunctor = &MFMLocal::Less;
+        LessFunctor alternativeLessFunctor = currentLessFunctor;
 
-        swap = (compResult < 0);
+        /// We have unusual requirements.
+        /// we need to sort by "sortColumn()" in "sortOrder()"
+        /// but if values in "sortColumn()" is equal, we need sort by other columns in AscendingOrder
+        /// that why we invert comparation functor for DescendingOrder
+        if (sortOrder() == Qt::DescendingOrder)
+            alternativeLessFunctor = &MFMLocal::Greater;
+
+        for (CompareFnSignature& compareFn : comparationChain)
+        {
+            int result = compareFn(lhsItem, rhsItem);
+            if (result != 0)
+            {
+                isLess = currentLessFunctor(result, 0);
+                break;
+            }
+
+            currentLessFunctor = alternativeLessFunctor;
+        }
     }
 
-    return swap;
+    return isLess;
 }
 
 bool MaterialFilteringModel::dropMimeData(QMimeData const* data, Qt::DropAction action, int row, int column, QModelIndex const& parent)
@@ -213,13 +265,4 @@ bool MaterialFilteringModel::dropMimeData(QMimeData const* data, Qt::DropAction 
         invalidate();
 
     return ret;
-}
-
-int MaterialFilteringModel::compareNames(DAVA::NMaterial* left, DAVA::NMaterial* right) const
-{
-    const QString lhsText = QString(left->GetMaterialName().c_str());
-    const QString rhsText = QString(right->GetMaterialName().c_str());
-    const int textComp = lhsText.compare(rhsText, Qt::CaseInsensitive);
-
-    return textComp;
 }
