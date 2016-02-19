@@ -55,11 +55,12 @@ class UIScreenshoter;
 class ScreenSwitchListener
 {
 public:
-    virtual ~ScreenSwitchListener();
+    virtual ~ScreenSwitchListener() = default;
 
     virtual void OnScreenWillSwitch(UIScreen* newScreen)
     {
     }
+
     virtual void OnScreenDidSwitch(UIScreen* newScreen)
     {
     }
