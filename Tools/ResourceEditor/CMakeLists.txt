@@ -157,6 +157,8 @@ list(APPEND TARGET_LIBRARIES core_generic_plugin_manager
                              core_qt_common
                              core_ui_framework)
 
+append_deploy_dependency(${PROJECT_NAME})
+set_delayed_deploy_qt()
 setup_main_executable()
 
 if (DEPLOY)

@@ -541,9 +541,18 @@ function (link_with_qt5 TARGET)
     target_link_libraries( ${TARGET} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${QT_LINKAGE_LIST_VALUE} )
 endfunction()
 
-function (append_deploy_dependency _RPOJECT_NAME)
+function (set_delayed_deploy_qt)
+    SET_PROPERTY(GLOBAL PROPERTY DELAYED_DEPLOY_TARGET true)
+endfunction()
+
+function (is_deploy_qt_delayed _IS_DELAYED)
+    GET_PROPERTY(IS_DELAYED_PROP GLOBAL PROPERTY DELAYED_DEPLOY_TARGET)
+    SET(${_IS_DELAYED} ${IS_DELAYED_PROP} PARENT_SCOPE)
+endfunction()
+
+function (append_deploy_dependency _PROJECT_NAME)
     GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
-    LIST(APPEND DEPENDENT_LIST ${_RPOJECT_NAME})
+    LIST(APPEND DEPENDENT_LIST ${_PROJECT_NAME})
     SET_PROPERTY(GLOBAL PROPERTY DEPLOY_DEPENDENCIES ${DEPENDENT_LIST})
 endfunction()
 

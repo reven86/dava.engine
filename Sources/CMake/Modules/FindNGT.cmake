@@ -20,6 +20,7 @@ else()
   ASSERT(NOT_SUPPORTED_PLATFORM "NGT not support this platform")
 endif()
 
+set(QML_SCAN_DIR ${DAVA_ROOT_DIR})
 get_filename_component(NGT_ABS_CORE_PATH ${NGT_CORE_PATH} ABSOLUTE)
 get_filename_component(NGT_ABS_SRC_ROOT ${NGT_SRC_ROOT} ABSOLUTE)
 
