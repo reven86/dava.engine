@@ -423,18 +423,23 @@ macro ( add_static_config_libs_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST
     #take one platform
     list ( GET WINDOWS_UAP_PLATFORMS 0 REF_PLATFORM )
     
+    #resolve libs location path
+    STRING( REGEX REPLACE "CONFIGURATION_TAG" "${CONFIG_TYPE}" CONCRETE_CONF_LIBS_LOCATION ${LIBS_LOCATION} )
+    STRING( REGEX REPLACE "ARCHITECTURE_TAG" "${REF_PLATFORM}" CONCRETE_LIBS_LOCATION ${CONCRETE_CONF_LIBS_LOCATION} )
+    
     #find all libs for specified platform
-    file ( GLOB REF_LIB_LIST "${LIBS_LOCATION}/${REF_PLATFORM}/${CONFIG_TYPE}/*.lib" )
+    file ( GLOB REF_LIB_LIST "${CONCRETE_LIBS_LOCATION}/*.lib" )
     
     #find all libs for all platforms
     FOREACH ( LIB_ARCH ${WINDOWS_UAP_PLATFORMS} )
-            file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.lib" )
-            
-            #add to list only filenames
-            FOREACH ( LIB ${LIB_LIST} )
-                get_filename_component ( LIB_FILE ${LIB} NAME )
-                list( APPEND LIB_FILE_LIST ${LIB_FILE} )
-            ENDFOREACH ()
+        STRING( REGEX REPLACE "ARCHITECTURE_TAG" "${LIB_ARCH}" CONCRETE_ARCH_LIBS_LOCATION ${CONCRETE_CONF_LIBS_LOCATION} )
+        file ( GLOB LIB_LIST "${CONCRETE_ARCH_LIBS_LOCATION}/*.lib" )
+        
+        #add to list only filenames
+        FOREACH ( LIB ${LIB_LIST} )
+            get_filename_component ( LIB_FILE ${LIB} NAME )
+            list( APPEND LIB_FILE_LIST ${LIB_FILE} )
+        ENDFOREACH ()
     ENDFOREACH ()
     
     #unique all platforms' lib list
@@ -462,10 +467,33 @@ endmacro ()
 
 #search static libs in specified location and add them in ${OUTPUT_LIB_LIST}_DEBUG and ${OUTPUT_LIB_LIST}_RELEASE
 #check equality of lib sets for all platforms
+#this macro supports different types of lib location, for example project/Libs/Win10/arm/Debug/ or project/Libs/Debug/Win10/arm/
+#the first variant is default. LIBS_LOCATION should contain CONFIGURATION_TAG and ARCHITECTURE_TAG for custom libs location
+#for example: project/Libs/CONFIGURATION_TAG/Win10/ARCHITECTURE_TAG/
 macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
 
-    add_static_config_libs_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
-    add_static_config_libs_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
+    #parse libs location
+    STRING ( FIND ${LIBS_LOCATION} "CONFIGURATION_TAG" CONF_TAG_POS )
+    if ( NOT ${CONF_TAG_POS} STREQUAL "-1" )
+        set ( CONF_TAG_EXIST true )
+    endif ()
+
+    STRING ( FIND ${LIBS_LOCATION} "ARCHITECTURE_TAG" ARCH_TAG_POS )
+    if ( NOT ${ARCH_TAG_POS} STREQUAL "-1" )
+        set ( ARCH_TAG_EXIST true )
+    endif ()
+
+    if ( NOT CONF_TAG_EXIST AND NOT ARCH_TAG_EXIST )
+        #if no tags, use default variant
+        set ( LIBS_LOCATION_FINAL "${LIBS_LOCATION}/ARCHITECTURE_TAG/CONFIGURATION_TAG" )
+    elseif ( CONF_TAG_EXIST OR ARCH_TAG_EXIST )
+        message ( FATAL_ERROR "Libs location path should contain all tags or no tags: ${LIBS_LOCATION}" )
+    else ()
+        set ( LIBS_LOCATION_FINAL LIBS_LOCATION )
+    endif ()
+
+    add_static_config_libs_win_uap ( "DEBUG"   ${LIBS_LOCATION_FINAL} ${OUTPUT_LIB_LIST} )
+    add_static_config_libs_win_uap ( "RELEASE" ${LIBS_LOCATION_FINAL} ${OUTPUT_LIB_LIST} )
 
 endmacro ()
 

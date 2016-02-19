@@ -449,7 +449,7 @@ typedef FCDParameterListAnimatableT<FMVector4, 1> FCDParameterListAnimatableColo
     @param niceName The Unicode string to identify this animatable parameter to users. */
 #define DeclareParameterAnimatable(type, qual, parameterName, niceName) \
 	class Parameter_##parameterName : public FCDParameterAnimatableT<type, qual> { \
-	public: Parameter_##parameterName(FUParameterizable* parent)                           \
+	public: Parameter_##parameterName(FUParameterizable* parent) \
             : FCDParameterAnimatableT<type, qual>(parent) {} \
 	Parameter_##parameterName(FUParameterizable* parent, const type& defaultValue) \
             : FCDParameterAnimatableT<type, qual>(parent, defaultValue) {} \

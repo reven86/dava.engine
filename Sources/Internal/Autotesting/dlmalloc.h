@@ -619,9 +619,9 @@
 #endif /* USE_LOCKS */
 
 #if USE_LOCKS /* Spin locks for gcc >= 4.1, older gcc on x86, MSC >= 1310 */
-#if ((defined(__GNUC__) &&                                             \
-      ((__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)) ||     \
-       defined(__i386__) || defined(__x86_64__))) ||                   \
+#if ((defined(__GNUC__) && \
+      ((__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)) || \
+       defined(__i386__) || defined(__x86_64__))) || \
      (defined(_MSC_VER) && _MSC_VER >= 1310))
 #ifndef USE_SPIN_LOCKS
 #define USE_SPIN_LOCKS 1
