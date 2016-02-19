@@ -191,6 +191,9 @@ NGTMemberProperty::NGTMemberProperty(const InspMember* member, const MetaInfo* o
     DVASSERT(objectType != nullptr);
     DVASSERT(memberInsp != nullptr);
 
+    if ((memberInsp->Flags() & I_EDIT) == 0)
+        metaBase = metaBase + MetaReadOnly();
+
     const InspDesc& desc = memberInsp->Desc();
     if (desc.enumMap != nullptr)
         metaBase = metaBase + MetaEnum(new EnumGenerator(memberInsp));
