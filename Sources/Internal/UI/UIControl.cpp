@@ -789,65 +789,76 @@ bool UIControl::GetHover() const
     return (controlState & STATE_HOVER) != 0;
 }
 
+bool IsControlInViewHierarchy(const UIControl* control)
+{
+    while (control->GetParent() != nullptr)
+    {
+        control = control->GetParent();
+    }
+
+    UIControlSystem* cs = UIControlSystem::Instance();
+    bool isRootControl = (cs->GetScreen() == control) ||
+    (cs->GetPopupContainer() == control) ||
+    (cs->GetScreenTransition() == control);
+
+    return isRootControl ? true : false;
+}
+
+bool IsControlVisibleOnScreen(const UIControl* control)
+{
+    while (control->GetParent() != nullptr)
+    {
+        if (!control->GetSystemVisible())
+            return false;
+
+        control = control->GetParent();
+    }
+
+    UIControlSystem* cs = UIControlSystem::Instance();
+    bool isRootControl = (cs->GetScreen() == control) ||
+    (cs->GetPopupContainer() == control) ||
+    (cs->GetScreenTransition() == control);
+
+    return isRootControl ? control->GetSystemVisible() : false;
+}
+
 void UIControl::ChangeViewState(eViewState newViewState)
 {
-    switch (newViewState)
+    static const Vector<std::pair<eViewState, eViewState>> validTransitions =
     {
-    case eViewState::NotInHierarhy:
-    {
-        bool isValid = false;
-        if (viewState == eViewState::InHierarhy)
-        {
-            UIControlSystem* cs = UIControlSystem::Instance();
-            isValid = (parent && parent->InViewHierarchy()) ||
-            (cs->GetScreen() == this) ||
-            (cs->GetPopupContainer() == this) ||
-            (cs->GetScreenTransition() == this);
-        }
+      { eViewState::NotInHierarhy, eViewState::InHierarhy },
+      { eViewState::InHierarhy, eViewState::Visible },
+      { eViewState::Visible, eViewState::InHierarhy },
+      { eViewState::InHierarhy, eViewState::NotInHierarhy }
+    };
 
-        DVASSERT(isValid);
-    }
-    break;
-    case eViewState::InHierarhy:
-    {
-        bool isValid = false;
-        if (viewState == eViewState::NotInHierarhy)
-        {
-            UIControlSystem* cs = UIControlSystem::Instance();
-            isValid = (parent && parent->InViewHierarchy()) ||
-            (cs->GetScreen() == this) ||
-            (cs->GetPopupContainer() == this) ||
-            (cs->GetScreenTransition() == this);
-        }
-        else if (viewState == eViewState::Visible)
-        {
-            UIControlSystem* cs = UIControlSystem::Instance();
-            isValid = (parent && parent->InViewHierarchy()) ||
-            (cs->GetScreen() == this) ||
-            (cs->GetPopupContainer() == this) ||
-            (cs->GetScreenTransition() == this);
-        }
+    bool verified = true;
+    String errorStr;
 
-        DVASSERT(isValid);
-    }
-    break;
-    case eViewState::Visible:
+    if (!IsControlInViewHierarchy(this))
     {
-        bool isValid = false;
-        if (viewState == eViewState::InHierarhy)
-        {
-            UIControlSystem* cs = UIControlSystem::Instance();
-            isValid = (parent && parent->IsOnScreen()) ||
-            (cs->GetScreen() == this) ||
-            (cs->GetPopupContainer() == this) ||
-            (cs->GetScreenTransition() == this);
-        }
-        DVASSERT(isValid);
+        errorStr += "Control not in hierarhy.";
+        verified = false;
     }
-    break;
-    default:
-        DVASSERT(false);
-        break;
+
+    std::pair<eViewState, eViewState> transition = { viewState, newViewState };
+    if (std::find(validTransitions.begin(), validTransitions.end(), transition) == validTransitions.end())
+    {
+        errorStr += "Unexpected change sequence.";
+        verified = false;
+    }
+
+    if (viewState == eViewState::InHierarhy && newViewState == eViewState::Visible && !IsControlInViewHierarchy(this))
+    {
+        errorStr += "Control not visible on screen.";
+        verified = false;
+    }
+
+    if (!verified)
+    {
+        String errorMsg = Format("[UIControl::ChangeViewState] Control '%s', change from state %d to state %d. %s", GetName().c_str(), viewState, newViewState, errorStr.c_str());
+        Logger::Error(errorMsg.c_str());
+        DVASSERT_MSG(false, errorMsg.c_str());
     }
 
     viewState = newViewState;
