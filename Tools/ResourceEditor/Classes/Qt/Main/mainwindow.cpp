@@ -91,6 +91,7 @@
 #include "Classes/StringConstants.h"
 
 #include "TextureCompression/TextureConverter.h"
+#include "SpritesPacker/SpritesPackerModule.h"
 
 //#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
@@ -131,6 +132,7 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
     , ngtContext(ngtContext_)
+    , spritesPacker(new SpritesPackerModule())
 {
     PathDescriptor::InitializePathDescriptors();
 
@@ -139,6 +141,9 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
 
     recentFiles.SetMenu(ui->menuFile);
     recentProjects.SetMenu(ui->menuRecentProjects);
+
+    spritesPacker->SetAction(ui->actionReloadSprites);
+    ProjectManager::Instance()->SetSpritesPacker(spritesPacker.get());
 
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
 
@@ -670,7 +675,9 @@ void QtMainWindow::SetupDocks()
 
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo, SLOT(UpdateInfoByTimer()));
     QObject::connect(this, SIGNAL(TexturesReloaded()), ui->sceneInfo, SLOT(TexturesReloaded()));
-    QObject::connect(this, SIGNAL(SpritesReloaded()), ui->sceneInfo, SLOT(SpritesReloaded()));
+
+    QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
+    QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
 
     ui->libraryWidget->SetupSignals();
     // Run Action Event dock
@@ -750,7 +757,6 @@ void QtMainWindow::SetupActions()
 
     QObject::connect(ui->menuTexturesForGPU, SIGNAL(triggered(QAction*)), this, SLOT(OnReloadTexturesTriggered(QAction*)));
     QObject::connect(ui->actionReloadTextures, SIGNAL(triggered()), this, SLOT(OnReloadTextures()));
-    QObject::connect(ui->actionReloadSprites, SIGNAL(triggered()), this, SLOT(OnReloadSprites()));
 
     QObject::connect(ui->actionAlbedo, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
     QObject::connect(ui->actionAmbient, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
@@ -1042,7 +1048,10 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionEnableCameraLight->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
-    ui->actionReloadSprites->setEnabled(enable);
+
+    QAction* actionReloadSprites = spritesPacker->GetReloadAction();
+    actionReloadSprites->setEnabled(enable);
+
     ui->actionSetLightViewMode->setEnabled(enable);
 
     ui->actionSaveHeightmapToPNG->setEnabled(enable);
@@ -1463,12 +1472,6 @@ void QtMainWindow::OnReloadTexturesTriggered(QAction* reloadAction)
     {
         SetGPUFormat(gpu);
     }
-}
-
-void QtMainWindow::OnReloadSprites()
-{
-    SpritePackerHelper::Instance()->UpdateParticleSprites(GetGPUFormat());
-    emit SpritesReloaded();
 }
 
 void QtMainWindow::OnSelectMode()
