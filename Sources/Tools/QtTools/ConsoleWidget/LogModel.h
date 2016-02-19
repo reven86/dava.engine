@@ -30,7 +30,7 @@
 #ifndef __LOGMODEL_H__
 #define __LOGMODEL_H__
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include <functional>
 
 #include <QObject>

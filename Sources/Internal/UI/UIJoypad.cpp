@@ -29,7 +29,7 @@
 
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "FileSystem/YamlNode.h"
 
 namespace DAVA

@@ -31,7 +31,7 @@
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/KeyedArchive.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "Network/IChannel.h"
 #include "Network/NetworkCommon.h"

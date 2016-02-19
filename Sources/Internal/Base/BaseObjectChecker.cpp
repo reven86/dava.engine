@@ -31,7 +31,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseObjectChecker.h"
 #include "Debug/List.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #ifdef ENABLE_BASE_OBJECT_CHECKS
 

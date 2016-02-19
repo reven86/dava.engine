@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Animation/Animation.h"
 #include "Animation/AnimatedObject.h"
 

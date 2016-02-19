@@ -33,7 +33,7 @@
     \defgroup utils Utilities
  */
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

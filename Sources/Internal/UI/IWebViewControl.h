@@ -35,7 +35,7 @@
 #include "Math/Vector.h"
 #include "Math/Rect.h"
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

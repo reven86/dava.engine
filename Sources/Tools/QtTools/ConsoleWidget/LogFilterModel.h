@@ -5,8 +5,7 @@
 #include <QObject>
 #include <QSortFilterProxyModel>
 #include <QFlags>
-#include "FileSystem/Logger.h"
-
+#include "Logger/Logger.h"
 
 class LogFilterModel
     : public QSortFilterProxyModel

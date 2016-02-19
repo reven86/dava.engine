@@ -39,7 +39,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Job/JobManager.h"
 #include "QtTools/FileDialog/FileDialog.h"
 

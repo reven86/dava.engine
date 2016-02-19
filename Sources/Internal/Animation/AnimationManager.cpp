@@ -28,7 +28,7 @@
 
 
 #include "Animation/AnimationManager.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Debug/Stats.h"
 #include "Job/JobManager.h"
 #include "Render/Renderer.h"

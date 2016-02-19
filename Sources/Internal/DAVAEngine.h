@@ -44,7 +44,8 @@
 #include "DLC/Patcher/PatchFile.h"
 #include "DLC/Downloader/DownloadManager.h"
 
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
+
 #include "Platform/SystemTimer.h"
 #include "Platform/DateTime.h"
 #include "Platform/DeviceInfo.h"

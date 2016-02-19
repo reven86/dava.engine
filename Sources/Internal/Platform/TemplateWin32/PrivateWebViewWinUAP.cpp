@@ -48,7 +48,7 @@
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 using namespace Windows::System;
 using namespace Windows::Foundation;

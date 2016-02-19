@@ -30,7 +30,7 @@
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterial.h"
 
