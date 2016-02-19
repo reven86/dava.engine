@@ -47,10 +47,14 @@ class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
 {
 public:
     UpdateDialogZipFunctor(const QString& progressMessage_
-        , const QString& finishMessage_
-        , const QString& errorMessage_
-        , UpdateDialog* dialog_
-        , QProgressBar* progressBar_)
+                           ,
+                           const QString& finishMessage_
+                           ,
+                           const QString& errorMessage_
+                           ,
+                           UpdateDialog* dialog_
+                           ,
+                           QProgressBar* progressBar_)
         : progressMessage(progressMessage_)
         , finishMessage(finishMessage_)
         , errorMessage(errorMessage_)
@@ -78,7 +82,7 @@ private:
         dialog->UpdateLastLogValue(finishMessage);
     }
 
-    void OnError(const ZipError & zipError) override
+    void OnError(const ZipError& zipError) override
     {
         Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
         ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
@@ -90,8 +94,8 @@ private:
     QString progressMessage;
     QString finishMessage;
     QString errorMessage;
-    UpdateDialog * dialog = nullptr;
-    QProgressBar * progressBar = nullptr;
+    UpdateDialog* dialog = nullptr;
+    QProgressBar* progressBar = nullptr;
 };
 }
 
@@ -221,7 +225,7 @@ void UpdateDialog::DownloadFinished()
     QString filePath = outputFile.fileName();
     outputFile.close();
 
-    const UpdateTask &task = tasks.head();
+    const UpdateTask& task = tasks.head();
 
     if (currentDownload)
     {
@@ -237,14 +241,14 @@ void UpdateDialog::DownloadFinished()
         FileManager::Instance()->DeleteDirectory(appDir);
 
         UpdateLastLogValue(tr("Download Complete!"));
-        
+
         AddLogValue(tr("Checking archive..."));
 
         ui->cancelButton->setEnabled(false);
         ZipUtils::CompressedFilesAndSizes files;
-        if(ListArchive(filePath, files)
-           && TestArchive(filePath, files)
-           && UnpackArchive(filePath, appDir, files))
+        if (ListArchive(filePath, files)
+            && TestArchive(filePath, files)
+            && UnpackArchive(filePath, appDir, files))
         {
             emit AppInstalled(task.branchID, task.appID, task.version);
             UpdateLastLogValue("Unpack Complete!");
@@ -267,23 +271,22 @@ void UpdateDialog::DownloadFinished()
     }
     tasks.dequeue();
     StartNextTask();
-
 }
 
-bool UpdateDialog::ListArchive(const QString &archivePath, ZipUtils::CompressedFilesAndSizes &files)
+bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files)
 {
     UpdateDialog_local::UpdateDialogZipFunctor functor("", "", tr("Archive not found or damaged!"), this, nullptr);
     return ZipUtils::GetFileList(archivePath, files, functor);
 }
 
-bool UpdateDialog::TestArchive(const QString &archivePath, const ZipUtils::CompressedFilesAndSizes &files)
+bool UpdateDialog::TestArchive(const QString& archivePath, const ZipUtils::CompressedFilesAndSizes& files)
 {
     UpdateLastLogValue(tr("Checking archive..."));
     UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Checking archive..."), tr("Archive checked!"), tr("Archive not found or damaged!"), this, ui->progressBar_testing);
-    return ZipUtils::TestZipArchive(archivePath, files, functor);   
+    return ZipUtils::TestZipArchive(archivePath, files, functor);
 }
 
-bool UpdateDialog::UnpackArchive(const QString &archivePath, const QString &outDir, const ZipUtils::CompressedFilesAndSizes &files)
+bool UpdateDialog::UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files)
 {
     AddLogValue(tr("Unpacking archive..."));
     UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);

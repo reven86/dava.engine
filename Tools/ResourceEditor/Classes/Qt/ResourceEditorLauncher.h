@@ -26,84 +26,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVA_SIGNAL_BASE_H__
-#define __DAVA_SIGNAL_BASE_H__
 
-#include "Base/BaseTypes.h"
-#include "Concurrency/Atomic.h"
+#ifndef __RESOURCEEDITOR_LAUNCHER_H__
+#define __RESOURCEEDITOR_LAUNCHER_H__
 
-namespace DAVA
+#include "Project/ProjectManager.h"
+#include "Main/mainwindow.h"
+
+#include <QObject>
+
+class ResourceEditorLauncher : public QObject
 {
-using SigConnectionID = size_t;
+    Q_OBJECT
 
-class TrackedObject;
-class SignalBase
-{
-public:
-    virtual ~SignalBase() = default;
-    virtual void Disconnect(TrackedObject*) = 0;
+public slots:
 
-    static SigConnectionID GetUniqueConnectionID()
+    void Launch()
     {
-        static Atomic<SigConnectionID> counter = { 0 };
-        return ++counter;
+        DVASSERT(ProjectManager::Instance() != nullptr);
+        ProjectManager::Instance()->UpdateParticleSprites();
+        ProjectManager::Instance()->OnSceneViewInitialized();
+
+        DVASSERT(QtMainWindow::Instance() != nullptr);
+        QtMainWindow::Instance()->SetupTitle();
+        QtMainWindow::Instance()->OnSceneNew();
     }
 };
 
-class TrackedObject
-{
-public:
-    void Track(SignalBase* signal)
-    {
-        trackedSignals.insert(signal);
-    }
 
-    void Untrack(SignalBase* signal)
-    {
-        trackedSignals.erase(signal);
-    }
-
-    template <typename T>
-    static TrackedObject* Cast(T* t)
-    {
-        return Detail<std::is_base_of<TrackedObject, T>::value>::Cast(t);
-    }
-
-protected:
-    Set<SignalBase*> trackedSignals;
-
-    template <bool is_derived_from_tracked_obj>
-    struct Detail;
-
-    virtual ~TrackedObject()
-    {
-        while (trackedSignals.size() > 0)
-        {
-            auto it = trackedSignals.begin();
-            (*it)->Disconnect(this);
-        }
-    }
-};
-
-template <>
-struct TrackedObject::Detail<false>
-{
-    static TrackedObject* Cast(void* t)
-    {
-        return nullptr;
-    }
-};
-
-template <>
-struct TrackedObject::Detail<true>
-{
-    template <typename T>
-    static TrackedObject* Cast(T* t)
-    {
-        return static_cast<TrackedObject*>(t);
-    }
-};
-
-} // namespace DAVA
-
-#endif // __DAVA_SIGNAL_BASE_H__
+#endif // __RESOURCEEDITOR_LAUNCHER_H__
