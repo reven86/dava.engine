@@ -317,15 +317,11 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
-    rect += coordSystem->GetPhysicalDrawOffset();
-    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
+    Rect rect = coordSystem->ConvertVirtualToInput(rectSrc);
 
-    // 2. map physical to window
-    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-    return controlRect;
+    NSView* openglView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+    rect.y = openglView.frame.size.height - (rect.y + rect.dy);
+    return NSMakeRect(rect.x, rect.y, rect.dx, rect.dy);
 }
 
 class MultilineField : public IField
