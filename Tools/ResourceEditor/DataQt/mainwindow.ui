@@ -71,7 +71,7 @@
     <string>Properties</string>
    </property>
    <property name="layoutTags" stdset="0">
-    <string>left</string>
+    <string notr="true">dockProperties</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -610,6 +610,9 @@
   <widget class="QDockWidget" name="dockSceneTree">
    <property name="windowTitle">
     <string>Scene Tree</string>
+   </property>
+   <property name="layoutTags" stdset="0">
+    <string notr="true">default</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>

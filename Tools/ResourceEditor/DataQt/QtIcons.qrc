@@ -1,4 +1,7 @@
 <RCC>
+  <qresource prefix="Views">
+    <file>PropertyPanel.qml</file>
+  </qresource>
   <qresource prefix="/">
     <file>QtIconsTextureDialog/convertallgpu.png</file>
     <file>QtIcons/pivot_mote_to_center.png</file>

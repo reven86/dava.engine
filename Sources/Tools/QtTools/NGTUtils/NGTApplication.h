@@ -34,19 +34,22 @@
 #include "Base/BaseTypes.h"
 
 #include "core_generic_plugin_manager/generic_plugin_manager.hpp"
+#include "core_generic_plugin/interfaces/i_component_context.hpp"
 
 class QMainWindow;
 class NGTBaseApplication
 {
 public:
     NGTBaseApplication(int argc, char** argv);
-    virtual ~NGTBaseApplication() = default;
+    virtual ~NGTBaseApplication();
 
     void LoadPlugins();
+    IComponentContext& GetComponentContext();
     int StartApplication(QMainWindow* appMainWindow);
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
+    virtual void OnPostLoadPugins(){};
 
 private:
     DAVA::WideString GetPluginsFolder() const;

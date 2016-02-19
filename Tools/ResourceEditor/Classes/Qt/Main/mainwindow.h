@@ -30,21 +30,22 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QDockWidget>
-#include <QPointer>
-
 #include "ui_mainwindow.h"
-#include "ModificationWidget.h"
-#include "Tools/QtWaitDialog/QtWaitDialog.h"
+
+#include "Classes/Qt/Main/ModificationWidget.h"
+#include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Main/RecentMenuItems.h"
+#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
+#include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
 
-#include "Scene/SceneEditor2.h"
-#include "Tools/QtPosSaver/QtPosSaver.h"
-#include "Main/RecentMenuItems.h"
+#include "core_generic_plugin/interfaces/i_component_context.hpp"
 
-#include "Beast/BeastProxy.h"
+#include <QMainWindow>
+#include <QDockWidget>
+#include <QPointer>
 
 class AddSwitchEntityDialog;
 class Request;
@@ -54,7 +55,7 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 class DeviceListController;
-
+class SpritesPackerModule;
 class QtMainWindow
 : public QMainWindow
   ,
@@ -68,10 +69,9 @@ signals:
     void GlobalInvalidateTimeout();
 
     void TexturesReloaded();
-    void SpritesReloaded();
 
 public:
-    explicit QtMainWindow(QWidget* parent = 0);
+    explicit QtMainWindow(IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -94,8 +94,6 @@ public:
     bool BeastWaitCanceled();
 
     void EnableGlobalTimeout(bool enable);
-
-    void RestartParticleEffects();
 
     // qt actions slots
 public slots:
@@ -128,7 +126,6 @@ public slots:
 
     void OnReloadTextures();
     void OnReloadTexturesTriggered(QAction* reloadAction);
-    void OnReloadSprites();
 
     void OnSelectMode();
     void OnMoveMode();
@@ -213,6 +210,8 @@ public slots:
     void OnSnapCameraToLandscape(bool);
 
     void SetupTitle();
+
+    void RestartParticleEffects();
 
 protected:
     virtual bool eventFilter(QObject* object, QEvent* event);
@@ -311,6 +310,10 @@ private:
 
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
+
+    IComponentContext& ngtContext;
+    PropertyPanel propertyPanel;
+    std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
     struct EmitterDescriptor

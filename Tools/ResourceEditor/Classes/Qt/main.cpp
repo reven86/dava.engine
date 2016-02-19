@@ -58,6 +58,8 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
+#include "ResourceEditorLauncher.h"
+
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
 #else
@@ -88,8 +90,15 @@ protected:
         names.push_back(L"plg_command_system");
         names.push_back(L"plg_serialization");
         names.push_back(L"plg_file_system");
+        names.push_back(L"plg_editor_interaction");
         names.push_back(L"plg_qt_app");
         names.push_back(L"plg_qt_common");
+    }
+
+    void OnPostLoadPugins() override
+    {
+        qApp->setOrganizationName("DAVA");
+        qApp->setApplicationName("Resource Editor");
     }
 };
 
@@ -215,19 +224,14 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 #endif
 
     // create and init UI
-    QtMainWindow* mainWindow = new QtMainWindow();
+    ResourceEditorLauncher launcher;
+    QtMainWindow* mainWindow = new QtMainWindow(a.GetComponentContext());
 
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
     ProjectManager::Instance()->OpenLastProject();
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
-
-    mainWindow->show();
-
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
     DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // start app

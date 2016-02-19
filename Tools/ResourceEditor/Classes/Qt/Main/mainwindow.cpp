@@ -29,113 +29,96 @@
 
 #include "DAVAEngine.h"
 
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QColorDialog>
-#include <QShortcut>
-#include <QKeySequence>
-#include <QMetaObject>
-#include <QMetaType>
-#include <QActionGroup>
-
 #include "mainwindow.h"
-#include "QtUtils.h"
-#include "Project/ProjectManager.h"
-#include "Scene/SceneHelper.h"
-#include "Scene/LandscapeThumbnails.h"
-#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-#include "SpritesPacker/SpritePackerHelper.h"
-
-#include "TextureBrowser/TextureBrowser.h"
-#include "SoundComponentEditor/FMODSoundBrowser.h"
-#include "TextureBrowser/TextureCache.h"
-#include "MaterialEditor/MaterialEditor.h"
-#include "QualitySwitcher/QualitySwitcher.h"
-
-#include "Qt/Settings/SettingsManager.h"
-#include "Deprecated/EditorConfig.h"
-
-#include "../CubemapEditor/CubemapUtils.h"
-#include "../CubemapEditor/CubemapTextureBrowser.h"
-#include "../ImageSplitterDialog/ImageSplitterDialog.h"
-
-#include "Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
+#include "Classes/Qt/BeastDialog/BeastDialog.h"
+#include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
+#include "Classes/Qt/CubemapEditor/CubemapUtils.h"
+#include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
+#include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
+#include "Classes/Qt/Main/QtUtils.h"
+#include "Classes/Qt/Main/Request.h"
+#include "Classes/Qt/MaterialEditor/MaterialEditor.h"
+#include "Classes/Qt/Project/ProjectManager.h"
+#include "Classes/Qt/QualitySwitcher/QualitySwitcher.h"
+#include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
+#include "Classes/Qt/Scene/LandscapeThumbnails.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Settings/SettingsDialog.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
+#include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
+#include "Classes/Qt/TextureBrowser/TextureBrowser.h"
+#include "Classes/Qt/TextureBrowser/TextureCache.h"
+#include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
+#include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
+#include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
+#include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
+#include "Classes/Qt/Tools/HangingObjectsHeight/HangingObjectsHeight.h"
+#include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
+#include "Classes/Qt/Tools/PathDescriptor/PathDescriptor.h"
+#include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
+#include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
+#include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
 #endif
 
-#include "../Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
-
-#include "Classes/Commands2/EntityAddCommand.h"
-#include "StringConstants.h"
-#include "Settings/SettingsManager.h"
-#include "Settings/SettingsDialog.h"
-
-#include "Classes/Qt/Scene/SceneEditor2.h"
-
-#include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Classes/Deprecated/EditorConfig.h"
+#include "Classes/Deprecated/SceneValidator.h"
 
 #include "Classes/CommandLine/SceneSaver/SceneSaver.h"
-#include "Classes/Qt/Main/Request.h"
+#include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/BeastAction.h"
-
+#include "Classes/Commands2/ConvertPathCommands.h"
 #include "Classes/Commands2/CustomColorsCommands2.h"
+#include "Classes/Commands2/EntityAddCommand.h"
 #include "Classes/Commands2/HeightmapEditorCommands2.h"
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Classes/Commands2/PaintHeightDeltaAction.h"
+#include "Classes/Commands2/RemoveComponentCommand.h"
 #include "Classes/Commands2/RulerToolActions.h"
 #include "Classes/Commands2/TilemaskEditorCommands.h"
-#include "Classes/Commands2/AddComponentCommand.h"
-#include "Classes/Commands2/RemoveComponentCommand.h"
 
-#include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
-
-#include "Tools/HangingObjectsHeight/HangingObjectsHeight.h"
-#include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
-
-#include "Scene3D/Components/ActionComponent.h"
-#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Classes/SceneProcessing/SceneProcessor.h"
 
 #include "Classes/Constants.h"
+#include "Classes/StringConstants.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include "Deprecated/SceneValidator.h"
 
-#include "Tools/DeveloperTools/DeveloperTools.h"
-#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
+//#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
-#include "Classes/Qt/BeastDialog/BeastDialog.h"
-#include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-
-#include "Classes/Commands2/PaintHeightDeltaAction.h"
-
-#include "Tools/HeightDeltaTool/HeightDeltaTool.h"
-#include "Tools/ColorPicker/ColorPicker.h"
-#include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Settings/SettingsManager.h"
-
-#include "SceneProcessing/SceneProcessor.h"
-#include "QtLayer.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-
-#include "Commands2/ConvertPathCommands.h"
-
-#include "Scene3D/Components/Controller/WASDControllerComponent.h"
-#include "Scene3D/Components/Controller/RotationControllerComponent.h"
-
-#include "Scene3D/Systems/StaticOcclusionSystem.h"
-
 #include "QtTools/FileDialog/FileDialog.h"
 
-QtMainWindow::QtMainWindow(QWidget* parent)
+#include "Platform/Qt5/QtLayer.h"
+
+#include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+
+#include <QActionGroup>
+#include <QColorDialog>
+#include <QDesktopServices>
+#include <QKeySequence>
+#include <QMessageBox>
+#include <QMetaObject>
+#include <QMetaType>
+#include <QShortcut>
+
+QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , waitDialog(nullptr)
@@ -147,6 +130,8 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , developerTools(new DeveloperTools(this))
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
+    , ngtContext(ngtContext_)
+    , spritesPacker(new SpritesPackerModule())
 {
     PathDescriptor::InitializePathDescriptors();
 
@@ -155,6 +140,9 @@ QtMainWindow::QtMainWindow(QWidget* parent)
 
     recentFiles.SetMenu(ui->menuFile);
     recentProjects.SetMenu(ui->menuRecentProjects);
+
+    spritesPacker->SetAction(ui->actionReloadSprites);
+    ProjectManager::Instance()->SetSpritesPacker(spritesPacker.get());
 
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
 
@@ -198,10 +186,18 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     EnableSceneActions(false);
 
     DiableUIForFutureUsing();
+
+    IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
+    IUIFramework* uiFramework = ngtContext.queryInterface<IUIFramework>();
+    DVASSERT(uiApplication != nullptr);
+    DVASSERT(uiFramework != nullptr);
+    propertyPanel.Initialize(*uiFramework, *uiApplication);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, &propertyPanel, &PropertyPanel::SceneSelectionChanged);
 }
 
 QtMainWindow::~QtMainWindow()
 {
+    propertyPanel.Finalize();
     const auto& logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
 
@@ -678,7 +674,9 @@ void QtMainWindow::SetupDocks()
 
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo, SLOT(UpdateInfoByTimer()));
     QObject::connect(this, SIGNAL(TexturesReloaded()), ui->sceneInfo, SLOT(TexturesReloaded()));
-    QObject::connect(this, SIGNAL(SpritesReloaded()), ui->sceneInfo, SLOT(SpritesReloaded()));
+
+    QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
+    QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
 
     ui->libraryWidget->SetupSignals();
     // Run Action Event dock
@@ -758,7 +756,6 @@ void QtMainWindow::SetupActions()
 
     QObject::connect(ui->menuTexturesForGPU, SIGNAL(triggered(QAction*)), this, SLOT(OnReloadTexturesTriggered(QAction*)));
     QObject::connect(ui->actionReloadTextures, SIGNAL(triggered()), this, SLOT(OnReloadTextures()));
-    QObject::connect(ui->actionReloadSprites, SIGNAL(triggered()), this, SLOT(OnReloadSprites()));
 
     QObject::connect(ui->actionAlbedo, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
     QObject::connect(ui->actionAmbient, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
@@ -1050,7 +1047,10 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionEnableCameraLight->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
-    ui->actionReloadSprites->setEnabled(enable);
+
+    QAction* actionReloadSprites = spritesPacker->GetReloadAction();
+    actionReloadSprites->setEnabled(enable);
+
     ui->actionSetLightViewMode->setEnabled(enable);
 
     ui->actionSaveHeightmapToPNG->setEnabled(enable);
@@ -1471,12 +1471,6 @@ void QtMainWindow::OnReloadTexturesTriggered(QAction* reloadAction)
     {
         SetGPUFormat(gpu);
     }
-}
-
-void QtMainWindow::OnReloadSprites()
-{
-    SpritePackerHelper::Instance()->UpdateParticleSprites(GetGPUFormat());
-    emit SpritesReloaded();
 }
 
 void QtMainWindow::OnSelectMode()

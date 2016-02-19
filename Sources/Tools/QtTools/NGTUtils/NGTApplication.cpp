@@ -27,12 +27,14 @@
 =====================================================================================*/
 
 #include "NGTApplication.h"
+#include "GlobalContext.h"
 
 #include "Debug/DVAssert.h"
 
 #include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
 #include "core_generic_plugin/interfaces/i_application.hpp"
 #include "core_generic_plugin/generic_plugin.hpp"
+#include "core_variant/variant.hpp"
 #include "core_ui_framework/i_ui_application.hpp"
 #include "core_qt_common/i_qt_framework.hpp"
 
@@ -55,6 +57,11 @@ NGTBaseApplication::NGTBaseApplication(int argc, char** argv)
 {
 }
 
+NGTBaseApplication::~NGTBaseApplication()
+{
+    DAVA::SetGlobalContext(nullptr);
+}
+
 void NGTBaseApplication::LoadPlugins()
 {
     DAVA::Vector<DAVA::WideString> pluginList;
@@ -68,6 +75,17 @@ void NGTBaseApplication::LoadPlugins()
 
     pluginManager.getContextManager().getGlobalContext()->registerInterface<ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
     pluginManager.loadPlugins(pluginList);
+    DAVA::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
+    Variant::setMetaTypeManager(DAVA::queryInterface<IMetaTypeManager>());
+
+    OnPostLoadPugins();
+}
+
+IComponentContext& NGTBaseApplication::GetComponentContext()
+{
+    IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
+    DVASSERT(context != nullptr);
+    return *context;
 }
 
 int NGTBaseApplication::StartApplication(QMainWindow* appMainWindow)

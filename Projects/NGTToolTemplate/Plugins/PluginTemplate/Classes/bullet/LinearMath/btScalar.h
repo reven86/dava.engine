@@ -130,8 +130,8 @@ inline int btGetVersion()
 #ifdef __SPU__
 #include <spu_printf.h>
 #define printf spu_printf
-	#define btAssert(x) {if (!(x)){printf("Assert "__FILE__                     \
-                   ":%u (" #x ")\n",                     \
+	#define btAssert(x) {if (!(x)){printf("Assert "__FILE__ \
+                   ":%u (" #x ")\n", \
                    __LINE__);spu_hcmpeq(0, 0);}}
 #else
 	#define btAssert assert

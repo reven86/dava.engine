@@ -31,10 +31,6 @@ endif()
 define_ngt_pathes("${FRAMEWORK_PATH}/Sources/External/ngt/")
 get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
 
-add_definitions(
-      -DDAVA_MEMORY_MANAGEMENT
-)
-
 list(APPEND EXCLUDE_LIBS "FColladaVS2010.lib" "libdxt.lib" "libdxtd.lib")
 list(APPEND ADDITIONAL_RELEASE_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/FColladaVS2010.lib")
 list(APPEND ADDITIONAL_DEBUG_LIBS "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/NGT/D/FColladaVS2010.lib")
@@ -105,6 +101,9 @@ qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
+file              ( GLOB QML_LIST "DataQt/*.qml")
+file              ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
+
 if( WIN32 )
     add_definitions( -D__DAVAENGINE_BEAST__ )
     set( BEAST_WRAPPER   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
@@ -130,11 +129,10 @@ set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
-set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
 set( LIBRARIES            ${BEAST_LIB} )
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
-                                                       
 
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
@@ -144,10 +142,6 @@ DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/con
                            COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll
                            COPY_DIR    ${DEPLOY_DIR}
                          )
-
-if (BUILD_AS_PLUGIN)
-    add_definitions(-D__DAVAENGINE_NGT_PLUGIN__)
-endif()
 
 # append NGT targets to solution
 foreach(NGT_LIB ${NGT_LIBS})
