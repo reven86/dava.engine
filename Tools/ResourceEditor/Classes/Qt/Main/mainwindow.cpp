@@ -133,9 +133,9 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     , ngtContext(ngtContext_)
 {
     PathDescriptor::InitializePathDescriptors();
-    
-	new ProjectManager();
-	ui->setupUi(this);
+
+    new ProjectManager();
+    ui->setupUi(this);
 
     recentFiles.SetMenu(ui->menuFile);
     recentProjects.SetMenu(ui->menuRecentProjects);
