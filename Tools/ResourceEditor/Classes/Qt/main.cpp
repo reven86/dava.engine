@@ -94,6 +94,12 @@ protected:
         names.push_back(L"plg_qt_app");
         names.push_back(L"plg_qt_common");
     }
+
+    void OnPostLoadPugins() override
+    {
+        qApp->setOrganizationName("DAVA");
+        qApp->setApplicationName("Resource Editor");
+    }
 };
 
 int main(int argc, char* argv[])

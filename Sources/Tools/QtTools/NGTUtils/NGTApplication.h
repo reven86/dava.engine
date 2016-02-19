@@ -49,6 +49,7 @@ public:
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
+    virtual void OnPostLoadPugins(){};
 
 private:
     DAVA::WideString GetPluginsFolder() const;

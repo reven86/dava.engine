@@ -77,6 +77,8 @@ void NGTBaseApplication::LoadPlugins()
     pluginManager.loadPlugins(pluginList);
     DAVA::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
     Variant::setMetaTypeManager(DAVA::queryInterface<IMetaTypeManager>());
+
+    OnPostLoadPugins();
 }
 
 IComponentContext& NGTBaseApplication::GetComponentContext()

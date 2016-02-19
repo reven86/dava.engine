@@ -50,7 +50,7 @@
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
-#include "Classes/Qt/SpritesPacker/SpritePackerHelper.h"
+#include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
@@ -91,7 +91,6 @@
 #include "Classes/StringConstants.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include "SpritesPacker/SpritesPackerModule.h"
 
 //#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
