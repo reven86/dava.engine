@@ -29,7 +29,7 @@
 #ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 #define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
-#include "UnitTests/TeamcityOutput.h"
+#include "Logger/TeamcityOutput.h"
 
 namespace DAVA
 {

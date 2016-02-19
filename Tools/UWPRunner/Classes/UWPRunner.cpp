@@ -36,7 +36,7 @@
 #include "Network/NetConfig.h"
 #include "Network/Services/LogConsumer.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
-#include "UnitTests/TeamCityTestsOutput.h"
+#include "Logger/TeamCityTestsOutput.h"
 
 #include "AppxBundleHelper.h"
 #include "ArchiveExtraction.h"
