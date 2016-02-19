@@ -209,6 +209,21 @@ private:
     HashMap<FastName, NMaterialProperty*> localProperties;
     HashMap<FastName, MaterialTextureInfo*> localTextures;
 
+    struct MaterialConfig
+    {
+        FastName presetName;
+        FastName fxName;
+        FastName qualityGroup;
+        HashMap<FastName, NMaterialProperty*> localProperties;
+        HashMap<FastName, MaterialTextureInfo*> localTextures;
+        HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
+
+        /*MaterialConfig();
+        ~MaterialConfig();*/
+    };
+
+    Vector<MaterialConfig> materialConfigs;
+
     // integer flags are just more generic than boolean (eg. #if SHADING == HIGH),
     // it has nothing in common with eFlagValue bullshit from old NMaterial
     HashMap<FastName, int32> localFlags;

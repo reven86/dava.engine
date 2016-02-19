@@ -40,11 +40,20 @@ class InspInfoDynamic;
 class InspMemberDynamic : public InspMember
 {
 public:
-    InspMemberDynamic(const char* _name, const InspDesc& _desc, const long int _offset, const MetaInfo* _type, int _flags, InspInfoDynamic* _dynamicInfo);
+    InspMemberDynamic(const char* _name, const InspDesc& _desc, const MetaInfo* _type, int _flags, InspInfoDynamic* _dynamicInfo);
     ~InspMemberDynamic();
 
     virtual const InspMemberDynamic* Dynamic() const;
     InspInfoDynamic* GetDynamicInfo() const;
+
+    virtual void* Pointer(void* object) const
+    {
+        return nullptr;
+    };
+    virtual void* Data(void* object) const
+    {
+        return nullptr;
+    };
 
 protected:
     InspInfoDynamic* dynamicInfo;
