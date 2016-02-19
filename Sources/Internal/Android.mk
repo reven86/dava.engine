@@ -388,7 +388,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/*.cpp)) \
-                     $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp)) \
+                     $(wildcard $(LOCAL_PATH)/Logger/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
 
