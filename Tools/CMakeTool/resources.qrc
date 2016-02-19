@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>Resources/config_mac.txt</file>
-        <file>Resources/config_windows.txt</file>
         <file>Resources/openfolder.png</file>
         <file>Resources/run.png</file>
         <file>Resources/ok.png</file>

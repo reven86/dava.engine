@@ -8,6 +8,7 @@
 #include "processwrapper.h"
 #include "filesystemhelper.h"
 
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
     configPath = "../CMakeTool/Resources/config_windows.txt";
 #elif defined Q_OS_MAC
-    configPath = "../../../../CMakeTool/Resources/config_mac.txt";
+    configPath = app.applicationDirPath() + "/../Resources/Data/config_mac.txt";
 #else
     qCritical() << "application started on undefined platform";
     return 1;

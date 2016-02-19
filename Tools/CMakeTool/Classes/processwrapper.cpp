@@ -4,8 +4,6 @@
 
 ProcessWrapper::ProcessWrapper(QObject *parent) : QObject(parent)
 {
-    process.setWorkingDirectory("/Users/");
-
     connect(&process, &QProcess::readyReadStandardOutput, this, &ProcessWrapper::OnReadyReadStandardOutput);
     connect(&process, &QProcess::readyReadStandardError, this, &ProcessWrapper::OnReadyReadStandardError);
     connect(&process, &QProcess::stateChanged, this, &ProcessWrapper::OnProcessStateChanged);
