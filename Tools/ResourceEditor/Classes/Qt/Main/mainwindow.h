@@ -54,7 +54,7 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 class DeviceListController;
-
+class SpritesPackerModule;
 class QtMainWindow
 : public QMainWindow
   ,
@@ -62,14 +62,12 @@ class QtMainWindow
 {
     Q_OBJECT
 
-protected:
     static const int GLOBAL_INVALIDATE_TIMER_DELTA = 1000;
 
 signals:
     void GlobalInvalidateTimeout();
 
     void TexturesReloaded();
-    void SpritesReloaded();
 
 public:
     explicit QtMainWindow(QWidget* parent = 0);
@@ -96,7 +94,6 @@ public:
 
     void EnableGlobalTimeout(bool enable);
 
-    void RestartParticleEffects();
 
     // qt actions slots
 public slots:
@@ -129,7 +126,6 @@ public slots:
 
     void OnReloadTextures();
     void OnReloadTexturesTriggered(QAction* reloadAction);
-    void OnReloadSprites();
 
     void OnSelectMode();
     void OnMoveMode();
@@ -214,6 +210,8 @@ public slots:
     void OnSnapCameraToLandscape(bool);
 
     void SetupTitle();
+
+    void RestartParticleEffects();
 
 protected:
     virtual bool eventFilter(QObject* object, QEvent* event);
@@ -312,6 +310,8 @@ private:
 
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
+
+    std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
     struct EmitterDescriptor
