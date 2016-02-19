@@ -475,8 +475,14 @@ void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*>& controls,
     {
         if (control->CanRemove())
         {
-            controlsToRemove.push_back(control);
-            nodesToRemove.push_back(control);
+            bool hasPrototype = std::find_if(controls.begin(), controls.end(), [control](const ControlNode* otherControl) {
+                                    return control->GetPrototype() == otherControl;
+                                }) != controls.end();
+            if (!hasPrototype)
+            {
+                controlsToRemove.push_back(control);
+                nodesToRemove.push_back(control);
+            }
         }
     }
 
