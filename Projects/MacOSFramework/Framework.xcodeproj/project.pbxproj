@@ -617,15 +617,6 @@
 		028C0FF41BD66A6000B2266F /* LocalizationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C091A1BD66A5E00B2266F /* LocalizationSystem.h */; };
 		028C0FF51BD66A6000B2266F /* LocalizationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C091A1BD66A5E00B2266F /* LocalizationSystem.h */; };
 		028C0FF61BD66A6000B2266F /* LocalizationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C091A1BD66A5E00B2266F /* LocalizationSystem.h */; };
-		028C0FF71BD66A6000B2266F /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C091B1BD66A5E00B2266F /* Logger.cpp */; };
-		028C0FF81BD66A6000B2266F /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C091B1BD66A5E00B2266F /* Logger.cpp */; };
-		028C0FF91BD66A6000B2266F /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C091B1BD66A5E00B2266F /* Logger.cpp */; };
-		028C0FFA1BD66A6000B2266F /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C091C1BD66A5E00B2266F /* Logger.h */; };
-		028C0FFB1BD66A6000B2266F /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C091C1BD66A5E00B2266F /* Logger.h */; };
-		028C0FFC1BD66A6000B2266F /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C091C1BD66A5E00B2266F /* Logger.h */; };
-		028C10001BD66A6000B2266F /* LoggerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C091E1BD66A5E00B2266F /* LoggerMacOS.mm */; };
-		028C10011BD66A6000B2266F /* LoggerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C091E1BD66A5E00B2266F /* LoggerMacOS.mm */; };
-		028C10021BD66A6000B2266F /* LoggerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C091E1BD66A5E00B2266F /* LoggerMacOS.mm */; };
 		028C10061BD66A6000B2266F /* Parser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09201BD66A5E00B2266F /* Parser.h */; };
 		028C10071BD66A6000B2266F /* Parser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09201BD66A5E00B2266F /* Parser.h */; };
 		028C10081BD66A6000B2266F /* Parser.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C09201BD66A5E00B2266F /* Parser.h */; };
@@ -2969,18 +2960,27 @@
 		6EC4681E1C58E54D0083C264 /* VisibilityCheckComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */; };
 		6EC4681F1C58E54D0083C264 /* VisibilityCheckComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */; };
 		72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB21B29C220003A52E0 /* libwebp_macos.a */; };
-		7CBC9E6E1C75D70E00A7C4C6 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E6A1C75D70E00A7C4C6 /* TeamcityOutput.cpp */; };
-		7CBC9E6F1C75D70E00A7C4C6 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E6A1C75D70E00A7C4C6 /* TeamcityOutput.cpp */; };
-		7CBC9E701C75D70E00A7C4C6 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E6A1C75D70E00A7C4C6 /* TeamcityOutput.cpp */; };
-		7CBC9E711C75D70E00A7C4C6 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBC9E6B1C75D70E00A7C4C6 /* TeamcityOutput.h */; };
-		7CBC9E721C75D70E00A7C4C6 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBC9E6B1C75D70E00A7C4C6 /* TeamcityOutput.h */; };
-		7CBC9E731C75D70E00A7C4C6 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBC9E6B1C75D70E00A7C4C6 /* TeamcityOutput.h */; };
-		7CBC9E741C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E6C1C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp */; };
-		7CBC9E751C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E6C1C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp */; };
-		7CBC9E761C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E6C1C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp */; };
-		7CBC9E771C75D70E00A7C4C6 /* TeamCityTestsOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBC9E6D1C75D70E00A7C4C6 /* TeamCityTestsOutput.h */; };
-		7CBC9E781C75D70E00A7C4C6 /* TeamCityTestsOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBC9E6D1C75D70E00A7C4C6 /* TeamCityTestsOutput.h */; };
-		7CBC9E791C75D70E00A7C4C6 /* TeamCityTestsOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBC9E6D1C75D70E00A7C4C6 /* TeamCityTestsOutput.h */; };
+		7C8D0F641C7752FE0078B69F /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F5B1C7752FE0078B69F /* Logger.cpp */; };
+		7C8D0F651C7752FE0078B69F /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F5B1C7752FE0078B69F /* Logger.cpp */; };
+		7C8D0F661C7752FE0078B69F /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F5B1C7752FE0078B69F /* Logger.cpp */; };
+		7C8D0F671C7752FE0078B69F /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F5C1C7752FE0078B69F /* Logger.h */; };
+		7C8D0F681C7752FE0078B69F /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F5C1C7752FE0078B69F /* Logger.h */; };
+		7C8D0F691C7752FE0078B69F /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F5C1C7752FE0078B69F /* Logger.h */; };
+		7C8D0F6D1C7752FE0078B69F /* LoggerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F5E1C7752FE0078B69F /* LoggerMacOS.mm */; };
+		7C8D0F6E1C7752FE0078B69F /* LoggerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F5E1C7752FE0078B69F /* LoggerMacOS.mm */; };
+		7C8D0F6F1C7752FE0078B69F /* LoggerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F5E1C7752FE0078B69F /* LoggerMacOS.mm */; };
+		7C8D0F731C7752FE0078B69F /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F601C7752FE0078B69F /* TeamcityOutput.cpp */; };
+		7C8D0F741C7752FE0078B69F /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F601C7752FE0078B69F /* TeamcityOutput.cpp */; };
+		7C8D0F751C7752FE0078B69F /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F601C7752FE0078B69F /* TeamcityOutput.cpp */; };
+		7C8D0F761C7752FE0078B69F /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F611C7752FE0078B69F /* TeamcityOutput.h */; };
+		7C8D0F771C7752FE0078B69F /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F611C7752FE0078B69F /* TeamcityOutput.h */; };
+		7C8D0F781C7752FE0078B69F /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F611C7752FE0078B69F /* TeamcityOutput.h */; };
+		7C8D0F791C7752FE0078B69F /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F621C7752FE0078B69F /* TeamCityTestsOutput.cpp */; };
+		7C8D0F7A1C7752FE0078B69F /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F621C7752FE0078B69F /* TeamCityTestsOutput.cpp */; };
+		7C8D0F7B1C7752FE0078B69F /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C8D0F621C7752FE0078B69F /* TeamCityTestsOutput.cpp */; };
+		7C8D0F7C1C7752FE0078B69F /* TeamCityTestsOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F631C7752FE0078B69F /* TeamCityTestsOutput.h */; };
+		7C8D0F7D1C7752FE0078B69F /* TeamCityTestsOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F631C7752FE0078B69F /* TeamCityTestsOutput.h */; };
+		7C8D0F7E1C7752FE0078B69F /* TeamCityTestsOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C8D0F631C7752FE0078B69F /* TeamCityTestsOutput.h */; };
 		7CBC9E7F1C75D7F400A7C4C6 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E7B1C75D7F400A7C4C6 /* CommandLineParser.cpp */; };
 		7CBC9E801C75D7F400A7C4C6 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E7B1C75D7F400A7C4C6 /* CommandLineParser.cpp */; };
 		7CBC9E811C75D7F400A7C4C6 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC9E7B1C75D7F400A7C4C6 /* CommandLineParser.cpp */; };
@@ -3274,9 +3274,6 @@
 		028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedUnarchiver.h; sourceTree = "<group>"; };
 		028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationSystem.cpp; sourceTree = "<group>"; };
 		028C091A1BD66A5E00B2266F /* LocalizationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationSystem.h; sourceTree = "<group>"; };
-		028C091B1BD66A5E00B2266F /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
-		028C091C1BD66A5E00B2266F /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
-		028C091E1BD66A5E00B2266F /* LoggerMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LoggerMacOS.mm; sourceTree = "<group>"; };
 		028C09201BD66A5E00B2266F /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		028C09211BD66A5E00B2266F /* ResourceArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceArchive.cpp; sourceTree = "<group>"; };
 		028C09221BD66A5E00B2266F /* ResourceArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceArchive.h; sourceTree = "<group>"; };
@@ -4065,10 +4062,13 @@
 		6EC4681C1C58E54D0083C264 /* VisibilityCheckComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisibilityCheckComponent.cpp; path = Components/VisibilityCheckComponent.cpp; sourceTree = "<group>"; };
 		6EC4681D1C58E54D0083C264 /* VisibilityCheckComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VisibilityCheckComponent.h; path = Components/VisibilityCheckComponent.h; sourceTree = "<group>"; };
 		72C84EB21B29C220003A52E0 /* libwebp_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_macos.a; path = ../../Libs/libs/libwebp_macos.a; sourceTree = "<group>"; };
-		7CBC9E6A1C75D70E00A7C4C6 /* TeamcityOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TeamcityOutput.cpp; sourceTree = "<group>"; };
-		7CBC9E6B1C75D70E00A7C4C6 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamcityOutput.h; sourceTree = "<group>"; };
-		7CBC9E6C1C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TeamCityTestsOutput.cpp; sourceTree = "<group>"; };
-		7CBC9E6D1C75D70E00A7C4C6 /* TeamCityTestsOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamCityTestsOutput.h; sourceTree = "<group>"; };
+		7C8D0F5B1C7752FE0078B69F /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
+		7C8D0F5C1C7752FE0078B69F /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
+		7C8D0F5E1C7752FE0078B69F /* LoggerMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LoggerMacOS.mm; sourceTree = "<group>"; };
+		7C8D0F601C7752FE0078B69F /* TeamcityOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TeamcityOutput.cpp; sourceTree = "<group>"; };
+		7C8D0F611C7752FE0078B69F /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamcityOutput.h; sourceTree = "<group>"; };
+		7C8D0F621C7752FE0078B69F /* TeamCityTestsOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TeamCityTestsOutput.cpp; sourceTree = "<group>"; };
+		7C8D0F631C7752FE0078B69F /* TeamCityTestsOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamCityTestsOutput.h; sourceTree = "<group>"; };
 		7CBC9E7B1C75D7F400A7C4C6 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandLineParser.cpp; sourceTree = "<group>"; };
 		7CBC9E7C1C75D7F400A7C4C6 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandLineParser.h; sourceTree = "<group>"; };
 		7CBC9E7D1C75D7F400A7C4C6 /* ProgramOptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProgramOptions.cpp; sourceTree = "<group>"; };
@@ -4505,9 +4505,6 @@
 				028C09141BD66A5E00B2266F /* KeyedUnarchiver.h */,
 				028C09191BD66A5E00B2266F /* LocalizationSystem.cpp */,
 				028C091A1BD66A5E00B2266F /* LocalizationSystem.h */,
-				028C091B1BD66A5E00B2266F /* Logger.cpp */,
-				028C091C1BD66A5E00B2266F /* Logger.h */,
-				028C091E1BD66A5E00B2266F /* LoggerMacOS.mm */,
 				028C09201BD66A5E00B2266F /* Parser.h */,
 				028C09211BD66A5E00B2266F /* ResourceArchive.cpp */,
 				028C09221BD66A5E00B2266F /* ResourceArchive.h */,
@@ -5591,10 +5588,6 @@
 		028C0D161BD66A5F00B2266F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				7CBC9E6A1C75D70E00A7C4C6 /* TeamcityOutput.cpp */,
-				7CBC9E6B1C75D70E00A7C4C6 /* TeamcityOutput.h */,
-				7CBC9E6C1C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp */,
-				7CBC9E6D1C75D70E00A7C4C6 /* TeamCityTestsOutput.h */,
 				028C0D171BD66A6000B2266F /* TestClass.cpp */,
 				028C0D181BD66A6000B2266F /* TestClass.h */,
 				028C0D191BD66A6000B2266F /* TestClassFactory.h */,
@@ -5701,6 +5694,20 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
+		7C8D0F5A1C7752FE0078B69F /* Logger */ = {
+			isa = PBXGroup;
+			children = (
+				7C8D0F5B1C7752FE0078B69F /* Logger.cpp */,
+				7C8D0F5C1C7752FE0078B69F /* Logger.h */,
+				7C8D0F5E1C7752FE0078B69F /* LoggerMacOS.mm */,
+				7C8D0F601C7752FE0078B69F /* TeamcityOutput.cpp */,
+				7C8D0F611C7752FE0078B69F /* TeamcityOutput.h */,
+				7C8D0F621C7752FE0078B69F /* TeamCityTestsOutput.cpp */,
+				7C8D0F631C7752FE0078B69F /* TeamCityTestsOutput.h */,
+			);
+			path = Logger;
+			sourceTree = "<group>";
+		};
 		7CBC9E7A1C75D7F400A7C4C6 /* CommandLine */ = {
 			isa = PBXGroup;
 			children = (
@@ -5747,6 +5754,7 @@
 				028C09341BD66A5E00B2266F /* Functional */,
 				028C09391BD66A5E00B2266F /* Input */,
 				028C09471BD66A5E00B2266F /* Job */,
+				7C8D0F5A1C7752FE0078B69F /* Logger */,
 				028C094E1BD66A5E00B2266F /* Math */,
 				028C09751BD66A5E00B2266F /* MemoryManager */,
 				028C09821BD66A5E00B2266F /* Network */,
@@ -5796,6 +5804,7 @@
 				028C0D7A1BD66A6000B2266F /* AutotestingSystemConfig.h in Headers */,
 				028C16531BD66A6000B2266F /* rhi_Impl.h in Headers */,
 				028C17F11BD66A6000B2266F /* UpdatableComponent.h in Headers */,
+				7C8D0F7E1C7752FE0078B69F /* TeamCityTestsOutput.h in Headers */,
 				028C18151BD66A6000B2266F /* WindComponent.h in Headers */,
 				028C17C11BD66A6000B2266F /* QualitySettingsComponent.h in Headers */,
 				028C10891BD66A6000B2266F /* AABBox2.h in Headers */,
@@ -5840,7 +5849,6 @@
 				028C16591BD66A6000B2266F /* rhi_Private.h in Headers */,
 				028C17431BD66A6000B2266F /* UniqueStateSet.h in Headers */,
 				028C124B1BD66A6000B2266F /* DeviceInfo.h in Headers */,
-				7CBC9E731C75D70E00A7C4C6 /* TeamcityOutput.h in Headers */,
 				028C181B1BD66A6000B2266F /* LodToLod2Converter.h in Headers */,
 				028C14761BD66A6000B2266F /* TextBlockRender.h in Headers */,
 				028C11551BD66A6000B2266F /* TCPSocket.h in Headers */,
@@ -5890,6 +5898,7 @@
 				028C1B271BD66A6100B2266F /* VectorSpinnerAdapter.h in Headers */,
 				028C10201BD66A6000B2266F /* XMLParser.h in Headers */,
 				028C0E671BD66A6000B2266F /* Result.h in Headers */,
+				7C8D0F781C7752FE0078B69F /* TeamcityOutput.h in Headers */,
 				028C1A191BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19651BD66A6000B2266F /* RawTimer.h in Headers */,
 				028C0FF61BD66A6000B2266F /* LocalizationSystem.h in Headers */,
@@ -5996,6 +6005,7 @@
 				028C0E161BD66A6000B2266F /* HashMap.h in Headers */,
 				028C0EA31BD66A6000B2266F /* ConditionVariable.h in Headers */,
 				028C0D621BD66A6000B2266F /* LinearPropertyAnimation.h in Headers */,
+				7C8D0F691C7752FE0078B69F /* Logger.h in Headers */,
 				028C18D21BD66A6000B2266F /* EventSystem.h in Headers */,
 				028C13DD1BD66A6000B2266F /* WebViewControlMacOS.h in Headers */,
 				028C194A1BD66A6000B2266F /* FMODSoundEvent.h in Headers */,
@@ -6104,7 +6114,6 @@
 				028C0EC11BD66A6000B2266F /* ThreadLocalPtr.h in Headers */,
 				028C0E251BD66A6000B2266F /* IntrospectionBase.h in Headers */,
 				028C14FD1BD66A6000B2266F /* RenderHierarchy.h in Headers */,
-				028C0FFC1BD66A6000B2266F /* Logger.h in Headers */,
 				028C1A011BD66A6000B2266F /* UIStyleSheetSystem.h in Headers */,
 				028C102F1BD66A6000B2266F /* YamlEmitter.h in Headers */,
 				028C11FD1BD66A6000B2266F /* LocalNotificationDelayed.h in Headers */,
@@ -6174,7 +6183,6 @@
 				028C151E1BD66A6000B2266F /* ShadowVolume.h in Headers */,
 				028C18AE1BD66A6000B2266F /* AnimationSystem.h in Headers */,
 				028C0DE01BD66A6000B2266F /* BaseTypes.h in Headers */,
-				7CBC9E791C75D70E00A7C4C6 /* TeamCityTestsOutput.h in Headers */,
 				028C0E281BD66A6000B2266F /* IntrospectionCollection.h in Headers */,
 				028C0D381BD66A6000B2266F /* AnimatedObject.h in Headers */,
 				028C1AEE1BD66A6100B2266F /* UISlider.h in Headers */,
@@ -6348,6 +6356,7 @@
 				028C0E141BD66A6000B2266F /* HashMap.h in Headers */,
 				028C19991BD66A6000B2266F /* LayoutHelpers.h in Headers */,
 				028C19A51BD66A6000B2266F /* SizeMeasuringAlgorithm.h in Headers */,
+				7C8D0F7C1C7752FE0078B69F /* TeamCityTestsOutput.h in Headers */,
 				028C0EF81BD66A6000B2266F /* MongodbObject.h in Headers */,
 				028C104B1BD66A6000B2266F /* SignalBase.h in Headers */,
 				028C195A1BD66A6000B2266F /* SoundSystem.h in Headers */,
@@ -6442,7 +6451,6 @@
 				028C0E531BD66A6000B2266F /* Observer.h in Headers */,
 				028C0D5A1BD66A6000B2266F /* LinearAnimation.h in Headers */,
 				028C173E1BD66A6000B2266F /* TextureDescriptor.h in Headers */,
-				7CBC9E771C75D70E00A7C4C6 /* TeamCityTestsOutput.h in Headers */,
 				028C10E11BD66A6000B2266F /* RectPacker.h in Headers */,
 				028C0EB01BD66A6000B2266F /* PosixThreads.h in Headers */,
 				028C111A1BD66A6000B2266F /* AddressResolver.h in Headers */,
@@ -6596,6 +6604,7 @@
 				028C163C1BD66A6000B2266F /* system.h in Headers */,
 				028C172C1BD66A6000B2266F /* Shader.h in Headers */,
 				028C11E31BD66A6000B2266F /* LocalNotification.h in Headers */,
+				7C8D0F761C7752FE0078B69F /* TeamcityOutput.h in Headers */,
 				028C15C71BD66A6000B2266F /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				028C0D541BD66A6000B2266F /* KeyframeAnimation.h in Headers */,
 				028C0E441BD66A6000B2266F /* ObjectCreator.h in Headers */,
@@ -6681,6 +6690,7 @@
 				028C11FE1BD66A6000B2266F /* LocalNotificationImpl.h in Headers */,
 				028C14741BD66A6000B2266F /* TextBlockRender.h in Headers */,
 				028C17A11BD66A6000B2266F /* CustomPropertiesComponent.h in Headers */,
+				7C8D0F671C7752FE0078B69F /* Logger.h in Headers */,
 				028C19B71BD66A6000B2266F /* UIFlowLayoutHintComponent.h in Headers */,
 				028C0D481BD66A6000B2266F /* BezierSplineAnimation.h in Headers */,
 				028C0EAA1BD66A6000B2266F /* Mutex.h in Headers */,
@@ -6690,7 +6700,6 @@
 				028C11231BD66A6000B2266F /* DeadlineTimer.h in Headers */,
 				028C120A1BD66A6000B2266F /* LocalNotificationNotImplemented.h in Headers */,
 				028C1B6A1BD66A6100B2266F /* Utils.h in Headers */,
-				028C0FFA1BD66A6000B2266F /* Logger.h in Headers */,
 				028C15BB1BD66A6000B2266F /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				028C10E41BD66A6000B2266F /* Sphere.h in Headers */,
 				028C19811BD66A6000B2266F /* IWebViewControl.h in Headers */,
@@ -6828,7 +6837,6 @@
 				028C18B21BD66A6000B2266F /* BaseProcessSystem.h in Headers */,
 				028C114A1BD66A6000B2266F /* TCPAcceptor.h in Headers */,
 				028C16E41BD66A6000B2266F /* rhi_ProgGLES2.h in Headers */,
-				7CBC9E711C75D70E00A7C4C6 /* TeamcityOutput.h in Headers */,
 				028C0F1F1BD66A6000B2266F /* Backtrace.h in Headers */,
 				028C18701BD66A6000B2266F /* VersionInfo.h in Headers */,
 				028C11081BD66A6000B2266F /* MemoryManager.h in Headers */,
@@ -6875,6 +6883,7 @@
 				028C0D791BD66A6000B2266F /* AutotestingSystemConfig.h in Headers */,
 				028C16521BD66A6000B2266F /* rhi_Impl.h in Headers */,
 				028C17F01BD66A6000B2266F /* UpdatableComponent.h in Headers */,
+				7C8D0F7D1C7752FE0078B69F /* TeamCityTestsOutput.h in Headers */,
 				7CCE26A81C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */,
 				028C18141BD66A6000B2266F /* WindComponent.h in Headers */,
 				028C17C01BD66A6000B2266F /* QualitySettingsComponent.h in Headers */,
@@ -6919,7 +6928,6 @@
 				028C176C1BD66A6000B2266F /* BoneNode.h in Headers */,
 				028C16581BD66A6000B2266F /* rhi_Private.h in Headers */,
 				028C17421BD66A6000B2266F /* UniqueStateSet.h in Headers */,
-				7CBC9E721C75D70E00A7C4C6 /* TeamcityOutput.h in Headers */,
 				028C124A1BD66A6000B2266F /* DeviceInfo.h in Headers */,
 				028C181A1BD66A6000B2266F /* LodToLod2Converter.h in Headers */,
 				028C14751BD66A6000B2266F /* TextBlockRender.h in Headers */,
@@ -6969,6 +6977,7 @@
 				028C123B1BD66A6000B2266F /* ParticleRenderObject.h in Headers */,
 				028C1B261BD66A6100B2266F /* VectorSpinnerAdapter.h in Headers */,
 				028C101F1BD66A6000B2266F /* XMLParser.h in Headers */,
+				7C8D0F771C7752FE0078B69F /* TeamcityOutput.h in Headers */,
 				028C0E661BD66A6000B2266F /* Result.h in Headers */,
 				028C1A181BD66A6000B2266F /* UIAggregatorControl.h in Headers */,
 				028C19641BD66A6000B2266F /* RawTimer.h in Headers */,
@@ -7075,6 +7084,7 @@
 				028C108E1BD66A6000B2266F /* AABBox3.h in Headers */,
 				028C0E151BD66A6000B2266F /* HashMap.h in Headers */,
 				028C0EA21BD66A6000B2266F /* ConditionVariable.h in Headers */,
+				7C8D0F681C7752FE0078B69F /* Logger.h in Headers */,
 				028C0D611BD66A6000B2266F /* LinearPropertyAnimation.h in Headers */,
 				028C18D11BD66A6000B2266F /* EventSystem.h in Headers */,
 				028C13DC1BD66A6000B2266F /* WebViewControlMacOS.h in Headers */,
@@ -7184,7 +7194,6 @@
 				028C0EC01BD66A6000B2266F /* ThreadLocalPtr.h in Headers */,
 				028C0E241BD66A6000B2266F /* IntrospectionBase.h in Headers */,
 				028C14FC1BD66A6000B2266F /* RenderHierarchy.h in Headers */,
-				028C0FFB1BD66A6000B2266F /* Logger.h in Headers */,
 				028C1A001BD66A6000B2266F /* UIStyleSheetSystem.h in Headers */,
 				028C102E1BD66A6000B2266F /* YamlEmitter.h in Headers */,
 				028C11FC1BD66A6000B2266F /* LocalNotificationDelayed.h in Headers */,
@@ -7253,7 +7262,6 @@
 				028C151D1BD66A6000B2266F /* ShadowVolume.h in Headers */,
 				028C18AD1BD66A6000B2266F /* AnimationSystem.h in Headers */,
 				028C0DDF1BD66A6000B2266F /* BaseTypes.h in Headers */,
-				7CBC9E781C75D70E00A7C4C6 /* TeamCityTestsOutput.h in Headers */,
 				028C0E271BD66A6000B2266F /* IntrospectionCollection.h in Headers */,
 				028C0D371BD66A6000B2266F /* AnimatedObject.h in Headers */,
 				028C1AED1BD66A6100B2266F /* UISlider.h in Headers */,
@@ -7656,6 +7664,7 @@
 				028C0FA51BD66A6000B2266F /* SceneSystem.cpp in Sources */,
 				028C0FB71BD66A6000B2266F /* File.cpp in Sources */,
 				028C14FA1BD66A6000B2266F /* RenderHierarchy.cpp in Sources */,
+				7C8D0F6F1C7752FE0078B69F /* LoggerMacOS.mm in Sources */,
 				028C109B1BD66A6000B2266F /* Color.cpp in Sources */,
 				028C1B1B1BD66A6100B2266F /* UIWebView.cpp in Sources */,
 				028C121E1BD66A6000B2266F /* ParticleEmitter.cpp in Sources */,
@@ -7694,7 +7703,6 @@
 				028C16D41BD66A6000B2266F /* rhi_DepthStencilStateGLES2.cpp in Sources */,
 				028C1AE51BD66A6100B2266F /* UIScrollViewContainer.cpp in Sources */,
 				028C147F1BD66A6000B2266F /* TextLayout.cpp in Sources */,
-				028C0FF91BD66A6000B2266F /* Logger.cpp in Sources */,
 				028C116A1BD66A6000B2266F /* NetConfig.cpp in Sources */,
 				028C19621BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D91BD66A6000B2266F /* NetLogger.cpp in Sources */,
@@ -7719,6 +7727,7 @@
 				028C10CB1BD66A6000B2266F /* Polygon2.cpp in Sources */,
 				028C0DC81BD66A6000B2266F /* AllocatorFactory.cpp in Sources */,
 				028C11071BD66A6000B2266F /* MemoryManager.cpp in Sources */,
+				7C8D0F7B1C7752FE0078B69F /* TeamCityTestsOutput.cpp in Sources */,
 				028C198C1BD66A6000B2266F /* ControlLayoutData.cpp in Sources */,
 				028C19351BD66A6000B2266F /* WindSystem.cpp in Sources */,
 				028C15631BD66A6000B2266F /* VegetationRenderObject.cpp in Sources */,
@@ -7729,6 +7738,7 @@
 				028C1B2A1BD66A6100B2266F /* TestClass.cpp in Sources */,
 				028C11D31BD66A6000B2266F /* MMNetServer.cpp in Sources */,
 				028C10E91BD66A6000B2266F /* Spline.cpp in Sources */,
+				7C8D0F661C7752FE0078B69F /* Logger.cpp in Sources */,
 				028C18BD1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF31BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11131BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
@@ -7761,7 +7771,6 @@
 				028C0DB01BD66A6000B2266F /* RectSwig.cpp in Sources */,
 				028C197A1BD66A6000B2266F /* DefaultUIPackageBuilder.cpp in Sources */,
 				028C0D3B1BD66A6000B2266F /* Animation.cpp in Sources */,
-				7CBC9E761C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp in Sources */,
 				028C19C81BD66A6000B2266F /* UILinearLayoutComponent.cpp in Sources */,
 				028C18181BD66A6000B2266F /* LodToLod2Converter.cpp in Sources */,
 				02141409181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
@@ -7789,7 +7798,6 @@
 				028C14EE1BD66A6000B2266F /* RenderBatch.cpp in Sources */,
 				028C1A341BD66A6100B2266F /* UIControlPackageContext.cpp in Sources */,
 				028C19E61BD66A6000B2266F /* UIStyleSheetPropertyDataBase.cpp in Sources */,
-				028C10021BD66A6000B2266F /* LoggerMacOS.mm in Sources */,
 				028C16051BD66A6000B2266F /* dbg_Draw.cpp in Sources */,
 				028C0E371BD66A6000B2266F /* Message.cpp in Sources */,
 				028C14D31BD66A6000B2266F /* Heightmap.cpp in Sources */,
@@ -7843,7 +7851,6 @@
 				028C151B1BD66A6000B2266F /* ShadowVolume.cpp in Sources */,
 				028C158A1BD66A6000B2266F /* LibJpegHelper.cpp in Sources */,
 				028C14C71BD66A6000B2266F /* CullingSystem.cpp in Sources */,
-				7CBC9E701C75D70E00A7C4C6 /* TeamcityOutput.cpp in Sources */,
 				028C118E1BD66A6000B2266F /* Discoverer.cpp in Sources */,
 				028C0DB91BD66A6000B2266F /* UIControlSwig.cpp in Sources */,
 				028C15CC1BD66A6000B2266F /* MipmapReplacer.cpp in Sources */,
@@ -7910,6 +7917,7 @@
 				028C0E2B1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6F1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
 				028C183F1BD66A6000B2266F /* LodNode.cpp in Sources */,
+				7C8D0F751C7752FE0078B69F /* TeamcityOutput.cpp in Sources */,
 				028C175E1BD66A6000B2266F /* AnimationData.cpp in Sources */,
 				028C1B3C1BD66A6100B2266F /* BiDiHelper.cpp in Sources */,
 				028C15F31BD66A6000B2266F /* RenderHelper.cpp in Sources */,
@@ -8072,6 +8080,7 @@
 				028C146B1BD66A6000B2266F /* TextBlockGraphicRender.cpp in Sources */,
 				028C19721BD66A6000B2266F /* UIControlFamily.cpp in Sources */,
 				028C0F3D1BD66A6000B2266F /* Profiler.cpp in Sources */,
+				7C8D0F731C7752FE0078B69F /* TeamcityOutput.cpp in Sources */,
 				87464EF91C2AB17C0001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */,
 				028C18FD1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
 				028C10721BD66A6000B2266F /* JobManager.cpp in Sources */,
@@ -8093,7 +8102,6 @@
 				028C0E591BD66A6000B2266F /* Radix.cpp in Sources */,
 				028C16451BD66A6000B2266F /* RegExp.cpp in Sources */,
 				028C1B461BD66A6100B2266F /* MD5.cpp in Sources */,
-				7CBC9E6E1C75D70E00A7C4C6 /* TeamcityOutput.cpp in Sources */,
 				028C199C1BD66A6000B2266F /* LinearLayoutAlgorithm.cpp in Sources */,
 				028C0DFC1BD66A6000B2266F /* FastName.cpp in Sources */,
 				028C0DB41BD66A6000B2266F /* UIControl_wrap.cxx in Sources */,
@@ -8165,7 +8173,6 @@
 				028C16D21BD66A6000B2266F /* rhi_DepthStencilStateGLES2.cpp in Sources */,
 				028C1AE31BD66A6100B2266F /* UIScrollViewContainer.cpp in Sources */,
 				028C147D1BD66A6000B2266F /* TextLayout.cpp in Sources */,
-				028C0FF71BD66A6000B2266F /* Logger.cpp in Sources */,
 				028C11681BD66A6000B2266F /* NetConfig.cpp in Sources */,
 				028C19601BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D71BD66A6000B2266F /* NetLogger.cpp in Sources */,
@@ -8213,7 +8220,6 @@
 				028C18671BD66A6000B2266F /* SerializationContext.cpp in Sources */,
 				028C1AFB1BD66A6100B2266F /* UISwitch.cpp in Sources */,
 				028C11741BD66A6000B2266F /* NetService.cpp in Sources */,
-				7CBC9E741C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp in Sources */,
 				028C1A921BD66A6100B2266F /* UIPackageLoader.cpp in Sources */,
 				028C18281BD66A6000B2266F /* DataNode.cpp in Sources */,
 				028C19D81BD66A6000B2266F /* UIPriorityStyleSheet.cpp in Sources */,
@@ -8261,7 +8267,6 @@
 				028C14EC1BD66A6000B2266F /* RenderBatch.cpp in Sources */,
 				028C1A321BD66A6100B2266F /* UIControlPackageContext.cpp in Sources */,
 				028C19E41BD66A6000B2266F /* UIStyleSheetPropertyDataBase.cpp in Sources */,
-				028C10001BD66A6000B2266F /* LoggerMacOS.mm in Sources */,
 				028C16031BD66A6000B2266F /* dbg_Draw.cpp in Sources */,
 				028C0E351BD66A6000B2266F /* Message.cpp in Sources */,
 				028C14D11BD66A6000B2266F /* Heightmap.cpp in Sources */,
@@ -8298,6 +8303,7 @@
 				028C0F8B1BD66A6000B2266F /* PatchFile.cpp in Sources */,
 				028C125E1BD66A6000B2266F /* Process.cpp in Sources */,
 				028C0FCA1BD66A6000B2266F /* FileSystem.cpp in Sources */,
+				7C8D0F641C7752FE0078B69F /* Logger.cpp in Sources */,
 				028C192D1BD66A6000B2266F /* WaveSystem.cpp in Sources */,
 				028C18911BD66A6000B2266F /* ShadowVolumeNode.cpp in Sources */,
 				028C1A6E1BD66A6100B2266F /* UIList.cpp in Sources */,
@@ -8331,6 +8337,7 @@
 				028C0E621BD66A6000B2266F /* Result.cpp in Sources */,
 				028C19CC1BD66A6000B2266F /* UISizePolicyComponent.cpp in Sources */,
 				028C18791BD66A6000B2266F /* SceneFileV2.cpp in Sources */,
+				7C8D0F791C7752FE0078B69F /* TeamCityTestsOutput.cpp in Sources */,
 				028C15D01BD66A6000B2266F /* OcclusionQuery.cpp in Sources */,
 				028C19F61BD66A6000B2266F /* UIStyleSheetStructs.cpp in Sources */,
 				028C17EC1BD66A6000B2266F /* UpdatableComponent.cpp in Sources */,
@@ -8384,6 +8391,7 @@
 				028C183D1BD66A6000B2266F /* LodNode.cpp in Sources */,
 				028C175C1BD66A6000B2266F /* AnimationData.cpp in Sources */,
 				028C1B3A1BD66A6100B2266F /* BiDiHelper.cpp in Sources */,
+				7C8D0F6D1C7752FE0078B69F /* LoggerMacOS.mm in Sources */,
 				028C15F11BD66A6000B2266F /* RenderHelper.cpp in Sources */,
 				028C113B1BD66A6000B2266F /* IPAddress.cpp in Sources */,
 				0347B7E31C64C211004DB76C /* UITextFieldMacOS.mm in Sources */,
@@ -8596,6 +8604,7 @@
 				028C0FB61BD66A6000B2266F /* File.cpp in Sources */,
 				028C14F91BD66A6000B2266F /* RenderHierarchy.cpp in Sources */,
 				028C109A1BD66A6000B2266F /* Color.cpp in Sources */,
+				7C8D0F6E1C7752FE0078B69F /* LoggerMacOS.mm in Sources */,
 				028C1B1A1BD66A6100B2266F /* UIWebView.cpp in Sources */,
 				028C121D1BD66A6000B2266F /* ParticleEmitter.cpp in Sources */,
 				028C122C1BD66A6000B2266F /* ParticleLayer.cpp in Sources */,
@@ -8633,7 +8642,6 @@
 				028C16D31BD66A6000B2266F /* rhi_DepthStencilStateGLES2.cpp in Sources */,
 				028C1AE41BD66A6100B2266F /* UIScrollViewContainer.cpp in Sources */,
 				028C147E1BD66A6000B2266F /* TextLayout.cpp in Sources */,
-				028C0FF81BD66A6000B2266F /* Logger.cpp in Sources */,
 				028C11691BD66A6000B2266F /* NetConfig.cpp in Sources */,
 				028C19611BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D81BD66A6000B2266F /* NetLogger.cpp in Sources */,
@@ -8659,6 +8667,7 @@
 				028C0DC71BD66A6000B2266F /* AllocatorFactory.cpp in Sources */,
 				028C11061BD66A6000B2266F /* MemoryManager.cpp in Sources */,
 				028C198B1BD66A6000B2266F /* ControlLayoutData.cpp in Sources */,
+				7C8D0F7A1C7752FE0078B69F /* TeamCityTestsOutput.cpp in Sources */,
 				028C19341BD66A6000B2266F /* WindSystem.cpp in Sources */,
 				028C15621BD66A6000B2266F /* VegetationRenderObject.cpp in Sources */,
 				028C0EA81BD66A6000B2266F /* Mutex.cpp in Sources */,
@@ -8669,6 +8678,7 @@
 				028C11D21BD66A6000B2266F /* MMNetServer.cpp in Sources */,
 				028C10E81BD66A6000B2266F /* Spline.cpp in Sources */,
 				028C18BC1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
+				7C8D0F651C7752FE0078B69F /* Logger.cpp in Sources */,
 				028C0FF21BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11121BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
@@ -8701,7 +8711,6 @@
 				028C0DAF1BD66A6000B2266F /* RectSwig.cpp in Sources */,
 				028C19791BD66A6000B2266F /* DefaultUIPackageBuilder.cpp in Sources */,
 				028C0D3A1BD66A6000B2266F /* Animation.cpp in Sources */,
-				7CBC9E751C75D70E00A7C4C6 /* TeamCityTestsOutput.cpp in Sources */,
 				028C19C71BD66A6000B2266F /* UILinearLayoutComponent.cpp in Sources */,
 				028C18171BD66A6000B2266F /* LodToLod2Converter.cpp in Sources */,
 				02141408181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
@@ -8729,7 +8738,6 @@
 				03C12A981C4FD827002D4636 /* Reachability.mm in Sources */,
 				028C1A331BD66A6100B2266F /* UIControlPackageContext.cpp in Sources */,
 				028C19E51BD66A6000B2266F /* UIStyleSheetPropertyDataBase.cpp in Sources */,
-				028C10011BD66A6000B2266F /* LoggerMacOS.mm in Sources */,
 				028C16041BD66A6000B2266F /* dbg_Draw.cpp in Sources */,
 				028C0E361BD66A6000B2266F /* Message.cpp in Sources */,
 				028C14D21BD66A6000B2266F /* Heightmap.cpp in Sources */,
@@ -8783,7 +8791,6 @@
 				028C1B741BD66A6100B2266F /* UtilsMacOS.mm in Sources */,
 				028C151A1BD66A6000B2266F /* ShadowVolume.cpp in Sources */,
 				028C15891BD66A6000B2266F /* LibJpegHelper.cpp in Sources */,
-				7CBC9E6F1C75D70E00A7C4C6 /* TeamcityOutput.cpp in Sources */,
 				028C14C61BD66A6000B2266F /* CullingSystem.cpp in Sources */,
 				028C118D1BD66A6000B2266F /* Discoverer.cpp in Sources */,
 				028C0DB81BD66A6000B2266F /* UIControlSwig.cpp in Sources */,
@@ -8850,6 +8857,7 @@
 				028C0E2A1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6E1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
 				028C183E1BD66A6000B2266F /* LodNode.cpp in Sources */,
+				7C8D0F741C7752FE0078B69F /* TeamcityOutput.cpp in Sources */,
 				028C175D1BD66A6000B2266F /* AnimationData.cpp in Sources */,
 				028C1B3B1BD66A6100B2266F /* BiDiHelper.cpp in Sources */,
 				028C15F21BD66A6000B2266F /* RenderHelper.cpp in Sources */,
