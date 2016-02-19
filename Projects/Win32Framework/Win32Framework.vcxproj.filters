@@ -196,6 +196,9 @@
     <Filter Include="Internal\CommandLine">
       <UniqueIdentifier>{de111723-0223-4ea4-93a7-cc216095165c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Logger">
+      <UniqueIdentifier>{682affb5-27b3-42fb-acbe-665faf6b9f98}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h">
@@ -319,9 +322,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h">
-      <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h">
@@ -1723,6 +1723,15 @@
     <ClInclude Include="..\..\Sources\Internal\CommandLine\ProgramOptions.h">
       <Filter>Internal\CommandLine</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamcityOutput.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Logger\Logger.h">
+      <Filter>Internal\Logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1807,9 +1816,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp">
-      <Filter>Internal\FileSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\Logger.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp">
@@ -2285,9 +2291,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\EnumMap.cpp">
       <Filter>Internal\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\LoggerWin.cpp">
-      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\KeyedArchiveSwig.cpp">
       <Filter>Internal\Autotesting</Filter>
@@ -3078,6 +3081,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\CommandLine\ProgramOptions.cpp">
       <Filter>Internal\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\LoggerWin.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamcityOutput.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\TeamCityTestsOutput.cpp">
+      <Filter>Internal\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Logger\Logger.cpp">
+      <Filter>Internal\Logger</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
