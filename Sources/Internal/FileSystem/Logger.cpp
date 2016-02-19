@@ -304,7 +304,7 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
         SafeRelease(log);
     };
 
-    static const int32 sizeToCut = cutLogSize;
+    static const uint32 sizeToCut = cutLogSize;
 
     const uint32 fileSize = log->GetSize();
     if (sizeToCut >= fileSize)
