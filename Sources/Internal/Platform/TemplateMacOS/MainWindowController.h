@@ -46,7 +46,6 @@
     
 @private
     IOPMAssertionID assertionID;
-    bool isDisplaySleepAllowed;
 }
 
 - (void)createWindows;

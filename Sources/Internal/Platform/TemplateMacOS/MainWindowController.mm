@@ -247,6 +247,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         mainWindow = nil;
         animationTimer = nil;
         core = 0;
+        assertionID = kIOPMNullAssertionID;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -255,8 +257,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
-        
-        isDisplaySleepAllowed = true;
+
         [self allowDisplaySleep:false];
     }
     return self;
@@ -272,15 +273,18 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)allowDisplaySleep:(bool)sleep
 {
-    if (sleep == isDisplaySleepAllowed)
+    bool displaySleepAllowed = assertionID == kIOPMNullAssertionID;
+    if (sleep == displaySleepAllowed)
     {
         return;
     }
     
     IOReturn result;
+
     if (sleep)
     {
         result = IOPMAssertionRelease(assertionID);
+        assertionID = kIOPMNullAssertionID;
     }
     else
     {
@@ -295,8 +299,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
         return;
     }
-    
-    isDisplaySleepAllowed = sleep;
 }
 
 - (void)createWindows
