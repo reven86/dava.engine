@@ -709,25 +709,37 @@ void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
 void UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
     // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
-    if ((newEvent->phase == UIEvent::Phase::BEGAN) && (lastClickData.phase == newEvent->phase))
+    if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
         DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
         newEvent->tapCount = 1;
-        if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
+        // only if last event ended
+        if (lastClickData.lastClickEnded)
         {
-            // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
-            float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
-            pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
-            if (pointShift < doubleClickRadiusSquared)
+            if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
             {
-                newEvent->tapCount = lastClickData.tapCount + 1;
+                // if point inside circle = (x0-x1)(x0-x1) + (y0-y1)(y0-y1) < r*r
+                float32 pointShift((lastClickData.physPoint.x - newEvent->physPoint.x) * (lastClickData.physPoint.x - newEvent->physPoint.x));
+                pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
+                if (static_cast<int32>(pointShift) < doubleClickRadiusSquared)
+                {
+                    newEvent->tapCount = lastClickData.tapCount + 1;
+                }
             }
         }
+        lastClickData.touchId = newEvent->touchId;
+        lastClickData.timestamp = newEvent->timestamp;
+        lastClickData.physPoint = newEvent->physPoint;
+        lastClickData.tapCount = newEvent->tapCount;
+        lastClickData.lastClickEnded = false;
     }
-    lastClickData.timestamp = newEvent->timestamp;
-    lastClickData.physPoint = newEvent->physPoint;
-    lastClickData.tapCount = newEvent->tapCount;
-    lastClickData.phase = newEvent->phase;
+    else if (newEvent->phase == UIEvent::Phase::ENDED)
+    {
+        if (newEvent->touchId == lastClickData.touchId)
+        {
+            lastClickData.lastClickEnded = true;
+        }
+    }
 }
 
 bool UIControlSystem::IsRtl() const

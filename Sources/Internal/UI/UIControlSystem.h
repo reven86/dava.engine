@@ -305,7 +305,7 @@ public:
     void SetUseClearPass(bool use);
 
     void SetDefaultTapCountSettings();
-    void SetTapCountSettings(float32 time = 0.f, int32 radius = 0);
+    void SetTapCountSettings(float32 time, int32 radius);
 
 private:
     /**
@@ -360,10 +360,11 @@ private:
     int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
     struct
     {
+        uint32 touchId;
         Vector2 physPoint;
         float64 timestamp = 0.0;
-        UIEvent::Phase phase = UIEvent::Phase::ERROR;
         int32 tapCount = 0;
+        bool lastClickEnded = false;
     } lastClickData;
 
     friend class UIScreenTransition;
