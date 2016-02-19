@@ -2,16 +2,20 @@
 #include <QString>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QProcessEnvironment>
+#include <QMessageBox>
 #include "configstorage.h"
+#include "processwrapper.h"
+#include "filesystemhelper.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     QString configPath;
 #ifdef Q_OS_WIN
-    configPath = ":/Resources/config_windows.txt";
+    configPath = "../CMakeTool/Resources/config_windows.txt";
 #elif defined Q_OS_MAC
-    configPath = ":/Resources/config_mac.txt";
+    configPath = "../../../../CMakeTool/Resources/config_mac.txt";
 #else
     qCritical() << "application started on undefined platform";
     return 1;
@@ -22,10 +26,23 @@ int main(int argc, char *argv[])
     {
         return 0;
     }
+    FileSystemHelper fileSystemHelper;
+    ProcessWrapper processWrapper;
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("configuration", configuration);
+    auto rootContext = engine.rootContext();
+    rootContext->setContextProperty("applicationDirPath", app.applicationDirPath());
+    rootContext->setContextProperty("configuration", configuration);
+    rootContext->setContextProperty("fileSystemHelper", &fileSystemHelper);
+    rootContext->setContextProperty("processWrapper", &processWrapper);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    //QObject::connect(engine.rootObjects().at(0), SIGNAL(dataReadyToSave(QString)), &configStorage, SLOT(SaveJSONTestToConfig(QString)));
-    return app.exec();
+    if(!engine.rootObjects().empty())
+    {
+        auto rootObject = engine.rootObjects().at(0);
+        QObject::connect(rootObject, SIGNAL(dataReadyToSave(QString)), &configStorage, SLOT(SaveJSONTestToConfig(QString)));
+        QObject::connect(rootObject, SIGNAL(invokeCmake(QString)), &processWrapper, SLOT(LaunchCmake(QString)));
+        return app.exec();
+    }
+    QMessageBox::critical(nullptr, QObject::tr("Failed to load QML file"), QObject::tr("QML file not loaded!"));
+    return 0;
 }
 

@@ -1,91 +1,94 @@
 {
-  "platforms": [
-    {
-      "name": "Windows",
-      "checked": true,
-      "value": "-G\"Visual Studio 12\" $PATH_TO_BUILD_FOLDER/.."
-    },
-    {
-      "name": "OS X",
-      "checked": false,
-      "value": "-G\"Xcode\" $PATH_TO_BUILD_FOLDER"
-    },
-    {
-      "name": "IOS",
-      "checked": false,
-      "value": "-G\"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $PATH_TO_BUILD_FOLDER/.."
-    },
-    {
-      "name": "Android",
-      "checked": false,
-      "value": "-G \"%1%2\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $PATH_TO_BUILD_FOLDER/..",
-      "defaults": [
+    "platforms": [
         {
-          "substring number": 1,
-          "value": "Eclipse CDT4 - "
+            "name": "Windows",
+            "checked": false,
+            "value": "-G \"Visual Studio 12\" $BUILD_FOLDER_PATH/.."
         },
         {
-          "substring number": 2,
-          "value": "NMake Makefiles"
-        }
-      ],
-      "options": [
-        {
-          "name": "console",
-          "type": "checkbox",
-          "checked": true,
-          "substring number": 1,
-          "value": ""
+            "name": "OS X",
+            "checked": false,
+            "value": "-G \"Xcode\" $BUILD_FOLDER_PATH"
         },
         {
-          "name": "use MinGW",
-          "type": "checkbox",
-          "checked": true,
-          "substring number": 2,
-          "value": "Mingw Makefiles"
-        }
-      ]
-    },
-    {
-      "name": "Windows 10",
-      "checked": false,
-      "value": "$DAVA_FRAMEWORK_PATH\\Tools\\WinStoreCMake\\mk_project.bat $PATH_TO_BUILD_FOLDER/.. %1",
-      "defaults": [
-        {
-          "substring number": 1,
-          "value": ""
-        }
-      ],
-      "options": [
-        {
-          "name": "ARM",
-          "type": "radiobutton",
-          "checked": false,
-          "substring number": 1,
-          "value": "ARM"
+            "name": "IOS",
+            "checked": false,
+            "value": "-G \"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $BUILD_FOLDER_PATH/.."
         },
         {
-          "name": "Win32",
-          "type": "radiobutton",
-          "checked": true,
-          "substring number": 1,
-          "value": "Win32"
+            "name": "Android",
+            "checked": false,
+            "value": "-G \"%1%2\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH/..",
+            "defaults": [
+                "Eclipse CDT4 - ",
+                "NMake Makefiles"
+            ],
+            "options": [
+                {
+                    "name": "console",
+                    "type": "checkbox",
+                    "checked": true,
+                    "substring number": 1,
+                    "value": "",
+                    "parentIndex": 3
+                },
+                {
+                    "name": "use MinGW",
+                    "type": "checkbox",
+                    "checked": true,
+                    "substring number": 2,
+                    "value": "Mingw Makefiles",
+                    "parentIndex": 3
+                }
+            ]
         },
         {
-          "name": "Win64",
-          "type": "radiobutton",
-          "checked": false,
-          "substring number": 1,
-          "value": "Win64"
+            "name": "Windows 10",
+            "checked": true,
+            "value": "$DAVA_FRAMEWORK_PATH\\Tools\\WinStoreCMake\\mk_project.bat $BUILD_FOLDER_PATH/.. %1",
+            "defaults": [
+                ""
+            ],
+            "options": [
+                {
+                    "name": "ARM",
+                    "type": "radiobutton",
+                    "checked": false,
+                    "substring number": 1,
+                    "value": "ARM",
+                    "parentIndex": 4
+                },
+                {
+                    "name": "Win32",
+                    "type": "radiobutton",
+                    "checked": false,
+                    "substring number": 1,
+                    "value": "Win32",
+                    "parentIndex": 4
+                },
+                {
+                    "name": "Win64",
+                    "type": "radiobutton",
+                    "checked": true,
+                    "substring number": 1,
+                    "value": "Win64",
+                    "parentIndex": 4
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "options": [
-    {
-      "name": "Unity build",
-      "checked": true,
-      "value": "-DUNITY_BUILD=true"
-    }
-  ]
+    ],
+    "options": [
+        {
+            "name": "Unity build",
+            "checked": true,
+            "value": "-DUNITY_BUILD=true"
+        }
+    ],
+    "davaFolder": "D:/Projects/dava.framework",
+    "buildFolderHistory": [
+        "D:/Projects/dava.framework/",
+        "D:/Projects/dava.framework/Tools/",
+        "D:",
+        "E:/PerfLogs"
+    ]
 }

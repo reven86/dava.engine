@@ -1,15 +1,14 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.2
+import QtQuick.Controls 1.3
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 
 ApplicationWindow {
     id: applicationWindow
     visible: true
-    width: 400
+    width: 800
     height: 400
     title: qsTr("CMake tool")
-    signal syncFile();
     ListModel {
         id: listModel_platforms
     }
@@ -22,34 +21,145 @@ ApplicationWindow {
         id: listModel_globalOptions
     }
 
-    property string platfromsOptionName: "platforms";
+    ListModel {
+        id: listModel_recentBuildsModel
+    }
+
+    property string platformsOptionName: "platforms";
     property string globalOptionsOptionName: "options";
+    property bool outputComplete: false
     property var mainObject;
+
     signal dataReadyToSave(string text);
-    Component.onDestruction: {
+    signal invokeCmake(string command);
+
+    function syncConfig() {
         dataReadyToSave(JSON.stringify(mainObject, null, 4));
+    }
+    property int counter: 0
+    Timer {
+        id: timer;
+        interval: 10
+        repeat: false
+        onTriggered: updateOutputStringImpl();
+    }
+
+    function extractDavaPathFromPath(path) {
+        var davaFolderName = "dava.framework";
+        var index = path.indexOf(davaFolderName);
+        if(index !== -1) {
+            textField_DAVAFolder.text = path.substring(0, index + davaFolderName.length);
+        }
+    }
+
+    function updateOutputString() {
+        timer.start();
+    }
+
+
+    function updateOutputStringImpl() {
+        outputComplete = true;
+        var outputText = "cmake ";
+        for(var i = 0, length = listModel_platforms.count; i < length; ++i) {
+            var platformObject = mainObject[platformsOptionName][i];
+            if(!platformObject.checked) {
+                continue;
+            }
+            outputText += platformObject.value;
+            var substrings = [];
+            var defaults = platformObject.defaults;
+            var localOptionsObject = platformObject.options;
+            if(defaults && Array.isArray(defaults)) {
+                if(defaults.length > localOptionsObject.count) {
+                    errorDialog.informativeText = qsTr("Internal error: local options size less than default substrings size!");
+                    errorDialog.open();
+                    return;
+                }
+                for(var i = 0, length = defaults.length; i < length; ++i) {
+                    substrings[i] = defaults[i];
+                }
+
+                for(var i = 0, length = localOptionsObject.length; i < length; ++i) {
+                    var localOption = localOptionsObject[i];
+                    if(localOption.checked) {
+                        substrings[localOption["substring number"] - 1] = localOption.value;
+                    }
+                }
+            }
+            for(var i = 0, length = substrings.length; i < length; ++i) {
+                outputText = outputText.arg(substrings[i])
+            }
+        }
+        var globalOptionsObject = mainObject[globalOptionsOptionName];
+        if(globalOptionsObject && Array.isArray(globalOptionsObject)) {
+            for(var i = 0, length = globalOptionsObject.length; i < length; ++i) {
+                var globalOption = globalOptionsObject[i];
+                if(globalOption.checked) {
+                    outputText += " " + globalOption.value
+                }
+            }
+        }
+        outputText += " -B " + comboBox_buildFolder.editText;
+
+        if(outputText.indexOf("$BUILD_FOLDER_PATH") !== -1) {
+            var buildFolder = comboBox_buildFolder.editText;
+            if(buildFolder.length === 0 || !fileSystemHelper.isDirExists(buildFolder)) {
+                outputText = qsTr("build folder path required")
+                outputComplete = false;
+            } else {
+                if(buildFolder[buildFolder.length - 1] === '/') {
+                    buildFolder = buildFolder.slice(0, -1);
+                }
+                outputText = outputText.replace("$BUILD_FOLDER_PATH", buildFolder)
+
+            }
+        }
+        if(outputText.indexOf("$DAVA_FRAMEWORK_PATH") !== -1) {
+            var davaFolder = textField_DAVAFolder.text;
+            if(davaFolder.length === 0 || !fileSystemHelper.isDirExists(davaFolder)) {
+                outputText = qsTr("DAVA folder path required")
+                outputComplete = false;
+            } else {
+                if(davaFolder[davaFolder.length - 1] === '/') {
+                    davaFolder = davaFolder.slice(0, -1);
+                }
+                outputText = outputText.replace("$DAVA_FRAMEWORK_PATH", davaFolder)
+            }
+        }
+        textField_output.text = outputText;
     }
 
     Component.onCompleted: {
         try {
             mainObject = JSON.parse(configuration);
 
-            var arrayPlatforms = mainObject[platfromsOptionName];
-            if(arrayPlatforms !== undefined && Array.isArray(arrayPlatforms))
-            {
-                for(var i = 0, length = arrayPlatforms.length; i < length; ++i)
-                {
+            var arrayPlatforms = mainObject[platformsOptionName];
+            if(arrayPlatforms && Array.isArray(arrayPlatforms)) {
+                for(var i = 0, length = arrayPlatforms.length; i < length; ++i) {
                     listModel_platforms.append(arrayPlatforms[i]);
                 }
             }
 
             var arrayGlobalOptions = mainObject[globalOptionsOptionName];
-            if(arrayGlobalOptions !== undefined && Array.isArray(arrayGlobalOptions))
-            {
-                for(var i = 0, length = arrayGlobalOptions.length; i < length; ++i)
-                {
+            if(arrayGlobalOptions && Array.isArray(arrayGlobalOptions)) {
+                for(var i = 0, length = arrayGlobalOptions.length; i < length; ++i) {
                     listModel_globalOptions.append(arrayGlobalOptions[i]);
                 }
+            }
+            var davaFolderPath = mainObject["davaFolder"];
+            if(davaFolderPath) {
+                textField_DAVAFolder.text = davaFolderPath
+            } else if(applicationDirPath) {
+                extractDavaPathFromPath(applicationDirPath);
+            }
+
+            var buildHistory = mainObject["buildFolderHistory"];
+            if(buildHistory && Array.isArray(buildHistory)) {
+                comboBox_buildFolder.blockRebuild = true;
+                for(var i = 0, length = buildHistory.length; i < length; ++i) {
+                    listModel_recentBuildsModel.append({text: buildHistory[i]});
+                }
+                comboBox_buildFolder.blockRebuild = false;
             }
         }
         catch(error) {
@@ -60,22 +170,19 @@ ApplicationWindow {
 
     MessageDialog {
         id: errorDialog;
-        text: "error occurred!"
-        visible: false
+        text: qsTr("error occurred!")
         icon: StandardIcon.Warning
-
     }
 
     Component {
         id: loaderDelegate
         Loader {
             sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
-            property variant modelData: listModel_localOptions.get(index);
-            property int index : index;
+            property variant modelData: listModel_localOptions.get(model.index);
+            property int index : model.index;
         }
     }
-    Exclus
-    iveGroup {
+    ExclusiveGroup {
         id: exclusiveGroup_localOptions
     }
 
@@ -84,7 +191,16 @@ ApplicationWindow {
         RadioButton {
             text: modelData ? modelData.name : ""
             checked: modelData ? modelData.checked : false
-            onCheckedChanged: mainObject[platfromsOptionName][index]["checked"] = checked;
+            onCheckedChanged: {
+                if(!modelData) {
+                    return;
+                }
+
+                mainObject[platformsOptionName][modelData.parentIndex]["options"][index]["checked"] = checked;
+                syncConfig();
+                updateOutputString();
+            }
+
             exclusiveGroup: exclusiveGroup_localOptions
         }
     }
@@ -92,13 +208,61 @@ ApplicationWindow {
         id: checkboxDelegate
         CheckBox {
             text: modelData ? modelData.name : ""
-            onCheckedChanged: mainObject[platfromsOptionName][index]["checked"] = checked;
+            checked: modelData ? modelData.checked : ""
+            onCheckedChanged: {
+                if(!modelData) {
+                    return;
+                }
+                mainObject[platformsOptionName][modelData.parentIndex]["options"][index]["checked"] = checked;
+                syncConfig();
+                updateOutputString();
+            }
+        }
+    }
+
+    FileDialog {
+        id: fileDialog_buidFolder
+        title: qsTr("select build folder")
+        selectFolder: true
+        onAccepted: {
+            var url = fileDialog_buidFolder.fileUrls[0].toString()
+            url = fileSystemHelper.resolveUrl(url);
+            comboBox_buildFolder.editText = url;
+        }
+    }
+
+    FileDialog {
+        id: fileDialog_DAVAFolder
+        title: qsTr("select DAVA folder");
+        selectFolder: true
+        onAccepted: {
+            var url = fileDialog_DAVAFolder.fileUrls[0].toString()
+            url = fileSystemHelper.resolveUrl(url);
+            textField_DAVAFolder.text = url;
+        }
+    }
+
+    TextArea {
+        id: textArea_processText
+        anchors.fill: parent
+        anchors.topMargin: 10
+        anchors.bottomMargin: 10
+        anchors.rightMargin: 10
+        anchors.leftMargin: parent.width / 2 + 10
+        textFormat: TextEdit.RichText
+        readOnly: true
+        Connections {
+            target: processWrapper
+            onProcessStateChanged: textArea_processText.append("<font color=\"DarkGreen\">" + text + "</font>");
+            onProcessErrorChanged: textArea_processText.append("<font color=\"DarkRed\">" + text + "</font>");
+            onProcessStandardOutput: textArea_processText.append(text);
+            onProcessStandardError: textArea_processText.append("<font color=\"DarkRed\">" + text + "</font>");
         }
     }
 
     ColumnLayout {
         id: columnLayout_main
-        anchors.rightMargin: 10
+        anchors.rightMargin: parent.width / 2 + 10
         anchors.leftMargin: 10
         anchors.bottomMargin: 10
         anchors.topMargin: 10
@@ -110,26 +274,86 @@ ApplicationWindow {
             height: 47
 
             Label {
-                id: label_buildFolder
+                id: label_comboBox_buildFolder
                 text: qsTr("Build folder")
             }
 
-            TextField {
-                id: textField_buildFolder
+            ComboBox {
+                id: comboBox_buildFolder
                 Layout.fillWidth: true
-                placeholderText: qsTr("Text Field")
+                editable: true
+                model: listModel_recentBuildsModel
+                property bool blockRebuild: false;
+                onEditTextChanged: {
+                    if(blockRebuild) {
+                        return;
+                    }
+
+                    if(fileSystemHelper.isDirExists(editText)) {
+                        var history = mainObject["buildFolderHistory"];
+                        var curIndex = currentIndex
+                        var newItem = editText;
+                        if(history && Array.isArray(history)) {
+                            var maxLength = 5
+                            var count = Math.min(history.length, maxLength);
+                            var found = false;
+                            for(var i = history.length; i >= 0 && !found; --i) {
+                                var currentHistory = history[i];
+                                if(currentHistory === newItem
+                                        || currentHistory + "/" === newItem
+                                        || newItem + "/" === currentHistory) {
+                                    found = true;
+                                    newItem = currentHistory;
+                                    history.splice(i, 1);
+                                }
+                            }
+                            if(history.length < maxLength) {
+                                history.push("");
+                            }
+                            for(var i = history.length - 2; i >= 0; --i) {
+                                history[i + 1] = history[i];
+                            }
+                            history[0] = newItem;
+                            if(history.length > maxLength) {
+                                console.log("got max length");
+                                history = history.slice(0, maxLength);
+                            }
+                        } else {
+                            history = [newItem];
+                        }
+                        mainObject["buildFolderHistory"] = history;
+                        syncConfig();
+                        blockRebuild = true;
+                        if(!found) {
+                            listModel_recentBuildsModel.clear();
+                            for(var i = 0, length = history.length; i < length; ++i) {
+                                listModel_recentBuildsModel.append({text: history[i]});
+                            }
+                        }
+                        blockRebuild = false;
+                    }
+
+
+                    syncConfig();
+                    extractDavaPathFromPath(editText);
+                    updateOutputString();
+                }
             }
 
             Button {
-                id: button_getBuildFolder
+                id: button_getcomboBox_buildFolder
                 iconSource: "qrc:///Resources/openfolder.png"
+                onClicked: {
+                    fileDialog_buidFolder.folder = comboBox_buildFolder.editText;
+                    fileDialog_buidFolder.open();
+                }
             }
 
-            Label {
-                id: label_buildFolderStatus
-                width: 19
-                height: 13
-                text: qsTr("")
+            Image {
+                id: image_comboBox_buildFolderStatus
+                width: height
+                height: rowLayout_buldFolder.height
+                source: "qrc:///Resources/" + (fileSystemHelper.isDirExists(comboBox_buildFolder.editText) ? "ok" : "error") + ".png"
             }
         }
 
@@ -146,19 +370,28 @@ ApplicationWindow {
             TextField {
                 id: textField_DAVAFolder
                 Layout.fillWidth: true
-                placeholderText: qsTr("Text Field")
+                placeholderText: qsTr("path to dava folder")
+                onTextChanged: {
+                    mainObject["davaFolder"] = text
+                    syncConfig();
+                    updateOutputString()
+                }
             }
 
             Button {
                 id: button_getDAVAFolder
                 iconSource: "qrc:///Resources/openfolder.png"
+                onClicked: {
+                    fileDialog_DAVAFolder.folder = textField_DAVAFolder.text;
+                    fileDialog_DAVAFolder.open();
+                }
             }
 
-            Label {
-                id: label_DAVAFolderStatus
-                width: 19
-                height: 13
-                text: qsTr("")
+            Image {
+                id: image_DAVAFolderStatus
+                width: height
+                height: rowLayout_davaFolder.height
+                source: "qrc:///Resources/" + (fileSystemHelper.isDirExists(textField_DAVAFolder.text) ? "ok" : "error") + ".png"
             }
         }
         Item
@@ -166,13 +399,6 @@ ApplicationWindow {
             id: wrapperItem
             Layout.fillHeight: true;
             Layout.fillWidth: true;
-            Layout.minimumHeight: {
-                label_platforms.height + Math.max(listView_platforms.contentHeight, listView_localOptions.contentHeight)
-                        + label_globalOptions.height + gridView_globalOptions.contentHeight
-            }
-            Layout.minimumWidth: {
-                listView_platforms.contentWidth + listView_localOptions.contentWidth
-            }
 
             RowLayout {
                 id: rowLayout_platformsAndOptions
@@ -207,6 +433,7 @@ ApplicationWindow {
                     ListView {
                         id: listView_platforms
                         orientation: Qt.Vertical
+                        boundsBehavior: Flickable.StopAtBounds
                         model: listModel_platforms
                         ExclusiveGroup {
                             id: exclusiveGroup_platforms
@@ -216,20 +443,20 @@ ApplicationWindow {
                             checked: model.checked
                             exclusiveGroup: exclusiveGroup_platforms
                             onCheckedChanged: {
-                                mainObject[platfromsOptionName][index]["checked"] = checked;
-                                if(checked)
-                                {
+                                mainObject[platformsOptionName][index]["checked"] = checked;
+                                syncConfig();
+                                if(checked) {
                                     listModel_localOptions.clear();
-                                    var localObject = mainObject[platfromsOptionName][index];
+                                    var localObject = mainObject[platformsOptionName][index];
                                     var options = localObject["options"];
-                                    if(options !== undefined && Array.isArray(options))
-                                    {
-                                        for(var i = 0, length = options.length; i < length; ++i)
-                                        {
+                                    if(options && Array.isArray(options)) {
+                                        for(var i = 0, length = options.length; i < length; ++i) {
+                                            options[i]["parentIndex"] = index
                                             listModel_localOptions.append(options[i]);
                                         }
                                     }
                                 }
+                                updateOutputString();
                             }
                         }
 
@@ -268,6 +495,7 @@ ApplicationWindow {
                     ListView {
                         id: listView_localOptions
                         orientation: Qt.Vertical
+                        boundsBehavior: Flickable.StopAtBounds
                         model: listModel_localOptions
                         delegate: loaderDelegate
 
@@ -302,6 +530,7 @@ ApplicationWindow {
                 GridView {
                     id: gridView_globalOptions
                     Layout.fillWidth: true;
+                    boundsBehavior: Flickable.StopAtBounds
                     width: 100
                     height: 100
                     anchors.bottom: parent.bottom
@@ -312,7 +541,11 @@ ApplicationWindow {
                     delegate: CheckBox {
                         text: model.name
                         checked: model.checked
-                        onCheckedChanged: mainObject[globalOptionsOptionName][index]["checked"] = checked;
+                        onCheckedChanged: {
+                            mainObject[globalOptionsOptionName][index]["checked"] = checked;
+                            syncConfig();
+                            updateOutputString();
+                        }
                     }
 
                     model: listModel_globalOptions
@@ -330,18 +563,25 @@ ApplicationWindow {
                 text: qsTr("Output:")
             }
 
-            TextField {
+            TextArea {
                 id: textField_output
                 Layout.fillWidth: true;
-                placeholderText: qsTr("Text Field")
+                Layout.minimumHeight: contentHeight + 5
+                Layout.maximumHeight: contentHeight + 5
+                textColor: outputComplete ? "black" : "darkred"
             }
 
             Button {
                 id: button_runCmake
+                iconSource: "qrc:///Resources/run.png"
                 text: qsTr("run cmake")
+                enabled: textField_output.text.length !== 0 && outputComplete
+                onClicked: {
+                    textArea_processText.append("");
+                    invokeCmake(textField_output.text)
+                }
             }
         }
     }
-
 }
 
