@@ -376,7 +376,7 @@ void DlcTest::SetInternalDlServer(BaseObject* obj, void* data, void* callerData)
 
 void DlcTest::IncDlThreads(BaseObject* obj, void* data, void* callerData)
 {
-    dlc->SetDownloadingThreadsCount(++downloadTreadsCount);
+    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(++downloadTreadsCount);
 }
 
 void DlcTest::DecDlThreads(BaseObject* obj, void* data, void* callerData)
@@ -385,7 +385,7 @@ void DlcTest::DecDlThreads(BaseObject* obj, void* data, void* callerData)
     if (0 == downloadTreadsCount)
         downloadTreadsCount = 1;
 
-    dlc->SetDownloadingThreadsCount(downloadTreadsCount);
+    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(downloadTreadsCount);
 }
 
 void DlcTest::Cancel(BaseObject* obj, void* data, void* callerData)

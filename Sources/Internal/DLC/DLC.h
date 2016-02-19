@@ -130,8 +130,6 @@ public:
     */
     FilePath GetMetaStorePath() const;
 
-    void SetDownloadingThreadsCount(uint32 newCount);
-
 protected:
     enum DLCEvent
     {
@@ -193,7 +191,6 @@ protected:
     DLCState dlcState;
     DLCError dlcError;
     DLCContext dlcContext;
-    uint32 downloadingThreadsCount = 4;
 
     // FSM variables
     bool fsmAutoReady;
