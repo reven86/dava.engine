@@ -51,6 +51,7 @@ const float32 SEGMENT_LENGTH = 15.0f;
 }
 
 const FastName RenderSystem2D::RENDER_PASS_NAME("2d");
+const FastName RenderSystem2D::FLAG_COLOR_OP("COLOR_OP");
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
