@@ -223,13 +223,11 @@ extern volatile DAVA::uint8 post_call_registers[64];
 
 #define GL_CALL(expr) \
 { \
-    asm volatile("vstmia %0, { q4-q7 }" ::"r"(pre_call_registers)                \
+    asm volatile("vpush { q4-q7 }" ::                                            \
                      : "memory"); \
     expr; \
-    asm volatile("vstmia %0, { q4-q7 }" ::"r"(post_call_registers)               \
+    asm volatile("vpop { q4-q7 }" ::                                             \
                      : "memory"); \
-    \
-    DVASSERT_MSG(memcmp((const void*)pre_call_registers, (const void*)post_call_registers, 64 * sizeof(DAVA::uint8)) == 0, #expr); \
 }
 
 #else
