@@ -256,13 +256,95 @@ void Logger::SetLogFilename(const String& filename)
     }
     else
     {
-        logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory() + filename;
+        SetLogPathname(GetLogPathForFilename(filename));
     }
 }
 
 void Logger::SetLogPathname(const FilePath& filepath)
 {
+    const bool canWorkWithFile = CutOldLogFileIfExist(filepath);
+    DVASSERT(canWorkWithFile);
+
     logFilename = filepath;
+}
+
+FilePath Logger::GetLogPathForFilename(const String& filename)
+{
+    FilePath logFilePath(FileSystem::Instance()->GetCurrentDocumentsDirectory() + filename);
+    return logFilePath;
+}
+
+void Logger::SetMaxFileSize(uint32 size)
+{
+    cutLogSize = size;
+}
+
+void Logger::ResetMaxFileSize()
+{
+    cutLogSize = defaultCutLogSize;
+}
+
+bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
+{
+    if (!logFile.Exists())
+    {
+        return true; // ok. No file - no questions;
+    }
+
+    // take the tail of the log file and put it to the start of the file. Cut file to size of taken tail.
+
+    File* log = File::Create(logFile, File::OPEN | File::READ | File::WRITE);
+    if (nullptr == log)
+    {
+        return false; // cannot open file;
+    }
+
+    SCOPE_EXIT
+    {
+        SafeRelease(log);
+    };
+
+    static const int32 sizeToCut = cutLogSize;
+
+    const uint32 fileSize = log->GetSize();
+    if (sizeToCut >= fileSize)
+    {
+        return true; // ok! Have less data than we should to cut.
+    }
+
+    Vector<uint8> buff(sizeToCut);
+    const bool seekSuccess = log->Seek(static_cast<int32>(-sizeToCut), File::SEEK_FROM_END);
+    if (!seekSuccess)
+    {
+        return false; // have enought data but seek error
+    }
+
+    uint32 dataReaden = log->Read(buff.data(), sizeToCut);
+    if (dataReaden != sizeToCut)
+    {
+        return false; // nave enought data but cannot to read
+    }
+
+    SafeRelease(log);
+
+    File* truncatedLog = File::Create(logFile, File::CREATE | File::WRITE);
+    if (nullptr == truncatedLog)
+    {
+        return false;
+    }
+
+    SCOPE_EXIT
+    {
+        SafeRelease(truncatedLog);
+    };
+
+    const uint32 dataWritten = truncatedLog->Write(buff.data(), sizeToCut);
+    if (dataWritten != sizeToCut)
+    {
+        return false; // have correct file and data size but cannot write to file.
+    }
+
+    return true; // correct;
 }
 
 void Logger::FileLog(eLogLevel ll, const char8* text) const
