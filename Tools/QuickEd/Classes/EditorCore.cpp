@@ -115,9 +115,9 @@ EditorCore::EditorCore(QObject* parent)
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 
     connect(spritesPacker.get(), &SpritesPacker::Finished, []()
-    {
-        Sprite::ReloadSprites();
-    });
+            {
+                Sprite::ReloadSprites();
+            });
 }
 
 EditorCore::~EditorCore() = default;

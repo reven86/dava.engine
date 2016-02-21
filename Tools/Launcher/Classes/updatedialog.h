@@ -89,9 +89,9 @@ private slots:
     void StartNextTask();
 
 private:
-    bool ListArchive(const QString &archivePath, ZipUtils::CompressedFilesAndSizes &files);
-    bool TestArchive(const QString &archivePath, const ZipUtils::CompressedFilesAndSizes &files);
-    bool UnpackArchive(const QString &archivePath, const QString &outDir, const ZipUtils::CompressedFilesAndSizes &files);
+    bool ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files);
+    bool TestArchive(const QString& archivePath, const ZipUtils::CompressedFilesAndSizes& files);
+    bool UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files);
     void UpdateButton();
 
     void AddTopLogValue(const QString& log);
@@ -110,7 +110,6 @@ private:
 
     QTreeWidgetItem* currentLogItem = nullptr;
     QTreeWidgetItem* currentTopLogItem = nullptr;
-
 
     int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;

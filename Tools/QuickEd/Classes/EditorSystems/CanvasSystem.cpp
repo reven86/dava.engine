@@ -48,7 +48,7 @@ public:
 
 private:
     void OnBackgroundTypeChanged(eBackgroundType type);
-    void OnBackgroundColorChanged(const Color &color);
+    void OnBackgroundColorChanged(const Color& color);
     void Draw(const UIGeometricData& geometricData) override;
     eBackgroundType coloredBackground = BackgroundTexture;
 };
@@ -79,7 +79,7 @@ void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
     }
 }
 
-void GridControl::OnBackgroundColorChanged(const Color &color)
+void GridControl::OnBackgroundColorChanged(const Color& color)
 {
     background->SetColor(color);
 }
