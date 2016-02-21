@@ -2,12 +2,24 @@ import QtQuick 2.2
 import QtQuick.Controls 1.3
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
+import Cpp.Utils 1.0
+import Qt.labs.settings 1.0
 
 ApplicationWindow {
     id: applicationWindow
     visible: true
     width: 800
-    height: 400
+    height: 600
+
+    Settings {
+        id: settings
+        property int mainWrapperWidth: 400
+        property alias x: applicationWindow.x
+        property alias y: applicationWindow.y
+        property alias width: applicationWindow.width
+        property alias height: applicationWindow.height
+    }
+
     title: qsTr("CMake tool")
     ListModel {
         id: listModel_platforms
@@ -25,18 +37,27 @@ ApplicationWindow {
         id: listModel_recentBuildsModel
     }
 
+    ProcessWrapper {
+        id: processWrapper;
+    }
+
+    ConfigStorage {
+        id: configStorage
+    }
+
+    FileSystemHelper {
+        id: fileSystemHelper;
+    }
+
     property string platformsOptionName: "platforms";
     property string globalOptionsOptionName: "options";
     property bool outputComplete: false
-    property var mainObject;
-
-    signal dataReadyToSave(string text);
-    signal invokeCmake(string command);
+    property var mainObject; //main JS object, contained in config file
 
     function syncConfig() {
-        dataReadyToSave(JSON.stringify(mainObject, null, 4));
+        configStorage.SaveToConfigFile(JSON.stringify(mainObject, null, 4));
     }
-    property int counter: 0
+
     Timer {
         id: timer;
         interval: 10
@@ -131,6 +152,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         try {
+            var configuration = configStorage.GetJSONTextFromConfigFile()
             mainObject = JSON.parse(configuration);
 
             var arrayPlatforms = mainObject[platformsOptionName];
@@ -164,6 +186,7 @@ ApplicationWindow {
         }
         catch(error) {
             errorDialog.informativeText = error.message;
+            errorDialog.critical = true;
             errorDialog.open();
         }
     }
@@ -172,50 +195,10 @@ ApplicationWindow {
         id: errorDialog;
         text: qsTr("error occurred!")
         icon: StandardIcon.Warning
-    }
-
-    Component {
-        id: loaderDelegate
-        Loader {
-            sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
-            property variant modelData: listModel_localOptions.get(model.index);
-            property int index : model.index;
-        }
-    }
-    ExclusiveGroup {
-        id: exclusiveGroup_localOptions
-    }
-
-    Component {
-        id: radioDelegate
-        RadioButton {
-            text: modelData ? modelData.name : ""
-            checked: modelData ? modelData.checked : false
-            onCheckedChanged: {
-                if(!modelData) {
-                    return;
-                }
-
-                mainObject[platformsOptionName][modelData.parentIndex]["options"][index]["checked"] = checked;
-                syncConfig();
-                updateOutputString();
-            }
-
-            exclusiveGroup: exclusiveGroup_localOptions
-        }
-    }
-    Component {
-        id: checkboxDelegate
-        CheckBox {
-            text: modelData ? modelData.name : ""
-            checked: modelData ? modelData.checked : ""
-            onCheckedChanged: {
-                if(!modelData) {
-                    return;
-                }
-                mainObject[platformsOptionName][modelData.parentIndex]["options"][index]["checked"] = checked;
-                syncConfig();
-                updateOutputString();
+        property bool critical: false
+        onVisibleChanged: {
+            if(!visible && critical) {
+                Qt.quit()
             }
         }
     }
@@ -247,8 +230,11 @@ ApplicationWindow {
         anchors.fill: parent
         anchors.margins: 10
         Item {
-        id: wrapper_main;
-            width: 400
+            width: settings.mainWrapperWidth;
+            Component.onDestruction: {
+                settings.mainWrapperWidth = width
+            }
+
             ColumnLayout {
                 id: columnLayout_main
                 anchors.fill: parent
@@ -277,7 +263,11 @@ ApplicationWindow {
                                 var curIndex = currentIndex
                                 var newItem = editText;
                                 if(history && Array.isArray(history)) {
-                                    var maxLength = 5
+
+                                    var maxLength = mainObject["maxHistoryCount"];
+                                    if(!maxLength) {
+                                        maxLength = 5;
+                                    }
                                     var count = Math.min(history.length, maxLength);
                                     var found = false;
                                     for(var i = history.length; i >= 0 && !found; --i) {
@@ -298,8 +288,9 @@ ApplicationWindow {
                                     }
                                     history[0] = newItem;
                                     if(history.length > maxLength) {
-                                        console.log("got max length");
+                                        console.log("got max length", history.length);
                                         history = history.slice(0, maxLength);
+                                        console.log(history.length);
                                     }
                                 } else {
                                     history = [newItem];
@@ -474,6 +465,51 @@ ApplicationWindow {
 
                             ListView {
                                 id: listView_localOptions
+                                    Component {
+                                    id: loaderDelegate
+                                    Loader {
+                                        sourceComponent: type == "checkbox" ? checkboxDelegate : radioDelegate;
+                                        property variant modelData: listModel_localOptions.get(model.index);
+                                        property int index : model.index;
+                                    }
+                                }
+                                ExclusiveGroup {
+                                    id: exclusiveGroup_localOptions
+                                }
+
+                                Component {
+                                    id: radioDelegate
+                                    RadioButton {
+                                        text: modelData ? modelData.name : ""
+                                        checked: modelData ? modelData.checked : false
+                                        onCheckedChanged: {
+                                            if(!modelData) {
+                                                return;
+                                            }
+
+                                            mainObject[platformsOptionName][modelData.parentIndex]["options"][index]["checked"] = checked;
+                                            syncConfig();
+                                            updateOutputString();
+                                        }
+
+                                        exclusiveGroup: exclusiveGroup_localOptions
+                                    }
+                                }
+                                Component {
+                                    id: checkboxDelegate
+                                    CheckBox {
+                                        text: modelData ? modelData.name : ""
+                                        checked: modelData ? modelData.checked : ""
+                                        onCheckedChanged: {
+                                            if(!modelData) {
+                                                return;
+                                            }
+                                            mainObject[platformsOptionName][modelData.parentIndex]["options"][index]["checked"] = checked;
+                                            syncConfig();
+                                            updateOutputString();
+                                        }
+                                    }
+                                }
                                 orientation: Qt.Vertical
                                 boundsBehavior: Flickable.StopAtBounds
                                 model: listModel_localOptions
@@ -558,7 +594,7 @@ ApplicationWindow {
                         enabled: textField_output.text.length !== 0 && outputComplete
                         onClicked: {
                             textArea_processText.append("");
-                            invokeCmake(textField_output.text)
+                            processWrapper.LaunchCmake(textField_output.text)
                         }
                     }
                 }

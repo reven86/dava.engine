@@ -83,5 +83,6 @@
         "/Users/k_lyashkevich/Projects/dava.framework/Tools/QuickEd/",
         "/Users/k_lyashkevich/Projects/",
         "/Users/k_lyashkevich/Projects/dava.framework/Tools/"
-    ]
+    ],
+    "maxHistoryCount": 5
 }

@@ -90,5 +90,6 @@
         "D:/Projects/dava.framework/Tools/",
         "D:",
         "E:/PerfLogs"
-    ]
+    ],
+    "maxHistoryCount": 5
 }

@@ -7,12 +7,11 @@
 class ConfigStorage : public QObject
 {
     Q_OBJECT
+    
 public:
-    explicit ConfigStorage(const QString &configFilePath, QObject *parent = 0);
-    QString GetJSONTextFromConfig() const;
-
-public slots:
-    void SaveJSONTestToConfig(QString config);
+    explicit ConfigStorage(QObject *parent = 0);
+    Q_INVOKABLE QString GetJSONTextFromConfigFile() const;
+    Q_INVOKABLE void SaveToConfigFile(QString config);
 
 private:
     QString configFilePath;

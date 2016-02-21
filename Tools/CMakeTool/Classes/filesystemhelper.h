@@ -7,6 +7,7 @@
 class FileSystemHelper : public QObject
 {
     Q_OBJECT
+    
 public:
     explicit FileSystemHelper(QObject *parent = 0);
     Q_INVOKABLE QVariant resolveUrl(QVariant url);
