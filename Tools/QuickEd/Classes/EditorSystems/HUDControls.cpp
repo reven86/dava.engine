@@ -83,10 +83,15 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
     if(valid)
     {
-        auto parent = node->GetParent();
+        PackageBaseNode* parent = node->GetParent();
         while(valid && nullptr != parent)
         {
-            valid &= node->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
+            ControlNode *parentControlNode = dynamic_cast<ControlNode*>(parent);
+            if(parentControlNode == nullptr)
+            {
+                break;
+            }
+            valid &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
             parent = parent->GetParent();
         }
     }
