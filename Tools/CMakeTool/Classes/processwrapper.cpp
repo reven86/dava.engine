@@ -1,6 +1,7 @@
 #include "processwrapper.h"
 #include <QProgressDialog>
 #include <QTimer>
+#include <QRegularExpression>
 
 ProcessWrapper::ProcessWrapper(QObject *parent) : QObject(parent)
 {
@@ -54,7 +55,9 @@ void ProcessWrapper::LaunchCmake(QString command)
 void ProcessWrapper::OnReadyReadStandardOutput()
 {
     QString text = process.readAllStandardOutput();
-    emit processStandardOutput(text);
+    QRegularExpression regExp("(\r\n|\r|\n)");
+    regExp.setPatternOptions(QRegularExpression::MultilineOption);
+    emit processStandardOutput(text.replace(regExp, "<br>")); //qml won't replace it. I don't know why.
     emit processOutput(text);
 }
 
