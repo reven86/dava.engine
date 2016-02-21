@@ -699,7 +699,7 @@ namespace
 {
 void CreateMagnetLinesForPivot(Vector<MagnetLineInfo>& magnetLines, Vector2 target, const UIGeometricData& controlGeometricData)
 {
-    const Vector2 targetSize(controlGeometricData.GetUnrotatedRect().GetSize());
+    const Vector2 targetSize(controlGeometricData.size);
     Vector2 offset = targetSize * target;
     Vector2 horizontalLinePos(0.0f, offset.y);
 
