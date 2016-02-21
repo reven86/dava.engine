@@ -60,7 +60,7 @@ public:
     };
     PropertiesModel(QObject* parent = nullptr);
     virtual ~PropertiesModel();
-    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor *commandExecutor_);
+    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
@@ -111,7 +111,7 @@ private:
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
     QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
-    LazyUpdater *lazyUpdater = nullptr;
+    LazyUpdater* lazyUpdater = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

@@ -376,7 +376,7 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
     if (canDrawRect != canDrawRect_)
     {
         canDrawRect = canDrawRect_;
-        if(canDrawRect)
+        if (canDrawRect)
         {
             DVASSERT(nullptr == selectionRectControl);
             selectionRectControl = CreateContainerWithBorders<SelectionRect>();

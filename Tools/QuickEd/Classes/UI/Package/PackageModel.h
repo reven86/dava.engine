@@ -51,7 +51,7 @@ class PackageModel : public QAbstractItemModel, PackageListener
 
 public:
     PackageModel(QObject* parent = nullptr);
-    void Reset(PackageNode *package, QtModelPackageCommandExecutor *executor);
+    void Reset(PackageNode* package, QtModelPackageCommandExecutor* executor);
 
     QModelIndex indexByNode(PackageBaseNode* node) const;
 
@@ -97,8 +97,8 @@ private: // PackageListener
 
     int GetRowIndex(int row, const QModelIndex& parent) const;
 
-    PackageNode *package = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    PackageNode* package = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__

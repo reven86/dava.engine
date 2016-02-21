@@ -93,9 +93,12 @@ struct MagnetLineInfo
 
 struct ChangePropertyAction
 {
-    ChangePropertyAction(ControlNode *node_, AbstractProperty *property_, const DAVA::VariantType &value_)
-    : node(node_), property(property_), value(value_)
-    { }
+    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
+        : node(node_)
+        , property(property_)
+        , value(value_)
+    {
+    }
     ControlNode* node = nullptr;
     AbstractProperty* property = nullptr;
     DAVA::VariantType value;
@@ -109,6 +112,7 @@ class EditorSystemsManager : PackageListener
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
+
 public:
     using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
@@ -134,7 +138,7 @@ public:
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
     DAVA::Signal<> SelectAllControls;
-    DAVA::Signal<const DAVA::Vector2 &/*new position*/> RootControlPositionChanged;
+    DAVA::Signal<const DAVA::Vector2& /*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
     DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
@@ -148,7 +152,7 @@ private:
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(PackageNode *node);
+    void OnPackageNodeChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);

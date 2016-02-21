@@ -198,8 +198,8 @@ void PackageWidget::OnDocumentChanged(Document* arg)
     SaveContext();
     filterLine->clear(); //invalidate filter line state
     document = arg;
-    PackageNode *package = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    PackageNode* package = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     if (!document.isNull())
     {
         package = document->GetPackage();
@@ -290,7 +290,7 @@ void PackageWidget::SaveContext()
         return;
     }
     PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
-    if(filterLine->text().isEmpty())
+    if (filterLine->text().isEmpty())
     {
         context->expandedIndexes = GetExpandedIndexes();
     }
@@ -383,7 +383,7 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, c
     {
         YamlPackageSerializer serializer;
         DVASSERT(!document.isNull());
-        PackageNode *package = document->GetPackage();
+        PackageNode* package = document->GetPackage();
         serializer.SerializePackageNodes(package, controls, styles);
         String str = serializer.WriteToString();
         QMimeData* data = new QMimeData();
@@ -392,7 +392,7 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, c
     }
 }
 
-void PackageWidget::OnSelectionChangedFromView(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
+void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
     {
@@ -442,8 +442,8 @@ void PackageWidget::OnImport()
     }
     DVASSERT(!packages.empty());
     DVASSERT(!document.isNull());
-    PackageNode *package = document->GetPackage();
-    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor();
+    PackageNode* package = document->GetPackage();
+    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
     commandExecutor->AddImportedPackagesIntoPackage(packages, package);
 }
 
@@ -474,7 +474,7 @@ void PackageWidget::OnPaste()
         {
             String string = clipboard->mimeData()->text().toStdString();
             DVASSERT(!document.isNull());
-            PackageNode *package = document->GetPackage();
+            PackageNode* package = document->GetPackage();
             document->GetCommandExecutor()->Paste(package, baseNode, baseNode->GetCount(), string);
         }
     }
@@ -496,7 +496,7 @@ void PackageWidget::OnCut()
 void PackageWidget::OnDelete()
 {
     DVASSERT(!document.isNull());
-    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor();
+    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
@@ -512,7 +512,7 @@ void PackageWidget::OnDelete()
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
-        PackageNode *package = document->GetPackage();
+        PackageNode* package = document->GetPackage();
         commandExecutor->RemoveImportedPackagesFromPackage(packages, package);
     }
 }
@@ -532,8 +532,8 @@ void PackageWidget::OnAddStyle()
 
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
     DVASSERT(!document.isNull());
-    PackageNode *package = document->GetPackage();
-    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor();
+    PackageNode* package = document->GetPackage();
+    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
     StyleSheetsNode* styleSheets = package->GetStyleSheets();
     commandExecutor->InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
@@ -605,7 +605,7 @@ void PackageWidget::OnMoveRight()
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
 {
     DVASSERT(!document.isNull());
-    QtModelPackageCommandExecutor *commandExecutor = document->GetCommandExecutor();
+    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
 
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
@@ -629,7 +629,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
     }
 }
 
-void PackageWidget::OnFilterTextChanged(const QString &filterText)
+void PackageWidget::OnFilterTextChanged(const QString& filterText)
 {
     if (!document.isNull())
     {
@@ -763,7 +763,7 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
     }
 }
 
-void PackageWidget::OnSelectionChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+void PackageWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
     SetSelectedNodes(selected, deselected);

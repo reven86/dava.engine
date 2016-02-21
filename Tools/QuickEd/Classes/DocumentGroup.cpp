@@ -94,7 +94,6 @@ void DocumentGroup::SetActiveDocument(Document* document)
     emit ActiveDocumentChanged(document);
 }
 
-
 Document* DocumentGroup::GetActiveDocument() const
 {
     return active;

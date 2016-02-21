@@ -75,7 +75,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SelectionSystem::OnPackageNodeChanged(PackageNode *packageNode_)
+void SelectionSystem::OnPackageNodeChanged(PackageNode* packageNode_)
 {
     if (nullptr != packageNode)
     {
@@ -105,7 +105,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
         DVASSERT(nullptr != control);
         return control->GetVisible() && rect.RectContains(control->GetGeometricData().GetAABBox());
     };
-    auto stopPredicate = [](const ControlNode* node)->bool {
+    auto stopPredicate = [](const ControlNode* node) -> bool {
         const auto control = node->GetControl();
         DVASSERT(nullptr != control);
         return !control->GetVisible();
@@ -195,7 +195,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
             DVASSERT(nullptr != control);
             return control->GetVisible() && control->IsPointInside(point);
         };
-        auto stopPredicate = [](const ControlNode *node) -> bool {
+        auto stopPredicate = [](const ControlNode* node) -> bool {
             const auto control = node->GetControl();
             DVASSERT(nullptr != control);
             return !control->GetVisible();
@@ -209,8 +209,8 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     else if (buttonID == UIEvent::MouseButton::RIGHT)
     {
         Vector<ControlNode*> nodesUnderPointForMenu;
-        auto predicateForMenu = [point](const ControlNode* node) -> bool 
-        {  
+        auto predicateForMenu = [point](const ControlNode* node) -> bool
+        {
             DVASSERT(nullptr != node->GetControl());
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
             return visibleProp->GetVisibleInEditor() && node->GetControl()->IsPointInside(point);

@@ -52,15 +52,15 @@ protected:
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(ControlNode *node);
+    explicit HUDContainer(ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
 
 private:
     ~HUDContainer() = default;
-    ControlNode *node = nullptr;
-    VisibleValueProperty *visibleProperty = nullptr;
+    ControlNode* node = nullptr;
+    VisibleValueProperty* visibleProperty = nullptr;
     DAVA::UIControl* control = nullptr;
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
 };

@@ -40,14 +40,14 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const
     , root(SafeRetain(root_))
     , hash(hash_)
 {
-    for (const auto &action : propertyActions_)
+    for (const auto& action : propertyActions_)
     {
         AbstractProperty* prop = action.property;
         changedProperties.emplace_back(
-            action.node,
-            prop,
-            GetValueFromProperty(prop),
-            action.value
+        action.node,
+        prop,
+        GetValueFromProperty(prop),
+        action.value
         );
     }
     Init();
@@ -59,7 +59,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , hash(hash_)
 {
     changedProperties.emplace_back(
-        node, prop, GetValueFromProperty(prop), newVal
+    node, prop, GetValueFromProperty(prop), newVal
     );
     Init();
 }
@@ -69,8 +69,8 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , root(SafeRetain(root_))
 {
     changedProperties.emplace_back(
-        node, prop, GetValueFromProperty(prop), VariantType()
-                                   
+    node, prop, GetValueFromProperty(prop), VariantType()
+
     );
     Init();
 }

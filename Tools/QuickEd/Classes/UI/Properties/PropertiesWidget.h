@@ -88,7 +88,7 @@ private:
     SelectionContainer selectionContainer;
 
     DAVA::String lastTopIndexPath;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
 };
 

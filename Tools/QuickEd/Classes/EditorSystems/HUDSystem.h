@@ -46,7 +46,7 @@ private:
         SEARCH_BACKWARD
     };
     struct HUD;
-    
+
     bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);

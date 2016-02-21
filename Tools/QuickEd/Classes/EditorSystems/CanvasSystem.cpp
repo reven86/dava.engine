@@ -310,9 +310,9 @@ CanvasSystem::~CanvasSystem()
     systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
-void CanvasSystem::OnPackageNodeChanged(PackageNode *package_)
+void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
 {
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->RemoveListener(this);
     }

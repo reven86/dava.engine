@@ -69,7 +69,7 @@ PropertiesModel::~PropertiesModel()
     CleanUp();
 }
 
-void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor *commandExecutor_)
+void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
     beginResetModel();
     CleanUp();

@@ -183,7 +183,7 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
     return nullptr;
 }
 
-void LibraryModel::SetPackageNode(PackageNode *package_)
+void LibraryModel::SetPackageNode(PackageNode* package_)
 {
     if (nullptr != controlsRootItem)
     {
@@ -195,12 +195,12 @@ void LibraryModel::SetPackageNode(PackageNode *package_)
         removeRow(importedPackageRootItem->row());
         importedPackageRootItem = nullptr;
     }
-    if(package != nullptr)
+    if (package != nullptr)
     {
         package->RemoveListener(this);
     }
     package = package_;
-    if(package != nullptr)
+    if (package != nullptr)
     {
         package->AddListener(this);
         BuildModel();

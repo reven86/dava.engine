@@ -81,13 +81,13 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetAngle(gd.angle);
     bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
-    if(valid)
+    if (valid)
     {
         PackageBaseNode* parent = node->GetParent();
-        while(valid && nullptr != parent)
+        while (valid && nullptr != parent)
         {
-            ControlNode *parentControlNode = dynamic_cast<ControlNode*>(parent);
-            if(parentControlNode == nullptr)
+            ControlNode* parentControlNode = dynamic_cast<ControlNode*>(parent);
+            if (parentControlNode == nullptr)
             {
                 break;
             }

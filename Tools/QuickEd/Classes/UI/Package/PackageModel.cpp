@@ -63,16 +63,16 @@ PackageModel::PackageModel(QObject* parent)
 {
 }
 
-void PackageModel::Reset(PackageNode *package_, QtModelPackageCommandExecutor *executor_)
+void PackageModel::Reset(PackageNode* package_, QtModelPackageCommandExecutor* executor_)
 {
     beginResetModel();
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->RemoveListener(this);
     }
     package = package_;
     commandExecutor = executor_;
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->AddListener(this);
     }
@@ -98,7 +98,7 @@ QModelIndex PackageModel::index(int row, int column, const QModelIndex& parent) 
     if (!parent.isValid())
     {
         DVASSERT(nullptr != package);
-        if(nullptr != package)
+        if (nullptr != package)
         {
             return createIndex(row, column, package->Get(row));
         }

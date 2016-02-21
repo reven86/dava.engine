@@ -63,14 +63,14 @@ class Document final : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(const DAVA::RefPtr<PackageNode> &package, QObject* parent = nullptr);
+    explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
     const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack() const;
-    PackageNode *GetPackage() const;
-    QtModelPackageCommandExecutor *GetCommandExecutor() const;
+    PackageNode* GetPackage() const;
+    QtModelPackageCommandExecutor* GetCommandExecutor() const;
     WidgetContext* GetContext(void* requester) const;
 
     void SetContext(void* requester, WidgetContext* widgetContext);

@@ -62,7 +62,7 @@ struct PreviewContext : WidgetContext
 {
     QPoint canvasPosition;
 };
-    
+
 struct SystemsContext : WidgetContext
 {
     SelectedNodes selection;
@@ -240,9 +240,9 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
 
 void PreviewWidget::SaveSystemsContextAndClear()
 {
-    if(!document.isNull())
+    if (!document.isNull())
     {
-        SystemsContext *systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+        SystemsContext* systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
         systemsContext->selection = selectionContainer.selectedNodes;
     }
     if (!selectionContainer.selectedNodes.empty())
@@ -257,19 +257,19 @@ void PreviewWidget::SaveSystemsContextAndClear()
 void PreviewWidget::LoadSystemsContext(Document* arg)
 {
     DVASSERT(arg == document.data());
-    if(document.isNull())
+    if (document.isNull())
     {
         return;
     }
     SystemsContext* context = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
-    if(nullptr == context)
+    if (nullptr == context)
     {
         document->SetContext(systemsManager.get(), new SystemsContext());
     }
     else
     {
         selectionContainer.selectedNodes = context->selection;
-        if(!selectionContainer.selectedNodes.empty())
+        if (!selectionContainer.selectedNodes.empty())
         {
             systemsManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
         }
@@ -281,7 +281,7 @@ void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
     systemsManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2 &pos)
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
     rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
     ApplyPosChanges();

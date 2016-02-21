@@ -100,7 +100,7 @@ private:
     void EndMacro();
 
 private:
-    Document *document = nullptr;
+    Document* document = nullptr;
     PackageNode* packageNode = nullptr;
 };
 

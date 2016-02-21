@@ -380,7 +380,6 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const Vector<MagnetLin
     {
         if (fabs(line.interval) < TRANSFORM_EPSILON)
         {
-
             const Vector2::eAxis oppositeAxis = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
 
             float32 controlTop = line.controlBox.GetPosition()[oppositeAxis];
@@ -621,7 +620,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
         if (directions[axis] != NO_DIRECTION)
         {
             Vector<MagnetLine> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
-            if(magnetLines.empty())
+            if (magnetLines.empty())
             {
                 continue;
             }
@@ -639,7 +638,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
             };
             magnetLines.erase(std::remove_if(magnetLines.begin(), magnetLines.end(), removePredicate));
 
-            if(magnetLines.empty())
+            if (magnetLines.empty())
             {
                 continue;
             }
