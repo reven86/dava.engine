@@ -64,7 +64,7 @@ VPROG_BEGIN
     float2 hUVheight = float2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
                               clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
 
-    float4 heightVec = VP_TEXTURE2D(heightmap, hUVheight);
+    float4 heightVec = VP_TEXTURE2D(heightmap, hUVheight, 0.0);
     float height = dot(heightVec, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303)) * worldSize.z;
 
     pos.z += height;
@@ -77,7 +77,7 @@ VPROG_BEGIN
     }
 
     float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
-    float4 vegetationMask = VP_TEXTURE2D(vegetationmap, hUVcolor);
+    float4 vegetationMask = VP_TEXTURE2D(vegetationmap, hUVcolor, 0.0);
     
     VP_OUT(vegetationColor) = vegetationMask.rgb;
     

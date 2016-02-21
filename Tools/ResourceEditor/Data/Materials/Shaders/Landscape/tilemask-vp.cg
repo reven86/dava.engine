@@ -88,8 +88,8 @@ VPROG_BEGIN
 	float baseLod = VP_IN_TEXCOORD6.x;
 	float morphAmount = VP_IN_TEXCOORD6.y;
 	
-    float4 heightmapSample0 = VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset), baseLod);
-	float4 heightmapSample1 = VP_TEXTURE2D(heightmap, relativePosition, baseLod + 1.0);
+    float4 heightmapSample0 = VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset * 2.0, baseLod + 1.0);
+	float4 heightmapSample1 = VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod);
 	float4 heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
 	
 #else

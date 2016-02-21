@@ -222,6 +222,7 @@ protected:
         };
 
         uint32 lastSubdivSizePow2 = 0;
+        float32 lastSubdivMorph = 0.f;
         uint8 subdivisionState = CLIPPED;
         uint8 startClipPlane = 0;
     };
@@ -236,7 +237,7 @@ protected:
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
-    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivSizePow2);
+    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivSizePow2, float32 lastSubdivMorph);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
     uint32 minSubdivLevelSize = 0;
@@ -342,7 +343,7 @@ protected:
     Texture* CreateHeightTexture(Heightmap* heightmap);
 
     void DrawLandscapeInstancing();
-    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2);
+    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2, float32 morph);
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
