@@ -124,8 +124,6 @@ private:
     void OnSwapChainPanelPointerPressed(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
     void OnSwapChainPanelPointerReleased(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
     void OnSwapChainPanelPointerMoved(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
-    void OnSwapChainPanelPointerEntered(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
-    void OnSwapChainPanelPointerExited(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
     void OnSwapChainPanelPointerWheel(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
 
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
