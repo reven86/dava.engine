@@ -176,7 +176,7 @@ void DlcTest::LoadResources()
     startButton->SetStateFontColor(0xFF, Color::White);
     startButton->SetStateText(0xFF, L"Start download");
     startButton->SetDebugDraw(true);
-    startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Restart));
+    startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Start));
     AddControl(startButton);
     SafeRelease(startButton);
 
@@ -386,6 +386,13 @@ void DlcTest::DecDlThreads(BaseObject* obj, void* data, void* callerData)
         downloadTreadsCount = 1;
 
     DownloadManager::Instance()->SetPreferredDownloadThreadsCount(downloadTreadsCount);
+}
+
+void DlcTest::Start(BaseObject* obj, void* data, void* callerData)
+{
+    staticText->SetText(L"Starting DLC...");
+
+    dlc->Start();
 }
 
 void DlcTest::Cancel(BaseObject* obj, void* data, void* callerData)

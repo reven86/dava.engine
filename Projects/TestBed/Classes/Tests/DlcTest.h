@@ -79,6 +79,7 @@ private:
     void SetExternalDlServer(BaseObject* obj, void* data, void* callerData);
     void IncDlThreads(BaseObject* obj, void* data, void* callerData);
     void DecDlThreads(BaseObject* obj, void* data, void* callerData);
+    void Start(BaseObject* obj, void* data, void* callerData);
     void Cancel(BaseObject* obj, void* data, void* callerData);
     void Restart(BaseObject* obj, void* data, void* callerData);
 
