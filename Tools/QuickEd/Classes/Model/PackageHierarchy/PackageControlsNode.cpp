@@ -141,9 +141,10 @@ void PackageControlsNode::RefreshControlProperties()
 
 ControlNode* PackageControlsNode::FindControlNodeByName(const DAVA::String& name) const
 {
+    FastName fName(name);
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
     {
-        if ((*it)->GetControl()->GetName() == name)
+        if ((*it)->GetControl()->GetName() == fName)
             return *it;
     }
     return NULL;

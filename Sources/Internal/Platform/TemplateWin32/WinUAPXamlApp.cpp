@@ -388,21 +388,32 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
-    core->RunOnMainThread([this, state]() {
-        switch (state)
+    if (state == CoreWindowActivationState::CodeActivated ||
+        state == CoreWindowActivationState::PointerActivated)
+    {
+        isWindowFocused = true;
+    }
+    else if (state == CoreWindowActivationState::Deactivated)
+    {
+        isWindowFocused = false;
+    }
+
+    core->RunOnMainThread([ this, isFocused = isWindowFocused ] {
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+
+        if (isPhoneApiDetected)
         {
-        case CoreWindowActivationState::CodeActivated:
-        case CoreWindowActivationState::PointerActivated:
-            isWindowFocused = true;
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
-            break;
-        case CoreWindowActivationState::Deactivated:
-            isWindowFocused = false;
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            break;
-        default:
-            break;
+            Core::Instance()->SetIsActive(isFocused);
+            return;
+        }
+
+        if (isFocused)
+        {
+            Core::Instance()->FocusReceived();
+        }
+        else
+        {
+            Core::Instance()->FocusLost();
         }
     });
 }

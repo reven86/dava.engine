@@ -203,7 +203,7 @@ void DialogReloadSprites::LoadSettings()
         }
     }
 
-    const auto &repack = settings.value(FORCE_REPACK);
+    const auto& repack = settings.value(FORCE_REPACK);
     if (repack.isValid())
     {
         ui->checkBox_repack->setChecked(repack.toBool());

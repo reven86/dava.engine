@@ -53,7 +53,7 @@ HUDContainer::HUDContainer(UIControl* container)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , control(container)
 {
-    SetName("HudContainer of " + container->GetName());
+    SetName(FastName(String("HudContainer of ") + container->GetName().c_str()));
 }
 
 void HUDContainer::AddChild(ControlContainer* container)
@@ -102,7 +102,7 @@ void FrameControl::Init()
     for (uint32 i = 0; i < BORDERS_COUNT; ++i)
     {
         ScopedPtr<UIControl> control(new UIControl());
-        control->SetName("border of " + GetName());
+        control->SetName(FastName(String("border of ") + GetName().c_str()));
         UIControlBackground* background = control->GetBackground();
         background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
         background->SetDrawType(UIControlBackground::DRAW_TILED);
@@ -132,7 +132,7 @@ void FrameControl::InitFromGD(const UIGeometricData& geometricData)
 FrameControl::FrameControl()
     : ControlContainer(HUDAreaInfo::FRAME_AREA)
 {
-    SetName("Frame Control");
+    SetName(FastName("Frame Control"));
 }
 
 Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
@@ -156,7 +156,7 @@ Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) c
 FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     : ControlContainer(area_)
 {
-    SetName("Frame Rect Control");
+    SetName(FastName("Frame Rect Control"));
     background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -205,7 +205,7 @@ Vector2 FrameRectControl::GetPos(const UIGeometricData& geometricData) const
 PivotPointControl::PivotPointControl()
     : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
 {
-    SetName("pivot point control");
+    SetName(FastName("pivot point control"));
     background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -227,7 +227,7 @@ void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
 RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
-    SetName("rotate control");
+    SetName(FastName("rotate control"));
     background->SetSprite("~res:/Gfx/HUDControls/Rotate", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -248,7 +248,7 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 
 SelectionRect::SelectionRect()
 {
-    SetName("Selection Rect");
+    SetName(FastName("Selection Rect"));
 }
 
 void SelectionRect::Draw(const UIGeometricData& geometricData)
@@ -268,7 +268,7 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
 
 MagnetLine::MagnetLine()
 {
-    SetName("Magnet Line");
+    SetName(FastName("Magnet Line"));
     SetDebugDraw(true);
     //background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
     //background->SetDrawType(UIControlBackground::DRAW_TILED);
