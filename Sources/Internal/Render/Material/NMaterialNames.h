@@ -211,6 +211,9 @@ public:
     static const DAVA::String FXName;
     static const DAVA::String QualityGroup;
     static const DAVA::String MaterialName;
+    static const DAVA::String ConfigName;
+    static const DAVA::String ConfigArchvie;
+    static const DAVA::String ConfigCount;
 };
 
 class NMaterialQualityName

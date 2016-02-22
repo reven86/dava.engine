@@ -77,7 +77,7 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
     {
         // if fxName is not valid (e.g global material)
         // we just add all local textures
-        for (const auto& t : material->localTextures)
+        for (const auto& t : material->materialConfigs[material->currConfig].localTextures)
             ret.insert(t.first);
     }
 

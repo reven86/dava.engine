@@ -146,6 +146,7 @@ public:
     bool HasLocalTexture(const FastName& slotName);
     Texture* GetLocalTexture(const FastName& slotName);
     Texture* GetEffectiveTexture(const FastName& slotName);
+
     void CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const;
     bool ContainsTexture(Texture* texture) const;
     const HashMap<FastName, MaterialTextureInfo*>& GetLocalTextures() const;
@@ -182,6 +183,8 @@ public:
 
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
+    void SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext);
+    void LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext);
 
     void RebuildBindings();
     void RebuildTextureBindings();
@@ -202,36 +205,29 @@ private:
 private:
     // config time
     FastName materialName;
-    FastName fxName;
     FastName qualityGroup;
-    FastName activeVariantName;
-
-    HashMap<FastName, NMaterialProperty*> localProperties;
-    HashMap<FastName, MaterialTextureInfo*> localTextures;
 
     struct MaterialConfig
     {
         FastName presetName;
         FastName fxName;
-        FastName qualityGroup;
         HashMap<FastName, NMaterialProperty*> localProperties;
         HashMap<FastName, MaterialTextureInfo*> localTextures;
         HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
 
-        /*MaterialConfig();
-        ~MaterialConfig();*/
+        MaterialConfig();
+        ~MaterialConfig();
     };
 
     Vector<MaterialConfig> materialConfigs;
-
-    // integer flags are just more generic than boolean (eg. #if SHADING == HIGH),
-    // it has nothing in common with eFlagValue bullshit from old NMaterial
-    HashMap<FastName, int32> localFlags;
 
     // runtime
     NMaterial* parent = nullptr;
     Vector<NMaterial*> children;
 
+    uint32 currConfig = 0;
+
+    FastName activeVariantName;
     RenderVariantInstance* activeVariantInstance = nullptr;
 
     HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
