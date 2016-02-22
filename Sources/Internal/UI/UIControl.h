@@ -1094,9 +1094,6 @@ protected:
     virtual void SystemBecomeVisible();
     virtual void SystemBecomeInvisible();
 
-    DAVA_DEPRECATED(virtual void WillBecomeVisible());
-    DAVA_DEPRECATED(virtual void WillBecomeInvisible());
-
     virtual void OnBecomeVisible();
     virtual void OnBecomeInvisible();
 

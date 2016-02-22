@@ -1657,22 +1657,12 @@ void UIControl::SystemBecomeInvisible()
     ChangeViewState(eViewState::InHierarhy);
 }
 
-void UIControl::WillBecomeVisible()
-{
-}
-
-void UIControl::WillBecomeInvisible()
-{
-}
-
 void UIControl::OnBecomeVisible()
 {
-    WillBecomeVisible();
 }
 
 void UIControl::OnBecomeInvisible()
 {
-    WillBecomeInvisible();
 }
 
 void UIControl::SystemAppear()
