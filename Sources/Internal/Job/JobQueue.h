@@ -38,14 +38,13 @@
 
 namespace DAVA
 {
-
 class JobQueueWorker
 {
 public:
     JobQueueWorker(uint32 maxCount = 1024);
     virtual ~JobQueueWorker();
 
-    void Push(const Function<void()> &fn);
+    void Push(const Function<void()>& fn);
     bool PopAndExec();
 
     bool IsEmpty();
@@ -56,7 +55,7 @@ public:
 
 protected:
     uint32 jobsMaxCount;
-    Function<void()> *jobs;
+    Function<void()>* jobs;
 
     uint32 nextPushIndex;
     uint32 nextPopIndex;
@@ -66,7 +65,6 @@ protected:
     ConditionVariable jobsInQueueCV;
     Mutex jobsInQueueMutex;
 };
-
 }
 
 #endif //__DAVAENGINE_JOB_QUEUE_H__

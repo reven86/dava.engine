@@ -35,17 +35,16 @@
 class EntityAddCommand : public Command2
 {
 public:
-	EntityAddCommand(DAVA::Entity* entityToAdd, DAVA::Entity* toParent);
-	~EntityAddCommand();
+    EntityAddCommand(DAVA::Entity* entityToAdd, DAVA::Entity* toParent);
+    ~EntityAddCommand();
 
-	virtual void Undo();
-	virtual void Redo();
+    virtual void Undo();
+    virtual void Redo();
 
-	virtual DAVA::Entity* GetEntity() const;
+    virtual DAVA::Entity* GetEntity() const;
 
-	DAVA::Entity* entityToAdd;
-	DAVA::Entity* parentToAdd;
-	
+    DAVA::Entity* entityToAdd;
+    DAVA::Entity* parentToAdd;
 };
 
 #endif // __ENTITY_ADD_COMMAND_H__

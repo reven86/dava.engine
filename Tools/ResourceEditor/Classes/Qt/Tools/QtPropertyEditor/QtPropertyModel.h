@@ -38,26 +38,26 @@
 
 class QtPropertyModel : public QAbstractItemModel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QtPropertyModel(QWidget *_viewport, QObject* parent = 0);
-	~QtPropertyModel();
+    QtPropertyModel(QWidget* _viewport, QObject* parent = 0);
+    ~QtPropertyModel();
 
-	QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
-	QModelIndex parent(const QModelIndex & index) const;
-	int rowCount(const QModelIndex & parent = QModelIndex()) const;
-	int columnCount(const QModelIndex & parent = QModelIndex()) const;
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-	bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
-	Qt::ItemFlags flags(const QModelIndex & index) const;
-    bool event(QEvent * e);
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
+    QModelIndex parent(const QModelIndex& index) const;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex& index) const;
+    bool event(QEvent* e);
 
-	QtPropertyData* rootItem() const;
+    QtPropertyData* rootItem() const;
 
-	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
-	QModelIndex indexFromItem(QtPropertyData *data) const;
+    QtPropertyData* itemFromIndex(const QModelIndex& index) const;
+    QModelIndex indexFromItem(QtPropertyData* data) const;
 
     void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent = QModelIndex());
     QModelIndex AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent = QModelIndex());
@@ -70,11 +70,11 @@ public:
     void RemoveProperty(const QModelIndex& index);
     void RemovePropertyAll();
 
-	void UpdateStructure(const QModelIndex &parent = QModelIndex());
+    void UpdateStructure(const QModelIndex& parent = QModelIndex());
     void FinishTreeCreation();
 
 signals:
-	void PropertyEdited(const QModelIndex &index);
+    void PropertyEdited(const QModelIndex& index);
 
 protected:
     enum
@@ -113,10 +113,10 @@ protected:
     void DataChanged(QtPropertyData* data, int reason);
     void DataAboutToBeAdded(QtPropertyData* parent, int first, int last);
     void DataAdded();
-	void DataAboutToBeRemoved(QtPropertyData *parent, int first, int last);
-	void DataRemoved();
+    void DataAboutToBeRemoved(QtPropertyData* parent, int first, int last);
+    void DataRemoved();
 
-	void UpdateStructureInternal(const QModelIndex &index);
+    void UpdateStructureInternal(const QModelIndex& index);
 };
 
 #endif // __QT_PROPERTY_MODEL_H__

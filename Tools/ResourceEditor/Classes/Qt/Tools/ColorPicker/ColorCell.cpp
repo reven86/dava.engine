@@ -40,7 +40,6 @@
 #include "../Helpers/MouseHelper.h"
 #include "../Helpers/PaintingHelper.h"
 
-
 ColorCell::ColorCell(QWidget* parent)
     : QWidget(parent)
     , color(Qt::transparent)
@@ -51,9 +50,9 @@ ColorCell::ColorCell(QWidget* parent)
     setMouseTracking(true);
     setAcceptDrops(true);
 
-    connect(mouse, SIGNAL( clicked() ), SLOT( OnMouseClick() ));
-    connect(mouse, SIGNAL( mouseEntered() ), SLOT( OnMouseEnter() ));
-    connect(mouse, SIGNAL( mouseLeaved() ), SLOT( OnMouseLeave() ));
+    connect(mouse, SIGNAL(clicked()), SLOT(OnMouseClick()));
+    connect(mouse, SIGNAL(mouseEntered()), SLOT(OnMouseEnter()));
+    connect(mouse, SIGNAL(mouseLeaved()), SLOT(OnMouseLeave()));
 }
 
 ColorCell::~ColorCell()
@@ -103,13 +102,13 @@ void ColorCell::paintEvent(QPaintEvent* e)
     p.drawRect(rect().adjusted(0, 0, -1, -1));
     if (isHovered)
     {
-        p.drawRect(rect().adjusted(1, 1, -2, -2 ));
+        p.drawRect(rect().adjusted(1, 1, -2, -2));
     }
 }
 
 void ColorCell::dragEnterEvent(QDragEnterEvent* e)
 {
-    const QMimeData *mime = e->mimeData();
+    const QMimeData* mime = e->mimeData();
     if (mime->hasColor())
     {
         e->acceptProposedAction();
@@ -125,7 +124,7 @@ void ColorCell::dragLeaveEvent(QDragLeaveEvent* e)
 
 void ColorCell::dragMoveEvent(QDragMoveEvent* e)
 {
-    const QMimeData *mime = e->mimeData();
+    const QMimeData* mime = e->mimeData();
     if (mime->hasColor())
     {
         e->acceptProposedAction();
@@ -134,7 +133,7 @@ void ColorCell::dragMoveEvent(QDragMoveEvent* e)
 
 void ColorCell::dropEvent(QDropEvent* e)
 {
-    const QMimeData *mime = e->mimeData();
+    const QMimeData* mime = e->mimeData();
     if (mime->hasColor())
     {
         const QColor& c = qvariant_cast<QColor>(mime->colorData());

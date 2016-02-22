@@ -30,15 +30,15 @@ extern "C" {
 */
 #define OPENCL_DEFINE(VAR, ...) "\n #" \
                                 "define " #VAR " " #__VA_ARGS__ " \n"
-#define OPENCL_ELIF(...) "\n #"        \
+#define OPENCL_ELIF(...) "\n #" \
                          "elif " #__VA_ARGS__ " \n"
-#define OPENCL_ELSE() "\n #"           \
-                      "else "          \
+#define OPENCL_ELSE() "\n #" \
+                      "else " \
                       " \n"
-#define OPENCL_ENDIF() "\n #"          \
-                       "endif "        \
+#define OPENCL_ENDIF() "\n #" \
+                       "endif " \
                        " \n"
-#define OPENCL_IF(...) "\n #"          \
+#define OPENCL_IF(...) "\n #" \
                        "if " #__VA_ARGS__ " \n"
 #define STRINGIFY(...) #__VA_ARGS__ "\n"
 

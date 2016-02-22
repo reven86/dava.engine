@@ -59,4 +59,4 @@ private:
     const DAVA::Vector<const DAVA::String*>* symbols = nullptr;
 };
 
-#endif  // __MEMORYTOOL_BACKTRACELISTMODEL_H__
+#endif // __MEMORYTOOL_BACKTRACELISTMODEL_H__

@@ -33,7 +33,7 @@
 
 namespace DAVA
 {
-DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount)
+DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl, const FilePath& storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount)
     : id(0)
     , url(srcUrl)
     , storePath(storeToFilePath)
@@ -48,20 +48,19 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
     , downloadProgress(0)
     , partsCount(_partsCount)
 {
-
 }
 
-DownloadPart::DownloadPart(Downloader *currentDownloader)
+DownloadPart::DownloadPart(Downloader* currentDownloader)
     : downloader(currentDownloader)
     , dataBuffer(0)
     , downloadSize(0)
     , seekPos(0)
     , progress(0)
-    
+
 {
 }
-    
-bool DownloadPart::SaveToBuffer(char8 *srcBuf, uint32 size)
+
+bool DownloadPart::SaveToBuffer(char8* srcBuf, uint32 size)
 {
     DVASSERT(downloadSize - progress >= size);
     if (downloadSize - progress > 0)
@@ -89,5 +88,4 @@ DataChunkInfo::~DataChunkInfo()
 {
     SafeDeleteArray(buffer);
 }
-
 }

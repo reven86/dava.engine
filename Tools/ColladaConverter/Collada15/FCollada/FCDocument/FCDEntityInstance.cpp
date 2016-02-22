@@ -29,61 +29,61 @@ ImplementParameterObject(FCDEntityInstance, FCDEntityReference, entityReference,
 ImplementParameterObject(FCDEntityInstance, FCDExtra, extra, new FCDExtra(parent->GetDocument(), parent));
 
 FCDEntityInstance::FCDEntityInstance(FCDocument* document, FCDSceneNode* _parent, FCDEntity::Type type)
-:	FCDObject(document), parent(_parent)
-,	entityType(type)
-,	InitializeParameterNoArg(entityReference)
-,	InitializeParameterNoArg(wantedSubId)
-,	InitializeParameterNoArg(extra)
+    : FCDObject(document)
+    , parent(_parent)
+    , entityType(type)
+    , InitializeParameterNoArg(entityReference)
+    , InitializeParameterNoArg(wantedSubId)
+    , InitializeParameterNoArg(extra)
 {
-	// Always create this
-	entityReference = new FCDEntityReference(document, _parent);
-	TrackObject(entityReference);
+    // Always create this
+    entityReference = new FCDEntityReference(document, _parent);
+    TrackObject(entityReference);
 }
 
 FCDEntityInstance::~FCDEntityInstance()
 {
-
-	if (entityReference != NULL)
-	{
-		UntrackObject(entityReference);
-		SAFE_RELEASE(entityReference);
-	}
+    if (entityReference != NULL)
+    {
+        UntrackObject(entityReference);
+        SAFE_RELEASE(entityReference);
+    }
 }
 
-FCDEntity* FCDEntityInstance::GetEntity() 
-{ 
-	return entityReference->GetEntity(); 
-}
-
-void FCDEntityInstance::SetEntity(FCDEntity* entity) 
-{ 
-	entityReference->SetEntity(entity); 
-}
-
-const FUUri FCDEntityInstance::GetEntityUri() const 
-{ 
-	return entityReference->GetUri(); 
-}
-
-void FCDEntityInstance::SetEntityUri(const FUUri& uri) 
-{ 
-	entityReference->SetUri(uri); 
-}
-
-void FCDEntityInstance::SetName(const fstring& _name) 
+FCDEntity* FCDEntityInstance::GetEntity()
 {
-	name = FCDEntity::CleanName(_name.c_str());
-	SetDirtyFlag();
+    return entityReference->GetEntity();
+}
+
+void FCDEntityInstance::SetEntity(FCDEntity* entity)
+{
+    entityReference->SetEntity(entity);
+}
+
+const FUUri FCDEntityInstance::GetEntityUri() const
+{
+    return entityReference->GetUri();
+}
+
+void FCDEntityInstance::SetEntityUri(const FUUri& uri)
+{
+    entityReference->SetUri(uri);
+}
+
+void FCDEntityInstance::SetName(const fstring& _name)
+{
+    name = FCDEntity::CleanName(_name.c_str());
+    SetDirtyFlag();
 }
 
 FCDExtra* FCDEntityInstance::GetExtra()
 {
-	return (extra != NULL) ? extra : (extra = new FCDExtra(GetDocument(), this));
+    return (extra != NULL) ? extra : (extra = new FCDExtra(GetDocument(), this));
 }
 
 bool FCDEntityInstance::IsExternalReference() const
-{ 
-	return entityReference->GetPlaceHolder() != NULL; 
+{
+    return entityReference->GetPlaceHolder() != NULL;
 }
 
 /*
@@ -117,80 +117,91 @@ void FCDEntityInstance::LoadExternalEntity(FCDocument* externalDocument, const f
 */
 bool FCDEntityInstance::HasForParent(FCDSceneNode* node) const
 {
-	if (node == NULL) return false;
-	if (parent == NULL) return false;
-	FCDSceneNodeList parentStack;
-	parentStack.push_back(parent);
-	while (!parentStack.empty())
-	{
-		FCDSceneNode* p = parentStack.front();
-		if (p == node) return true;
-		for (size_t i = 0; i < p->GetParentCount(); ++i)
-		{
-			parentStack.push_back(p->GetParent(i));
-		}
-		parentStack.pop_front();
-	}
-	return false;
+    if (node == NULL)
+        return false;
+    if (parent == NULL)
+        return false;
+    FCDSceneNodeList parentStack;
+    parentStack.push_back(parent);
+    while (!parentStack.empty())
+    {
+        FCDSceneNode* p = parentStack.front();
+        if (p == node)
+            return true;
+        for (size_t i = 0; i < p->GetParentCount(); ++i)
+        {
+            parentStack.push_back(p->GetParent(i));
+        }
+        parentStack.pop_front();
+    }
+    return false;
 }
 
 void FCDEntityInstance::CleanSubId(FUSUniqueStringMap* parentStringMap)
 {
-	if (!wantedSubId->empty() && (parentStringMap != NULL))
-	{
-		parentStringMap->insert(wantedSubId);
-	}
+    if (!wantedSubId->empty() && (parentStringMap != NULL))
+    {
+        parentStringMap->insert(wantedSubId);
+    }
 }
 
 FCDEntityInstance* FCDEntityInstance::Clone(FCDEntityInstance* clone) const
 {
-	if (clone == NULL)
-	{
-		clone = new FCDEntityInstance(const_cast<FCDocument*>(GetDocument()), const_cast<FCDSceneNode*>(parent), entityType);
-	}
+    if (clone == NULL)
+    {
+        clone = new FCDEntityInstance(const_cast<FCDocument*>(GetDocument()), const_cast<FCDSceneNode*>(parent), entityType);
+    }
 
-	clone->SetEntity(const_cast<FCDEntity*>(entityReference->GetEntity()));
-	return clone;
+    clone->SetEntity(const_cast<FCDEntity*>(entityReference->GetEntity()));
+    return clone;
 }
 
 void FCDEntityInstance::OnObjectReleased(FUTrackable* object)
 {
-	FUAssert(object == entityReference, return);
-	entityReference = NULL;
-	Release();
+    FUAssert(object == entityReference, return );
+    entityReference = NULL;
+    Release();
 }
-
 
 /******************* FCDEntityInstanceFactory implementation ***********************/
 
-
 FCDEntityInstance* FCDEntityInstanceFactory::CreateInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type type)
 {
-	switch (type)
-	{
-	case FCDEntity::CONTROLLER: return new FCDControllerInstance(document, parent, type); break;
-	case FCDEntity::EMITTER: return new FCDEmitterInstance(document, parent, type); break;
-	case FCDEntity::GEOMETRY: return new FCDGeometryInstance(document, parent, type); break;
-	case FCDEntity::FORCE_FIELD: return new FCDPhysicsForceFieldInstance(document, parent, type); break;
-	case FCDEntity::PHYSICS_MATERIAL:
-	case FCDEntity::CAMERA:
-	case FCDEntity::LIGHT:
-	case FCDEntity::ANIMATION:
-	case FCDEntity::SCENE_NODE: return new FCDEntityInstance(document, parent, type); break;
+    switch (type)
+    {
+    case FCDEntity::CONTROLLER:
+        return new FCDControllerInstance(document, parent, type);
+        break;
+    case FCDEntity::EMITTER:
+        return new FCDEmitterInstance(document, parent, type);
+        break;
+    case FCDEntity::GEOMETRY:
+        return new FCDGeometryInstance(document, parent, type);
+        break;
+    case FCDEntity::FORCE_FIELD:
+        return new FCDPhysicsForceFieldInstance(document, parent, type);
+        break;
+    case FCDEntity::PHYSICS_MATERIAL:
+    case FCDEntity::CAMERA:
+    case FCDEntity::LIGHT:
+    case FCDEntity::ANIMATION:
+    case FCDEntity::SCENE_NODE:
+        return new FCDEntityInstance(document, parent, type);
+        break;
 
-	default: 
-		FUFail(;);
-		// Default to always return something.
-		return new FCDEntityInstance(document, parent, type);
-		break;
-	}
+    default:
+        FUFail(;);
+        // Default to always return something.
+        return new FCDEntityInstance(document, parent, type);
+        break;
+    }
 }
 
 FCDEntityInstance* FCDEntityInstanceFactory::CreateInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity* entity)
 {
-	FUAssert(entity != NULL, return NULL);
+    FUAssert(entity != NULL, return NULL);
 
-	FCDEntityInstance* instance = CreateInstance(document, parent, entity->GetType());
-	instance->SetEntity(entity);
-	return instance;
+    FCDEntityInstance* instance = CreateInstance(document, parent, entity->GetType());
+    instance->SetEntity(entity);
+    return instance;
 }

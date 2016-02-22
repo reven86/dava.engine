@@ -36,7 +36,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 TCPClientTransport::TCPClientTransport(IOLoop* aLoop, uint32 readTimeout_)
     : loop(aLoop)
     , endpoint()
@@ -101,9 +100,10 @@ int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
 {
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= SENDBUF_COUNT);
     DVASSERT(0 == sendBufferCount);
-    if (false == isConnected) return 0;
+    if (false == isConnected)
+        return 0;
 
-    for (size_t i = 0;i < bufferCount;++i)
+    for (size_t i = 0; i < bufferCount; ++i)
     {
         DVASSERT(buffers[i].base != NULL && buffers[i].len > 0);
         sendBuffers[i] = buffers[i];
@@ -118,7 +118,8 @@ void TCPClientTransport::DoStart()
     // Try to establish connection if connection is initiated by this
     // Otherwise connection should be already accepted
     int32 error = true == isInitiator ? socket.Connect(endpoint, MakeFunction(this, &TCPClientTransport::SocketHandleConnect))
-                                      : DoConnected();
+                                        :
+                                        DoConnected();
     if (error != 0)
         CleanUp(error);
 }
@@ -189,7 +190,8 @@ void TCPClientTransport::TimerHandleClose(DeadlineTimer* timer)
 
 void TCPClientTransport::TimerHandleTimeout(DeadlineTimer* timer)
 {
-    if (true == isTerminating) return;
+    if (true == isTerminating)
+        return;
 
     timer->Wait(readTimeout, MakeFunction(this, &TCPClientTransport::TimerHandleTimeout));
     listener->OnTransportReadTimeout(this);
@@ -207,7 +209,8 @@ void TCPClientTransport::SocketHandleClose(TCPSocket* socket)
 
 void TCPClientTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
 {
-    if (true == isTerminating) return;
+    if (true == isTerminating)
+        return;
 
     if (0 == error)
         error = DoConnected();
@@ -217,7 +220,8 @@ void TCPClientTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
 
 void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread)
 {
-    if (false == isConnected) return;
+    if (false == isConnected)
+        return;
 
     if (0 == error)
     {
@@ -232,7 +236,8 @@ void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t
 
 void TCPClientTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)
 {
-    if (false == isConnected) return;
+    if (false == isConnected)
+        return;
 
     if (0 == error)
     {
@@ -245,5 +250,5 @@ void TCPClientTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

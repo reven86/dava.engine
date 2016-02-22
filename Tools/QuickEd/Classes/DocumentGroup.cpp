@@ -32,7 +32,7 @@
 #include <QUndoGroup>
 #include "Debug/DVAssert.h"
 
-DocumentGroup::DocumentGroup(QObject *parent) 
+DocumentGroup::DocumentGroup(QObject* parent)
     : QObject(parent)
     , active(nullptr)
     , undoGroup(new QUndoGroup(this))
@@ -81,7 +81,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
-    if (nullptr != active) 
+    if (nullptr != active)
     {
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
@@ -89,7 +89,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         disconnect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::CanvasSizeChanged);
         DocumentDeactivated(active);
     }
-    
+
     active = document;
 
     if (nullptr == active)
@@ -175,12 +175,12 @@ void DocumentGroup::FocusPreviousChild()
     }
 }
 
-Document *DocumentGroup::GetActiveDocument() const
+Document* DocumentGroup::GetActiveDocument() const
 {
     return active;
 }
 
-const QUndoGroup *DocumentGroup::GetUndoGroup() const
+const QUndoGroup* DocumentGroup::GetUndoGroup() const
 {
     return undoGroup;
 }

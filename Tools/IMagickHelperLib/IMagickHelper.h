@@ -4,31 +4,31 @@
 #ifdef WIN32
 
 #ifdef IMAGICKHELPER_STATIC_DEFINE
-#  define IMAGICKHELPER_EXPORT
-#  define IMAGICKHELPER_NO_EXPORT
+#define IMAGICKHELPER_EXPORT
+#define IMAGICKHELPER_NO_EXPORT
 #else
-#  ifndef IMAGICKHELPER_EXPORT
-#    ifdef IMagickHelper_EXPORTS
-#      define IMAGICKHELPER_EXPORT __declspec(dllexport)
-#    else
-#      define IMAGICKHELPER_EXPORT __declspec(dllimport)
-#    endif
-#  endif
+#ifndef IMAGICKHELPER_EXPORT
+#ifdef IMagickHelper_EXPORTS
+#define IMAGICKHELPER_EXPORT __declspec(dllexport)
+#else
+#define IMAGICKHELPER_EXPORT __declspec(dllimport)
+#endif
+#endif
 #endif
 
 #else
 
 #ifdef IMAGICKHELPER_STATIC_DEFINE
-#  define IMAGICKHELPER_EXPORT
-#  define IMAGICKHELPER_NO_EXPORT
+#define IMAGICKHELPER_EXPORT
+#define IMAGICKHELPER_NO_EXPORT
 #else
-#  ifndef IMAGICKHELPER_EXPORT
-#    ifdef IMagickHelper_EXPORTS
-#      define IMAGICKHELPER_EXPORT __attribute__((visibility("default")))
-#    else
-#      define IMAGICKHELPER_EXPORT __attribute__((visibility("default")))
-#    endif
-#  endif
+#ifndef IMAGICKHELPER_EXPORT
+#ifdef IMagickHelper_EXPORTS
+#define IMAGICKHELPER_EXPORT __attribute__((visibility("default")))
+#else
+#define IMAGICKHELPER_EXPORT __attribute__((visibility("default")))
+#endif
+#endif
 #endif
 
 #endif

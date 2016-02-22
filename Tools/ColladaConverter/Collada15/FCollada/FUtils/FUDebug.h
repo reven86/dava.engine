@@ -26,46 +26,46 @@
 class FCOLLADA_EXPORT FUDebug
 {
 private:
-	/**	Block access to the constructors and destructors 
+    /**	Block access to the constructors and destructors 
 		as only static functions of the class will be used. */
-	FUDebug();
-	virtual ~FUDebug();
+    FUDebug();
+    virtual ~FUDebug();
 
-	/**	Outputs a string to the debug monitor.
+    /**	Outputs a string to the debug monitor.
 		@param level The error level: FUError::DEBUG_LEVEL is recommended.
 		@param message The formatted message to output. */
-	static void DebugOut(uint8 level, const char* message, ...);
+    static void DebugOut(uint8 level, const char* message, ...);
 #if (1)
     static void DebugOut(uint8 level, const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 
-	/**	Outputs a string to the debug monitor.
+    /**	Outputs a string to the debug monitor.
 		@param level The error level: FUError::DEBUG_LEVEL is recommended.
 		@param message The formatted message to output.
 		@param vars A standard variable argument list. */
-	static void DebugOutV(uint8 level, const char* message, va_list& vars);
+    static void DebugOutV(uint8 level, const char* message, va_list& vars);
 #if (1)
     static void DebugOutV(uint8 level, const fchar* message, va_list& vars); /**< See above. */
 #endif // UNICODE
 
-	/**	Outputs a string to the debug monitor.
+    /**	Outputs a string to the debug monitor.
 		@param level The error level: FUError::DEBUG_LEVEL is recommended.
 		@param filename The filename of the code to trace.
 		@param line The line number of the code trace.
 		@param message The formatted message to output.
 		@param vars A standard variable argument list. */
-	static void DebugOutV(uint8 level, const char* filename, uint32 line, const char* message, va_list& vars);
+    static void DebugOutV(uint8 level, const char* filename, uint32 line, const char* message, va_list& vars);
 #if (1)
     static void DebugOutV(uint8 level, const char* filename, uint32 line, const fchar* message, va_list& vars); /**< See above. */
 #endif // UNICODE
 
 public:
-	/**	Outputs a string to the debug monitor.
+    /**	Outputs a string to the debug monitor.
 		@param level The error level: FUError::DEBUG_LEVEL is recommended.
 		@param filename The filename of the code to trace.
 		@param line The line number of the code trace.
 		@param message The formatted message to output. */
-	static void DebugOut(uint8 level, uint32 line, const char* filename, const char* message, ...);
+    static void DebugOut(uint8 level, uint32 line, const char* filename, const char* message, ...);
 #if (1)
     static void DebugOut(uint8 level, uint32 line, const char* filename, const fchar* message, ...); /**< See above. */
 #endif // UNICODE

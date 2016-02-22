@@ -41,7 +41,7 @@ PackageBaseNode::~PackageBaseNode()
     parent = nullptr;
 }
 
-int PackageBaseNode::GetIndex(const PackageBaseNode *node) const
+int PackageBaseNode::GetIndex(const PackageBaseNode* node) const
 {
     for (int i = 0; i < GetCount(); i++)
     {
@@ -51,12 +51,12 @@ int PackageBaseNode::GetIndex(const PackageBaseNode *node) const
     return -1;
 }
 
-PackageBaseNode *PackageBaseNode::GetParent() const
+PackageBaseNode* PackageBaseNode::GetParent() const
 {
     return parent;
 }
 
-void PackageBaseNode::SetParent(PackageBaseNode *parent)
+void PackageBaseNode::SetParent(PackageBaseNode* parent)
 {
     this->parent = parent;
 }
@@ -66,17 +66,17 @@ String PackageBaseNode::GetName() const
     return "Unknown";
 }
 
-PackageNode *PackageBaseNode::GetPackage()
+PackageNode* PackageBaseNode::GetPackage()
 {
     return parent ? parent->GetPackage() : nullptr;
 }
 
-const PackageNode *PackageBaseNode::GetPackage() const
+const PackageNode* PackageBaseNode::GetPackage() const
 {
     return parent ? parent->GetPackage() : nullptr;
 }
 
-UIControl *PackageBaseNode::GetControl() const
+UIControl* PackageBaseNode::GetControl() const
 {
     return NULL;
 }
@@ -111,17 +111,17 @@ bool PackageBaseNode::IsInsertingStylesSupported() const
     return false;
 }
 
-bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+bool PackageBaseNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
 {
     return false;
 }
 
-bool PackageBaseNode::CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const
+bool PackageBaseNode::CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) const
 {
     return false;
 }
 
-bool PackageBaseNode::CanInsertImportedPackage(PackageNode *package) const
+bool PackageBaseNode::CanInsertImportedPackage(PackageNode* package) const
 {
     return false;
 }

@@ -42,22 +42,24 @@
 
 namespace DAVA
 {
-
-WaveSystem::WaveInfo::WaveInfo(WaveComponent * _component) :
-component(_component),
-currentWaveRadius(0.f)
+WaveSystem::WaveInfo::WaveInfo(WaveComponent* _component)
+    :
+    component(_component)
+    ,
+    currentWaveRadius(0.f)
 {
-    if(component->GetDampingRatio() < EPSILON)
+    if (component->GetDampingRatio() < EPSILON)
         maxRadius = component->GetInfluenceRadius();
     else
-        maxRadius = Min(component->GetInfluenceRadius(), 1.f/component->GetDampingRatio());
+        maxRadius = Min(component->GetInfluenceRadius(), 1.f / component->GetDampingRatio());
 
     maxRadiusSq = maxRadius * maxRadius;
 
     center = GetTransformComponent(component->GetEntity())->GetWorldTransform().GetTranslationVector();
 }
 
-WaveSystem::WaveSystem(Scene * scene) : 
+WaveSystem::WaveSystem(Scene* scene)
+    :
     SceneSystem(scene)
 {
     RenderOptions* options = Renderer::GetOptions();
@@ -76,14 +78,14 @@ WaveSystem::~WaveSystem()
     ClearWaves();
 }
 
-void WaveSystem::ImmediateEvent(Component * component, uint32 event)
+void WaveSystem::ImmediateEvent(Component* component, uint32 event)
 {
-    if(event == EventSystem::WAVE_TRIGGERED)
+    if (event == EventSystem::WAVE_TRIGGERED)
     {
-        if(!isWavesEnabled || !isVegetationAnimationEnabled)
+        if (!isWavesEnabled || !isVegetationAnimationEnabled)
             return;
 
-        WaveComponent * waveComponent = DynamicTypeCheck<WaveComponent*>(component);
+        WaveComponent* waveComponent = DynamicTypeCheck<WaveComponent*>(component);
         waves.push_back(new WaveInfo(waveComponent));
     }
 }
@@ -94,12 +96,12 @@ void WaveSystem::Process(float32 timeElapsed)
 
     int32 index = 0;
     int32 size = static_cast<int32>(waves.size());
-    while(index < size)
+    while (index < size)
     {
-        WaveInfo * info = waves[index];
+        WaveInfo* info = waves[index];
         info->currentWaveRadius += info->component->GetWaveSpeed() * timeElapsed;
 
-        if(info->currentWaveRadius >= info->maxRadius)
+        if (info->currentWaveRadius >= info->maxRadius)
         {
             SafeDelete(info);
             RemoveExchangingWithLast(waves, index);
@@ -112,18 +114,18 @@ void WaveSystem::Process(float32 timeElapsed)
     }
 }
 
-Vector3 WaveSystem::GetWaveDisturbance(const Vector3 & inPosition) const
+Vector3 WaveSystem::GetWaveDisturbance(const Vector3& inPosition) const
 {
     Vector3 ret;
     int32 wavesCount = static_cast<int32>(waves.size());
-    for(int32 i = 0; i < wavesCount; ++i)
+    for (int32 i = 0; i < wavesCount; ++i)
     {
-        WaveInfo * info = waves[i];
+        WaveInfo* info = waves[i];
         Vector3 direction = inPosition - info->center;
         float32 distanceSq = direction.SquareLength();
-        if(distanceSq > EPSILON && distanceSq < info->maxRadiusSq)
+        if (distanceSq > EPSILON && distanceSq < info->maxRadiusSq)
         {
-            WaveComponent * component = info->component;
+            WaveComponent* component = info->component;
 
             float32 damping = 1 - component->GetDampingRatio() * info->currentWaveRadius; //damping function: D = 1 - k * x
 
@@ -145,7 +147,7 @@ Vector3 WaveSystem::GetWaveDisturbance(const Vector3 & inPosition) const
 
 void WaveSystem::ClearWaves()
 {
-    for(auto& wave : waves)
+    for (auto& wave : waves)
     {
         SafeDelete(wave);
     }
@@ -153,13 +155,12 @@ void WaveSystem::ClearWaves()
     waves.clear();
 }
 
-void WaveSystem::HandleEvent(Observable * observable)
+void WaveSystem::HandleEvent(Observable* observable)
 {
-    RenderOptions * options = static_cast<RenderOptions *>(observable);
+    RenderOptions* options = static_cast<RenderOptions*>(observable);
     isWavesEnabled = options->IsOptionEnabled(RenderOptions::WAVE_DISTURBANCE_PROCESS);
 
-    if(!isWavesEnabled)
+    if (!isWavesEnabled)
         ClearWaves();
 }
-
 };

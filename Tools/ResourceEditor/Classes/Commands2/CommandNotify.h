@@ -38,27 +38,27 @@ class Command2;
 class CommandNotify : public DAVA::BaseObject
 {
 public:
-	CommandNotify();
-	~CommandNotify();
+    CommandNotify();
+    ~CommandNotify();
 
-	virtual void Notify(const Command2 *command, bool redo) = 0;
-	virtual void CleanChanged(bool clean) { };
+    virtual void Notify(const Command2* command, bool redo) = 0;
+    virtual void CleanChanged(bool clean){};
 };
 
 class CommandNotifyProvider
 {
 public:
-	CommandNotifyProvider();
-	virtual ~CommandNotifyProvider();
+    CommandNotifyProvider();
+    virtual ~CommandNotifyProvider();
 
-	void SetNotify(CommandNotify *notify);
-	CommandNotify* GetNotify() const;
+    void SetNotify(CommandNotify* notify);
+    CommandNotify* GetNotify() const;
 
-	void EmitNotify(const Command2 *command, bool redo);
-	void EmitCleanChanged(bool clean);
+    void EmitNotify(const Command2* command, bool redo);
+    void EmitCleanChanged(bool clean);
 
 protected:
-	CommandNotify* curNotify;
+    CommandNotify* curNotify;
 };
 
 #endif // __COMMAND_NOTIFY_H__

@@ -39,16 +39,16 @@ class StyleSheetProperty;
 class AddRemoveStylePropertyCommand : public QUndoCommand
 {
 public:
-    AddRemoveStylePropertyCommand(PackageNode *root, StyleSheetNode *node, StyleSheetProperty *property, bool add, QUndoCommand *parent = nullptr);
+    AddRemoveStylePropertyCommand(PackageNode* root, StyleSheetNode* node, StyleSheetProperty* property, bool add, QUndoCommand* parent = nullptr);
     virtual ~AddRemoveStylePropertyCommand();
-    
+
     void redo() override;
     void undo() override;
-    
+
 private:
-    PackageNode *root;
-    StyleSheetNode *node;
-    StyleSheetProperty *property;
+    PackageNode* root;
+    StyleSheetNode* node;
+    StyleSheetProperty* property;
     bool add;
 };
 

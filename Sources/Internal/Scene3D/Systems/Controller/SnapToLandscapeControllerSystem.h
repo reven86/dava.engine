@@ -33,34 +33,28 @@
 #include "Entity/SceneSystem.h"
 #include "Math/Vector.h"
 
-
 namespace DAVA
 {
-    
 class Camera;
 class Landscape;
-class SnapToLandscapeControllerSystem: public SceneSystem
+class SnapToLandscapeControllerSystem : public SceneSystem
 {
-    
 public:
-    SnapToLandscapeControllerSystem(Scene * scene);
+    SnapToLandscapeControllerSystem(Scene* scene);
     virtual ~SnapToLandscapeControllerSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+
     virtual void Process(float32 timeElapsed);
-    void ImmediateEvent(Component * component, uint32 event) override;
+    void ImmediateEvent(Component* component, uint32 event) override;
 
 private:
-    
-    void SnapToLandscape(Landscape *landscape, Entity *entity, bool forceSnap = false);
-    
-    Vector<Entity *> entities;
-    Map<Entity *, Vector3> positions;
-    
+    void SnapToLandscape(Landscape* landscape, Entity* entity, bool forceSnap = false);
+
+    Vector<Entity*> entities;
+    Map<Entity*, Vector3> positions;
 };
-    
 };
 
 #endif //__DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__

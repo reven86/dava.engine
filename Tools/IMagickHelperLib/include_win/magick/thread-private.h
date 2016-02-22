@@ -30,11 +30,11 @@ extern "C" {
   Single threaded unless workload justifies the threading overhead.
 */
 #define magick_threads(source, destination, chunk, expression) \
-  num_threads((expression) == 0 ? 1 :                                                           \
+  num_threads((expression) == 0 ? 1 : \
                                     (((chunk) > (32 * GetMagickResourceLimit(ThreadResource))) && \
-                                     (GetImagePixelCacheType(source) != DiskCache)) &&            \
-                (GetImagePixelCacheType(destination) != DiskCache) ?                              \
-                                    GetMagickResourceLimit(ThreadResource) :                      \
+                                     (GetImagePixelCacheType(source) != DiskCache)) && \
+                (GetImagePixelCacheType(destination) != DiskCache) ? \
+                                    GetMagickResourceLimit(ThreadResource) : \
                                     GetMagickResourceLimit(ThreadResource) < 2 ? 1 : 2)
 
 #if defined(__clang__) || (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ > 10))

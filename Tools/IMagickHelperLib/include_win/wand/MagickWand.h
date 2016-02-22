@@ -49,7 +49,7 @@ extern "C" {
 #endif
 
 #define MAGICKWAND_CHECK_VERSION(major, minor, micro) \
-  ((MAGICKWAND_MAJOR_VERSION > (major)) ||   \
+  ((MAGICKWAND_MAJOR_VERSION > (major)) || \
      ((MAGICKWAND_MAJOR_VERSION == (major)) && \
       (MAGICKWAND_MINOR_VERSION > (minor))) || \
      ((MAGICKWAND_MAJOR_VERSION == (major)) && \

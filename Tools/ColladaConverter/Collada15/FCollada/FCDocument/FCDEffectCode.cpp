@@ -14,9 +14,10 @@
 
 ImplementObjectType(FCDEffectCode);
 
-FCDEffectCode::FCDEffectCode(FCDocument* document) : FCDObject(document)
+FCDEffectCode::FCDEffectCode(FCDocument* document)
+    : FCDObject(document)
 {
-	type = INCLUDE;
+    type = INCLUDE;
 }
 
 FCDEffectCode::~FCDEffectCode()
@@ -25,25 +26,26 @@ FCDEffectCode::~FCDEffectCode()
 
 // Do not inline this function.  No memory-creating functions should be inline
 void FCDEffectCode::SetSubId(const fm::string& _sid)
-{ 
-	sid = FCDObjectWithId::CleanSubId(_sid); 
-	SetDirtyFlag(); 
+{
+    sid = FCDObjectWithId::CleanSubId(_sid);
+    SetDirtyFlag();
 }
 
 void FCDEffectCode::SetFilename(const fstring& _filename)
 {
-	filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
-	type = INCLUDE;
-	SetDirtyFlag();
+    filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
+    type = INCLUDE;
+    SetDirtyFlag();
 }
 
 // Clone
 FCDEffectCode* FCDEffectCode::Clone(FCDEffectCode* clone) const
 {
-	if (clone == NULL) clone = new FCDEffectCode(const_cast<FCDocument*>(GetDocument()));
-	clone->type = type;
-	clone->sid = sid;
-	clone->filename = filename;
-	clone->code = code;
-	return clone;
+    if (clone == NULL)
+        clone = new FCDEffectCode(const_cast<FCDocument*>(GetDocument()));
+    clone->type = type;
+    clone->sid = sid;
+    clone->filename = filename;
+    clone->code = code;
+    return clone;
 }

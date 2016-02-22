@@ -53,15 +53,15 @@ class LibraryFilteringModel;
 class LibraryTreeView : public QTreeView
 {
     Q_OBJECT
-    
+
 public:
-    explicit LibraryTreeView(QWidget *parent = 0): QTreeView(parent) {};
-    
+    explicit LibraryTreeView(QWidget* parent = 0)
+        : QTreeView(parent){};
+
 signals:
     void DragStarted();
-    
+
 protected:
-    
     virtual void startDrag(Qt::DropActions supportedActions)
     {
         emit DragStarted();
@@ -71,34 +71,34 @@ protected:
 
 class LibraryWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
     enum eViewMode
     {
         VIEW_AS_LIST = 0,
         VIEW_DETAILED
     };
-    
+
 public:
-	LibraryWidget(QWidget *parent = 0);
-	~LibraryWidget();
+    LibraryWidget(QWidget* parent = 0);
+    ~LibraryWidget();
 
     void SetupSignals();
-    
+
 protected slots:
 
-    void ProjectOpened(const QString &path);
-	void ProjectClosed();
+    void ProjectOpened(const QString& path);
+    void ProjectClosed();
 
     void ViewAsList();
     void ViewDetailed();
-    
-	void SelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-    void ShowContextMenu(const QPoint & point);
-    void fileDoubleClicked(const QModelIndex & index);
-    
+
+    void SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    void ShowContextMenu(const QPoint& point);
+    void fileDoubleClicked(const QModelIndex& index);
+
     void OnFilesTypeChanged(int typeIndex);
-    
+
     void OnAddModel();
     void OnEditModel();
     void OnConvertDae();
@@ -106,38 +106,36 @@ protected slots:
     void OnRevealAtFolder();
 
     void OnTreeDragStarted();
+
 private:
-    
     void SetupFileTypes();
     void SetupToolbar();
     void SetupView();
     void SetupLayout();
-    
+
     void HideDetailedColumnsAtFilesView(bool show);
-    
+
     void HidePreview() const;
-    void ShowPreview(const QString & pathname) const;
-    
+    void ShowPreview(const QString& pathname) const;
+
     QStringList GetExtensions(DAVA::ImageFormat imageFormat) const;
-    
+
 private:
+    QVBoxLayout* layout;
 
-    QVBoxLayout *layout;
-    
-    QToolBar *toolbar;
-    QTreeView *filesView;
-    
-	QComboBox *filesTypeFilter;
-    
-    QAction *actionViewAsList;
-    QAction *actionViewDetailed;
+    QToolBar* toolbar;
+    QTreeView* filesView;
 
-    
+    QComboBox* filesTypeFilter;
+
+    QAction* actionViewAsList;
+    QAction* actionViewDetailed;
+
     QString rootPathname;
-    LibraryFileSystemModel *filesModel;
-    
+    LibraryFileSystemModel* filesModel;
+
     eViewMode viewMode;
-	int curTypeIndex;
+    int curTypeIndex;
 };
 
 #endif // __LIBRARY_WIDGET_H__

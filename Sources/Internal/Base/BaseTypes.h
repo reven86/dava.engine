@@ -51,13 +51,12 @@
 #include <cerrno>
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#   include "MemoryManager/AllocPools.h"
-#   include "MemoryManager/TrackingAllocator.h"
+#include "MemoryManager/AllocPools.h"
+#include "MemoryManager/TrackingAllocator.h"
 #endif
 
 namespace DAVA
 {
-
 //Platform-independent signed and unsigned integer type
 using uint8 = uint8_t;
 using uint16 = uint16_t;
@@ -80,16 +79,16 @@ using float32 = float;
 using float64 = double;
 
 //Compile-time checks for size of types
-static_assert(sizeof(int8)   == 1, "Invalid type size!");
-static_assert(sizeof(uint8)  == 1, "Invalid type size!");
-static_assert(sizeof(int16)  == 2, "Invalid type size!");
+static_assert(sizeof(int8) == 1, "Invalid type size!");
+static_assert(sizeof(uint8) == 1, "Invalid type size!");
+static_assert(sizeof(int16) == 2, "Invalid type size!");
 static_assert(sizeof(uint16) == 2, "Invalid type size!");
-static_assert(sizeof(int32)  == 4, "Invalid type size!");
+static_assert(sizeof(int32) == 4, "Invalid type size!");
 static_assert(sizeof(uint32) == 4, "Invalid type size!");
-static_assert(sizeof(int64)  == 8, "Invalid type size!");
+static_assert(sizeof(int64) == 8, "Invalid type size!");
 static_assert(sizeof(uint64) == 8, "Invalid type size!");
 static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
-static_assert(sizeof(char8)  == 1, "Invalid type size!");
+static_assert(sizeof(char8) == 1, "Invalid type size!");
 static_assert(sizeof(float32) == 4, "Invalid type size!");
 static_assert(sizeof(float64) == 8, "Invalid type size!");
 
@@ -97,92 +96,92 @@ const uint32 InvalidIndex = static_cast<uint32>(-1);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 // FIX: replace DefaultSTLAllocator with TrackingAllocator after fixing framework and game codebases
-template<typename T>
+template <typename T>
 using DefaultSTLAllocator = std::allocator<T>;
 //using DefaultSTLAllocator = TrackingAllocator<T, ALLOC_POOL_DEFAULT>;
 #else
-template<typename T>
+template <typename T>
 using DefaultSTLAllocator = std::allocator<T>;
 #endif
 
-template<typename CharT>
+template <typename CharT>
 using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
 using String = BasicString<char8>;
 using WideString = BasicString<wchar_t>;
 
-template<typename CharT>
+template <typename CharT>
 using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
 using StringStream = BasicStringStream<char8>;
 
-template<typename T,
-         std::size_t N>
+template <typename T,
+          std::size_t N>
 using Array = std::array<T, N>;
 
-template<typename T>
+template <typename T>
 using List = std::list<T, DefaultSTLAllocator<T>>;
 
-template<typename T>
+template <typename T>
 using Vector = std::vector<T, DefaultSTLAllocator<T>>;
 
-template<typename T>
+template <typename T>
 using Deque = std::deque<T, DefaultSTLAllocator<T>>;
 
 template <class _Key,
           class _Compare = std::less<_Key>>
-using Set = std::set< _Key, _Compare, DefaultSTLAllocator<_Key>>;
-    
-template<class _Kty,
-         class _Ty,
-         class _Pr = std::less<_Kty>>
+using Set = std::set<_Key, _Compare, DefaultSTLAllocator<_Key>>;
+
+template <class _Kty,
+          class _Ty,
+          class _Pr = std::less<_Kty>>
 using Map = std::map<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
-template<class _Kty,
-         class _Ty,
-         class _Pr = std::less<_Kty>>
+template <class _Kty,
+          class _Ty,
+          class _Pr = std::less<_Kty>>
 using MultiMap = std::multimap<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
-template<class T,
-         class Container = Deque<T>>
+template <class T,
+          class Container = Deque<T>>
 using Stack = std::stack<T, Container>;
 
-template<class T,
-         class Container = Vector<T>,
-         class Compare = std::less<typename Container::value_type>>
+template <class T,
+          class Container = Vector<T>,
+          class Compare = std::less<typename Container::value_type>>
 using PriorityQueue = std::priority_queue<T, Container, Compare>;
 
-template<typename Key,
-         typename Hash = std::hash<Key>,
-         typename KeyEqual = std::equal_to<Key>>
+template <typename Key,
+          typename Hash = std::hash<Key>,
+          typename KeyEqual = std::equal_to<Key>>
 using UnorderedSet = std::unordered_set<Key, Hash, KeyEqual, DefaultSTLAllocator<Key>>;
 
-template<typename Key,
-         typename T,
-         typename Hash = std::hash<Key>,
-         typename KeyEqual = std::equal_to<Key>>
+template <typename Key,
+          typename T,
+          typename Hash = std::hash<Key>,
+          typename KeyEqual = std::equal_to<Key>>
 using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
-template<size_t Bits>
+template <size_t Bits>
 using Bitset = std::bitset<Bits>;
 
 #ifdef min
-#   undef min
+#undef min
 #endif
 #ifdef max
-#   undef max
+#undef max
 #endif
 
 /*
  Useful functions to offset pointer by specified number of bytes without long cast sequences.
 */
-template<typename T>
+template <typename T>
 inline T* OffsetPointer(void* ptr, ptrdiff_t offset)
 {
     return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + offset);
 }
 
-template<typename T>
+template <typename T>
 inline const T* OffsetPointer(const void* ptr, ptrdiff_t offset)
 {
     return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr) + offset);
@@ -213,9 +212,9 @@ inline T Clamp(T val, T a, T b)
 }
 
 #if defined(__DAVAENGINE_WINDOWS__)
-#   define Snprintf    _snprintf
+#define Snprintf _snprintf
 #else
-#   define Snprintf    snprintf
+#define Snprintf snprintf
 #endif
 
 #define Memcmp memcmp
@@ -224,7 +223,7 @@ inline T Clamp(T val, T a, T b)
 #define Memmove memmove
 
 template <class TYPE>
-void SafeDelete(TYPE * &d)
+void SafeDelete(TYPE*& d)
 {
     if (d != nullptr)
     {
@@ -234,50 +233,53 @@ void SafeDelete(TYPE * &d)
 }
 
 template <class TYPE>
-void SafeDeleteArray(TYPE * & d)
+void SafeDeleteArray(TYPE*& d)
 {
     if (d != nullptr)
     {
-        delete [] d;
+        delete[] d;
         d = nullptr;
     }
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x)  DAVA::SafeDelete(x)
+#define SAFE_DELETE(x) DAVA::SafeDelete(x)
 #endif 
 
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x)    DAVA::SafeDeleteArray(x)
+#define SAFE_DELETE_ARRAY(x) DAVA::SafeDeleteArray(x)
 #endif
 
 #ifndef OBJC_SAFE_RELEASE
-#   define OBJC_SAFE_RELEASE(x) [x release];x = nil;
-#endif 
+#define OBJC_SAFE_RELEASE(x) [x release];x = nil;
+#endif
 
 /**
  \enum Graphical object aligment.
 */
-enum eAlign 
+enum eAlign
 {
-    ALIGN_LEFT      = 0x01, //!<Align graphical object by the left side.
-    ALIGN_HCENTER   = 0x02, //!<Align graphical object by the horizontal center.
-    ALIGN_RIGHT     = 0x04, //!<Align graphical object by the right side.
-    ALIGN_TOP       = 0x08, //!<Align graphical object by the top side.
-    ALIGN_VCENTER   = 0x10, //!<Align graphical object by the vertical center.
-    ALIGN_BOTTOM    = 0x20, //!<Align graphical object by the bottom side.
-    ALIGN_HJUSTIFY  = 0x40  //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
+    ALIGN_LEFT = 0x01, //!<Align graphical object by the left side.
+    ALIGN_HCENTER = 0x02, //!<Align graphical object by the horizontal center.
+    ALIGN_RIGHT = 0x04, //!<Align graphical object by the right side.
+    ALIGN_TOP = 0x08, //!<Align graphical object by the top side.
+    ALIGN_VCENTER = 0x10, //!<Align graphical object by the vertical center.
+    ALIGN_BOTTOM = 0x20, //!<Align graphical object by the bottom side.
+    ALIGN_HJUSTIFY = 0x40 //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
 
 template <typename T, size_t N>
-DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT{ return N; }
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
+{
+    return N;
+}
     
 #ifndef REMOVE_IN_RELEASE
-#   if defined(__DAVAENGINE_DEBUG__)
-#       define REMOVE_IN_RELEASE (x) x
-#   else
-#       define REMOVE_IN_RELEASE (x) 
-#   endif
+#if defined(__DAVAENGINE_DEBUG__)
+#define REMOVE_IN_RELEASE (x) x
+#else
+#define REMOVE_IN_RELEASE (x) 
+#endif
 #endif
 
 enum class eErrorCode
@@ -289,6 +291,6 @@ enum class eErrorCode
     ERROR_WRITE_FAIL
 };
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_BASETYPES_H__
+#endif // __DAVAENGINE_BASETYPES_H__

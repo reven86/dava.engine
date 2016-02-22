@@ -34,21 +34,19 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Job/JobManager.h"
 
-jstringArray::jstringArray(const jobjectArray &arr)
+jstringArray::jstringArray(const jobjectArray& arr)
 {
     obj = arr;
 }
 
 namespace DAVA
 {
-
 namespace JNI
 {
-
-JNIEnv *GetEnv()
+JNIEnv* GetEnv()
 {
-    JNIEnv *env;
-    JavaVM *vm = GetJVM();
+    JNIEnv* env;
+    JavaVM* vm = GetJVM();
 
     if (nullptr == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
     {
@@ -60,31 +58,31 @@ JNIEnv *GetEnv()
 
 void AttachCurrentThreadToJVM()
 {
-	if (true == Thread::IsMainThread())
-		return;
+    if (true == Thread::IsMainThread())
+        return;
 
-	JavaVM *vm = GetJVM();
-	JNIEnv *env;
+    JavaVM* vm = GetJVM();
+    JNIEnv* env;
 
-	if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
-	{
-		if (vm->AttachCurrentThread(&env, NULL)!=0)
-			Logger::Error("runtime_error(Could not attach current thread to JNI)");
-	}
+    if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    {
+        if (vm->AttachCurrentThread(&env, NULL) != 0)
+            Logger::Error("runtime_error(Could not attach current thread to JNI)");
+    }
 }
 
 void DetachCurrentThreadFromJVM()
 {
-	if (true == Thread::IsMainThread())
-		return;
+    if (true == Thread::IsMainThread())
+        return;
 
-	JavaVM *vm = GetJVM();
-	JNIEnv *env;
-	if (JNI_OK == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
-	{
-		if (0 != vm->DetachCurrentThread())
-			Logger::Error("runtime_error(Could not detach current thread from JNI)");
-	}
+    JavaVM* vm = GetJVM();
+    JNIEnv* env;
+    if (JNI_OK == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    {
+        if (0 != vm->DetachCurrentThread())
+            Logger::Error("runtime_error(Could not detach current thread from JNI)");
+    }
 }
 
 Rect V2I(const Rect& srcRect)
@@ -141,13 +139,13 @@ jstring ToJNIString(const DAVA::WideString& string)
     return env->NewStringUTF(utf8.c_str());
 }
 
-JavaClass::JavaClass(const String &className)
+JavaClass::JavaClass(const String& className)
     : javaClass(NULL)
 {
     DVASSERT(!className.empty());
     name = className;
 
-    Function<void (String)> findJClass (this, &JavaClass::FindJavaClass);
+    Function<void(String)> findJClass(this, &JavaClass::FindJavaClass);
     auto findJClassName = Bind(findJClass, name);
     uint32 jobId = JobManager::Instance()->CreateMainJob(findJClassName);
     JobManager::Instance()->WaitMainJobID(jobId);
@@ -162,7 +160,7 @@ void JavaClass::FindJavaClass(String name)
 {
     DVASSERT(Thread::IsMainThread());
 
-    JNIEnv *env = GetEnv();
+    JNIEnv* env = GetEnv();
 
     jclass foundLocalRefClass = env->FindClass(name.c_str());
     DAVA_JNI_EXCEPTION_CHECK
@@ -175,7 +173,6 @@ void JavaClass::FindJavaClass(String name)
     javaClass = static_cast<jclass>(env->NewGlobalRef(foundLocalRefClass));
     env->DeleteLocalRef(foundLocalRefClass);
 }
-
 }
 }
 #endif

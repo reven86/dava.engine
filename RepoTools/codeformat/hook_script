@@ -28,7 +28,7 @@ for file in `git diff-index --cached --name-only HEAD | grep -E "Projects|Tools|
 		# collect only file, that are
 		# matched specified extensions 
 		case "$file" in
-			*.c | *.cc |*.cpp | *.h | *.hh |*.hpp | *.mm | *.cxx)
+			*.cpp | *.h | *.mm)
 				files="$files $file"
 			;;
 			*)

@@ -731,7 +731,7 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 static void
 gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    // NOTE: expected to be called BEFORE SetFragmentTexture
+// NOTE: expected to be called BEFORE SetFragmentTexture
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();

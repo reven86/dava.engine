@@ -34,11 +34,10 @@ namespace DAVA
 {
 namespace Net
 {
-
 // Transport types
 enum eTransportType
 {
-    TRANSPORT_TCP       // Transport based on TCP
+    TRANSPORT_TCP // Transport based on TCP
 };
 
 // Role of network objects
@@ -59,7 +58,7 @@ enum eMiscConst
     DEFAULT_ANNOUNCE_TIME_PERIOD = 5
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_NETWORKCOMMON_H__
+#endif // __DAVAENGINE_NETWORKCOMMON_H__

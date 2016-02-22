@@ -26,11 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  This file is just for doxygen documentation.
  */
-
 
 /**
 	\mainpage DAVA SDK Documentation 
@@ -513,4 +511,3 @@ default value is 1
  
 	
  */
-

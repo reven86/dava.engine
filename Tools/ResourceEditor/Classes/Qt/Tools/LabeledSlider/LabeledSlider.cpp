@@ -35,7 +35,7 @@
 #include <QLabel>
 #include <QGridLayout>
 
-LabeledSlider::LabeledSlider(QWidget *parent /*= 0*/)
+LabeledSlider::LabeledSlider(QWidget* parent /*= 0*/)
     : QWidget(parent)
 {
     InitUI();
@@ -47,14 +47,13 @@ LabeledSlider::LabeledSlider(QWidget *parent /*= 0*/)
     slider->setValue(1);
 }
 
-
 LabeledSlider::~LabeledSlider()
 {
 }
 
 void LabeledSlider::InitUI()
 {
-    QGridLayout *gridLayout = new QGridLayout(this);
+    QGridLayout* gridLayout = new QGridLayout(this);
     gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
 
     slider = new QSlider(this);

@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_RENDERLAYER_H__
-#define	__DAVAENGINE_SCENE3D_RENDERLAYER_H__
+#define __DAVAENGINE_SCENE3D_RENDERLAYER_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 class Camera;
 class OcclusionQuery;
 class RenderLayer
@@ -102,5 +101,4 @@ inline uint32 RenderLayer::GetSortingFlags() const
 
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */

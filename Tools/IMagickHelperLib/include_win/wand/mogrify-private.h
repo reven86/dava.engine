@@ -48,8 +48,8 @@ extern "C" {
 #define FireImageStack(postfix, advance, fire) \
   if ((j <= i) && (i < (ssize_t)argc)) \
     { \
-DisableMSCWarning(4127) if (image_stack[k].image == (Image*)NULL)                                                                          \
-        status &= MogrifyImageInfo(image_stack[k].image_info, (int)(i - j + 1),                                                            \
+DisableMSCWarning(4127) if (image_stack[k].image == (Image*)NULL) \
+        status &= MogrifyImageInfo(image_stack[k].image_info, (int)(i - j + 1), \
                                    (const char**)(argv + j), exception); \
       else if ((fire) != MagickFalse) \
           { \
@@ -92,8 +92,8 @@ RestoreMSCWarning \
   image_info = image_stack[k].image_info; \
   image = image_stack[k].image; \
 }
-#define QuantumTick(i, span) ((MagickBooleanType)((((i) & ((i)-1)) == 0) ||                                                                \
-                                                  (((i)&0xfff) == 0) ||                                                                    \
+#define QuantumTick(i, span) ((MagickBooleanType)((((i) & ((i)-1)) == 0) || \
+                                                  (((i)&0xfff) == 0) || \
                                                   ((MagickOffsetType)(i) == ((MagickOffsetType)(span)-1))))
 #define RemoveImageStack(images) \
 { \

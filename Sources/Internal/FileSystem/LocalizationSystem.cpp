@@ -47,41 +47,39 @@
 #include "Core/Core.h"
 #endif
 
-
-namespace DAVA 
+namespace DAVA
 {
 //TODO: move it to DateTimeWin32 or remove
 const Vector<LocalizationSystem::LanguageLocalePair> LocalizationSystem::languageLocaleMap =
 {
-    { "en", "en_US" },
-    { "ru", "ru_RU" },
-    { "de", "de_DE" },
-    { "it", "it_IT" },
-    { "fr", "fr_FR" },
-    { "es", "es_ES" },
-    { "zh", "zh_CN" },
-    { "ja", "ja_JP" },
-    { "uk", "uk_UA" }
+  { "en", "en_US" },
+  { "ru", "ru_RU" },
+  { "de", "de_DE" },
+  { "it", "it_IT" },
+  { "fr", "fr_FR" },
+  { "es", "es_ES" },
+  { "zh", "zh_CN" },
+  { "ja", "ja_JP" },
+  { "uk", "uk_UA" }
 };
 
 const char* LocalizationSystem::DEFAULT_LOCALE = "en";
 
-
 LocalizationSystem::LocalizationSystem()
 {
-	langId = DEFAULT_LOCALE;
+    langId = DEFAULT_LOCALE;
 
-	dataHolder = new YamlParser::YamlDataHolder();
-	dataHolder->data = 0;
+    dataHolder = new YamlParser::YamlDataHolder();
+    dataHolder->data = 0;
 }
 
 LocalizationSystem::~LocalizationSystem()
 {
     Cleanup();
-	SafeDelete(dataHolder);
+    SafeDelete(dataHolder);
 }
-	
-void LocalizationSystem::InitWithDirectory(const FilePath &directoryPath)
+
+void LocalizationSystem::InitWithDirectory(const FilePath& directoryPath)
 {
     SetDirectory(directoryPath);
     Init();
@@ -105,8 +103,8 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 
 void LocalizationSystem::Init()
 {
-	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
-}   
+    LoadStringFile(langId, directoryPath + (langId + ".yaml"));
+}
 
 String LocalizationSystem::GetDeviceLocale() const
 {
@@ -120,41 +118,41 @@ String LocalizationSystem::GetDeviceLocale() const
     return DEFAULT_LOCALE;
 #endif
 }
-    
-const String &LocalizationSystem::GetCurrentLocale() const
+
+const String& LocalizationSystem::GetCurrentLocale() const
 {
-	return langId;
+    return langId;
 }
-	
-const FilePath &LocalizationSystem::GetDirectoryPath() const
+
+const FilePath& LocalizationSystem::GetDirectoryPath() const
 {
     return directoryPath;
 }
 
-void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
+void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
 {
     String actualLangId;
-    
+
     FilePath localeFilePath(directoryPath + (requestedLangId + ".yaml"));
     if (FileSystem::Instance()->Exists(localeFilePath))
     {
         actualLangId = requestedLangId;
     }
-    else if(requestedLangId.size() > 2)
+    else if (requestedLangId.size() > 2)
     {
         String langPart = requestedLangId.substr(0, 2);
         String::size_type posPartStart = 3;
         // ex. zh-Hans, zh-Hans-CN, zh-Hans_CN, zh_Hans_CN, zh_CN, zh
-        
+
         String::size_type posScriptEnd = requestedLangId.find('-', posPartStart);
-        if(posScriptEnd == String::npos)
+        if (posScriptEnd == String::npos)
         {
             // ex. not zh-Hans-CN, but can be zh-Hans_CN
             posScriptEnd = requestedLangId.find('_', posPartStart);
         }
 
         String scriptPart = requestedLangId.substr(posPartStart);
-        if(posScriptEnd != String::npos)
+        if (posScriptEnd != String::npos)
         {
             // ex. zh-Hans-CN or zh-Hans_CN try zh-Hans
             scriptPart = requestedLangId.substr(posPartStart, posScriptEnd - posPartStart);
@@ -176,19 +174,19 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
         {
             actualLangId = langPart;
         }
-        else if(langPart == "zh")
+        else if (langPart == "zh")
         {
             // in case zh is returned without country code and no zh.yaml is found - try zh-Hans
             langPart = "zh-Hans";
             localeFilePath = directoryPath + (langPart + ".yaml");
-            if(localeFilePath.Exists())
+            if (localeFilePath.Exists())
             {
                 actualLangId = langPart;
             }
         }
     }
-    
-    if(actualLangId.empty())
+
+    if (actualLangId.empty())
     {
         localeFilePath = directoryPath + (String(DEFAULT_LOCALE) + ".yaml");
         if (FileSystem::Instance()->Exists(localeFilePath))
@@ -201,181 +199,184 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
             return;
         }
     }
-    
+
     //TODO: add reloading strings data on langId changing
     Logger::FrameworkDebug("LocalizationSystem requested locale: %s, set locale: %s", requestedLangId.c_str(), actualLangId.c_str());
     langId = actualLangId;
     SoundSystem::Instance()->SetCurrentLocale(langId);
 }
-	
-LocalizationSystem::StringFile * LocalizationSystem::LoadFromYamlFile(const String & langID, const FilePath & pathName)
-{
-	yaml_parser_t parser;
-	yaml_event_t event;
-	
-	int done = 0;
-	
-	/* Create the Parser object. */
-	yaml_parser_initialize(&parser);
-	
-	yaml_parser_set_encoding(&parser, YAML_UTF8_ENCODING);
-	
-	File * yamlFile = File::Create(pathName, File::OPEN | File::READ);
-    if(!yamlFile) return NULL;
-    
-	dataHolder->fileSize = yamlFile->GetSize();
-	dataHolder->data = new uint8[dataHolder->fileSize];
-	dataHolder->dataOffset = 0;
-	yamlFile->Read(dataHolder->data, dataHolder->fileSize);
-	yamlFile->Release();
-	
-	yaml_parser_set_input(&parser, read_handler, dataHolder);
-	
-	WideString key;
-	WideString value;
-	bool isKey = true;
-	StringFile * strFile = new StringFile();
-	
-	/* Read the event sequence. */
-	while (!done) 
-	{
-		
-		/* Get the next event. */
-		if (!yaml_parser_parse(&parser, &event))
-		{
-			Logger::Error("parsing error: type: %d %s line: %d pos: %d", parser.error, parser.problem, parser.problem_mark.line, parser.problem_mark.column);
-			SafeDelete(strFile);
-			break;
-		}
-				
-		switch(event.type)
-		{
-			case YAML_ALIAS_EVENT:
-				//Logger::FrameworkDebug("alias: %s", event.data.alias.anchor);
-				break;
-				
-			case YAML_SCALAR_EVENT:
-			{
-                const uint8* str = reinterpret_cast<const uint8*>(event.data.scalar.value);
-                size_t size = static_cast<size_t>(event.data.scalar.length);
-				if (isKey)
-				{
-					UTF8Utils::EncodeToWideString(str, size, key);
-				}else 
-				{
-					UTF8Utils::EncodeToWideString(str, size, value);
-					strFile->strings[key] = value;
-				}
-				
-				isKey = !isKey;
-			}
-			break;
-				
-			case YAML_DOCUMENT_START_EVENT:
-			{
-				//Logger::FrameworkDebug("document start:");
-			}break;
-				
-			case YAML_DOCUMENT_END_EVENT:
-			{	//Logger::FrameworkDebug("document end:");
-			}
-				break;
-				
-			case YAML_SEQUENCE_START_EVENT:
-			{
-			}break;
-				
-			case YAML_SEQUENCE_END_EVENT:
-			{
-			}break;
-				
-			case YAML_MAPPING_START_EVENT:
-			{
-			}
-			break;
-				
-			case YAML_MAPPING_END_EVENT:
-			{
-			}
-			break;
-                default:
-                break;
-		};
-		
-		/* Are we finished? */
-		done = (event.type == YAML_STREAM_END_EVENT);
-		
-		/* The application is responsible for destroying the event object. */
-		yaml_event_delete(&event);
-		
-	}
-	
-	yaml_parser_delete(&parser);	
-	if (strFile)
-	{
-		strFile->pathName = pathName;
-		strFile->langId = langID;
-	}
 
-	SafeDeleteArray(dataHolder->data);
-	return strFile;
+LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const String& langID, const FilePath& pathName)
+{
+    yaml_parser_t parser;
+    yaml_event_t event;
+
+    int done = 0;
+
+    /* Create the Parser object. */
+    yaml_parser_initialize(&parser);
+
+    yaml_parser_set_encoding(&parser, YAML_UTF8_ENCODING);
+
+    File* yamlFile = File::Create(pathName, File::OPEN | File::READ);
+    if (!yamlFile)
+        return NULL;
+
+    dataHolder->fileSize = yamlFile->GetSize();
+    dataHolder->data = new uint8[dataHolder->fileSize];
+    dataHolder->dataOffset = 0;
+    yamlFile->Read(dataHolder->data, dataHolder->fileSize);
+    yamlFile->Release();
+
+    yaml_parser_set_input(&parser, read_handler, dataHolder);
+
+    WideString key;
+    WideString value;
+    bool isKey = true;
+    StringFile* strFile = new StringFile();
+
+    /* Read the event sequence. */
+    while (!done)
+    {
+        /* Get the next event. */
+        if (!yaml_parser_parse(&parser, &event))
+        {
+            Logger::Error("parsing error: type: %d %s line: %d pos: %d", parser.error, parser.problem, parser.problem_mark.line, parser.problem_mark.column);
+            SafeDelete(strFile);
+            break;
+        }
+
+        switch (event.type)
+        {
+        case YAML_ALIAS_EVENT:
+            //Logger::FrameworkDebug("alias: %s", event.data.alias.anchor);
+            break;
+
+        case YAML_SCALAR_EVENT:
+        {
+            const uint8* str = reinterpret_cast<const uint8*>(event.data.scalar.value);
+            size_t size = static_cast<size_t>(event.data.scalar.length);
+            if (isKey)
+            {
+                UTF8Utils::EncodeToWideString(str, size, key);
+            }
+            else
+            {
+                UTF8Utils::EncodeToWideString(str, size, value);
+                strFile->strings[key] = value;
+            }
+
+            isKey = !isKey;
+        }
+        break;
+
+        case YAML_DOCUMENT_START_EVENT:
+        {
+            //Logger::FrameworkDebug("document start:");
+        }
+        break;
+
+        case YAML_DOCUMENT_END_EVENT:
+        { //Logger::FrameworkDebug("document end:");
+        }
+        break;
+
+        case YAML_SEQUENCE_START_EVENT:
+        {
+        }
+        break;
+
+        case YAML_SEQUENCE_END_EVENT:
+        {
+        }
+        break;
+
+        case YAML_MAPPING_START_EVENT:
+        {
+        }
+        break;
+
+        case YAML_MAPPING_END_EVENT:
+        {
+        }
+        break;
+        default:
+            break;
+        };
+
+        /* Are we finished? */
+        done = (event.type == YAML_STREAM_END_EVENT);
+
+        /* The application is responsible for destroying the event object. */
+        yaml_event_delete(&event);
+    }
+
+    yaml_parser_delete(&parser);
+    if (strFile)
+    {
+        strFile->pathName = pathName;
+        strFile->langId = langID;
+    }
+
+    SafeDeleteArray(dataHolder->data);
+    return strFile;
 }
-	
+
 bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
 {
-	if (!stringFile)
-	{
-		return false;
-	}
+    if (!stringFile)
+    {
+        return false;
+    }
 
-	YamlNode *node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
-	for (auto iter = stringFile->strings.begin(); iter != stringFile->strings.end(); ++iter)
-	{
-		node->Add(UTF8Utils::EncodeToUTF8(iter->first), iter->second);
-	}
-	
-	bool result = YamlEmitter::SaveToYamlFile(stringFile->pathName, node);
+    YamlNode* node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
+    for (auto iter = stringFile->strings.begin(); iter != stringFile->strings.end(); ++iter)
+    {
+        node->Add(UTF8Utils::EncodeToUTF8(iter->first), iter->second);
+    }
 
-	SafeRelease(node);
-	return result;
+    bool result = YamlEmitter::SaveToYamlFile(stringFile->pathName, node);
+
+    SafeRelease(node);
+    return result;
 }
 
-void LocalizationSystem::LoadStringFile(const String & langID, const FilePath & fileName)
+void LocalizationSystem::LoadStringFile(const String& langID, const FilePath& fileName)
 {
-	StringFile * file = LoadFromYamlFile(langID, fileName);
-	if (file)
-	{
-		stringsList.push_back(file);
-	}	
+    StringFile* file = LoadFromYamlFile(langID, fileName);
+    if (file)
+    {
+        stringsList.push_back(file);
+    }
 }
-	
-void LocalizationSystem::UnloadStringFile(const FilePath & fileName)
+
+void LocalizationSystem::UnloadStringFile(const FilePath& fileName)
 {
-	DVASSERT(0 && "Method do not implemented");
+    DVASSERT(0 && "Method do not implemented");
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString & key) const
-{
-	for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
-	{
-		StringFile * file = *it;
-
-		auto res = file->strings.find(key);
-		if (res != file->strings.end())
-		{
-			return res->second;
-		}
-	}
-	return key;
-}
-
-WideString LocalizationSystem::GetLocalizedString(const WideString & key, const String &langId) const
+WideString LocalizationSystem::GetLocalizedString(const WideString& key) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
-        StringFile * file = *it;
+        StringFile* file = *it;
 
-        if(file->langId.compare(langId) == 0)
+        auto res = file->strings.find(key);
+        if (res != file->strings.end())
+        {
+            return res->second;
+        }
+    }
+    return key;
+}
+
+WideString LocalizationSystem::GetLocalizedString(const WideString& key, const String& langId) const
+{
+    for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    {
+        StringFile* file = *it;
+
+        if (file->langId.compare(langId) == 0)
         {
             auto res = file->strings.find(key);
             if (res != file->strings.end())
@@ -387,75 +388,75 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key, const 
     return key;
 }
 
-void LocalizationSystem::SetLocalizedString(const WideString & key, const WideString & value)
+void LocalizationSystem::SetLocalizedString(const WideString& key, const WideString& value)
 {
-	// Update in all files currently loaded.
+    // Update in all files currently loaded.
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
-	{
-		StringFile * file = *it;
-		file->strings[key] = value;
-	}
+    {
+        StringFile* file = *it;
+        file->strings[key] = value;
+    }
 }
 
-void LocalizationSystem::RemoveLocalizedString(const WideString & key)
+void LocalizationSystem::RemoveLocalizedString(const WideString& key)
 {
-	// Update in all files currently loaded.
+    // Update in all files currently loaded.
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
-	{
-		StringFile * file = *it;
-		file->strings.erase(key);
-	}
+    {
+        StringFile* file = *it;
+        file->strings.erase(key);
+    }
 }
 
 bool LocalizationSystem::SaveLocalizedStrings()
 {
-	bool saveResult = true;
+    bool saveResult = true;
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
-	{
-		StringFile * file = *it;
-		saveResult &= SaveToYamlFile(file);
-	}
-	
-	return saveResult;
+    {
+        StringFile* file = *it;
+        saveResult &= SaveToYamlFile(file);
+    }
+
+    return saveResult;
 }
-	
+
 void LocalizationSystem::Cleanup()
 {
-	// release all memory allocated by strings
+    // release all memory allocated by strings
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
-	{
-		StringFile * file = *it;
-		SafeDelete(file);
-	}
-	stringsList.clear();
-    
+    {
+        StringFile* file = *it;
+        SafeDelete(file);
+    }
+    stringsList.clear();
+
     directoryPath = FilePath();
     langId.clear();
-	SafeDeleteArray(dataHolder->data);
+    SafeDeleteArray(dataHolder->data);
 }
 
 bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>& strings) const
 {
     for (auto iter = stringsList.begin(); iter != stringsList.end();
-		 ++iter)
-	{
-		if ((*iter)->langId == GetCurrentLocale())
-		{
-			strings = (*iter)->strings;
-			return true;
-		}
-	}
-	
-	// No strings found.
-	return false;
+         ++iter)
+    {
+        if ((*iter)->langId == GetCurrentLocale())
+        {
+            strings = (*iter)->strings;
+            return true;
+        }
+    }
+
+    // No strings found.
+    return false;
 }
-    
+
 String LocalizationSystem::GetCountryCode() const
 {
-    auto iter = std::find_if(languageLocaleMap.begin(), languageLocaleMap.end(), [&](const LocalizationSystem::LanguageLocalePair & langPair)
-    {
-        return langPair.languageCode == langId;
-    });
+    auto iter = std::find_if(languageLocaleMap.begin(), languageLocaleMap.end(), [&](const LocalizationSystem::LanguageLocalePair& langPair)
+                             {
+                                 return langPair.languageCode == langId;
+                             });
 
     if (iter != languageLocaleMap.end())
     {
@@ -464,5 +465,4 @@ String LocalizationSystem::GetCountryCode() const
 
     return "en_US";
 }
-	
 };

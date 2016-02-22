@@ -37,24 +37,23 @@ class BaseScreen : public DAVA::UIScreen
 {
 public:
     BaseScreen();
-    
-    virtual void OnStart() {};
-    virtual void OnFinish() {};
+
+    virtual void OnStart(){};
+    virtual void OnFinish(){};
     virtual void RegisterScreen();
-    
+
     virtual bool IsRegistered() const;
     virtual bool IsFinished() const;
-    
-    virtual void BeginFrame() {};
-    virtual void EndFrame() {};
-    
+
+    virtual void BeginFrame(){};
+    virtual void EndFrame(){};
+
     static uint32 SCREEN_INDEX;
-    
+
 protected:
-    ~BaseScreen() {};
+    ~BaseScreen(){};
 
     int32 currentScreenIndex;
 };
 
 #endif
-

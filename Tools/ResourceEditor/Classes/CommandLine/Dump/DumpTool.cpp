@@ -60,14 +60,14 @@ void DumpTool::ConvertOptionsToParamsInternal()
 
 bool DumpTool::InitializeInternal()
 {
-    if(inFolder.IsEmpty())
+    if (inFolder.IsEmpty())
     {
         AddError("Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
-    
-    if(filename.empty())
+
+    if (filename.empty())
     {
         AddError("Filename was not selected");
         return false;
@@ -90,32 +90,31 @@ bool DumpTool::InitializeInternal()
 
 void DumpTool::ProcessInternal()
 {
-    if(commandAction == ACTION_DUMP_LINKS)
+    if (commandAction == ACTION_DUMP_LINKS)
     {
-		auto links = SceneDumper::DumpLinks(inFolder + filename, errors);
+        auto links = SceneDumper::DumpLinks(inFolder + filename, errors);
 
         FileSystem::Instance()->CreateDirectory(outFile.GetDirectory(), true);
-		ScopedPtr<File> file(File::Create(outFile, File::WRITE | File::CREATE));
-		if (file)
-		{
-			for (const auto &link : links)
-			{
-				if (!link.IsEmpty() && link.GetType() != FilePath::PATH_IN_MEMORY)
-				{
-					file->WriteLine(link.GetAbsolutePathname());
-				}
-			}
-		}
+        ScopedPtr<File> file(File::Create(outFile, File::WRITE | File::CREATE));
+        if (file)
+        {
+            for (const auto& link : links)
+            {
+                if (!link.IsEmpty() && link.GetType() != FilePath::PATH_IN_MEMORY)
+                {
+                    file->WriteLine(link.GetAbsolutePathname());
+                }
+            }
+        }
     }
 }
 
 DAVA::FilePath DumpTool::GetQualityConfigPath() const
 {
-	if (qualityPathname.IsEmpty())
-	{
-		return CreateQualityConfigPath(inFolder);
-	}
+    if (qualityPathname.IsEmpty())
+    {
+        return CreateQualityConfigPath(inFolder);
+    }
 
-	return qualityPathname;
+    return qualityPathname;
 }
-

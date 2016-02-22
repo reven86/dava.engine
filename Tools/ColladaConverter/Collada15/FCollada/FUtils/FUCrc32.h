@@ -28,17 +28,16 @@
 */
 namespace FUCrc32
 {
-	/** A CRC32 hash value. */
-	typedef uint32 crc32;
+/** A CRC32 hash value. */
+typedef uint32 crc32;
 
-	/** Hashes a string.
+/** Hashes a string.
 		@param text The string to hash.
 		@return The 32-bit hash value. */
-	FCOLLADA_EXPORT crc32 CRC32(const char* text);
+FCOLLADA_EXPORT crc32 CRC32(const char* text);
 #if (1)
-    FCOLLADA_EXPORT crc32 CRC32(const fchar* text); /**< See above. */
+FCOLLADA_EXPORT crc32 CRC32(const fchar* text); /**< See above. */
 #endif // UNICODE
 };
 
 #endif // _FU_CRC32_H_
-

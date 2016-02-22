@@ -15,8 +15,12 @@
 // FUDebug
 //
 
-FUDebug::FUDebug() {}
-FUDebug::~FUDebug() {}
+FUDebug::FUDebug()
+{
+}
+FUDebug::~FUDebug()
+{
+}
 
 #if defined(LINUX) || defined(__APPLE__)
 #if defined(UNICODE)
@@ -33,109 +37,112 @@ FUDebug::~FUDebug() {}
 #ifdef _DEBUG
 static void DebugString(const fchar* message)
 {
-	STRING_OUT(message);
+    STRING_OUT(message);
 }
 
 #if (1)
 static void DebugString(const char* message)
 {
-	fstring str = TO_FSTRING(message);
-	DebugString(str);
+    fstring str = TO_FSTRING(message);
+    DebugString(str);
 }
 #endif // UNICODE
 #else // _DEBUG
-static void DebugString(const fchar* UNUSED(message)) {}
+static void DebugString(const fchar* UNUSED(message))
+{
+}
 
 #if (1)
-static void DebugString(const char* UNUSED(message)) {}
+static void DebugString(const char* UNUSED(message))
+{
+}
 #endif //UNICODE
 #endif //_DEBUG
 
 void FUDebug::DebugOut(uint8 verbosity, uint32 line, const char* filename, const char* message, ...)
 {
-	va_list vars;
-	va_start(vars, message);
-	FUDebug::DebugOutV(verbosity, filename, line, message, vars);
-	va_end(vars);
+    va_list vars;
+    va_start(vars, message);
+    FUDebug::DebugOutV(verbosity, filename, line, message, vars);
+    va_end(vars);
 }
 
 void FUDebug::DebugOut(uint8 verbosity, const char* message, ...)
 {
-	va_list vars;
-	va_start(vars, message);
-	FUDebug::DebugOutV(verbosity, message, vars);
-	va_end(vars);
+    va_list vars;
+    va_start(vars, message);
+    FUDebug::DebugOutV(verbosity, message, vars);
+    va_end(vars);
 }
 
 void FUDebug::DebugOutV(uint8 verbosity, const char* filename, uint32 line, const char* message, va_list& vars)
 {
-	char buffer[256];
-	snprintf(buffer, 256, "[%s@%du] ", filename, line);
-	buffer[255] = 0;
-	DebugString(buffer);
+    char buffer[256];
+    snprintf(buffer, 256, "[%s@%du] ", filename, line);
+    buffer[255] = 0;
+    DebugString(buffer);
 
-	FUDebug::DebugOutV(verbosity, message, vars);
+    FUDebug::DebugOutV(verbosity, message, vars);
 }
 
 void FUDebug::DebugOutV(uint8 verbosity, const char* message, va_list& vars)
 {
-	uint32 length = (uint32) strlen(message);
-	char* buffer = new char[length + 256];
-	vsnprintf(buffer, length + 256, message, vars);
-	length = (uint32) min(strlen(buffer), (size_t) length + 253);
-	buffer[length] = '\n';
-	buffer[length+1] = '\r';
-	buffer[length+2] = 0;
+    uint32 length = (uint32)strlen(message);
+    char* buffer = new char[length + 256];
+    vsnprintf(buffer, length + 256, message, vars);
+    length = (uint32)min(strlen(buffer), (size_t)length + 253);
+    buffer[length] = '\n';
+    buffer[length + 1] = '\r';
+    buffer[length + 2] = 0;
 
-	DebugString(buffer);
-	FUError::SetCustomErrorString(buffer);
-	FUError::Error((FUError::Level) verbosity, FUError::ERROR_CUSTOM_STRING, 5000);
+    DebugString(buffer);
+    FUError::SetCustomErrorString(buffer);
+    FUError::Error((FUError::Level)verbosity, FUError::ERROR_CUSTOM_STRING, 5000);
 
-	SAFE_DELETE_ARRAY(buffer);
+    SAFE_DELETE_ARRAY(buffer);
 }
 
 #if (1)
 void FUDebug::DebugOut(uint8 verbosity, uint32 line, const char* filename, const fchar* message, ...)
 {
-	va_list vars;
-	va_start(vars, message);
-	FUDebug::DebugOutV(verbosity, filename, line, message, vars);
-	va_end(vars);
+    va_list vars;
+    va_start(vars, message);
+    FUDebug::DebugOutV(verbosity, filename, line, message, vars);
+    va_end(vars);
 }
 
 void FUDebug::DebugOut(uint8 verbosity, const fchar* message, ...)
 {
-	va_list vars;
-	va_start(vars, message);
-	FUDebug::DebugOutV(verbosity, message, vars);
-	va_end(vars);
+    va_list vars;
+    va_start(vars, message);
+    FUDebug::DebugOutV(verbosity, message, vars);
+    va_end(vars);
 }
 
 void FUDebug::DebugOutV(uint8 verbosity, const char* filename, uint32 line, const fchar* message, va_list& vars)
 {
-	char buffer[256];
-	snprintf(buffer, 256, "[%s@%u] ", filename, line);
-	buffer[255] = 0;
-	DebugString(buffer);
+    char buffer[256];
+    snprintf(buffer, 256, "[%s@%u] ", filename, line);
+    buffer[255] = 0;
+    DebugString(buffer);
 
-	FUDebug::DebugOutV(verbosity, message, vars);
+    FUDebug::DebugOutV(verbosity, message, vars);
 }
 
 void FUDebug::DebugOutV(uint8 verbosity, const fchar* message, va_list& vars)
 {
-	uint32 length = (uint32) fstrlen(message);
-	fchar* buffer = new fchar[length + 256];
-	fvsnprintf(buffer, length + 256, message, vars);
-	length = (uint32) min(wcslen(buffer), (size_t) length + 253);
-	buffer[length] = '\n';
-	buffer[length+1] = '\r';
-	buffer[length+2] = 0;
+    uint32 length = (uint32)fstrlen(message);
+    fchar* buffer = new fchar[length + 256];
+    fvsnprintf(buffer, length + 256, message, vars);
+    length = (uint32)min(wcslen(buffer), (size_t)length + 253);
+    buffer[length] = '\n';
+    buffer[length + 1] = '\r';
+    buffer[length + 2] = 0;
 
-	DebugString(buffer);
-	FUError::SetCustomErrorString(TO_STRING((const fchar*) buffer));
-	FUError::Error((FUError::Level) verbosity, FUError::ERROR_CUSTOM_STRING, 5000);
+    DebugString(buffer);
+    FUError::SetCustomErrorString(TO_STRING((const fchar*)buffer));
+    FUError::Error((FUError::Level)verbosity, FUError::ERROR_CUSTOM_STRING, 5000);
 
-	SAFE_DELETE_ARRAY(buffer);
+    SAFE_DELETE_ARRAY(buffer);
 }
 #endif // UNICODE
-

@@ -40,12 +40,12 @@
 #include "UI/UIScreenManager.h"
 #import "Platform/TemplateiOS/RenderViewController.h"
 
-enum 
+enum
 {
-	CONTROLLER_GL = 10000,
+    CONTROLLER_GL = 10000,
 };
 
-@interface HelperAppDelegate : NSObject <UIApplicationDelegate>
+@interface HelperAppDelegate : NSObject<UIApplicationDelegate>
 {
     RenderViewController* renderViewController;
 }

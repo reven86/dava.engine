@@ -43,26 +43,26 @@ using namespace DAVA;
 
 SpritePackerHelper::SpritePackerHelper()
 {
-	QObject::connect(&watcher, SIGNAL(finished()), this, SLOT(threadRepackAllFinished()), Qt::QueuedConnection);
+    QObject::connect(&watcher, SIGNAL(finished()), this, SLOT(threadRepackAllFinished()), Qt::QueuedConnection);
 }
 
 void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 {
     FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
-    if(projectPath.IsEmpty())
+    if (projectPath.IsEmpty())
     {
         Logger::Warning("[ParticlesEditorSpritePackerHelper::UpdateParticleSprites] Project path not set.");
         return;
     }
 
-	Pack(gpu);
-	
-	Reload();
+    Pack(gpu);
+
+    Reload();
 }
 
 void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 {
-	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
+    void* pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
     FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
     FilePath outputDir = projectPath + "Data/Gfx/Particles/";
@@ -71,8 +71,8 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
     {
         Logger::Error("[SpritePackerHelper::Pack] inputDir is not directory (%s)", inputDir.GetAbsolutePathname().c_str());
         DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
-		return;
-	}
+        return;
+    }
 
     ResourcePacker2D resourcePacker;
 
@@ -94,36 +94,36 @@ void SpritePackerHelper::Reload()
     QtMainWindow::Instance()->RestartParticleEffects();
 }
 
-void SpritePackerHelper::EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite *> &sprites)
+void SpritePackerHelper::EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite*>& sprites)
 {
-	if (!emitter)
-	{
-		return;
-	}
+    if (!emitter)
+    {
+        return;
+    }
 
     size_type layersCount = emitter->layers.size();
     for (size_type il = 0; il < layersCount; ++il)
     {
-		ParticleLayer* curLayer = emitter->layers[il];
-		Sprite *sprite = curLayer->sprite;
-		if (sprite)
-		{
-			sprites[sprite->GetRelativePathname().GetAbsolutePathname()] = sprite;
-		}
-		
-		// Superemitter layers might have inner emitter with its own sprites.
-		if (curLayer->innerEmitter)
-		{
-			EnumerateSpritesForParticleEmitter(curLayer->innerEmitter, sprites);
-		}
-	}
+        ParticleLayer* curLayer = emitter->layers[il];
+        Sprite* sprite = curLayer->sprite;
+        if (sprite)
+        {
+            sprites[sprite->GetRelativePathname().GetAbsolutePathname()] = sprite;
+        }
+
+        // Superemitter layers might have inner emitter with its own sprites.
+        if (curLayer->innerEmitter)
+        {
+            EnumerateSpritesForParticleEmitter(curLayer->innerEmitter, sprites);
+        }
+    }
 }
 
 void SpritePackerHelper::threadRepackAllFinished()
 {
-	future = NULL;
-	
-	Reload();
+    future = NULL;
 
-	emit readyAll();
+    Reload();
+
+    emit readyAll();
 }

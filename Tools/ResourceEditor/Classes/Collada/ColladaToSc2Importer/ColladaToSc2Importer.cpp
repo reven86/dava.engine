@@ -68,6 +68,27 @@ Mesh* ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance* mesh, const 
     return davaMesh;
 }
 
+bool ColladaToSc2Importer::VerifyColladaMesh(ColladaMeshInstance* mesh, const FastName& nodeName)
+{
+    for (auto polygonGroupInstance : mesh->polyGroupInstances)
+    {
+        if (polygonGroupInstance->material == nullptr)
+        {
+            ReportError(Format("[DAE to SC2] Node %s has no material", nodeName.c_str()));
+            return false;
+        }
+
+        auto polyGroup = polygonGroupInstance->polyGroup;
+        if ((polyGroup == nullptr) || polyGroup->GetVertices().empty())
+        {
+            ReportError(Format("[DAE to SC2] Node %s has no geometric data", nodeName.c_str()));
+            return false;
+        }
+    }
+
+    return true;
+}
+
 eColladaErrorCodes ColladaToSc2Importer::VerifyDavaMesh(RenderObject* mesh, const FastName name)
 {
     eColladaErrorCodes retValue = eColladaErrorCodes::COLLADA_OK;
@@ -114,20 +135,27 @@ eColladaErrorCodes ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshIn
     DVASSERT(1 >= meshInstances.size() && "Should be only one meshInstance in one collada node");
     for (auto meshInstance : meshInstances)
     {
-        bool isShadowNode = String::npos != node->GetName().find(ImportSettings::shadowNamePattern);
-
-        ScopedPtr<RenderObject> davaMesh(GetMeshFromCollada(meshInstance, isShadowNode));
-        RenderComponent* davaRenderComponent = GetRenderComponent(node);
-        if (nullptr == davaRenderComponent)
+        if (VerifyColladaMesh(meshInstance, node->GetName()))
         {
-            davaRenderComponent = new RenderComponent();
-            node->AddComponent(davaRenderComponent);
-        }
-        davaRenderComponent->SetRenderObject(davaMesh);
+            bool isShadowNode = String::npos != node->GetName().find(ImportSettings::shadowNamePattern);
 
-        // Verification!
-        eColladaErrorCodes iterationRet = VerifyDavaMesh(davaMesh.get(), node->GetName());
-        retValue = Max(iterationRet, retValue);
+            ScopedPtr<RenderObject> davaMesh(GetMeshFromCollada(meshInstance, isShadowNode));
+            RenderComponent* davaRenderComponent = GetRenderComponent(node);
+            if (nullptr == davaRenderComponent)
+            {
+                davaRenderComponent = new RenderComponent();
+                node->AddComponent(davaRenderComponent);
+            }
+            davaRenderComponent->SetRenderObject(davaMesh);
+
+            // Verification!
+            eColladaErrorCodes iterationRet = VerifyDavaMesh(davaMesh.get(), node->GetName());
+            retValue = Max(iterationRet, retValue);
+        }
+        else
+        {
+            retValue = eColladaErrorCodes::COLLADA_ERROR;
+        }
     }
 
     return retValue;

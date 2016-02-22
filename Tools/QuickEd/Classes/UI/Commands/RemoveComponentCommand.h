@@ -39,16 +39,16 @@ class ComponentPropertiesSection;
 class RemoveComponentCommand : public QUndoCommand
 {
 public:
-    RemoveComponentCommand(PackageNode *_root, ControlNode *_node, ComponentPropertiesSection *_section, QUndoCommand *parent = nullptr);
+    RemoveComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section, QUndoCommand* parent = nullptr);
     virtual ~RemoveComponentCommand();
-    
+
     void redo() override;
     void undo() override;
-    
+
 private:
-    PackageNode *root;
-    ControlNode *node;
-    ComponentPropertiesSection *componentSection;
+    PackageNode* root;
+    ControlNode* node;
+    ComponentPropertiesSection* componentSection;
 };
 
 #endif // __QUICKED_REMOVE_COMPONENT_COMMAND_H__

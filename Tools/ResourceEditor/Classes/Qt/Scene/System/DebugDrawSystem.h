@@ -41,22 +41,21 @@
 class Command2;
 class DebugDrawSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
-	friend class EditorScene;
+    friend class SceneEditor2;
+    friend class EditorScene;
 
 public:
-
-	static DAVA::float32 HANGING_OBJECTS_HEIGHT;
+    static DAVA::float32 HANGING_OBJECTS_HEIGHT;
 
 public:
-	DebugDrawSystem(DAVA::Scene * scene);
-	virtual ~DebugDrawSystem();
+    DebugDrawSystem(DAVA::Scene* scene);
+    virtual ~DebugDrawSystem();
 
-	void SetRequestedObjectType(ResourceEditor::eSceneObjectType objectType);
-	ResourceEditor::eSceneObjectType GetRequestedObjectType() const;
+    void SetRequestedObjectType(ResourceEditor::eSceneObjectType objectType);
+    ResourceEditor::eSceneObjectType GetRequestedObjectType() const;
 
-	inline void EnableHangingObjectsMode(bool enabled);
-	inline bool HangingObjectsModeEnabled() const;
+    inline void EnableHangingObjectsMode(bool enabled);
+    inline bool HangingObjectsModeEnabled() const;
 
     //need be moved to testing tool
     DAVA_DEPRECATED(inline void EnableSwithcesWithDifferentLODsMode(bool enabled));
@@ -66,9 +65,9 @@ private:
     void Draw();
     void Draw(DAVA::Entity* entity);
 
-    void DrawObjectBoxesByType(DAVA::Entity *entity);
-	void DrawUserNode(DAVA::Entity *entity);
-	void DrawLightNode(DAVA::Entity *entity);
+    void DrawObjectBoxesByType(DAVA::Entity* entity);
+    void DrawUserNode(DAVA::Entity* entity);
+    void DrawLightNode(DAVA::Entity* entity);
     void DrawSoundNode(DAVA::Entity* entity);
     void DrawSelectedSoundNode(DAVA::Entity* entity);
     void DrawHangingObjects(DAVA::Entity* entity);

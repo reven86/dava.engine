@@ -196,5 +196,4 @@ bool ConvertToPNGCroppedGeometry(const char* in_image_path, const char* out_path
 
     return true;
 }
-
 }

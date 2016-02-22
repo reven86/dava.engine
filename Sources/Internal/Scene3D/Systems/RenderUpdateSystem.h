@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_RENDERUPDATESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_RENDERUPDATESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_RENDERUPDATESYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
@@ -43,29 +43,27 @@ class RenderObject;
 class RenderBatch;
 class Entity;
 class Camera;
-    
-    
+
 /**
     \brief This system is required to transfer all changes from scene to render system and update render object properties.
  */
 class RenderUpdateSystem : public SceneSystem
 {
 public:
-    RenderUpdateSystem(Scene * scene);
+    RenderUpdateSystem(Scene* scene);
     virtual ~RenderUpdateSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    void ImmediateEvent(Component * component, uint32 event) override;
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+    void ImmediateEvent(Component* component, uint32 event) override;
 
     virtual void Process(float32 timeElapsed);
-    
+
 private:
-    void UpdateActiveIndexes(Entity *entity, RenderObject *object);
+    void UpdateActiveIndexes(Entity* entity, RenderObject* object);
     HashMap<Entity*, RenderObject*> entityObjectMap;
 };
-    
+
 } // ns
 
-#endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_H__ */
-
+#endif /* __DAVAENGINE_RENDER_RENDERSYSTEM_H__ */

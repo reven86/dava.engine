@@ -35,54 +35,52 @@
 
 namespace DAVA
 {
-
 class UILoadingTransition : public UIScreenTransition
 {
 public:
-	UILoadingTransition();
-	virtual ~UILoadingTransition();
-	
-	// Setup of default loading screen
-	void	SetInTransition(UIScreenTransition * transition);
-	void	SetOutTransition(UIScreenTransition * transition);
-	
-	void	SetBackgroundSprite(Sprite * sprite);
-	void	SetAnimationSprite(Sprite * animationSprite);
-	void	SetAnimationDuration(float32 durationInSeconds);
-	
-	virtual void DidAppear();
-	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
-	virtual int32 GetGroupId();
-	virtual void WillAppear();
-	virtual void WillDisappear();
-	
-	inline UIScreenTransition * GetInTransition();	
-	
-	bool IsLoadingTransition();
-	
+    UILoadingTransition();
+    virtual ~UILoadingTransition();
+
+    // Setup of default loading screen
+    void SetInTransition(UIScreenTransition* transition);
+    void SetOutTransition(UIScreenTransition* transition);
+
+    void SetBackgroundSprite(Sprite* sprite);
+    void SetAnimationSprite(Sprite* animationSprite);
+    void SetAnimationDuration(float32 durationInSeconds);
+
+    virtual void DidAppear();
+    virtual void StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen);
+    virtual void Update(float32 timeElapsed);
+    virtual void Draw(const UIGeometricData& geometricData);
+    virtual int32 GetGroupId();
+    virtual void WillAppear();
+    virtual void WillDisappear();
+
+    inline UIScreenTransition* GetInTransition();
+
+    bool IsLoadingTransition();
+
 protected:
-	Sprite * backgroundSprite;
-	Sprite * animationSprite;
-	float32 animationTime;
-	float32 animationDuration;
+    Sprite* backgroundSprite;
+    Sprite* animationSprite;
+    float32 animationTime;
+    float32 animationDuration;
 
-	UIScreenTransition * inTransition;
-	UIScreenTransition * outTransition;
+    UIScreenTransition* inTransition;
+    UIScreenTransition* outTransition;
 
-	void	ThreadMessage(BaseObject * obj, void * userData, void *callerData);
-	Thread * thread;
+    void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
+    Thread* thread;
 
 private:
-	virtual void SetDuration(float32 timeInSeconds);
+    virtual void SetDuration(float32 timeInSeconds);
 };
-	
-inline UIScreenTransition * UILoadingTransition::GetInTransition()	
-{
-	return inTransition;
-}
 
+inline UIScreenTransition* UILoadingTransition::GetInTransition()
+{
+    return inTransition;
+}
 };
 
 

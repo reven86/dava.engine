@@ -49,7 +49,7 @@ extern "C" {
 #endif
 
 #define MAGICKCORE_CHECK_VERSION(major, minor, micro) \
-  ((MAGICKCORE_MAJOR_VERSION > (major)) ||   \
+  ((MAGICKCORE_MAJOR_VERSION > (major)) || \
      ((MAGICKCORE_MAJOR_VERSION == (major)) && \
       (MAGICKCORE_MINOR_VERSION > (minor))) || \
      ((MAGICKCORE_MAJOR_VERSION == (major)) && \

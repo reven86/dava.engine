@@ -52,4 +52,4 @@ private:
     ProfilingSession* profileSession = nullptr;
 };
 
-#endif  // __SNAPSHOTLISTMODEL_H__
+#endif // __SNAPSHOTLISTMODEL_H__

@@ -50,10 +50,10 @@ public:
     const DAVA::InspInfo* info;
 
 protected:
-	QMap<QtPropertyDataDavaVariant*, const DAVA::InspMember *> childVariantMembers;
+    QMap<QtPropertyDataDavaVariant*, const DAVA::InspMember*> childVariantMembers;
 
-	void AddMember(const DAVA::InspMember *member);
-	virtual QVariant GetValueInternal() const;
+    void AddMember(const DAVA::InspMember* member);
+    virtual QVariant GetValueInternal() const;
 };
 
 #endif // __QT_PROPERTY_DATA_INTROSPECTION_H__

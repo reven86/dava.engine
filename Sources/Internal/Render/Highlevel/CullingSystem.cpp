@@ -39,48 +39,46 @@
 
 namespace DAVA
 {
-
-CullingSystem::CullingSystem(Scene * scene)
-:	SceneSystem(scene)
+CullingSystem::CullingSystem(Scene* scene)
+    : SceneSystem(scene)
 {
 }
 
 CullingSystem::~CullingSystem()
 {
 }
-    
-void CullingSystem::ImmediateUpdate(Entity * entity)
+
+void CullingSystem::ImmediateUpdate(Entity* entity)
 {
-    RenderObject * renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
-    if (!renderObject)return;
-    
+    RenderObject* renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
+    if (!renderObject)
+        return;
+
     if (renderObject->GetRemoveIndex() == static_cast<uint32>(-1)) // FAIL, SHOULD NOT HAPPEN
     {
         Logger::Error("Object in entity was replaced suddenly. ");
     }
-    
-    // Do we need updates??? 
-}
-    
-void CullingSystem::AddEntity(Entity * entity)
-{
-    
+
+    // Do we need updates???
 }
 
-void CullingSystem::RemoveEntity(Entity * entity)
+void CullingSystem::AddEntity(Entity* entity)
 {
-    
 }
-    
-void CullingSystem::SetCamera(Camera * _camera)
+
+void CullingSystem::RemoveEntity(Entity* entity)
+{
+}
+
+void CullingSystem::SetCamera(Camera* _camera)
 {
     camera = _camera;
 }
-    
+
 void CullingSystem::Process(float32 timeElapsed)
 {
     int32 objectsCulled = 0;
-    
+
     //Frustum * frustum = camera->GetFrustum();
 
     uint32 size = static_cast<uint32>(renderObjectArray.size());
@@ -96,6 +94,4 @@ void CullingSystem::Process(float32 timeElapsed)
         }
     }
 }
-    
-    
 };

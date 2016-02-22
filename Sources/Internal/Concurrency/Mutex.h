@@ -33,18 +33,17 @@
 #include "Base/Platform.h"
 
 #if defined(USE_CPP11_CONCURRENCY)
-#   include <mutex> //for std::mutex and std::recursive_mutex
+#include <mutex> //for std::mutex and std::recursive_mutex
 #else
-#   include "Concurrency/PosixThreads.h"
+#include "Concurrency/PosixThreads.h"
 #endif
 
 namespace DAVA
 {
-
 //-----------------------------------------------------------------------------
 //Mutex realization
-//Direct using of mutex is inadvisable. 
-//Use LockGuard or ConcurrentObject instead 
+//Direct using of mutex is inadvisable.
+//Use LockGuard or ConcurrentObject instead
 //-----------------------------------------------------------------------------
 #if defined(USE_CPP11_CONCURRENCY)
 
@@ -52,14 +51,24 @@ template <typename MutexT>
 class MutexBase
 {
     friend class ConditionVariable;
+
 public:
     MutexBase() = default;
     MutexBase(const MutexBase&) = delete;
     MutexBase& operator=(const MutexBase&) = delete;
 
-    void Lock() { mutex.lock(); }
-    void Unlock() { mutex.unlock(); }
-    bool TryLock() { return mutex.try_lock(); }
+    void Lock()
+    {
+        mutex.lock();
+    }
+    void Unlock()
+    {
+        mutex.unlock();
+    }
+    bool TryLock()
+    {
+        return mutex.try_lock();
+    }
 
 private:
     MutexT mutex;
@@ -77,23 +86,24 @@ public:
     RecursiveMutex() = default;
 };
 
-#else 
+#else
 
 //Base mutex class
 class MutexBase
 {
     friend class ConditionVariable;
+
 public:
     MutexBase() = default;
     ~MutexBase();
 
     MutexBase(const MutexBase&) = delete;
     MutexBase& operator=(const MutexBase&) = delete;
-	
-	void Lock();
+
+    void Lock();
     void Unlock();
     bool TryLock();
-	
+
 protected:
     pthread_mutex_t mutex;
 };
@@ -102,7 +112,7 @@ protected:
 class Mutex final : public MutexBase
 {
 public:
-	Mutex();
+    Mutex();
     Mutex(const Mutex&) = delete;
     Mutex& operator=(const Mutex&) = delete;
 };
@@ -115,8 +125,7 @@ public:
     RecursiveMutex& operator=(const RecursiveMutex&) = delete;
 };
 	
-#endif  // defined(USE_CPP11_CONCURRENCY)
-
+#endif // defined(USE_CPP11_CONCURRENCY)
 };
 
-#endif  // __DAVAENGINE_MUTEX_H__
+#endif // __DAVAENGINE_MUTEX_H__

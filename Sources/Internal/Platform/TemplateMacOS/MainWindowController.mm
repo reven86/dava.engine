@@ -44,39 +44,60 @@
     // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
     if ([theEvent type] == NSKeyDown)
     {
-        if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+        int cmdOrCmdWithCaps = ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask);
+        if ((cmdOrCmdWithCaps == NSCommandKeyMask) || (cmdOrCmdWithCaps == (NSCommandKeyMask | NSAlphaShiftKeyMask)))
         {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"x"])
+            if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"x"])
             {
                 if ([self sendAction:@selector(cut:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"c"])
             {
-                if ([self sendAction:@selector(copy:) to:nil from:self])
+                if ([self sendAction:@selector(copy:) to:[[NSApp keyWindow] firstResponder] from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"v"])
             {
-                if ([self sendAction:@selector(paste:) to:nil from:self])
-                    return;
+                // HACK if user trying to paste text into textfield
+                // we have to check room for it
+                // and if no more room skip paste operation here
+                // because some time NSFormatter not called
+                NSResponder* view = [[NSApp keyWindow] firstResponder];
+                DAVA::UIControl* focused = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+                if (focused != nullptr)
+                {
+                    DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focused);
+                    if (tf)
+                    {
+                        DAVA::WideString text = tf->GetText();
+                        int size = tf->GetMaxLength();
+                        int textSize = static_cast<int>(text.length());
+                        if (size > 0 && size > (textSize + 1))
+                        {
+                            if ([self sendAction:@selector(paste:) to:view from:self])
+                                return;
+                        }
+                        else
+                        {
+                            // skip paste into no room textfield
+                        }
+                    }
+                }
+                else
+                {
+                    if ([self sendAction:@selector(paste:) to:view from:self])
+                        return;
+                }
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"z"])
             {
                 if ([self sendAction:@selector(undo:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"a"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"a"])
             {
                 if ([self sendAction:@selector(selectAll:) to:nil from:self])
-                    return;
-            }
-        }
-        else if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
-        {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"Z"])
-            {
-                if ([self sendAction:@selector(redo:) to:nil from:self])
                     return;
             }
         }
@@ -118,75 +139,75 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-namespace DAVA 
+namespace DAVA
 {
-	int Core::Run(int argc, char *argv[], AppHandle handle)
-	{
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
-        CoreMacOSPlatform* core = new CoreMacOSPlatform();
-        core->SetCommandLine(argc, argv);
-        core->CreateSingletons();
+int Core::Run(int argc, char* argv[], AppHandle handle)
+{
+    NSAutoreleasePool* globalPool = 0;
+    globalPool = [[NSAutoreleasePool alloc] init];
+    CoreMacOSPlatform* core = new CoreMacOSPlatform();
+    core->SetCommandLine(argc, argv);
+    core->CreateSingletons();
 
-        // try to create delegate from client code
-        Class delegateClass = NSClassFromString(@"MacOSHelperAppDelegate");
-        if (nullptr == delegateClass)
-        {
-            // have no delegate in client code - create byself
-            delegateClass = NSClassFromString(@"HelperAppDelegate");
-        }
-
-        DVASSERT_MSG(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
-
-        HelperAppDelegate* appDelegate = [[[delegateClass alloc] init] autorelease];
-
-        MainWindowController* mainWindowController = [[[MainWindowController alloc] init] autorelease];
-
-        // window controller used from app delegate
-        [appDelegate setWindowController:mainWindowController];
-
-        [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
-
-        int retVal = NSApplicationMain(argc, (const char**)argv);
-        // This method never returns, so release code transfered to termination message 
-        // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
-        // core->ReleaseSingletons() is called from there
-
-        [globalPool release];
-        globalPool = 0;
-        return retVal;
-    }
-
-    int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+    // try to create delegate from client code
+    Class delegateClass = NSClassFromString(@"MacOSHelperAppDelegate");
+    if (nullptr == delegateClass)
     {
-        NSAutoreleasePool* globalPool = 0;
-        globalPool = [[NSAutoreleasePool alloc] init];
-        CoreMacOSPlatform* core = new CoreMacOSPlatform();
-        core->SetCommandLine(argc, argv);
-        core->EnableConsoleMode();
-        core->CreateSingletons();
-
-        Logger::Instance()->EnableConsoleMode();
-
-        FrameworkDidLaunched();
-        FrameworkWillTerminate();
-
-        core->ReleaseSingletons();
-
-        [globalPool release];
-        globalPool = 0;
-        return 0;
+        // have no delegate in client code - create byself
+        delegateClass = NSClassFromString(@"HelperAppDelegate");
     }
+
+    DVASSERT_MSG(nullptr != delegateClass, "Cannot find NSApplicationDelegate class!");
+
+    HelperAppDelegate* appDelegate = [[[delegateClass alloc] init] autorelease];
+
+    MainWindowController* mainWindowController = [[[MainWindowController alloc] init] autorelease];
+
+    // window controller used from app delegate
+    [appDelegate setWindowController:mainWindowController];
+
+    [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+
+    int retVal = NSApplicationMain(argc, (const char**)argv);
+    // This method never returns, so release code transfered to termination message
+    // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+    // core->ReleaseSingletons() is called from there
+
+    [globalPool release];
+    globalPool = 0;
+    return retVal;
+}
+
+int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+{
+    NSAutoreleasePool* globalPool = 0;
+    globalPool = [[NSAutoreleasePool alloc] init];
+    CoreMacOSPlatform* core = new CoreMacOSPlatform();
+    core->SetCommandLine(argc, argv);
+    core->EnableConsoleMode();
+    core->CreateSingletons();
+
+    Logger::Instance()->EnableConsoleMode();
+
+    FrameworkDidLaunched();
+    FrameworkWillTerminate();
+
+    core->ReleaseSingletons();
+
+    [globalPool release];
+    globalPool = 0;
+    return 0;
+}
 }
 
 @interface MainWindowController ()
-- (void) startAnimationTimer;
-- (void) stopAnimationTimer;
-- (void) animationTimerFired:(NSTimer *)timer;
+- (void)startAnimationTimer;
+- (void)stopAnimationTimer;
+- (void)animationTimerFired:(NSTimer*)timer;
 
-- (void)windowWillMiniaturize:(NSNotification *)notification;
-- (void)windowDidMiniaturize:(NSNotification *)notification;
-- (void)windowDidDeminiaturize:(NSNotification *)notification;
+- (void)windowWillMiniaturize:(NSNotification*)notification;
+- (void)windowDidMiniaturize:(NSNotification*)notification;
+- (void)windowDidDeminiaturize:(NSNotification*)notification;
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification;
 - (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification;
 
@@ -195,11 +216,11 @@ namespace DAVA
 
 @implementation MainWindowController
 
-static MainWindowController * mainWindowController = nil;
+static MainWindowController* mainWindowController = nil;
 
 /* This code disabled for now and left for the future
  */
-namespace DAVA 
+namespace DAVA
 {
 void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
 {
@@ -219,13 +240,13 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (id)init
 {
     self = [super init];
-	if (self)
-	{
-		mainWindowController = self;
-		openGLView = nil;
-		mainWindow = nil;
-		animationTimer = nil;
-		core = 0;
+    if (self)
+    {
+        mainWindowController = self;
+        openGLView = nil;
+        mainWindow = nil;
+        animationTimer = nil;
+        core = 0;
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -245,11 +266,11 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     [super dealloc];
 }
 
--(void)createWindows
+- (void)createWindows
 {
-    core = Core::GetApplicationCore();
-
     FrameworkDidLaunched();
+
+    core = Core::GetApplicationCore();
 
     String title;
     int32 width = 800;
@@ -259,10 +280,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     float32 minWidth = 0.0f;
     float32 minHeight = 0.0f;
     KeyedArchive* options = Core::Instance()->GetOptions();
-    if(nullptr != options)
+    if (nullptr != options)
     {
         title = options->GetString("title", "[set application title using core options property 'title']");
-        if(options->IsKeyExists("width") && options->IsKeyExists("height"))
+        if (options->IsKeyExists("width") && options->IsKeyExists("height"))
         {
             width = options->GetInt32("width");
             height = options->GetInt32("height");
@@ -272,8 +293,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
         minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
     }
-    
-    openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
+
+    openGLView = [[OpenGLView alloc] initWithFrame:NSMakeRect(0, 0, width, height)];
 
     NSRect displayRect = [[NSScreen mainScreen] frame];
     NSUInteger wStyle = NSTitledWindowMask + NSMiniaturizableWindowMask + NSClosableWindowMask + NSResizableWindowMask;
@@ -281,7 +302,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     mainWindow = [[NSWindow alloc] initWithContentRect:wRect styleMask:wStyle backing:NSBackingStoreBuffered defer:FALSE];
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [mainWindow setDelegate:self];
-    [mainWindow setContentView: openGLView];
+    [mainWindow setContentView:openGLView];
     mainWindow.contentMinSize = NSMakeSize(width, height);
     [mainWindowController setMinimumWindowSize:0.0f height:0.0f];
     if (minWidth > 0 && minHeight > 0)
@@ -365,11 +386,11 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     mainWindow.contentMinSize = NSMakeSize(width, height);
 }
 
-- (void)windowWillMiniaturize:(NSNotification *)notification
+- (void)windowWillMiniaturize:(NSNotification*)notification
 {
 }
 
-- (void)windowDidMiniaturize:(NSNotification *)notification
+- (void)windowDidMiniaturize:(NSNotification*)notification
 {
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(true);
@@ -377,7 +398,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     [self OnSuspend];
 }
 
-- (void)windowDidDeminiaturize:(NSNotification *)notification
+- (void)windowDidDeminiaturize:(NSNotification*)notification
 {
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Emit(false);
@@ -396,13 +417,13 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
-- (void)windowDidEnterFullScreen:(NSNotification *)notification
+- (void)windowDidEnterFullScreen:(NSNotification*)notification
 {
     fullScreen = true;
     Core::Instance()->GetApplicationCore()->OnEnterFullscreen();
 }
 
-- (void)windowDidExitFullScreen:(NSNotification *)notification
+- (void)windowDidExitFullScreen:(NSNotification*)notification
 {
     fullScreen = false;
     Core::Instance()->GetApplicationCore()->OnExitFullscreen();
@@ -427,7 +448,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
--(bool) isFullScreen
+- (bool)isFullScreen
 {
     return fullScreen;
 }
@@ -438,11 +459,11 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     {
         double macOSVer = floor(NSAppKitVersionNumber);
         // fullscreen for new 10.7+ MacOS
-        if(macOSVer >= NSAppKitVersionNumber10_7)
+        if (macOSVer >= NSAppKitVersionNumber10_7)
         {
             // just toggle current state
             // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
-            [mainWindowController->mainWindow toggleFullScreen: nil];
+            [mainWindowController->mainWindow toggleFullScreen:nil];
             return YES;
         }
         else
@@ -455,103 +476,103 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     return YES;
 }
 
-- (void) keyDown:(NSEvent *)event
+- (void)keyDown:(NSEvent*)event
 {
-	[openGLView keyDown:event];
+    [openGLView keyDown:event];
 }
 
-- (void) keyUp:(NSEvent *)event
+- (void)keyUp:(NSEvent*)event
 {
-	[openGLView keyUp:event];
+    [openGLView keyUp:event];
 }
 
-- (void) flagsChanged :(NSEvent *)event
+- (void)flagsChanged:(NSEvent*)event
 {
-	[openGLView flagsChanged:event];
+    [openGLView flagsChanged:event];
 }
 
-- (void)mouseDown:(NSEvent *)theEvent
+- (void)mouseDown:(NSEvent*)theEvent
 {
-	[openGLView mouseDown:theEvent];
+    [openGLView mouseDown:theEvent];
 }
 
-- (void)scrollWheel:(NSEvent *)theEvent
+- (void)scrollWheel:(NSEvent*)theEvent
 {
     [openGLView scrollWheel:theEvent];
 }
 
-- (void)mouseMoved:(NSEvent *)theEvent
+- (void)mouseMoved:(NSEvent*)theEvent
 {
-	[openGLView mouseMoved:theEvent];
+    [openGLView mouseMoved:theEvent];
 }
 
-- (void)mouseUp:(NSEvent *)theEvent
+- (void)mouseUp:(NSEvent*)theEvent
 {
-	[openGLView mouseUp:theEvent];
+    [openGLView mouseUp:theEvent];
 }
 
-- (void)mouseDragged:(NSEvent *)theEvent
+- (void)mouseDragged:(NSEvent*)theEvent
 {
-	[openGLView mouseDragged:theEvent];
+    [openGLView mouseDragged:theEvent];
 }
 
-- (void)mouseEntered:(NSEvent *)theEvent
-{
-}
-
-- (void)mouseExited:(NSEvent *)theEvent
+- (void)mouseEntered:(NSEvent*)theEvent
 {
 }
 
-- (void)rightMouseDown:(NSEvent *)theEvent
+- (void)mouseExited:(NSEvent*)theEvent
 {
-	[openGLView rightMouseDown:theEvent];
 }
 
-- (void)rightMouseDragged:(NSEvent *)theEvent
+- (void)rightMouseDown:(NSEvent*)theEvent
 {
-	[openGLView rightMouseDragged:theEvent];
+    [openGLView rightMouseDown:theEvent];
 }
 
-- (void)rightMouseUp:(NSEvent *)theEvent
+- (void)rightMouseDragged:(NSEvent*)theEvent
 {
-	[openGLView rightMouseUp:theEvent];
+    [openGLView rightMouseDragged:theEvent];
 }
 
-- (void)otherMouseDown:(NSEvent *)theEvent
+- (void)rightMouseUp:(NSEvent*)theEvent
 {
-	[openGLView otherMouseDown:theEvent];
+    [openGLView rightMouseUp:theEvent];
 }
 
-- (void)otherMouseDragged:(NSEvent *)theEvent
+- (void)otherMouseDown:(NSEvent*)theEvent
 {
-	[openGLView otherMouseDragged:theEvent];
+    [openGLView otherMouseDown:theEvent];
 }
 
-- (void)otherMouseUp:(NSEvent *)theEvent
+- (void)otherMouseDragged:(NSEvent*)theEvent
 {
-	[openGLView otherMouseUp:theEvent];
+    [openGLView otherMouseDragged:theEvent];
 }
 
-- (void) startAnimationTimer
+- (void)otherMouseUp:(NSEvent*)theEvent
 {
-    if (animationTimer == nil) 
-	{
+    [openGLView otherMouseUp:theEvent];
+}
+
+- (void)startAnimationTimer
+{
+    if (animationTimer == nil)
+    {
         animationTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0f / currFPS target:self selector:@selector(animationTimerFired:) userInfo:nil repeats:YES] retain];
     }
 }
 
-- (void) stopAnimationTimer
+- (void)stopAnimationTimer
 {
-    if (animationTimer != nil) 
-	{
+    if (animationTimer != nil)
+    {
         [animationTimer invalidate];
         [animationTimer release];
         animationTimer = nil;
     }
 }
 
-- (void) animationTimerFired:(NSTimer *)timer
+- (void)animationTimerFired:(NSTimer*)timer
 {
     [openGLView setNeedsDisplay:YES];
 
@@ -591,14 +612,13 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
     return event;
 }
 
-
 - (void)OnSuspend
 {
-    if(core)
+    if (core)
     {
         core->OnSuspend();
     }
-    else 
+    else
     {
         Core::Instance()->SetIsActive(false);
     }
@@ -606,11 +626,11 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
-    if(core)
+    if (core)
     {
         core->OnResume();
     }
-    else 
+    else
     {
         Core::Instance()->SetIsActive(true);
     }
@@ -618,9 +638,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 @end
 
-namespace DAVA 
+namespace DAVA
 {
-
 Core::eScreenMode CoreMacOSPlatform::GetScreenMode()
 {
     return ([mainWindowController isFullScreen]) ? Core::eScreenMode::FULLSCREEN : Core::eScreenMode::WINDOWED;
@@ -645,8 +664,8 @@ bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 
 void CoreMacOSPlatform::Quit()
 {
-	mainWindowController->openGLView.willQuit = true;
-	[[NSApplication sharedApplication] terminate: nil];
+    mainWindowController->openGLView.willQuit = true;
+    [[NSApplication sharedApplication] terminate:nil];
 }
 
 void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)

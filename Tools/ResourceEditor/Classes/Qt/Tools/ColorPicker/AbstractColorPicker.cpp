@@ -29,7 +29,6 @@
 
 #include "AbstractColorPicker.h"
 
-
 AbstractColorPicker::AbstractColorPicker(QWidget* parent)
     : QWidget(parent)
 {

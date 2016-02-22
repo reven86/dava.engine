@@ -61,7 +61,7 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
                 pathApplied = true;
             }
         }
-	}
+    }
 
     if (!pathApplied)
     {

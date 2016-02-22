@@ -8,11 +8,21 @@ set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+set                   ( QML_SCAN_DIR ${CMAKE_CURRENT_LIST_DIR} )
 include               ( CMake-common )
 
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
+
+if (DEPLOY)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+    if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/ResourceEditor)
+        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/ResourceEditor)
+    endif()
+endif()
 
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
@@ -70,9 +80,9 @@ if( WIN32 )
 	    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN64_release_bullet.lib )    
     	set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN64_debug_bullet.lib )    
 	else ()
-    	set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
-	    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib )    
-    	set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib )    
+    set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
+    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib )    
+    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib )    
 	endif()
 
 
@@ -101,7 +111,7 @@ set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 if ( WIN32 AND X64_MODE )
 	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
 else ()
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 endif ()
 
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
@@ -112,3 +122,14 @@ DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/con
                          )
 
 setup_main_executable()
+if (DEPLOY)
+    set(BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR})
+    if (NOT WIN32)
+        set(BEAST_DIR "")
+    endif()
+    ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/postDeploy.py"
+            "${DEPLOY_ROOT}"
+            "${BEAST_DIR}"
+        )
+endif()
