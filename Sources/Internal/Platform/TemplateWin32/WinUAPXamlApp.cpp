@@ -302,10 +302,6 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     Core::Instance()->CreateSingletons();
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
-    if (!isWindowFocused)
-    {
-        isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
-    }
 
     core->RunOnUIThreadBlocked([this]() {
         SetupEventHandlers();
@@ -616,43 +612,12 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     }
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
-{
-    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
-    PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type && mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
-    {
-        SetCursorVisible(false);
-    }
-}
-
-void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
-{
-    bool passEventForProcession = true;
-    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
-    PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type || PointerDeviceType::Pen == type)
-    {
-        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
-
-        passEventForProcession = mouseButtonsState.any();
-
-        SetCursorVisible(true);
-    }
-
-    if (passEventForProcession)
-    {
-        float32 x = pointerPoint->Position.X;
-        float32 y = pointerPoint->Position.Y;
-        int32 id = pointerPoint->PointerId;
-        core->RunOnMainThread([this, x, y, id, type]() {
-            DAVATouchEvent(UIEvent::Phase::ENDED, x, y, id, ToDavaDeviceId(type));
-        });
-    }
-}
-
 void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
+    if (!isWindowFocused)
+    {
+        return;
+    }
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
@@ -860,7 +825,6 @@ void WinUAPXamlApp::SetupEventHandlers()
     Resuming += ref new EventHandler<::Platform::Object ^>(this, &WinUAPXamlApp::OnResuming);
 
     CoreWindow ^ coreWindow = Window::Current->CoreWindow;
-    //     coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
     auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
@@ -880,9 +844,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     // Receive mouse events from SwapChainPanel, not CoreWindow, to not handle native controls' events
     swapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerPressed);
     swapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerReleased);
-    swapChainPanel->PointerEntered += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerEntered);
     swapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerMoved);
-    swapChainPanel->PointerExited += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerExited);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);
