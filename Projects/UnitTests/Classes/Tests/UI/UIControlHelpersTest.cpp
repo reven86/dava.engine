@@ -35,7 +35,7 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(UIControlHelpersTest)
+DAVA_TESTCLASS (UIControlHelpersTest)
 {
     UIScrollView* scrollView = nullptr;
     UIControl* smallControl = nullptr;
@@ -102,7 +102,7 @@ DAVA_TESTCLASS(UIControlHelpersTest)
     }
 
     // UIControlHelpers::ScrollToControl
-    DAVA_TEST(SmallControlOnScreen_ScrollDontWork)
+    DAVA_TEST (SmallControlOnScreen_ScrollDontWork)
     {
         SmallControlOnScreen_ScrollDontWork(false);
         SmallControlOnScreen_ScrollDontWork(true);
@@ -129,7 +129,7 @@ DAVA_TESTCLASS(UIControlHelpersTest)
     }
 
     // UIControlHelpers::ScrollToControl
-    DAVA_TEST(SmallControlRightThanView_ScrollToLeft)
+    DAVA_TEST (SmallControlRightThanView_ScrollToLeft)
     {
         SmallControlRightThanView_ScrollToLeft(false);
         SmallControlRightThanView_ScrollToLeft(true);
@@ -157,7 +157,7 @@ DAVA_TESTCLASS(UIControlHelpersTest)
     }
 
     // UIControlHelpers::ScrollToControl
-    DAVA_TEST(SmallControlLeftThanView_ScrollToRight)
+    DAVA_TEST (SmallControlLeftThanView_ScrollToRight)
     {
         SmallControlLeftThanView_ScrollToRight(false);
         SmallControlLeftThanView_ScrollToRight(true);
@@ -184,7 +184,7 @@ DAVA_TESTCLASS(UIControlHelpersTest)
     }
 
     // UIControlHelpers::ScrollToControl
-    DAVA_TEST(BigControlOnScreen_DontScroll)
+    DAVA_TEST (BigControlOnScreen_DontScroll)
     {
         BigControlOnScreen_DontScroll(false);
         BigControlOnScreen_DontScroll(true);
@@ -218,7 +218,7 @@ DAVA_TESTCLASS(UIControlHelpersTest)
     }
 
     // UIControlHelpers::ScrollToControl
-    DAVA_TEST(BigControlLeftThanView_ScrollToRight)
+    DAVA_TEST (BigControlLeftThanView_ScrollToRight)
     {
         BigControlLeftThanView_ScrollToRight(false);
         BigControlLeftThanView_ScrollToRight(true);
@@ -252,7 +252,7 @@ DAVA_TESTCLASS(UIControlHelpersTest)
     }
 
     // UIControlHelpers::ScrollToControl
-    DAVA_TEST(BigControlRightThanView_ScrollToLeft)
+    DAVA_TEST (BigControlRightThanView_ScrollToLeft)
     {
         BigControlRightThanView_ScrollToLeft(false);
         BigControlRightThanView_ScrollToLeft(true);

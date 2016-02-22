@@ -174,48 +174,48 @@ void BackgroundController::ControlPropertyWasChanged(ControlNode* node, Abstract
 namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
+{
+    if (!control->GetVisible())
     {
-        if (!control->GetVisible())
-        {
-            return;
-        }
-        UIGeometricData tempGeometricData = control->GetLocalGeometricData();
-        tempGeometricData.AddGeometricData(gd);
-        Rect box = tempGeometricData.GetAABBox();
-
-        if (totalRect.x > box.x)
-        {
-            float32 delta = totalRect.x - box.x;
-            rootControlPosition.x += delta;
-            totalRect.dx += delta;
-            totalRect.x = box.x;
-        }
-        if (totalRect.y > box.y)
-        {
-            float32 delta = totalRect.y - box.y;
-            rootControlPosition.y += delta;
-            totalRect.dy += delta;
-            totalRect.y = box.y;
-        }
-        if (totalRect.x + totalRect.dx < box.x + box.dx)
-        {
-            float32 nextRight = box.x + box.dx;
-            totalRect.dx = nextRight - totalRect.x;
-        }
-        if (totalRect.y + totalRect.dy < box.y + box.dy)
-        {
-            float32 nextBottom = box.y + box.dy;
-            totalRect.dy = nextBottom - totalRect.y;
-        }
-
-        for (const auto& child : control->GetChildren())
-        {
-            CalculateTotalRectImpl(child, totalRect, rootControlPosition, tempGeometricData);
-        }
+        return;
     }
-    } //unnamed namespace
+    UIGeometricData tempGeometricData = control->GetLocalGeometricData();
+    tempGeometricData.AddGeometricData(gd);
+    Rect box = tempGeometricData.GetAABBox();
 
-    void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
+    if (totalRect.x > box.x)
+    {
+        float32 delta = totalRect.x - box.x;
+        rootControlPosition.x += delta;
+        totalRect.dx += delta;
+        totalRect.x = box.x;
+    }
+    if (totalRect.y > box.y)
+    {
+        float32 delta = totalRect.y - box.y;
+        rootControlPosition.y += delta;
+        totalRect.dy += delta;
+        totalRect.y = box.y;
+    }
+    if (totalRect.x + totalRect.dx < box.x + box.dx)
+    {
+        float32 nextRight = box.x + box.dx;
+        totalRect.dx = nextRight - totalRect.x;
+    }
+    if (totalRect.y + totalRect.dy < box.y + box.dy)
+    {
+        float32 nextBottom = box.y + box.dy;
+        totalRect.dy = nextBottom - totalRect.y;
+    }
+
+    for (const auto& child : control->GetChildren())
+    {
+        CalculateTotalRectImpl(child, totalRect, rootControlPosition, tempGeometricData);
+    }
+}
+} //unnamed namespace
+
+void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();

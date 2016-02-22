@@ -33,7 +33,7 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(UIControlTest)
+DAVA_TESTCLASS (UIControlTest)
 {
     // root
     // |-a
@@ -146,14 +146,14 @@ DAVA_TESTCLASS(UIControlTest)
     }
 
     // UIControl::FindByName
-    DAVA_TEST(FindThemSelves)
+    DAVA_TEST (FindThemSelves)
     {
         TEST_VERIFY(root->FindByPath(".") == root);
         TEST_VERIFY(b->FindByPath(".") == b);
     }
 
     // UIControl::FindByName
-    DAVA_TEST(FindLocalRoot)
+    DAVA_TEST (FindLocalRoot)
     {
         TEST_VERIFY(root->FindByPath("^") == nullptr);
         TEST_VERIFY(c1->FindByPath("^") == nullptr);
@@ -168,7 +168,7 @@ DAVA_TESTCLASS(UIControlTest)
     }
 
     // UIControl::FindByName
-    DAVA_TEST(FindParent)
+    DAVA_TEST (FindParent)
     {
         TEST_VERIFY(root->FindByPath("..") == nullptr);
         TEST_VERIFY(c->FindByPath("..") == root);
@@ -177,7 +177,7 @@ DAVA_TESTCLASS(UIControlTest)
     }
 
     // UIControl::FindByName
-    DAVA_TEST(MatchesOneLevel)
+    DAVA_TEST (MatchesOneLevel)
     {
         TEST_VERIFY(root->FindByPath("*/1") == a1);
         TEST_VERIFY(root->FindByPath("*/*/1") == a11);
@@ -186,7 +186,7 @@ DAVA_TESTCLASS(UIControlTest)
     }
 
     // UIControl::FindByName
-    DAVA_TEST(MatchesZeroOrMoreLevels)
+    DAVA_TEST (MatchesZeroOrMoreLevels)
     {
         TEST_VERIFY(root->FindByPath("**/1") == a1);
         TEST_VERIFY(root->FindByPath("**/a") == a);
@@ -195,7 +195,7 @@ DAVA_TESTCLASS(UIControlTest)
     }
 
     // UIControl::FindByName
-    DAVA_TEST(FindSomePatches)
+    DAVA_TEST (FindSomePatches)
     {
         TEST_VERIFY(root->FindByPath("b/2/1") == b21);
         TEST_VERIFY(b11->FindByPath("../..") == b);
