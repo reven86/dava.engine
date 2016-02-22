@@ -84,9 +84,9 @@ EditorSystemsManager::EditorSystemsManager()
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
-    rootControl->SetName("rootControl");
+    rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
-    scalableControl->SetName("scalableContent");
+    scalableControl->SetName(FastName("scalableContent"));
 
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
