@@ -232,8 +232,9 @@ protected:
 	bool IsAnySceneChanged();
 
 	void DiableUIForFutureUsing();
-	
-	bool SelectCustomColorsTexturePath();
+    void SynchronizeStateWithUI();
+
+    bool SelectCustomColorsTexturePath();
 	
 	static void SetActionCheckedSilently(QAction *action, bool checked);
 

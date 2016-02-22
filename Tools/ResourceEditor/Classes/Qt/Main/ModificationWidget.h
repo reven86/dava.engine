@@ -46,13 +46,13 @@ class ModificationWidget
 	Q_OBJECT
 
 public:
-	enum PivotMode
-	{
-		PivotAbsolute,
-		PivotRelative,
-	};
+    enum PivotMode : uint32
+    {
+        PivotAbsolute,
+        PivotRelative,
+    };
 
-	explicit ModificationWidget(QWidget* parent = nullptr);
+    explicit ModificationWidget(QWidget* parent = nullptr);
 	~ModificationWidget();
 
 	void SetPivotMode(PivotMode pivotMode);
@@ -83,7 +83,7 @@ private:
     DAVAFloat32SpinBox* yAxisModify = nullptr;
     DAVAFloat32SpinBox* zAxisModify = nullptr;
     SceneEditor2* curScene = nullptr;
-    PivotMode pivotMode = PivotMode::PivotRelative;
+    PivotMode pivotMode = PivotMode::PivotAbsolute;
     ST_ModifMode modifMode = ST_ModifMode::ST_MODIF_OFF;
     bool groupMode = false;
 };
