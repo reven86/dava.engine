@@ -183,7 +183,6 @@ private:
     bool isTouchDetected = false;
     bool isPhoneApiDetected = false;
 
-    bool isWindowFocused = false;
     bool isWindowVisible = true;
     bool isWindowFocused = false;
     bool isWindowClosed = false;
