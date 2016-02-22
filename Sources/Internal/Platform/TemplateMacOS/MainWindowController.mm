@@ -268,9 +268,9 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)createWindows
 {
-    core = Core::GetApplicationCore();
-
     FrameworkDidLaunched();
+
+    core = Core::GetApplicationCore();
 
     String title;
     int32 width = 800;

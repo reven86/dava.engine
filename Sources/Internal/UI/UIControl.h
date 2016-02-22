@@ -1195,13 +1195,6 @@ public:
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
-    // Get/set visible flag for UI editor. Should not be serialized.
-    bool GetVisibleForUIEditor() const
-    {
-        return visibleForUIEditor;
-    };
-    virtual void SetVisibleForUIEditor(bool value);
-
     void DumpInputs(int32 depthLevel);
 
     static void DumpControls(bool onlyOrphans);
@@ -1235,8 +1228,6 @@ protected:
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
     bool multiInput : 1;
-
-    bool visibleForUIEditor : 1;
 
     // Enable align options
     bool isUpdated : 1;
@@ -1368,7 +1359,6 @@ private:
 /* Styles */
 
 public:
-    inline bool GetSystemVisible() const;
     void SystemNotifyVisibilityChanged();
     
     virtual int32 GetBackgroundComponentsCount() const;
@@ -1500,11 +1490,6 @@ int32 UIControl::GetState() const
     return controlState;
 }
     
-bool UIControl::GetSystemVisible() const
-{
-    return visible & visibleForUIEditor;
-}
-
 bool UIControl::GetEnabled() const
 {
     return !GetDisabled();

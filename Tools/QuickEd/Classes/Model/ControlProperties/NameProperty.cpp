@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourceProperty, eCloneType cloneType)
+NameProperty::NameProperty(ControlNode* anControl, const NameProperty* sourceProperty, eCloneType cloneType)
     : ValueProperty("Name")
     , control(anControl) // weak ptr
 {
@@ -59,12 +59,12 @@ NameProperty::~NameProperty()
 void NameProperty::Refresh(DAVA::int32 refreshFlags)
 {
     ValueProperty::Refresh(refreshFlags);
-    
+
     if ((refreshFlags & REFRESH_DEFAULT_VALUE) != 0 && GetPrototypeProperty())
         ApplyValue(GetDefaultValue());
 }
 
-void NameProperty::Accept(PropertyVisitor *visitor)
+void NameProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitNameProperty(this);
 }
@@ -94,12 +94,12 @@ bool NameProperty::IsOverriddenLocally() const
     return control->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD;
 }
 
-ControlNode *NameProperty::GetControlNode() const
+ControlNode* NameProperty::GetControlNode() const
 {
     return control;
 }
 
-void NameProperty::ApplyValue(const DAVA::VariantType &value)
+void NameProperty::ApplyValue(const DAVA::VariantType& value)
 {
     if (value.GetType() == VariantType::TYPE_STRING)
     {

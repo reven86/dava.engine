@@ -12,15 +12,15 @@
 
 #define FUBOUNDINGBOX_COORDINATE_COUNT 8
 #define FUBOUNDINGBOX_COORDINATES(coordinates, boundingBox) \
-	FMVector3 coordinates[FUBOUNDINGBOX_COORDINATE_COUNT] = {                                                                                                                                                         \
-        boundingBox.GetMin(),                                                                                                                                                                                         \
-        FMVector3(boundingBox.GetMin().x, boundingBox.GetMin().y, boundingBox.GetMax().z),                                                                                                                            \
-        FMVector3(boundingBox.GetMin().x, boundingBox.GetMax().y, boundingBox.GetMin().z),                                                                                                                            \
-        FMVector3(boundingBox.GetMax().x, boundingBox.GetMin().y, boundingBox.GetMin().z),                                                                                                                            \
-        FMVector3(boundingBox.GetMin().x, boundingBox.GetMax().y, boundingBox.GetMax().z),                                                                                                                            \
-        FMVector3(boundingBox.GetMax().x, boundingBox.GetMin().y, boundingBox.GetMax().z),                                                                                                                            \
-        FMVector3(boundingBox.GetMax().x, boundingBox.GetMax().y, boundingBox.GetMin().z),                                                                                                                            \
-        boundingBox.GetMax()                                                                                                                                                                                          \
+	FMVector3 coordinates[FUBOUNDINGBOX_COORDINATE_COUNT] = { \
+        boundingBox.GetMin(), \
+        FMVector3(boundingBox.GetMin().x, boundingBox.GetMin().y, boundingBox.GetMax().z), \
+        FMVector3(boundingBox.GetMin().x, boundingBox.GetMax().y, boundingBox.GetMin().z), \
+        FMVector3(boundingBox.GetMax().x, boundingBox.GetMin().y, boundingBox.GetMin().z), \
+        FMVector3(boundingBox.GetMin().x, boundingBox.GetMax().y, boundingBox.GetMax().z), \
+        FMVector3(boundingBox.GetMax().x, boundingBox.GetMin().y, boundingBox.GetMax().z), \
+        FMVector3(boundingBox.GetMax().x, boundingBox.GetMax().y, boundingBox.GetMin().z), \
+        boundingBox.GetMax() \
     }
 
 //
