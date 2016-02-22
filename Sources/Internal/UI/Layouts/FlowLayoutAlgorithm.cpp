@@ -45,6 +45,16 @@ struct FlowLayoutAlgorithm::LineInfo
     int32 lastIndex;
     int32 childrenCount;
     float32 usedSize;
+
+    LineInfo(int32 first_, int32 last_, int32 count_, float32 size_)
+        : firstIndex(first_)
+        , lastIndex(last_)
+        , childrenCount(count_)
+        , usedSize(size_)
+    {
+        DVASSERT(lastIndex >= firstIndex);
+        DVASSERT(childrenCount > 0);
+    }
 };
 
 FlowLayoutAlgorithm::FlowLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_)
@@ -153,7 +163,10 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
 
         if (newLineBeforeThis && index > firstIndex)
         {
-            lines.emplace_back(LineInfo{ firstIndex, index - 1, childrenInLine, usedSize });
+            if (childrenInLine > 0)
+            {
+                lines.emplace_back(LineInfo(firstIndex, index - 1, childrenInLine, usedSize));
+            }
             firstIndex = index;
             childrenInLine = 0;
             usedSize = 0.0f;
@@ -165,14 +178,17 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         {
             if (index > firstIndex)
             {
-                lines.emplace_back(LineInfo{ firstIndex, index - 1, childrenInLine, usedSize });
+                if (childrenInLine > 0)
+                {
+                    lines.emplace_back(LineInfo(firstIndex, index - 1, childrenInLine, usedSize));
+                }
                 firstIndex = index;
                 childrenInLine = 1;
                 usedSize = childSize;
             }
             else
             {
-                lines.emplace_back(LineInfo{ firstIndex, index, 1, childSize });
+                lines.emplace_back(LineInfo(firstIndex, index, 1, childSize));
                 firstIndex = index + 1;
                 childrenInLine = 0;
                 usedSize = 0.0f;
@@ -187,7 +203,7 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
 
     if (firstIndex <= data.GetLastChildIndex() && childrenInLine > 0)
     {
-        lines.emplace_back(LineInfo{ firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize });
+        lines.emplace_back(LineInfo(firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize));
     }
 }
 

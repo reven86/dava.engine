@@ -115,7 +115,7 @@ private:
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
+    QSet<QPair<QPersistentModelIndex, QPersistentModelIndex>> changedIndexes;
     QTimer* updatePropertyTimer = nullptr;
 };
 

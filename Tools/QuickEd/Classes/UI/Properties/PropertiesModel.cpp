@@ -312,12 +312,13 @@ void PropertiesModel::UpdateAllChangedProperties()
     {
         emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
     }
+    changedIndexes.clear();
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    QPersistentModelIndex nameIndex = indexByProperty(property, 0);
+    QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
     updatePropertyTimer->start();
 }
