@@ -47,7 +47,7 @@
         /*first you SHOULD clear exception state in VM*/ \
         env->ExceptionClear();\
         jmethodID toString = env->GetMethodID( \
-            env->FindClass("java/lang/Object"),    \
+            env->FindClass("java/lang/Object"), \
             "toString", "()Ljava/lang/String;");\
         jstring estring = (jstring)env->CallObjectMethod(e, toString);\
         jboolean isCopy = false;\

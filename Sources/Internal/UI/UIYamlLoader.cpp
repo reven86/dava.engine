@@ -528,7 +528,7 @@ void UIYamlLoader::SetScrollBarDelegates(UIControl* rootControl)
     Map<UIScrollBar*, String>::iterator it = scrollsToLink.begin();
     for (; it != scrollsToLink.end(); ++it)
     {
-        UIControl* control = UIControlHelpers::GetControlByPath(it->second, rootControl);
+        UIControl* control = UIControlHelpers::FindControlByPath(it->second, rootControl);
         it->first->SetDelegate(dynamic_cast<UIScrollBarDelegate*>(control));
     }
     scrollsToLink.clear();
@@ -667,7 +667,7 @@ void UIYamlLoader::LoadFromNode(UIControl* parentControl, const YamlNode* rootNo
             //Logger::FrameworkDebug("Create control with type:%s", type.c_str());
         }
 
-        control->SetName(rootNode->GetItemKeyName(k));
+        control->SetName(FastName(rootNode->GetItemKeyName(k)));
         control->LoadFromYamlNode(node, this);
         parentControl->AddControl(control);
 
@@ -718,7 +718,7 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl* parentControl, YamlNode* parentNod
     YamlNode* childNode = parentControl->SaveToYamlNode(this);
     if (parentNode && parentNode->GetType() == YamlNode::TYPE_MAP)
     {
-        parentNode->AddNodeToMap(parentControl->GetName(), childNode);
+        parentNode->AddNodeToMap(String(parentControl->GetName().c_str()), childNode);
     }
 
     SaveChildren(parentControl, childNode);

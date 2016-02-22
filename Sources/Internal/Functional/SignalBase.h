@@ -75,7 +75,7 @@ protected:
     template <bool is_derived_from_tracked_obj>
     struct Detail;
 
-    ~TrackedObject()
+    virtual ~TrackedObject()
     {
         while (trackedSignals.size() > 0)
         {
