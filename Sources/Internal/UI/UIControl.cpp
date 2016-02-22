@@ -86,7 +86,6 @@ UIControl::UIControl(const Rect& rect)
     parent = NULL;
     prevControlState = controlState = STATE_NORMAL;
     visible = true;
-    visibleForUIEditor = true;
     /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -241,16 +240,19 @@ bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& c
     return false;
 }
 
-void UIControl::SetName(const String& _name)
+void UIControl::SetName(const String& name_)
 {
-    FastName newFastName(_name);
-    if (fastName != newFastName)
+    SetName(FastName(name_));
+}
+
+void UIControl::SetName(const FastName& name_)
+{
+    if (name != name_)
     {
         SetStyleSheetDirty();
     }
 
-    name = _name;
-    fastName = newFastName;
+    name = name_;
 }
 
 void UIControl::SetTag(int32 _tag)
@@ -261,26 +263,22 @@ void UIControl::SetTag(int32 _tag)
 // return first control with given name
 UIControl* UIControl::FindByName(const String& name, bool recursive) const
 {
-    List<UIControl*>::const_iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
-    {
-        UIControl* c = (*it);
-        if (c->name == name)
-            return c;
-
-        if (recursive)
-        {
-            UIControl* inChilds = c->FindByName(name);
-            if (inChilds)
-                return inChilds;
-        }
-    }
-    return 0;
+    return UIControlHelpers::FindChildControlByName(name, this, recursive);
 }
 
-UIControl* UIControl::FindByPath(const String& path) const
+UIControl* UIControl::FindByName(const FastName& name, bool recursive) const
 {
-    return UIControlHelpers::GetControlByPath(path, this);
+    return UIControlHelpers::FindChildControlByName(name, this, recursive);
+}
+
+const UIControl* UIControl::FindByPath(const String& path) const
+{
+    return UIControlHelpers::FindControlByPath(path, this);
+}
+
+UIControl* UIControl::FindByPath(const String& path)
+{
+    return UIControlHelpers::FindControlByPath(path, this);
 }
 
 void UIControl::SetState(int32 state)
@@ -651,31 +649,9 @@ void UIControl::SetVisible(bool isVisible)
         return;
     }
 
-    bool oldSystemVisible = GetSystemVisible();
     visible = isVisible;
-    if (GetSystemVisible() == oldSystemVisible)
-    {
-        return;
-    }
 
     SetLayoutDirty();
-
-    SystemNotifyVisibilityChanged();
-}
-
-void UIControl::SetVisibleForUIEditor(bool value)
-{
-    if (visibleForUIEditor == value)
-    {
-        return;
-    }
-
-    bool oldSystemVisible = GetSystemVisible();
-    visibleForUIEditor = value;
-    if (GetSystemVisible() == oldSystemVisible)
-    {
-        return;
-    }
 
     SystemNotifyVisibilityChanged();
 }
@@ -684,7 +660,7 @@ void UIControl::SystemNotifyVisibilityChanged()
 {
     if (parent && parent->IsOnScreen())
     {
-        if (GetSystemVisible())
+        if (GetVisible())
         {
             SystemWillBecomeVisible();
         }
@@ -807,7 +783,7 @@ void UIControl::AddControl(UIControl* control)
         control->SystemDidAppear();
     }
 
-    if (IsOnScreen() && control->GetSystemVisible())
+    if (IsOnScreen() && control->GetVisible())
         control->SystemWillBecomeVisible();
 
     isIteratorCorrupted = true;
@@ -826,7 +802,7 @@ void UIControl::RemoveControl(UIControl* control)
     {
         if ((*it) == control)
         {
-            if (IsOnScreen() && control->GetSystemVisible())
+            if (IsOnScreen() && control->GetVisible())
                 control->SystemWillBecomeInvisible();
 
             bool inHierarchy = InViewHierarchy();
@@ -917,7 +893,7 @@ void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
                 control->SystemDidAppear();
             }
 
-            if (IsOnScreen() && control->GetSystemVisible())
+            if (IsOnScreen() && control->GetVisible())
                 control->SystemWillBecomeVisible();
 
             isIteratorCorrupted = true;
@@ -951,7 +927,7 @@ void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
                 control->SystemDidAppear();
             }
 
-            if (IsOnScreen() && control->GetSystemVisible())
+            if (IsOnScreen() && control->GetVisible())
                 control->SystemWillBecomeVisible();
 
             isIteratorCorrupted = true;
@@ -1043,11 +1019,9 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     tag = srcControl->GetTag();
     name = srcControl->name;
-    fastName = srcControl->fastName;
 
     controlState = srcControl->controlState;
     visible = srcControl->visible;
-    visibleForUIEditor = srcControl->visibleForUIEditor;
     inputEnabled = srcControl->inputEnabled;
     clipContents = srcControl->clipContents;
 
@@ -1119,10 +1093,10 @@ bool UIControl::IsOnScreen() const
     if (UIControlSystem::Instance()->GetScreen() == this ||
         UIControlSystem::Instance()->GetPopupContainer() == this)
     {
-        return GetSystemVisible();
+        return GetVisible();
     }
 
-    if (!GetSystemVisible() || !parent)
+    if (!GetVisible() || !parent)
         return false;
 
     return parent->IsOnScreen();
@@ -1307,7 +1281,7 @@ void UIControl::SystemUpdate(float32 timeElapsed)
 
 void UIControl::SystemDraw(const UIGeometricData& geometricData)
 {
-    if (!GetSystemVisible())
+    if (!GetVisible())
         return;
 
     UIControlSystem::Instance()->drawCounter++;
@@ -1454,7 +1428,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 
 bool UIControl::SystemProcessInput(UIEvent* currentInput)
 {
-    if (!inputEnabled || !GetSystemVisible() || controlState & STATE_DISABLED)
+    if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
     {
         return false;
     }
@@ -1471,6 +1445,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::CHAR:
     case UIEvent::Phase::CHAR_REPEAT:
+    case UIEvent::Phase::KEY_UP:
     case UIEvent::Phase::KEY_DOWN:
     case UIEvent::Phase::KEY_DOWN_REPEAT:
     {
@@ -1554,9 +1529,10 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             {
                                 controlState |= STATE_PRESSED_INSIDE;
                                 controlState &= ~STATE_PRESSED_OUTSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                controlState |= STATE_HOVER;
-#endif
+                                if (currentInput->device == UIEvent::Device::MOUSE)
+                                {
+                                    controlState |= STATE_HOVER;
+                                }
                             }
                         }
                     }
@@ -1598,12 +1574,13 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                     {
                         --touchesInside;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        if (totalTouches == 0)
+                        if (currentInput->device == UIEvent::Device::MOUSE)
                         {
-                            controlState |= STATE_HOVER;
+                            if (totalTouches == 0)
+                            {
+                                controlState |= STATE_HOVER;
+                            }
                         }
-#endif
                     }
 
                     currentInput->controlState =
@@ -1639,13 +1616,13 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     {
                         controlState |= STATE_PRESSED_OUTSIDE;
                         controlState &= ~STATE_PRESSED_INSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        controlState &= ~STATE_HOVER;
-#endif
+                        if (currentInput->device == UIEvent::Device::MOUSE)
+                        {
+                            controlState &= ~STATE_HOVER;
+                        }
                     }
                 }
             }
-
             currentInput->touchLocker = NULL;
             return true;
         }
@@ -1667,7 +1644,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
     UIControlSystem::Instance()->inputCounter++;
     isUpdated = true;
 
-    if (!GetSystemVisible())
+    if (!GetVisible())
         return false;
 
     //if(currentInput->touchLocker != this)
@@ -1797,7 +1774,7 @@ void UIControl::SystemWillBecomeVisible()
     List<UIControl*>::const_iterator end = childs.end();
     for (; it != end; ++it)
     {
-        if ((*it)->GetSystemVisible())
+        if ((*it)->GetVisible())
             (*it)->SystemWillBecomeVisible();
     }
 }
@@ -1821,7 +1798,7 @@ void UIControl::SystemWillBecomeInvisible()
     List<UIControl*>::const_iterator end = childs.end();
     for (; it != end; ++it)
     {
-        if ((*it)->GetSystemVisible())
+        if ((*it)->GetVisible())
             (*it)->SystemWillBecomeInvisible();
     }
 
@@ -2444,7 +2421,7 @@ void UIControl::DumpInputs(int32 depthLevel)
         outStr += "| ";
     }
     outStr += "\\-";
-    outStr += name;
+    outStr += name.c_str();
     if (inputProcessorsCount > 0)
     {
         outStr += " ";
@@ -2830,6 +2807,11 @@ void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     packageContext = newPackageContext;
     for (UIControl* child : childs)
         child->PropagateParentWithContext(packageContext ? this : parentWithContext);
+}
+
+UIControl* UIControl::GetParentWithContext() const
+{
+    return parentWithContext;
 }
 
 void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)

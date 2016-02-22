@@ -55,8 +55,8 @@
  *> match yours.
  */
 #define TODO 								\
-    xmlGenericError(xmlGenericErrorContext,           \
-                    "Unimplemented block at %s:%d\n", \
+    xmlGenericError(xmlGenericErrorContext,                 \
+                    "Unimplemented block at %s:%d\n",       \
                     __FILE__, __LINE__);
 
 #define XML_URN_PUBID "urn:publicid:"
