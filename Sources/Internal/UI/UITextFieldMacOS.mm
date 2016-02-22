@@ -1319,13 +1319,21 @@ doCommandBySelector:(SEL)commandSelector
         }
         else
         {
-            text->ctrl->davaText->GetDelegate()->TextFieldShouldReturn(text->ctrl->davaText);
+            DAVA::UITextFieldDelegate* delegate = text->ctrl->davaText->GetDelegate();
+            if (delegate != nullptr)
+            {
+                delegate->TextFieldShouldReturn(text->ctrl->davaText);
+            }
         }
         result = YES;
     }
     else if (commandSelector == @selector(cancelOperation:))
     {
-        text->ctrl->davaText->GetDelegate()->TextFieldShouldCancel(text->ctrl->davaText);
+        DAVA::UITextFieldDelegate* delegate = text->ctrl->davaText->GetDelegate();
+        if (delegate != nullptr)
+        {
+            delegate->TextFieldShouldReturn(text->ctrl->davaText);
+        }
         result = YES;
     }
     else if (commandSelector == @selector(insertTab:))
