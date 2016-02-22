@@ -61,7 +61,7 @@ HUDContainer::HUDContainer(ControlNode* node_)
     , node(node_)
 {
     DVASSERT(nullptr != node);
-    SetName(FastName(String("HudContainer of ") + container->GetName().c_str()));
+    SetName(FastName(String("HudContainer of ") + node->GetName().c_str()));
     control = node->GetControl();
     visibleProperty = node->GetRootProperty()->GetVisibleProperty();
     DVASSERT(nullptr != control && nullptr != visibleProperty);
