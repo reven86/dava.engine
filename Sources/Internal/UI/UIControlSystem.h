@@ -36,7 +36,6 @@
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
 #include "UI/UIScreenTransition.h"
-#include "UI/UILoadingTransition.h"
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
