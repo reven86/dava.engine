@@ -279,11 +279,6 @@ void Logger::SetMaxFileSize(uint32 size)
     cutLogSize = size;
 }
 
-void Logger::ResetMaxFileSize()
-{
-    cutLogSize = defaultCutLogSize;
-}
-
 bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
 {
     if (!logFile.Exists())
@@ -304,7 +299,7 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
         SafeRelease(log);
     };
 
-    static const uint32 sizeToCut = cutLogSize;
+    const uint32 sizeToCut = cutLogSize;
 
     const uint32 fileSize = log->GetSize();
     if (sizeToCut >= fileSize)

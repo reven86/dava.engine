@@ -123,7 +123,6 @@ public:
 
     static FilePath GetLogPathForFilename(const String& filename);
     void SetMaxFileSize(uint32 size);
-    void ResetMaxFileSize();
     void EnableConsoleMode();
 
     const char8* GetLogLevelString(eLogLevel ll) const;
@@ -143,8 +142,7 @@ private:
     FilePath logFilename;
     Vector<LoggerOutput*> customOutputs;
     bool consoleModeEnabled;
-    const uint32 defaultCutLogSize = 512 * 1024; //0.5 MB;
-    uint32 cutLogSize = defaultCutLogSize;
+    uint32 cutLogSize = 512 * 1024; //0.5 MB;
 };
 
 class LoggerOutput
