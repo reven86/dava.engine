@@ -27,31 +27,59 @@
 =====================================================================================*/
 
 
-#ifndef QUAADLER32_H
-#define QUAADLER32_H
+#ifndef __LAUNCHER_ZIP_UTILS_H__
+#define __LAUNCHER_ZIP_UTILS_H__
 
-#include <QByteArray>
+//this is private header
+#include <QObject>
+#include <functional>
 
-#include "quachecksum32.h"
-
-/// Adler32 checksum
-/** \class QuaAdler32 quaadler32.h <quazip/quaadler32.h>
- * This class wrappers the adler32 function with the QuaChecksum32 interface.
- * See QuaChecksum32 for more info.
- */
-class QUAZIP_EXPORT QuaAdler32 : public QuaChecksum32
+class ZipError
 {
 public:
-    QuaAdler32();
-
-    quint32 calculate(const QByteArray& data);
-
-    void reset();
-    void update(const QByteArray& buf);
-    quint32 value();
-
-private:
-    quint32 checksum;
+    enum eZipListError
+    {
+        NO_ERRORS, //NO_ERROR is taken by winerror.h
+        FILE_NOT_EXISTS,
+        NOT_AN_ARCHIVE,
+        ARHIVE_DAMAGED,
+        ARCHIVER_NOT_FOUND,
+        PROCESS_FAILED_TO_START,
+        PROCESS_FAILED_TO_FINISH,
+        PARSE_ERROR,
+        ARCHIVE_IS_EMPTY,
+        OUT_DIRECTORY_NOT_EXISTS
+    };
+    ZipError(eZipListError errCode = NO_ERRORS)
+        : error(errCode)
+    {
+    }
+    eZipListError error = NO_ERRORS;
+    QString GetErrorString() const;
 };
 
-#endif //QUAADLER32_H
+namespace ZipUtils
+{
+class ZipOperationFunctor
+{
+public:
+    virtual ~ZipOperationFunctor() = default;
+
+    virtual void OnStart(){};
+    virtual void OnProgress(int){};
+    virtual void OnSuccess(){};
+    virtual void OnError(const ZipError&){};
+};
+
+using ReadyReadCallback = std::function<void(const QByteArray&)>;
+using CompressedFilesAndSizes = QMap<QString, qint64>;
+
+const QString& GetArchiverPath();
+bool IsArchiveValid(const QString& archivePath, ZipError* err = nullptr);
+bool LaunchArchiver(const QStringList& arguments, ReadyReadCallback callback = ReadyReadCallback(), ZipError* err = nullptr);
+bool GetFileList(const QString& archivePath, CompressedFilesAndSizes& files, ZipOperationFunctor& functor);
+bool TestZipArchive(const QString& archivePath, const CompressedFilesAndSizes& files, ZipOperationFunctor& functor);
+bool UnpackZipArchive(const QString& archivePath, const QString& outDir, const CompressedFilesAndSizes& files, ZipOperationFunctor& onProgress);
+}
+
+#endif // __LAUNCHER_ZIP_LIST_H__

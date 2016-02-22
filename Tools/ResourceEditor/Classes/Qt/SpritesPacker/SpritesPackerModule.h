@@ -27,31 +27,45 @@
 =====================================================================================*/
 
 
-#include "quacrc32.h"
+#ifndef __SPRITES_PACKER_MODULE_H__
+#define __SPRITES_PACKER_MODULE_H__
 
-#include "zlib.h"
+#include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
-QuaCrc32::QuaCrc32()
+#include <QObject>
+
+class SpritesPacker;
+class QAction;
+class SpritesPackerModule final : public QObject
 {
-    reset();
-}
+    Q_OBJECT
 
-quint32 QuaCrc32::calculate(const QByteArray& data)
-{
-    return crc32(crc32(0L, Z_NULL, 0), (const Bytef*)data.data(), data.size());
-}
+public:
+    SpritesPackerModule();
+    ~SpritesPackerModule() override;
 
-void QuaCrc32::reset()
-{
-    checksum = crc32(0L, Z_NULL, 0);
-}
+    QAction* GetReloadAction() const;
+    void SetAction(QAction* reloadSpritesAction);
 
-void QuaCrc32::update(const QByteArray& buf)
-{
-    checksum = crc32(checksum, (const Bytef*)buf.data(), buf.size());
-}
+    void RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
 
-quint32 QuaCrc32::value()
-{
-    return checksum;
-}
+signals:
+    void SpritesReloaded();
+
+private slots:
+
+    void RepackWithDialog();
+
+private:
+    void SetupSpritesPacker(const DAVA::FilePath& projectPath);
+    void ShowPackerDialog();
+    void ReloadObjects();
+
+private:
+    std::unique_ptr<SpritesPacker> spritesPacker;
+    QAction* reloadSpritesAction = nullptr;
+};
+
+#endif // __SPRITES_PACKER_MODULE_H__

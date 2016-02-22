@@ -74,35 +74,35 @@ public:
     size_t currentMessageRawSize = 0;
 };
 
-DAVA_TESTCLASS(UnlimitedLogOutputTest)
+DAVA_TESTCLASS (UnlimitedLogOutputTest)
 {
-  DAVA_TEST(TestFunction)
-  {
-  TestLoggerOutput testOutput;
-Logger::AddCustomOutput(&testOutput);
-
-for (auto bufSizeLocal : { 10, static_cast<int32>(bufSize), 4095, 4096, 4097 })
-{
-    String str(bufSizeLocal, 'a');
-    size_t startIndex = bufSizeLocal - messageEnd.size();
-
-    for (auto c : messageEnd)
+    DAVA_TEST (TestFunction)
     {
-        str[startIndex++] = c;
+        TestLoggerOutput testOutput;
+        Logger::AddCustomOutput(&testOutput);
+
+        for (auto bufSizeLocal : { 10, static_cast<int32>(bufSize), 4095, 4096, 4097 })
+        {
+            String str(bufSizeLocal, 'a');
+            size_t startIndex = bufSizeLocal - messageEnd.size();
+
+            for (auto c : messageEnd)
+            {
+                str[startIndex++] = c;
+            }
+
+            testOutput.currentMessageRawSize = bufSizeLocal;
+
+            Logger::Instance()->Info("%s", str.c_str());
+        }
+        Logger::RemoveCustomOutput(&testOutput);
+
+        if (!errorMessage.empty())
+        {
+            Logger::Error("Error: %s", errorMessage.c_str());
+        }
+
+        TEST_VERIFY(errorMessage.empty());
     }
-
-    testOutput.currentMessageRawSize = bufSizeLocal;
-
-    Logger::Instance()->Info("%s", str.c_str());
-}
-Logger::RemoveCustomOutput(&testOutput);
-
-if (!errorMessage.empty())
-{
-    Logger::Error("Error: %s", errorMessage.c_str());
-}
-
-TEST_VERIFY(errorMessage.empty());
-}
 }
 ;
