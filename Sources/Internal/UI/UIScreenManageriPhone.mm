@@ -113,8 +113,7 @@ void UIScreenManager::SetScreen(int screenId, UIScreenTransition* transition)
             [[ScreenManagerImpl instance] setViewController:controller];
         }
         activeControllerId = screenId;
-        UIControlSystem::Instance()->SetScreen(0, 0);
-        UIControlSystem::Instance()->ProcessScreenLogic();
+        UIControlSystem::Instance()->SetScreen(nullptr);
 
         activeScreenId = -1;
     }
