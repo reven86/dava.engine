@@ -392,6 +392,23 @@ struct PackA8
     }
 };
 
+struct UnpackA16
+{
+    inline void operator()(const uint16* input, uint32& r, uint32& g, uint32& b, uint32& a)
+    {
+        r = g = b = 0;
+        a = (*input);
+    }
+};
+
+struct PackA16
+{
+    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint16* output)
+    {
+        *output = a;
+    }
+};
+
 struct UnpackRGB888
 {
     inline void operator()(const RGB888* input, uint32& r, uint32& g, uint32& b, uint32& a)
@@ -875,6 +892,11 @@ public:
         else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
         {
             ConvertDownscaleTwiceNearest<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_A16) && (outFormat == FORMAT_A16))
+        {
+            ConvertDownscaleTwiceNearest<uint16, uint16, UnpackA16, PackA16> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else

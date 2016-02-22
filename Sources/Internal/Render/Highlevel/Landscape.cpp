@@ -309,7 +309,7 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
     uint32 hmSize = heightmap->Size();
     DVASSERT(IsPowerOf2(hmSize));
 
-    Image* mip0 = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
+    Image* mip0 = Image::CreateFromData(hmSize, hmSize, FORMAT_A16, reinterpret_cast<uint8*>(heightmap->Data()));
     Vector<Image*> textureData = mip0->CreateMipMapsImages(false, false);
     SafeRelease(mip0);
 
@@ -952,28 +952,47 @@ void Landscape::AllocateGeometryDataInstancing()
     else
         landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
-    uint32 verticesCount = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
-    VertexInstancing* patchVertices = new VertexInstancing[verticesCount];
-    uint16* patchIndices = new uint16[PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6];
+    const uint32 VERTICES_COUNT = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS * PATCH_SIZE_QUADS;
+    const uint32 INDICES_COUNT = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 12;
+    const uint32 MID_VERTECIES_OFFSET = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
+
+    VertexInstancing* patchVertices = new VertexInstancing[VERTICES_COUNT];
+    uint16* patchIndices = new uint16[INDICES_COUNT];
     uint16* indicesPtr = patchIndices;
+
+    float32 quadSize = 1.f / PATCH_SIZE_QUADS;
+
     for (uint32 y = 0; y < PATCH_SIZE_VERTICES; ++y)
     {
         for (uint32 x = 0; x < PATCH_SIZE_VERTICES; ++x)
         {
             VertexInstancing& vertex = patchVertices[y * PATCH_SIZE_VERTICES + x];
-            vertex.position = Vector2(float32(x) / (PATCH_SIZE_VERTICES - 1), float32(y) / (PATCH_SIZE_VERTICES - 1));
+            vertex.position = Vector2(x * quadSize, y * quadSize);
             vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero for middle vertices
             vertex.morphDir = Vector2(0.f, 0.f);
 
             if (x < (PATCH_SIZE_VERTICES - 1) && y < (PATCH_SIZE_VERTICES - 1))
             {
+                VertexInstancing& vertex = patchVertices[MID_VERTECIES_OFFSET + y * PATCH_SIZE_QUADS + x];
+                vertex.position = Vector2((x + .5f) * quadSize, (y + .5f) * quadSize);
+                vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero for middle vertices
+                vertex.morphDir = Vector2(0.f, 0.f);
+
                 *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 0);
                 *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
-                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = MID_VERTECIES_OFFSET + y * PATCH_SIZE_QUADS + x;
 
                 *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
                 *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = MID_VERTECIES_OFFSET + y * PATCH_SIZE_QUADS + x;
+
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 1);
                 *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = MID_VERTECIES_OFFSET + y * PATCH_SIZE_QUADS + x;
+
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = MID_VERTECIES_OFFSET + y * PATCH_SIZE_QUADS + x;
             }
         }
     }
@@ -998,13 +1017,13 @@ void Landscape::AllocateGeometryDataInstancing()
     }
 
     rhi::VertexBuffer::Descriptor vdesc;
-    vdesc.size = verticesCount * sizeof(VertexInstancing);
+    vdesc.size = VERTICES_COUNT * sizeof(VertexInstancing);
     vdesc.initialData = patchVertices;
     vdesc.usage = rhi::USAGE_STATICDRAW;
     patchVertexBuffer = rhi::CreateVertexBuffer(vdesc);
 
     rhi::IndexBuffer::Descriptor idesc;
-    idesc.size = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6 * sizeof(uint16);
+    idesc.size = INDICES_COUNT * sizeof(uint16);
     idesc.initialData = patchIndices;
     idesc.usage = rhi::USAGE_STATICDRAW;
     patchIndexBuffer = rhi::CreateIndexBuffer(idesc);
@@ -1023,8 +1042,8 @@ void Landscape::AllocateGeometryDataInstancing()
     batch->vertexBuffer = patchVertexBuffer;
     batch->indexBuffer = patchIndexBuffer;
     batch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-    batch->indexCount = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6;
-    batch->vertexCount = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
+    batch->indexCount = INDICES_COUNT;
+    batch->vertexCount = VERTICES_COUNT;
 
     rhi::VertexLayout vLayout;
     vLayout.AddStream(rhi::VDF_PER_VERTEX);

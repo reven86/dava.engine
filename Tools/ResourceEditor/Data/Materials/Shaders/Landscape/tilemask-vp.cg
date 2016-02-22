@@ -88,18 +88,17 @@ VPROG_BEGIN
 	float baseLod = VP_IN_TEXCOORD6.x;
 	float morphAmount = VP_IN_TEXCOORD6.y;
 	
-    float4 heightmapSample0 = VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset * 2.0, baseLod + 1.0);
-	float4 heightmapSample1 = VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod);
-	float4 heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
+    float heightmapSample0 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset) * 2.0, baseLod + 1.0));
+	float heightmapSample1 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset), baseLod));
+	float heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
 	
 #else
 	
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset), 0.0);
+	float heightmapSample = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset), 0.0));
 	
 #endif
 
-	float relativeHeight = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
-    float3 vx_position = float3( relativePosition - 0.5, relativeHeight ) * boundingBoxSize;
+    float3 vx_position = float3( relativePosition - 0.5, heightmapSample ) * boundingBoxSize;
 	
     VP_OUT_POSITION = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewProjMatrix );
     VP_OUT(texCoord) = float2(relativePosition.x, 1.0 - relativePosition.y);
