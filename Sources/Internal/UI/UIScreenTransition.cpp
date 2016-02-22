@@ -151,5 +151,4 @@ bool UIScreenTransition::IsComplete() const
 {
     return complete;
 }
-
 };

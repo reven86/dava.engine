@@ -246,7 +246,7 @@ void UIControl::SetName(const String& name_)
 }
 
 void UIControl::SetName(const FastName& name_)
-    {
+{
     if (name != name_)
     {
         SetStyleSheetDirty();
@@ -267,14 +267,14 @@ UIControl* UIControl::FindByName(const String& name, bool recursive) const
 }
 
 UIControl* UIControl::FindByName(const FastName& name, bool recursive) const
-    {
+{
     return UIControlHelpers::FindChildControlByName(name, this, recursive);
 }
 
 const UIControl* UIControl::FindByPath(const String& path) const
-        {
+{
     return UIControlHelpers::FindControlByPath(path, this);
-        }
+}
 
 UIControl* UIControl::FindByPath(const String& path)
 {
