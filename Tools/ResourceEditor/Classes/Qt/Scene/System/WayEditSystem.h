@@ -96,8 +96,8 @@ protected:
     void UpdateSelectionMask();
     void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
 
-    bool shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection) override;
-    
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) override;
+
 protected:
     EntityGroup currentSelection;
     EntityGroup selectedWaypoints;

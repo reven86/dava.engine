@@ -265,7 +265,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
     {
         for (auto selectionDelegate : selectionDelegates)
         {
-            if (selectionDelegate->shouldChangeSelectionFromCurrent(curSelections) == false)
+            if (selectionDelegate->AllowChangeSelectionReplacingCurrent(curSelections) == false)
             {
                 return;
             }
@@ -787,12 +787,13 @@ void SceneSelectionSystem::FinishSelection()
     SetSelection(newSelection);
 }
 
-void SceneSelectionSystem::addSelectionDelegate(SceneSelectionSystemDelegate* aDelegate)
+void SceneSelectionSystem::AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_)
 {
-    selectionDelegates.insert(aDelegate);
+    DVASSERT(std::find(selectionDelegates.begin(), selectionDelegates.end(), delegate_) == selectionDelegates.end());
+    selectionDelegates.push_back(delegate_);
 }
 
-void SceneSelectionSystem::removeSelectionDelegate(SceneSelectionSystemDelegate* aDelegate)
+void SceneSelectionSystem::RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_)
 {
-    selectionDelegates.erase(aDelegate);
+    selectionDelegates.push_back(delegate_);
 }

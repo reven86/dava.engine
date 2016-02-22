@@ -131,43 +131,40 @@ private:
     
     DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
     bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
-    
-    bool shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection) override;
+
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) override;
 
 private:
-    SceneCollisionSystem* collisionSystem;
-    SceneCameraSystem* cameraSystem;
-    HoodSystem* hoodSystem;
-    
-    CloneState cloneState;
-
-    // starting modification pos
-    DAVA::Vector3 modifStartPos3d;
-    DAVA::Vector2 modifStartPos2d;
+    SceneCollisionSystem* collisionSystem = nullptr;
+    SceneCameraSystem* cameraSystem = nullptr;
+    HoodSystem* hoodSystem = nullptr;
 
     // entities to modify
     DAVA::Vector<EntityToModify> modifEntities;
     DAVA::Vector<DAVA::Entity*> clonedEntities;
+    DAVA::List<EntityModificationSystemDelegate*> delegates;
 
     // values calculated, when starting modification
     ST_PivotPoint modifPivotPoint;
     DAVA::Vector3 modifEntitiesCenter;
+    DAVA::Vector3 modifStartPos3d;
+    DAVA::Vector2 modifStartPos2d;
     DAVA::Matrix4 moveToZeroPosRelativeCenter;
     DAVA::Matrix4 moveFromZeroPosRelativeCenter;
     DAVA::Vector2 rotateNormal;
     DAVA::Vector3 rotateAround;
-    DAVA::float32 crossXY;
-    DAVA::float32 crossXZ;
-    DAVA::float32 crossYZ;
-    DAVA::List<EntityModificationSystemDelegate*> delegates;
-    
-    ST_ModifMode curMode;
-    ST_Axis curAxis;
-    
-    bool inModifState;
-    bool isOrthoModif;
-    bool modified;
-    bool snapToLandscape;
+    DAVA::float32 crossXY = 0.0f;
+    DAVA::float32 crossXZ = 0.0f;
+    DAVA::float32 crossYZ = 0.0f;
+
+    CloneState cloneState = CloneState::CLONE_DONT;
+    ST_ModifMode curMode = ST_ModifMode::ST_MODIF_OFF;
+    ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
+
+    bool inModifState = false;
+    bool isOrthoModif = false;
+    bool modified = false;
+    bool snapToLandscape = false;
 };
 
 #endif //__ENTITY_MODIFICATION_SYSTEM_H__

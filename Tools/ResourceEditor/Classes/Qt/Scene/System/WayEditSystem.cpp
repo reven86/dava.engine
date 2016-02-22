@@ -316,14 +316,13 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                     sceneEditor->selectionSystem->SetLocked(true);
                     sceneEditor->BeginBatch("Add Waypoint");
                     sceneEditor->Exec(new EntityAddCommand(newWaypoint, currentWayParent));
-                    sceneEditor->EndBatch();
-
                     if (!validPrevPoints.IsEmpty())
                     {
                         AddEdges(validPrevPoints, newWaypoint);
                     }
+                    sceneEditor->EndBatch();
 
-                    prevSelectedWaypoints = EntityGroup(newWaypoint, sceneEditor->selectionSystem->GetSelectionAABox(newWaypoint));
+                    prevSelectedWaypoints = EntityGroup(newWaypoint, sceneEditor->selectionSystem->GetUntransformedBoundingBox(newWaypoint));
                     sceneEditor->selectionSystem->SetLocked(false);
                     newWaypoint->Release();
                 }
@@ -528,7 +527,7 @@ void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEnt
     }
 }
 
-bool WayEditSystem::shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection)
+bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection)
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);

@@ -51,18 +51,12 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene* scene, SceneColl
     , collisionSystem(colSys)
     , cameraSystem(camSys)
     , hoodSystem(hoodSys)
-    , cloneState(CLONE_DONT)
-    , inModifState(false)
-    , modified(false)
-    , snapToLandscape(false)
 {
     SetModifMode(ST_MODIF_OFF);
     SetModifAxis(ST_AXIS_Z);
 }
 
-EntityModificationSystem::~EntityModificationSystem()
-{
-}
+EntityModificationSystem::~EntityModificationSystem() = default;
 
 void EntityModificationSystem::SetModifAxis(ST_Axis axis)
 {
@@ -1141,7 +1135,7 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
     }
 }
 
-bool EntityModificationSystem::shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection)
+bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection)
 {
     return (GetModifMode() == ST_ModifMode::ST_MODIF_OFF) || !ModifCanStartByMouse(currentSelection);
 }

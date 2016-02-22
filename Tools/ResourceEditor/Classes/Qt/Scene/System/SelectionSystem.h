@@ -116,9 +116,9 @@ public:
 
     void Draw();
     void CancelSelection();
-    
-    void addSelectionDelegate(SceneSelectionSystemDelegate* aDelegate);
-    void removeSelectionDelegate(SceneSelectionSystemDelegate* aDelegate);
+
+    void AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+    void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
 
 private:
     void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
@@ -160,7 +160,7 @@ private:
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
-    DAVA::Set<SceneSelectionSystemDelegate*> selectionDelegates;
+    DAVA::Vector<SceneSelectionSystemDelegate*> selectionDelegates;
     ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
     GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
     bool selectionAllowed = true;

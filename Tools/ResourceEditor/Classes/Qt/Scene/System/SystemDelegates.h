@@ -39,8 +39,6 @@ class EntityGroup;
 class EntityModificationSystemDelegate
 {
 public:
-    virtual ~EntityModificationSystemDelegate() = default;
-    
     virtual void WillClone(DAVA::Entity* originalEntity) = 0;
     virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
 };
@@ -48,8 +46,6 @@ public:
 class StructureSystemDelegate
 {
 public:
-    virtual ~StructureSystemDelegate() = default;
-    
     virtual void WillRemove(DAVA::Entity* removedEntity) = 0;
     virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
 };
@@ -57,7 +53,7 @@ public:
 class SceneSelectionSystemDelegate
 {
 public:
-    virtual bool shouldChangeSelectionFromCurrent(const EntityGroup& currentSelection) = 0;
+    virtual bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) = 0;
 };
 
 #endif //__SYSTEM_DELEGATES_H__
