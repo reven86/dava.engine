@@ -27,11 +27,11 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_LOADING_TRANSITION_H__
-#define __DAVAENGINE_UI_LOADING_TRANSITION_H__
+#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
+#define __DAVAENGINE_UI_LOADING_SCREEN_H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIScreenTransition.h"
+#include "UI/UIScreen.h"
 
 namespace DAVA
 {
@@ -58,4 +58,4 @@ private:
 
 
 
-#endif // __DAVAENGINE_UI_LOADING_TRANSITION_H__
+#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__

@@ -27,13 +27,11 @@
 =====================================================================================*/
 
 
-#include "UI/UILoadingTransition.h"
+#include "UI/UILoadingScreen.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreenManager.h"
 #include "Debug/Replay.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/RenderHelper.h"
 #include "Job/JobManager.h"
 
 namespace DAVA
