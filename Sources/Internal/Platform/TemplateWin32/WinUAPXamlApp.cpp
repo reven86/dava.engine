@@ -214,6 +214,7 @@ void WinUAPXamlApp::PreStartAppSettings()
         StatusBar::GetForCurrentView()->HideAsync();
     }
     Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
+    Window::Current->CoreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
@@ -301,6 +302,10 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     Core::Instance()->CreateSingletons();
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
+    if (!isWindowFocused)
+    {
+        isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
+    }
 
     core->RunOnUIThreadBlocked([this]() {
         SetupEventHandlers();
@@ -392,9 +397,11 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
         {
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
+            isWindowFocused = true;
             isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
             break;
         case CoreWindowActivationState::Deactivated:
+            isWindowFocused = false;
             isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
             break;
@@ -853,7 +860,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     Resuming += ref new EventHandler<::Platform::Object ^>(this, &WinUAPXamlApp::OnResuming);
 
     CoreWindow ^ coreWindow = Window::Current->CoreWindow;
-    coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
+    //     coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
     auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
