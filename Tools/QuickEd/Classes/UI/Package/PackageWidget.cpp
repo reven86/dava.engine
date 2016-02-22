@@ -415,6 +415,8 @@ void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelect
     }
 
     selectionContainer.MergeSelection(selected, deselected);
+    auto currentIndex = treeView->currentIndex();
+    currentIndexes.push(currentIndex);
 
     RefreshActions();
     emit SelectedNodesChanged(selected, deselected);
@@ -773,7 +775,12 @@ void PackageWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
 void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     DVASSERT(!selected.empty() || !deselected.empty());
-    selectionContainer.MergeSelection(selected, deselected);
+    //we can catch response from systems when we select any of controlNodes in package widget
+    SelectedNodes reallySelected;
+    SelectedNodes reallyDeselected;
+    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
+    selectionContainer.GetNotExistedItems(selected, reallySelected);
+    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
 
     RefreshActions();
     DVASSERT(!document.isNull());
@@ -781,11 +788,11 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     {
         return;
     }
-    for (const auto& node : deselected)
+    for (const auto& node : reallyDeselected)
     {
         DeselectNodeImpl(node);
     }
-    for (const auto& node : selected)
+    for (const auto& node : reallySelected)
     {
         SelectNodeImpl(node);
     }
