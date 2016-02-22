@@ -1024,15 +1024,15 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
-void UITextField::WillBecomeVisible()
+void UITextField::OnBecomeVisible()
 {
-    UIControl::WillBecomeVisible();
+    UIControl::OnBecomeVisible();
     textFieldImpl->SetVisible(visible);
 }
 
-void UITextField::WillBecomeInvisible()
+void UITextField::OnBecomeInvisible()
 {
-    UIControl::WillBecomeInvisible();
+    UIControl::OnBecomeInvisible();
     textFieldImpl->SetVisible(false);
 }
 

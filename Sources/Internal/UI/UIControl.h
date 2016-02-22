@@ -970,22 +970,6 @@ public:
 
 public:
     /**
-     \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after OnAppear() for the other screens.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     \param[in] newFullScreenSize New full screen size in virtual coordinates.
-        Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
-     */
-    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
-    /**
-     \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after OnAppear() for the other screens.
-     \param[in] newFullScreenSize New full screen size in virtual coordinates.
-        Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
-     */
-    virtual void ScreenSizeDidChanged(const Rect& newFullScreenRect);
-
-    /**
      \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
         Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
      \param[in] timeElapsed Current frame time delta.
@@ -1092,17 +1076,38 @@ public:
     virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
 protected:
+    enum class eViewState : int32
+    {
+        NotInHierarhy,
+        InHierarhy,
+        Visible,
+    };
+
+    virtual void SystemBecomeVisible();
+    virtual void SystemBecomeInvisible();
+
+    DAVA_DEPRECATED(virtual void WillBecomeVisible());
+    DAVA_DEPRECATED(virtual void WillBecomeInvisible());
+
+    virtual void OnBecomeVisible();
+    virtual void OnBecomeInvisible();
+
     virtual void SystemAppear();
     virtual void SystemDisappear();
 
     virtual void OnAppear();
     virtual void OnDisappear();
 
-    virtual void SystemWillBecomeVisible();
-    virtual void SystemWillBecomeInvisible();
+    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
+    virtual void OnScreenSizeDidChanged(const Rect& newFullScreenRect);
 
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
+    void InvokeAppear(eViewState parentViewState);
+    void InvokeDisappear();
+
+    void InvokeBecomeVisible(eViewState parentViewState);
+    void InvokeBecomeInvisible();
+
+    void ChangeViewState(eViewState newViewState);
 
 public:
     //TODO: Борода напиши дескрипшн.
@@ -1231,16 +1236,6 @@ protected:
     void DrawPivotPoint(const Rect& drawRect);
 
 private:
-    enum class eViewState : int32
-    {
-        NotInHierarhy,
-        InHierarhy,
-        Visible,
-    };
-
-    void ChangeViewState(eViewState newViewState);
-
-private:
     int32 tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
@@ -1332,8 +1327,6 @@ private:
     /* Styles */
 
 public:
-    void SystemNotifyVisibilityChanged();
-
     virtual int32 GetBackgroundComponentsCount() const;
     virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
     virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;

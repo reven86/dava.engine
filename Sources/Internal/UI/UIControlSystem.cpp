@@ -47,19 +47,6 @@ namespace DAVA
 {
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
-UIControlSystem::~UIControlSystem()
-{
-    if (popupContainer->GetSystemVisible())
-        popupContainer->SystemWillBecomeInvisible();
-    popupContainer->SystemDisappear();
-    popupContainer = nullptr;
-
-    currentScreen = nullptr;
-    SafeDelete(styleSheetSystem);
-    SafeDelete(layoutSystem);
-    SafeDelete(screenshoter);
-}
-
 UIControlSystem::UIControlSystem()
     : clearColor(Color::Clear)
 {
@@ -77,9 +64,19 @@ UIControlSystem::UIControlSystem()
     popupContainer->SetName("UIControlSystem_popupContainer");
     popupContainer->SetInputEnabled(false);
 
-    popupContainer->SystemAppear();
-    if (popupContainer->GetSystemVisible())
-        popupContainer->SystemWillBecomeVisible();
+    popupContainer->InvokeAppear(UIControl::eViewState::Visible);
+}
+
+UIControlSystem::~UIControlSystem()
+{
+    popupContainer->InvokeDisappear();
+
+    popupContainer = nullptr;
+
+    currentScreen = nullptr;
+    SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
+    SafeDelete(screenshoter);
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
@@ -99,18 +96,14 @@ void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _tran
         Logger::Warning("2 screen switches during one frame.");
     }
 
-    // 2 switches on one frame can cause memory leak
-    nextScreenTransition = nullptr;
-    nextScreen = nullptr;
-
     nextScreenTransition = _transition;
+    nextScreen = _nextScreen;
 
-    if (_nextScreen == nullptr)
+    if (nextScreen == nullptr)
     {
         removeCurrentScreen = true;
+        ProcessScreenLogic();
     }
-
-    nextScreen = _nextScreen;
 }
 
 UIScreen* UIControlSystem::GetScreen() const
@@ -214,9 +207,7 @@ void UIControlSystem::ProcessScreenLogic()
         // if we have current screen we call events, unload resources for it group
         if (currentScreen)
         {
-            if (currentScreen->GetSystemVisible())
-                currentScreen->SystemWillBecomeInvisible();
-            currentScreen->SystemDisappear();
+            currentScreen->InvokeDisappear();
 
             RefPtr<UIScreen> prevScreen = currentScreen;
             currentScreen = nullptr;
@@ -239,9 +230,7 @@ void UIControlSystem::ProcessScreenLogic()
         currentScreen = nextScreenProcessed;
         if (currentScreen)
         {
-            currentScreen->SystemAppear();
-            if (currentScreen->GetSystemVisible())
-                currentScreen->SystemWillBecomeVisible();
+            currentScreen->InvokeAppear(UIControl::eViewState::Visible);
         }
 
         NotifyListenersDidSwitch(currentScreen.Get());
@@ -254,9 +243,7 @@ void UIControlSystem::ProcessScreenLogic()
             LockInput();
 
             currentScreenTransition = nextScreenTransitionProcessed;
-            currentScreenTransition->SystemAppear();
-            if (currentScreenTransition->GetSystemVisible())
-                currentScreenTransition->SystemWillBecomeVisible();
+            currentScreenTransition->InvokeAppear(UIControl::eViewState::Visible);
         }
 
         UnlockInput();
@@ -269,9 +256,7 @@ void UIControlSystem::ProcessScreenLogic()
     {
         if (currentScreenTransition->IsComplete())
         {
-            if (currentScreenTransition->GetSystemVisible())
-                currentScreenTransition->SystemWillBecomeInvisible();
-            currentScreenTransition->SystemDisappear();
+            currentScreenTransition->InvokeDisappear();
 
             RefPtr<UIScreenTransition> prevScreenTransitionProcessed = currentScreenTransition;
             currentScreenTransition = nullptr;
@@ -280,7 +265,6 @@ void UIControlSystem::ProcessScreenLogic()
             UnlockSwitch();
 
             prevScreenTransitionProcessed->EndTransition();
-            prevScreenTransitionProcessed = nullptr;
         }
     }
 

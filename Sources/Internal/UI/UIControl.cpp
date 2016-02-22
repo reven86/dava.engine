@@ -86,7 +86,6 @@ UIControl::UIControl(const Rect& rect)
     parent = NULL;
     prevControlState = controlState = STATE_NORMAL;
     visible = true;
-    visibleForUIEditor = true;
     /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -651,48 +650,21 @@ void UIControl::SetVisible(bool isVisible)
         return;
     }
 
-    bool oldSystemVisible = GetSystemVisible();
     visible = isVisible;
-    if (GetSystemVisible() == oldSystemVisible)
+
+    if (parent)
     {
-        return;
+        if (visible)
+        {
+            InvokeBecomeVisible(parent->viewState);
+        }
+        else
+        {
+            InvokeBecomeInvisible();
+        }
     }
 
     SetLayoutDirty();
-
-    SystemNotifyVisibilityChanged();
-}
-
-void UIControl::SetVisibleForUIEditor(bool value)
-{
-    if (visibleForUIEditor == value)
-    {
-        return;
-    }
-
-    bool oldSystemVisible = GetSystemVisible();
-    visibleForUIEditor = value;
-    if (GetSystemVisible() == oldSystemVisible)
-    {
-        return;
-    }
-
-    SystemNotifyVisibilityChanged();
-}
-
-void UIControl::SystemNotifyVisibilityChanged()
-{
-    if (parent && parent->IsOnScreen())
-    {
-        if (GetSystemVisible())
-        {
-            SystemWillBecomeVisible();
-        }
-        else if (IsOnScreen())
-        {
-            SystemWillBecomeInvisible();
-        }
-    }
 }
 
 void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
@@ -789,81 +761,6 @@ bool UIControl::GetHover() const
     return (controlState & STATE_HOVER) != 0;
 }
 
-bool IsControlInViewHierarchy(const UIControl* control)
-{
-    while (control->GetParent() != nullptr)
-    {
-        control = control->GetParent();
-    }
-
-    UIControlSystem* cs = UIControlSystem::Instance();
-    bool isRootControl = (cs->GetScreen() == control) ||
-    (cs->GetPopupContainer() == control) ||
-    (cs->GetScreenTransition() == control);
-
-    return isRootControl ? true : false;
-}
-
-bool IsControlVisibleOnScreen(const UIControl* control)
-{
-    while (control->GetParent() != nullptr)
-    {
-        if (!control->GetSystemVisible())
-            return false;
-
-        control = control->GetParent();
-    }
-
-    UIControlSystem* cs = UIControlSystem::Instance();
-    bool isRootControl = (cs->GetScreen() == control) ||
-    (cs->GetPopupContainer() == control) ||
-    (cs->GetScreenTransition() == control);
-
-    return isRootControl ? control->GetSystemVisible() : false;
-}
-
-void UIControl::ChangeViewState(eViewState newViewState)
-{
-    static const Vector<std::pair<eViewState, eViewState>> validTransitions =
-    {
-      { eViewState::NotInHierarhy, eViewState::InHierarhy },
-      { eViewState::InHierarhy, eViewState::Visible },
-      { eViewState::Visible, eViewState::InHierarhy },
-      { eViewState::InHierarhy, eViewState::NotInHierarhy }
-    };
-
-    bool verified = true;
-    String errorStr;
-
-    if (!IsControlInViewHierarchy(this))
-    {
-        errorStr += "Control not in hierarhy.";
-        verified = false;
-    }
-
-    std::pair<eViewState, eViewState> transition = { viewState, newViewState };
-    if (std::find(validTransitions.begin(), validTransitions.end(), transition) == validTransitions.end())
-    {
-        errorStr += "Unexpected change sequence.";
-        verified = false;
-    }
-
-    if (viewState == eViewState::InHierarhy && newViewState == eViewState::Visible && !IsControlInViewHierarchy(this))
-    {
-        errorStr += "Control not visible on screen.";
-        verified = false;
-    }
-
-    if (!verified)
-    {
-        String errorMsg = Format("[UIControl::ChangeViewState] Control '%s', change from state %d to state %d. %s", GetName().c_str(), viewState, newViewState, errorStr.c_str());
-        Logger::Error(errorMsg.c_str());
-        DVASSERT_MSG(false, errorMsg.c_str());
-    }
-
-    viewState = newViewState;
-}
-
 void UIControl::AddControl(UIControl* control)
 {
     control->Retain();
@@ -872,14 +769,8 @@ void UIControl::AddControl(UIControl* control)
     control->isUpdated = false;
     control->SetParent(this);
     children.push_back(control);
-    if (InViewHierarchy())
-    {
-        control->SystemAppear();
-        if (IsOnScreen() && control->GetSystemVisible())
-        {
-            control->SystemWillBecomeVisible();
-        }
-    }
+
+    control->InvokeAppear(viewState);
 
     isIteratorCorrupted = true;
     SetLayoutDirty();
@@ -887,7 +778,7 @@ void UIControl::AddControl(UIControl* control)
 
 void UIControl::RemoveControl(UIControl* control)
 {
-    if (NULL == control)
+    if (nullptr == control)
     {
         return;
     }
@@ -897,14 +788,7 @@ void UIControl::RemoveControl(UIControl* control)
     {
         if ((*it) == control)
         {
-            if (control->InViewHierarchy())
-            {
-                if (control->IsOnScreen())
-                {
-                    control->SystemWillBecomeInvisible();
-                }
-                control->SystemDisappear();
-            }
+            control->InvokeDisappear();
 
             control->SetParent(NULL);
             children.erase(it);
@@ -975,14 +859,8 @@ void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
 
             children.insert(it, control);
             control->SetParent(this);
-            if (InViewHierarchy())
-            {
-                control->SystemAppear();
-                if (IsOnScreen() && control->GetSystemVisible())
-                {
-                    control->SystemWillBecomeVisible();
-                }
-            }
+
+            control->InvokeAppear(viewState);
 
             isIteratorCorrupted = true;
             SetLayoutDirty();
@@ -1006,14 +884,7 @@ void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
             children.insert(++it, control);
             control->SetParent(this);
 
-            if (InViewHierarchy())
-            {
-                control->SystemAppear();
-                if (IsOnScreen() && control->GetSystemVisible())
-                {
-                    control->SystemWillBecomeVisible();
-                }
-            }
+            control->InvokeAppear(viewState);
 
             isIteratorCorrupted = true;
             SetLayoutDirty();
@@ -1108,7 +979,6 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     controlState = srcControl->controlState;
     visible = srcControl->visible;
-    visibleForUIEditor = srcControl->visibleForUIEditor;
     inputEnabled = srcControl->inputEnabled;
     clipContents = srcControl->clipContents;
 
@@ -1171,10 +1041,6 @@ bool UIControl::IsOnScreen() const
     return (viewState == eViewState::Visible);
 }
 
-void UIControl::ScreenSizeDidChanged(const Rect& newFullScreenRect)
-{
-}
-
 void UIControl::SystemUpdate(float32 timeElapsed)
 {
     UIControlSystem::Instance()->updateCounter++;
@@ -1210,18 +1076,18 @@ void UIControl::SystemUpdate(float32 timeElapsed)
     }
 
     it = children.begin();
+    isIteratorCorrupted = false;
     while (it != children.end())
     {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        if (!current->isUpdated)
+        RefPtr<UIControl> child;
+        child = *it;
+        if (!child->isUpdated)
         {
-            current->Retain();
-            current->SystemUpdate(timeElapsed);
-            current->Release();
+            child->SystemUpdate(timeElapsed);
             if (isIteratorCorrupted)
             {
                 it = children.begin();
+                isIteratorCorrupted = false;
                 continue;
             }
         }
@@ -1231,7 +1097,7 @@ void UIControl::SystemUpdate(float32 timeElapsed)
 
 void UIControl::SystemDraw(const UIGeometricData& geometricData)
 {
-    if (!GetSystemVisible())
+    if (!GetVisible())
         return;
 
     UIControlSystem::Instance()->drawCounter++;
@@ -1378,7 +1244,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 
 bool UIControl::SystemProcessInput(UIEvent* currentInput)
 {
-    if (!inputEnabled || !GetSystemVisible() || controlState & STATE_DISABLED)
+    if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
     {
         return false;
     }
@@ -1591,7 +1457,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
     UIControlSystem::Instance()->inputCounter++;
     isUpdated = true;
 
-    if (!GetSystemVisible())
+    if (!GetVisible())
         return false;
 
     //if(currentInput->touchLocker != this)
@@ -1705,114 +1571,17 @@ void UIControl::InputCancelled(UIEvent* currentInput)
 void UIControl::Update(float32 timeElapsed)
 {
 }
+
 void UIControl::Draw(const UIGeometricData& geometricData)
 {
     background->Draw(geometricData);
 }
+
 void UIControl::DrawAfterChilds(const UIGeometricData& geometricData)
 {
 }
 
-void UIControl::SystemAppear()
-{
-    if (viewState >= eViewState::InHierarhy)
-    {
-        DVASSERT_MSG(false, Format("Control '%s'", name.c_str()).c_str());
-        return;
-    }
-
-    ChangeViewState(eViewState::InHierarhy);
-
-    OnAppear();
-
-    auto it = children.begin();
-    while (it != children.end())
-    {
-        UIControl* child = *it;
-        if (!child->InViewHierarchy())
-        {
-            isIteratorCorrupted = false;
-
-            child->Retain();
-            child->SystemAppear();
-            child->Release();
-
-            if (isIteratorCorrupted)
-            {
-                it = children.begin();
-                continue;
-            }
-        }
-        ++it;
-    }
-}
-
-void UIControl::SystemDisappear()
-{
-    if (viewState != eViewState::InHierarhy)
-    {
-        DVASSERT_MSG(false, Format("Control '%s'", name.c_str()).c_str());
-        return;
-    }
-
-    auto it = children.rbegin();
-    while (it != children.rend())
-    {
-        UIControl* child = *it;
-        if (child->InViewHierarchy())
-        {
-            isIteratorCorrupted = false;
-
-            child->Retain();
-            child->SystemDisappear();
-            child->Release();
-
-            if (isIteratorCorrupted)
-            {
-                it = children.rbegin();
-                continue;
-            }
-        }
-        ++it;
-    }
-
-    OnDisappear();
-
-    ChangeViewState(eViewState::NotInHierarhy);
-}
-
-void UIControl::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
-{
-    ScreenSizeDidChanged(newFullScreenRect);
-
-    auto it = children.begin();
-    while (it != children.end())
-    {
-        isIteratorCorrupted = false;
-
-        UIControl* current = *it;
-        current->Retain();
-        current->SystemScreenSizeDidChanged(newFullScreenRect);
-        current->Release();
-
-        if (isIteratorCorrupted)
-        {
-            it = children.begin();
-            continue;
-        }
-        ++it;
-    }
-}
-
-void UIControl::OnAppear()
-{
-}
-
-void UIControl::OnDisappear()
-{
-}
-
-void UIControl::SystemWillBecomeVisible()
+void UIControl::SystemBecomeVisible()
 {
     if (viewState == eViewState::Visible)
     {
@@ -1822,31 +1591,29 @@ void UIControl::SystemWillBecomeVisible()
 
     ChangeViewState(eViewState::Visible);
 
-    WillBecomeVisible();
+    OnBecomeVisible();
 
     auto it = children.begin();
+    isIteratorCorrupted = false;
     while (it != children.end())
     {
-        UIControl* child = *it;
-        if (!child->IsOnScreen() && child->GetSystemVisible())
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->InvokeBecomeVisible(viewState);
+
+        if (isIteratorCorrupted)
         {
+            it = children.begin();
             isIteratorCorrupted = false;
-
-            child->Retain();
-            child->SystemWillBecomeVisible();
-            child->Release();
-
-            if (isIteratorCorrupted)
-            {
-                it = children.begin();
-                continue;
-            }
+            continue;
         }
+
         ++it;
     }
 }
 
-void UIControl::SystemWillBecomeInvisible()
+void UIControl::SystemBecomeInvisible()
 {
     if (viewState != eViewState::Visible)
     {
@@ -1868,27 +1635,26 @@ void UIControl::SystemWillBecomeInvisible()
     }
 
     auto it = children.rbegin();
+    isIteratorCorrupted = false;
     while (it != children.rend())
     {
-        UIControl* child = *it;
-        if (child->IsOnScreen() && child->GetSystemVisible())
+        RefPtr<UIControl> child;
+        child = *it;
+        if (child->IsOnScreen())
         {
-            isIteratorCorrupted = false;
-
-            child->Retain();
-            child->SystemWillBecomeInvisible();
-            child->Release();
+            child->InvokeBecomeInvisible();
 
             if (isIteratorCorrupted)
             {
                 it = children.rbegin();
+                isIteratorCorrupted = false;
                 continue;
             }
         }
         ++it;
     }
 
-    WillBecomeInvisible();
+    OnBecomeInvisible();
 
     ChangeViewState(eViewState::InHierarhy);
 }
@@ -1899,6 +1665,223 @@ void UIControl::WillBecomeVisible()
 
 void UIControl::WillBecomeInvisible()
 {
+}
+
+void UIControl::OnBecomeVisible()
+{
+    WillBecomeVisible();
+}
+
+void UIControl::OnBecomeInvisible()
+{
+    WillBecomeInvisible();
+}
+
+void UIControl::SystemAppear()
+{
+    if (viewState >= eViewState::InHierarhy)
+    {
+        DVASSERT_MSG(false, Format("Control '%s'", name.c_str()).c_str());
+        return;
+    }
+
+    ChangeViewState(eViewState::InHierarhy);
+
+    OnAppear();
+
+    auto it = children.begin();
+    isIteratorCorrupted = false;
+    while (it != children.end())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->InvokeAppear(viewState);
+
+        if (isIteratorCorrupted)
+        {
+            it = children.begin();
+            isIteratorCorrupted = false;
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::SystemDisappear()
+{
+    if (viewState != eViewState::InHierarhy)
+    {
+        DVASSERT_MSG(false, Format("Control '%s'", name.c_str()).c_str());
+        return;
+    }
+
+    auto it = children.rbegin();
+    isIteratorCorrupted = false;
+    while (it != children.rend())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->InvokeDisappear();
+
+        if (isIteratorCorrupted)
+        {
+            it = children.rbegin();
+            isIteratorCorrupted = false;
+            continue;
+        }
+
+        ++it;
+    }
+
+    OnDisappear();
+
+    ChangeViewState(eViewState::NotInHierarhy);
+}
+
+void UIControl::OnAppear()
+{
+}
+
+void UIControl::OnDisappear()
+{
+}
+
+void UIControl::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
+{
+    OnScreenSizeDidChanged(newFullScreenRect);
+
+    auto it = children.begin();
+    while (it != children.end())
+    {
+        isIteratorCorrupted = false;
+
+        UIControl* current = *it;
+        current->Retain();
+        current->SystemScreenSizeDidChanged(newFullScreenRect);
+        current->Release();
+
+        if (isIteratorCorrupted)
+        {
+            it = children.begin();
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::OnScreenSizeDidChanged(const Rect& newFullScreenRect)
+{
+}
+
+void UIControl::InvokeAppear(eViewState parentViewState)
+{
+    if (!InViewHierarchy() && parentViewState >= eViewState::InHierarhy)
+    {
+        SystemAppear();
+        InvokeBecomeVisible(parentViewState);
+    }
+}
+
+void UIControl::InvokeDisappear()
+{
+    if (InViewHierarchy())
+    {
+        InvokeBecomeInvisible();
+        SystemDisappear();
+    }
+}
+
+void UIControl::InvokeBecomeVisible(eViewState parentViewState)
+{
+    if (!IsOnScreen() && parentViewState == eViewState::Visible && GetVisible())
+    {
+        SystemBecomeVisible();
+    }
+}
+
+void UIControl::InvokeBecomeInvisible()
+{
+    if (IsOnScreen())
+    {
+        SystemBecomeInvisible();
+    }
+}
+
+bool IsControlInViewHierarchy(const UIControl* control)
+{
+    while (control->GetParent() != nullptr)
+    {
+        control = control->GetParent();
+    }
+
+    UIControlSystem* cs = UIControlSystem::Instance();
+    bool isRootControl = (cs->GetScreen() == control) ||
+    (cs->GetPopupContainer() == control) ||
+    (cs->GetScreenTransition() == control);
+
+    return isRootControl ? true : false;
+}
+
+bool IsControlVisibleOnScreen(const UIControl* control)
+{
+    while (control->GetParent() != nullptr)
+    {
+        if (!control->GetVisible())
+            return false;
+
+        control = control->GetParent();
+    }
+
+    UIControlSystem* cs = UIControlSystem::Instance();
+    bool isRootControl = (cs->GetScreen() == control) ||
+    (cs->GetPopupContainer() == control) ||
+    (cs->GetScreenTransition() == control);
+
+    return isRootControl ? control->GetVisible() : false;
+}
+
+void UIControl::ChangeViewState(eViewState newViewState)
+{
+    static const Vector<std::pair<eViewState, eViewState>> validTransitions =
+    {
+      { eViewState::NotInHierarhy, eViewState::InHierarhy },
+      { eViewState::InHierarhy, eViewState::Visible },
+      { eViewState::Visible, eViewState::InHierarhy },
+      { eViewState::InHierarhy, eViewState::NotInHierarhy }
+    };
+
+    bool verified = true;
+    String errorStr;
+
+    if (!IsControlInViewHierarchy(this))
+    {
+        errorStr += "Control not in hierarhy.";
+        verified = false;
+    }
+
+    std::pair<eViewState, eViewState> transition = { viewState, newViewState };
+    if (std::find(validTransitions.begin(), validTransitions.end(), transition) == validTransitions.end())
+    {
+        errorStr += "Unexpected change sequence.";
+        verified = false;
+    }
+
+    if (viewState == eViewState::InHierarhy && newViewState == eViewState::Visible && !IsControlInViewHierarchy(this))
+    {
+        errorStr += "Control not visible on screen.";
+        verified = false;
+    }
+
+    if (!verified)
+    {
+        String errorMsg = Format("[UIControl::ChangeViewState] Control '%s', change from state %d to state %d. %s", GetName().c_str(), viewState, newViewState, errorStr.c_str());
+        Logger::Error(errorMsg.c_str());
+        DVASSERT_MSG(false, errorMsg.c_str());
+    }
+
+    viewState = newViewState;
 }
 
 YamlNode* UIControl::SaveToYamlNode(UIYamlLoader* loader)

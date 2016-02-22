@@ -30,6 +30,7 @@
 #include "UI/UILoadingTransition.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIScreenManager.h"
 #include "Debug/Replay.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
@@ -47,25 +48,19 @@ UILoadingScreen::~UILoadingScreen()
 {
 }
 
-void UILoadingScreen::SetScreenToLoad(UIScreen* _nextScreen)
+void UILoadingScreen::SetScreenToLoad(int32 screenId)
 {
-    nextScreen = _nextScreen;
+    nextScreenId = screenId;
     DVASSERT(!thread.Valid());
     thread = nullptr;
 }
 
 void UILoadingScreen::ThreadMessage(BaseObject* obj, void* userData, void* callerData)
 {
-    if (nextScreen.Valid())
+    UIScreen* nextScreen = (nextScreenId != -1) ? UIScreenManager::Instance()->GetScreen(nextScreenId) : nullptr;
+    if (nextScreen != nullptr)
     {
-        UIControlSystem::Instance()->LockSwitch();
-        UIControlSystem::Instance()->LockInput();
-        //         int32 originalGroupId = GetGroupId();
-        //         AddToGroup(nextScreen->GetGroupId());
         nextScreen->LoadGroup();
-        //        AddToGroup(originalGroupId);
-        UIControlSystem::Instance()->UnlockInput();
-        UIControlSystem::Instance()->UnlockSwitch();
     }
 }
 
@@ -75,6 +70,9 @@ void UILoadingScreen::OnAppear()
 
     if (!thread)
     {
+        UIControlSystem::Instance()->LockSwitch();
+        UIControlSystem::Instance()->LockInput();
+
         thread = Thread::Create(Message(this, &UILoadingScreen::ThreadMessage));
         thread->SetStackSize(LOADING_THREAD_STACK_SIZE);
         thread->Start();
@@ -94,7 +92,10 @@ void UILoadingScreen::Update(float32 timeElapsed)
     {
         JobManager::Instance()->WaitMainJobs(thread->GetId());
 
-        UIControlSystem::Instance()->SetScreen(nextScreen.Get());
+        UIControlSystem::Instance()->UnlockInput();
+        UIControlSystem::Instance()->UnlockSwitch();
+
+        UIScreenManager::Instance()->SetScreen(nextScreenId);
 
         thread = nullptr;
     }

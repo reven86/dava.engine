@@ -123,15 +123,15 @@ void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
 #endif
 }
 
-void UIMovieView::WillBecomeVisible()
+void UIMovieView::OnBecomeVisible()
 {
-    UIControl::WillBecomeVisible();
+    UIControl::OnBecomeVisible();
     movieViewControl->SetVisible(true);
 }
 
-void UIMovieView::WillBecomeInvisible()
+void UIMovieView::OnBecomeInvisible()
 {
-    UIControl::WillBecomeInvisible();
+    UIControl::OnBecomeInvisible();
     movieViewControl->SetVisible(false);
 }
 

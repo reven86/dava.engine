@@ -127,15 +127,15 @@ void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
     webViewControl->OpenFromBuffer(string, basePath);
 }
 
-void UIWebView::WillBecomeVisible()
+void UIWebView::OnBecomeVisible()
 {
-    UIControl::WillBecomeVisible();
+    UIControl::OnBecomeVisible();
     UpdateNativeControlVisible(true);
 }
 
-void UIWebView::WillBecomeInvisible()
+void UIWebView::OnBecomeInvisible()
 {
-    UIControl::WillBecomeInvisible();
+    UIControl::OnBecomeInvisible();
     UpdateNativeControlVisible(false);
 }
 

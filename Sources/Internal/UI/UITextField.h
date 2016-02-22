@@ -360,8 +360,8 @@ public:
 
 protected:
     ~UITextField() override;
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnBecomeVisible() override;
+    void OnBecomeInvisible() override;
 
 private:
     void SetRenderToTexture(bool value);

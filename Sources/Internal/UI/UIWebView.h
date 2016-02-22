@@ -96,8 +96,8 @@ public:
 #endif
 
 protected:
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnBecomeVisible() override;
+    void OnBecomeInvisible() override;
     void OnAppear() override;
 
 public:

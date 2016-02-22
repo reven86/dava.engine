@@ -55,8 +55,8 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
 
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnBecomeVisible() override;
+    void OnBecomeInvisible() override;
 
     UIMovieView* Clone() override;
 

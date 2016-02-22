@@ -61,24 +61,6 @@ UIScreen::~UIScreen()
     }
 }
 
-void UIScreen::SystemAppear()
-{
-    bool needNotify = false;
-    const Rect& virtualRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    if (GetSize() != virtualRect.GetSize())
-    {
-        SetSize(virtualRect.GetSize());
-        needNotify = true;
-    }
-
-    UIControl::SystemAppear();
-
-    if (needNotify)
-    {
-        SystemScreenSizeDidChanged(virtualRect);
-    }
-}
-
 void UIScreen::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
 {
     SetSize(newFullScreenRect.GetSize());

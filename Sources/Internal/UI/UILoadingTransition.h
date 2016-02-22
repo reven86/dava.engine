@@ -41,7 +41,7 @@ public:
     UILoadingScreen();
     virtual ~UILoadingScreen();
 
-    virtual void SetScreenToLoad(UIScreen* _nextScreen);
+    virtual void SetScreenToLoad(int32 screenId);
 
     void Update(float32 timeElapsed) override;
     void OnAppear() override;
@@ -52,7 +52,7 @@ protected:
     RefPtr<Thread> thread;
 
 private:
-    RefPtr<UIScreen> nextScreen;
+    int32 nextScreenId = -1;
 };
 };
 
