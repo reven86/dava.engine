@@ -135,7 +135,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , sortedControlList(CompareByLCA)
 {
     InvalidatePressedPoint();
-    systemManager->GetRootControl()->AddControl(hudControl.Get());
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
@@ -247,22 +246,16 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
+void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
 {
-    OnEmulationModeChanged(rootControls.size() != 1);
+    rootControls = rootControls_;
+    UpdatePlacedOnScreenStatus();
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     inEmulationMode = emulationMode;
-    if (emulationMode)
-    {
-        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
-    }
-    else
-    {
-        systemManager->GetRootControl()->AddControl(hudControl.Get());
-    }
+    UpdatePlacedOnScreenStatus();
 }
 
 void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
@@ -417,4 +410,22 @@ void HUDSystem::UpdateAreasVisibility()
 void HUDSystem::InvalidatePressedPoint()
 {
     pressedPoint.Set(std::numeric_limits<float32>::max(), std::numeric_limits<float32>::max());
+}
+
+void HUDSystem::UpdatePlacedOnScreenStatus()
+{
+    bool isPlaced = rootControls.size() == 1 && !inEmulationMode;
+    if(isPlacedOnScreen == isPlaced)
+    {
+        return;
+    }
+    isPlacedOnScreen = isPlaced;
+    if (isPlacedOnScreen)
+    {
+        systemManager->GetRootControl()->AddControl(hudControl.Get());
+    }
+    else
+    {
+        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+    }
 }
