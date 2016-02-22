@@ -415,7 +415,7 @@ void HUDSystem::InvalidatePressedPoint()
 void HUDSystem::UpdatePlacedOnScreenStatus()
 {
     bool isPlaced = rootControls.size() == 1 && !inEmulationMode;
-    if(isPlacedOnScreen == isPlaced)
+    if (isPlacedOnScreen == isPlaced)
     {
         return;
     }
