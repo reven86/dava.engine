@@ -90,7 +90,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     , hudControl(hudControl_)
     , container(new HUDContainer(control))
 {
-    container->SetName("Container for HUD controls of node " + node_->GetName());
+    container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
     uint32 begin = HUDAreaInfo::AREAS_BEGIN;
     uint32 end = HUDAreaInfo::AREAS_COUNT;
     if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
@@ -121,7 +121,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , sortedControlList(CompareByLCA)
 {
     hudControl->AddControl(selectionRectControl.Get());
-    hudControl->SetName("hudControl");
+    hudControl->SetName(FastName("hudControl"));
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
@@ -197,7 +197,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;
         auto predicate = [point](const UIControl* control) -> bool {
-            return control->GetSystemVisible() && control->IsPointInside(point);
+            return control->GetVisible() && control->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
@@ -312,14 +312,14 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
-            if (hud->container->GetSystemVisible())
+            if (hud->container->GetVisible())
             {
                 HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
                 auto hudControlsIter = hud->hudControls.find(area);
                 if (hudControlsIter != hud->hudControls.end())
                 {
                     const auto& controlContainer = hudControlsIter->second;
-                    if (controlContainer->GetSystemVisible() && controlContainer->IsPointInside(pos))
+                    if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
                     {
                         return HUDAreaInfo(hud->node, area);
                     }

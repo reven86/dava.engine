@@ -27,29 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef QUACRC32_H
-#define QUACRC32_H
+#ifndef __RESOURCEEDITOR_LAUNCHER_H__
+#define __RESOURCEEDITOR_LAUNCHER_H__
 
-#include "quachecksum32.h"
+#include "Project/ProjectManager.h"
+#include "Main/mainwindow.h"
 
-///CRC32 checksum
-/** \class QuaCrc32 quacrc32.h <quazip/quacrc32.h>
-* This class wrappers the crc32 function with the QuaChecksum32 interface.
-* See QuaChecksum32 for more info.
-*/
-class QUAZIP_EXPORT QuaCrc32 : public QuaChecksum32
+#include <QObject>
+
+class ResourceEditorLauncher : public QObject
 {
-public:
-    QuaCrc32();
+    Q_OBJECT
 
-    quint32 calculate(const QByteArray& data);
+public slots:
 
-    void reset();
-    void update(const QByteArray& buf);
-    quint32 value();
+    void Launch()
+    {
+        DVASSERT(ProjectManager::Instance() != nullptr);
+        ProjectManager::Instance()->UpdateParticleSprites();
+        ProjectManager::Instance()->OnSceneViewInitialized();
 
-private:
-    quint32 checksum;
+        DVASSERT(QtMainWindow::Instance() != nullptr);
+        QtMainWindow::Instance()->SetupTitle();
+        QtMainWindow::Instance()->OnSceneNew();
+    }
 };
 
-#endif //QUACRC32_H
+
+#endif // __RESOURCEEDITOR_LAUNCHER_H__

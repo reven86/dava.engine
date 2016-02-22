@@ -49,14 +49,14 @@ extern "C" {
   if ((j <= i) && (i < (ssize_t)argc)) \
     { \
       if (image_stack[k].image == (Image*)NULL) \
-        status &= MogrifyImageInfo(image_stack[k].image_info, (int)(i - j + 1),       \
+        status &= MogrifyImageInfo(image_stack[k].image_info, (int)(i - j + 1), \
                                        (const char**)(argv + j), exception); \
       else \
         if ((fire) != MagickFalse) \
           { \
-            status &= MogrifyImages(image_stack[k].image_info, postfix, (int)             \
-                                                                        (i - j + 1),      \
-                                    (const char**)(argv + j), &image_stack[k].image,      \
+            status &= MogrifyImages(image_stack[k].image_info, postfix, (int) \
+                                                                        (i - j + 1), \
+                                    (const char**)(argv + j), &image_stack[k].image, \
                                     exception); \
             image = image_stack[k].image; \
             if ((advance) != MagickFalse) \
@@ -95,8 +95,8 @@ extern "C" {
   image = image_stack[k].image; \
 }
 #define QuantumScale ((MagickRealType)1.0 / (MagickRealType)QuantumRange)
-#define QuantumTick(i, span) ((MagickBooleanType)((((i) & ((i)-1)) == 0) ||               \
-                                                  (((i)&0xfff) == 0) ||                   \
+#define QuantumTick(i, span) ((MagickBooleanType)((((i) & ((i)-1)) == 0) || \
+                                                  (((i)&0xfff) == 0) || \
                                                   ((MagickOffsetType)(i) == ((MagickOffsetType)(span)-1))))
 #define RadiansToDegrees(x) (180.0 * (x) / MagickPI)
 #define RemoveImageStack(images) \

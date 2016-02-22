@@ -27,29 +27,45 @@
 =====================================================================================*/
 
 
-#include "quazipfileinfo.h"
+#ifndef __SPRITES_PACKER_MODULE_H__
+#define __SPRITES_PACKER_MODULE_H__
 
-QFile::Permissions QuaZipFileInfo::getPermissions() const
+#include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
+
+#include <QObject>
+
+class SpritesPacker;
+class QAction;
+class SpritesPackerModule final : public QObject
 {
-    quint32 uPerm = (externalAttr & 0xFFFF0000u) >> 16;
-    QFile::Permissions perm = 0;
-    if ((uPerm & 0400) != 0)
-        perm |= QFile::ReadOwner;
-    if ((uPerm & 0200) != 0)
-        perm |= QFile::WriteOwner;
-    if ((uPerm & 0100) != 0)
-        perm |= QFile::ExeOwner;
-    if ((uPerm & 0040) != 0)
-        perm |= QFile::ReadGroup;
-    if ((uPerm & 0020) != 0)
-        perm |= QFile::WriteGroup;
-    if ((uPerm & 0010) != 0)
-        perm |= QFile::ExeGroup;
-    if ((uPerm & 0004) != 0)
-        perm |= QFile::ReadOther;
-    if ((uPerm & 0002) != 0)
-        perm |= QFile::WriteOther;
-    if ((uPerm & 0001) != 0)
-        perm |= QFile::ExeOther;
-    return perm;
-}
+    Q_OBJECT
+
+public:
+    SpritesPackerModule();
+    ~SpritesPackerModule() override;
+
+    QAction* GetReloadAction() const;
+    void SetAction(QAction* reloadSpritesAction);
+
+    void RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
+
+signals:
+    void SpritesReloaded();
+
+private slots:
+
+    void RepackWithDialog();
+
+private:
+    void SetupSpritesPacker(const DAVA::FilePath& projectPath);
+    void ShowPackerDialog();
+    void ReloadObjects();
+
+private:
+    std::unique_ptr<SpritesPacker> spritesPacker;
+    QAction* reloadSpritesAction = nullptr;
+};
+
+#endif // __SPRITES_PACKER_MODULE_H__
