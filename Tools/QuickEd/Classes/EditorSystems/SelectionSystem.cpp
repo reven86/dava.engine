@@ -211,11 +211,16 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
         Vector<ControlNode*> nodesUnderPointForMenu;
         auto predicateForMenu = [point](const ControlNode* node) -> bool
         {
-            DVASSERT(nullptr != node->GetControl());
+            const auto control = node->GetControl();
+            DVASSERT(nullptr != control);
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
-            return visibleProp->GetVisibleInEditor() && node->GetControl()->IsPointInside(point);
+            return visibleProp->GetVisibleInEditor() && control->IsPointInside(point);
         };
-        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu);
+        auto stopPredicate = [](const ControlNode* node) -> bool {
+            const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
+            return !visibleProp->GetVisibleInEditor();
+        };
+        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu, stopPredicate);
         selectedNode = systemManager->GetControlByMenu(nodesUnderPointForMenu, point);
         if (nullptr == selectedNode)
         {
