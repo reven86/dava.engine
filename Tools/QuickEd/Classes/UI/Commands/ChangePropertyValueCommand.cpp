@@ -58,9 +58,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , root(SafeRetain(root_))
     , hash(hash_)
 {
-    changedProperties.emplace_back(
-    node, prop, GetValueFromProperty(prop), newVal
-    );
+    changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), newVal);
     Init();
 }
 
@@ -68,10 +66,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     : QUndoCommand(parent)
     , root(SafeRetain(root_))
 {
-    changedProperties.emplace_back(
-    node, prop, GetValueFromProperty(prop), VariantType()
-
-    );
+    changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), VariantType());
     Init();
 }
 
