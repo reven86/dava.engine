@@ -70,7 +70,7 @@ public:
         RTL_USE_BY_CONTENT,
         RTL_USE_BY_SYSTEM
     };
-    
+
     static void ScreenResolutionChanged();
     /**
     * \brief Sets BiDi transformation support enabled.
@@ -84,65 +84,65 @@ public:
     */
     static bool IsBiDiSupportEnabled();
 
-    static TextBlock * Create(const Vector2 & size);
-    
-    virtual void SetFont(Font * font);
-    virtual void SetScale(const Vector2 & scale);
-    virtual void SetRectSize(const Vector2 & size);
+    static TextBlock* Create(const Vector2& size);
+
+    virtual void SetFont(Font* font);
+    virtual void SetScale(const Vector2& scale);
+    virtual void SetRectSize(const Vector2& size);
     virtual void SetPosition(const Vector2& position);
     virtual void SetAlign(int32 align);
     virtual int32 GetAlign();
-	virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
+    virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
     virtual void SetUseRtlAlign(eUseRtlAlign useRtlAlign);
     virtual eUseRtlAlign GetUseRtlAlign();
     virtual bool IsRtl();
 
     //[DO NOT ACTUAL ANYMORE] if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
-    //if requested size in <0 - rect creates for the all text size	
-    virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));	
+    //if requested size in <0 - rect creates for the all text size
+    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2(0, 0));
     virtual void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
-    virtual void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE, FITTING_POINTS
+    virtual void SetFittingOption(int32 fittingType); //may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE, FITTING_POINTS
 
     Vector2 GetPreferredSizeForWidth(float32 width);
-    
-    virtual Font * GetFont();
-    virtual const WideString & GetText();
-    virtual const WideString & GetVisualText();
-    virtual const Vector<WideString> & GetMultilineStrings();
+
+    virtual Font* GetFont();
+    virtual const WideString& GetText();
+    virtual const WideString& GetVisualText();
+    virtual const Vector<WideString>& GetMultilineStrings();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
-    
+
     /**
     \brief Get the render size.
     \returns size in pixels
     */
-    virtual float32	GetRenderSize();
+    virtual float32 GetRenderSize();
 
     /**
     \brief Set the render size.
     \param[in] size in points
     */
     virtual void SetRenderSize(float32 renderSize);
-	
-    Sprite * GetSprite();
+
+    Sprite* GetSprite();
     bool IsSpriteReady();
     const Vector2& GetSpriteOffset();
-    
-    const Vector2 & GetTextSize();
+
+    const Vector2& GetTextSize();
 
     void PreDraw();
     void Draw(const Color& textColor, const Vector2* offset = NULL);
 
-    TextBlock * Clone();
+    TextBlock* Clone();
 
     const Vector<int32>& GetStringSizes();
         
 
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
-	bool IsVisualTextCroped();
+    bool IsVisualTextCroped();
 #endif
 
     TextBlockRender* GetRenderer()
@@ -187,7 +187,7 @@ private:
 
     float32 originalFontSize;
     float32 renderSize;
-    
+
     int32 cacheDx;
     int32 cacheDy;
     int32 cacheW;
@@ -202,23 +202,23 @@ private:
     int32 align;
     eUseRtlAlign useRtlAlign;
 
-    Font * font;
+    Font* font;
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
     Vector<int32> stringSizes;
-    
-    bool isMultilineEnabled:1;
-    bool isMultilineBySymbolEnabled:1;
-    bool isPredrawed:1;
-    bool cacheUseJustify:1;
-    bool treatMultilineAsSingleLine:1;
-	bool needPrepareInternal:1;
+
+    bool isMultilineEnabled : 1;
+    bool isMultilineBySymbolEnabled : 1;
+    bool isPredrawed : 1;
+    bool cacheUseJustify : 1;
+    bool treatMultilineAsSingleLine : 1;
+    bool needPrepareInternal : 1;
     bool isRtl : 1;
     bool needCalculateCacheParams : 1;
     bool forceBiDiSupport : 1;
 
-    static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static bool isBiDiSupportEnabled; //!< true if BiDi transformation support enabled
     static Set<TextBlock*> registredTextBlocks;
     static Mutex textblockListMutex;
 

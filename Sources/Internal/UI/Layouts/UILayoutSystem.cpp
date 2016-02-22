@@ -141,7 +141,7 @@ void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
 void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
 {
     int32 index = static_cast<int32>(layoutData.size());
-    const List<UIControl*> &children = control->GetChildren();
+    const List<UIControl*>& children = control->GetChildren();
 
     layoutData[parentIndex].SetFirstChildIndex(index);
     layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));

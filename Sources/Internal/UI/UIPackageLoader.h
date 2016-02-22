@@ -44,7 +44,7 @@ class FilePath;
 class UIPackage;
 class UIControlFactory;
 class UIControlBackground;
-    
+
 class UIPackageLoader : public AbstractUIPackageLoader
 {
 public:
@@ -59,31 +59,31 @@ public:
     virtual ~UIPackageLoader();
 
 public:
-    virtual bool LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder) override;
-    virtual bool LoadPackage(const YamlNode *rootNode, const FilePath &packagePath, AbstractUIPackageBuilder *builder);
-    virtual bool LoadControlByName(const String &name, AbstractUIPackageBuilder *builder) override;
+    virtual bool LoadPackage(const FilePath& packagePath, AbstractUIPackageBuilder* builder) override;
+    virtual bool LoadPackage(const YamlNode* rootNode, const FilePath& packagePath, AbstractUIPackageBuilder* builder);
+    virtual bool LoadControlByName(const String& name, AbstractUIPackageBuilder* builder) override;
 
 private:
     struct ComponentNode
     {
-        const YamlNode *node;
+        const YamlNode* node;
         uint32 type;
         uint32 index;
     };
-    
-private:
-    void LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractUIPackageBuilder *builder);
-    void LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder);
 
-    void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    
-    void LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    void ProcessLegacyAligns(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    Vector<ComponentNode> ExtractComponentNodes(const YamlNode *node);
-    
-    void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, const DAVA::String &propertyName);
+private:
+    void LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractUIPackageBuilder* builder);
+    void LoadControl(const YamlNode* node, bool root, AbstractUIPackageBuilder* builder);
+
+    void LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder);
+
+    void LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
+
+    void LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void LoadInternalControlPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, const DAVA::String& propertyName);
 
 private:
     enum eItemStatus
@@ -92,17 +92,17 @@ private:
         STATUS_LOADING,
         STATUS_LOADED
     };
-    
+
     struct QueueItem
     {
         String name;
-        const YamlNode *node;
+        const YamlNode* node;
         int32 status;
     };
-    
+
     Vector<QueueItem> loadingQueue;
     DAVA::int32 version = CURRENT_VERSION;
-    
+
     DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
 };
 };

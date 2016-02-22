@@ -66,19 +66,19 @@ protected:
 public:
     UIStaticText(const Rect& rect = Rect());
 
-    virtual void Draw(const UIGeometricData &geometricData) override;
-    virtual void SetParentColor(const Color &parentColor) override;
+    virtual void Draw(const UIGeometricData& geometricData) override;
+    virtual void SetParentColor(const Color& parentColor) override;
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
-    void SetTextWithoutRect(const WideString &text);
-    
-    void SetFont(Font * font);
+    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2(0, 0));
+    void SetTextWithoutRect(const WideString& text);
+
+    void SetFont(Font* font);
     void SetTextColor(const Color& color);
 
-    void SetShadowColor(const Color &color);
-    void SetShadowOffset(const Vector2 &offset);
+    void SetShadowColor(const Color& color);
+    void SetShadowOffset(const Vector2& offset);
 
     void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
     bool GetMultiline() const;
@@ -87,7 +87,7 @@ public:
     void SetMargins(const UIControlBackground::UIMargins* margins);
     const UIControlBackground::UIMargins* GetMargins() const;
 
-    void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
+    void SetFittingOption(int32 fittingType); //may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
 
     //for background sprite
@@ -96,39 +96,39 @@ public:
 
     virtual void SetTextAlign(int32 _align);
     virtual int32 GetTextAlign() const;
-	virtual int32 GetTextVisualAlign() const;
-	virtual bool GetTextIsRtl() const;
+    virtual int32 GetTextVisualAlign() const;
+    virtual bool GetTextIsRtl() const;
     virtual void SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign);
     virtual TextBlock::eUseRtlAlign GetTextUseRtlAlign() const;
-    
+
     virtual void SetTextUseRtlAlignFromInt(int32 value);
     virtual int32 GetTextUseRtlAlignAsInt() const;
 
     virtual const WideString& GetVisualText() const;
-    const Vector2 & GetTextSize();
+    const Vector2& GetTextSize();
 
-    Vector2 GetContentPreferredSize(const Vector2 &constraints) const override;
+    Vector2 GetContentPreferredSize(const Vector2& constraints) const override;
     bool IsHeightDependsOnWidth() const override;
 
     void PrepareSprite();
 
-    const WideString & GetText() const;
-    const Vector<WideString> & GetMultilineStrings() const;
+    const WideString& GetText() const;
+    const Vector<WideString>& GetMultilineStrings() const;
 
     Font* GetFont() const
     {
         return textBlock->GetFont();
     }
 
-    virtual UIStaticText *Clone() override;
-    virtual void CopyDataFrom(UIControl *srcControl) override;
+    virtual UIStaticText* Clone() override;
+    virtual void CopyDataFrom(UIControl* srcControl) override;
     TextBlock* GetTextBlock()
     {
         return textBlock;
     }
-    const Color &GetTextColor() const;
-    const Color &GetShadowColor() const;
-    const Vector2 &GetShadowOffset() const;
+    const Color& GetTextColor() const;
+    const Color& GetShadowColor() const;
+    const Vector2& GetShadowOffset() const;
 
     inline UIControlBackground* GetTextBackground() const
     {
@@ -140,10 +140,10 @@ public:
     };
 
     // Animation methods for Text Color and Shadow Color.
-    virtual Animation * TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
-    virtual Animation * ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
+    virtual Animation* TextColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    virtual Animation* ShadowColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
 
-    const Vector<int32> & GetStringSizes() const;
+    const Vector<int32>& GetStringSizes() const;
 
     inline bool IsForceBiDiSupportEnabled() const
     {
@@ -152,30 +152,30 @@ public:
     void SetForceBiDiSupportEnabled(bool value);
 
 protected:
-    Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
+    Rect CalculateTextBlockRect(const UIGeometricData& geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
-    void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
-    void DrawLocalizationErrors(const UIGeometricData & textGeomData, const UIGeometricData & elementGeomData) const;
+    void DrawLocalizationDebug(const UIGeometricData& textGeomData) const;
+    void DrawLocalizationErrors(const UIGeometricData& textGeomData, const UIGeometricData& elementGeomData) const;
     void RecalculateDebugColoring();
 #endif
 protected:
-    TextBlock *textBlock;
+    TextBlock* textBlock;
     Vector2 shadowOffset;
-    UIControlBackground *shadowBg;
-    UIControlBackground *textBg;
+    UIControlBackground* shadowBg;
+    UIControlBackground* textBg;
 #if defined(LOCALIZATION_DEBUG)
     DebugHighliteColor warningColor;
     DebugHighliteColor lineBreakError;
 #endif
 
 public:
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
-    
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
+    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
+
 public:
     String GetFontPresetName() const;
-    void SetFontByPresetName(const String &presetName);
-    
+    void SetFontByPresetName(const String& presetName);
+
     int32 GetTextColorInheritType() const;
     void SetTextColorInheritType(int32 type);
 
@@ -186,7 +186,7 @@ public:
     void SetMultilineType(int32 multilineType);
 
     Vector4 GetMarginsAsVector4() const;
-    void SetMarginsAsVector4(const Vector4 &margins);
+    void SetMarginsAsVector4(const Vector4& margins);
 
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
