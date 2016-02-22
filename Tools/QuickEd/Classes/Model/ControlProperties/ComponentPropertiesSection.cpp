@@ -129,7 +129,7 @@ void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSecti
 
 bool ComponentPropertiesSection::HasChanges() const
 {
-    return SectionProperty::HasChanges();
+    return SectionProperty::HasChanges() || (GetFlags() & AbstractProperty::EF_INHERITED) == 0;
 }
 
 uint32 ComponentPropertiesSection::GetFlags() const
