@@ -42,7 +42,7 @@ auto GetIndex = [](const FileList* files, DAVA::String filename)
     return i;
 };
 
-DAVA_TESTCLASS(FileListTest)
+DAVA_TESTCLASS (FileListTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
@@ -57,7 +57,7 @@ DAVA_TESTCLASS(FileListTest)
     #endif
     }
 
-    DAVA_TEST(ResTestFunction)
+    DAVA_TEST (ResTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileListTest/"));
 
@@ -181,7 +181,7 @@ DAVA_TESTCLASS(FileListTest)
     }
 
 #if defined(__DAVAENGINE_WINDOWS__)
-    DAVA_TEST(FileListTestWindowsExtensions)
+    DAVA_TEST (FileListTestWindowsExtensions)
     {
         FileSystem* fs = FileSystem::Instance();
         const String fileContent = "Hello :)";
@@ -241,7 +241,7 @@ DAVA_TESTCLASS(FileListTest)
     }
 #endif // __DAVAENGINE_WINDOWS__
 
-    DAVA_TEST(DocTestFunction)
+    DAVA_TEST (DocTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileListTest/"));
 
@@ -364,7 +364,7 @@ DAVA_TESTCLASS(FileListTest)
         }
     }
 
-    DAVA_TEST(HiddenFileTest)
+    DAVA_TEST (HiddenFileTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
         FilePath file1 = FilePath("~doc:/TestData/FileListTest/Folder1/file1");
@@ -409,7 +409,7 @@ DAVA_TESTCLASS(FileListTest)
 #endif //PLATFORMS
     }
 
-    DAVA_TEST(HiddenDirTest)
+    DAVA_TEST (HiddenDirTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
         FilePath dir1 = FilePath("~doc:/TestData/FileListTest/Folder1/");

@@ -48,6 +48,7 @@ public:
 
 private:
     void OnBackgroundTypeChanged(eBackgroundType type);
+    void OnBackgroundColorChanged(const Color& color);
     void Draw(const UIGeometricData& geometricData) override;
     eBackgroundType coloredBackground = BackgroundTexture;
 };
@@ -58,7 +59,7 @@ GridControl::GridControl()
     OnBackgroundTypeChanged(settings->GetGridType());
 
     settings->GridTypeChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
-    settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
+    settings->GridColorChanged.Connect(this, &GridControl::OnBackgroundColorChanged);
 }
 
 void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
@@ -76,6 +77,11 @@ void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
         background->SetColor(Color());
         break;
     }
+}
+
+void GridControl::OnBackgroundColorChanged(const Color& color)
+{
+    background->SetColor(color);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -129,11 +135,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     , nestedControl(nestedControl_)
 {
     DVASSERT(nullptr != nestedControl);
-    String name = nestedControl->GetName();
+    String name = nestedControl->GetName().c_str();
     name = name.empty() ? "unnamed" : name;
-    gridControl->SetName("Grid control of " + name);
-    counterpoiseControl->SetName("counterpoise of " + name);
-    positionHolderControl->SetName("Position holder of " + name);
+    gridControl->SetName(FastName("Grid control of " + name));
+    counterpoiseControl->SetName(FastName("counterpoise of " + name));
+    positionHolderControl->SetName(FastName("Position holder of " + name));
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
@@ -169,7 +175,7 @@ namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
-    if (!control->GetSystemVisible())
+    if (!control->GetVisible())
     {
         return;
     }
@@ -294,7 +300,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 {
     systemManager->GetPackage()->AddListener(this);
 
-    controlsCanvas->SetName("controls canvas");
+    controlsCanvas->SetName(FastName("controls canvas"));
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
 }

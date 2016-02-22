@@ -671,14 +671,14 @@ public:
         Later you can find control by this name.
      \param[in] _name new control name.
      */
-    void SetName(const String& _name);
+    void SetName(const String& name_);
+    void SetName(const FastName& name_);
 
     /**
      \brief Returns current name of the control.
      \returns control name.
      */
-    inline const String& GetName() const;
-    inline const FastName& GetFastName() const;
+    inline const FastName& GetName() const;
 
     /**
      \brief Sets the contol tag.
@@ -699,11 +699,19 @@ public:
      \returns first control with given name.
      */
     UIControl* FindByName(const String& name, bool recursive = true) const;
+    UIControl* FindByName(const FastName& name, bool recursive = true) const;
 
-    UIControl* FindByPath(const String& path) const;
+    const UIControl* FindByPath(const String& path) const;
+    UIControl* FindByPath(const String& path);
 
     template <class C>
     C FindByPath(const String& path) const
+    {
+        return DynamicTypeCheck<C>(FindByPath(path));
+    }
+
+    template <class C>
+    C FindByPath(const String& path)
     {
         return DynamicTypeCheck<C>(FindByPath(path));
     }
@@ -1203,21 +1211,14 @@ public:
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
-    // Get/set visible flag for UI editor. Should not be serialized.
-    bool GetVisibleForUIEditor() const
-    {
-        return visibleForUIEditor;
-    };
-    virtual void SetVisibleForUIEditor(bool value);
-
     void DumpInputs(int32 depthLevel);
 
     static void DumpControls(bool onlyOrphans);
 
 private:
-    String name;
-    FastName fastName;
+    FastName name;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
+
 protected:
     UIControl* parent;
     List<UIControl*> childs;
@@ -1243,8 +1244,6 @@ protected:
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
     bool multiInput : 1;
-
-    bool visibleForUIEditor : 1;
 
     // Enable align options
     bool isUpdated : 1;
@@ -1364,6 +1363,7 @@ public:
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
+    UIControl* GetParentWithContext() const;
 
 private:
     UIStyleSheetClassSet classes;
@@ -1376,7 +1376,6 @@ private:
     /* Styles */
 
 public:
-    inline bool GetSystemVisible() const;
     void SystemNotifyVisibilityChanged();
 
     virtual int32 GetBackgroundComponentsCount() const;
@@ -1463,14 +1462,9 @@ float32 UIControl::GetAngleInDegrees() const
     return RadToDeg(angle);
 }
 
-const String& UIControl::GetName() const
+const FastName& UIControl::GetName() const
 {
     return name;
-}
-
-const FastName& UIControl::GetFastName() const
-{
-    return fastName;
 }
 
 int32 UIControl::GetTag() const
@@ -1516,11 +1510,6 @@ bool UIControl::GetMultiInput() const
 int32 UIControl::GetState() const
 {
     return controlState;
-}
-
-bool UIControl::GetSystemVisible() const
-{
-    return visible & visibleForUIEditor;
 }
 
 bool UIControl::GetEnabled() const
