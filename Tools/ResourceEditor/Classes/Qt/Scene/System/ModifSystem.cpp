@@ -1067,7 +1067,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMod
                     newPivotPos = DAVA::Vector3(0, 0, 0);
                     break;
                 case BAKE_CENTER_PIVOT:
-                    newPivotPos = selectionSystem->GetSelectionAABox(entity).GetCenter();
+                    newPivotPos = selectionSystem->GetUntransformedBoundingBox(entity).GetCenter();
                     break;
                 }
 

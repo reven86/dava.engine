@@ -102,7 +102,7 @@ private slots:
 
     void RebuildRecentMenu();
 
-    void SetBackgroundColorMenuTriggered(QAction* action);
+    void OnBackgroundCustomColorClicked();
 
     // Pixelization.
     void OnPixelizationStateChanged();
@@ -121,6 +121,7 @@ private:
     void InitEmulationMode();
     void InitMenu();
     void SetupViewMenu();
+    void SetupBackgroundMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
@@ -128,16 +129,12 @@ private:
     void SaveMainWindowState();
     void RestoreMainWindowState();
 
-    // Background Frame Color menu actions.
-    QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction = nullptr;
-    QAction* backgroundFrameSelectCustomColorAction = nullptr;
-
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox* comboboxLanguage = nullptr;
+    QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
 };
 
 #endif // MAINWINDOW_H

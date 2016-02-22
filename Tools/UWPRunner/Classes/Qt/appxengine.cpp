@@ -65,7 +65,7 @@ QT_USE_NAMESPACE
 #define CHECK_RESULT(errorMessage, action)\
     do {\
         if (FAILED(hr)) {\
-            qCWarning(lcWinRtRunner).nospace() << errorMessage " (0x"                    \
+            qCWarning(lcWinRtRunner).nospace() << errorMessage " (0x" \
                                                << QByteArray::number(hr, 16).constData() \
                                                << ' ' << qt_error_string(hr) << ')';\
             action;\

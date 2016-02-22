@@ -67,12 +67,14 @@ public:
     SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
     ~SceneSelectionSystem();
 
-    void SetSelection(DAVA::Entity* entity);
     void SetSelection(const EntityGroup& newSelection);
-    void AddSelection(DAVA::Entity* entity);
+
+    void AddEntityToSelection(DAVA::Entity* entity);
     void AddSelection(const EntityGroup& entities);
-    void ExcludeSelection(DAVA::Entity* entity);
+
+    void ExcludeEntityFromSelection(DAVA::Entity* entity);
     void ExcludeSelection(const EntityGroup& entities);
+
     void Clear();
 
     bool IsEntitySelectable(DAVA::Entity* entity) const;
@@ -94,8 +96,8 @@ public:
 
     void SetLocked(bool lock) override;
 
-    DAVA::AABBox3 GetSelectionAABox(DAVA::Entity* entity) const;
-    DAVA::AABBox3 GetSelectionAABox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
+    DAVA::AABBox3 GetUntransformedBoundingBox(DAVA::Entity* entity) const;
+    DAVA::AABBox3 GetTransformedBoundingBox(const EntityGroup& group) const;
 
     void ForceEmitSignals();
 
@@ -120,6 +122,7 @@ public:
 
 private:
     void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
+    DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
 
     void UpdateHoodPos() const;
 

@@ -260,7 +260,7 @@ private:
     size_t pendingDelivered = 0; // Parcel index expected to be confirmed as delivered
 };
 
-DAVA_TESTCLASS(NetworkTest)
+DAVA_TESTCLASS (NetworkTest)
 {
     BEGIN_CLASSES_COVERED_BY_TESTS()
     DECLARE_COVERED_CLASS(NetCore)
@@ -331,7 +331,7 @@ DAVA_TESTCLASS(NetworkTest)
         return true;
     }
 
-    DAVA_TEST(TestIPAddress)
+    DAVA_TEST (TestIPAddress)
     {
         // Test empty address
         TEST_VERIFY(true == IPAddress().IsUnspecified());
@@ -359,7 +359,7 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(false == IPAddress("255.255.255.255").IsUnspecified());
     }
 
-    DAVA_TEST(TestEndpoint)
+    DAVA_TEST (TestEndpoint)
     {
         TEST_VERIFY(0 == Endpoint().Port());
         TEST_VERIFY(String("0.0.0.0:0") == Endpoint().ToString());
@@ -373,7 +373,7 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.46", 1234))); // Different addressess
     }
 
-    DAVA_TEST(TestNetConfig)
+    DAVA_TEST (TestNetConfig)
     {
         TEST_VERIFY(SERVER_ROLE == NetConfig(SERVER_ROLE).Role());
         TEST_VERIFY(false == NetConfig(SERVER_ROLE).Validate());
@@ -397,7 +397,7 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(3 == config2.Services().size());
     }
 
-    DAVA_TEST(TestEcho)
+    DAVA_TEST (TestEcho)
     {
         echoTestDone = echoServer.IsTestDone() && echoClient.IsTestDone();
         if (echoTestDone)
