@@ -531,11 +531,11 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& curr
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
-    
+
     if (isEnabled && shiftPressed)
     {
         return selectedWaypoints.Size() == 1;
     }
-    
+
     return true;
 }

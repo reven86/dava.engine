@@ -96,39 +96,39 @@ private:
         DAVA::Matrix4 moveToZeroPos;
         DAVA::Matrix4 moveFromZeroPos;
     };
-    
+
     enum CloneState : DAVA::uint32
     {
         CLONE_DONT,
         CLONE_NEED,
         CLONE_DONE
     };
-    
+
     enum BakeMode : DAVA::uint32
     {
         BAKE_ZERO_PIVOT,
         BAKE_CENTER_PIVOT
     };
-    
+
     void Draw();
     void ProcessCommand(const Command2* command, bool redo);
     void BeginModification(const EntityGroup& entities);
     void EndModification();
-    
+
     void CloneBegin();
     void CloneEnd();
-    
+
     void ApplyModification();
-    
+
     DAVA::Vector3 CamCursorPosToModifPos(DAVA::Camera* camera, DAVA::Vector2 pos);
     DAVA::Vector2 Cam2dProjection(const DAVA::Vector3& from, const DAVA::Vector3& to);
-    
+
     DAVA::Vector3 Move(const DAVA::Vector3& newPos3d);
     DAVA::float32 Rotate(const DAVA::Vector2& newPos2d);
     DAVA::float32 Scale(const DAVA::Vector2& newPos2d);
     void BakeGeometry(const EntityGroup& entities, BakeMode mode);
     void SearchEntitiesWithRenderObject(DAVA::RenderObject* ro, DAVA::Entity* root, DAVA::Set<DAVA::Entity*>& result);
-    
+
     DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
     bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
 

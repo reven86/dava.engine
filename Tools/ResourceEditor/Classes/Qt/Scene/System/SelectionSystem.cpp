@@ -270,7 +270,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent* event)
                 return;
             }
         }
-        
+
         selecting = true;
         selectionStartPoint = event->point;
         selectionEndPoint = selectionStartPoint;
