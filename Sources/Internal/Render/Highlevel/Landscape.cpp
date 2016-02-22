@@ -952,6 +952,8 @@ void Landscape::AllocateGeometryDataInstancing()
     else
         landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
 
+#if 0
+
     const uint32 VERTICES_COUNT = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS * PATCH_SIZE_QUADS;
     const uint32 INDICES_COUNT = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 12;
     const uint32 MID_VERTECIES_OFFSET = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
@@ -996,6 +998,41 @@ void Landscape::AllocateGeometryDataInstancing()
             }
         }
     }
+
+#else
+
+    const uint32 VERTICES_COUNT = PATCH_SIZE_VERTICES * PATCH_SIZE_VERTICES;
+    const uint32 INDICES_COUNT = PATCH_SIZE_QUADS * PATCH_SIZE_QUADS * 6;
+
+    VertexInstancing* patchVertices = new VertexInstancing[VERTICES_COUNT];
+    uint16* patchIndices = new uint16[INDICES_COUNT];
+    uint16* indicesPtr = patchIndices;
+
+    float32 quadSize = 1.f / PATCH_SIZE_QUADS;
+
+    for (uint32 y = 0; y < PATCH_SIZE_VERTICES; ++y)
+    {
+        for (uint32 x = 0; x < PATCH_SIZE_VERTICES; ++x)
+        {
+            VertexInstancing& vertex = patchVertices[y * PATCH_SIZE_VERTICES + x];
+            vertex.position = Vector2(x * quadSize, y * quadSize);
+            vertex.edgeMask = Vector4(1.f, 1.f, 1.f, 1.f); //should be non-zero for middle vertices
+            vertex.morphDir = Vector2(0.f, 0.f);
+
+            if (x < (PATCH_SIZE_VERTICES - 1) && y < (PATCH_SIZE_VERTICES - 1))
+            {
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 0);
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
+
+                *indicesPtr++ = (y + 0) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 1);
+                *indicesPtr++ = (y + 1) * PATCH_SIZE_VERTICES + (x + 0);
+            }
+        }
+    }
+
+#endif
 
     for (uint32 i = 1; i < PATCH_SIZE_QUADS; ++i)
     {
