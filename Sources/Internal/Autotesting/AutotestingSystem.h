@@ -100,6 +100,10 @@ public:
 
     const String& GetScreenShotName();
     void MakeScreenShot();
+    inline bool GetIsScreenShotSaving() const
+    {
+        return isScreenShotSaving;
+    }
 
     // DB Master-Helper relations
 
@@ -131,6 +135,9 @@ protected:
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
+    
+private:
+    bool isScreenShotSaving;
 
 public:
     uint64 startTimeMS;

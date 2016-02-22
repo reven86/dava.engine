@@ -154,6 +154,7 @@ public:
     String GetTestParameter(const String& device);
 
     String MakeScreenshot();
+    bool GetIsScreenShotSaving();
 
 protected:
 #if !defined(SWIG)

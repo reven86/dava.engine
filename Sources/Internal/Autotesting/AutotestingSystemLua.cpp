@@ -408,6 +408,11 @@ String AutotestingSystemLua::MakeScreenshot()
     return AutotestingSystem::Instance()->GetScreenShotName();
 }
 
+bool AutotestingSystemLua::GetIsScreenShotSaving()
+{
+    return AutotestingSystem::Instance()->GetIsScreenShotSaving();
+}
+
 UIControl* AutotestingSystemLua::GetScreen()
 {
     return UIControlSystem::Instance()->GetScreen();
