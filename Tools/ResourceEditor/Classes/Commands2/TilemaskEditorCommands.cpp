@@ -201,4 +201,3 @@ Entity* SetTileColorCommand::GetEntity() const
 {
     return nullptr;
 }
-
