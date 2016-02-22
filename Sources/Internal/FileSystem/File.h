@@ -237,8 +237,6 @@ protected:
     FilePath filename;
 };
 
-using FilePtr = ScopedPtr<File>;
-
 template <class T>
 uint32 File::Read(T* value)
 {

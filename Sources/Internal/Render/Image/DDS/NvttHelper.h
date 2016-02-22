@@ -30,17 +30,16 @@
 #ifndef __DAVAENGINE_NVTT_HELPER_H__
 #define __DAVAENGINE_NVTT_HELPER_H__
 
-#include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
-#include "Render/Image/Image.h"
 
-namespace DAVA
-{
-namespace NvttHelper
-{
-ImagePtr DecompressDxtToRGBA(const Image* image);
-bool WriteDxtFile(const FilePath& outFileName, PixelFormat compressionFormat, const Vector<Vector<Image*>>& imageSet);
-bool WriteDdsFile(const FilePath& outFileName, PixelFormat compressionFormat, const Vector<uint8>& compressedData, uint32 width, uint32 height, uint32 mipCount, bool isCubemap);
+namespace DAVA {
+
+namespace NvttHelper {
+
+bool IsDxtFormat(PixelFormat format);
+bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage);
+bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage);
+
 }
 }
 

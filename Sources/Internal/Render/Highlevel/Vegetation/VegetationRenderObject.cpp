@@ -1371,7 +1371,7 @@ Image* VegetationRenderObject::LoadSingleImage(const FilePath& path) const
 {
     Vector<Image*> images;
 
-    ImageSystem::Instance()->Load(path, images);
+    ImageSystem::Load(path, images);
 
     Image* image = nullptr;
     if (images.size() > 0)

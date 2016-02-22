@@ -79,10 +79,7 @@ void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classt
             pixelsCopy = reinterpret_cast<DAVA::int32*>(image->GetData());
         }
 
-        // convert on the same memory
-        DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
-                                               DAVA::FORMAT_RGBA8888, pixelsCopy, width, height, pitch, pixelsCopy,
-                                               width, height, pitch);
+        DAVA::ImageConvert::SwapRedBlueChannels(DAVA::FORMAT_RGBA8888, pixelsCopy, width, height, pitch);
 
         DAVA::JniWebView::PageLoaded(id, pixelsCopy, width, height);
 

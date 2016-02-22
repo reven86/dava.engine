@@ -42,9 +42,9 @@ class LibWebPHelper : public ImageFormatInterface
 public:
     LibWebPHelper();
 
-    bool CanProcessFile(const FilePtr& infile) const override;
+    bool CanProcessFile(const ScopedPtr<File>& infile) const override;
 
-    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
 
     //only RGBA8888 or RGB888
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
@@ -52,7 +52,7 @@ public:
     //only RGBA8888 or RGB888
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(const FilePtr& infile) const override;
+    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 };
 
 };

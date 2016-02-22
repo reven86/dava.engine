@@ -74,19 +74,19 @@ void jpegErrorExit(j_common_ptr cinfo)
 
 LibJpegHelper::LibJpegHelper()
     : ImageFormatInterface(
-      IMAGE_FORMAT_JPEG,
-      "JPG",
-      { ".jpg", ".jpeg" },
-      { FORMAT_RGB888, FORMAT_A8 })
+      IMAGE_FORMAT_JPEG, // image format type
+      "JPG", // image format name
+      { ".jpg", ".jpeg" }, // image format extensions
+      { FORMAT_RGB888, FORMAT_A8 }) // supported pixel formats
 {
 }
 
-bool LibJpegHelper::CanProcessFile(const FilePtr& infile) const
+bool LibJpegHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibJpegHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
+eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
@@ -283,7 +283,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
     return eErrorCode::SUCCESS;
 }
 
-DAVA::ImageInfo LibJpegHelper::GetImageInfo(const FilePtr& infile) const
+DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
@@ -324,6 +324,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(const FilePtr& infile) const
     }
     info.dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
     info.mipmapsCount = 1;
+    info.faceCount = 1;
 
     jpeg_destroy_decompress(&cinfo);
     SafeDeleteArray(fileBuffer);

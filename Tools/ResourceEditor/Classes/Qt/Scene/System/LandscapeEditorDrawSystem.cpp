@@ -523,7 +523,7 @@ bool LandscapeEditorDrawSystem::SaveTileMaskTexture()
 
         if (image)
         {
-            ImageSystem::Instance()->Save(sourceTilemaskPath, image);
+            ImageSystem::Save(sourceTilemaskPath, image);
             SafeRelease(image);
         }
 

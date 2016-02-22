@@ -217,5 +217,5 @@ void PaintHeightDeltaAction::MarkDeltaRegion(DAVA::uint32 x,
 void PaintHeightDeltaAction::SaveDeltaImage(const DAVA::FilePath& targetPath,
                                             DAVA::Image* deltaImage)
 {
-    DAVA::ImageSystem::Instance()->Save(targetPath, deltaImage);
+    DAVA::ImageSystem::Save(targetPath, deltaImage);
 }

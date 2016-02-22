@@ -336,7 +336,7 @@ void TilemaskEditorPanel::UpdateTileTextures()
     FilePath tileTexturePath = sceneEditor->tilemaskEditorSystem->GetTileTexture()->GetDescriptor()->GetSourceTexturePathname();
 
     Vector<Image*> imgs;
-    ImageSystem::Instance()->Load(tileTexturePath, imgs);
+    ImageSystem::Load(tileTexturePath, imgs);
     DVASSERT(imgs.size() == 1);
 
     imgs[0]->ResizeCanvas(iconSize.width(), iconSize.height());

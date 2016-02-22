@@ -38,9 +38,13 @@ namespace DAVA
 {
 namespace QualcommHelper
 {
-ImagePtr DecompressAtcToRGBA(const Image* image);
-bool WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat);
-bool WriteAtcFileAsCubemap(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat);
+
+bool IsAtcFormat(PixelFormat format);
+bool DecompressAtcToRgba(const Image* image, Image* dstImage);
+bool CompressRgbaToAtc(const Image* image, Image* dstImage);
+//bool WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat);
+//bool WriteAtcFileAsCubemap(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat);
+
 }
 }
 

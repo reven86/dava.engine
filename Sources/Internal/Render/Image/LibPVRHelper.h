@@ -145,14 +145,14 @@ class LibPVRHelper : public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibPVRHelper();
 
-    bool CanProcessFile(const FilePtr& infile) const override;
+    bool CanProcessFile(const ScopedPtr<File>& infile) const override;
 
-    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 fromMipmap = 0) const override;
+    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 fromMipmap = 0) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(const FilePtr& infile) const override;
+    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;

@@ -58,7 +58,7 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
         if (DAVA::FileSystem::Instance()->Exists(filePath))
         {
             auto extension = filePath.GetExtension();
-            auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+            auto imageFormat = DAVA::ImageSystem::GetImageFormatForExtension(extension);
 
             if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
             {

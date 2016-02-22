@@ -134,7 +134,7 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
 
     QString fileName = filePath.GetAbsolutePathname().c_str();
     QString errorString;
-    ImageInfo loadedImageInfo = ImageSystem::Instance()->GetImageInfo(filePath);
+    ImageInfo loadedImageInfo = ImageSystem::GetImageInfo(filePath);
 
     bool verified = false;
     bool isFirstImage = false;
@@ -436,7 +436,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
             {
                 ScopedPtr<Image> image(CreateTopLevelImage(targetFacePathes[i]));
                 image->RotateDeg(faceLabel->GetRotation());
-                ImageSystem::Instance()->Save(targetFacePathes[i], image);
+                ImageSystem::Save(targetFacePathes[i], image);
                 faceLabel->SetRotation(0);
             }
         }

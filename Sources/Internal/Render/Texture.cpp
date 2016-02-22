@@ -48,6 +48,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif //PLATFORMS
 
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -119,18 +120,23 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
     }
     else if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
     {
-        const uint32 count = static_cast<uint32>(imageSet.size());
-        for (uint32 i = 0; i < count; ++i)
+        for (Image*& image : imageSet)
         {
-            Image* image = imageSet[i];
             Image* newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-            ImageConvert::ConvertImageDirect(image, newImage);
+            bool converted = ImageConvert::ConvertImage(image, newImage);
+            if (converted)
+            {
+                newImage->mipmapLevel = image->mipmapLevel;
+                newImage->cubeFaceID = image->cubeFaceID;
 
-            newImage->mipmapLevel = image->mipmapLevel;
-            newImage->cubeFaceID = image->cubeFaceID;
-
-            imageSet[i] = newImage;
-            image->Release();
+                image->Release();
+                image = newImage;
+            }
+            else
+            {
+                SafeRelease(newImage);
+                return false;
+            }
         }
 
         return true;
@@ -435,7 +441,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 continue;
 
             Vector<Image*> faceImage;
-            ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap);
+            ImageSystem::Load(currentfacePath, faceImage, baseMipMap);
             if (faceImage.size() == 0)
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
@@ -479,8 +485,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     {
         FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
 
-        ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
-        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
+        ImageSystem::Load(imagePathname, *images, baseMipMap);
+        ImageSystem::EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {
             Image* img = *images->begin();

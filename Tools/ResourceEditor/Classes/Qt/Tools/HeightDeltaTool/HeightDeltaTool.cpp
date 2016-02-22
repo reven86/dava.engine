@@ -126,7 +126,7 @@ void HeightDeltaTool::OnRun()
                 const double unitSize = (bbox.max.x - bbox.min.x) / heightmap->Size();
 
                 auto inputPathname = FilePath(inPath.toStdString());
-                auto imInterface = DAVA::ImageSystem::Instance()->GetImageFormatInterface(inputPathname);
+                auto imInterface = DAVA::ImageSystem::GetImageFormatInterface(inputPathname);
                 DVASSERT(imInterface);
                 auto imageInfo = imInterface->GetImageInfo(inputPathname);
 

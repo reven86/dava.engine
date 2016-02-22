@@ -40,19 +40,19 @@ namespace DAVA
 {
 LibWebPHelper::LibWebPHelper()
     : ImageFormatInterface(
-      IMAGE_FORMAT_WEBP,
-      "WEBP",
-      { ".webp" },
-      { FORMAT_RGB888, FORMAT_RGBA8888 })
+      IMAGE_FORMAT_WEBP, // image format type
+      "WEBP", // image format name
+      { ".webp" }, // image format extension
+      { FORMAT_RGB888, FORMAT_RGBA8888 }) // supported pixel formats
 {
 }
 
-bool LibWebPHelper::CanProcessFile(const FilePtr& infile) const
+bool LibWebPHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibWebPHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
+eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
     WebPDecoderConfig config;
     WebPBitstreamFeatures* bitstream = &config.input;
@@ -192,7 +192,7 @@ eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vec
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibWebPHelper::GetImageInfo(const FilePtr& infile) const
+DAVA::ImageInfo LibWebPHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);
@@ -228,6 +228,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(const FilePtr& infile) const
     auto size = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
     info.dataSize = size;
     info.mipmapsCount = 1;
+    info.faceCount = 1;
 
     SafeDeleteArray(data);
 

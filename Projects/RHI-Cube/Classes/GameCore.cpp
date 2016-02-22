@@ -603,7 +603,7 @@ void GameCore::SetupTank()
 
     Vector<Image*> images;
 
-    ImageSystem::Instance()->Load("~res:/3d/test.png", images, 0);
+    ImageSystem::Load("~res:/3d/test.png", images, 0);
     if (images.size())
     {
         Image* img = images[0];

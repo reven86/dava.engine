@@ -97,7 +97,7 @@ DAVA::Image* CreateTopLevelImage(const DAVA::FilePath& imagePathname)
 {
     Image* image = NULL;
     Vector<Image*> imageSet;
-    ImageSystem::Instance()->Load(imagePathname, imageSet);
+    ImageSystem::Load(imagePathname, imageSet);
     if (0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);
@@ -253,5 +253,5 @@ void SaveTextureToFile(DAVA::Texture* texture, const DAVA::FilePath& path)
 
 void SaveImageToFile(DAVA::Image* image, const DAVA::FilePath& path)
 {
-    DAVA::ImageSystem::Instance()->Save(path, image);
+    DAVA::ImageSystem::Save(path, image);
 }

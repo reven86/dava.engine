@@ -91,10 +91,8 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
 
     { FORMAT_R32F, { FORMAT_R32F, FastName("R32F"), 32, rhi::TextureFormat::TEXTURE_FORMAT_R32F, false } },
     { FORMAT_RG32F, { FORMAT_RG32F, FastName("RG32F"), 64, rhi::TextureFormat::TEXTURE_FORMAT_RG32F, false } },
-    { FORMAT_RGBA32F, { FORMAT_RGBA32F, FastName("RGBA32F"), 128, rhi::TextureFormat::TEXTURE_FORMAT_RGBA32F, false } },
+    { FORMAT_RGBA32F, { FORMAT_RGBA32F, FastName("RGBA32F"), 128, rhi::TextureFormat::TEXTURE_FORMAT_RGBA32F, false } }
 #endif
-    ,
-    { FORMAT_INVALID, { FORMAT_INVALID, FastName("invalid"), 0, TEXTURE_FORMAT_INVALID, false } }
 };
 
 const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(const PixelFormat formatID)

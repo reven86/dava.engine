@@ -592,10 +592,9 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int3
     DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
     uint8* dataPtr = imageData + bitsOffset;
 
-    const uint32 pitch = 4 * width;
-    ImageConvert::ConvertImageDirect(FORMAT_BGRA8888, FORMAT_RGBA8888, dataPtr, width, height, pitch, dataPtr, width, height, pitch);
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, dataPtr));
-    return Sprite::CreateFromImage(imgSrc.Get(), true, false);
+    ImageConvert::SwapRedBlueChannels(imgSrc);
+    return Sprite::CreateFromImage(imgSrc, true, false);
 }
 
 } // namespace DAVA

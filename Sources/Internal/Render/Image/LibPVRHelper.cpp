@@ -120,11 +120,14 @@ const uint32 PVRTEX3_METADATAIDENT = 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
     : ImageFormatInterface(
-      IMAGE_FORMAT_PVR, "PVR", { ".pvr" }, {})
+      IMAGE_FORMAT_PVR, // image format type
+      "PVR",            // image format name
+      { ".pvr" },       // image format extension
+      {})               // supported pixel formats
 {
 }
 
-bool LibPVRHelper::CanProcessFile(const FilePtr& file) const
+bool LibPVRHelper::CanProcessFile(const ScopedPtr<File>& file) const
 {
     bool isPvrFile = false;
 
@@ -139,7 +142,7 @@ bool LibPVRHelper::CanProcessFile(const FilePtr& file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const
+eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const
 {
     PVRFile* pvrFile = ReadFile(infile, true, true);
     if (pvrFile != nullptr)
@@ -169,7 +172,7 @@ eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPVRHelper::GetImageInfo(const FilePtr& infile) const
+DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     ImageInfo info;
 
@@ -181,6 +184,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(const FilePtr& infile) const
         info.format = GetTextureFormat(pvrFile->header);
         info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
         info.mipmapsCount = pvrFile->header.u32MIPMapCount;
+        info.faceCount = pvrFile->header.u32NumFaces;
 
         delete pvrFile;
     }

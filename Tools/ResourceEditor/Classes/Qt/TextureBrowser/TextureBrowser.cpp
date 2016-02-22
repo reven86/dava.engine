@@ -362,7 +362,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage>& images)
             imagePath = curDescriptor->GetSourceTexturePathname();
         }
 
-        const ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePath);
+        const ImageInfo info = ImageSystem::GetImageInfo(imagePath);
         String formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
 
         int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);

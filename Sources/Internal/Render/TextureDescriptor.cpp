@@ -128,7 +128,7 @@ void TextureDescriptor::TextureDataSettings::SetDefaultValues()
     static ImageFormat defaultImageFormat = IMAGE_FORMAT_PNG;
 
     sourceFileFormat = defaultImageFormat;
-    sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(defaultImageFormat)[0];
+    sourceFileExtension = ImageSystem::GetExtensionsFor(defaultImageFormat)[0];
 }
 
 void TextureDescriptor::TextureDataSettings::SetGenerateMipmaps(const bool& generateMipmaps)
@@ -253,7 +253,7 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
         //this code need until using of convertation params in crc
         const ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
         const FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
-        ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(filePath);
+        ImageInfo imageInfo = ImageSystem::GetImageInfo(filePath);
 
         const bool imageIsActual = (imageInfo.format == compressionForGPU->format) &&
         ((compressionForGPU->compressToWidth == 0) || (imageInfo.width == compressionForGPU->compressToWidth)) && ((compressionForGPU->compressToHeight == 0) || (imageInfo.height == compressionForGPU->compressToHeight));
@@ -791,7 +791,7 @@ const String& TextureDescriptor::GetDefaultFaceExtension()
 
 const String& TextureDescriptor::GetLightmapTextureExtension()
 {
-    return ImageSystem::Instance()->GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
+    return ImageSystem::GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
 }
 
 const TextureDescriptor::Compression* TextureDescriptor::GetCompressionParams(eGPUFamily gpuFamily) const
@@ -805,7 +805,7 @@ Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORM
 
 auto IsSupportedFor = [](ImageFormat format, const String& extension)
 {
-    auto& extensions = ImageSystem::Instance()->GetExtensionsFor(format);
+    auto& extensions = ImageSystem::GetExtensionsFor(format);
     for (auto& ext : extensions)
     {
         if (CompareCaseInsensitive(ext, extension) == 0)
@@ -960,7 +960,7 @@ FilePath TextureDescriptor::CreatePathnameForGPU(const eGPUFamily gpuFamily) con
 
 FilePath TextureDescriptor::CreateCompressedTexturePathname(const eGPUFamily gpuFamily, ImageFormat imageFormat) const
 {
-    String ext = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::Instance()->GetExtensionsFor(imageFormat)[0];
+    String ext = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::GetExtensionsFor(imageFormat)[0];
     return FilePath::CreateWithNewExtension(pathname, ext);
 }
 

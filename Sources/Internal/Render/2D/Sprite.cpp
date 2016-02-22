@@ -335,7 +335,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
 
-    ScopedPtr<Image> squareImage(ImageSystem::Instance()->EnsurePowerOf2Image(image));
+    ScopedPtr<Image> squareImage(ImageSystem::EnsurePowerOf2Image(image));
     ScopedPtr<Texture> texture(Texture::CreateFromData(squareImage, false));
 
     Sprite* sprite = nullptr;
@@ -365,11 +365,11 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
         return nullptr;
     }
 
-    FilePtr file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
+    ScopedPtr<File> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
     DVASSERT(file);
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(file, images);
+    ImageSystem::Load(file, images);
     if (images.size() == 0)
     {
         return nullptr;
@@ -407,7 +407,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     }
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(path, images);
+    ImageSystem::Load(path, images);
     if (images.size() == 0)
     {
         return nullptr;

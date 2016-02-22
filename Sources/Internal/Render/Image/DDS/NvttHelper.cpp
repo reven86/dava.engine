@@ -30,292 +30,226 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/DDS/NvttHelper.h"
-#include "FileSystem/FileSystem.h"
+#include "Base/GlobalEnum.h"
 
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
 
-namespace DAVA
-{
-namespace NvttHelper
-{
-struct PairNvttPixelFormat
-{
-    nvtt::Format nvttFormat;
-    PixelFormat davaFormat;
-};
+namespace DAVA {
+namespace NvttHelper {
 
-const Map<nvtt::Format, PixelFormat> formatNamesMap =
-{
-  { nvtt::Format_DXT1, FORMAT_DXT1 },
-  { nvtt::Format_DXT1a, FORMAT_DXT1A },
-  { nvtt::Format_DXT3, FORMAT_DXT3 },
-  { nvtt::Format_DXT5, FORMAT_DXT5 },
-  { nvtt::Format_DXT5n, FORMAT_DXT5NM },
-  { nvtt::Format_ATC_RGB, FORMAT_ATC_RGB },
-  { nvtt::Format_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
-  { nvtt::Format_ATC_RGBA_INTERPOLATED_ALPHA, FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
-  { nvtt::Format_RGBA, FORMAT_RGBA8888 }
-};
-
-bool InitDecompressor(nvtt::Decompressor& dec, const uint8* mem, uint32 size)
-{
-    if (NULL == mem || size == 0)
-    {
-        Logger::Error("[InitDecompressor] Wrong buffer params.");
-        return false;
-    }
-
-    if (!dec.initWithDDSFile(mem, size))
-    {
-        Logger::Error("[InitDecompressor] Wrong buffer.");
-        return false;
-    }
-
-    return true;
-}
-
-PixelFormat GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
-{
-    PixelFormat retValue = FORMAT_INVALID;
-    auto result = formatNamesMap.find(nvttFormat);
-    if (result == formatNamesMap.end())
-    {
-        return FORMAT_INVALID;
-    }
-    else
-    {
-        return result->second;
-    }
-}
+namespace Internal {
 
 nvtt::Format GetNVTTFormatByPixelFormat(PixelFormat pixelFormat)
 {
-    for (const auto& formatPair : formatNamesMap)
+    switch (pixelFormat)
     {
-        if (formatPair.second == pixelFormat)
+    case  FORMAT_DXT1: return nvtt::Format_DXT1;
+    case  FORMAT_DXT1A: return nvtt::Format_DXT1a;
+    case  FORMAT_DXT3: return nvtt::Format_DXT3;
+    case  FORMAT_DXT5: return nvtt::Format_DXT5;
+    case  FORMAT_DXT5NM: return nvtt::Format_DXT5n;
+    case  FORMAT_ATC_RGB: return nvtt::Format_ATC_RGB;
+    case  FORMAT_ATC_RGBA_EXPLICIT_ALPHA: return nvtt::Format_ATC_RGBA_EXPLICIT_ALPHA;
+    case  FORMAT_ATC_RGBA_INTERPOLATED_ALPHA: return nvtt::Format_ATC_RGBA_INTERPOLATED_ALPHA;
+    case  FORMAT_RGBA8888: return nvtt::Format_RGBA;
+    default: DVASSERT_MSG(false, "Unsupported pixel format"); return nvtt::Format_COUNT;
+    }
+}
+
+struct BufferOutputHandler : public nvtt::OutputHandler
+{
+    explicit BufferOutputHandler(Vector<uint8>& buf) : buffer(buf) { buffer.clear(); }
+
+    virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override
+    {
+        Logger::FrameworkDebug("Compressing image: size %d [%dx%d] depth %d, face %d, mip %d", size, width, height, depth, face, miplevel);
+        writingImage = true;
+    }
+
+    virtual bool writeData(const void* data, int size) override
+    {
+        if (writingImage)
         {
-            return formatPair.first;
+            auto prevSize = buffer.size();
+            buffer.resize(prevSize + size);
+            Memcpy(&buffer[prevSize], data, size);
+        }
+        return true;
+    }
+
+    bool writingImage = false;
+    Vector<uint8>& buffer;
+};
+
+struct ImageOutputHandler : public nvtt::OutputHandler
+{
+    explicit ImageOutputHandler(Image* img) : image(img), ptr(image->data), bytesWritten(0)
+    {
+    }
+
+    virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override
+    {
+        writingImage = true;
+        Logger::FrameworkDebug("Compressing image: size %d [%dx%d] depth %d, face %d, mip %d", size, width, height, depth, face, miplevel);
+    }
+
+    virtual bool writeData(const void* data, int size) override
+    {
+        if (writingImage)
+        {
+            if (bytesWritten + size > image->dataSize)
+            {
+                Logger::Error("Compressed data size is larger than expected");
+                return false;
+            }
+            else
+            {
+                Memcpy(ptr, data, size);
+                ptr += size;
+                bytesWritten += size;
+                return true;
+            }
         }
     }
 
-    //bc5 is unsupported, used to determinate fail in search
-    return nvtt::Format_BC5;
+    bool writingImage = false;
+    Image* image = nullptr;
+    uint8* ptr = nullptr;
+    uint32 bytesWritten = 0;
+};
+
+} // namespace Internal
+
+bool IsDxtFormat(PixelFormat format)
+{
+    return (format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM);
 }
 
-ImagePtr DecompressDxtToRGBA(const Image* image)
+bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage)
 {
-    DVASSERT(image);
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    if (!(image->format >= FORMAT_DXT1 && image->format <= FORMAT_DXT5NM))
-    {
-        Logger::Error("[NvttHelper::DecompressDxt] Wrong compression format (%d).", GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
-        return ImagePtr(nullptr);
-    }
+    DVASSERT_MSG(false, "No need to decompress on mobile platforms");
+    return false;
 
-    nvtt::Format innerComprFormat = GetNVTTFormatByPixelFormat(image->format);
-    if (nvtt::Format_BC5 == innerComprFormat)
-    { //bc5 is unsupported, used to determinate fail in search
-        Logger::Error("[NvttHelper::DecompressDxt] Can't work with nvtt::Format_BC5.");
-        return ImagePtr(nullptr);
-    }
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        return false;
+
+#else
+    DVASSERT(srcImage);
+    DVASSERT(dstImage);
+    DVASSERT(IsDxtFormat(srcImage->format));
+    DVASSERT(dstImage->format == FORMAT_RGBA8888)
 
     nvtt::InputOptions inputOptions;
-    inputOptions.setTextureLayout(nvtt::TextureType_2D, image->width, image->height);
+    inputOptions.setTextureLayout(nvtt::TextureType_2D, srcImage->width, srcImage->height);
     inputOptions.setMipmapGeneration(false);
 
     nvtt::CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-    if (FORMAT_DXT5NM == image->format)
+    compressionOptions.setFormat(Internal::GetNVTTFormatByPixelFormat(srcImage->format));
+    if (FORMAT_DXT5NM == srcImage->format)
     {
         inputOptions.setNormalMap(true);
     }
 
     uint32 headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    Vector<uint8> imageBuffer(headerSize + image->dataSize);
+    Vector<uint8> imageBuffer(headerSize + srcImage->dataSize);
 
     uint32 realHeaderSize = nvtt::Decompressor::getHeader(imageBuffer.data(), headerSize, inputOptions, compressionOptions);
     if (realHeaderSize > DECOMPRESSOR_MIN_HEADER_SIZE)
     {
         Logger::Error("[NvttHelper::DecompressDxt] Header size (%d) is bigger than maximum expected", realHeaderSize);
-        return ImagePtr(nullptr);
+        return false;
     }
 
     nvtt::Decompressor dec;
 
-    Memcpy(imageBuffer.data() + realHeaderSize, image->data, image->dataSize);
+    Memcpy(imageBuffer.data() + realHeaderSize, srcImage->data, srcImage->dataSize);
 
-    bool initOk = InitDecompressor(dec, imageBuffer.data(), realHeaderSize + image->dataSize);
-    if (initOk)
+    if (!dec.initWithDDSFile(imageBuffer.data(), realHeaderSize + srcImage->dataSize))
     {
-        static const PixelFormat outFormat = FORMAT_RGBA8888;
-        ImagePtr newImage(Image::Create(image->width, image->height, outFormat));
-        const uint32 mip = 0;
-        bool decompressedOk = dec.process(newImage->data, newImage->dataSize, mip);
-        if (decompressedOk)
-        {
-            // nvtt decompresses into BGRA8888, thus we need to swap channels to obtain RGBA8888
-            ImageConvert::SwapRedBlueChannels(newImage);
+        Logger::Error("[InitDecompressor] Wrong buffer data");
+        return false;
+    }
+    
+    const PixelFormat outFormat = FORMAT_RGBA8888;
+    ScopedPtr<Image> newImage(Image::Create(srcImage->width, srcImage->height, outFormat));
+    const uint32 mip = 0;
+    bool decompressedOk = dec.process(newImage->data, newImage->dataSize, mip);
+    if (decompressedOk)
+    {
+        // nvtt decompresses into BGRA8888, thus we need to swap channels to obtain RGBA8888
+        ImageConvert::SwapRedBlueChannels(newImage, dstImage);
 
-            newImage->mipmapLevel = image->mipmapLevel;
-            newImage->cubeFaceID = image->cubeFaceID;
+        newImage->mipmapLevel = srcImage->mipmapLevel;
+        newImage->cubeFaceID = srcImage->cubeFaceID;
 
-            return newImage;
-        }
+        return true;
     }
 
-    return ImagePtr(nullptr);
+    return false;
+#endif
 }
 
-bool WriteDxtFile(const FilePath& outFileName, PixelFormat compressionFormat, const Vector<Vector<Image*>>& srcImages)
+bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage)
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    DVASSERT_MSG(false, "No necessary write compressed files on mobile");
+    DVASSERT_MSG(false, "No need to compress on mobile platforms");
     return false;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
+        return false;
 
 #else
-    if (!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM) || (compressionFormat == FORMAT_RGBA8888)))
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
-        return false;
-    }
-
-    nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
-    if (nvtt::Format_BC5 == innerComprFormat)
-    {
-        //bc5 is unsupported, used to determinate fail in search
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Can't work with nvtt::Format_BC5.");
-        return false;
-    }
-    if (srcImages.empty() || srcImages[0].empty())
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Empty incoming image vector.");
-        return false;
-    }
-
-    uint32 facesCount = srcImages.size();
-    uint32 mipmapsCount = srcImages[0].size();
+    DVASSERT(srcImage);
+    DVASSERT(dstImage);
+    DVASSERT_MSG(srcImage->format == FORMAT_RGBA8888, "Source image format is not rgba8888");
+    DVASSERT_MSG(IsDxtFormat(dstImage->format), "Specified format is not a dxt compressed");
 
     nvtt::InputOptions inputOptions;
-    nvtt::TextureType textureType = (facesCount > 1) ? nvtt::TextureType_Cube : nvtt::TextureType_2D;
-    inputOptions.setTextureLayout(textureType, srcImages[0][0]->width, srcImages[0][0]->height);
-    inputOptions.setMipmapGeneration(mipmapsCount > 1, mipmapsCount - 1);
+    inputOptions.setTextureLayout(nvtt::TextureType_2D, srcImage->width, srcImage->height);
 
-    for (uint32 f = 0; f < facesCount; ++f)
-    {
-        DVVERIFY(srcImages[f].size() == mipmapsCount);
-        for (uint32 m = 0; m < mipmapsCount; ++m)
-        {
-            Image* image = srcImages[f][m];
-            ImagePtr convertedImage(nullptr);
-            auto inputFormat = image->format;
-
-            if (inputFormat >= FORMAT_DXT1 && inputFormat <= FORMAT_DXT5NM)
-            {
-                convertedImage = DecompressDxtToRGBA(image);
-                if (!convertedImage)
-                {
-                    Logger::Error("[NvttHelper::WriteDxtFile] Error during decompressing of DXT into RGBA");
-                    return false;
-                }
-            }
-            else
-            {
-                if (inputFormat == FORMAT_RGBA8888)
-                {
-                    convertedImage = Image::CreateFromData(image->width, image->height, FORMAT_RGBA8888, image->data);
-                }
-                else
-                {
-                    convertedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-                    ImageConvert::ConvertImageDirect(image, convertedImage);
-                }
-            }
-
-            ImageConvert::SwapRedBlueChannels(convertedImage);
-            inputOptions.setMipmapData(convertedImage->data, convertedImage->width, convertedImage->height, 1, f, m);
-        }
-    }
+    ScopedPtr<Image> bgraImage(Image::Create(srcImage->width, srcImage->height, FORMAT_RGBA8888));
+    ImageConvert::SwapRedBlueChannels(srcImage, bgraImage);
+    inputOptions.setMipmapData(bgraImage->data, bgraImage->width, bgraImage->height, 1, 0, 0);
+    inputOptions.setMipmapGeneration(false);
 
     nvtt::CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-    if (FORMAT_DXT5NM == compressionFormat)
+    compressionOptions.setFormat(Internal::GetNVTTFormatByPixelFormat(dstImage->format));
+    if (FORMAT_DXT5NM == dstImage->format)
     {
         inputOptions.setNormalMap(true);
     }
 
     nvtt::OutputOptions outputOptions;
-    FilePath tmpFileName = FilePath::CreateWithNewExtension(outFileName, "_dds");
-    outputOptions.setFileName(tmpFileName.GetAbsolutePathname().c_str());
+    Internal::ImageOutputHandler outputHandler(dstImage);
+    outputOptions.setOutputHandler(&outputHandler);
 
     nvtt::Compressor compressor;
     bool compressedOk = compressor.process(inputOptions, compressionOptions, outputOptions);
     if (compressedOk)
     {
-        FileSystem::Instance()->DeleteFile(outFileName);
-        if (!FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
+        if (outputHandler.bytesWritten == dstImage->dataSize)
         {
-            Logger::Error("[NvttHelper::WriteDxtFile] Temporary dds file renamig failed.");
-            compressedOk = false;
+            return true;
+        }
+        else
+        {
+            Logger::Error("[NvttHelper::CompressRGBAtoDxt] dxt compress size %d is not equal to expected %d", outputHandler.bytesWritten, dstImage->dataSize);
+            return false;
         }
     }
     else
     {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Error during writing DDS file (%s).", tmpFileName.GetAbsolutePathname().c_str());
-    }
-
-    return compressedOk;
-#endif //__DAVAENGINE_IPHONE__
-}
-
-bool WriteDdsFile(const FilePath& outFileName, PixelFormat compressionFormat, const Vector<uint8>& compressedData, uint32 width, uint32 height, uint32 mipCount, bool isCubemap)
-{
-    nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
-
-    nvtt::TextureType textureType = isCubemap ? nvtt::TextureType_Cube : nvtt::TextureType_2D;
-    nvtt::InputOptions inputOptions;
-    inputOptions.setTextureLayout(textureType, width, height);
-    inputOptions.setMipmapGeneration(mipCount > 1, mipCount - 1);
-
-    nvtt::CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-
-    uint32 headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    Vector<uint8> header(headerSize);
-
-    nvtt::Decompressor decompress;
-    const uint32 realHeaderSize = decompress.getHeader(header.data(), headerSize, inputOptions, compressionOptions);
-    if (realHeaderSize > DECOMPRESSOR_MIN_HEADER_SIZE)
-    {
-        Logger::Error("[NvttHelper::DecompressDxt] Header size (%d) is bigger than maximum expected", realHeaderSize);
+        Logger::Error("[NvttHelper::CompressRGBAtoDxt] dxt compress error");
         return false;
     }
-
-    bool res = false;
-    const FilePath fileName = FilePath::CreateWithNewExtension(outFileName, "_dds");
-    ScopedPtr<File> file(File::Create(fileName, File::CREATE | File::WRITE));
-    if (file)
-    {
-        file->Write(header.data(), realHeaderSize);
-        file->Write(compressedData.data(), compressedData.size());
-        file.reset();
-
-        FileSystem::Instance()->DeleteFile(outFileName);
-        res = FileSystem::Instance()->MoveFile(fileName, outFileName, true);
-        if (!res)
-            Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
-    }
-    else
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Can't open '%s' for writing.", fileName.GetAbsolutePathname().c_str());
-    }
-
-    return res;
+#endif
 }
+
 }
 }

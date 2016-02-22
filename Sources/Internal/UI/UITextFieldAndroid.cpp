@@ -542,9 +542,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
             // convert on the same memory
             uint32 pitch = width * 4;
             uint8* imageData = reinterpret_cast<uint8*>(rawPixels);
-            ImageConvert::ConvertImageDirect(FORMAT_BGRA8888,
-                                             FORMAT_RGBA8888, imageData, width, height, pitch, imageData,
-                                             width, height, pitch);
+            ImageConvert::SwapRedBlueChannels(FORMAT_RGBA8888, imageData, width, height, pitch);
 
             Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, imageData, width, height, false);
             SCOPE_EXIT

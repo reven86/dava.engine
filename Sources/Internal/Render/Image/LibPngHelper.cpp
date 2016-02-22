@@ -92,14 +92,14 @@ void abort_(const char* s, ...)
 
 LibPngHelper::LibPngHelper()
     : ImageFormatInterface(
-      IMAGE_FORMAT_PNG,
-      "PNG",
-      { ".png" },
-      { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 })
+      IMAGE_FORMAT_PNG, // image format type
+      "PNG", // image format name
+      { ".png" }, // image format extension
+      { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 }) // supported pixel formats
 {
 }
 
-bool LibPngHelper::CanProcessFile(const FilePtr& infile) const
+bool LibPngHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
     if (infile)
     {
@@ -115,7 +115,7 @@ bool LibPngHelper::CanProcessFile(const FilePtr& infile) const
     }
 }
 
-eErrorCode LibPngHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
+eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
@@ -287,7 +287,7 @@ eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const FilePtr& infile) const
+DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     if (!infile)
     {
@@ -425,6 +425,7 @@ DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const FilePtr& infile) const
 
     info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
     info.mipmapsCount = 1;
+    info.faceCount = 1;
     return info;
 }
 

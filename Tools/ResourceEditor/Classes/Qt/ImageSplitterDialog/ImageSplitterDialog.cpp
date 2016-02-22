@@ -336,21 +336,20 @@ void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplitted
         return;
     }
 
-    DAVA::ImageSystem* system = DAVA::ImageSystem::Instance();
     if (saveSplittedImagesSeparately)
     {
         DAVA::String directory = filePath.GetDirectory().GetAbsolutePathname();
         DAVA::String baseName = filePath.GetBasename();
 
-        system->Save(directory + baseName + "_red.png", channels.red, channels.red->format);
-        system->Save(directory + baseName + "_green.png", channels.green, channels.green->format);
-        system->Save(directory + baseName + "_blue.png", channels.blue, channels.blue->format);
-        system->Save(directory + baseName + "_alpha.png", channels.alpha, channels.alpha->format);
+        DAVA::ImageSystem::Save(directory + baseName + "_red.png", channels.red, channels.red->format);
+        DAVA::ImageSystem::Save(directory + baseName + "_green.png", channels.green, channels.green->format);
+        DAVA::ImageSystem::Save(directory + baseName + "_blue.png", channels.blue, channels.blue->format);
+        DAVA::ImageSystem::Save(directory + baseName + "_alpha.png", channels.alpha, channels.alpha->format);
     }
     else
     {
         DAVA::Image* mergedImage = ImageTools::CreateMergedImage(channels);
-        system->Save(filePath, mergedImage, mergedImage->format);
+        DAVA::ImageSystem::Save(filePath, mergedImage, mergedImage->format);
         DAVA::SafeRelease(mergedImage);
         ui->path->SetPath(QString::fromStdString(filePath.GetAbsolutePathname()));
     }

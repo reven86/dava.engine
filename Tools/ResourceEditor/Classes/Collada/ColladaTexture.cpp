@@ -115,7 +115,7 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
             const String extension = texturePath.GetExtension();
             if (!extension.empty())
             {
-                auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
+                auto imageFormat = ImageSystem::GetImageFormatForExtension(texturePath.GetExtension());
                 if (imageFormat != IMAGE_FORMAT_UNKNOWN)
                 {
                     TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);

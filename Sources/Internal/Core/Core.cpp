@@ -260,7 +260,6 @@ void Core::CreateSingletons()
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-    new ImageSystem();
     new FrameOcclusionQueryManager();
 
     new VirtualCoordinatesSystem();
@@ -367,7 +366,6 @@ void Core::ReleaseSingletons()
     VersionInfo::Instance()->Release();
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
-    ImageSystem::Instance()->Release();
 
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();

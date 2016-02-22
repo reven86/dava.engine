@@ -142,7 +142,7 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath& originalPath
 {
     const FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(originalPathname);
     const String extension = originalPathname.GetExtension();
-    const ImageFormat sourceFormat = ImageSystem::Instance()->GetImageFormatForExtension(extension);
+    const ImageFormat sourceFormat = ImageSystem::GetImageFormatForExtension(extension);
     if (false == FileSystem::Instance()->IsFile(descriptorPathname))
     {
         std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());

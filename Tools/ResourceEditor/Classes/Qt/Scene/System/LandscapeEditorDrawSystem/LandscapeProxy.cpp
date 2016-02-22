@@ -223,7 +223,7 @@ void LandscapeProxy::InitTilemaskImageCopy()
     SafeRelease(tilemaskImageCopy);
 
     Vector<Image*> imgs;
-    ImageSystem::Instance()->Load(sourceTilemaskPath, imgs);
+    ImageSystem::Load(sourceTilemaskPath, imgs);
 
     DVASSERT(imgs.size() == 1);
     tilemaskImageCopy = imgs[0];

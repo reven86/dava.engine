@@ -102,10 +102,10 @@ public:
 
     static DAVA::Image* CreateMergedImage(const Channels& channes);
 
-    static void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value);
+    static void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value);  
 
     static QImage FromDavaImage(const DAVA::FilePath& pathname);
-    static QImage FromDavaImage(DAVA::Image* image);
+    static QImage FromDavaImage(const DAVA::Image* image);
 
 private:
     static void SaveImage(DAVA::Image* image, const DAVA::FilePath& pathname);

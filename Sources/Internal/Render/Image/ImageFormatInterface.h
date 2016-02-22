@@ -66,6 +66,7 @@ struct ImageInfo
     PixelFormat format = FORMAT_INVALID;
     uint32 dataSize = 0;
     uint32 mipmapsCount = 0;
+    uint32 faceCount = 0;
 };
 
 class ImageFormatInterface
@@ -75,14 +76,21 @@ public:
     virtual ~ImageFormatInterface() = default;
 
     inline ImageFormat GetImageFormat() const;
-    inline const char* GetFormatName() const;
+    inline const String& GetFormatName() const;
     inline const Vector<String>& GetExtensions() const;
+
     inline ImageInfo GetImageInfo(const FilePath& path) const;
+    virtual ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const = 0;
 
     inline bool IsFormatSupported(PixelFormat format) const;
     inline bool IsFileExtensionSupported(const String& extension) const;
 
-    virtual bool CanProcessFile(const FilePtr& file) const = 0;
+    virtual eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const = 0;
+
+    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+
+    virtual bool CanProcessFile(const ScopedPtr<File>& file) const = 0;
 
 protected:
     ImageFormat imageFormat;
@@ -134,9 +142,9 @@ inline const Vector<String>& ImageFormatInterface::GetExtensions() const
     return supportedExtensions;
 }
 
-inline const char* ImageFormatInterface::GetFormatName() const
+inline const String& ImageFormatInterface::GetFormatName() const
 {
-    return name.c_str();
+    return name;
 }
 };
 

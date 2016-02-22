@@ -204,7 +204,7 @@ AnimationData* ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation* colladaAn
 Texture* ImportLibrary::GetTextureForPath(const FilePath& imagePath) const
 {
     FilePath texturePath(imagePath);
-    auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
+    auto imageFormat = ImageSystem::GetImageFormatForExtension(texturePath.GetExtension());
     if (imageFormat == IMAGE_FORMAT_UNKNOWN)
     {
         texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);

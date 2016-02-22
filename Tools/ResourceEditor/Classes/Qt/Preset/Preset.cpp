@@ -174,7 +174,7 @@ bool LoadPresetForTexture(DAVA::TextureDescriptor* descriptor)
     dataSettings.cubefaceFlags = cubefaceFlags;
 
     const DAVA::FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
-    const DAVA::ImageInfo imageInfo = DAVA::ImageSystem::Instance()->GetImageInfo(sourceImagePath);
+    const DAVA::ImageInfo imageInfo = DAVA::ImageSystem::GetImageInfo(sourceImagePath);
 
     for (DAVA::uint32 gpu = 0; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)
     {

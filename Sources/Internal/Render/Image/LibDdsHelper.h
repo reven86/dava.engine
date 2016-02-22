@@ -47,17 +47,22 @@ public:
     LibDdsHelper();
 
     // ImageFormatInterface
-    bool CanProcessFile(const FilePtr& infile) const override;
-    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
+    bool CanProcessFile(const ScopedPtr<File>& infile) const override;
+    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    ImageInfo GetImageInfo(const FilePtr& infile) const override;
+    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 
     // CRCAdditionInterface
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
-    static ImagePtr DecompressToRGBA(const Image* image);
+    static bool IsSupportedCompressedFormat(PixelFormat format);
+    static bool DecompressToRGBA(const Image* image, Image* dstImage);
+    static bool CompressFromRGBA(const Image* image, Image* dstImage);
+
+private:
+    eErrorCode WriteFileInternal(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const;
 };
 
 };

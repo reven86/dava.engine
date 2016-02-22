@@ -71,28 +71,28 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
     image->height = height;
     image->format = format;
 
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    if (formatSize ||
-        (format >= FORMAT_DXT1 && format <= FORMAT_DXT1A) ||
-        (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
-    {
-        //workaround, because formatSize is not designed for formats with 4 bits per pixel
-        image->dataSize = width * height * formatSize / 8;
+    int32 pixelSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
 
+    if (pixelSizeBits > 0)
+    {
         if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
             (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
         {
-            uint32 dSize = (formatSize / 8) == 0 ? (width * height) / 2 : width * height;
             if (width < 4 || height < 4) // size lower than  block's size
             {
-                uint32 minvalue = width < height ? width : height;
-                uint32 maxvalue = width > height ? width : height;
-                minvalue = minvalue < 4 ? 4 : minvalue;
-                maxvalue = maxvalue < 4 ? 4 : maxvalue;
-                dSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) * minvalue * maxvalue;
-                dSize /= 8;
+                uint32 w = Max(width, (uint32)4);
+                uint32 h = Max(height, (uint32)4);
+                image->dataSize = w * h * pixelSizeBits / 8;
             }
-            image->dataSize = dSize;
+            else
+            {
+                int32 pix = (pixelSizeBits < 8) ? 4 : pixelSizeBits;
+                image->dataSize = width * height * pix / 8;
+            }
+        }
+        else
+        {
+            image->dataSize = width * height * pixelSizeBits / 8;
         }
 
         image->data = new uint8[image->dataSize];
@@ -432,7 +432,7 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 bool Image::Save(const FilePath& path) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
+    return ImageSystem::Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
 
 void Image::FlipHorizontal()

@@ -45,111 +45,97 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <libatc/TextureConverter.h>
 #endif
 
-namespace DAVA
-{
-namespace QualcommHelper
-{
-const Map<int32, PixelFormat> formatsMap =
-{
-  { Q_FORMAT_ATC_RGB, FORMAT_ATC_RGB },
-  { Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
-  { Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
-  { Q_FORMAT_RGBA_8UI, FORMAT_RGBA8888 },
-  { Q_FORMAT_RGB_8UI, FORMAT_RGB888 },
-  { Q_FORMAT_RGB5_A1UI, FORMAT_RGBA5551 },
-  { Q_FORMAT_RGBA_4444, FORMAT_RGBA4444 },
-  { Q_FORMAT_RGB_565, FORMAT_RGB565 },
-  { Q_FORMAT_ALPHA_8, FORMAT_A8 }
-};
+namespace DAVA {
+namespace QualcommHelper {
 
+namespace Internal {
 int32 GetQualcommFromDava(PixelFormat format)
 {
-    for (const auto& pair : formatsMap)
+    switch (format)
     {
-        if (pair.second == format)
-        {
-            return pair.first;
-        }
-    }
-
-    Logger::Error("Wrong pixel format (%d).", GlobalEnumMap<PixelFormat>::Instance()->ToString(format));
-    return -1;
-}
-
-PixelFormat GetDavaFromQualcomm(int32 format)
-{
-    const auto& pairFound = formatsMap.find(format);
-    if (pairFound == formatsMap.end())
-    {
-        Logger::Error("Wrong qualcomm format (%d).", format);
-        return FORMAT_INVALID;
-    }
-    else
-    {
-        return pairFound->second;
+    case FORMAT_ATC_RGB: return Q_FORMAT_ATC_RGB;
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA: return Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA;
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA: return Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
+    case FORMAT_RGBA8888: return Q_FORMAT_RGBA_8UI;
+    default: DVASSERT_MSG(false, "Unsupported pixel format"); return Q_FORMAT_ATC_RGB;
     }
 }
+} // namespace Internal
 
-ImagePtr DecompressAtcToRGBA(const Image* image)
+bool IsAtcFormat(PixelFormat format)
 {
-#if defined(__DAVAENGINE_WIN_UAP__)
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return (format == FORMAT_ATC_RGB ||
+            format == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
+            format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA);
+}
+
+bool DecompressAtcToRgba(const Image* srcImage, Image* dstImage)
+{
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+
+    DVASSERT_MSG(false, "No need to decompress on mobile platforms");
     return false;
 
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        return false;
+
+#else
 #if defined(__DAVAENGINE_MACOS__)
-    if (image->format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+    if (srcImage->format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        Logger::Error("Decompressing FORMAT_ATC_RGBA_INTERPOLATED_ALPHA disabled on OSX platform, because of bug in qualcomm library");
-        return ImagePtr(nullptr);
+        Logger::Error("Decompressing of FORMAT_ATC_RGBA_INTERPOLATED_ALPHA is disabled on OSX platform, because of bug in qualcomm library");
+        return ScopedPtr<Image>(nullptr);
     }
 #endif
 
-    DVASSERT(image);
-
-    const int32 qualcommFormat = GetQualcommFromDava(image->format);
+    DVASSERT(srcImage);
+    DVASSERT(dstImage);
+    DVASSERT(dstImage->format == FORMAT_RGBA8888);
 
     TQonvertImage srcImg = { 0 };
     TQonvertImage dstImg = { 0 };
 
-    srcImg.nWidth = image->width;
-    srcImg.nHeight = image->height;
-    srcImg.nFormat = qualcommFormat;
-    srcImg.nDataSize = image->dataSize;
-    srcImg.pData = image->data;
+    srcImg.nWidth = srcImage->width;
+    srcImg.nHeight = srcImage->height;
+    srcImg.nFormat = Internal::GetQualcommFromDava(srcImage->format);
+    srcImg.nDataSize = srcImage->dataSize;
+    srcImg.pData = srcImage->data;
 
-    dstImg.nWidth = image->width;
-    dstImg.nHeight = image->height;
+    dstImg.nWidth = srcImage->width;
+    dstImg.nHeight = srcImage->height;
     dstImg.nFormat = Q_FORMAT_RGBA_8UI;
     dstImg.nDataSize = 0;
     dstImg.pData = nullptr;
 
-    if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS ||
-        dstImg.nDataSize == 0)
+    if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS)
     {
         Logger::Error("[DecompressAtcToRGBA] Failed to get dst data size");
-        return ImagePtr(nullptr);
+        return false;
     }
 
-    Vector<unsigned char> dstData(dstImg.nDataSize);
-    dstImg.pData = dstData.data();
+    if (dstImg.nDataSize != dstImage->dataSize)
+    {
+        Logger::Error("[DecompressAtcToRGBA] dst data size is %d, expected is %d", dstImg.nDataSize, dstImage->dataSize);
+        return false;
+    }
+
+    static_assert(sizeof(uint8) == sizeof(unsigned char), ""); // qualcomm uses unsigned char to store image data, whereas we use uint8
+    dstImg.pData = dstImage->data;
     if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS)
     {
         Logger::Error("[DecompressAtc] Failed to convert data");
-        return ImagePtr(nullptr);
+        return false;
     }
 
-    ImagePtr convertedImage(Image::CreateFromData(image->width, image->height, FORMAT_RGBA8888, dstImg.pData));
-    convertedImage->mipmapLevel = image->mipmapLevel;
-    convertedImage->cubeFaceID = image->cubeFaceID;
+    dstImage->mipmapLevel = srcImage->mipmapLevel;
+    dstImage->cubeFaceID = srcImage->cubeFaceID;
 
-    return convertedImage;
-#else
-    return ImagePtr(nullptr);
-#endif //defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+    return true;
+#endif
 }
 
-bool WriteAtcFile(const FilePath& outFileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat)
+bool CompressRgbaToAtc(const Image* srcImage, Image* dstImage)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
@@ -157,174 +143,51 @@ bool WriteAtcFile(const FilePath& outFileName, const Vector<Image*>& imageSet, P
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
+        return false;
 
 #else
+    DVASSERT(srcImage);
+    DVASSERT(dstImage);
+    DVASSERT(srcImage->format == FORMAT_RGBA8888);
+    DVASSERT(IsAtcFormat(dstImage->format));
 
-    if (compressionFormat != FORMAT_ATC_RGB &&
-        compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
-        compressionFormat != FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+    TQonvertImage srcImg = { 0 };
+    TQonvertImage dstImg = { 0 };
+
+    srcImg.nWidth = srcImage->width;
+    srcImg.nHeight = srcImage->height;
+    srcImg.nFormat = Internal::GetQualcommFromDava(srcImage->format);
+    srcImg.nDataSize = srcImage->dataSize;
+    srcImg.pData = srcImage->data;
+
+    dstImg.nWidth = dstImage->width;
+    dstImg.nHeight = dstImage->height;
+    dstImg.nFormat = Internal::GetQualcommFromDava(dstImage->format);
+    dstImg.nDataSize = 0;
+    dstImg.pData = nullptr;
+
+    if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
     {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Wrong copression format (%d).", compressionFormat);
+        Logger::Error("[QualcommHelper::CompressRgbaToAtc] Convert error");
         return false;
     }
 
-    if (imageSet.empty())
+    if (dstImg.nDataSize != dstImage->dataSize)
     {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
+        Logger::Error("[QualcommHelper::CompressRgbaToAtc] dst data size is %d, expected is %d", dstImg.nDataSize, dstImage->dataSize);
         return false;
     }
 
-    uint32 compressedDataSize = 0;
-    uint32 mipCount = imageSet.size();
-    Vector<TQonvertImage> srcImages(mipCount);
-    Vector<TQonvertImage> dstImages(mipCount);
-
-    auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
-    auto atcSrcFormat = GetQualcommFromDava(imageSet[0]->format);
-    auto atcDstFormat = GetQualcommFromDava(compressionFormat);
-
-    for (uint32 i = 0; i < mipCount; ++i)
+    dstImg.pData = dstImage->data;
+    if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
     {
-        TQonvertImage& srcImg = srcImages[i];
-        TQonvertImage& dstImg = dstImages[i];
-
-        srcImg = { 0 };
-        srcImg.nWidth = imageSet[i]->width;
-        srcImg.nHeight = imageSet[i]->height;
-        srcImg.nFormat = atcSrcFormat;
-        srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
-        srcImg.pData = imageSet[i]->data;
-
-        dstImg = { 0 };
-        dstImg.nWidth = imageSet[i]->width;
-        dstImg.nHeight = imageSet[i]->height;
-        dstImg.nFormat = atcDstFormat;
-        dstImg.nDataSize = 0;
-        dstImg.pData = nullptr;
-
-        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-        {
-            Logger::Error("[QualcommHelper::WriteAtcFile] Error converting (%s).", outFileName.GetAbsolutePathname().c_str());
-            return false;
-        }
-        compressedDataSize += dstImg.nDataSize;
+        Logger::Error("[QualcommHelper::CompressRgbaToAtc] Convert error");
+        return false;
     }
 
-    Vector<unsigned char> compressedData(compressedDataSize);
-    unsigned char* imageData = compressedData.data();
-    for (uint32 i = 0; i < mipCount; ++i)
-    {
-        TQonvertImage& srcImg = srcImages[i];
-        TQonvertImage& dstImg = dstImages[i];
-
-        dstImg.pData = imageData;
-        imageData += dstImg.nDataSize;
-
-        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-        {
-            Logger::Error("[QualcommHelper::WriteAtcFile] Error converting (%s).", outFileName.GetAbsolutePathname().c_str());
-            return false;
-        }
-    }
-
-    return NvttHelper::WriteDdsFile(outFileName, compressionFormat, compressedData, imageSet[0]->width, imageSet[0]->height, mipCount, false);
+    return true;
 #endif
 }
 
-bool WriteAtcFileAsCubemap(const DAVA::FilePath& outFileName, const Vector<Vector<DAVA::Image*>>& imageSets, DAVA::PixelFormat compressionFormat)
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
-    return false;
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
-
-#else
-
-    DVASSERT(imageSets.empty() == false);
-    DVASSERT(imageSets[0].empty() == false);
-
-    if (compressionFormat != FORMAT_ATC_RGB &&
-        compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
-        compressionFormat != FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
-    {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Wrong copression format (%d).", compressionFormat);
-        return false;
-    }
-    if (imageSets.empty())
-    {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
-        return false;
-    }
-
-    uint32 facesCount = imageSets.size();
-    uint32 mipCount = imageSets[0].size();
-
-    uint32 compressedDataSize = 0;
-
-    Vector<Vector<TQonvertImage>> srcImages(mipCount);
-    Vector<Vector<TQonvertImage>> dstImages(mipCount);
-
-    auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSets[0][0]->format);
-    auto atcSrcFormat = QualcommHelper::GetQualcommFromDava(imageSets[0][0]->format);
-    auto atcDstFormat = QualcommHelper::GetQualcommFromDava(compressionFormat);
-
-    for (uint32 f = 0; f < facesCount; ++f)
-    {
-        for (int32 m = 0; m < mipCount; ++m)
-        {
-            Image* image = imageSets[f][m];
-
-            TQonvertImage& srcImg = srcImages[f][m];
-            TQonvertImage& dstImg = dstImages[f][m];
-
-            srcImg.nWidth = image->width;
-            srcImg.nHeight = image->height;
-            srcImg.nFormat = atcSrcFormat;
-            srcImg.nDataSize = image->width * image->height * pixelSize;
-            srcImg.pData = image->data;
-
-            dstImg.nWidth = image->width;
-            dstImg.nHeight = image->height;
-            dstImg.nFormat = atcDstFormat;
-            dstImg.nDataSize = 0;
-            dstImg.pData = nullptr;
-
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-            {
-                Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", outFileName.GetAbsolutePathname().c_str());
-                return false;
-            }
-
-            compressedDataSize += dstImg.nDataSize;
-        }
-    }
-
-    Vector<unsigned char> compressedData(compressedDataSize);
-    unsigned char* imageData = compressedData.data();
-    for (uint32 f = 0; f < facesCount; ++f)
-    {
-        for (uint32 m = 0; m < mipCount; ++m)
-        {
-            TQonvertImage& srcImg = srcImages[f][m];
-            TQonvertImage& dstImg = dstImages[f][m];
-
-            dstImg.pData = imageData;
-            imageData += dstImg.nDataSize;
-
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-            {
-                Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", outFileName.GetAbsolutePathname().c_str());
-                return false;
-            }
-        }
-    }
-
-    return NvttHelper::WriteDdsFile(outFileName, compressionFormat, compressedData, imageSets[0][0]->width, imageSets[0][0]->height, mipCount, true);
-#endif
-}
-}
-}
+} // namespace QualcommHelper
+} // namespace DAVA

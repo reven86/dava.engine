@@ -138,8 +138,6 @@ public:
     void (*customDeleter)(void*);
 };
 
-using ImagePtr = ScopedPtr<Image>;
-
 template <class Type>
 void Image::FlipVertical(Type* buffer, uint32 width, uint32 height)
 {

@@ -225,7 +225,7 @@ void HeightmapEditorSystem::UpdateToolImage()
         SafeRelease(curToolImage);
 
         Vector<Image*> images;
-        ImageSystem::Instance()->Load(toolImagePath, images);
+        ImageSystem::Load(toolImagePath, images);
         if (images.size())
         {
             DVASSERT(images.size() == 1);
