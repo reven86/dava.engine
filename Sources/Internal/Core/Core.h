@@ -248,6 +248,7 @@ public:
 
     virtual void GoBackground(bool isLock);
     virtual void GoForeground();
+    inline bool IsFocus();
     virtual void FocusLost();
     virtual void FocusReceived();
 
@@ -275,6 +276,7 @@ private:
     KeyedArchive* options;
 
     bool isActive;
+    bool isFocus;
 
     uint32 globalFrameIndex;
 
@@ -288,6 +290,11 @@ private:
 inline bool Core::IsActive()
 {
     return isActive;
+}
+
+inline bool Core::IsFocus()
+{
+    return isFocus;
 }
 };
 

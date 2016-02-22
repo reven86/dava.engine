@@ -103,6 +103,7 @@ Core::Core()
 {
     globalFrameIndex = 1;
     isActive = false;
+    isFocus = false;
     firstRun = true;
 
     isConsoleMode = false;
@@ -761,6 +762,7 @@ void Core::GoForeground()
 
 void Core::FocusLost()
 {
+    isFocus = false;
     if (core)
     {
         core->OnFocusLost();
@@ -769,6 +771,7 @@ void Core::FocusLost()
 
 void Core::FocusReceived()
 {
+    isFocus = true;
     if (core)
     {
         core->OnFocusReceived();
