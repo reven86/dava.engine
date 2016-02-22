@@ -7,7 +7,7 @@ ConfigStorage::ConfigStorage(QObject *parent)
     : QObject(parent)
 {
 #ifdef Q_OS_WIN
-    configFilePath = "../CMakeTool/Resources/config_windows.txt";
+    configFilePath = "../CMakeTool/Data/config_windows.txt";
 #elif defined Q_OS_MAC
     configFilePath = qApp->applicationDirPath() + "/../Resources/Data/config_mac.txt";
 #else

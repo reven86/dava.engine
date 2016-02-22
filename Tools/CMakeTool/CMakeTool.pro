@@ -4,10 +4,10 @@ QT += qml quick widgets
 
 CONFIG += c++11
 
-SOURCES += main.cpp \
-    configstorage.cpp \
-    processwrapper.cpp \
-    filesystemhelper.cpp
+SOURCES += Classes/main.cpp \
+    Classes/configstorage.cpp \
+    Classes/processwrapper.cpp \
+    Classes/filesystemhelper.cpp
 
 RESOURCES += qml.qrc \
     resources.qrc
@@ -19,6 +19,6 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    configstorage.h \
-    processwrapper.h \
-    filesystemhelper.h
+    Classes/configstorage.h \
+    Classes/processwrapper.h \
+    Classes/filesystemhelper.h

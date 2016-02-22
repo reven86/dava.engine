@@ -86,6 +86,7 @@
     ],
     "davaFolder": "D:/Projects/dava.framework",
     "buildFolderHistory": [
+        "D:/Projects/dava.framework/Tools/QuickEd/_build",
         "D:/Projects/dava.framework/",
         "D:/Projects/dava.framework/Tools/",
         "D:",
