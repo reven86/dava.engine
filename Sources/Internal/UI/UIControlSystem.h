@@ -360,7 +360,7 @@ private:
     int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
     struct
     {
-        uint32 touchId;
+        uint32 touchId = 0;
         Vector2 physPoint;
         float64 timestamp = 0.0;
         int32 tapCount = 0;
