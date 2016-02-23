@@ -34,13 +34,14 @@
 #include "Deprecated/EditorConfig.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "SpritesPacker/SpritePackerHelper.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+
+#include "SpritesPacker/SpritesPackerModule.h"
 
 bool ProjectManager::IsOpened() const
 {
@@ -134,12 +135,17 @@ void ProjectManager::OpenProject(const FilePath& incomePath)
     }
 }
 
+void ProjectManager::SetSpritesPacker(SpritesPackerModule* spritesPacker_)
+{
+    spritesPacker = spritesPacker_;
+}
+
 void ProjectManager::UpdateParticleSprites()
 {
     useDelayInitialization = false;
-    if (!isParticleSpritesUpdated)
+    if (!isParticleSpritesUpdated && spritesPacker != nullptr)
     {
-        SpritePackerHelper::Instance()->UpdateParticleSprites(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+        spritesPacker->RepackSilently(projectPath, static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_SpriteViewGPU).AsUInt32()));
         isParticleSpritesUpdated = true;
     }
 }

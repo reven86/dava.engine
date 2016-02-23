@@ -82,6 +82,7 @@
          <addaction name="actionViewTextList"/>
          <addaction name="separator"/>
          <addaction name="actionFilterSelectedNode"/>
+         <addaction name="actionConvertForAllGPU"/>
          <addaction name="actionConvertAll"/>
          <addaction name="actionConvertModified"/>
         </widget>
@@ -805,6 +806,18 @@
    </property>
    <property name="toolTip">
     <string>Convert modified textures</string>
+   </property>
+  </action>
+  <action name="actionConvertForAllGPU">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIconsTextureDialog/convertallgpu.png</normaloff>:/QtIconsTextureDialog/convertallgpu.png</iconset>
+   </property>
+   <property name="text">
+    <string>Convert for all GPU</string>
+   </property>
+   <property name="toolTip">
+    <string>Convert current texture for all GPU</string>
    </property>
   </action>
  </widget>
