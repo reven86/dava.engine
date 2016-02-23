@@ -369,13 +369,13 @@ void MainWindow::SetupViewMenu()
 
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
-    
-    QMenu *appStyleMenu = new QMenu(tr("Application style"), menuView);
+
+    QMenu* appStyleMenu = new QMenu(tr("Application style"), menuView);
     menuView->addMenu(appStyleMenu);
-    QActionGroup *actionGroup = new QActionGroup(this);
-    for(const QString &theme : Themes::ThemesNames())
+    QActionGroup* actionGroup = new QActionGroup(this);
+    for (const QString& theme : Themes::ThemesNames())
     {
-        QAction *action = new QAction(theme, menuView);
+        QAction* action = new QAction(theme, menuView);
         actionGroup->addAction(action);
         action->setCheckable(true);
         if (theme == Themes::GetCurrentThemeStr())
@@ -384,8 +384,8 @@ void MainWindow::SetupViewMenu()
         }
         appStyleMenu->addAction(action);
     }
-    connect(actionGroup, &QActionGroup::triggered, [](QAction *action){
-        if(action->isChecked())
+    connect(actionGroup, &QActionGroup::triggered, [](QAction* action) {
+        if (action->isChecked())
         {
             Themes::SetCurrentTheme(action->text());
         }

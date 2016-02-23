@@ -192,11 +192,11 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     break;
 
     case Qt::BackgroundRole:
-        if(property->GetType() == AbstractProperty::TYPE_HEADER)
+        if (property->GetType() == AbstractProperty::TYPE_HEADER)
         {
             return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : Themes::GetViewLineAliternateColor();
         }
-        
+
     case Qt::FontRole:
     {
         if (property->IsOverriddenLocally() || property->IsReadOnly())
@@ -223,11 +223,11 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
                 }
             }
         }
-            if(flags & AbstractProperty::EF_INHERITED)
-            {
-                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
-            }
-            return QVariant();
+        if (flags & AbstractProperty::EF_INHERITED)
+        {
+            return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
+        }
+        return QVariant();
     }
     }
 

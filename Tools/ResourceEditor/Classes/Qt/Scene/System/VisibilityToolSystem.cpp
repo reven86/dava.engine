@@ -59,34 +59,34 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 
 VisibilityToolSystem::~VisibilityToolSystem()
 {
-	SafeRelease(crossTexture);
+    SafeRelease(crossTexture);
 }
 
 LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
 {
-	if (enabled)
-	{
-		return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType canBeEnabledError = IsCanBeEnabled();
-	if ( canBeEnabledError!= LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return canBeEnabledError;
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enableCustomDrawError = drawSystem->EnableCustomDraw();
-	if (enableCustomDrawError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return enableCustomDrawError;
-	}
+    if (enabled)
+    {
+        return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    }
 
-	SetState(VT_STATE_NORMAL);
-	
-	selectionSystem->SetLocked(true);
-	modifSystem->SetLocked(true);
+    LandscapeEditorDrawSystem::eErrorType canBeEnabledError = IsCanBeEnabled();
+    if (canBeEnabledError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return canBeEnabledError;
+    }
 
-	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
+    LandscapeEditorDrawSystem::eErrorType enableCustomDrawError = drawSystem->EnableCustomDraw();
+    if (enableCustomDrawError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return enableCustomDrawError;
+    }
+
+    SetState(VT_STATE_NORMAL);
+
+    selectionSystem->SetLocked(true);
+    modifSystem->SetLocked(true);
+
+    Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
     drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture, false);
     landscapeSize = static_cast<float>(visibilityToolTexture->GetWidth());
 
@@ -97,24 +97,24 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 
     PrepareConfig();
 
-	enabled = true;
-	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    enabled = true;
+    return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool VisibilityToolSystem::DisableLandscapeEdititing()
 {
-	if (!enabled)
-	{
-		return true;
-	}
+    if (!enabled)
+    {
+        return true;
+    }
 
-	SetState(VT_STATE_NORMAL);
+    SetState(VT_STATE_NORMAL);
 
-	selectionSystem->SetLocked(false);
-	modifSystem->SetLocked(false);
+    selectionSystem->SetLocked(false);
+    modifSystem->SetLocked(false);
 
-	drawSystem->DisableCursor();
-	drawSystem->DisableCustomDraw();
+    drawSystem->DisableCursor();
+    drawSystem->DisableCustomDraw();
 
     drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
 
@@ -124,155 +124,155 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 
 void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
 {
-	if (!IsLandscapeEditingEnabled())
-	{
-		return;
-	}
+    if (!IsLandscapeEditingEnabled())
+    {
+        return;
+    }
 
-	if (editingIsEnabled && isIntersectsLandscape)
-	{
-		if (prevCursorPos != cursorPosition)
-		{
-			prevCursorPos = cursorPosition;
-		}
-	}
+    if (editingIsEnabled && isIntersectsLandscape)
+    {
+        if (prevCursorPos != cursorPosition)
+        {
+            prevCursorPos = cursorPosition;
+        }
+    }
 }
 
-void VisibilityToolSystem::Input(DAVA::UIEvent *event)
+void VisibilityToolSystem::Input(DAVA::UIEvent* event)
 {
-	if (!IsLandscapeEditingEnabled())
-	{
-		return;
-	}
+    if (!IsLandscapeEditingEnabled())
+    {
+        return;
+    }
 
-	UpdateCursorPosition();
+    UpdateCursorPosition();
 
-	if (state != VT_STATE_SET_AREA && state != VT_STATE_SET_POINT)
-	{
-		return;
-	}
+    if (state != VT_STATE_SET_AREA && state != VT_STATE_SET_POINT)
+    {
+        return;
+    }
 
     if (UIEvent::Phase::KEY_DOWN == event->phase)
     {
         if (event->key == Key::ESCAPE)
         {
             SetState(VT_STATE_NORMAL);
-		}
-	}
+        }
+    }
     else if (event->mouseButton == UIEvent::MouseButton::LEFT)
     {
-        switch(event->phase)
-		{
+        switch (event->phase)
+        {
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)
-                {
-					editingIsEnabled = true;
-				}
-				break;
+            {
+                editingIsEnabled = true;
+            }
+            break;
 
         case UIEvent::Phase::DRAG:
             break;
 
         case UIEvent::Phase::ENDED:
             if (editingIsEnabled)
+            {
+                if (state == VT_STATE_SET_POINT)
                 {
-					if (state == VT_STATE_SET_POINT)
-					{
-						SetVisibilityPointInternal();
-					}
-					else if (state == VT_STATE_SET_AREA)
-					{
-						SetVisibilityAreaInternal();
-					}
-					editingIsEnabled = false;
-				}
-				break;
-		}
-	}
+                    SetVisibilityPointInternal();
+                }
+                else if (state == VT_STATE_SET_AREA)
+                {
+                    SetVisibilityAreaInternal();
+                }
+                editingIsEnabled = false;
+            }
+            break;
+        }
+    }
 }
 
 void VisibilityToolSystem::SetBrushSize(int32 brushSize)
 {
-	if (brushSize > 0)
-	{
+    if (brushSize > 0)
+    {
         curToolSize = (uint32)brushSize;
         cursorSize = curToolSize / landscapeSize;
 
         if (state == VT_STATE_SET_AREA)
         {
             drawSystem->SetCursorSize(cursorSize);
-		}
-	}
+        }
+    }
 }
 
 void VisibilityToolSystem::PrepareConfig()
 {
-	EditorConfig* config = EditorConfig::Instance();
+    EditorConfig* config = EditorConfig::Instance();
 
-	pointsDensity = 10.f;
-	VariantType* value = config->GetPropertyDefaultValue("LevelVisibilityDensity");
-	if(value && config->GetPropertyValueType("LevelVisibilityDensity") == VariantType::TYPE_FLOAT)
-		pointsDensity = value->AsFloat();
+    pointsDensity = 10.f;
+    VariantType* value = config->GetPropertyDefaultValue("LevelVisibilityDensity");
+    if (value && config->GetPropertyValueType("LevelVisibilityDensity") == VariantType::TYPE_FLOAT)
+        pointsDensity = value->AsFloat();
 
-	visibilityPointHeight = 2.f;
-	areaPointHeights.clear();
-	const Vector<String>& heights = config->GetComboPropertyValues("LevelVisibilityPointHeights");
-	if(heights.size() != 0)
-	{
-		if(heights.front() != "none")
-		{
-			std::sscanf(heights[0].c_str(), "%f", &visibilityPointHeight);
+    visibilityPointHeight = 2.f;
+    areaPointHeights.clear();
+    const Vector<String>& heights = config->GetComboPropertyValues("LevelVisibilityPointHeights");
+    if (heights.size() != 0)
+    {
+        if (heights.front() != "none")
+        {
+            std::sscanf(heights[0].c_str(), "%f", &visibilityPointHeight);
 
             areaPointHeights.reserve(heights.size() - 1);
-			for(uint32 i = 1; i < heights.size(); ++i)
-			{
-				float32 val;
-				std::sscanf(heights[i].c_str(), "%f", &val);
-				areaPointHeights.push_back(val);
-			}
-		}
-	}
+            for (uint32 i = 1; i < heights.size(); ++i)
+            {
+                float32 val;
+                std::sscanf(heights[i].c_str(), "%f", &val);
+                areaPointHeights.push_back(val);
+            }
+        }
+    }
 
-	areaPointColors = config->GetColorPropertyValues("LevelVisibilityColors");
+    areaPointColors = config->GetColorPropertyValues("LevelVisibilityColors");
 }
 
 void VisibilityToolSystem::SetState(eVisibilityToolState newState)
 {
-	if(state == newState)
-		state = VT_STATE_NORMAL;
-	else
-		state = newState;
+    if (state == newState)
+        state = VT_STATE_NORMAL;
+    else
+        state = newState;
 
-	switch(state)
-	{
-		case VT_STATE_SET_POINT:
-			drawSystem->SetCursorTexture(crossTexture);
-            drawSystem->SetCursorSize(CROSS_TEXTURE_SIZE / landscapeSize);
-            break;
+    switch (state)
+    {
+    case VT_STATE_SET_POINT:
+        drawSystem->SetCursorTexture(crossTexture);
+        drawSystem->SetCursorSize(CROSS_TEXTURE_SIZE / landscapeSize);
+        break;
 
-        case VT_STATE_SET_AREA:
-            drawSystem->SetCursorTexture(cursorTexture);
-            drawSystem->SetCursorSize(cursorSize);
-            break;
+    case VT_STATE_SET_AREA:
+        drawSystem->SetCursorTexture(cursorTexture);
+        drawSystem->SetCursorSize(cursorSize);
+        break;
 
-        default:
-			if (IsLandscapeEditingEnabled())
-			{
-				drawSystem->SetCursorSize(0);
-			}
-			break;
-	}
-	SceneSignals::Instance()->EmitVisibilityToolStateChanged(dynamic_cast<SceneEditor2*>(GetScene()), state);
+    default:
+        if (IsLandscapeEditingEnabled())
+        {
+            drawSystem->SetCursorSize(0);
+        }
+        break;
+    }
+    SceneSignals::Instance()->EmitVisibilityToolStateChanged(dynamic_cast<SceneEditor2*>(GetScene()), state);
 }
 
 void VisibilityToolSystem::SetVisibilityPoint()
 {
-	SetState(VT_STATE_SET_POINT);
+    SetState(VT_STATE_SET_POINT);
 }
 
 void VisibilityToolSystem::SetVisibilityArea()
 {
-	SetState(VT_STATE_SET_AREA);
+    SetState(VT_STATE_SET_AREA);
 }
 
 void VisibilityToolSystem::SetVisibilityPointInternal()
@@ -284,9 +284,9 @@ void VisibilityToolSystem::SetVisibilityPointInternal()
 
 void VisibilityToolSystem::SetVisibilityAreaInternal()
 {
-	if (drawSystem->GetVisibilityToolProxy()->IsVisibilityPointSet())
-	{
-		Vector2 visibilityPoint = drawSystem->GetVisibilityToolProxy()->GetVisibilityPoint();
+    if (drawSystem->GetVisibilityToolProxy()->IsVisibilityPointSet())
+    {
+        Vector2 visibilityPoint = drawSystem->GetVisibilityToolProxy()->GetVisibilityPoint();
         Vector3 point(visibilityPoint * landscapeSize);
         point.z = drawSystem->GetHeightAtTexturePoint(textureLevel, point.xy()) + visibilityPointHeight;
 
@@ -302,8 +302,8 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
     }
     else
     {
-		// show "could not check visibility without visibility point" error message
-	}
+        // show "could not check visibility without visibility point" error message
+    }
 }
 
 void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
@@ -374,54 +374,55 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
     }
 }
 
-void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
+void VisibilityToolSystem::ExcludeEntities(EntityGroup* entities) const
 {
-    if (!entities || (entities->Size() == 0)) return;
-    
+    if (!entities || (entities->Size() == 0))
+        return;
+
     uint32 count = entities->Size();
-    while(count)
+    while (count)
     {
-        Entity *object = entities->GetEntity(count - 1);
+        Entity* object = entities->GetEntity(count - 1);
         bool needToExclude = false;
 
-        KeyedArchive * customProps = GetCustomPropertiesArchieve(object);
-        if(customProps)
-        {   // exclude not collised by bullet objects
-            const int32 collisiontype = customProps->GetInt32( "CollisionType", 0 );
-            if(     (ResourceEditor::ESOT_TREE == collisiontype)
-                ||  (ResourceEditor::ESOT_BUSH == collisiontype)
-                ||  (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype)
-                ||  (ResourceEditor::ESOT_FALLING == collisiontype)
-                ||  (ResourceEditor::ESOT_SPEED_TREE == collisiontype)
+        KeyedArchive* customProps = GetCustomPropertiesArchieve(object);
+        if (customProps)
+        { // exclude not collised by bullet objects
+            const int32 collisiontype = customProps->GetInt32("CollisionType", 0);
+            if ((ResourceEditor::ESOT_TREE == collisiontype)
+                || (ResourceEditor::ESOT_BUSH == collisiontype)
+                || (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype)
+                || (ResourceEditor::ESOT_FALLING == collisiontype)
+                || (ResourceEditor::ESOT_SPEED_TREE == collisiontype)
                 )
             {
                 needToExclude = true;
             }
         }
-        
-        if(!needToExclude)
+
+        if (!needToExclude)
         {
-            RenderObject *ro = GetRenderObject(object);
-            if(ro)
+            RenderObject* ro = GetRenderObject(object);
+            if (ro)
             {
                 switch (ro->GetType())
                 {
-                    case RenderObject::TYPE_LANDSCAPE:
-                    case RenderObject::TYPE_SPEED_TREE:
-                    case RenderObject::TYPE_SPRITE:
-                    case RenderObject::TYPE_VEGETATION:
-                    case RenderObject::TYPE_PARTICLE_EMTITTER:
-                        needToExclude = true;
-                        break;
-                        
-                    default:
-                        break;
+                case RenderObject::TYPE_LANDSCAPE:
+                case RenderObject::TYPE_SPEED_TREE:
+                case RenderObject::TYPE_SPRITE:
+                case RenderObject::TYPE_VEGETATION:
+                case RenderObject::TYPE_PARTICLE_EMTITTER:
+                    needToExclude = true;
+                    break;
+
+                default:
+                    break;
                 }
             }
         }
 
-        if(!needToExclude)
-        {   // exclude sky
+        if (!needToExclude)
+        { // exclude sky
 
             Set<NMaterial*> materials;
             SceneHelper::EnumerateMaterials(object, materials);
@@ -437,11 +438,11 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
             }
         }
 
-        if(needToExclude)
+        if (needToExclude)
         {
             entities->Rem(object);
         }
-        
+
         --count;
     }
 }
@@ -472,10 +473,10 @@ void VisibilityToolSystem::DrawVisibilityPoint()
     RenderVisibilityPoint(true);
 }
 
-void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points)
+void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3>& points)
 {
-	VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-	Texture * visibilityAreaTexture = visibilityToolProxy->GetTexture();
+    VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
+    Texture* visibilityAreaTexture = visibilityToolProxy->GetTexture();
 
     static const float32 pointSize = 6.f;
 
@@ -495,10 +496,10 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 {
-	if (filePath.IsEmpty())
-	{
-		return;
-	}
+    if (filePath.IsEmpty())
+    {
+        return;
+    }
 
     Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 
@@ -509,7 +510,7 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 
 VisibilityToolSystem::eVisibilityToolState VisibilityToolSystem::GetState()
 {
-	return state;
+    return state;
 }
 
 int32 VisibilityToolSystem::GetBrushSize()

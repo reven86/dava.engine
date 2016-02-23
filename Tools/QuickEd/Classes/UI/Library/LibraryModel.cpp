@@ -207,12 +207,12 @@ void LibraryModel::SetPackageNode(PackageNode* package_)
     }
 }
 
-QVariant LibraryModel::data(const QModelIndex &index, int role) const
+QVariant LibraryModel::data(const QModelIndex& index, int role) const
 {
-    if(role == Qt::BackgroundRole)
+    if (role == Qt::BackgroundRole)
     {
-        QStandardItem *item = itemFromIndex(index);
-        if(item->parent() == nullptr)
+        QStandardItem* item = itemFromIndex(index);
+        if (item->parent() == nullptr)
         {
             return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : Themes::GetViewLineAliternateColor();
         }

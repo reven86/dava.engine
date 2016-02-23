@@ -60,7 +60,7 @@ public:
     void SetPackageNode(PackageNode* package);
 
 private:
-    QVariant data(const QModelIndex &index, int role) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
     void BuildModel();

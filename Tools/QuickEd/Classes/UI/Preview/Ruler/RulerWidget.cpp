@@ -183,14 +183,14 @@ void RulerWidget::UpdateDoubleBufferImage()
     doubleBuffer.fill();
 
     QColor rulerBackgroundColor;
-    switch(Themes::GetCurrentTheme())
+    switch (Themes::GetCurrentTheme())
     {
-        case Themes::Classic:
-            rulerBackgroundColor = Qt::white;
-            break;
-        case Themes::Dark:
-            rulerBackgroundColor = palette().color(QPalette::Window);
-            break;
+    case Themes::Classic:
+        rulerBackgroundColor = Qt::white;
+        break;
+    case Themes::Dark:
+        rulerBackgroundColor = palette().color(QPalette::Window);
+        break;
     }
     const QColor rulerTicksColor = palette().color(QPalette::Text);
     static const int rulerFontSize = 10;

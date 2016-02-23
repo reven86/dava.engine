@@ -206,7 +206,7 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
         }
 
         case Qt::TextColorRole:
-            if(controlNode->GetPrototype() != nullptr)
+            if (controlNode->GetPrototype() != nullptr)
             {
                 return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
             }
@@ -255,7 +255,7 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
             {
             case Qt::DisplayRole:
                 return StringToQString(node->GetName());
-                
+
             case Qt::BackgroundRole:
                 return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : Themes::GetViewLineAliternateColor();
 
