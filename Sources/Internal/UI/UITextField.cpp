@@ -38,8 +38,22 @@
 // to enable of any kind of static text fitting
 static const DAVA::Vector2 NO_REQUIRED_SIZE = DAVA::Vector2(-1, -1);
 
+#if defined(__DAVAENGINE_ANDROID__)
+#include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 
-#if defined(DISABLE_NATIVE_TEXTFIELD)
+extern void CreateTextField(DAVA::UITextField*);
+extern void ReleaseTextField();
+extern void OpenKeyboard();
+extern void CloseKeyboard();
+
+#elif defined(__DAVAENGINE_IPHONE__)
+#include "UI/UITextFieldiPhone.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "UI/UITextFieldWinUAP.h"
+#elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
+#include "UI/UITextFieldMacOS.h"
+#else
 #include "UI/UIStaticText.h"
 #include "Platform/SystemTimer.h"
 namespace DAVA
@@ -255,30 +269,11 @@ private:
     bool showCursor = true;
 };
 } // end namespace DAVA
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "UITextFieldAndroid.h"
-#include "Utils/UTF8Utils.h"
-
-extern void CreateTextField(DAVA::UITextField*);
-extern void ReleaseTextField();
-extern void OpenKeyboard();
-extern void CloseKeyboard();
-
-#elif defined(__DAVAENGINE_IPHONE__)
-#include "UI/UITextFieldiPhone.h"
-#elif defined(__DAVAENGINE_WIN_UAP__)
-#include "UI/UITextFieldWinUAP.h"
-#elif defined(__DAVAENGINE_MACOS__)
-#include "UI/UITextFieldMacOS.h"
-#else
-#error "platform must be specifyed. For default implementation use add_definitions DISABLE_NATIVE_TEXTFIELD macro"
 #endif
 
-#ifndef DISABLE_NATIVE_TEXTFIELD
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_WIN_UAP__)
 #define DAVA_TEXTFIELD_USE_NATIVE
 #endif
-#endif //DISABLE_NATIVE_TEXTFIELD
 
 namespace DAVA
 {
