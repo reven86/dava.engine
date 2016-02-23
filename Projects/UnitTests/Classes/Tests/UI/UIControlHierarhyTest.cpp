@@ -138,7 +138,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     // in OnBecomeInvisible
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlToInvisibleHierarhy_OnlyOnAppearCalls)
+    DAVA_TEST (AddControlToInvisibleActiveHierarhy)
     {
         root->SetVisible(false);
         callSequence.clear();
@@ -158,7 +158,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlToNoneActiveHierarhy_NothingCalls)
+    DAVA_TEST (AddControlToNoneActiveHierarhy)
     {
         root->RemoveFromParent();
         callSequence.clear();
@@ -168,7 +168,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlToVisibleHierarhy_OnAppearAndOnBecomeVisibleCalls)
+    DAVA_TEST (AddControlToVisibleActiveHierarhy)
     {
         root->SetVisible(true);
         callSequence.clear();
@@ -195,7 +195,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls)
+    DAVA_TEST (AddControlToInvisibleAciveHierarhyInOnAppearCallback)
     {
         root->SetVisible(false);
         callSequence.clear();
@@ -226,7 +226,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlInOnDisappearCallbackToInvisibleHierarhy_OnDisappearCallsOnlyForXControlOriginalChildren)
+    DAVA_TEST (AddControlToInvisibleActiveHierarhyInOnDisappearCallback)
     {
         root->SetVisible(false);
         root->AddControl(x);
@@ -262,7 +262,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
+    DAVA_TEST (AddControlToVisibleHierarhyInOnBecomeVisibleCallback)
     {
         callSequence.clear();
         x1->onBecomeVisibleCallback = [this]()
@@ -303,7 +303,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::AddControl
-    DAVA_TEST (AddControlInOnBecomeInvisibleCallbackToVisibleHierarhy_OnDisappearAndBecomeInvisibleCalls)
+    DAVA_TEST (AddControlToVisibleHierarhyInOnBecomeInvisibleCallback)
     {
         root->AddControl(x);
         callSequence.clear();
@@ -354,7 +354,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::RemoveControl
-    DAVA_TEST (RemoveControlFromInvisibleHierarhy_OnlyOnDisappearCalls)
+    DAVA_TEST (RemoveControlFromInvisibleActiveHierarhy)
     {
         root->SetVisible(false);
         root->AddControl(x);
@@ -376,7 +376,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::RemoveControl
-    DAVA_TEST (RemoveControlFromVisibleHierarhy_OnBecomeInvisibleAndOnDisappearCalls)
+    DAVA_TEST (RemoveControlFromVisibleHierarhy)
     {
         root->SetVisible(true);
         root->AddControl(x);
@@ -405,7 +405,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::RemoveControl
-    DAVA_TEST (RemoveControlInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls)
+    DAVA_TEST (RemoveControlFromInvisibleActiveHierarhyInOnAppearCallback)
     {
         root->SetVisible(false);
         x->AddControl(z);
@@ -434,7 +434,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::RemoveControl
-    DAVA_TEST (RemoveControlInOnDisappearCallbackToInvisibleHierarhy_OnAppearCalls)
+    DAVA_TEST (RemoveControlFromInvisibleActiveHierarhyInOnDisappearCallback)
     {
         root->SetVisible(false);
         x->AddControl(z);
@@ -468,7 +468,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::RemoveControl
-    DAVA_TEST (RemoveControlInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
+    DAVA_TEST (RemoveControlFromVisibleHierarhyInOnBecomeVisibleCallback)
     {
         x->AddControl(z);
         callSequence.clear();
@@ -510,7 +510,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::RemoveControl
-    DAVA_TEST (RemoveControlInOnBecomeInvisibleCallbackToVisibleHierarhy_OnDisappearAndBecomeInvisibleCalls)
+    DAVA_TEST (RemoveControlFromVisibleHierarhyInOnBecomeInvisibleCallback)
     {
         x->AddControl(z);
         root->AddControl(x);
@@ -553,7 +553,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleForInvisibleRoot_OnlyOnBecomeVisibleCalls)
+    DAVA_TEST (SetVisibleForInvisibleControl)
     {
         x->SetVisible(false);
         root->AddControl(x);
@@ -575,7 +575,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleForVisibleControl_NothingCalls)
+    DAVA_TEST (SetVisibleForVisibleControl)
     {
         x->SetVisible(true);
 
@@ -584,13 +584,11 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         x->SetVisible(true);
 
-        Vector<std::pair<FastName, FastName>> expectedCallSequence;
-
-        TEST_VERIFY(expectedCallSequence == callSequence);
+        TEST_VERIFY(callSequence.empty());
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleForVisibleControl_OnlyOnBecomeInvisibleCalls)
+    DAVA_TEST (SetInvisibleForVisibleControl)
     {
         x->SetVisible(true);
 
@@ -613,7 +611,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleForInvisibleControl_NothingCalls)
+    DAVA_TEST (SetInvisibleForInvisibleControl)
     {
         x->SetVisible(false);
 
@@ -622,13 +620,11 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         x->SetVisible(false);
 
-        Vector<std::pair<FastName, FastName>> expectedCallSequence;
-
-        TEST_VERIFY(expectedCallSequence == callSequence);
+        TEST_VERIFY(callSequence.empty());
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleForNoneActiveHierarhy_NothingCalls)
+    DAVA_TEST (SetVisibleForNoneActiveHierarhy)
     {
         x->SetVisible(false);
         callSequence.clear();
@@ -639,7 +635,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleForNotActiveHierarhy_NothingCalls)
+    DAVA_TEST (SetInvisibleForNoneActiveHierarhy)
     {
         x->SetVisible(false);
 
@@ -647,7 +643,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls)
+    DAVA_TEST (SetVisibleToInvisibleActiveHierarhyInOnAppearCallback)
     {
         root->SetVisible(false);
         x->AddControl(z);
@@ -680,7 +676,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleInOnDisappearCallbackToInvisibleHierarhy_OnDisappearCallsOnlyForXControlOriginalChildren)
+    DAVA_TEST (SetVisibleToInvisibleActiveHierarhyInOnDisappearCallback)
     {
         root->SetVisible(false);
         root->AddControl(x);
@@ -714,7 +710,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
+    DAVA_TEST (SetVisibleToVisibleHierarhyInOnBecomeVisibleCallback)
     {
         x->AddControl(z);
         z->SetVisible(false);
@@ -758,7 +754,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetVisibleInOnBecomeInvisibleCallbackToVisibleHierarhy_OnDisappearAndBecomeInvisibleCalls)
+    DAVA_TEST (SetVisibleToVisibleHierarhyInOnBecomeInvisibleCallback)
     {
         root->AddControl(x);
         x->AddControl(z);
@@ -806,7 +802,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls) //
+    DAVA_TEST (SetInvisibleToInvisibleActiveHierarhyInOnAppearCallback)
     {
         root->SetVisible(false);
         x->AddControl(z);
@@ -839,7 +835,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleInOnDisappearCallbackToInvisibleHierarhy_OnDisappearCallsOnlyForXControlOriginalChildren)
+    DAVA_TEST (SetInvisibleToInvisibleActiveHierarhyInOnDisappearCallback)
     {
         root->SetVisible(false);
         root->AddControl(x);
@@ -873,7 +869,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
+    DAVA_TEST (SetInvisibleToVisibleHierarhyInOnBecomeVisibleCallback)
     {
         x->AddControl(z);
         callSequence.clear();
@@ -912,7 +908,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     }
 
     // UIControl::SetVisible
-    DAVA_TEST (SetInvisibleInOnBecomeInvisibleCallbackToVisibleHierarhy_OnDisappearAndBecomeInvisibleCalls)
+    DAVA_TEST (SetInvisibleToVisibleHierarhyInOnBecomeInvisibleCallback)
     {
         root->AddControl(x);
         x->AddControl(z);
@@ -957,9 +953,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     class UITestControl : public UIControl
     {
     public:
-        UITestControl()
-        {
-        }
+        UITestControl() = default;
 
         DAVA::Function<void()> onBecomeVisibleCallback;
         DAVA::Function<void()> onBecomeInvisibleCallback;
@@ -967,9 +961,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
         DAVA::Function<void()> onDisappearCallback;
 
     protected:
-        ~UITestControl() override
-        {
-        }
+        ~UITestControl() override = default;
 
         void OnBecomeVisible() override
         {
