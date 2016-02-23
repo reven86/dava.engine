@@ -493,7 +493,7 @@ ApplicationWindow {
                                         if(checked) {
                                             listModel_localOptions.clear();
                                             var localObject = mainObject[platformsOptionName][index];
-                                            var options = localObject["options"];
+                                            var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
                                             if(options && Array.isArray(options)) {
                                                 for(var i = 0, length = options.length; i < length; ++i) {
                                                     options[i]["parentIndex"] = index
@@ -519,6 +519,7 @@ ApplicationWindow {
 
                         ColumnLayout {
                             id: columnLayout_localOptions
+                            visible: listModel_localOptions.count !== 0
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 0
                             anchors.top: parent.top

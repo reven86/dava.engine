@@ -151,8 +151,8 @@ void ProcessWrapper::StartNextCommand()
     {
         return;
     }
+    emit processStandardOutput(""); //emit an empty string to make whitespace between build logs
     QString command = taskQueue.dequeue();
     Q_ASSERT(process.state() == QProcess::NotRunning);
     process.start(command);
-    emit processStandardOutput(""); //emit an empty string to make whitespace between build logs
 }
