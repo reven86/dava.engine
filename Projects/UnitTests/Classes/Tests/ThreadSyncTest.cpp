@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(ThreadSyncTest)
+DAVA_TESTCLASS (ThreadSyncTest)
 {
     Thread* someThread = nullptr;
 
@@ -53,7 +53,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     AutoResetEvent are;
     ManualResetEvent mre;
 
-    DAVA_TEST(ThreadSyncTestFunction)
+    DAVA_TEST (ThreadSyncTestFunction)
     {
         cvMutex.Lock();
         someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
@@ -68,7 +68,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         someThread = nullptr;
     }
 
-    DAVA_TEST(ThreadSleepTestFunction)
+    DAVA_TEST (ThreadSleepTestFunction)
     {
         uint64 time = SystemTimer::Instance()->AbsoluteMS();
         Thread::Sleep(300);
@@ -77,11 +77,11 @@ DAVA_TESTCLASS(ThreadSyncTest)
         TEST_VERIFY(elapsedTime >= 299);
     }
 
-    DAVA_TEST(TestThread)
+    DAVA_TEST (TestThread)
     {
         TEST_VERIFY(true == Thread::IsMainThread());
 
-        Thread *infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
+        Thread* infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
 
         TEST_VERIFY(Thread::STATE_CREATED == infiniteThread->GetState());
         infiniteThread->SetName("Infinite test thread");
@@ -98,7 +98,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         infiniteThread->Join();
         TEST_VERIFY(Thread::STATE_ENDED == infiniteThread->GetState());
 
-        Thread *shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
+        Thread* shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
         shortThread->Start();
         shortThread->Join();
         TEST_VERIFY(Thread::STATE_ENDED == shortThread->GetState());
@@ -154,7 +154,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         */
     }
 
-    DAVA_TEST(TestAutoResetEvent)
+    DAVA_TEST (TestAutoResetEvent)
     {
         Thread* threads[autoResetThreadCount];
 
@@ -230,7 +230,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         autoResetValue++;
     }
 
-    DAVA_TEST(TestManualResetEvent)
+    DAVA_TEST (TestManualResetEvent)
     {
         Thread* threads[autoResetThreadCount];
 
@@ -286,7 +286,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         Logger::Info("%f", res);
     }
 
-    void SomeThreadFunc(BaseObject * caller, void * callerData, void * userData)
+    void SomeThreadFunc(BaseObject * caller, void* callerData, void* userData)
     {
         someValue = 0;
         cvMutex.Lock();
@@ -294,19 +294,19 @@ DAVA_TESTCLASS(ThreadSyncTest)
         cvMutex.Unlock();
     }
 
-    void InfiniteThreadFunction(BaseObject * caller, void * callerData, void * userData)
+    void InfiniteThreadFunction(BaseObject * caller, void* callerData, void* userData)
     {
-        Thread *thread = static_cast<Thread *>(caller);
+        Thread* thread = static_cast<Thread*>(caller);
         while (thread && !thread->IsCancelling())
         {
             Thread::Sleep(200);
         }
     }
 
-    void ShortThreadFunction(BaseObject * caller, void * callerData, void * userData)
+    void ShortThreadFunction(BaseObject * caller, void* callerData, void* userData)
     {
         uint32 i = 200;
-        Thread *thread = static_cast<Thread *>(caller);
+        Thread* thread = static_cast<Thread*>(caller);
         while (thread && i-- > 0)
         {
             Thread::Sleep(1);
@@ -329,7 +329,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     }
 
     //if stack size is not set, app will crash
-    DAVA_TEST(StackHurtTest)
+    DAVA_TEST (StackHurtTest)
     {
         auto stackHurtThread = RefPtr<Thread>(Thread::Create(StackHurtFunc));
         stackHurtThread->SetStackSize(2 * 1024 * 1024); //2 MB

@@ -22,16 +22,16 @@
 ImplementObjectType(FCDCamera);
 
 FCDCamera::FCDCamera(FCDocument* document)
-:	FCDTargetedEntity(document, "Camera")
-,	InitializeParameter(projection, PERSPECTIVE)
-,	InitializeParameterAnimatable(viewY, 60.0f)
-,	InitializeParameterAnimatable(viewX, 60.0f)
-,	InitializeParameterAnimatable(aspectRatio, 1.0f)
-,	InitializeParameterAnimatable(nearZ, 1.0f)
-,	InitializeParameterAnimatable(farZ, 1000.0f)
+    : FCDTargetedEntity(document, "Camera")
+    , InitializeParameter(projection, PERSPECTIVE)
+    , InitializeParameterAnimatable(viewY, 60.0f)
+    , InitializeParameterAnimatable(viewX, 60.0f)
+    , InitializeParameterAnimatable(aspectRatio, 1.0f)
+    , InitializeParameterAnimatable(nearZ, 1.0f)
+    , InitializeParameterAnimatable(farZ, 1000.0f)
 {
-	ResetHasHorizontalViewFlag();
-	ResetHasVerticalViewFlag();
+    ResetHasHorizontalViewFlag();
+    ResetHasVerticalViewFlag();
 }
 
 FCDCamera::~FCDCamera()
@@ -40,22 +40,24 @@ FCDCamera::~FCDCamera()
 
 void FCDCamera::SetFovX(float _viewX)
 {
-	viewX = _viewX;
-	if (GetHasVerticalViewFlag() && !IsEquivalent(viewX, 0.0f)) aspectRatio = viewX / viewY;
-	SetHasHorizontalViewFlag();
-	SetDirtyFlag(); 
+    viewX = _viewX;
+    if (GetHasVerticalViewFlag() && !IsEquivalent(viewX, 0.0f))
+        aspectRatio = viewX / viewY;
+    SetHasHorizontalViewFlag();
+    SetDirtyFlag();
 }
 
 void FCDCamera::SetFovY(float _viewY)
 {
-	viewY = _viewY;
-	if (GetHasHorizontalViewFlag() && !IsEquivalent(viewX, 0.0f)) aspectRatio = viewX / viewY;
-	SetHasVerticalViewFlag();
-	SetDirtyFlag(); 
+    viewY = _viewY;
+    if (GetHasHorizontalViewFlag() && !IsEquivalent(viewX, 0.0f))
+        aspectRatio = viewX / viewY;
+    SetHasVerticalViewFlag();
+    SetDirtyFlag();
 }
 
 void FCDCamera::SetAspectRatio(float _aspectRatio)
 {
-	aspectRatio = _aspectRatio;
-	SetDirtyFlag(); 
+    aspectRatio = _aspectRatio;
+    SetDirtyFlag();
 }

@@ -35,7 +35,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 void NetService::OnChannelOpen(IChannel* aChannel)
 {
     DVASSERT(NULL == channel);
@@ -74,8 +73,9 @@ bool NetService::Send(const void* data, size_t length, uint32* packetId)
 {
     DVASSERT(data != NULL && length > 0 && true == IsChannelOpen());
     return IsChannelOpen() ? channel->Send(data, length, 0, packetId)
-                           : false;
+                             :
+                             false;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

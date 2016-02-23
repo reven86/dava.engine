@@ -28,30 +28,32 @@ extern "C" {
   Typedef declarations.
 */
 typedef struct _RandomInfo
-  RandomInfo;
+RandomInfo;
 
 /*
   Method declarations.
 */
 extern MagickExport double
-  GetRandomValue(RandomInfo *),
-  GetPseudoRandomValue(RandomInfo *);
+GetRandomValue(RandomInfo *),
+GetPseudoRandomValue(RandomInfo *);
 
 extern MagickExport MagickBooleanType
-  RandomComponentGenesis(void);
+RandomComponentGenesis(void);
 
 extern MagickExport RandomInfo
-  *AcquireRandomInfo(void),
-  *DestroyRandomInfo(RandomInfo *);
+*
+AcquireRandomInfo(void),
+*DestroyRandomInfo(RandomInfo *);
 
 extern MagickExport StringInfo
-  *GetRandomKey(RandomInfo *,const size_t);
+*
+GetRandomKey(RandomInfo*, const size_t);
 
 extern MagickExport void
-  RandomComponentTerminus(void),
-  SeedPseudoRandomGenerator(const unsigned long),
-  SetRandomKey(RandomInfo *,const size_t,unsigned char *),
-  SetRandomTrueRandom(const MagickBooleanType);
+RandomComponentTerminus(void),
+SeedPseudoRandomGenerator(const unsigned long),
+SetRandomKey(RandomInfo *, const size_t, unsigned char *),
+SetRandomTrueRandom(const MagickBooleanType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

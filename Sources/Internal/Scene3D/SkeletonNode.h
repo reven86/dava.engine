@@ -33,25 +33,25 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/BoneNode.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class SkeletonNode : public BoneNode
 {
 public:
-	SkeletonNode();
-	virtual ~SkeletonNode();
-	
-	void EnableDebugDraw(bool enableDebugDraw);
-	
-	void Update(float32 timeElapsed);
-	void Draw();
+    SkeletonNode();
+    virtual ~SkeletonNode();
+
+    void EnableDebugDraw(bool enableDebugDraw);
+
+    void Update(float32 timeElapsed);
+    void Draw();
 
 private:
-	void BuildBoneArray();
-	
-	Vector<BoneNode*> bones;
-	bool enableDebugDraw;
-};	
+    void BuildBoneArray();
+
+    Vector<BoneNode*> bones;
+    bool enableDebugDraw;
+};
 };
 
 #endif // __DAVAENGINE_SKELETON_NODE_H__

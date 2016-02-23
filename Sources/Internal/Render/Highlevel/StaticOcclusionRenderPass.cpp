@@ -165,7 +165,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
 
     for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
-        RenderLayer * layer = renderLayers[k];
+        RenderLayer* layer = renderLayers[k];
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
 
         uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();

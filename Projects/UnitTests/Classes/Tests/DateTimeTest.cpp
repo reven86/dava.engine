@@ -31,14 +31,14 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(DateTimeTest)
+DAVA_TESTCLASS (DateTimeTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         TEST_VERIFY(FormatDateTime(DateTime(1970, 0, 1, 0, 0, 0, 0)) == "1970-00-01 00:00:00+0");
-        
+
         TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600)) == "2001-01-01 00:00:00+10800");
         TEST_VERIFY(FormatDateTime(DateTime(2002, 2, 3, 5, 20, 10, -3 * 3600)) == "2002-02-03 05:20:10-10800");
         TEST_VERIFY(FormatDateTime(DateTime(2020, 11, 31, 5, 22, 10, -2 * 3600)) == "2020-11-31 05:22:10-7200");
@@ -50,22 +50,22 @@ DAVA_TESTCLASS(DateTimeTest)
         TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600).ConvertToTimeZone(0)) == "2001-00-31 21:00:00+0");
         TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600).ConvertToTimeZone(-3 * 3600)) == "2001-00-31 18:00:00-10800");
 
-        {   // Test ParseISO8601Date
+        { // Test ParseISO8601Date
             DateTime date = DateTime::Now();
             TEST_VERIFY(date.ParseISO8601Date("1970-01-01T05:00:00-03:00"));
             TEST_VERIFY(FormatDateTime(date) == "1970-00-01 05:00:00-10800");
         }
-        {   // Test ParseRFC822Date
+        { // Test ParseRFC822Date
             DateTime date = DateTime::Now();
             TEST_VERIFY(date.ParseRFC822Date("Wed, 27 Sep 2006 21:36:45 +0100"));
             TEST_VERIFY(FormatDateTime(date) == "2006-08-27 21:36:45+3600");
         }
 
-        {   // Test GmTime
+        { // Test GmTime
             DateTime dt(2015, 10, 15, 13, 0, 0, 3 * 3600);
             TEST_VERIFY(FormatDateTime(DateTime::GmTime(dt.GetTimestamp())) == "2015-10-15 10:00:00+0");
         }
-        {   // Test LocalTime
+        { // Test LocalTime
             DateTime dt(2015, 10, 15, 13, 0, 0, 0);
             TEST_VERIFY(FormatDateTime(DateTime::LocalTime(dt.GetTimestamp())) == "2015-10-15 16:00:00+10800");
         }
@@ -135,4 +135,5 @@ DAVA_TESTCLASS(DateTimeTest)
         String result = Format("%04d-%02d-%02d %02d:%02d:%02d%+d", year, month, day, hour, minute, sec, tz);
         return result;
     }
-};
+}
+;

@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 int GetBPPFromMode(CGDisplayModeRef displayMode)
 {
     CFStringRef pixelEncoding = CGDisplayModeCopyPixelEncoding(displayMode);
@@ -60,26 +59,26 @@ int GetBPPFromMode(CGDisplayModeRef displayMode)
     }
 
     CFRelease(pixelEncoding);
-    
+
     return depth;
 }
-	
+
 DisplayMode CoreMacOSPlatformBase::GetCurrentDisplayMode()
 {
     CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(kCGDirectMainDisplay);
-        
+
     DisplayMode mode;
     mode.width = CGDisplayModeGetWidth(currentMode);
     mode.height = CGDisplayModeGetHeight(currentMode);
     mode.refreshRate = CGDisplayModeGetRefreshRate(currentMode);
     mode.bpp = GetBPPFromMode(currentMode);
-    
+
     CGDisplayModeRelease(currentMode);
 
     return mode;
 }
 
-void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
+void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode>& availableModes)
 {
     CFArrayRef availableModesSystem = CGDisplayCopyAllDisplayModes(kCGDirectMainDisplay, NULL);
     int32 numberOfAvailableModes = CFArrayGetCount(availableModesSystem);
@@ -96,10 +95,9 @@ void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode> & availab
         mode.bpp = GetBPPFromMode(modeSystem);
         availableModes.push_back(mode);
     }
-    
+
     CFRelease(availableModesSystem);
 }
-
 }
 
 #endif // #if defined(__DAVAENGINE_MACOS__)

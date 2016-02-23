@@ -31,15 +31,15 @@
 #import "OpenGLView.h"
 #import "AppDelegate.h"
 
-@interface MainWindowController : NSWindowController <NSWindowDelegate, NSFileManagerDelegate>
+@interface MainWindowController : NSWindowController<NSWindowDelegate, NSFileManagerDelegate>
 {
 @public
-	float32	currFPS;
-	OpenGLView * openGLView;
-	NSWindow * mainWindow;
-	NSTimer * animationTimer;
-	
-	ApplicationCore * core;
+    float32 currFPS;
+    OpenGLView* openGLView;
+    NSWindow* mainWindow;
+    NSTimer* animationTimer;
+
+    ApplicationCore* core;
     bool fullScreen;
 }
 
@@ -48,17 +48,16 @@
 - (bool)isFullScreen;
 - (bool)setFullScreen:(bool)_fullScreen;
 
-- (void)windowWillMiniaturize:(NSNotification *)notification;
-- (void)windowDidDeminiaturize:(NSNotification *)notification;
+- (void)windowWillMiniaturize:(NSNotification*)notification;
+- (void)windowDidDeminiaturize:(NSNotification*)notification;
 
-- (void)windowDidEnterFullScreen:(NSNotification *)notification;
-- (void)windowDidExitFullScreen:(NSNotification *)notification;
+- (void)windowDidEnterFullScreen:(NSNotification*)notification;
+- (void)windowDidExitFullScreen:(NSNotification*)notification;
 
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
 
 - (void)OnSuspend;
 - (void)OnResume;
-
 
 @end

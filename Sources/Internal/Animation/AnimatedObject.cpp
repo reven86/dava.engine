@@ -30,35 +30,32 @@
 #include "Animation/AnimatedObject.h"
 #include "Animation/AnimationManager.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 AnimatedObject::AnimatedObject()
 //	: animationsStorage(0)
 {
-	
 }
 
 AnimatedObject::~AnimatedObject()
 {
-	StopAnimations();
+    StopAnimations();
 }
-	
+
 void AnimatedObject::StopAnimations(int32 track)
 {
-	AnimationManager::Instance()->DeleteAnimations(this, track);
+    AnimationManager::Instance()->DeleteAnimations(this, track);
 }
 
 bool AnimatedObject::IsAnimating(int32 track) const
 {
-	return AnimationManager::Instance()->IsAnimating(this, track);
+    return AnimationManager::Instance()->IsAnimating(this, track);
 }
 
-Animation * AnimatedObject::FindPlayingAnimation(int32 track /*= -1*/)
+Animation* AnimatedObject::FindPlayingAnimation(int32 track /*= -1*/)
 {
-	return AnimationManager::Instance()->FindPlayingAnimation(this, track);
+    return AnimationManager::Instance()->FindPlayingAnimation(this, track);
 }
-
 }
 
 /*

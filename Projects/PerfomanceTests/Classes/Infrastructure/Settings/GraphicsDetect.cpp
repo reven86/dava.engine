@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace DAVA;
 
 GraphicsDetect::GraphicsDetect()
-:activeGroup(NULL)
+    : activeGroup(NULL)
 {
     Init();
 }
@@ -49,28 +49,28 @@ GraphicsDetect::~GraphicsDetect()
 void GraphicsDetect::Init()
 {
     const RefPtr<YamlParser> parser(YamlParser::Create("~res:/GraphicSettings/Detect.yaml"));
-    
-    if ( !parser.Get() )
+
+    if (!parser.Get())
         return;
-    
+
     const YamlNode* rootNode = parser->GetRootNode();
     if (!rootNode)
         return;
 
-    const auto & mm = rootNode->AsMap();
-    for(auto i = mm.begin(); i != mm.end(); ++i)
+    const auto& mm = rootNode->AsMap();
+    for (auto i = mm.begin(); i != mm.end(); ++i)
     {
         Group group;
         if (i->second->GetType() == YamlNode::TYPE_MAP)
         {
-            const auto & groupMap = i->second->AsMap();
+            const auto& groupMap = i->second->AsMap();
             auto fit = groupMap.find("base");
             if (fit != groupMap.end())
                 group.base = fit->second->AsString();
             fit = groupMap.find("devices");
             if (fit != groupMap.end() && fit->second->GetType() == YamlNode::TYPE_ARRAY)
             {
-                const auto & array = fit->second->AsVector();
+                const auto& array = fit->second->AsVector();
                 for (auto arrIt = array.begin(); arrIt != array.end(); ++arrIt)
                     group.devices.insert((*arrIt)->AsString());
             }
@@ -85,12 +85,12 @@ DAVA::String GraphicsDetect::GetLevelString()
     return activeGroup->base;
 }
 
-GraphicsDetect::Group * GraphicsDetect::GetAutoDetected()
+GraphicsDetect::Group* GraphicsDetect::GetAutoDetected()
 {
-    const String & platform = DeviceInfo::GetPlatformString();
-    const String & model = DeviceInfo::GetModel();
+    const String& platform = DeviceInfo::GetPlatformString();
+    const String& model = DeviceInfo::GetModel();
     Logger::Info("AutoDetect platform '%s' model '%s'", platform.c_str(), model.c_str());
-    Group * result = 0;
+    Group* result = 0;
     for (auto i = groupsMap.begin(); i != groupsMap.end(); ++i)
     {
         if (i->second.devices.find(model) != i->second.devices.end())

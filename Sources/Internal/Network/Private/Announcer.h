@@ -42,7 +42,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class IOLoop;
 
 class Announcer : public IController
@@ -79,8 +78,8 @@ private:
     uint32 announcePeriod;
     bool isTerminating;
     size_t runningObjects;
-    Function<void (IController*)> stopCallback;
-    Function<size_t (size_t, void*)> dataCallback;
+    Function<void(IController*)> stopCallback;
+    Function<size_t(size_t, void*)> dataCallback;
     uint8 buffer[4 * 1024];
 
     Endpoint tcpEndpoint; // Listening port for direct connection
@@ -88,7 +87,7 @@ private:
     uint8 tcpBuffer[4 * 1024];
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_ANNOUNCER_H__
+#endif // __DAVAENGINE_ANNOUNCER_H__

@@ -31,13 +31,13 @@
 #include "Animation/LinearAnimation.h"
 #include "UI/UIEvent.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 //use these names for children controls to define UISwitch in .yaml
-static const String UISWITCH_BUTTON_LEFT_NAME = "buttonLeft";
-static const String UISWITCH_BUTTON_RIGHT_NAME = "buttonRight";
-static const String UISWITCH_BUTTON_TOGGLE_NAME = "buttonToggle";
+static const FastName UISWITCH_BUTTON_LEFT_NAME("buttonLeft");
+static const FastName UISWITCH_BUTTON_RIGHT_NAME("buttonRight");
+static const FastName UISWITCH_BUTTON_TOGGLE_NAME("buttonToggle");
+
 static const float32 UISWITCH_SWITCH_ANIMATION_TIME = 0.1f;
 static const int32 UISWITCH_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISWITCH_ANCHOR_UNDEFINED = 10000.f;
@@ -50,8 +50,9 @@ protected:
     {
         SafeRelease(uiSwitch);
     }
+
 public:
-    TogglePositionAnimation(bool _isCausedByTap, UISwitch * _uiSwitch, float32 * _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
+    TogglePositionAnimation(bool _isCausedByTap, UISwitch* _uiSwitch, float32* _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
         : LinearAnimation(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
         , uiSwitch(SafeRetain(_uiSwitch))
         , isFromLeftToRight(false)
@@ -64,7 +65,7 @@ public:
             isFromLeftToRight = _endValue > *_var;
         }
     }
-    
+
     virtual void Update(float32 timeElapsed)
     {
         LinearAnimation::Update(timeElapsed);
@@ -79,13 +80,13 @@ public:
     }
 
 private:
-    UISwitch * uiSwitch;
+    UISwitch* uiSwitch;
     bool isFromLeftToRight;
     bool centerNotPassed;
     float32 centerPos;
 };
 
-UISwitch::UISwitch(const Rect &rect) 
+UISwitch::UISwitch(const Rect& rect)
     : UIControl(rect)
     , buttonLeft(new UIButton())
     , buttonRight(new UIButton())
@@ -122,10 +123,10 @@ void UISwitch::InitControls()
     CheckToggleSideChange();
     float32 toggleXPosition = GetToggleUttermostPosition();
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
-    ChangeVisualState();//forcing visual state change cause it can be skipped in CheckToggleSideChange()
+    ChangeVisualState(); //forcing visual state change cause it can be skipped in CheckToggleSideChange()
 }
 
-void UISwitch::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
+void UISwitch::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
 {
     //release default buttons - they have to be loaded from yaml
     buttonLeft = nullptr;
@@ -135,36 +136,36 @@ void UISwitch::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     UIControl::LoadFromYamlNode(node, loader);
 }
 
-YamlNode * UISwitch::SaveToYamlNode(UIYamlLoader * loader)
+YamlNode* UISwitch::SaveToYamlNode(UIYamlLoader* loader)
 {
     buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
-	toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
-	buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
+    toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
+    buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
 
-	YamlNode *node = UIControl::SaveToYamlNode(loader);
-	return node;
+    YamlNode* node = UIControl::SaveToYamlNode(loader);
+    return node;
 }
 
-void UISwitch::AddControl(UIControl *control)
+void UISwitch::AddControl(UIControl* control)
 {
-	// Synchronize the pointers to the buttons each time new control is added.
-	UIControl::AddControl(control);
+    // Synchronize the pointers to the buttons each time new control is added.
+    UIControl::AddControl(control);
 
     if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft.Get() != control)
-	{
-		buttonLeft = DynamicTypeCheck<UIButton*>(control);
-	}
+    {
+        buttonLeft = DynamicTypeCheck<UIButton*>(control);
+    }
     else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle.Get() != control)
-	{
+    {
         toggle = DynamicTypeCheck<UIButton*>(control);
-	}
+    }
     else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight.Get() != control)
-	{
+    {
         buttonRight = DynamicTypeCheck<UIButton*>(control);
-	}
+    }
 }
 
-void UISwitch::RemoveControl(UIControl *control)
+void UISwitch::RemoveControl(UIControl* control)
 {
     if (control == buttonRight.Get())
     {
@@ -178,27 +179,27 @@ void UISwitch::RemoveControl(UIControl *control)
     {
         toggle = nullptr;
     }
-    
+
     UIControl::RemoveControl(control);
 }
 
-void UISwitch::CopyDataFrom(UIControl *srcControl)
+void UISwitch::CopyDataFrom(UIControl* srcControl)
 {
-	//release default buttons - they have to be copied from srcControl
+    //release default buttons - they have to be copied from srcControl
     buttonLeft = nullptr;
     buttonRight = nullptr;
     toggle = nullptr;
 
-	UIControl::CopyDataFrom(srcControl);
+    UIControl::CopyDataFrom(srcControl);
 
     InitControls();
 }
 
 UISwitch* UISwitch::Clone()
 {
-	UISwitch *t = new UISwitch(GetRect());
-	t->CopyDataFrom(this);
-	return t;
+    UISwitch* t = new UISwitch(GetRect());
+    t->CopyDataFrom(this);
+    return t;
 }
 
 void UISwitch::LoadFromYamlNodeCompleted()
@@ -206,7 +207,7 @@ void UISwitch::LoadFromYamlNodeCompleted()
     InitControls();
 }
 
-void UISwitch::Input(UIEvent *currentInput)
+void UISwitch::Input(UIEvent* currentInput)
 {
     if (toggle->IsAnimating(UISWITCH_MOVE_ANIMATION_TRACK))
     {
@@ -257,7 +258,7 @@ void UISwitch::Input(UIEvent *currentInput)
         else if (switchOnTapBesideToggle)
         {
             InternalSetIsLeftSelected(!isLeftSelected, false, currentInput); //switch logical state immediately,
-        }       
+        }
         float32 toggleX = GetToggleUttermostPosition();
 
         bool causedByTap = dragAnchorX >= UISWITCH_ANCHOR_UNDEFINED;
@@ -276,7 +277,7 @@ void UISwitch::SetIsLeftSelected(bool aIsLeftSelected)
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
 }
 
-void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent *inputEvent /*= NULL*/)
+void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent* inputEvent /*= NULL*/)
 {
     bool prevIsLeftSelected = isLeftSelected;
     isLeftSelected = aIsLeftSelected;
@@ -308,7 +309,7 @@ float32 UISwitch::GetToggleUttermostPosition()
     return result;
 }
 
-void UISwitch::CheckToggleSideChange(UIEvent *inputEvent /*= NULL*/)
+void UISwitch::CheckToggleSideChange(UIEvent* inputEvent /*= NULL*/)
 {
     float32 leftBound = buttonLeft->relativePosition.x;
     float32 rightBound = buttonRight->relativePosition.x;
@@ -316,5 +317,4 @@ void UISwitch::CheckToggleSideChange(UIEvent *inputEvent /*= NULL*/)
     float32 toggleSpaceCenter = (leftBound + rightBound) / 2;
     InternalSetIsLeftSelected(toggleCenter < toggleSpaceCenter, true, inputEvent);
 }
-
 }

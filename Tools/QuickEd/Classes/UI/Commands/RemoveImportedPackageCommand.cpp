@@ -35,7 +35,7 @@
 
 using namespace DAVA;
 
-RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, QUndoCommand *parent)
+RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(aRoot))
     , importedPackage(SafeRetain(anImportedPackage))

@@ -49,71 +49,70 @@
 
 class TextureConvertor : public QObject, public DAVA::Singleton<TextureConvertor>
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	TextureConvertor();
-	~TextureConvertor();
+    TextureConvertor();
+    ~TextureConvertor();
 
-	static DAVA::Vector<DAVA::Image*> ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
+    static DAVA::Vector<DAVA::Image*> ConvertFormat(DAVA::TextureDescriptor* descriptor, DAVA::eGPUFamily gpu,
                                                     eTextureConvertMode convertMode);
-	
-	int GetThumbnail(const DAVA::TextureDescriptor *descriptor);
-	int GetOriginal(const DAVA::TextureDescriptor *descriptor);
-	int GetConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
+
+    int GetThumbnail(const DAVA::TextureDescriptor* descriptor);
+    int GetOriginal(const DAVA::TextureDescriptor* descriptor);
+    int GetConverted(const DAVA::TextureDescriptor* descriptor, DAVA::eGPUFamily gpu,
                      eTextureConvertMode convertMode = CONVERT_NOT_EXISTENT);
-	int Reconvert(DAVA::Scene *scene, eTextureConvertMode convertMode);
-	
-	void WaitConvertedAll(QWidget *parent = nullptr);
-	void CancelConvert();
+    int Reconvert(DAVA::Scene* scene, eTextureConvertMode convertMode);
+
+    void WaitConvertedAll(QWidget* parent = nullptr);
+    void CancelConvert();
 
 signals:
-	void ReadyThumbnail(const DAVA::TextureDescriptor *descriptor, const TextureInfo & image);
-	void ReadyOriginal(const DAVA::TextureDescriptor *descriptor, const TextureInfo & image);
-	void ReadyConverted(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu, const TextureInfo & image);
-	void ReadyReconvert();
+    void ReadyThumbnail(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image);
+    void ReadyOriginal(const DAVA::TextureDescriptor* descriptor, const TextureInfo& image);
+    void ReadyConverted(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily gpu, const TextureInfo& image);
+    void ReadyReconvert();
 
-	void ReadyConvertedAll();
+    void ReadyConvertedAll();
 
-	void ConvertStatusImg(const QString &imgPath, int imgGpu);
-	void ConvertStatusQueue(int curJob, int jobCount);
+    void ConvertStatusImg(const QString& imgPath, int imgGpu);
+    void ConvertStatusQueue(int curJob, int jobCount);
 
 private:
-	int jobIdCounter;
-	int convertJobQueueSize;
+    int jobIdCounter;
+    int convertJobQueueSize;
 
-	bool waitingComletion;
-	QString waitStatusText;
+    bool waitingComletion;
+    QString waitStatusText;
 
-	QFutureWatcher< TextureInfo > thumbnailWatcher;
-	QFutureWatcher< TextureInfo > originalWatcher;
-	QFutureWatcher< TextureInfo > convertedWatcher;
+    QFutureWatcher<TextureInfo> thumbnailWatcher;
+    QFutureWatcher<TextureInfo> originalWatcher;
+    QFutureWatcher<TextureInfo> convertedWatcher;
 
-	JobStack jobStackThumbnail;
-	JobStack jobStackOriginal;
-	JobStack jobStackConverted;
+    JobStack jobStackThumbnail;
+    JobStack jobStackOriginal;
+    JobStack jobStackConverted;
 
-	JobItem *curJobThumbnail;
-	JobItem *curJobOriginal;
-	JobItem *curJobConverted;
+    JobItem* curJobThumbnail;
+    JobItem* curJobOriginal;
+    JobItem* curJobConverted;
 
-	QtWaitDialog* waitDialog;
+    QtWaitDialog* waitDialog;
 
-	void jobRunNextConvert();
-	void jobRunNextOriginal();
-	void jobRunNextThumbnail();
+    void jobRunNextConvert();
+    void jobRunNextOriginal();
+    void jobRunNextThumbnail();
 
-	TextureInfo GetThumbnailThread(JobItem *item);
-	TextureInfo GetOriginalThread(JobItem *item);
-	TextureInfo GetConvertedThread(JobItem *item);
+    TextureInfo GetThumbnailThread(JobItem* item);
+    TextureInfo GetOriginalThread(JobItem* item);
+    TextureInfo GetConvertedThread(JobItem* item);
 
 private slots:
-	
-	void waitCanceled();
-	void threadThumbnailFinished();
-	void threadOriginalFinished();
-	void threadConvertedFinished();
 
+    void waitCanceled();
+    void threadThumbnailFinished();
+    void threadOriginalFinished();
+    void threadConvertedFinished();
 };
 
 #endif // __TEXTURE_CONVERTOR_H__

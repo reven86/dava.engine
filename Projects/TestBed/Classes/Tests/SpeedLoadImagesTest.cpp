@@ -47,13 +47,13 @@ SpeedLoadImagesTest::~SpeedLoadImagesTest()
 void SpeedLoadImagesTest::LoadResources()
 {
     BaseScreen::LoadResources();
-    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(30);
 
-    auto CreateButton = [font, this](const Rect &r, const WideString &str, const Message &m)
+    auto CreateButton = [font, this](const Rect& r, const WideString& str, const Message& m)
     {
-        UIButton *button = new UIButton(r);
+        UIButton* button = new UIButton(r);
         button->SetStateFont(0xFF, font);
         button->SetStateFontColor(0xFF, Color::White);
         button->SetStateText(0xFF, str);
@@ -90,7 +90,7 @@ void SpeedLoadImagesTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void SpeedLoadImagesTest::OnTestPng(BaseObject *obj, void *data, void *callerData)
+void SpeedLoadImagesTest::OnTestPng(BaseObject* obj, void* data, void* callerData)
 {
     String resultString;
     resultString.append("Results:");
@@ -101,7 +101,7 @@ void SpeedLoadImagesTest::OnTestPng(BaseObject *obj, void *data, void *callerDat
     TestAndDisplayFormat("png", qualities);
 }
 
-void SpeedLoadImagesTest::OnTestJpg(BaseObject *obj, void *data, void *callerData)
+void SpeedLoadImagesTest::OnTestJpg(BaseObject* obj, void* data, void* callerData)
 {
     String resultString;
     resultString.append("Results:");
@@ -112,7 +112,7 @@ void SpeedLoadImagesTest::OnTestJpg(BaseObject *obj, void *data, void *callerDat
     TestAndDisplayFormat("jpg", qualities);
 }
 
-void SpeedLoadImagesTest::OnTestTga(BaseObject *obj, void *data, void *callerData)
+void SpeedLoadImagesTest::OnTestTga(BaseObject* obj, void* data, void* callerData)
 {
     String resultString;
     resultString.append("Results:");
@@ -123,7 +123,7 @@ void SpeedLoadImagesTest::OnTestTga(BaseObject *obj, void *data, void *callerDat
     TestAndDisplayFormat("tga", qualities);
 }
 
-void SpeedLoadImagesTest::OnTestWebP(BaseObject *obj, void *data, void *callerData)
+void SpeedLoadImagesTest::OnTestWebP(BaseObject* obj, void* data, void* callerData)
 {
     String resultString;
     resultString.append("Results:");
@@ -139,7 +139,7 @@ void SpeedLoadImagesTest::OnTestWebP(BaseObject *obj, void *data, void *callerDa
     TestAndDisplayFormat("webp", qualities);
 }
 
-void SpeedLoadImagesTest::OnTestPvr(BaseObject *obj, void *data, void *callerData)
+void SpeedLoadImagesTest::OnTestPvr(BaseObject* obj, void* data, void* callerData)
 {
     String resultString;
     resultString.append("Results:");
@@ -150,12 +150,12 @@ void SpeedLoadImagesTest::OnTestPvr(BaseObject *obj, void *data, void *callerDat
     TestAndDisplayFormat("pvr", qualities);
 }
 
-void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<String> &qualities)
+void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<String>& qualities)
 {
     FileSystem::Instance()->CreateDirectory("~doc:/TestData/SpeedLoadImagesTest/", true);
     FilePath resultsPath(Format("~doc:/TestData/SpeedLoadImagesTest/results_%s.txt", extension.c_str()));
-    ScopedPtr<File> resultsFile(File::Create(resultsPath, File::CREATE | File::WRITE)); 
-    
+    ScopedPtr<File> resultsFile(File::Create(resultsPath, File::CREATE | File::WRITE));
+
     String resultString("\n");
     Vector<FilePath> paths;
     CreatePaths(extension, qualities, paths);
@@ -165,7 +165,7 @@ void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<St
     }
     else
     {
-        for (auto &path : paths)
+        for (auto& path : paths)
         {
             uint64 loadTime = GetLoadTime(path);
             auto fileName = path.GetFilename();
@@ -180,7 +180,7 @@ void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<St
     resultText->SetText(resultWideString);
 }
 
-void SpeedLoadImagesTest::CreatePaths(String extension, const Vector<String> &qualities, Vector<FilePath> &outPaths)
+void SpeedLoadImagesTest::CreatePaths(String extension, const Vector<String>& qualities, Vector<FilePath>& outPaths)
 {
     Vector<String> fileNames;
     fileNames.push_back("_rgb888_512");
@@ -196,9 +196,9 @@ void SpeedLoadImagesTest::CreatePaths(String extension, const Vector<String> &qu
     fileNames.push_back("_pvr4_1024");
     fileNames.push_back("_pvr4_2048");
 
-    for (auto &fileName : fileNames)
+    for (auto& fileName : fileNames)
     {
-        for (auto &quality : qualities)
+        for (auto& quality : qualities)
         {
             FilePath inpath(Format("~res:/TestData/SpeedLoadImagesTest/%s%s_quality%s.%s",
                                    extension.c_str(),
@@ -214,10 +214,10 @@ void SpeedLoadImagesTest::CreatePaths(String extension, const Vector<String> &qu
     }
 }
 
-uint64 SpeedLoadImagesTest::GetLoadTime(const FilePath &path)
+uint64 SpeedLoadImagesTest::GetLoadTime(const FilePath& path)
 {
     ScopedPtr<File> infile(File::Create(path, File::OPEN | File::READ));
-    Vector<Image *> imageSet;
+    Vector<Image*> imageSet;
 
     auto number = 5;
     uint64 allTime = 0;

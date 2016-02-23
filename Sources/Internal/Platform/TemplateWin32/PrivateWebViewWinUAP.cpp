@@ -181,7 +181,7 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
-        WebView^ p = nativeWebView;
+        WebView ^ p = nativeWebView;
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
@@ -350,7 +350,7 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     // clang-format on
 }
 
-void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
+void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigationStartingEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -362,12 +362,12 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigati
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
     core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]()
-    {
-        if (uiWebView != nullptr && webViewDelegate != nullptr)
-        {
-            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
-        }
-    });
+                                 {
+                                     if (uiWebView != nullptr && webViewDelegate != nullptr)
+                                     {
+                                         whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+                                     }
+                                 });
 
     if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
     {
@@ -376,7 +376,7 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigati
     args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
-void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigationCompletedEventArgs^ args)
+void PrivateWebViewWinUAP::OnNavigationCompleted(WebView ^ sender, WebViewNavigationCompletedEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -398,7 +398,7 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigat
         RenderToTexture();
     }
 
-    auto self{shared_from_this()};
+    auto self{ shared_from_this() };
     core->RunOnMainThread([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
@@ -598,6 +598,6 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int3
     return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
 #endif // defined(__DAVAENGINE_WIN_UAP__)

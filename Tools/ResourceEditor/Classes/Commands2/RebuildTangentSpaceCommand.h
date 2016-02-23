@@ -34,24 +34,26 @@
 
 #include "Render/Highlevel/RenderBatch.h"
 
-
-class RebuildTangentSpaceCommand: public Command2
+class RebuildTangentSpaceCommand : public Command2
 {
 public:
-    RebuildTangentSpaceCommand(DAVA::RenderBatch *renderBatch, bool computeBinormal);
+    RebuildTangentSpaceCommand(DAVA::RenderBatch* renderBatch, bool computeBinormal);
     virtual ~RebuildTangentSpaceCommand();
 
     virtual void Undo();
     virtual void Redo();
 
-    virtual DAVA::Entity* GetEntity() const {return NULL;}    
+    virtual DAVA::Entity* GetEntity() const
+    {
+        return NULL;
+    }
 
-protected:    
-    DAVA::RenderBatch *renderBatch;       
+protected:
+    DAVA::RenderBatch* renderBatch;
     bool computeBinormal;
-    DAVA::PolygonGroup* originalGroup;    
+    DAVA::PolygonGroup* originalGroup;
     DAVA::int32 materialBinormalFlagState;
 };
 
 
-#endif 
+#endif

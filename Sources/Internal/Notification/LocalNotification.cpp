@@ -33,12 +33,11 @@
 
 namespace DAVA
 {
-
 LocalNotification::LocalNotification()
 {
     impl = LocalNotificationImpl::Create(GenerateGUID());
 }
-    
+
 LocalNotification::~LocalNotification()
 {
     delete impl;
@@ -46,28 +45,28 @@ LocalNotification::~LocalNotification()
 
 void LocalNotification::SetAction(const Message& msg)
 {
-	action = msg;
-	impl->SetAction(L"");
+    action = msg;
+    impl->SetAction(L"");
 }
 
-void LocalNotification::SetTitle(const WideString &_title)
+void LocalNotification::SetTitle(const WideString& _title)
 {
-	if (_title != title)
-	{
-		isChanged = true;
-		title = _title;
-	}
+    if (_title != title)
+    {
+        isChanged = true;
+        title = _title;
+    }
 }
 
-void LocalNotification::SetText(const WideString &_text)
+void LocalNotification::SetText(const WideString& _text)
 {
-	if (_text != text)
-	{
-		isChanged = true;
-		text = _text;
-	}
+    if (_text != text)
+    {
+        isChanged = true;
+        text = _text;
+    }
 }
-    
+
 void LocalNotification::SetUseSound(const bool value)
 {
     if (useSound != value)
@@ -79,28 +78,26 @@ void LocalNotification::SetUseSound(const bool value)
 
 void LocalNotification::Show()
 {
-	isVisible = true;
-	isChanged = true;
+    isVisible = true;
+    isChanged = true;
 }
 
 void LocalNotification::Hide()
 {
-	isVisible = false;
-	isChanged = true;
+    isVisible = false;
+    isChanged = true;
 }
 
 void LocalNotification::Update()
 {
-	if (false == isChanged)
-		return;
+    if (false == isChanged)
+        return;
 
-	if (true == isVisible)
-		ImplShow();
-	else
-		impl->Hide();
+    if (true == isVisible)
+        ImplShow();
+    else
+        impl->Hide();
 
-	isChanged = false;
+    isChanged = false;
 }
-
 }
-
