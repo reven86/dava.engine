@@ -48,6 +48,9 @@ namespace Themes
     const QString& GetCurrentThemeStr();
     eTheme GetCurrentTheme();
     QColor GetViewLineAliternateColor();
+    QColor GetChangedPropertyColor();
+    QColor GetPrototypeColor();
+    QColor GetStyleSheetNodeColor();
 };
 
 #endif // __QT_TOOLS_THEMES_H__

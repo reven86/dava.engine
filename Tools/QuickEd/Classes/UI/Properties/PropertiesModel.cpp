@@ -194,7 +194,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     case Qt::BackgroundRole:
         if (property->GetType() == AbstractProperty::TYPE_HEADER)
         {
-            return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : Themes::GetViewLineAliternateColor();
+            return Themes::GetViewLineAliternateColor();
         }
 
     case Qt::FontRole:
@@ -211,6 +211,10 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
 
     case Qt::TextColorRole:
     {
+        if (property->IsOverriddenLocally() || property->IsReadOnly())
+        {
+            return Themes::GetChangedPropertyColor();
+        }
         if (controlNode)
         {
             int32 propertyIndex = property->GetStylePropertyIndex();
@@ -219,13 +223,13 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
                 bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
                 if (setByStyle)
                 {
-                    return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::darkGreen) : "light green";
+                    return Themes::GetStyleSheetNodeColor();
                 }
             }
         }
         if (flags & AbstractProperty::EF_INHERITED)
         {
-            return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
+            return Themes::GetPrototypeColor();
         }
         return QVariant();
     }

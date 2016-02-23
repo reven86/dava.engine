@@ -131,10 +131,10 @@ void SetupDarkTheme()
     qApp->setStyle(QStyleFactory::create("Fusion"));
     
     QPalette darkPalette;
-    QColor textColor(0xf2, 0xf2, 0xf2);
+    QColor textColor(192, 192, 192);
     darkPalette.setColor(QPalette::Window, QColor(53,53,53));
     darkPalette.setColor(QPalette::WindowText, textColor);
-    darkPalette.setColor(QPalette::Base, QColor(25,25,25));
+    darkPalette.setColor(QPalette::Base, QColor(53, 53, 53));
     darkPalette.setColor(QPalette::AlternateBase, QColor(53,53,53));
     darkPalette.setColor(QPalette::ToolTipBase, textColor);
     darkPalette.setColor(QPalette::ToolTipText, textColor);
@@ -148,8 +148,8 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     
     qApp->setPalette(darkPalette);
-    
-    qApp->setStyleSheet("QToolTip { color: #f2f2f2; background-color: #2a82da; border: 1px solid white; }");
+
+    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }");
 }
 
 
@@ -165,7 +165,21 @@ eTheme GetCurrentTheme()
     
 QColor GetViewLineAliternateColor()
 {
-    return QColor(0x3f, 0x3f, 0x46);
+    return currentTheme == Themes::Classic ? QColor(Qt::lightGray) : QColor(0x3f, 0x3f, 0x46);
 }
 
+QColor GetChangedPropertyColor()
+{
+    return currentTheme == Themes::Classic ? QColor(Qt::black) : QColor(225, 225, 225);
+}
+
+QColor GetPrototypeColor()
+{
+    return currentTheme == Themes::Classic ? QColor(Qt::blue) : QColor("CadetBlue");
+}
+
+QColor GetStyleSheetNodeColor()
+{
+    return currentTheme == Themes::Classic ? QColor(Qt::darkGreen) : QColor("light green");
+}
 };
