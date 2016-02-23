@@ -167,7 +167,7 @@
         {
             NSString* newString = nullptr;
             // when the last insert was out of bounds, and after it was press revert button on the keyboard
-            if((range.location + range.length) > maxLength)
+            if ((range.location + range.length) > maxLength)
             {
                 range.length = maxLength - range.location;
                 if (range.length == 0)
