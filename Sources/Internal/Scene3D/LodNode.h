@@ -33,24 +33,23 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class Scene;
 class StaticMesh;
 class Texture;
 class SceneFileV2;
-    
+
 class LodNode : public Entity
 {
     static const int32 RECHECK_LOD_EVERY_FRAME = 3;
-    
-public:
 
+public:
     static const int32 MAX_LOD_LAYERS = 4;
     static const int32 INVALID_LOD_LAYER = -1;
     static const float32 MIN_LOD_DISTANCE;
     static const float32 MAX_LOD_DISTANCE;
-	static const float32 INVALID_DISTANCE;
+    static const float32 INVALID_DISTANCE;
 
     struct LodDistance
     {
@@ -58,21 +57,21 @@ public:
 
         float32 nearDistance;
         float32 farDistance;
-        
+
         float32 nearDistanceSq;
         float32 farDistanceSq;
-        
+
         LodDistance();
         void SetDistance(float32 newDistance);
         void SetNearDistance(float32 newDistance);
         void SetFarDistance(float32 newDistance);
     };
-    
+
     struct LodData
     {
         LodData()
-        :layer(INVALID_LOD_LAYER)
-        ,isDummy(false)
+            : layer(INVALID_LOD_LAYER)
+            , isDummy(false)
         {
         }
         Vector<Entity*> nodes;
@@ -80,39 +79,39 @@ public:
         int32 layer;
         bool isDummy;
     };
+
 protected:
-	virtual ~LodNode();
+    virtual ~LodNode();
+
 public:
-	LodNode();
-	
-    
-    virtual void	AddNodeInLayer(Entity * node, int32 layer);//adds new node and registers this node as a LOD layer
-    virtual void	RegisterNodeInLayer(Entity * node, int32 layer);//register existing node as a layer
-	virtual void	RemoveNode(Entity * node);
-	virtual void	RemoveAllChildren();
-    
+    LodNode();
+
+    virtual void AddNodeInLayer(Entity* node, int32 layer); //adds new node and registers this node as a LOD layer
+    virtual void RegisterNodeInLayer(Entity* node, int32 layer); //register existing node as a layer
+    virtual void RemoveNode(Entity* node);
+    virtual void RemoveAllChildren();
+
     virtual void Update(float32 timeElapsed);
     void SimpleUpdate(float32 timeElapsed);
-	
-    virtual Entity* Clone(Entity *dstNode = NULL);
+
+    virtual Entity* Clone(Entity* dstNode = NULL);
     /**
         \brief virtual function to save node to KeyedArchive
      */
-    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-    
+    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+
     /**
         \brief virtual function to load node to KeyedArchive
      */
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-    
-    void SetCurrentLod(LodData *newLod);
+    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+
+    void SetCurrentLod(LodData* newLod);
 
     virtual void SceneDidLoaded();
-    
-    virtual bool IsLodMain(Entity *childToCheck = NULL);//if childToCheck is NULL checks the caller node
 
-	int32 GetMaxLodLayer();
+    virtual bool IsLodMain(Entity* childToCheck = NULL); //if childToCheck is NULL checks the caller node
 
+    int32 GetMaxLodLayer();
 
     /**
      \brief Sets lod layer thet would be forcely used in the whole scene.
@@ -128,15 +127,13 @@ public:
     void SetForceLodLayerDistance(float32 newForceDistance);
     float32 GetForceLodLayerDistance();
 
-    
     /**
      \brief Registers LOD layer into the LodNode.
      \param[in] layerNum is the layer index
      \param[in] distance near view distance for the layer
 	 */
     void SetLodLayerDistance(int32 layerNum, float32 distance);
-    
-    
+
     inline int32 GetLodLayersCount();
     inline float32 GetLodLayerDistance(int32 layerNum);
     inline float32 GetLodLayerNear(int32 layerNum);
@@ -146,20 +143,19 @@ public:
 
     static float32 GetDefaultDistance(int32 layer);
 
-    void GetLodData(List<LodData*> &retLodLayers);
-    
-protected:
-//    virtual Entity* CopyDataTo(Entity *dstNode);
+    void GetLodData(List<LodData*>& retLodLayers);
 
-    virtual void	RegisterIndexInLayer(int32 nodeIndex, int32 layer);
-    virtual LodData	*CreateNewLayer(int32 layer);
+protected:
+    //    virtual Entity* CopyDataTo(Entity *dstNode);
+
+    virtual void RegisterIndexInLayer(int32 nodeIndex, int32 layer);
+    virtual LodData* CreateNewLayer(int32 layer);
 
     void RecheckLod();
-    
-    LodData *currentLod;
+
+    LodData* currentLod;
     List<LodData> lodLayers;
-    
-    
+
     int lastLodUpdateFrame;
 
     LodDistance lodLayersArray[MAX_LOD_LAYERS];
@@ -167,10 +163,10 @@ protected:
     float32 forceDistance;
     float32 forceDistanceSq;
 };
-    
+
 int32 LodNode::GetLodLayersCount()
 {
-	return (int32)lodLayers.size();
+    return (int32)lodLayers.size();
 }
 
 float32 LodNode::GetLodLayerDistance(int32 layerNum)
@@ -202,7 +198,6 @@ float32 LodNode::GetLodLayerFarSquare(int32 layerNum)
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     return lodLayersArray[layerNum].farDistanceSq;
 }
-	
 };
 
 #endif // __DAVAENGINE_MESH_INSTANCE_H__

@@ -35,19 +35,18 @@
 
 #include "Scene3D/SceneFile/VersionInfo.h"
 
-
-namespace Ui {
-    class VersionInfoWidget;
+namespace Ui
+{
+class VersionInfoWidget;
 } // namespace Ui
 
-
 class VersionInfoWidget
-    : public QWidget
+: public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit VersionInfoWidget(QWidget *parent);
+    explicit VersionInfoWidget(QWidget* parent);
     ~VersionInfoWidget();
 
 private slots:

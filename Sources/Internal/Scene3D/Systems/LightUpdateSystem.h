@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_LIGHTUPDATESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_LIGHTUPDATESYSTEM_H__
+#define __DAVAENGINE_SCENE3D_LIGHTUPDATESYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
@@ -44,26 +44,25 @@ class RenderBatch;
 class Entity;
 class Camera;
 class Light;
-    
-    
+
 /**
     \brief This system is required to transfer all changes from scene to render system and update render object properties.
  */
 class LightUpdateSystem : public SceneSystem
 {
 public:
-    LightUpdateSystem(Scene * scene);
+    LightUpdateSystem(Scene* scene);
     virtual ~LightUpdateSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    void ImmediateEvent(Component * component, uint32 event) override;
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+    void ImmediateEvent(Component* component, uint32 event) override;
+
 private:
-    void RecalcLight(Entity *entity);
+    void RecalcLight(Entity* entity);
     HashMap<Entity*, Light*> entityObjectMap;
 };
-    
+
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_LIGHTUPDATESYSTEM_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_LIGHTUPDATESYSTEM_H__ */

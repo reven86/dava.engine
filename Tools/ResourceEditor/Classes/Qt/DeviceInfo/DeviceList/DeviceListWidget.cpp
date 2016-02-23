@@ -47,21 +47,23 @@
 
 using namespace DAVA;
 
-DeviceListWidget::DeviceListWidget( QWidget *parent )
-    : QWidget( parent, Qt::Window )
-    , ui( new Ui::DeviceListWidget() )
+DeviceListWidget::DeviceListWidget(QWidget* parent)
+    : QWidget(parent, Qt::Window)
+    , ui(new Ui::DeviceListWidget())
 {
-    ui->setupUi( this );
+    ui->setupUi(this);
 
-    connect( ui->connectDevice, &QPushButton::clicked, this, &DeviceListWidget::connectClicked );
-    connect( ui->disconnectDevice, &QPushButton::clicked, this, &DeviceListWidget::disconnectClicked );
-    connect( ui->showLog, &QPushButton::clicked, this, &DeviceListWidget::showLogClicked );
+    connect(ui->connectDevice, &QPushButton::clicked, this, &DeviceListWidget::connectClicked);
+    connect(ui->disconnectDevice, &QPushButton::clicked, this, &DeviceListWidget::disconnectClicked);
+    connect(ui->showLog, &QPushButton::clicked, this, &DeviceListWidget::showLogClicked);
 
     connect(ui->viewDump, &QPushButton::clicked, this, &DeviceListWidget::OnViewDump);
     connect(ui->discoverDevice, &QPushButton::clicked, this, &DeviceListWidget::OnDeviceDiscover);
 }
 
-DeviceListWidget::~DeviceListWidget() {}
+DeviceListWidget::~DeviceListWidget()
+{
+}
 
 QTreeView* DeviceListWidget::ItemView()
 {

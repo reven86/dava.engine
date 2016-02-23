@@ -49,19 +49,20 @@ class LibraryModel : public QStandardItemModel, PackageListener
         POINTER_DATA = Qt::UserRole + 1,
         INNER_NAME_DATA
     };
+
 public:
     LibraryModel(QObject* parent = nullptr);
     ~LibraryModel() override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
-    QMimeData *mimeData(const QModelIndexList &indexes) const override;
-    void SetPackageNode(PackageNode *package);
+    QMimeData* mimeData(const QModelIndexList& indexes) const override;
+    void SetPackageNode(PackageNode* package);
 
 private:
     QVariant data(const QModelIndex &index, int role) const override;
 
-    QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
+    QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
     void BuildModel();
     void AddControl(ControlNode* node);
     void AddImportedControl(PackageNode* node);
@@ -74,8 +75,7 @@ private:
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
     void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
-
-    PackageNode *package = nullptr;
+    PackageNode* package = nullptr;
     QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
     DAVA::Vector<ControlNode*> defaultControls;
 };

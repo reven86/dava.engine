@@ -114,7 +114,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
-void FileSystemDockWidget::SetProjectDir(const QString &path)
+void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
     QDir dir(path);
     dir.cdUp();
@@ -187,15 +187,15 @@ QString FileSystemDockWidget::GetPathByCurrentPos()
     return path + "/";
 }
 
-void FileSystemDockWidget::onDoubleClicked(const QModelIndex &index)
+void FileSystemDockWidget::onDoubleClicked(const QModelIndex& index)
 {
-    if(!model->isDir(index))
+    if (!model->isDir(index))
     {
         emit OpenPackageFile(model->filePath(index));
     }
 }
 
-void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
+void FileSystemDockWidget::setFilterFixedString(const QString& filterStr)
 {
     QStringList filters;
     filters << QString("*%1*" + FileSystemModel::GetYamlExtensionString()).arg(filterStr);

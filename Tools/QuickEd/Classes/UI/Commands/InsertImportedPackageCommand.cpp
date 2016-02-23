@@ -34,13 +34,12 @@
 
 using namespace DAVA;
 
-InsertImportedPackageCommand::InsertImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, int anIndex, QUndoCommand *parent)
+InsertImportedPackageCommand::InsertImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, int anIndex, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(aRoot))
     , importedPackage(SafeRetain(anImportedPackage))
     , index(anIndex)
 {
-    
 }
 
 InsertImportedPackageCommand::~InsertImportedPackageCommand()
@@ -58,4 +57,3 @@ void InsertImportedPackageCommand::undo()
 {
     root->RemoveImportedPackage(importedPackage);
 }
-

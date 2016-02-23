@@ -17,9 +17,9 @@ ILboolean GenSides(void);
 
 ILboolean bCleaned = IL_FALSE;
 
-GLuint	TexID1 = 0, TexID2 = 0, TexID3 = 0, TexID4 = 0;
-ILuint	ImgId;
+GLuint TexID1 = 0, TexID2 = 0, TexID3 = 0, TexID4 = 0;
+ILuint ImgId;
 
-float	Angle = 0.0, TransFactor = -470.0;
+float Angle = 0.0, TransFactor = -470.0;
 
-#endif//TEST3D_H
+#endif //TEST3D_H

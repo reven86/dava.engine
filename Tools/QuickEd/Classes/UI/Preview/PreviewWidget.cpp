@@ -62,7 +62,7 @@ struct PreviewContext : WidgetContext
 {
     QPoint canvasPosition;
 };
-    
+
 struct SystemsContext : WidgetContext
 {
     SelectedNodes selection;
@@ -96,7 +96,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
     connect(davaGLWidget, &DavaGLWidget::Initialized, this, &PreviewWidget::OnGLInitialized);
-    connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
+    connect(davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
@@ -107,7 +107,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
     connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::OnScaleChanged);
 
-    connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
+    connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
@@ -240,9 +240,9 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
 
 void PreviewWidget::SaveSystemsContextAndClear()
 {
-    if(!document.isNull())
+    if (!document.isNull())
     {
-        SystemsContext *systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+        SystemsContext* systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
         systemsContext->selection = selectionContainer.selectedNodes;
     }
     if (!selectionContainer.selectedNodes.empty())
@@ -257,19 +257,19 @@ void PreviewWidget::SaveSystemsContextAndClear()
 void PreviewWidget::LoadSystemsContext(Document* arg)
 {
     DVASSERT(arg == document.data());
-    if(document.isNull())
+    if (document.isNull())
     {
         return;
     }
     SystemsContext* context = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
-    if(nullptr == context)
+    if (nullptr == context)
     {
         document->SetContext(systemsManager.get(), new SystemsContext());
     }
     else
     {
         selectionContainer.selectedNodes = context->selection;
-        if(!selectionContainer.selectedNodes.empty())
+        if (!selectionContainer.selectedNodes.empty())
         {
             systemsManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
         }
@@ -281,7 +281,7 @@ void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
     systemsManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2 &pos)
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
     rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
     ApplyPosChanges();

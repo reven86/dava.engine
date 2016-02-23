@@ -44,7 +44,8 @@ struct BlockLink;
 class MemoryBlocksModel : public QAbstractTableModel
 {
 public:
-    enum {
+    enum
+    {
         ROLE_LINKITEM_POINTER = Qt::UserRole + 1
     };
 
@@ -75,14 +76,14 @@ public:
     MemoryBlocksFilterModel(MemoryBlocksModel* model, QObject* parent = nullptr);
     virtual ~MemoryBlocksFilterModel();
 
-    template<typename F>
+    template <typename F>
     void SetFilter(F fn);
     void ClearFilter();
 
-    template<typename F>
+    template <typename F>
     void SortBy(F fn);
 
-    template<typename F>
+    template <typename F>
     void IterateOverElements(F fn);
 
     // reimplemented QSortFilterProxyModel methods
@@ -95,14 +96,14 @@ protected:
 
 private:
     // TODO: replace with DAVA::Function
-    std::function<bool (const BlockLink::Item&, const BlockLink::Item&)> lessThanPredicate;
-    std::function<bool (const BlockLink::Item&)> filterPredicate;
+    std::function<bool(const BlockLink::Item&, const BlockLink::Item&)> lessThanPredicate;
+    std::function<bool(const BlockLink::Item&)> filterPredicate;
 
     bool dontFilter = true;
 };
 
 //////////////////////////////////////////////////////////////////////////
-template<typename F>
+template <typename F>
 void MemoryBlocksFilterModel::SetFilter(F fn)
 {
     dontFilter = false;
@@ -110,7 +111,7 @@ void MemoryBlocksFilterModel::SetFilter(F fn)
     invalidateFilter();
 }
 
-template<typename F>
+template <typename F>
 void MemoryBlocksFilterModel::SortBy(F fn)
 {
     static int x = 0;
@@ -119,10 +120,10 @@ void MemoryBlocksFilterModel::SortBy(F fn)
     //x = x == 0;
 }
 
-template<typename F>
+template <typename F>
 void MemoryBlocksFilterModel::IterateOverElements(F fn)
 {
-    for (int i = 0, n = rowCount();i < n;++i)
+    for (int i = 0, n = rowCount(); i < n; ++i)
     {
         QVariant v = data(index(i, 0), MemoryBlocksModel::ROLE_LINKITEM_POINTER);
         const BlockLink::Item* item = static_cast<const BlockLink::Item*>(v.value<void*>());
@@ -130,4 +131,4 @@ void MemoryBlocksFilterModel::IterateOverElements(F fn)
     }
 }
 
-#endif  // __MEMORYTOOL_MEMORYBLOCKSMODEL_H__
+#endif // __MEMORYTOOL_MEMORYBLOCKSMODEL_H__

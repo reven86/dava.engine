@@ -64,20 +64,20 @@ EditorUIPackageBuilder::EditorUIPackageBuilder()
 
 EditorUIPackageBuilder::~EditorUIPackageBuilder()
 {
-    for (PackageNode *importedPackage : importedPackages)
+    for (PackageNode* importedPackage : importedPackages)
         importedPackage->Release();
     importedPackages.clear();
-    
-    for (ControlNode *control : rootControls)
+
+    for (ControlNode* control : rootControls)
         control->Release();
     rootControls.clear();
 
-    for (StyleSheetNode *styleSheet : styleSheets)
+    for (StyleSheetNode* styleSheet : styleSheets)
         styleSheet->Release();
     styleSheets.clear();
 }
 
-void EditorUIPackageBuilder::BeginPackage(const FilePath &aPackagePath)
+void EditorUIPackageBuilder::BeginPackage(const FilePath& aPackagePath)
 {
     DVASSERT(packagePath.IsEmpty());
     packagePath = aPackagePath;
@@ -87,45 +87,45 @@ void EditorUIPackageBuilder::EndPackage()
 {
 }
 
-bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr, AbstractUIPackageLoader *loader)
+bool EditorUIPackageBuilder::ProcessImportedPackage(const String& packagePathStr, AbstractUIPackageLoader* loader)
 {
     FilePath packagePath(packagePathStr);
-    for (PackageNode *package : importedPackages)
+    for (PackageNode* package : importedPackages)
     {
         if (package->GetPath().GetFrameworkPath() == packagePath.GetFrameworkPath())
             return true;
     }
-    
+
     if (std::find(declinedPackages.begin(), declinedPackages.end(), packagePath) != declinedPackages.end())
     {
-        DVASSERT(false); 
+        DVASSERT(false);
         return false;
     }
-    
+
     EditorUIPackageBuilder builder;
     builder.declinedPackages.insert(builder.declinedPackages.end(), declinedPackages.begin(), declinedPackages.end());
     builder.declinedPackages.push_back(packagePath);
-    
+
     if (loader->LoadPackage(packagePath, &builder))
     {
         RefPtr<PackageNode> importedPackage = builder.BuildPackage();
         importedPackages.push_back(SafeRetain(importedPackage.Get()));
         return true;
     }
-    
+
     return false;
 }
 
-void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
+void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties)
 {
-    StyleSheetNode *node = new StyleSheetNode(selectorChains, properties);
+    StyleSheetNode* node = new StyleSheetNode(selectorChains, properties);
     styleSheets.push_back(node);
 }
 
-UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
+UIControl* EditorUIPackageBuilder::BeginControlWithClass(const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
@@ -135,25 +135,25 @@ UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className
     return control.Get();
 }
 
-UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
+UIControl* EditorUIPackageBuilder::BeginControlWithCustomClass(const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    ControlNode *node = ControlNode::CreateFromControl(control.Get());
+    ControlNode* node = ControlNode::CreateFromControl(control.Get());
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
 
     return control.Get();
 }
 
-UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
+UIControl* EditorUIPackageBuilder::BeginControlWithPrototype(const String& packageName, const String& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
-    ControlNode *prototypeNode = nullptr;
+    ControlNode* prototypeNode = nullptr;
     if (packageName.empty())
     {
         prototypeNode = FindRootControl(prototypeName);
@@ -165,7 +165,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
     }
     else
     {
-        for (PackageNode *importedPackage : importedPackages)
+        for (PackageNode* importedPackage : importedPackages)
         {
             if (importedPackage->GetName() == packageName)
             {
@@ -174,9 +174,9 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
             }
         }
     }
-    
+
     DVASSERT(prototypeNode);
-    ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode);
+    ControlNode* node = ControlNode::CreateFromPrototype(prototypeNode);
     if (customClassName)
         node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
     controlsStack.push_back(ControlDescr(node, true));
@@ -184,15 +184,15 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
     return node->GetControl();
 }
 
-UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
+UIControl* EditorUIPackageBuilder::BeginControlWithPath(const String& pathName)
 {
-    ControlNode *control = nullptr;
+    ControlNode* control = nullptr;
     if (!controlsStack.empty())
     {
         control = controlsStack.back().node;
         Vector<String> controlNames;
         Split(pathName, "/", controlNames, false, true);
-        for (Vector<String>::const_iterator iter = controlNames.begin(); iter!=controlNames.end(); ++iter)
+        for (Vector<String>::const_iterator iter = controlNames.begin(); iter != controlNames.end(); ++iter)
         {
             control = control->FindByName(*iter);
             if (!control)
@@ -208,7 +208,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
     return control->GetControl();
 }
 
-UIControl *EditorUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
+UIControl* EditorUIPackageBuilder::BeginUnknownControl(const YamlNode* node)
 {
     DVASSERT(false);
     return nullptr;
@@ -216,10 +216,10 @@ UIControl *EditorUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
 
 void EditorUIPackageBuilder::EndControl(bool isRoot)
 {
-    ControlNode *lastControl = SafeRetain(controlsStack.back().node);
+    ControlNode* lastControl = SafeRetain(controlsStack.back().node);
     bool addToParent = controlsStack.back().addToParent;
     controlsStack.pop_back();
-    
+
     if (addToParent)
     {
         if (controlsStack.empty() || isRoot)
@@ -233,7 +233,7 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
     SafeRelease(lastControl);
 }
 
-void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
+void EditorUIPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
     currentSection = controlsStack.back().node->GetRootProperty()->GetControlPropertiesSection(name);
     currentObject = controlsStack.back().node->GetControl();
@@ -245,10 +245,10 @@ void EditorUIPackageBuilder::EndControlPropertiesSection()
     currentObject = nullptr;
 }
 
-UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
+UIComponent* EditorUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
 {
-    ControlNode *node = controlsStack.back().node;
-    ComponentPropertiesSection * section;
+    ControlNode* node = controlsStack.back().node;
+    ComponentPropertiesSection* section;
     section = node->GetRootProperty()->FindComponentPropertiesSection(componentType, componentIndex);
     if (section == nullptr)
         section = node->GetRootProperty()->AddComponentPropertiesSection(componentType);
@@ -263,10 +263,10 @@ void EditorUIPackageBuilder::EndComponentPropertiesSection()
     currentObject = nullptr;
 }
 
-UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
+UIControlBackground* EditorUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
 {
-    ControlNode *node = controlsStack.back().node;
-    BackgroundPropertiesSection *section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
+    ControlNode* node = controlsStack.back().node;
+    BackgroundPropertiesSection* section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
     if (section && sectionHasProperties)
     {
         if (section->GetBg() == nullptr)
@@ -279,7 +279,7 @@ UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index,
             return section->GetBg();
         }
     }
-    
+
     return nullptr;
 }
 
@@ -289,15 +289,15 @@ void EditorUIPackageBuilder::EndBgPropertiesSection()
     currentObject = nullptr;
 }
 
-UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
+UIControl* EditorUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
 {
-    ControlNode *node = controlsStack.back().node;
-    InternalControlPropertiesSection *section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
+    ControlNode* node = controlsStack.back().node;
+    InternalControlPropertiesSection* section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
     if (section && sectionHasProperties)
     {
         if (section->GetInternalControl() == nullptr)
             section->CreateInternalControl();
-        
+
         if (section->GetInternalControl())
         {
             currentObject = section->GetInternalControl();
@@ -305,7 +305,7 @@ UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool s
             return section->GetInternalControl();
         }
     }
-    
+
     return nullptr;
 }
 
@@ -315,11 +315,11 @@ void EditorUIPackageBuilder::EndInternalControlSection()
     currentObject = nullptr;
 }
 
-void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const VariantType &value)
+void EditorUIPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
 {
     if (currentObject && currentSection && (member->Flags() & I_EDIT))
     {
-        ValueProperty *property = currentSection->FindProperty(member);
+        ValueProperty* property = currentSection->FindProperty(member);
         if (property && value.GetType() != VariantType::TYPE_NONE)
         {
             if (property->GetStylePropertyIndex() != -1)
@@ -334,9 +334,9 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
-    
+
     Vector<PackageNode*> declinedPackages;
-    for (PackageNode *importedPackage : importedPackages)
+    for (PackageNode* importedPackage : importedPackages)
     {
         if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
         {
@@ -347,57 +347,57 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
             declinedPackages.push_back(importedPackage);
         }
     }
-    
-    for (StyleSheetNode *styleSheet : styleSheets)
+
+    for (StyleSheetNode* styleSheet : styleSheets)
     {
         package->GetStyleSheets()->Add(styleSheet);
     }
-    
-    for (ControlNode *control : rootControls)
+
+    for (ControlNode* control : rootControls)
     {
         bool canInsert = true;
-        for (PackageNode *declinedPackage : declinedPackages)
+        for (PackageNode* declinedPackage : declinedPackages)
         {
             if (control->IsDependsOnPackage(declinedPackage))
                 canInsert = false;
         }
-        
+
         if (canInsert)
         {
             package->GetPackageControlsNode()->Add(control);
         }
     }
-    
+
     package->RefreshPackageStylesAndLayout();
-    
+
     DVASSERT(declinedPackages.empty());
-    
+
     return package;
 }
 
-const Vector<ControlNode*> &EditorUIPackageBuilder::GetRootControls() const
+const Vector<ControlNode*>& EditorUIPackageBuilder::GetRootControls() const
 {
     return rootControls;
 }
 
-const Vector<PackageNode*> &EditorUIPackageBuilder::GetImportedPackages() const
+const Vector<PackageNode*>& EditorUIPackageBuilder::GetImportedPackages() const
 {
     return importedPackages;
 }
 
-const Vector<StyleSheetNode*> &EditorUIPackageBuilder::GetStyles() const
+const Vector<StyleSheetNode*>& EditorUIPackageBuilder::GetStyles() const
 {
     return styleSheets;
 }
 
-void EditorUIPackageBuilder::AddImportedPackage(PackageNode *node)
+void EditorUIPackageBuilder::AddImportedPackage(PackageNode* node)
 {
     importedPackages.push_back(SafeRetain(node));
 }
 
-ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) const
+ControlNode* EditorUIPackageBuilder::FindRootControl(const DAVA::String& name) const
 {
-    for (ControlNode *control : rootControls)
+    for (ControlNode* control : rootControls)
     {
         if (control->GetName() == name)
             return control;
@@ -408,15 +408,19 @@ ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) c
 ////////////////////////////////////////////////////////////////////////////////
 // ControlDescr
 ////////////////////////////////////////////////////////////////////////////////
-EditorUIPackageBuilder::ControlDescr::ControlDescr() : node(nullptr), addToParent(false)
+EditorUIPackageBuilder::ControlDescr::ControlDescr()
+    : node(nullptr)
+    , addToParent(false)
 {
 }
 
-EditorUIPackageBuilder::ControlDescr::ControlDescr(ControlNode *node, bool addToParent) : node(node), addToParent(addToParent)
+EditorUIPackageBuilder::ControlDescr::ControlDescr(ControlNode* node, bool addToParent)
+    : node(node)
+    , addToParent(addToParent)
 {
 }
 
-EditorUIPackageBuilder::ControlDescr::ControlDescr(const ControlDescr &descr)
+EditorUIPackageBuilder::ControlDescr::ControlDescr(const ControlDescr& descr)
 {
     node = DAVA::SafeRetain(descr.node);
     addToParent = descr.addToParent;
@@ -427,11 +431,11 @@ EditorUIPackageBuilder::ControlDescr::~ControlDescr()
     DAVA::SafeRelease(node);
 }
 
-EditorUIPackageBuilder::ControlDescr &EditorUIPackageBuilder::ControlDescr::operator=(const ControlDescr &descr)
+EditorUIPackageBuilder::ControlDescr& EditorUIPackageBuilder::ControlDescr::operator=(const ControlDescr& descr)
 {
     DAVA::SafeRetain(descr.node);
     DAVA::SafeRelease(node);
-    
+
     node = descr.node;
     addToParent = descr.addToParent;
     return *this;

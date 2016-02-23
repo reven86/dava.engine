@@ -64,8 +64,8 @@ public:
     DAVA::GraphicFont* GetFont() const;
 
 protected:
-	struct TextToDraw
-	{
+    struct TextToDraw
+    {
         TextToDraw(DAVA::Vector2 _pos, const DAVA::String& _text, const DAVA::Color& _color, Align _align)
             : pos(_pos)
             , text(_text)

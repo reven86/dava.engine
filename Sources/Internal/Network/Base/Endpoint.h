@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class Endpoint represents a endpoint - simple and clear description :)
  Endpoint is a pair of IP address and port number.
@@ -66,28 +65,30 @@ public:
     // These methods are used for close interaction with libuv
     sockaddr* CastToSockaddr();
     const sockaddr* CastToSockaddr() const;
-    
+
     sockaddr_in* CastToSockaddrIn();
     const sockaddr_in* CastToSockaddrIn() const;
 
-    friend bool operator == (const Endpoint& left, const Endpoint& right);
-    friend bool operator < (const Endpoint& left, const Endpoint& right);
+    friend bool operator==(const Endpoint& left, const Endpoint& right);
+    friend bool operator<(const Endpoint& left, const Endpoint& right);
 
 private:
     void InitSockaddrIn(uint32 addr, uint16 port);
-	uint32 GetSockaddrAddr() const;
-	
+    uint32 GetSockaddrAddr() const;
+
 private:
     sockaddr_in data;
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline Endpoint::Endpoint(uint16 port) : data()
+inline Endpoint::Endpoint(uint16 port)
+    : data()
 {
     InitSockaddrIn(INADDR_ANY, port);
 }
 
-inline Endpoint::Endpoint(const IPAddress& address, uint16 port) : data()
+inline Endpoint::Endpoint(const IPAddress& address, uint16 port)
+    : data()
 {
     InitSockaddrIn(address.ToUInt(), port);
 }
@@ -107,24 +108,37 @@ inline size_t Endpoint::Size() const
     return sizeof(data);
 }
 
-inline sockaddr* Endpoint::CastToSockaddr() { return reinterpret_cast<sockaddr*>(&data); }
-inline const sockaddr* Endpoint::CastToSockaddr() const { return reinterpret_cast<const sockaddr*>(&data); }
+inline sockaddr* Endpoint::CastToSockaddr()
+{
+    return reinterpret_cast<sockaddr*>(&data);
+}
+inline const sockaddr* Endpoint::CastToSockaddr() const
+{
+    return reinterpret_cast<const sockaddr*>(&data);
+}
 
-inline sockaddr_in* Endpoint::CastToSockaddrIn() { return reinterpret_cast<sockaddr_in*>(&data); }
-inline const sockaddr_in* Endpoint::CastToSockaddrIn() const { return reinterpret_cast<const sockaddr_in*>(&data); }
+inline sockaddr_in* Endpoint::CastToSockaddrIn()
+{
+    return reinterpret_cast<sockaddr_in*>(&data);
+}
+inline const sockaddr_in* Endpoint::CastToSockaddrIn() const
+{
+    return reinterpret_cast<const sockaddr_in*>(&data);
+}
 
-inline bool operator == (const Endpoint& left, const Endpoint& right)
+inline bool operator==(const Endpoint& left, const Endpoint& right)
 {
     return left.Address() == right.Address() && left.Port() == right.Port();
 }
 
-inline bool operator < (const Endpoint& left, const Endpoint& right)
+inline bool operator<(const Endpoint& left, const Endpoint& right)
 {
     return left.Address() == right.Address() ? left.Port() < right.Port()
-                                             : left.Address() < right.Address();
+                                               :
+                                               left.Address() < right.Address();
 }
 
-}   // namespace Net
-}	// namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_ENDPOINT_H__
+#endif // __DAVAENGINE_ENDPOINT_H__

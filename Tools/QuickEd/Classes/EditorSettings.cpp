@@ -50,7 +50,7 @@ EditorSettings::~EditorSettings()
     SafeRelease(settings);
 }
 
-KeyedArchive *EditorSettings::GetSettings()
+KeyedArchive* EditorSettings::GetSettings()
 {
     return settings;
 }
@@ -60,15 +60,15 @@ void EditorSettings::Save()
     settings->Save(EDITOR_SETTINGS_FILE);
 }
 
-void EditorSettings::SetProjectPath(const String &projectPath)
+void EditorSettings::SetProjectPath(const String& projectPath)
 {
-	settings->SetString(String("ProjectPath"), projectPath);
-	Save();
+    settings->SetString(String("ProjectPath"), projectPath);
+    Save();
 }
 
 String EditorSettings::GetProjectPath()
 {
-	return settings->GetString(String("ProjectPath"), String(""));
+    return settings->GetString(String("ProjectPath"), String(""));
 }
 
 int32 EditorSettings::GetLastOpenedCount()
@@ -80,11 +80,11 @@ String EditorSettings::GetLastOpenedFile(int32 index)
 {
     int32 count = GetLastOpenedCount();
     DVASSERT((0 <= index) && (index < count));
-    
+
     return settings->GetString(Format("LastOpenedFile_%d", index), "");
 }
 
-void EditorSettings::AddLastOpenedFile(const String & pathToFile)
+void EditorSettings::AddLastOpenedFile(const String& pathToFile)
 {
     Vector<String> filesList;
 
@@ -124,19 +124,19 @@ void EditorSettings::AddLastOpenedFile(const String & pathToFile)
 
 void EditorSettings::SetUIEditorVersion(const String& editorVersion)
 {
-	settings->SetString("editor.version", editorVersion);
-	Save();
+    settings->SetString("editor.version", editorVersion);
+    Save();
 }
 
 String EditorSettings::GetUIEditorVersion()
 {
-	return settings->GetString("editor.version");
+    return settings->GetString("editor.version");
 }
 
 void EditorSettings::SetPixelized(bool value)
 {
     settings->SetBool("editor.pixelized", value);
-	Save();
+    Save();
 }
 
 bool EditorSettings::IsPixelized() const
@@ -157,14 +157,13 @@ void EditorSettings::SetGrigColor(const Color& color)
 
 eBackgroundType EditorSettings::GetGridType() const
 {
-    bool value = settings->GetBool("editor.gridType");
+    int64 value = settings->GetInt64("editor.gridType");
     return static_cast<eBackgroundType>(value);
 }
 
 void EditorSettings::SetGridType(eBackgroundType type)
 {
-    bool value = static_cast<eBackgroundType>(type);
-    settings->SetBool("editor.gridType", value);
+    settings->SetInt64("editor.gridType", type);
     GridTypeChanged.Emit(type);
 }
 

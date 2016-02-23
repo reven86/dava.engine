@@ -40,14 +40,14 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const
     , root(SafeRetain(root_))
     , hash(hash_)
 {
-    for (const auto &action : propertyActions_)
+    for (const auto& action : propertyActions_)
     {
         AbstractProperty* prop = action.property;
         changedProperties.emplace_back(
-            action.node,
-            prop,
-            GetValueFromProperty(prop),
-            action.value
+        action.node,
+        prop,
+        GetValueFromProperty(prop),
+        action.value
         );
     }
     Init();
@@ -58,9 +58,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , root(SafeRetain(root_))
     , hash(hash_)
 {
-    changedProperties.emplace_back(
-        node, prop, newVal, GetValueFromProperty(prop)
-    );
+    changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), newVal);
     Init();
 }
 
@@ -68,9 +66,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     : QUndoCommand(parent)
     , root(SafeRetain(root_))
 {
-    changedProperties.emplace_back(
-        node, prop, VariantType(), GetValueFromProperty(prop)
-    );
+    changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), VariantType());
     Init();
 }
 

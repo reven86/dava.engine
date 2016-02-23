@@ -23,11 +23,11 @@ extern "C" {
 #endif
 
 extern WandExport size_t
-  AcquireWandId(void);
+AcquireWandId(void);
 
 extern WandExport void
-  DestroyWandIds(void),
-  RelinquishWandId(const size_t);
+DestroyWandIds(void),
+RelinquishWandId(const size_t);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

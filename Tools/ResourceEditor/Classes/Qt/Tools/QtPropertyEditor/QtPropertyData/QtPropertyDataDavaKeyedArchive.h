@@ -47,21 +47,21 @@ public:
     QtPropertyDataDavaKeyedArcive(const DAVA::FastName& name, DAVA::KeyedArchive* archive);
     virtual ~QtPropertyDataDavaKeyedArcive();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
-	virtual void* CreateLastCommand() const;
+    virtual const DAVA::MetaInfo* MetaInfo() const;
+    virtual void* CreateLastCommand() const;
 
     void FinishTreeCreation() override;
 
     DAVA::KeyedArchive* archive;
 
 protected:
-	mutable Command2 *lastCommand;
-	int lastAddedType;
+    mutable Command2* lastCommand;
+    int lastAddedType;
 
     QtConnections connections;
 
     virtual QVariant GetValueInternal() const;
-	virtual bool UpdateValueInternal();
+    virtual bool UpdateValueInternal();
 
 private:
     void ChildCreate(const DAVA::FastName& key, DAVA::VariantType* value);
@@ -69,35 +69,35 @@ private:
 private:
     void AddKeyedArchiveField(QToolButton* button);
     void RemKeyedArchiveField(QToolButton* button);
-    void NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value);
+    void NewKeyedArchiveFieldReady(const DAVA::String& key, const DAVA::VariantType& value);
     void RemKeyedArchiveField(const DAVA::FastName& key);
 };
 
 class KeyedArchiveItemWidget : public QWidget
 {
-	Q_OBJECT;
+    Q_OBJECT;
 
 public:
-	KeyedArchiveItemWidget(DAVA::KeyedArchive *arch, int defaultType = DAVA::VariantType::TYPE_STRING, QWidget *parent = NULL);
-	~KeyedArchiveItemWidget();
+    KeyedArchiveItemWidget(DAVA::KeyedArchive* arch, int defaultType = DAVA::VariantType::TYPE_STRING, QWidget* parent = NULL);
+    ~KeyedArchiveItemWidget();
 
 signals:
-	void ValueReady(const DAVA::String &key, const DAVA::VariantType &value);
+    void ValueReady(const DAVA::String& key, const DAVA::VariantType& value);
 
 protected:
-	DAVA::KeyedArchive *arch;
+    DAVA::KeyedArchive* arch;
 
-	QLineEdit *keyWidget;
-	QComboBox *valueWidget;
-	QComboBox *presetWidget;
-	QPushButton *defaultBtn;
+    QLineEdit* keyWidget;
+    QComboBox* valueWidget;
+    QComboBox* presetWidget;
+    QPushButton* defaultBtn;
 
-	virtual void showEvent(QShowEvent * event);
-	virtual void keyPressEvent(QKeyEvent *event);
+    virtual void showEvent(QShowEvent* event);
+    virtual void keyPressEvent(QKeyEvent* event);
 
 protected slots:
-	void OkKeyPressed();
-	void PreSetSelected(int index);
+    void OkKeyPressed();
+    void PreSetSelected(int index);
 };
 
 #endif // __QT_PROPERTY_DATA_DAVA_KEYEDARCHIVE_H__

@@ -33,27 +33,27 @@ using namespace DAVA;
 
 namespace
 {
-    uint32 sharedCounter{0};
-    const uint32 result{20000000};
-    const uint32 numThreads{5};
-    Spinlock spin;
+uint32 sharedCounter{ 0 };
+const uint32 result{ 20000000 };
+const uint32 numThreads{ 5 };
+Spinlock spin;
 
-    void ThreadFunc(DAVA::BaseObject* obj, void*, void*)
+void ThreadFunc(DAVA::BaseObject* obj, void*, void*)
+{
+    uint32 count{ 0 };
+    while (count < (result / numThreads))
     {
-        uint32 count{0};
-        while (count < (result / numThreads))
-        {
-            spin.Lock();
-            ++sharedCounter;
-            spin.Unlock();
-            ++count;
-        }
+        spin.Lock();
+        ++sharedCounter;
+        spin.Unlock();
+        ++count;
     }
 }
+}
 
-DAVA_TESTCLASS(SpinLockTest)
+DAVA_TESTCLASS (SpinLockTest)
 {
-    DAVA_TEST(TestFunc)
+    DAVA_TEST (TestFunc)
     {
         static_assert(result % numThreads == 0, "numThreads equal for each thread?");
 
@@ -76,4 +76,5 @@ DAVA_TESTCLASS(SpinLockTest)
 
         TEST_VERIFY(result == sharedCounter);
     }
-};
+}
+;

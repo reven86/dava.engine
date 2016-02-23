@@ -37,6 +37,9 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/QuickEd"        ${CMAKE_CURRENT_
 set_deploy_dir        ( UnitTests )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_BINARY_DIR}/UnitTests )
 
+set_deploy_dir        ( TestBed)
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/TestBed"     ${CMAKE_CURRENT_BINARY_DIR}/TestBed )
+
 set_deploy_dir        ( SceneViewer )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/SceneViewer"   ${CMAKE_CURRENT_BINARY_DIR}/SceneViewer )
 
@@ -51,3 +54,8 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheClient" ${CMAKE_CURREN
 
 set_deploy_dir        ( AssetCacheServer )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheServer" ${CMAKE_CURRENT_BINARY_DIR}/AssetCacheServer )
+
+if ( WIN32 )
+    set_deploy_dir    ( UWPRunner )
+    add_subdirectory  ( "${DAVA_ROOT_DIR}/Tools/UWPRunner"   ${CMAKE_CURRENT_BINARY_DIR}/UWPRunner )
+endif ()

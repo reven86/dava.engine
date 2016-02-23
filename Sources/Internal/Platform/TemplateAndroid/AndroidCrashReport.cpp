@@ -45,15 +45,13 @@
 
 namespace DAVA
 {
-
-
-char * AndroidCrashReport::teamcityBuildName  = nullptr;
-Vector<JniCrashReporter::CrashStep> AndroidCrashReport::crashSteps ;
-const char * AndroidCrashReport::teamcityBuildNamePrototype = "CrashApp::CrashedSignal";
-const char * AndroidCrashReport::teamcityBuildNamePrototypeEnd = "()";
-const char * AndroidCrashReport::teamcityBuildNamePrototypePlaceHolder = "FFFFFFFFFF";
+char* AndroidCrashReport::teamcityBuildName = nullptr;
+Vector<JniCrashReporter::CrashStep> AndroidCrashReport::crashSteps;
+const char* AndroidCrashReport::teamcityBuildNamePrototype = "CrashApp::CrashedSignal";
+const char* AndroidCrashReport::teamcityBuildNamePrototypeEnd = "()";
+const char* AndroidCrashReport::teamcityBuildNamePrototypePlaceHolder = "FFFFFFFFFF";
 char AndroidCrashReport::functionString[AndroidCrashReport::maxStackSize][AndroidCrashReport::functionStringSize];
-JniCrashReporter * AndroidCrashReport::crashReporter = nullptr;
+JniCrashReporter* AndroidCrashReport::crashReporter = nullptr;
 static int fatalSignals[] = {
     SIGABRT,
     SIGBUS,
@@ -63,11 +61,11 @@ static int fatalSignals[] = {
     SIGTRAP
 };
 //This function is needed to format string inside signal
-// unfortunatly "man signal" does not list sprintf as signal safe 
+// unfortunatly "man signal" does not list sprintf as signal safe
 //so it depends on particular implementation
-static char map[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+static char map[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-template<class T>
+template <class T>
 void ToHex(T integer, char* buffPtr, size_t buffSize, bool finishWithNullChar)
 {
     static_assert(std::is_integral<T>::value, "use only integral types");
@@ -96,8 +94,7 @@ void ToHex(T integer, char* buffPtr, size_t buffSize, bool finishWithNullChar)
     }
     *buffPtr-- = 'x';
     *buffPtr-- = '0';
-
-} 
+}
 
 static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
@@ -107,30 +104,29 @@ jclass JniCrashReporter::stringID;
 jmethodID JniCrashReporter::mid;
 JniCrashReporter::JniCrashReporter(JNIEnv* env)
 {
-    if(env == nullptr)
+    if (env == nullptr)
         env = JNI::GetEnv();
-    
+
     env->ExceptionClear();
     jclass tmpClassID = env->FindClass("com/dava/framework/JNICrashReporter");
     classID = (jclass)env->NewGlobalRef(tmpClassID);
-    
-   
-    jclass tmpStringID = env->FindClass( "java/lang/String");
+
+    jclass tmpStringID = env->FindClass("java/lang/String");
     stringID = (jclass)env->NewGlobalRef(tmpStringID);
-    mid = env->GetStaticMethodID( classID,"ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
-  
+    mid = env->GetStaticMethodID(classID, "ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
+
     env->DeleteLocalRef(tmpClassID);
     env->DeleteLocalRef(tmpStringID);
 }
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 {
-    JNIEnv *env = JNI::GetEnv();
-   
+    JNIEnv* env = JNI::GetEnv();
+
     jobjectArray jModuleArray = env->NewObjectArray(chashSteps.size(), stringID, 0);
     jobjectArray jFunctionArray = env->NewObjectArray(chashSteps.size(), stringID, 0);
     jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
-   
+
     int* fileLines = new int[chashSteps.size()];
     for (uint i = 0; i < chashSteps.size(); ++i)
     {
@@ -139,22 +135,20 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
         fileLines[i] = chashSteps[i].fileLine;
     }
     env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
-    env->CallStaticVoidMethod(classID,mid,jModuleArray,jFunctionArray,jFileLineArray);
-   
-    delete [] fileLines;
+    env->CallStaticVoidMethod(classID, mid, jModuleArray, jFunctionArray, jFileLineArray);
+
+    delete[] fileLines;
 }
 
-
-
-static struct sigaction *sa_old;
+static struct sigaction* sa_old;
 void AndroidCrashReport::Init(JNIEnv* env)
 {
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)
     crashReporter = new JniCrashReporter(env);
     //creating custom signal handler
     //this is legacy implementation and uses some asynch unsafe functions
-    BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
-    if(backtraceProvider != nullptr)
+    BacktraceInterface* backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+    if (backtraceProvider != nullptr)
     {
         s_sigstk.ss_size = 64 * 1024;
         s_sigstk.ss_sp = malloc(s_sigstk.ss_size);
@@ -164,16 +158,16 @@ void AndroidCrashReport::Init(JNIEnv* env)
         {
             LOGE("CUSTOMSIGNALS Could not initialize alternative signal stack");
         }
-        sa_old = (struct sigaction*)::malloc(sizeof(struct sigaction)*SIG_NUMBER_MAX);
+        sa_old = (struct sigaction*)::malloc(sizeof(struct sigaction) * SIG_NUMBER_MAX);
 
         for (int i = 0; i < fatalSignalsCount; i++)
         {
             struct sigaction sa;
             memset(&sa, 0, sizeof(sa));
-            sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
+            sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
             sigemptyset(&sa.sa_mask);
             sa.sa_sigaction = &SignalHandler;
-        
+
             if (sigaction(fatalSignals[i], &sa, &sa_old[fatalSignals[i]]) != 0)
             {
                 LOGE("CUSTOMSIGNALS Signal registration for failed:");
@@ -190,24 +184,22 @@ void AndroidCrashReport::Init(JNIEnv* env)
     //we pre-format the first step here to avoid doing it in signal
     //crashSteps.push_back(FormatTeamcityIdStep(0,));
 
-    size_t protoLen = strlen(teamcityBuildNamePrototype) 
-        +strlen(teamcityBuildNamePrototypeEnd)+  strlen(teamcityBuildNamePrototypePlaceHolder) ;
-    
+    size_t protoLen = strlen(teamcityBuildNamePrototype)
+    + strlen(teamcityBuildNamePrototypeEnd) + strlen(teamcityBuildNamePrototypePlaceHolder);
+
     teamcityBuildName = new char[protoLen];
-    strcpy(teamcityBuildName,teamcityBuildNamePrototype);
-    
+    strcpy(teamcityBuildName, teamcityBuildNamePrototype);
+
     size_t offset = strlen(teamcityBuildNamePrototype);
-    strcpy(teamcityBuildName+ offset
-        ,teamcityBuildNamePrototypePlaceHolder);
-    
-    
+    strcpy(teamcityBuildName + offset
+           ,
+           teamcityBuildNamePrototypePlaceHolder);
+
     offset += strlen(teamcityBuildNamePrototypePlaceHolder);
-    strcpy(teamcityBuildName+offset,teamcityBuildNamePrototypeEnd);
+    strcpy(teamcityBuildName + offset, teamcityBuildNamePrototypeEnd);
     
     
 #endif
-
-    
 }
 JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int32 addr)
 {
@@ -215,9 +207,8 @@ JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int32 addr)
 #ifdef TEAMCITY_BUILD_TYPE_ID
     buildId.module = TEAMCITY_BUILD_TYPE_ID;
 #endif
-    
-    
-    ToHex(addr,teamcityBuildName+strlen(teamcityBuildNamePrototype),strlen(teamcityBuildNamePrototypePlaceHolder),false);
+
+    ToHex(addr, teamcityBuildName + strlen(teamcityBuildNamePrototype), strlen(teamcityBuildNamePrototypePlaceHolder), false);
     buildId.function = teamcityBuildNamePrototype;
     buildId.fileLine = (addr);
     return buildId;
@@ -225,20 +216,21 @@ JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int32 addr)
 void AndroidCrashReport::OnStackFrame(pointer_size addr)
 {
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)
-    if(crashSteps.size() >= maxStackSize) return;
+    if (crashSteps.size() >= maxStackSize)
+        return;
 
-    const char * libName = nullptr;
+    const char* libName = nullptr;
     pointer_size relAddres = 0;
-    BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
-    backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
-#ifdef TEAMCITY_BUILD_TYPE_ID    
+    BacktraceInterface* backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+    backtraceProvider->GetMemoryMap()->Resolve(addr, &libName, &relAddres);
+#ifdef TEAMCITY_BUILD_TYPE_ID
     //no sence in adding crash step without crash id
-    if(crashSteps.size() == 0)
+    if (crashSteps.size() == 0)
     {
         crashSteps.push_back(FormatTeamcityIdStep(relAddres));
     }
 #endif
-    ToHex(relAddres,functionString[crashSteps.size()],functionStringSize,true);
+    ToHex(relAddres, functionString[crashSteps.size()], functionStringSize, true);
     JniCrashReporter::CrashStep step;
     step.module = libName;
     step.function = functionString[crashSteps.size()];
@@ -246,22 +238,23 @@ void AndroidCrashReport::OnStackFrame(pointer_size addr)
     crashSteps.push_back(step);
 #endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
 }
-void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
+void AndroidCrashReport::SignalHandler(int signal, struct siginfo* siginfo, void* sigcontext)
 {
-    if(signal<SIG_NUMBER_MAX)
+    if (signal < SIG_NUMBER_MAX)
     {
         sa_old[signal].sa_sigaction(signal, siginfo, sigcontext);
     }
     alarm(500);
-    //kill the app if it freezes
+//kill the app if it freezes
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)
-    BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
-    if(backtraceProvider != nullptr)
+    BacktraceInterface* backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+    if (backtraceProvider != nullptr)
     {
         //LOGE("FRAME_STACK backtracing %d %d",sigcontext,siginfo);
         //backtraceProvider->Backtrace(&AndroidCrashReport::onStackFrame,sigcontext,siginfo);
         backtraceProvider->Backtrace(&AndroidCrashReport::OnStackFrame
-                ,sigcontext,siginfo);
+                                     ,
+                                     sigcontext, siginfo);
     }
     else
     {
@@ -291,6 +284,5 @@ void AndroidCrashReport::ThrowExeption(const String& message)
     LOGE("Fabric handeling crashes - 4");
     crashReport.ThrowJavaExpetion(crashSteps);
 }
-
 
 } // namespace DAVA

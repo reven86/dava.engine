@@ -38,7 +38,7 @@ namespace
 const quint8 NUMBER_OF_SCREEN(0);
 }
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -58,7 +58,7 @@ void MainWindow::CreateGlWidget()
 {
     using namespace DAVA;
 
-    DavaGLWidget *glWidget = new DavaGLWidget(this);
+    DavaGLWidget* glWidget = new DavaGLWidget(this);
     ScopedPtr<UIScreen> davaUIScreen(new DAVA::UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(DAVA::Color(1.f, 0.f, 0.f, 1.f));
@@ -73,7 +73,7 @@ void MainWindow::CreateGlWidget()
 void MainWindow::OnGlWidgedResized(int width, int height, int dpr)
 {
     using namespace DAVA;
-    UIScreen *screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
+    UIScreen* screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
     if (screen == nullptr)
     {
         return;

@@ -38,15 +38,15 @@
 class CollisionLandscape : public CollisionBaseObject
 {
 public:
-	CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Landscape *landscape);
-	virtual ~CollisionLandscape();
+    CollisionLandscape(DAVA::Entity* entity, btCollisionWorld* word, DAVA::Landscape* landscape);
+    virtual ~CollisionLandscape();
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;
     CollisionBaseObject::ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) override;
 
 protected:
-	btHeightfieldTerrainShape* btTerrain;
-	DAVA::Vector<DAVA::float32> btHMap;
+    btHeightfieldTerrainShape* btTerrain;
+    DAVA::Vector<DAVA::float32> btHMap;
 };
 
 #endif // __SCENE_COLLISION_LANDSCAPE_H__

@@ -38,95 +38,93 @@
 #include "DAVAEngine.h"
 class SceneEditor2;
 
-class SelectPathWidgetBase: public QLineEdit
+class SelectPathWidgetBase : public QLineEdit
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit SelectPathWidgetBase( QWidget* parent = 0, bool checkForProjectPath = false,DAVA::String openDialoDefualtPath = "", DAVA::String relativPath = "",
-								  DAVA::String openFileDialogTitle = "Open File", DAVA::String fileFormatDescriotion = "*.*");
-	
-	virtual ~SelectPathWidgetBase();
-	
-	void setText(const DAVA::String &);
+    explicit SelectPathWidgetBase(QWidget* parent = 0, bool checkForProjectPath = false, DAVA::String openDialoDefualtPath = "", DAVA::String relativPath = "",
+                                  DAVA::String openFileDialogTitle = "Open File", DAVA::String fileFormatDescriotion = "*.*");
 
-	DAVA::String getText();
+    virtual ~SelectPathWidgetBase();
 
-	virtual void EraseWidget();
+    void setText(const DAVA::String&);
 
-	void SetAllowedFormatsList(const DAVA::List<DAVA::String>& _allowedFormatsList)
-	{
-		allowedFormatsList = _allowedFormatsList;
-	}
-    
+    DAVA::String getText();
+
+    virtual void EraseWidget();
+
+    void SetAllowedFormatsList(const DAVA::List<DAVA::String>& _allowedFormatsList)
+    {
+        allowedFormatsList = _allowedFormatsList;
+    }
+
     bool IsOpenButtonVisible() const;
-    
+
     void SetOpenButtonVisible(bool value);
-    
+
     bool IsClearButtonVisible() const;
-    
+
     void SetClearButtonVisible(bool value);
-    
+
     DAVA::String GetOpenDialogDefaultPath() const;
-    
+
     void SetOpenDialogDefaultPath(const DAVA::FilePath& path);
-    
+
     DAVA::String GetFileFormatFilter() const;
-    
+
     void SetFileFormatFilter(const DAVA::String& filter);
-	
+
 public slots:
 
-	void setText(const QString&);
-		
-	void acceptEditing();
+    void setText(const QString&);
+
+    void acceptEditing();
 
     void setVisible(bool);
-    
+
 signals:
-	
-	void PathSelected(DAVA::String selectedFile);
+
+    void PathSelected(DAVA::String selectedFile);
 
 protected:
+    void resizeEvent(QResizeEvent*);
 
-	void resizeEvent(QResizeEvent *);
-	
-	virtual void Init(DAVA::String& _openDialogDefualtPath, DAVA::String& _relativPath,DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion);
-	
-	virtual void HandlePathSelected(DAVA::String name);
-		
-	DAVA::String ConvertToRelativPath(const DAVA::String& path);
-	
-	QToolButton* CreateToolButton(const DAVA::String& iconPath);
+    virtual void Init(DAVA::String& _openDialogDefualtPath, DAVA::String& _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion);
 
-	void dragEnterEvent(QDragEnterEvent* event);
-	void dragMoveEvent(QDragMoveEvent* event);
-	void dropEvent(QDropEvent * event);
-	
-	DAVA::FilePath			relativePath;
-	
-	DAVA::String			openDialogDefaultPath;
-	
-	DAVA::String			fileFormatFilter;// like "Scene File (*.sc2)"
+    virtual void HandlePathSelected(DAVA::String name);
 
-	DAVA::List<DAVA::String> allowedFormatsList;
-	
-	DAVA::String			openFileDialogTitle;
-		
-	QMimeData				mimeData;
-    
-    bool                    checkForProjectPath;
+    DAVA::String ConvertToRelativPath(const DAVA::String& path);
+
+    QToolButton* CreateToolButton(const DAVA::String& iconPath);
+
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
+    void dropEvent(QDropEvent* event);
+
+    DAVA::FilePath relativePath;
+
+    DAVA::String openDialogDefaultPath;
+
+    DAVA::String fileFormatFilter; // like "Scene File (*.sc2)"
+
+    DAVA::List<DAVA::String> allowedFormatsList;
+
+    DAVA::String openFileDialogTitle;
+
+    QMimeData mimeData;
+
+    bool checkForProjectPath;
 
 protected slots:
 
-	void EraseClicked();
+    void EraseClicked();
 
-	void OpenClicked();
-	
+    void OpenClicked();
+
 private:
-
-	QToolButton *clearButton;
-	QToolButton *openButton;
+    QToolButton* clearButton;
+    QToolButton* openButton;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__SELECTPATHWIDGET__) */

@@ -39,7 +39,7 @@ class LabeledSlider : public QWidget
     Q_OBJECT
 
 public:
-    LabeledSlider(QWidget *parent = 0);
+    LabeledSlider(QWidget* parent = 0);
     ~LabeledSlider();
 
     void setMinimum(int);
@@ -66,10 +66,10 @@ protected:
     void InitUI();
 
 private:
-    QSlider *slider;
-    QLabel * minText;
-    QLabel * maxText;
-    QLabel * valueText;
+    QSlider* slider;
+    QLabel* minText;
+    QLabel* maxText;
+    QLabel* valueText;
 };
 
 #endif // __LABELED_SLIDER_H__

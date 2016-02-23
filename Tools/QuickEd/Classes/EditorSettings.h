@@ -32,30 +32,33 @@
 
 #include "DAVAEngine.h"
 
-enum eBackgroundType : bool;
-
-class EditorSettings: public DAVA::Singleton<EditorSettings>
+enum eBackgroundType : DAVA::int64
 {
+    BackgroundTexture,
+    BackgroundColor
+};
 
-public: 
+class EditorSettings : public DAVA::Singleton<EditorSettings>
+{
+public:
     enum eDefaultSettings
     {
         RECENT_FILES_COUNT = 5,
     };
-	
+
 public:
-	EditorSettings();
+    EditorSettings();
     virtual ~EditorSettings();
 
-    DAVA::KeyedArchive *GetSettings();
+    DAVA::KeyedArchive* GetSettings();
     void Save();
-	
-    void SetProjectPath(const DAVA::String &projectPath);
+
+    void SetProjectPath(const DAVA::String& projectPath);
     DAVA::String GetProjectPath();
-	
+
     DAVA::int32 GetLastOpenedCount();
     DAVA::String GetLastOpenedFile(DAVA::int32 index);
-    void AddLastOpenedFile(const DAVA::String & pathToFile);
+    void AddLastOpenedFile(const DAVA::String& pathToFile);
 
     void SetUIEditorVersion(const DAVA::String& editorVersion);
     DAVA::String GetUIEditorVersion();
@@ -84,7 +87,7 @@ protected:
 private:
     using HashType = size_t;
 
-    DAVA::KeyedArchive *settings;
+    DAVA::KeyedArchive* settings;
 };
 
 #endif //UIEditor_EditorSettings_h

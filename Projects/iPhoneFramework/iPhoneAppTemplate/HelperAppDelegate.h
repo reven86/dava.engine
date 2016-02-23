@@ -31,10 +31,8 @@
 
 #include "UIScreenManager.h"
 
-@interface HelperAppDelegate : NSObject <UIApplicationDelegate>
+@interface HelperAppDelegate : NSObject<UIApplicationDelegate>
 {
-	
 }
-
 
 @end

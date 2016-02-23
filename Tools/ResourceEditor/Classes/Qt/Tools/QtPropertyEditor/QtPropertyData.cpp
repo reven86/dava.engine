@@ -78,12 +78,12 @@ QtPropertyData::QtPropertyData(const DAVA::FastName& name_, const QVariant& valu
 
 QtPropertyData::~QtPropertyData()
 {
-	DVASSERT(!updatingValue && "Property can't be removed during it update process");
-	childrenData.clear();
+    DVASSERT(!updatingValue && "Property can't be removed during it update process");
+    childrenData.clear();
     mergedData.clear();
 
     for (int i = 0; i < optionalButtons.size(); i++)
-	{
+    {
         optionalButtons.at(i)->deleteLater();
     }
 
@@ -92,18 +92,18 @@ QtPropertyData::~QtPropertyData()
 
 QVariant QtPropertyData::data(int role) const
 {
-	QVariant ret;
+    QVariant ret;
 
-	switch(role)
-	{
-	case Qt::EditRole:
-	case Qt::DisplayRole:
-		ret = GetAlias();
-		if(!ret.isValid())
-		{
-			ret = GetValue();
-		}
-		break;
+    switch (role)
+    {
+    case Qt::EditRole:
+    case Qt::DisplayRole:
+        ret = GetAlias();
+        if (!ret.isValid())
+        {
+            ret = GetValue();
+        }
+        break;
     case Qt::ToolTipRole:
         ret = GetToolTip();
         if (!ret.isValid())
@@ -111,59 +111,59 @@ QVariant QtPropertyData::data(int role) const
             ret = data(Qt::DisplayRole);
         }
         break;
-	case Qt::CheckStateRole:
-		if(GetFlags() & Qt::ItemIsUserCheckable)
-		{
+    case Qt::CheckStateRole:
+        if (GetFlags() & Qt::ItemIsUserCheckable)
+        {
             ret = GetValue();
-            if ( !ret.isValid() )
+            if (!ret.isValid())
             {
                 ret = Qt::PartiallyChecked;
             }
             else
             {
-			    ret = GetValue().toBool() ? Qt::Checked : Qt::Unchecked;
+                ret = GetValue().toBool() ? Qt::Checked : Qt::Unchecked;
             }
-		}
-		break;
-	case Qt::FontRole:
-	case Qt::DecorationRole:
-	case Qt::BackgroundRole:
-	case Qt::ForegroundRole:
-		ret = style.value(role);
-		break;
-	default:
-		break;
-	}
+        }
+        break;
+    case Qt::FontRole:
+    case Qt::DecorationRole:
+    case Qt::BackgroundRole:
+    case Qt::ForegroundRole:
+        ret = style.value(role);
+        break;
+    default:
+        break;
+    }
 
-	return ret;
+    return ret;
 }
 
-bool QtPropertyData::setData(const QVariant & value, int role)
+bool QtPropertyData::setData(const QVariant& value, int role)
 {
-	bool ret = false;
+    bool ret = false;
 
-	switch(role)
-	{
-	case Qt::EditRole:
-		SetValue(value, QtPropertyData::VALUE_EDITED);
-		ret = true;
-		break;
-	case Qt::CheckStateRole:
-		(value.toInt() == Qt::Unchecked) ? SetValue(false, QtPropertyData::VALUE_EDITED) : SetValue(true, QtPropertyData::VALUE_EDITED);
-		ret = true;
-		break;
-	case Qt::FontRole:
-	case Qt::DecorationRole:
-	case Qt::BackgroundRole:
-	case Qt::ForegroundRole:
-		style.insert(role, value);
-		ret = true;
-		break;
-	default:
-		break;
-	}
+    switch (role)
+    {
+    case Qt::EditRole:
+        SetValue(value, QtPropertyData::VALUE_EDITED);
+        ret = true;
+        break;
+    case Qt::CheckStateRole:
+        (value.toInt() == Qt::Unchecked) ? SetValue(false, QtPropertyData::VALUE_EDITED) : SetValue(true, QtPropertyData::VALUE_EDITED);
+        ret = true;
+        break;
+    case Qt::FontRole:
+    case Qt::DecorationRole:
+    case Qt::BackgroundRole:
+    case Qt::ForegroundRole:
+        style.insert(role, value);
+        ret = true;
+        break;
+    default:
+        break;
+    }
 
-	return ret;
+    return ret;
 }
 
 void QtPropertyData::BuildCurrentValue()
@@ -182,7 +182,7 @@ void QtPropertyData::BuildCurrentValue()
     isValuesMerged = isAllEqual;
 
     // Update Qt MVC properties
-    if ( !isAllEqual )
+    if (!isAllEqual)
     {
         auto it = style.find(Qt::DecorationRole);
         if (it != style.end())
@@ -190,12 +190,11 @@ void QtPropertyData::BuildCurrentValue()
             *it = QVariant();
         }
     }
-
 }
 
 QVariant QtPropertyData::GetValue() const
 {
-    QtPropertyData *self = const_cast<QtPropertyData*>(this);
+    QtPropertyData* self = const_cast<QtPropertyData*>(this);
 
     bool hasValue = curValue.isValid() || !curValue.isNull();
 
@@ -258,55 +257,55 @@ void QtPropertyData::SetValue(const QVariant& value, ValueChangeReason reason)
         setValueFunctor(this);
     }
 
-	// and get what was really set
-	// it can differ from input "value"
-	// (example: we are trying to set 10, but accepted range is 0-5
-	//   value is 10
-	//   curValue becomes 0-5)
+    // and get what was really set
+    // it can differ from input "value"
+    // (example: we are trying to set 10, but accepted range is 0-5
+    //   value is 10
+    //   curValue becomes 0-5)
     UpdateValue();
-	curValue = GetValueInternal();
+    curValue = GetValueInternal();
 
-	if(curValue != oldValue)
-	{
-		updatingValue = true;
+    if (curValue != oldValue)
+    {
+        updatingValue = true;
 
-		UpdateDown();
-		UpdateUp();
+        UpdateDown();
+        UpdateUp();
 
-		EmitDataChanged(reason);
+        EmitDataChanged(reason);
 
-		updatingValue = false;
-	}
+        updatingValue = false;
+    }
 }
 
 bool QtPropertyData::UpdateValue(bool force)
 {
-	bool ret = false;
+    bool ret = false;
 
-	if(!updatingValue)
-	{
-		updatingValue = true;
+    if (!updatingValue)
+    {
+        updatingValue = true;
 
-		if( UpdateValueInternal() || force )
-		{
-			EmitDataChanged(VALUE_SOURCE_CHANGED);
-			ret = true;
-		}
+        if (UpdateValueInternal() || force)
+        {
+            EmitDataChanged(VALUE_SOURCE_CHANGED);
+            ret = true;
+        }
 
-		updatingValue = false;
-	}
+        updatingValue = false;
+    }
 
-	return ret;
+    return ret;
 }
 
 QVariant QtPropertyData::GetAlias() const
 {
-	// this will force update internalValue if 
-	// it source was changed 
-	GetValue();
+    // this will force update internalValue if
+    // it source was changed
+    GetValue();
     const QVariant alias = IsMergedDataEqual() ? GetValueAlias() : QVariant();
 
-	return alias;
+    return alias;
 }
 
 const DAVA::FastName& QtPropertyData::GetName() const
@@ -319,107 +318,107 @@ QString QtPropertyData::GetPath() const
     QString path = name.c_str();
 
     // search top level parent
-	const QtPropertyData *parent = this;
-	while(NULL != parent->Parent())
-	{
-		parent = parent->Parent();
+    const QtPropertyData* parent = this;
+    while (NULL != parent->Parent())
+    {
+        parent = parent->Parent();
         path = QString(parent->name.c_str()) + "/" + path;
     }
 
-	return path;
+    return path;
 }
 
-void QtPropertyData::SetColorButtonIcon(const QIcon &icon)
+void QtPropertyData::SetColorButtonIcon(const QIcon& icon)
 {
-    auto it = std::find_if(optionalButtons.begin(), optionalButtons.end(), [](const QtPropertyToolButton* btn){
+    auto it = std::find_if(optionalButtons.begin(), optionalButtons.end(), [](const QtPropertyToolButton* btn) {
         return btn->objectName() == "colorButton";
     });
-    if(it != optionalButtons.end())
+    if (it != optionalButtons.end())
     {
         (*it)->setIcon(icon);
     }
 }
 
-void QtPropertyData::SetIcon(const QIcon &icon)
+void QtPropertyData::SetIcon(const QIcon& icon)
 {
     setData(QVariant(icon), Qt::DecorationRole);
 }
 
 QIcon QtPropertyData::GetIcon() const
 {
-	return qvariant_cast<QIcon>(data(Qt::DecorationRole));
+    return qvariant_cast<QIcon>(data(Qt::DecorationRole));
 }
 
 QFont QtPropertyData::GetFont() const
 {
-	return qvariant_cast<QFont>(data(Qt::FontRole));
+    return qvariant_cast<QFont>(data(Qt::FontRole));
 }
 
-void QtPropertyData::SetFont(const QFont &font)
+void QtPropertyData::SetFont(const QFont& font)
 {
-	setData(QVariant(font), Qt::FontRole);
+    setData(QVariant(font), Qt::FontRole);
 }
 
 QBrush QtPropertyData::GetBackground() const
 {
-	return qvariant_cast<QBrush>(data(Qt::BackgroundRole));
+    return qvariant_cast<QBrush>(data(Qt::BackgroundRole));
 }
 
-void QtPropertyData::SetBackground(const QBrush &brush)
+void QtPropertyData::SetBackground(const QBrush& brush)
 {
-	setData(QVariant(brush), Qt::BackgroundRole);
+    setData(QVariant(brush), Qt::BackgroundRole);
 }
 
 QBrush QtPropertyData::GetForeground() const
 {
-	return qvariant_cast<QBrush>(data(Qt::ForegroundRole));
+    return qvariant_cast<QBrush>(data(Qt::ForegroundRole));
 }
 
-void QtPropertyData::SetForeground(const QBrush &brush)
+void QtPropertyData::SetForeground(const QBrush& brush)
 {
-	setData(QVariant(brush), Qt::ForegroundRole);
+    setData(QVariant(brush), Qt::ForegroundRole);
 }
 
 void QtPropertyData::ResetStyle()
 {
-	style.remove(Qt::ForegroundRole);
-	style.remove(Qt::BackgroundRole);
-	style.remove(Qt::FontRole);
+    style.remove(Qt::ForegroundRole);
+    style.remove(Qt::BackgroundRole);
+    style.remove(Qt::FontRole);
 }
 
 Qt::ItemFlags QtPropertyData::GetFlags() const
 {
-	return curFlags;
+    return curFlags;
 }
 
 void QtPropertyData::SetFlags(Qt::ItemFlags flags)
 {
-	curFlags = flags;
+    curFlags = flags;
 }
 
 void QtPropertyData::SetCheckable(bool checkable)
 {
-	(checkable) ? (curFlags |= Qt::ItemIsUserCheckable) : (curFlags &= ~Qt::ItemIsUserCheckable);
+    (checkable) ? (curFlags |= Qt::ItemIsUserCheckable) : (curFlags &= ~Qt::ItemIsUserCheckable);
 }
 
 bool QtPropertyData::IsCheckable() const
 {
-	return (curFlags & Qt::ItemIsUserCheckable);
+    return (curFlags & Qt::ItemIsUserCheckable);
 }
 
 void QtPropertyData::SetChecked(bool checked)
 {
-	setData(QVariant(checked), Qt::CheckStateRole);
+    setData(QVariant(checked), Qt::CheckStateRole);
 }
 
 bool QtPropertyData::IsChecked() const
 {
-	return data(Qt::CheckStateRole).toBool();
+    return data(Qt::CheckStateRole).toBool();
 }
 
 void QtPropertyData::SetEditable(bool editable)
 {
-	(editable) ? (curFlags |= Qt::ItemIsEditable) : (curFlags &= ~Qt::ItemIsEditable);
+    (editable) ? (curFlags |= Qt::ItemIsEditable) : (curFlags &= ~Qt::ItemIsEditable);
     UpdateOWState();
 
     EmitDataChanged(STATE_CHANGED);
@@ -427,12 +426,12 @@ void QtPropertyData::SetEditable(bool editable)
 
 bool QtPropertyData::IsEditable() const
 {
-	return (curFlags & Qt::ItemIsEditable);
+    return (curFlags & Qt::ItemIsEditable);
 }
 
 void QtPropertyData::SetEnabled(bool enabled)
 {
-	(enabled) ? (curFlags |= Qt::ItemIsEnabled) : (curFlags &= ~Qt::ItemIsEnabled);
+    (enabled) ? (curFlags |= Qt::ItemIsEnabled) : (curFlags &= ~Qt::ItemIsEnabled);
     UpdateOWState();
 
     EmitDataChanged(STATE_CHANGED);
@@ -443,13 +442,13 @@ void QtPropertyData::UpdateOWState()
     bool isItemEditable = IsEditable();
     bool isItemEnabled = IsEnabled();
 
-	for(int i = 0; i < optionalButtons.size(); ++i)
-	{
-		optionalButtons[i]->UpdateState(isItemEnabled, isItemEditable);
-	}
+    for (int i = 0; i < optionalButtons.size(); ++i)
+    {
+        optionalButtons[i]->UpdateState(isItemEnabled, isItemEditable);
+    }
 }
 
-void QtPropertyData::SetUserData(UserData *data)
+void QtPropertyData::SetUserData(UserData* data)
 {
     userData.reset(data);
     EmitDataChanged(VALUE_SET);
@@ -477,19 +476,19 @@ const DAVA::MetaInfo* QtPropertyData::MetaInfo() const
 
 bool QtPropertyData::IsEnabled() const
 {
-	return (curFlags & Qt::ItemIsEnabled);
+    return (curFlags & Qt::ItemIsEnabled);
 }
 
 QtPropertyModel* QtPropertyData::GetModel() const
 {
-	return model;
+    return model;
 }
 
 void QtPropertyData::Merge(std::unique_ptr<QtPropertyData>&& data)
 {
     DVASSERT(data);
 
-    if ( !data->IsMergable() )
+    if (!data->IsMergable())
     {
         data.reset();
         return;
@@ -565,36 +564,36 @@ QtPropertyDataValidator* QtPropertyData::GetValidator() const
     return validator.get();
 }
 
-QWidget* QtPropertyData::CreateEditor(QWidget *parent, const QStyleOptionViewItem& option) const
-{ 
-	return CreateEditorInternal(parent, option);
+QWidget* QtPropertyData::CreateEditor(QWidget* parent, const QStyleOptionViewItem& option) const
+{
+    return CreateEditorInternal(parent, option);
 }
 
-bool QtPropertyData::EditorDone(QWidget *editor)
+bool QtPropertyData::EditorDone(QWidget* editor)
 {
     return EditorDoneInternal(editor);
 }
 
-bool QtPropertyData::SetEditorData(QWidget *editor)
+bool QtPropertyData::SetEditorData(QWidget* editor)
 {
     return SetEditorDataInternal(editor);
 }
 
 void QtPropertyData::EmitDataChanged(ValueChangeReason reason)
 {
-	if(NULL != model)
-	{
-		model->DataChanged(this, reason);
-	}
+    if (NULL != model)
+    {
+        model->DataChanged(this, reason);
+    }
 }
 
 void QtPropertyData::UpdateUp()
 {
-	if(NULL != parent)
-	{
-		parent->UpdateValue();
-		parent->UpdateUp();
-	}
+    if (NULL != parent)
+    {
+        parent->UpdateValue();
+        parent->UpdateUp();
+    }
 }
 
 void QtPropertyData::UpdateDown()
@@ -609,7 +608,7 @@ void QtPropertyData::UpdateDown()
 
 QtPropertyData* QtPropertyData::Parent() const
 {
-	return parent;
+    return parent;
 }
 
 void QtPropertyData::ChildAdd(std::unique_ptr<QtPropertyData>&& data)
@@ -677,7 +676,7 @@ void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData>&& data, int pos
 
 int QtPropertyData::ChildCount() const
 {
-	return childrenData.size();
+    return childrenData.size();
 }
 
 QtPropertyData* QtPropertyData::ChildGet(int i) const
@@ -754,37 +753,37 @@ void QtPropertyData::FinishTreeCreation()
 
 int QtPropertyData::GetButtonsCount() const
 {
-	return optionalButtons.size();
+    return optionalButtons.size();
 }
 
 QtPropertyToolButton* QtPropertyData::GetButton(int index)
 {
-	QtPropertyToolButton *ret = NULL;
+    QtPropertyToolButton* ret = NULL;
 
-	if(index >= 0 && index < optionalButtons.size())
-	{
-		ret = optionalButtons.at(index);
-	}
+    if (index >= 0 && index < optionalButtons.size())
+    {
+        ret = optionalButtons.at(index);
+    }
 
-	return ret;
+    return ret;
 }
 
 QtPropertyToolButton* QtPropertyData::AddButton(QtPropertyToolButton::StateVariant stateVariant /* = QtPropertyToolButton::ACTIVE_ALWAYS */)
 {
-	QtPropertyToolButton *button = new QtPropertyToolButton(this, optionalButtonsViewport);
+    QtPropertyToolButton* button = new QtPropertyToolButton(this, optionalButtonsViewport);
 
-	optionalButtons.append(button);
+    optionalButtons.append(button);
     button->stateVariant = stateVariant;
-	button->setGeometry(0, 0, 18, 18);
-	button->setAttribute(Qt::WA_NoSystemBackground, true);
-	button->hide();
+    button->setGeometry(0, 0, 18, 18);
+    button->setAttribute(Qt::WA_NoSystemBackground, true);
+    button->hide();
 
     UpdateOWState();
 
-	return button;
+    return button;
 }
 
-void QtPropertyData::RemButton(QtPropertyToolButton *button)
+void QtPropertyData::RemButton(QtPropertyToolButton* button)
 {
     QVector<QtPropertyToolButton*>::iterator iter = std::find(optionalButtons.begin(), optionalButtons.end(), button);
     if (iter != optionalButtons.end())
@@ -796,20 +795,20 @@ void QtPropertyData::RemButton(QtPropertyToolButton *button)
 
 QWidget* QtPropertyData::GetOWViewport() const
 {
-	return optionalButtonsViewport;
+    return optionalButtonsViewport;
 }
 
-void QtPropertyData::SetOWViewport(QWidget *viewport)
- {
-	optionalButtonsViewport = viewport;
+void QtPropertyData::SetOWViewport(QWidget* viewport)
+{
+    optionalButtonsViewport = viewport;
 
-	for(int i = 0; i < optionalButtons.size(); ++i)
-	{
-		if(NULL != optionalButtons[i])
-		{
-			optionalButtons[i]->setParent(viewport);
-		}
-	}
+    for (int i = 0; i < optionalButtons.size(); ++i)
+    {
+        if (NULL != optionalButtons[i])
+        {
+            optionalButtons[i]->setParent(viewport);
+        }
+    }
 
     for (size_t i = 0; i < childrenData.size(); i++)
     {
@@ -819,31 +818,31 @@ void QtPropertyData::SetOWViewport(QWidget *viewport)
 
 void* QtPropertyData::CreateLastCommand() const
 {
-	// can be re-implemented by sub-class
+    // can be re-implemented by sub-class
 
-	return NULL;
+    return NULL;
 }
 
 QVariant QtPropertyData::GetValueInternal() const
 {
-	// should be re-implemented by sub-class
+    // should be re-implemented by sub-class
 
-	return curValue;
+    return curValue;
 }
 
 bool QtPropertyData::UpdateValueInternal()
 {
-	return false;
+    return false;
 }
 
 QVariant QtPropertyData::GetValueAlias() const
 {
-	// should be re-implemented by sub-class
+    // should be re-implemented by sub-class
 
-	return QVariant();
+    return QVariant();
 }
 
-void QtPropertyData::SetTempValue(const QVariant &value)
+void QtPropertyData::SetTempValue(const QVariant& value)
 {
     auto setValueFunctor = [](QtPropertyData* data, QVariant value) {
         QtPropertyDataValidator* validator = data->GetValidator();
@@ -861,11 +860,11 @@ void QtPropertyData::SetTempValue(const QVariant &value)
     setValueFunctor(this, value);
 }
 
-void QtPropertyData::SetValueInternal(const QVariant &value)
+void QtPropertyData::SetValueInternal(const QVariant& value)
 {
-	// should be re-implemented by sub-class
+    // should be re-implemented by sub-class
 
-	curValue = value;
+    curValue = value;
 }
 
 void QtPropertyData::SetTempValueInternal(QVariant const& value)
@@ -874,23 +873,23 @@ void QtPropertyData::SetTempValueInternal(QVariant const& value)
     Q_UNUSED(value);
 }
 
-QWidget* QtPropertyData::CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const
+QWidget* QtPropertyData::CreateEditorInternal(QWidget* parent, const QStyleOptionViewItem& option) const
 {
-	// should be re-implemented by sub-class
+    // should be re-implemented by sub-class
 
-	return NULL;
+    return NULL;
 }
 
-bool QtPropertyData::EditorDoneInternal(QWidget *editor)
+bool QtPropertyData::EditorDoneInternal(QWidget* editor)
 {
-	// should be re-implemented by sub-class
-	return false;
+    // should be re-implemented by sub-class
+    return false;
 }
 
-bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
+bool QtPropertyData::SetEditorDataInternal(QWidget* editor)
 {
-	// should be re-implemented by sub-class
-	return false;
+    // should be re-implemented by sub-class
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -899,39 +898,41 @@ bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-QtPropertyToolButton::QtPropertyToolButton(QtPropertyData* data, QWidget * parent /* = 0 */)
-	: QToolButton(parent)
-	, eventsPassThrought(false)
-	, overlayed(false)
-	, propertyData(data)
-	, stateVariant(ACTIVE_ALWAYS)
-{}
+QtPropertyToolButton::QtPropertyToolButton(QtPropertyData* data, QWidget* parent /* = 0 */)
+    : QToolButton(parent)
+    , eventsPassThrought(false)
+    , overlayed(false)
+    , propertyData(data)
+    , stateVariant(ACTIVE_ALWAYS)
+{
+}
 
 QtPropertyToolButton::~QtPropertyToolButton()
-{}
+{
+}
 
 QtPropertyData* QtPropertyToolButton::GetPropertyData() const
 {
-	return propertyData;
+    return propertyData;
 }
 
-bool QtPropertyToolButton::event(QEvent * event)
+bool QtPropertyToolButton::event(QEvent* event)
 {
-	int type = event->type();
+    int type = event->type();
 
-	if(eventsPassThrought)
-	{
-		if(type != QEvent::Enter &&
-			type != QEvent::Leave &&
-			type != QEvent::MouseMove)
-		{
-			QToolButton::event(event);
-		}
+    if (eventsPassThrought)
+    {
+        if (type != QEvent::Enter &&
+            type != QEvent::Leave &&
+            type != QEvent::MouseMove)
+        {
+            QToolButton::event(event);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	return QToolButton::event(event);
+    return QToolButton::event(event);
 }
 
 QtPropertyToolButton::StateVariant QtPropertyToolButton::GetStateVariant() const
@@ -947,25 +948,25 @@ void QtPropertyToolButton::SetStateVariant(StateVariant state)
 void QtPropertyToolButton::UpdateState(bool itemIsEnabled, bool itemIsEditable)
 {
     bool enabled = false;
-    switch(stateVariant)
+    switch (stateVariant)
     {
-        case QtPropertyToolButton::ACTIVE_ALWAYS:
-            enabled = true;
-            break;
-        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_ENABLED:
-            enabled = itemIsEnabled;
-            break;
-        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE:
-            enabled = itemIsEditable;
-            break;
-        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_OR_ENABLED:
-            enabled = (itemIsEnabled || itemIsEditable);
-            break;
-        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED:
-            enabled = (itemIsEnabled && itemIsEditable);
-            break;
-        default:
-            break;
+    case QtPropertyToolButton::ACTIVE_ALWAYS:
+        enabled = true;
+        break;
+    case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_ENABLED:
+        enabled = itemIsEnabled;
+        break;
+    case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE:
+        enabled = itemIsEditable;
+        break;
+    case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_OR_ENABLED:
+        enabled = (itemIsEnabled || itemIsEditable);
+        break;
+    case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED:
+        enabled = (itemIsEnabled && itemIsEditable);
+        break;
+    default:
+        break;
     }
 
     setEnabled(enabled);

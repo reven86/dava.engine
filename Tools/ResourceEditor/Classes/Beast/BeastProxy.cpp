@@ -29,8 +29,7 @@
 
 #include "BeastProxy.h"
 
-BeastManager * BeastProxy::CreateManager()
+BeastManager* BeastProxy::CreateManager()
 {
-	return 0;
+    return 0;
 }
-

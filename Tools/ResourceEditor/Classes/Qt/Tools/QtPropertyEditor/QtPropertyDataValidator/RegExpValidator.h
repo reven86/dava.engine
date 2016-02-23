@@ -36,20 +36,16 @@
 class RegExpValidator : public QtPropertyDataValidator
 {
 public:
-    
     RegExpValidator(const QString& value);
-    
+
     QString GetRegularExpression() const;
-    
+
     void SetRegularExpression(const QString& value);
 
-    
 protected:
-
-    virtual bool ValidateInternal(const QVariant &v);
+    virtual bool ValidateInternal(const QVariant& v);
 
 private:
-    
     QRegExpValidator innerValidator;
 };
 

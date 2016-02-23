@@ -43,13 +43,13 @@ public:
     virtual void Redo() override;
     virtual DAVA::Entity* GetEntity() const override;
 
-    DAVA::RenderBatch * GetRenderBatch() const;
-    
+    DAVA::RenderBatch* GetRenderBatch() const;
+
 protected:
     void CreateTextureFiles();
     void DeleteTextureFiles();
 
-    static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
+    static bool IsHorisontalMesh(const DAVA::AABBox3& bbox);
 
 private:
     CreatePlaneLODCommandHelper::RequestPointer request;

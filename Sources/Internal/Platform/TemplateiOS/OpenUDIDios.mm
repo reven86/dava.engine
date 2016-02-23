@@ -36,20 +36,20 @@
 
 @implementation OpenUDIDiOS
 
-- (void) setDict:(id)dict forPasteboard:(id)pboard
+- (void)setDict:(id)dict forPasteboard:(id)pboard
 {
     [pboard setData:[NSKeyedArchiver archivedDataWithRootObject:dict] forPasteboardType:kOpenUDIDDomain];
 }
 
-- (id) getDataForPasteboard:(id)pboard
+- (id)getDataForPasteboard:(id)pboard
 {
     return [pboard dataForPasteboardType:kOpenUDIDDomain];
 }
 
-- (id) getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent
+- (id)getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent
 {
     UIPasteboard* slotPB = [UIPasteboard pasteboardWithName:name create:create];
-    if(persistent)
+    if (persistent)
     {
         [slotPB setPersistent:YES];
     }

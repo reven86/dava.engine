@@ -29,13 +29,12 @@
 
 #include "ScenePathValidator.h"
 
-
 ScenePathValidator::ScenePathValidator(const QStringList& value)
     : PathValidator(value)
 {
 }
 
-bool ScenePathValidator::ValidateInternal(const QVariant &v)
+bool ScenePathValidator::ValidateInternal(const QVariant& v)
 {
     bool res = RegExpValidator::ValidateInternal(v);
 

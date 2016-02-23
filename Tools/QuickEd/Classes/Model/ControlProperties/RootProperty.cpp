@@ -44,14 +44,14 @@
 #include "PrototypeNameProperty.h"
 #include "ClassProperty.h"
 #include "CustomClassProperty.h"
+#include "VisibleValueProperty.h"
 
-#include "../PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
 
 using namespace DAVA;
 
-
-RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourceProperties, eCloneType cloneType)
+RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourceProperties, eCloneType cloneType)
     : node(_node)
     , classProperty(nullptr)
     , customClassProperty(nullptr)
@@ -65,20 +65,20 @@ RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourcePropert
 
     if (sourceProperties)
     {
-        for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
+        for (ComponentPropertiesSection* section : sourceProperties->componentProperties)
         {
-            UIComponent::eType type = (UIComponent::eType) section->GetComponent()->GetType();
+            UIComponent::eType type = (UIComponent::eType)section->GetComponent()->GetType();
             int32 index = section->GetComponentIndex();
             ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(node->GetControl(), type, index, section, cloneType));
             AddComponentPropertiesSection(newSection);
         }
     }
+    visibleProperty = DynamicTypeCheck<VisibleValueProperty*>(FindPropertyByName("Visible"));
 }
 
 RootProperty::~RootProperty()
 {
     node = nullptr; // don't release, just weak ptr
-    
     SafeRelease(classProperty);
     SafeRelease(customClassProperty);
     SafeRelease(prototypeProperty);
@@ -86,29 +86,30 @@ RootProperty::~RootProperty()
     DVASSERT(baseProperties.size() == 4);
     baseProperties.clear();
 
-    for (ControlPropertiesSection *section : controlProperties)
+    visibleProperty = nullptr;
+
+    for (ControlPropertiesSection* section : controlProperties)
     {
         section->SetParent(nullptr);
         section->Release();
     }
     controlProperties.clear();
 
-    for (BackgroundPropertiesSection *section : backgroundProperties)
+    for (BackgroundPropertiesSection* section : backgroundProperties)
     {
         section->SetParent(nullptr);
         section->Release();
     }
     backgroundProperties.clear();
 
-    for (InternalControlPropertiesSection *section : internalControlProperties)
+    for (InternalControlPropertiesSection* section : internalControlProperties)
     {
         section->SetParent(nullptr);
         section->Release();
     }
     internalControlProperties.clear();
 
-
-    for (ComponentPropertiesSection *section : componentProperties)
+    for (ComponentPropertiesSection* section : componentProperties)
     {
         section->SetParent(nullptr);
         section->Release();
@@ -123,22 +124,22 @@ uint32 RootProperty::GetCount() const
     return (baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
 }
 
-AbstractProperty *RootProperty::GetProperty(int index) const
+AbstractProperty* RootProperty::GetProperty(int index) const
 {
     DVASSERT(index >= 0);
     if (index < (int)baseProperties.size())
         return baseProperties[index];
     index -= baseProperties.size();
 
-    if (index < (int) controlProperties.size())
+    if (index < (int)controlProperties.size())
         return controlProperties[index];
     index -= controlProperties.size();
-    
-    if (index < (int) componentProperties.size())
+
+    if (index < (int)componentProperties.size())
         return componentProperties[index];
     index -= componentProperties.size();
-    
-    if (index < (int) backgroundProperties.size())
+
+    if (index < (int)backgroundProperties.size())
         return backgroundProperties[index];
     index -= backgroundProperties.size();
     DVASSERT(index < internalControlProperties.size());
@@ -150,7 +151,7 @@ DAVA::int32 RootProperty::GetControlPropertiesSectionsCount() const
     return static_cast<int32>(controlProperties.size());
 }
 
-ControlPropertiesSection *RootProperty::GetControlPropertiesSection(DAVA::int32 index) const
+ControlPropertiesSection* RootProperty::GetControlPropertiesSection(DAVA::int32 index) const
 {
     if (index >= 0 && index < static_cast<int32>(controlProperties.size()))
     {
@@ -163,7 +164,7 @@ ControlPropertiesSection *RootProperty::GetControlPropertiesSection(DAVA::int32 
     }
 }
 
-ControlPropertiesSection *RootProperty::GetControlPropertiesSection(const DAVA::String &name) const
+ControlPropertiesSection* RootProperty::GetControlPropertiesSection(const DAVA::String& name) const
 {
     for (auto it = controlProperties.begin(); it != controlProperties.end(); ++it)
     {
@@ -177,13 +178,13 @@ bool RootProperty::CanAddComponent(DAVA::uint32 componentType) const
 {
     if (IsReadOnly())
         return false;
-    
+
     if (UIComponent::IsMultiple(componentType))
         return true;
-    
+
     if (FindComponentPropertiesSection(componentType, 0) == nullptr)
         return true;
-    
+
     return false;
 }
 
@@ -192,12 +193,12 @@ bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
     return !IsReadOnly() && FindComponentPropertiesSection(componentType, 0) != nullptr; // TODO
 }
 
-const Vector<ComponentPropertiesSection*> &RootProperty::GetComponents() const
+const Vector<ComponentPropertiesSection*>& RootProperty::GetComponents() const
 {
     return componentProperties;
 }
 
-int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
+int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection* section) const
 {
     int32 offset = controlProperties.size() + baseProperties.size();
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
@@ -211,47 +212,47 @@ int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSecti
     }
 }
 
-ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) const
+ComponentPropertiesSection* RootProperty::FindComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) const
 {
     int32 index = 0;
-    for (ComponentPropertiesSection *section : componentProperties)
+    for (ComponentPropertiesSection* section : componentProperties)
     {
         if (section->GetComponent()->GetType() == componentType)
         {
             if (componentIndex == index)
                 return section;
-            
+
             index++;
         }
     }
     return nullptr;
 }
 
-ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::uint32 componentType)
+ComponentPropertiesSection* RootProperty::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
     uint32 index = 0;
-    
-    for (ComponentPropertiesSection *s : componentProperties)
+
+    for (ComponentPropertiesSection* s : componentProperties)
     {
         if (s->GetComponentType() == componentType)
             index++;
     }
-    
-    ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) componentType, index, nullptr, CT_INHERIT);
+
+    ComponentPropertiesSection* section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType)componentType, index, nullptr, CT_INHERIT);
     AddComponentPropertiesSection(section);
     section->Release();
     return section;
 }
 
-void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *section)
+void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection* section)
 {
     uint32 componentType = section->GetComponentType();
     if (UIComponent::IsMultiple(componentType) || FindComponentPropertiesSection(componentType, 0) == nullptr)
     {
         int32 index = GetComponentAbsIndex(componentType, section->GetComponentIndex());
-        
+
         int32 globalIndex = GetIndexOfCompoentPropertiesSection(section);
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->ComponentPropertiesWillBeAdded(this, section, globalIndex);
 
         componentProperties.insert(componentProperties.begin() + index, SafeRetain(section));
@@ -259,9 +260,9 @@ void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *sec
         section->SetParent(this);
         section->InstallComponent();
 
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->ComponentPropertiesWasAdded(this, section, globalIndex);
-        
+
         RefreshComponentIndices();
     }
     else
@@ -272,21 +273,21 @@ void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *sec
 
 void RootProperty::RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
-    ComponentPropertiesSection *section = FindComponentPropertiesSection(componentType, componentIndex);
+    ComponentPropertiesSection* section = FindComponentPropertiesSection(componentType, componentIndex);
     if (section)
     {
         RemoveComponentPropertiesSection(section);
     }
 }
 
-void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)
+void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection* section)
 {
     uint32 componentType = section->GetComponentType();
-    
+
     if (FindComponentPropertiesSection(componentType, section->GetComponentIndex()) == section)
     {
         int index = GetIndexOfCompoentPropertiesSection(section);
-        for (PropertyListener *listener : listeners)
+        for (PropertyListener* listener : listeners)
             listener->ComponentPropertiesWillBeRemoved(this, section, index);
 
         auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
@@ -299,10 +300,10 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
             section->UninstallComponent();
             section->Release();
         }
-        
-        for (PropertyListener *listener : listeners)
+
+        for (PropertyListener* listener : listeners)
             listener->ComponentPropertiesWasRemoved(this, section, index);
-        
+
         RefreshComponentIndices();
     }
     else
@@ -311,46 +312,46 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
     }
 }
 
-void RootProperty::AttachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+void RootProperty::AttachPrototypeComponent(ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection)
 {
     section->AttachPrototypeSection(prototypeSection);
 }
 
-void RootProperty::DetachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+void RootProperty::DetachPrototypeComponent(ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection)
 {
     section->DetachPrototypeSection(prototypeSection);
 }
 
-const Vector<BackgroundPropertiesSection*> &RootProperty::GetBackgroundProperties() const
+const Vector<BackgroundPropertiesSection*>& RootProperty::GetBackgroundProperties() const
 {
     return backgroundProperties;
 }
 
-BackgroundPropertiesSection *RootProperty::GetBackgroundPropertiesSection(int num) const
+BackgroundPropertiesSection* RootProperty::GetBackgroundPropertiesSection(int num) const
 {
-    if (0 <= num && num < (int) backgroundProperties.size())
+    if (0 <= num && num < (int)backgroundProperties.size())
         return backgroundProperties[num];
     return nullptr;
 }
 
-const DAVA::Vector<InternalControlPropertiesSection*> &RootProperty::GetInternalControlProperties() const
+const DAVA::Vector<InternalControlPropertiesSection*>& RootProperty::GetInternalControlProperties() const
 {
     return internalControlProperties;
 }
 
-InternalControlPropertiesSection *RootProperty::GetInternalControlPropertiesSection(int num) const
+InternalControlPropertiesSection* RootProperty::GetInternalControlPropertiesSection(int num) const
 {
-    if (0 <= num && num < (int) internalControlProperties.size())
+    if (0 <= num && num < (int)internalControlProperties.size())
         return internalControlProperties[num];
     return nullptr;
 }
 
-void RootProperty::AddListener(PropertyListener *listener)
+void RootProperty::AddListener(PropertyListener* listener)
 {
     listeners.push_back(listener);
 }
 
-void RootProperty::RemoveListener(PropertyListener *listener)
+void RootProperty::RemoveListener(PropertyListener* listener)
 {
     auto it = std::find(listeners.begin(), listeners.end(), listener);
     if (it != listeners.end())
@@ -363,35 +364,35 @@ void RootProperty::RemoveListener(PropertyListener *listener)
     }
 }
 
-void RootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
+void RootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
 {
     property->SetValue(newValue);
-    
-    for (PropertyListener *listener : listeners)
+
+    for (PropertyListener* listener : listeners)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::SetDefaultProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
+void RootProperty::SetDefaultProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
 {
     property->SetDefaultValue(newValue);
 
-    for (PropertyListener *listener : listeners)
+    for (PropertyListener* listener : listeners)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::ResetProperty(AbstractProperty *property)
+void RootProperty::ResetProperty(AbstractProperty* property)
 {
     property->ResetValue();
 
-    for (PropertyListener *listener : listeners)
+    for (PropertyListener* listener : listeners)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::RefreshProperty(AbstractProperty *property, DAVA::int32 refreshFlags)
+void RootProperty::RefreshProperty(AbstractProperty* property, DAVA::int32 refreshFlags)
 {
     property->Refresh(refreshFlags);
 
-    for (PropertyListener *listener : listeners)
+    for (PropertyListener* listener : listeners)
         listener->PropertyChanged(property);
 }
 
@@ -423,7 +424,7 @@ void RootProperty::Refresh(DAVA::int32 refreshFlags)
         GetProperty(i)->Refresh(refreshFlags);
 }
 
-void RootProperty::Accept(PropertyVisitor *visitor)
+void RootProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitRootProperty(this);
 }
@@ -433,7 +434,7 @@ bool RootProperty::IsReadOnly() const
     return !node->IsEditingSupported();
 }
 
-const DAVA::String & RootProperty::GetName() const
+const DAVA::String& RootProperty::GetName() const
 {
     static String rootName = "ROOT";
     return rootName;
@@ -444,37 +445,37 @@ AbstractProperty::ePropertyType RootProperty::GetType() const
     return TYPE_HEADER;
 }
 
-void RootProperty::AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType)
+void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType)
 {
-    NameProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
+    NameProperty* sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
     nameProperty = new NameProperty(node, sourceNameProperty, cloneType);
     baseProperties.push_back(nameProperty);
-    
-    PrototypeNameProperty *sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();
+
+    PrototypeNameProperty* sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();
     prototypeProperty = new PrototypeNameProperty(node, sourcePrototypeProperty, cloneType);
     baseProperties.push_back(prototypeProperty);
-    
+
     classProperty = new ClassProperty(node);
     baseProperties.push_back(classProperty);
-    
-    CustomClassProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
+
+    CustomClassProperty* sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
     customClassProperty = new CustomClassProperty(node, sourceCustomClassProperty, cloneType);
     baseProperties.push_back(customClassProperty);
 
-    for (ValueProperty *prop : baseProperties)
+    for (ValueProperty* prop : baseProperties)
         prop->SetParent(this);
 }
 
-void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType copyType)
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType copyType)
 {
-    const InspInfo *baseInfo = typeInfo->BaseInfo();
+    const InspInfo* baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
         MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
-    
+
     bool hasProperties = false;
     for (int i = 0; i < typeInfo->MembersCount(); i++)
     {
-        const InspMember *member = typeInfo->Member(i);
+        const InspMember* member = typeInfo->Member(i);
         if ((member->Flags() & I_EDIT) != 0)
         {
             hasProperties = true;
@@ -483,30 +484,30 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const 
     }
     if (hasProperties)
     {
-        ControlPropertiesSection *sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->Name().c_str());
-        ControlPropertiesSection *section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
+        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->Name().c_str());
+        ControlPropertiesSection* section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);
     }
 }
 
-void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType)
+void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
 {
     for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
-        BackgroundPropertiesSection *sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetBackgroundPropertiesSection(i);
-        BackgroundPropertiesSection *section = new BackgroundPropertiesSection(control, i, sourceSection, copyType);
+        BackgroundPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetBackgroundPropertiesSection(i);
+        BackgroundPropertiesSection* section = new BackgroundPropertiesSection(control, i, sourceSection, copyType);
         section->SetParent(this);
         backgroundProperties.push_back(section);
     }
 }
 
-void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType)
+void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
 {
     for (int i = 0; i < control->GetInternalControlsCount(); i++)
     {
-        InternalControlPropertiesSection *sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetInternalControlPropertiesSection(i);
-        InternalControlPropertiesSection *section = new InternalControlPropertiesSection(control, i, sourceSection, copyType);
+        InternalControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetInternalControlPropertiesSection(i);
+        InternalControlPropertiesSection* section = new InternalControlPropertiesSection(control, i, sourceSection, copyType);
         section->SetParent(this);
         internalControlProperties.push_back(section);
     }
@@ -515,7 +516,7 @@ void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl *control
 uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const
 {
     uint32 i = 0;
-    for (ComponentPropertiesSection *section : componentProperties)
+    for (ComponentPropertiesSection* section : componentProperties)
     {
         if (section->GetComponentType() >= componentType)
         {
@@ -524,16 +525,16 @@ uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint
         i++;
     }
     DVASSERT(index == 0);
-    return (uint32) componentProperties.size();
+    return (uint32)componentProperties.size();
 }
 
 void RootProperty::RefreshComponentIndices()
 {
-    for (ComponentPropertiesSection *section : componentProperties)
+    for (ComponentPropertiesSection* section : componentProperties)
     {
         section->RefreshIndex();
-        
-        for (PropertyListener *listener : listeners)
+
+        for (PropertyListener* listener : listeners)
             listener->PropertyChanged(section);
     }
 }

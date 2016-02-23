@@ -34,20 +34,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestFlowController
 {
 public:
-    
     virtual void Init(const Vector<BaseTest*>& registeredTests);
-    virtual void Finish() {};
-    
-    virtual void Update(float32 delta) {};
-    
+    virtual void Finish(){};
+
+    virtual void Update(float32 delta){};
+
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
-    
-    virtual ~TestFlowController() {};
-    
+
+    virtual ~TestFlowController(){};
+
 protected:
-    
     Vector<BaseTest*> testChain;
 };
 
-#endif 
+#endif

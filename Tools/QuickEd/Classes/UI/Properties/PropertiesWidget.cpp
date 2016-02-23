@@ -68,7 +68,7 @@ String GetPathFromIndex(QModelIndex index)
 }
 }
 
-PropertiesWidget::PropertiesWidget(QWidget *parent)
+PropertiesWidget::PropertiesWidget(QWidget* parent)
     : QDockWidget(parent)
 {
     setupUi(this);
@@ -86,9 +86,9 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 
     addStyleSelectorAction = CreateAddStyleSelectorAction();
     treeView->addAction(addStyleSelectorAction);
-    
+
     treeView->addAction(CreateSeparator());
-    
+
     removeAction = CreateRemoveAction();
     treeView->addAction(removeAction);
 
@@ -111,7 +111,7 @@ void PropertiesWidget::OnDocumentChanged(Document* document)
     UpdateModel(nullptr); //SelectionChanged will invoke by Queued Connection, so selectedNode have invalid value
 }
 
-void PropertiesWidget::OnAddComponent(QAction *action)
+void PropertiesWidget::OnAddComponent(QAction* action)
 {
     DVASSERT(nullptr != commandExecutor);
     if (nullptr != commandExecutor)
@@ -136,26 +136,26 @@ void PropertiesWidget::OnRemove()
         QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
         if (!indices.empty())
         {
-            const QModelIndex &index = indices.first();
-            AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
-            
+            const QModelIndex& index = indices.first();
+            AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+
             if ((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0)
             {
-                ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
+                ComponentPropertiesSection* section = dynamic_cast<ComponentPropertiesSection*>(property);
                 if (section)
                 {
                     commandExecutor->RemoveComponent(DynamicTypeCheck<ControlNode*>(selectedNode), section->GetComponentType(), section->GetComponentIndex());
                 }
                 else
                 {
-                    StyleSheetProperty *styleProperty = dynamic_cast<StyleSheetProperty*>(property);
+                    StyleSheetProperty* styleProperty = dynamic_cast<StyleSheetProperty*>(property);
                     if (styleProperty)
                     {
                         commandExecutor->RemoveStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), styleProperty->GetPropertyIndex());
                     }
                     else
                     {
-                        StyleSheetSelectorProperty *selectorProperty = dynamic_cast<StyleSheetSelectorProperty*>(property);
+                        StyleSheetSelectorProperty* selectorProperty = dynamic_cast<StyleSheetSelectorProperty*>(property);
                         if (selectorProperty)
                         {
                             int32 index = property->GetParent()->GetIndex(selectorProperty);
@@ -172,7 +172,7 @@ void PropertiesWidget::OnRemove()
     }
 }
 
-void PropertiesWidget::OnAddStyleProperty(QAction *action)
+void PropertiesWidget::OnAddStyleProperty(QAction* action)
 {
     DVASSERT(nullptr != commandExecutor);
     if (nullptr != commandExecutor)
@@ -187,7 +187,6 @@ void PropertiesWidget::OnAddStyleProperty(QAction *action)
             DVASSERT(propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT);
         }
     }
-    
 }
 
 void PropertiesWidget::OnAddStyleSelector()
@@ -204,41 +203,41 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection& /*selected*/, co
     UpdateActions();
 }
 
-QAction *PropertiesWidget::CreateAddComponentAction()
+QAction* PropertiesWidget::CreateAddComponentAction()
 {
-    QMenu *addComponentMenu = new QMenu(this);
+    QMenu* addComponentMenu = new QMenu(this);
     for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
     {
-        const char *name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
-        QAction *componentAction = new QAction(name, this); // TODO: Localize name
+        const char* name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
+        QAction* componentAction = new QAction(name, this); // TODO: Localize name
         componentAction->setData(i);
         addComponentMenu->addAction(componentAction);
     }
     connect(addComponentMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddComponent);
 
-    QAction *action = new QAction(tr("Add Component"), this);
+    QAction* action = new QAction(tr("Add Component"), this);
     action->setMenu(addComponentMenu);
     addComponentMenu->setEnabled(false);
     return action;
 }
 
-QAction *PropertiesWidget::CreateAddStyleSelectorAction()
+QAction* PropertiesWidget::CreateAddStyleSelectorAction()
 {
-    QAction *action = new QAction(tr("Add Style Selector"), this);
+    QAction* action = new QAction(tr("Add Style Selector"), this);
     connect(action, &QAction::triggered, this, &PropertiesWidget::OnAddStyleSelector);
     action->setEnabled(false);
     return action;
 }
 
-QAction *PropertiesWidget::CreateAddStylePropertyAction()
+QAction* PropertiesWidget::CreateAddStylePropertyAction()
 {
-    QMenu *propertiesMenu = new QMenu(this);
+    QMenu* propertiesMenu = new QMenu(this);
     QMenu* groupMenu = nullptr;
     UIStyleSheetPropertyGroup* prevGroup = nullptr;
-    UIStyleSheetPropertyDataBase *db = UIStyleSheetPropertyDataBase::Instance();
+    UIStyleSheetPropertyDataBase* db = UIStyleSheetPropertyDataBase::Instance();
     for (int32 i = 0; i < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; i++)
     {
-        const UIStyleSheetPropertyDescriptor &descr = db->GetStyleSheetPropertyByIndex(i);
+        const UIStyleSheetPropertyDescriptor& descr = db->GetStyleSheetPropertyByIndex(i);
         if (descr.group != prevGroup)
         {
             prevGroup = descr.group;
@@ -252,30 +251,30 @@ QAction *PropertiesWidget::CreateAddStylePropertyAction()
                 propertiesMenu->addMenu(groupMenu);
             }
         }
-        QAction *componentAction = new QAction(descr.name.c_str(), this);
+        QAction* componentAction = new QAction(descr.name.c_str(), this);
         componentAction->setData(i);
 
         groupMenu->addAction(componentAction);
     }
     connect(propertiesMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddStyleProperty);
 
-    QAction *action = new QAction(tr("Add Style Property"), this);
+    QAction* action = new QAction(tr("Add Style Property"), this);
     action->setMenu(propertiesMenu);
     propertiesMenu->setEnabled(false);
     return action;
 }
 
-QAction *PropertiesWidget::CreateRemoveAction()
+QAction* PropertiesWidget::CreateRemoveAction()
 {
-    QAction *action = new QAction(tr("Remove"), this);
+    QAction* action = new QAction(tr("Remove"), this);
     connect(action, &QAction::triggered, this, &PropertiesWidget::OnRemove);
     action->setEnabled(false);
     return action;
 }
 
-QAction *PropertiesWidget::CreateSeparator()
+QAction* PropertiesWidget::CreateSeparator()
 {
-    QAction *separator = new QAction(this);
+    QAction* separator = new QAction(this);
     separator->setSeparator(true);
     return separator;
 }
@@ -318,7 +317,7 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     addStylePropertyAction->menu()->setEnabled(isStyle);
     addStyleSelectorAction->setEnabled(isStyle);
     removeAction->setEnabled(false);
-    
+
     //delay long time work with view
     QMetaObject::invokeMethod(this, "OnModelUpdated", Qt::QueuedConnection);
 }
@@ -328,7 +327,7 @@ void PropertiesWidget::UpdateActions()
     QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
     if (!indices.empty())
     {
-        AbstractProperty *property = static_cast<AbstractProperty*>(indices.first().internalPointer());
+        AbstractProperty* property = static_cast<AbstractProperty*>(indices.first().internalPointer());
         removeAction->setEnabled((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0);
     }
 }

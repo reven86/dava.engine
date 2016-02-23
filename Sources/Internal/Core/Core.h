@@ -43,15 +43,15 @@
 	Application entry point and place where you can find all information about platform indepedent and platform dependent initialization and 
     platform functions you can use later during app execution.  
 */
-namespace DAVA 
+namespace DAVA
 {
 #if defined(__DAVAENGINE_WIN32__)
-    using AppHandle = HINSTANCE;
+using AppHandle = HINSTANCE;
 #elif defined(__DAVAENGINE_ANDROID__)
-    using AppHandle = struct android_app*;
+using AppHandle = struct android_app*;
 #else
-    using AppHandle = uint32;
-#endif 
+using AppHandle = uint32;
+#endif
 
 /**
 	\ingroup core
@@ -92,10 +92,9 @@ namespace DAVA
 class Core : public Singleton<Core>
 {
 public:
-
     enum eScreenOrientation
     {
-        SCREEN_ORIENTATION_TEXTURE = -1,     // Use only for texture purpose drawings
+        SCREEN_ORIENTATION_TEXTURE = -1, // Use only for texture purpose drawings
         SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0,
         SCREEN_ORIENTATION_LANDSCAPE_LEFT,
         SCREEN_ORIENTATION_PORTRAIT,
@@ -118,12 +117,12 @@ public:
     {
         DEVICE_UNKNOWN = -1,
         DEVICE_HANDSET = 0,
-        DEVICE_PAD, 
+        DEVICE_PAD,
         DEVICE_DESKTOP
     };
-    
-    static int Run(int argc, char *argv[], AppHandle handle = 0);
-    static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
+
+    static int Run(int argc, char* argv[], AppHandle handle = 0);
+    static int RunCmdTool(int argc, char* argv[], AppHandle handle = 0);
 
     // Should be called in platform initialization before FrameworkDidLaunched
     void CreateSingletons();
@@ -133,22 +132,20 @@ public:
     void ReleaseRenderer();
     void ReleaseSingletons();
 
-    const Vector<String> & GetCommandLine(); 
+    const Vector<String>& GetCommandLine();
     bool IsConsoleMode();
 
 public:
-    void SetOptions(KeyedArchive * archiveOfOptions);
-    KeyedArchive * GetOptions();
+    void SetOptions(KeyedArchive* archiveOfOptions);
+    KeyedArchive* GetOptions();
 
-	
-	static void SetApplicationCore(ApplicationCore * core);
-	static ApplicationCore * GetApplicationCore();
+    static void SetApplicationCore(ApplicationCore* core);
+    static ApplicationCore* GetApplicationCore();
 
-	
-	// platform dependent functions that should be implemented
-	virtual eScreenMode GetScreenMode();	// 
-	
-	/**
+    // platform dependent functions that should be implemented
+    virtual eScreenMode GetScreenMode(); //
+
+    /**
 		\brief This function should perform switching from one mode to another (fullscreen => windowed and back)
 		\param[in] screenMode mode of the screen we want to switch to
 	*/
@@ -241,16 +238,16 @@ public:
 		* FOR INTERNAL FRAMEWORK USAGE ONLY * 
 		MUST BE CALLED FROM templates on different OS
 	 */
-	
-	void SystemAppStarted();
-	void SystemProcessFrame();
-	void SystemAppFinished();
+
+    void SystemAppStarted();
+    void SystemProcessFrame();
+    void SystemAppFinished();
 
     inline bool IsActive();
-	void SetIsActive(bool isActive);
-	
-	virtual void GoBackground(bool isLock);
-	virtual void GoForeground();
+    void SetIsActive(bool isActive);
+
+    virtual void GoBackground(bool isLock);
+    virtual void GoForeground();
     virtual void FocusLost();
     virtual void FocusReceived();
 
@@ -258,8 +255,8 @@ public:
      \brief Get device familty
      */
     eDeviceFamily GetDeviceFamily();
-	
-	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
+
+    // Needs to be overriden for the platforms where it has sence (MacOS only for now).
     void* GetNativeView() const;
     void SetNativeView(void* nativeView);
 
@@ -268,31 +265,30 @@ public:
     rhi::InitParam rendererParams;
 
 protected:
-	int32 screenOrientation;
+    int32 screenOrientation;
 
-	void SetCommandLine(int argc, char *argv[]);
-	void SetCommandLine(Vector<String>&& args);
+    void SetCommandLine(int argc, char* argv[]);
+    void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
-    KeyedArchive * options;
+    KeyedArchive* options;
 
-	bool isActive;
+    bool isActive;
 
-	uint32 globalFrameIndex;
+    uint32 globalFrameIndex;
 
-	bool firstRun;//call begin frame 1st time
-	
-	Vector<String> commandLine;
-	bool isConsoleMode;
+    bool firstRun; //call begin frame 1st time
+
+    Vector<String> commandLine;
+    bool isConsoleMode;
     void* nativeView;
 };
-    
+
 inline bool Core::IsActive()
 {
     return isActive;
 }
-    
 };
 
 #endif // __DAVAENGINE_CORE_H__

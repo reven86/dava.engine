@@ -33,21 +33,18 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 
-
-BoolPropertyDelegate::BoolPropertyDelegate(PropertiesTreeItemDelegate *delegate)
+BoolPropertyDelegate::BoolPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
-
 }
 
 BoolPropertyDelegate::~BoolPropertyDelegate()
 {
-
 }
 
 QWidget* BoolPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    QComboBox *comboBox = new QComboBox(parent);
+    QComboBox* comboBox = new QComboBox(parent);
     comboBox->setObjectName(QString::fromUtf8("comboBox"));
     connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged()));
 
@@ -59,9 +56,9 @@ QWidget* BoolPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionV
     return comboBox;
 }
 
-void BoolPropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex & index) const
+void BoolPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& index) const
 {
-    QComboBox *editor = rawEditor->findChild<QComboBox *>("comboBox");
+    QComboBox* editor = rawEditor->findChild<QComboBox*>("comboBox");
 
     editor->blockSignals(true);
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
@@ -73,12 +70,12 @@ void BoolPropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex 
     BasePropertyDelegate::SetValueModified(editor, false);
 }
 
-bool BoolPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index) const
+bool BoolPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    QComboBox *comboBox = rawEditor->findChild<QComboBox *>("comboBox");
+    QComboBox* comboBox = rawEditor->findChild<QComboBox*>("comboBox");
 
     DAVA::VariantType variantType(comboBox->itemData(comboBox->currentIndex()).toBool());
     QVariant variant;
@@ -89,11 +86,11 @@ bool BoolPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel 
 
 void BoolPropertyDelegate::OnCurrentIndexChanged()
 {
-    QWidget *comboBox = qobject_cast<QWidget *>(sender());
+    QWidget* comboBox = qobject_cast<QWidget*>(sender());
     if (!comboBox)
         return;
 
-    QWidget *editor = comboBox->parentWidget();
+    QWidget* editor = comboBox->parentWidget();
     if (!editor)
         return;
 

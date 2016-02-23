@@ -45,17 +45,17 @@
 
 namespace MainWindow_namespace
 {
-    const QString APP_GEOMETRY = "geometry";
-    const QString APP_STATE = "windowstate";
-    const QString CONSOLE_STATE = "console state";
+const QString APP_GEOMETRY = "geometry";
+const QString APP_STATE = "windowstate";
+const QString CONSOLE_STATE = "console state";
 
-    void SetColoredIconToAction(QAction* action, QColor color)
-    {
-        QPixmap pixmap(16, 16);
-        pixmap.fill(color);
-        action->setIcon(pixmap);
-        action->setData(color);
-    }
+void SetColoredIconToAction(QAction* action, QColor color)
+{
+    QPixmap pixmap(16, 16);
+    pixmap.fill(color);
+    action->setIcon(pixmap);
+    action->setData(color);
+}
 }
 
 using namespace DAVA;
@@ -119,14 +119,14 @@ MainWindow::MainWindow(QWidget* parent)
     OnDocumentChanged(nullptr);
 }
 
-void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
+void MainWindow::CreateUndoRedoActions(const QUndoGroup* undoGroup)
 {
     Q_ASSERT(undoGroup);
-    QAction *undoAction = undoGroup->createUndoAction(this);
+    QAction* undoAction = undoGroup->createUndoAction(this);
     undoAction->setShortcuts(QKeySequence::Undo);
     undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
 
-    QAction *redoAction = undoGroup->createRedoAction(this);
+    QAction* redoAction = undoGroup->createRedoAction(this);
     redoAction->setShortcuts(QKeySequence::Redo);
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
@@ -188,7 +188,7 @@ void MainWindow::RestoreMainWindowState()
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     auto val = settings.value(MainWindow_namespace::APP_GEOMETRY);
     if (val.canConvert<QByteArray>())
-	{
+    {
         restoreGeometry(settings.value(MainWindow_namespace::APP_GEOMETRY).toByteArray());
     }
     val = settings.value(MainWindow_namespace::APP_STATE);
@@ -261,13 +261,13 @@ void MainWindow::InitLanguageBox()
 {
     comboboxLanguage = new QComboBox();
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    QLabel *label = new QLabel(tr("language"));
+    QLabel* label = new QLabel(tr("language"));
     label->setBuddy(comboboxLanguage);
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(comboboxLanguage);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
 }
@@ -284,47 +284,31 @@ void MainWindow::FillComboboxLanguages(const Project* project)
 
 void MainWindow::InitRtlBox()
 {
-    QCheckBox *rtlBox = new QCheckBox();
-    rtlBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("Right-to-left"));
-    label->setBuddy(rtlBox);
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(rtlBox);
-    QWidget *wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
+    rtlBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
 void MainWindow::InitBiDiSupportBox()
 {
-    QCheckBox *bidiSupportBox = new QCheckBox();
-    bidiSupportBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("BiDi Support"));
-    label->setBuddy(bidiSupportBox);
-    QHBoxLayout *layout = new QHBoxLayout();
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(bidiSupportBox);
-    QWidget *wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
+    bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
+    toolBarPlugins->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
 void MainWindow::InitGlobalClasses()
 {
-    QLineEdit *classesEdit = new QLineEdit();
+    QLineEdit* classesEdit = new QLineEdit();
     classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    QLabel *label = new QLabel(tr("global classes"));
+    QLabel* label = new QLabel(tr("global classes"));
     label->setBuddy(classesEdit);
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
     layout->addWidget(classesEdit);
-    QWidget *wrapper = new QWidget();
+    QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
@@ -333,7 +317,7 @@ void MainWindow::InitGlobalClasses()
 void MainWindow::InitEmulationMode()
 {
     emulationBox = new QCheckBox("Emulation", this);
-    emulationBox->setCheckState(Qt::Unchecked);
+    emulationBox->setLayoutDirection(Qt::RightToLeft);
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
     toolBarPlugins->addWidget(emulationBox);
 }
@@ -350,7 +334,7 @@ void MainWindow::InitMenu()
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
     connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
 
-    // Remap zoom in/out shorcuts for windows platform
+// Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
     QList<QKeySequence> shortcuts;
     shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
@@ -426,8 +410,10 @@ void MainWindow::SetupBackgroundMenu()
 
     actionGroup->addAction(defaultBackgroundColorAction);
     connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
-        eBackgroundType type = static_cast<eBackgroundType>(!toggled);
-        EditorSettings::Instance()->SetGridType(type);
+        if (toggled)
+        {
+            EditorSettings::Instance()->SetGridType(BackgroundTexture);
+        }
     });
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
@@ -439,10 +425,9 @@ void MainWindow::SetupBackgroundMenu()
     } colorsMap[] =
     {
       { Qt::black, "Black" },
-      { QColor(0x33, 0x33, 0x33, 0xFF), "Gray" },
-      { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
-      { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
-      { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
+      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
+      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
     };
     for (const auto& colorItem : colorsMap)
     {
@@ -455,24 +440,28 @@ void MainWindow::SetupBackgroundMenu()
         connect(colorAction, &QAction::toggled, [color](bool toggled) {
             if (toggled)
             {
+                EditorSettings::Instance()->SetGridType(BackgroundColor);
                 EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
             }
         });
     }
     QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
-    actionGroup->addAction(backgroundCustomColorAction);
     backgroundColorMenu->addAction(backgroundCustomColorAction);
     connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
+    actionGroup->addAction(backgroundCustomColorAction);
 
     for (auto& action : actionGroup->actions())
     {
         action->setCheckable(true);
     }
+    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
+        previousBackgroundColorAction = action;
+    });
 
     auto editorSettings = EditorSettings::Instance();
     if (!editorSettings->GetGridType())
     {
-        defaultBackgroundColorAction->setChecked(true);
+        defaultBackgroundColorAction->trigger();
     }
     else
     {
@@ -481,7 +470,7 @@ void MainWindow::SetupBackgroundMenu()
         {
             if (action->data().value<QColor>() == color)
             {
-                action->setChecked(true);
+                action->trigger();
             }
         }
         if (actionGroup->checkedAction() == nullptr)
@@ -512,12 +501,12 @@ void MainWindow::RebuildRecentMenu()
         projectList << QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(i).c_str()));
     }
     projectList.removeDuplicates();
-    for (auto &projectPath : projectList)
-        {
-            QAction *recentProject = new QAction(projectPath, this);
-            recentProject->setData(projectPath);
-            menuRecent->addAction(recentProject);
-        }
+    for (auto& projectPath : projectList)
+    {
+        QAction* recentProject = new QAction(projectPath, this);
+        recentProject->setData(projectPath);
+        menuRecent->addAction(recentProject);
+    }
     menuRecent->setEnabled(projectCount > 0);
 }
 
@@ -528,9 +517,14 @@ void MainWindow::OnBackgroundCustomColorClicked()
     QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
     if (!color.isValid())
     {
+        if (previousBackgroundColorAction != nullptr && previousBackgroundColorAction != customColorAction) //if we launch app with custom color previous color action will be nullptr
+        {
+            previousBackgroundColorAction->trigger();
+        }
         return;
     }
     MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
+    EditorSettings::Instance()->SetGridType(BackgroundColor);
     EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
 }
 
@@ -550,7 +544,7 @@ int MainWindow::AddTab(Document* document, int index)
     return insertedIndex;
 }
 
-void MainWindow::closeEvent(QCloseEvent *ev)
+void MainWindow::closeEvent(QCloseEvent* ev)
 {
     SaveMainWindowState();
     emit CloseRequested();
@@ -574,7 +568,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     else
     {
         QStringList errors;
-        for (const auto &result : resultList.GetResults())
+        for (const auto& result : resultList.GetResults())
         {
             errors << QString::fromStdString(result.message);
         }
@@ -586,14 +580,14 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 void MainWindow::OnOpenProject()
 {
     QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
-                                                        ResourcesManageHelper::GetDefaultDirectory(),
-                                                        tr( "Project (*.uieditor)"));
+                                                      ResourcesManageHelper::GetDefaultDirectory(),
+                                                      tr("Project (*.uieditor)"));
     if (projectPath.isEmpty())
     {
         return;
     }
     projectPath = QDir::toNativeSeparators(projectPath);
-        
+
     emit ActionOpenProjectTriggered(projectPath);
 }
 
@@ -601,14 +595,14 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
 {
     // Add file to recent project files list
     EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
-    
+
     // Save to settings default project directory
     QFileInfo fileInfo(projectPath);
     QString projectDir = fileInfo.absoluteDir().absolutePath();
     EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
-	// Update window title
-	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+    // Update window title
+    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
 
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
@@ -631,7 +625,7 @@ void MainWindow::OnBiDiSupportChanged(int arg)
     emit BiDiSupportChanged(arg == Qt::Checked);
 }
 
-void MainWindow::OnGlobalClassesChanged(const QString &str)
+void MainWindow::OnGlobalClassesChanged(const QString& str)
 {
     emit GlobalStyleClassesChanged(str);
 }
@@ -643,4 +637,3 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
         logWidget->AddMessage(logLevel, output);
     }
 }
-

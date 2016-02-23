@@ -51,6 +51,7 @@
 #include "Model/ControlProperties/ClassProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/PrototypeNameProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 #include "Model/YamlPackageSerializer.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
@@ -63,25 +64,25 @@ PackageModel::PackageModel(QObject* parent)
 {
 }
 
-void PackageModel::Reset(PackageNode *package_, QtModelPackageCommandExecutor *executor_)
+void PackageModel::Reset(PackageNode* package_, QtModelPackageCommandExecutor* executor_)
 {
     beginResetModel();
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->RemoveListener(this);
     }
     package = package_;
     commandExecutor = executor_;
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->AddListener(this);
     }
     endResetModel();
 }
 
-QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
+QModelIndex PackageModel::indexByNode(PackageBaseNode* node) const
 {
-    PackageBaseNode *parent = node->GetParent();
+    PackageBaseNode* parent = node->GetParent();
     if (parent == nullptr)
     {
         return QModelIndex();
@@ -89,7 +90,7 @@ QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
     return createIndex(parent->GetIndex(node), 0, node);
 }
 
-QModelIndex PackageModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex PackageModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))
     {
@@ -98,17 +99,17 @@ QModelIndex PackageModel::index(int row, int column, const QModelIndex &parent) 
     if (!parent.isValid())
     {
         DVASSERT(nullptr != package);
-        if(nullptr != package)
+        if (nullptr != package)
         {
             return createIndex(row, column, package->Get(row));
         }
         return QModelIndex();
     }
-    PackageBaseNode *node = static_cast<PackageBaseNode*>(parent.internalPointer());
+    PackageBaseNode* node = static_cast<PackageBaseNode*>(parent.internalPointer());
     return createIndex(row, column, node->Get(row));
 }
 
-QModelIndex PackageModel::parent(const QModelIndex &child) const
+QModelIndex PackageModel::parent(const QModelIndex& child) const
 {
     if (!child.isValid())
     {
@@ -116,8 +117,8 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
         return QModelIndex();
     }
 
-    PackageBaseNode *node = static_cast<PackageBaseNode*>(child.internalPointer());
-    PackageBaseNode *parent = node->GetParent();
+    PackageBaseNode* node = static_cast<PackageBaseNode*>(child.internalPointer());
+    PackageBaseNode* parent = node->GetParent();
     DVASSERT(package != nullptr);
     if (package != nullptr)
     {
@@ -132,7 +133,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
     return QModelIndex();
 }
 
-int PackageModel::rowCount(const QModelIndex &parent) const
+int PackageModel::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid())
     {
@@ -146,124 +147,128 @@ int PackageModel::rowCount(const QModelIndex &parent) const
     return static_cast<PackageBaseNode*>(parent.internalPointer())->GetCount();
 }
 
-int PackageModel::columnCount(const QModelIndex &/*parent*/) const
+int PackageModel::columnCount(const QModelIndex& /*parent*/) const
 {
     return 1;
 }
 
-QVariant PackageModel::data(const QModelIndex &index, int role) const
+QVariant PackageModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
     {
         DVASSERT(false && "invalid index passed to data function");
         return QVariant();
     }
-    PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-    ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+    PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
+    ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
 
     if (controlNode)
     {
-        switch(role)
+        switch (role)
         {
-            case Qt::EditRole:
-            case Qt::DisplayRole:
-                return StringToQString(node->GetName());
-                
-            case Qt::DecorationRole:
-                if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsOverridden())
-                {
-                    return QIcon(IconHelper::GetCustomIconPath());
-                }
-                else
-                {
-                    const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
-                    return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
-                }
-                
-            case Qt::CheckStateRole:
-                return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
-                
-            case Qt::ToolTipRole:
+        case Qt::EditRole:
+        case Qt::DisplayRole:
+            return StringToQString(node->GetName());
+
+        case Qt::DecorationRole:
+            if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsOverridden())
             {
-                const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
-                const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
-                const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
-                QString toolTip = QString("class: ") + className.c_str();
-                if (!customClassName.empty())
-                {
-                    toolTip += QString("\ncustom class: ") + customClassName.c_str();
-                }
-                
-                if (controlNode->GetPrototype())
-                {
-                    toolTip += QString("\nprototype: ") + prototype.c_str();
-                }
-                return toolTip;
+                return QIcon(IconHelper::GetCustomIconPath());
             }
-                
-            case Qt::TextColorRole:
-                if(controlNode->GetPrototype() != nullptr)
-                {
-                    return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
-                }
-                
-            case Qt::FontRole:
+            else
             {
-                QFont myFont;
-                if (controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-                    myFont.setBold(true);
-                
-                if (node->IsReadOnly())
-                    myFont.setItalic(true);
-                
-                return myFont;
+                const String& className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
             }
+
+        case Qt::CheckStateRole:
+        {
+            auto prop = controlNode->GetRootProperty()->GetVisibleProperty();
+            return prop->GetVisibleInEditor() ? Qt::Checked : Qt::Unchecked;
+        }
+
+        case Qt::ToolTipRole:
+        {
+            const String& prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
+            const String& className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+            const String& customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
+            QString toolTip = QString("class: ") + className.c_str();
+            if (!customClassName.empty())
+            {
+                toolTip += QString("\ncustom class: ") + customClassName.c_str();
+            }
+
+            if (controlNode->GetPrototype())
+            {
+                toolTip += QString("\nprototype: ") + prototype.c_str();
+            }
+            return toolTip;
+        }
+
+        case Qt::TextColorRole:
+            if(controlNode->GetPrototype() != nullptr)
+            {
+                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::blue) : "light blue";
+            }
+
+        case Qt::FontRole:
+        {
+            QFont myFont;
+            if (controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+                myFont.setBold(true);
+
+            if (node->IsReadOnly())
+                myFont.setItalic(true);
+
+            return myFont;
+        }
         }
     }
     else
     {
-        StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
+        StyleSheetNode* styleSheet = dynamic_cast<StyleSheetNode*>(node);
         if (styleSheet)
         {
-            switch(role)
+            switch (role)
             {
-                case Qt::DisplayRole:
-                    return StringToQString(node->GetName());
-                    
-                case Qt::TextColorRole:
-                {
-                    return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::darkGreen) : "light green";
-                }
-                    
-                case Qt::FontRole:
-                {
-                    QFont myFont;
-                    if (node->IsReadOnly())
-                        myFont.setItalic(true);
-                    
-                    return myFont;
-                }
+            case Qt::DisplayRole:
+                return StringToQString(node->GetName());
+
+            case Qt::TextColorRole:
+            {
+                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::darkGreen) : "light green";
+            }
+
+            case Qt::FontRole:
+            {
+                QFont myFont;
+                if (node->IsReadOnly())
+                    myFont.setItalic(true);
+
+                return myFont;
+            }
             }
         }
         else
         {
-            switch(role)
+            switch (role)
             {
-                case Qt::DisplayRole:
-                    return StringToQString(node->GetName());
+            case Qt::DisplayRole:
+                return StringToQString(node->GetName());
                 
-                case Qt::BackgroundRole:
-                    return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : "indigo";
-                    
-                case Qt::FontRole:
-                {
-                    QFont myFont;
-                    
-                    if (node->IsReadOnly())
-                        myFont.setItalic(true);
-                    
-                    return myFont;
-                }
+            case Qt::BackgroundRole:
+                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : "indigo";
+
+            case Qt::FontRole:
+            {
+                QFont myFont;
+                myFont.setBold(true);
+
+                if (node->IsReadOnly())
+                    myFont.setItalic(true);
+
+                return myFont;
+            }
             }
         }
     }
@@ -271,25 +276,29 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!index.isValid())
     {
         DVASSERT(false && "invalid index passed to setData");
         return false;
     }
-    PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+    PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
     auto control = node->GetControl();
-    if(nullptr == control)
+    if (nullptr == control)
     {
         return false;
     }
+    ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+    DVASSERT(controlNode);
+
     if (role == Qt::CheckStateRole)
     {
-        control->SetVisibleForUIEditor(value.toBool());
+        auto prop = controlNode->GetRootProperty()->GetVisibleProperty();
+        prop->SetVisibleInEditor(value.toBool());
         return true;
     }
-    if(role == Qt::EditRole)
+    if (role == Qt::EditRole)
     {
         DVASSERT(nullptr != commandExecutor);
         if (nullptr != commandExecutor)
@@ -308,15 +317,15 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
     return false;
 }
 
-Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
+Qt::ItemFlags PackageModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
     {
         return Qt::NoItemFlags;
     }
     Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
-    
-    const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+
+    const PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
     if (node->CanCopy())
     {
         flags |= Qt::ItemIsDragEnabled;
@@ -325,7 +334,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     {
         flags |= Qt::ItemIsDropEnabled;
     }
-    if(node->IsEditingSupported())
+    if (node->IsEditingSupported())
     {
         flags |= Qt::ItemIsEditable;
     }
@@ -347,7 +356,7 @@ QStringList PackageModel::mimeTypes() const
     return types;
 }
 
-QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
+QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
 {
     DVASSERT(nullptr != package);
     if (nullptr == package)
@@ -355,33 +364,32 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
         return nullptr;
     }
 
-    PackageMimeData *mimeData = new PackageMimeData();
-    
-    for (const QModelIndex &index : indices)
+    PackageMimeData* mimeData = new PackageMimeData();
+
+    for (const QModelIndex& index : indices)
     {
         if (index.isValid())
         {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+            PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
             if (node->CanCopy())
             {
-                ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+                ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
                 if (nullptr != controlNode)
                 {
                     mimeData->AddControl(controlNode);
                 }
                 else
                 {
-                    StyleSheetNode *style = dynamic_cast<StyleSheetNode*>(node);
+                    StyleSheetNode* style = dynamic_cast<StyleSheetNode*>(node);
                     if (nullptr != style)
                     {
                         mimeData->AddStyle(style);
                     }
                 }
-                
             }
         }
     }
-    
+
     YamlPackageSerializer serializer;
     serializer.SerializePackageNodes(package, mimeData->GetControls(), mimeData->GetStyles());
     String str = serializer.WriteToString();
@@ -399,19 +407,14 @@ int PackageModel::GetRowIndex(int row, const QModelIndex& parent) const
     return rowCount(parent);
 }
 
-bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int /*column*/, const QModelIndex& parent)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr == commandExecutor)
+    DVASSERT(nullptr != commandExecutor && nullptr != package);
+    if (nullptr == commandExecutor || nullptr == package)
     {
         return false;
     }
 
-    DVASSERT(nullptr != package);
-    if (nullptr == package)
-    {
-        return false;
-    }
     if (action == Qt::IgnoreAction)
     {
         return true;
@@ -419,20 +422,20 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 
     int rowIndex = GetRowIndex(row, parent);
 
-    PackageBaseNode *destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
-    
-    ControlsContainerNode *destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
-    StyleSheetsNode *destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
-    
+    PackageBaseNode* destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
+
+    ControlsContainerNode* destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
+    StyleSheetsNode* destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
+
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
-        const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
+        const PackageMimeData* controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (nullptr == controlMimeData)
         {
             return false;
         }
 
-        const Vector<ControlNode *> &srcControls = controlMimeData->GetControls();
+        const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
         if (srcControls.empty())
         {
             return false;
@@ -459,12 +462,12 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     }
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
-        const PackageMimeData *mimeData = dynamic_cast<const PackageMimeData*>(data);
+        const PackageMimeData* mimeData = dynamic_cast<const PackageMimeData*>(data);
         if (nullptr == mimeData)
         {
             return false;
         }
-        const Vector<StyleSheetNode *> &srcStyles = mimeData->GetStyles();
+        const Vector<StyleSheetNode*>& srcStyles = mimeData->GetStyles();
         if (srcStyles.empty())
         {
             return false;
@@ -489,7 +492,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     {
         QStringList list = data->text().split("\n");
         Vector<FilePath> packages;
-        for (const QString &str : list)
+        for (const QString& str : list)
         {
             QUrl url(str);
             if (url.isLocalFile())

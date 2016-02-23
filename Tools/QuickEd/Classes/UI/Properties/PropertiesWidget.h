@@ -52,13 +52,13 @@ public slots:
     void UpdateModel(PackageBaseNode* node);
     void OnDocumentChanged(Document* doc);
 
-    void OnAddComponent(QAction *action);
-    void OnAddStyleProperty(QAction *action);
+    void OnAddComponent(QAction* action);
+    void OnAddStyleProperty(QAction* action);
     void OnAddStyleSelector();
     void OnRemove();
-    
-    void OnSelectionChanged(const QItemSelection &selected,
-                            const QItemSelection &deselected);
+
+    void OnSelectionChanged(const QItemSelection& selected,
+                            const QItemSelection& deselected);
     void OnModelUpdated();
 
 private slots:
@@ -66,11 +66,11 @@ private slots:
     void OnCollapsed(const QModelIndex& index);
 
 private:
-    QAction *CreateAddComponentAction();
-    QAction *CreateAddStyleSelectorAction();
-    QAction *CreateAddStylePropertyAction();
-    QAction *CreateRemoveAction();
-    QAction *CreateSeparator();
+    QAction* CreateAddComponentAction();
+    QAction* CreateAddStyleSelectorAction();
+    QAction* CreateAddStylePropertyAction();
+    QAction* CreateRemoveAction();
+    QAction* CreateSeparator();
 
     void UpdateActions();
 
@@ -88,7 +88,7 @@ private:
     SelectionContainer selectionContainer;
 
     DAVA::String lastTopIndexPath;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
 };
 

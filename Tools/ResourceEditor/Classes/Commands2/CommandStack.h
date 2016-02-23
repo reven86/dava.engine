@@ -38,66 +38,66 @@ struct CommandStackNotify;
 
 class CommandStack : public CommandNotifyProvider
 {
-	friend struct CommandStackNotify;
+    friend struct CommandStackNotify;
 
 public:
-	CommandStack();
-	~CommandStack();
+    CommandStack();
+    ~CommandStack();
 
-	bool CanRedo() const;
-	bool CanUndo() const;
+    bool CanRedo() const;
+    bool CanUndo() const;
 
-	void Clear();
-	void Clear(int commandId);
-	
-	void Undo();
-	void Redo();
-	void Exec(Command2 *command);
+    void Clear();
+    void Clear(int commandId);
 
-	void BeginBatch(const DAVA::String &text);
-	void EndBatch();
+    void Undo();
+    void Redo();
+    void Exec(Command2* command);
+
+    void BeginBatch(const DAVA::String& text);
+    void EndBatch();
     bool IsBatchStarted() const;
 
-	bool IsClean() const;
-	void SetClean(bool clean);
+    bool IsClean() const;
+    void SetClean(bool clean);
 
-	size_t GetCleanIndex() const;
-	size_t GetNextIndex() const;
+    size_t GetCleanIndex() const;
+    size_t GetNextIndex() const;
 
-	size_t GetUndoLimit() const;
-	void SetUndoLimit(size_t limit);
+    size_t GetUndoLimit() const;
+    void SetUndoLimit(size_t limit);
 
-	size_t GetCount() const;
-	const Command2* GetCommand(size_t index) const;
+    size_t GetCount() const;
+    const Command2* GetCommand(size_t index) const;
 
 protected:
-	DAVA::List<Command2 *> commandList;
-	size_t commandListLimit;
-	size_t nextCommandIndex;
-	size_t cleanCommandIndex;
-	bool lastCheckCleanState;
+    DAVA::List<Command2*> commandList;
+    size_t commandListLimit;
+    size_t nextCommandIndex;
+    size_t cleanCommandIndex;
+    bool lastCheckCleanState;
 
     DAVA::uint32 nestedBatchesCounter;
-	CommandBatch* curBatchCommand;
-	CommandStackNotify *stackCommandsNotify;
+    CommandBatch* curBatchCommand;
+    CommandStackNotify* stackCommandsNotify;
 
-	void ExecInternal(Command2 *command, bool runCommand);
-	Command2* GetCommandInternal(size_t index) const;
+    void ExecInternal(Command2* command, bool runCommand);
+    Command2* GetCommandInternal(size_t index) const;
 
-	void ClearRedoCommands();
-	void ClearLimitedCommands();
-	void ClearCommand(size_t index);
+    void ClearRedoCommands();
+    void ClearLimitedCommands();
+    void ClearCommand(size_t index);
 
-	void CleanCheck();
-	void CommandExecuted(const Command2 *command, bool redo);
+    void CleanCheck();
+    void CommandExecuted(const Command2* command, bool redo);
 };
 
 struct CommandStackNotify : public CommandNotify
 {
-	CommandStack* stack;
+    CommandStack* stack;
 
-	CommandStackNotify(CommandStack *_stack);
-	virtual void Notify(const Command2 *command, bool redo);
+    CommandStackNotify(CommandStack* _stack);
+    virtual void Notify(const Command2* command, bool redo);
 };
 
 #endif // __COMMAND_STACK_H__

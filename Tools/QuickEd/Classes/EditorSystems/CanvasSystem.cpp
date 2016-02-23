@@ -38,15 +38,9 @@
 
 using namespace DAVA;
 
-enum eBackgroundType : bool
-{
-    BackgroundTexture,
-    BackgroundColor
-};
-
 namespace CanvasSystem_namespace
 {
-class GridControl : public UIControl
+class GridControl : public UIControl, public TrackedObject
 {
 public:
     GridControl();
@@ -54,6 +48,7 @@ public:
 
 private:
     void OnBackgroundTypeChanged(eBackgroundType type);
+    void OnBackgroundColorChanged(const Color& color);
     void Draw(const UIGeometricData& geometricData) override;
     eBackgroundType coloredBackground = BackgroundTexture;
 };
@@ -64,12 +59,12 @@ GridControl::GridControl()
     OnBackgroundTypeChanged(settings->GetGridType());
 
     settings->GridTypeChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
-    settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
+    settings->GridColorChanged.Connect(this, &GridControl::OnBackgroundColorChanged);
 }
 
 void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
 {
-    coloredBackground = static_cast<eBackgroundType>(type);
+    coloredBackground = type;
     switch (coloredBackground)
     {
     case BackgroundColor:
@@ -82,6 +77,11 @@ void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
         background->SetColor(Color());
         break;
     }
+}
+
+void GridControl::OnBackgroundColorChanged(const Color& color)
+{
+    background->SetColor(color);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -135,11 +135,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     , nestedControl(nestedControl_)
 {
     DVASSERT(nullptr != nestedControl);
-    String name = nestedControl->GetName();
+    String name = nestedControl->GetName().c_str();
     name = name.empty() ? "unnamed" : name;
-    gridControl->SetName("Grid control of " + name);
-    counterpoiseControl->SetName("counterpoise of " + name);
-    positionHolderControl->SetName("Position holder of " + name);
+    gridControl->SetName(FastName("Grid control of " + name));
+    counterpoiseControl->SetName(FastName("counterpoise of " + name));
+    positionHolderControl->SetName(FastName("Position holder of " + name));
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
@@ -174,48 +174,48 @@ void BackgroundController::ControlPropertyWasChanged(ControlNode* node, Abstract
 namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
+{
+    if (!control->GetVisible())
     {
-        if (!control->GetSystemVisible())
-        {
-            return;
-        }
-        UIGeometricData tempGeometricData = control->GetLocalGeometricData();
-        tempGeometricData.AddGeometricData(gd);
-        Rect box = tempGeometricData.GetAABBox();
-
-        if (totalRect.x > box.x)
-        {
-            float32 delta = totalRect.x - box.x;
-            rootControlPosition.x += delta;
-            totalRect.dx += delta;
-            totalRect.x = box.x;
-        }
-        if (totalRect.y > box.y)
-        {
-            float32 delta = totalRect.y - box.y;
-            rootControlPosition.y += delta;
-            totalRect.dy += delta;
-            totalRect.y = box.y;
-        }
-        if (totalRect.x + totalRect.dx < box.x + box.dx)
-        {
-            float32 nextRight = box.x + box.dx;
-            totalRect.dx = nextRight - totalRect.x;
-        }
-        if (totalRect.y + totalRect.dy < box.y + box.dy)
-        {
-            float32 nextBottom = box.y + box.dy;
-            totalRect.dy = nextBottom - totalRect.y;
-        }
-
-        for (const auto& child : control->GetChildren())
-        {
-            CalculateTotalRectImpl(child, totalRect, rootControlPosition, tempGeometricData);
-        }
+        return;
     }
-    } //unnamed namespace
+    UIGeometricData tempGeometricData = control->GetLocalGeometricData();
+    tempGeometricData.AddGeometricData(gd);
+    Rect box = tempGeometricData.GetAABBox();
 
-    void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
+    if (totalRect.x > box.x)
+    {
+        float32 delta = totalRect.x - box.x;
+        rootControlPosition.x += delta;
+        totalRect.dx += delta;
+        totalRect.x = box.x;
+    }
+    if (totalRect.y > box.y)
+    {
+        float32 delta = totalRect.y - box.y;
+        rootControlPosition.y += delta;
+        totalRect.dy += delta;
+        totalRect.y = box.y;
+    }
+    if (totalRect.x + totalRect.dx < box.x + box.dx)
+    {
+        float32 nextRight = box.x + box.dx;
+        totalRect.dx = nextRight - totalRect.x;
+    }
+    if (totalRect.y + totalRect.dy < box.y + box.dy)
+    {
+        float32 nextBottom = box.y + box.dy;
+        totalRect.dy = nextBottom - totalRect.y;
+    }
+
+    for (const auto& child : control->GetChildren())
+    {
+        CalculateTotalRectImpl(child, totalRect, rootControlPosition, tempGeometricData);
+    }
+}
+} //unnamed namespace
+
+void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
@@ -298,7 +298,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
-    controlsCanvas->SetName("controls canvas");
+    controlsCanvas->SetName(FastName("controls canvas"));
     systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
@@ -310,9 +310,9 @@ CanvasSystem::~CanvasSystem()
     systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
-void CanvasSystem::OnPackageNodeChanged(PackageNode *package_)
+void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
 {
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->RemoveListener(this);
     }

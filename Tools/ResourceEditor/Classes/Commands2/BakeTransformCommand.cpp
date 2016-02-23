@@ -33,29 +33,31 @@
 #include "Scene3D/Entity.h"
 
 BakeGeometryCommand::BakeGeometryCommand(DAVA::RenderObject* _object, DAVA::Matrix4 _transform)
-	: Command2(CMDID_BAKE_GEOMERTY, "Bake geometry")
-	, object(_object)
+    : Command2(CMDID_BAKE_GEOMERTY, "Bake geometry")
+    , object(_object)
     , transform(_transform)
-{ }
+{
+}
 
 BakeGeometryCommand::~BakeGeometryCommand()
-{ }
+{
+}
 
 void BakeGeometryCommand::Undo()
 {
-    if(NULL != object)
-	{
+    if (NULL != object)
+    {
         DAVA::Matrix4 undoTransform = transform;
         undoTransform.Inverse();
 
         object->BakeGeometry(undoTransform);
-	}
+    }
 }
 
 void BakeGeometryCommand::Redo()
 {
-	if(NULL != object)
-	{
+    if (NULL != object)
+    {
         object->BakeGeometry(transform);
-	}
+    }
 }

@@ -48,8 +48,7 @@
 
 using namespace DAVA;
 
-
-PackageNode::PackageNode(const FilePath &aPath)
+PackageNode::PackageNode(const FilePath& aPath)
     : PackageBaseNode(nullptr)
     , path(aPath)
 {
@@ -64,13 +63,13 @@ PackageNode::~PackageNode()
 {
     importedPackagesNode->SetParent(nullptr);
     SafeRelease(importedPackagesNode);
-    
+
     packageControlsNode->SetParent(nullptr);
     SafeRelease(packageControlsNode);
 
     styleSheets->SetParent(nullptr);
     SafeRelease(styleSheets);
-    
+
     SafeRelease(packageContext);
 }
 
@@ -79,25 +78,24 @@ int PackageNode::GetCount() const
     return SECTION_COUNT;
 }
 
-PackageBaseNode *PackageNode::Get(int index) const
+PackageBaseNode* PackageNode::Get(int index) const
 {
     switch (index)
     {
-        case SECTION_IMPORTED_PACKAGES:
-            return importedPackagesNode;
-            
-        case SECTION_STYLES:
-            return styleSheets;
+    case SECTION_IMPORTED_PACKAGES:
+        return importedPackagesNode;
 
-        case SECTION_CONTROLS:
-            return packageControlsNode;
-            
+    case SECTION_STYLES:
+        return styleSheets;
+
+    case SECTION_CONTROLS:
+        return packageControlsNode;
     }
     DVASSERT(false);
     return nullptr;
 }
 
-void PackageNode::Accept(PackageVisitor *visitor)
+void PackageNode::Accept(PackageVisitor* visitor)
 {
     visitor->VisitPackage(this);
 }
@@ -107,22 +105,22 @@ String PackageNode::GetName() const
     return name;
 }
 
-PackageNode *PackageNode::GetPackage()
+PackageNode* PackageNode::GetPackage()
 {
     return this;
 }
 
-const FilePath &PackageNode::GetPath() const
+const FilePath& PackageNode::GetPath() const
 {
     return path;
 }
 
-UIControlPackageContext *PackageNode::GetContext() const
+UIControlPackageContext* PackageNode::GetContext() const
 {
     return packageContext;
 }
 
-const PackageNode *PackageNode::GetPackage() const
+const PackageNode* PackageNode::GetPackage() const
 {
     return this;
 }
@@ -142,22 +140,22 @@ bool PackageNode::IsReadOnly() const
     return GetParent() != nullptr;
 }
 
-ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
+ImportedPackagesNode* PackageNode::GetImportedPackagesNode() const
 {
     return importedPackagesNode;
 }
 
-PackageControlsNode *PackageNode::GetPackageControlsNode() const
+PackageControlsNode* PackageNode::GetPackageControlsNode() const
 {
     return packageControlsNode;
 }
 
-StyleSheetsNode *PackageNode::GetStyleSheets() const
+StyleSheetsNode* PackageNode::GetStyleSheets() const
 {
     return styleSheets;
 }
 
-PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path) const
+PackageNode* PackageNode::FindImportedPackage(const DAVA::FilePath& path) const
 {
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
@@ -167,16 +165,16 @@ PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path) const
     return nullptr;
 }
 
-bool PackageNode::FindPackageInImportedPackagesRecursively(const PackageNode *node) const
+bool PackageNode::FindPackageInImportedPackagesRecursively(const PackageNode* node) const
 {
     return FindPackageInImportedPackagesRecursively(node->GetPath());
 }
 
-bool PackageNode::FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const
+bool PackageNode::FindPackageInImportedPackagesRecursively(const DAVA::FilePath& path) const
 {
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
-        PackageNode *importedPackage = importedPackagesNode->GetImportedPackage(index);
+        PackageNode* importedPackage = importedPackagesNode->GetImportedPackage(index);
         if (importedPackage->GetPath().GetFrameworkPath() == path.GetFrameworkPath())
             return true;
         if (importedPackage->FindPackageInImportedPackagesRecursively(path))
@@ -203,19 +201,19 @@ void PackageNode::RemoveListener(PackageListener* listener)
     }
 }
 
-void PackageNode::SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
+void PackageNode::SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
 {
     node->GetRootProperty()->SetProperty(property, newValue);
     RefreshProperty(node, property);
 }
 
-void PackageNode::ResetControlProperty(ControlNode *node, AbstractProperty *property)
+void PackageNode::ResetControlProperty(ControlNode* node, AbstractProperty* property)
 {
     node->GetRootProperty()->ResetProperty(property);
     RefreshProperty(node, property);
 }
 
-void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
+void PackageNode::RefreshProperty(ControlNode* node, AbstractProperty* property)
 {
     if (property->GetStylePropertyIndex() != -1)
         node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), property->IsOverridden());
@@ -229,37 +227,37 @@ void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
         listener->ControlPropertyWasChanged(node, property);
 }
 
-void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
+void PackageNode::AddComponent(ControlNode* node, ComponentPropertiesSection* section)
 {
     node->GetRootProperty()->AddComponentPropertiesSection(section);
     RefreshControlStylesAndLayout(node);
 }
 
-void PackageNode::RemoveComponent(ControlNode *node, ComponentPropertiesSection *section)
+void PackageNode::RemoveComponent(ControlNode* node, ComponentPropertiesSection* section)
 {
     node->GetRootProperty()->RemoveComponentPropertiesSection(section);
     RefreshControlStylesAndLayout(node);
 }
 
-void PackageNode::AttachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+void PackageNode::AttachPrototypeComponent(ControlNode* node, ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection)
 {
     node->GetRootProperty()->AttachPrototypeComponent(section, prototypeSection);
-    
+
     RefreshProperty(node, section);
     for (uint32 i = 0; i < section->GetCount(); i++)
         RefreshProperty(node, section->GetProperty(i));
 }
 
-void PackageNode::DetachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+void PackageNode::DetachPrototypeComponent(ControlNode* node, ComponentPropertiesSection* section, ComponentPropertiesSection* prototypeSection)
 {
     node->GetRootProperty()->DetachPrototypeComponent(section, prototypeSection);
-    
+
     RefreshProperty(node, section);
     for (uint32 i = 0; i < section->GetCount(); i++)
         RefreshProperty(node, section->GetProperty(i));
 }
 
-void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
+void PackageNode::SetStyleProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
 {
     node->GetRootProperty()->SetProperty(property, newValue);
     node->UpdateName();
@@ -270,19 +268,19 @@ void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *prope
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::AddStyleProperty(StyleSheetNode *node, StyleSheetProperty *property)
+void PackageNode::AddStyleProperty(StyleSheetNode* node, StyleSheetProperty* property)
 {
     node->GetRootProperty()->AddProperty(property);
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::RemoveStyleProperty(StyleSheetNode *node, StyleSheetProperty *property)
+void PackageNode::RemoveStyleProperty(StyleSheetNode* node, StyleSheetProperty* property)
 {
     node->GetRootProperty()->RemoveProperty(property);
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::InsertSelector(StyleSheetNode *node, StyleSheetSelectorProperty *property, DAVA::int32 index)
+void PackageNode::InsertSelector(StyleSheetNode* node, StyleSheetSelectorProperty* property, DAVA::int32 index)
 {
     node->GetRootProperty()->InsertSelector(property, index);
     node->UpdateName();
@@ -293,7 +291,7 @@ void PackageNode::InsertSelector(StyleSheetNode *node, StyleSheetSelectorPropert
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::RemoveSelector(StyleSheetNode *node, StyleSheetSelectorProperty *property)
+void PackageNode::RemoveSelector(StyleSheetNode* node, StyleSheetSelectorProperty* property)
 {
     node->GetRootProperty()->RemoveSelector(property);
     node->UpdateName();
@@ -304,7 +302,7 @@ void PackageNode::RemoveSelector(StyleSheetNode *node, StyleSheetSelectorPropert
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index)
+void PackageNode::InsertControl(ControlNode* node, ControlsContainerNode* dest, DAVA::int32 index)
 {
     for (PackageListener* listener : listeners)
         listener->ControlWillBeAdded(node, dest, index);
@@ -318,7 +316,7 @@ void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, 
     RefreshControlStylesAndLayout(node);
 }
 
-void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
+void PackageNode::RemoveControl(ControlNode* node, ControlsContainerNode* from)
 {
     for (PackageListener* listener : listeners)
         listener->ControlWillBeRemoved(node, from);
@@ -333,7 +331,7 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
         RefreshControlStylesAndLayout(node);
 }
 
-void PackageNode::InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA::int32 index)
+void PackageNode::InsertStyle(StyleSheetNode* node, StyleSheetsNode* dest, DAVA::int32 index)
 {
     for (PackageListener* listener : listeners)
         listener->StyleWillBeAdded(node, dest, index);
@@ -346,7 +344,7 @@ void PackageNode::InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA:
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::RemoveStyle(StyleSheetNode *node, StyleSheetsNode *from)
+void PackageNode::RemoveStyle(StyleSheetNode* node, StyleSheetsNode* from)
 {
     for (PackageListener* listener : listeners)
         listener->StyleWillBeRemoved(node, from);
@@ -359,7 +357,7 @@ void PackageNode::RemoveStyle(StyleSheetNode *node, StyleSheetsNode *from)
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
+void PackageNode::InsertImportedPackage(PackageNode* node, DAVA::int32 index)
 {
     for (PackageListener* listener : listeners)
         listener->ImportedPackageWillBeAdded(node, importedPackagesNode, index);
@@ -372,13 +370,13 @@ void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
     RefreshPackageStylesAndLayout();
 }
 
-void PackageNode::RemoveImportedPackage(PackageNode *node)
+void PackageNode::RemoveImportedPackage(PackageNode* node)
 {
     for (PackageListener* listener : listeners)
         listener->ImportedPackageWillBeRemoved(node, importedPackagesNode);
 
     importedPackagesNode->Remove(node);
-    
+
     RefreshPackageStylesAndLayout();
 
     for (PackageListener* listener : listeners)
@@ -390,30 +388,29 @@ void PackageNode::RebuildStyleSheets()
     Vector<UIPriorityStyleSheet> importedStyleSheets;
     for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
     {
-        PackageNode *node = importedPackagesNode->GetImportedPackage(i);
-        const Vector<UIPriorityStyleSheet> &styleSheets = node->GetContext()->GetSortedStyleSheets();
-        for (const UIPriorityStyleSheet &ss : styleSheets)
+        PackageNode* node = importedPackagesNode->GetImportedPackage(i);
+        const Vector<UIPriorityStyleSheet>& styleSheets = node->GetContext()->GetSortedStyleSheets();
+        for (const UIPriorityStyleSheet& ss : styleSheets)
         {
             importedStyleSheets.emplace_back(UIPriorityStyleSheet(ss.GetStyleSheet(), ss.GetPriority() + 1));
         }
     }
 
     packageContext->RemoveAllStyleSheets();
-    for (const UIPriorityStyleSheet &styleSheet : importedStyleSheets)
+    for (const UIPriorityStyleSheet& styleSheet : importedStyleSheets)
     {
         packageContext->AddStyleSheet(styleSheet);
     }
-    
+
     for (int32 i = 0; i < styleSheets->GetCount(); i++)
     {
-        StyleSheetNode *node = styleSheets->Get(i);
+        StyleSheetNode* node = styleSheets->Get(i);
         Vector<UIStyleSheet*> styleSheets = node->GetRootProperty()->CollectStyleSheets();
-        for (UIStyleSheet *styleSheet : styleSheets)
+        for (UIStyleSheet* styleSheet : styleSheets)
         {
             packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
         }
     }
-
 }
 
 void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
@@ -425,7 +422,7 @@ void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
             importedPackagesNode->GetImportedPackage(i)->RefreshPackageStylesAndLayout(true);
         }
     }
-    
+
     RebuildStyleSheets();
 
     for (int32 i = 0; i < packageControlsNode->GetCount(); i++)
@@ -434,20 +431,20 @@ void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
     }
 }
 
-void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property)
+void PackageNode::RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property)
 {
-    for (ControlNode *instance : node->GetInstances())
+    for (ControlNode* instance : node->GetInstances())
     {
-        AbstractProperty *instanceProperty = instance->GetRootProperty()->FindPropertyByPrototype(property);
+        AbstractProperty* instanceProperty = instance->GetRootProperty()->FindPropertyByPrototype(property);
         if (instanceProperty)
             RefreshProperty(instance, instanceProperty);
     }
 }
 
-void PackageNode::RefreshControlStylesAndLayout(ControlNode *node)
+void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
 {
     Vector<ControlNode*> roots;
-    ControlNode *root = node;
+    ControlNode* root = node;
     while (root->GetParent() != nullptr && root->GetParent()->GetControl() != nullptr)
     {
         root = static_cast<ControlNode*>(root->GetParent());
@@ -459,7 +456,7 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode *node)
     NotifyPropertyChanged(root);
 }
 
-void PackageNode::RefreshStyles(ControlNode *node)
+void PackageNode::RefreshStyles(ControlNode* node)
 {
     UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl());
     for (int32 i = 0; i < node->GetCount(); i++)
@@ -468,30 +465,30 @@ void PackageNode::RefreshStyles(ControlNode *node)
     }
 }
 
-void PackageNode::CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Vector<ControlNode*> &roots)
+void PackageNode::CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots)
 {
-    ControlNode *root = node;
+    ControlNode* root = node;
     while (root->GetParent() != nullptr && root->GetParent()->GetControl() != nullptr)
         root = static_cast<ControlNode*>(root->GetParent());
-    
+
     if (std::find(roots.begin(), roots.end(), root) == roots.end())
     {
         roots.push_back(root);
-        for (ControlNode *instance : root->GetInstances())
+        for (ControlNode* instance : root->GetInstances())
             CollectRootControlsToRefreshLayout(instance, roots);
     }
 }
 
-void PackageNode::RestoreProperties(ControlNode *node)
+void PackageNode::RestoreProperties(ControlNode* node)
 {
-    RootProperty *rootProperty = node->GetRootProperty();
+    RootProperty* rootProperty = node->GetRootProperty();
 
     for (int32 i = 0; i < rootProperty->GetControlPropertiesSectionsCount(); i++)
     {
-        ControlPropertiesSection *controlSection = rootProperty->GetControlPropertiesSection(i);
+        ControlPropertiesSection* controlSection = rootProperty->GetControlPropertiesSection(i);
         for (uint32 j = 0; j < controlSection->GetCount(); j++)
         {
-            IntrospectionProperty *prop = controlSection->GetProperty(j);
+            IntrospectionProperty* prop = controlSection->GetProperty(j);
             if (prop->GetFlags() & AbstractProperty::EF_DEPENDS_ON_LAYOUTS)
             {
                 prop->Refresh(AbstractProperty::REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES);
@@ -505,16 +502,16 @@ void PackageNode::RestoreProperties(ControlNode *node)
         RestoreProperties(node->Get(i));
 }
 
-void PackageNode::NotifyPropertyChanged(ControlNode *control)
+void PackageNode::NotifyPropertyChanged(ControlNode* control)
 {
-    RootProperty *rootProperty = control->GetRootProperty();
-    
+    RootProperty* rootProperty = control->GetRootProperty();
+
     for (int32 i = 0; i < rootProperty->GetControlPropertiesSectionsCount(); i++)
     {
-        ControlPropertiesSection *controlSection = rootProperty->GetControlPropertiesSection(i);
+        ControlPropertiesSection* controlSection = rootProperty->GetControlPropertiesSection(i);
         for (uint32 j = 0; j < controlSection->GetCount(); j++)
         {
-            AbstractProperty *prop = controlSection->GetProperty(j);
+            AbstractProperty* prop = controlSection->GetProperty(j);
             for (PackageListener* listener : listeners)
                 listener->ControlPropertyWasChanged(control, prop);
         }

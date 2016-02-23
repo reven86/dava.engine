@@ -40,15 +40,15 @@
 
 void InitPVRTexTool()
 {
-#if defined (__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined (__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     qInstallMessageHandler(DAVAMessageHandler);
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 
     QApplication::setQuitOnLastWindowClosed(false);
 
-    DAVA::Core::Run( argc, argv );
+    DAVA::Core::Run(argc, argv);
     auto qtLayer = new DAVA::QtLayer(); //will be deleted with DavaRenderer. Sorry about that.
     QObject::connect(&a, &QApplication::applicationStateChanged, [qtLayer](Qt::ApplicationState state) {
         state == Qt::ApplicationActive ? qtLayer->OnResume() : qtLayer->OnSuspend();
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
 
-    auto *editorCore = new EditorCore();
+    auto* editorCore = new EditorCore();
 
     editorCore->Start();
 
