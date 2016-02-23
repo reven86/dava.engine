@@ -73,6 +73,7 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
     resourcePacker.InitFolders(inputDir, outputDir);
     resourcePacker.isLightmapsPacking = isLightmapPacking;
 
+    bool shouldDisconnectClient = false;
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
         DAVA::String ipStr = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
@@ -80,17 +81,21 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         DAVA::uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
 
         DAVA::AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? "127.0.0.1" : ipStr);
+        params.ip = (ipStr.empty() ? DAVA::AssetCache::LOCALHOST : ipStr);
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 
-        DAVA::AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
-        if (connected == DAVA::AssetCache::ERROR_OK)
+        DAVA::AssetCache::AssetCacheError connected = cacheClient.ConnectSynchronously(params);
+        if (connected == DAVA::AssetCache::AssetCacheError::NO_ERRORS)
         {
             resourcePacker.SetCacheClient(&cacheClient, "Resource Editor.Repack Sprites");
+            shouldDisconnectClient = true;
         }
     }
 
     resourcePacker.PackResources(gpu);
-    cacheClient.Disconnect();
+    if (shouldDisconnectClient)
+    {
+        cacheClient.Disconnect();
+    }
 }

@@ -108,5 +108,5 @@ int main(int argc, char* argv[])
     }
 
     ReleaseDAVA();
-    return cacheClient.GetExitCode();
+    return static_cast<int>(cacheClient.GetExitCode());
 }

@@ -28,27 +28,40 @@
 
 #include "AssetCache/AssetCacheConstants.h"
 #include "Base/GlobalEnum.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 namespace AssetCache
 {
+String ErrorToString(AssetCacheError error)
+{
+    static const Vector<std::pair<AssetCacheError, String>> errorStrings = 
+    {{
+        {AssetCacheError::NO_ERRORS, "OK"},
+        {AssetCacheError::CODE_NOT_INITIALIZED, "CODE_NOT_INITIALIZED"},
+        {AssetCacheError::WRONG_COMMAND_LINE, "WRONG_COMMAND_LINE"},
+        {AssetCacheError::WRONG_IP, "WRONG_IP"},
+        {AssetCacheError::OPERATION_TIMEOUT, "OPERATION_TIMEOUT"},
+        {AssetCacheError::CANNOT_CONNECT, "CANNOT_CONNECT"},
+        {AssetCacheError::SERVER_ERROR, "SERVER_ERROR"},
+        {AssetCacheError::NOT_FOUND_ON_SERVER, "NOT_FOUND_ON_SERVER"},
+        {AssetCacheError::READ_FILES, "READ_FILES"},
+        {AssetCacheError::ADDRESS_RESOLVER_FAILED, "ADDRESS_RESOLVER_FAILED"},
+        {AssetCacheError::CANNOT_SEND_REQUEST_ADD, "CANNOT_SEND_REQUEST_ADD"},
+        {AssetCacheError::CANNOT_SEND_REQUEST_GET, "CANNOT_SEND_REQUEST_GET"},
+        {AssetCacheError::CORRUPTED_DATA, "CORRUPTED_DATA"}
+    }};
+
+    DVASSERT(static_cast<uint32>(AssetCacheError::ERRORS_COUNT) == errorStrings.size());
+
+    const auto & errorDetails = errorStrings[static_cast<uint32>(error)];
+
+    DVASSERT(errorDetails.first == error);
+    return errorDetails.second;
+}
+
+
 } // end of namespace AssetCache
 } // end of namespace DAVA
 
-ENUM_DECLARE(DAVA::AssetCache::ErrorCodes)
-{
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_OK, "OK");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CODE_NOT_INITIALIZED, "ERROR_CODE_NOT_INITIALIZED");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_WRONG_COMMAND_LINE, "WRONG_COMMAND_LINE");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_WRONG_IP, "WRONG_IP");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_OPERATION_TIMEOUT, "ERROR_OPERATION_TIMEOUT");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CANNOT_CONNECT, "CANNOT_CONNECT");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_SERVER_ERROR, "SERVER_ERROR");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_NOT_FOUND_ON_SERVER, "NOT_FOUND_ON_SERVER");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_READ_FILES, "READ_FILES");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_ADDRESS_RESOLVER_FAILED, "ADDRESS_RESOLVER_FAILED");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CANNOT_SEND_REQUEST_ADD, "CANNOT_SEND_REQUEST_ADD");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CANNOT_SEND_REQUEST_GET, "CANNOT_SEND_REQUEST_GET");
-    ENUM_ADD_DESCR(DAVA::AssetCache::ERROR_CORRUPTED_DATA, "ERROR_CORRUPTED_DATA");
-}

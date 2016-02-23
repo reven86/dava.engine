@@ -36,6 +36,11 @@
 
 #include <QObject>
 
+namespace DAVA
+{
+class AssetCacheClient;
+}
+
 class SpritesPacker;
 class QAction;
 class SpritesPackerModule final : public QObject
@@ -63,7 +68,13 @@ private:
     void ShowPackerDialog();
     void ReloadObjects();
 
+    void ConnectCacheClient();
+    void DisconnectCacheClient();
+
 private:
+
+    DAVA::AssetCacheClient *cacheClient = nullptr;
+
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
 };

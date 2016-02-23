@@ -402,7 +402,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     uint64 allFilesSize = 0;
     uint32 allFilesCount = 0;
 
-    static const Vector<String> ignoredFileNames = { ".DS_Store", "flags.txt", "thumb.db" };
+    static const Vector<String> ignoredFileNames = { ".DS_Store", "flags.txt", "Thumbs.db", ".gitignore" };
     auto IsFileIgnoredByName = [](const Vector<String>& ignoredFileNames, const String& filename)
     {
         auto found = std::find_if(ignoredFileNames.begin(), ignoredFileNames.end(), [&filename](const String& name)
@@ -607,7 +607,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
 }
 
-void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, String comment)
+void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const String& comment)
 {
     cacheClient = cacheClient_;
 
@@ -632,14 +632,14 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         return false;
     }
 
-    AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(key, outputPath);
-    if (requested == AssetCache::ERROR_OK)
+    AssetCache::AssetCacheError requested = cacheClient->RequestFromCacheSynchronously(key, outputPath);
+    if (requested == AssetCache::AssetCacheError::NO_ERRORS)
     {
         return true;
     }
     else
     {
-        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(requested));
+        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested));
     }
 
     return false;
@@ -670,18 +670,18 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
 
     if (!value.IsEmpty())
     {
-        value.FinalizeValidationData();
+        value.UpdateValidationData();
         value.SetDescription(cacheItemDescription);
 
-        AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(key, value);
-        if (added == AssetCache::ERROR_OK)
+        AssetCache::AssetCacheError added = cacheClient->AddToCacheSynchronously(key, value);
+        if (added == AssetCache::AssetCacheError::NO_ERRORS)
         {
             Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
             return true;
         }
         else
         {
-            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(added));
+            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added));
         }
     }
     else

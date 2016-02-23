@@ -44,6 +44,11 @@ class PackageNode;
 class SpritesPacker;
 class QFileSystemWatcher;
 
+namespace DAVA
+{
+class AssetCacheClient;
+}
+
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
@@ -56,7 +61,8 @@ public:
     void Start();
 
 private slots:
-    void OnReloadSprites();
+    void OnReloadSpritesStarted();
+    void OnReloadSpritesFinished();
     void OnFilesChanged(const QStringList& changedFiles);
     void OnFilesRemoved(const QStringList& removedFiles);
 
@@ -94,6 +100,8 @@ private:
     int GetIndexByPackagePath(const DAVA::FilePath& davaPath) const;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
+    std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
+
     Project* project = nullptr;
     QList<Document*> documents;
     DocumentGroup* documentGroup = nullptr;

@@ -38,6 +38,8 @@ namespace AssetCache
 static const uint32 NET_SERVICE_ID = 0xACCA;
 static const uint16 ASSET_SERVER_PORT = 0xACCA;
 
+static const String LOCALHOST = "127.0.0.1";
+
 enum ePacketID : uint8
 {
     PACKET_UNKNOWN = 0,
@@ -50,22 +52,26 @@ enum ePacketID : uint8
     PACKET_COUNT
 };
 
-enum ErrorCodes : int32
+enum class AssetCacheError: int32
 {
-    ERROR_OK = 0,
-    ERROR_CODE_NOT_INITIALIZED,
-    ERROR_WRONG_COMMAND_LINE,
-    ERROR_WRONG_IP,
-    ERROR_OPERATION_TIMEOUT,
-    ERROR_CANNOT_CONNECT,
-    ERROR_SERVER_ERROR,
-    ERROR_NOT_FOUND_ON_SERVER,
-    ERROR_READ_FILES,
-    ERROR_ADDRESS_RESOLVER_FAILED,
-    ERROR_CANNOT_SEND_REQUEST_ADD,
-    ERROR_CANNOT_SEND_REQUEST_GET,
-    ERROR_CORRUPTED_DATA
+    NO_ERRORS = 0,
+    CODE_NOT_INITIALIZED,
+    WRONG_COMMAND_LINE,
+    WRONG_IP,
+    OPERATION_TIMEOUT,
+    CANNOT_CONNECT,
+    SERVER_ERROR,
+    NOT_FOUND_ON_SERVER,
+    READ_FILES,
+    ADDRESS_RESOLVER_FAILED,
+    CANNOT_SEND_REQUEST_ADD,
+    CANNOT_SEND_REQUEST_GET,
+    CORRUPTED_DATA,
+
+    ERRORS_COUNT,
 };
+
+String ErrorToString(AssetCacheError error);
 
 } // end of namespace AssetCache
 } // end of namespace DAVA

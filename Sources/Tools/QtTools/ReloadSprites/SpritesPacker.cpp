@@ -32,16 +32,13 @@
 #include "Render/2D/Sprite.h"
 #include <QDirIterator>
 
+#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
 SpritesPacker::SpritesPacker(QObject* parent)
     : QObject(parent)
     , running(false)
-{
-}
-
-SpritesPacker::~SpritesPacker()
 {
 }
 
@@ -115,3 +112,9 @@ const DAVA::ResourcePacker2D& SpritesPacker::GetResourcePacker() const
 {
     return resourcePacker2D;
 }
+
+void SpritesPacker::SetCacheClient(AssetCacheClient* cacheClient, const String& comment)
+{
+    resourcePacker2D.SetCacheClient(cacheClient, comment);
+}
+

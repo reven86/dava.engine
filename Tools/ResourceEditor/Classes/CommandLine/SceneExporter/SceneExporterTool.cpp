@@ -56,23 +56,20 @@ void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const FilePa
                 CollectObjectsFromFolder(pathname, inFolder, objectType, exportedObjects);
             }
         }
-        else
+        else if ((SceneExporter::OBJECT_SCENE == objectType) && (pathname.IsEqualToExtension(".sc2")))
         {
-            if ((SceneExporter::OBJECT_SCENE == objectType) && (pathname.IsEqualToExtension(".sc2")))
+            String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
+            if (exportedPos != String::npos)
             {
-                String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
-                if (exportedPos != String::npos)
-                {
-                    Logger::Warning("[SceneExporterTool] Found temporary file: %s\nPlease delete it manualy", pathname.GetAbsolutePathname().c_str());
-                    continue;
-                }
+                Logger::Warning("[SceneExporterTool] Found temporary file: %s\nPlease delete it manualy", pathname.GetAbsolutePathname().c_str());
+                continue;
+            }
 
-                exportedObjects.emplace_back(SceneExporter::OBJECT_SCENE, pathname.GetRelativePathname(inFolder));
-            }
-            else if ((SceneExporter::OBJECT_TEXTURE == objectType) && (pathname.IsEqualToExtension(".tex")))
-            {
-                exportedObjects.emplace_back(SceneExporter::OBJECT_TEXTURE, pathname.GetRelativePathname(inFolder));
-            }
+            exportedObjects.emplace_back(SceneExporter::OBJECT_SCENE, pathname.GetRelativePathname(inFolder));
+        }
+        else if ((SceneExporter::OBJECT_TEXTURE == objectType) && (pathname.IsEqualToExtension(".tex")))
+        {
+            exportedObjects.emplace_back(SceneExporter::OBJECT_TEXTURE, pathname.GetRelativePathname(inFolder));
         }
     }
 }
@@ -106,7 +103,6 @@ bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inF
         return false;
     }
 
-    bool isEof = false;
     do
     {
         String link = fileWithLinks->ReadLine();
@@ -130,8 +126,7 @@ bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inF
             }
         }
 
-        isEof = fileWithLinks->IsEof();
-    } while (!isEof);
+    } while (true);
 
     return true;
 }
@@ -160,7 +155,7 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
 
     options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
-    options.AddOption(OptionName::AssetCacheIP, VariantType(String("127.0.0.1")), "ip of adress of Asset Cache Server");
+    options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::LOCALHOST), "ip of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCachePort, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
 }
@@ -256,8 +251,8 @@ void SceneExporterTool::ProcessInternal()
 
     if (useAssetCache)
     {
-        AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(connectionsParams);
-        if (connected == AssetCache::ERROR_OK)
+        AssetCache::AssetCacheError connected = cacheClient.ConnectSynchronously(connectionsParams);
+        if (connected == AssetCache::AssetCacheError::NO_ERRORS)
         {
             String machineName = WStringToString(DeviceInfo::GetName());
             DateTime timeNow = DateTime::Now();

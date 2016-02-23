@@ -33,6 +33,8 @@
 
 #include "Project/ProjectManager.h"
 
+#include "AssetCache/AssetCacheClient.h"
+
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 
@@ -49,7 +51,13 @@ SpritesPackerModule::SpritesPackerModule()
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
 }
 
-SpritesPackerModule::~SpritesPackerModule() = default;
+SpritesPackerModule::~SpritesPackerModule()
+{
+    if (cacheClient != nullptr)
+    {
+        DisconnectCacheClient();
+    }
+}
 
 QAction* SpritesPackerModule::GetReloadAction() const
 {
@@ -74,7 +82,11 @@ void SpritesPackerModule::SetAction(QAction* reloadSpritesAction_)
 void SpritesPackerModule::RepackWithDialog()
 {
     SetupSpritesPacker(ProjectManager::Instance()->GetProjectPath());
+    ConnectCacheClient();
+
     ShowPackerDialog();
+
+    DisconnectCacheClient();
     ReloadObjects();
 }
 
@@ -96,6 +108,7 @@ void SpritesPackerModule::ShowPackerDialog()
 void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu)
 {
     SetupSpritesPacker(ProjectManager::Instance()->GetProjectPath());
+    ConnectCacheClient();
 
     QtMainWindow::Instance()->WaitStart("Reload Particles particles for project", "Reload Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()));
 
@@ -103,6 +116,7 @@ void SpritesPackerModule::RepackSilently(const DAVA::FilePath& projectPath, DAVA
 
     QtMainWindow::Instance()->WaitStop();
 
+    DisconnectCacheClient();
     ReloadObjects();
 }
 
@@ -115,3 +129,38 @@ void SpritesPackerModule::ReloadObjects()
 
     emit SpritesReloaded();
 }
+
+void SpritesPackerModule::ConnectCacheClient()
+{
+    DVASSERT(cacheClient == nullptr);
+    if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
+    {
+        DAVA::String ipStr = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
+        DAVA::uint16 port = static_cast<DAVA::uint16>(SettingsManager::GetValue(Settings::General_AssetCache_Port).AsUInt32());
+        DAVA::uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
+
+        DAVA::AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? DAVA::AssetCache::LOCALHOST : ipStr);
+        params.port = port;
+        params.timeoutms = timeoutSec * 1000; //in ms
+
+        cacheClient = new DAVA::AssetCacheClient(true);
+        DAVA::AssetCache::AssetCacheError connected = cacheClient->ConnectSynchronously(params);
+        if (connected == DAVA::AssetCache::AssetCacheError::NO_ERRORS)
+        {
+            SafeDelete(cacheClient);
+        }
+    }
+
+    spritesPacker->SetCacheClient(cacheClient, "ResourceEditor.ReloadParticles");
+}
+
+void SpritesPackerModule::DisconnectCacheClient()
+{
+    if (cacheClient != nullptr)
+    {
+        cacheClient->Disconnect();
+        SafeDelete(cacheClient);
+    }
+}
+

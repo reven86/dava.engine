@@ -49,7 +49,7 @@ using namespace DAVA;
 
 FilePath PathnameToDAVAStyle(const QString& convertedPathname)
 {
-    return FilePath((const String&)QSTRING_TO_DAVASTRING(convertedPathname));
+    return FilePath(convertedPathname.toStdString());
 }
 
 FilePath GetOpenFileName(const String& title, const FilePath& pathname, const String& filter)

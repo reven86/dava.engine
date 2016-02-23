@@ -52,22 +52,22 @@ AssetCacheClient::ConnectionParams GetConnectionParams(ProgramOptions options)
 CacheRequest::CacheRequest(const String& commandLineOptionName)
     : options(commandLineOptionName)
 {
-    options.AddOption("-ip", VariantType(String("127.0.0.1")), "Set ip adress of Asset Cache Server.");
+    options.AddOption("-ip", VariantType(AssetCache::LOCALHOST), "Set ip adress of Asset Cache Server.");
     options.AddOption("-p", VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "Set port of Asset Cache Server.");
     options.AddOption("-h", VariantType(String("")), "Hash string of requested data");
     options.AddOption("-v", VariantType(false), "Verbose output.");
     options.AddOption("-t", VariantType(static_cast<uint64>(1)), "Connection timeout seconds.");
 }
 
-AssetCache::ErrorCodes CacheRequest::Process(AssetCacheClient& cacheClient)
+AssetCache::AssetCacheError CacheRequest::Process(AssetCacheClient& cacheClient)
 {
     if (options.GetOption("-v").AsBool())
     {
         Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
     }
 
-    AssetCache::ErrorCodes exitCode = cacheClient.ConnectBlocked(CacheRequestInternal::GetConnectionParams(options));
-    if (AssetCache::ERROR_OK == exitCode)
+    AssetCache::AssetCacheError exitCode = cacheClient.ConnectSynchronously(CacheRequestInternal::GetConnectionParams(options));
+    if (AssetCache::AssetCacheError::NO_ERRORS == exitCode)
     {
         exitCode = SendRequest(cacheClient);
     }
@@ -76,13 +76,13 @@ AssetCache::ErrorCodes CacheRequest::Process(AssetCacheClient& cacheClient)
     return exitCode;
 }
 
-AssetCache::ErrorCodes CacheRequest::CheckOptions() const
+AssetCache::AssetCacheError CacheRequest::CheckOptions() const
 {
     const String hash = options.GetOption("-h").AsString();
     if (hash.length() != AssetCache::HASH_SIZE * 2)
     {
         Logger::Error("[CacheRequest::%s] Wrong hash argument (%s)", __FUNCTION__, hash.c_str());
-        return AssetCache::ERROR_WRONG_COMMAND_LINE;
+        return AssetCache::AssetCacheError::WRONG_COMMAND_LINE;
     }
 
     return CheckOptionsInternal();

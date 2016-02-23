@@ -143,12 +143,12 @@ void ProcessRecourcePacker()
         String timeoutStr = CommandLineParser::GetCommandParam("-t");
 
         AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? "127.0.0.1" : ipStr);
+        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
         params.port = (portStr.empty()) ? AssetCache::ASSET_SERVER_PORT : atoi(portStr.c_str());
         params.timeoutms = (timeoutStr.empty() ? 1000 : atoi(timeoutStr.c_str()) * 1000); //in ms
 
-        AssetCache::ErrorCodes connected = cacheClient.ConnectBlocked(params);
-        if (connected == AssetCache::ERROR_OK)
+        AssetCache::AssetCacheError connected = cacheClient.ConnectSynchronously(params);
+        if (connected == AssetCache::AssetCacheError::NO_ERRORS)
         {
             shouldDisconnect = true;
             resourcePacker.SetCacheClient(&cacheClient, "Resource Packer. Repack Sprites");

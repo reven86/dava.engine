@@ -40,6 +40,8 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "EditorSettings.h"
 
+#include "AssetCache/AssetCacheClient.h"
+
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
@@ -56,6 +58,7 @@ EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
+    , cacheClient(nullptr)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
@@ -67,7 +70,9 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
 
-    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
+    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
+    connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -127,11 +132,6 @@ EditorCore::EditorCore(QObject* parent)
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
     documentGroup->SetPixelization(mainWindow->isPixelized());
     documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
-
-    connect(spritesPacker.get(), &SpritesPacker::Finished, []()
-            {
-                Sprite::ReloadSprites();
-            });
 }
 
 EditorCore::~EditorCore() = default;
@@ -151,13 +151,25 @@ void EditorCore::Start()
     mainWindow->show();
 }
 
-void EditorCore::OnReloadSprites()
+void EditorCore::OnReloadSpritesStarted()
 {
     if (CloseAllDocuments())
     {
         mainWindow->ExecDialogReloadSprites(spritesPacker.get());
     }
 }
+
+void EditorCore::OnReloadSpritesFinished()
+{
+    if (cacheClient)
+    {
+        cacheClient->Disconnect();
+        cacheClient.reset();
+    }
+
+    Sprite::ReloadSprites();
+}
+
 
 void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 {
@@ -266,15 +278,27 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
-        spritesPacker->SetCacheTool(
-        EditorSettings::Instance()->GetAssetCacheIp(),
-        EditorSettings::Instance()->GetAssetCachePort(),
-        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+        String ipStr = EditorSettings::Instance()->GetAssetCacheIp();
+
+        DAVA::AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
+        params.port = static_cast<DAVA::uint16>(EditorSettings::Instance()->GetAssetCachePort());
+        params.timeoutms = EditorSettings::Instance()->GetAssetCacheTimeoutSec() * 1000; //in ms
+
+        cacheClient.reset(new AssetCacheClient(true));
+        DAVA::AssetCache::AssetCacheError connected = cacheClient->ConnectSynchronously(params);
+        if (connected != AssetCache::AssetCacheError::NO_ERRORS)
+        {
+            cacheClient.reset();
+        }
     }
     else
     {
-        spritesPacker->ClearCacheTool();
+        cacheClient.reset();
     }
+
+    spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
+
 
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();

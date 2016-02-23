@@ -121,7 +121,6 @@ void LoadExportedObjects(const FilePath& linkPathname, SceneExporter::ExportedOb
             while (size--)
             {
                 if (linksFile->IsEof())
-
                 {
                     Logger::Warning("Reading of file stopped by EOF: %s", linkPathname.GetAbsolutePathname().c_str());
                     break;
@@ -310,8 +309,8 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
     { //request Scene from cache
         SceneExporterCache::CalculateSceneKey(scenePathname, sceneLink, cacheKey, static_cast<uint32>(optimizeOnExport));
 
-        AssetCache::ErrorCodes requested = cacheClient->RequestFromCacheBlocked(cacheKey, outScenePathname.GetDirectory());
-        if (requested == AssetCache::ERROR_OK)
+        AssetCache::AssetCacheError requested = cacheClient->RequestFromCacheSynchronously(cacheKey, outScenePathname.GetDirectory());
+        if (requested == AssetCache::AssetCacheError::NO_ERRORS)
         {
             SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
             ExportObjects(externalLinks);
@@ -319,7 +318,7 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         }
         else
         {
-            Logger::Info("%s - failed to retrieve from cache(%s)", scenePathname.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(requested));
+            Logger::Info("%s - failed to retrieve from cache(%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested));
         }
     }
 
@@ -335,17 +334,17 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         AssetCache::CachedItemValue value;
         value.Add(outScenePathname);
         value.Add(linksPathname);
-        value.FinalizeValidationData();
+        value.UpdateValidationData();
         value.SetDescription(cacheItemDescription);
 
-        AssetCache::ErrorCodes added = cacheClient->AddToCacheBlocked(cacheKey, value);
-        if (added == AssetCache::ERROR_OK)
+        AssetCache::AssetCacheError added = cacheClient->AddToCacheSynchronously(cacheKey, value);
+        if (added == AssetCache::AssetCacheError::NO_ERRORS)
         {
             Logger::Info("%s - added to cache", scenePathname.GetAbsolutePathname().c_str());
         }
         else
         {
-            Logger::Info("%s - failed to add to cache (%s)", scenePathname.GetAbsolutePathname().c_str(), GlobalEnumMap<AssetCache::ErrorCodes>::Instance()->ToString(added));
+            Logger::Info("%s - failed to add to cache (%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added));
         }
     }
 }
@@ -451,9 +450,7 @@ bool SceneExporter::CopyFile(const FilePath& filePath, const String& fileLink) c
     bool retCopy = FileSystem::Instance()->CopyFile(filePath, newFilePath, true);
     if (!retCopy)
     {
-        Logger::Error("Can't copy %s to %s",
-                      fileLink.c_str(),
-                      newFilePath.GetAbsolutePathname().c_str());
+        Logger::Error("Can't copy %s to %s", fileLink.c_str(), newFilePath.GetAbsolutePathname().c_str());
     }
 
     return retCopy;

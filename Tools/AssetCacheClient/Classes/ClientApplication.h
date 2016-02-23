@@ -42,7 +42,7 @@ public:
 
     bool ParseCommandLine(int argc, char* argv[]);
 
-    DAVA::AssetCache::ErrorCodes GetExitCode() const
+    DAVA::AssetCache::AssetCacheError GetExitCode() const
     {
         return exitCode;
     };
@@ -53,7 +53,7 @@ private:
     void PrintUsage() const;
 
 private:
-    DAVA::AssetCache::ErrorCodes exitCode = DAVA::AssetCache::ERROR_WRONG_COMMAND_LINE;
+    DAVA::AssetCache::AssetCacheError exitCode = DAVA::AssetCache::AssetCacheError::WRONG_COMMAND_LINE;
 
     DAVA::List<std::unique_ptr<CacheRequest>> requests;
     CacheRequest* activeRequest = nullptr;

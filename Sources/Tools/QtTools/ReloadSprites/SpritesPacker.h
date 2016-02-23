@@ -38,6 +38,7 @@
 
 namespace DAVA {
     class ResourcePacker2D;
+    class AssetCacheClient;
 }
 class QDir;
 
@@ -47,7 +48,8 @@ class SpritesPacker : public QObject
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
 public:
     SpritesPacker(QObject *parent = nullptr);
-    ~SpritesPacker() override;
+
+    void SetCacheClient(DAVA::AssetCacheClient* cacheClient, const DAVA::String& comment);
 
     void AddTask(const QDir &inputDir, const QDir &outputDir);
     void ClearTasks();

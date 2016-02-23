@@ -41,7 +41,7 @@ GetRequest::GetRequest()
     options.AddOption("-f", VariantType(String("")), "Folder to save files from server");
 }
 
-AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient& cacheClient)
+AssetCache::AssetCacheError GetRequest::SendRequest(AssetCacheClient& cacheClient)
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
@@ -49,17 +49,17 @@ AssetCache::ErrorCodes GetRequest::SendRequest(AssetCacheClient& cacheClient)
     FilePath folder = options.GetOption("-f").AsString();
     folder.MakeDirectoryPathname();
 
-    return cacheClient.RequestFromCacheBlocked(key, folder);
+    return cacheClient.RequestFromCacheSynchronously(key, folder);
 }
 
-AssetCache::ErrorCodes GetRequest::CheckOptionsInternal() const
+AssetCache::AssetCacheError GetRequest::CheckOptionsInternal() const
 {
     const String folderpath = options.GetOption("-f").AsString();
     if (folderpath.empty())
     {
         Logger::Error("[GetRequest::%s] Empty folderpath", __FUNCTION__);
-        return AssetCache::ERROR_WRONG_COMMAND_LINE;
+        return AssetCache::AssetCacheError::WRONG_COMMAND_LINE;
     }
 
-    return AssetCache::ERROR_OK;
+    return AssetCache::AssetCacheError::NO_ERRORS;
 }

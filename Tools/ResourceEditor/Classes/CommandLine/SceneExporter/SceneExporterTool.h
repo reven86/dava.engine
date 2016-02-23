@@ -58,26 +58,25 @@ private:
     void ProcessInternal() override;
     DAVA::FilePath GetQualityConfigPath() const override;
 
-    eAction commandAction = ACTION_NONE;
-    SceneExporter::eExportedObjectType commandObject = SceneExporter::OBJECT_NONE;
-
-    DAVA::String filename;
-    DAVA::String foldername;
-    DAVA::FilePath fileListPath;
+    SceneExporter::ExportedObjectCollection exportedObjects;
+    DAVA::AssetCacheClient::ConnectionParams connectionsParams;
 
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
     DAVA::FilePath qualityConfigPath;
 
-    DAVA::eGPUFamily requestedGPU = DAVA::GPU_ORIGIN;
-    bool optimizeOnExport = true;
+    DAVA::String filename;
+    DAVA::String foldername;
+    DAVA::FilePath fileListPath;
 
+    eAction commandAction = ACTION_NONE;
+    SceneExporter::eExportedObjectType commandObject = SceneExporter::OBJECT_NONE;
+
+    DAVA::eGPUFamily requestedGPU = DAVA::GPU_ORIGIN;
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
 
-    SceneExporter::ExportedObjectCollection exportedObjects;
-
+    bool optimizeOnExport = true;
     bool useAssetCache = false;
-    DAVA::AssetCacheClient::ConnectionParams connectionsParams;
 };
 
 

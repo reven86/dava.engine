@@ -97,7 +97,7 @@ public:
     const Description& GetDescription() const;
 
     bool IsValid() const;
-    void FinalizeValidationData();
+    void UpdateValidationData();
 
 private:
     ValueData LoadFile(const FilePath& pathname);

@@ -38,12 +38,19 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 {
     struct Request
     {
+        Request() = default;
+        Request(const AssetCache::CacheItemKey& key_, const FilePath& outputFolder_, AssetCache::ePacketID requestID_)
+            : key(key_), outputFolder(outputFolder_), requestID(requestID_)
+            , result(AssetCache::AssetCacheError::CODE_NOT_INITIALIZED), recieved(false), processingRequest(false)
+        {
+        }
+
         void Reset()
         {
             outputFolder = "";
 
             requestID = AssetCache::PACKET_UNKNOWN;
-            result = AssetCache::ERROR_OK;
+            result = AssetCache::AssetCacheError::CODE_NOT_INITIALIZED;
 
             recieved = false;
             processingRequest = false;
@@ -53,7 +60,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
         FilePath outputFolder;
 
         AssetCache::ePacketID requestID = AssetCache::PACKET_UNKNOWN;
-        AssetCache::ErrorCodes result = AssetCache::ERROR_OK;
+        AssetCache::AssetCacheError result = AssetCache::AssetCacheError::NO_ERRORS;
 
         bool recieved = false;
         bool processingRequest = false;
@@ -62,26 +69,26 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 public:
     struct ConnectionParams
     {
-        String ip = "127.0.0.1";
+        String ip = AssetCache::LOCALHOST;
         uint16 port = AssetCache::ASSET_SERVER_PORT;
-        uint64 timeoutms = 60u * 1000u;
+        uint64 timeoutms = 60 * 1000;
     };
 
     AssetCacheClient(bool emulateNetworkLoop);
     ~AssetCacheClient() override;
 
-    AssetCache::ErrorCodes ConnectBlocked(const ConnectionParams& connectionParams);
+    AssetCache::AssetCacheError ConnectSynchronously(const ConnectionParams& connectionParams);
     void Disconnect();
 
-    AssetCache::ErrorCodes AddToCacheBlocked(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
-    AssetCache::ErrorCodes RequestFromCacheBlocked(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
+    AssetCache::AssetCacheError AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
+    AssetCache::AssetCacheError RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
 
     bool IsConnected() const;
 
 private:
     void ProcessNetwork();
 
-    AssetCache::ErrorCodes WaitRequest();
+    AssetCache::AssetCacheError WaitRequest();
 
     //ClientNetProxyListener
     void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;
