@@ -29,6 +29,8 @@
 
 #include "StatusBar.h"
 
+#include "Platform/SystemTimer.h"
+
 #include "Main/mainwindow.h"
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
@@ -39,33 +41,37 @@
 #include <QLayout>
 #include <QPalette>
 
-StatusBar::StatusBar(QWidget *parent)
-	: QStatusBar(parent)
+StatusBar::StatusBar(QWidget* parent)
+    : QStatusBar(parent)
 {
-	sceneGeometry = new QLabel(this);
-	sceneGeometry->setToolTip("Resolution");
-	sceneGeometry->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	addPermanentWidget(sceneGeometry);
+    sceneGeometry = new QLabel(this);
+    sceneGeometry->setToolTip("Resolution");
+    sceneGeometry->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    addPermanentWidget(sceneGeometry);
 
-	distanceToCamera = new QLabel(this);
-	distanceToCamera->setToolTip("Distance from camera to center of the selection");
-	distanceToCamera->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	addPermanentWidget(distanceToCamera);
+    fpsCounter = new QLabel(this);
+    fpsCounter->setToolTip("Current FPS for active scene");
+    fpsCounter->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    addPermanentWidget(fpsCounter);
 
-	selectionBoxSize = new QLabel(this);
-	selectionBoxSize->setToolTip("Selection box size");
-	selectionBoxSize->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	addPermanentWidget(selectionBoxSize);
-    
-	layout()->setContentsMargins(0, 0, 0, 0);
-	layout()->setMargin(0);
-	layout()->setSpacing(1);
+    distanceToCamera = new QLabel(this);
+    distanceToCamera->setToolTip("Distance from camera to center of the selection");
+    distanceToCamera->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    addPermanentWidget(distanceToCamera);
+
+    selectionBoxSize = new QLabel(this);
+    selectionBoxSize->setToolTip("Selection box size");
+    selectionBoxSize->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    addPermanentWidget(selectionBoxSize);
+
+    layout()->setContentsMargins(0, 0, 0, 0);
+    layout()->setMargin(0);
+    layout()->setSpacing(1);
     setStyleSheet("QStatusBar::item {border: none;}");
 }
 
 StatusBar::~StatusBar()
 {
-
 }
 
 void StatusBar::SetDistanceToCamera(DAVA::float32 distance)
@@ -80,90 +86,113 @@ void StatusBar::ResetDistanceToCamera()
 
 void StatusBar::UpdateDistanceToCamera()
 {
-	SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-	if(!scene)
-	{
-		ResetDistanceToCamera();
-		return;
-	}
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    if (!scene)
+    {
+        ResetDistanceToCamera();
+        return;
+    }
 
-	if(scene->selectionSystem->GetSelectionCount() > 0)
-	{
-		float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
-		SetDistanceToCamera(distanceToCamera);
-	}
-	else
-	{
-		ResetDistanceToCamera();
-	}
+    if (scene->selectionSystem->GetSelectionCount() > 0)
+    {
+        float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
+        SetDistanceToCamera(distanceToCamera);
+    }
+    else
+    {
+        ResetDistanceToCamera();
+    }
 }
 
-void StatusBar::SceneActivated( SceneEditor2 *scene )
+void StatusBar::SceneActivated(SceneEditor2* scene)
 {
-	UpdateDistanceToCamera();
-    
+    UpdateDistanceToCamera();
+
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::SceneSelectionChanged( SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected )
+void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
 {
-	UpdateDistanceToCamera();
+    UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+void StatusBar::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
     int id = command->GetId();
-    if(id == CMDID_BATCH)
+    if (id == CMDID_BATCH)
     {
-		CommandBatch *batch = (CommandBatch *)command;
-		Command2 *firstCommand = batch->GetCommand(0);
-		if(firstCommand && (firstCommand->GetId() == CMDID_TRANSFORM))
-		{
+        CommandBatch* batch = (CommandBatch*)command;
+        Command2* firstCommand = batch->GetCommand(0);
+        if (firstCommand && (firstCommand->GetId() == CMDID_TRANSFORM))
+        {
             UpdateSelectionBoxSize(scene);
-		}
+        }
     }
-    else if(id == CMDID_TRANSFORM)
+    else if (id == CMDID_TRANSFORM)
     {
         UpdateSelectionBoxSize(scene);
     }
 }
 
-void StatusBar::StructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
+void StatusBar::StructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 {
     UpdateSelectionBoxSize(scene);
 }
 
 void StatusBar::UpdateByTimer()
 {
-	UpdateDistanceToCamera();
+    UpdateDistanceToCamera();
+    UpdateFPS();
 }
 
 void StatusBar::OnSceneGeometryChaged(int width, int height)
 {
-	sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
+    sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
 }
 
-void StatusBar::UpdateSelectionBoxSize(SceneEditor2 *scene)
+void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
 {
-    EntityGroup selection;
-    if(scene)
+    if (scene == nullptr)
     {
-        selection = scene->selectionSystem->GetSelection();
+        return;
     }
 
-    if(selection.Size())
-    {
-        DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
-        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
-
-        selectionBoxSize->setVisible(true);
-    }
-    else
+    const EntityGroup& selection = scene->selectionSystem->GetSelection();
+    if (selection.IsEmpty())
     {
         selectionBoxSize->setText("");
         selectionBoxSize->setVisible(false);
     }
+    else
+    {
+        DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
+        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+        selectionBoxSize->setVisible(true);
+    }
 }
 
+void StatusBar::UpdateFPS()
+{
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    DAVA::uint32 frames = 0;
+    if (scene != nullptr)
+    {
+        frames = scene->GetFramesCount();
+        scene->ResetFramesCount();
+    }
 
+    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::Instance()->AbsoluteMS();
+
+    if (frames > 0 && lastTimeMS != 0 && lastTimeMS != currentTimeMS)
+    {
+        DAVA::uint64 deltaTime = currentTimeMS - lastTimeMS;
+        fpsCounter->setText(QString::fromStdString(DAVA::Format("FPS: %lld", frames * 1000 / deltaTime)));
+    }
+    else
+    {
+        fpsCounter->setText(QString::fromStdString("FPS: unknown"));
+    }
+
+    lastTimeMS = currentTimeMS;
+}

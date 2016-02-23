@@ -42,60 +42,60 @@
 
 namespace DAVA
 {
-	class Image;
+class Image;
 
-	class AutotestingDB : public Singleton < AutotestingDB >
-	{
-	public:
-		AutotestingDB();
-		~AutotestingDB();
+class AutotestingDB : public Singleton<AutotestingDB>
+{
+public:
+    AutotestingDB();
+    ~AutotestingDB();
 
-		static const String DB_ERROR_STR_VALUE;
-		static const int32 DB_ERROR_INT_VALUE = -9999;
+    static const String DB_ERROR_STR_VALUE;
+    static const int32 DB_ERROR_INT_VALUE = -9999;
 
-		bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
-		void CloseConnection();
-        void FailOnLocalBuild();
+    bool ConnectToDB(const String& collection, const String& dbName, const String& dbHost, const int32 dbPort);
+    void CloseConnection();
+    void FailOnLocalBuild();
 
-        // Work with log object in DB
-        KeyedArchive* FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
-        KeyedArchive* FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
+    // Work with log object in DB
+    KeyedArchive* FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
+    KeyedArchive* FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
 
-        KeyedArchive* FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String& groupId);
-        KeyedArchive* InsertTestArchive(KeyedArchive* currentGroupArchive, const String& testId);
-        KeyedArchive* InsertStepArchive(KeyedArchive* testArchive, const String& stepId, const String& description);
+    KeyedArchive* FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String& groupId);
+    KeyedArchive* InsertTestArchive(KeyedArchive* currentGroupArchive, const String& testId);
+    KeyedArchive* InsertStepArchive(KeyedArchive* testArchive, const String& stepId, const String& description);
 
-        KeyedArchive* FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String& testId);
-        KeyedArchive* FindOrInsertStepArchive(KeyedArchive* testArchive, const String& stepId);
-        KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
+    KeyedArchive* FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String& testId);
+    KeyedArchive* FindOrInsertStepArchive(KeyedArchive* testArchive, const String& stepId);
+    KeyedArchive* FindOrInsertTestStepLogEntryArchive(KeyedArchive* testStepArchive, const String& logId);
 
-		// Getting and Setting data from/in DB
-		bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
+    // Getting and Setting data from/in DB
+    bool SaveToDB(MongodbUpdateObject* dbUpdateObject);
 
-		void WriteLogHeader();
-		void WriteLog(const char8 *text, ...);
-		void Log(const String &level, const String &message);
+    void WriteLogHeader();
+    void WriteLog(const char8* text, ...);
+    void Log(const String& level, const String& message);
 
-		String GetStringTestParameter(const String &deviceName, const String &parameter);
-		int32 GetIntTestParameter(const String &deviceName, const String &parameter);
+    String GetStringTestParameter(const String& deviceName, const String& parameter);
+    int32 GetIntTestParameter(const String& deviceName, const String& parameter);
 
-		bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive);
+    bool SaveKeyedArchiveToDevice(const String& archiveName, KeyedArchive* archive);
 
-		void UploadScreenshot(const String &name, Image *image);
+    void UploadScreenshot(const String& name, Image* image);
 
-		// multiplayer api
-        String ReadState(const String& device, const String& param);
-        void WriteState(const String& device, const String& param, const String& state);
+    // multiplayer api
+    String ReadState(const String& device, const String& param);
+    void WriteState(const String& device, const String& param, const String& state);
 
-        void SetTestStarted();
+    void SetTestStarted();
 
-        FilePath logsFolder;
+    FilePath logsFolder;
 
-    protected:
-        MongodbClient* dbClient;
-        FilePath logFilePath;
-        AutotestingSystem* autoSys;
-    };
+protected:
+    MongodbClient* dbClient;
+    FilePath logFilePath;
+    AutotestingSystem* autoSys;
+};
 }
 
 #endif //__DAVAENGINE_AUTOTESTING__

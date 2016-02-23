@@ -38,13 +38,13 @@
 
 namespace DAVA
 {
-
 /** \brief A FriBiDi library wrapper. */
 class BiDiWrapper
 {
 public:
     bool Prepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
     bool Reorder(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl);
+
 private:
     Mutex mutex;
     Vector<FriBidiChar> logicalBuffer;
@@ -86,7 +86,7 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
     fribidi_shape(flags, &bidiLevels[0], fribidi_len, &arabicProps[0], &visualBuffer[0]);
 
     /* Remove FRIBIDI_CHAR_FILL aka 'ZERO WIDTH NO-BREAK SPACE' (U+FEFF) after joining and shaping */
-    auto lastIt = std::remove_if(visualBuffer.begin(), visualBuffer.end(), [](FriBidiChar ch){ return ch == FRIBIDI_CHAR_FILL; });
+    auto lastIt = std::remove_if(visualBuffer.begin(), visualBuffer.end(), [](FriBidiChar ch) { return ch == FRIBIDI_CHAR_FILL; });
     visualBuffer.erase(lastIt, visualBuffer.end());
 
     preparedStr.assign(visualBuffer.begin(), visualBuffer.end());
@@ -94,7 +94,7 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
     {
         *isRTL = FRIBIDI_IS_RTL(base_dir);
     }
-    
+
     return true;
 }
 
@@ -158,8 +158,7 @@ bool BiDiHelper::ReorderString(const WideString& preparedStr, WideString& reorde
 bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const
 {
     return FRIBIDI_IS_EXPLICIT_OR_BN(fribidi_get_bidi_type(character))
-        || character == FRIBIDI_CHAR_LRM 
-        || character == FRIBIDI_CHAR_RLM;
+    || character == FRIBIDI_CHAR_LRM
+    || character == FRIBIDI_CHAR_RLM;
 }
-
 }

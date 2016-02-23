@@ -32,45 +32,38 @@
 
 namespace DAVA
 {
-	
 UserNode::UserNode()
-	:drawBox(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f))
+    : drawBox(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f))
 {
-//	SetDebugFlags(GetDebugFlags() | DEBUG_DRAW_USERNODE);
+    //	SetDebugFlags(GetDebugFlags() | DEBUG_DRAW_USERNODE);
 }
 
 UserNode::~UserNode()
 {
-
 }
 
 void UserNode::Draw()
-{    
-	Entity::Draw();
-	if (!(flags & NODE_VISIBLE) || !(flags & NODE_UPDATABLE) || (flags & NODE_INVALID))return;
-
+{
+    Entity::Draw();
+    if (!(flags & NODE_VISIBLE) || !(flags & NODE_UPDATABLE) || (flags & NODE_INVALID))
+        return;
 }
-
-
 
 AABBox3 UserNode::GetWTMaximumBoundingBox()
 {
-	AABBox3 retBBox = drawBox;
-	drawBox.GetTransformedBox(GetWorldTransform(), retBBox);
-	return retBBox;
+    AABBox3 retBBox = drawBox;
+    drawBox.GetTransformedBox(GetWorldTransform(), retBBox);
+    return retBBox;
 }
 
-
-Entity* UserNode::Clone(Entity *dstNode)
+Entity* UserNode::Clone(Entity* dstNode)
 {
-	if (!dstNode) 
-	{
-		DVASSERT_MSG(IsPointerToExactClass<UserNode>(this), "Can clone only UserNode");
-		dstNode = new UserNode();
-	}
-	Entity::Clone(dstNode);
-	return dstNode;
+    if (!dstNode)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<UserNode>(this), "Can clone only UserNode");
+        dstNode = new UserNode();
+    }
+    Entity::Clone(dstNode);
+    return dstNode;
 }
-
-
 };

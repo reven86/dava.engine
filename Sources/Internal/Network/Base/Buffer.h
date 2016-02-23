@@ -37,10 +37,9 @@ namespace DAVA
 {
 namespace Net
 {
-
 using Buffer = uv_buf_t;
 
-template<typename T>
+template <typename T>
 Buffer CreateBuffer(T* buffer, std::size_t count = 1)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
@@ -62,7 +61,7 @@ inline Buffer CreateBuffer(void* rawBuffer, std::size_t size)
 /*
  Overloads that take pointer to const buffer
 */
-template<typename T>
+template <typename T>
 Buffer CreateBuffer(const T* buffer, std::size_t count = 1)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
@@ -81,7 +80,7 @@ inline Buffer CreateBuffer(const void* rawBuffer, std::size_t size)
 #endif
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_BUFFER_H__
+#endif // __DAVAENGINE_BUFFER_H__

@@ -47,9 +47,10 @@ MemorySnapshot::MemorySnapshot(MemorySnapshot&& other)
     , symbolTable(std::move(other.symbolTable))
     , mblocks(std::move(other.mblocks))
     , blockMap(std::move(other.blockMap))
-{}
+{
+}
 
-MemorySnapshot& MemorySnapshot::operator = (MemorySnapshot&& other)
+MemorySnapshot& MemorySnapshot::operator=(MemorySnapshot&& other)
 {
     if (this != &other)
     {
@@ -91,7 +92,7 @@ void MemorySnapshot::Unload()
 Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) const
 {
     DVASSERT(IsLoaded());
-    
+
     Branch* root = new Branch;
     for (auto& pair : blockMap)
     {
@@ -104,7 +105,7 @@ Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) co
             if (startFrame >= 0)
             {
                 Branch* leaf = BuildPath(root, startFrame, *bktraceNames);
-                
+
                 // Append memory blocks to leaf
                 uint32 allocByApp = 0;
                 uint32 pools = 0;
@@ -129,7 +130,8 @@ Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) co
 
 Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const Vector<const String*>& bktraceNames) const
 {
-    do {
+    do
+    {
         const String* curName = bktraceNames[startFrame];
         Branch* branch = parent->FindInChildren(curName);
         if (nullptr == branch)
@@ -138,20 +140,21 @@ Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const Vector<c
             parent->AppendChild(branch);
         }
         parent = branch;
-    } while (startFrame --> 0);
+    } while (startFrame-- > 0);
     return parent;
 }
 
 int MemorySnapshot::FindNamesInBacktrace(const Vector<const String*>& namesToFind, const Vector<const String*>& bktraceNames) const
 {
     int index = static_cast<int>(bktraceNames.size() - 1);
-    do {
+    do
+    {
         auto iterFind = std::find(namesToFind.begin(), namesToFind.end(), bktraceNames[index]);
         if (iterFind != namesToFind.end())
         {
             return index;
         }
-    } while (index --> 0);
+    } while (index-- > 0);
     return -1;
 }
 
@@ -186,7 +189,7 @@ bool MemorySnapshot::LoadFile()
                     if (bktraceSize * msnapshot.bktraceCount == nread)
                     {
                         const uint8* curOffset = bktrace.data();
-                        for (size_t i = 0, n = msnapshot.bktraceCount;i < n;++i)
+                        for (size_t i = 0, n = msnapshot.bktraceCount; i < n; ++i)
                         {
                             const MMBacktrace* curBktrace = reinterpret_cast<const MMBacktrace*>(curOffset);
                             const uint64* frames = OffsetPointer<uint64>(curBktrace, sizeof(MMBacktrace));

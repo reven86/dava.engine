@@ -39,7 +39,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 TCPServerTransport::TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout_)
     : loop(aLoop)
     , endpoint(aEndpoint)
@@ -115,7 +114,7 @@ void TCPServerTransport::AcceptorHandleClose(TCPAcceptor* acceptor)
         IServerListener* p = listener;
         listener = NULL;
         isTerminating = false;
-        p->OnTransportTerminated(this);     // This can be the last executed line of object instance
+        p->OnTransportTerminated(this); // This can be the last executed line of object instance
     }
     else
     {
@@ -125,8 +124,9 @@ void TCPServerTransport::AcceptorHandleClose(TCPAcceptor* acceptor)
 
 void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
 {
-    if (true == isTerminating) return;
-    
+    if (true == isTerminating)
+        return;
+
     if (0 == error)
     {
         TCPClientTransport* client = new TCPClientTransport(loop, readTimeout);
@@ -147,5 +147,5 @@ void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 erro
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

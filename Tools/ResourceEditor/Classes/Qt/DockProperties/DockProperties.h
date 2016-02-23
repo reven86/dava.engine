@@ -34,24 +34,23 @@
 #include <QPointer>
 #include <QMenu>
 
-
 class DockProperties : public QDockWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	DockProperties(QWidget *parent = NULL);
-	~DockProperties();
+    DockProperties(QWidget* parent = NULL);
+    ~DockProperties();
 
-	void Init();
+    void Init();
 
 protected slots:
-	void ActionFavoritesEdit();
-	void ViewModeSelected(int index);
+    void ActionFavoritesEdit();
+    void ViewModeSelected(int index);
     void OnAddAction();
 
 private:
-    QPointer< QMenu > addComponentMenu;
+    QPointer<QMenu> addComponentMenu;
 };
 
 #endif // __RESOURCEEDITORQT__DOCKPROPERTIES__

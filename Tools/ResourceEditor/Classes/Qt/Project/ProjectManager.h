@@ -34,11 +34,13 @@
 #include <QVector>
 #include "DAVAEngine.h"
 
+class SpritesPackerModule;
 class ProjectManager
-    : public QObject
-    , public DAVA::Singleton<ProjectManager>
+: public QObject
+  ,
+  public DAVA::Singleton<ProjectManager>
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     struct AvailableMaterialTemplate
@@ -71,6 +73,8 @@ public:
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
 
+    void SetSpritesPacker(SpritesPackerModule* spritesPacker);
+
 public slots:
     DAVA::FilePath ProjectOpenDialog() const;
     void OpenProject(const QString& path);
@@ -81,9 +85,9 @@ public slots:
     void UpdateParticleSprites();
 
 signals:
-	void ProjectOpened(const QString &path);
-	void ProjectClosed();
-    
+    void ProjectOpened(const QString& path);
+    void ProjectClosed();
+
 private:
     void LoadProjectSettings();
     void LoadMaterialsSettings();
@@ -100,6 +104,8 @@ private:
     QVector<AvailableMaterialQuality> qualities;
     bool useDelayInitialization = true;
     bool isParticleSpritesUpdated = false;
+
+    SpritesPackerModule* spritesPacker = nullptr;
 };
 
-#endif // __PROJECT_MANAGER_H__ 
+#endif // __PROJECT_MANAGER_H__

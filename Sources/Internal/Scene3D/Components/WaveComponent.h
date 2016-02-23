@@ -35,36 +35,37 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class WaveSystem;
 class WaveComponent : public Component
 {
 protected:
-	virtual ~WaveComponent();
+    virtual ~WaveComponent();
+
 public:
     WaveComponent();
     WaveComponent(float32 waveAmlitude, float32 waveLenght, float32 waveSpeed, float32 dampingRatio, float32 influenceDistance);
 
-	IMPLEMENT_COMPONENT_TYPE(WAVE_COMPONENT);
+    IMPLEMENT_COMPONENT_TYPE(WAVE_COMPONENT);
 
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    virtual Component* Clone(Entity* toEntity);
+    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
 
     void Trigger();
-    
-    inline const float32 & GetWaveAmplitude() const;
-    inline const float32 & GetWaveLenght() const;
-    inline const float32 & GetWaveSpeed() const;
-    inline const float32 & GetDampingRatio() const;
-    inline const float32 & GetInfluenceRadius() const;
 
-    inline void SetWaveAmplitude(const float32 & amplitude);
-    inline void SetWaveLenght(const float32 & lenght);
-    inline void SetWaveSpeed(const float32 & speed);
-    inline void SetDampingRatio(const float32 & damping);
-    inline void SetInfluenceRadius(const float32 & infRadius);
+    inline const float32& GetWaveAmplitude() const;
+    inline const float32& GetWaveLenght() const;
+    inline const float32& GetWaveSpeed() const;
+    inline const float32& GetDampingRatio() const;
+    inline const float32& GetInfluenceRadius() const;
+
+    inline void SetWaveAmplitude(const float32& amplitude);
+    inline void SetWaveLenght(const float32& lenght);
+    inline void SetWaveSpeed(const float32& speed);
+    inline void SetDampingRatio(const float32& damping);
+    inline void SetInfluenceRadius(const float32& infRadius);
 
 protected:
     float32 amplitude;
@@ -72,9 +73,9 @@ protected:
     float32 speed;
     float32 damping;
     float32 infRadius;
-    
+
 public:
-	INTROSPECTION_EXTEND(WaveComponent, Component,
+    INTROSPECTION_EXTEND(WaveComponent, Component,
                          PROPERTY("amplitude", "amplitude", GetWaveAmplitude, SetWaveAmplitude, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("lenght", "lenght", GetWaveLenght, SetWaveLenght, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("speed", "speed", GetWaveSpeed, SetWaveSpeed, I_SAVE | I_VIEW | I_EDIT)
@@ -83,56 +84,55 @@ public:
                          );
 };
 
-inline const float32 & WaveComponent::GetWaveAmplitude() const
+inline const float32& WaveComponent::GetWaveAmplitude() const
 {
     return amplitude;
 }
 
-inline const float32 & WaveComponent::GetWaveLenght() const
+inline const float32& WaveComponent::GetWaveLenght() const
 {
     return lenght;
 }
 
-inline const float32 & WaveComponent::GetWaveSpeed() const
+inline const float32& WaveComponent::GetWaveSpeed() const
 {
     return speed;
 }
 
-inline const float32 & WaveComponent::GetDampingRatio() const
+inline const float32& WaveComponent::GetDampingRatio() const
 {
     return damping;
 }
 
-inline const float32 & WaveComponent::GetInfluenceRadius() const
+inline const float32& WaveComponent::GetInfluenceRadius() const
 {
     return infRadius;
 }
 
-inline void WaveComponent::SetWaveAmplitude(const float32 & _amplitude)
+inline void WaveComponent::SetWaveAmplitude(const float32& _amplitude)
 {
     amplitude = _amplitude;
 }
 
-inline void WaveComponent::SetWaveLenght(const float32 & _lenght)
+inline void WaveComponent::SetWaveLenght(const float32& _lenght)
 {
     lenght = _lenght;
 }
 
-inline void WaveComponent::SetWaveSpeed(const float32 & _speed)
+inline void WaveComponent::SetWaveSpeed(const float32& _speed)
 {
     speed = _speed;
 }
 
-inline void WaveComponent::SetDampingRatio(const float32 & _damping)
+inline void WaveComponent::SetDampingRatio(const float32& _damping)
 {
     damping = _damping;
 }
 
-inline void WaveComponent::SetInfluenceRadius(const float32 & _infRadius)
+inline void WaveComponent::SetInfluenceRadius(const float32& _infRadius)
 {
     infRadius = _infRadius;
 }
-
 };
 
 #endif

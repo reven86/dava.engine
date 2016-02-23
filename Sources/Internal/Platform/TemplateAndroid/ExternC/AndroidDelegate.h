@@ -36,20 +36,19 @@
 #include <jni.h>
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
-class AndroidDelegate: public DAVA::AndroidSystemDelegate
+class AndroidDelegate : public DAVA::AndroidSystemDelegate
 {
-	enum eConst
-	{
-		MAX_PATH_SZ = 260
-	};
+    enum eConst
+    {
+        MAX_PATH_SZ = 260
+    };
 
-	char httpDownloaderName[MAX_PATH_SZ];
+    char httpDownloaderName[MAX_PATH_SZ];
 
 public:
+    AndroidDelegate(JavaVM* vm);
 
-	AndroidDelegate(JavaVM *vm);
-
-	virtual bool DownloadHttpFile(const DAVA::String & url, const DAVA::String & documentsPathname);
+    virtual bool DownloadHttpFile(const DAVA::String& url, const DAVA::String& documentsPathname);
 };
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)

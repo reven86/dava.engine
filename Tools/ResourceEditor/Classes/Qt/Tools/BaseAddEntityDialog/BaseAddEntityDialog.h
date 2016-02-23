@@ -41,58 +41,56 @@
 
 namespace Ui
 {
-	class BaseAddEntityDialog;
+class BaseAddEntityDialog;
 }
 
-class BaseAddEntityDialog: public QDialog
+class BaseAddEntityDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	
-	enum eButtonAlign
-	{
-		BUTTON_ALIGN_LEFT = 0,
-		BUTTON_ALIGN_RIGHT
-	};
-	
-	explicit BaseAddEntityDialog( QWidget* parent = 0, QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Close);
-	virtual ~BaseAddEntityDialog();
-	
-	void GetIncludedControls(QList<QWidget*>& includedWidgets);
+    enum eButtonAlign
+    {
+        BUTTON_ALIGN_LEFT = 0,
+        BUTTON_ALIGN_RIGHT
+    };
 
-	virtual DAVA::Entity* GetEntity();
-	void virtual SetEntity(DAVA::Entity* );
-	
-	void AddButton( QWidget* widget, eButtonAlign orientation = BUTTON_ALIGN_LEFT);
-	void AddButton( QWidget* widget, int32 position);
+    explicit BaseAddEntityDialog(QWidget* parent = 0, QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Close);
+    virtual ~BaseAddEntityDialog();
+
+    void GetIncludedControls(QList<QWidget*>& includedWidgets);
+
+    virtual DAVA::Entity* GetEntity();
+    void virtual SetEntity(DAVA::Entity*);
+
+    void AddButton(QWidget* widget, eButtonAlign orientation = BUTTON_ALIGN_LEFT);
+    void AddButton(QWidget* widget, int32 position);
 
 protected slots:
-	virtual void OnItemEdited(const QModelIndex &);
-    virtual void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
-    
+    virtual void OnItemEdited(const QModelIndex&);
+    virtual void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
 
 protected:
-	virtual void FillPropertyEditorWithContent() = 0;
+    virtual void FillPropertyEditorWithContent() = 0;
 
-	virtual QtPropertyData* AddInspMemberToEditor(void *object, const DAVA::InspMember *);
-	virtual QtPropertyData* AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName);
-	virtual QtPropertyData* AddMetaObject(void *_object, const DAVA::MetaInfo *_meta, const String& rowName);
+    virtual QtPropertyData* AddInspMemberToEditor(void* object, const DAVA::InspMember*);
+    virtual QtPropertyData* AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName);
+    virtual QtPropertyData* AddMetaObject(void* _object, const DAVA::MetaInfo* _meta, const String& rowName);
 
-	void AddControlToUserContainer(QWidget* widget);
-	void AddControlToUserContainer(QWidget* widget, const DAVA::String& labelString);
-	void RemoveControlFromUserContainer(QWidget* widget);
-	void RemoveAllControlsFromUserContainer();
+    void AddControlToUserContainer(QWidget* widget);
+    void AddControlToUserContainer(QWidget* widget, const DAVA::String& labelString);
+    void RemoveControlFromUserContainer(QWidget* widget);
+    void RemoveAllControlsFromUserContainer();
 
-	void showEvent(QShowEvent * event);
-	
-	void PerformResize();
-	
-	DAVA::Entity* entity;
-	QtPropertyEditor *propEditor;
-	Ui::BaseAddEntityDialog *ui;
-	
-	DAVA::Map<QWidget*, QWidget*> additionalWidgetMap;
+    void showEvent(QShowEvent* event);
+
+    void PerformResize();
+
+    DAVA::Entity* entity;
+    QtPropertyEditor* propEditor;
+    Ui::BaseAddEntityDialog* ui;
+
+    DAVA::Map<QWidget*, QWidget*> additionalWidgetMap;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__BASEADDENTITYDIALOG__) */

@@ -41,28 +41,26 @@ class QAction;
 class RecentMenuItems
 {
 public:
-    
-    RecentMenuItems(RecentMenuItems &rmi) = delete;
+    RecentMenuItems(RecentMenuItems& rmi) = delete;
     RecentMenuItems& operator=(RecentMenuItems& rmi) = delete;
 
-    RecentMenuItems(const DAVA::FastName & settingsKeyCount, const DAVA::FastName & settingsKeyData);
+    RecentMenuItems(const DAVA::FastName& settingsKeyCount, const DAVA::FastName& settingsKeyData);
 
-    void SetMenu(QMenu *menu);
+    void SetMenu(QMenu* menu);
     void InitMenuItems();
     void EnableMenuItems(bool enabled);
-    
-    void Add(const DAVA::String & recent);
+
+    void Add(const DAVA::String& recent);
     DAVA::Vector<DAVA::String> Get() const;
 
-    DAVA::String GetItem(const QAction *action) const;
-    
-private:
+    DAVA::String GetItem(const QAction* action) const;
 
-    void AddInternal(const DAVA::String & recent);
+private:
+    void AddInternal(const DAVA::String& recent);
     void RemoveMenuItems();
 
-    QList<QAction *> actions;
-    QMenu *menu;
+    QList<QAction*> actions;
+    QMenu* menu;
 
     const DAVA::FastName settingsKeyCount;
     const DAVA::FastName settingsKeyData;

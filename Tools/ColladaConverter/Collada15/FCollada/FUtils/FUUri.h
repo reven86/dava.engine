@@ -33,57 +33,58 @@
 class FCOLLADA_EXPORT FUUri
 {
 public:
-	enum Scheme
-	{
-		NONE,
-		FILE,
-		FTP,
-		HTTP,
-		HTTPS
-	};
+    enum Scheme
+    {
+        NONE,
+        FILE,
+        FTP,
+        HTTP,
+        HTTPS
+    };
 
 private:
-	/** The URI scheme */
-	Scheme scheme;
-	/** The URI scheme specific part */
-	fstring schemeDelimiter;
-	/** The URI user used to connect to the host */
-	fstring username;
-	/** The URI password used to connect to the host */
-	fstring password;
-	/** The URI the host */
-	fstring hostname;
-	/** The URI port used to connect to the host */
-	uint32 port;
-	/** The URI path represent the name of the filename. */
-	fstring path;
-	/** The URI query */
-	fstring query;
-	/** The URI fragment represent the COLLADA id of the element targeted. */
-	fstring fragment;
+    /** The URI scheme */
+    Scheme scheme;
+    /** The URI scheme specific part */
+    fstring schemeDelimiter;
+    /** The URI user used to connect to the host */
+    fstring username;
+    /** The URI password used to connect to the host */
+    fstring password;
+    /** The URI the host */
+    fstring hostname;
+    /** The URI port used to connect to the host */
+    uint32 port;
+    /** The URI path represent the name of the filename. */
+    fstring path;
+    /** The URI query */
+    fstring query;
+    /** The URI fragment represent the COLLADA id of the element targeted. */
+    fstring fragment;
 
-	static bool IsAlpha(fchar fc);
-	static bool IsDigit(fchar fc);
-	static bool IsAlphaNumeric(fchar fc);
-	static bool IsMark(fchar fc);
-	static bool IsHex(fchar fc);
-	static bool IsReserved(fchar fc);
+    static bool IsAlpha(fchar fc);
+    static bool IsDigit(fchar fc);
+    static bool IsAlphaNumeric(fchar fc);
+    static bool IsMark(fchar fc);
+    static bool IsHex(fchar fc);
+    static bool IsReserved(fchar fc);
 
-	/** For a relative path, extract the list of the individual paths that must be traversed to get to the file.
+    /** For a relative path, extract the list of the individual paths that must be traversed to get to the file.
 		@param filename A file path.
 		@param list The returned list of paths to traverse.
 		@param includeFilename Whether the filename should be pushed at the back of the returned list. */
-	void ExtractPathStack(const fstring& name, FStringList& list, bool includeFilename = false) const;
-public:
-	/** Constructor. */
-	FUUri();
+    void ExtractPathStack(const fstring& name, FStringList& list, bool includeFilename = false) const;
 
-	/** Constructor.
+public:
+    /** Constructor. */
+    FUUri();
+
+    /** Constructor.
 		@param uri The string value for the URI.
 		@param escape Whether to escape the strings.*/
-	FUUri(const fstring& uri, bool escape = false);
+    FUUri(const fstring& uri, bool escape = false);
 
-	/** Constructor.
+    /** Constructor.
 		@param scheme The scheme to use in the construction of the URI.
 		@param username The username to use in the construction of the URI.
 		@param passwd The password to use in the construction of the URI.
@@ -92,111 +93,140 @@ public:
 		@param path The path to use in the construction of the URI.
 		@param query The query to use in the construction of the URI.
 		@param fragment The fragment to use in the construction of the URI. */
-	FUUri(Scheme scheme, const fstring& username, const fstring& passwd, const fstring& host, uint32 port, const fstring& path = FC(""), const fstring& query = FC(""), const fstring& fragment = FC(""));
+    FUUri(Scheme scheme, const fstring& username, const fstring& passwd, const fstring& host, uint32 port, const fstring& path = FC(""), const fstring& query = FC(""), const fstring& fragment = FC(""));
 
-	/** Constructor.
+    /** Constructor.
 		@param scheme The scheme to use in the construction of the URI.
 		@param host The host to use in the construction of the URI.
 		@param path The path to use in the construction of the URI.
 		@param fragment The fragment to use in the construction of the URI. */
-	FUUri(Scheme scheme, const fstring& host, const fstring& path = FC(""), const fstring& fragment = FC(""));
+    FUUri(Scheme scheme, const fstring& host, const fstring& path = FC(""), const fstring& fragment = FC(""));
 
-	/** Constructor.
+    /** Constructor.
 		@param path The path to use in the construction of the URI.
 		@param fragment The fragment to use in the construction of the URI. */
-	FUUri(const fstring& path, const fstring& fragment);
+    FUUri(const fstring& path, const fstring& fragment);
 
-	/** Retrieves the scheme from the URI.
+    /** Retrieves the scheme from the URI.
 		@return The URI scheme. */
-	inline Scheme GetScheme() const { return scheme; }
+    inline Scheme GetScheme() const
+    {
+        return scheme;
+    }
 
-	/** Retrieves the scheme delimiter from the URI.
+    /** Retrieves the scheme delimiter from the URI.
 		@return The URI scheme delimiter. */
-	inline const fstring& GetSchemeDelimiter() const { return schemeDelimiter; }
+    inline const fstring& GetSchemeDelimiter() const
+    {
+        return schemeDelimiter;
+    }
 
-	/** Retrieves the user information from the URI.
+    /** Retrieves the user information from the URI.
 		@return The URI user information. */
-	fstring GetUserInformations() const;
+    fstring GetUserInformations() const;
 
-	/** Retrieves the host information from the URI.
+    /** Retrieves the host information from the URI.
 		@return The URI host. */
-	inline const fstring& GetHostname() const { return hostname; }
+    inline const fstring& GetHostname() const
+    {
+        return hostname;
+    }
 
-	/** Retrieves the port number from the URI.
+    /** Retrieves the port number from the URI.
 		@return The URI port number. */
-	inline uint32 GetPort() const { return port; }
+    inline uint32 GetPort() const
+    {
+        return port;
+    }
 
-	/** Sets the port number of the URI.
+    /** Sets the port number of the URI.
 		@param _port A valid port number. */
-	inline void SetPort(uint32 _port) { port = _port; }
+    inline void SetPort(uint32 _port)
+    {
+        port = _port;
+    }
 
-	/** Retrieves the path from the URI.
+    /** Retrieves the path from the URI.
 		@return The URI path. */
-	inline const fstring& GetPath() const { return path; }
+    inline const fstring& GetPath() const
+    {
+        return path;
+    }
 
-	/** Retrieves the query from the URI.
+    /** Retrieves the query from the URI.
 		@return The URI query. */
-	inline const fstring& GetQuery() const { return query; }
+    inline const fstring& GetQuery() const
+    {
+        return query;
+    }
 
-	/** Sets the query of the URI.
+    /** Sets the query of the URI.
 		@param _query A URI fragment. */
-	inline void SetQuery(const fstring& _query) { query = _query; }
+    inline void SetQuery(const fstring& _query)
+    {
+        query = _query;
+    }
 
-	/** Retrieves the fragment from the URI.
+    /** Retrieves the fragment from the URI.
 		@return The URI query. */
-	inline const fstring& GetFragment() const { return fragment; }
+    inline const fstring& GetFragment() const
+    {
+        return fragment;
+    }
 
-	/** Sets the fragment of the URI.
+    /** Sets the fragment of the URI.
 		@param _fragment A URI fragment. */
-	inline void SetFragment(const fstring& _fragment) { fragment = _fragment; }
+    inline void SetFragment(const fstring& _fragment)
+    {
+        fragment = _fragment;
+    }
 
-	/** Retrieves the authority string from the URI. ("[userInfo@]host[:port]")
+    /** Retrieves the authority string from the URI. ("[userInfo@]host[:port]")
 		@return The URI authority string. */
-	fstring GetAuthority() const;
+    fstring GetAuthority() const;
 
-	/** Retrieves an absolute path from the URI.
+    /** Retrieves an absolute path from the URI.
 		@return The URI absolute path. */
-	fstring GetAbsolutePath() const;
+    fstring GetAbsolutePath() const;
 
-	/** Retrieves an absolute URI string from the URI.
+    /** Retrieves an absolute URI string from the URI.
 		@param fragment Whether to return a string with the fragment
 		@return The URI string. */
-	fstring GetAbsoluteUri(bool fragment = true) const;
+    fstring GetAbsoluteUri(bool fragment = true) const;
 
-	/** Retrieves an relative URI string from the URI.
+    /** Retrieves an relative URI string from the URI.
 		@return The URI string. */
-	fstring GetRelativeUri(const FUUri& uri) const;
+    fstring GetRelativeUri(const FUUri& uri) const;
 
-	/** Makes a relative path from a uri
+    /** Makes a relative path from a uri
 		@param	uri	The uri representing the path.
 		@return The relative path. */
-	fstring MakeRelative(const fstring& path) const;
+    fstring MakeRelative(const fstring& path) const;
 
-	/** Makes an absolute path from a relative path and this URI
+    /** Makes an absolute path from a relative path and this URI
 		@param	relpath	The relative path
 		@return The absolute path. */
-	fstring MakeAbsolute(const fstring& relativePath) const;
+    fstring MakeAbsolute(const fstring& relativePath) const;
 
-	/** Makes the passed in URI relative to this URI
+    /** Makes the passed in URI relative to this URI
 		@param uri The relative or absolute URI */
-	void MakeAbsolute(FUUri& uri) const;
+    void MakeAbsolute(FUUri& uri) const;
 
-	/** Resolves a URI from a relative path against this URI
+    /** Resolves a URI from a relative path against this URI
 		@param	relpath	The relative path.
 		@return The newly contructed URI. */
-	FUUri Resolve(const fstring& relativePath) const;
+    FUUri Resolve(const fstring& relativePath) const;
 
-	/** Retrieves whether this URI points to a file.
+    /** Retrieves whether this URI points to a file.
 		@return Whether this URI points to a file. */
-	bool IsFile() const;
+    bool IsFile() const;
 
-	/** Escapes a path
+    /** Escapes a path
 		@param path A path.
 		@return The escaped path. */
-	static fstring Escape(const fstring& path);
+    static fstring Escape(const fstring& path);
 };
 
 typedef fm::vector<FUUri> FUUriList; /**< A dynamically-sized array of URIs. */
 
 #endif // _FU_URI_H_
-

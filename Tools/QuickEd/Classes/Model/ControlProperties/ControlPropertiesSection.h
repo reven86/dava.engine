@@ -35,22 +35,22 @@
 
 namespace DAVA
 {
-    class UIControl;
+class UIControl;
 }
 
 class ControlPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
-    ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType copyType);
+    ControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const ControlPropertiesSection* sourceSection, eCloneType copyType);
 
 protected:
     virtual ~ControlPropertiesSection();
-    
+
 public:
-    void Accept(PropertyVisitor *visitor) override;
+    void Accept(PropertyVisitor* visitor) override;
 
 private:
-    DAVA::UIControl *control;
+    DAVA::UIControl* control;
 };
 
 #endif // __UI_EDITOR_CONTROL_PROPERTIES_SECTION_H__

@@ -117,30 +117,27 @@ void CorePlatformAndroid::ProcessFrame()
     {
         if (viewSizeChanged)
         {
-            ProcessResizeView();
+            ApplyPendingViewSize();
         }
 
         Core::SystemProcessFrame();
     }
 }
 
-void CorePlatformAndroid::ProcessResizeView()
+void CorePlatformAndroid::ApplyPendingViewSize()
 {
+    Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] in");
+    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", pendingWidth, pendingHeight);
+
     viewSizeChanged = false;
 
     DeviceInfo::InitializeScreenInfo();
-    UpdateScreenMode();
-}
 
-void CorePlatformAndroid::UpdateScreenMode()
-{
-    Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] start");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backbufferWidth, backbufferHeight);
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(pendingWidth, pendingHeight);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(pendingWidth, pendingHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
-    Logger::FrameworkDebug("[CorePlatformAndroid::] input w = %d, h = %d", width, height);
-    Logger::FrameworkDebug("[CorePlatformAndroid::] back buffer w = %d, h = %d", backbufferWidth, backbufferHeight);
+    Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] out");
     Logger::FrameworkDebug("[CorePlatformAndroid::UpdateScreenMode] done");
 }
 
@@ -163,8 +160,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     renderIsActive = true;
 
-    width = w;
-    height = h;
+    pendingWidth = w;
+    pendingHeight = h;
     backbufferWidth = int32(w * GetScreenScaleFactor());
     backbufferHeight = int32(h * GetScreenScaleFactor());
 
@@ -182,18 +179,15 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
     {
         wasCreated = true;
 
-        ProcessResizeView();
+        ApplyPendingViewSize();
         rendererParams.width = (uint32)backbufferWidth;
         rendererParams.height = (uint32)backbufferHeight;
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();
-
         FileSystem::Instance()->Init();
 
-        //////////////////////////////////////////////////////////////////////////
         Core::Instance()->SystemAppStarted();
-
         StartForeground();
     }
 
@@ -209,16 +203,10 @@ void CorePlatformAndroid::OnDestroyActivity()
 {
     Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
 
-    rhi::ResetParam params;
-    params.width = 0;
-    params.height = 0;
-    params.window = nullptr;
-    rhi::Reset(params);
-
     renderIsActive = false;
-    QuitAction();
-
     wasCreated = false;
+
+    QuitAction();
 }
 
 void CorePlatformAndroid::StartVisible()
@@ -386,6 +374,16 @@ AndroidSystemDelegate* CorePlatformAndroid::GetAndroidSystemDelegate() const
 void CorePlatformAndroid::SetNativeWindow(void* nativeWindow)
 {
     rendererParams.window = nativeWindow;
+}
+
+int32 CorePlatformAndroid::GetViewWidth() const
+{
+    return pendingWidth;
+}
+
+int32 CorePlatformAndroid::GetViewHeight() const
+{
+    return pendingHeight;
 }
 }
 #endif // #if defined(__DAVAENGINE_ANDROID__)

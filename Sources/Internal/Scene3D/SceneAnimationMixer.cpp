@@ -29,19 +29,15 @@
 
 #include "Scene3D/SceneAnimationMixer.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 /*	
 	ситуации 
 	- blendFromCurrentPosition
 	
 */
-	
+
 void SceneAnimationMixer::Update(float32 time)
 {
-	
 }
-	
-
 };

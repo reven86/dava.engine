@@ -55,7 +55,7 @@ public:
         EF_AFFECTS_STYLES = 0x08,
         EF_DEPENDS_ON_LAYOUTS = 0x10,
     };
-    
+
     enum eRefreshFlags
     {
         REFRESH_DEFAULT_VALUE = 0x01,
@@ -69,26 +69,27 @@ public:
         CT_INHERIT,
         CT_COPY
     };
-    
+
 public:
     AbstractProperty();
+
 protected:
     virtual ~AbstractProperty();
 
 public:
-    AbstractProperty *GetParent() const;
-    void SetParent(AbstractProperty *parent);
+    AbstractProperty* GetParent() const;
+    void SetParent(AbstractProperty* parent);
 
     virtual DAVA::uint32 GetCount() const = 0;
     virtual AbstractProperty* GetProperty(DAVA::int32 index) const = 0;
     virtual DAVA::int32 GetIndex(AbstractProperty* property) const;
 
     virtual void Refresh(DAVA::int32 refreshFlags);
-    virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype);
+    virtual AbstractProperty* FindPropertyByPrototype(AbstractProperty* prototype);
     virtual bool HasChanges() const;
-    virtual void Accept(PropertyVisitor *visitor) = 0;
+    virtual void Accept(PropertyVisitor* visitor) = 0;
 
-    virtual const DAVA::String &GetName() const = 0;
+    virtual const DAVA::String& GetName() const = 0;
     virtual ePropertyType GetType() const = 0;
     virtual DAVA::uint32 GetFlags() const;
     virtual DAVA::int32 GetStylePropertyIndex() const;
@@ -96,24 +97,24 @@ public:
     virtual bool IsReadOnly() const;
 
     virtual DAVA::VariantType GetValue() const;
-    virtual void SetValue(const DAVA::VariantType &newValue);
+    virtual void SetValue(const DAVA::VariantType& newValue);
     virtual DAVA::VariantType GetDefaultValue() const;
-    virtual void SetDefaultValue(const DAVA::VariantType &newValue);
-    virtual const EnumMap *GetEnumMap() const;
+    virtual void SetDefaultValue(const DAVA::VariantType& newValue);
+    virtual const EnumMap* GetEnumMap() const;
     virtual void ResetValue();
     virtual bool IsOverriddenLocally() const;
     virtual bool IsOverridden() const;
 
-    AbstractProperty *GetRootProperty();
-    const AbstractProperty *GetRootProperty() const;
+    AbstractProperty* GetRootProperty();
+    const AbstractProperty* GetRootProperty() const;
 
 private:
-    AbstractProperty *parent;
+    AbstractProperty* parent;
+
 public:
     INTROSPECTION_EXTEND(AbstractProperty, DAVA::BaseObject,
                          nullptr
                          );
-
 };
 
 

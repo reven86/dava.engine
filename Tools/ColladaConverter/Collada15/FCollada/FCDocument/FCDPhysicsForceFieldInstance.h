@@ -31,12 +31,12 @@ class FCDocument;
 class FCOLLADA_EXPORT FCDPhysicsForceFieldInstance : public FCDEntityInstance
 {
 private:
-	DeclareObjectType(FCDEntityInstance);
+    DeclareObjectType(FCDEntityInstance);
 
-	friend class FCDEntityInstanceFactory;
+    friend class FCDEntityInstanceFactory;
 
 protected:
-	/** Constructor: do not use directly. Create new physics force fields using
+    /** Constructor: do not use directly. Create new physics force fields using
 		the FCDEntityInstanceFactory::CreateInstance function.
 		@param document The COLLADA document that contains this physics model
 			instance. 
@@ -44,25 +44,28 @@ protected:
 			writing, this should be NULL since only parents are physics model
 			instances and physics scene.
 		@param entityType The entity type: FORCE_FIELD. */
-	FCDPhysicsForceFieldInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType = FCDEntity::FORCE_FIELD);
+    FCDPhysicsForceFieldInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType = FCDEntity::FORCE_FIELD);
 
 public:
-	/** Destructor. */
-	virtual ~FCDPhysicsForceFieldInstance();
+    /** Destructor. */
+    virtual ~FCDPhysicsForceFieldInstance();
 
-	/** Retrieves the entity instance class type.
+    /** Retrieves the entity instance class type.
 		This is used to determine the up-class for the entity instance object.
 		@deprecated Instead use: FCDEntityInstance::HasType(
 			FCDGeometryInstance::GetClassType())
 		@return The class type: PHYSICS_FORCE_FIELD. */
-	virtual Type GetType() const { return PHYSICS_FORCE_FIELD; }
+    virtual Type GetType() const
+    {
+        return PHYSICS_FORCE_FIELD;
+    }
 
-	/** Clones the physics force field instance.
+    /** Clones the physics force field instance.
 		@param clone The physics force field instance to become the clone.
 			If this pointer is NULL, a new physics force field instance will be
 			created and you will need to release it.
 		@return The clone. */
-	virtual FCDEntityInstance* Clone(FCDEntityInstance* clone = NULL) const;
+    virtual FCDEntityInstance* Clone(FCDEntityInstance* clone = NULL) const;
 };
 
 #endif // _FCD_PHYSICS_FORCE_FIELD_INSTANCE_H_

@@ -35,84 +35,88 @@
 #include "Render/RenderHelper.h"
 #include "Job/JobManager.h"
 
-namespace DAVA 
+namespace DAVA
 {
 static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
 
 UILoadingTransition::UILoadingTransition()
 {
-	thread = 0;
-	backgroundSprite = 0;
-	animationSprite = 0;
-	inTransition = 0;
-	outTransition = 0;
+    thread = 0;
+    backgroundSprite = 0;
+    animationSprite = 0;
+    inTransition = 0;
+    outTransition = 0;
 }
 
 UILoadingTransition::~UILoadingTransition()
 {
-	SafeRelease(inTransition);
-	SafeRelease(outTransition);
-	SafeRelease(backgroundSprite);
-	SafeRelease(animationSprite);
+    SafeRelease(inTransition);
+    SafeRelease(outTransition);
+    SafeRelease(backgroundSprite);
+    SafeRelease(animationSprite);
 }
-	
+
 // Setup of default loading screen
-void UILoadingTransition::SetInTransition(UIScreenTransition * transition)
+void UILoadingTransition::SetInTransition(UIScreenTransition* transition)
 {
-	SafeRelease(inTransition);
-	inTransition = transition;
-	if (inTransition)inTransition->Retain();
+    SafeRelease(inTransition);
+    inTransition = transition;
+    if (inTransition)
+        inTransition->Retain();
 }
 
-void UILoadingTransition::SetOutTransition(UIScreenTransition * transition)
+void UILoadingTransition::SetOutTransition(UIScreenTransition* transition)
 {
-	SafeRelease(outTransition);
-	outTransition = transition;
-	if (outTransition)outTransition->Retain();
+    SafeRelease(outTransition);
+    outTransition = transition;
+    if (outTransition)
+        outTransition->Retain();
 }
 
-void UILoadingTransition::SetBackgroundSprite(Sprite * sprite)
+void UILoadingTransition::SetBackgroundSprite(Sprite* sprite)
 {
-	SafeRelease(backgroundSprite);
-	backgroundSprite = sprite;
-	if (backgroundSprite)backgroundSprite->Retain();
+    SafeRelease(backgroundSprite);
+    backgroundSprite = sprite;
+    if (backgroundSprite)
+        backgroundSprite->Retain();
 }
 
-void UILoadingTransition::SetAnimationSprite(Sprite * _animationSprite)
+void UILoadingTransition::SetAnimationSprite(Sprite* _animationSprite)
 {
-	SafeRelease(animationSprite);
-	animationSprite = _animationSprite;
-	if (animationSprite)animationSprite->Retain();
+    SafeRelease(animationSprite);
+    animationSprite = _animationSprite;
+    if (animationSprite)
+        animationSprite->Retain();
 }
 
 void UILoadingTransition::SetAnimationDuration(float32 durationInSeconds)
 {
-	animationDuration = durationInSeconds;
+    animationDuration = durationInSeconds;
 }
-	
-void UILoadingTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen)
+
+void UILoadingTransition::StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen)
 {
-	prevScreen = _prevScreen;
-	nextScreen = _nextScreen;
-	thread = 0;
-	animationTime = 0;
-}	
+    prevScreen = _prevScreen;
+    nextScreen = _nextScreen;
+    thread = 0;
+    animationTime = 0;
+}
 
 int32 UILoadingTransition::GetGroupId()
 {
-    if (!nextScreen || !thread) 
+    if (!nextScreen || !thread)
     {
         return UIScreen::GetGroupId();
     }
-	return nextScreen->GetGroupId();
+    return nextScreen->GetGroupId();
 }
-	
-void UILoadingTransition::ThreadMessage(BaseObject * obj, void * userData, void *callerData)
+
+void UILoadingTransition::ThreadMessage(BaseObject* obj, void* userData, void* callerData)
 {
-	//RenderManager::Instance()->
-	if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
+    //RenderManager::Instance()->
+    if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
     {
-		nextScreen->LoadGroup();
+        nextScreen->LoadGroup();
     }
 }
 
@@ -128,31 +132,30 @@ void UILoadingTransition::DidAppear()
 
 void UILoadingTransition::Update(float32 timeElapsed)
 {
-	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
+    if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
     {
         JobManager::Instance()->WaitMainJobs(thread->GetId());
 
         UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
-        if (!inTransition) 
+        if (!inTransition)
         {
-            UIControlSystem:: Instance()->UnlockInput();//need to call this because once its calls on loading start
-            UIControlSystem:: Instance()->UnlockSwitch();
+            UIControlSystem::Instance()->UnlockInput(); //need to call this because once its calls on loading start
+            UIControlSystem::Instance()->UnlockSwitch();
         }
-		SafeRelease(thread);
-	}
-	float32 elapsedTime = SystemTimer::FrameDelta();
-	animationTime += elapsedTime; 
-	if (animationSprite)
-	{
-		if (animationTime > animationDuration)
-			animationTime -= animationDuration;
-	}
+        SafeRelease(thread);
+    }
+    float32 elapsedTime = SystemTimer::FrameDelta();
+    animationTime += elapsedTime;
+    if (animationSprite)
+    {
+        if (animationTime > animationDuration)
+            animationTime -= animationDuration;
+    }
 }
 
-void UILoadingTransition::Draw(const UIGeometricData &geometricData)
+void UILoadingTransition::Draw(const UIGeometricData& geometricData)
 {
-    
-	if (backgroundSprite)
+    if (backgroundSprite)
     {
         Sprite::DrawState drawState;
         drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
@@ -160,12 +163,12 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
         RenderSystem2D::Instance()->Draw(backgroundSprite, &drawState, Color::White);
     }
 
-	if (animationSprite)
-	{
-		int frame = (int32)((animationTime/animationDuration) * animationSprite->GetFrameCount());
-		if (frame > animationSprite->GetFrameCount() - 1)
-			frame = animationSprite->GetFrameCount() - 1;
-		
+    if (animationSprite)
+    {
+        int frame = (int32)((animationTime / animationDuration) * animationSprite->GetFrameCount());
+        if (frame > animationSprite->GetFrameCount() - 1)
+            frame = animationSprite->GetFrameCount() - 1;
+
         Sprite::DrawState drawState;
         drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
         drawState.SetFrame(frame);
@@ -174,10 +177,10 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
         RenderSystem2D::Instance()->Draw(animationSprite, &drawState, Color::White);
     }
 }
-	
+
 bool UILoadingTransition::IsLoadingTransition()
 {
-	return true;
+    return true;
 }
 
 void UILoadingTransition::SetDuration(float32 timeInSeconds)
@@ -186,21 +189,18 @@ void UILoadingTransition::SetDuration(float32 timeInSeconds)
 
 void UILoadingTransition::WillAppear()
 {
-	if(Replay::IsRecord() || Replay::IsPlayback())
-	{
-		Replay::Instance()->PauseReplay(true);
-	}
+    if (Replay::IsRecord() || Replay::IsPlayback())
+    {
+        Replay::Instance()->PauseReplay(true);
+    }
 }
 
 void UILoadingTransition::WillDisappear()
 {
-	if(Replay::Instance())
-	{
-		Replay::Instance()->PauseReplay(false);
-		SystemTimer::Instance()->SetFrameDelta(0.33f);//TODO: this is temporary solution for "first frame after loading" issue
-	}
+    if (Replay::Instance())
+    {
+        Replay::Instance()->PauseReplay(false);
+        SystemTimer::Instance()->SetFrameDelta(0.33f); //TODO: this is temporary solution for "first frame after loading" issue
+    }
 }
-
-
 };
-

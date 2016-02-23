@@ -35,12 +35,11 @@ namespace DAVA
 {
 namespace Net
 {
-
-DeadlineTimer::DeadlineTimer(IOLoop* loop) : DeadlineTimerTemplate<DeadlineTimer>(loop)
-                                           , closeHandler()
-                                           , waitHandler()
+DeadlineTimer::DeadlineTimer(IOLoop* loop)
+    : DeadlineTimerTemplate<DeadlineTimer>(loop)
+    , closeHandler()
+    , waitHandler()
 {
-
 }
 
 int32 DeadlineTimer::Wait(uint32 timeout, WaitHandlerType handler)
@@ -54,7 +53,8 @@ void DeadlineTimer::Close(CloseHandlerType handler)
 {
     closeHandler = handler;
     IsOpen() ? DoClose()
-             : HandleClose();   // Execute user handle in any case
+               :
+               HandleClose(); // Execute user handle in any case
 }
 
 void DeadlineTimer::HandleClose()
@@ -70,5 +70,5 @@ void DeadlineTimer::HandleTimer()
     waitHandler(this);
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

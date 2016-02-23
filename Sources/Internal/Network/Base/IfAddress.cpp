@@ -36,7 +36,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 Vector<IfAddress> IfAddress::GetInstalledInterfaces(bool withInternal)
 {
     Vector<IfAddress> result;
@@ -48,13 +47,16 @@ Vector<IfAddress> IfAddress::GetInstalledInterfaces(bool withInternal)
     if (0 == error)
     {
         result.reserve(n);
-        for (int i = 0;i < n;++i)
+        for (int i = 0; i < n; ++i)
         {
-            if (ifaddr[i].address.address4.sin_family != AF_INET) continue; // For now list only IPv4 addresses
+            if (ifaddr[i].address.address4.sin_family != AF_INET)
+                continue; // For now list only IPv4 addresses
 
-            if (true == Endpoint(&ifaddr[i].address.address4).Address().IsUnspecified()) continue;   // List only interfaces with specified IP-address
+            if (true == Endpoint(&ifaddr[i].address.address4).Address().IsUnspecified())
+                continue; // List only interfaces with specified IP-address
 
-            if (false == withInternal && ifaddr[i].is_internal != 0) continue;  // Do not list internal interfaces
+            if (false == withInternal && ifaddr[i].is_internal != 0)
+                continue; // Do not list internal interfaces
 
             PhysAddress physAddr;
             Endpoint addr(&ifaddr[i].address.address4);
@@ -70,5 +72,5 @@ Vector<IfAddress> IfAddress::GetInstalledInterfaces(bool withInternal)
     return result;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

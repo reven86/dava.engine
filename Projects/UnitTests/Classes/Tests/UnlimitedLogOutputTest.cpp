@@ -33,11 +33,11 @@ using namespace DAVA;
 
 namespace
 {
-    const uint32 bufSize{ 4100 }; // more then 4096
-    const String messageEnd{ "test" };
-    const WideString wideMessageEnd{ L"TEST" };
+const uint32 bufSize{ 4100 }; // more then 4096
+const String messageEnd{ "test" };
+const WideString wideMessageEnd{ L"TEST" };
 
-    String errorMessage;
+String errorMessage;
 }
 
 class TestLoggerOutput : public LoggerOutput
@@ -48,15 +48,15 @@ public:
     void Output(Logger::eLogLevel ll, const char8* text) override
     {
         std::ostringstream ostr;
-        String msgFromLogger{text};
+        String msgFromLogger{ text };
 
         if (currentMessageRawSize + 1 != msgFromLogger.length())
         {
             ostr << "size of buffer do not match! bufSize == " << bufSize
-                << " msgFromLogger.length == " << msgFromLogger.length() << "\n";
+                 << " msgFromLogger.length == " << msgFromLogger.length() << "\n";
         }
         const String lastNChars = msgFromLogger.substr(
-            msgFromLogger.size() - (messageEnd.size() + 1), messageEnd.size());
+        msgFromLogger.size() - (messageEnd.size() + 1), messageEnd.size());
 
         if (lastNChars != messageEnd)
         {
@@ -74,14 +74,14 @@ public:
     size_t currentMessageRawSize = 0;
 };
 
-DAVA_TESTCLASS(UnlimitedLogOutputTest)
+DAVA_TESTCLASS (UnlimitedLogOutputTest)
 {
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         TestLoggerOutput testOutput;
         Logger::AddCustomOutput(&testOutput);
 
-        for (auto bufSizeLocal : {10, static_cast<int32>(bufSize), 4095, 4096, 4097})
+        for (auto bufSizeLocal : { 10, static_cast<int32>(bufSize), 4095, 4096, 4097 })
         {
             String str(bufSizeLocal, 'a');
             size_t startIndex = bufSizeLocal - messageEnd.size();
@@ -104,4 +104,5 @@ DAVA_TESTCLASS(UnlimitedLogOutputTest)
 
         TEST_VERIFY(errorMessage.empty());
     }
-};
+}
+;

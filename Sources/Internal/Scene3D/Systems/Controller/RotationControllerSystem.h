@@ -35,63 +35,57 @@
 
 namespace DAVA
 {
-    
 class Camera;
 class UIEvent;
 class InputCallback;
-class RotationControllerSystem: public SceneSystem
+class RotationControllerSystem : public SceneSystem
 {
     static const float32 maxViewAngle;
 
-    
 public:
-    RotationControllerSystem(Scene * scene);
+    RotationControllerSystem(Scene* scene);
     virtual ~RotationControllerSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
 
     virtual void Process(float32 timeElapsed);
 
-    virtual void Input(UIEvent *event);
-    
+    virtual void Input(UIEvent* event);
+
     inline float32 GetRotationSpeeed() const;
     inline void SetRotationSpeeed(float32 rotateSpeed);
 
-    inline const Vector3 & GetRotationPoint() const;
-    inline void SetRotationPoint(const Vector3 & point);
+    inline const Vector3& GetRotationPoint() const;
+    inline void SetRotationPoint(const Vector3& point);
 
-    void RecalcCameraViewAngles(Camera *camera);
+    void RecalcCameraViewAngles(Camera* camera);
 
 private:
-    void RotateDirection(Camera * camera);
-    void RotatePosition(Camera * camera);
-    void RotatePositionAroundPoint(Camera * camera, const Vector3 & pos);
+    void RotateDirection(Camera* camera);
+    void RotatePosition(Camera* camera);
+    void RotatePositionAroundPoint(Camera* camera, const Vector3& pos);
 
-
-    
     Vector3 rotationPoint;
-    
+
     Vector2 rotateStartPoint;
     Vector2 rotateStopPoint;
-    
+
     float32 curViewAngleZ;
     float32 curViewAngleY;
 
     float32 rotationSpeed;
-    
-    InputCallback * inputCallback;
 
-    Vector<Entity *> entities;
-    
-    Camera *oldCamera;
+    InputCallback* inputCallback;
 
+    Vector<Entity*> entities;
+
+    Camera* oldCamera;
 };
 
 inline float32 RotationControllerSystem::GetRotationSpeeed() const
 {
     return rotationSpeed;
-    
 }
 
 inline void RotationControllerSystem::SetRotationSpeeed(float32 rotateSpeed)
@@ -99,16 +93,14 @@ inline void RotationControllerSystem::SetRotationSpeeed(float32 rotateSpeed)
     rotationSpeed = rotateSpeed;
 }
 
-inline const Vector3 & RotationControllerSystem::GetRotationPoint() const
+inline const Vector3& RotationControllerSystem::GetRotationPoint() const
 {
     return rotationPoint;
 }
-inline void RotationControllerSystem::SetRotationPoint(const Vector3 & point)
+inline void RotationControllerSystem::SetRotationPoint(const Vector3& point)
 {
     rotationPoint = point;
 }
-
-    
 };
 
 #endif //__DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__

@@ -57,9 +57,9 @@ public:
     int frameCount;
     int spriteWidth;
     int spriteHeight;
-    Rect2i		* frameRects;
+    Rect2i* frameRects;
 
-	Vector<String> pathsInfo;
+    Vector<String> pathsInfo;
     Vector<String> frameNames;
 };
 

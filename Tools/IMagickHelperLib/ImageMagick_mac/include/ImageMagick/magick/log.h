@@ -26,67 +26,70 @@ extern "C" {
 #include "magick/exception.h"
 
 #if !defined(GetMagickModule)
-# define GetMagickModule()  __FILE__,__func__,(unsigned long) __LINE__
+#define GetMagickModule() __FILE__, __func__, (unsigned long)__LINE__
 #endif
 
-#define MagickLogFilename  "log.xml"
+#define MagickLogFilename "log.xml"
 
 typedef enum
 {
-  UndefinedEvents,
-  NoEvents = 0x00000,
-  TraceEvent = 0x00001,
-  AnnotateEvent = 0x00002,
-  BlobEvent = 0x00004,
-  CacheEvent = 0x00008,
-  CoderEvent = 0x00010,
-  ConfigureEvent = 0x00020,
-  DeprecateEvent = 0x00040,
-  DrawEvent = 0x00080,
-  ExceptionEvent = 0x00100,
-  ImageEvent = 0x00200,
-  LocaleEvent = 0x00400,
-  ModuleEvent = 0x00800,
-  PolicyEvent = 0x01000,
-  ResourceEvent = 0x02000,
-  TransformEvent = 0x04000,
-  UserEvent = 0x09000,
-  WandEvent = 0x10000,
-  X11Event = 0x20000,
-  AccelerateEvent = 0x40000,
-  AllEvents = 0x7fffffff
+    UndefinedEvents,
+    NoEvents = 0x00000,
+    TraceEvent = 0x00001,
+    AnnotateEvent = 0x00002,
+    BlobEvent = 0x00004,
+    CacheEvent = 0x00008,
+    CoderEvent = 0x00010,
+    ConfigureEvent = 0x00020,
+    DeprecateEvent = 0x00040,
+    DrawEvent = 0x00080,
+    ExceptionEvent = 0x00100,
+    ImageEvent = 0x00200,
+    LocaleEvent = 0x00400,
+    ModuleEvent = 0x00800,
+    PolicyEvent = 0x01000,
+    ResourceEvent = 0x02000,
+    TransformEvent = 0x04000,
+    UserEvent = 0x09000,
+    WandEvent = 0x10000,
+    X11Event = 0x20000,
+    AccelerateEvent = 0x40000,
+    AllEvents = 0x7fffffff
 } LogEventType;
 
 typedef struct _LogInfo
-  LogInfo;
+LogInfo;
 
 extern MagickExport char
-  **GetLogList(const char *,size_t *,ExceptionInfo *);
+**
+GetLogList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport const char
-  *GetLogName(void),
-  *SetLogName(const char *);
-                                                                                
+*
+GetLogName(void),
+*SetLogName(const char *);
+
 extern MagickExport const LogInfo
-  **GetLogInfoList(const char *,size_t *,ExceptionInfo *);
+**
+GetLogInfoList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport LogEventType
-  SetLogEventMask(const char *);
+SetLogEventMask(const char*);
 
 extern MagickExport MagickBooleanType
-  IsEventLogging(void),
-  ListLogInfo(FILE *,ExceptionInfo *),
-  LogComponentGenesis(void),
-  LogMagickEvent(const LogEventType,const char *,const char *,const size_t,
-    const char *,...) 
-    magick_attribute((format (printf,5,6))),
-  LogMagickEventList(const LogEventType,const char *,const char *,const size_t,
-    const char *,va_list) magick_attribute((format (printf,5,0)));
+IsEventLogging(void),
+ListLogInfo(FILE *, ExceptionInfo *),
+LogComponentGenesis(void),
+LogMagickEvent(const LogEventType, const char *, const char *, const size_t,
+               const char *, ...)
+magick_attribute((format(printf, 5, 6))),
+LogMagickEventList(const LogEventType, const char *, const char *, const size_t,
+                   const char *, va_list) magick_attribute((format(printf, 5, 0)));
 
 extern MagickExport void
-  CloseMagickLog(void),
-  LogComponentTerminus(void),
-  SetLogFormat(const char *);
+CloseMagickLog(void),
+LogComponentTerminus(void),
+SetLogFormat(const char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

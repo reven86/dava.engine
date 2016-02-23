@@ -33,30 +33,30 @@
 #include <QWidget>
 #include "IColorEditor.h"
 
-
 class HSVPaletteWidget
-    : public QWidget
-    , public IColorEditor
+: public QWidget
+  ,
+  public IColorEditor
 {
     Q_OBJECT
 
 signals:
     void begin();
-    void changing( const QColor& c );
-    void changed( const QColor& c );
+    void changing(const QColor& c);
+    void changed(const QColor& c);
     void canceled();
 
 public:
-    explicit HSVPaletteWidget(QWidget *parent = NULL);
+    explicit HSVPaletteWidget(QWidget* parent = NULL);
     ~HSVPaletteWidget();
 
     // IColorEditor
     QColor GetColor() const;
-    void setColor( QColor const& c );
+    void setColor(QColor const& c);
 
 private:
-    void paintEvent( QPaintEvent* e );
-    void resizeEvent( QResizeEvent* e );
+    void paintEvent(QPaintEvent* e);
+    void resizeEvent(QResizeEvent* e);
 
     QColor color;
     QPixmap cache;

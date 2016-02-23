@@ -35,14 +35,12 @@
     #include "Base/BaseTypes.h"
     #include "Platform/SystemTimer.h"
     #include "FileSystem/File.h"
-    using namespace DAVA;
+using namespace DAVA;
 
 
     #include <stdio.h>
     #include <string.h>
     #include <vector>
-
-
 
 //==============================================================================
 
@@ -52,33 +50,29 @@ CurTimeUs()
     return (long)(SystemTimer::Instance()->GetAbsoluteUs());
 }
 
-
-
 namespace profiler
 {
 //==============================================================================
 
 class Counter;
 
-static Counter* GetCounter( uint32 id );
+static Counter* GetCounter(uint32 id);
 
-static bool             profilerInited      = false;
-static uint32           maxCounterCount     = 0;
-static uint32           historyCount        = 0;
+static bool profilerInited = false;
+static uint32 maxCounterCount = 0;
+static uint32 historyCount = 0;
 
-static Counter*         profCounter         = 0;
-static Counter*         profAverage         = 0;
-static Counter*         curCounter          = 0;
-static bool             profStarted         = false;
-static Counter**        activeCounter       = 0;
-static uint32           activeCounterCount  = 0;
-static uint64           totalTime0          = 0;
-static uint64           totalTime           = 0;
-static DAVA::Spinlock   counterSync;
+static Counter* profCounter = 0;
+static Counter* profAverage = 0;
+static Counter* curCounter = 0;
+static bool profStarted = false;
+static Counter** activeCounter = 0;
+static uint32 activeCounterCount = 0;
+static uint64 totalTime0 = 0;
+static uint64 totalTime = 0;
+static DAVA::Spinlock counterSync;
 
-
-
-class 
+class
 Counter
 {
 public:
@@ -91,133 +85,147 @@ public:
         , name(0)
         , used(false)
         , useCount(0)
-                {
-                }
+    {
+    }
 
-    void        SetName( const char* n )        { name = n; }
+    void SetName(const char* n)
+    {
+        name = n;
+    }
 
-    void        Reset()                         
-                { 
-                    counterSync.Lock();
+    void Reset()
+    {
+        counterSync.Lock();
 
-                    t         = 0; 
-                    count     = 0; 
-                    used      = false;
-                    useCount  = 0;
-                    parentId = DAVA::InvalidIndex;
+        t = 0;
+        count = 0;
+        used = false;
+        useCount = 0;
+        parentId = DAVA::InvalidIndex;
 
-                    counterSync.Unlock();
-                }
-    void        Start()
-                {
-                    counterSync.Lock();
+        counterSync.Unlock();
+    }
+    void Start()
+    {
+        counterSync.Lock();
 
-                    if( !useCount ) 
-                    {
-                        if( activeCounterCount )
-                            parentId = activeCounter[activeCounterCount-1]->id;
-                        else
-                            parentId = DAVA::InvalidIndex;
+        if (!useCount)
+        {
+            if (activeCounterCount)
+                parentId = activeCounter[activeCounterCount - 1]->id;
+            else
+                parentId = DAVA::InvalidIndex;
 
-                        activeCounter[activeCounterCount] = this;
-                        ++activeCounterCount;
-                                                        
-                        t0 = CurTimeUs();
-                    }
+            activeCounter[activeCounterCount] = this;
+            ++activeCounterCount;
 
-                    used = true;
-                    ++count;
-                    ++useCount;
-                                                    
-                    counterSync.Unlock();
-                }
-    void        Stop()                          
-                { 
-                    counterSync.Lock();
+            t0 = CurTimeUs();
+        }
 
-                    if( useCount == 1 )
-                    {
-                        if( activeCounterCount )
-                            --activeCounterCount; 
-                    }
+        used = true;
+        ++count;
+        ++useCount;
 
-                    if( --useCount == 0 )
-                        t += CurTimeUs() - t0; 
-                                                    
-                    counterSync.Unlock();
-                }
+        counterSync.Unlock();
+    }
+    void Stop()
+    {
+        counterSync.Lock();
 
+        if (useCount == 1)
+        {
+            if (activeCounterCount)
+                --activeCounterCount;
+        }
 
-    const char* GetName() const                 { return name; }
+        if (--useCount == 0)
+            t += CurTimeUs() - t0;
 
-    uint32      GetCount() const                { return count; }
-    uint64      GetTimeUs() const               { return t; }
+        counterSync.Unlock();
+    }
 
-    uint32      GetId() const                   { return id; }
-    uint32      GetParentId() const             { return parentId; }
-    bool        IsUsed() const                  { return (used)  ? true  : false; }
+    const char* GetName() const
+    {
+        return name;
+    }
+
+    uint32 GetCount() const
+    {
+        return count;
+    }
+    uint64 GetTimeUs() const
+    {
+        return t;
+    }
+
+    uint32 GetId() const
+    {
+        return id;
+    }
+    uint32 GetParentId() const
+    {
+        return parentId;
+    }
+    bool IsUsed() const
+    {
+        return (used) ? true : false;
+    }
     uint32 NestingLevel() const
     {
         return (parentId != DAVA::InvalidIndex) ? GetCounter(parentId)->NestingLevel() + 1 : 0;
     }
 
-private :
-friend void Init( uint32, uint32 );
-friend void Start();
-friend void Stop();
-friend bool DumpAverage();
-friend bool GetAverageCounters( std::vector<CounterInfo>* );
+private:
+    friend void Init(uint32, uint32);
+    friend void Start();
+    friend void Stop();
+    friend bool DumpAverage();
+    friend bool GetAverageCounters(std::vector<CounterInfo>*);
 
 private:
+    uint64 t0;
+    uint64 t;
+    uint32 count;
 
-    uint64      t0;
-    uint64      t;
-    uint32      count;
+    uint32 id;
+    uint32 parentId;
+    const char* name; // ref-only, expected to be immutable string
 
-    uint32      id;
-    uint32      parentId;
-    const char* name;      // ref-only, expected to be immutable string
-
-    uint32      used:1;
-    uint32      useCount:4;
+    uint32 used : 1;
+    uint32 useCount : 4;
 };
-
-
-
-
 
 //==============================================================================
 
 static Counter*
-GetCounter( uint32 id )
+GetCounter(uint32 id)
 {
-    return (id < maxCounterCount)  ? curCounter+id  : 0;
+    return (id < maxCounterCount) ? curCounter + id : 0;
 }
-
 
 //------------------------------------------------------------------------------
 
-void 
-Init( uint32 _maxCounterCount, uint32 _historyCount )
+void
+Init(uint32 _maxCounterCount, uint32 _historyCount)
 {
     DVASSERT(!profilerInited);
 
-    historyCount    = _historyCount;
+    historyCount = _historyCount;
     maxCounterCount = _maxCounterCount;
 
-    profCounter     = new Counter[maxCounterCount*historyCount];
-    profAverage     = new Counter[maxCounterCount];
-    activeCounter   = new Counter*[maxCounterCount];
+    profCounter = new Counter[maxCounterCount * historyCount];
+    profAverage = new Counter[maxCounterCount];
+    activeCounter = new Counter*[maxCounterCount];
 
-    Counter*    counter = profCounter;
-    
-    for( uint32 h=0; h!=historyCount; ++h )
+    Counter* counter = profCounter;
+
+    for (uint32 h = 0; h != historyCount; ++h)
     {
-        for( Counter* c=counter,*c_end=counter+maxCounterCount; c!=c_end; ++c )
-        {        
-            c->id        = static_cast<uint32>(c - counter);
+        for (Counter *c = counter, *c_end = counter + maxCounterCount; c != c_end; ++c)
+        {
+            c->id = static_cast<uint32>(c - counter);
             c->parentId = DAVA::InvalidIndex;
-            c->used      = false;
+            c->used = false;
         }
 
         counter += maxCounterCount;
@@ -226,85 +234,80 @@ Init( uint32 _maxCounterCount, uint32 _historyCount )
     profilerInited = true;
 }
 
-
 //------------------------------------------------------------------------------
 
 void
-EnsureInited( uint32 _maxCounterCount, uint32 _historyCount )
+EnsureInited(uint32 _maxCounterCount, uint32 _historyCount)
 {
-    if( !profilerInited )
+    if (!profilerInited)
     {
-        Init( _maxCounterCount, _historyCount );
+        Init(_maxCounterCount, _historyCount);
     }
 }
-
 
 //------------------------------------------------------------------------------
 
 void
 Uninit()
 {
-    if( profCounter )
+    if (profCounter)
     {
         delete[] profCounter;
         profCounter = 0;
     }
 
-    if( profAverage )
+    if (profAverage)
     {
         delete[] profAverage;
         profAverage = 0;
     }
 
-    if( activeCounter )
+    if (activeCounter)
     {
         delete[] activeCounter;
         activeCounter = 0;
     }
 
-    historyCount    = 0;
+    historyCount = 0;
     maxCounterCount = 0;
 
     profilerInited = false;
 }
 
-
 //------------------------------------------------------------------------------
 
 void
-SetCounterName( unsigned counterId, const char* name )
+SetCounterName(unsigned counterId, const char* name)
 {
-    DVASSERT( counterId < maxCounterCount );
+    DVASSERT(counterId < maxCounterCount);
 
-    Counter*    counter = profCounter + counterId;
+    Counter* counter = profCounter + counterId;
 
-    for( uint32 h=0; h!=historyCount; ++h )
+    for (uint32 h = 0; h != historyCount; ++h)
     {
-        counter->SetName( name );
+        counter->SetName(name);
         counter += maxCounterCount;
     }
 }
 
-
 //------------------------------------------------------------------------------
 
 void
-StartCounter( uint32 counterId )
+StartCounter(uint32 counterId)
 {
-    DVASSERT( counterId < maxCounterCount );
+    DVASSERT(counterId < maxCounterCount);
 
-    Counter*    counter = curCounter + counterId;
-        
+    Counter* counter = curCounter + counterId;
+
     counter->Start();
 }
 
-
 //------------------------------------------------------------------------------
 
 void
-StartCounter( uint32 counterId, const char* counterName )
+StartCounter(uint32 counterId, const char* counterName)
 {
-    DVASSERT( counterId < maxCounterCount );
+    DVASSERT(counterId < maxCounterCount);
 
     if (curCounter)
     {
@@ -315,13 +318,12 @@ StartCounter( uint32 counterId, const char* counterName )
     }
 }
 
-
 //------------------------------------------------------------------------------
 
 void
-StopCounter( uint32 counterId )
+StopCounter(uint32 counterId)
 {
-    DVASSERT( counterId < maxCounterCount );
+    DVASSERT(counterId < maxCounterCount);
 
     if (curCounter)
     {
@@ -331,7 +333,6 @@ StopCounter( uint32 counterId )
     }
 }
 
-
 //------------------------------------------------------------------------------
 
 void
@@ -339,10 +340,10 @@ Start()
 {
     DVASSERT(!profStarted);
 
-    if( curCounter )
+    if (curCounter)
     {
         curCounter += maxCounterCount;
-        if( curCounter >= profCounter+maxCounterCount*historyCount )
+        if (curCounter >= profCounter + maxCounterCount * historyCount)
         {
             curCounter = profCounter;
         }
@@ -352,17 +353,16 @@ Start()
         curCounter = profCounter;
     }
 
-    for( Counter* c=curCounter,*c_end=curCounter+maxCounterCount; c!=c_end; ++c )
+    for (Counter *c = curCounter, *c_end = curCounter + maxCounterCount; c != c_end; ++c)
     {
         c->Reset();
         c->used = false;
     }
 
-    profStarted         = true;
-    activeCounterCount  = 0;
-    totalTime0          = CurTimeUs();
+    profStarted = true;
+    activeCounterCount = 0;
+    totalTime0 = CurTimeUs();
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -371,51 +371,51 @@ Stop()
 {
     DVASSERT(profStarted);
 
-    totalTime   = CurTimeUs() - totalTime0;
+    totalTime = CurTimeUs() - totalTime0;
     profStarted = false;
 }
-
 
 //------------------------------------------------------------------------------
 
 static inline int
-fltDec( float f )
+fltDec(float f)
 {
-    return int((f - float(int(f)))*10.0f);
+    return int((f - float(int(f))) * 10.0f);
 }
 
 static void
-DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
+DumpInternal(const std::vector<CounterInfo>& result, bool showPercents = false)
 {
     size_t max_name_len = 0;
-    
-    for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
+
+    for (size_t i = 0, i_end = result.size(); i != i_end; ++i)
     {
-        uint32  pi      = result[i].parentIndex;
-        uint32  indent  = 0;
-        size_t  len     = 0;
+        uint32 pi = result[i].parentIndex;
+        uint32 indent = 0;
+        size_t len = 0;
 
         while (pi != DAVA::InvalidIndex)
         {
             pi = result[pi].parentIndex;
             ++indent;
         }
-        
-        if( result[i].name )
-            len += strlen( result[i].name );
 
-        len += indent*2;
-        
-        if( len > max_name_len )
+        if (result[i].name)
+            len += strlen(result[i].name);
+
+        len += indent * 2;
+
+        if (len > max_name_len)
             max_name_len = len;
     }
 
-    Logger::Info( "===================================================" );
-    for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
+    Logger::Info("===================================================");
+    for (size_t i = 0, i_end = result.size(); i != i_end; ++i)
     {
-        uint32  pi          = result[i].parentIndex;
-        uint32  indent      = 0;
-        char    text[256];  memset( text, ' ', sizeof(text) );
+        uint32 pi = result[i].parentIndex;
+        uint32 indent = 0;
+        char text[256];
+        memset(text, ' ', sizeof(text));
 
         while (pi != DAVA::InvalidIndex)
         {
@@ -423,38 +423,43 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
             ++indent;
         }
 
-        size_t text_len = 0;       
+        size_t text_len = 0;
 
-        if( result[i].name )
-            text_len = Snprintf( text+indent*2, sizeof(text)-indent*2, "%s", result[i].name );
+        if (result[i].name)
+            text_len = Snprintf(text + indent * 2, sizeof(text) - indent * 2, "%s", result[i].name);
         else
-            text_len = Snprintf( text+indent*2, sizeof(text)-indent*2, "%u", static_cast<uint32>(i) );
-        
-        text[indent*2+text_len] = ' ';
-        text_len = max_name_len+2+Snprintf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %llu us", result[i].count, result[i].timeUs );
+            text_len = Snprintf(text + indent * 2, sizeof(text) - indent * 2, "%u", static_cast<uint32>(i));
 
-        if( showPercents )
+        text[indent * 2 + text_len] = ' ';
+        text_len = max_name_len + 2 + Snprintf(text + max_name_len + 2, sizeof(text) - max_name_len - 2, " %-5u  %llu us", result[i].count, result[i].timeUs);
+
+        if (showPercents)
         {
-            float               pg  = (totalTime)  
-                                      ? 100.0f*float(result[i].timeUs)/float(totalTime)
-                                      : 0;
+            float pg = (totalTime)
+            ?
+            100.0f * float(result[i].timeUs) / float(totalTime)
+            :
+            0;
             const CounterInfo* pc = (result[i].parentIndex != DAVA::InvalidIndex) ? &(result[0]) + result[i].parentIndex : 0;
-            float               pl  = (pc  &&  pc->timeUs)  
-                                      ? 100.0f*float(result[i].timeUs)/float(pc->timeUs)
-                                      : 0;
+            float pl = (pc && pc->timeUs)
+            ?
+            100.0f * float(result[i].timeUs) / float(pc->timeUs)
+            :
+            0;
 
             text[text_len] = ' ';
-            text_len = max_name_len + 2 + 1 + 5 + 2 + 5+1+2;
+            text_len = max_name_len + 2 + 1 + 5 + 2 + 5 + 1 + 2;
 
-            if( pc )    text_len += Snprintf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pl),fltDec(pl), int(pg),fltDec(pg) );
-            else        text_len += Snprintf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pg),fltDec(pg), int(pg),fltDec(pg) );
+            if (pc)
+                text_len += Snprintf(text + text_len, sizeof(text) - text_len, "   %02i.%i    %02i.%i", int(pl), fltDec(pl), int(pg), fltDec(pg));
+            else
+                text_len += Snprintf(text + text_len, sizeof(text) - text_len, "   %02i.%i    %02i.%i", int(pg), fltDec(pg), int(pg), fltDec(pg));
         }
 
-        Logger::Info( text );
+        Logger::Info(text);
     }
-    Logger::Info( "\n" );
+    Logger::Info("\n");
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -465,113 +470,108 @@ Dump()
 
     static std::vector<CounterInfo> result;
 
-    GetCounters( &result );
-    DumpInternal( result, true );
+    GetCounters(&result);
+    DumpInternal(result, true);
 }
-
 
 //------------------------------------------------------------------------------
 
 bool
 DumpAverage()
 {
-    bool                            success = false;
+    bool success = false;
     static std::vector<CounterInfo> result;
 
-    if( GetAverageCounters( &result ) )
+    if (GetAverageCounters(&result))
     {
-        DumpInternal( result, false );
+        DumpInternal(result, false);
         success = true;
     }
 
     return success;
 }
 
-
 //------------------------------------------------------------------------------
 
-static void 
-CollectCountersWithChilds( const Counter* base, const Counter* counter, std::vector<Counter*>* result )
+static void
+CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vector<Counter*>* result)
 {
-    for( const Counter* c=base,*c_end=base+maxCounterCount; c!=c_end; ++c )
+    for (const Counter *c = base, *c_end = base + maxCounterCount; c != c_end; ++c)
     {
-        if(     c->IsUsed()  
-            &&  c->GetParentId() == counter->GetId() 
-          )
+        if (c->IsUsed()
+            && c->GetParentId() == counter->GetId()
+            )
         {
-            result->push_back( (Counter*)c );
-            CollectCountersWithChilds( base, c, result );
+            result->push_back((Counter*)c);
+            CollectCountersWithChilds(base, c, result);
         }
     }
 }
 
-
 //------------------------------------------------------------------------------
 
 static void
-CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
+CollectActiveCounters(Counter* cur_counter, std::vector<Counter*>* result)
 {
     // get top-level counters, sorted by time
 
-    static std::vector<Counter*>  top;
+    static std::vector<Counter*> top;
 
     top.clear();
-    for( Counter* c=cur_counter,*c_end=cur_counter+maxCounterCount; c!=c_end; ++c )
+    for (Counter *c = cur_counter, *c_end = cur_counter + maxCounterCount; c != c_end; ++c)
     {
-        if( !c->IsUsed() )
-          continue;
+        if (!c->IsUsed())
+            continue;
 
-        bool    do_add = true;
+        bool do_add = true;
 
         if (c->GetParentId() == DAVA::InvalidIndex)
         {
-            for( size_t i=0,i_end=top.size(); i!=i_end; ++i )
+            for (size_t i = 0, i_end = top.size(); i != i_end; ++i)
             {
-                if( c->GetTimeUs() > top[i]->GetTimeUs() )
+                if (c->GetTimeUs() > top[i]->GetTimeUs())
                 {
-                    top.insert( top.begin()+i, c );
+                    top.insert(top.begin() + i, c);
                     do_add = false;
                     break;
                 }
             }
 
-            if( do_add )
-                top.push_back( c );                        
+            if (do_add)
+                top.push_back(c);
         }
-    }    
-        
+    }
 
     // fill active-counter list
 
     result->clear();
-    for( uint32 i=0; i!=top.size(); ++i )
+    for (uint32 i = 0; i != top.size(); ++i)
     {
-        result->push_back( top[i] );
-        CollectCountersWithChilds( cur_counter, top[i], result );
+        result->push_back(top[i]);
+        CollectCountersWithChilds(cur_counter, top[i], result);
     }
 }
 
-
 //------------------------------------------------------------------------------
 
-void    
-GetCounters( std::vector<CounterInfo>* info )
+void
+GetCounters(std::vector<CounterInfo>* info)
 {
-    static std::vector<Counter*>  result;
-    
-    CollectActiveCounters( curCounter, &result );
+    static std::vector<Counter*> result;
 
-    info->resize( result.size() );
-    for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
+    CollectActiveCounters(curCounter, &result);
+
+    info->resize(result.size());
+    for (size_t i = 0, i_end = result.size(); i != i_end; ++i)
     {
-        (*info)[i].name         = result[i]->GetName();
-        (*info)[i].count        = result[i]->GetCount();
-        (*info)[i].timeUs       = result[i]->GetTimeUs();
+        (*info)[i].name = result[i]->GetName();
+        (*info)[i].count = result[i]->GetCount();
+        (*info)[i].timeUs = result[i]->GetTimeUs();
         (*info)[i].parentIndex = DAVA::InvalidIndex;
 
-        for( size_t k=0,k_end=info->size(); k!=k_end; ++k )
+        for (size_t k = 0, k_end = info->size(); k != k_end; ++k)
         {
-            if( result[i]->GetParentId() == result[k]->GetId() )
+            if (result[i]->GetParentId() == result[k]->GetId())
             {
                 (*info)[i].parentIndex = static_cast<uint32>(k);
                 break;
@@ -580,64 +580,62 @@ GetCounters( std::vector<CounterInfo>* info )
     }
 }
 
-
 //------------------------------------------------------------------------------
 
 bool
-GetAverageCounters( std::vector<CounterInfo>* info )
+GetAverageCounters(std::vector<CounterInfo>* info)
 {
-    bool    success = false;
+    bool success = false;
 
-    if( curCounter == profCounter + maxCounterCount*(historyCount-1) )
+    if (curCounter == profCounter + maxCounterCount * (historyCount - 1))
     {
-        for( Counter* c=profAverage,*c_end=profAverage+maxCounterCount; c!=c_end; ++c )
+        for (Counter *c = profAverage, *c_end = profAverage + maxCounterCount; c != c_end; ++c)
         {
-            Counter*    src = profCounter + (c-profAverage);
-            
-            c->Reset();
-            c->SetName( src->GetName() );
+            Counter* src = profCounter + (c - profAverage);
 
-            c->id        = src->id;
-            c->parentId  = src->parentId;
-            c->t0        = 0;
-            c->t         = 0;
-            c->used      = src->used;
+            c->Reset();
+            c->SetName(src->GetName());
+
+            c->id = src->id;
+            c->parentId = src->parentId;
+            c->t0 = 0;
+            c->t = 0;
+            c->used = src->used;
         }
-    
-        for( uint32 h=0; h!=historyCount; ++h )
+
+        for (uint32 h = 0; h != historyCount; ++h)
         {
-            Counter*    counter = profCounter + h*maxCounterCount;
-            
-            for( Counter* c=counter,*c_end=counter+maxCounterCount,*a=profAverage; c!=c_end; ++c,++a )
-            {        
+            Counter* counter = profCounter + h * maxCounterCount;
+
+            for (Counter *c = counter, *c_end = counter + maxCounterCount, *a = profAverage; c != c_end; ++c, ++a)
+            {
                 a->count += c->count;
-                a->t0     = 0;
-                a->t     += c->GetTimeUs();
+                a->t0 = 0;
+                a->t += c->GetTimeUs();
             }
         }
 
-        for( Counter* c=profAverage,*c_end=profAverage+maxCounterCount; c!=c_end; ++c )
+        for (Counter *c = profAverage, *c_end = profAverage + maxCounterCount; c != c_end; ++c)
         {
             c->count /= historyCount;
-            c->t     /= historyCount;
+            c->t /= historyCount;
         }
 
-        
-        static std::vector<Counter*>    result;
-        
-        CollectActiveCounters( profAverage, &result );
+        static std::vector<Counter*> result;
 
-        info->resize( result.size() );
-        for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
+        CollectActiveCounters(profAverage, &result);
+
+        info->resize(result.size());
+        for (size_t i = 0, i_end = result.size(); i != i_end; ++i)
         {
-            (*info)[i].name         = result[i]->GetName();
-            (*info)[i].count        = result[i]->GetCount();
-            (*info)[i].timeUs       = result[i]->GetTimeUs();
+            (*info)[i].name = result[i]->GetName();
+            (*info)[i].count = result[i]->GetCount();
+            (*info)[i].timeUs = result[i]->GetTimeUs();
             (*info)[i].parentIndex = DAVA::InvalidIndex;
 
-            for( size_t k=0,k_end=info->size(); k!=k_end; ++k )
+            for (size_t k = 0, k_end = info->size(); k != k_end; ++k)
             {
-                if( result[i]->GetParentId() == result[k]->GetId() )
+                if (result[i]->GetParentId() == result[k]->GetId())
                 {
                     (*info)[i].parentIndex = static_cast<uint32>(k);
                     break;
@@ -647,7 +645,7 @@ GetAverageCounters( std::vector<CounterInfo>* info )
 
         success = true;
     }
-    
+
     return success;
 }
 
@@ -820,4 +818,3 @@ void SaveEvents(const char* fileName)
 
 //==============================================================================
 } // namespace profiler
-

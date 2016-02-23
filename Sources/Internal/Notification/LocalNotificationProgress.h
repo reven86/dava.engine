@@ -34,27 +34,25 @@
 
 namespace DAVA
 {
-
 class LocalNotificationProgress : public LocalNotification
 {
-	friend class LocalNotificationController;
+    friend class LocalNotificationController;
 
 protected:
-	LocalNotificationProgress();
+    LocalNotificationProgress();
     ~LocalNotificationProgress() override;
 
 public:
-	void SetProgressCurrent(const uint32 _currentProgress);
-	void SetProgressTotal(const uint32 _total);
+    void SetProgressCurrent(const uint32 _currentProgress);
+    void SetProgressTotal(const uint32 _total);
 
 private:
     void ImplShow() override;
 
 private:
-	uint32 total;
-	uint32 progress;
+    uint32 total;
+    uint32 progress;
 };
-
 }
 
 #endif

@@ -25,14 +25,15 @@ extern "C" {
 #include "magick/splay-tree.h"
 
 extern MagickExport void
-  *CropImageToHBITMAP(Image *,const RectangleInfo *,ExceptionInfo *),
-  *ImageToHBITMAP(Image *);
+*
+CropImageToHBITMAP(Image *, const RectangleInfo *, ExceptionInfo *),
+*ImageToHBITMAP(Image *);
 
 #if !defined(XS_VERSION)
 
 extern MagickExport MagickBooleanType
-  NTIsMagickConflict(const char *),
-  NTLoadTypeLists(SplayTreeInfo *,ExceptionInfo *);
+NTIsMagickConflict(const char *),
+NTLoadTypeLists(SplayTreeInfo *, ExceptionInfo *);
 
 #endif
 

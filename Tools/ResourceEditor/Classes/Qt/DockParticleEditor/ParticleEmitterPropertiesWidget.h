@@ -42,42 +42,54 @@
 #include <QSlider>
 #include <QCheckBox>
 
-class ParticleEmitterPropertiesWidget: public QWidget, public BaseParticleEditorContentWidget
+class ParticleEmitterPropertiesWidget : public QWidget, public BaseParticleEditorContentWidget
 {
-	Q_OBJECT
-	
+    Q_OBJECT
+
 public:
-	explicit ParticleEmitterPropertiesWidget(QWidget* parent = 0);
-	~ParticleEmitterPropertiesWidget();
+    explicit ParticleEmitterPropertiesWidget(QWidget* parent = 0);
+    ~ParticleEmitterPropertiesWidget();
 
-	void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter* emitter, bool updateMinimize, bool needUpdateTimeLimits = true);
-	void Update();
-	
-	virtual bool eventFilter( QObject * o, QEvent * e );
+    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool updateMinimize, bool needUpdateTimeLimits = true);
+    void Update();
 
-	virtual void StoreVisualState(KeyedArchive* visualStateProps);
-	virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    virtual bool eventFilter(QObject* o, QEvent* e);
 
-	// Accessors to timelines.
-	TimeLineWidget* GetEmitterRadiusTimeline() {return emitterRadius;};
-    TimeLineWidget* GetEmitterAngleTimeline() {return emitterAngle;};
-	TimeLineWidget* GetEmitterSizeTimeline() {return emitterSize;};
-	TimeLineWidget* GetEmissionVectorTimeline() {return emitterEmissionVector;};
+    virtual void StoreVisualState(KeyedArchive* visualStateProps);
+    virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+
+    // Accessors to timelines.
+    TimeLineWidget* GetEmitterRadiusTimeline()
+    {
+        return emitterRadius;
+    };
+    TimeLineWidget* GetEmitterAngleTimeline()
+    {
+        return emitterAngle;
+    };
+    TimeLineWidget* GetEmitterSizeTimeline()
+    {
+        return emitterSize;
+    };
+    TimeLineWidget* GetEmissionVectorTimeline()
+    {
+        return emitterEmissionVector;
+    };
 
 signals:
-	void ValueChanged();
-	
+    void ValueChanged();
+
 public slots:
-	void OnValueChanged();    
-	void OnEmitterYamlPathChanged(const QString& newPath);
+    void OnValueChanged();
+    void OnEmitterYamlPathChanged(const QString& newPath);
     void OnEmitterPositionChanged();
 
 protected:
-	void UpdateTooltip();	
+    void UpdateTooltip();
 
 private:
-	QVBoxLayout* mainLayout;
-	QLineEdit* emitterNameLineEdit;
+    QVBoxLayout* mainLayout;
+    QLineEdit* emitterNameLineEdit;
 
     QLineEdit* originalEmitterYamlPath = nullptr;
     QLineEdit* emitterYamlPath;
@@ -87,17 +99,17 @@ private:
 
     QCheckBox* shortEffectCheckBox;
 
-	TimeLineWidget* emitterEmissionRange;
-	TimeLineWidget* emitterEmissionVector;
-	TimeLineWidget* emitterRadius;
-	TimeLineWidget* emitterSize;
+    TimeLineWidget* emitterEmissionRange;
+    TimeLineWidget* emitterEmissionVector;
+    TimeLineWidget* emitterRadius;
+    TimeLineWidget* emitterSize;
     TimeLineWidget* emitterAngle;
-	EventFilterDoubleSpinBox* emitterLife;
-	GradientPickerWidget* emitterColorWidget;		
+    EventFilterDoubleSpinBox* emitterLife;
+    GradientPickerWidget* emitterColorWidget;
 
-	bool blockSignals;
-	
-	void InitWidget(QWidget* widget, bool connectWidget = true);
+    bool blockSignals;
+
+    void InitWidget(QWidget* widget, bool connectWidget = true);
 };
 
 #endif // __RESOURCE_EDITOR_PARTICLEEMITTERPROPERTIESWIDGET_H__

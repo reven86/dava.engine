@@ -37,6 +37,7 @@
 #include "MaterialModel.h"
 #include "Main/QtUtils.h"
 #include "TextureBrowser/TextureCache.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace MaterialItemLocal
 {
@@ -48,14 +49,10 @@ MaterialItem::MaterialItem(DAVA::NMaterial* _material, bool dragEnabled, bool dr
     , QStandardItem()
     , material(_material)
 {
-	DVASSERT(material);
+    DVASSERT(material);
 
-	static QIcon materialIcon(QString::fromUtf8(":/QtIcons/sphere.png"));
-	static QIcon instanceIcon(QString::fromUtf8(":/QtIcons/3d.png"));
-    static QIcon globalIcon(QString::fromUtf8(":/QtIcons/global.png"));
-	
-	setEditable(false);
-    setData(QVariant::fromValue<DAVA::NMaterial *>(material));
+    setEditable(false);
+    setData(QVariant::fromValue<DAVA::NMaterial*>(material));
     setDragEnabled(dragEnabled);
     setDropEnabled(dropEnabled);
     setSizeHint(QSize(MaterialItemLocal::MAX_MATERIAL_HEIGHT, MaterialItemLocal::MAX_MATERIAL_HEIGHT));
@@ -64,32 +61,33 @@ MaterialItem::MaterialItem(DAVA::NMaterial* _material, bool dragEnabled, bool dr
 }
 
 MaterialItem::~MaterialItem()
-{ }
+{
+}
 
 QVariant MaterialItem::data(int role) const
 {
-	QVariant ret;
+    QVariant ret;
 
-	switch(role)
-	{
-		case Qt::DisplayRole:
-			ret = QString(material->GetMaterialName().c_str());
-			break;
-        case Qt::DecorationRole:
-            const_cast< MaterialItem * >( this )->requestPreview();
-            ret = QStandardItem::data(role);
-            break;
-		default:
-			ret = QStandardItem::data(role);
-			break;
-	}
+    switch (role)
+    {
+    case Qt::DisplayRole:
+        ret = QString(material->GetMaterialName().c_str());
+        break;
+    case Qt::DecorationRole:
+        const_cast<MaterialItem*>(this)->requestPreview();
+        ret = QStandardItem::data(role);
+        break;
+    default:
+        ret = QStandardItem::data(role);
+        break;
+    }
 
     return ret;
 }
 
-DAVA::NMaterial * MaterialItem::GetMaterial() const
+DAVA::NMaterial* MaterialItem::GetMaterial() const
 {
-	return material;
+    return material;
 }
 
 void MaterialItem::SetFlag(MaterialFlag flag, bool enable)

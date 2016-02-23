@@ -43,7 +43,6 @@
 
 namespace DAVA
 {
-
 static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
 
 bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
@@ -78,17 +77,17 @@ static bool systemCursorVisibility = false;
 bool Cursor::SetSystemCursorVisibility(bool show)
 {
 #ifdef __DAVAENGINE_NPAPI__
-	CGDirectDisplayID displayID = 0; //this parameter is ignored on MacOS.
-	if (show)
-	{
-		CGDisplayShowCursor(displayID);
-	}
-	else
-	{
-		CGDisplayHideCursor(displayID);
-	}
+    CGDirectDisplayID displayID = 0; //this parameter is ignored on MacOS.
+    if (show)
+    {
+        CGDisplayShowCursor(displayID);
+    }
+    else
+    {
+        CGDisplayHideCursor(displayID);
+    }
 #else
-    if(show)
+    if (show)
         [NSCursor unhide];
     else
         [NSCursor hide];
@@ -101,7 +100,6 @@ bool Cursor::GetSystemCursorVisibility()
 {
     return systemCursorVisibility;
 }
-	
 };
 
 

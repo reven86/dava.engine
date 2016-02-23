@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class RenderOptions : public Observable
 {
 public:
@@ -88,14 +87,13 @@ public:
     };
 
     bool IsOptionEnabled(RenderOption option);
-	void SetOption(RenderOption option, bool value);
+    void SetOption(RenderOption option, bool value);
     FastName GetOptionName(RenderOption option);
     RenderOptions();
 
 private:
     bool options[OPTIONS_COUNT];
 };
-
 };
 
 #endif //__DAVAENGINE_RENDEROPTIONS_H__

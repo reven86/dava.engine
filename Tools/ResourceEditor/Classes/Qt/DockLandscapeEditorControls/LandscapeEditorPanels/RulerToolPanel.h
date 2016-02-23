@@ -38,35 +38,35 @@ using namespace DAVA;
 class QLabel;
 class SliderWidget;
 
-class RulerToolPanel: public LandscapeEditorBasePanel
+class RulerToolPanel : public LandscapeEditorBasePanel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit RulerToolPanel(QWidget* parent = 0);
-	~RulerToolPanel();
+    explicit RulerToolPanel(QWidget* parent = 0);
+    ~RulerToolPanel();
 
 private slots:
-	void UpdateLengths(SceneEditor2* scene, double length, double previewLength);
+    void UpdateLengths(SceneEditor2* scene, double length, double previewLength);
 
 protected:
-	virtual bool GetEditorEnabled();
-	
-	virtual void SetWidgetsState(bool enabled);
-	virtual void BlockAllSignals(bool block);
-	
-	virtual void InitUI();
-	virtual void ConnectToSignals();
+    virtual bool GetEditorEnabled();
 
-	virtual void StoreState();
-	virtual void RestoreState();
+    virtual void SetWidgetsState(bool enabled);
+    virtual void BlockAllSignals(bool block);
 
-	virtual void ConnectToShortcuts();
-	virtual void DisconnectFromShortcuts();
+    virtual void InitUI();
+    virtual void ConnectToSignals();
+
+    virtual void StoreState();
+    virtual void RestoreState();
+
+    virtual void ConnectToShortcuts();
+    virtual void DisconnectFromShortcuts();
 
 private:
-	QLabel* labelLength;
-	QLabel* labelPreview;
+    QLabel* labelLength;
+    QLabel* labelPreview;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__RULERTOOLPANEL__) */

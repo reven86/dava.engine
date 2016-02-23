@@ -51,16 +51,16 @@ using namespace DAVA;
 }
 
 // Intercept the right-mouse-clicks/
-- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems;
+- (NSArray*)webView:(WebView*)sender contextMenuItemsForElement:(NSDictionary*)element defaultMenuItems:(NSArray*)defaultMenuItems;
 
 @end
 
 @implementation WebViewControlUIDelegate
 
-- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
+- (NSArray*)webView:(WebView*)sender contextMenuItemsForElement:(NSDictionary*)element defaultMenuItems:(NSArray*)defaultMenuItems
 {
-	// No menu items needed.
-	return nil;
+    // No menu items needed.
+    return nil;
 }
 
 @end
@@ -71,20 +71,20 @@ using namespace DAVA;
 @interface WebViewPolicyDelegate : NSObject
 #endif
 {
-	IUIWebViewDelegate* delegate;
+    IUIWebViewDelegate* delegate;
     UIWebView* webView;
     WebViewControl* webViewControl;
 }
 
 - (id)init;
 
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
+- (void)webView:(WebView*)webView decidePolicyForNavigationAction:(NSDictionary*)actionInformation request:(NSURLRequest*)request frame:(WebFrame*)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
+- (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame;
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
-- (void)onExecuteJScript:(NSString *)result;
-- (void)setWebViewControl:(WebViewControl*) webControl;
-- (void)setUiWebViewControl:(UIWebView*) uiWebControl;
+- (void)onExecuteJScript:(NSString*)result;
+- (void)setWebViewControl:(WebViewControl*)webControl;
+- (void)setUiWebViewControl:(UIWebView*)uiWebControl;
 
 @end
 
@@ -92,70 +92,70 @@ using namespace DAVA;
 
 - (id)init
 {
-	self = [super init];
-	if (self)
-	{
-		delegate = NULL;
-		webView = NULL;
-	}
-	return self;
+    self = [super init];
+    if (self)
+    {
+        delegate = NULL;
+        webView = NULL;
+    }
+    return self;
 }
 
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
+- (void)webView:(WebView*)webView decidePolicyForNavigationAction:(NSDictionary*)actionInformation request:(NSURLRequest*)request frame:(WebFrame*)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
-	BOOL process = YES;
-	
-	if (delegate && self->webView)
-	{
-		NSString* url = [[request URL] absoluteString];
-		
-		if (url)
-		{
+    BOOL process = YES;
+
+    if (delegate && self->webView)
+    {
+        NSString* url = [[request URL] absoluteString];
+
+        if (url)
+        {
             NSInteger navigationTypeKey = [[actionInformation objectForKey:@"WebActionNavigationTypeKey"] integerValue];
             bool isRedirecteByMouseClick = navigationTypeKey == WebNavigationTypeLinkClicked;
-			IUIWebViewDelegate::eAction action = delegate->URLChanged(self->webView, [url UTF8String], isRedirecteByMouseClick);
-			
-			switch (action)
-			{
-				case IUIWebViewDelegate::PROCESS_IN_WEBVIEW:
-					Logger::FrameworkDebug("PROCESS_IN_WEBVIEW");
-					break;
-					
-				case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
-					Logger::FrameworkDebug("PROCESS_IN_SYSTEM_BROWSER");
-					process = NO;
-					[[NSWorkspace sharedWorkspace] openURL:[request URL]];
-					break;
-					
-				case IUIWebViewDelegate::NO_PROCESS:
-					Logger::FrameworkDebug("NO_PROCESS");
-					
-				default:
-					process = NO;
-					break;
-			}
-		}
-	}
-	
-	if (process)
-	{
-		[listener use];
-	}
-	else
-	{
-		[listener ignore];
-	}
+            IUIWebViewDelegate::eAction action = delegate->URLChanged(self->webView, [url UTF8String], isRedirecteByMouseClick);
+
+            switch (action)
+            {
+            case IUIWebViewDelegate::PROCESS_IN_WEBVIEW:
+                Logger::FrameworkDebug("PROCESS_IN_WEBVIEW");
+                break;
+
+            case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
+                Logger::FrameworkDebug("PROCESS_IN_SYSTEM_BROWSER");
+                process = NO;
+                [[NSWorkspace sharedWorkspace] openURL:[request URL]];
+                break;
+
+            case IUIWebViewDelegate::NO_PROCESS:
+                Logger::FrameworkDebug("NO_PROCESS");
+
+            default:
+                process = NO;
+                break;
+            }
+        }
+    }
+
+    if (process)
+    {
+        [listener use];
+    }
+    else
+    {
+        [listener ignore];
+    }
 }
 
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
+- (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame
 {
     if (webView && webView->IsRenderToTexture())
     {
         webViewControl->RenderToTextureAndSetAsBackgroundSpriteToControl(*webView);
     }
-    
+
     if (delegate && self->webView)
-	{
+    {
         delegate->PageLoaded(self->webView);
     }
 }
@@ -163,14 +163,14 @@ using namespace DAVA;
 - (void)setDelegate:(IUIWebViewDelegate*)d
          andWebView:(UIWebView*)w
 {
-	if (d && w)
-	{
-		delegate = d;
-		webView = w;
-	}
+    if (d && w)
+    {
+        delegate = d;
+        webView = w;
+    }
 }
 
-- (void)onExecuteJScript:(NSString *)result
+- (void)onExecuteJScript:(NSString*)result
 {
     if (delegate)
     {
@@ -178,13 +178,13 @@ using namespace DAVA;
     }
 }
 
-- (void)setWebViewControl:(WebViewControl*) webControl
+- (void)setWebViewControl:(WebViewControl*)webControl
 {
     DVASSERT(webControl);
     webViewControl = webControl;
 }
-                           
-- (void)setUiWebViewControl:(UIWebView*) uiWebControl
+
+- (void)setUiWebViewControl:(UIWebView*)uiWebControl
 {
     DVASSERT(uiWebControl);
     webView = uiWebControl;
@@ -198,26 +198,27 @@ WebViewControl::WebViewControl(UIWebView& ptr)
     , isRenderToTexture(false)
     , isVisible(true)
 {
-	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
-	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
+    NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);
+    webViewPtr = [[WebView alloc] initWithFrame:emptyRect
+                                      frameName:nil
                                       groupName:nil];
 
-	WebView* localWebView = (WebView*)webViewPtr;
-	[localWebView setWantsLayer:YES];
-	
-	webViewDelegatePtr = [[WebViewControlUIDelegate alloc] init];
-	[localWebView setUIDelegate:(WebViewControlUIDelegate*)webViewDelegatePtr];
+    WebView* localWebView = (WebView*)webViewPtr;
+    [localWebView setWantsLayer:YES];
 
-	webViewPolicyDelegatePtr = [[WebViewPolicyDelegate alloc] init];
-	[localWebView setPolicyDelegate:
-                    (WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
-    
+    webViewDelegatePtr = [[WebViewControlUIDelegate alloc] init];
+    [localWebView setUIDelegate:(WebViewControlUIDelegate*)webViewDelegatePtr];
+
+    webViewPolicyDelegatePtr = [[WebViewPolicyDelegate alloc] init];
+    [localWebView setPolicyDelegate:
+                  (WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
+
     [localWebView setFrameLoadDelegate:
-                    (WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
+                  (WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
 
     [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setWebViewControl:this];
     [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setUiWebViewControl:
-                                                            &uiWebViewControl];
+                                                      &uiWebViewControl];
 
     NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     [openGLView addSubview:localWebView];
@@ -225,32 +226,34 @@ WebViewControl::WebViewControl(UIWebView& ptr)
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
 
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    SetBackgroundTransparency(true);
+
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 }
 
 WebViewControl::~WebViewControl()
 {
-    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
 
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
-   [imageRep release];
+    [imageRep release];
     webImageCachePtr = 0;
-    
-	WebView* innerWebView = (WebView*)webViewPtr;
 
-	[innerWebView setUIDelegate:nil];
+    WebView* innerWebView = (WebView*)webViewPtr;
 
-	[innerWebView removeFromSuperview];
-	[innerWebView close];
-	[innerWebView release];
-	webViewPtr = 0;
+    [innerWebView setUIDelegate:nil];
 
-	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
-	[w release];
-	webViewPolicyDelegatePtr = 0;
-    
+    [innerWebView removeFromSuperview];
+    [innerWebView close];
+    [innerWebView release];
+    webViewPtr = 0;
+
+    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
+    [w release];
+    webViewPolicyDelegatePtr = 0;
+
     WebViewControlUIDelegate* c = (WebViewControlUIDelegate*)webViewDelegatePtr;
     [c release];
     webViewDelegatePtr = 0;
@@ -258,54 +261,61 @@ WebViewControl::~WebViewControl()
 
 void WebViewControl::SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView)
 {
-	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
-	[w setDelegate:delegate andWebView:webView];
+    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
+    [w setDelegate:delegate andWebView:webView];
 }
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-	SetRect(rect);
+    SetRect(rect);
 }
 
 // Open the URL requested.
 void WebViewControl::OpenURL(const String& urlToOpen)
 {
-	NSString* nsURLPathToOpen = [NSString stringWithUTF8String:urlToOpen.c_str()];
-	[(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
+    NSString* nsURLPathToOpen = [NSString stringWithUTF8String:urlToOpen.c_str()];
+    [(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
 }
 
 void WebViewControl::LoadHtmlString(const WideString& htlmString)
 {
-	NSString* htmlPageToLoad = [[[NSString alloc]
-                                 initWithBytes: htlmString.data()
-                                        length: htlmString.size() * sizeof(wchar_t)
-                                      encoding: NSUTF32LittleEndianStringEncoding] autorelease];
+    NSString* htmlPageToLoad = [[[NSString alloc]
+    initWithBytes:htlmString.data()
+           length:htlmString.size() * sizeof(wchar_t)
+         encoding:NSUTF32LittleEndianStringEncoding] autorelease];
     [[(WebView*)webViewPtr mainFrame]
-        loadHTMLString:htmlPageToLoad
-        baseURL:[[NSBundle mainBundle] bundleURL]];
+    loadHTMLString:htmlPageToLoad
+           baseURL:[[NSBundle mainBundle] bundleURL]];
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
 {
-	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
-	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-	// Delete all cookies for specified URL
-	for(NSHTTPCookie *cookie in [cookies cookies])
-	{
-		if([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
-	  	{
-       		[cookies deleteCookie:cookie];
-   	 	}
-	}
-	// Syncronized all changes with file system
-	[[NSUserDefaults standardUserDefaults] synchronize];
+    NSString* targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+    NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    // Delete all cookies for specified URL
+    for (NSHTTPCookie* cookie in [cookies cookies])
+    {
+        if ([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
+        {
+            [cookies deleteCookie:cookie];
+        }
+    }
+    // Syncronized all changes with file system
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
-    [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
+
+    // First escape base path to allow spaces and other similar symbols
+    NSString* basePathAsUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
+    NSString* escapedBasePath = [basePathAsUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    NSURL* baseUrl = [NSURL URLWithString:escapedBasePath];
+
+    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
+    [[nativeWebView mainFrame] loadHTMLString:dataToOpen baseURL:baseUrl];
 }
 
 void WebViewControl::SetRect(const Rect& srcRect)
@@ -331,7 +341,7 @@ void WebViewControl::SetRect(const Rect& srcRect)
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
-    
+
     if (!isRenderToTexture)
     {
         SetNativeVisible(isVisible);
@@ -340,8 +350,8 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
-	WebView* webView = (WebView*)webViewPtr;
-	[webView setDrawsBackground:(enabled ? NO : YES)];
+    WebView* webView = (WebView*)webViewPtr;
+    [webView setDrawsBackground:(enabled ? NO : YES)];
 }
 
 void WebViewControl::SetRenderToTexture(bool value)
@@ -363,8 +373,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     }
 }
 
-void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-UIWebView& uiWebViewControl)
+void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl)
 {
     bool recreateImageRep = true;
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
@@ -408,7 +417,7 @@ UIWebView& uiWebViewControl)
     const int h = [imageRep pixelsHigh];
     const int BPP = [imageRep bitsPerPixel];
     const int pitch = [imageRep bytesPerRow];
-    
+
     PixelFormat format = FORMAT_INVALID;
     if (24 == BPP)
     {
@@ -425,11 +434,11 @@ UIWebView& uiWebViewControl)
         uiWebViewControl.SetSprite(nullptr, 0);
         return;
     }
-    
+
     {
         RefPtr<Image> imageRGB;
         int bytesPerLine = w * (BPP / 8);
-        
+
         if (pitch == bytesPerLine)
         {
             imageRGB = Image::CreateFromData(w, h, format, rawData);
@@ -438,16 +447,16 @@ UIWebView& uiWebViewControl)
         {
             imageRGB = Image::Create(w, h, format);
             uint8* pixels = imageRGB->GetData();
-            
+
             // copy line by line image
-            for(int y = 0; y < h; ++y)
+            for (int y = 0; y < h; ++y)
             {
                 uint8* dstLineStart = &pixels[y * bytesPerLine];
                 const uint8* srcLineStart = &rawData[y * pitch];
                 Memcpy(dstLineStart, srcLineStart, bytesPerLine);
             }
         }
-        
+
         DVASSERT(imageRGB);
         {
             RefPtr<Texture> tex(Texture::CreateFromData(imageRGB.Get(), false));
@@ -462,10 +471,10 @@ UIWebView& uiWebViewControl)
 
 void WebViewControl::ExecuteJScript(const String& scriptString)
 {
-    NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
-    NSString *resultString = [(WebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+    NSString* jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
+    NSString* resultString = [(WebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
 
-    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*) webViewPolicyDelegatePtr;
+    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
     if (w)
     {
         [w performSelector:@selector(onExecuteJScript:) withObject:resultString afterDelay:0.0];
