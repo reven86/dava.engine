@@ -132,7 +132,7 @@ protected:
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
-    
+
 private:
     bool isScreenShotSaving = false;
 
@@ -184,12 +184,11 @@ public:
 
     String screenShotName;
 };
-    
+
 inline bool AutotestingSystem::GetIsScreenShotSaving() const
 {
     return isScreenShotSaving;
 }
-    
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

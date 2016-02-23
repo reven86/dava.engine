@@ -395,7 +395,7 @@ const String& AutotestingSystem::GetScreenShotName()
     Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
     return screenShotName;
 }
-    
+
 void AutotestingSystem::OnScreenShot(Image* image)
 {
     Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
@@ -415,7 +415,7 @@ void AutotestingSystem::OnScreenShotInternal(Image* image)
     isScreenShotSaving = false;
     SafeRelease(image);
 }
-    
+
 void AutotestingSystem::OnTestsFinished()
 {
     Logger::Info("AutotestingSystem::OnTestsFinished");
