@@ -56,7 +56,7 @@ bool BasePropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
     if (BasePropertyDelegate::IsValueReseted(editor))
     {
         BasePropertyDelegate::SetValueReseted(editor, false);
-        if (model->setData(index, QVariant(), DAVA::ResetRole))
+        if (model->setData(index, QVariant(), PropertiesModel::ResetRole))
         {
             return true;
         }

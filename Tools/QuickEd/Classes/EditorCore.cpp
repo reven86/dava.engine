@@ -87,51 +87,37 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-    connect(mainWindow.get(), &MainWindow::EmulationModeChanbed, documentGroup, &DocumentGroup::SetEmulationMode);
-    connect(mainWindow.get(), &MainWindow::PixelizationChanged, documentGroup, &DocumentGroup::SetPixelization);
     QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
+    auto previewWidget = mainWindow->previewWidget;
+
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
+
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->propertiesWidget, &PropertiesWidget::SetSelectedNodes);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->packageWidget, &PackageWidget::SetSelectedNodes);
-    connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, documentGroup, &DocumentGroup::SetSelectedNodes);
-
-    auto previewWidget = mainWindow->previewWidget;
-    auto scrollAreaController = previewWidget->GetScrollAreaController();
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::DocumentActivated, previewWidget, &PreviewWidget::OnDocumentActivated);
-    connect(documentGroup, &DocumentGroup::DocumentDeactivated, previewWidget, &PreviewWidget::OnDocumentDeactivated);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
-
-    connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
-
-    connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
-    connect(previewWidget, &PreviewWidget::FocusNextChild, documentGroup, &DocumentGroup::FocusNextChild);
-    connect(previewWidget, &PreviewWidget::FocusPreviousChild, documentGroup, &DocumentGroup::FocusPreviousChild);
-    connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
 
     auto packageWidget = mainWindow->packageWidget;
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
+    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
     connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
+    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
+    connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
-    documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
-    documentGroup->SetPixelization(mainWindow->isPixelized());
-    documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 }
 
 EditorCore::~EditorCore() = default;
@@ -214,11 +200,8 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
                 DAVA::FilePath davaPath = document->GetPackageFilePath();
                 CloseDocument(index);
                 RefPtr<PackageNode> package = project->OpenPackage(davaPath);
-                DVASSERT(nullptr != package);
-                if (nullptr != package)
-                {
-                    index = CreateDocument(index, package.Get());
-                }
+                DVASSERT(package.Get() != nullptr);
+                CreateDocument(index, package);
             }
         }
     }
@@ -264,10 +247,8 @@ void EditorCore::OnOpenPackageFile(const QString& path)
         if (index == -1)
         {
             RefPtr<PackageNode> package = project->OpenPackage(davaPath);
-            if (nullptr != package)
-            {
-                index = CreateDocument(documents.size(), package.Get());
-            }
+            DVASSERT(package.Get() != nullptr);
+            index = CreateDocument(documents.size(), package);
         }
         mainWindow->SetCurrentTab(index);
     }
@@ -563,7 +544,11 @@ void EditorCore::CloseDocument(int index)
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
     Document* activeDocument = documentGroup->GetActiveDocument();
+    //we will set active document after check current document
+    disconnect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     int newIndex = mainWindow->CloseTab(index);
+    connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
+
     DVASSERT(activeDocument != nullptr);
     Document* detached = documents.takeAt(index);
     Document* nextDocument = nullptr;
@@ -583,7 +568,7 @@ void EditorCore::CloseDocument(int index)
     delete detached; //some widgets hold this document inside :(
 }
 
-int EditorCore::CreateDocument(int index, PackageNode* package)
+int EditorCore::CreateDocument(int index, const RefPtr<PackageNode>& package)
 {
     Document* document = new Document(package, this);
     documents.insert(index, document);

@@ -77,6 +77,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelection);
     connect(ui->clearDirectoryButton, &QPushButton::clicked, ui->cacheFolderLineEdit, &QLineEdit::clear);
+
     connect(ui->cacheSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnCacheSizeChanged(double)));
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
@@ -265,7 +266,9 @@ void AssetCacheServerWindow::OnFolderSelection()
 
 void AssetCacheServerWindow::OnFolderTextChanged()
 {
-    ui->clearDirectoryButton->setEnabled(!ui->cacheFolderLineEdit->text().isEmpty());
+    bool isEmpty = ui->cacheFolderLineEdit->text().isEmpty();
+
+    ui->clearDirectoryButton->setEnabled(!isEmpty);
     ui->cacheFolderLineEdit->setFocus();
     VerifyData();
 }
@@ -379,7 +382,17 @@ void AssetCacheServerWindow::RemoveServers()
 
 void AssetCacheServerWindow::VerifyData()
 {
-    ChangeSettingsState(EDITED);
+    SettingsState newState = NOT_EDITED;
+    if (ui->cacheFolderLineEdit->text().isEmpty())
+    {
+        newState = EDITED_NOT_CORRECT;
+    }
+    else
+    {
+        newState = EDITED;
+    }
+
+    ChangeSettingsState(newState);
 }
 
 void AssetCacheServerWindow::OnApplyButtonClicked()
