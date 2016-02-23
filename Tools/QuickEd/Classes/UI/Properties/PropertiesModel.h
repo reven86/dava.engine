@@ -32,7 +32,6 @@
 
 #include <QAbstractItemModel>
 #include <QSet>
-#include <QTimer>
 
 #include "FileSystem/VariantType.h"
 #include "Model/ControlProperties/PropertyListener.h"
@@ -111,7 +110,6 @@ private:
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    QTimer* updatePropertyTimer = nullptr;
     QSet<QPair<QPersistentModelIndex, QPersistentModelIndex>> changedIndexes;
     LazyUpdater* lazyUpdater = nullptr;
 };

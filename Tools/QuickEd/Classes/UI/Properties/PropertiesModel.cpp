@@ -32,7 +32,6 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
-#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
 #include "Document.h"
