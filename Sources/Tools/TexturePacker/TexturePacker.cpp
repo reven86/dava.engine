@@ -741,7 +741,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                     {
                         AddError(Format("Compression format '%s' can't be saved to %s image for GPU '%s'",
                                         GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                                        wrapper->GetFormatName(),
+                                        wrapper->GetFormatName().c_str(),
                                         GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
 
                         keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
@@ -771,7 +771,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                     {
                         AddError(Format("Format '%s' is not supported for %s images.",
                                         GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                                        wrapper->GetFormatName()));
+                                        wrapper->GetFormatName().c_str()));
                     }
                 }
             }
@@ -795,7 +795,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
             if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
             {
                 AddError(Format("Compression format is not specified for '%s' token",
-                                ImageSystem::GetImageFormatInterface(keys.imageFormat)->GetFormatName()));
+                                ImageSystem::GetImageFormatInterface(keys.imageFormat)->GetFormatName().c_str()));
                 keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
             }
         }

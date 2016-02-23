@@ -85,7 +85,7 @@ bool DecompressAtcToRgba(const Image* srcImage, Image* dstImage)
     if (srcImage->format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
         Logger::Error("Decompressing of FORMAT_ATC_RGBA_INTERPOLATED_ALPHA is disabled on OSX platform, because of bug in qualcomm library");
-        return ScopedPtr<Image>(nullptr);
+        return false;
     }
 #endif
 

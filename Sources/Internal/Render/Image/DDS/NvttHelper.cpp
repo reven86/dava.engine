@@ -111,6 +111,7 @@ struct ImageOutputHandler : public nvtt::OutputHandler
                 return true;
             }
         }
+        return true;
     }
 
     bool writingImage = false;

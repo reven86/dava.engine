@@ -592,7 +592,7 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int3
     DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
     uint8* dataPtr = imageData + bitsOffset;
 
-    RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, dataPtr));
+    ScopedPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, dataPtr));
     ImageConvert::SwapRedBlueChannels(imgSrc);
     return Sprite::CreateFromImage(imgSrc, true, false);
 }
