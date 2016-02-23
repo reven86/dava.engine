@@ -39,7 +39,6 @@
 
 namespace DAVA
 {
-
 const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("Vegetation Animation");
 const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Shadows");
 const FastName QualitySettingsSystem::QUALITY_OPTION_WATER_DECORATIONS("Water Decorations");
@@ -64,51 +63,51 @@ QualitySettingsSystem::QualitySettingsSystem()
     EnableOption(QUALITY_OPTION_WATER_DECORATIONS, false);
 }
 
-void QualitySettingsSystem::Load(const FilePath &path)
+void QualitySettingsSystem::Load(const FilePath& path)
 {
     Logger::FrameworkDebug("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if (FileSystem::Instance()->Exists(path))
     {
-        YamlParser *parser = YamlParser::Create(path);
-        YamlNode *rootNode = parser->GetRootNode();
+        YamlParser* parser = YamlParser::Create(path);
+        YamlNode* rootNode = parser->GetRootNode();
 
-        if(NULL != rootNode)
+        if (NULL != rootNode)
         {
             textureQualities.clear();
             materialGroups.clear();
             soundQualities.clear();
 
             // materials
-            const YamlNode *materialGroupsNode = rootNode->Get("materials");
-            if(NULL != materialGroupsNode)
+            const YamlNode* materialGroupsNode = rootNode->Get("materials");
+            if (NULL != materialGroupsNode)
             {
-                for(uint32 i = 0; i < materialGroupsNode->GetCount(); ++i)
+                for (uint32 i = 0; i < materialGroupsNode->GetCount(); ++i)
                 {
-                    const YamlNode *groupNode = materialGroupsNode->Get(i);
-                    const YamlNode *name = groupNode->Get("group");
-                    const YamlNode *values = groupNode->Get("quality");
-                    const YamlNode *deflt = groupNode->Get("default");
+                    const YamlNode* groupNode = materialGroupsNode->Get(i);
+                    const YamlNode* name = groupNode->Get("group");
+                    const YamlNode* values = groupNode->Get("quality");
+                    const YamlNode* deflt = groupNode->Get("default");
 
                     FastName defQualityName;
-                    if(NULL != deflt && deflt->GetType() == YamlNode::TYPE_STRING)
+                    if (NULL != deflt && deflt->GetType() == YamlNode::TYPE_STRING)
                     {
                         defQualityName = FastName(deflt->AsString().c_str());
                     }
 
-                    if(NULL != name && NULL != values &&
+                    if (NULL != name && NULL != values &&
                         name->GetType() == YamlNode::TYPE_STRING &&
                         values->GetType() == YamlNode::TYPE_ARRAY)
                     {
-                        const Vector<YamlNode *> &v = values->AsVector();
+                        const Vector<YamlNode*>& v = values->AsVector();
 
                         MAGrQ maGr;
                         maGr.curQuality = 0;
                         maGr.qualities.reserve(v.size());
 
-                        for(size_t j = 0; j < v.size(); ++j)
+                        for (size_t j = 0; j < v.size(); ++j)
                         {
-                            if(v[j]->GetType() == YamlNode::TYPE_STRING)
+                            if (v[j]->GetType() == YamlNode::TYPE_STRING)
                             {
                                 MaterialQuality mq;
                                 mq.weight = j;
@@ -116,7 +115,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
 
                                 maGr.qualities.push_back(mq);
 
-                                if(mq.qualityName == defQualityName)
+                                if (mq.qualityName == defQualityName)
                                 {
                                     maGr.curQuality = j;
                                 }
@@ -129,30 +128,30 @@ void QualitySettingsSystem::Load(const FilePath &path)
             }
 
             // textures
-            const YamlNode *texturesNode = rootNode->Get("textures");
-            if(NULL != texturesNode)
+            const YamlNode* texturesNode = rootNode->Get("textures");
+            if (NULL != texturesNode)
             {
-                const YamlNode *defltTx = texturesNode->Get("default");
-                const YamlNode *qualitiesNode = texturesNode->Get("qualities");
+                const YamlNode* defltTx = texturesNode->Get("default");
+                const YamlNode* qualitiesNode = texturesNode->Get("qualities");
 
-                if(NULL != qualitiesNode)
+                if (NULL != qualitiesNode)
                 {
                     FastName defTxQualityName;
-                    if(NULL != defltTx && defltTx->GetType() == YamlNode::TYPE_STRING)
+                    if (NULL != defltTx && defltTx->GetType() == YamlNode::TYPE_STRING)
                     {
                         defTxQualityName = FastName(defltTx->AsString().c_str());
                     }
 
                     textureQualities.reserve(qualitiesNode->GetCount());
-                    for(uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                    for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
                     {
-                        const YamlNode *qualityNode = qualitiesNode->Get(i);
-                        const YamlNode *name = qualityNode->Get("quality");
-                        const YamlNode *albedoNode = qualityNode->Get("albedo");
-                        const YamlNode *normalNode = qualityNode->Get("normalmap");
-                        const YamlNode *sizeNode = qualityNode->Get("minsize");
+                        const YamlNode* qualityNode = qualitiesNode->Get(i);
+                        const YamlNode* name = qualityNode->Get("quality");
+                        const YamlNode* albedoNode = qualityNode->Get("albedo");
+                        const YamlNode* normalNode = qualityNode->Get("normalmap");
+                        const YamlNode* sizeNode = qualityNode->Get("minsize");
 
-                        if(NULL != name && name->GetType() == YamlNode::TYPE_STRING &&
+                        if (NULL != name && name->GetType() == YamlNode::TYPE_STRING &&
                             NULL != albedoNode && albedoNode->GetType() == YamlNode::TYPE_STRING &&
                             NULL != normalNode && normalNode->GetType() == YamlNode::TYPE_STRING &&
                             NULL != sizeNode && sizeNode->GetType() == YamlNode::TYPE_STRING)
@@ -167,40 +166,39 @@ void QualitySettingsSystem::Load(const FilePath &path)
 
                             textureQualities.push_back(txq);
 
-                            if(txq.name == defTxQualityName)
+                            if (txq.name == defTxQualityName)
                             {
                                 curTextureQuality = i;
                             }
                         }
                     }
-
                 }
             }
 
             // sound
-            const YamlNode *soundsNode = rootNode->Get("sounds");
-            if(NULL != soundsNode)
+            const YamlNode* soundsNode = rootNode->Get("sounds");
+            if (NULL != soundsNode)
             {
-                const YamlNode *defltSfx = soundsNode->Get("default");
-                const YamlNode *qualitiesNode = soundsNode->Get("qualities");
+                const YamlNode* defltSfx = soundsNode->Get("default");
+                const YamlNode* qualitiesNode = soundsNode->Get("qualities");
 
-                if(NULL != qualitiesNode)
+                if (NULL != qualitiesNode)
                 {
                     FastName defSfxQualityName;
-                    if(NULL != defltSfx && defltSfx->GetType() == YamlNode::TYPE_STRING)
+                    if (NULL != defltSfx && defltSfx->GetType() == YamlNode::TYPE_STRING)
                     {
                         defSfxQualityName = FastName(defltSfx->AsString().c_str());
                     }
 
                     soundQualities.reserve(qualitiesNode->GetCount());
-                    for(uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                    for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
                     {
-                        const YamlNode *qualityNode = qualitiesNode->Get(i);
-                        const YamlNode *name = qualityNode->Get("quality");
-                        const YamlNode *confgNode = qualityNode->Get("configPath");
+                        const YamlNode* qualityNode = qualitiesNode->Get(i);
+                        const YamlNode* name = qualityNode->Get("quality");
+                        const YamlNode* confgNode = qualityNode->Get("configPath");
 
-                        if(NULL != name && name->GetType() == YamlNode::TYPE_STRING &&
-                           NULL != confgNode && confgNode->GetType() == YamlNode::TYPE_STRING)
+                        if (NULL != name && name->GetType() == YamlNode::TYPE_STRING &&
+                            NULL != confgNode && confgNode->GetType() == YamlNode::TYPE_STRING)
                         {
                             SFXQ sfxq;
 
@@ -209,13 +207,12 @@ void QualitySettingsSystem::Load(const FilePath &path)
 
                             soundQualities.push_back(sfxq);
 
-                            if(sfxq.name == defSfxQualityName)
+                            if (sfxq.name == defSfxQualityName)
                             {
                                 curSoundQuality = i;
                             }
                         }
                     }
-
                 }
             }
             // particles
@@ -241,7 +238,7 @@ FastName QualitySettingsSystem::GetTextureQualityName(size_t index) const
 {
     FastName ret;
 
-    if(index < textureQualities.size())
+    if (index < textureQualities.size())
     {
         ret = textureQualities[index].name;
     }
@@ -254,11 +251,11 @@ FastName QualitySettingsSystem::GetCurTextureQuality() const
     return GetTextureQualityName(curTextureQuality);
 }
 
-void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
+void QualitySettingsSystem::SetCurTextureQuality(const FastName& name)
 {
-    for(size_t i = 0; i < textureQualities.size(); ++i)
+    for (size_t i = 0; i < textureQualities.size(); ++i)
     {
-        if(textureQualities[i].name == name)
+        if (textureQualities[i].name == name)
         {
             curTextureQuality = static_cast<int32>(i);
             return;
@@ -268,13 +265,13 @@ void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
     DVASSERT(0 && "No such quality");
 }
 
-const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName &name) const
+const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName& name) const
 {
-    const TextureQuality *ret = NULL;
+    const TextureQuality* ret = NULL;
 
-    for(size_t i = 0; i < textureQualities.size(); ++i)
+    for (size_t i = 0; i < textureQualities.size(); ++i)
     {
-        if(textureQualities[i].name == name)
+        if (textureQualities[i].name == name)
         {
             ret = &textureQualities[i].quality;
             break;
@@ -295,7 +292,7 @@ FastName QualitySettingsSystem::GetSFXQualityName(size_t index) const
 {
     FastName ret;
 
-    if(index < soundQualities.size())
+    if (index < soundQualities.size())
     {
         ret = soundQualities[index].name;
     }
@@ -308,11 +305,11 @@ FastName QualitySettingsSystem::GetCurSFXQuality() const
     return GetSFXQualityName(curSoundQuality);
 }
 
-void QualitySettingsSystem::SetCurSFXQuality(const FastName &name)
+void QualitySettingsSystem::SetCurSFXQuality(const FastName& name)
 {
-    for(size_t i = 0; i < soundQualities.size(); ++i)
+    for (size_t i = 0; i < soundQualities.size(); ++i)
     {
-        if(soundQualities[i].name == name)
+        if (soundQualities[i].name == name)
         {
             curSoundQuality = static_cast<int32>(i);
             return;
@@ -320,13 +317,13 @@ void QualitySettingsSystem::SetCurSFXQuality(const FastName &name)
     }
 }
 
-FilePath QualitySettingsSystem::GetSFXQualityConfigPath(const FastName &name) const
+FilePath QualitySettingsSystem::GetSFXQualityConfigPath(const FastName& name) const
 {
     FilePath ret;
 
-    for(size_t i = 0; i < soundQualities.size(); ++i)
+    for (size_t i = 0; i < soundQualities.size(); ++i)
     {
-        if(soundQualities[i].name == name)
+        if (soundQualities[i].name == name)
         {
             ret = soundQualities[i].configPath;
             break;
@@ -340,7 +337,7 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
 {
     FilePath ret;
 
-    if(index < soundQualities.size())
+    if (index < soundQualities.size())
     {
         ret = soundQualities[index].configPath;
     }
@@ -366,7 +363,7 @@ FastName QualitySettingsSystem::GetMaterialQualityGroupName(size_t index) const
 {
     FastName ret;
 
-    if(index < materialGroups.size())
+    if (index < materialGroups.size())
     {
         ret = materialGroups.keyByIndex(index);
     }
@@ -374,11 +371,11 @@ FastName QualitySettingsSystem::GetMaterialQualityGroupName(size_t index) const
     return ret;
 }
 
-size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName &group) const
+size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName& group) const
 {
     size_t ret = 0;
 
-    if(materialGroups.count(group) > 0)
+    if (materialGroups.count(group) > 0)
     {
         ret = materialGroups[group].qualities.size();
     }
@@ -386,11 +383,11 @@ size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName &group) con
     return ret;
 }
 
-FastName QualitySettingsSystem::GetMaterialQualityName(const FastName &group, size_t index) const
+FastName QualitySettingsSystem::GetMaterialQualityName(const FastName& group, size_t index) const
 {
     FastName ret;
 
-    if(materialGroups.count(group) > 0 && index < materialGroups[group].qualities.size())
+    if (materialGroups.count(group) > 0 && index < materialGroups[group].qualities.size())
     {
         ret = materialGroups[group].qualities[index].qualityName;
     }
@@ -398,11 +395,11 @@ FastName QualitySettingsSystem::GetMaterialQualityName(const FastName &group, si
     return ret;
 }
 
-FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName &group) const
+FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName& group) const
 {
     FastName ret;
 
-    if(materialGroups.count(group) > 0)
+    if (materialGroups.count(group) > 0)
     {
         ret = GetMaterialQualityName(group, materialGroups[group].curQuality);
     }
@@ -410,13 +407,13 @@ FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName &group) con
     return ret;
 }
 
-void QualitySettingsSystem::SetCurMaterialQuality(const FastName &group, const FastName &quality)
+void QualitySettingsSystem::SetCurMaterialQuality(const FastName& group, const FastName& quality)
 {
-    if(materialGroups.count(group) > 0)
+    if (materialGroups.count(group) > 0)
     {
-        for(size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
+        for (size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
         {
-            if(materialGroups[group].qualities[i].qualityName == quality)
+            if (materialGroups[group].qualities[i].qualityName == quality)
             {
                 materialGroups[group].curQuality = i;
                 return;
@@ -427,15 +424,15 @@ void QualitySettingsSystem::SetCurMaterialQuality(const FastName &group, const F
     DVASSERT(0 && "Not such quality");
 }
 
-const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName &group, const FastName &quality) const
+const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName& group, const FastName& quality) const
 {
-    const MaterialQuality *ret = NULL;
+    const MaterialQuality* ret = NULL;
 
-    if(materialGroups.count(group) > 0)
+    if (materialGroups.count(group) > 0)
     {
-        for(size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
+        for (size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
         {
-            if(materialGroups[group].qualities[i].qualityName == quality)
+            if (materialGroups[group].qualities[i].qualityName == quality)
             {
                 ret = &materialGroups[group].qualities[i];
                 break;
@@ -458,19 +455,19 @@ ParticlesQualitySettings& QualitySettingsSystem::GetParticlesQualitySettings()
     return particlesQualitySettings;
 }
 
-void QualitySettingsSystem::EnableOption( const FastName & option, bool enabled )
+void QualitySettingsSystem::EnableOption(const FastName& option, bool enabled)
 {
-	qualityOptions[option] = enabled;
+    qualityOptions[option] = enabled;
 }
 
-bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
+bool QualitySettingsSystem::IsOptionEnabled(const FastName& option) const
 {
-	if(qualityOptions.count(option) > 0)
-	{
-		return qualityOptions[option];
-	}
+    if (qualityOptions.count(option) > 0)
+    {
+        return qualityOptions[option];
+    }
 
-	return false;
+    return false;
 }
 
 int32 QualitySettingsSystem::GetOptionsCount() const
@@ -483,14 +480,15 @@ FastName QualitySettingsSystem::GetOptionName(int32 index) const
     return qualityOptions.keyByIndex(index);
 }
 
-void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
+void QualitySettingsSystem::UpdateEntityAfterLoad(Entity* entity)
 {
-	if(qualityOptions.empty() || (NULL == entity)) return;
+    if (qualityOptions.empty() || (NULL == entity))
+        return;
 
-	Vector<Entity *> entitiesWithQualityComponent;
-	entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Component::QUALITY_SETTINGS_COMPONENT);
+    Vector<Entity*> entitiesWithQualityComponent;
+    entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Component::QUALITY_SETTINGS_COMPONENT);
 
-    for (size_t i = 0, sz = entitiesWithQualityComponent.size(); i< sz; ++i)
+    for (size_t i = 0, sz = entitiesWithQualityComponent.size(); i < sz; ++i)
     {
         if (!IsQualityVisible(entitiesWithQualityComponent[i]))
         {
@@ -500,40 +498,37 @@ void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
             }
             else
             {
-                Entity *parent = entitiesWithQualityComponent[i]->GetParent();
+                Entity* parent = entitiesWithQualityComponent[i]->GetParent();
                 parent->RemoveNode(entitiesWithQualityComponent[i]);
             }
         }
     }
 }
 
-
-bool QualitySettingsSystem::IsQualityVisible(const Entity *entity)
-{    
-    QualitySettingsComponent * comp = GetQualitySettingsComponent(entity);
-    if(comp)
+bool QualitySettingsSystem::IsQualityVisible(const Entity* entity)
+{
+    QualitySettingsComponent* comp = GetQualitySettingsComponent(entity);
+    if (comp)
     {
         if (comp->filterByType)
-            return (!comp->modelType.IsValid())||IsOptionEnabled(comp->GetModelType());
+            return (!comp->modelType.IsValid()) || IsOptionEnabled(comp->GetModelType());
         else
             return (GetCurMaterialQuality(comp->requiredGroup) == comp->requiredQuality);
     }
-    
+
     return true;
 }
 
-void QualitySettingsSystem::UpdateEntityVisibility(Entity *e)
+void QualitySettingsSystem::UpdateEntityVisibility(Entity* e)
 {
-    QualitySettingsComponent * comp = GetQualitySettingsComponent(e);
+    QualitySettingsComponent* comp = GetQualitySettingsComponent(e);
     if (comp)
         UpdateEntityVisibilityRecursively(e, IsQualityVisible(e));
 }
 
-
-
-void QualitySettingsSystem::UpdateEntityVisibilityRecursively(Entity *e, bool qualityVisible)
+void QualitySettingsSystem::UpdateEntityVisibilityRecursively(Entity* e, bool qualityVisible)
 {
-    RenderObject *ro = GetRenderObject(e);
+    RenderObject* ro = GetRenderObject(e);
     if (ro)
     {
         if (qualityVisible)

@@ -35,7 +35,6 @@
 #include "Base/EnumMap.h"
 #include "Debug/DVAssert.h"
 
-
 FlagSelectorCombo::FlagSelectorCombo(QWidget* parent)
     : QComboBox(parent)
     , extraMask(0)
@@ -44,9 +43,9 @@ FlagSelectorCombo::FlagSelectorCombo(QWidget* parent)
 
     QStandardItemModel* m = qobject_cast<QStandardItemModel*>(model());
     DVASSERT(m);
-    connect( m, SIGNAL( itemChanged(QStandardItem*) ), SLOT( onItemChanged(QStandardItem*) ) );
+    connect(m, SIGNAL(itemChanged(QStandardItem*)), SLOT(onItemChanged(QStandardItem*)));
 
-    QListView *v = new QListView();
+    QListView* v = new QListView();
     setView(v);
 
     view()->viewport()->installEventFilter(this);
@@ -64,7 +63,7 @@ void FlagSelectorCombo::AddFlagItem(const quint64 value, const QString& hint)
     const QString numValue = QString::number(value);
     const QString toolTip = hint.isEmpty() ? numValue : QString("(%1) %2").arg(value).arg(hint);
 
-    QStandardItem *item = new QStandardItem();
+    QStandardItem* item = new QStandardItem();
     item->setCheckable(true);
     item->setData(value, ValueRole);
     item->setText(!hint.isEmpty() ? hint : numValue);
@@ -82,9 +81,9 @@ void FlagSelectorCombo::SetFlags(const quint64 flags)
     const int n = m->rowCount();
     for (int i = 0; i < n; i++)
     {
-        QStandardItem *item = m->item(i);
+        QStandardItem* item = m->item(i);
         const quint64 flag = item->data(ValueRole).toULongLong();
-        const bool isChecked = ( (flag & flags) == flag );
+        const bool isChecked = ((flag & flags) == flag);
         item->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
         knownFlags |= flag;
     }
@@ -102,7 +101,7 @@ quint64 FlagSelectorCombo::GetFlags() const
     const int n = m->rowCount();
     for (int i = 0; i < n; i++)
     {
-        QStandardItem *item = m->item(i);
+        QStandardItem* item = m->item(i);
         if (item->checkState() == Qt::Checked)
         {
             const quint64 flag = item->data(ValueRole).toULongLong();
@@ -129,15 +128,15 @@ void FlagSelectorCombo::updateText()
     const int n = m->rowCount();
     for (int i = 0; i < n; i++)
     {
-        QStandardItem *item = m->item(i);
+        QStandardItem* item = m->item(i);
         if (item->checkState() == Qt::Checked)
         {
             hints << item->text();
         }
     }
 
-    text = hints.join( " | " );
-    const QString toolTip = hints.join( "\n" );
+    text = hints.join(" | ");
+    const QString toolTip = hints.join("\n");
     setToolTip(toolTip);
     repaint();
 }
@@ -149,21 +148,21 @@ bool FlagSelectorCombo::eventFilter(QObject* obj, QEvent* e)
         switch (e->type())
         {
         case QEvent::MouseButtonRelease:
-            {
-                QAbstractItemView *v = view();
-                QAbstractItemModel *m = v->model();
-                const QModelIndex index = v->currentIndex();
-                const bool isChecked = ( m->data(index, Qt::CheckStateRole).toInt() == Qt::Checked );
-                m->setData( index, isChecked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
-            }
+        {
+            QAbstractItemView* v = view();
+            QAbstractItemModel* m = v->model();
+            const QModelIndex index = v->currentIndex();
+            const bool isChecked = (m->data(index, Qt::CheckStateRole).toInt() == Qt::Checked);
+            m->setData(index, isChecked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
+        }
             return true;
 
         case QEvent::Hide:
-            {
-                const quint64 flags = GetFlags();
-                emit done(flags);
-            }
-            break;
+        {
+            const quint64 flags = GetFlags();
+            emit done(flags);
+        }
+        break;
 
         default:
             break;
@@ -185,9 +184,9 @@ void FlagSelectorCombo::paintEvent(QPaintEvent* event)
 
     p.drawComplexControl(QStyle::CC_ComboBox, option);
 
-    const QRect textRect = style()->subControlRect( QStyle::CC_ComboBox, &option, QStyle::SC_ComboBoxEditField );
+    const QRect textRect = style()->subControlRect(QStyle::CC_ComboBox, &option, QStyle::SC_ComboBoxEditField);
     const QFontMetrics metrics(font());
-    const QString elidedText = metrics.elidedText( text, Qt::ElideRight, textRect.width() );
+    const QString elidedText = metrics.elidedText(text, Qt::ElideRight, textRect.width());
 
     p.drawText(textRect, Qt::AlignVCenter, elidedText);
 }

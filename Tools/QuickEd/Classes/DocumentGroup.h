@@ -31,18 +31,16 @@
 #define QUICKED_DOCUMENTGROUP_H
 
 #include <QObject>
-#include <QUndoGroup>
-#include "Base/BaseTypes.h"
-#include "EditorSystems/SelectionContainer.h"
 
 class Document;
+class QUndoGroup;
 class PackageBaseNode;
 
 class DocumentGroup : public QObject
 {
     Q_OBJECT
 public:
-    explicit DocumentGroup(QObject *parent = nullptr);
+    explicit DocumentGroup(QObject* parent = nullptr);
     ~DocumentGroup();
 
     void InsertDocument(int index, Document*);
@@ -53,30 +51,14 @@ public:
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void DocumentActivated(Document*);
-    void DocumentDeactivated(Document*);
-    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void CanvasSizeChanged();
-    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void SetActiveDocument(Document* document);
-    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void SetEmulationMode(bool emulationMode);
-    void SetPixelization(bool hasPixelization);
-    void SetScale(float scale);
-    void OnSelectAllRequested();
-    void FocusNextChild();
-    void FocusPreviousChild();
 
-protected:
-    bool emulationMode = false;
-    bool hasPixalization = false;
-    float scale = 100.0f;
-
-    Document *active;
+private:
+    Document* active;
     QList<Document*> documentList;
-    QUndoGroup *undoGroup;
+    QUndoGroup* undoGroup;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

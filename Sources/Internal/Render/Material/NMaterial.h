@@ -148,6 +148,7 @@ public:
     Texture* GetEffectiveTexture(const FastName& slotName);
     void CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const;
     bool ContainsTexture(Texture* texture) const;
+    const HashMap<FastName, MaterialTextureInfo*>& GetLocalTextures() const;
 
     // flags
     void AddFlag(const FastName& flagName, int32 value);

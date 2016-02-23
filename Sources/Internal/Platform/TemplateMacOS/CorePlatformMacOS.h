@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class CoreMacOSPlatform : public CoreMacOSPlatformBase
 {
 public:

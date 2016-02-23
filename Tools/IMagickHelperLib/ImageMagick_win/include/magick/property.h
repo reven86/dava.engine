@@ -23,25 +23,27 @@ extern "C" {
 #endif
 
 extern MagickExport char
-  *GetNextImageProperty(const Image *),
-  *InterpretImageProperties(const ImageInfo *,Image *,const char *),
-  *RemoveImageProperty(Image *,const char *);
+*
+GetNextImageProperty(const Image *),
+*InterpretImageProperties(const ImageInfo *, Image *, const char *),
+*RemoveImageProperty(Image *, const char *);
 
 extern MagickExport const char
-  *GetImageProperty(const Image *,const char *),
-  *GetMagickProperty(const ImageInfo *,Image *,const char *);
+*
+GetImageProperty(const Image *, const char *),
+*GetMagickProperty(const ImageInfo *, Image *, const char *);
 
 extern MagickExport MagickBooleanType
-  CloneImageProperties(Image *,const Image *),
-  DefineImageProperty(Image *,const char *),
-  DeleteImageProperty(Image *,const char *),
-  FormatImageProperty(Image *,const char *,const char *,...)
-    magick_attribute((format (printf,3,4))),
-  SetImageProperty(Image *,const char *,const char *);
+CloneImageProperties(Image *, const Image *),
+DefineImageProperty(Image *, const char *),
+DeleteImageProperty(Image *, const char *),
+FormatImageProperty(Image *, const char *, const char *, ...)
+magick_attribute((format(printf, 3, 4))),
+SetImageProperty(Image *, const char *, const char *);
 
 extern MagickExport void
-  DestroyImageProperties(Image *),
-  ResetImagePropertyIterator(const Image *);
+DestroyImageProperties(Image *),
+ResetImagePropertyIterator(const Image *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

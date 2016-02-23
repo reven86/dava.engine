@@ -42,7 +42,7 @@ auto GetIndex = [](const FileList* files, DAVA::String filename)
     return i;
 };
 
-DAVA_TESTCLASS(FileListTest)
+DAVA_TESTCLASS (FileListTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
@@ -57,7 +57,7 @@ DAVA_TESTCLASS(FileListTest)
     #endif
     }
 
-    DAVA_TEST(ResTestFunction)
+    DAVA_TEST (ResTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileListTest/"));
 
@@ -66,7 +66,8 @@ DAVA_TESTCLASS(FileListTest)
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
-            if (fileList->IsNavigationDirectory(ifo)) continue;
+            if (fileList->IsNavigationDirectory(ifo))
+                continue;
 
             String filename = fileList->GetFilename(ifo);
             FilePath pathname = fileList->GetPathname(ifo);
@@ -80,7 +81,8 @@ DAVA_TESTCLASS(FileListTest)
 
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
@@ -109,7 +111,8 @@ DAVA_TESTCLASS(FileListTest)
                 TEST_VERIFY(files->GetFileCount() == 6);
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
@@ -150,7 +153,8 @@ DAVA_TESTCLASS(FileListTest)
                 TEST_VERIFY(files->GetFileCount() == 2);
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
@@ -177,7 +181,7 @@ DAVA_TESTCLASS(FileListTest)
     }
 
 #if defined(__DAVAENGINE_WINDOWS__)
-    DAVA_TEST(FileListTestWindowsExtensions)
+    DAVA_TEST (FileListTestWindowsExtensions)
     {
         FileSystem* fs = FileSystem::Instance();
         const String fileContent = "Hello :)";
@@ -237,7 +241,7 @@ DAVA_TESTCLASS(FileListTest)
     }
 #endif // __DAVAENGINE_WINDOWS__
 
-    DAVA_TEST(DocTestFunction)
+    DAVA_TEST (DocTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileListTest/"));
 
@@ -246,7 +250,8 @@ DAVA_TESTCLASS(FileListTest)
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
-            if (fileList->IsNavigationDirectory(ifo)) continue;
+            if (fileList->IsNavigationDirectory(ifo))
+                continue;
 
             String filename = fileList->GetFilename(ifo);
             FilePath pathname = fileList->GetPathname(ifo);
@@ -260,7 +265,8 @@ DAVA_TESTCLASS(FileListTest)
 
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
@@ -289,7 +295,8 @@ DAVA_TESTCLASS(FileListTest)
                 TEST_VERIFY(files->GetFileCount() == 6);
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
@@ -330,7 +337,8 @@ DAVA_TESTCLASS(FileListTest)
                 TEST_VERIFY(files->GetFileCount() == 2);
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
@@ -356,7 +364,7 @@ DAVA_TESTCLASS(FileListTest)
         }
     }
 
-    DAVA_TEST(HiddenFileTest)
+    DAVA_TEST (HiddenFileTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
         FilePath file1 = FilePath("~doc:/TestData/FileListTest/Folder1/file1");
@@ -383,7 +391,7 @@ DAVA_TESTCLASS(FileListTest)
         TEST_VERIFY(files->IsHidden(i) == true);
 
         SetFileAttributesA(file1str.c_str(), attrs);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
         FilePath file1 = "~doc:/TestData/FileListTest/Folder1/file1";
         FilePath file1hidden = "~doc:/TestData/FileListTest/Folder1/.file1";
         TEST_VERIFY(FileSystem::Instance()->CopyFile(file1, file1hidden, true));
@@ -401,7 +409,7 @@ DAVA_TESTCLASS(FileListTest)
 #endif //PLATFORMS
     }
 
-    DAVA_TEST(HiddenDirTest)
+    DAVA_TEST (HiddenDirTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
         FilePath dir1 = FilePath("~doc:/TestData/FileListTest/Folder1/");
@@ -429,7 +437,7 @@ DAVA_TESTCLASS(FileListTest)
 
         SetFileAttributesA(dir1str.c_str(), attrs);
 
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
         FilePath folder1hidden = "~doc:/TestData/FileListTest/.Folder1/";
         TEST_VERIFY(FileSystem::Instance()->CreateDirectory(folder1hidden, true));
@@ -448,7 +456,7 @@ DAVA_TESTCLASS(FileListTest)
 #endif //PLATFORMS
     }
 
-    void RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePath &dst)
+    void RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
     {
         DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
 

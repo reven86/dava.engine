@@ -39,6 +39,8 @@ class ControlNode;
 class StyleSheetNode;
 class Document;
 class PackageBaseNode;
+class PropertiesModel;
+class QtModelPackageCommandExecutor;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
@@ -47,48 +49,47 @@ public:
     PropertiesWidget(QWidget* parent = nullptr);
 
 public slots:
+    void UpdateModel(PackageBaseNode* node);
     void OnDocumentChanged(Document* doc);
-    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
-    void OnAddComponent(QAction *action);
-    void OnAddStyleProperty(QAction *action);
+    void OnAddComponent(QAction* action);
+    void OnAddStyleProperty(QAction* action);
     void OnAddStyleSelector();
     void OnRemove();
-    
-    void OnSelectionChanged(const QItemSelection &selected,
-                            const QItemSelection &deselected);
-    void OnModelChanged();
+
+    void OnSelectionChanged(const QItemSelection& selected,
+                            const QItemSelection& deselected);
+    void OnModelUpdated();
 
 private slots:
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
 
 private:
-    QAction *CreateAddComponentAction();
-    QAction *CreateAddStyleSelectorAction();
-    QAction *CreateAddStylePropertyAction();
-    QAction *CreateRemoveAction();
-    QAction *CreateSeparator();
+    QAction* CreateAddComponentAction();
+    QAction* CreateAddStyleSelectorAction();
+    QAction* CreateAddStylePropertyAction();
+    QAction* CreateRemoveAction();
+    QAction* CreateSeparator();
 
-    ControlNode *GetSelectedControlNode() const;
-    StyleSheetNode *GetSelectedStyleSheetNode() const;
-    
-    void UpdateSelection();
     void UpdateActions();
 
     void ApplyExpanding();
 
-    Document* document = nullptr;
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
     QAction* addStyleSelectorAction = nullptr;
     QAction* removeAction = nullptr;
+
+    PropertiesModel* propertiesModel = nullptr;
 
     DAVA::Map<DAVA::String, bool> itemsState;
 
     SelectionContainer selectionContainer;
 
     DAVA::String lastTopIndexPath;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
+    PackageBaseNode* selectedNode = nullptr; //node used to build model
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

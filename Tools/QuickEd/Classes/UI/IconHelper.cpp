@@ -29,15 +29,14 @@
 
 #include "IconHelper.h"
 
-QString IconHelper::GetIconPathForClassName(const QString &className)
+QString IconHelper::GetIconPathForClassName(const QString& className)
 {
-	QString s = ":/Icons/QtControlIcons/" + className.toLower() + ".png";
+    QString s = ":/Icons/QtControlIcons/" + className.toLower() + ".png";
 
-	return s;
+    return s;
 }
 
 QString IconHelper::GetCustomIconPath()
 {
     return ":/Icons/QtControlIcons/custom_icon.png";
 }
-

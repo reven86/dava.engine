@@ -34,7 +34,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 13"
+#define LAUNCHER_VER "0.9 build 14"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 
@@ -79,7 +79,7 @@
 /////////////////////
 
 template <class TYPE>
-void SafeDelete(TYPE * &d)
+void SafeDelete(TYPE*& d)
 {
     if (d)
     {

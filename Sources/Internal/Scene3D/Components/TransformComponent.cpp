@@ -35,86 +35,81 @@
 
 namespace DAVA
 {
-
-    
 TransformComponent::TransformComponent()
 {
     localMatrix = Matrix4::IDENTITY;
-	worldMatrix = Matrix4::IDENTITY;
-	parentMatrix = 0;
-	parent = 0;
-}
-    
-TransformComponent::~TransformComponent()
-{
-    
+    worldMatrix = Matrix4::IDENTITY;
+    parentMatrix = 0;
+    parent = 0;
 }
 
-Component * TransformComponent::Clone(Entity * toEntity)
+TransformComponent::~TransformComponent()
 {
-    TransformComponent * newTransform = new TransformComponent();
-	newTransform->SetEntity(toEntity);
-	newTransform->localMatrix = localMatrix;
-	newTransform->worldMatrix = worldMatrix;
+}
+
+Component* TransformComponent::Clone(Entity* toEntity)
+{
+    TransformComponent* newTransform = new TransformComponent();
+    newTransform->SetEntity(toEntity);
+    newTransform->localMatrix = localMatrix;
+    newTransform->worldMatrix = worldMatrix;
     newTransform->parent = this->parent;
 
     return newTransform;
 }
 
-
-void TransformComponent::SetLocalTransform(const Matrix4 * transform)
+void TransformComponent::SetLocalTransform(const Matrix4* transform)
 {
-	localMatrix = *transform;
-	if(!parent)
-	{
-		worldMatrix = *transform;
-	}
+    localMatrix = *transform;
+    if (!parent)
+    {
+        worldMatrix = *transform;
+    }
 
-	GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 }
 
-void TransformComponent::SetParent(Entity * node)
+void TransformComponent::SetParent(Entity* node)
 {
-	parent = node;
+    parent = node;
 
-	if(node)
-	{
-		parentMatrix = ((TransformComponent*)node->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-	}
-	else
-	{
-		parentMatrix = 0;
-	}
+    if (node)
+    {
+        parentMatrix = ((TransformComponent*)node->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+    }
+    else
+    {
+        parentMatrix = 0;
+    }
 
-	GlobalEventSystem::Instance()->Event(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
-Matrix4 & TransformComponent::ModifyLocalTransform()
+Matrix4& TransformComponent::ModifyLocalTransform()
 {
-	GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
-	return localMatrix;
+    GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    return localMatrix;
 }
 
-void TransformComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void TransformComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(NULL != archive)
-	{
-		archive->SetMatrix4("tc.localMatrix", localMatrix);
-		archive->SetMatrix4("tc.worldMatrix", worldMatrix);
-	}
+    if (NULL != archive)
+    {
+        archive->SetMatrix4("tc.localMatrix", localMatrix);
+        archive->SetMatrix4("tc.worldMatrix", worldMatrix);
+    }
 }
 
-void TransformComponent::Deserialize(KeyedArchive *archive, SerializationContext *sceneFile)
+void TransformComponent::Deserialize(KeyedArchive* archive, SerializationContext* sceneFile)
 {
-	if(NULL != archive)
-	{
-		localMatrix = archive->GetMatrix4("tc.localMatrix", Matrix4::IDENTITY);
-		worldMatrix = archive->GetMatrix4("tc.worldMatrix", Matrix4::IDENTITY);
-	}
+    if (NULL != archive)
+    {
+        localMatrix = archive->GetMatrix4("tc.localMatrix", Matrix4::IDENTITY);
+        worldMatrix = archive->GetMatrix4("tc.worldMatrix", Matrix4::IDENTITY);
+    }
 
-	Component::Deserialize(archive, sceneFile);
+    Component::Deserialize(archive, sceneFile);
 }
-
 };

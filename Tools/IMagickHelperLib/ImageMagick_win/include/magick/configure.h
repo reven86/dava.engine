@@ -26,45 +26,49 @@ extern "C" {
 
 typedef struct _ConfigureInfo
 {
-  char
+    char
     *path,
     *name,
     *value;
-                                                                                
-  MagickBooleanType
+
+    MagickBooleanType
     exempt,
     stealth;
-                                                                                
-  struct _ConfigureInfo
-    *previous,
-    *next;  /* deprecated, use GetConfigureInfoList() */
 
-  size_t
+    struct _ConfigureInfo
+    *previous,
+    *next; /* deprecated, use GetConfigureInfoList() */
+
+    size_t
     signature;
 } ConfigureInfo;
 
 extern MagickExport char
-  **GetConfigureList(const char *,size_t *,ExceptionInfo *),
-  *GetConfigureOption(const char *);
+**
+GetConfigureList(const char *, size_t *, ExceptionInfo *),
+*GetConfigureOption(const char *);
 
 extern MagickExport const char
-  *GetConfigureValue(const ConfigureInfo *);
+*
+GetConfigureValue(const ConfigureInfo*);
 
 extern MagickExport const ConfigureInfo
-  *GetConfigureInfo(const char *,ExceptionInfo *),
-  **GetConfigureInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetConfigureInfo(const char *, ExceptionInfo *),
+**GetConfigureInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport LinkedListInfo
-  *DestroyConfigureOptions(LinkedListInfo *),
-  *GetConfigurePaths(const char *,ExceptionInfo *),
-  *GetConfigureOptions(const char *,ExceptionInfo *);
+*
+DestroyConfigureOptions(LinkedListInfo *),
+*GetConfigurePaths(const char *, ExceptionInfo *),
+*GetConfigureOptions(const char *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  ConfigureComponentGenesis(void),
-  ListConfigureInfo(FILE *,ExceptionInfo *);
+ConfigureComponentGenesis(void),
+ListConfigureInfo(FILE *, ExceptionInfo *);
 
 extern MagickExport void
-  ConfigureComponentTerminus(void);
+ConfigureComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -35,25 +35,27 @@
 
 namespace DAVA
 {
-    class UIControl;
+class UIControl;
 }
 
 class InternalControlPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
-    InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCloneType copyType);
+    InternalControlPropertiesSection(DAVA::UIControl* control, int num, const InternalControlPropertiesSection* sourceSection, eCloneType copyType);
+
 protected:
     virtual ~InternalControlPropertiesSection();
+
 public:
-    virtual DAVA::UIControl *GetInternalControl() const;
+    virtual DAVA::UIControl* GetInternalControl() const;
     void CreateInternalControl();
-    
+
     bool HasChanges() const override;
-    void Accept(PropertyVisitor *visitor) override;
+    void Accept(PropertyVisitor* visitor) override;
 
 private:
-    DAVA::UIControl *control;
-    DAVA::UIControl *internalControl;
+    DAVA::UIControl* control;
+    DAVA::UIControl* internalControl;
     int internalControlNum;
 };
 

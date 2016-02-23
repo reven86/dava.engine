@@ -42,10 +42,10 @@ namespace DAVA
 class File;
 namespace Net
 {
-    struct IChannelListener;
-    class MMNetClient;
-}   // namespace Net
-}   // namespace DAVA
+struct IChannelListener;
+class MMNetClient;
+} // namespace Net
+} // namespace DAVA
 
 class MemProfWidget;
 class ProfilingSession;
@@ -53,7 +53,7 @@ class ProfilingSession;
 class MemProfController : public QObject
 {
     Q_OBJECT
-    
+
 public:
     enum eMode
     {
@@ -63,8 +63,8 @@ public:
     };
 
 public:
-    MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = nullptr);
-    MemProfController(const DAVA::FilePath& srcDir, QWidget *parentWidget, QObject *parent = nullptr);
+    MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget* parentWidget, QObject* parent = nullptr);
+    MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget, QObject* parent = nullptr);
     ~MemProfController();
 
     void ShowView();

@@ -40,7 +40,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
@@ -84,11 +83,11 @@ private:
     size_t runningObjects;
     TCPSocket socket;
     DeadlineTimer timer;
-    IClientListener* listener;  // Who receive notifications; also indicator that Start has been called
+    IClientListener* listener; // Who receive notifications; also indicator that Start has been called
     uint32 readTimeout;
-    bool isInitiator;       // true: establishes connection; false: created from accepted connection
-    bool isTerminating;     // Stop has been invoked
-    bool isConnected;       // Connections has been established
+    bool isInitiator; // true: establishes connection; false: created from accepted connection
+    bool isTerminating; // Stop has been invoked
+    bool isConnected; // Connections has been established
 
     static const size_t INBUF_SIZE = 10 * 1024;
     uint8 inbuf[INBUF_SIZE];
@@ -104,7 +103,7 @@ inline TCPSocket& TCPClientTransport::Socket()
     return socket;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TCPCLIENTTRANSPORT_H__
+#endif // __DAVAENGINE_TCPCLIENTTRANSPORT_H__

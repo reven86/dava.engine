@@ -39,40 +39,36 @@
 
 using namespace DAVA;
 
-HangingObjectsHeight::HangingObjectsHeight(QWidget *parent /*= 0*/)
-	: QWidget(parent)
+HangingObjectsHeight::HangingObjectsHeight(QWidget* parent /*= 0*/)
+    : QWidget(parent)
 {
-	heightValue = new EventFilterDoubleSpinBox(this);
-	heightValue->setToolTip("Min height for hanging objects");
-	heightValue->setMinimum(-100);
-	heightValue->setMaximum(100);	
-	heightValue->setSingleStep(0.01);
-	heightValue->setDecimals(4);
+    heightValue = new EventFilterDoubleSpinBox(this);
+    heightValue->setToolTip("Min height for hanging objects");
+    heightValue->setMinimum(-100);
+    heightValue->setMaximum(100);
+    heightValue->setSingleStep(0.01);
+    heightValue->setDecimals(4);
 
-	QLabel *caption = new QLabel("Min height:", this);
+    QLabel* caption = new QLabel("Min height:", this);
 
-	QHBoxLayout *layout = new QHBoxLayout(this);
-	layout->setMargin(0);
-	layout->setContentsMargins(0, 0, 0, 0);
+    QHBoxLayout* layout = new QHBoxLayout(this);
+    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
-	setLayout(layout);
+    setLayout(layout);
 
-	layout->addWidget(caption);
-	layout->addWidget(heightValue);
+    layout->addWidget(caption);
+    layout->addWidget(heightValue);
 
-
-	QObject::connect(heightValue, SIGNAL(valueChanged(double)), this, SLOT(ValueChanged(double)));
+    QObject::connect(heightValue, SIGNAL(valueChanged(double)), this, SLOT(ValueChanged(double)));
 }
 
-void HangingObjectsHeight::SetHeight( DAVA::float32 value )
+void HangingObjectsHeight::SetHeight(DAVA::float32 value)
 {
-	heightValue->setValue(value);
+    heightValue->setValue(value);
 }
 
-void HangingObjectsHeight::ValueChanged( double value )
+void HangingObjectsHeight::ValueChanged(double value)
 {
-	emit HeightChanged(value);
+    emit HeightChanged(value);
 }
-
-
-

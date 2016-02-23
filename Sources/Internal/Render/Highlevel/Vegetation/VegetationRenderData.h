@@ -36,7 +36,6 @@
 #include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
 
-
 namespace DAVA
 {
 typedef uint32 VegetationIndex;
@@ -86,28 +85,26 @@ struct VegetationLayerParams
 class VegetationRenderData
 {
 public:
-
     VegetationRenderData();
     ~VegetationRenderData();
 
     inline Vector<VegetationVertex>& GetVertices();
     inline Vector<VegetationIndex>& GetIndices();
-    inline Vector<Vector<Vector<VegetationSortedBufferItem> > >& GetIndexBuffers();
+    inline Vector<Vector<Vector<VegetationSortedBufferItem>>>& GetIndexBuffers();
     inline NMaterial* GetMaterial();
     inline void SetMaterial(NMaterial* mat);
 
     void ReleaseRenderData();
-    
-    Vector<Vector<uint32> > instanceCount; //layer - lod
-    Vector<Vector<uint32> > vertexCountPerInstance; //layer - lod
-    Vector<Vector<uint32> > polyCountPerInstance; //layer - lod
+
+    Vector<Vector<uint32>> instanceCount; //layer - lod
+    Vector<Vector<uint32>> vertexCountPerInstance; //layer - lod
+    Vector<Vector<uint32>> polyCountPerInstance; //layer - lod
 
 private:
-    
     NMaterial* material;
     Vector<VegetationVertex> vertexData;
     Vector<VegetationIndex> indexData;
-    Vector<Vector<Vector<VegetationSortedBufferItem> > > indexRenderDataObject; //resolution - cell - direction
+    Vector<Vector<Vector<VegetationSortedBufferItem>>> indexRenderDataObject; //resolution - cell - direction
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +119,7 @@ inline Vector<VegetationIndex>& VegetationRenderData::GetIndices()
     return indexData;
 }
 
-inline Vector<Vector<Vector<VegetationSortedBufferItem> > >& VegetationRenderData::GetIndexBuffers()
+inline Vector<Vector<Vector<VegetationSortedBufferItem>>>& VegetationRenderData::GetIndexBuffers()
 {
     return indexRenderDataObject;
 }
@@ -131,16 +128,15 @@ inline NMaterial* VegetationRenderData::GetMaterial()
 {
     return material;
 }
-    
+
 inline void VegetationRenderData::SetMaterial(NMaterial* mat)
 {
-    if(mat != material)
+    if (mat != material)
     {
         SafeRelease(material);
         material = SafeRetain(mat);
     }
 }
-
 };
 
 #endif /* defined(__Framework__VegetationRenderData__) */

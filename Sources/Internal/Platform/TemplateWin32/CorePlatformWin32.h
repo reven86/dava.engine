@@ -36,12 +36,12 @@
 #include "CoreWin32PlatformBase.h"
 #include "UI/UIEvent.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 class CoreWin32Platform : public CoreWin32PlatformBase
 {
 public:
-	eScreenMode GetScreenMode() override;
+    eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
 

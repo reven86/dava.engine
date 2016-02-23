@@ -33,58 +33,58 @@
 
 @implementation AppDelegate
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+- (void)applicationDidFinishLaunching:(NSNotification*)aNotification
 {
-	NSLog(@"applicationDidFinishLaunching: notification");
+    NSLog(@"applicationDidFinishLaunching: notification");
 }
 
 - (void)orderFrontStandardAboutPanel:(id)sender
 {
-	// [NSApp orderFrontStandardAboutPanel:sender];
+    // [NSApp orderFrontStandardAboutPanel:sender];
 }
 
 - (void)unhideAllApplications:(id)sender
 {
-	// [NSApp unhideAllApplications:sender];
+    // [NSApp unhideAllApplications:sender];
 }
 
 - (void)hide:(id)sender
 {
-	// [NSApp hide:sender];
+    // [NSApp hide:sender];
 }
 
 - (void)hideOtherApplications:(id)sender
 {
-	// [NSApp hideOtherApplications:sender];
+    // [NSApp hideOtherApplications:sender];
 }
 
 - (void)terminate:(id)sender
 {
-	// _quit = TRUE;
+    // _quit = TRUE;
 }
 
 - (void)windowWillClose:(id)sender
 {
-//	_quit = TRUE;
+    //	_quit = TRUE;
 }
 
-- (NSSize)windowWillResize:(NSWindow *)window toSize:(NSSize)proposedFrameSize
+- (NSSize)windowWillResize:(NSWindow*)window toSize:(NSSize)proposedFrameSize
 {
-//	if (_device->isResizable())
-//		return proposedFrameSize;
-//	else
-//		return [window frame].size;
-	return proposedFrameSize;
+    //	if (_device->isResizable())
+    //		return proposedFrameSize;
+    //	else
+    //		return [window frame].size;
+    return proposedFrameSize;
 }
 
-- (void)windowDidResize:(NSNotification *)aNotification
+- (void)windowDidResize:(NSNotification*)aNotification
 {
-//	NSWindow	*window;
-//	NSRect		frame;
-//
-//	window = [aNotification object];
-//	frame = [window frame];
-//	_device->setResize((int)frame.size.width,(int)frame.size.height);
+    //	NSWindow	*window;
+    //	NSRect		frame;
+    //
+    //	window = [aNotification object];
+    //	frame = [window frame];
+    //	_device->setResize((int)frame.size.width,(int)frame.size.height);
 }
 
 //- (BOOL)isQuit

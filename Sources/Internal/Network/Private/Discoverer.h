@@ -41,7 +41,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class IOLoop;
 
 class Discoverer : public IController
@@ -49,7 +48,7 @@ class Discoverer : public IController
     static const uint32 RESTART_DELAY_PERIOD = 3000;
 
 public:
-    Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
+    Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback);
     virtual ~Discoverer();
 
     // IController
@@ -78,8 +77,8 @@ private:
     Array<char8, 30> endpAsString;
     bool isTerminating;
     size_t runningObjects;
-    Function<void (IController*)> stopCallback;
-    Function<void (size_t, const void*, const Endpoint&)> dataCallback;
+    Function<void(IController*)> stopCallback;
+    Function<void(size_t, const void*, const Endpoint&)> dataCallback;
     uint8 inbuf[4 * 1024];
 
     Endpoint tcpEndpoint; // IP address of remote announcer
@@ -87,7 +86,7 @@ private:
     char tcpInbuf[4 * 1024];
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_DISCOVERER_H__
+#endif // __DAVAENGINE_DISCOVERER_H__

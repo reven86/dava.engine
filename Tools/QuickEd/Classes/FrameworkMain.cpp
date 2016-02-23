@@ -36,7 +36,7 @@ using namespace DAVA;
 
 void FrameworkDidLaunched()
 {
-    KeyedArchive * appOptions = new KeyedArchive();
+    KeyedArchive* appOptions = new KeyedArchive();
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
@@ -46,15 +46,15 @@ void FrameworkDidLaunched()
     appOptions->SetString("title", DAVA::Format("DAVA Framework - QuickEd | %s-%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
     Size2i screenSize = DPIHelper::GetScreenSize();
-    appOptions->SetInt32("width",  screenSize.dx);
-	appOptions->SetInt32("height", screenSize.dy);
+    appOptions->SetInt32("width", screenSize.dx);
+    appOptions->SetInt32("height", screenSize.dy);
     VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenSize.dx, screenSize.dy);
     VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenSize.dx, screenSize.dy, "Gfx");
 
     Core::Instance()->SetOptions(appOptions);
     VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
-    GameCore * core = new GameCore();
+    GameCore* core = new GameCore();
     Core::SetApplicationCore(core);
 
     DynamicBufferAllocator::SetPageSize(1024 * 512);
