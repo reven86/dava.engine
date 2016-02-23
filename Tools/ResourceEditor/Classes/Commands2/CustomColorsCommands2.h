@@ -65,22 +65,18 @@ protected:
 class ModifyCustomColorsCommand : public Command2
 {
 public:
-    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage,
-                              CustomColorsProxy* customColorsProxy,
-                              const Rect& updatedRect);
-    ~ModifyCustomColorsCommand();
+    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy, const Rect& updatedRect);
+    ~ModifyCustomColorsCommand() override;
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    Entity* GetEntity() const override;
 
 protected:
     CustomColorsProxy* customColorsProxy;
     Image* undoImage;
     Image* redoImage;
     Rect updatedRect;
-
-    Texture* texture;
 
     void ApplyImage(Image* image);
 };

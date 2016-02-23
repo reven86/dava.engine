@@ -205,7 +205,7 @@ xmlXPathPopExternal(xmlXPathParserContextPtr ctxt);
  * Returns true if the current object on the stack is a node-set.
  */
 #define xmlXPathStackIsNodeSet(ctxt)					\
-    (((ctxt)->value != NULL)                    \
+    (((ctxt)->value != NULL) \
      && (((ctxt)->value->type == XPATH_NODESET) \
          || ((ctxt)->value->type == XPATH_XSLT_TREE)))
 
