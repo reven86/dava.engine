@@ -257,7 +257,7 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
                 return StringToQString(node->GetName());
                 
             case Qt::BackgroundRole:
-                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : "indigo";
+                return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : Themes::GetViewLineAliternateColor();
 
             case Qt::FontRole:
             {

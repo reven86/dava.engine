@@ -144,8 +144,8 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
     
-    darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+    darkPalette.setColor(QPalette::Highlight, QColor(0x37, 0x63, 0xAD));
+    darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     
     qApp->setPalette(darkPalette);
     
@@ -162,4 +162,10 @@ eTheme GetCurrentTheme()
 {
     return currentTheme;
 }
+    
+QColor GetViewLineAliternateColor()
+{
+    return QColor(0x3f, 0x3f, 0x46);
+}
+
 };

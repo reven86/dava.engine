@@ -194,7 +194,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
     case Qt::BackgroundRole:
         if(property->GetType() == AbstractProperty::TYPE_HEADER)
         {
-            return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : "indigo";
+            return Themes::GetCurrentTheme() == Themes::Classic ? QColor(Qt::lightGray) : Themes::GetViewLineAliternateColor();
         }
         
     case Qt::FontRole:
