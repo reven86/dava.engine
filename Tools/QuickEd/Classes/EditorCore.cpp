@@ -129,9 +129,9 @@ EditorCore::EditorCore(QObject* parent)
     documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
 
     connect(spritesPacker.get(), &SpritesPacker::Finished, []()
-    {
-        Sprite::ReloadSprites();
-    });
+            {
+                Sprite::ReloadSprites();
+            });
 }
 
 EditorCore::~EditorCore() = default;
