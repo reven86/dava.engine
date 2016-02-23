@@ -4,5 +4,6 @@
         <file>Icons/ok.png</file>
         <file>Icons/openfolder.png</file>
         <file>Icons/run.png</file>
+        <file>Icons/icon.ico</file>
     </qresource>
 </RCC>

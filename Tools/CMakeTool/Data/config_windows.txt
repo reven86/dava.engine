@@ -7,7 +7,7 @@
         },
         {
             "name": "OS X",
-            "checked": false,
+            "checked": true,
             "value": "-G \"Xcode\" $BUILD_FOLDER_PATH"
         },
         {
@@ -44,7 +44,7 @@
         },
         {
             "name": "Windows 10",
-            "checked": true,
+            "checked": false,
             "value": "$DAVA_FRAMEWORK_PATH\\Tools\\WinStoreCMake\\mk_project.bat $BUILD_FOLDER_PATH/.. %1",
             "defaults": [
                 ""

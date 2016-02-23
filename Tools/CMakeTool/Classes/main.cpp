@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setOrganizationName("DAVA");
     app.setApplicationName("CMakeTool");
-
     QQmlApplicationEngine engine;
     auto rootContext = engine.rootContext();
     qmlRegisterType<ProcessWrapper>("Cpp.Utils", 1, 0, "ProcessWrapper");

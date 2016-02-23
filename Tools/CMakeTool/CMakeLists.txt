@@ -14,6 +14,10 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
 
+if ( WIN32 )
+    set( LIB_RELEASE  "msvcrt.lib" )
+    set( LIB_DEBUG    "msvcrtd.lib" )
+endif()
 
 file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
@@ -23,11 +27,12 @@ define_source_folders         ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build"  
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
 
-set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  CMakeTool.rc )
+set( ADDED_SRC            ${RCC_APP_SRCS}  CMakeTool.rc )
 
 set( QML_SCAN_DIR				${CMAKE_CURRENT_LIST_DIR} )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( ADDED_SRC                  ${RCC_APP_SRCS} )
+set( LIBRARIES_RELEASE          ${LIB_RELEASE} )
+set( LIBRARIES_DEBUG            ${LIB_DEBUG} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()

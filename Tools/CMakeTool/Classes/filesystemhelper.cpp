@@ -51,7 +51,7 @@ QVariant FileSystemHelper::FindCMakeBin(QVariant pathToDavaFramework)
     QString cmakePath = davaPath + "/Tools/Bin" +
 #ifdef Q_OS_MAC
     "/CMake.app/Contents/bin/cmake";
-#elif dfined Q_OS_WIN
+#elif defined Q_OS_WIN
     "/cmake/bin/cmake.exe";
 #endif //Q_OS_MAC Q_OS_WIN
     if (!QFile::exists(cmakePath))
