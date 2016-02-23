@@ -100,10 +100,7 @@ public:
 
     const String& GetScreenShotName();
     void MakeScreenShot();
-    inline bool GetIsScreenShotSaving() const
-    {
-        return isScreenShotSaving;
-    }
+    inline bool GetIsScreenShotSaving() const;
 
     // DB Master-Helper relations
 
@@ -137,7 +134,7 @@ protected:
     void ExitApp();
     
 private:
-    bool isScreenShotSaving;
+    bool isScreenShotSaving = false;
 
 public:
     uint64 startTimeMS;
@@ -187,6 +184,12 @@ public:
 
     String screenShotName;
 };
+    
+inline bool AutotestingSystem::GetIsScreenShotSaving() const
+{
+    return isScreenShotSaving;
+}
+    
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

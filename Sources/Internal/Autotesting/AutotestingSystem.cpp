@@ -82,7 +82,6 @@ AutotestingSystem::AutotestingSystem()
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
     , luaSystem(nullptr)
-    , isScreenShotSaving(false)
 {
     new AutotestingDB();
 }

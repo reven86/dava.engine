@@ -408,7 +408,7 @@ String AutotestingSystemLua::MakeScreenshot()
     return AutotestingSystem::Instance()->GetScreenShotName();
 }
 
-bool AutotestingSystemLua::GetIsScreenShotSaving()
+bool AutotestingSystemLua::GetIsScreenShotSaving() const
 {
     return AutotestingSystem::Instance()->GetIsScreenShotSaving();
 }
