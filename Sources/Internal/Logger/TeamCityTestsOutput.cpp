@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "TeamCityTestsOutput.h"
+#include "Logger/TeamCityTestsOutput.h"
 #include "Utils/Utils.h"
 
 namespace DAVA

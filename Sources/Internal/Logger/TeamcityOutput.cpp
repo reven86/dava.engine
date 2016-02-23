@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TeamcityOutput.h"
+#include "Logger/TeamcityOutput.h"
 #include "Utils/Utils.h"
 
 #include <iostream>
