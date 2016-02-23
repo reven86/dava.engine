@@ -94,7 +94,6 @@ public:
 
     void EnableGlobalTimeout(bool enable);
 
-
     // qt actions slots
 public slots:
     void OnProjectOpen();
