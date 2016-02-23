@@ -74,26 +74,29 @@ ApplicationWindow {
         }
     }
 
+    function extractCMakePathFromPath(path) {
+        var CMakePath = fileSystemHelper.FindCMakeBin(textField_DAVAFolder.text);
+        if(CMakePath.length !== 0) {
+            textField_CMakeFolder.text = CMakePath;
+        }
+    }
+
     function updateOutputString() {
         timer.start();
     }
 
-
     function updateOutputStringImpl() {
         outputComplete = true;
-        var cmakePath = fileSystemHelper.FindCMakeBin(textField_DAVAFolder.text);
-        if(cmakePath.length === 0) {
-            outputComplete = false;
-            textField_output.text = qsTr("can not find cmake executable in DAVA folder");
-            return;
-        }
-        var outputText = cmakePath + " ";
+        var outputText = "";
         for(var i = 0, length = listModel_platforms.count; i < length; ++i) {
             var platformObject = mainObject[platformsOptionName][i];
             if(!platformObject.checked) {
                 continue;
             }
             outputText += platformObject.value;
+
+            outputText += " -B" + comboBox_buildFolder.editText;
+
             var substrings = [];
             var defaults = platformObject.defaults;
             var localOptionsObject = platformObject.options;
@@ -119,8 +122,6 @@ ApplicationWindow {
             }
         }
 
-        outputText += " -B" + comboBox_buildFolder.editText;
-
         var globalOptionsObject = mainObject[globalOptionsOptionName];
         if(globalOptionsObject && Array.isArray(globalOptionsObject)) {
             for(var i = 0, length = globalOptionsObject.length; i < length; ++i) {
@@ -131,11 +132,23 @@ ApplicationWindow {
             }
         }
 
+        if(outputText.indexOf("$CMAKE_PATH") !== -1) {
+            var cmakePath = textField_CMakeFolder.text;
+            if(cmakePath.length === 0 || !fileSystemHelper.isFileExists(cmakePath)) {
+                outputComplete = false;
+                textField_output.text = qsTr("cmake path required")
+                return;
+            } else {
+                outputText = outputText.replace("$CMAKE_PATH", cmakePath);
+            }
+        }
+
         if(outputText.indexOf("$BUILD_FOLDER_PATH") !== -1) {
             var buildFolder = comboBox_buildFolder.editText;
             if(buildFolder.length === 0 || !fileSystemHelper.isDirExists(buildFolder)) {
-                outputText = qsTr("build folder path required")
                 outputComplete = false;
+                textField_output.text = qsTr("build folder path required")
+                return;
             } else {
                 if(buildFolder[buildFolder.length - 1] === '/') {
                     buildFolder = buildFolder.slice(0, -1);
@@ -147,8 +160,9 @@ ApplicationWindow {
         if(outputText.indexOf("$DAVA_FRAMEWORK_PATH") !== -1) {
             var davaFolder = textField_DAVAFolder.text;
             if(davaFolder.length === 0 || !fileSystemHelper.isDirExists(davaFolder)) {
-                outputText = qsTr("DAVA folder path required")
                 outputComplete = false;
+                textField_output.text = qsTr("DAVA folder path required")
+                return;
             } else {
                 if(davaFolder[davaFolder.length - 1] === '/') {
                     davaFolder = davaFolder.slice(0, -1);
@@ -182,6 +196,13 @@ ApplicationWindow {
                 textField_DAVAFolder.text = davaFolderPath
             } else if(applicationDirPath) {
                 extractDavaPathFromPath(applicationDirPath);
+            }
+
+            var CMakeFolderPath = mainObject["CMakeFolder"];
+            if(CMakeFolderPath) {
+                textField_CMakeFolder.text = CMakeFolderPath
+            } else {
+                extractCMakePathFromPath(textField_DAVAFolder.text)
             }
 
             var buildHistory = mainObject["buildFolderHistory"];
@@ -231,6 +252,15 @@ ApplicationWindow {
             var url = fileDialog_DAVAFolder.fileUrls[0].toString()
             url = fileSystemHelper.resolveUrl(url);
             textField_DAVAFolder.text = url;
+        }
+    }
+    FileDialog {
+        id: fileDialog_CMakeFolder
+        title: qsTr("select CMake executable");
+        onAccepted: {
+            var url = fileDialog_CMakeFolder.fileUrls[0].toString()
+            url = fileSystemHelper.resolveUrl(url);
+            textField_CMakeFolder.text = url;
         }
     }
     SplitView {
@@ -354,6 +384,7 @@ ApplicationWindow {
                             mainObject["davaFolder"] = text
                             syncConfig();
                             updateOutputString()
+                            extractCMakePathFromPath(text);
                         }
                     }
 
@@ -371,6 +402,41 @@ ApplicationWindow {
                         width: height
                         height: rowLayout_davaFolder.height
                         source: "qrc:///Icons/" + (fileSystemHelper.isDirExists(textField_DAVAFolder.text) ? "ok" : "error") + ".png"
+                    }
+                }
+
+                RowLayout {
+                    id: rowLayout_CMakeFolder
+                    Label {
+                        id: label_CMakeFolder
+                        text: qsTr("CMake folder")
+                    }
+
+                    TextField {
+                        id: textField_CMakeFolder
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("path to CMake folder")
+                        onTextChanged: {
+                            mainObject["CMakeFolder"] = text
+                            syncConfig();
+                            updateOutputString()
+                        }
+                    }
+
+                    Button {
+                        id: button_getCMakeFolder
+                        iconSource: "qrc:///Icons/openfolder.png"
+                        onClicked: {
+                            fileDialog_CMakeFolder.folder = textField_CMakeFolder.text;
+                            fileDialog_CMakeFolder.open();
+                        }
+                    }
+
+                    Image {
+                        id: image_CMakeFolderStatus
+                        width: height
+                        height: rowLayout_CMakeFolder.height
+                        source: "qrc:///Icons/" + (fileSystemHelper.isFileExists(textField_CMakeFolder.text) ? "ok" : "error") + ".png"
                     }
                 }
                 Item
@@ -538,6 +604,7 @@ ApplicationWindow {
 
                     ColumnLayout {
                         id: columnLayout_globalOptions
+                        visible: listModel_globalOptions.count !== 0
                         height: (parent.height / 3) - 5
                         anchors.left: parent.left
                         anchors.leftMargin: 0
@@ -603,7 +670,6 @@ ApplicationWindow {
                             text: qsTr("run cmake")
                             enabled: textField_output.text.length !== 0 && outputComplete
                             onClicked: {
-                                textArea_processText.append("");
                                 if(checkBox_clean.checked) {
                                     if(fileSystemHelper.ClearBuildFolder(comboBox_buildFolder.editText)) {
                                         textArea_processText.append(qsTr("build folder cleared succesful"));

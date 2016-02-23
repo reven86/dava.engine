@@ -55,12 +55,31 @@ QVariant FileSystemHelper::resolveUrl(QVariant url)
 
 QVariant FileSystemHelper::isDirExists(QVariant dirPath)
 {
-    if (!dirPath.canConvert<QString>() || dirPath.toString().isEmpty())
+    if (!dirPath.canConvert<QString>())
+    {
+        return false;
+    }
+    QString path = dirPath.toString();
+    if (path.isEmpty())
     {
         return false;
     }
     QDir dir(dirPath.toString());
     return dir.exists();
+}
+
+QVariant FileSystemHelper::isFileExists(QVariant filePath)
+{
+    if (!filePath.canConvert<QString>())
+    {
+        return false;
+    }
+    QString path = filePath.toString();
+    if (path.isEmpty())
+    {
+        return false;
+    }
+    return QFile::exists(path);
 }
 
 QVariant FileSystemHelper::FindCMakeBin(QVariant pathToDavaFramework)

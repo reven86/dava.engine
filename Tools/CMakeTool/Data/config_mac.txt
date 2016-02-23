@@ -3,24 +3,62 @@
         {
             "name": "Windows",
             "checked": false,
-            "value": "-G \"Visual Studio 12\" $BUILD_FOLDER_PATH/.."
+            "value": "$CMAKE_PATH -G \"Visual Studio 12%1\" $BUILD_FOLDER_PATH/.. %2",
+            "defaults": [ "", "" ],
+            "options" : [
+            	{
+            		"name": "x64",
+            		"type": "checkbox",
+            		"checked": false,
+            		"substring number": 1,
+            		"value": " Win64"
+            	},
+            	{
+            	    "name": "Unity build",
+            	    "type": "checkbox",
+                    "checked": true,
+                    "substring number": 2,
+                    "value": "-DUNITY_BUILD=true"
+            	}
+            ]
         },
         {
             "name": "OS X",
             "checked": true,
-            "value": "-G \"Xcode\" $BUILD_FOLDER_PATH/.."
+            "value": "$CMAKE_PATH -G \"Xcode\" $BUILD_FOLDER_PATH/.. %1",
+            "defaults": [ "" ],
+            "options" : [
+            	{
+            	    "name": "Unity build",
+            	    "type": "checkbox",
+            	    "checked": true,
+            	    "substring number": 1,
+            	    "value": "-DUNITY_BUILD=true"
+            	}
+            ]
         },
         {
             "name": "IOS",
             "checked": false,
-            "value": "-G \"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $BUILD_FOLDER_PATH/.."
+            "value": "$CMAKE_PATH -G \"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $BUILD_FOLDER_PATH/.. %1",
+            "defaults": [ "" ],
+            "options" : [
+            	{
+            	    "name": "Unity build",
+            	    "type": "checkbox",
+            	    "checked": true,
+            	    "substring number": 1,
+            	    "value": "-DUNITY_BUILD=true"
+            	}
+            ]
         },
         {
             "name": "Android",
             "checked": false,
-            "value": "-G \"%1Unix Makefiles\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH/..",
+            "value": "$CMAKE_PATH -G \"%1Unix Makefiles\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH/.. %2",
             "defaults": [
-                "Eclipse CDT4 - "
+                "Eclipse CDT4 - ",
+                ""
             ],
             "options": [
                 {
@@ -28,61 +66,67 @@
                     "type": "checkbox",
                     "checked": false,
                     "substring number": 1,
-                    "value": "",
-                    "parentIndex": 3
+                    "value": ""
+                },
+                {
+                    "name": "Unity build",
+            	    "type": "checkbox",
+            	    "checked": true,
+            	    "substring number": 2,
+            	    "value": "-DUNITY_BUILD=true"
                 }
             ]
         },
         {
             "name": "Windows 10",
             "checked": false,
-            "value": "$DAVA_FRAMEWORK_PATH\\Tools\\WinStoreCMake\\mk_project.bat $BUILD_FOLDER_PATH/.. %1",
+            "value": "$DAVA_FRAMEWORK_PATH/Tools/WinStoreCMake/mk_project.bat $BUILD_FOLDER_PATH/.. %1",
             "defaults": [
-                ""
+                "", ""
             ],
             "options": [
+            	{
+                    "name": "all",
+                    "type": "radiobutton",
+                    "checked": true,
+                    "substring number": 1,
+                    "value": ""
+            	},
                 {
                     "name": "ARM",
                     "type": "radiobutton",
                     "checked": false,
                     "substring number": 1,
-                    "value": "ARM",
-                    "parentIndex": 4
+                    "value": "ARM"
                 },
                 {
                     "name": "Win32",
                     "type": "radiobutton",
                     "checked": false,
                     "substring number": 1,
-                    "value": "Win32",
-                    "parentIndex": 4
+                    "value": "Win32"
                 },
                 {
                     "name": "Win64",
                     "type": "radiobutton",
-                    "checked": true,
+                    "checked": false,
                     "substring number": 1,
-                    "value": "Win64",
-                    "parentIndex": 4
+                    "value": "Win64"
+                },
+                {
+                    "name": "Unity build",
+                    "type": "checkbox",
+                    "checked": true,
+                    "substring number": 2,
+                    "value": "Unibuild"
                 }
             ]
         }
     ],
     "options": [
-        {
-            "name": "Unity build",
-            "checked": false,
-            "value": "-DUNITY_BUILD=true"
-        }
     ],
-    "buildFolder": "/Users/k_lyashkevich/Projects/dava.framework/Tools/QuickEd/QE_build",
-    "davaFolder": "/Users/k_lyashkevich/Projects/dava.framework",
-    "buildFolderHistory": [
-        "/Users/k_lyashkevich/Projects/dava.framework/Tools/QuickEd/QE_build",
-        "/Users/k_lyashkevich/Projects/dava.framework/",
-        "/Users/k_lyashkevich/Projects/dava.framework/Tools/QuickEd/",
-        "/Users/k_lyashkevich/Projects/",
-        "/Users/k_lyashkevich/Projects/dava.framework/Tools/"
-    ],
+    "CMakeFolder": "",
+    "davaFolder": "",
+    "buildFolderHistory": [],
     "maxHistoryCount": 5
 }
