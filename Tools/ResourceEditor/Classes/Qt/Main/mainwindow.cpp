@@ -2346,7 +2346,7 @@ void QtMainWindow::OnCustomColorsEditor()
         }
     }
 
-    sceneEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR, true);
+    sceneEditor->Exec(new DisableCustomColorsCommand(sceneEditor, true));
     ui->actionCustomColorsEditor->setChecked(false);
 }
 
