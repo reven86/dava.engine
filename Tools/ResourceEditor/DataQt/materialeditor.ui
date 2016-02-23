@@ -120,6 +120,65 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
+	   
+	   <item>
+        <widget class="QFrame" name="frame_25">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>   
+		  <item>		  
+           <widget class="QPushButton" name="left">            
+            <property name="text">
+             <string> left </string>
+            </property>            
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+		  </item>
+		  <item>
+		   <widget class="QPushButton" name="add">            
+            <property name="text">
+             <string> add </string>
+            </property>            
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+		  </item>
+		  <item>
+		   <widget class="QPushButton" name="right">            
+            <property name="text">
+             <string> right </string>
+            </property>            
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+	   
        <item>
         <widget class="QFrame" name="frame_3">
          <property name="frameShape">
