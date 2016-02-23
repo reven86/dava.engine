@@ -438,7 +438,7 @@ void AutotestingSystem::OnInput(const UIEvent& input)
 {
     if (UIScreenManager::Instance())
     {
-        String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
+        String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName().c_str() : "noname";
         Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
     }
 
