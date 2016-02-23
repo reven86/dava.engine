@@ -27,25 +27,34 @@
 =====================================================================================*/
 
 
-#include "Vector.h"
-#include "Matrix3.h"
+#ifndef __QT_TOOLS_MESSAGE_HANDLER_H__
+#define __QT_TOOLS_MESSAGE_HANDLER_H__
 
-namespace DAVA
+#include "Debug/DVAssert.h"
+
+void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-const Vector2 Vector2::UnitX(1.0f, 0.0f);
-const Vector2 Vector2::UnitY(0.0f, 1.0f);
-
-const Vector3 Vector3::Zero(0.0f, 0.0f, 0.0f);
-const Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);
-const Vector3 Vector3::UnitY(0.0f, 1.0f, 0.0f);
-const Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
-
-const Vector4 Vector4::Zero(0.0f, 0.0f, 0.0f, 0.0f);
-
-Vector2 Rotate(const Vector2& in, float32 angleRad)
-{
-    DAVA::Matrix3 rotateMatrix;
-    rotateMatrix.BuildRotation(angleRad);
-    return in * rotateMatrix;
+    QByteArray localMsg = msg.toLocal8Bit();
+    switch (type)
+    {
+    case QtDebugMsg:
+        DAVA::Logger::Debug("Qt debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtWarningMsg:
+        DAVA::Logger::Warning("Qt Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtCriticalMsg:
+        DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        DVASSERT(false);
+        break;
+    case QtFatalMsg:
+        DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        DVASSERT(false);
+        break;
+    default:
+        DAVA::Logger::Info("Qt Unknown: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    }
 }
-}
+
+#endif // __QT_TOOLS_MESSAGE_HANDLER_H__
