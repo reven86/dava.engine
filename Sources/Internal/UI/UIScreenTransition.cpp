@@ -188,5 +188,4 @@ UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
     }
     return nullptr;
 }
-
 };

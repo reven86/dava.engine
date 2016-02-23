@@ -33,15 +33,15 @@
 #include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
 
-class DAEConvertAction: public CommandAction
+class DAEConvertAction : public CommandAction
 {
 public:
-	DAEConvertAction(const DAVA::FilePath &path);
+    DAEConvertAction(const DAVA::FilePath& path);
 
     void Redo() override;
 
 protected:
-	DAVA::FilePath daePath;
+    DAVA::FilePath daePath;
 };
 
 #endif // __RESOURCEEDITORQT__DAECONVERTACTION__

@@ -33,12 +33,10 @@ using namespace DAVA;
 
 namespace
 {
-
 typedef DAVA::Set<String> StringSet;
-
 }
 
-SceneProcessor::SceneProcessor(EntityProcessorBase *_entityProcessor /*= NULL*/)
+SceneProcessor::SceneProcessor(EntityProcessorBase* _entityProcessor /*= NULL*/)
     : entityProcessor(SafeRetain(_entityProcessor))
 {
 }
@@ -48,14 +46,14 @@ SceneProcessor::~SceneProcessor()
     SafeRelease(entityProcessor);
 }
 
-void SceneProcessor::SetEntityProcessor(EntityProcessorBase *_entityProcessor)
+void SceneProcessor::SetEntityProcessor(EntityProcessorBase* _entityProcessor)
 {
     SafeRelease(entityProcessor);
 
     entityProcessor = SafeRetain(_entityProcessor);
 }
 
-bool SceneProcessor::Execute(DAVA::Scene *currentScene)
+bool SceneProcessor::Execute(DAVA::Scene* currentScene)
 {
     if (!entityProcessor)
     {
@@ -74,20 +72,20 @@ bool SceneProcessor::Execute(DAVA::Scene *currentScene)
 
     for (int32 index = 0; index < childrenCount; index++)
     {
-        Entity *currentEntity = currentScene->GetChild(index);
+        Entity* currentEntity = currentScene->GetChild(index);
 
         bool entityModified = entityProcessor->ProcessEntity(currentEntity, currentEntity->GetName(), false);
         sceneModified = sceneModified || entityModified;
         if (entityModified && needProcessExternal)
         {
-            KeyedArchive *props = GetCustomPropertiesArchieve(currentEntity);
-            
+            KeyedArchive* props = GetCustomPropertiesArchieve(currentEntity);
+
             if (!props)
             {
                 Logger::Warning("%s %s custom properties not found", __FUNCTION__, currentEntity->GetName().c_str());
                 continue;
             }
-            
+
             if (!props->IsKeyExists("editor.referenceToOwner"))
             {
                 Logger::Error("%s editor.referenceToOwner not found for %s", __FUNCTION__, currentEntity->GetName().c_str());
@@ -99,7 +97,7 @@ bool SceneProcessor::Execute(DAVA::Scene *currentScene)
 
             if (insertResult.second)
             {
-                Scene *newScene = new Scene();
+                Scene* newScene = new Scene();
                 newScene->LoadScene(referenceToOwner);
                 DVASSERT(newScene->GetChildrenCount() == 1);
                 entityProcessor->ProcessEntity(newScene, currentEntity->GetName(), true);

@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 /**
     \brief Class to measure performance in framework code. 
  
@@ -88,61 +87,60 @@ namespace DAVA
 class ImmediateTimeMeasure
 {
 public:
-    ImmediateTimeMeasure(const FastName & name);
+    ImmediateTimeMeasure(const FastName& name);
     ~ImmediateTimeMeasure();
-    
+
 private:
     FastName name;
     uint64 time;
 };
-    
+
 class TimeMeasure
 {
 private:
     struct FunctionMeasure
     {
-		FunctionMeasure()
-		:	parent(0)
-		{
-		}
+        FunctionMeasure()
+            : parent(0)
+        {
+        }
         FastName name;
         uint32 frameCounter;
         uint64 timeStart;
         uint64 timeSpent;
-        HashMap<FunctionMeasure *, FunctionMeasure *> children;
-        FunctionMeasure * parent;
+        HashMap<FunctionMeasure*, FunctionMeasure*> children;
+        FunctionMeasure* parent;
     };
-    
+
     // Now it should work for single thread, but can be extended to multithreaded time measure
     struct ThreadTimeStamps
     {
         List<FunctionMeasure*> topFunctions;
         HashMap<FastName, FunctionMeasure*> functions;
     };
-    
+
     static ThreadTimeStamps mainThread;
 
 public:
-    TimeMeasure(const FastName & blockName);
+    TimeMeasure(const FastName& blockName);
     ~TimeMeasure();
-    
-    static void Dump(FunctionMeasure * function = 0, uint32 level = 0);
+
+    static void Dump(FunctionMeasure* function = 0, uint32 level = 0);
     static void ClearFunctions();
-    
-    static TimeMeasure * activeTimeMeasure;
-    static FunctionMeasure * lastframeTopFunction;
-    
-    TimeMeasure * parent;
-    FunctionMeasure * function;
-    
+
+    static TimeMeasure* activeTimeMeasure;
+    static FunctionMeasure* lastframeTopFunction;
+
+    TimeMeasure* parent;
+    FunctionMeasure* function;
 };
-    
+
 class Stats : public StaticSingleton<Stats>
 {
 public:
     Stats();
     virtual ~Stats();
-    
+
     /**
         \brief Function enables automatic output of measured values to log, every N frames. 
         \param[in] skipFrameCount number of frames we should skip before next debug print to log.
@@ -158,7 +156,7 @@ public:
         \brief System function that is called from ApplicationCore::EndFrame, to finalize the state of the statistics singleton and output debug information.
      */
     void EndFrame();
-    
+
 private:
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
     int32 frame;
@@ -173,9 +171,6 @@ private:
 #define TIME_PROFILE(name)
 #define IMM_TIME_PROFILE(name)
 #endif
-
-
-
 };
 
 #endif // __DAVAENGINE_STATS_H__

@@ -36,27 +36,22 @@
 
 class LazyUpdater : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-
-	using Updater = DAVA::Function < void() > ;
-
+    using Updater = DAVA::Function<void()>;
 
 public:
-	LazyUpdater(Updater updater, QObject *parent = nullptr);
+    LazyUpdater(Updater updater, QObject* parent = nullptr);
 
-	void Update();
+    void Update();
 
 private slots:
 
-	void OnTimer();
-
+    void OnTimer();
 
 private:
-
-	Updater updater;
-	int counter = 0;
-
+    Updater updater;
+    int counter = 0;
 };
 
 #endif // __TOOL_LAZY_UPDATER_H__

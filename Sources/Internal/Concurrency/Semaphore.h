@@ -41,7 +41,6 @@
 
 namespace DAVA
 {
-
 /*! brief Semaphore wrapper class compatible with Thread class. Supports Win32, MacOS, iPhone, Android platforms. */
 class Semaphore
 {
@@ -55,13 +54,12 @@ public:
 protected:
 
 #if defined(__DAVAENGINE_WINDOWS__)
-	HANDLE semaphore;
+    HANDLE semaphore;
 #elif defined(__DAVAENGINE_APPLE__)
     dispatch_semaphore_t semaphore;
 #elif defined(__DAVAENGINE_ANDROID__)
-	sem_t semaphore;
+    sem_t semaphore;
 #endif //PLATFORMS
-
 };
 
 #if defined(__DAVAENGINE_WINDOWS__)
@@ -77,12 +75,12 @@ inline Semaphore::Semaphore(uint32 count)
 #else
     semaphore = CreateSemaphoreEx(NULL, count, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #endif
-	DVASSERT(NULL != semaphore);
+    DVASSERT(NULL != semaphore);
 }
 
 inline Semaphore::~Semaphore()
 {
-	CloseHandle(semaphore);
+    CloseHandle(semaphore);
 }
 
 inline void Semaphore::Post(uint32 count)
@@ -93,10 +91,10 @@ inline void Semaphore::Post(uint32 count)
 
 inline void Semaphore::Wait()
 {
-	WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
+    WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
 }
 
-#elif defined(__DAVAENGINE_APPLE__) 
+#elif defined(__DAVAENGINE_APPLE__)
 
 // ##########################################################################################################
 // MacOS/IOS implementation
@@ -109,7 +107,7 @@ inline Semaphore::Semaphore(uint32 count)
 
 inline Semaphore::~Semaphore()
 {
-	dispatch_release(semaphore);
+    dispatch_release(semaphore);
 }
 
 inline void Semaphore::Post(uint32 count)
@@ -122,7 +120,7 @@ inline void Semaphore::Post(uint32 count)
 
 inline void Semaphore::Wait()
 {
-	dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -137,7 +135,7 @@ inline Semaphore::Semaphore(uint32 count)
 
 inline Semaphore::~Semaphore()
 {
-	sem_destroy(&semaphore);
+    sem_destroy(&semaphore);
 }
 
 inline void Semaphore::Post(uint32 count)
@@ -150,10 +148,9 @@ inline void Semaphore::Post(uint32 count)
 
 inline void Semaphore::Wait()
 {
-	sem_wait(&semaphore);
+    sem_wait(&semaphore);
 }
 #endif
-
 };
 
 #endif // __DAVAENGINE_SEMAPHORE_H__

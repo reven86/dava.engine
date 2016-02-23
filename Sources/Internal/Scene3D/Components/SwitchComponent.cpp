@@ -34,55 +34,51 @@
 
 namespace DAVA
 {
-
-
-
 SwitchComponent::SwitchComponent()
-:	oldSwitchIndex(-1),
-	newSwitchIndex(0)
+    : oldSwitchIndex(-1)
+    ,
+    newSwitchIndex(0)
 {
-
 }
 
-Component * SwitchComponent::Clone(Entity * toEntity)
+Component* SwitchComponent::Clone(Entity* toEntity)
 {
-	SwitchComponent * newComponent = new SwitchComponent();
-	newComponent->SetEntity(toEntity);
+    SwitchComponent* newComponent = new SwitchComponent();
+    newComponent->SetEntity(toEntity);
     newComponent->SetSwitchIndex(GetSwitchIndex());
 
-	return newComponent;
+    return newComponent;
 }
 
-void SwitchComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SwitchComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(NULL != archive)
-	{
-		archive->SetInt32("sc.switchindex", newSwitchIndex);
-	}
+    if (NULL != archive)
+    {
+        archive->SetInt32("sc.switchindex", newSwitchIndex);
+    }
 }
 
-void SwitchComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SwitchComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Deserialize(archive, serializationContext);
-	
-	if(NULL != archive)
-	{
-		SetSwitchIndex(archive->GetInt32("sc.switchindex"));
-	}
+    Component::Deserialize(archive, serializationContext);
+
+    if (NULL != archive)
+    {
+        SetSwitchIndex(archive->GetInt32("sc.switchindex"));
+    }
 }
 
-void SwitchComponent::SetSwitchIndex(const int32 & _switchIndex)
+void SwitchComponent::SetSwitchIndex(const int32& _switchIndex)
 {
-	newSwitchIndex = _switchIndex;
+    newSwitchIndex = _switchIndex;
 
-	GlobalEventSystem::Instance()->Event(this, EventSystem::SWITCH_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SWITCH_CHANGED);
 }
 
 int32 SwitchComponent::GetSwitchIndex() const
 {
-	return newSwitchIndex;
+    return newSwitchIndex;
 }
-
 }

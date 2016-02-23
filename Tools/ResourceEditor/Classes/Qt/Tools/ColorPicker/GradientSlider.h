@@ -36,9 +36,8 @@
 #include "../GuiTypes.h"
 #include "../Widgets/AbstractSlider.h"
 
-
 class GradientSlider
-    : public AbstractSlider
+: public AbstractSlider
 {
     Q_OBJECT
 

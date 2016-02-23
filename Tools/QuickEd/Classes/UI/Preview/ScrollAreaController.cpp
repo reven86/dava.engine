@@ -35,7 +35,7 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
     : QObject(parent)
     , backgroundControl(new UIControl)
 {
-    backgroundControl->SetName("Background control of scroll area controller");
+    backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));

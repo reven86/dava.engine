@@ -37,90 +37,86 @@ namespace Log
 {
 namespace Math
 {
-
 //! \brief class to work with Axial-Aligned Bouding Boxes
-//! This class can be used for clipping together with Frustum 
+//! This class can be used for clipping together with Frustum
 class AABBox
 {
-	const float32 INFINITY;
+    const float32 INFINITY;
+
 public:
-	union
-	{
-		struct
-		{
-			Vector3 min, max;
-		};
-		struct
-		{
-			float32 dmin[3], dmax[3];
-		};
-	};
-	
-	//! \brief construct empty bounding box
-	inline AABBox();
+    union
+    {
+        struct
+        {
+            Vector3 min, max;
+        };
+        struct
+        {
+            float32 dmin[3], dmax[3];
+        };
+    };
 
-	//! \brief construct bounding box from another bounding box
-	//! \param _box another bouding box
-	inline AABBox(const AABBox & _box);
-	
+    //! \brief construct empty bounding box
+    inline AABBox();
 
-	//! \brief construct bounding box from 2 points
-	//! \param _min min point of bounding box
-	//! \param _max max point of bounding box
-	inline AABBox(const Vector3 & _min, const Vector3 & _max);
+    //! \brief construct bounding box from another bounding box
+    //! \param _box another bouding box
+    inline AABBox(const AABBox& _box);
 
+    //! \brief construct bounding box from 2 points
+    //! \param _min min point of bounding box
+    //! \param _max max point of bounding box
+    inline AABBox(const Vector3& _min, const Vector3& _max);
 
-	//! \brief add point to bounding box
-	//! if point inside bounding box bounding box not changed
-	//! in another case bounding box become larger
-	//! \param pt point to add
-	inline void AddPoint(Vector3 pt);
-	
-	//! \brief check if bounding box intersect other bounding box
-	//! \param box another bounding box
-	//! \return true if intersect, false otherwise
-	inline bool IsIntersect(const AABBox & box);
+    //! \brief add point to bounding box
+    //! if point inside bounding box bounding box not changed
+    //! in another case bounding box become larger
+    //! \param pt point to add
+    inline void AddPoint(Vector3 pt);
 
-	//! \brief make bounding box empty
-	inline void Empty();
+    //! \brief check if bounding box intersect other bounding box
+    //! \param box another bounding box
+    //! \return true if intersect, false otherwise
+    inline bool IsIntersect(const AABBox& box);
 
-	//! \brief check if bounding box intersect line
-	inline bool IsIntersectLine(const Vector3 & l1, const Vector3 &l2);
+    //! \brief make bounding box empty
+    inline void Empty();
 
-	//! \brief check if point inside bbox
-	inline bool IsInside(const Vector3 & pt);
+    //! \brief check if bounding box intersect line
+    inline bool IsIntersectLine(const Vector3& l1, const Vector3& l2);
 
+    //! \brief check if point inside bbox
+    inline bool IsInside(const Vector3& pt);
 
-	//! \brief copy operator of bounding box class
-	inline AABBox & operator =(const AABBox & _bbox);
-
+    //! \brief copy operator of bounding box class
+    inline AABBox& operator=(const AABBox& _bbox);
 };
 
 //! \brief construct empty bounding box
 inline AABBox::AABBox()
-: INFINITY(1000000.0f)
+    : INFINITY(1000000.0f)
 {
-	min = Vector3(INFINITY, INFINITY, INFINITY);
-	max = Vector3(-INFINITY, -INFINITY, -INFINITY);
+    min = Vector3(INFINITY, INFINITY, INFINITY);
+    max = Vector3(-INFINITY, -INFINITY, -INFINITY);
 };
 
 //! \brief construct bounding box from another bounding box
 //! \param _box another bouding box
-inline AABBox::AABBox(const AABBox & _box)
-: INFINITY(1000000.0f)
+inline AABBox::AABBox(const AABBox& _box)
+    : INFINITY(1000000.0f)
 {
-	min = _box.min;
-	max = _box.max;
+    min = _box.min;
+    max = _box.max;
 }
 
 //! \brief construct bounding box from 2 points
 //! \param _min min point of bounding box
 //! \param _max max point of bounding box
-inline AABBox::AABBox(const Vector3 & _min, const Vector3 & _max)
-: INFINITY(1000000.0f)
+inline AABBox::AABBox(const Vector3& _min, const Vector3& _max)
+    : INFINITY(1000000.0f)
 {
-	min = _min;
-	max = _max;
+    min = _min;
+    max = _max;
 }
 
 //! \brief add point to bounding box
@@ -129,82 +125,77 @@ inline AABBox::AABBox(const Vector3 & _min, const Vector3 & _max)
 //! \param pt point to add
 inline void AABBox::AddPoint(Vector3 pt)
 {
-	if (pt.x < min.x)
-		min.x = pt.x;
-	if (pt.y < min.y)
-		min.y = pt.y;
-	if (pt.z < min.z)
-		min.z = pt.z;
+    if (pt.x < min.x)
+        min.x = pt.x;
+    if (pt.y < min.y)
+        min.y = pt.y;
+    if (pt.z < min.z)
+        min.z = pt.z;
 
-	if (pt.x > max.x)
-		max.x = pt.x;
-	if (pt.y > max.y)
-		max.y = pt.y;
-	if (pt.z > max.z)
-		max.z = pt.z;
+    if (pt.x > max.x)
+        max.x = pt.x;
+    if (pt.y > max.y)
+        max.y = pt.y;
+    if (pt.z > max.z)
+        max.z = pt.z;
 }
 
 //! \brief check if bounding box intersect other bounding box
 //! \param box another bounding box
 //! \return true if intersect, false otherwise
-inline bool AABBox::IsIntersect(const AABBox & box)
+inline bool AABBox::IsIntersect(const AABBox& box)
 {
-	// TODO: implement this function
-	return false;
-};	
+    // TODO: implement this function
+    return false;
+};
 
 //! \brief make bounding box empty
 inline void AABBox::Empty()
 {
-	min = Vector3(INFINITY, INFINITY, INFINITY);
-	max = Vector3(-INFINITY, -INFINITY, -INFINITY);
+    min = Vector3(INFINITY, INFINITY, INFINITY);
+    max = Vector3(-INFINITY, -INFINITY, -INFINITY);
 }
 
-
 //! \brief check if bounding box intersect line
-inline bool IsIntersectLine(const Vector3 & l1, const Vector3 &l2)
+inline bool IsIntersectLine(const Vector3& l1, const Vector3& l2)
 {
-	//float32 tmin[3];
-	//float32 tmax[3];
-	//
-	//Vector3 center = (min + max) / 2.0f;
-	//Vector3 p = center  - l1;
-	//
-	//for (int i = 0; i < 3; ++i)
-	//{
-	//	float32 e = 
-	//	float32 d = 
-	//}
-	return false;
+    //float32 tmin[3];
+    //float32 tmax[3];
+    //
+    //Vector3 center = (min + max) / 2.0f;
+    //Vector3 p = center  - l1;
+    //
+    //for (int i = 0; i < 3; ++i)
+    //{
+    //	float32 e =
+    //	float32 d =
+    //}
+    return false;
 }
 
 //! \brief check if point inside bbox
-inline bool AABBox::IsInside(const Vector3 & pt)
+inline bool AABBox::IsInside(const Vector3& pt)
 {
-	if (
-		(min.x <= pt.x)
-		&&(min.y <= pt.y)
-		&&(min.z <= pt.z)
-		&&(pt.x <= max.x)
-		&&(pt.y <= max.y)
-		&&(pt.z <= max.z))return true;
+    if (
+    (min.x <= pt.x)
+    && (min.y <= pt.y)
+    && (min.z <= pt.z)
+    && (pt.x <= max.x)
+    && (pt.y <= max.y)
+    && (pt.z <= max.z))
+        return true;
 
-	return false;
+    return false;
 }
 
 //! \brief copy operator of bounding box class
-inline AABBox & AABBox::operator =(const AABBox & _bbox)
+inline AABBox& AABBox::operator=(const AABBox& _bbox)
 {
-	min = _bbox.min;
-	max = _bbox.max;
-	return *this;
+    min = _bbox.min;
+    max = _bbox.max;
+    return *this;
 }
-
-
-
-
 };
 };
 
 #endif // __LOGENGINE_AABBOX_H__
-

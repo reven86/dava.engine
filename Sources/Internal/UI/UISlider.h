@@ -35,45 +35,44 @@
 
 namespace DAVA
 {
-
 class UIButton;
 class UISlider : public UIControl
 {
 protected:
-	virtual ~UISlider();
+    virtual ~UISlider();
+
 public:
     UISlider(const Rect& rect = Rect());
 
-    virtual void SetSize(const DAVA::Vector2 &newSize);
+    virtual void SetSize(const DAVA::Vector2& newSize);
 
-	inline float32 GetMinValue() const;
-	inline float32 GetMaxValue() const;
-	void SetMinMaxValue(float32 _minValue, float32 _maxValue);
-	
-    virtual void AddControl(UIControl *control);
-    virtual void RemoveControl(UIControl *control);
+    inline float32 GetMinValue() const;
+    inline float32 GetMaxValue() const;
+    void SetMinMaxValue(float32 _minValue, float32 _maxValue);
 
-	virtual void Draw(const UIGeometricData &geometricData);
-	
-	inline bool IsEventsContinuos() const;
-	inline void SetEventsContinuos(bool isEventsContinuos);
-	inline float32 GetValue() const;
-    
+    virtual void AddControl(UIControl* control);
+    virtual void RemoveControl(UIControl* control);
+
+    virtual void Draw(const UIGeometricData& geometricData);
+
+    inline bool IsEventsContinuos() const;
+    inline void SetEventsContinuos(bool isEventsContinuos);
+    inline float32 GetValue() const;
+
     void SetMaxValue(float32 value);
     void SetMinValue(float32 value);
-	void SetValue(float32 value);
+    void SetValue(float32 value);
 
-    
-    void SetThumb(UIControl *newThumb);
-    inline UIControl *GetThumb() const;
-	
-	inline UIControlBackground *GetBgMin() const;
-	inline UIControlBackground *GetBgMax() const;
+    void SetThumb(UIControl* newThumb);
+    inline UIControl* GetThumb() const;
 
-	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-	virtual void LoadFromYamlNodeCompleted();
+    inline UIControlBackground* GetBgMin() const;
+    inline UIControlBackground* GetBgMax() const;
 
-	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
+    virtual void LoadFromYamlNodeCompleted();
+
+    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
 
     UISlider* Clone() override;
     virtual void CopyDataFrom(UIControl* srcControl);
@@ -82,47 +81,46 @@ public:
     void SyncThumbWithSprite();
 
 protected:
-	bool isEventsContinuos;
-	
-	int32 leftInactivePart;
-	int32 rightInactivePart;
-	
-	float32 minValue;
-	float32 maxValue;
-	
-	float32 currentValue;
+    bool isEventsContinuos;
 
-	void Input(UIEvent *currentInput);
-	
-	void RecalcButtonPos();
+    int32 leftInactivePart;
+    int32 rightInactivePart;
+
+    float32 minValue;
+    float32 maxValue;
+
+    float32 currentValue;
+
+    void Input(UIEvent* currentInput);
+
+    void RecalcButtonPos();
 
     UIControlBackground* minBackground;
     UIControlBackground* maxBackground;
-	UIControl * thumbButton;
+    UIControl* thumbButton;
 
-	Vector2 relTouchPoint;
+    Vector2 relTouchPoint;
 
-	void InitThumb();
-	
-	void AttachToSubcontrols();
-	void InitInactiveParts(Sprite* spr);
+    void InitThumb();
+
+    void AttachToSubcontrols();
+    void InitInactiveParts(Sprite* spr);
 
     // Load/save the background.
     void LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNodem, const UIYamlLoader* loader);
-    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader);
+    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader* loader);
 
     void CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to);
 
 private:
     // Whether the sprites are embedded into control YAML (new storage format)?
     bool spritesEmbedded;
-    
+
 public:
-    
     virtual int32 GetBackgroundComponentsCount() const;
-    virtual UIControlBackground *GetBackgroundComponent(int32 index) const;
-    virtual UIControlBackground *CreateBackgroundComponent(int32 index) const;
-    virtual void SetBackgroundComponent(int32 index, UIControlBackground *bg);
+    virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
+    virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;
+    virtual void SetBackgroundComponent(int32 index, UIControlBackground* bg);
     virtual String GetBackgroundComponentName(int32 index) const;
 
     INTROSPECTION_EXTEND(UISlider, UIControl,
@@ -130,52 +128,50 @@ public:
                          PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
                          );
+
 private:
     static const int32 BACKGROUND_COMPONENTS_COUNT = 3;
-
 };
-    
-    
-inline UIControl *UISlider::GetThumb() const
+
+inline UIControl* UISlider::GetThumb() const
 {
     return thumbButton;
 }
 
-inline UIControlBackground *UISlider::GetBgMin() const
+inline UIControlBackground* UISlider::GetBgMin() const
 {
-	return minBackground;
+    return minBackground;
 }
 
-inline UIControlBackground *UISlider::GetBgMax() const
+inline UIControlBackground* UISlider::GetBgMax() const
 {
-	return maxBackground;
+    return maxBackground;
 }
 
 inline bool UISlider::IsEventsContinuos() const
 {
-	return isEventsContinuos;
+    return isEventsContinuos;
 }
 
 inline void UISlider::SetEventsContinuos(bool _isEventsContinuos)
 {
-	isEventsContinuos = _isEventsContinuos;	
+    isEventsContinuos = _isEventsContinuos;
 }
-	
+
 inline float32 UISlider::GetValue() const
 {
-	return currentValue;
+    return currentValue;
 }
 
 inline float32 UISlider::GetMinValue() const
 {
-	return minValue;
-}
-	
-inline float32 UISlider::GetMaxValue() const
-{
-	return maxValue;
+    return minValue;
 }
 
+inline float32 UISlider::GetMaxValue() const
+{
+    return maxValue;
+}
 };
 
 #endif

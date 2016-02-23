@@ -682,6 +682,16 @@ void DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 primCount, u
     (*_Impl.impl_CommandBuffer_DrawIndexedPrimitive)(cmdBuf, type, primCount, vertexCount, firstVertex, startIndex);
 }
 
+void DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedPrimitive)(cmdBuf, type, instCount, count);
+}
+
+void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedIndexedPrimitive)(cmdBuf, type, instCount, primCount, vertexCount, firstVertex, startIndex, baseInstance);
+}
+
 void SetMarker(Handle cmdBuf, const char* text)
 {
     (*_Impl.impl_CommandBuffer_SetMarker)(cmdBuf, text);

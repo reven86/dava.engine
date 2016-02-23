@@ -211,6 +211,7 @@ public:
     // RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
+    bool IsUpdatable() const;
 
     void SetForceFirstLod(bool force);
 

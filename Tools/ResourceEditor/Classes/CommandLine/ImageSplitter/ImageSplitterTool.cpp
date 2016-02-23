@@ -86,13 +86,12 @@ bool ImageSplitterTool::InitializeInternal()
 
 void ImageSplitterTool::ProcessInternal()
 {
-    if(commandAction == ACTION_SPLIT)
+    if (commandAction == ACTION_SPLIT)
     {
         ImageTools::SplitImage(filename, errors);
     }
-    else if(commandAction == ACTION_MERGE)
+    else if (commandAction == ACTION_MERGE)
     {
         ImageTools::MergeImages(foldername, errors);
     }
 }
-

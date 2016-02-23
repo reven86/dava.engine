@@ -32,7 +32,7 @@
 
 #include "CommandLine/CommandLineTool.h"
 
-class ImageSplitterTool: public CommandLineTool
+class ImageSplitterTool : public CommandLineTool
 {
     enum eAction : DAVA::int32
     {

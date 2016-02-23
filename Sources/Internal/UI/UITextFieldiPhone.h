@@ -32,7 +32,7 @@
 
 #include "UI/UITextField.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class UITextField;
 
@@ -53,25 +53,25 @@ public:
 
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
-	void SetTextUseRtlAlign(bool useRtlAlign);
-	bool GetTextUseRtlAlign() const;
+    void SetTextUseRtlAlign(bool useRtlAlign);
+    bool GetTextUseRtlAlign() const;
 
     void SetVisible(bool value);
-	void ShowField();
-	void HideField();
-	
-	void SetIsPassword(bool isPassword);
+    void ShowField();
+    void HideField();
 
-	void SetInputEnabled(bool value);
-    
-	// Keyboard traits.
-	void SetAutoCapitalizationType(DAVA::int32 value);
-	void SetAutoCorrectionType(DAVA::int32 value);
-	void SetSpellCheckingType(DAVA::int32 value);
-	void SetKeyboardAppearanceType(DAVA::int32 value);
-	void SetKeyboardType(DAVA::int32 value);
-	void SetReturnKeyType(DAVA::int32 value);
-	void SetEnableReturnKeyAutomatically(bool value);
+    void SetIsPassword(bool isPassword);
+
+    void SetInputEnabled(bool value);
+
+    // Keyboard traits.
+    void SetAutoCapitalizationType(DAVA::int32 value);
+    void SetAutoCorrectionType(DAVA::int32 value);
+    void SetSpellCheckingType(DAVA::int32 value);
+    void SetKeyboardAppearanceType(DAVA::int32 value);
+    void SetKeyboardType(DAVA::int32 value);
+    void SetReturnKeyType(DAVA::int32 value);
+    void SetEnableReturnKeyAutomatically(bool value);
 
     // Cursor pos.
     uint32 GetCursorPos();
@@ -79,9 +79,9 @@ public:
 
     // Max text length.
     void SetMaxLength(int maxLength);
-    
+
     void SetMultiline(bool multiline);
-    
+
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
     void SystemDraw(const UIGeometricData& geometricData);
@@ -90,12 +90,12 @@ private:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
     void UpdateStaticTexture();
-    void UpdateNativeRect(const Rect & virtualRect, int xOffset);
+    void UpdateNativeRect(const Rect& virtualRect, int xOffset);
 
     Rect nextRect;
     Rect prevRect;
     UITextField& davaTextField;
-	void * objcClassPtr;
+    void* objcClassPtr;
     bool renderToTexture;
     bool isSingleLine = true;
     int deltaMoveControl = 0;

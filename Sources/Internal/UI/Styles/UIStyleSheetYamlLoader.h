@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 class UIStyleSheet;
 class YamlNode;
 
@@ -46,7 +45,6 @@ public:
 
     void LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets);
 };
-
 };
 
 

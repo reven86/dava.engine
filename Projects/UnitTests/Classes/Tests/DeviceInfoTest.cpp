@@ -35,17 +35,19 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(DeviceInfoTest){
-    DAVA_TEST(TestFunction){
-    String ver = DeviceInfo::GetVersion();
+DAVA_TESTCLASS (DeviceInfoTest)
+{
+    DAVA_TEST (TestFunction)
+    {
+        String ver = DeviceInfo::GetVersion();
 
-Logger::Debug(ver.c_str());
+        Logger::Debug(ver.c_str());
 
-String model = DeviceInfo::GetModel();
-Logger::Debug(model.c_str());
+        String model = DeviceInfo::GetModel();
+        Logger::Debug(model.c_str());
 
-eGPUFamily gpuModel = DeviceInfo::GetGPUFamily();
-DeviceInfo::NetworkInfo ninfo = DeviceInfo::GetNetworkInfo();
-}
+        eGPUFamily gpuModel = DeviceInfo::GetGPUFamily();
+        DeviceInfo::NetworkInfo ninfo = DeviceInfo::GetNetworkInfo();
+    }
 }
 ;

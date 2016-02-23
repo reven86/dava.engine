@@ -40,10 +40,14 @@
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent) :
-    QDialog(parent),
-    component(0),
-    scene(_scene),
+SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget* parent)
+    :
+    QDialog(parent)
+    ,
+    component(0)
+    ,
+    scene(_scene)
+    ,
     ui(new Ui::SoundComponentEditor)
 {
     ui->setupUi(this);
@@ -61,7 +65,7 @@ SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent
     QObject::connect(ui->removeEventBut, SIGNAL(clicked()), this, SLOT(OnRemoveEvent()));
     QObject::connect(ui->autoTriggerCheckBox, SIGNAL(clicked(bool)), this, SLOT(OnAutoTrigger(bool)));
 
-    QObject::connect(ui->listWidget, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(OnEventSelected(QListWidgetItem *)));
+    QObject::connect(ui->listWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(OnEventSelected(QListWidgetItem*)));
 
     OnEventSelected(0);
 
@@ -73,7 +77,7 @@ SoundComponentEditor::~SoundComponentEditor()
     delete ui;
 }
 
-void SoundComponentEditor::SetEditableEntity(DAVA::Entity * _entity)
+void SoundComponentEditor::SetEditableEntity(DAVA::Entity* _entity)
 {
     DVASSERT(_entity);
     entity = _entity;
@@ -84,12 +88,12 @@ void SoundComponentEditor::SetEditableEntity(DAVA::Entity * _entity)
     FillEventsList();
 }
 
-void SoundComponentEditor::OnEventSelected(QListWidgetItem * item)
+void SoundComponentEditor::OnEventSelected(QListWidgetItem* item)
 {
-    if(item)
+    if (item)
     {
         QVariant data = item->data(Qt::UserRole);
-        if(!data.isNull())
+        if (!data.isNull())
         {
             DAVA::int32 index = data.toInt();
             selectedEventIndex = index;
@@ -107,10 +111,10 @@ void SoundComponentEditor::OnEventSelected(QListWidgetItem * item)
 
 void SoundComponentEditor::OnAutoTrigger(bool checked)
 {
-    if(selectedEventIndex != -1)
+    if (selectedEventIndex != -1)
     {
         uint32 flags = component->GetSoundEventFlags(selectedEventIndex);
-        if(checked)
+        if (checked)
         {
             scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags | SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
         }
@@ -125,17 +129,17 @@ void SoundComponentEditor::FillEventsList()
 {
     ui->listWidget->clear();
 
-    if(!component)
+    if (!component)
         return;
 
     DAVA::int32 eventsCount = component->GetEventsCount();
-    for(DAVA::int32 i = 0; i < eventsCount; ++i)
+    for (DAVA::int32 i = 0; i < eventsCount; ++i)
     {
-        QListWidgetItem * item = new QListWidgetItem(QString(component->GetSoundEvent(i)->GetEventName().c_str()));
+        QListWidgetItem* item = new QListWidgetItem(QString(component->GetSoundEvent(i)->GetEventName().c_str()));
         item->setData(Qt::UserRole, i);
         ui->listWidget->addItem(item);
 
-        if(i == selectedEventIndex)
+        if (i == selectedEventIndex)
         {
             item->setSelected(true);
             OnEventSelected(item);
@@ -147,10 +151,10 @@ void SoundComponentEditor::FillEventParamsFrame()
 {
     ClearParamsFrame();
 
-    if(selectedEventIndex == -1)
+    if (selectedEventIndex == -1)
         return;
 
-    SoundEvent * soundEvent = component->GetSoundEvent(selectedEventIndex);
+    SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
 
     ui->eventNameLabel->setText(QString(soundEvent->GetEventName().c_str()));
 
@@ -163,10 +167,10 @@ void SoundComponentEditor::FillEventParamsFrame()
     DAVA::Vector<DAVA::SoundEvent::SoundEventParameterInfo> params;
     soundEvent->GetEventParametersInfo(params);
     DAVA::int32 paramsCount = params.size();
-    for(DAVA::int32 i = 0; i < paramsCount; i++)
+    for (DAVA::int32 i = 0; i < paramsCount; i++)
     {
-        DAVA::SoundEvent::SoundEventParameterInfo & param = params[i];
-        if(param.name != "(distance)" && param.name != "(event angle)" && param.name != "(listener angle)")
+        DAVA::SoundEvent::SoundEventParameterInfo& param = params[i];
+        if (param.name != "(distance)" && param.name != "(event angle)" && param.name != "(listener angle)")
         {
             float32 currentParamValue = soundEvent->GetParameterValue(FastName(param.name));
             AddSliderWidget(param, currentParamValue);
@@ -176,25 +180,25 @@ void SoundComponentEditor::FillEventParamsFrame()
 
 void SoundComponentEditor::OnPlay()
 {
-    if(selectedEventIndex != -1 && !component->GetSoundEvent(selectedEventIndex)->IsActive())
+    if (selectedEventIndex != -1 && !component->GetSoundEvent(selectedEventIndex)->IsActive())
         component->Trigger(selectedEventIndex);
 }
 
 void SoundComponentEditor::OnStop()
 {
-    if(selectedEventIndex != -1)
+    if (selectedEventIndex != -1)
         component->Stop(selectedEventIndex);
 }
 
 void SoundComponentEditor::OnAddEvent()
 {
-    if(component)
+    if (component)
     {
-        FMODSoundBrowser * browser = FMODSoundBrowser::Instance();
-        if(browser->exec() == QDialog::Accepted)
+        FMODSoundBrowser* browser = FMODSoundBrowser::Instance();
+        if (browser->exec() == QDialog::Accepted)
         {
             DAVA::String selectedEventName = browser->GetSelectSoundEvent();
-            DAVA::SoundEvent * sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(FastName(selectedEventName), DAVA::FastName("FX"));
+            DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(FastName(selectedEventName), DAVA::FastName("FX"));
 
             scene->Exec(new AddSoundEventCommand(component->GetEntity(), sEvent));
 
@@ -209,7 +213,7 @@ void SoundComponentEditor::OnAddEvent()
 
 void SoundComponentEditor::OnRemoveEvent()
 {
-    if(selectedEventIndex != -1 && component)
+    if (selectedEventIndex != -1 && component)
     {
         scene->Exec(new RemoveSoundEventCommand(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
     }
@@ -221,7 +225,7 @@ void SoundComponentEditor::OnRemoveEvent()
 
 void SoundComponentEditor::OnSliderPressed()
 {
-    QSlider * slider = dynamic_cast<QSlider *>(QObject::sender());
+    QSlider* slider = dynamic_cast<QSlider*>(QObject::sender());
 
     DAVA::float32 minValue = slider->property("minValue").toFloat();
     DAVA::float32 maxValue = slider->property("maxValue").toFloat();
@@ -233,7 +237,7 @@ void SoundComponentEditor::OnSliderPressed()
 
 void SoundComponentEditor::OnSliderMoved(int value)
 {
-    QSlider * slider = dynamic_cast<QSlider *>(QObject::sender());
+    QSlider* slider = dynamic_cast<QSlider*>(QObject::sender());
 
     DAVA::String paramName = slider->property("paramName").toString().toStdString();
     DAVA::float32 minValue = slider->property("minValue").toFloat();
@@ -243,19 +247,19 @@ void SoundComponentEditor::OnSliderMoved(int value)
 
     QToolTip::showText(QCursor::pos(), QString("%1").arg(newParamValue), slider);
 
-    if(selectedEventIndex != -1)
+    if (selectedEventIndex != -1)
         component->GetSoundEvent(selectedEventIndex)->SetParameterValue(DAVA::FastName(paramName), newParamValue);
 }
 
-void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param, float32 currentParamValue)
+void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo& param, float32 currentParamValue)
 {
-    QGridLayout * layout = dynamic_cast<QGridLayout *>(ui->paramsFrame->layout());
-    
-    QLabel * nameLabel = new QLabel(QString(param.name.c_str()));
-    QLabel * minLabel = new QLabel(QString(DAVA::Format("%.1f", param.minValue).c_str()));
+    QGridLayout* layout = dynamic_cast<QGridLayout*>(ui->paramsFrame->layout());
+
+    QLabel* nameLabel = new QLabel(QString(param.name.c_str()));
+    QLabel* minLabel = new QLabel(QString(DAVA::Format("%.1f", param.minValue).c_str()));
     minLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    QLabel * maxLabel = new QLabel(QString(DAVA::Format("%.1f", param.maxValue).c_str()));
-    QSlider * slider = new QSlider(Qt::Horizontal);
+    QLabel* maxLabel = new QLabel(QString(DAVA::Format("%.1f", param.maxValue).c_str()));
+    QSlider* slider = new QSlider(Qt::Horizontal);
     slider->setMinimum(0);
     slider->setMaximum(1000);
     slider->setValue(0);
@@ -263,7 +267,7 @@ void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventPar
     slider->setProperty("minValue", param.minValue);
     slider->setProperty("maxValue", param.maxValue);
 
-    if(selectedEventIndex != -1)
+    if (selectedEventIndex != -1)
     {
         int currentValue = (currentParamValue - param.minValue) / (param.maxValue - param.minValue) * 1000;
         slider->setValue(currentValue);
@@ -280,10 +284,10 @@ void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventPar
 
 void SoundComponentEditor::ClearParamsFrame()
 {
-    QGridLayout * layout = dynamic_cast<QGridLayout *>(ui->paramsFrame->layout());
+    QGridLayout* layout = dynamic_cast<QGridLayout*>(ui->paramsFrame->layout());
 
     QLayoutItem* item = 0;
-    while((item = layout->takeAt(0)))
+    while ((item = layout->takeAt(0)))
     {
         delete item->widget();
         delete item;

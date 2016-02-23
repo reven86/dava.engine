@@ -41,7 +41,7 @@ class ColladaMeshInstance
 {
 public:
     ColladaMeshInstance(bool _animated);
-    ~ColladaMeshInstance();
+    ~ColladaMeshInstance() = default;
 
     void Render();
     void AddPolygonGroupInstance(ColladaPolygonGroupInstance* instance);

@@ -35,25 +35,24 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 
-class DeleteRenderBatchCommand: public Command2
+class DeleteRenderBatchCommand : public Command2
 {
 public:
-	DeleteRenderBatchCommand(DAVA::Entity *entity, DAVA::RenderObject *renderObject, DAVA::uint32 renderBatchIndex);
+    DeleteRenderBatchCommand(DAVA::Entity* entity, DAVA::RenderObject* renderObject, DAVA::uint32 renderBatchIndex);
     virtual ~DeleteRenderBatchCommand();
 
-	virtual void Undo();
-	virtual void Redo();
-    
-	virtual DAVA::Entity* GetEntity() const;
-    
-    DAVA::RenderBatch *GetRenderBatch() const;
+    virtual void Undo();
+    virtual void Redo();
+
+    virtual DAVA::Entity* GetEntity() const;
+
+    DAVA::RenderBatch* GetRenderBatch() const;
 
 protected:
+    DAVA::Entity* entity;
+    DAVA::RenderObject* renderObject;
+    DAVA::RenderBatch* renderBatch;
 
-    DAVA::Entity *entity;
-    DAVA::RenderObject *renderObject;
-    DAVA::RenderBatch *renderBatch;
-    
     DAVA::uint32 renderBatchIndex;
     DAVA::int32 lodIndex;
     DAVA::int32 switchIndex;

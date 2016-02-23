@@ -18,11 +18,11 @@
 
 typedef struct TEX_HEAD
 {
-	char	Name[64];
-	ILuint	Flags;
-	ILuint	Width;
-	ILuint	Height;
-	ILuint	Offset;
+    char Name[64];
+    ILuint Flags;
+    ILuint Width;
+    ILuint Height;
+    ILuint Offset;
 } TEX_HEAD;
 
-#endif//MD2_H
+#endif //MD2_H

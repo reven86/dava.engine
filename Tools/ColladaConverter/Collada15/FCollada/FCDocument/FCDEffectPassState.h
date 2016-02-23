@@ -36,49 +36,61 @@
 class FCOLLADA_EXPORT FCDEffectPassState : public FCDObject
 {
 private:
-	DeclareObjectType(FCDObject);
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, type, FC("Type")); // FUDaePassState::State
+    DeclareObjectType(FCDObject);
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, type, FC("Type")); // FUDaePassState::State
 
-	// Data remains state-specific, un-parameterizable and will
-	// pretty much always require custom UI.
-	uint8* data;
-	size_t dataSize;
+    // Data remains state-specific, un-parameterizable and will
+    // pretty much always require custom UI.
+    uint8* data;
+    size_t dataSize;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		Once built, the render state associated with this object should never change
 		and the data pointer should be allocated to the correct size and never
 		re-allocated.
 		@param document The COLLADA document that owns this render state.
 		@param renderState The render state type. */
-	FCDEffectPassState(FCDocument* document, FUDaePassState::State renderState);
+    FCDEffectPassState(FCDocument* document, FUDaePassState::State renderState);
 
-	/** Destructor. */
-	virtual ~FCDEffectPassState();
+    /** Destructor. */
+    virtual ~FCDEffectPassState();
 
-	/** Retrieves the type of the pass render state.
+    /** Retrieves the type of the pass render state.
 		@return The render state type. */
-	FUDaePassState::State GetType() const { return (FUDaePassState::State) *type; }
+    FUDaePassState::State GetType() const
+    {
+        return (FUDaePassState::State)*type;
+    }
 
-	/** Retrieves the data size of the pass render state.
+    /** Retrieves the data size of the pass render state.
 		@return The size of the render state data. */
-	size_t GetDataSize() const { return dataSize; }
+    size_t GetDataSize() const
+    {
+        return dataSize;
+    }
 
-	/** Retrieves the data pointer for the pass render state.
+    /** Retrieves the data pointer for the pass render state.
 		@return The data pointer. */
-	uint8* GetData() { return data; }
-	const uint8* GetData() const { return data; } /**< See above. */
+    uint8* GetData()
+    {
+        return data;
+    }
+    const uint8* GetData() const
+    {
+        return data;
+    } /**< See above. */
 
-	/**	Use this method to reset the state back to its default value. This method
+    /**	Use this method to reset the state back to its default value. This method
 		is called in the constructor.*/
-	void SetDefaultValue();
+    void SetDefaultValue();
 
-	/** Clones the effect pass and shaders.
+    /** Clones the effect pass and shaders.
 		@param clone The cloned pass.
 			If this pointer is NULL, a new pass is created and
 			you will need to release this new pass.
 		@return The cloned pass. */
-	FCDEffectPassState* Clone(FCDEffectPassState* clone = NULL) const;
+    FCDEffectPassState* Clone(FCDEffectPassState* clone = NULL) const;
 };
 
 #endif // _FCD_EFFECT_PASS_STATE_H_

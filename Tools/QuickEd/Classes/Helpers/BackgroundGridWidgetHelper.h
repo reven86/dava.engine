@@ -35,8 +35,8 @@
 #include "UI/UITextField.h"
 #include <QString>
 
-namespace DAVA {
-    
+namespace DAVA
+{
 class BackgroundGridWidgetHelper
 {
 public:
@@ -52,15 +52,15 @@ public:
     static int GetColorInheritTypesCount();
     static UIControlBackground::eColorInheritType GetColorInheritType(int index);
     static QString GetColorInheritTypeDesc(int index);
-    
+
     // Get the Color Inherit Type Description by the Value.
     static QString GetColorInheritTypeDescByType(UIControlBackground::eColorInheritType inheritType);
-    
+
     // Per Pixer Accuracy.
     static int GetPerPixelAccuracyTypesCount();
     static UIControlBackground::ePerPixelAccuracyType GetPerPixelAccuracyType(int index);
     static QString GetPerPixelAccuracyTypeDesc(int index);
-    
+
     // Get the Pixer Accuracy Type Description by the Value.
     static QString GetPerPixelAccuracyTypeDescByType(UIControlBackground::ePerPixelAccuracyType pixelAccuracyType);
 
@@ -72,55 +72,54 @@ public:
     // Get the Align Type Description by the Value.
     static QString GetAlignTypeDescByType(int alignType);
 
-	//Return key type.
+    //Return key type.
     static int GetReturnKeyTypesCount();
     static int GetReturnKeyType(int index);
     static QString GetReturnKeyTypeDesc(int index);
     // Get the Return Key Type Description by the Value.
     static QString GetReturnKeyTypeDescByType(int retKeyType);
 
-	//Keyboard type.
+    //Keyboard type.
     static int GetKeyboardTypesCount();
     static int GetKeyboardType(int index);
     static QString GetKeyboardTypeDesc(int index);
     // Get the Keyboard Type Description by the Value.
     static QString GetKeyboardTypeDescByType(int keyboardType);
 
-	//Keyboard Appearance Type.
+    //Keyboard Appearance Type.
     static int GetKeyboardAppearanceTypesCount();
     static int GetKeyboardAppearanceType(int index);
     static QString GetKeyboardAppearanceTypeDesc(int index);
     // Get the Keyboard Appearance Type Description by the Value.
     static QString GetKeyboardAppearanceTypeDescByType(int keyboardAppearabveType);
 
-	//Spell Checking Type.
+    //Spell Checking Type.
     static int GetSpellCheckingTypesCount();
     static int GetSpellCheckingType(int index);
     static QString GetSpellCheckingTypeDesc(int index);
     // Get the SpellCheckingType Description by the Value.
     static QString GetSpellCheckingTypeDescByType(int spellCheckingType);
 
-	//	Auto Correction Type.
+    //	Auto Correction Type.
     static int GetAutoCorrectionTypesCount();
     static int GetAutoCorrectionType(int index);
     static QString GetAutoCorrectionTypeDesc(int index);
     // Get the AutoCorrectionType Description by the Value.
     static QString GetAutoCorrectionTypeDescByType(int autoCorrectionType);
 
-	
-	//	Auto Capitalization Type.
+    //	Auto Capitalization Type.
     static int GetAutoCapitalizationTypesCount();
     static int GetAutoCapitalizationType(int index);
     static QString GetAutoCapitalizationTypeDesc(int index);
     // Get the AutoCapitalizationType Description by the Value.
     static QString GetAutoCapitalizationTypeDescByType(int autoCapitalizationType);
 
-	//SpriteModificationType
-	static int GetModificationType(int index);
+    //SpriteModificationType
+    static int GetModificationType(int index);
     static QString GetModificationTypeDesc(int index);
-	static int GetModificationTypesCount();
+    static int GetModificationTypesCount();
 
-	static QString GetModificationTypeDescByType(int modificationType);
+    static QString GetModificationTypeDescByType(int modificationType);
 
     // Fitting Type.
     static int GetFittingType(int index);
@@ -134,14 +133,14 @@ protected:
     static bool ValidateColorInheritTypeIndex(int index);
     static bool ValidatePerPixelAccuracyTypeIndex(int index);
     static bool ValidateAlginTypeIndex(int index);
-	static bool ValidateSpriteModificationIndex(int index);
+    static bool ValidateSpriteModificationIndex(int index);
 
-	static bool ValidateReturnKeyTypeIndex(int index);
-	static bool ValidateKeyboardTypeIndex(int index);
-	static bool ValidateKeyboardAppearanceIndex(int index);
-	static bool ValidateSpellCheckingIndex(int index);
-	static bool ValidateAutoCorrectionIndex(int index);
-	static bool ValidateAutoCapitalizationIndex(int index);
+    static bool ValidateReturnKeyTypeIndex(int index);
+    static bool ValidateKeyboardTypeIndex(int index);
+    static bool ValidateKeyboardAppearanceIndex(int index);
+    static bool ValidateSpellCheckingIndex(int index);
+    static bool ValidateAutoCorrectionIndex(int index);
+    static bool ValidateAutoCapitalizationIndex(int index);
 
     static bool ValidateFittingTypeIndex(int index);
 
@@ -151,13 +150,13 @@ protected:
         UIControlBackground::eDrawType drawType;
         const char* drawTypeDesc;
     };
-    
+
     struct ColorInheritTypesData
     {
         UIControlBackground::eColorInheritType colorInheritType;
         const char* colorInheritTypeDesc;
     };
-    
+
     struct PerPixelAccuracyTypesData
     {
         UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType;
@@ -170,47 +169,47 @@ protected:
         const char* alignTypeDesc;
     };
 
-	struct SpriteModificationTypesData
+    struct SpriteModificationTypesData
     {
         int spriteModificationType;
         const char* spriteModificationTypeDescription;
     };
-	
-	struct ReturnKeyTypesData
-	{
-		UITextField::eReturnKeyType	returnKeyType;
-		const char* returnKeyTypeDescription;
-	};
 
-	struct KeyboardTypesData
-	{
-		UITextField::eKeyboardType	keyboardType;
-		const char* keyboardTypeDescription;
-	};
+    struct ReturnKeyTypesData
+    {
+        UITextField::eReturnKeyType returnKeyType;
+        const char* returnKeyTypeDescription;
+    };
 
-	struct KeyboardAppearanceTypesData
-	{
-		UITextField::eKeyboardAppearanceType	keyboardAppearanceType;
-		const char* keyboardAppearanceTypeDescription;
-	};
-		
-	struct SpellCheckingTypesData
-	{
-		UITextField::eSpellCheckingType	spellCheckingType;
-		const char* spellCheckingTypeDescription;
-	};
+    struct KeyboardTypesData
+    {
+        UITextField::eKeyboardType keyboardType;
+        const char* keyboardTypeDescription;
+    };
 
-	struct AutoCorrectionTypesData
-	{
-		UITextField::eAutoCorrectionType	autoCorrectionType;
-		const char* autoCorrectionTypeDescription;
-	};
+    struct KeyboardAppearanceTypesData
+    {
+        UITextField::eKeyboardAppearanceType keyboardAppearanceType;
+        const char* keyboardAppearanceTypeDescription;
+    };
 
-	struct AutoCapitalizationTypesData
-	{
-		UITextField::eAutoCapitalizationType	autoCapitalizationType;
-		const char* autoCapitalizationTypeDescription;
-	};
+    struct SpellCheckingTypesData
+    {
+        UITextField::eSpellCheckingType spellCheckingType;
+        const char* spellCheckingTypeDescription;
+    };
+
+    struct AutoCorrectionTypesData
+    {
+        UITextField::eAutoCorrectionType autoCorrectionType;
+        const char* autoCorrectionTypeDescription;
+    };
+
+    struct AutoCapitalizationTypesData
+    {
+        UITextField::eAutoCapitalizationType autoCapitalizationType;
+        const char* autoCapitalizationTypeDescription;
+    };
 
     struct FittingTypesData
     {
@@ -222,18 +221,17 @@ protected:
     static const ColorInheritTypesData colorInheritTypesData[];
     static const PerPixelAccuracyTypesData perPixelAccuracyTypesData[];
     static const AlignTypesData alignTypesData[];
-	static const SpriteModificationTypesData spriteModificationTypesData[];
-	
-	static const ReturnKeyTypesData returnKeyTypesData[];
-	static const KeyboardTypesData keyboardTypesData[];
-	static const KeyboardAppearanceTypesData keyboardAppearanceTypesData[];
-	static const SpellCheckingTypesData spellCheckingTypesData[];
-	static const AutoCorrectionTypesData autoCorrectionTypesData[];
-	static const AutoCapitalizationTypesData autoCapitalizationTypesData[];
-    
+    static const SpriteModificationTypesData spriteModificationTypesData[];
+
+    static const ReturnKeyTypesData returnKeyTypesData[];
+    static const KeyboardTypesData keyboardTypesData[];
+    static const KeyboardAppearanceTypesData keyboardAppearanceTypesData[];
+    static const SpellCheckingTypesData spellCheckingTypesData[];
+    static const AutoCorrectionTypesData autoCorrectionTypesData[];
+    static const AutoCapitalizationTypesData autoCapitalizationTypesData[];
+
     static const FittingTypesData fittingTypesData[];
 };
-
 };
 
 #endif /* defined(__UIEditor__BackgroundGridWidgetHelper__) */

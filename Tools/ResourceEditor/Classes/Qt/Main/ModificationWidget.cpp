@@ -37,61 +37,61 @@
 #include <QHBoxLayout>
 #include <QStyleOptionSpinBox>
 
-
 ModificationWidget::ModificationWidget(QWidget* parent)
-	: QWidget(parent)
+    : QWidget(parent)
 {
-	auto horizontalLayout = new QHBoxLayout(this);
-	horizontalLayout->setSpacing(2);
-	horizontalLayout->setContentsMargins(2, 1, 2, 1);
+    auto horizontalLayout = new QHBoxLayout(this);
+    horizontalLayout->setSpacing(2);
+    horizontalLayout->setContentsMargins(2, 1, 2, 1);
 
-	xLabel = new QLabel("X:", this);
-	xLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-	horizontalLayout->addWidget(xLabel);
+    xLabel = new QLabel("X:", this);
+    xLabel->setAlignment(Qt::AlignRight | Qt::AlignTrailing | Qt::AlignVCenter);
+    horizontalLayout->addWidget(xLabel);
 
-	xAxisModify = new DAVAFloat32SpinBox(this);
-	xAxisModify->setMinimumSize(QSize(70, 0));
-	horizontalLayout->addWidget(xAxisModify);
+    xAxisModify = new DAVAFloat32SpinBox(this);
+    xAxisModify->setMinimumSize(QSize(70, 0));
+    horizontalLayout->addWidget(xAxisModify);
 
-	yLabel = new QLabel("Y:", this);
-	yLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-	horizontalLayout->addWidget(yLabel);
+    yLabel = new QLabel("Y:", this);
+    yLabel->setAlignment(Qt::AlignRight | Qt::AlignTrailing | Qt::AlignVCenter);
+    horizontalLayout->addWidget(yLabel);
 
-	yAxisModify = new DAVAFloat32SpinBox(this);
-	yAxisModify->setMinimumSize(QSize(70, 0));
-	horizontalLayout->addWidget(yAxisModify);
+    yAxisModify = new DAVAFloat32SpinBox(this);
+    yAxisModify->setMinimumSize(QSize(70, 0));
+    horizontalLayout->addWidget(yAxisModify);
 
-	zLabel = new QLabel("Z:", this);
-	zLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-	horizontalLayout->addWidget(zLabel);
+    zLabel = new QLabel("Z:", this);
+    zLabel->setAlignment(Qt::AlignRight | Qt::AlignTrailing | Qt::AlignVCenter);
+    horizontalLayout->addWidget(zLabel);
 
-	zAxisModify = new DAVAFloat32SpinBox(this);
-	zAxisModify->setMinimumSize(QSize(70, 0));
-	horizontalLayout->addWidget(zAxisModify);
+    zAxisModify = new DAVAFloat32SpinBox(this);
+    zAxisModify->setMinimumSize(QSize(70, 0));
+    horizontalLayout->addWidget(zAxisModify);
 
-    connect( xAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnXChanged );
-    connect( yAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnYChanged );
-    connect( zAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnZChanged );
+    connect(xAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnXChanged);
+    connect(yAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnYChanged);
+    connect(zAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnZChanged);
 
-    connect( SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &ModificationWidget::OnSceneSelectionChanged );
-    connect( SceneSignals::Instance(), &SceneSignals::Activated, this, &ModificationWidget::OnSceneActivated );
-    connect( SceneSignals::Instance(), &SceneSignals::Deactivated, this, &ModificationWidget::OnSceneDeactivated );
-    connect( SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ModificationWidget::OnSceneCommand );
+    connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &ModificationWidget::OnSceneSelectionChanged);
+    connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &ModificationWidget::OnSceneActivated);
+    connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &ModificationWidget::OnSceneDeactivated);
+    connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ModificationWidget::OnSceneCommand);
 }
 
 ModificationWidget::~ModificationWidget()
-{}
+{
+}
 
 void ModificationWidget::SetPivotMode(PivotMode mode)
 {
-	pivotMode = mode;
-	ReloadValues();
+    pivotMode = mode;
+    ReloadValues();
 }
 
 void ModificationWidget::SetModifMode(ST_ModifMode mode)
 {
-	modifMode = mode;
-	ReloadValues();
+    modifMode = mode;
+    ReloadValues();
 }
 
 void ModificationWidget::ReloadValues()
@@ -100,27 +100,27 @@ void ModificationWidget::ReloadValues()
     yAxisModify->clear();
     zAxisModify->clear();
 
-	if(modifMode == ST_MODIF_SCALE)
-	{
-		xLabel->setText("Scale:");
+    if (modifMode == ST_MODIF_SCALE)
+    {
+        xLabel->setText("Scale:");
 
-		yLabel->setVisible(false);
-		zLabel->setVisible(false);
-		yAxisModify->setVisible(false);
-		zAxisModify->setVisible(false);
-	}
-	else
-	{
-		xLabel->setText("X:");
+        yLabel->setVisible(false);
+        zLabel->setVisible(false);
+        yAxisModify->setVisible(false);
+        zAxisModify->setVisible(false);
+    }
+    else
+    {
+        xLabel->setText("X:");
 
-		yLabel->setVisible(true);
-		zLabel->setVisible(true);
-		yAxisModify->setVisible(true);
-		zAxisModify->setVisible(true);
-	}
+        yLabel->setVisible(true);
+        zLabel->setVisible(true);
+        yAxisModify->setVisible(true);
+        zAxisModify->setVisible(true);
+    }
 
-	if (nullptr != curScene)
-	{
+    if (nullptr != curScene)
+    {
         const EntityGroup& selection = curScene->selectionSystem->GetSelection();
         if (!selection.IsEmpty() && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
         {
@@ -130,41 +130,41 @@ void ModificationWidget::ReloadValues()
 
             xAxisModify->showButtons(true);
             yAxisModify->showButtons(true);
-			zAxisModify->showButtons(true);
+            zAxisModify->showButtons(true);
 
-			if(selection.Size() > 1)
-			{
-				groupMode = true;
+            if (selection.Size() > 1)
+            {
+                groupMode = true;
 
-				if(pivotMode == PivotRelative)
-				{
-					xAxisModify->setValue(0);
-					yAxisModify->setValue(0);
-					zAxisModify->setValue(0);
-				}
-				else
-				{
-					xAxisModify->showButtons(false);
-					yAxisModify->showButtons(false);
-					zAxisModify->showButtons(false);
+                if (pivotMode == PivotRelative)
+                {
+                    xAxisModify->setValue(0);
+                    yAxisModify->setValue(0);
+                    zAxisModify->setValue(0);
+                }
+                else
+                {
+                    xAxisModify->showButtons(false);
+                    yAxisModify->showButtons(false);
+                    zAxisModify->showButtons(false);
 
-					xAxisModify->clear();
-					yAxisModify->clear();
-					zAxisModify->clear();
-				}
-			}
-			else
-			{
-				groupMode = false;
+                    xAxisModify->clear();
+                    yAxisModify->clear();
+                    zAxisModify->clear();
+                }
+            }
+            else
+            {
+                groupMode = false;
 
-				if(pivotMode == PivotRelative)
-				{
-					xAxisModify->setValue(0);
-					yAxisModify->setValue(0);
-					zAxisModify->setValue(0);
-				}
-				else
-				{
+                if (pivotMode == PivotRelative)
+                {
+                    xAxisModify->setValue(0);
+                    yAxisModify->setValue(0);
+                    zAxisModify->setValue(0);
+                }
+                else
+                {
                     DAVA::Entity* singleEntity = selection.GetFirstEntity();
                     if (NULL != singleEntity)
                     {
@@ -173,64 +173,64 @@ void ModificationWidget::ReloadValues()
                         DAVA::float32 z = 0;
 
                         DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
-						switch (modifMode)
-						{
-						case ST_MODIF_MOVE:
-							{
-								DAVA::Vector3 translation = localMatrix.GetTranslationVector();
-								x = translation.x;
-								y = translation.y;
-								z = translation.z;
-							}
-							break;
-						case ST_MODIF_ROTATE:
-							{
-								DAVA::Vector3 pos, scale, rotate;
-								if(localMatrix.Decomposition(pos, scale, rotate))
-								{
-									x = DAVA::RadToDeg(rotate.x);
-									y = DAVA::RadToDeg(rotate.y);
-									z = DAVA::RadToDeg(rotate.z);
-								}
-							}
-							break;
-						case ST_MODIF_SCALE:
-							{
-								DAVA::Vector3 pos, scale, rotate;
-								if(localMatrix.Decomposition(pos, scale, rotate))
-								{
-									x = scale.x;
-									y = scale.y;
-									z = scale.z;
-								}
-							}
-							break;
-						default:
-							break;
-						}
+                        switch (modifMode)
+                        {
+                        case ST_MODIF_MOVE:
+                        {
+                            DAVA::Vector3 translation = localMatrix.GetTranslationVector();
+                            x = translation.x;
+                            y = translation.y;
+                            z = translation.z;
+                        }
+                        break;
+                        case ST_MODIF_ROTATE:
+                        {
+                            DAVA::Vector3 pos, scale, rotate;
+                            if (localMatrix.Decomposition(pos, scale, rotate))
+                            {
+                                x = DAVA::RadToDeg(rotate.x);
+                                y = DAVA::RadToDeg(rotate.y);
+                                z = DAVA::RadToDeg(rotate.z);
+                            }
+                        }
+                        break;
+                        case ST_MODIF_SCALE:
+                        {
+                            DAVA::Vector3 pos, scale, rotate;
+                            if (localMatrix.Decomposition(pos, scale, rotate))
+                            {
+                                x = scale.x;
+                                y = scale.y;
+                                z = scale.z;
+                            }
+                        }
+                        break;
+                        default:
+                            break;
+                        }
 
-						xAxisModify->setValue(x);
-						yAxisModify->setValue(y);
-						zAxisModify->setValue(z);
-					}
-				}
-			}
-		}
-		else
-		{
-			xAxisModify->showButtons(true);
-			yAxisModify->showButtons(true);
-			zAxisModify->showButtons(true);
+                        xAxisModify->setValue(x);
+                        yAxisModify->setValue(y);
+                        zAxisModify->setValue(z);
+                    }
+                }
+            }
+        }
+        else
+        {
+            xAxisModify->showButtons(true);
+            yAxisModify->showButtons(true);
+            zAxisModify->showButtons(true);
 
-			xAxisModify->setEnabled(false);
-			yAxisModify->setEnabled(false);
-			zAxisModify->setEnabled(false);
+            xAxisModify->setEnabled(false);
+            yAxisModify->setEnabled(false);
+            zAxisModify->setEnabled(false);
 
-			xAxisModify->clear();
-			yAxisModify->clear();
-			zAxisModify->clear();
-		}
-	}
+            xAxisModify->clear();
+            yAxisModify->clear();
+            zAxisModify->clear();
+        }
+    }
 
     OnSnapToLandscapeChanged();
 }
@@ -270,32 +270,32 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneCommand(SceneEditor2 *scene, const Command2* command, bool redo)
+void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const Command2* command, bool redo)
 {
-	if(curScene == scene)
-	{
-		ReloadValues();
-	}
+    if (curScene == scene)
+    {
+        ReloadValues();
+    }
 }
 
 void ModificationWidget::OnXChanged()
 {
-	ApplyValues(ST_AXIS_X);
+    ApplyValues(ST_AXIS_X);
 }
 
 void ModificationWidget::OnYChanged()
 {
-	ApplyValues(ST_AXIS_Y);
+    ApplyValues(ST_AXIS_Y);
 }
 
 void ModificationWidget::OnZChanged()
 {
-	ApplyValues(ST_AXIS_Z);
+    ApplyValues(ST_AXIS_Z);
 }
 
 void ModificationWidget::OnSnapToLandscapeChanged()
 {
-    if ( curScene == nullptr )
+    if (curScene == nullptr)
         return;
 
     const EntityGroup& selection = curScene->selectionSystem->GetSelection();
@@ -303,160 +303,161 @@ void ModificationWidget::OnSnapToLandscapeChanged()
         return;
 
     const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
-    const auto isMoveMode = ( modifMode == ST_MODIF_MOVE );
-    zAxisModify->setReadOnly( isSnappedToLandscape && isMoveMode );
+    const auto isMoveMode = (modifMode == ST_MODIF_MOVE);
+    zAxisModify->setReadOnly(isSnappedToLandscape && isMoveMode);
 }
 
-void ModificationWidget::OnSceneActivated(SceneEditor2 *scene)
+void ModificationWidget::OnSceneActivated(SceneEditor2* scene)
 {
-	curScene = scene;
-	ReloadValues();
+    curScene = scene;
+    ReloadValues();
 }
 
-void ModificationWidget::OnSceneDeactivated(SceneEditor2 *scene)
+void ModificationWidget::OnSceneDeactivated(SceneEditor2* scene)
 {
-	curScene = NULL;
-	ReloadValues();
+    curScene = NULL;
+    ReloadValues();
 }
 
-void ModificationWidget::OnSceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
+void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
 {
-	if(curScene == scene)
-	{
-		ReloadValues();
-	}
+    if (curScene == scene)
+    {
+        ReloadValues();
+    }
 }
 
 // =======================================================================================================
 // ModificationSpin
 // =======================================================================================================
 
-DAVAFloat32SpinBox::DAVAFloat32SpinBox(QWidget *parent /* = 0 */)
-	: QAbstractSpinBox(parent)
-	, originalValue(0)
-	, precision(3)
-	, hasButtons(true)
-	, cleared(true)
+DAVAFloat32SpinBox::DAVAFloat32SpinBox(QWidget* parent /* = 0 */)
+    : QAbstractSpinBox(parent)
+    , originalValue(0)
+    , precision(3)
+    , hasButtons(true)
+    , cleared(true)
 {
-	QLineEdit *le = lineEdit();
+    QLineEdit* le = lineEdit();
 
-	QRegExp rx("^-?\\d+([\\.,]\\d+){0,1}$");
-	QValidator *vd = new QRegExpValidator(rx, this);
+    QRegExp rx("^-?\\d+([\\.,]\\d+){0,1}$");
+    QValidator* vd = new QRegExpValidator(rx, this);
 
-	le->setValidator(vd);
+    le->setValidator(vd);
 
-	connect(this, SIGNAL(editingFinished()), this, SLOT(textEditingFinished()));
+    connect(this, SIGNAL(editingFinished()), this, SLOT(textEditingFinished()));
 }
 
 DAVAFloat32SpinBox::~DAVAFloat32SpinBox()
-{ }
+{
+}
 
 DAVA::float32 DAVAFloat32SpinBox::value() const
 {
-	return originalValue;
+    return originalValue;
 }
 
 void DAVAFloat32SpinBox::showButtons(bool show)
 {
-	hasButtons = show;
+    hasButtons = show;
 }
 
 void DAVAFloat32SpinBox::clear()
 {
-	QAbstractSpinBox::clear();
-	cleared = true;
+    QAbstractSpinBox::clear();
+    cleared = true;
 }
 
 void DAVAFloat32SpinBox::setValue(DAVA::float32 val)
 {
-	QLineEdit *le = lineEdit();
+    QLineEdit* le = lineEdit();
 
-	if(originalValue != val || cleared)
-	{
-		cleared = false;
+    if (originalValue != val || cleared)
+    {
+        cleared = false;
 
-		originalString = QString::number((double) val, 'f', precision);
-		le->setText(originalString);
+        originalString = QString::number((double)val, 'f', precision);
+        le->setText(originalString);
 
-		if(originalValue != val)
-		{
-			originalValue = val;
-			emit valueChanged();
-		}
-	}
+        if (originalValue != val)
+        {
+            originalValue = val;
+            emit valueChanged();
+        }
+    }
 }
 
 void DAVAFloat32SpinBox::stepBy(int steps)
 {
-	textEditingFinished();
-	setValue(originalValue + (DAVA::float32) steps);
-	selectAll();
+    textEditingFinished();
+    setValue(originalValue + (DAVA::float32)steps);
+    selectAll();
 
-	emit valueEdited();
+    emit valueEdited();
 }
 
 void DAVAFloat32SpinBox::textEditingFinished()
 {
-	// was modified
-	if(lineEdit()->isUndoAvailable())
-	{
-		QString newString = lineEdit()->text();
-		newString.replace(QChar(','), QChar('.'));
+    // was modified
+    if (lineEdit()->isUndoAvailable())
+    {
+        QString newString = lineEdit()->text();
+        newString.replace(QChar(','), QChar('.'));
 
-		// current text is different from the originalText
-		if(newString != originalString)
-		{
-			bool convertedNew = false;
-			bool convertedOrig = false;
+        // current text is different from the originalText
+        if (newString != originalString)
+        {
+            bool convertedNew = false;
+            bool convertedOrig = false;
 
-			double newValue = newString.toDouble(&convertedNew);
-			double origValue = originalString.toDouble(&convertedOrig);
+            double newValue = newString.toDouble(&convertedNew);
+            double origValue = originalString.toDouble(&convertedOrig);
 
-			// current double value is different from the original
-			if(convertedNew && convertedOrig && newValue != origValue)
-			{
-				setValue(static_cast<DAVA::float32>(newValue));
+            // current double value is different from the original
+            if (convertedNew && convertedOrig && newValue != origValue)
+            {
+                setValue(static_cast<DAVA::float32>(newValue));
 
-				emit valueEdited();
-			}
-		}
-	}
+                emit valueEdited();
+            }
+        }
+    }
 }
 
-void DAVAFloat32SpinBox::keyPressEvent(QKeyEvent *event)
+void DAVAFloat32SpinBox::keyPressEvent(QKeyEvent* event)
 {
-	switch (event->key()) 
-	{
-	case Qt::Key_Enter:
-	case Qt::Key_Return:
-		selectAll();
-		event->ignore();
-		emit editingFinished();
-		return;
+    switch (event->key())
+    {
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+        selectAll();
+        event->ignore();
+        emit editingFinished();
+        return;
 
-	default:
-		QAbstractSpinBox::keyPressEvent(event);
-	}
+    default:
+        QAbstractSpinBox::keyPressEvent(event);
+    }
 }
 
-void DAVAFloat32SpinBox::paintEvent(QPaintEvent *event)
+void DAVAFloat32SpinBox::paintEvent(QPaintEvent* event)
 {
-	QStyleOptionSpinBox opt;
-	initStyleOption(&opt);
+    QStyleOptionSpinBox opt;
+    initStyleOption(&opt);
 
-	// draw buttons disabled if they are
-	opt.stepEnabled = stepEnabled();
+    // draw buttons disabled if they are
+    opt.stepEnabled = stepEnabled();
 
-	QStylePainter p(this);
-	p.drawComplexControl(QStyle::CC_SpinBox, opt);
+    QStylePainter p(this);
+    p.drawComplexControl(QStyle::CC_SpinBox, opt);
 }
 
 QAbstractSpinBox::StepEnabled DAVAFloat32SpinBox::stepEnabled() const
 {
-	if(hasButtons)
-	{
-		return (QAbstractSpinBox::StepDownEnabled | QAbstractSpinBox::StepUpEnabled);
-	}
+    if (hasButtons)
+    {
+        return (QAbstractSpinBox::StepDownEnabled | QAbstractSpinBox::StepUpEnabled);
+    }
 
-	return QAbstractSpinBox::StepNone;
+    return QAbstractSpinBox::StepNone;
 }

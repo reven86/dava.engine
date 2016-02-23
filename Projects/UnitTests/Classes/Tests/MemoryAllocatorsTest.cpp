@@ -38,19 +38,19 @@ public:
     Vector3 direction;
     Quaternion orientation;
 
-    static void * operator new(size_t size);
-    static void operator delete(void * pointer, size_t size);
+    static void* operator new(size_t size);
+    static void operator delete(void* pointer, size_t size);
     static FixedSizePoolAllocator pool;
 };
 
 FixedSizePoolAllocator ObjectWithNDOverload::pool(sizeof(ObjectWithNDOverload), 64);
 
-void * ObjectWithNDOverload::operator new(size_t size)
+void* ObjectWithNDOverload::operator new(size_t size)
 {
     return pool.New();
 }
 
-void ObjectWithNDOverload::operator delete(void * pointer, size_t size)
+void ObjectWithNDOverload::operator delete(void* pointer, size_t size)
 {
     return pool.Delete(pointer);
 }
@@ -61,17 +61,16 @@ public:
     Vector3 position;
     Vector3 direction;
     Quaternion orientation;
-
 };
 
-DAVA_TESTCLASS(MemoryAllocatorsTest)
+DAVA_TESTCLASS (MemoryAllocatorsTest)
 {
-    DAVA_TEST(PoolAllocatorTest)
+    DAVA_TEST (PoolAllocatorTest)
     {
         // 32 bytes block, 64 elements
         FixedSizePoolAllocator pool(32, 64);
 
-        uint8 * pointers[128];
+        uint8* pointers[128];
 
         for (uint32 k = 0; k < 128; ++k)
         {
@@ -94,12 +93,13 @@ DAVA_TESTCLASS(MemoryAllocatorsTest)
         }
     }
 
-    DAVA_TEST(PoolAllocatorNewDeleteTest)
+    DAVA_TEST (PoolAllocatorNewDeleteTest)
     {
-        ObjectWithNDOverload * object1 = new ObjectWithNDOverload;
+        ObjectWithNDOverload* object1 = new ObjectWithNDOverload;
         SafeDelete(object1);
 
-        ObjectWithNDOverload * object2 = new ObjectWithNDOverload;
+        ObjectWithNDOverload* object2 = new ObjectWithNDOverload;
         SafeDelete(object2);
     }
-};
+}
+;

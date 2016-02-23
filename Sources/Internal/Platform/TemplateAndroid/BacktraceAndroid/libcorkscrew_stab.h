@@ -38,7 +38,8 @@
 ///--- begin stab from libunwind-arm.h
 ///------------------------------------------------------------------------
 //libcorkscrew definition
-typedef struct map_info {
+typedef struct map_info
+{
     struct map_info* next;
     uintptr_t start;
     uintptr_t end;
@@ -48,13 +49,15 @@ typedef struct map_info {
     char name[];
 } map_info_t;
 
-typedef struct {
+typedef struct
+{
     uintptr_t absolute_pc;
     uintptr_t stack_top;
     size_t stack_size;
 } backtrace_frame_t;
 
-typedef struct {
+typedef struct
+{
     uintptr_t relative_pc;
     uintptr_t relative_symbol_addr;
     char* map_name;
@@ -79,7 +82,7 @@ extern t_free_backtrace_symbols free_backtrace_symbols;
 
 typedef ssize_t (*t_unwind_backtrace)(backtrace_frame_t* backtrace, size_t ignore_depth, size_t max_depth);
 extern t_unwind_backtrace unwind_backtrace;
-	
+
 ///------------------------------------------------------------------------
 ///--- end stab libcorkscrew
 ///------------------------------------------------------------------------

@@ -32,7 +32,6 @@
 
 namespace DAVA
 {
-
 /**
  \brief Data chunk associated with a vegetation quad tree. 
     This data is used for visibility culling and rendering of tree leafes with proper geometry buffers.
@@ -45,14 +44,14 @@ struct VegetationSpatialData
     int16 height;
     int8 rdoIndex;
     bool isVisible;
-    
+
     Vector2 animationOffset[4];
     Vector2 animationVelocity[4];
-    
+
     AABBox3 bbox;
     float32 cameraDistance;
     uint8 clippingPlane;
-    
+
     inline VegetationSpatialData();
     inline VegetationSpatialData& operator=(const VegetationSpatialData& src);
     inline static bool IsEmpty(uint32 cellValue);
@@ -62,12 +61,18 @@ struct VegetationSpatialData
     inline bool IsElementaryCell() const;
 };
 
-inline VegetationSpatialData::VegetationSpatialData() : x(-1),
-                                    y(-1),
-                                    rdoIndex(-1),
-                                    isVisible(true),
-                                    cameraDistance(0.0f),
-                                    clippingPlane(0)
+inline VegetationSpatialData::VegetationSpatialData()
+    : x(-1)
+    ,
+    y(-1)
+    ,
+    rdoIndex(-1)
+    ,
+    isVisible(true)
+    ,
+    cameraDistance(0.0f)
+    ,
+    clippingPlane(0)
 {
 }
 
@@ -81,7 +86,7 @@ inline VegetationSpatialData& VegetationSpatialData::operator=(const VegetationS
     width = src.width;
     height = src.height;
     rdoIndex = src.rdoIndex;
-    
+
     return *this;
 }
 
@@ -110,7 +115,6 @@ bool VegetationSpatialData::IsElementaryCell() const
 {
     return (1 == width);
 }
-
 };
 
 #endif

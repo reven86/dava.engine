@@ -24,15 +24,15 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedMode,
-  FrameMode,
-  UnframeMode,
-  ConcatenateMode
+    UndefinedMode,
+    FrameMode,
+    UnframeMode,
+    ConcatenateMode
 } MontageMode;
 
 typedef struct _MontageInfo
 {
-  char
+    char
     *geometry,
     *tile,
     *title,
@@ -40,46 +40,48 @@ typedef struct _MontageInfo
     *texture,
     *font;
 
-  double
+    double
     pointsize;
 
-  size_t
+    size_t
     border_width;
 
-  MagickBooleanType
+    MagickBooleanType
     shadow;
 
-  PixelPacket
+    PixelPacket
     fill,
     stroke,
     background_color,
     border_color,
     matte_color;
 
-  GravityType
+    GravityType
     gravity;
 
-  char
+    char
     filename[MaxTextExtent];
 
-  MagickBooleanType
+    MagickBooleanType
     debug;
 
-  size_t
+    size_t
     signature;
 } MontageInfo;
 
 extern MagickExport Image
-  *MontageImages(const Image *,const MontageInfo *,ExceptionInfo *),
-  *MontageImageList(const ImageInfo *,const MontageInfo *,const Image *,
-    ExceptionInfo *);
+*
+MontageImages(const Image *, const MontageInfo *, ExceptionInfo *),
+*MontageImageList(const ImageInfo *, const MontageInfo *, const Image *,
+                  ExceptionInfo *);
 
 extern MagickExport MontageInfo
-  *CloneMontageInfo(const ImageInfo *,const MontageInfo *),
-  *DestroyMontageInfo(MontageInfo *);
+*
+CloneMontageInfo(const ImageInfo *, const MontageInfo *),
+*DestroyMontageInfo(MontageInfo *);
 
 extern MagickExport void
-  GetMontageInfo(const ImageInfo *,MontageInfo *);
+GetMontageInfo(const ImageInfo*, MontageInfo*);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

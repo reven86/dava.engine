@@ -37,19 +37,16 @@
 
 namespace DAVA
 {
-
 class JniDpiHelper
 {
 public:
-	JniDpiHelper();
-	uint32 GetScreenDPI();
+    JniDpiHelper();
+    uint32 GetScreenDPI();
 
 private:
-	JNI::JavaClass jniDpiHelper;
-	Function<jint()> getScreenDPI;
-
+    JNI::JavaClass jniDpiHelper;
+    Function<jint()> getScreenDPI;
 };
-
 };
 
 #endif //__DAVAENGINE_ANDROID__

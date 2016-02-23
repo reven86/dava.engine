@@ -35,7 +35,7 @@ FloatRangeValidator::FloatRangeValidator(float minValue, float maxValue)
     innerValidator.setRange(minValue, maxValue);
 }
 
-bool FloatRangeValidator::ValidateInternal(const QVariant &value)
+bool FloatRangeValidator::ValidateInternal(const QVariant& value)
 {
     QString validateValue = value.toString();
     int pos = 0;
@@ -44,27 +44,25 @@ bool FloatRangeValidator::ValidateInternal(const QVariant &value)
 
 void FloatRangeValidator::SetRange(float minValue, float maxValue)
 {
-	innerValidator.setRange(minValue, maxValue);
+    innerValidator.setRange(minValue, maxValue);
 }
 
 int FloatRangeValidator::GetMaximum() const
 {
-	return innerValidator.top();
+    return innerValidator.top();
 }
 
 void FloatRangeValidator::SetMaximum(float maxValue)
 {
-	innerValidator.setTop(maxValue);
+    innerValidator.setTop(maxValue);
 }
 
 int FloatRangeValidator::GetMinimum() const
 {
-	return innerValidator.bottom();
+    return innerValidator.bottom();
 }
 
 void FloatRangeValidator::SetMinimum(float minValue)
 {
     innerValidator.setBottom(minValue);
 }
-
-

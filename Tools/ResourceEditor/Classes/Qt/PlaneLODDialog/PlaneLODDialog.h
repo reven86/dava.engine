@@ -33,17 +33,18 @@
 #include "DAVAEngine.h"
 #include <QDialog>
 
-namespace Ui {
-	class QtPlaneLODDialog;
+namespace Ui
+{
+class QtPlaneLODDialog;
 }
 
-class PlaneLODDialog: public QDialog
+class PlaneLODDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath & defaultTexturePath, QWidget *parent = 0);
-	~PlaneLODDialog();
+    PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath& defaultTexturePath, QWidget* parent = 0);
+    ~PlaneLODDialog();
 
     DAVA::int32 GetSelectedLayer();
     DAVA::uint32 GetSelectedTextureSize();
@@ -56,7 +57,7 @@ private slots:
     void OnTextureSelect();
 
 private:
-	Ui::QtPlaneLODDialog *ui;
+    Ui::QtPlaneLODDialog* ui;
 
     QString texturePath;
     DAVA::int32 selectedLayer;

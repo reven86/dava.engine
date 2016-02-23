@@ -39,11 +39,10 @@
 
 class DAVAFloat32SpinBox;
 
-
 class ModificationWidget
-    : public QWidget
+: public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     enum PivotMode : uint32
@@ -53,27 +52,27 @@ public:
     };
 
     explicit ModificationWidget(QWidget* parent = nullptr);
-	~ModificationWidget();
+    ~ModificationWidget();
 
-	void SetPivotMode(PivotMode pivotMode);
-	void SetModifMode(ST_ModifMode modifMode);
+    void SetPivotMode(PivotMode pivotMode);
+    void SetModifMode(ST_ModifMode modifMode);
 
 public slots:
     void OnSnapToLandscapeChanged();
 
 private slots:
-	void OnSceneActivated(SceneEditor2 *scene);
-	void OnSceneDeactivated(SceneEditor2 *scene);
-	void OnSceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
-	void OnSceneCommand(SceneEditor2 *scene, const Command2* command, bool redo);
+    void OnSceneActivated(SceneEditor2* scene);
+    void OnSceneDeactivated(SceneEditor2* scene);
+    void OnSceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void OnSceneCommand(SceneEditor2* scene, const Command2* command, bool redo);
 
-	void OnXChanged();
-	void OnYChanged();
-	void OnZChanged();
+    void OnXChanged();
+    void OnYChanged();
+    void OnZChanged();
 
 private:
-	void ReloadValues();
-	void ApplyValues(ST_Axis axis);
+    void ReloadValues();
+    void ApplyValues(ST_Axis axis);
 
 private:
     QLabel* xLabel = nullptr;
@@ -89,41 +88,41 @@ private:
 };
 
 class DAVAFloat32SpinBox
-    : public QAbstractSpinBox
+: public QAbstractSpinBox
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit DAVAFloat32SpinBox(QWidget *parent = nullptr);
-	virtual ~DAVAFloat32SpinBox();
+    explicit DAVAFloat32SpinBox(QWidget* parent = nullptr);
+    virtual ~DAVAFloat32SpinBox();
 
-	void showButtons(bool show);
+    void showButtons(bool show);
 
-	DAVA::float32 value() const;
-	void setValue(DAVA::float32 val);
-	void stepBy(int steps) override;
+    DAVA::float32 value() const;
+    void setValue(DAVA::float32 val);
+    void stepBy(int steps) override;
 
 signals:
-	void valueEdited();
-	void valueChanged();
+    void valueEdited();
+    void valueChanged();
 
 public slots:
-	void clear() override;
+    void clear() override;
 
 protected slots:
-	void textEditingFinished();
+    void textEditingFinished();
 
 protected:
-	DAVA::float32 originalValue;
-	QString originalString;
+    DAVA::float32 originalValue;
+    QString originalString;
 
-	int precision;
-	bool hasButtons;
-	bool cleared;
+    int precision;
+    bool hasButtons;
+    bool cleared;
 
-	void keyPressEvent(QKeyEvent *event) override;
-	void paintEvent(QPaintEvent *event) override;
-	StepEnabled stepEnabled() const override;
+    void keyPressEvent(QKeyEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
+    StepEnabled stepEnabled() const override;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__MODIFICATIONWIDGET__) */

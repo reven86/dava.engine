@@ -34,15 +34,18 @@ using namespace DAVA;
 
 SnapshotListModel::SnapshotListModel(QObject* parent)
     : QAbstractListModel(parent)
-{}
+{
+}
 
 SnapshotListModel::~SnapshotListModel()
-{}
+{
+}
 
 int SnapshotListModel::rowCount(const QModelIndex& parent) const
 {
     return profileSession != nullptr ? static_cast<int>(profileSession->SnapshotCount())
-                                     : 0;
+                                       :
+                                       0;
 }
 
 QVariant SnapshotListModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -71,8 +74,8 @@ QVariant SnapshotListModel::data(const QModelIndex& index, int role) const
         {
             String filename = snapshot.FileName().GetFilename();
             return QString("%1 - %2")
-                .arg(snapshot.Timestamp() / 1000)
-                .arg(filename.c_str());
+            .arg(snapshot.Timestamp() / 1000)
+            .arg(filename.c_str());
         }
         else if (Qt::BackgroundRole == role)
         {

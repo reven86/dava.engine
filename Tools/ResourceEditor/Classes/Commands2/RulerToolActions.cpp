@@ -34,77 +34,77 @@
 #include "../Qt/Main/QtUtils.h"
 
 ActionEnableRulerTool::ActionEnableRulerTool(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_RULER_TOOL_ENABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_RULER_TOOL_ENABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionEnableRulerTool::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool enabled = sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled();
-	if (enabled)
-	{
-		return;
-	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	
-	if (!success )
-	{
-		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->rulerToolSystem->EnableLandscapeEditing();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-	}
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
+
+    bool enabled = sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled();
+    if (enabled)
+    {
+        return;
+    }
+
+    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    if (!success)
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->rulerToolSystem->EnableLandscapeEditing();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+    }
+
+    if (success &&
+        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(false);
     }
-	
-	SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
+
+    SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
 }
 
 ActionDisableRulerTool::ActionDisableRulerTool(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_RULER_TOOL_DISABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_RULER_TOOL_DISABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionDisableRulerTool::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool disabled = !sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled();
-	if (disabled)
-	{
-		return;
-	}
-	
-	disabled = sceneEditor->rulerToolSystem->DisableLandscapeEdititing();
-	if (!disabled)
-	{
-		ShowErrorDialog(ResourceEditor::RULER_TOOL_DISABLE_ERROR);
-	}
-    
-    if(disabled)
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
+
+    bool disabled = !sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled();
+    if (disabled)
+    {
+        return;
+    }
+
+    disabled = sceneEditor->rulerToolSystem->DisableLandscapeEdititing();
+    if (!disabled)
+    {
+        ShowErrorDialog(ResourceEditor::RULER_TOOL_DISABLE_ERROR);
+    }
+
+    if (disabled)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(true);
     }
-	
-	SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
+
+    SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
 }

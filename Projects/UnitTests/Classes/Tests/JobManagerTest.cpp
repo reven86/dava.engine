@@ -35,7 +35,12 @@ using namespace DAVA;
 
 struct JobManagerTestData
 {
-    JobManagerTestData() : mainThreadVar(0), testThreadVar(0), ownedMainJobsVar(-1) {}
+    JobManagerTestData()
+        : mainThreadVar(0)
+        , testThreadVar(0)
+        , ownedMainJobsVar(-1)
+    {
+    }
     uint32 mainThreadVar;
     uint32 testThreadVar;
 
@@ -45,17 +50,27 @@ struct JobManagerTestData
 class TestJobOwner : public BaseObject
 {
 public:
-    TestJobOwner(int32 * _outData) : resultData(_outData), anyData(0) {}
-    virtual ~TestJobOwner() { (*resultData) = anyData; };
+    TestJobOwner(int32* _outData)
+        : resultData(_outData)
+        , anyData(0)
+    {
+    }
+    virtual ~TestJobOwner()
+    {
+        (*resultData) = anyData;
+    };
 
-    void AnyFunction() { anyData++; };
+    void AnyFunction()
+    {
+        anyData++;
+    };
 
 protected:
-    int32 * resultData;
+    int32* resultData;
     Atomic<int32> anyData;
 };
 
-static void testCalc(uint32 *var)
+static void testCalc(uint32* var)
 {
     (*var)++;
 
@@ -72,11 +87,11 @@ static void testCalc(uint32 *var)
     }
 }
 
-DAVA_TESTCLASS(JobManagerTest)
+DAVA_TESTCLASS (JobManagerTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
-    DAVA_TEST(TestMainJobs)
+    DAVA_TEST (TestMainJobs)
     {
         JobManagerTestData testData;
 
@@ -94,15 +109,15 @@ DAVA_TESTCLASS(JobManagerTest)
         TEST_VERIFY((testData.ownedMainJobsVar == JOBS_COUNT));
     }
 
-    DAVA_TEST(TestWorkerJobs)
+    DAVA_TEST (TestWorkerJobs)
     {
         // TODO:
         // ...
     }
 
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
+    void ThreadFunc(BaseObject * bo, void* userParam, void* callerParam)
     {
-        JobManagerTestData *data = (JobManagerTestData*)userParam;
+        JobManagerTestData* data = (JobManagerTestData*)userParam;
 
         for (uint32 i = 0; i < JOBS_COUNT; i++)
         {
@@ -131,7 +146,7 @@ DAVA_TESTCLASS(JobManagerTest)
             }
         }
 
-        TestJobOwner * jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
+        TestJobOwner* jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
         for (uint32 i = 0; i < JOBS_COUNT; ++i)
         {
             JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(jobOwner), &TestJobOwner::AnyFunction));
@@ -139,4 +154,5 @@ DAVA_TESTCLASS(JobManagerTest)
         jobOwner->Release();
         JobManager::Instance()->WaitMainJobs();
     }
-};
+}
+;

@@ -36,12 +36,10 @@
 
 namespace DAVA
 {
-
 class File;
 
 namespace Net
 {
-
 /*
  This is a simple log consumer: each log message is treated as string
 */
@@ -60,7 +58,7 @@ public:
     Signal<const String&> newDataNotifier;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_LOGCONSUMER_H__
+#endif // __DAVAENGINE_LOGCONSUMER_H__

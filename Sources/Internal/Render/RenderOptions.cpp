@@ -79,10 +79,10 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 
 RenderOptions::RenderOptions()
 {
-	for(int32 i = 0; i < OPTIONS_COUNT; ++i)
-	{
-		options[i] = true;
-	}		
+    for (int32 i = 0; i < OPTIONS_COUNT; ++i)
+    {
+        options[i] = true;
+    }
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[DEBUG_ENABLE_VISIBILITY_SYSTEM] = false;
@@ -100,18 +100,17 @@ RenderOptions::RenderOptions()
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)
 {
-	return options[option];
+    return options[option];
 }
 
 void RenderOptions::SetOption(RenderOption option, bool value)
 {
-	options[option] = value;
-	NotifyObservers();
+    options[option] = value;
+    NotifyObservers();
 }
 
 FastName RenderOptions::GetOptionName(RenderOption option)
 {
     return optionsNames[option];
 }
-
 };

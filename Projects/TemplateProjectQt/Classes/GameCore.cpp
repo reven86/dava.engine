@@ -43,10 +43,8 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-
 }
 
 void GameCore::OnAppFinished()
 {
-
 }
