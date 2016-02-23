@@ -101,7 +101,8 @@ private:
     enum SettingsState
     {
         NOT_EDITED,
-        EDITED
+        EDITED,
+        EDITED_NOT_CORRECT
     };
 
     void ChangeSettingsState(SettingsState newState);

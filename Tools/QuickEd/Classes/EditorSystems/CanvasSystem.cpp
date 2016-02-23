@@ -117,7 +117,7 @@ public:
     void AdjustToNestedControl();
 
     DAVA::Signal<> ContentSizeChanged;
-    DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
+    DAVA::Signal<const DAVA::Vector2&> RootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
@@ -298,37 +298,29 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
-    systemManager->GetPackage()->AddListener(this);
-
     controlsCanvas->SetName(FastName("controls canvas"));
+    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
+    systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
 }
 
 CanvasSystem::~CanvasSystem()
 {
-    PackageNode* package = systemManager->GetPackage();
+    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
+}
+
+void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
+{
     if (nullptr != package)
     {
-        systemManager->GetPackage()->RemoveListener(this);
+        package->RemoveListener(this);
     }
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
-}
-
-void CanvasSystem::OnActivated()
-{
-    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
-    for (auto& iter : gridControls)
+    package = package_;
+    if (nullptr != package)
     {
-        iter->AdjustToNestedControl();
+        package->AddListener(this);
     }
-}
-
-void CanvasSystem::OnDeactivated()
-{
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
-    systemManager->GetScalableControl()->SetSize(Vector2());
-    systemManager->CanvasSizeChanged.Emit();
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -371,7 +363,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<DAVA::Vector2>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
