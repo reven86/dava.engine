@@ -54,7 +54,7 @@ public:
     virtual void InputCancelled(UIEvent* currentInput);
     virtual bool SystemInput(UIEvent* currentInput);
     virtual void SetSize(const Vector2& size);
-    virtual void OnDisappear() override;
+    void OnDisappear() override;
 
     // Set container relative position and enable*Scroll properties based on self and parent size
     void ApplySizeChanges();

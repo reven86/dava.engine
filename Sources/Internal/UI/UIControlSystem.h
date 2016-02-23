@@ -291,6 +291,9 @@ public:
 
     bool IsBiDiSupportEnabled() const;
     void SetBiDiSupportEnabled(bool support);
+
+    bool IsHostControl(const UIControl* control) const;
+
     UILayoutSystem* GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();

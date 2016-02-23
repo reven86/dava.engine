@@ -64,7 +64,7 @@ UIControlSystem::UIControlSystem()
     popupContainer->SetName("UIControlSystem_popupContainer");
     popupContainer->SetInputEnabled(false);
 
-    popupContainer->InvokeAppear(UIControl::eViewState::Visible);
+    popupContainer->InvokeAppear(UIControl::eViewState::VISIBLE);
 }
 
 UIControlSystem::~UIControlSystem()
@@ -122,7 +122,7 @@ void UIControlSystem::AddPopup(UIPopup* newPopup)
 
     if (newPopup->GetRect() != fullscreenRect)
     {
-        newPopup->SystemScreenSizeDidChanged(fullscreenRect);
+        newPopup->SystemScreenSizeChanged(fullscreenRect);
     }
 
     newPopup->LoadGroup();
@@ -198,7 +198,7 @@ void UIControlSystem::ProcessScreenLogic()
         {
             if (nextScreenTransitionProcessed->GetRect() != fullscreenRect)
             {
-                nextScreenTransitionProcessed->SystemScreenSizeDidChanged(fullscreenRect);
+                nextScreenTransitionProcessed->SystemScreenSizeChanged(fullscreenRect);
             }
 
             nextScreenTransitionProcessed->StartTransition();
@@ -222,7 +222,7 @@ void UIControlSystem::ProcessScreenLogic()
         {
             if (nextScreenProcessed->GetRect() != fullscreenRect)
             {
-                nextScreenProcessed->SystemScreenSizeDidChanged(fullscreenRect);
+                nextScreenProcessed->SystemScreenSizeChanged(fullscreenRect);
             }
 
             nextScreenProcessed->LoadGroup();
@@ -230,7 +230,7 @@ void UIControlSystem::ProcessScreenLogic()
         currentScreen = nextScreenProcessed;
         if (currentScreen)
         {
-            currentScreen->InvokeAppear(UIControl::eViewState::Visible);
+            currentScreen->InvokeAppear(UIControl::eViewState::VISIBLE);
         }
 
         NotifyListenersDidSwitch(currentScreen.Get());
@@ -243,7 +243,7 @@ void UIControlSystem::ProcessScreenLogic()
             LockInput();
 
             currentScreenTransition = nextScreenTransitionProcessed;
-            currentScreenTransition->InvokeAppear(UIControl::eViewState::Visible);
+            currentScreenTransition->InvokeAppear(UIControl::eViewState::VISIBLE);
         }
 
         UnlockInput();
@@ -565,12 +565,12 @@ void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
     fullscreenRect = newFullscreenRect;
 
     if (currentScreenTransition.Valid())
-        currentScreenTransition->SystemScreenSizeDidChanged(fullscreenRect);
+        currentScreenTransition->SystemScreenSizeChanged(fullscreenRect);
 
     if (currentScreen.Valid())
-        currentScreen->SystemScreenSizeDidChanged(fullscreenRect);
+        currentScreen->SystemScreenSizeChanged(fullscreenRect);
 
-    popupContainer->SystemScreenSizeDidChanged(fullscreenRect);
+    popupContainer->SystemScreenSizeChanged(fullscreenRect);
 }
 
 void UIControlSystem::SetHoveredControl(UIControl* newHovered)
@@ -702,6 +702,11 @@ bool UIControlSystem::IsBiDiSupportEnabled() const
 void UIControlSystem::SetBiDiSupportEnabled(bool support)
 {
     TextBlock::SetBiDiSupportEnabled(support);
+}
+
+bool UIControlSystem::IsHostControl(const UIControl* control) const
+{
+    return (GetScreen() == control || GetPopupContainer() == control || GetScreenTransition() == control);
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const

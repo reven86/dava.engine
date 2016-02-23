@@ -38,12 +38,9 @@ namespace DAVA
 {
 static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
 
-UILoadingScreen::UILoadingScreen()
-{
-}
-
 UILoadingScreen::~UILoadingScreen()
 {
+    DVASSERT(thread == nullptr);
 }
 
 void UILoadingScreen::SetScreenToLoad(int32 screenId)

@@ -82,7 +82,7 @@ public:
     virtual int32 GetGroupId();
     virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
 
-    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenSize);
+    virtual void SystemScreenSizeChanged(const Rect& newFullScreenSize);
 
 protected:
     virtual void LoadResources(){};

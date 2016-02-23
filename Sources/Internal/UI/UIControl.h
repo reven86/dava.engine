@@ -1086,9 +1086,9 @@ public:
 protected:
     enum class eViewState : int32
     {
-        NotInHierarhy,
-        InHierarhy,
-        Visible,
+        NOT_IN_HIERARHY,
+        IN_HIERARHY,
+        VISIBLE,
     };
 
     virtual void SystemBecomeVisible();
@@ -1103,8 +1103,8 @@ protected:
     virtual void OnAppear();
     virtual void OnDisappear();
 
-    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
-    virtual void OnScreenSizeDidChanged(const Rect& newFullScreenRect);
+    virtual void SystemScreenSizeChanged(const Rect& newFullScreenRect);
+    virtual void OnScreenSizeChanged(const Rect& newFullScreenRect);
 
     void InvokeAppear(eViewState parentViewState);
     void InvokeDisappear();
@@ -1244,7 +1244,7 @@ private:
     int32 tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
-    eViewState viewState = eViewState::NotInHierarhy;
+    eViewState viewState = eViewState::NOT_IN_HIERARHY;
 
     /* Components */
 public:

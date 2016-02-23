@@ -61,10 +61,10 @@ UIScreen::~UIScreen()
     }
 }
 
-void UIScreen::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
+void UIScreen::SystemScreenSizeChanged(const Rect& newFullScreenRect)
 {
     SetSize(newFullScreenRect.GetSize());
-    UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
+    UIControl::SystemScreenSizeChanged(newFullScreenRect);
 }
 
 void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)

@@ -38,8 +38,8 @@ namespace DAVA
 class UILoadingScreen : public UIScreen
 {
 public:
-    UILoadingScreen();
-    virtual ~UILoadingScreen();
+    UILoadingScreen() = default;
+    ~UILoadingScreen() override;
 
     virtual void SetScreenToLoad(int32 screenId);
 
