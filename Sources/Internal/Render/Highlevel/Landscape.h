@@ -221,7 +221,7 @@ protected:
             TERMINATED = 3,
         };
 
-        uint32 lastSubdivSizePow2 = 0;
+        uint32 lastSubdivLevel = 0;
         float32 lastSubdivMorph = 0.f;
         uint8 subdivisionState = CLIPPED;
         uint8 startClipPlane = 0;
@@ -231,13 +231,12 @@ protected:
     {
         uint32 offset;
         uint32 size;
-        uint32 sizePow2;
     };
 
     SubdivisionPatchInfo* GetSubdivPatch(uint32 level, uint32 x, uint32 y);
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
     void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
-    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivSizePow2, float32 lastSubdivMorph);
+    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdivLevel, float32 lastSubdivMorph);
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
     uint32 minSubdivLevelSize = 0;
@@ -315,7 +314,7 @@ protected:
     struct VertexInstancing
     {
         Vector2 position;
-        Vector2 morphDir;
+        Vector2 gluDir;
         Vector4 edgeMask;
     };
 
@@ -325,10 +324,11 @@ protected:
         float32 patchScale;
         float32 centerPixelOffset;
 
-        Vector4 lodOffset; // per edge: left, right, bottom, top
+        Vector4 nearPatchLodOffset; // per edge: left, right, bottom, top
+        Vector4 nearPatchMorph;
 
-        float32 morphBaseLod;
-        float32 morphAmount;
+        float32 patchLod;
+        float32 patchMorph;
     };
 
     struct InstanceDataBuffer
@@ -343,7 +343,7 @@ protected:
     Texture* CreateHeightTexture(Heightmap* heightmap);
 
     void DrawLandscapeInstancing();
-    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, uint32 xNegSizePow2, uint32 xPosSizePow2, uint32 yNegSizePow2, uint32 yPosSizePow2, float32 morph);
+    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, float32 patchMorph, const Vector4& nearSizePow2, const Vector4& nearMorph);
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
