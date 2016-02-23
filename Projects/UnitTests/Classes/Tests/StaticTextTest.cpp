@@ -51,7 +51,7 @@ static struct FittingTestInfo
     { TextBlock::FITTING_REDUCE, ALIGN_RIGHT, TEST_DATA },
 };
 
-DAVA_TESTCLASS(StaticTextTest)
+DAVA_TESTCLASS (StaticTextTest)
 {
     UIStaticText* staticText = nullptr;
     Font* font = nullptr;
@@ -70,7 +70,7 @@ DAVA_TESTCLASS(StaticTextTest)
         SafeRelease(font);
     }
 
-    DAVA_TEST(SplitByWords)
+    DAVA_TEST (SplitByWords)
     {
         staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
         Vector<WideString> resultStrings;
@@ -103,7 +103,7 @@ DAVA_TESTCLASS(StaticTextTest)
         TEST_VERIFY(testSuccess);
     }
 
-    DAVA_TEST(SplitBySymbols)
+    DAVA_TEST (SplitBySymbols)
     {
         staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
         Vector<WideString> resultStrings;
@@ -137,7 +137,7 @@ DAVA_TESTCLASS(StaticTextTest)
         TEST_VERIFY(testSuccess);
     }
 
-    DAVA_TEST(SplitByWordsWithNewLine)
+    DAVA_TEST (SplitByWordsWithNewLine)
     {
         staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY\nTHE DAVA CONSULTING\nLLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
         Vector<WideString> resultStrings;
@@ -172,7 +172,7 @@ DAVA_TESTCLASS(StaticTextTest)
         TEST_VERIFY(testSuccess);
     }
 
-    DAVA_TEST(SplitBySymbolsWithNewLine)
+    DAVA_TEST (SplitBySymbolsWithNewLine)
     {
         staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING,\nLLC AND\nCONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
         Vector<WideString> resultStrings;
@@ -208,7 +208,7 @@ DAVA_TESTCLASS(StaticTextTest)
         TEST_VERIFY(testSuccess);
     }
 
-    DAVA_TEST(SplitAndTrimTest)
+    DAVA_TEST (SplitAndTrimTest)
     {
         staticText->SetText(L"  THIS SOFTWARE IS   \u00A0   PROVIDED BY   \u00A0   \n  THE DAVA CONSULTING\n LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
         Vector<WideString> resultStrings;
@@ -244,10 +244,9 @@ DAVA_TESTCLASS(StaticTextTest)
         }
 
         TEST_VERIFY(testSuccess);
-
     }
 
-    DAVA_TEST(CleanLineTest)
+    DAVA_TEST (CleanLineTest)
     {
         WideString test1 = StringUtils::RemoveNonPrintable(L"THIS SOFTWARE\u00A0IS PROV\u200BIDED BY\n THE DAVA CONS\u200BULTING\n LLC");
         WideString test2 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC");
@@ -265,7 +264,7 @@ DAVA_TESTCLASS(StaticTextTest)
         TEST_VERIFY(test4 == out4);
     }
 
-    DAVA_TEST(TestFitting)
+    DAVA_TEST (TestFitting)
     {
         staticText->SetMultiline(false);
 

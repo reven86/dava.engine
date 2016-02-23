@@ -31,18 +31,20 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/SceneFileV2.h"
 
-namespace DAVA 
+namespace DAVA
 {
 DataNode::DataNode()
     : id(INVALID_ID)
     , isRuntime(false)
     , scene(nullptr)
-{ }
+{
+}
 
 DataNode::~DataNode()
-{ }
+{
+}
 
-void DataNode::SetScene(Scene * _scene)
+void DataNode::SetScene(Scene* _scene)
 {
     DVASSERT(scene == nullptr || scene == _scene);
     scene = _scene;
@@ -73,18 +75,17 @@ void DataNode::SetRuntime(bool _isRuntime)
     isRuntime = _isRuntime;
 }
 
-void DataNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void DataNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     BaseObject::LoadObject(archive);
-    id = archive->GetByteArrayAsType("#id", (uint64) 0);
+    id = archive->GetByteArrayAsType("#id", (uint64)0);
 }
 
-void DataNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void DataNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     BaseObject::SaveObject(archive);
-    
+
     DVASSERT(INVALID_ID != id);
     archive->SetByteArrayAsType("#id", id);
 }
-
 }

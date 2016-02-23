@@ -47,33 +47,33 @@ class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:
-    explicit EditorCore(QObject *parent = nullptr);
+    explicit EditorCore(QObject* parent = nullptr);
     ~EditorCore();
     MainWindow* GetMainWindow() const;
-    Project *GetProject() const;
+    Project* GetProject() const;
     void Start();
 
 private slots:
     void OnReloadSprites();
 
-    void OnProjectPathChanged(const QString &path);
+    void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
 
     void Exit();
-    void RecentMenu(QAction *);
-    
+    void RecentMenu(QAction*);
+
     void UpdateLanguage();
-   
+
     void OnRtlChanged(bool isRtl);
     void OnBiDiSupportChanged(bool support);
-    void OnGlobalStyleClassesChanged(const QString &classesStr);
+    void OnGlobalStyleClassesChanged(const QString& classesStr);
 
 private:
     void ApplyFileChanges();
     Document* GetDocument(const QString& path) const;
-    void OpenProject(const QString &path);
+    void OpenProject(const QString& path);
     bool CloseProject();
-    int CreateDocument(int index, const DAVA::RefPtr<PackageNode> &package);
+    int CreateDocument(int index, const DAVA::RefPtr<PackageNode>& package);
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
@@ -81,7 +81,7 @@ private:
     std::unique_ptr<MainWindow> mainWindow;
 };
 
-inline EditorFontSystem *GetEditorFontSystem()
+inline EditorFontSystem* GetEditorFontSystem()
 {
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
 }

@@ -257,7 +257,6 @@ void DocumentGroup::SaveAllDocuments()
         SaveDocument(document);
     }
 }
-
 void DocumentGroup::SaveCurrentDocument()
 {
     DVASSERT(nullptr != active);

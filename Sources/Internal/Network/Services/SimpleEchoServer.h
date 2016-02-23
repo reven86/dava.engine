@@ -36,7 +36,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  This is a simple echo service: each recieved packet is sent back
 */
@@ -56,14 +55,14 @@ public:
     {
         std::pair<const uint8*, size_t> item = buffers.front();
         buffers.pop_front();
-        delete [] item.first;
+        delete[] item.first;
     }
 
 private:
     Deque<std::pair<const uint8*, size_t>> buffers;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_SIMPLEECHOSERVER_H__
+#endif // __DAVAENGINE_SIMPLEECHOSERVER_H__

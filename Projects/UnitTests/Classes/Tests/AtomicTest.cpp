@@ -34,13 +34,13 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(AtomicTest)
+DAVA_TESTCLASS (AtomicTest)
 {
-    DAVA_TEST(OperationTest)
+    DAVA_TEST (OperationTest)
     {
         const int theGreatestNumber = 42;
         const int theRandomNumber = 7;
-        
+
         Atomic<char> atom_char;
         Atomic<short> atom_short;
         Atomic<int> atom_int;
@@ -107,7 +107,7 @@ DAVA_TESTCLASS(AtomicTest)
         atom_short = theRandomNumber;
         atom_int = theRandomNumber;
         atom_int64 = theRandomNumber;
-        
+
         TEST_VERIFY(atom_char.CompareAndSwap(1, 2) == false);
         TEST_VERIFY(atom_char.CompareAndSwap(theRandomNumber, theGreatestNumber));
         TEST_VERIFY(atom_char == theGreatestNumber);
@@ -122,26 +122,30 @@ DAVA_TESTCLASS(AtomicTest)
         TEST_VERIFY(atom_int64 == theGreatestNumber);
     }
 
-    DAVA_TEST(MultiThreadedEnvironmentTest)
+    DAVA_TEST (MultiThreadedEnvironmentTest)
     {
         const unsigned threadCount = std::thread::hardware_concurrency();
         const unsigned cycles = 1000000;
         const unsigned targetNumber = cycles * threadCount;
-        Atomic<unsigned> resultNumber {0U};
+        Atomic<unsigned> resultNumber{ 0U };
 
         Vector<std::thread> threads(threadCount);
         for (auto& x : threads)
         {
             x = std::thread([&]
-            { 
-                for (size_t i = 0; i < cycles; ++i)
-                {
-                    resultNumber++;
-                }
-            });
+                            {
+                                for (size_t i = 0; i < cycles; ++i)
+                                {
+                                    resultNumber++;
+                                }
+                            });
         }
 
-        for (auto& x : threads) { x.join(); }
+        for (auto& x : threads)
+        {
+            x.join();
+        }
         TEST_VERIFY(resultNumber == targetNumber);
     }
-};
+}
+;

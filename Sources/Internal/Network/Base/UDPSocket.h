@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class UDPSocket provides a UDP socket.
  UDPSocket allows to send and receive UDP datagrams.
@@ -73,7 +72,7 @@ namespace Net
 class UDPSocket : public UDPSocketTemplate<UDPSocket>
 {
 private:
-    friend UDPSocketTemplate<UDPSocket>;   // Make base class friend to allow it to call my Handle... methods
+    friend UDPSocketTemplate<UDPSocket>; // Make base class friend to allow it to call my Handle... methods
 
 public:
     using CloseHandlerType = Function<void(UDPSocket* socket)>;
@@ -102,7 +101,7 @@ private:
     SendHandlerType sendHandler;
 };
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_UDPSOCKET_H__
+#endif // __DAVAENGINE_UDPSOCKET_H__

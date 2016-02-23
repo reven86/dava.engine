@@ -44,7 +44,7 @@
 
 using namespace DAVA;
 
-Project::Project(QObject *parent)
+Project::Project(QObject* parent)
     : QObject(parent)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
@@ -58,7 +58,7 @@ Project::~Project()
     SafeRelease(legacyData);
 }
 
-bool Project::Open(const QString &path)
+bool Project::Open(const QString& path)
 {
     bool result = OpenInternal(path);
     SetIsOpen(result);
@@ -73,7 +73,7 @@ void Project::Close()
     return;
 }
 
-bool Project::OpenInternal(const QString &path)
+bool Project::OpenInternal(const QString& path)
 {
     // Attempt to create a project
     YamlParser* parser = YamlParser::Create(path.toStdString());
@@ -99,21 +99,21 @@ bool Project::OpenInternal(const QString &path)
     SetProjectPath(fileInfo.absolutePath());
     projectPath.MakeDirectoryPathname();
 
-    const auto &resFolders = FilePath::GetResourcesFolders();
-    const auto &searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
+    const auto& resFolders = FilePath::GetResourcesFolders();
+    const auto& searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
 
     if (searchIt == resFolders.end())
     {
         FilePath::AddResourcesFolder(projectPath);
     }
 
-    const YamlNode *fontNode = projectRoot->Get("font");
+    const YamlNode* fontNode = projectRoot->Get("font");
 
     // Get font node
     if (nullptr != fontNode)
     {
         // Get default font node
-        const YamlNode *defaultFontPath = fontNode->Get("DefaultFontsPath");
+        const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
         if (nullptr != defaultFontPath)
         {
             FilePath localizationFontsPath(defaultFontPath->AsString());
@@ -134,17 +134,17 @@ bool Project::OpenInternal(const QString &path)
     const YamlNode* platforms = projectRoot->Get("platforms");
     for (uint32 i = 0; i < platforms->GetCount(); i++)
     {
-        const String &platformName = platforms->GetItemKeyName(i);
+        const String& platformName = platforms->GetItemKeyName(i);
         if (platformName.empty())
             continue;
-        const YamlNode *platform = platforms->Get(platformName);
+        const YamlNode* platform = platforms->Get(platformName);
         float platformWidth = platform->Get("width")->AsFloat();
         float platformHeight = platform->Get("height")->AsFloat();
 
-        const YamlNode *screens = platform->Get("screens");
+        const YamlNode* screens = platform->Get("screens");
         for (int j = 0; j < (int32)screens->GetCount(); j++)
         {
-            const String &screenName = screens->Get(j)->AsString();
+            const String& screenName = screens->Get(j)->AsString();
             LegacyControlData::Data data;
             data.name = screenName;
             data.isAggregator = false;
@@ -153,11 +153,11 @@ bool Project::OpenInternal(const QString &path)
             legacyData->Put(key, data);
         }
 
-        const YamlNode *aggregators = platform->Get("aggregators");
+        const YamlNode* aggregators = platform->Get("aggregators");
         for (int j = 0; j < (int32)aggregators->GetCount(); j++)
         {
             String aggregatorName = aggregators->GetItemKeyName(j);
-            const YamlNode *aggregator = aggregators->Get(j);
+            const YamlNode* aggregator = aggregators->Get(j);
             float aggregatorWidth = aggregator->Get("width")->AsFloat();
             float aggregatorHeight = aggregator->Get("height")->AsFloat();
 
@@ -171,8 +171,8 @@ bool Project::OpenInternal(const QString &path)
 
         if (i == 0)
         {
-            const YamlNode *localizationPathNode = platform->Get("LocalizationPath");
-            const YamlNode *localeNode = platform->Get("Locale");
+            const YamlNode* localizationPathNode = platform->Get("LocalizationPath");
+            const YamlNode* localeNode = platform->Get("Locale");
             if (localizationPathNode && localeNode)
             {
                 FilePath localePath = localizationPathNode->AsString();
@@ -208,7 +208,7 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
     if (!FileSystem::Instance()->LockFile(projectPath.toStdString(), false))
     {
         QMessageBox::critical(qApp->activeWindow(), tr("Unable to unlock project file!"),
-            tr("Unable to unlock project file %1. Please check whether the project is opened in another QuickEd and close it, if yes.").arg(projectPath));
+                              tr("Unable to unlock project file %1. Please check whether the project is opened in another QuickEd and close it, if yes.").arg(projectPath));
         return false;
     }
 
@@ -225,11 +225,11 @@ RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
 
     if (packageLoaded)
         return builder.BuildPackage();
-    
+
     return RefPtr<PackageNode>();
 }
 
-bool Project::SavePackage(PackageNode *package)
+bool Project::SavePackage(PackageNode* package)
 {
     YamlPackageSerializer serializer;
     serializer.SerializePackage(package);

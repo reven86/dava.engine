@@ -100,9 +100,9 @@ private:
     Document* CreateDocument(const QString& path);
     void InsertDocument(Document* document, int pos);
 
-    Document *active;
+    Document* active;
     QList<Document*> documents;
-    QUndoGroup *undoGroup;
+    QUndoGroup* undoGroup;
     QSet<Document*> changedFiles;
     QList<QPointer<QTabBar>> attachedTabBars;
     QPointer<Project> project;

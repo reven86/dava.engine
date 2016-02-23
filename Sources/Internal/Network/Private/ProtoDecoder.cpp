@@ -35,7 +35,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 ProtoDecoder::ProtoDecoder()
     : totalDataSize(0)
     , accumulatedSize(0)
@@ -56,7 +55,8 @@ ProtoDecoder::eDecodeStatus ProtoDecoder::Decode(const void* buffer, size_t leng
         {
             ProtoHeader* header = reinterpret_cast<ProtoHeader*>(curFrame);
             status = TYPE_DATA == header->frameType ? ProcessDataFrame(header, result)
-                                                    : ProcessControlFrame(header, result);
+                                                      :
+                                                      ProcessControlFrame(header, result);
             curFrameSize = 0;
         }
     }
@@ -86,7 +86,7 @@ size_t ProtoDecoder::EncodeControlFrame(ProtoHeader* header, uint32 type, uint32
     header->channelId = 0;
     header->packetId = 0;
     header->totalSize = 0;
-    switch(type)
+    switch (type)
     {
     case TYPE_CHANNEL_QUERY:
     case TYPE_CHANNEL_ALLOW:
@@ -165,7 +165,8 @@ ProtoDecoder::eDecodeStatus ProtoDecoder::GatherHeader(const void* buffer, size_
         result->decodedSize += n;
 
         return curFrameSize == sizeof(ProtoHeader) ? CheckHeader(reinterpret_cast<const ProtoHeader*>(curFrame))
-                                                   : DECODE_INCOMPLETE;
+                                                     :
+                                                     DECODE_INCOMPLETE;
     }
     return DECODE_OK;
 }
@@ -182,7 +183,8 @@ ProtoDecoder::eDecodeStatus ProtoDecoder::GatherFrame(const void* buffer, size_t
         result->decodedSize += n;
 
         return curFrameSize == frameSize ? DECODE_OK
-                                         : DECODE_INCOMPLETE;
+                                           :
+                                           DECODE_INCOMPLETE;
     }
     return DECODE_OK;
 }
@@ -197,5 +199,5 @@ ProtoDecoder::eDecodeStatus ProtoDecoder::CheckHeader(const ProtoHeader* header)
     return DECODE_INVALID;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

@@ -38,7 +38,7 @@ class PackageNode;
 class ControlNode;
 class AbstractProperty;
 
-class ChangePropertyValueCommand: public QUndoCommand
+class ChangePropertyValueCommand : public QUndoCommand
 {
 public:
     ChangePropertyValueCommand(PackageNode* _root, const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash = 0, QUndoCommand* parent = nullptr);
@@ -57,11 +57,15 @@ public:
 private:
     struct PropertyActionWithOldValue
     {
-        PropertyActionWithOldValue(ControlNode *node_, AbstractProperty *property_, const DAVA::VariantType &oldValue_, const DAVA::VariantType &newValue_)
-        : node(node_), property(property_), oldValue(oldValue_), newValue(newValue_)
-        {}
-        ControlNode *node = nullptr;
-        AbstractProperty *property = nullptr;
+        PropertyActionWithOldValue(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& oldValue_, const DAVA::VariantType& newValue_)
+            : node(node_)
+            , property(property_)
+            , oldValue(oldValue_)
+            , newValue(newValue_)
+        {
+        }
+        ControlNode* node = nullptr;
+        AbstractProperty* property = nullptr;
         DAVA::VariantType oldValue;
         DAVA::VariantType newValue;
     };

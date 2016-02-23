@@ -30,101 +30,101 @@
 #include "Commands2/CommandBatch.h"
 
 CommandBatch::CommandBatch()
-	: Command2(CMDID_BATCH)
-{ }
+    : Command2(CMDID_BATCH)
+{
+}
 
 CommandBatch::~CommandBatch()
 {
-	std::vector<Command2 *>::iterator i = commandList.begin();
-	std::vector<Command2 *>::iterator end = commandList.end(); 
+    std::vector<Command2*>::iterator i = commandList.begin();
+    std::vector<Command2*>::iterator end = commandList.end();
 
-	for(; i != end; i++)
-	{
-		if(NULL != *i)
-		{
-			delete *i;
-		}
-	}
+    for (; i != end; i++)
+    {
+        if (NULL != *i)
+        {
+            delete *i;
+        }
+    }
 
-	commandList.clear();
+    commandList.clear();
 }
 
 void CommandBatch::Undo()
 {
-	std::vector<Command2 *>::reverse_iterator i = commandList.rbegin();
-	std::vector<Command2 *>::reverse_iterator end = commandList.rend(); 
+    std::vector<Command2*>::reverse_iterator i = commandList.rbegin();
+    std::vector<Command2*>::reverse_iterator end = commandList.rend();
 
-	for(; i != end; i++)
-	{
-		UndoInternalCommand(*i);
-	}
+    for (; i != end; i++)
+    {
+        UndoInternalCommand(*i);
+    }
 }
 
 void CommandBatch::Redo()
 {
-	std::vector<Command2 *>::iterator i = commandList.begin();
-	std::vector<Command2 *>::iterator end = commandList.end(); 
+    std::vector<Command2*>::iterator i = commandList.begin();
+    std::vector<Command2*>::iterator end = commandList.end();
 
-	for(; i != end; i++)
-	{
-		RedoInternalCommand(*i);
-	}
+    for (; i != end; i++)
+    {
+        RedoInternalCommand(*i);
+    }
 }
 
 DAVA::Entity* CommandBatch::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }
 
-void CommandBatch::AddAndExec(Command2 *command)
+void CommandBatch::AddAndExec(Command2* command)
 {
-	if(NULL != command)
-	{
-		commandList.push_back(command);
-		RedoInternalCommand(command);
-	}
+    if (NULL != command)
+    {
+        commandList.push_back(command);
+        RedoInternalCommand(command);
+    }
 }
 
 int CommandBatch::Size() const
 {
-	return commandList.size();
+    return commandList.size();
 }
 
-Command2 * CommandBatch::GetCommand(int index) const
+Command2* CommandBatch::GetCommand(int index) const
 {
-	if(index >= 0 && index < (int)commandList.size())
-		return commandList[index];
+    if (index >= 0 && index < (int)commandList.size())
+        return commandList[index];
 
-	return NULL;
+    return NULL;
 }
 
 void CommandBatch::Clear(int commandId)
 {
-	std::vector<Command2 *>::iterator i = commandList.begin();
+    std::vector<Command2*>::iterator i = commandList.begin();
 
-	while(i != commandList.end())
-	{
-		Command2 *command = *i;
-		if(NULL != command && command->GetId() == commandId)
-		{
-			delete command;
-			i = commandList.erase(i);
-		}
-		else
-		{
-			i++;
-		}
-	}
+    while (i != commandList.end())
+    {
+        Command2* command = *i;
+        if (NULL != command && command->GetId() == commandId)
+        {
+            delete command;
+            i = commandList.erase(i);
+        }
+        else
+        {
+            i++;
+        }
+    }
 }
 
 bool CommandBatch::ContainsCommand(int commandId) const
 {
-    for(auto command: commandList)
+    for (auto command : commandList)
     {
-        if(command->GetId() == commandId)
+        if (command->GetId() == commandId)
             return true;
     }
-    
+
     return false;
 }
-

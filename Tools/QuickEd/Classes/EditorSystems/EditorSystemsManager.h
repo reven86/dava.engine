@@ -93,9 +93,12 @@ struct MagnetLineInfo
 
 struct ChangePropertyAction
 {
-    ChangePropertyAction(ControlNode *node_, AbstractProperty *property_, const DAVA::VariantType &value_)
-    : node(node_), property(property_), value(value_)
-    { }
+    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
+        : node(node_)
+        , property(property_)
+        , value(value_)
+    {
+    }
     ControlNode* node = nullptr;
     AbstractProperty* property = nullptr;
     DAVA::VariantType value;
@@ -107,7 +110,7 @@ class PackageNode;
 
 class EditorSystemsManager : PackageListener
 {
-    using StopPredicate = std::function<bool(DAVA::UIControl*)>;
+    using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
 
 public:
@@ -138,7 +141,7 @@ public:
     DAVA::Signal<const DAVA::Vector2& /*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
-    DAVA::Signal<PackageNode */*node*/> PackageNodeChanged;
+    DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
@@ -149,7 +152,7 @@ private:
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(PackageNode *node);
+    void OnPackageNodeChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);
@@ -181,8 +184,7 @@ void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate pred
 template <class OutIt, class Predicate>
 void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const
 {
-    auto control = node->GetControl();
-    if (predicate(control))
+    if (predicate(node))
     {
         *destination++ = node;
     }
@@ -196,7 +198,5 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
         }
     }
 }
-
-extern DAVA::Vector2 RotateVector(const DAVA::Vector2& in, DAVA::float32 angle);
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

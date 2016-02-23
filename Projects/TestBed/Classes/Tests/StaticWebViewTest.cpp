@@ -34,39 +34,38 @@
 
 namespace
 {
-
 const String htmlCuteCats =
-    "<html>"
-    "  <head>"
-    "    <link rel='stylesheet' type='text/css' href='test.css'>"
-    "    <script type = 'text/javascript'>"
-    "      function doSomething() {"
-    "          var x = document.getElementById('mydiv');"
-    "          x.innerHTML += '<h3>Hello from JS</h3>';"
-    "      }"
-    "    </script>"
-    "  </head>"
-    "  <body>"
-    "      <h1>Cute cats picture</h1><br/>"
-    "      <br/>"
-    "      <img src='cute-cat-picture.jpg'/>"
-    "      <div id='mydiv'>"
-    "      </div>"
-    "  </body>"
-    "</html>";
+"<html>"
+"  <head>"
+"    <link rel='stylesheet' type='text/css' href='test.css'>"
+"    <script type = 'text/javascript'>"
+"      function doSomething() {"
+"          var x = document.getElementById('mydiv');"
+"          x.innerHTML += '<h3>Hello from JS</h3>';"
+"      }"
+"    </script>"
+"  </head>"
+"  <body>"
+"      <h1>Cute cats picture</h1><br/>"
+"      <br/>"
+"      <img src='cute-cat-picture.jpg'/>"
+"      <div id='mydiv'>"
+"      </div>"
+"  </body>"
+"</html>";
 
-const WideString htmlString = 
-    L"<html>"
-    L"  <head>"
-    L"  </head>"
-    L"  <body style='color: #d0e4fe'>"
-    L"      <h1>This is a WebView</h1>"
-    L"      <a href='http://www.turion.by'>click me</a><br/>"
-    L"      <a href='https://wargaming.net'>click me</a><br/>"
-    L"  </body>"
-    L"</html>";
+const WideString htmlString =
+L"<html>"
+L"  <head>"
+L"  </head>"
+L"  <body style='color: #d0e4fe'>"
+L"      <h1>This is a WebView</h1>"
+L"      <a href='http://www.turion.by'>click me</a><br/>"
+L"      <a href='https://wargaming.net'>click me</a><br/>"
+L"  </body>"
+L"</html>";
 
-}   // unnamed namespace
+} // unnamed namespace
 
 class MyWebViewDelegate : public IUIWebViewDelegate
 {
@@ -87,12 +86,15 @@ public:
         Logger::Debug("MyWebViewDelegate::PageLoaded");
     }
 
-    void SwipeGesture(bool left) override {}
+    void SwipeGesture(bool left) override
+    {
+    }
 };
 
 StaticWebViewTest::StaticWebViewTest()
     : BaseScreen("StaticWebViewTest")
-{}
+{
+}
 
 void StaticWebViewTest::LoadResources()
 {
@@ -119,7 +121,7 @@ void StaticWebViewTest::LoadResources()
     webView3->LoadHtmlString(htmlString);
     AddControl(webView3);
 
-    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(20);
 
@@ -139,16 +141,16 @@ void StaticWebViewTest::LoadResources()
     FilePath cpyFile = cpyDir + "test.html";
     FileSystem::Instance()->CopyFile(srcFile, cpyFile);
 
-    setStaticButton           = CreateUIButton(font, Rect(0 + 300, 510, 300, w), L"Render To Texture", &StaticWebViewTest::OnButtonSetStatic);
-    setNormalButton           = CreateUIButton(font, Rect(0 + 300 * 2, 510, 300, w), L"Normal View", &StaticWebViewTest::OnButtonSetNormal);
-    add10ToAlfaButton         = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w, 300, w), L"+10 to Alfa", &StaticWebViewTest::OnButtonAdd10ToAlfa);
-    minus10FromAlfaButton     = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w, 300, w), L"-10 to Alfa", &StaticWebViewTest::OnButtonMinus10FromAlfa);
-    checkTransparancyButton   = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w * 2, 300, w), L"set Transparent Background", &StaticWebViewTest::OnButtonCheckTransparancy);
+    setStaticButton = CreateUIButton(font, Rect(0 + 300, 510, 300, w), L"Render To Texture", &StaticWebViewTest::OnButtonSetStatic);
+    setNormalButton = CreateUIButton(font, Rect(0 + 300 * 2, 510, 300, w), L"Normal View", &StaticWebViewTest::OnButtonSetNormal);
+    add10ToAlfaButton = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w, 300, w), L"+10 to Alfa", &StaticWebViewTest::OnButtonAdd10ToAlfa);
+    minus10FromAlfaButton = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w, 300, w), L"-10 to Alfa", &StaticWebViewTest::OnButtonMinus10FromAlfa);
+    checkTransparancyButton = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w * 2, 300, w), L"set Transparent Background", &StaticWebViewTest::OnButtonCheckTransparancy);
     uncheckTransparancyButton = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w * 2, 300, w), L"unset Transparent Background", &StaticWebViewTest::OnButtonUncheckTransparancy);
-    executeJSButton           = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w * 3, 300, w), L"exec JS", &StaticWebViewTest::OnButtonExecJS);
-    loadHTMLString            = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w * 3, 300, w), L"load HTML String", &StaticWebViewTest::OnLoadHTMLString);
-    setVisibleButton          = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w * 4, 300, w), L"Show", &StaticWebViewTest::OnButtonVisible);
-    setHideButton             = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w * 4, 300, w), L"Hide", &StaticWebViewTest::OnButtonHide);
+    executeJSButton = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w * 3, 300, w), L"exec JS", &StaticWebViewTest::OnButtonExecJS);
+    loadHTMLString = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w * 3, 300, w), L"load HTML String", &StaticWebViewTest::OnLoadHTMLString);
+    setVisibleButton = CreateUIButton(font, Rect(0 + 300 * 1, 510 + w * 4, 300, w), L"Show", &StaticWebViewTest::OnButtonVisible);
+    setHideButton = CreateUIButton(font, Rect(0 + 300 * 2, 510 + w * 4, 300, w), L"Hide", &StaticWebViewTest::OnButtonHide);
 
     SafeRelease(font);
 
@@ -177,21 +179,21 @@ void StaticWebViewTest::UnloadResources()
     SafeRelease(setHideButton);
 }
 
-void StaticWebViewTest::OnButtonSetStatic(BaseObject *, void *, void *)
+void StaticWebViewTest::OnButtonSetStatic(BaseObject*, void*, void*)
 {
     webView1->SetRenderToTexture(true);
     webView2->SetRenderToTexture(true);
     webView3->SetRenderToTexture(true);
 }
 
-void StaticWebViewTest::OnButtonSetNormal(BaseObject *, void *, void *)
+void StaticWebViewTest::OnButtonSetNormal(BaseObject*, void*, void*)
 {
     webView1->SetRenderToTexture(false);
     webView2->SetRenderToTexture(false);
     webView3->SetRenderToTexture(false);
 }
 
-void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* callerData)
 {
     Sprite* spr = webView1->GetSprite();
     UIControlBackground* back = webView1->GetBackground();
@@ -204,7 +206,7 @@ void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *c
     }
 }
 
-void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject* obj, void* data, void* callerData)
 {
     Sprite* spr = webView1->GetSprite();
     UIControlBackground* back = webView1->GetBackground();
@@ -217,14 +219,14 @@ void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject *obj, void *data, voi
     }
 }
 
-void StaticWebViewTest::OnButtonCheckTransparancy(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::OnButtonCheckTransparancy(BaseObject* obj, void* data, void* callerData)
 {
     webView1->SetBackgroundTransparency(true);
     webView2->SetBackgroundTransparency(true);
     webView3->SetBackgroundTransparency(true);
 }
 
-void StaticWebViewTest::OnButtonUncheckTransparancy(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::OnButtonUncheckTransparancy(BaseObject* obj, void* data, void* callerData)
 {
     webView1->SetBackgroundTransparency(false);
     webView2->SetBackgroundTransparency(false);
@@ -247,8 +249,8 @@ UIButton* StaticWebViewTest::CreateUIButton(Font* font, const Rect& rect, const 
 void StaticWebViewTest::OnButtonExecJS(BaseObject* obj, void*, void*)
 {
     webView1->ExecuteJScript(
-            "document.body.innerHTML = \"<H1>Hi from JS!</H1>"
-            "<P>Test only test</P>\"");
+    "document.body.innerHTML = \"<H1>Hi from JS!</H1>"
+    "<P>Test only test</P>\"");
     webView2->ExecuteJScript("doSomething()");
 }
 
@@ -260,24 +262,24 @@ void StaticWebViewTest::OnLoadHTMLString(BaseObject* obj, void*, void*)
     if (switchHtml)
     {
         webView1->LoadHtmlString(
-            L"<HTML>"
-            L"   <HEAD></HEAD>"
-            L"<BODY bgcolor='#E6E6FA'>"
-            L"   <H1>Hi</H1>"
-            L"   <P>This is HTML document with explicitly set background color</P>"
-            L"</BODY>"
-            L"</HTML>");
+        L"<HTML>"
+        L"   <HEAD></HEAD>"
+        L"<BODY bgcolor='#E6E6FA'>"
+        L"   <H1>Hi</H1>"
+        L"   <P>This is HTML document with explicitly set background color</P>"
+        L"</BODY>"
+        L"</HTML>");
     }
     else
     {
         webView1->LoadHtmlString(
-            L"<HTML>"
-            L"   <HEAD></HEAD>"
-            L"<BODY text='blue'>"
-            L"   <H1>Hi</H1>"
-            L"   <P>This is HTML document with background color not set</P>"
-            L"</BODY>"
-            L"</HTML>");
+        L"<HTML>"
+        L"   <HEAD></HEAD>"
+        L"<BODY text='blue'>"
+        L"   <H1>Hi</H1>"
+        L"   <P>This is HTML document with background color not set</P>"
+        L"</BODY>"
+        L"</HTML>");
     }
     webView3->LoadHtmlString(htmlString);
 }

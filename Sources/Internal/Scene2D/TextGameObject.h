@@ -34,8 +34,8 @@
 
 namespace DAVA
 {
-    class Font;
-    class TextBlock;
+class Font;
+class TextBlock;
 /**
 	\ingroup scene2d
 	\brief represent text as game object
@@ -43,13 +43,16 @@ namespace DAVA
 class TextGameObject : public GameObject
 {
 protected:
-    ~TextGameObject(){}
-public: // from UIStaticText
-    TextGameObject(const Rect &rect);
-    TextGameObject(const Rect &rect, Font *font, const WideString &string);
+    ~TextGameObject()
+    {
+    }
 
-    void SetText(const WideString &string, const Vector2 &requestedTextRectSize = Vector2(0,0));
-    void SetFont(Font *font, bool prepareSprite = true);
+public: // from UIStaticText
+    TextGameObject(const Rect& rect);
+    TextGameObject(const Rect& rect, Font* font, const WideString& string);
+
+    void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2(0, 0));
+    void SetFont(Font* font, bool prepareSprite = true);
     void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
     void SetFittingOption(int32 fittingType);
     void SetAlign(int32 alignment);
@@ -58,7 +61,7 @@ protected:
     void PrepareSprite();
 
 protected:
-    TextBlock *textBlock;
+    TextBlock* textBlock;
 };
 };
 #endif // __TEXT_GAME_OBJECT__

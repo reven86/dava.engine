@@ -35,13 +35,12 @@
 
 namespace DAVA
 {
-	class DPIHelper
-	{
-		public:
-
-		static uint32 GetScreenDPI();
-        static float64 GetDpiScaleFactor(int32 screenId);
-        static Size2i GetScreenSize();
-	};
+class DPIHelper
+{
+public:
+    static uint32 GetScreenDPI();
+    static float64 GetDpiScaleFactor(int32 screenId);
+    static Size2i GetScreenSize();
+};
 };
 #endif // __DPIHELPER_H__

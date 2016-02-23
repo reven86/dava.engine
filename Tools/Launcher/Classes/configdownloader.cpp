@@ -35,19 +35,23 @@
 #include "applicationmanager.h"
 #include <QProcess>
 
-ConfigDownloader::ConfigDownloader(ApplicationManager * manager, QNetworkAccessManager * accessManager, QWidget *parent) :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
-    ui(new Ui::ConfigDownloader),
-    downloader(0),
+ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QNetworkAccessManager* accessManager, QWidget* parent)
+    :
+    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    ,
+    ui(new Ui::ConfigDownloader)
+    ,
+    downloader(0)
+    ,
     appManager(manager)
 {
     ui->setupUi(this);
 
     downloader = new FileDownloader(accessManager);
     connect(ui->cancelButton, SIGNAL(clicked()), downloader, SLOT(Cancel()));
-    
-    connect(downloader, SIGNAL(Finished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)),
-            this, SLOT(DownloadFinished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)));
+
+    connect(downloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
+            this, SLOT(DownloadFinished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)));
 }
 
 ConfigDownloader::~ConfigDownloader()
@@ -63,11 +67,11 @@ int ConfigDownloader::exec()
     return QDialog::exec();
 }
 
-void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr)
+void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr)
 {
-    if(errorCode)
+    if (errorCode)
     {
-        if(errorCode != QNetworkReply::OperationCanceledError)
+        if (errorCode != QNetworkReply::OperationCanceledError)
         {
             ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, errorCode, errorDescr);
         }
@@ -76,9 +80,9 @@ void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList< QPair<
     else
     {
         const QByteArray contentTypeConst("Content-Type");
-        for (QList< QPair<QByteArray, QByteArray> >::ConstIterator it = rawHeaderList.begin(); it != rawHeaderList.end(); ++it)
+        for (QList<QPair<QByteArray, QByteArray>>::ConstIterator it = rawHeaderList.begin(); it != rawHeaderList.end(); ++it)
         {
-            if((*it).first == contentTypeConst && (*it).second.left(9) != QByteArray("text/html"))
+            if ((*it).first == contentTypeConst && (*it).second.left(9) != QByteArray("text/html"))
             {
                 appManager->ParseRemoteConfigData(downloadedData);
             }

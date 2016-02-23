@@ -29,333 +29,333 @@ extern "C" {
 
 typedef enum
 {
-  UndefinedAlign,
-  LeftAlign,
-  CenterAlign,
-  RightAlign
+    UndefinedAlign,
+    LeftAlign,
+    CenterAlign,
+    RightAlign
 } AlignType;
 
 typedef enum
 {
-  UndefinedPathUnits,
-  UserSpace,
-  UserSpaceOnUse,
-  ObjectBoundingBox
+    UndefinedPathUnits,
+    UserSpace,
+    UserSpaceOnUse,
+    ObjectBoundingBox
 } ClipPathUnits;
 
 typedef enum
 {
-  UndefinedDecoration,
-  NoDecoration,
-  UnderlineDecoration,
-  OverlineDecoration,
-  LineThroughDecoration
+    UndefinedDecoration,
+    NoDecoration,
+    UnderlineDecoration,
+    OverlineDecoration,
+    LineThroughDecoration
 } DecorationType;
 
 typedef enum
 {
-  UndefinedDirection,
-  RightToLeftDirection,
-  LeftToRightDirection
+    UndefinedDirection,
+    RightToLeftDirection,
+    LeftToRightDirection
 } DirectionType;
 
 typedef enum
 {
-  UndefinedRule,
+    UndefinedRule,
 #undef EvenOddRule
-  EvenOddRule,
-  NonZeroRule
+    EvenOddRule,
+    NonZeroRule
 } FillRule;
 
 typedef enum
 {
-  UndefinedGradient,
-  LinearGradient,
-  RadialGradient
+    UndefinedGradient,
+    LinearGradient,
+    RadialGradient
 } GradientType;
 
 typedef enum
 {
-  UndefinedCap,
-  ButtCap,
-  RoundCap,
-  SquareCap
+    UndefinedCap,
+    ButtCap,
+    RoundCap,
+    SquareCap
 } LineCap;
 
 typedef enum
 {
-  UndefinedJoin,
-  MiterJoin,
-  RoundJoin,
-  BevelJoin
+    UndefinedJoin,
+    MiterJoin,
+    RoundJoin,
+    BevelJoin
 } LineJoin;
 
 typedef enum
 {
-  UndefinedMethod,
-  PointMethod,
-  ReplaceMethod,
-  FloodfillMethod,
-  FillToBorderMethod,
-  ResetMethod
+    UndefinedMethod,
+    PointMethod,
+    ReplaceMethod,
+    FloodfillMethod,
+    FillToBorderMethod,
+    ResetMethod
 } PaintMethod;
 
 typedef enum
 {
-  UndefinedPrimitive,
-  PointPrimitive,
-  LinePrimitive,
-  RectanglePrimitive,
-  RoundRectanglePrimitive,
-  ArcPrimitive,
-  EllipsePrimitive,
-  CirclePrimitive,
-  PolylinePrimitive,
-  PolygonPrimitive,
-  BezierPrimitive,
-  ColorPrimitive,
-  MattePrimitive,
-  TextPrimitive,
-  ImagePrimitive,
-  PathPrimitive
+    UndefinedPrimitive,
+    PointPrimitive,
+    LinePrimitive,
+    RectanglePrimitive,
+    RoundRectanglePrimitive,
+    ArcPrimitive,
+    EllipsePrimitive,
+    CirclePrimitive,
+    PolylinePrimitive,
+    PolygonPrimitive,
+    BezierPrimitive,
+    ColorPrimitive,
+    MattePrimitive,
+    TextPrimitive,
+    ImagePrimitive,
+    PathPrimitive
 } PrimitiveType;
 
 typedef enum
 {
-  UndefinedReference,
-  GradientReference
+    UndefinedReference,
+    GradientReference
 } ReferenceType;
 
 typedef enum
 {
-  UndefinedSpread,
-  PadSpread,
-  ReflectSpread,
-  RepeatSpread
+    UndefinedSpread,
+    PadSpread,
+    ReflectSpread,
+    RepeatSpread
 } SpreadMethod;
 
 typedef struct _PointInfo
-{ 
-  double
+{
+    double
     x,
     y;
 } PointInfo;
 
 typedef struct _StopInfo
 {
-  MagickPixelPacket
+    MagickPixelPacket
     color;
 
-  MagickRealType
+    MagickRealType
     offset;
 } StopInfo;
 
 typedef struct _GradientInfo
 {
-  GradientType
+    GradientType
     type;
 
-  RectangleInfo
+    RectangleInfo
     bounding_box;
 
-  SegmentInfo
+    SegmentInfo
     gradient_vector;
 
-  StopInfo
-    *stops;
+    StopInfo
+    * stops;
 
-  size_t
+    size_t
     number_stops;
 
-  SpreadMethod
+    SpreadMethod
     spread;
 
-  MagickBooleanType
+    MagickBooleanType
     debug;
 
-  size_t
+    size_t
     signature;
 
-  PointInfo
+    PointInfo
     center;
 
-  MagickRealType
+    MagickRealType
     radius;
 } GradientInfo;
 
 typedef struct _ElementReference
 {
-  char
-    *id;
+    char
+    * id;
 
-  ReferenceType
+    ReferenceType
     type;
 
-  GradientInfo
+    GradientInfo
     gradient;
 
-  size_t
+    size_t
     signature;
 
-  struct _ElementReference
+    struct _ElementReference
     *previous,
     *next;
 } ElementReference;
 
 typedef struct _DrawInfo
 {
-  char
+    char
     *primitive,
     *geometry;
 
-  RectangleInfo
+    RectangleInfo
     viewbox;
 
-  AffineMatrix
+    AffineMatrix
     affine;
 
-  GravityType
+    GravityType
     gravity;
 
-  PixelPacket
+    PixelPacket
     fill,
     stroke;
 
-  double
+    double
     stroke_width;
 
-  GradientInfo
+    GradientInfo
     gradient;
 
-  Image
+    Image
     *fill_pattern,
     *tile,
     *stroke_pattern;
 
-  MagickBooleanType
+    MagickBooleanType
     stroke_antialias,
     text_antialias;
 
-  FillRule
+    FillRule
     fill_rule;
 
-  LineCap
+    LineCap
     linecap;
 
-  LineJoin
+    LineJoin
     linejoin;
 
-  size_t
+    size_t
     miterlimit;
 
-  double
+    double
     dash_offset;
 
-  DecorationType
+    DecorationType
     decorate;
 
-  CompositeOperator
+    CompositeOperator
     compose;
 
-  char
-    *text;
+    char
+    * text;
 
-  size_t
+    size_t
     face;
 
-  char
+    char
     *font,
     *metrics,
     *family;
 
-  StyleType
+    StyleType
     style;
 
-  StretchType
+    StretchType
     stretch;
 
-  size_t
+    size_t
     weight;
 
-  char
-    *encoding;
+    char
+    * encoding;
 
-  double
+    double
     pointsize;
 
-  char
-    *density;
+    char
+    * density;
 
-  AlignType
+    AlignType
     align;
 
-  PixelPacket
+    PixelPacket
     undercolor,
     border_color;
 
-  char
-    *server_name;
+    char
+    * server_name;
 
-  double
-    *dash_pattern;
+    double
+    * dash_pattern;
 
-  char
-    *clip_mask;
+    char
+    * clip_mask;
 
-  SegmentInfo
+    SegmentInfo
     bounds;
 
-  ClipPathUnits
+    ClipPathUnits
     clip_units;
 
-  Quantum
+    Quantum
     opacity;
 
-  MagickBooleanType
+    MagickBooleanType
     render;
 
-  ElementReference
+    ElementReference
     element_reference;
 
-  MagickBooleanType
+    MagickBooleanType
     debug;
 
-  size_t
+    size_t
     signature;
 
-  double
+    double
     kerning,
     interword_spacing,
     interline_spacing;
 
-  DirectionType
+    DirectionType
     direction;
 } DrawInfo;
 
 typedef struct _PrimitiveInfo
 {
-  PointInfo
+    PointInfo
     point;
 
-  size_t
+    size_t
     coordinates;
 
-  PrimitiveType
+    PrimitiveType
     primitive;
 
-  PaintMethod
+    PaintMethod
     method;
 
-  char
-    *text;
+    char
+    * text;
 } PrimitiveInfo;
 
 typedef struct _TypeMetric
 {
-  PointInfo
+    PointInfo
     pixels_per_em;
 
-  double
+    double
     ascent,
     descent,
     width,
@@ -364,29 +364,30 @@ typedef struct _TypeMetric
     underline_position,
     underline_thickness;
 
-  SegmentInfo
+    SegmentInfo
     bounds;
 
-  PointInfo
+    PointInfo
     origin;
 } TypeMetric;
 
 extern MagickExport DrawInfo
-  *AcquireDrawInfo(void),
-  *CloneDrawInfo(const ImageInfo *,const DrawInfo *),
-  *DestroyDrawInfo(DrawInfo *);
+*
+AcquireDrawInfo(void),
+*CloneDrawInfo(const ImageInfo *, const DrawInfo *),
+*DestroyDrawInfo(DrawInfo *);
 
 extern MagickExport MagickBooleanType
-  DrawAffineImage(Image *,const Image *,const AffineMatrix *),
-  DrawClipPath(Image *,const DrawInfo *,const char *),
-  DrawGradientImage(Image *,const DrawInfo *),
-  DrawImage(Image *,const DrawInfo *),
-  DrawPatternPath(Image *,const DrawInfo *,const char *,Image **),
-  DrawPrimitive(Image *,const DrawInfo *,const PrimitiveInfo *);
+DrawAffineImage(Image *, const Image *, const AffineMatrix *),
+DrawClipPath(Image *, const DrawInfo *, const char *),
+DrawGradientImage(Image *, const DrawInfo *),
+DrawImage(Image *, const DrawInfo *),
+DrawPatternPath(Image *, const DrawInfo *, const char *, Image **),
+DrawPrimitive(Image *, const DrawInfo *, const PrimitiveInfo *);
 
 extern MagickExport void
-  GetAffineMatrix(AffineMatrix *),
-  GetDrawInfo(const ImageInfo *,DrawInfo *);
+GetAffineMatrix(AffineMatrix *),
+GetDrawInfo(const ImageInfo *, DrawInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

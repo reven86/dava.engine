@@ -64,13 +64,13 @@ void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject c
     }
 }
 
-DAVA_TESTCLASS(JNITest)
+DAVA_TESTCLASS (JNITest)
 {
     JNI::JavaClass jtest;
     Function<void(jint, jint, jboolean)> askJavaToCallToC;
 
     JNI::JavaClass javaNotificationProvider;
-    Function<void (jstring, jstring, jstring, jboolean)> showNotificationText;
+    Function<void(jstring, jstring, jstring, jboolean)> showNotificationText;
 
     JNITest()
         : javaNotificationProvider("com/dava/framework/JNINotificationProvider")
@@ -88,12 +88,12 @@ DAVA_TESTCLASS(JNITest)
         getObjectFromJava = jtest.GetStaticMethod<jobject>("GetObject");
     }
 
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         // try to use Java Class from !Main thread.
-        Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
+        Thread* someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
         someThread->Start();
-        while(someThread->GetState() != Thread::STATE_ENDED)
+        while (someThread->GetState() != Thread::STATE_ENDED)
         {
             JobManager::Instance()->Update();
         }
@@ -107,7 +107,7 @@ DAVA_TESTCLASS(JNITest)
         }
 
         // test calls to Java using JNITest java class
-        JNIEnv *env = JNI::GetEnv();
+        JNIEnv* env = JNI::GetEnv();
 
         // get Function as Static Method for PassString
         auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
@@ -162,7 +162,7 @@ DAVA_TESTCLASS(JNITest)
         env->DeleteLocalRef(str);
     }
 
-    DAVA_TEST(Native_Calls)
+    DAVA_TEST (Native_Calls)
     {
         // Call Java_com_dava_unittests_UnitTests_nativeCall from pure Java Activity.
 
@@ -176,7 +176,7 @@ DAVA_TESTCLASS(JNITest)
         askJavaToCallToC(1, 1024, true);
     }
 
-    void ThreadFunc(BaseObject * caller, void * callerData, void * userData)
+    void ThreadFunc(BaseObject * caller, void* callerData, void* userData)
     {
         JNI::JavaClass inThreadInitedClass("com/dava/framework/JNINotificationProvider");
 

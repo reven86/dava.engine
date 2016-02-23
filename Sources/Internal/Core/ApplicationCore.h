@@ -32,7 +32,7 @@
 
 #include "Base/BaseObject.h"
 
-namespace DAVA 
+namespace DAVA
 {
 /**
 	\ingroup core
@@ -148,38 +148,39 @@ class Thread;
 class ApplicationCore : public BaseObject
 {
 protected:
-	virtual ~ApplicationCore();
-public:
-	ApplicationCore();
+    virtual ~ApplicationCore();
 
-	/**
+public:
+    ApplicationCore();
+
+    /**
 		\brief Called when application is suspended or minimized.
 		Stops main loop.
 	 */
-	virtual void OnSuspend();
-	
-	/**
+    virtual void OnSuspend();
+
+    /**
 		\brief Called when application is resumed after suspend or minimization.
 		Resumes main loop.
 	 */
-	virtual void OnResume();
-    
+    virtual void OnResume();
+
     /**
      \brief Called after entering fullscreen.
      */
     virtual void OnEnterFullscreen();
-    
+
     /**
      \brief Called after exiting fullscreen.
      */
     virtual void OnExitFullscreen();
 
-	/**
+    /**
 		\brief Called time to time from separate thread (not main) when application is Suspended.
 	 */
-	virtual void OnBackgroundTick();
+    virtual void OnBackgroundTick();
 
-	/**
+    /**
 		\brief Called when application is going to quit.
 		Called after quit event has come from operating system. If false is returned, application will quit in normal way (all destructors are called).
 		Is true is returned, application will fast quit (no desructors are called). Fast quit is usually used to prevent crash on quit while loading transition is in progress.
@@ -187,7 +188,7 @@ public:
 
 		\returns true for fast quit, false for normal quit
 	 */
-	virtual bool OnQuit();
+    virtual bool OnQuit();
 
 protected:
     /**
@@ -278,30 +279,29 @@ protected:
 	
 #if defined(__DAVAENGINE_ANDROID__)
 protected:
-	/**
+    /**
 		\brief Should be started only when Main thread is stopped
 	 */
-	void StartBackbroundTicker(uint32 tickPeriod = 250);
-	/**
+    void StartBackbroundTicker(uint32 tickPeriod = 250);
+    /**
 		\brief Should be stopped before Main thread start
 	 */
-	void StopBackgroundTicker();
+    void StopBackgroundTicker();
 
 private:
-	void BackgroundTickerHandler(BaseObject * caller, void * callerData, void * userData);
+    void BackgroundTickerHandler(BaseObject* caller, void* callerData, void* userData);
 #endif
-    
+
 private:
-	friend class Core;
+    friend class Core;
 
 #if defined(__DAVAENGINE_ANDROID__)
 private:
-	Thread *backgroundTicker;
-	volatile bool backgroundTickerFinishing;
-	uint32 backgroundTickTimeMs;
+    Thread* backgroundTicker;
+    volatile bool backgroundTickerFinishing;
+    uint32 backgroundTickTimeMs;
 #endif
 };
-	
 };
 
 #endif

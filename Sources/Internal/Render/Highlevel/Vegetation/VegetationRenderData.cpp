@@ -36,16 +36,15 @@ VegetationRenderData::VegetationRenderData()
     : material(NULL)
 {
 }
-    
+
 VegetationRenderData::~VegetationRenderData()
 {
     SafeRelease(material);
 }
-    
+
 void VegetationRenderData::ReleaseRenderData()
 {
     vertexData.clear();
     indexData.clear();
 }
-
 }

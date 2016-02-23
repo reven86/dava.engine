@@ -27,16 +27,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #include "TestChooserScreen.h"
 
-
 TestChooserScreen::TestChooserScreen()
-    :   testForRun(nullptr)
+    : testForRun(nullptr)
 {
 }
 
 void TestChooserScreen::LoadResources()
 {
     BaseScreen::LoadResources();
-    
+
     CreateChooserUI();
 }
 
@@ -50,19 +49,19 @@ bool TestChooserScreen::IsFinished() const
     return nullptr != testForRun;
 }
 
-void TestChooserScreen::OnButtonPressed(BaseObject *obj, void *data, void *callerData)
+void TestChooserScreen::OnButtonPressed(BaseObject* obj, void* data, void* callerData)
 {
     UIButton* button = static_cast<UIButton*>(obj);
     const String& testName = button->GetName();
-    
-    for(auto *test : testChain)
+
+    for (auto* test : testChain)
     {
         if (testName == test->GetSceneName())
         {
             testForRun = test;
         }
     }
-    
+
     DVASSERT(nullptr != testForRun);
 }
 
@@ -70,8 +69,8 @@ void TestChooserScreen::CreateChooserUI()
 {
     ScopedPtr<FTFont> chooserFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
     uint32 testNumber = 0;
-    
-    for (auto *test : testChain)
+
+    for (auto* test : testChain)
     {
         ScopedPtr<UIButton> button(new UIButton());
         button->SetName(test->GetSceneName());
@@ -94,6 +93,6 @@ void TestChooserScreen::CreateChooserUI()
 
         AddControl(button);
 
-		testNumber++;
-	}
+        testNumber++;
+    }
 }

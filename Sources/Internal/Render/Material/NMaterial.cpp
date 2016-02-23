@@ -250,6 +250,11 @@ bool NMaterial::ContainsTexture(Texture* texture) const
     return false;
 }
 
+const HashMap<FastName, MaterialTextureInfo*>& NMaterial::GetLocalTextures() const
+{
+    return localTextures;
+}
+
 void NMaterial::SetFXName(const FastName& fx)
 {
     fxName = fx;
@@ -541,7 +546,7 @@ void NMaterial::InvalidateBufferBindings()
 
 void NMaterial::InvalidateTextureBindings()
 {
-    //reset existing handle?
+    // reset existing handle?
     needRebuildTextures = true;
     for (auto& child : children)
         child->InvalidateTextureBindings();
@@ -549,7 +554,8 @@ void NMaterial::InvalidateTextureBindings()
 
 void NMaterial::InvalidateRenderVariants()
 {
-    //release existing descriptor?
+    // release existing descriptor?
+    ClearLocalBuffers(); // to avoid using incorrect buffers in certain situations (e.g chaning parent)
     needRebuildVariants = true;
     for (auto& child : children)
         child->InvalidateRenderVariants();

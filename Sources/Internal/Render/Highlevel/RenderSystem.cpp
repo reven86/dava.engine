@@ -55,8 +55,8 @@ RenderSystem::RenderSystem()
     mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
 
     renderHierarchy = new QuadTree(10);
-	hierarchyInitialized = false;   
-	markedObjects.reserve(100);
+    hierarchyInitialized = false;
+    markedObjects.reserve(100);
 
     debugDrawer = new RenderHelper();
 }
@@ -67,96 +67,95 @@ RenderSystem::~RenderSystem()
     SafeRelease(drawCamera);
 
     SafeRelease(globalMaterial);
-    
-    SafeDelete(renderHierarchy);	
+
+    SafeDelete(renderHierarchy);
     SafeDelete(mainRenderPass);
 
     SafeDelete(debugDrawer);
 }
-    
 
-void RenderSystem::RenderPermanent(RenderObject * renderObject)
+void RenderSystem::RenderPermanent(RenderObject* renderObject)
 {
     DVASSERT(renderObject->GetRemoveIndex() == static_cast<uint32>(-1));
-    
-	/*on add calculate valid world bbox*/	
+
+    /*on add calculate valid world bbox*/
     renderObject->Retain();
     renderObjectArray.push_back(renderObject);
     renderObject->SetRemoveIndex((uint32)(renderObjectArray.size() - 1));
-    
-    AddRenderObject(renderObject);	
-//    uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-//    for (uint32 k = 0; k < renderBatchCount; ++k)
-//    {
-//        RenderBatch * batch = renderObject->GetRenderBatch(k);
-//        AddRenderBatch(batch);
-//    }
+
+    AddRenderObject(renderObject);
+    //    uint32 renderBatchCount = renderObject->GetRenderBatchCount();
+    //    for (uint32 k = 0; k < renderBatchCount; ++k)
+    //    {
+    //        RenderBatch * batch = renderObject->GetRenderBatch(k);
+    //        AddRenderBatch(batch);
+    //    }
 }
 
-void RenderSystem::RemoveFromRender(RenderObject * renderObject)
+void RenderSystem::RemoveFromRender(RenderObject* renderObject)
 {
     DVASSERT(renderObject->GetRemoveIndex() != static_cast<uint32>(-1));
-    
-//	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-//	for (uint32 k = 0; k < renderBatchCount; ++k)
-//	{
-//		RenderBatch * batch = renderObject->GetRenderBatch(k);
-//		RemoveRenderBatch(batch);
-//	}
 
-	FindAndRemoveExchangingWithLast(markedObjects, renderObject);
-	renderObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);	
+    //	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
+    //	for (uint32 k = 0; k < renderBatchCount; ++k)
+    //	{
+    //		RenderBatch * batch = renderObject->GetRenderBatch(k);
+    //		RemoveRenderBatch(batch);
+    //	}
 
-	RenderObject * lastRenderObject = renderObjectArray[renderObjectArray.size() - 1];
+    FindAndRemoveExchangingWithLast(markedObjects, renderObject);
+    renderObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
+
+    RenderObject* lastRenderObject = renderObjectArray[renderObjectArray.size() - 1];
     renderObjectArray[renderObject->GetRemoveIndex()] = lastRenderObject;
     renderObjectArray.pop_back();
-	lastRenderObject->SetRemoveIndex(renderObject->GetRemoveIndex());
+    lastRenderObject->SetRemoveIndex(renderObject->GetRemoveIndex());
     renderObject->SetRemoveIndex(-1);
-    
+
     RemoveRenderObject(renderObject);
 
-	renderObject->Release();
+    renderObject->Release();
 }
 
-void RenderSystem::AddRenderObject(RenderObject * renderObject)
+void RenderSystem::AddRenderObject(RenderObject* renderObject)
 {
-	renderObject->RecalculateWorldBoundingBox();						
-	renderHierarchy->AddRenderObject(renderObject);
+    renderObject->RecalculateWorldBoundingBox();
+    renderHierarchy->AddRenderObject(renderObject);
 
-	renderObject->SetRenderSystem(this);
-    
-	uint32 size = renderObject->GetRenderBatchCount();
-	for(uint32 i = 0; i < size; ++i)
-	{
-        RenderBatch *batch = renderObject->GetRenderBatch(i);
+    renderObject->SetRenderSystem(this);
+
+    uint32 size = renderObject->GetRenderBatchCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        RenderBatch* batch = renderObject->GetRenderBatch(i);
         RegisterBatch(batch);
     }
 }
 
-void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
+void RenderSystem::RemoveRenderObject(RenderObject* renderObject)
 {
-	uint32 size = renderObject->GetRenderBatchCount();
-	for(uint32 i = 0; i < size; ++i)
-	{
-        RenderBatch *batch = renderObject->GetRenderBatch(i);
+    uint32 size = renderObject->GetRenderBatchCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        RenderBatch* batch = renderObject->GetRenderBatch(i);
         UnregisterBatch(batch);
     }
 
-	renderHierarchy->RemoveRenderObject(renderObject);
-	renderObject->SetRenderSystem(0);	
+    renderHierarchy->RemoveRenderObject(renderObject);
+    renderObject->SetRenderSystem(0);
 }
-    
-void RenderSystem::RegisterBatch(RenderBatch * batch)
+
+void RenderSystem::RegisterBatch(RenderBatch* batch)
 {
     RegisterMaterial(batch->GetMaterial());
 }
-    
-void RenderSystem::UnregisterBatch(RenderBatch * batch)
+
+void RenderSystem::UnregisterBatch(RenderBatch* batch)
 {
     UnregisterMaterial(batch->GetMaterial());
 }
-    
-void RenderSystem::RegisterMaterial(NMaterial * material)
+
+void RenderSystem::RegisterMaterial(NMaterial* material)
 {
     NMaterial* topParent = nullptr;
 
@@ -172,8 +171,8 @@ void RenderSystem::RegisterMaterial(NMaterial * material)
         topParent->SetParent(globalMaterial);
     }
 }
-    
-void RenderSystem::UnregisterMaterial(NMaterial * material)
+
+void RenderSystem::UnregisterMaterial(NMaterial* material)
 {
     /*
     if (!material) return;
@@ -219,81 +218,82 @@ NMaterial* RenderSystem::GetGlobalMaterial() const
     return globalMaterial;
 }
 
-void RenderSystem::MarkForUpdate(RenderObject * renderObject)
+void RenderSystem::MarkForUpdate(RenderObject* renderObject)
 {
-	uint32 flags = renderObject->GetFlags();
-	if (flags&RenderObject::MARKED_FOR_UPDATE) return;
-	flags|=RenderObject::NEED_UPDATE;
-	if ((flags&RenderObject::CLIPPING_VISIBILITY_CRITERIA) == RenderObject::CLIPPING_VISIBILITY_CRITERIA)
-	{
-		markedObjects.push_back(renderObject);
-		flags|=RenderObject::MARKED_FOR_UPDATE;
-	}
-	renderObject->SetFlags(flags);
+    uint32 flags = renderObject->GetFlags();
+    if (flags & RenderObject::MARKED_FOR_UPDATE)
+        return;
+    flags |= RenderObject::NEED_UPDATE;
+    if ((flags & RenderObject::CLIPPING_VISIBILITY_CRITERIA) == RenderObject::CLIPPING_VISIBILITY_CRITERIA)
+    {
+        markedObjects.push_back(renderObject);
+        flags |= RenderObject::MARKED_FOR_UPDATE;
+    }
+    renderObject->SetFlags(flags);
 }
-  
-void RenderSystem::MarkForUpdate(Light * lightNode)
+
+void RenderSystem::MarkForUpdate(Light* lightNode)
 {
     movedLights.push_back(lightNode);
 }
-    
-void RenderSystem::RegisterForUpdate(IRenderUpdatable * updatable)
+
+void RenderSystem::RegisterForUpdate(IRenderUpdatable* updatable)
 {
     objectsForUpdate.push_back(updatable);
 }
-    
-void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
+
+void RenderSystem::UnregisterFromUpdate(IRenderUpdatable* updatable)
 {
     uint32 size = static_cast<uint32>(objectsForUpdate.size());
-	for(uint32 i = 0; i < size; ++i)
-	{
-		if(objectsForUpdate[i] == updatable)
-		{
-			objectsForUpdate[i] = objectsForUpdate[size - 1];
-			objectsForUpdate.pop_back();
-			return;
-		}
-	}
+    for (uint32 i = 0; i < size; ++i)
+    {
+        if (objectsForUpdate[i] == updatable)
+        {
+            objectsForUpdate[i] = objectsForUpdate[size - 1];
+            objectsForUpdate.pop_back();
+            return;
+        }
+    }
 }
-    
+
 //void RenderSystem::MarkForMaterialSort(Material * material)
 //{
 //    //for (FastNameMap<RenderLayer*>::Iterator it = renderLayersMap.Begin(); it != )
 //}
 
-    
-void RenderSystem::FindNearestLights(RenderObject * renderObject)
-{		
-    Light * nearestLight = 0;
+void RenderSystem::FindNearestLights(RenderObject* renderObject)
+{
+    Light* nearestLight = 0;
     float32 squareMinDistance = 10000000.0f;
     Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-    
+
     uint32 size = static_cast<uint32>(lights.size());
-	
-	if(1 == size)
-	{
-		nearestLight = (lights[0] && lights[0]->IsDynamic()) ? lights[0] : NULL;
-	}
-	else
-	{
-		for (uint32 k = 0; k < size; ++k)
-		{
-			Light * light = lights[k];
-			
-			if (!light->IsDynamic())continue;
-			
-			const Vector3 & lightPosition = light->GetPosition();
-			
-			float32 squareDistanceToLight = (position - lightPosition).SquareLength();
-			if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
-			{
-				squareMinDistance = squareDistanceToLight;
-				nearestLight = light;
-			}
-		}
-	}
-    
-    renderObject->SetLight(0, nearestLight);    
+
+    if (1 == size)
+    {
+        nearestLight = (lights[0] && lights[0]->IsDynamic()) ? lights[0] : NULL;
+    }
+    else
+    {
+        for (uint32 k = 0; k < size; ++k)
+        {
+            Light* light = lights[k];
+
+            if (!light->IsDynamic())
+                continue;
+
+            const Vector3& lightPosition = light->GetPosition();
+
+            float32 squareDistanceToLight = (position - lightPosition).SquareLength();
+            if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
+            {
+                squareMinDistance = squareDistanceToLight;
+                nearestLight = light;
+            }
+        }
+    }
+
+    renderObject->SetLight(0, nearestLight);
 }
 
 void RenderSystem::FindNearestLights()
@@ -304,22 +304,22 @@ void RenderSystem::FindNearestLights()
         FindNearestLights(renderObjectArray[k]);
     }
 }
-    
-void RenderSystem::AddLight(Light * light)
+
+void RenderSystem::AddLight(Light* light)
 {
     lights.push_back(SafeRetain(light));
     FindNearestLights();
 }
-    
-void RenderSystem::RemoveLight(Light * light)
+
+void RenderSystem::RemoveLight(Light* light)
 {
     FindAndRemoveExchangingWithLast(lights, light);
     FindNearestLights();
-    
+
     SafeRelease(light);
 }
 
-Vector<Light*> & RenderSystem::GetLights()
+Vector<Light*>& RenderSystem::GetLights()
 {
     return lights;
 }
@@ -331,50 +331,50 @@ void RenderSystem::SetForceUpdateLights()
 
 void RenderSystem::Update(float32 timeElapsed)
 {
-	if (!hierarchyInitialized)
-	{
-		renderHierarchy->Initialize();
-		hierarchyInitialized = true;
-	}		
-	
+    if (!hierarchyInitialized)
+    {
+        renderHierarchy->Initialize();
+        hierarchyInitialized = true;
+    }
+
     int32 objectBoxesUpdated = 0;
     Vector<RenderObject*>::iterator end = markedObjects.end();
     for (Vector<RenderObject*>::iterator it = markedObjects.begin(); it != end; ++it)
     {
-        RenderObject * obj = *it;
-		
-		obj->RecalculateWorldBoundingBox();
-		
-		FindNearestLights(obj);
-		if (obj->GetTreeNodeIndex()!=INVALID_TREE_NODE_INDEX)
-			renderHierarchy->ObjectUpdated(obj);
-		
-		obj->RemoveFlag(RenderObject::NEED_UPDATE | RenderObject::MARKED_FOR_UPDATE);
+        RenderObject* obj = *it;
+
+        obj->RecalculateWorldBoundingBox();
+
+        FindNearestLights(obj);
+        if (obj->GetTreeNodeIndex() != INVALID_TREE_NODE_INDEX)
+            renderHierarchy->ObjectUpdated(obj);
+
+        obj->RemoveFlag(RenderObject::NEED_UPDATE | RenderObject::MARKED_FOR_UPDATE);
         objectBoxesUpdated++;
     }
     markedObjects.clear();
 
-	renderHierarchy->Update();
-	
+    renderHierarchy->Update();
+
     if (movedLights.size() > 0 || forceUpdateLights)
     {
         FindNearestLights();
-        
+
         forceUpdateLights = false;
-		movedLights.clear();
+        movedLights.clear();
     }
-    
-	uint32 size = static_cast<uint32>(objectsForUpdate.size());
-	for(uint32 i = 0; i < size; ++i)
-	{
+
+    uint32 size = static_cast<uint32>(objectsForUpdate.size());
+    for (uint32 i = 0; i < size; ++i)
+    {
         objectsForUpdate[i]->RenderUpdate(mainCamera, timeElapsed);
-    }	    
+    }
 }
 
 void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 {
-	if (renderHierarchy)
-		renderHierarchy->DebugDraw(cameraMatrix);
+    if (renderHierarchy)
+        renderHierarchy->DebugDraw(cameraMatrix);
 }
 
 void RenderSystem::Render()
@@ -383,5 +383,4 @@ void RenderSystem::Render()
 
     mainRenderPass->Draw(this);
 }
-
 };

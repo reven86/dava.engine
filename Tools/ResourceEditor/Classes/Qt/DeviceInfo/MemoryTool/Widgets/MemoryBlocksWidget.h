@@ -104,4 +104,4 @@ private:
     DAVA::Vector<BlockGroup> groups;
 };
 
-#endif  // __MEMORYTOOL_MEMORYBLOCKSWIDGET_H__
+#endif // __MEMORYTOOL_MEMORYBLOCKSWIDGET_H__

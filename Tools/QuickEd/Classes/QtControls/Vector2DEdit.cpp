@@ -33,16 +33,16 @@
 #include <QLineEdit>
 #include <QValidator>
 
-Vector2DEdit::Vector2DEdit(QWidget *parent)
+Vector2DEdit::Vector2DEdit(QWidget* parent)
     : QWidget(parent)
     , editX(NULL)
     , editY(NULL)
 {
-    QHBoxLayout *horizontalLayout = new QHBoxLayout(this);
+    QHBoxLayout* horizontalLayout = new QHBoxLayout(this);
     horizontalLayout->setSpacing(1);
     horizontalLayout->setContentsMargins(0, 0, 0, 0);
     horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-    QLabel * label1 = new QLabel(this);
+    QLabel* label1 = new QLabel(this);
     label1->setText("[");
 
     horizontalLayout->addWidget(label1);
@@ -52,7 +52,7 @@ Vector2DEdit::Vector2DEdit(QWidget *parent)
     editX->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
     horizontalLayout->addWidget(editX);
 
-    QLabel * label2 = new QLabel(this);
+    QLabel* label2 = new QLabel(this);
     label2->setText(",");
 
     horizontalLayout->addWidget(label2);
@@ -62,7 +62,7 @@ Vector2DEdit::Vector2DEdit(QWidget *parent)
     editY->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
     horizontalLayout->addWidget(editY);
 
-    QLabel * label3 = new QLabel(this);
+    QLabel* label3 = new QLabel(this);
     label3->setText("]");
 
     horizontalLayout->addWidget(label3);
@@ -79,10 +79,10 @@ Vector2DEdit::~Vector2DEdit()
 
 QVector2D Vector2DEdit::vector2D() const
 {
-    return QVector2D(editX->text().toDouble(), editY->text().toDouble() );
+    return QVector2D(editX->text().toDouble(), editY->text().toDouble());
 }
 
-void Vector2DEdit::setVector2D(const QVector2D &newValue)
+void Vector2DEdit::setVector2D(const QVector2D& newValue)
 {
     if (signalsBlocked())
     {

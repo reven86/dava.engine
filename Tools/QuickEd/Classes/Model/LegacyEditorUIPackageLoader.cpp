@@ -50,11 +50,11 @@ const FastName UIPACKAGELOADER_PROPERTY_NAME_SIZE("size");
 const FastName UIPACKAGELOADER_PROPERTY_NAME_TEXT_USE_RTL_ALIGN("textUseRtlAlign");
 }
 
-LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
+LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData* data)
     : legacyData(SafeRetain(data))
 {
     // for legacy loading
-    
+
     // UIButton bg
     propertyNamesMap["UIButton"]["sprite"] = "stateSprite";
     propertyNamesMap["UIButton"]["drawType"] = "stateDrawType";
@@ -81,7 +81,7 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data
 
     baseClasses["UIButton"] = "UIControl";
     baseClasses["UIListCell"] = "UIButton";
-    
+
     legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
     legacyAlignsMap["leftAnchor"] = "leftAlign";
     legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
@@ -94,7 +94,6 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data
     legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
     legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
     legacyAlignsMap["bottomAnchor"] = "bottomAlign";
-
 }
 
 LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
@@ -102,74 +101,74 @@ LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
     SafeRelease(legacyData);
 }
 
-bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder)
+bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath& packagePath, AbstractUIPackageBuilder* builder)
 {
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
 
     if (parser.Get() == NULL)
         return NULL;
-    
-    YamlNode *rootNode = parser->GetRootNode();
-    if (!rootNode)//empty yaml equal to empty UIPackage
+
+    YamlNode* rootNode = parser->GetRootNode();
+    if (!rootNode) //empty yaml equal to empty UIPackage
     {
         builder->BeginPackage(packagePath);
         builder->EndPackage();
         return true;
     }
-    
+
     builder->BeginPackage(packagePath);
-    
-    UIControl *legacyControl = builder->BeginControlWithClass("UIControl");
+
+    UIControl* legacyControl = builder->BeginControlWithClass("UIControl");
     builder->BeginControlPropertiesSection("UIControl");
-    const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
+    const LegacyControlData::Data* data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
-        legacyControl->SetName(data->name);
+        legacyControl->SetName(FastName(data->name));
         builder->ProcessProperty(legacyControl->TypeInfo()->Member(UIPACKAGELOADER_PROPERTY_NAME_SIZE), VariantType(data->size));
     }
     else
     {
-        legacyControl->SetName("LegacyControl");
+        legacyControl->SetName(FastName("LegacyControl"));
     }
     builder->EndControlPropertiesSection();
 
-    const YamlNode *childrenNode = rootNode->Get("children");
+    const YamlNode* childrenNode = rootNode->Get("children");
     if (!childrenNode)
         childrenNode = rootNode;
 
     for (int32 i = 0; i < (int)childrenNode->GetCount(); i++)
     {
-        const YamlNode *childNode = childrenNode->Get(i);
+        const YamlNode* childNode = childrenNode->Get(i);
         if (childNode->Get("type"))
         {
             String name = childrenNode->GetItemKeyName(i);
             LoadControl(name, childNode, builder);
         }
     }
-    
+
     builder->EndControl(true);
-    
+
     builder->EndPackage();
-    
+
     return true;
 }
 
-bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/, DAVA::AbstractUIPackageBuilder *builder)
+bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String& /*name*/, DAVA::AbstractUIPackageBuilder* builder)
 {
     DVASSERT(false);
     return false;
 }
 
-void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
+void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String& name, const YamlNode* node, DAVA::AbstractUIPackageBuilder* builder)
 {
     UIControl* control = nullptr;
-    const YamlNode *type = node->Get("type");
-    const YamlNode *baseType = node->Get("baseType");
+    const YamlNode* type = node->Get("type");
+    const YamlNode* baseType = node->Get("baseType");
     bool loadChildren = true;
     if (type->AsString() == "UIAggregatorControl")
     {
         loadChildren = false;
-        const YamlNode *pathNode = node->Get("aggregatorPath");
+        const YamlNode* pathNode = node->Get("aggregatorPath");
         String aggregatorName = "";
         String packagPath(pathNode->AsString());
         bool result = builder->ProcessImportedPackage(packagPath, this);
@@ -188,11 +187,10 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
     else
         control = builder->BeginControlWithClass(type->AsString());
-    
 
     if (control)
     {
-        control->SetName(name);
+        control->SetName(FastName(name));
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
         LoadInternalControlPropertiesFromYamlNode(control, node, builder);
@@ -201,12 +199,12 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         // load children
         if (loadChildren)
         {
-            const YamlNode * childrenNode = node->Get("children");
+            const YamlNode* childrenNode = node->Get("children");
             if (childrenNode == nullptr)
                 childrenNode = node;
             for (uint32 i = 0; i < childrenNode->GetCount(); ++i)
             {
-                const YamlNode *childNode = childrenNode->Get(i);
+                const YamlNode* childNode = childrenNode->Get(i);
                 if (childNode->Get("type"))
                 {
                     String name = childrenNode->GetItemKeyName(i);
@@ -214,52 +212,52 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
                 }
             }
         }
-        
+
         control->LoadFromYamlNodeCompleted();
     }
     builder->EndControl(false);
 }
 
-void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
+void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, DAVA::AbstractUIPackageBuilder* builder)
 {
-    const InspInfo *baseInfo = typeInfo->BaseInfo();
+    const InspInfo* baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
-    
-	builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
+
+    builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
 
     String className = control->GetClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
-        const InspMember *member = typeInfo->Member(i);
-        
+        const InspMember* member = typeInfo->Member(i);
+
         String oldPropertyName = GetOldPropertyName(className, member->Name().c_str());
-        
+
         VariantType res;
         if (node)
             res = ReadVariantTypeFromYamlNode(member, node, -1, oldPropertyName);
-        
+
         builder->ProcessProperty(member, res);
     }
     builder->EndControlPropertiesSection();
 }
 
-void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
+void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const YamlNode* node, DAVA::AbstractUIPackageBuilder* builder)
 {
     String className = control->GetClassName();
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
-        UIControlBackground *bg = builder->BeginBgPropertiesSection(i, true);
+        UIControlBackground* bg = builder->BeginBgPropertiesSection(i, true);
         if (bg)
         {
-            const InspInfo *insp = bg->GetTypeInfo();
+            const InspInfo* insp = bg->GetTypeInfo();
             String bgName = control->GetBackgroundComponentName(i);
-            
+
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
-                const InspMember *member = insp->Member(j);
+                const InspMember* member = insp->Member(j);
                 int32 subNodeIndex = -1;
-                
+
                 String memberName = GetOldPropertyName(className, member->Name().c_str());
                 if (memberName == "stateSprite")
                 {
@@ -276,7 +274,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
                     subNodeIndex = 2;
                     memberName = "stateSprite";
                 }
-                
+
                 memberName = GetOldBgPrefix(className, bgName) + memberName + GetOldBgPostfix(className, bgName);
 
                 if (memberName == "minperPixelAccuracy")
@@ -287,7 +285,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
                 {
                     memberName = "maxpixelAccuracy";
                 }
-                
+
                 VariantType res = ReadVariantTypeFromYamlNode(member, node, subNodeIndex, memberName);
                 builder->ProcessProperty(member, res);
             }
@@ -296,20 +294,20 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
     }
 }
 
-void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
+void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl* control, const YamlNode* node, DAVA::AbstractUIPackageBuilder* builder)
 {
     String className = control->GetClassName();
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
-        UIControl *internalControl = builder->BeginInternalControlSection(i, true);
+        UIControl* internalControl = builder->BeginInternalControlSection(i, true);
         if (internalControl)
         {
-            const InspInfo *insp = internalControl->GetTypeInfo();
+            const InspInfo* insp = internalControl->GetTypeInfo();
             String internalControlName = control->GetInternalControlName(i);
-            
+
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
-                const InspMember *member = insp->Member(j);
+                const InspMember* member = insp->Member(j);
                 String memberName = member->Name().c_str();
                 memberName = GetOldPropertyName(className, memberName);
                 memberName = GetOldBgPrefix(className, internalControlName) + memberName + GetOldBgPostfix(className, internalControlName);
@@ -321,10 +319,10 @@ void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UICo
     }
 }
 
-void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
+void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     bool hasAnchorProperties = false;
-    for (const auto &it : legacyAlignsMap)
+    for (const auto& it : legacyAlignsMap)
     {
         if (node->Get(it.second))
         {
@@ -332,16 +330,16 @@ void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl *control, const 
             break;
         }
     }
-    
+
     if (hasAnchorProperties)
     {
-        UIComponent *component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
+        UIComponent* component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
         if (component)
         {
-            const InspInfo *insp = component->GetTypeInfo();
+            const InspInfo* insp = component->GetTypeInfo();
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
-                const InspMember *member = insp->Member(j);
+                const InspMember* member = insp->Member(j);
                 String name = legacyAlignsMap[String(member->Name().c_str())];
                 VariantType res = ReadVariantTypeFromYamlNode(member, node, -1, name);
                 if (name.find("Enabled") != String::npos)
@@ -355,19 +353,19 @@ void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl *control, const 
                 builder->ProcessProperty(member, res);
             }
         }
-        
+
         builder->EndComponentPropertiesSection();
     }
 }
 
-VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, int32 subNodeIndex, const String &propertyName)
+VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, int32 subNodeIndex, const String& propertyName)
 {
-    const YamlNode *valueNode = node->Get(propertyName);
+    const YamlNode* valueNode = node->Get(propertyName);
     if (valueNode)
     {
         if (subNodeIndex != -1)
             valueNode = valueNode->Get(subNodeIndex);
-        
+
         if (member->Desc().type == InspDesc::T_ENUM)
         {
             int32 val = 0;
@@ -397,7 +395,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                             DVVERIFY(FindAndReplace(multilineBySymbolProperty, "Multiline", "MultilineBySymbol"));
                         }
 
-                        const YamlNode *bySymbolNode = node->Get(multilineBySymbolProperty);
+                        const YamlNode* bySymbolNode = node->Get(multilineBySymbolProperty);
                         if (bySymbolNode && bySymbolNode->AsBool())
                             return VariantType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
                         else
@@ -425,7 +423,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                 int32 val = 0;
                 for (uint32 i = 0; i < valueNode->GetCount(); i++)
                 {
-                    const YamlNode *flagNode = valueNode->Get(i);
+                    const YamlNode* flagNode = valueNode->Get(i);
                     int32 flag = 0;
                     if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
                     {
@@ -436,7 +434,9 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                         DVASSERT_MSG(false, Format("No convertion from string to flag value."
                                                    "\n Yaml property name: \"%s\""
                                                    "\n Introspection property name: \"%s\""
-                                                   "\n String value: \"%s\"", propertyName.c_str(), member->Name().c_str(), flagNode->AsString().c_str()).c_str());
+                                                   "\n String value: \"%s\"",
+                                                   propertyName.c_str(), member->Name().c_str(), flagNode->AsString().c_str())
+                                            .c_str());
                     }
                 }
                 return VariantType(val);
@@ -448,8 +448,8 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
         }
         else if (propertyName == "pivot")
         {
-            const YamlNode *sizeNode = node->Get("size");
-            const YamlNode *rectNode = node->Get("rect");
+            const YamlNode* sizeNode = node->Get("size");
+            const YamlNode* rectNode = node->Get("rect");
             DVASSERT(sizeNode || rectNode);
 
             Vector2 size = sizeNode ? sizeNode->AsVector2() : rectNode->AsRect().GetSize();
@@ -483,7 +483,9 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
 
         DVASSERT_MSG(false, Format("No legacy convertion for property."
                                    "\n Yaml property name: \"%s\""
-                                   "\n Introspection property name: \"%s\"", propertyName.c_str(), member->Name().c_str()).c_str());
+                                   "\n Introspection property name: \"%s\"",
+                                   propertyName.c_str(), member->Name().c_str())
+                            .c_str());
     }
     else
     {
@@ -500,31 +502,29 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     return VariantType(valueNode->AsRect().GetSize());
             }
         }
-        
     }
     return VariantType();
 }
 
-
-String LegacyEditorUIPackageLoader::GetOldPropertyName(const String &controlClassName, const String &name) const
+String LegacyEditorUIPackageLoader::GetOldPropertyName(const String& controlClassName, const String& name) const
 {
     auto mapIt = propertyNamesMap.find(controlClassName);
     if (mapIt != propertyNamesMap.end())
     {
-        const Map<String, String> &map = mapIt->second;
+        const Map<String, String>& map = mapIt->second;
         auto it = map.find(name);
         if (it != map.end())
             return it->second;
     }
-    
+
     auto baseIt = baseClasses.find(controlClassName);
     if (baseIt != baseClasses.end())
         return GetOldPropertyName(baseIt->second, name);
-    
+
     return name;
 }
 
-String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String &controlClassName, const String &name) const
+String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String& controlClassName, const String& name) const
 {
     if (controlClassName == "UISlider" && name != "Background")
         return name;
@@ -532,7 +532,7 @@ String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String &controlClassNam
         return "";
 }
 
-String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String &controlClassName, const String &name) const
+String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String& controlClassName, const String& name) const
 {
     if (controlClassName == "UIButton")
         return name;

@@ -110,6 +110,11 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    connect(spritesPacker.get(), &SpritesPacker::Finished, []()
+            {
+                Sprite::ReloadSprites();
+            });
 }
 
 EditorCore::~EditorCore() = default;
@@ -150,7 +155,7 @@ void EditorCore::OnGLWidgedInitialized()
     }
 }
 
-void EditorCore::OnProjectPathChanged(const QString &projectPath)
+void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
@@ -169,7 +174,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
-        const QFileInfo &fileInfo = it.fileInfo();
+        const QFileInfo& fileInfo = it.fileInfo();
         it.next();
         if (fileInfo.isDir())
         {
@@ -185,6 +190,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     }
 }
 
+        .arg(document->GetPackageFilePath().GetBasename().c_str()),
 
 void EditorCore::Exit()
 {
@@ -194,7 +200,7 @@ void EditorCore::Exit()
     }
 }
 
-void EditorCore::RecentMenu(QAction *recentProjectAction)
+void EditorCore::RecentMenu(QAction* recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
 
@@ -235,13 +241,13 @@ void EditorCore::OnBiDiSupportChanged(bool support)
     }
 }
 
-void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
+void EditorCore::OnGlobalStyleClassesChanged(const QString& classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
 
     UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
-    for (String &token : tokens)
+    for (String& token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 
     for (auto& document : documentGroup->GetDocuments())
@@ -251,7 +257,7 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
     }
 }
 
-void EditorCore::OpenProject(const QString &path)
+void EditorCore::OpenProject(const QString& path)
 {
     if (!CloseProject())
     {

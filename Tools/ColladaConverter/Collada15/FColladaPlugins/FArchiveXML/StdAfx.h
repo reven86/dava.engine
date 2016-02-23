@@ -25,4 +25,3 @@ using namespace FUDaeWriter;
 #include "FAXStructures.h"
 
 #endif // _STD_AFX_PCH_H_
-

@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 ShadowVolume::ShadowVolume()
 {
 }
@@ -44,5 +43,4 @@ ShadowVolume::ShadowVolume()
 ShadowVolume::~ShadowVolume()
 {
 }
-
 };

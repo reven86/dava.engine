@@ -28,4 +28,3 @@
 
 
 #include "Base/BaseMath.h"
-

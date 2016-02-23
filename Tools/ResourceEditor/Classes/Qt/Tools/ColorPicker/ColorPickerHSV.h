@@ -34,12 +34,11 @@
 
 #include "AbstractColorPicker.h"
 
-
 class PaletteHSV;
 class GradientSlider;
 
 class ColorPickerHSV
-    : public AbstractColorPicker
+: public AbstractColorPicker
 {
     Q_OBJECT
 

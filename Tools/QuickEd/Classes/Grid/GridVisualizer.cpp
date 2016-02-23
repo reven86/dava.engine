@@ -31,14 +31,14 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 using namespace DAVA;
 // Construction/destruction.
-GridVisualizer::GridVisualizer() :
+GridVisualizer::GridVisualizer()
+    :
     curScale(0.0f)
 {
 }
 
 GridVisualizer::~GridVisualizer()
 {
-
 }
 
 void GridVisualizer::SetScale(float32 scale)

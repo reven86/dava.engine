@@ -35,29 +35,27 @@
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesTreeItemDelegate.h"
 
-StringPropertyDelegate::StringPropertyDelegate(PropertiesTreeItemDelegate *delegate)
+StringPropertyDelegate::StringPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
-
 }
 
 StringPropertyDelegate::~StringPropertyDelegate()
 {
-
 }
 
 QWidget* StringPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    QLineEdit *lineEdit = new QLineEdit(parent);
+    QLineEdit* lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
 
     return lineEdit;
 }
 
-void StringPropertyDelegate::setEditorData( QWidget *rawEditor, const QModelIndex & index ) const 
+void StringPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& index) const
 {
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
+    QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
     QString stringValue;
@@ -74,12 +72,12 @@ void StringPropertyDelegate::setEditorData( QWidget *rawEditor, const QModelInde
     editor->blockSignals(false);
 }
 
-bool StringPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index ) const 
+bool StringPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
+    QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
 
@@ -100,11 +98,11 @@ bool StringPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemMod
 
 void StringPropertyDelegate::OnEditingFinished()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
+    QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
     if (!lineEdit)
         return;
 
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     if (!editor)
         return;
 

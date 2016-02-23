@@ -31,42 +31,33 @@
 #include "Scene3D/SkeletonNode.h"
 #include "Render/RenderHelper.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-BoneNode::BoneNode(SkeletonNode * owner)
-	: Entity()
+BoneNode::BoneNode(SkeletonNode* owner)
+    : Entity()
 {
-	
-	
 }
 
 BoneNode::~BoneNode()
 {
-
-	
 }
-	
+
 void BoneNode::Draw()
 {
-	Entity::Draw();
+    Entity::Draw();
 
-//	glPushMatrix();
-//	glMultMatrixf(worldTransform.data);
-//	
-//	glDisable(GL_LIGHTING);
-//	glColor4f(0.984375, 0.078125, 0.64453125, 1.0f);
-//		//glutWireCube(0.5f);
-//		
-//	AABBox box(Vector3(0.0f, 0.0f, 0.0f), 1.0f);
-//	RenderHelper::DrawBox(box);
-//	
-//	glEnable(GL_LIGHTING);
-//	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-//	glPopMatrix();
+    //	glPushMatrix();
+    //	glMultMatrixf(worldTransform.data);
+    //
+    //	glDisable(GL_LIGHTING);
+    //	glColor4f(0.984375, 0.078125, 0.64453125, 1.0f);
+    //		//glutWireCube(0.5f);
+    //
+    //	AABBox box(Vector3(0.0f, 0.0f, 0.0f), 1.0f);
+    //	RenderHelper::DrawBox(box);
+    //
+    //	glEnable(GL_LIGHTING);
+    //	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    //	glPopMatrix();
 }
-	
-
-
-
 }

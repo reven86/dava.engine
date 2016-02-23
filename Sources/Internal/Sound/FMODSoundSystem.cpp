@@ -54,11 +54,10 @@
 
 namespace DAVA
 {
-    
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char * name, int unicode, unsigned int * filesize, void ** handle, void ** userdata);
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void * handle, void * buffer, unsigned int sizebytes, unsigned int * bytesread, void * userdata);
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void * handle, unsigned int pos, void * userdata);
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userdata);
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char* name, int unicode, unsigned int* filesize, void** handle, void** userdata);
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void* handle, void* buffer, unsigned int sizebytes, unsigned int* bytesread, void* userdata);
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void* handle, unsigned int pos, void* userdata);
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void* handle, void* userdata);
 
 namespace
 {
@@ -78,9 +77,9 @@ void F_CALLBACK fmod_tracking_free(void* ptr, FMOD_MEMORY_TYPE /*type*/, const c
 {
     MemoryManager::Instance()->Deallocate(ptr);
 }
-#endif  // DAVA_MEMORY_PROFILING_ENABLE
+#endif // DAVA_MEMORY_PROFILING_ENABLE
 
-}   // unnamed namespace
+} // unnamed namespace
 
 static_assert(sizeof(FMOD_VECTOR) == sizeof(Vector3), "Sizes of FMOD_VECTOR and Vector3 are mismatch");
 
@@ -88,7 +87,7 @@ static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
 Mutex SoundSystem::soundGroupsMutex;
-    
+
 SoundSystem::SoundSystem()
 {
     SetDebugMode(false);
@@ -97,23 +96,23 @@ SoundSystem::SoundSystem()
     FMOD::Memory_Initialize(nullptr, 0, &fmod_tracking_alloc, &fmod_tracking_realloc, &fmod_tracking_free);
 #endif
 
-    void * extraDriverData = 0;
+    void* extraDriverData = 0;
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPHONE_EXTRADRIVERDATA iphoneDriverData;
     Memset(&iphoneDriverData, 0, sizeof(FMOD_IPHONE_EXTRADRIVERDATA));
-    
+
     iphoneDriverData.sessionCategory = FMOD_IPHONE_SESSIONCATEGORY_AMBIENTSOUND;
-    
+
     extraDriverData = &iphoneDriverData;
 #endif
-    
-	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
-	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
+
+    FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
+    FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
 #ifdef __DAVAENGINE_ANDROID__
-	FMOD_VERIFY(fmodSystem->setOutput(FMOD_OUTPUTTYPE_AUDIOTRACK));
+    FMOD_VERIFY(fmodSystem->setOutput(FMOD_OUTPUTTYPE_AUDIOTRACK));
 #endif
     FMOD_VERIFY(fmodSystem->setSoftwareChannels(MAX_SOUND_CHANNELS));
-    
+
     FMOD_INITFLAGS initFlags = FMOD_INIT_NORMAL;
 #ifdef DAVA_FMOD_PROFILE
     initFlags |= FMOD_INIT_ENABLE_PROFILE;
@@ -131,7 +130,7 @@ SoundSystem::SoundSystem()
 
     if (fmodEventSystem)
     {
-        FMOD::EventCategory * masterCategory = nullptr;
+        FMOD::EventCategory* masterCategory = nullptr;
         FMOD_VERIFY(fmodEventSystem->getCategory("master", &masterCategory));
         FMOD_VERIFY(masterCategory->getChannelGroup(&masterEventChannelGroup));
 
@@ -152,9 +151,9 @@ void SoundSystem::InitFromQualitySettings()
 {
     UnloadFMODProjects();
 
-    QualitySettingsSystem * qSystem = QualitySettingsSystem::Instance();
+    QualitySettingsSystem* qSystem = QualitySettingsSystem::Instance();
     FilePath sfxConfig = qSystem->GetSFXQualityConfigPath(qSystem->GetCurSFXQuality());
-    if(!sfxConfig.IsEmpty())
+    if (!sfxConfig.IsEmpty())
     {
         ParseSFXConfig(sfxConfig);
     }
@@ -176,88 +175,88 @@ bool SoundSystem::IsDebugModeOn() const
     return debugLevel != FMOD_DEBUG_LEVEL_NONE;
 }
 
-SoundEvent * SoundSystem::CreateSoundEventByID(const FastName & eventName, const FastName & groupName)
+SoundEvent* SoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)
 {
-    SoundEvent * event = new FMODSoundEvent(eventName);
+    SoundEvent* event = new FMODSoundEvent(eventName);
     AddSoundEventToGroup(groupName, event);
-    
+
     return event;
 }
 
-SoundEvent * SoundSystem::CreateSoundEventFromFile(const FilePath & fileName, const FastName & groupName, uint32 flags /* = SOUND_EVENT_DEFAULT */, int32 priority /* = 128 */)
+SoundEvent* SoundSystem::CreateSoundEventFromFile(const FilePath& fileName, const FastName& groupName, uint32 flags /* = SOUND_EVENT_DEFAULT */, int32 priority /* = 128 */)
 {
-    SoundEvent * event = nullptr;
+    SoundEvent* event = nullptr;
     
 #ifdef __DAVAENGINE_IPHONE__
-    if((flags & SoundEvent::SOUND_EVENT_CREATE_STREAM) && !(flags & SoundEvent::SOUND_EVENT_CREATE_3D))
+    if ((flags & SoundEvent::SOUND_EVENT_CREATE_STREAM) && !(flags & SoundEvent::SOUND_EVENT_CREATE_3D))
     {
-        MusicIOSSoundEvent * musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName);
-        if(musicEvent && (flags & SoundEvent::SOUND_EVENT_CREATE_LOOP))
+        MusicIOSSoundEvent* musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName);
+        if (musicEvent && (flags & SoundEvent::SOUND_EVENT_CREATE_LOOP))
             musicEvent->SetLoopCount(-1);
-        
+
         event = musicEvent;
     }
 #endif //__DAVAENGINE_IPHONE__
-    
-    if(!event)
+
+    if (!event)
     {
         event = FMODFileSoundEvent::CreateWithFlags(fileName, flags, priority);
     }
-    
-    if(event)
+
+    if (event)
     {
         AddSoundEventToGroup(groupName, event);
     }
-    
+
     return event;
 }
 
-void SoundSystem::SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArchive)
+void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchive)
 {
-    if(IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
+    if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        FMODFileSoundEvent * sound = (FMODFileSoundEvent *)sEvent;
+        FMODFileSoundEvent* sound = (FMODFileSoundEvent*)sEvent;
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTFILE);
 
         toArchive->SetUInt32("flags", sound->flags);
         toArchive->SetInt32("priority", sound->priority);
         toArchive->SetString("filePath", sound->fileName.GetFrameworkPath());
     }
-    else if(IsPointerToExactClass<FMODSoundEvent>(sEvent))
+    else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        FMODSoundEvent * sound = (FMODSoundEvent *)sEvent;
+        FMODSoundEvent* sound = (FMODSoundEvent*)sEvent;
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTSYSTEM);
 
         toArchive->SetFastName("eventName", sound->eventName);
     }
 #ifdef __DAVAENGINE_IPHONE__
-    else if(IsPointerToExactClass<MusicIOSSoundEvent>(sEvent))
+    else if (IsPointerToExactClass<MusicIOSSoundEvent>(sEvent))
     {
-        MusicIOSSoundEvent * musicEvent = (MusicIOSSoundEvent *)sEvent;
+        MusicIOSSoundEvent* musicEvent = (MusicIOSSoundEvent*)sEvent;
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTFILE);
-        
+
         uint32 flags = SoundEvent::SOUND_EVENT_CREATE_STREAM;
-        if(musicEvent->GetLoopCount() == -1)
+        if (musicEvent->GetLoopCount() == -1)
             flags |= SoundEvent::SOUND_EVENT_CREATE_LOOP;
-        
+
         toArchive->SetUInt32("flags", flags);
         toArchive->SetString("filePath", musicEvent->GetEventName());
     }
 #endif //__DAVAENGINE_IPHONE__
 
     FastName groupName = FindGroupByEvent(sEvent);
-    if(groupName.IsValid())
+    if (groupName.IsValid())
         toArchive->SetFastName("groupName", groupName);
 }
 
-SoundEvent * SoundSystem::DeserializeEvent(KeyedArchive *archive)
+SoundEvent* SoundSystem::DeserializeEvent(KeyedArchive* archive)
 {
     DVASSERT(archive);
 
     FastName eventType = archive->GetFastName("EventType");
     FastName groupName = archive->GetFastName("groupName", FastName(""));
 
-    if(eventType == SEREALIZE_EVENTTYPE_EVENTFILE)
+    if (eventType == SEREALIZE_EVENTTYPE_EVENTFILE)
     {
         uint32 flags = archive->GetUInt32("flags");
         int32 priority = archive->GetInt32("priority");
@@ -265,7 +264,7 @@ SoundEvent * SoundSystem::DeserializeEvent(KeyedArchive *archive)
 
         return CreateSoundEventFromFile(path, groupName, flags, priority);
     }
-    else if(eventType == SEREALIZE_EVENTTYPE_EVENTSYSTEM)
+    else if (eventType == SEREALIZE_EVENTTYPE_EVENTSYSTEM)
     {
         FastName eventName = archive->GetFastName("eventName");
 
@@ -275,28 +274,28 @@ SoundEvent * SoundSystem::DeserializeEvent(KeyedArchive *archive)
     return 0;
 }
 
-SoundEvent * SoundSystem::CloneEvent(const SoundEvent * sEvent)
+SoundEvent* SoundSystem::CloneEvent(const SoundEvent* sEvent)
 {
     DVASSERT(sEvent);
 
-    SoundEvent * clonedSound = 0;
-    if(IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
+    SoundEvent* clonedSound = 0;
+    if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        FMODFileSoundEvent * sound = (FMODFileSoundEvent *)sEvent;
+        FMODFileSoundEvent* sound = (FMODFileSoundEvent*)sEvent;
         clonedSound = CreateSoundEventFromFile(sound->fileName, FindGroupByEvent(sound), sound->flags, sound->priority);
     }
-    else if(IsPointerToExactClass<FMODSoundEvent>(sEvent))
+    else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        FMODSoundEvent * sound = (FMODSoundEvent *)sEvent;
+        FMODSoundEvent* sound = (FMODSoundEvent*)sEvent;
         clonedSound = CreateSoundEventByID(sound->eventName, FindGroupByEvent(sound));
     }
 #ifdef __DAVAENGINE_IPHONE__
-    else if(IsPointerToExactClass<MusicIOSSoundEvent>(sEvent))
+    else if (IsPointerToExactClass<MusicIOSSoundEvent>(sEvent))
     {
-        MusicIOSSoundEvent * musicEvent = (MusicIOSSoundEvent *)sEvent;
+        MusicIOSSoundEvent* musicEvent = (MusicIOSSoundEvent*)sEvent;
 
         uint32 flags = SoundEvent::SOUND_EVENT_CREATE_STREAM;
-        if(musicEvent->GetLoopCount() == -1)
+        if (musicEvent->GetLoopCount() == -1)
             flags |= SoundEvent::SOUND_EVENT_CREATE_LOOP;
 
         clonedSound = CreateSoundEventFromFile(musicEvent->GetEventName(), FindGroupByEvent(sEvent), flags);
@@ -307,44 +306,44 @@ SoundEvent * SoundSystem::CloneEvent(const SoundEvent * sEvent)
     return clonedSound;
 }
 
-FastName SoundSystem::FindGroupByEvent(const SoundEvent * soundEvent)
+FastName SoundSystem::FindGroupByEvent(const SoundEvent* soundEvent)
 {
     FastName groupName;
     bool groupWasFound = false;
     Vector<SoundGroup>::iterator it = soundGroups.begin();
     Vector<SoundGroup>::iterator itEnd = soundGroups.end();
-    for(;it != itEnd; ++it)
+    for (; it != itEnd; ++it)
     {
-        Vector<SoundEvent *> & events = it->events;
-        Vector<SoundEvent *>::const_iterator itEv = events.begin();
-        Vector<SoundEvent *>::const_iterator itEvEnd = events.end();
-        for(;itEv != itEvEnd; ++itEv)
+        Vector<SoundEvent*>& events = it->events;
+        Vector<SoundEvent*>::const_iterator itEv = events.begin();
+        Vector<SoundEvent*>::const_iterator itEvEnd = events.end();
+        for (; itEv != itEvEnd; ++itEv)
         {
-            if((*itEv) == soundEvent)
+            if ((*itEv) == soundEvent)
             {
                 groupName = it->name;
                 groupWasFound = true;
                 break;
             }
         }
-        if(groupWasFound)
+        if (groupWasFound)
             break;
     }
 
     return groupName;
 }
 
-void SoundSystem::ParseSFXConfig(const FilePath & configPath)
+void SoundSystem::ParseSFXConfig(const FilePath& configPath)
 {
     YamlParser* parser = YamlParser::Create(configPath);
-    if(parser)
-    {    
+    if (parser)
+    {
         YamlNode* rootNode = parser->GetRootNode();
-        const YamlNode * fmodfevsNode = rootNode->Get("fmod_projects");
-        if(fmodfevsNode)
+        const YamlNode* fmodfevsNode = rootNode->Get("fmod_projects");
+        if (fmodfevsNode)
         {
             int32 fevCount = fmodfevsNode->GetCount();
-            for(int32 i = 0; i < fevCount; ++i)
+            for (int32 i = 0; i < fevCount; ++i)
             {
                 LoadFEV(FilePath(fmodfevsNode->Get(i)->AsString()));
             }
@@ -353,31 +352,31 @@ void SoundSystem::ParseSFXConfig(const FilePath & configPath)
     SafeRelease(parser);
 }
 
-void SoundSystem::LoadFEV(const FilePath & filePath)
+void SoundSystem::LoadFEV(const FilePath& filePath)
 {
-    if(projectsMap.find(filePath) != projectsMap.end())
+    if (projectsMap.find(filePath) != projectsMap.end())
         return;
 
     if (fmodEventSystem == nullptr)
         return;
 
-    FMOD::EventProject * project = nullptr;
+    FMOD::EventProject* project = nullptr;
     FMOD_VERIFY(fmodEventSystem->load(filePath.GetStringValue().c_str(), 0, &project));
-    
-    if(project)
+
+    if (project)
     {
         FMOD_EVENT_PROJECTINFO info;
         FMOD_VERIFY(project->getInfo(&info));
         String projectName(info.name);
-        
+
         int32 groupsCount = 0;
         FMOD_VERIFY(project->getNumGroups(&groupsCount));
-        for(int32 i = 0; i < groupsCount; ++i)
+        for (int32 i = 0; i < groupsCount; ++i)
         {
-            FMOD::EventGroup * group = 0;
+            FMOD::EventGroup* group = 0;
             FMOD_VERIFY(project->getGroupByIndex(i, false, &group));
-            
-            char * buf = 0;
+
+            char* buf = 0;
             FMOD_VERIFY(group->getInfo(0, &buf));
             toplevelGroups.push_back(projectName + "/" + buf);
         }
@@ -386,10 +385,10 @@ void SoundSystem::LoadFEV(const FilePath & filePath)
     }
 }
 
-void SoundSystem::UnloadFEV(const FilePath & filePath)
+void SoundSystem::UnloadFEV(const FilePath& filePath)
 {
-    Map<FilePath, FMOD::EventProject *>::iterator it = projectsMap.find(filePath);
-    if(it != projectsMap.end())
+    Map<FilePath, FMOD::EventProject*>::iterator it = projectsMap.find(filePath);
+    if (it != projectsMap.end())
     {
         FMOD_VERIFY(it->second->release());
         projectsMap.erase(it);
@@ -402,43 +401,43 @@ void SoundSystem::UnloadFMODProjects()
     {
         FMOD_VERIFY(fmodEventSystem->unload());
     }
-    
+
     projectsMap.clear();
     toplevelGroups.clear();
 }
 
 void SoundSystem::Update(float32 timeElapsed)
 {
-	TIME_PROFILE("SoundSystem::Update");
+    TIME_PROFILE("SoundSystem::Update");
 
     if (fmodEventSystem)
     {
         FMOD_VERIFY(fmodEventSystem->update());
     }
-    
-	uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());
-	if(size)
-	{
-		for(uint32 i = 0; i < size; i++)
-			soundsToReleaseOnUpdate[i]->Release();
-		soundsToReleaseOnUpdate.clear();
-	}
+
+    uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());
+    if (size)
+    {
+        for (uint32 i = 0; i < size; i++)
+            soundsToReleaseOnUpdate[i]->Release();
+        soundsToReleaseOnUpdate.clear();
+    }
 }
 
-void SoundSystem::ReleaseOnUpdate(SoundEvent * sound)
+void SoundSystem::ReleaseOnUpdate(SoundEvent* sound)
 {
-	soundsToReleaseOnUpdate.push_back(sound);
+    soundsToReleaseOnUpdate.push_back(sound);
 }
 
 uint32 SoundSystem::GetMemoryUsageBytes() const
 {
     uint32 memory = 0;
-    
+
     if (fmodEventSystem)
     {
         FMOD_VERIFY(fmodEventSystem->getMemoryInfo(FMOD_MEMBITS_ALL, FMOD_EVENT_MEMBITS_ALL, &memory, 0));
     }
-    
+
     return memory;
 }
 
@@ -465,7 +464,7 @@ int32 SoundSystem::GetChannelsMax() const
 
     return softChannels;
 }
-    
+
 void SoundSystem::Suspend()
 {
 #ifdef __DAVAENGINE_ANDROID__
@@ -474,7 +473,7 @@ void SoundSystem::Suspend()
     Mute(true);
 #endif
 }
-    
+
 void SoundSystem::Resume()
 {
 #ifdef __DAVAENGINE_IPHONE__
@@ -491,7 +490,7 @@ void SoundSystem::Mute(bool value)
     FMOD_VERIFY(masterEventChannelGroup->setMute(value));
 }
 
-void SoundSystem::SetCurrentLocale(const String & langID)
+void SoundSystem::SetCurrentLocale(const String& langID)
 {
     if (fmodEventSystem)
     {
@@ -511,7 +510,7 @@ String SoundSystem::GetCurrentLocale() const
     return String();
 }
 
-void SoundSystem::SetListenerPosition(const Vector3 & position)
+void SoundSystem::SetListenerPosition(const Vector3& position)
 {
     if (fmodEventSystem)
     {
@@ -519,7 +518,7 @@ void SoundSystem::SetListenerPosition(const Vector3 & position)
     }
 }
 
-void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 & left)
+void SoundSystem::SetListenerOrientation(const Vector3& forward, const Vector3& left)
 {
     if (fmodEventSystem)
     {
@@ -527,7 +526,7 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
         forwardNorm.Normalize();
         Vector3 upNorm = forwardNorm.CrossProduct(left);
         upNorm.Normalize();
-        
+
         DVASSERT(forwardNorm.SquareLength() > EPSILON);
         DVASSERT(upNorm.SquareLength() > EPSILON);
         DVASSERT(left.SquareLength() > EPSILON);
@@ -536,9 +535,9 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
     }
 }
 
-void SoundSystem::GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names)
+void SoundSystem::GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names)
 {
-    char * groupName = 0;
+    char* groupName = 0;
     FMOD_VERIFY(group->getInfo(0, &groupName));
     DVASSERT(groupName);
     String currPath = currNamePath + "/" + groupName;
@@ -546,14 +545,14 @@ void SoundSystem::GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String 
     int32 eventsCount = 0;
     FMOD_VERIFY(group->getNumEvents(&eventsCount));
     names.reserve(names.size() + eventsCount);
-    for(int32 i = 0; i < eventsCount; i++)
+    for (int32 i = 0; i < eventsCount; i++)
     {
-        FMOD::Event * event = 0;
+        FMOD::Event* event = 0;
         FMOD_VERIFY(group->getEventByIndex(i, FMOD_EVENT_INFOONLY, &event));
-        if(!event)
+        if (!event)
             continue;
 
-        char * eventName = 0;
+        char* eventName = 0;
         FMOD_VERIFY(event->getInfo(0, &eventName, 0));
         DVASSERT(eventName);
 
@@ -562,16 +561,16 @@ void SoundSystem::GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String 
 
     int32 groupsCount = 0;
     FMOD_VERIFY(group->getNumGroups(&groupsCount));
-    for(int32 i = 0; i < groupsCount; i++)
+    for (int32 i = 0; i < groupsCount; i++)
     {
-        FMOD::EventGroup * childGroup = 0;
+        FMOD::EventGroup* childGroup = 0;
         FMOD_VERIFY(group->getGroupByIndex(i, false, &childGroup));
-        if(childGroup)
+        if (childGroup)
             GetGroupEventsNamesRecursive(childGroup, currPath, names);
     }
 }
 
-void SoundSystem::GetAllEventsNames(Vector<String> & names)
+void SoundSystem::GetAllEventsNames(Vector<String>& names)
 {
     names.clear();
 
@@ -580,24 +579,24 @@ void SoundSystem::GetAllEventsNames(Vector<String> & names)
 
     int32 projectsCount = 0;
     FMOD_VERIFY(fmodEventSystem->getNumProjects(&projectsCount));
-    for(int32 i = 0; i < projectsCount; i++)
+    for (int32 i = 0; i < projectsCount; i++)
     {
-        FMOD::EventProject * project = 0;
+        FMOD::EventProject* project = 0;
         FMOD_VERIFY(fmodEventSystem->getProjectByIndex(i, &project));
-        if(!project)
+        if (!project)
             continue;
 
         FMOD_EVENT_PROJECTINFO info;
         FMOD_VERIFY(project->getInfo(&info));
         String projectName(info.name);
 
-        int32 groupsCount = 0;        
+        int32 groupsCount = 0;
         FMOD_VERIFY(project->getNumGroups(&groupsCount));
-        for(int32 j = 0; j < groupsCount; j++)
+        for (int32 j = 0; j < groupsCount; j++)
         {
-            FMOD::EventGroup * group = 0;
+            FMOD::EventGroup* group = 0;
             FMOD_VERIFY(project->getGroupByIndex(j, false, &group));
-            if(!group)
+            if (!group)
                 continue;
 
             GetGroupEventsNamesRecursive(group, projectName, names);
@@ -605,42 +604,42 @@ void SoundSystem::GetAllEventsNames(Vector<String> & names)
     }
 }
 
-void SoundSystem::PreloadFMODEventGroupData(const String & groupName)
+void SoundSystem::PreloadFMODEventGroupData(const String& groupName)
 {
     if (fmodEventSystem == nullptr)
         return;
 
-    FMOD::EventGroup * eventGroup = nullptr;
+    FMOD::EventGroup* eventGroup = nullptr;
     FMOD_VERIFY(fmodEventSystem->getGroup(groupName.c_str(), true, &eventGroup));
-    if(eventGroup)
+    if (eventGroup)
         FMOD_VERIFY(eventGroup->loadEventData());
 }
-    
-void SoundSystem::ReleaseFMODEventGroupData(const String & groupName)
+
+void SoundSystem::ReleaseFMODEventGroupData(const String& groupName)
 {
     if (fmodEventSystem == nullptr)
         return;
 
-    FMOD::EventGroup * eventGroup = nullptr;
+    FMOD::EventGroup* eventGroup = nullptr;
     FMOD_VERIFY(fmodEventSystem->getGroup(groupName.c_str(), false, &eventGroup));
-    if(eventGroup)
+    if (eventGroup)
         FMOD_VERIFY(eventGroup->freeEventData());
 }
-    
+
 void SoundSystem::ReleaseAllEventWaveData()
 {
     int32 topCount = static_cast<int32>(toplevelGroups.size());
-    for(int32 i = 0; i < topCount; ++i)
+    for (int32 i = 0; i < topCount; ++i)
         ReleaseFMODEventGroupData(toplevelGroups[i]);
 }
-    
-void SoundSystem::SetGroupVolume(const FastName & groupName, float32 volume)
+
+void SoundSystem::SetGroupVolume(const FastName& groupName, float32 volume)
 {
     soundGroupsMutex.Lock();
-    for(size_t i = 0; i < soundGroups.size(); ++i)
+    for (size_t i = 0; i < soundGroups.size(); ++i)
     {
-        SoundGroup & group = soundGroups[i];
-        if(group.name == groupName)
+        SoundGroup& group = soundGroups[i];
+        if (group.name == groupName)
         {
             group.volume = volume;
             for (auto& x : group.events)
@@ -654,14 +653,14 @@ void SoundSystem::SetGroupVolume(const FastName & groupName, float32 volume)
     soundGroupsMutex.Unlock();
 }
 
-float32 SoundSystem::GetGroupVolume(const FastName & groupName)
+float32 SoundSystem::GetGroupVolume(const FastName& groupName)
 {
     soundGroupsMutex.Lock();
     float32 ret = -1.f;
-    for(size_t i = 0; i < soundGroups.size(); ++i)
+    for (size_t i = 0; i < soundGroups.size(); ++i)
     {
-        SoundGroup & group = soundGroups[i];
-        if(group.name == groupName)
+        SoundGroup& group = soundGroups[i];
+        if (group.name == groupName)
         {
             ret = group.volume;
             break;
@@ -671,18 +670,18 @@ float32 SoundSystem::GetGroupVolume(const FastName & groupName)
     return ret;
 }
 
-void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * event)
+void SoundSystem::AddSoundEventToGroup(const FastName& groupName, SoundEvent* event)
 {
     soundGroupsMutex.Lock();
-    
-    for(size_t i = 0; i < soundGroups.size(); ++i)
+
+    for (size_t i = 0; i < soundGroups.size(); ++i)
     {
-        SoundGroup & group = soundGroups[i];
-        if(group.name == groupName)
+        SoundGroup& group = soundGroups[i];
+        if (group.name == groupName)
         {
             event->SetVolume(group.volume);
             group.events.push_back(event);
-            
+
             soundGroupsMutex.Unlock();
             return;
         }
@@ -694,28 +693,28 @@ void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * 
     group.events.push_back(event);
 
     soundGroups.push_back(group);
-    
+
     soundGroupsMutex.Unlock();
 }
-    
-void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
+
+void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
 {
     soundGroupsMutex.Lock();
 
-    for(uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
+    for (uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
     {
-        Vector<SoundEvent *> & events = soundGroups[i].events;
+        Vector<SoundEvent*>& events = soundGroups[i].events;
         uint32 eventsCount = static_cast<uint32>(events.size());
-        for(uint32 k = 0; k < eventsCount; k++)
+        for (uint32 k = 0; k < eventsCount; k++)
         {
-            if(events[k] == event)
+            if (events[k] == event)
             {
                 RemoveExchangingWithLast(events, k);
                 break;
             }
         }
 
-        if(!events.size())
+        if (!events.size())
         {
             RemoveExchangingWithLast(soundGroups, i);
             --i;
@@ -739,11 +738,11 @@ void SoundSystem::DuckSystemMusic(bool duck)
 }
 
 #endif
-    
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char * name, int unicode, unsigned int * filesize, void ** handle, void ** userdata)
+
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char* name, int unicode, unsigned int* filesize, void** handle, void** userdata)
 {
-    File * file = File::Create(FilePath(name), File::OPEN | File::READ);
-    if(!file)
+    File* file = File::Create(FilePath(name), File::OPEN | File::READ);
+    if (!file)
         return FMOD_ERR_FILE_NOTFOUND;
 
     (*filesize) = file->GetSize();
@@ -752,30 +751,29 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char * name, int unicod
     return FMOD_OK;
 }
 
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void * handle, void * buffer, unsigned int sizebytes, unsigned int * bytesread, void * userdata)
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void* handle, void* buffer, unsigned int sizebytes, unsigned int* bytesread, void* userdata)
 {
-    File * file = (File*)handle;
+    File* file = (File*)handle;
     (*bytesread) = file->Read(buffer, sizebytes);
 
     return FMOD_OK;
 }
 
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void * handle, unsigned int pos, void * userdata)
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void* handle, unsigned int pos, void* userdata)
 {
-    File * file = (File*)handle;
+    File* file = (File*)handle;
     file->Seek(pos, File::SEEK_FROM_START);
 
     return FMOD_OK;
 }
 
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userdata)
+FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void* handle, void* userdata)
 {
-    File * file = (File*)handle;
+    File* file = (File*)handle;
     SafeRelease(file);
 
     return FMOD_OK;
 }
-
 };
 
 #endif //DAVA_FMOD

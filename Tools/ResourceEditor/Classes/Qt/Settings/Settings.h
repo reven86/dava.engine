@@ -101,6 +101,7 @@ public:
     // and are used only by application
     static const DAVA::FastName InternalGroup;
     static const DAVA::FastName Internal_TextureViewGPU;
+    static const DAVA::FastName Internal_SpriteViewGPU;
     static const DAVA::FastName Internal_LastProjectPath;
     static const DAVA::FastName Internal_EditorVersion;
     static const DAVA::FastName Internal_CubemapLastFaceDir;

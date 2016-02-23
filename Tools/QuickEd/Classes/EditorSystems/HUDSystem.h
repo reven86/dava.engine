@@ -46,7 +46,7 @@ private:
         SEARCH_BACKWARD
     };
     struct HUD;
-    
+
     bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -61,6 +61,7 @@ private:
     void SetCanDrawRect(bool canDrawRect_);
     void UpdateAreasVisibility();
     void InvalidatePressedPoint();
+    void UpdatePlacedOnScreenStatus();
     HUDAreaInfo activeAreaInfo;
 
     DAVA::RefPtr<DAVA::UIControl> hudControl;
@@ -74,9 +75,10 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
-    bool hudVisible = false;
     SelectionContainer selectionContainer;
     bool inEmulationMode = false;
+    EditorSystemsManager::SortedPackageBaseNodeSet rootControls;
+    bool isPlacedOnScreen = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

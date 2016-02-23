@@ -38,7 +38,6 @@
 
 namespace DAVA
 {
-
 enum class ePropertyOwner
 {
     CONTROL,
@@ -89,12 +88,14 @@ struct UIStyleSheetPropertyDescriptor
 
 struct UIStyleSheetSelector
 {
-    UIStyleSheetSelector() :
-        className(""),
-        name(),
+    UIStyleSheetSelector()
+        :
+        className("")
+        ,
+        name()
+        ,
         stateMask(0)
     {
-
     }
 
     String className;
@@ -105,14 +106,18 @@ struct UIStyleSheetSelector
 
 struct UIStyleSheetProperty
 {
-    UIStyleSheetProperty(uint32 aPropertyIndex, const VariantType& aValue, bool aTransition = false, Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR, float32 aTransitionTime = 0.0f) :
-        propertyIndex(aPropertyIndex),
-        value(aValue),
-        transitionFunction(aTransitionFunction),
-        transitionTime(aTransitionTime), 
+    UIStyleSheetProperty(uint32 aPropertyIndex, const VariantType& aValue, bool aTransition = false, Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR, float32 aTransitionTime = 0.0f)
+        :
+        propertyIndex(aPropertyIndex)
+        ,
+        value(aValue)
+        ,
+        transitionFunction(aTransitionFunction)
+        ,
+        transitionTime(aTransitionTime)
+        ,
         transition(aTransition)
     {
-
     }
 
     uint32 propertyIndex;

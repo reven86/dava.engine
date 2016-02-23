@@ -118,15 +118,15 @@ QComboBox* FilterAndSortBar::CreateGroupCombo()
 QComboBox* FilterAndSortBar::CreateSortCombo()
 {
     std::pair<QString, int> items[] = {
-        {"Sort by order", SORT_BY_ORDER},
-        {"Sort by size", SORT_BY_SIZE},
-        {"Sort by pool", SORT_BY_POOL},
-        {"Sort by backtrace", SORT_BY_BACKTRACE}
+        { "Sort by order", SORT_BY_ORDER },
+        { "Sort by size", SORT_BY_SIZE },
+        { "Sort by pool", SORT_BY_POOL },
+        { "Sort by backtrace", SORT_BY_BACKTRACE }
     };
 
     int nrows = static_cast<int>(COUNT_OF(items));
     sortComboModel.reset(new QStandardItemModel(nrows, 1));
-    for (int i = 0;i < nrows;++i)
+    for (int i = 0; i < nrows; ++i)
     {
         QStandardItem* item = new QStandardItem(QString(items[i].first));
         item->setData(items[i].second, Qt::UserRole + 1);
@@ -147,14 +147,14 @@ CheckableComboBox* FilterAndSortBar::CreateFilterPoolCombo()
     CheckableComboBox* widget = new CheckableComboBox;
 
     int nrows = static_cast<int>(session->AllocPoolCount());
-    for (int i = 0;i < nrows;++i)
+    for (int i = 0; i < nrows; ++i)
     {
         const String& name = session->AllocPoolName(i);
         widget->addItem(name.c_str(), 1 << i);
     }
 
     QAbstractItemModel* model = widget->model();
-    for (int i = 0;i < nrows;++i)
+    for (int i = 0; i < nrows; ++i)
     {
         QModelIndex index = model->index(i, 0);
         model->setData(index, Qt::Unchecked, Qt::CheckStateRole);
@@ -169,14 +169,14 @@ CheckableComboBox* FilterAndSortBar::CreateFilterTagCombo()
     CheckableComboBox* widget = new CheckableComboBox;
 
     int nrows = static_cast<int>(session->TagCount());
-    for (int i = 0;i < nrows;++i)
+    for (int i = 0; i < nrows; ++i)
     {
         const String& name = session->TagName(i);
         widget->addItem(name.c_str(), 1 << i);
     }
 
     QAbstractItemModel* model = widget->model();
-    for (int i = 0;i < nrows;++i)
+    for (int i = 0; i < nrows; ++i)
     {
         QModelIndex index = model->index(i, 0);
         model->setData(index, Qt::Unchecked, Qt::CheckStateRole);
