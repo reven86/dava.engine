@@ -113,7 +113,7 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
     buttonText = (UIStaticText*)c->FindByName(buttonName);
     if (nullptr != buttonText)
     {
-        buttonText->SetText(UTF8Utils::EncodeToWideString(screen->GetName()));
+        buttonText->SetText(UTF8Utils::EncodeToWideString(screen->GetName().c_str()));
     }
 
     return c; //returns cell

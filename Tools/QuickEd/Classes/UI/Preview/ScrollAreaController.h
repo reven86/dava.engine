@@ -63,6 +63,8 @@ public:
     qreal GetScale() const;
     qreal GetMinScale() const;
     qreal GetMaxScale() const;
+    QPoint GetMinimumPos() const;
+    QPoint GetMaximumPos() const;
 
 public slots:
     void SetViewSize(QSize size);
