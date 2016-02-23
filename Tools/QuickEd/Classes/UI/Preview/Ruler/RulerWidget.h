@@ -35,11 +35,6 @@
 #include <QPixmap>
 #include <QMouseEvent>
 
-namespace Themes
-{
-enum eTheme : int;
-}
-
 class RulerWidget : public QWidget
 {
     Q_OBJECT
