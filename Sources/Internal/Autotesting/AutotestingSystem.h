@@ -100,7 +100,7 @@ public:
 
     const String& GetScreenShotName();
     void MakeScreenShot();
-    inline bool GetIsScreenShotSaving() const;
+    bool GetIsScreenShotSaving() const;
 
     // DB Master-Helper relations
 
