@@ -327,7 +327,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                     newWaypoint->Release();
                 }
             }
-            else if (selectedWaypoints.Size() == 1 && !cloneJustDone)
+            else if ((selectedWaypoints.Size() == 1) && (cloneJustDone == false))
             {
                 Entity* nextWaypoint = selectedWaypoints.GetFirstEntity();
                 EntityGroup entitiesToAddEdge;
@@ -534,7 +534,7 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& curr
 
     if (isEnabled && shiftPressed)
     {
-        return selectedWaypoints.Size() == 1;
+        return !selectedWaypoints.IsEmpty();
     }
 
     return true;

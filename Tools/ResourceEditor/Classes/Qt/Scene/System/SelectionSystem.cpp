@@ -795,5 +795,6 @@ void SceneSelectionSystem::AddSelectionDelegate(SceneSelectionSystemDelegate* de
 
 void SceneSelectionSystem::RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_)
 {
-    selectionDelegates.push_back(delegate_);
+    auto i = std::remove(selectionDelegates.begin(), selectionDelegates.end(), delegate_);
+    selectionDelegates.erase(i, selectionDelegates.end());
 }

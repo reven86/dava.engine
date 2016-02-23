@@ -643,6 +643,13 @@ SceneEditor2* SceneEditor2::CreateCopyForExport()
 
 void SceneEditor2::RemoveSystems()
 {
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->RemoveSelectionDelegate(modifSystem);
+        selectionSystem->RemoveSelectionDelegate(hoodSystem);
+        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+    }
+
     if (editorLightSystem)
     {
         editorLightSystem->SetCameraLightEnabled(false);
