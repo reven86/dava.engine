@@ -334,10 +334,6 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::WillAppear()
 {
-    if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
-    {
-        UIControlSystem::Instance()->SetFocusedControl(this);
-    }
 }
 
 void UITextField::DidAppear()
@@ -966,6 +962,26 @@ void UITextField::SetReturnKeyType(int32 value)
     textFieldImpl->SetReturnKeyType(value);
 }
 
+UITextField::eOpenKeyboardPolicy UITextField::GetOpenKeyboardPolicy() const
+{
+    return openKeyboardPolicy;
+}
+
+void UITextField::SetOpenKeyboardPolicy(eOpenKeyboardPolicy policy)
+{
+    openKeyboardPolicy = policy;
+}
+
+UITextField::eCloseKeyboardPolicy UITextField::GetCloseKeyboardPolicy() const
+{
+    return closeKeyboardPolicy;
+}
+
+void UITextField::SetCloseKeyboardPolicy(eCloseKeyboardPolicy policy)
+{
+    closeKeyboardPolicy = policy;
+}
+
 bool UITextField::IsEnableReturnKeyAutomatically() const
 {
     return enableReturnKeyAutomatically;
@@ -1066,6 +1082,26 @@ void UITextField::SystemDraw(const UIGeometricData& geometricData)
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);
     textFieldImpl->SystemDraw(localData);
+}
+
+int32 UITextField::GetOpenKeyboardPolicyAsInt() const
+{
+    return GetOpenKeyboardPolicy();
+}
+
+void UITextField::SetOpenKeyboardPolicyFromInt(int32 policy)
+{
+    SetOpenKeyboardPolicy(static_cast<eOpenKeyboardPolicy>(policy));
+}
+
+int32 UITextField::GetCloseKeyboardPolicyAsInt() const
+{
+    return GetCloseKeyboardPolicy();
+}
+
+void UITextField::SetCloseKeyboardPolicyFromInt(int32 policy)
+{
+    SetCloseKeyboardPolicy(static_cast<eCloseKeyboardPolicy>(policy));
 }
 
 } // namespace DAVA

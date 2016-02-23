@@ -306,6 +306,18 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_EMERGENCY_CALL, "RETURN_KEY_EMERGENCY_CALL");
 };
 
+ENUM_DECLARE(UITextField::eOpenKeyboardPolicy)
+{
+    ENUM_ADD_DESCR(UITextField::OPEN_KEYBOARD_WHEN_FOCUSED, "WhenFocused");
+    ENUM_ADD_DESCR(UITextField::OPEN_KEYBOARD_WHEN_ACTIVATED, "WhenActivated");
+};
+
+ENUM_DECLARE(UITextField::eCloseKeyboardPolicy)
+{
+    ENUM_ADD_DESCR(UITextField::CLOSE_KEYBOARD_WHEN_FOCUS_LOST, "WhenFocusLost");
+    ENUM_ADD_DESCR(UITextField::CLOSE_KEYBOARD_WHEN_DEACTIVATED, "WhenDeactivated");
+};
+
 ENUM_DECLARE(UIComponent::eType)
 {
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");

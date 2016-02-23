@@ -83,11 +83,6 @@ public:
     {
     }
 
-    virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField* /*textField*/)
-    {
-        return false;
-    }
-
     /*
         \brief Called when device keyboard is displayed/hidden.
         */
@@ -168,6 +163,18 @@ public:
         RETURN_KEY_YAHOO,
         RETURN_KEY_DONE,
         RETURN_KEY_EMERGENCY_CALL
+    };
+
+    enum eOpenKeyboardPolicy
+    {
+        OPEN_KEYBOARD_WHEN_FOCUSED,
+        OPEN_KEYBOARD_WHEN_ACTIVATED,
+    };
+
+    enum eCloseKeyboardPolicy
+    {
+        CLOSE_KEYBOARD_WHEN_FOCUS_LOST,
+        CLOSE_KEYBOARD_WHEN_DEACTIVATED,
     };
 
     UITextField(const Rect& rect = Rect());
@@ -325,6 +332,12 @@ public:
     int32 GetReturnKeyType() const;
     void SetReturnKeyType(int32 value);
 
+    eOpenKeyboardPolicy GetOpenKeyboardPolicy() const;
+    void SetOpenKeyboardPolicy(eOpenKeyboardPolicy policy);
+
+    eCloseKeyboardPolicy GetCloseKeyboardPolicy() const;
+    void SetCloseKeyboardPolicy(eCloseKeyboardPolicy policy);
+
     /**
       \brief Enable return key automatically.
      */
@@ -367,6 +380,12 @@ private:
     */
     void SetupDefaults();
 
+    int32 GetOpenKeyboardPolicyAsInt() const;
+    void SetOpenKeyboardPolicyFromInt(int32 policy);
+
+    int32 GetCloseKeyboardPolicyAsInt() const;
+    void SetCloseKeyboardPolicyFromInt(int32 policy);
+
     WideString text;
     UITextFieldDelegate* delegate = nullptr;
     float32 cursorBlinkingTime = 0.0f;
@@ -378,6 +397,8 @@ private:
     eKeyboardAppearanceType keyboardAppearanceType;
     eKeyboardType keyboardType;
     eReturnKeyType returnKeyType;
+    eOpenKeyboardPolicy openKeyboardPolicy = OPEN_KEYBOARD_WHEN_ACTIVATED;
+    eCloseKeyboardPolicy closeKeyboardPolicy = CLOSE_KEYBOARD_WHEN_DEACTIVATED;
 
     // All Boolean variables are grouped together because of DF-2149.
     bool isPassword;
@@ -405,7 +426,10 @@ public:
                          PROPERTY("keyboardAppearanceType", InspDesc("Keyboard appearance type", GlobalEnumMap<eKeyboardAppearanceType>::Instance()), GetKeyboardAppearanceType, SetKeyboardAppearanceType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("keyboardType", InspDesc("Keyboard type", GlobalEnumMap<eKeyboardType>::Instance()), GetKeyboardType, SetKeyboardType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("returnKeyType", InspDesc("Return key type", GlobalEnumMap<eReturnKeyType>::Instance()), GetReturnKeyType, SetReturnKeyType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("openKeyboardPolicy", InspDesc("Open Keyboard Policy", GlobalEnumMap<eOpenKeyboardPolicy>::Instance()), GetOpenKeyboardPolicyAsInt, SetOpenKeyboardPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("closeKeyboardPolicy", InspDesc("Close Keyboard Policy", GlobalEnumMap<eCloseKeyboardPolicy>::Instance()), GetCloseKeyboardPolicyAsInt, SetCloseKeyboardPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         )
 };
 
 } // namespace DAVA
