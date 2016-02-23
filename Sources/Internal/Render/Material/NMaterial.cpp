@@ -527,6 +527,48 @@ void NMaterial::RemoveChildMaterial(NMaterial* material)
     DVASSERT(res);
 }
 
+//Configs managment
+uint32 NMaterial::GetCurrConfig() const
+{
+    return currConfig;
+}
+void NMaterial::SetCurrConfig(uint32 id)
+{
+    DVASSERT(id < materialConfigs.size());
+    currConfig = id;
+    InvalidateRenderVariants();
+}
+uint32 NMaterial::GetConfigCount()
+{
+    return materialConfigs.size();
+}
+const FastName& NMaterial::GetCurrConfigName()
+{
+    return materialConfigs[currConfig].presetName;
+}
+void NMaterial::SetCurrConfigName(const FastName& name)
+{
+    materialConfigs[currConfig].presetName = name;
+}
+uint32 NMaterial::FindConfigByName(const FastName& name)
+{
+    for (size_t i = 0, sz = materialConfigs.size(); i < sz; ++i)
+    {
+        if (materialConfigs[i].presetName == name)
+            return i;
+    }
+    return materialConfigs.size();
+}
+void NMaterial::AddConfig()
+{
+    materialConfigs.push_back(MaterialConfig());
+}
+void NMaterial::RemoveConfig(uint32 id)
+{
+    DVASSERT(id < materialConfigs.size());
+    materialConfigs.erase(materialConfigs.begin() + id);
+}
+
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
 {
     if (parent && !NeedLocalOverride(propLayoutId))

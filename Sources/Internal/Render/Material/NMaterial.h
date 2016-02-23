@@ -168,6 +168,16 @@ public:
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
 
+    //Configs managment
+    uint32 GetCurrConfig() const;
+    void SetCurrConfig(uint32 id);
+    uint32 GetConfigCount();
+    const FastName& GetCurrConfigName();
+    void SetCurrConfigName(const FastName& name);
+    uint32 FindConfigByName(const FastName& name); //return size if config not found!
+    void AddConfig();
+    void RemoveConfig(uint32 id);
+
     void BindParams(rhi::Packet& target);
 
     // returns true if has variant for this pass, false otherwise
@@ -243,6 +253,8 @@ private:
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
                          PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
+                         PROPERTY("configName", "Config name", GetCurrConfigName, SetCurrConfigName, I_VIEW | I_EDIT)
+                         PROPERTY("configId", "Current config", GetCurrConfig, SetCurrConfig, I_VIEW | I_EDIT)
                          PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
                          PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
                          DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
