@@ -326,7 +326,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
         UIControl* lineControl = new UIControl(Rect(linePos + gdPos, lineSize));
         lineControl->SetDebugDraw(true);
-        lineControl->SetName("magnet line control");
+        lineControl->SetName(FastName("magnet line control"));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         lineControl->SetSize(lineControl->GetSize() + extraSize);
         lineControl->SetPivotPoint(extraSize / 2.0f);
@@ -342,7 +342,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         lineSize *= gd->scale;
 
         UIControl* rectControl = new UIControl(Rect(linePos + gdPos, lineSize));
-        rectControl->SetName("rect of target control which we magnet to");
+        rectControl->SetName(FastName("rect of target control which we magnet to"));
         rectControl->SetDebugDraw(true);
         rectControl->SetAngle(line.gd->angle);
         hudControl->AddControl(rectControl);

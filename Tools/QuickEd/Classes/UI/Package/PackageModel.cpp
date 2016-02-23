@@ -421,9 +421,8 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
 void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, int destIndex, const DAVA::Vector2& pos)
 {
     DVASSERT(nullptr != commandExecutor && nullptr != package);
-    if (nullptr == commandExecutor || nullptr == package)
 
-        ControlsContainerNode* destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
+    ControlsContainerNode* destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
     StyleSheetsNode* destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
 
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
@@ -437,15 +436,15 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         switch (action)
         {
         case Qt::CopyAction:
-            commandExecutorPtr->CopyControls(srcControls, destControlContainer, destIndex, pos);
+            commandExecutor->CopyControls(srcControls, destControlContainer, destIndex, pos);
             break;
         case Qt::MoveAction:
             emit BeforeNodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
-            commandExecutorPtr->MoveControls(srcControls, destControlContainer, destIndex, pos);
+            commandExecutor->MoveControls(srcControls, destControlContainer, destIndex, pos);
             emit NodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
             break;
         case Qt::LinkAction:
-            commandExecutorPtr->InsertInstances(srcControls, destControlContainer, destIndex, pos);
+            commandExecutor->InsertInstances(srcControls, destControlContainer, destIndex, pos);
             break;
         default:
             DVASSERT(false && "unrecognised action!");
@@ -462,11 +461,11 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         switch (action)
         {
         case Qt::CopyAction:
-            commandExecutorPtr->CopyStyles(srcStyles, destStylesContainer, destIndex);
+            commandExecutor->CopyStyles(srcStyles, destStylesContainer, destIndex);
             break;
         case Qt::MoveAction:
             emit BeforeNodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
-            commandExecutor->MoveStyles(srcStyles, destStylesContainer, rowIndex);
+            commandExecutor->MoveStyles(srcStyles, destStylesContainer, destIndex);
             emit NodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
             break;
         default:
@@ -493,7 +492,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        commandExecutorPtr->Paste(packagePtr.get(), destNode, destIndex, string, pos);
+        commandExecutor->Paste(package, destNode, destIndex, string, pos);
     }
 }
 

@@ -324,7 +324,7 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
             InsertControlImpl(copy, dest, index);
             if (pos.x != -1.0f && pos.y != -1.0f)
             {
-                SetAbsoulutePosToControlNode(GetPackageNode(), copy, pos);
+                SetAbsoulutePosToControlNode(packageNode, copy, pos);
             }
             SafeRelease(copy);
             index++;
@@ -354,7 +354,7 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
             InsertControlImpl(copy, dest, index);
             if (pos.x != -1.0f && pos.y != -1.0f)
             {
-                SetAbsoulutePosToControlNode(GetPackageNode(), copy, pos);
+                SetAbsoulutePosToControlNode(packageNode, copy, pos);
             }
             SafeRelease(copy);
             index++;
@@ -394,7 +394,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
                     InsertControlImpl(node, dest, index);
                     if (pos.x != -1.0f && pos.y != -1.0f)
                     {
-                        SetAbsoulutePosToControlNode(GetPackageNode(), node, pos);
+                        SetAbsoulutePosToControlNode(packageNode, node, pos);
                     }
                 }
                 node->Release();
@@ -623,7 +623,7 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* de
                         InsertControl(control, controlsDest, index);
                         if (pos.x != -1.0f && pos.y != -1.0f)
                         {
-                            SetAbsoulutePosToControlNode(GetPackageNode(), control, pos);
+                            SetAbsoulutePosToControlNode(packageNode, control, pos);
                         }
                         index++;
                     }

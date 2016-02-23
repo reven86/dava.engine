@@ -48,6 +48,7 @@
 #include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
+#include "UI/Package/PackageMimeData.h"
 
 using namespace DAVA;
 
@@ -554,8 +555,8 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     {
         DVASSERT(nullptr != document);
         DAVA::Vector2 pos(event->pos().x(), event->pos().y());
-        auto node = systemManager->ControlNodeUnderPoint(pos);
-        systemManager->NodesHovered.Emit({ node });
+        auto node = systemsManager->ControlNodeUnderPoint(pos);
+        systemsManager->NodesHovered.Emit({ node });
         return nullptr != node && (!mimeData->hasFormat(PackageMimeData::MIME_TYPE) || !node->IsReadOnly());
     }
     return false;
@@ -563,18 +564,18 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
 
 void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
 {
-    systemManager->NodesHovered.Emit({ nullptr });
+    systemsManager->NodesHovered.Emit({ nullptr });
 }
 
 void PreviewWidget::OnDropEvent(QDropEvent* event)
 {
-    systemManager->NodesHovered.Emit({ nullptr });
+    systemsManager->NodesHovered.Emit({ nullptr });
     DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
     if (mimeData->hasFormat("text/plain"))
     {
         DAVA::Vector2 pos(event->pos().x(), event->pos().y());
-        auto node = systemManager->ControlNodeUnderPoint(pos);
+        auto node = systemsManager->ControlNodeUnderPoint(pos);
         DVASSERT(nullptr != node);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
