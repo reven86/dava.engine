@@ -68,16 +68,17 @@ CommandBufferMetal_t
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     uint32 cur_stride;
 
-    void _ApplyVertexData();
+    void _ApplyVertexData( unsigned firstVertex=0 );
 };
 
-void CommandBufferMetal_t::_ApplyVertexData()
+void CommandBufferMetal_t::_ApplyVertexData( unsigned firstVertex )
 {
-    for (unsigned s = 0; s != cur_vstream_count; ++s)
+   for (unsigned s = 0; s != cur_vstream_count; ++s)
     {
         id<MTLBuffer> vb = VertexBufferMetal::GetBuffer(cur_vb[s]);
+        unsigned off = (s==0) ? firstVertex*cur_stride : 0;
 
-        [encoder setVertexBuffer:vb offset:0 atIndex:s];
+        [encoder setVertexBuffer:vb offset:off atIndex:s];
     }
 }
 
@@ -324,10 +325,27 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 
     if (!(rect.x == 0 && rect.y == 0 && rect.width == 0 && rect.height == 0))
     {
+        unsigned max_x = (cb->rt)  ? unsigned(cb->rt.width-1)  :  unsigned(_Metal_DefFrameBuf.width-1);
+        unsigned max_y = (cb->rt)  ? unsigned(cb->rt.height-1)  :  unsigned(_Metal_DefFrameBuf.height-1);
+
         rc.x = rect.x;
         rc.y = rect.y;
-        rc.width = rect.width;
-        rc.height = rect.height;
+        rc.width = (rect.x+rect.width > max_x) ? (max_x-rc.x) : rect.width;
+        rc.height = (rect.y+rect.height > max_y) ? (max_y-rc.y) : rect.height;
+
+        if( rc.width == 0 )
+        {
+            rc.width = 1;
+            if( rc.x > 0 )
+                --rc.x;
+        }
+
+        if( rc.height == 0 )
+        {
+            rc.height = 1;
+            if( rc.y > 0 )
+                --rc.y;
+        }
     }
     else
     {
@@ -585,7 +603,7 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
         break;
     }
 
-    cb->_ApplyVertexData();
+    cb->_ApplyVertexData( firstVertex );
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:i_off];
 
     StatSet::IncStat(stat_DIP, 1);
@@ -682,7 +700,7 @@ metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
         break;
     }
 
-    cb->_ApplyVertexData();
+    cb->_ApplyVertexData( firstVertex );
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:i_off];
 
     StatSet::IncStat(stat_DIP, 1);
