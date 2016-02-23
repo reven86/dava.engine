@@ -163,4 +163,3 @@ void SpritesPackerModule::DisconnectCacheClient()
         SafeDelete(cacheClient);
     }
 }
-

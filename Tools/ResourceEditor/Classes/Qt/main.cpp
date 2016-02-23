@@ -104,8 +104,8 @@ int main(int argc, char* argv[])
     CommandLineManager cmdLine(argc, argv);
     if (cmdLine.IsEnabled())
     {
-        RunConsole( argc, argv, cmdLine );
-	}
+        RunConsole(argc, argv, cmdLine);
+    }
     else if (argc == 1)
     {
         RunGui(argc, argv, cmdLine);

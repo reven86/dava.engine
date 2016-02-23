@@ -130,10 +130,7 @@ bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inF
 
     return true;
 }
-
 }
-
-
 
 SceneExporterTool::SceneExporterTool()
     : CommandLineTool("-sceneexporter")
@@ -310,4 +307,3 @@ FilePath SceneExporterTool::GetQualityConfigPath() const
 
     return qualityConfigPath;
 }
-

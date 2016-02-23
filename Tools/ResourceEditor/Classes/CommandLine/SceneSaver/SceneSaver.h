@@ -36,8 +36,6 @@
 
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
-
-
 namespace DAVA
 {
 class Entity;
@@ -48,8 +46,8 @@ class ParticleEmitter;
 class SceneSaver
 {
 public:
-	SceneSaver();
-	virtual ~SceneSaver();
+    SceneSaver();
+    virtual ~SceneSaver();
 
     void SetInFolder(const DAVA::FilePath& folderPathname);
     void SetOutFolder(const DAVA::FilePath& folderPathname);
@@ -68,8 +66,8 @@ private:
     void CopyTextures(DAVA::Scene* scene);
     void CopyTexture(const DAVA::FilePath& texturePathname);
 
-    void CopyReferencedObject(DAVA::Entity *node);
-    void CopyEffects(DAVA::Entity *node);
+    void CopyReferencedObject(DAVA::Entity* node);
+    void CopyEffects(DAVA::Entity* node);
     void CopyAllParticlesEmitters(const DAVA::ParticleEmitterData& emitterData);
     void CopyEmitterByPath(const DAVA::FilePath& emitterConfigPath);
     void CopyEmitter(DAVA::ParticleEmitter* emitter);

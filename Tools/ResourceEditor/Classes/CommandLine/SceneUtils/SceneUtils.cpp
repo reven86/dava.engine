@@ -80,8 +80,8 @@ bool SceneUtils::CopyFile(const FilePath& filePathname)
     if (!retCopy)
     {
         Logger::Error("Can't copy %s from %s to %s",
-                                      workingPathname.c_str(),
-                                      dataSourceFolder.GetAbsolutePathname().c_str(),
+                      workingPathname.c_str(),
+                      dataSourceFolder.GetAbsolutePathname().c_str(),
                       dataFolder.GetAbsolutePathname().c_str());
     }
 
@@ -142,7 +142,7 @@ void SceneUtils::CopyFiles()
         if (!retCopy)
         {
             Logger::Error("Can't copy %s to %s",
-                                          it->first.GetAbsolutePathname().c_str(),
+                          it->first.GetAbsolutePathname().c_str(),
                           it->second.GetAbsolutePathname().c_str());
         }
     }

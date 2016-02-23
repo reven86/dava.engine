@@ -76,7 +76,6 @@ void CommandLineTool::PrintUsage() const
     options.PrintUsage();
 }
 
-
 void CommandLineTool::Process()
 {
     const bool printUsage = options.GetOption("-h").AsBool();
@@ -122,7 +121,6 @@ DAVA::FilePath CommandLineTool::GetQualityConfigPath() const
 {
     return DAVA::FilePath();
 };
-
 
 void CommandLineTool::PrepareQualitySystem() const
 {

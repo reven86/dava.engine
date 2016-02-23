@@ -180,7 +180,6 @@ private:
     #define TOOLS_TIME_PROFILE(name)
     #define TOOLS_IMM_TIME_PROFILE(name)
 #endif //__DAVAENGINE_ENABLE_TOOLS_STATS__
-    
 };
 
 #endif // __DAVAENGINE_STATS_H__

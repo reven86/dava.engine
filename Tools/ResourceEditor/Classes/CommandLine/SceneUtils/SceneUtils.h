@@ -41,15 +41,15 @@ public:
 
     void CleanFolder(const DAVA::FilePath& folderPathname);
 
-    void SetInFolder(const DAVA::FilePath &folderPathname);
-    void SetOutFolder(const DAVA::FilePath &folderPathname);
+    void SetInFolder(const DAVA::FilePath& folderPathname);
+    void SetOutFolder(const DAVA::FilePath& folderPathname);
 
     bool CopyFile(const DAVA::FilePath& filePathname);
     void PrepareFolderForCopyFile(const DAVA::String& filename);
 
-    DAVA::FilePath GetNewFilePath(const DAVA::FilePath &oldPathname) const;
-    
-    void AddFile(const DAVA::FilePath &sourcePath);
+    DAVA::FilePath GetNewFilePath(const DAVA::FilePath& oldPathname) const;
+
+    void AddFile(const DAVA::FilePath& sourcePath);
     void CopyFiles();
 
 private:

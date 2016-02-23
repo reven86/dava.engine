@@ -37,7 +37,7 @@
 
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
-class SceneExporterTool: public CommandLineTool
+class SceneExporterTool : public CommandLineTool
 {
     enum eAction : DAVA::int8
     {

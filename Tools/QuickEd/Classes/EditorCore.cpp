@@ -170,7 +170,6 @@ void EditorCore::OnReloadSpritesFinished()
     Sprite::ReloadSprites();
 }
 
-
 void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 {
     bool yesToAll = false;
@@ -298,7 +297,6 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
     }
 
     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
-
 
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();

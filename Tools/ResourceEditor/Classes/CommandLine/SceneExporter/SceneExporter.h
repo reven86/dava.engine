@@ -69,7 +69,6 @@ public:
         DAVA::String relativePathname;
     };
 
-
     SceneExporter() = default;
     ~SceneExporter();
 

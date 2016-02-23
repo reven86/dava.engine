@@ -52,9 +52,9 @@ public:
 
 private:
     SceneDumper(const DAVA::FilePath& scenePath);
-	~SceneDumper();
+    ~SceneDumper();
 
-	void DumpLinksRecursive(DAVA::Entity *entity, SceneLinks &links) const;
+    void DumpLinksRecursive(DAVA::Entity* entity, SceneLinks& links) const;
 
     void DumpCustomProperties(DAVA::KeyedArchive* properties, SceneLinks& links) const;
     void DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks& links) const;

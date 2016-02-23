@@ -72,8 +72,7 @@ private:
     void DisconnectCacheClient();
 
 private:
-
-    DAVA::AssetCacheClient *cacheClient = nullptr;
+    DAVA::AssetCacheClient* cacheClient = nullptr;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;

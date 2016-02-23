@@ -83,17 +83,16 @@ struct Channels
 class ImageTools
 {
 public:
-    
-     enum eComponentsRGBA
-     {
-         COLOR_RED		= 0,
-         COLOR_GREEN,
-         COLOR_BLUE,
-         COLOR_ALPHA,
-     };
-    
-    static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
-	static void ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality);
+    enum eComponentsRGBA
+    {
+        COLOR_RED = 0,
+        COLOR_GREEN,
+        COLOR_BLUE,
+        COLOR_ALPHA,
+    };
+
+    static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
+    static void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality);
 
     static bool SplitImage(const DAVA::FilePath& pathname);
 

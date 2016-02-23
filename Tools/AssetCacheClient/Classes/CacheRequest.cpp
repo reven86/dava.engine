@@ -87,4 +87,3 @@ AssetCache::AssetCacheError CacheRequest::CheckOptions() const
 
     return CheckOptionsInternal();
 }
-

@@ -31,7 +31,7 @@
 
 using namespace DAVA;
 
-SceneProcessor::SceneProcessor(EntityProcessorBase *_entityProcessor /*= NULL*/)
+SceneProcessor::SceneProcessor(EntityProcessorBase* _entityProcessor /*= NULL*/)
     : entityProcessor(SafeRetain(_entityProcessor))
 {
 }

@@ -1263,7 +1263,7 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     LoggerErrorHandler handler;
     Logger::AddCustomOutput(&handler);
 
-    SceneEditor2 *sceneForSaving = scene->CreateCopyForExport();
+    SceneEditor2* sceneForSaving = scene->CreateCopyForExport();
     sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath());
     sceneForSaving->Release();
     Logger::RemoveCustomOutput(&handler);

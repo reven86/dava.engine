@@ -48,7 +48,7 @@ using namespace DAVA;
 
 SceneDumper::SceneLinks SceneDumper::DumpLinks(const FilePath& scenePath)
 {
-	SceneLinks links;
+    SceneLinks links;
     SceneDumper dumper(scenePath);
 
     if (nullptr != dumper.scene)
@@ -64,10 +64,10 @@ SceneDumper::SceneDumper(const FilePath& scenePath)
 {
     scene = new Scene();
     if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePathname))
-	{
+    {
         Logger::Error("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str());
-		SafeRelease(scene);
-	}
+        SafeRelease(scene);
+    }
 
     RenderObjectsFlusher::Flush();
 }

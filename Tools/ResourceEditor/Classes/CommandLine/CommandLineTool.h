@@ -48,7 +48,6 @@ public:
     void Process();
 
 protected:
-
     virtual void ConvertOptionsToParamsInternal() = 0;
     virtual bool InitializeInternal() = 0;
     virtual void ProcessInternal() = 0;
@@ -63,7 +62,6 @@ private:
 
 protected:
     DAVA::ProgramOptions options;
-
 };
 
 #endif // __COMMAND_LINE_TOOL_H__

@@ -49,8 +49,6 @@
 #include "StringConstants.h"
 #include "Scene/SceneHelper.h"
 
-
-
 using namespace DAVA;
 
 namespace SceneExporterCache
@@ -84,7 +82,6 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
         Memcpy(key.data() + MD5::MD5Digest::DIGEST_SIZE, sceneParamsDigest.digest.data(), MD5::MD5Digest::DIGEST_SIZE);
     }
 }
-
 
 } //namespace SceneExporterCache
 

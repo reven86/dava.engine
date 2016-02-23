@@ -76,10 +76,10 @@ void SceneSaver::SaveFile(const String& fileName)
     {
         SaveScene(scene, filePath);
     }
-	else
-	{
+    else
+    {
         Logger::Error("[SceneSaver::SaveFile] Can't open file %s", fileName.c_str());
-	}
+    }
 
     SafeRelease(scene);
     RenderObjectsFlusher::Flush();
@@ -145,8 +145,8 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
         }
     }
 
-	CopyReferencedObject(scene);
-	CopyEffects(scene);
+    CopyReferencedObject(scene);
+    CopyEffects(scene);
     CopyCustomColorTexture(scene, fileName.GetDirectory());
 
     //save scene to new place
@@ -157,11 +157,11 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
     scene->SaveScene(tempSceneName, false);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
-	if(!moved)
-	{
+    if (!moved)
+    {
         Logger::Error("Can't move file %s", fileName.GetAbsolutePathname().c_str());
-	}
-    
+    }
+
     SceneValidator::Instance()->SetPathForChecking(oldPath);
 
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
@@ -186,10 +186,10 @@ void SceneSaver::ReleaseTextures()
 void SceneSaver::CopyTexture(const FilePath& texturePathname)
 {
     FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePathname);
-	
-	TextureDescriptor* desc = TextureDescriptor::CreateFromFile(descriptorPathname);
-	if(!desc)
-	{
+
+    TextureDescriptor* desc = TextureDescriptor::CreateFromFile(descriptorPathname);
+    if (!desc)
+    {
         Logger::Error("Can't open file %s", descriptorPathname.GetAbsolutePathname().c_str());
         return;
     }
