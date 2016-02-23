@@ -150,7 +150,7 @@ FrameControl::FrameControl()
     SetName(FastName("Frame Control"));
 }
 
-Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
+Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect)
 {
     switch (border)
     {
@@ -284,4 +284,25 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
         (*chilrenIt)->SetRect(borderRect);
     }
     UIControl::Draw(geometricData);
+}
+
+HUDMagnetLineControl::HUDMagnetLineControl(const Rect& rect)
+    : UIControl(rect)
+{
+    background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    background->SetDrawType(UIControlBackground::DRAW_TILED);
+}
+
+HUDMagnetRect::HUDMagnetRect(const Rect& rect)
+    : UIControl(rect)
+{
+    const int bordersCount = 4;
+    DAVA::Rect innerRect(Vector2(0.0f, 0.0f), rect.GetSize());
+    for (int i = 0; i < bordersCount; ++i)
+    {
+        Rect subRect = FrameControl::CreateFrameBorderRect(i, innerRect);
+        ScopedPtr<UIControl> control(new HUDMagnetLineControl(subRect));
+        control->SetName(FastName(String("border of magnet rect")));
+        AddControl(control);
+    }
 }

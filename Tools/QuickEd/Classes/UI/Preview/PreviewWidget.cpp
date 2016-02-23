@@ -579,7 +579,7 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
         DVASSERT(nullptr != node);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
-        emit DropRequested(mimeData, action, node, node->GetCount(), pos);
+        emit DropRequested(mimeData, action, node, node->GetCount(), &pos);
     }
     else if (mimeData->hasFormat("text/uri-list"))
     {

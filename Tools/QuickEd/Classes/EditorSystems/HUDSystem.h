@@ -51,7 +51,7 @@ private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
-    void OnNodesHovered(DAVA::Vector<ControlNode*> node);
+    void OnNodesHovered(const DAVA::Vector<ControlNode*>& node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 

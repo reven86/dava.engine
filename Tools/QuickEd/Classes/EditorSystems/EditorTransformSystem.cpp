@@ -392,7 +392,7 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const Vector<MagnetLin
             linePos[axis] = line.targetPosition;
             linePos[oppositeAxis] = Min(controlTop, targetTop);
             Vector2 lineSize;
-            lineSize[axis] = 0.0f;
+            lineSize[axis] = 1.0f;
             lineSize[oppositeAxis] = Max(controlBottom, targetBottom) - linePos[oppositeAxis];
 
             Rect lineRect(linePos, lineSize);

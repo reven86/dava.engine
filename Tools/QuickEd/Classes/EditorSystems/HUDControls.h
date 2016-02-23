@@ -83,12 +83,12 @@ public:
         BORDERS_COUNT
     };
     void Init();
+    static DAVA::Rect CreateFrameBorderRect(DAVA::uint32 border, const DAVA::Rect& frameRect);
 
 protected:
     explicit FrameControl();
     ~FrameControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
-    DAVA::Rect CreateFrameBorderRect(DAVA::uint32 border, const DAVA::Rect& frameRect) const;
 };
 
 class FrameRectControl : public ControlContainer
@@ -139,5 +139,28 @@ T* CreateContainerWithBorders()
     t->Init();
     return t;
 }
+
+class HUDMagnetLineControl final : public UIControl
+{
+public:
+    HUDMagnetLineControl(const DAVA::Rect& rect = Rect());
+
+private:
+    ~HUDMagnetLineControl() override = default;
+};
+
+class HUDMagnetRect final : public UIControl
+{
+public:
+    HUDMagnetRect(const DAVA::Rect& rect = Rect());
+
+private:
+    ~HUDMagnetRect() override = default;
+
+    //this class not designet to be resized
+    using UIControl::SetSize;
+    using UIControl::SetRect;
+    using UIControl::SetAbsoluteRect;
+};
 
 #endif //_QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_

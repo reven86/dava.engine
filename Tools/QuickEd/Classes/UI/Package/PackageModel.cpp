@@ -414,11 +414,11 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
 {
     int rowIndex = GetRowIndex(row, parent);
     PackageBaseNode* destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
-    OnDropMimeData(data, action, destNode, rowIndex, Vector2(-1.0f, -1.0f));
+    OnDropMimeData(data, action, destNode, rowIndex, nullptr);
     return true; //if we can drop - we must drop. Otherwise CanDropMimeData must return false;
 }
 
-void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, int destIndex, const DAVA::Vector2& pos)
+void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, int destIndex, const DAVA::Vector2* pos)
 {
     DVASSERT(nullptr != commandExecutor && nullptr != package);
 

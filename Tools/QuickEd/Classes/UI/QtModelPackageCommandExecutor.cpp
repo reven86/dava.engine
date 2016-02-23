@@ -304,7 +304,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode* control, Co
     return resultList;
 }
 
-void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*>& controls, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos)
+void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*>& controls, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2* pos)
 {
     Vector<ControlNode*> nodesToInsert;
     for (ControlNode* node : controls)
@@ -322,9 +322,9 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
         {
             ControlNode* copy = ControlNode::CreateFromPrototype(node);
             InsertControlImpl(copy, dest, index);
-            if (pos.x != -1.0f && pos.y != -1.0f)
+            if (pos != nullptr)
             {
-                SetAbsoulutePosToControlNode(packageNode, copy, pos);
+                SetAbsoulutePosToControlNode(packageNode, copy, *pos);
             }
             SafeRelease(copy);
             index++;
@@ -334,7 +334,7 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
     }
 }
 
-void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos)
+void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2* pos)
 {
     Vector<ControlNode*> nodesToCopy;
     for (ControlNode* node : nodes)
@@ -352,9 +352,9 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
         {
             ControlNode* copy = node->Clone();
             InsertControlImpl(copy, dest, index);
-            if (pos.x != -1.0f && pos.y != -1.0f)
+            if (pos != nullptr)
             {
-                SetAbsoulutePosToControlNode(packageNode, copy, pos);
+                SetAbsoulutePosToControlNode(packageNode, copy, *pos);
             }
             SafeRelease(copy);
             index++;
@@ -364,7 +364,7 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
     }
 }
 
-void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos)
+void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2* pos)
 {
     Vector<ControlNode*> nodesToMove;
     for (ControlNode* node : nodes)
@@ -392,9 +392,9 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
                 if (IsNodeInHierarchy(dest))
                 {
                     InsertControlImpl(node, dest, index);
-                    if (pos.x != -1.0f && pos.y != -1.0f)
+                    if (pos != nullptr)
                     {
-                        SetAbsoulutePosToControlNode(packageNode, node, pos);
+                        SetAbsoulutePosToControlNode(packageNode, node, *pos);
                     }
                 }
                 node->Release();
@@ -543,7 +543,7 @@ void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*>& controls,
     }
 }
 
-bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data, const DAVA::Vector2& pos)
+bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data, const DAVA::Vector2* pos)
 {
     if (dest->IsReadOnly())
         return false;
@@ -621,9 +621,9 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* de
                     for (ControlNode* control : acceptedControls)
                     {
                         InsertControl(control, controlsDest, index);
-                        if (pos.x != -1.0f && pos.y != -1.0f)
+                        if (pos != nullptr)
                         {
-                            SetAbsoulutePosToControlNode(packageNode, control, pos);
+                            SetAbsoulutePosToControlNode(packageNode, control, *pos);
                         }
                         index++;
                     }
