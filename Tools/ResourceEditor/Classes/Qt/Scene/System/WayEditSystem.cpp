@@ -244,7 +244,7 @@ void WayEditSystem::ProcessSelection()
             Entity* entity = item.first;
             if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
-                selectedWaypoints.Add(entity, selectionSystem->GetSelectionAABox(entity));
+                selectedWaypoints.Add(entity, selectionSystem->GetUntransformedBoundingBox(entity));
             }
         }
     }
@@ -363,7 +363,7 @@ void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup&
     {
         if (parentEntity == item.first->GetParent())
         {
-            ret.Add(item.first, selectionSystem->GetSelectionAABox(item.first));
+            ret.Add(item.first, selectionSystem->GetUntransformedBoundingBox(item.first));
         }
     }
 }
@@ -381,11 +381,11 @@ void WayEditSystem::DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::E
 
         if (FindEdgeComponent(srcPoint, dstPoint))
         {
-            toRemoveEdge.Add(srcPoint, selectionSystem->GetSelectionAABox(srcPoint));
+            toRemoveEdge.Add(srcPoint, selectionSystem->GetUntransformedBoundingBox(srcPoint));
         }
         else
         {
-            toAddEdge.Add(srcPoint, selectionSystem->GetSelectionAABox(srcPoint));
+            toAddEdge.Add(srcPoint, selectionSystem->GetUntransformedBoundingBox(srcPoint));
         }
     }
 }
@@ -473,8 +473,6 @@ void WayEditSystem::Draw()
         DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
         DVASSERT(wpComponent);
 
-        AABBox3 worldBox = selectionSystem->GetSelectionAABox(e);
-
         float32 redValue = 0.0f;
         float32 greenValue = 0.0f;
         float32 blueValue = wpComponent->IsStarting() ? 1.0f : 0.0f;
@@ -493,8 +491,9 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
 
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+        AABBox3 localBox = selectionSystem->GetUntransformedBoundingBox(e);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 

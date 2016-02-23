@@ -24,6 +24,7 @@ def check_format(file, formatOK):
 
 def format(file):
 	proc = subprocess.Popen([cwd+'/'+execName, '-i', '--style=file', file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	proc.communicate()
 
 cwd = os.getcwd()
 if os.name == 'nt':
@@ -33,7 +34,7 @@ else:
 sources = ['../../Sources/Internal', '../../Projects', '../../Tools']
 for source in sources:
 	for root, dirnames, filenames in os.walk(source):
-		for ext in ['cpp', 'h', 'c', 'mm']:
+		for ext in ['cpp', 'h', 'mm']:
 			for filename in fnmatch.filter(filenames, '*.'+ext):
 				file = os.path.join(root, filename)
 				if args.teamcity_notify:

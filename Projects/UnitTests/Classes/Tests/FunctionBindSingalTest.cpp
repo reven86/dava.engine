@@ -172,9 +172,9 @@ struct C : public M, virtual public V, virtual public A
 // =======================================================================================================================================
 // =======================================================================================================================================
 
-DAVA_TESTCLASS(FunctionBindSignalTest)
+DAVA_TESTCLASS (FunctionBindSignalTest)
 {
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         // ==================================================================================
         // common functions testing
@@ -351,7 +351,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(bound_f3_3(30, 20, 10, &aa) == aa.classFn3(10, 20, 30));
     }
 
-    DAVA_TEST(TestFunctionExtended)
+    DAVA_TEST (TestFunctionExtended)
     {
         B b;
         A* a_pt = nullptr;
@@ -410,7 +410,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
     {
     };
 
-    DAVA_TEST(TestSignals)
+    DAVA_TEST (TestSignals)
     {
         // ==================================================================================
         // signals

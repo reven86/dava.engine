@@ -64,7 +64,6 @@ public:
     int AddTab(Document* document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
-    bool isPixelized() const;
     QComboBox* GetComboBoxLanguage();
 
 protected:
@@ -85,11 +84,9 @@ signals:
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
-    void EmulationModeChanbed(bool emulationMode);
-    void PixelizationChanged(bool pixelization);
+    void EmulationModeChanged(bool emulationMode);
 
 public slots:
-    void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
     void OnDocumentChanged(Document* document);
 
@@ -102,10 +99,9 @@ private slots:
 
     void RebuildRecentMenu();
 
-    void SetBackgroundColorMenuTriggered(QAction* action);
+    void OnBackgroundCustomColorClicked();
 
-    // Pixelization.
-    void OnPixelizationStateChanged();
+    void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
@@ -121,6 +117,7 @@ private:
     void InitEmulationMode();
     void InitMenu();
     void SetupViewMenu();
+    void SetupBackgroundMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
@@ -128,16 +125,12 @@ private:
     void SaveMainWindowState();
     void RestoreMainWindowState();
 
-    // Background Frame Color menu actions.
-    QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction = nullptr;
-    QAction* backgroundFrameSelectCustomColorAction = nullptr;
-
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox* comboboxLanguage = nullptr;
+    QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
 };
 
 #endif // MAINWINDOW_H

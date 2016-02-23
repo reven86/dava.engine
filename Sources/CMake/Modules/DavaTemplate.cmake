@@ -336,31 +336,38 @@ if (QT5_FOUND)
 endif()
 
 if ( QT5_FOUND )
-    if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
-    elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    set (QTCONF_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    if (DEPLOY_DIR AND DEPLOY)
+        set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
     endif()
 
-    if     ( TEAMCITY_DEPLOY AND WIN32 )
+    if ( WIN32 )
+        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
+    elseif ( APPLE )
+        set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    endif()
+
+     if ( TEAMCITY_DEPLOY AND WIN32 )
         set ( PLUGINS_PATH .)
+        set ( QML_IMPORT_PATH .)
+        set ( QML2_IMPORT_PATH .)
     elseif ( TEAMCITY_DEPLOY AND APPLE )
         set ( PLUGINS_PATH PlugIns )
+        set ( QML_IMPORT_PATH Resources/qml)
+        set ( QML2_IMPORT_PATH Resources/qml)
     else()
-        set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
-        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
+        get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
+        set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
+        set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
+        set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
     endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
+                             ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
+       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in
        ${QTCONF_DEPLOY_PATH}
     )
 

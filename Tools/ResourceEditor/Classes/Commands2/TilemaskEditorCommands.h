@@ -40,42 +40,37 @@ class SceneEditor2;
 class ModifyTilemaskCommand : public Command2
 {
 public:
-    ModifyTilemaskCommand(LandscapeProxy* landscapeProxy,
-                          const Rect& updatedRect);
-    ~ModifyTilemaskCommand();
+    ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const Rect& updatedRect);
+    ~ModifyTilemaskCommand() override;
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    Entity* GetEntity() const override;
 
 protected:
-    Image* undoImageMask;
-    Image* redoImageMask;
-    LandscapeProxy* landscapeProxy;
+    Image* undoImageMask = nullptr;
+    Image* redoImageMask = nullptr;
+    LandscapeProxy* landscapeProxy = nullptr;
     Rect updatedRect;
 
-    void ApplyImageToTexture(Image* image, Texture* dstTex, int32 internalHandle);
-
-    Texture* texture[2];
+    void ApplyImageToTexture(Image* image, Texture* dstTex);
 };
 
 class SetTileColorCommand : public Command2
 {
 public:
-    SetTileColorCommand(LandscapeProxy* landscapeProxy,
-                        const FastName& level,
-                        const Color& color);
-    ~SetTileColorCommand();
+    SetTileColorCommand(LandscapeProxy* landscapeProxy, const FastName& level, const Color& color);
+    ~SetTileColorCommand() override;
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    Entity* GetEntity() const override;
 
 protected:
     const FastName& level;
     Color redoColor;
     Color undoColor;
-    LandscapeProxy* landscapeProxy;
+    LandscapeProxy* landscapeProxy = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__) */

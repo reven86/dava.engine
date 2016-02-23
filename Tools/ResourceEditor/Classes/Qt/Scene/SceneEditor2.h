@@ -178,6 +178,9 @@ public:
     void Activate() override;
     void Deactivate() override;
 
+    uint32 GetFramesCount() const;
+    void ResetFramesCount();
+
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
     INTROSPECTION(SceneEditor2,
@@ -209,6 +212,8 @@ protected:
     bool wasChanged; //deprecated
 
     void Setup3DDrawing();
+
+    uint32 framesCount = 0;
 
 private:
     friend struct EditorCommandNotify;

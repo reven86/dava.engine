@@ -324,7 +324,9 @@ void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPac
     if (control)
     {
         if (nameNode)
-            control->SetName(nameNode->AsString());
+        {
+            control->SetName(nameNode->AsFastName());
+        }
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);

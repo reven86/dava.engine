@@ -157,7 +157,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     }
 
     Rect2i updateRect = Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
-    notPassableTerrainProxy->Enable();
+    notPassableTerrainProxy->SetEnabled(true);
     notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 
     landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture(), false);
@@ -172,7 +172,7 @@ bool LandscapeEditorDrawSystem::DisableNotPassableTerrain()
         return false;
     }
 
-    notPassableTerrainProxy->Disable();
+    notPassableTerrainProxy->SetEnabled(false);
     landscapeProxy->SetToolTexture(nullptr, false);
 
     DisableCustomDraw();
