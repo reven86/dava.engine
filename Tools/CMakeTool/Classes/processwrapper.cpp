@@ -55,17 +55,15 @@ void ProcessWrapper::LaunchCmake(QString command)
 void ProcessWrapper::OnReadyReadStandardOutput()
 {
     QString text = process.readAllStandardOutput();
-    QRegularExpression regExp("(\r\n|\r|\n)");
-    regExp.setPatternOptions(QRegularExpression::MultilineOption);
-    emit processStandardOutput(text.replace(regExp, "<br>")); //qml won't replace it. I don't know why.
+    emit processStandardOutput(text);
     emit processOutput(text);
 }
 
 void ProcessWrapper::OnReadyReadStandardError()
 {
     QString text = process.readAllStandardError();
-    emit processStandardError(text);
     emit processOutput(text);
+    emit processStandardError(text);
 }
 
 void ProcessWrapper::OnProcessStateChanged(QProcess::ProcessState newState)
