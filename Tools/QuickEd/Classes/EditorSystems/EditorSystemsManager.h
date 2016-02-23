@@ -189,7 +189,7 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
         *destination++ = node;
     }
 
-    if (!stopPredicate(control))
+    if (!stopPredicate(node))
     {
         int count = node->GetCount();
         for (int i = 0; i < count; ++i)

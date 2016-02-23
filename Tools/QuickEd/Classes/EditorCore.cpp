@@ -61,7 +61,6 @@ EditorCore::EditorCore(QObject* parent)
     , documentGroup(new DocumentGroup(project, this))
     , mainWindow(std::make_unique<MainWindow>())
 {
-
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
@@ -189,8 +188,6 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
         }
     }
 }
-
-        .arg(document->GetPackageFilePath().GetBasename().c_str()),
 
 void EditorCore::Exit()
 {

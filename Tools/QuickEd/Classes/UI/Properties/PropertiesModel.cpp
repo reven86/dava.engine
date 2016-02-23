@@ -264,7 +264,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     }
     break;
 
-        case ResetRole:
+    case ResetRole:
     {
         ResetProperty(property);
         return true;

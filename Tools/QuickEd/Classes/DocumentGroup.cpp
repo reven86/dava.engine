@@ -423,7 +423,7 @@ void DocumentGroup::SaveDocument(Document* document)
         {
             FilePath projectPath(saveFileName.toStdString().c_str());
 
-            document->GetPackage().lock()->SetPath(projectPath);
+            document->GetPackage()->SetPath(projectPath);
         }
         else
         {
@@ -435,8 +435,8 @@ void DocumentGroup::SaveDocument(Document* document)
         return;
     }
     QString path = document->GetPackageAbsolutePath();
-    auto packagePtr = document->GetPackage().lock();
-    DVVERIFY(project->SavePackage(packagePtr.get())); //TODO:log here
+    auto package = document->GetPackage();
+    DVVERIFY(project->SavePackage(package)); //TODO:log here
     document->GetUndoStack()->setClean();
 }
 
@@ -445,12 +445,8 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
     FilePath davaPath(canonicalFilePath.toStdString());
     RefPtr<PackageNode> packageRef = project->OpenPackage(davaPath);
-    DVASSERT(packageRef.Get() != nullptr);
 
-    PackageNode* packagePtr = SafeRetain(packageRef.Get());
-    std::shared_ptr<PackageNode> package = std::shared_ptr<PackageNode>(packagePtr, [](BaseObject* obj) { obj->Release(); });
-
-    Document* document = new Document(package, this);
+    Document* document = new Document(packageRef, this);
     connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
     connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
     return document;
