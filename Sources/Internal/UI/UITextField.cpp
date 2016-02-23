@@ -270,6 +270,8 @@ extern void CloseKeyboard();
 #include "UI/UITextFieldWinUAP.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "UI/UITextFieldMacOS.h"
+#else
+#error "platform must be specifyed. For default implementation use add_definitions DISABLE_NATIVE_TEXTFIELD macro"
 #endif
 
 #ifndef DISABLE_NATIVE_TEXTFIELD

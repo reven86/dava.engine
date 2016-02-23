@@ -11,6 +11,8 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 set                   ( QML_SCAN_DIR ${CMAKE_CURRENT_LIST_DIR} )
 include               ( CMake-common )
 
+add_definitions       ( -D__DISABLE_NATIVE_WEBVIEW__ -DDISABLE_NATIVE_TEXTFIELD)
+
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
