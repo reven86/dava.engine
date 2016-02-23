@@ -215,9 +215,7 @@ bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet
 
 bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
 {
-    if (((selector.stateMask & control->GetState()) != selector.stateMask)
-        || (selector.name.IsValid() && selector.name != control->GetFastName())
-        || (!selector.className.empty() && selector.className != control->GetClassName()))
+    if (((selector.stateMask & control->GetState()) != selector.stateMask) || (selector.name.IsValid() && selector.name != control->GetName()) || (!selector.className.empty() && selector.className != control->GetClassName()))
         return false;
 
     for (const FastName& clazz : selector.classes)
