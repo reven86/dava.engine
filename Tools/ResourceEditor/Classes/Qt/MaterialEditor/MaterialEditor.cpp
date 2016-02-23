@@ -132,6 +132,11 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     QObject::connect(ui->actionSaveMaterialPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialSave(bool)));
     QObject::connect(ui->actionLoadMaterialPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialLoad(bool)));
 
+    /**/
+    QObject::connect(ui->add, SIGNAL(clicked()), this, SLOT(OnAddConfig()));
+    QObject::connect(ui->left, SIGNAL(clicked()), this, SLOT(OnLeftConfig()));
+    QObject::connect(ui->right, SIGNAL(clicked()), this, SLOT(OnRightConfig()));
+
     posSaver.Attach(this);
     new QtPosSaver(ui->splitter);
     treeStateHelper = new PropertyEditorStateHelper(ui->materialProperty, (QtPropertyModel*)ui->materialProperty->model());
@@ -921,6 +926,40 @@ void MaterialEditor::OnTemplateChanged(int index)
         }
     }
 
+    RefreshMaterialProperties();
+}
+
+void MaterialEditor::OnLeftConfig()
+{
+    if (1 == curMaterials.size())
+    {
+        DAVA::NMaterial* material = curMaterials[0];
+        DAVA::uint32 curr = material->GetCurrConfig();
+        if (curr > 0)
+            material->SetCurrConfig(curr - 1);
+    }
+    RefreshMaterialProperties();
+}
+
+void MaterialEditor::OnAddConfig()
+{
+    if (1 == curMaterials.size())
+    {
+        DAVA::NMaterial* material = curMaterials[0];
+        material->AddConfig();
+        material->SetCurrConfig(material->GetConfigCount() - 1);
+    }
+    RefreshMaterialProperties();
+}
+void MaterialEditor::OnRightConfig()
+{
+    if (1 == curMaterials.size())
+    {
+        DAVA::NMaterial* material = curMaterials[0];
+        DAVA::uint32 curr = material->GetCurrConfig();
+        if (curr < (material->GetConfigCount() - 1))
+            material->SetCurrConfig(curr + 1);
+    }
     RefreshMaterialProperties();
 }
 

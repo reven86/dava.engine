@@ -157,6 +157,7 @@ VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData&
 
     if (textures->count(textureName))
     {
+        auto& localTextures = material->materialConfigs[0].localTextures;
         Texture* tex = material->GetEffectiveTexture(textureName);
         if (nullptr != tex)
         {

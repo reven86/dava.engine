@@ -97,7 +97,42 @@ NMaterial::MaterialConfig::MaterialConfig()
     , localFlags(16, 0)
 {
 }
-NMaterial::MaterialConfig::~MaterialConfig()
+NMaterial::MaterialConfig::MaterialConfig(const MaterialConfig& config)
+    : localProperties(16, nullptr)
+    , localTextures(8, nullptr)
+    , localFlags(16, 0)
+{
+    operator=(config);
+}
+
+NMaterial::MaterialConfig& NMaterial::MaterialConfig::operator=(const MaterialConfig& config)
+{
+    Clear();
+    presetName = config.presetName;
+    fxName = config.fxName;
+    localFlags = config.localFlags;
+    for (auto& tex : config.localTextures)
+    {
+        MaterialTextureInfo* texInfo = new MaterialTextureInfo();
+        texInfo->path = tex.second->path;
+        texInfo->texture = SafeRetain(tex.second->texture);
+        localTextures[tex.first] = texInfo;
+    }
+    localProperties.clear();
+    for (auto& prop : config.localProperties)
+    {
+        NMaterialProperty* newProp = new NMaterialProperty();
+        newProp->name = prop.first;
+        newProp->type = prop.second->type;
+        newProp->arraySize = prop.second->arraySize;
+        newProp->data.reset(new float[ShaderDescriptor::CalculateDataSize(newProp->type, newProp->arraySize)]);
+        newProp->SetPropertyValue(prop.second->data.get());
+        localProperties[newProp->name] = newProp;
+    }
+    return *this;
+}
+
+void NMaterial::MaterialConfig::Clear()
 {
     for (auto& prop : localProperties)
         SafeDelete(prop.second);
@@ -106,6 +141,11 @@ NMaterial::MaterialConfig::~MaterialConfig()
         SafeRelease(texInfo.second->texture);
         SafeDelete(texInfo.second);
     }
+}
+
+NMaterial::MaterialConfig::~MaterialConfig()
+{
+    Clear();
 }
 
 NMaterial::~NMaterial()
@@ -916,28 +956,7 @@ NMaterial* NMaterial::Clone()
     clonedMaterial->materialConfigs.resize(materialConfigs.size());
     for (size_t i = 0, sz = materialConfigs.size(); i < sz; ++i)
     {
-        clonedMaterial->materialConfigs[i].fxName = materialConfigs[i].fxName;
-        for (auto prop : materialConfigs[i].localProperties)
-        {
-            NMaterialProperty* newProp = new NMaterialProperty();
-            newProp->name = prop.first;
-            newProp->type = prop.second->type;
-            newProp->arraySize = prop.second->arraySize;
-            newProp->data.reset(new float[ShaderDescriptor::CalculateDataSize(newProp->type, newProp->arraySize)]);
-            newProp->SetPropertyValue(prop.second->data.get());
-            clonedMaterial->materialConfigs[i].localProperties[newProp->name] = newProp;
-        }
-
-        for (auto tex : materialConfigs[i].localTextures)
-        {
-            MaterialTextureInfo* res = new MaterialTextureInfo();
-            res->path = tex.second->path;
-            res->texture = SafeRetain(tex.second->texture);
-            clonedMaterial->materialConfigs[i].localTextures[tex.first] = res;
-        }
-
-        for (auto flag : materialConfigs[i].localFlags)
-            materialConfigs[i].localFlags[flag.first] = flag.second;
+        clonedMaterial->materialConfigs[i] = materialConfigs[i];
     }
 
     clonedMaterial->SetParent(parent);
@@ -1137,7 +1156,7 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
         qualityGroup = FastName(archive->GetString(NMaterialSerializationKey::QualityGroup).c_str());
     }
 
-    uint32 configCount = archive->GetUInt32(NMaterialSerializationKey::MaterialKey, 1);
+    uint32 configCount = archive->GetUInt32(NMaterialSerializationKey::ConfigCount, 1);
     materialConfigs.resize(configCount);
     if (configCount == 1)
     {

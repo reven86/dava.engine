@@ -77,6 +77,10 @@ protected slots:
     void OnPropertyEdited(const QModelIndex&);
     void OnAddRemoveButton();
 
+    void OnLeftConfig();
+    void OnAddConfig();
+    void OnRightConfig();
+
     void OnMaterialAddGlobal(bool checked);
     void OnMaterialRemoveGlobal(bool checked);
     void OnMaterialSave(bool checked);

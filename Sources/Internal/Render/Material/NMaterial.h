@@ -225,6 +225,10 @@ private:
         HashMap<FastName, MaterialTextureInfo*> localTextures;
         HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
 
+        MaterialConfig& operator=(const MaterialConfig& config);
+        MaterialConfig(const MaterialConfig& config);
+
+        void Clear();
         MaterialConfig();
         ~MaterialConfig();
     };
