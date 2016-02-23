@@ -32,7 +32,6 @@
 
 namespace DAVA
 {
-
 EdgeComponent::EdgeComponent()
     : Component()
     , nextEntity(NULL)
@@ -53,75 +52,71 @@ EdgeComponent::EdgeComponent(const EdgeComponent& cp)
     SetNextEntity(cp.nextEntity);
     SetProperties(cp.GetProperties());
 }
-    
-Component * EdgeComponent::Clone(Entity * toEntity)
+
+Component* EdgeComponent::Clone(Entity* toEntity)
 {
-	EdgeComponent * newComponent = new EdgeComponent();
-	newComponent->SetEntity(toEntity);
+    EdgeComponent* newComponent = new EdgeComponent();
+    newComponent->SetEntity(toEntity);
     newComponent->SetNextEntity(GetNextEntity());
     newComponent->SetProperties(properties);
-    
-	return newComponent;
+
+    return newComponent;
 }
 
-void EdgeComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void EdgeComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DVASSERT(false);
 }
 
-void EdgeComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void EdgeComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DVASSERT(false);
 }
 
-void EdgeComponent::SetProperties(KeyedArchive *archieve)
+void EdgeComponent::SetProperties(KeyedArchive* archieve)
 {
     SafeRelease(properties);
     properties = new KeyedArchive(*archieve);
 }
-    
-void EdgeComponent::SetNextEntity(Entity * _entity)
+
+void EdgeComponent::SetNextEntity(Entity* _entity)
 {
-    if(nextEntity != _entity) 
+    if (nextEntity != _entity)
     {
         SafeRelease(nextEntity);
         nextEntity = SafeRetain(_entity);
     }
 }
 
-
-void EdgeComponent::SetNextEntityName(const FastName & name)
+void EdgeComponent::SetNextEntityName(const FastName& name)
 {
-	//do nothing
+    //do nothing
 }
 
 const FastName EdgeComponent::GetNextEntityName() const
 {
-	FastName nextEntityName;
-	if(nextEntity)
-	{
-		nextEntityName = nextEntity->GetName();
-	}
+    FastName nextEntityName;
+    if (nextEntity)
+    {
+        nextEntityName = nextEntity->GetName();
+    }
 
-	return nextEntityName;
+    return nextEntityName;
 }
 
 void EdgeComponent::SetNextEntityTag(int32 tag)
 {
-	//do nothing
+    //do nothing
 }
 
 int32 EdgeComponent::GetNextEntityTag() const
 {
     int32 tag = 0;
-	if(nextEntity)
-	{
-		tag = nextEntity->GetTag();
-	}
+    if (nextEntity)
+    {
+        tag = nextEntity->GetTag();
+    }
 
-	return tag;
+    return tag;
 }
-
-
-
 }

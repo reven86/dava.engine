@@ -33,7 +33,6 @@
 
 namespace DAVA
 {
-
 const String TeamcityTestsOutput::START_TEST = "start test ";
 const String TeamcityTestsOutput::FINISH_TEST = "finish test ";
 const String TeamcityTestsOutput::ERROR_TEST = "test error ";
@@ -52,12 +51,12 @@ const String TeamcityTestsOutput::AVERAGE_FPS = "Average_fps";
 
 const String TeamcityTestsOutput::FRAME_DELTA = "Frame_delta";
 const String TeamcityTestsOutput::MAX_MEM_USAGE = "Max_memory_usage";
-    
+
 const String TeamcityTestsOutput::MATERIAL_TEST_TIME = "Material_test_time";
 const String TeamcityTestsOutput::MATERIAL_ELAPSED_TEST_TIME = "Material__elapsed_test_time";
 const String TeamcityTestsOutput::MATERIAL_FRAME_DELTA = "Material_frame_delta";
 
-void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
+void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8* text)
 {
     String textStr = text;
     Vector<String> lines;
@@ -69,24 +68,26 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     {
         String testName = lines.at(1);
         output = "##teamcity[testStarted name=\'" + testName + "\']\n";
-    } else if (FINISH_TEST == lines[0])
+    }
+    else if (FINISH_TEST == lines[0])
     {
         String testName = lines.at(1);
         output = "##teamcity[testFinished name=\'" + testName + "\']\n";
-
-    } else if (ERROR_TEST == lines[0])
+    }
+    else if (ERROR_TEST == lines[0])
     {
         String testName = lines.at(1);
         String condition = NormalizeString(lines.at(2).c_str());
         String errorFileLine = NormalizeString(lines.at(3).c_str());
-        output = "##teamcity[testFailed name=\'" + testName 
-            + "\' message=\'" + condition 
-            + "\' details=\'" + errorFileLine + "\']\n";
-    } else if (STATISTIC == lines[0])
+        output = "##teamcity[testFailed name=\'" + testName
+        + "\' message=\'" + condition
+        + "\' details=\'" + errorFileLine + "\']\n";
+    }
+    else if (STATISTIC == lines[0])
     {
         output = "##teamcity[buildStatisticValue key=\'" + lines[1] + "\' value=\'" + lines[2] + "\']\n";
-
-    } else
+    }
+    else
     {
         TeamcityOutput::Output(ll, text);
         return;

@@ -41,92 +41,119 @@ class FCDocument;
 class FCOLLADA_EXPORT FCDImage : public FCDEntity
 {
 private:
-	DeclareObjectType(FCDEntity);
+    DeclareObjectType(FCDEntity);
 
-	DeclareParameter(fstring, FUParameterQualifiers::SIMPLE, filename, FC("Filename"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, width, FC("Width"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, height, FC("Height"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, depth, FC("Depth"));
-
-public:
-	DeclareFlag(Video, 0); /**< Flags this image as a video stream.*/
-	DeclareFlagCount(1);
+    DeclareParameter(fstring, FUParameterQualifiers::SIMPLE, filename, FC("Filename"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, width, FC("Width"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, height, FC("Height"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, depth, FC("Depth"));
 
 public:
-	/** Constructor: do not use directly.
+    DeclareFlag(Video, 0); /**< Flags this image as a video stream.*/
+    DeclareFlagCount(1);
+
+public:
+    /** Constructor: do not use directly.
 		Instead, use the FCDLibrary::AddEntity function.
 		@param document The COLLADA document that owns the image. */
-	FCDImage(FCDocument* document);
+    FCDImage(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDImage();
+    /** Destructor. */
+    virtual ~FCDImage();
 
-	/** Retrieves the entity type for this class. This function is part
+    /** Retrieves the entity type for this class. This function is part
 		of the FCDEntity class interface.
 		@return The entity type: IMAGE. */
-	virtual Type GetType() const { return IMAGE; }
+    virtual Type GetType() const
+    {
+        return IMAGE;
+    }
 
-	/** Retrieves the filename of the image file.
+    /** Retrieves the filename of the image file.
 		This is the image file that you should load when attempting
 		to use the image bits. FCollada will deal with the filename
 		internally and provide an absolute filename.
 		@return The filename of the image file. */
-	const fstring& GetFilename() const { return filename; }
+    const fstring& GetFilename() const
+    {
+        return filename;
+    }
 
-	/** Sets the filename of the image file.
+    /** Sets the filename of the image file.
 		This is the image file that you should load when attempting
 		to use the image bits. FCollada will deal with the filename
 		internally and export a relative filename.
 		@param _filename The filename of the image file. */
-	void SetFilename(const fstring& _filename);
+    void SetFilename(const fstring& _filename);
 
-	/** Retrieves the width of the image.
+    /** Retrieves the width of the image.
 		This parameter is useful for off-screen render targets and is
 		optional for texture image files.
 		@return The width of the image. This value will be zero to indicate
 			that you should retrieve the width of the image from the image file. */
-	const uint32& GetWidth() const { return width; }
+    const uint32& GetWidth() const
+    {
+        return width;
+    }
 
-	/** Sets the width of the image.
+    /** Sets the width of the image.
 		This parameter is useful for off-screen render targets and is
 		optional for texture image files.
 		@param _width The width of the image. This value can be zero to indicate
 			that you should retrieve the width of the image from the image file. */
-	void SetWidth(uint32 _width) { width = _width; SetDirtyFlag(); }
+    void SetWidth(uint32 _width)
+    {
+        width = _width;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the height of the image.
+    /** Retrieves the height of the image.
 		This parameter is useful for off-screen render targets and is
 		optional for texture image files.
 		@return The height of the image. This value will be zero to indicate
 			that you should retrieve the height of the image from the image file. */
-	const uint32& GetHeight() const { return height; }
+    const uint32& GetHeight() const
+    {
+        return height;
+    }
 
-	/** Sets the height of the image.
+    /** Sets the height of the image.
 		This parameter is useful for off-screen render targets and is
 		optional for texture image files.
 		@param _height The height of the image. This value can be zero to indicate
 			that you should retrieve the width of the image from the image file. */
-	void SetHeight(uint32 _height) { height = _height; SetDirtyFlag(); }
+    void SetHeight(uint32 _height)
+    {
+        height = _height;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the depth of the 3D image.
+    /** Retrieves the depth of the 3D image.
 		This parameter is optional for texture image files.
 		@return The depth of the image. This value will be zero to indicate
 			that you should retrieve the depth of the image from the image file. */
-	const uint32& GetDepth() const { return depth; }
+    const uint32& GetDepth() const
+    {
+        return depth;
+    }
 
-	/** Sets the depth of the 3D image.
+    /** Sets the depth of the 3D image.
 		This parameter is optional for texture image files.
 		@param _depth The depth of the image. This value can be zero to indicate
 			that you should retrieve the depth of the image from the image file. */
-	void SetDepth(uint32 _depth) { depth = _depth; SetDirtyFlag(); }
+    void SetDepth(uint32 _depth)
+    {
+        depth = _depth;
+        SetDirtyFlag();
+    }
 
-	/** Copies the image entity into a clone.
+    /** Copies the image entity into a clone.
 		The clone may reside in another document.
 		@param clone The empty clone. If this pointer is NULL, a new image
 			will be created and you will need to release the returned pointer manually.
 		@param cloneChildren Whether to recursively clone this entity's children.
 		@return The clone. */
-	virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
+    virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
 };
 
 #endif // _FCD_IMAGE_H_

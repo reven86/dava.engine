@@ -43,16 +43,17 @@
 
 namespace DAVA
 {
-
 const static float32 WIND_PERIOD = 2 * PI;
 
-WindSystem::WindInfo::WindInfo(WindComponent * c) :
-component(c)
+WindSystem::WindInfo::WindInfo(WindComponent* c)
+    :
+    component(c)
 {
     timeValue = (float32)Random::Instance()->RandFloat(1000.f);
 }
 
-WindSystem::WindSystem(Scene * scene) : 
+WindSystem::WindSystem(Scene* scene)
+    :
     SceneSystem(scene)
 {
     RenderOptions* options = Renderer::GetOptions();
@@ -61,7 +62,7 @@ WindSystem::WindSystem(Scene * scene) :
 
     isVegetationAnimationEnabled = QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION);
 
-    for(int32 i = 0; i < WIND_TABLE_SIZE; i++)
+    for (int32 i = 0; i < WIND_TABLE_SIZE; i++)
     {
         float32 t = WIND_PERIOD * i / (float32)WIND_TABLE_SIZE;
         windValuesTable[i] = (2.f + sinf(t) * 0.7f + cosf(t * 10) * 0.3f);
@@ -75,19 +76,19 @@ WindSystem::~WindSystem()
     Renderer::GetOptions()->RemoveObserver(this);
 }
 
-void WindSystem::AddEntity(Entity * entity)
+void WindSystem::AddEntity(Entity* entity)
 {
-    WindComponent * wind = GetWindComponent(entity);
+    WindComponent* wind = GetWindComponent(entity);
     winds.push_back(new WindInfo(wind));
 }
 
-void WindSystem::RemoveEntity(Entity * entity)
+void WindSystem::RemoveEntity(Entity* entity)
 {
     int32 windsCount = static_cast<int32>(winds.size());
-    for(int32 i = 0; i < windsCount; ++i)
+    for (int32 i = 0; i < windsCount; ++i)
     {
-        WindInfo * info = winds[i];
-        if(info->component->GetEntity() == entity)
+        WindInfo* info = winds[i];
+        if (info->component->GetEntity() == entity)
         {
             SafeDelete(info);
             RemoveExchangingWithLast(winds, i);
@@ -99,25 +100,25 @@ void WindSystem::RemoveEntity(Entity * entity)
 void WindSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("WindSystem::Process")
-    
-    if(!isAnimationEnabled || !isVegetationAnimationEnabled)
+
+    if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
 
     int32 windCount = static_cast<int32>(winds.size());
-    for(int32 i = 0; i < windCount; ++i)
+    for (int32 i = 0; i < windCount; ++i)
     {
         winds[i]->timeValue += timeElapsed * winds[i]->component->GetWindSpeed();
     }
 }
 
-Vector3 WindSystem::GetWind(const Vector3 & inPosition) const
+Vector3 WindSystem::GetWind(const Vector3& inPosition) const
 {
     Vector3 ret;
     int32 windCount = static_cast<int32>(winds.size());
-    for(int32 i = 0; i < windCount; ++i)
+    for (int32 i = 0; i < windCount; ++i)
     {
-        WindInfo * info = winds[i];
-        if(info->component->GetInfluenceBBox().IsInside(inPosition))
+        WindInfo* info = winds[i];
+        if (info->component->GetInfluenceBBox().IsInside(inPosition))
         {
             ret += info->component->GetDirection() * info->component->GetWindForce() * GetWindValueFromTable(inPosition, info) * winds[i]->component->GetWindSpeed();
         }
@@ -126,7 +127,7 @@ Vector3 WindSystem::GetWind(const Vector3 & inPosition) const
     return ret;
 }
 
-float32 WindSystem::GetWindValueFromTable(const Vector3 & inPosition, const WindInfo * info) const
+float32 WindSystem::GetWindValueFromTable(const Vector3& inPosition, const WindInfo* info) const
 {
     Vector3 dir = info->component->GetDirection();
     Vector3 projPt = dir * (inPosition.DotProduct(dir));
@@ -139,10 +140,9 @@ float32 WindSystem::GetWindValueFromTable(const Vector3 & inPosition, const Wind
     return windValuesTable[i];
 }
 
-void WindSystem::HandleEvent(Observable * observable)
+void WindSystem::HandleEvent(Observable* observable)
 {
-    RenderOptions * options = static_cast<RenderOptions *>(observable);
+    RenderOptions* options = static_cast<RenderOptions*>(observable);
     isAnimationEnabled = options->IsOptionEnabled(RenderOptions::SPEEDTREE_ANIMATIONS);
 }
-
 };

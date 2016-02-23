@@ -38,7 +38,6 @@
 #include <QtGui>
 #include <QtWidgets>
 
-
 class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
@@ -53,12 +52,12 @@ class Project;
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
-    
+
 public:
     struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
 
-    void CreateUndoRedoActions(const QUndoGroup *undoGroup);
+    void CreateUndoRedoActions(const QUndoGroup* undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
@@ -68,13 +67,13 @@ public:
     QComboBox* GetComboBoxLanguage();
 
 protected:
-    void closeEvent(QCloseEvent *event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 signals:
     void TabClosed(int tab);
     void CloseProject();
     void ActionExitTriggered();
-    void RecentMenuTriggered(QAction *);
+    void RecentMenuTriggered(QAction*);
     void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
     void SaveAllDocuments();
@@ -83,7 +82,7 @@ signals:
     void CloseRequested();
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
-    void GlobalStyleClassesChanged(const QString &classesStr);
+    void GlobalStyleClassesChanged(const QString& classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
     void EmulationModeChanged(bool emulationMode);
 
@@ -95,18 +94,18 @@ private slots:
     void OnCleanChanged(bool val);
     void OnSaveDocument();
     void OnShowHelp();
-    
+
     void OnOpenProject();
-    
+
     void RebuildRecentMenu();
 
-    void SetBackgroundColorMenuTriggered(QAction* action);
+    void OnBackgroundCustomColorClicked();
 
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
-    void OnGlobalClassesChanged(const QString &str);
+    void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
 
 private:
@@ -118,6 +117,7 @@ private:
     void InitEmulationMode();
     void InitMenu();
     void SetupViewMenu();
+    void SetupBackgroundMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
@@ -125,16 +125,12 @@ private:
     void SaveMainWindowState();
     void RestoreMainWindowState();
 
-    // Background Frame Color menu actions.
-    QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction = nullptr;
-    QAction* backgroundFrameSelectCustomColorAction = nullptr;
-
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox* comboboxLanguage = nullptr;
+    QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
 };
 
 #endif // MAINWINDOW_H

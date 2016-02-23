@@ -42,6 +42,7 @@ class StaticWebViewTest : public BaseScreen
 {
 protected:
     ~StaticWebViewTest(){};
+
 public:
     StaticWebViewTest();
 
@@ -49,12 +50,12 @@ public:
     void UnloadResources() override;
 
 private:
-    void OnButtonSetStatic(BaseObject *obj, void *data, void *callerData);
-    void OnButtonSetNormal(BaseObject *obj, void *data, void *callerData);
-    void OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData);
-    void OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData);
-    void OnButtonCheckTransparancy(BaseObject *obj, void *data, void *callerData);
-    void OnButtonUncheckTransparancy(BaseObject *obj, void *data, void *callerData);
+    void OnButtonSetStatic(BaseObject* obj, void* data, void* callerData);
+    void OnButtonSetNormal(BaseObject* obj, void* data, void* callerData);
+    void OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* callerData);
+    void OnButtonMinus10FromAlfa(BaseObject* obj, void* data, void* callerData);
+    void OnButtonCheckTransparancy(BaseObject* obj, void* data, void* callerData);
+    void OnButtonUncheckTransparancy(BaseObject* obj, void* data, void* callerData);
     void OnButtonExecJS(BaseObject* obj, void*, void*);
     void OnLoadHTMLString(BaseObject* obj, void*, void*);
     void OnButtonVisible(BaseObject*, void*, void*);

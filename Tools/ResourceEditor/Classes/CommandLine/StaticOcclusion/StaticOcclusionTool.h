@@ -31,7 +31,7 @@
 #define __STATIC_OCCLUSION_TOOL_H__
 
 #include "CommandLine/CommandLineTool.h"
-class StaticOcclusionTool: public CommandLineTool
+class StaticOcclusionTool : public CommandLineTool
 {
     enum eAction : DAVA::int32
     {

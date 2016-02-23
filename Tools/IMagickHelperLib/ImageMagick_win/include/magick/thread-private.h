@@ -25,71 +25,74 @@ extern "C" {
 #include <magick/thread_.h>
 
 #if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR > 10))
-#define MagickCachePrefetch(address,mode,locality) \
-  __builtin_prefetch(address,mode,locality)
+#define MagickCachePrefetch(address, mode, locality) \
+  __builtin_prefetch(address, mode, locality)
 #else
-#define MagickCachePrefetch(address,mode,locality)
+#define MagickCachePrefetch(address, mode, locality)
 #endif
 
-#define omp_throttle(factor)  num_threads(omp_get_max_threads() >> \
-   (factor) == 0 ? 1 : omp_get_max_threads() >> (factor))
+#define omp_throttle(factor) num_threads(omp_get_max_threads() >> \
+                                         (factor) == \
+                                         0 ? \
+                                         1 : \
+                                         omp_get_max_threads() >> (factor))
 
 #if defined(MAGICKCORE_THREAD_SUPPORT)
-  typedef pthread_mutex_t MagickMutexType;
+typedef pthread_mutex_t MagickMutexType;
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
-  typedef CRITICAL_SECTION MagickMutexType;
+typedef CRITICAL_SECTION MagickMutexType;
 #else
-  typedef size_t MagickMutexType;
+typedef size_t MagickMutexType;
 #endif
 
 static inline MagickThreadType GetMagickThreadId(void)
 {
 #if defined(MAGICKCORE_THREAD_SUPPORT)
-  return(pthread_self());
+    return (pthread_self());
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
-  return(GetCurrentThreadId());
+    return (GetCurrentThreadId());
 #else
-  return(getpid());
+    return (getpid());
 #endif
 }
 
 static inline size_t GetMagickThreadSignature(void)
 {
 #if defined(MAGICKCORE_THREAD_SUPPORT)
-  {
-    union
     {
-      pthread_t
-        id;
+        union
+        {
+            pthread_t
+            id;
 
-      size_t
-        signature;
-    } magick_thread;
+            size_t
+            signature;
+        } magick_thread;
 
-    magick_thread.signature=0UL;
-    magick_thread.id=pthread_self();
-    return(magick_thread.signature);
-  }
+        magick_thread.signature = 0UL;
+        magick_thread.id = pthread_self();
+        return (magick_thread.signature);
+    }
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
-  return((size_t) GetCurrentThreadId());
+    return ((size_t)GetCurrentThreadId());
 #else
-  return((size_t) getpid());
+    return ((size_t)getpid());
 #endif
 }
 
 static inline MagickBooleanType IsMagickThreadEqual(const MagickThreadType id)
 {
 #if defined(MAGICKCORE_THREAD_SUPPORT)
-  if (pthread_equal(id,pthread_self()) != 0)
-    return(MagickTrue);
+    if (pthread_equal(id, pthread_self()) != 0)
+        return (MagickTrue);
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
-  if (id == GetCurrentThreadId())
-    return(MagickTrue);
+    if (id == GetCurrentThreadId())
+        return (MagickTrue);
 #else
-  if (id == getpid())
-    return(MagickTrue);
+    if (id == getpid())
+        return (MagickTrue);
 #endif
-  return(MagickFalse);
+    return (MagickFalse);
 }
 
 /*
@@ -97,46 +100,46 @@ static inline MagickBooleanType IsMagickThreadEqual(const MagickThreadType id)
 */
 static inline size_t GetOpenMPMaximumThreads(void)
 {
-  static size_t
+    static size_t
     maximum_threads = 1;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
-  {
-    ssize_t
-      threads;
+    {
+        ssize_t
+        threads;
 
-    threads=omp_get_max_threads();
-    if (threads > (ssize_t) maximum_threads)
-      maximum_threads=threads;
-  }
+        threads = omp_get_max_threads();
+        if (threads > (ssize_t)maximum_threads)
+            maximum_threads = threads;
+    }
 #endif
-  return(maximum_threads);
+    return (maximum_threads);
 }
 
 static inline int GetOpenMPThreadId(void)
 {
 #if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
-  return(omp_get_thread_num());
+    return (omp_get_thread_num());
 #else
-  return(0);
+    return (0);
 #endif
 }
 
 static inline void SetOpenMPMaximumThreads(const int threads)
 {
 #if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
-  omp_set_num_threads(threads);
+    omp_set_num_threads(threads);
 #else
-  (void) threads;
+    (void)threads;
 #endif
 }
 
 static inline void SetOpenMPNested(const int value)
 {
 #if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
-  omp_set_nested(value);
+    omp_set_nested(value);
 #else
-  (void) value;
+    (void)value;
 #endif
 }
 

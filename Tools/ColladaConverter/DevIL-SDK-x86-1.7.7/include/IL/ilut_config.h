@@ -23,4 +23,4 @@
 //#define ILUT_USE_SDL
 #define ILUT_USE_WIN32
 
-#endif//__ILUT_CONFIG_H__
+#endif //__ILUT_CONFIG_H__

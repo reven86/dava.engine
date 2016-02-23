@@ -26,40 +26,43 @@ extern "C" {
 #include "wand/pixel-wand.h"
 
 typedef struct _PixelIterator
-  PixelIterator;
+PixelIterator;
 
 extern WandExport char
-  *PixelGetIteratorException(const PixelIterator *,ExceptionType *);
+*
+PixelGetIteratorException(const PixelIterator*, ExceptionType*);
 
 extern WandExport ExceptionType
-  PixelGetIteratorExceptionType(const PixelIterator *);
+PixelGetIteratorExceptionType(const PixelIterator*);
 
 extern WandExport MagickBooleanType
-  IsPixelIterator(const PixelIterator *),
-  PixelClearIteratorException(PixelIterator *),
-  PixelSetIteratorRow(PixelIterator *,const ssize_t),
-  PixelSyncIterator(PixelIterator *);
+IsPixelIterator(const PixelIterator *),
+PixelClearIteratorException(PixelIterator *),
+PixelSetIteratorRow(PixelIterator *, const ssize_t),
+PixelSyncIterator(PixelIterator *);
 
 extern WandExport PixelIterator
-  *ClonePixelIterator(const PixelIterator *),
-  *DestroyPixelIterator(PixelIterator *),
-  *NewPixelIterator(MagickWand *),
-  *NewPixelRegionIterator(MagickWand *,const ssize_t,const ssize_t,const size_t,
-    const size_t);
+*
+ClonePixelIterator(const PixelIterator *),
+*DestroyPixelIterator(PixelIterator *),
+*NewPixelIterator(MagickWand *),
+*NewPixelRegionIterator(MagickWand *, const ssize_t, const ssize_t, const size_t,
+                        const size_t);
 
 extern WandExport PixelWand
-  **PixelGetCurrentIteratorRow(PixelIterator *,size_t *),
-  **PixelGetNextIteratorRow(PixelIterator *,size_t *),
-  **PixelGetPreviousIteratorRow(PixelIterator *,size_t *);
+**
+PixelGetCurrentIteratorRow(PixelIterator *, size_t *),
+**PixelGetNextIteratorRow(PixelIterator *, size_t *),
+**PixelGetPreviousIteratorRow(PixelIterator *, size_t *);
 
 extern WandExport ssize_t
-  PixelGetIteratorRow(PixelIterator *);
+PixelGetIteratorRow(PixelIterator*);
 
 extern WandExport void
-  ClearPixelIterator(PixelIterator *),
-  PixelResetIterator(PixelIterator *),
-  PixelSetFirstIteratorRow(PixelIterator *),
-  PixelSetLastIteratorRow(PixelIterator *);
+ClearPixelIterator(PixelIterator *),
+PixelResetIterator(PixelIterator *),
+PixelSetFirstIteratorRow(PixelIterator *),
+PixelSetLastIteratorRow(PixelIterator *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 class CoreMacOSPlatformBase : public Core
 {
 public:
@@ -48,7 +47,6 @@ public:
     //  - when false - application/window has been unhidden/restored
     Signal<bool> signalAppMinimizedRestored;
 };
-
 };
 
 #endif // __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__

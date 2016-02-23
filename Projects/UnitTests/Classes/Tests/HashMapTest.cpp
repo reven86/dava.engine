@@ -34,11 +34,11 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(HashMapTest)
+DAVA_TESTCLASS (HashMapTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
-    DAVA_TEST(HashMapInsertRemoveGetTest)
+    DAVA_TEST (HashMapInsertRemoveGetTest)
     {
         const int32 SIZE = 20000;
         Vector<DAVA::uint32> vect(SIZE, 0);
@@ -76,7 +76,7 @@ DAVA_TESTCLASS(HashMapTest)
 
         // iterator test
         HashMap<int32, uint32>::iterator iter = map.begin();
-        for (;iter != map.end(); ++iter)
+        for (; iter != map.end(); ++iter)
         {
             // TEST_VERIFY(vect[iter.GetKey()] == iter.GetValue());
         }
@@ -88,4 +88,5 @@ DAVA_TESTCLASS(HashMapTest)
         {
         }
     }
-};
+}
+;

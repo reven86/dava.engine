@@ -65,10 +65,10 @@ class FCDForceDragDamping;
 class FCDEmitter;
 class FCDExternalReferenceManager;
 
-typedef bool(* XMLLoadFunc)(FCDObject*, xmlNode* node);
+typedef bool (*XMLLoadFunc)(FCDObject*, xmlNode* node);
 typedef fm::map<const FUObjectType*, XMLLoadFunc> XMLLoadFuncMap;
 
-typedef xmlNode* (* XMLWriteFunc)(FCDObject*, xmlNode* node);
+typedef xmlNode* (*XMLWriteFunc)(FCDObject*, xmlNode* node);
 typedef fm::map<const FUObjectType*, XMLWriteFunc> XMLWriteFuncMap;
 
 //
@@ -80,7 +80,7 @@ typedef fm::map<const FUObjectType*, XMLWriteFunc> XMLWriteFuncMap;
 //
 struct FCDTargetedEntityData
 {
-	fm::string targetId;
+    fm::string targetId;
 };
 typedef fm::map<FCDTargetedEntity*, FCDTargetedEntityData> FCDTargetedEntityDataMap;
 
@@ -89,7 +89,7 @@ typedef fm::map<FCDTargetedEntity*, FCDTargetedEntityData> FCDTargetedEntityData
 //
 struct FCDEmitterInstanceData
 {
-	StringList forceInstUris;
+    StringList forceInstUris;
 };
 typedef fm::map<FCDEmitterInstance*, FCDEmitterInstanceData> FCDEmitterInstanceDataMap;
 
@@ -98,13 +98,13 @@ typedef fm::map<FCDEmitterInstance*, FCDEmitterInstanceData> FCDEmitterInstanceD
 //
 struct FCDAnimatedData
 {
-	fm::string pointer;
+    fm::string pointer;
 
-	//
-	//[sli 5-15-2007] The following variable could be still be in FCDAnimated.
-	// To be figured out later.
-	//
-	//StringList qualifiers;
+    //
+    //[sli 5-15-2007] The following variable could be still be in FCDAnimated.
+    // To be figured out later.
+    //
+    //StringList qualifiers;
 };
 typedef fm::map<FCDAnimated*, FCDAnimatedData> FCDAnimatedDataMap;
 
@@ -113,34 +113,42 @@ typedef fm::map<FCDAnimated*, FCDAnimatedData> FCDAnimatedDataMap;
 //
 struct FAXAnimationChannelDefaultValue
 {
-	FCDAnimationCurve* curve; /**< An animation curve contained by this channel. */
-	float defaultValue; /**< The default value for an animation value pointer that is not animated but may be merged. */
-	
-	/** Default constructor. */
-	FAXAnimationChannelDefaultValue() : curve(NULL), defaultValue(0.0f) {}
-	/** Simple constructor. @param c A curve. @param f The default value. @param q The default value's qualifier. */
-	FAXAnimationChannelDefaultValue(FCDAnimationCurve* c, float f) { curve = c; defaultValue = f; }
+    FCDAnimationCurve* curve; /**< An animation curve contained by this channel. */
+    float defaultValue; /**< The default value for an animation value pointer that is not animated but may be merged. */
+
+    /** Default constructor. */
+    FAXAnimationChannelDefaultValue()
+        : curve(NULL)
+        , defaultValue(0.0f)
+    {
+    }
+    /** Simple constructor. @param c A curve. @param f The default value. @param q The default value's qualifier. */
+    FAXAnimationChannelDefaultValue(FCDAnimationCurve* c, float f)
+    {
+        curve = c;
+        defaultValue = f;
+    }
 };
 typedef fm::vector<FAXAnimationChannelDefaultValue> FAXAnimationChannelDefaultValueList;
 
 struct FCDAnimationChannelData
 {
-	// Channel target
-	fm::string targetPointer;
-	fm::string targetQualifier;
+    // Channel target
+    fm::string targetPointer;
+    fm::string targetQualifier;
 
-	// Maya-specific: the driver for this/these curves
-	fm::string driverPointer;
-	int32 driverQualifier;
+    // Maya-specific: the driver for this/these curves
+    fm::string driverPointer;
+    int32 driverQualifier;
 
-	// Export parameters
-	FAXAnimationChannelDefaultValueList defaultValues;
-	FCDAnimated* animatedValue;
+    // Export parameters
+    FAXAnimationChannelDefaultValueList defaultValues;
+    FCDAnimated* animatedValue;
 
-	FCDAnimationChannelData()
-	{
-		driverQualifier = -1;
-	}
+    FCDAnimationChannelData()
+    {
+        driverQualifier = -1;
+    }
 };
 typedef fm::map<FCDAnimationChannel*, FCDAnimationChannelData> FCDAnimationChannelDataMap;
 
@@ -149,13 +157,13 @@ typedef fm::map<FCDAnimationChannel*, FCDAnimationChannelData> FCDAnimationChann
 //
 struct FCDAnimationCurveData
 {
-	int32 targetElement;
-	fm::string targetQualifier;
+    int32 targetElement;
+    fm::string targetQualifier;
 
-	FCDAnimationCurveData()
-	{
-		targetElement = -1;
-	}
+    FCDAnimationCurveData()
+    {
+        targetElement = -1;
+    }
 };
 typedef fm::map<FCDAnimationCurve*, FCDAnimationCurveData> FCDAnimationCurveDataMap;
 
@@ -164,7 +172,7 @@ typedef fm::map<FCDAnimationCurve*, FCDAnimationCurveData> FCDAnimationCurveData
 //
 struct FCDAnimationData
 {
-	FAXNodeIdPairList childNodes; // import-only.
+    FAXNodeIdPairList childNodes; // import-only.
 };
 typedef fm::map<FCDAnimation*, FCDAnimationData> FCDAnimationDataMap;
 
@@ -174,7 +182,7 @@ typedef fm::map<FCDAnimation*, FCDAnimationData> FCDAnimationDataMap;
 typedef fm::map<xmlNode*, FUUri> ModelInstanceNameNodeMap;
 struct FCDPhysicsModelData
 {
-	ModelInstanceNameNodeMap modelInstancesMap;
+    ModelInstanceNameNodeMap modelInstancesMap;
 };
 typedef fm::map<FCDPhysicsModel*, FCDPhysicsModelData> FCDPhysicsModelDataMap;
 
@@ -183,7 +191,7 @@ typedef fm::map<FCDPhysicsModel*, FCDPhysicsModelData> FCDPhysicsModelDataMap;
 //
 struct FCDEffectParameterSamplerData
 {
-	fm::string surfaceSid;
+    fm::string surfaceSid;
 };
 typedef fm::map<FCDEffectParameterSampler*, FCDEffectParameterSamplerData> FCDEffectParameterSamplerDataMap;
 
@@ -192,7 +200,7 @@ typedef fm::map<FCDEffectParameterSampler*, FCDEffectParameterSamplerData> FCDEf
 //
 struct FCDTextureData
 {
-	fm::string samplerSid;
+    fm::string samplerSid;
 };
 typedef fm::map<FCDTexture*, FCDTextureData> FCDTextureDataMap;
 
@@ -201,7 +209,7 @@ typedef fm::map<FCDTexture*, FCDTextureData> FCDTextureDataMap;
 //
 struct FCDSkinControllerData
 {
-	bool jointAreSids;
+    bool jointAreSids;
 };
 typedef fm::map<FCDSkinController*, FCDSkinControllerData> FCDSkinControllerDataMap;
 
@@ -210,7 +218,7 @@ typedef fm::map<FCDSkinController*, FCDSkinControllerData> FCDSkinControllerData
 //
 struct FCDMorphControllerData
 {
-	fm::string targetId;
+    fm::string targetId;
 };
 typedef fm::map<FCDMorphController*, FCDMorphControllerData> FCDMorphControllerDataMap;
 
@@ -219,10 +227,9 @@ typedef fm::map<FCDMorphController*, FCDMorphControllerData> FCDMorphControllerD
 //
 struct FCDGeometrySourceData
 {
-	xmlNode* sourceNode;
+    xmlNode* sourceNode;
 };
 typedef fm::map<FCDGeometrySource*, FCDGeometrySourceData> FCDGeometrySourceDataMap;
-
 
 typedef fm::pvector<FCDAnimationChannel> FCDAnimationChannelList;
 
@@ -233,18 +240,18 @@ typedef fm::pvector<FCDAnimationChannel> FCDAnimationChannelList;
 //
 struct FCDocumentLinkData
 {
-	FCDEmitterInstanceDataMap emitterInstanceDataMap;
-	FCDTargetedEntityDataMap targetedEntityDataMap;
-	FCDAnimationChannelDataMap animationChannelData;
-	FCDAnimatedDataMap animatedData;
-	FCDAnimationCurveDataMap animationCurveData;
-	FCDAnimationDataMap animationData;
-	FCDPhysicsModelDataMap physicsModelDataMap;
-	FCDEffectParameterSamplerDataMap effectParameterSamplerDataMap;
-	FCDTextureDataMap textureDataMap;
-	FCDSkinControllerDataMap skinControllerDataMap;
-	FCDMorphControllerDataMap morphControllerDataMap;
-	FCDGeometrySourceDataMap geometrySourceDataMap;
+    FCDEmitterInstanceDataMap emitterInstanceDataMap;
+    FCDTargetedEntityDataMap targetedEntityDataMap;
+    FCDAnimationChannelDataMap animationChannelData;
+    FCDAnimatedDataMap animatedData;
+    FCDAnimationCurveDataMap animationCurveData;
+    FCDAnimationDataMap animationData;
+    FCDPhysicsModelDataMap physicsModelDataMap;
+    FCDEffectParameterSamplerDataMap effectParameterSamplerDataMap;
+    FCDTextureDataMap textureDataMap;
+    FCDSkinControllerDataMap skinControllerDataMap;
+    FCDMorphControllerDataMap morphControllerDataMap;
+    FCDGeometrySourceDataMap geometrySourceDataMap;
 };
 
 typedef fm::map<const FCDocument*, FCDocumentLinkData> DocumentLinkDataMap;

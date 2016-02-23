@@ -45,13 +45,13 @@ signals:
     void ParticlesQualityChanged();
 
 protected:
-    QualitySwitcher(QWidget *parent = nullptr);
+    QualitySwitcher(QWidget* parent = nullptr);
     ~QualitySwitcher();
 
     void ApplyTx();
     void ApplyMa();
 
-    void UpdateEntitiesToQuality(DAVA::Entity *e);
+    void UpdateEntitiesToQuality(DAVA::Entity* e);
     void UpdateParticlesToQuality();
     void ReloadEntityEmitters(DAVA::Entity* e);
     void SetSettingsDirty(bool dirty);

@@ -62,7 +62,7 @@ private:
     struct MoveInfo;
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
-    
+
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 

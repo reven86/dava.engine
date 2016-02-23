@@ -72,12 +72,12 @@ QUndoStack* Document::GetUndoStack() const
     return undoStack.get();
 }
 
-PackageNode *Document::GetPackage() const
+PackageNode* Document::GetPackage() const
 {
     return package.Get();
 }
 
-QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
+QtModelPackageCommandExecutor* Document::GetCommandExecutor() const
 {
     return commandExecutor.get();
 }

@@ -35,15 +35,13 @@
 PropertiesTreeView::PropertiesTreeView(QWidget* parent /*= NULL*/)
     : QTreeView(parent)
 {
-
 }
 
 PropertiesTreeView::~PropertiesTreeView()
 {
-
 }
 
-void PropertiesTreeView::drawRow(QPainter * painter, const QStyleOptionViewItem &option, const QModelIndex & index) const
+void PropertiesTreeView::drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QStyleOptionViewItemV3 opt = option;
 

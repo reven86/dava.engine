@@ -61,4 +61,4 @@ private:
     QListView* listWidget = nullptr;
 };
 
-#endif  // __MEMORYTOOL_SYMBOLSWIDGET_H__
+#endif // __MEMORYTOOL_SYMBOLSWIDGET_H__

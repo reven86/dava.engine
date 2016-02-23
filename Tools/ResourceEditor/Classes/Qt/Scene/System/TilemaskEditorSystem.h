@@ -40,37 +40,37 @@
 
 using namespace DAVA;
 
-class TilemaskEditorSystem: public LandscapeEditorSystem
+class TilemaskEditorSystem : public LandscapeEditorSystem
 {
 public:
-	enum eTilemaskDrawType
-	{
-		TILEMASK_DRAW_NORMAL = 0,
-		TILEMASK_DRAW_COPY_PASTE,
-		
-		TILEMASK_DRAW_TYPES_COUNT
-	};
+    enum eTilemaskDrawType
+    {
+        TILEMASK_DRAW_NORMAL = 0,
+        TILEMASK_DRAW_COPY_PASTE,
 
-	TilemaskEditorSystem(Scene* scene);
-	virtual ~TilemaskEditorSystem();
-	
-	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
-	bool DisableLandscapeEdititing();
+        TILEMASK_DRAW_TYPES_COUNT
+    };
 
-	void Process(DAVA::float32 timeElapsed) override;
-	void Input(DAVA::UIEvent *event) override;
-	void Draw();
-	
-	void SetBrushSize(int32 brushSize);
-	int32 GetBrushSize();
-	void SetStrength(float32 strength);
-	float32 GetStrength();
-	void SetToolImage(const FilePath& toolImagePath, int32 index);
-	int32 GetToolImage();
-	void SetTileTexture(uint32 tileTexture);
-	uint32 GetTileTextureIndex();
+    TilemaskEditorSystem(Scene* scene);
+    virtual ~TilemaskEditorSystem();
 
-	uint32 GetTileTextureCount() const;
+    LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
+    bool DisableLandscapeEdititing();
+
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent* event) override;
+    void Draw();
+
+    void SetBrushSize(int32 brushSize);
+    int32 GetBrushSize();
+    void SetStrength(float32 strength);
+    float32 GetStrength();
+    void SetToolImage(const FilePath& toolImagePath, int32 index);
+    int32 GetToolImage();
+    void SetTileTexture(uint32 tileTexture);
+    uint32 GetTileTextureIndex();
+
+    uint32 GetTileTextureCount() const;
     Texture* GetTileTexture();
     Color GetTileColor(int32 index);
     void SetTileColor(int32 index, const Color& color);
@@ -79,7 +79,7 @@ public:
     eTilemaskDrawType GetDrawingType();
 
 protected:
-	uint32 curToolSize;
+    uint32 curToolSize;
 
     Texture* toolImageTexture;
     Texture* landscapeTilemaskTexture;
@@ -124,9 +124,9 @@ protected:
 
     void CreateUndoPoint();
 
-	void InitSprites();
+    void InitSprites();
 
-	void FinishEditing();
+    void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

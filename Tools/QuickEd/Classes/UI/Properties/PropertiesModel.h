@@ -36,8 +36,9 @@
 #include "FileSystem/VariantType.h"
 #include "Model/ControlProperties/PropertyListener.h"
 
-namespace DAVA {
-    class InspInfo;
+namespace DAVA
+{
+class InspInfo;
 }
 
 class AbstractProperty;
@@ -51,7 +52,7 @@ class LazyUpdater;
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
     Q_OBJECT
-    
+
 public:
     enum
     {
@@ -59,7 +60,7 @@ public:
     };
     PropertiesModel(QObject* parent = nullptr);
     virtual ~PropertiesModel();
-    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor *commandExecutor_);
+    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
@@ -76,41 +77,41 @@ private:
     void UpdateAllChangedProperties();
 
     // PropertyListener
-    void PropertyChanged(AbstractProperty *property) override;
+    void PropertyChanged(AbstractProperty* property) override;
 
-    void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    
-    void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index) override;
+    void ComponentPropertiesWasAdded(RootProperty* root, ComponentPropertiesSection* section, int index) override;
 
-    void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
-    void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
-    
-    void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
-    void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void ComponentPropertiesWillBeRemoved(RootProperty* root, ComponentPropertiesSection* section, int index) override;
+    void ComponentPropertiesWasRemoved(RootProperty* root, ComponentPropertiesSection* section, int index) override;
 
-    void StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
-    void StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
-    
-    void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
-    void StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
+    void StylePropertyWillBeAdded(StyleSheetPropertiesSection* section, StyleSheetProperty* property, int index) override;
+    void StylePropertyWasAdded(StyleSheetPropertiesSection* section, StyleSheetProperty* property, int index) override;
 
-    void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);
-    void ResetProperty(AbstractProperty *property);
-    
-    QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
-    QString makeQVariant(const AbstractProperty *property) const;
-    void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
+    void StylePropertyWillBeRemoved(StyleSheetPropertiesSection* section, StyleSheetProperty* property, int index) override;
+    void StylePropertyWasRemoved(StyleSheetPropertiesSection* section, StyleSheetProperty* property, int index) override;
+
+    void StyleSelectorWillBeAdded(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
+    void StyleSelectorWasAdded(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
+
+    void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
+    void StyleSelectorWasRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
+
+    void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
+    void ResetProperty(AbstractProperty* property);
+
+    QModelIndex indexByProperty(AbstractProperty* property, int column = 0);
+    QString makeQVariant(const AbstractProperty* property) const;
+    void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
     void CleanUp();
 
 private:
-    ControlNode *controlNode = nullptr;
-    StyleSheetNode *styleSheet = nullptr;
-    AbstractProperty *rootProperty = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    ControlNode* controlNode = nullptr;
+    StyleSheetNode* styleSheet = nullptr;
+    AbstractProperty* rootProperty = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
-    LazyUpdater *lazyUpdater = nullptr;
+    LazyUpdater* lazyUpdater = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

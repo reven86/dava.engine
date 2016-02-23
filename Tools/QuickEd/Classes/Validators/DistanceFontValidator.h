@@ -32,16 +32,16 @@
 
 #include "BaseValidator.h"
 
-class DistanceFontValidator: public BaseValidator
+class DistanceFontValidator : public BaseValidator
 {
 public:
     DistanceFontValidator();
 
 protected:
-    virtual bool ValidateInternal(QVariant &v);
+    virtual bool ValidateInternal(QVariant& v);
     virtual void FixupInternal(QVariant& v) const;
 
-    virtual void ErrorNotifyInternal(const QVariant &v) const;
+    virtual void ErrorNotifyInternal(const QVariant& v) const;
 
     QString notifyMessage;
 };

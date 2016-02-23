@@ -42,7 +42,7 @@
 
 using namespace DAVA;
 
-EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](DAVA::UIControl* ) {return false;};
+EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
 class EditorSystemsManager::RootControl : public UIControl
 {
@@ -84,9 +84,9 @@ EditorSystemsManager::EditorSystemsManager()
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
-    rootControl->SetName("rootControl");
+    rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
-    scalableControl->SetName("scalableContent");
+    scalableControl->SetName(FastName("scalableContent"));
 
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
@@ -137,15 +137,15 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::OnPackageNodeChanged(PackageNode *package_)
+void EditorSystemsManager::OnPackageNodeChanged(PackageNode* package_)
 {
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->RemoveListener(this);
     }
     package = package_;
     SetPreviewMode(true);
-    if(nullptr != package)
+    if (nullptr != package)
     {
         package->AddListener(this);
     }

@@ -197,7 +197,7 @@ void MemoryBlocksWidget::FilterBar_FilterChanged(uint32 poolMask, uint32 tagMask
 
     if (filterTagMask != 0 || filterPoolMask != 0)
     {
-        memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) ->bool { return Filter(item); });
+        memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) -> bool { return Filter(item); });
     }
     else
     {
@@ -215,7 +215,7 @@ void MemoryBlocksWidget::FilterBar_HideTheSameChanged(bool hide)
         GroupBy();
         blockGroupModel->SetBlockGroups(&groups);
     }
-    memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) ->bool { return Filter(item); });
+    memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) -> bool { return Filter(item); });
 }
 
 void MemoryBlocksWidget::FilterBar_HideDifferentChanged(bool hide)

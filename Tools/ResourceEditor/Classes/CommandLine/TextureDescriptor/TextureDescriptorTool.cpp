@@ -159,30 +159,30 @@ bool TextureDescriptorTool::InitializeInternal()
 
 void TextureDescriptorTool::ProcessInternal()
 {
-    switch(commandAction)
+    switch (commandAction)
     {
-        case ACTION_RESAVE_DESCRIPTORS:
-            TextureDescriptorUtils::ResaveDescriptorsForFolder(folderPathname);
-            break;
-            
-        case ACTION_COPY_COMPRESSION:
-            TextureDescriptorUtils::CopyCompressionParamsForFolder(folderPathname);
-            break;
-            
-        case ACTION_CREATE_DESCRIPTORS:
-            TextureDescriptorUtils::CreateDescriptorsForFolder(folderPathname);
-			break;
+    case ACTION_RESAVE_DESCRIPTORS:
+        TextureDescriptorUtils::ResaveDescriptorsForFolder(folderPathname);
+        break;
 
-		case ACTION_SET_COMPRESSION_FOR_FOLDER:
-			TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
-			break;
+    case ACTION_COPY_COMPRESSION:
+        TextureDescriptorUtils::CopyCompressionParamsForFolder(folderPathname);
+        break;
 
-		case ACTION_SET_COMPRESSION_FOR_DESCRIPTOR:
-			TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
-			break;
+    case ACTION_CREATE_DESCRIPTORS:
+        TextureDescriptorUtils::CreateDescriptorsForFolder(folderPathname);
+        break;
 
-        default:
-            Logger::Error("[TextureDescriptorTool::Process] Unhandled action!");
-			break;
+    case ACTION_SET_COMPRESSION_FOR_FOLDER:
+        TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
+        break;
+
+    case ACTION_SET_COMPRESSION_FOR_DESCRIPTOR:
+        TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
+        break;
+
+    default:
+        Logger::Error("[TextureDescriptorTool::Process] Unhandled action!");
+        break;
     }
 }

@@ -34,27 +34,30 @@
 
 const DAVA::int32 OwnersSignatureSystem::validIDs[] =
 {
-	CMDID_ENTITY_ADD,
-	CMDID_ENTITY_CHANGE_PARENT,
-	CMDID_TRANSFORM
+  CMDID_ENTITY_ADD,
+  CMDID_ENTITY_CHANGE_PARENT,
+  CMDID_TRANSFORM
 };
 
-OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene):SceneSystem(scene)
-{}
+OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene)
+    : SceneSystem(scene)
+{
+}
 
 OwnersSignatureSystem::~OwnersSignatureSystem()
-{}
-
-void OwnersSignatureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-	if(IsCommandIdValid(command->GetId()))
-	{
-		KeyedArchive* properties = GetCustomPropertiesArchieve(command->GetEntity());
-		if(NULL != properties)
-		{
-			UpdateEntityOwner(properties);
-		}
-	}
+}
+
+void OwnersSignatureSystem::ProcessCommand(const Command2* command, bool redo)
+{
+    if (IsCommandIdValid(command->GetId()))
+    {
+        KeyedArchive* properties = GetCustomPropertiesArchieve(command->GetEntity());
+        if (NULL != properties)
+        {
+            UpdateEntityOwner(properties);
+        }
+    }
 }
 
 bool OwnersSignatureSystem::IsCommandIdValid(int _id)
@@ -66,23 +69,23 @@ bool OwnersSignatureSystem::IsCommandIdValid(int _id)
             return true;
         }
     }
-	return false;
+    return false;
 }
 
 DAVA::String OwnersSignatureSystem::GetCurrentTime()
 {
-	time_t now = time(0);
+    time_t now = time(0);
     tm* utcTime = localtime(&now);
-	
-	DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
-							   utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
-							   utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
-	
-	return timeString;
+
+    DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
+                                     utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
+                                     utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
+
+    return timeString;
 }
 
-void OwnersSignatureSystem::UpdateEntityOwner(DAVA::KeyedArchive *customProperties)
+void OwnersSignatureSystem::UpdateEntityOwner(DAVA::KeyedArchive* customProperties)
 {
-	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
-	customProperties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
+    customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
+    customProperties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
 }

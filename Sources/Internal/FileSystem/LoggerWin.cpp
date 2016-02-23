@@ -35,14 +35,12 @@
 #include <windows.h>
 #include <windowsx.h>
 
-namespace DAVA 
+namespace DAVA
 {
-
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-	OutputDebugStringA(text);
+    OutputDebugStringA(text);
+}
 }
 
-}
-
-#endif 
+#endif

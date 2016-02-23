@@ -25,70 +25,73 @@ extern "C" {
 #include <time.h>
 #include "magick/version.h"
 
-#define MagickImageCoderSignature  ((size_t) \
-  (((MagickLibVersion) << 8) | MAGICKCORE_QUANTUM_DEPTH))
-#define MagickImageFilterSignature  ((size_t) \
-  (((MagickLibVersion) << 8) | MAGICKCORE_QUANTUM_DEPTH))
+#define MagickImageCoderSignature ((size_t) \
+                                   (((MagickLibVersion) << 8) | MAGICKCORE_QUANTUM_DEPTH))
+#define MagickImageFilterSignature ((size_t) \
+                                    (((MagickLibVersion) << 8) | MAGICKCORE_QUANTUM_DEPTH))
 
 typedef enum
 {
-  MagickImageCoderModule,
-  MagickImageFilterModule
+    MagickImageCoderModule,
+    MagickImageFilterModule
 } MagickModuleType;
 
 typedef struct _ModuleInfo
 {
-  char
+    char
     *path,
     *tag;
 
-  void
+    void
     *handle,
     (*unregister_module)(void);
 
-  size_t
+    size_t
     (*register_module)(void);
 
-  time_t
+    time_t
     timestamp;
 
-  MagickBooleanType
+    MagickBooleanType
     stealth;
 
-  struct _ModuleInfo
+    struct _ModuleInfo
     *previous,
-    *next;  /* deprecated, use GetModuleInfoList() */
+    *next; /* deprecated, use GetModuleInfoList() */
 
-  size_t
+    size_t
     signature;
 } ModuleInfo;
 
 typedef ModuleExport size_t
-  ImageFilterHandler(Image **,const int,const char **,ExceptionInfo *);
+ImageFilterHandler(Image**, const int, const char**, ExceptionInfo*);
 
 extern MagickExport char
-  **GetModuleList(const char *,const MagickModuleType,size_t *,ExceptionInfo *);
+**
+GetModuleList(const char*, const MagickModuleType, size_t*, ExceptionInfo*);
 
 extern MagickExport const ModuleInfo
-  **GetModuleInfoList(const char *,size_t *,ExceptionInfo *);
+**
+GetModuleInfoList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport MagickBooleanType
-  InitializeModuleList(ExceptionInfo *),
-  InvokeDynamicImageFilter(const char *,Image **,const int,const char **,
-    ExceptionInfo *),
-  ListModuleInfo(FILE *,ExceptionInfo *),
-  ModuleComponentGenesis(void),
-  OpenModule(const char *,ExceptionInfo *),
-  OpenModules(ExceptionInfo *);
+InitializeModuleList(ExceptionInfo *),
+InvokeDynamicImageFilter(const char *, Image **, const int, const char **,
+                         ExceptionInfo *),
+ListModuleInfo(FILE *, ExceptionInfo *),
+ModuleComponentGenesis(void),
+OpenModule(const char *, ExceptionInfo *),
+OpenModules(ExceptionInfo *);
 
 extern MagickExport ModuleInfo
-  *GetModuleInfo(const char *,ExceptionInfo *);
+*
+GetModuleInfo(const char*, ExceptionInfo*);
 
 extern MagickExport void
-  DestroyModuleList(void),
-  ModuleComponentTerminus(void),
-  RegisterStaticModules(void),
-  UnregisterStaticModules(void);
+DestroyModuleList(void),
+ModuleComponentTerminus(void),
+RegisterStaticModules(void),
+UnregisterStaticModules(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

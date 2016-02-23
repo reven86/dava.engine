@@ -38,26 +38,24 @@
 
 #include "Main/QtUtils.h"
 
-
 namespace Ui
 {
-    class ColorPicker;
+class ColorPicker;
 };
 
 #include "AbstractColorPicker.h"
-
 
 class EyeDropper;
 class ColorPickerRGBAM;
 class QtPosSaver;
 
 class ColorPicker
-    : public AbstractColorPicker
+: public AbstractColorPicker
 {
     Q_OBJECT
 
 private:
-    typedef QMap< QString, QPointer<AbstractColorPicker> > PickerMap;
+    typedef QMap<QString, QPointer<AbstractColorPicker>> PickerMap;
 
 public:
     explicit ColorPicker(QWidget* parent = 0);
@@ -71,9 +69,9 @@ public:
     void SetDavaColor(const DAVA::Color& color);
     DAVA::Color GetDavaColor() const;
 
-    static double CalculateMultiplier( float r, float g, float b );
-    static bool RemoveMultiplier( float& r, float& g, float& b );
-    static void ApplyMultiplier( float& r, float& g, float& b, double mul );
+    static double CalculateMultiplier(float r, float g, float b);
+    static bool RemoveMultiplier(float& r, float& g, float& b);
+    static void ApplyMultiplier(float& r, float& g, float& b, double mul);
 
 protected:
     void RegisterPicker(const QString& key, AbstractColorPicker* picker);
@@ -93,7 +91,7 @@ private:
     void UpdateControls(const QColor& c, AbstractColorPicker* source = nullptr);
     void ConnectPicker(AbstractColorPicker* picker);
     void closeEvent(QCloseEvent* e) override;
-    void keyPressEvent(QKeyEvent * e) override;
+    void keyPressEvent(QKeyEvent* e) override;
 
     void LoadCustomPalette();
     void SaveCustomPalette();
