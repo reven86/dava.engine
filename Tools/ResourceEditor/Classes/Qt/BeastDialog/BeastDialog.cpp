@@ -38,13 +38,12 @@
 
 #include "Qt/Scene/SceneEditor2.h"
 
-
 namespace
 {
-    const FastName settingsDefaultPath("Internal/Beast/LightmapsDefaultDir");
+const FastName settingsDefaultPath("Internal/Beast/LightmapsDefaultDir");
 }
 
-BeastDialog::BeastDialog(QWidget *parent)
+BeastDialog::BeastDialog(QWidget* parent)
     : QWidget(parent, Qt::Window | Qt::CustomizeWindowHint | Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint)
     , ui(new Ui::BeastDialog())
     , scene(NULL)
@@ -55,36 +54,36 @@ BeastDialog::BeastDialog(QWidget *parent)
 
     setWindowModality(Qt::WindowModal);
 
-    connect(ui->start, SIGNAL( clicked() ), SLOT( OnStart() ));
-    connect(ui->cancel, SIGNAL( clicked() ), SLOT( OnCancel() ));
-    connect(ui->browse, SIGNAL( clicked() ), SLOT( OnBrowse() ));
-    connect(ui->output, SIGNAL( textChanged(const QString&) ), SLOT( OnTextChanged() ));
-    connect(ui->lightmapBeastModeButton, SIGNAL( clicked( bool ) ), SLOT( OnLightmapMode( bool ) ));
-    connect(ui->shBeastModeButton, SIGNAL( clicked( bool ) ), SLOT( OnSHMode( bool ) ));
-    connect(ui->previewButton, SIGNAL( clicked( bool ) ), SLOT( OnPreviewMode( bool ) ));
+    connect(ui->start, SIGNAL(clicked()), SLOT(OnStart()));
+    connect(ui->cancel, SIGNAL(clicked()), SLOT(OnCancel()));
+    connect(ui->browse, SIGNAL(clicked()), SLOT(OnBrowse()));
+    connect(ui->output, SIGNAL(textChanged(const QString&)), SLOT(OnTextChanged()));
+    connect(ui->lightmapBeastModeButton, SIGNAL(clicked(bool)), SLOT(OnLightmapMode(bool)));
+    connect(ui->shBeastModeButton, SIGNAL(clicked(bool)), SLOT(OnSHMode(bool)));
+    connect(ui->previewButton, SIGNAL(clicked(bool)), SLOT(OnPreviewMode(bool)));
 }
 
 BeastDialog::~BeastDialog()
 {
 }
 
-void BeastDialog::SetScene(SceneEditor2 *_scene)
+void BeastDialog::SetScene(SceneEditor2* _scene)
 {
     scene = _scene;
 }
 
-bool BeastDialog::Exec(QWidget *parent)
+bool BeastDialog::Exec(QWidget* parent)
 {
     DVASSERT(scene);
 
-    ui->scenePath->setText(QDir::toNativeSeparators( GetDefaultPath() ));
-    
+    ui->scenePath->setText(QDir::toNativeSeparators(GetDefaultPath()));
+
     const String defaultPath = SettingsManager::Instance()->GetValue(settingsDefaultPath).AsString();
     ui->output->setText(QDir::toNativeSeparators(QString("%1").arg(defaultPath.c_str())));
 
     show();
 
-    loop = new QEventLoop( this );
+    loop = new QEventLoop(this);
     loop->exec();
 
     hide();
@@ -95,16 +94,16 @@ bool BeastDialog::Exec(QWidget *parent)
 
 void BeastDialog::OnStart()
 {
-    const QDir dir( ui->scenePath->text() );
-    dir.mkpath( ui->output->text() );
-    if ( !dir.exists( ui->output->text() ) )
+    const QDir dir(ui->scenePath->text());
+    dir.mkpath(ui->output->text());
+    if (!dir.exists(ui->output->text()))
     {
         result = false;
-        QMessageBox::warning( this, QString(), "Specified path is invalid. Couldn't create output directory." );
+        QMessageBox::warning(this, QString(), "Specified path is invalid. Couldn't create output directory.");
         return;
     }
 
-    SettingsManager::Instance()->SetValue(settingsDefaultPath,VariantType(QDir::toNativeSeparators(ui->output->text()).toStdString()));
+    SettingsManager::Instance()->SetValue(settingsDefaultPath, VariantType(QDir::toNativeSeparators(ui->output->text()).toStdString()));
 
     result = true;
     loop->quit();
@@ -118,22 +117,22 @@ void BeastDialog::OnCancel()
 
 void BeastDialog::OnBrowse()
 {
-    const QString path = FileDialog::getExistingDirectory( this, QString(), GetPath(), FileDialog::ShowDirsOnly );
-    if ( !path.isEmpty() )
+    const QString path = FileDialog::getExistingDirectory(this, QString(), GetPath(), FileDialog::ShowDirsOnly);
+    if (!path.isEmpty())
     {
-        SetPath( path );
+        SetPath(path);
     }
 }
 
 void BeastDialog::OnTextChanged()
 {
     const QString text = QString("Output path: %1").arg(QDir::toNativeSeparators(GetPath()));
-    ui->output->setToolTip( text );
+    ui->output->setToolTip(text);
 }
 
 void BeastDialog::OnLightmapMode(bool checked)
 {
-    if(checked)
+    if (checked)
     {
         ui->foldersWidget->setDisabled(false);
         beastMode = BeastProxy::MODE_LIGHTMAPS;
@@ -142,7 +141,7 @@ void BeastDialog::OnLightmapMode(bool checked)
 
 void BeastDialog::OnSHMode(bool checked)
 {
-    if(checked)
+    if (checked)
     {
         ui->foldersWidget->setDisabled(true);
         beastMode = BeastProxy::MODE_SPHERICAL_HARMONICS;
@@ -151,14 +150,14 @@ void BeastDialog::OnSHMode(bool checked)
 
 void BeastDialog::OnPreviewMode(bool checked)
 {
-    if(checked)
+    if (checked)
     {
         ui->foldersWidget->setDisabled(true);
         beastMode = BeastProxy::MODE_PREVIEW;
     }
 }
 
-void BeastDialog::closeEvent( QCloseEvent * event )
+void BeastDialog::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
     ui->cancel->click();
@@ -182,7 +181,7 @@ BeastProxy::eBeastMode BeastDialog::GetMode() const
 
 QString BeastDialog::GetDefaultPath() const
 {
-    if ( !scene )
+    if (!scene)
         return QString();
 
     const QString absoluteFilePath = scene->GetScenePath().GetAbsolutePathname().c_str();
@@ -192,16 +191,16 @@ QString BeastDialog::GetDefaultPath() const
     return dir;
 }
 
-void BeastDialog::SetPath( const QString& path )
+void BeastDialog::SetPath(const QString& path)
 {
-    const QString mandatory = QDir::fromNativeSeparators( GetDefaultPath() );
+    const QString mandatory = QDir::fromNativeSeparators(GetDefaultPath());
     const QString pathRoot = path.left(mandatory.length());
-    if (QDir( mandatory + '/' ) != QDir( pathRoot + '/' ))
+    if (QDir(mandatory + '/') != QDir(pathRoot + '/'))
     {
-        ui->output->setText( QString() );
+        ui->output->setText(QString());
         return;
     }
 
     const QString relative = path.mid(mandatory.length() + 1);
-    ui->output->setText(QDir::toNativeSeparators( relative ));
+    ui->output->setText(QDir::toNativeSeparators(relative));
 }

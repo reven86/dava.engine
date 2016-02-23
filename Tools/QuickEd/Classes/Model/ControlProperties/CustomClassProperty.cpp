@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-CustomClassProperty::CustomClassProperty(ControlNode *aControl, const CustomClassProperty *sourceProperty, eCloneType cloneType)
+CustomClassProperty::CustomClassProperty(ControlNode* aControl, const CustomClassProperty* sourceProperty, eCloneType cloneType)
     : ValueProperty("Custom Class")
     , control(aControl) // weak
 {
@@ -65,7 +65,7 @@ CustomClassProperty::~CustomClassProperty()
     control = nullptr; //weak
 }
 
-void CustomClassProperty::Accept(PropertyVisitor *visitor)
+void CustomClassProperty::Accept(PropertyVisitor* visitor)
 {
     visitor->VisitCustomClassProperty(this);
 }
@@ -85,13 +85,12 @@ VariantType CustomClassProperty::GetValue() const
     return VariantType(customClass);
 }
 
-const String &CustomClassProperty::GetCustomClassName() const
+const String& CustomClassProperty::GetCustomClassName() const
 {
     return customClass;
 }
 
-void CustomClassProperty::ApplyValue(const DAVA::VariantType &value)
+void CustomClassProperty::ApplyValue(const DAVA::VariantType& value)
 {
     customClass = value.AsString();
 }
-

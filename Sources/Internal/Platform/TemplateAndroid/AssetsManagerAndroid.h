@@ -39,25 +39,28 @@ class zip;
 
 namespace DAVA
 {
-
-class AssetsManager: public Singleton<AssetsManager>
+class AssetsManager : public Singleton<AssetsManager>
 {
-
 public:
-	AssetsManager();
-	virtual ~AssetsManager();
+    AssetsManager();
+    virtual ~AssetsManager();
 
-	void Init(const String& packageName);
+    void Init(const String& packageName);
 
-	const String& GetPackageName() const {return packageName;};
-	zip* GetApplicationPackage() const {return applicationPackage;};
+    const String& GetPackageName() const
+    {
+        return packageName;
+    };
+    zip* GetApplicationPackage() const
+    {
+        return applicationPackage;
+    };
 
 private:
-	String packageName;
+    String packageName;
 
-	zip* applicationPackage;
+    zip* applicationPackage;
 };
-
 };
 
 #endif // #if defined(__DAVAENGINE_ANDROID__)

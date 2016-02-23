@@ -37,7 +37,7 @@
 
 using namespace DAVA;
 
-AddRemoveStylePropertyCommand::AddRemoveStylePropertyCommand(PackageNode *aRoot, StyleSheetNode *aNode, StyleSheetProperty *aProperty, bool anAdd, QUndoCommand *parent)
+AddRemoveStylePropertyCommand::AddRemoveStylePropertyCommand(PackageNode* aRoot, StyleSheetNode* aNode, StyleSheetProperty* aProperty, bool anAdd, QUndoCommand* parent)
     : QUndoCommand(parent)
     , root(SafeRetain(aRoot))
     , node(SafeRetain(aNode))

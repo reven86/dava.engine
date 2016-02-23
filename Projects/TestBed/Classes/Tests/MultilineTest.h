@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-    class UITextField;
+class UITextField;
 }
 
 class TextDelegate1;
@@ -59,7 +59,7 @@ private:
     UIControl* topLayerControl = nullptr;
 
     DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
-                             void (MultilineTest::*onClick)(DAVA::BaseObject*, void*, void*));
+                                   void (MultilineTest::*onClick)(DAVA::BaseObject*, void*, void*));
 
     DAVA::UITextField* textField1 = nullptr;
     DAVA::UITextField* textField2 = nullptr;

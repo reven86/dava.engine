@@ -36,29 +36,29 @@
 
 class Command2;
 
-class CustomColorsSystem: public LandscapeEditorSystem
+class CustomColorsSystem : public LandscapeEditorSystem
 {
 public:
-	CustomColorsSystem(Scene* scene);
-	virtual ~CustomColorsSystem();
-	
-	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
-	bool DisableLandscapeEdititing(bool saveNeeded = true);
-	
-	virtual void Process(DAVA::float32 timeElapsed);
-	virtual void Input(DAVA::UIEvent *event);
-	
-	void SetBrushSize(int32 brushSize, bool updateDrawSystem = true);
-	int32 GetBrushSize();
-	void SetColor(int32 colorIndex);
-	int32 GetColor();
+    CustomColorsSystem(Scene* scene);
+    virtual ~CustomColorsSystem();
 
-	void SaveTexture(const FilePath& filePath);
-	bool LoadTexture(const FilePath& filePath, bool createUndo = true);
-	FilePath GetCurrentSaveFileName();
-	
-	bool ChangesPresent();
-		
+    LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
+    bool DisableLandscapeEdititing(bool saveNeeded = true);
+
+    virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent* event);
+
+    void SetBrushSize(int32 brushSize, bool updateDrawSystem = true);
+    int32 GetBrushSize();
+    void SetColor(int32 colorIndex);
+    int32 GetColor();
+
+    void SaveTexture(const FilePath& filePath);
+    bool LoadTexture(const FilePath& filePath, bool createUndo = true);
+    FilePath GetCurrentSaveFileName();
+
+    bool ChangesPresent();
+
 protected:
     bool CouldApplyImage(Image* image, const String& imageName) const;
 
@@ -85,20 +85,19 @@ protected:
     Rect GetUpdatedRect();
 
     void StoreOriginalState();
-	void CreateUndoPoint();
+    void CreateUndoPoint();
 
-	void StoreSaveFileName(const FilePath& filePath);
+    void StoreSaveFileName(const FilePath& filePath);
 
-	FilePath GetScenePath();
-	String GetRelativePathToScenePath(const FilePath& absolutePath);
-	FilePath GetAbsolutePathFromScenePath(const String& relativePath);
-	String GetRelativePathToProjectPath(const FilePath& absolutePath);
-	FilePath GetAbsolutePathFromProjectPath(const String& relativePath);
+    FilePath GetScenePath();
+    String GetRelativePathToScenePath(const FilePath& absolutePath);
+    FilePath GetAbsolutePathFromScenePath(const String& relativePath);
+    String GetRelativePathToProjectPath(const FilePath& absolutePath);
+    FilePath GetAbsolutePathFromProjectPath(const String& relativePath);
 
+    void FinishEditing();
 
-	void FinishEditing();
-
-	Command2* CreateSaveFileNameCommand(const String& filePath);
+    Command2* CreateSaveFileNameCommand(const String& filePath);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

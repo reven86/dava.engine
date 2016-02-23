@@ -37,101 +37,159 @@ class FCDEffectParameterSurface;
 class FCOLLADA_EXPORT FCDEffectParameterSampler : public FCDEffectParameter
 {
 public:
-	/** The type of sampling to execute. */
-	enum SamplerType
-	{
-		SAMPLER1D, /** 1D sampling. */
-		SAMPLER2D, /** 2D sampling. */
-		SAMPLER3D, /** 3D sampling. */
-		SAMPLERCUBE /** Cube-map sampling. */
-	};
+    /** The type of sampling to execute. */
+    enum SamplerType
+    {
+        SAMPLER1D, /** 1D sampling. */
+        SAMPLER2D, /** 2D sampling. */
+        SAMPLER3D, /** 3D sampling. */
+        SAMPLERCUBE /** Cube-map sampling. */
+    };
 
 private:
-	DeclareObjectType(FCDEffectParameter);
+    DeclareObjectType(FCDEffectParameter);
 
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, samplerType, FC("Sampler Type")); // SamplerType
-	DeclareParameterPtr(FCDEffectParameterSurface, surface, FC("Surface"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, wrap_s, FC("Wrap Mode S")); // FUDaeTextureWrapMode::WrapMode
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, wrap_t, FC("Wrap Mode T"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, wrap_p, FC("Wrap Mode P"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, minFilter, FC("Min Filter")); // FUDaeTextureFilterFunction::FilterFunction
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, magFilter, FC("Mag Filter"));
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, mipFilter, FC("Mip Filter"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, samplerType, FC("Sampler Type")); // SamplerType
+    DeclareParameterPtr(FCDEffectParameterSurface, surface, FC("Surface"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, wrap_s, FC("Wrap Mode S")); // FUDaeTextureWrapMode::WrapMode
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, wrap_t, FC("Wrap Mode T"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, wrap_p, FC("Wrap Mode P"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, minFilter, FC("Min Filter")); // FUDaeTextureFilterFunction::FilterFunction
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, magFilter, FC("Mag Filter"));
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, mipFilter, FC("Mip Filter"));
 
 public:
-	/** Constructor: do not use directly.
+    /** Constructor: do not use directly.
 		Instead, use the appropriate AddEffectParameter function.
 		@param document The COLLADA document that owns the effect parameter. */
-	FCDEffectParameterSampler(FCDocument* document);
+    FCDEffectParameterSampler(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDEffectParameterSampler();
+    /** Destructor. */
+    virtual ~FCDEffectParameterSampler();
 
-	/** Retrieves the type of effect parameter class.
+    /** Retrieves the type of effect parameter class.
 		@return The parameter class type: SAMPLER. */
-	virtual Type GetType() const { return SAMPLER; }
+    virtual Type GetType() const
+    {
+        return SAMPLER;
+    }
 
-	/** Retrieves the parameter for the surface to sample.
+    /** Retrieves the parameter for the surface to sample.
 		@return The surface parameter. This pointer will be NULL if the sampler is
 			not yet linked to any surface.. */
-	FCDEffectParameterSurface* GetSurface() { return surface; }
-	const FCDEffectParameterSurface* GetSurface() const { return surface; } /**< See above. */
+    FCDEffectParameterSurface* GetSurface()
+    {
+        return surface;
+    }
+    const FCDEffectParameterSurface* GetSurface() const
+    {
+        return surface;
+    } /**< See above. */
 
-	/** Sets the surface parameter for the surface to sample.
+    /** Sets the surface parameter for the surface to sample.
 		@param surface The surface parameter. This pointer may be NULL
 			to unlink the sampler. */
-	void SetSurface(FCDEffectParameterSurface* surface);
+    void SetSurface(FCDEffectParameterSurface* surface);
 
-	/** Retrieves the type of sampling to do.
+    /** Retrieves the type of sampling to do.
 		@return The sampling type. */
-	SamplerType GetSamplerType() const { return (SamplerType) *samplerType; }
+    SamplerType GetSamplerType() const
+    {
+        return (SamplerType)*samplerType;
+    }
 
-	/** Sets the type of sampling to do.
+    /** Sets the type of sampling to do.
 		@param type The sampling type. */
-	void SetSamplerType(SamplerType type) { samplerType = type; SetDirtyFlag(); }
+    void SetSamplerType(SamplerType type)
+    {
+        samplerType = type;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the wrap mode (in dimension S, T or P) of the sampler.
+    /** Retrieves the wrap mode (in dimension S, T or P) of the sampler.
 		@return The wrap mode.*/
-	FUDaeTextureWrapMode::WrapMode GetWrapS() const { return (FUDaeTextureWrapMode::WrapMode) *wrap_s; }
-	FUDaeTextureWrapMode::WrapMode GetWrapT() const { return (FUDaeTextureWrapMode::WrapMode) *wrap_t; } /**< See above.*/
-	FUDaeTextureWrapMode::WrapMode GetWrapP() const { return (FUDaeTextureWrapMode::WrapMode) *wrap_p; } /**< See above.*/
+    FUDaeTextureWrapMode::WrapMode GetWrapS() const
+    {
+        return (FUDaeTextureWrapMode::WrapMode)*wrap_s;
+    }
+    FUDaeTextureWrapMode::WrapMode GetWrapT() const
+    {
+        return (FUDaeTextureWrapMode::WrapMode)*wrap_t;
+    } /**< See above.*/
+    FUDaeTextureWrapMode::WrapMode GetWrapP() const
+    {
+        return (FUDaeTextureWrapMode::WrapMode)*wrap_p;
+    } /**< See above.*/
 
-	/** Sets the wrap mode (in dimension S, T or P) of the sampler.
+    /** Sets the wrap mode (in dimension S, T or P) of the sampler.
 		@param mode The wrap mode.*/
-	void SetWrapS(FUDaeTextureWrapMode::WrapMode mode) { wrap_s = mode; SetDirtyFlag(); }
-	void SetWrapT(FUDaeTextureWrapMode::WrapMode mode) { wrap_t = mode; SetDirtyFlag(); } /**< See above.*/
-	void SetWrapP(FUDaeTextureWrapMode::WrapMode mode) { wrap_p = mode; SetDirtyFlag(); } /**< See above.*/
+    void SetWrapS(FUDaeTextureWrapMode::WrapMode mode)
+    {
+        wrap_s = mode;
+        SetDirtyFlag();
+    }
+    void SetWrapT(FUDaeTextureWrapMode::WrapMode mode)
+    {
+        wrap_t = mode;
+        SetDirtyFlag();
+    } /**< See above.*/
+    void SetWrapP(FUDaeTextureWrapMode::WrapMode mode)
+    {
+        wrap_p = mode;
+        SetDirtyFlag();
+    } /**< See above.*/
 
-	/** Retrieves the appropriate filter function (minification, magnification or mip map filtering)
+    /** Retrieves the appropriate filter function (minification, magnification or mip map filtering)
 		of the sampler.
 		@return The filter function.*/
-	FUDaeTextureFilterFunction::FilterFunction GetMinFilter() const { return (FUDaeTextureFilterFunction::FilterFunction) *minFilter; }
-	FUDaeTextureFilterFunction::FilterFunction GetMagFilter() const { return (FUDaeTextureFilterFunction::FilterFunction) *magFilter; } /**< See above.*/
-	FUDaeTextureFilterFunction::FilterFunction GetMipFilter() const { return (FUDaeTextureFilterFunction::FilterFunction) *mipFilter; } /**< See above.*/
+    FUDaeTextureFilterFunction::FilterFunction GetMinFilter() const
+    {
+        return (FUDaeTextureFilterFunction::FilterFunction)*minFilter;
+    }
+    FUDaeTextureFilterFunction::FilterFunction GetMagFilter() const
+    {
+        return (FUDaeTextureFilterFunction::FilterFunction)*magFilter;
+    } /**< See above.*/
+    FUDaeTextureFilterFunction::FilterFunction GetMipFilter() const
+    {
+        return (FUDaeTextureFilterFunction::FilterFunction)*mipFilter;
+    } /**< See above.*/
 
-	/** Sets the appropriate filter function  (minification, magnification or mip map filtering)
+    /** Sets the appropriate filter function  (minification, magnification or mip map filtering)
 		of the sampler.
 		@param func The filter function.*/
-	void SetMinFilter(FUDaeTextureFilterFunction::FilterFunction func) { minFilter = func; SetDirtyFlag(); }
-	void SetMagFilter(FUDaeTextureFilterFunction::FilterFunction func) { magFilter = func; SetDirtyFlag(); } /**< See above.*/
-	void SetMipFilter(FUDaeTextureFilterFunction::FilterFunction func) { mipFilter = func; SetDirtyFlag(); } /**< See above.*/
+    void SetMinFilter(FUDaeTextureFilterFunction::FilterFunction func)
+    {
+        minFilter = func;
+        SetDirtyFlag();
+    }
+    void SetMagFilter(FUDaeTextureFilterFunction::FilterFunction func)
+    {
+        magFilter = func;
+        SetDirtyFlag();
+    } /**< See above.*/
+    void SetMipFilter(FUDaeTextureFilterFunction::FilterFunction func)
+    {
+        mipFilter = func;
+        SetDirtyFlag();
+    } /**< See above.*/
 
-	/** Compares this parameter's value with another
+    /** Compares this parameter's value with another
 		@param parameter The given parameter to compare with.
 		@return true if the values are equal */
-	virtual bool IsValueEqual(FCDEffectParameter *parameter);
+    virtual bool IsValueEqual(FCDEffectParameter* parameter);
 
-	/** Creates a full copy of the effect parameter.
+    /** Creates a full copy of the effect parameter.
 		@param clone The cloned effect parameter. If this pointer is NULL,
 			a new effect parameter will be created and you
 			will need to delete this pointer.
 		@return The cloned effect parameter. */
-	virtual FCDEffectParameter* Clone(FCDEffectParameter* clone = NULL) const;
+    virtual FCDEffectParameter* Clone(FCDEffectParameter* clone = NULL) const;
 
-	/** [INTERNAL] Overwrites the target parameter with this parameter.
+    /** [INTERNAL] Overwrites the target parameter with this parameter.
 		This function is used during the flattening of materials.
 		@param target The target parameter to overwrite. */
-	virtual void Overwrite(FCDEffectParameter* target);
+    virtual void Overwrite(FCDEffectParameter* target);
 };
 
 #endif // _FCD_EFFECT_PARAMETER_SAMPLER_H_

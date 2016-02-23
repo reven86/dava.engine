@@ -31,7 +31,7 @@
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 
-namespace DAVA 
+namespace DAVA
 {
 rhi::TextureFormat PixelFormatDescriptor::TEXTURE_FORMAT_INVALID = rhi::TextureFormat(-1);
 
@@ -123,12 +123,12 @@ int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat formatID
 int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat formatID)
 {
     int32 bits = GetPixelFormatSizeInBits(formatID);
-    if(bits < 8)
-    {   // To detect wrong situations
+    if (bits < 8)
+    { // To detect wrong situations
         Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
     }
-    
-    return  bits / 8;
+
+    return bits / 8;
 }
 
 const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat formatID)
@@ -136,7 +136,7 @@ const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat format
     return GetPixelFormatDescriptor(formatID).name.c_str();
 }
 
-PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatName)
+PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName& formatName)
 {
     for (const auto& entry : pixelDescriptors)
     {
@@ -146,8 +146,7 @@ PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatNa
             return descr.formatID;
         }
     }
-    
+
     return FORMAT_INVALID;
 }
- 
 };

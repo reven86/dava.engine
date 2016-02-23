@@ -30,7 +30,7 @@
 #include "SceneHelper.h"
 #include "Deprecated/SceneValidator.h"
 
-void SceneHelper::EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode)
+void SceneHelper::EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode)
 {
     EnumerateEntityTextures(forScene, forScene, textureCollection, mode);
 }
@@ -68,10 +68,10 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* f
     for (auto& mat : materials)
     {
         String materialName = mat->GetMaterialName().c_str();
-        String parentName = mat->GetParent() ? mat->GetParent()->GetMaterialName().c_str() : String() ;
-        
-        if((parentName.find("Particle") != String::npos) || (materialName.find("Particle") != String::npos))
-        {   //because particle materials has textures only after first start, so we have different result during scene life.
+        String parentName = mat->GetParent() ? mat->GetParent()->GetMaterialName().c_str() : String();
+
+        if ((parentName.find("Particle") != String::npos) || (materialName.find("Particle") != String::npos))
+        { //because particle materials has textures only after first start, so we have different result during scene life.
             continue;
         }
 
@@ -97,11 +97,11 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* f
     }
 }
 
-int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures)
+int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures)
 {
-	int32 retValue = 0;
-	textures.clear();
-	TexturesMap allTextures;
+    int32 retValue = 0;
+    textures.clear();
+    TexturesMap allTextures;
     EnumerateSceneTextures(forScene, allTextures, TexturesEnumerateMode::EXCLUDE_NULL);
 
     for (auto& it : allTextures)
@@ -112,17 +112,17 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
             continue;
         }
 
-        DAVA::TextureDescriptor *descriptor = texture->GetDescriptor();
+        DAVA::TextureDescriptor* descriptor = texture->GetDescriptor();
         DVASSERT(descriptor);
         DVASSERT(descriptor->compression);
 
         DAVA::Vector<DAVA::eGPUFamily> markedGPUs;
         for (int i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
         {
-			eGPUFamily gpu = (eGPUFamily)i;
-			if(GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))
-			{
-				FilePath texPath = descriptor->GetSourceTexturePathname();
+            eGPUFamily gpu = (eGPUFamily)i;
+            if (GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))
+            {
+                FilePath texPath = descriptor->GetSourceTexturePathname();
                 if (FileSystem::Instance()->Exists(texPath) && !descriptor->IsCompressedTextureActual(gpu))
                 {
                     markedGPUs.push_back(gpu);
@@ -135,7 +135,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
             textures[texture] = markedGPUs;
         }
     }
-	return retValue;
+    return retValue;
 }
 
 void SceneHelper::EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials)
@@ -176,12 +176,12 @@ void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DA
     }
 }
 
-DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
+DAVA::Entity* SceneHelper::CloneEntityWithMaterials(DAVA::Entity* fromNode)
 {
     Scene* scene = fromNode->GetScene();
     NMaterial* globalMaterial = (scene) ? scene->GetGlobalMaterial() : nullptr;
 
-    Entity * newEntity = fromNode->Clone();
+    Entity* newEntity = fromNode->Clone();
 
     Set<NMaterial*> materialInstances;
     EnumerateMaterialInstances(newEntity, materialInstances);

@@ -50,21 +50,21 @@ class EditorLODSystem : public DAVA::SceneSystem
     friend class EntityModificationSystem;
 
 public:
-    EditorLODSystem(DAVA::Scene * scene);
+    EditorLODSystem(DAVA::Scene* scene);
     virtual ~EditorLODSystem();
 
-    void AddEntity(DAVA::Entity * entity) override;
-    void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
-    void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
+    void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32>& lodDistances);
 
     DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
 
-    static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
+    static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS>& triangles, DAVA::LodComponent* lod, bool onlyVisibleBatches);
 
-    void SolidChanged(const DAVA::Entity *entity, bool value);
+    void SolidChanged(const DAVA::Entity* entity, bool value);
 
-    bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
+    bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
     bool CanCreatePlaneLOD() const;
     //TODO: remove after lod editing implementation
     DAVA_DEPRECATED(bool CopyLastLodToLod0());
@@ -74,7 +74,7 @@ public:
     bool DeleteFirstLOD();
     bool DeleteLastLOD();
 
-    void SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
+    void SceneSelectionChanged(const EntityGroup* selected, const EntityGroup* deselected);
 
     inline DAVA::uint32 GetLayerTriangles(DAVA::uint32 layerNum) const;
 
@@ -100,17 +100,17 @@ public:
     void SetAllSceneModeEnabled(bool enabled);
 
 protected:
-    bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
+    bool CheckSelectedContainsEntity(const DAVA::Entity* arg) const;
 
-    void AddSelectedLODsRecursive(DAVA::Entity *entity);
-    void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
+    void AddSelectedLODsRecursive(DAVA::Entity* entity);
+    void RemoveSelectedLODsRecursive(DAVA::Entity* entity);
 
     void UpdateForceLayer();
     void UpdateForceDistance();
     void UpdateAllSceneModeEnabled();
     void UpdateForceData();
-    void ResetForceState(DAVA::Entity *entity);
-    void ResetForceState(DAVA::LodComponent *lodComponent);
+    void ResetForceState(DAVA::Entity* entity);
+    void ResetForceState(DAVA::LodComponent* lodComponent);
 
     void Process(DAVA::float32 elapsedTime) override;
 
@@ -174,11 +174,11 @@ inline bool EditorLODSystem::GetAllSceneModeEnabled() const
     return allSceneModeEnabled;
 }
 
-inline const DAVA::List<DAVA::LodComponent *> EditorLODSystem::GetCurrentLODs() const
+inline const DAVA::List<DAVA::LodComponent*> EditorLODSystem::GetCurrentLODs() const
 {
     if (allSceneModeEnabled)
     {
-        DAVA::List<DAVA::LodComponent *> lods;
+        DAVA::List<DAVA::LodComponent*> lods;
         for (auto it = sceneLODs.begin(); it != sceneLODs.end(); ++it)
         {
             lods.push_back(it->first);

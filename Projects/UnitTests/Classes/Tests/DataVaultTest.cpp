@@ -33,11 +33,11 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(DataVaultTest)
+DAVA_TESTCLASS (DataVaultTest)
 {
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
-        IDataStorage *storage = DataStorage::Create();
+        IDataStorage* storage = DataStorage::Create();
 
         storage->Clear();
         storage->Push();
@@ -68,4 +68,5 @@ DAVA_TESTCLASS(DataVaultTest)
 #endif
         SafeRelease(storage);
     }
-};
+}
+;

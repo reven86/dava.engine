@@ -12,7 +12,8 @@ class MemorySnapshot;
 class BranchTreeModel : public QAbstractItemModel
 {
 public:
-    enum {
+    enum
+    {
         CLM_NAME = 0,
         CLM_STAT,
         NCOLUMNS = 2
@@ -39,4 +40,4 @@ private:
     Branch* rootBranch = nullptr;
 };
 
-#endif  // __BRANCHTREEMODEL_H__
+#endif // __BRANCHTREEMODEL_H__

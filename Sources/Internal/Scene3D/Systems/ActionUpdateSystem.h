@@ -36,31 +36,30 @@
 
 namespace DAVA
 {
-	class ActionComponent;
-	class ActionUpdateSystem : public SceneSystem
-	{
-	public:
-		ActionUpdateSystem(Scene * scene);
-		virtual void Process(float32 timeElapsed);
-		
-		virtual void AddEntity(Entity * entity);
-		virtual void RemoveEntity(Entity * entity);
+class ActionComponent;
+class ActionUpdateSystem : public SceneSystem
+{
+public:
+    ActionUpdateSystem(Scene* scene);
+    virtual void Process(float32 timeElapsed);
 
-		void Watch(ActionComponent* component);
-		void UnWatch(ActionComponent* component);
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
 
-		void SetBlockEvent(ActionComponent::Action::eEvent eventType, bool block);
-		bool IsBlockEvent(ActionComponent::Action::eEvent eventType);
-		void UnblockAllEvents();
-		
-	protected:
-		bool eventBlocked[ActionComponent::Action::EVENTS_COUNT];
-		Vector<ActionComponent*> activeActions;
+    void Watch(ActionComponent* component);
+    void UnWatch(ActionComponent* component);
 
-		void DelayedDeleteActions();
-		Vector<ActionComponent*> deleteActions;
-	};
-	
+    void SetBlockEvent(ActionComponent::Action::eEvent eventType, bool block);
+    bool IsBlockEvent(ActionComponent::Action::eEvent eventType);
+    void UnblockAllEvents();
+
+protected:
+    bool eventBlocked[ActionComponent::Action::EVENTS_COUNT];
+    Vector<ActionComponent*> activeActions;
+
+    void DelayedDeleteActions();
+    Vector<ActionComponent*> deleteActions;
+};
 }
 
 #endif //__DAVAENGINE_SCENE3D_ACTIONUPDATESYSTEM_H__

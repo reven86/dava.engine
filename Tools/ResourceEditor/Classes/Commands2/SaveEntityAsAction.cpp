@@ -38,7 +38,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Classes/StringConstants.h"
 
-
 using namespace DAVA;
 
 class ElegantSceneGuard final
@@ -83,18 +82,20 @@ private:
     Map<DataNode*, uint64> dataNodeIDs;
 };
 
-SaveEntityAsAction::SaveEntityAsAction(const EntityGroup *_entities, const FilePath &_path)
-	: CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
-	, entities(_entities)
-	, sc2Path(_path)
-{ }
+SaveEntityAsAction::SaveEntityAsAction(const EntityGroup* _entities, const FilePath& _path)
+    : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
+    , entities(_entities)
+    , sc2Path(_path)
+{
+}
 
 SaveEntityAsAction::~SaveEntityAsAction()
-{ }
+{
+}
 
 void SaveEntityAsAction::Redo()
 {
-	uint32 count = static_cast<uint32>(entities->Size());
+    uint32 count = static_cast<uint32>(entities->Size());
     if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
     {
         const auto RemoveReferenceToOwner = [](Entity* entity) {
@@ -147,14 +148,14 @@ void SaveEntityAsAction::Redo()
     }
 }
 
-void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
+void SaveEntityAsAction::RemoveLightmapsRecursive(Entity* entity) const
 {
-	RenderObject * renderObject = GetRenderObject(entity);
-	if (nullptr != renderObject)
-	{
-		const uint32 batchCount = renderObject->GetRenderBatchCount();
-		for (uint32 b = 0; b < batchCount; ++b)
-		{
+    RenderObject* renderObject = GetRenderObject(entity);
+    if (nullptr != renderObject)
+    {
+        const uint32 batchCount = renderObject->GetRenderBatchCount();
+        for (uint32 b = 0; b < batchCount; ++b)
+        {
             NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
             if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
             {
@@ -164,9 +165,8 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
     }
 
     const int32 count = entity->GetChildrenCount();
-	for (int32 ch = 0; ch < count; ++ch)
-	{
-		RemoveLightmapsRecursive(entity->GetChild(ch));
-	}
+    for (int32 ch = 0; ch < count; ++ch)
+    {
+        RemoveLightmapsRecursive(entity->GetChild(ch));
+    }
 }
-

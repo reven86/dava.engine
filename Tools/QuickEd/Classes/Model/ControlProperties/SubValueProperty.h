@@ -39,27 +39,27 @@ class SubValueProperty;
 class SubValueProperty : public AbstractProperty
 {
 public:
-    SubValueProperty(int index, const DAVA::String &propName);
+    SubValueProperty(int index, const DAVA::String& propName);
 
 protected:
     virtual ~SubValueProperty();
 
 public:
     DAVA::uint32 GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    void Accept(PropertyVisitor *visitor) override;
-    
-    const DAVA::String &GetName() const override;
+    AbstractProperty* GetProperty(int index) const override;
+    void Accept(PropertyVisitor* visitor) override;
+
+    const DAVA::String& GetName() const override;
     ePropertyType GetType() const override;
     DAVA::VariantType GetValue() const override;
-    void SetValue(const DAVA::VariantType &newValue) override;
+    void SetValue(const DAVA::VariantType& newValue) override;
     DAVA::VariantType GetDefaultValue() const override;
-    void SetDefaultValue(const DAVA::VariantType &newValue) override;
+    void SetDefaultValue(const DAVA::VariantType& newValue) override;
     void ResetValue() override;
     bool IsOverriddenLocally() const override;
 
 private:
-    ValueProperty *GetValueProperty() const;
+    ValueProperty* GetValueProperty() const;
     int index;
     DAVA::String name;
 };

@@ -36,7 +36,6 @@
 
 #include "MaterialEditor/MaterialAssignSystem.h"
 
-
 // framework
 #include "Scene3d/Components/ComponentHelpers.h"
 
@@ -47,614 +46,609 @@
 #include "Tools/MimeData/MimeDataHelper2.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
-	: QStandardItemModel(parent)
-	, curScene(NULL)
-	, dropAccepted(false)
+SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/)
+    : QStandardItemModel(parent)
+    , curScene(NULL)
+    , dropAccepted(false)
 {
     SetScene(NULL);
-	QObject::connect(this, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(ItemChanged(QStandardItem *)));
+    QObject::connect(this, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(ItemChanged(QStandardItem*)));
 }
 
 SceneTreeModel::~SceneTreeModel()
 {
-	if(NULL != curScene)
-	{
-		curScene->Release();
-		curScene = NULL;
-	}
+    if (NULL != curScene)
+    {
+        curScene->Release();
+        curScene = NULL;
+    }
 }
 
 Qt::DropActions SceneTreeModel::supportedDragActions() const
 {
-	return Qt::MoveAction|Qt::LinkAction;
+    return Qt::MoveAction | Qt::LinkAction;
 }
 
-void SceneTreeModel::SetScene(SceneEditor2 *scene)
+void SceneTreeModel::SetScene(SceneEditor2* scene)
 {
     clear();
     setColumnCount(1);
-    setHorizontalHeaderLabels( QStringList() << "Scene hierarchy" );
+    setHorizontalHeaderLabels(QStringList() << "Scene hierarchy");
 
-	if(NULL != curScene)
-	{
-		curScene->Release();
-	}	
+    if (NULL != curScene)
+    {
+        curScene->Release();
+    }
 
-	curScene = scene;
+    curScene = scene;
 
-	if(NULL != curScene)
-	{
-		curScene->Retain();
-	}
+    if (NULL != curScene)
+    {
+        curScene->Retain();
+    }
 
-	ResyncStructure(invisibleRootItem(), curScene);
-    SetFilter(filterText);  // Apply filter to new model
+    ResyncStructure(invisibleRootItem(), curScene);
+    SetFilter(filterText); // Apply filter to new model
 }
 
 SceneEditor2* SceneTreeModel::GetScene() const
 {
-	return curScene;
+    return curScene;
 }
 
-void SceneTreeModel::SetSolid(const QModelIndex &index, bool solid)
+void SceneTreeModel::SetSolid(const QModelIndex& index, bool solid)
 {
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(GetItem(index));
 
-	if(NULL != entity)
-	{
-		entity->SetSolid(solid);
-		SceneSignals::Instance()->EmitSolidChanged(curScene, entity, solid);
-	}
+    if (NULL != entity)
+    {
+        entity->SetSolid(solid);
+        SceneSignals::Instance()->EmitSolidChanged(curScene, entity, solid);
+    }
 }
 
-bool SceneTreeModel::GetSolid(const QModelIndex &index) const
+bool SceneTreeModel::GetSolid(const QModelIndex& index) const
 {
-	bool ret = false;
+    bool ret = false;
 
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
-	if(NULL != entity)
-	{
-		ret = entity->GetSolid();
-	}
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    if (NULL != entity)
+    {
+        ret = entity->GetSolid();
+    }
 
-	return ret;
+    return ret;
 }
 
-void SceneTreeModel::SetLocked(const QModelIndex &index, bool locked)
+void SceneTreeModel::SetLocked(const QModelIndex& index, bool locked)
 {
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(GetItem(index));
 
-	if(NULL != entity)
-	{
-		entity->SetLocked(locked);
-	}
+    if (NULL != entity)
+    {
+        entity->SetLocked(locked);
+    }
 }
 
-bool SceneTreeModel::GetLocked(const QModelIndex &index) const
+bool SceneTreeModel::GetLocked(const QModelIndex& index) const
 {
-	bool ret = false;
-	
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
-	if(NULL != entity)
-	{
-		ret = entity->GetLocked();
-	}
+    bool ret = false;
 
-	return ret;
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    if (NULL != entity)
+    {
+        ret = entity->GetLocked();
+    }
+
+    return ret;
 }
 
-QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
+QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex& index) const
 {
     QVector<QIcon> ret;
-	SceneTreeItem *item = GetItem(index);
+    SceneTreeItem* item = GetItem(index);
 
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
-	if(NULL != entity)
-	{
-		if(entity->GetLocked())
-		{
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
+    if (NULL != entity)
+    {
+        if (entity->GetLocked())
+        {
             ret.push_back(SharedIcon(":/QtIcons/locked.png"));
         }
 
-        if(NULL != GetCamera(entity))
-		{
-			if(curScene->GetCurrentCamera() == GetCamera(entity))
-			{
+        if (NULL != GetCamera(entity))
+        {
+            if (curScene->GetCurrentCamera() == GetCamera(entity))
+            {
                 ret.push_back(SharedIcon(":/QtIcons/eye.png"));
             }
         }
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
-int SceneTreeModel::GetCustomFlags(const QModelIndex &index) const
+int SceneTreeModel::GetCustomFlags(const QModelIndex& index) const
 {
-	int ret = 0;
+    int ret = 0;
 
-	SceneTreeItem *item = GetItem(index);
-	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
+    SceneTreeItem* item = GetItem(index);
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
 
-	if(NULL != entity)
-	{
-		if(entity->GetName().find("editor.") != DAVA::String::npos)
-		{
-			ret |= CF_Disabled;
-		}
-	}
-	else
-	{
-		DAVA::ParticleLayer *layer = SceneTreeItemParticleLayer::GetLayer(item);
-		if(NULL != layer)
-		{
-			DAVA::Entity *emitter = SceneTreeItemEntity::GetEntity(GetItem(index.parent()));
-			if(NULL != emitter)
-			{
-				DAVA::LodComponent *lodComp = GetLodComponent(emitter);
-				if(NULL != lodComp)
-				{
-					if(!layer->IsLodActive(lodComp->currentLod))
-					{
-						ret |= CF_Invisible;
-					}
-				}
-			}
-		}
-	}
+    if (NULL != entity)
+    {
+        if (entity->GetName().find("editor.") != DAVA::String::npos)
+        {
+            ret |= CF_Disabled;
+        }
+    }
+    else
+    {
+        DAVA::ParticleLayer* layer = SceneTreeItemParticleLayer::GetLayer(item);
+        if (NULL != layer)
+        {
+            DAVA::Entity* emitter = SceneTreeItemEntity::GetEntity(GetItem(index.parent()));
+            if (NULL != emitter)
+            {
+                DAVA::LodComponent* lodComp = GetLodComponent(emitter);
+                if (NULL != lodComp)
+                {
+                    if (!layer->IsLodActive(lodComp->currentLod))
+                    {
+                        ret |= CF_Invisible;
+                    }
+                }
+            }
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-QModelIndex SceneTreeModel::GetIndex(DAVA::Entity *entity) const
+QModelIndex SceneTreeModel::GetIndex(DAVA::Entity* entity) const
 {
-	return indexesCacheEntities.value(entity, QModelIndex());
+    return indexesCacheEntities.value(entity, QModelIndex());
 }
 
-QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleLayer *layer) const
+QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleLayer* layer) const
 {
-	return indexesCacheLayers.value(layer, QModelIndex());
+    return indexesCacheLayers.value(layer, QModelIndex());
 }
 
-QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleEmitter *emitter) const
+QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleEmitter* emitter) const
 {
-	return indexesCacheEmitters.value(emitter, QModelIndex());
+    return indexesCacheEmitters.value(emitter, QModelIndex());
 }
 
-QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleForce *force) const
+QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleForce* force) const
 {
-	return indexesCacheForces.value(force, QModelIndex());
+    return indexesCacheForces.value(force, QModelIndex());
 }
 
-SceneTreeItem* SceneTreeModel::GetItem(const QModelIndex &index) const
+SceneTreeItem* SceneTreeModel::GetItem(const QModelIndex& index) const
 {
-	return (SceneTreeItem *)itemFromIndex(index);
+    return (SceneTreeItem*)itemFromIndex(index);
 }
 
 Qt::DropActions SceneTreeModel::supportedDropActions() const
 {
-	return (Qt::LinkAction | Qt::MoveAction | Qt::CopyAction);
+    return (Qt::LinkAction | Qt::MoveAction | Qt::CopyAction);
 }
 
-QMimeData * SceneTreeModel::mimeData(const QModelIndexList & indexes) const
+QMimeData* SceneTreeModel::mimeData(const QModelIndexList& indexes) const
 {
-	QMimeData* ret = NULL;
+    QMimeData* ret = NULL;
 
-	if(indexes.size() > 0)
-	{
-		if(AreSameType(indexes))
-		{
-			SceneTreeItem *firstItem = GetItem(indexes.at(0));
-			if(NULL != firstItem)
-			{
-				switch (firstItem->ItemType())
-				{
-				case SceneTreeItem::EIT_Entity:
-					{
-						QVector<DAVA::Entity*> data;
-						foreach(QModelIndex index, indexes)
-						{
-							data.push_back(SceneTreeItemEntity::GetEntity(GetItem(index)));
-						}
-
-						ret = MimeDataHelper2<DAVA::Entity>::EncodeMimeData(data);
-					}
-					break;
-                case SceneTreeItem::EIT_Emitter:
+    if (indexes.size() > 0)
+    {
+        if (AreSameType(indexes))
+        {
+            SceneTreeItem* firstItem = GetItem(indexes.at(0));
+            if (NULL != firstItem)
+            {
+                switch (firstItem->ItemType())
+                {
+                case SceneTreeItem::EIT_Entity:
+                {
+                    QVector<DAVA::Entity*> data;
+                    foreach (QModelIndex index, indexes)
                     {
-                        QVector<DAVA::ParticleEmitter *> data;
-                        foreach(QModelIndex index, indexes)
-                        {
-                            data.push_back(SceneTreeItemParticleEmitter::GetEmitterStrict(GetItem(index)));
-                        }
-
-                        ret = MimeDataHelper2<DAVA::ParticleEmitter>::EncodeMimeData(data);
+                        data.push_back(SceneTreeItemEntity::GetEntity(GetItem(index)));
                     }
+
+                    ret = MimeDataHelper2<DAVA::Entity>::EncodeMimeData(data);
+                }
+                break;
+                case SceneTreeItem::EIT_Emitter:
+                {
+                    QVector<DAVA::ParticleEmitter*> data;
+                    foreach (QModelIndex index, indexes)
+                    {
+                        data.push_back(SceneTreeItemParticleEmitter::GetEmitterStrict(GetItem(index)));
+                    }
+
+                    ret = MimeDataHelper2<DAVA::ParticleEmitter>::EncodeMimeData(data);
+                }
+                break;
+                case SceneTreeItem::EIT_Layer:
+                {
+                    QVector<DAVA::ParticleLayer*> data;
+                    foreach (QModelIndex index, indexes)
+                    {
+                        data.push_back(SceneTreeItemParticleLayer::GetLayer(GetItem(index)));
+                    }
+
+                    ret = MimeDataHelper2<DAVA::ParticleLayer>::EncodeMimeData(data);
+                }
+                break;
+                case SceneTreeItem::EIT_Force:
+                {
+                    QVector<DAVA::ParticleForce*> data;
+                    foreach (QModelIndex index, indexes)
+                    {
+                        data.push_back(SceneTreeItemParticleForce::GetForce(GetItem(index)));
+                    }
+
+                    ret = MimeDataHelper2<DAVA::ParticleForce>::EncodeMimeData(data);
+                }
+                break;
+                default:
                     break;
-				case SceneTreeItem::EIT_Layer:
-					{
-						QVector<DAVA::ParticleLayer *> data;
-						foreach(QModelIndex index, indexes)
-						{
-							data.push_back(SceneTreeItemParticleLayer::GetLayer(GetItem(index)));
-						}
+                }
+            }
+        }
+        else
+        {
+            // empty mime data
+            ret = new QMimeData();
+        }
+    }
 
-						ret = MimeDataHelper2<DAVA::ParticleLayer>::EncodeMimeData(data);
-					}
-					break;
-				case SceneTreeItem::EIT_Force:
-					{
-						QVector<DAVA::ParticleForce *> data;
-						foreach(QModelIndex index, indexes)
-						{
-							data.push_back(SceneTreeItemParticleForce::GetForce(GetItem(index)));
-						}
-
-						ret = MimeDataHelper2<DAVA::ParticleForce>::EncodeMimeData(data);
-					}
-					break;
-				default:
-					break;
-				}
-			}
-		}
-		else
-		{
-			// empty mime data
-			ret = new QMimeData();
-		}
-	}
-
-	return ret;
+    return ret;
 }
 
 QStringList SceneTreeModel::mimeTypes() const
 {
-	QStringList types;
+    QStringList types;
 
-	types << MimeDataHelper2<DAVA::Entity>::GetMimeType();
-	types << MimeDataHelper2<DAVA::ParticleEmitter>::GetMimeType();
+    types << MimeDataHelper2<DAVA::Entity>::GetMimeType();
+    types << MimeDataHelper2<DAVA::ParticleEmitter>::GetMimeType();
     types << MimeDataHelper2<DAVA::ParticleLayer>::GetMimeType();
-	types << MimeDataHelper2<DAVA::ParticleForce>::GetMimeType();
+    types << MimeDataHelper2<DAVA::ParticleForce>::GetMimeType();
 
-	return types;
+    return types;
 }
 
-bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-	bool ret = false;
+    bool ret = false;
 
-	SceneTreeItem* parentItem = GetItem(parent);
-	SceneTreeItem *beforeItem = GetItem(index(row, column, parent));
+    SceneTreeItem* parentItem = GetItem(parent);
+    SceneTreeItem* beforeItem = GetItem(index(row, column, parent));
 
-	int dropType = GetDropType(data);
-	switch (dropType)
-	{
-	case DropingEntity:
-		{
-			DAVA::Entity *parentEntity = SceneTreeItemEntity::GetEntity(parentItem);
-			DAVA::Entity *beforeEntity = SceneTreeItemEntity::GetEntity(beforeItem);
+    int dropType = GetDropType(data);
+    switch (dropType)
+    {
+    case DropingEntity:
+    {
+        DAVA::Entity* parentEntity = SceneTreeItemEntity::GetEntity(parentItem);
+        DAVA::Entity* beforeEntity = SceneTreeItemEntity::GetEntity(beforeItem);
 
-			if(NULL == parentEntity)
-			{
-				parentEntity = curScene;
-			}
+        if (NULL == parentEntity)
+        {
+            parentEntity = curScene;
+        }
 
-			QVector<DAVA::Entity*> entitiesV = MimeDataHelper2<DAVA::Entity>::DecodeMimeData(data);
-			if(entitiesV.size() > 0)
-			{
-				EntityGroup entityGroup;
-				for (int i = 0; i < entitiesV.size(); ++i)
-				{
-                    entityGroup.Add((DAVA::Entity*)entitiesV[i], DAVA::AABBox3());
-                }
+        QVector<DAVA::Entity*> entitiesV = MimeDataHelper2<DAVA::Entity>::DecodeMimeData(data);
+        if (entitiesV.size() > 0)
+        {
+            EntityGroup entityGroup;
+            for (int i = 0; i < entitiesV.size(); ++i)
+            {
+                entityGroup.Add((DAVA::Entity*)entitiesV[i], DAVA::AABBox3());
+            }
 
-				curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
-				ret = true;
-			}
-		}
-		break;
+            curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
+            ret = true;
+        }
+    }
+    break;
 
     case DropingEmitter:
+    {
+        DAVA::ParticleEffectComponent* effect = GetEffectComponent(SceneTreeItemEntity::GetEntity(parentItem));
+        QVector<DAVA::ParticleEmitter*> emittersV = MimeDataHelper2<DAVA::ParticleEmitter>::DecodeMimeData(data);
+        if (NULL != effect && emittersV.size() > 0)
         {
-
-            DAVA::ParticleEffectComponent *effect = GetEffectComponent(SceneTreeItemEntity::GetEntity(parentItem));                
-            QVector<DAVA::ParticleEmitter *> emittersV = MimeDataHelper2<DAVA::ParticleEmitter>::DecodeMimeData(data);
-            if(NULL != effect && emittersV.size() > 0)
-            {                
-                DAVA::Vector<DAVA::ParticleEmitter*> emittersGroup;
-                DAVA::Vector<DAVA::ParticleEffectComponent*> effectsGroup;
-                emittersGroup.reserve(emittersV.size());
-                effectsGroup.reserve(emittersV.size());
-                for(int i = 0; i < emittersV.size(); ++i)
-                {
-                    emittersGroup.push_back((DAVA::ParticleEmitter *) emittersV[i]);
-                    QModelIndex emitterIndex = GetIndex((DAVA::ParticleEmitter *) emittersV[i]);                    
-                    DAVA::ParticleEffectComponent *oldEffect = GetEffectComponent(SceneTreeItemEntity::GetEntity(GetItem(emitterIndex.parent())));
-                    effectsGroup.push_back(oldEffect);
-                }
-
-                curScene->structureSystem->MoveEmitter(emittersGroup, effectsGroup, effect, row);
-
-				if (emittersV.size() == 1)
-				{
-					// moved only one emitter - keep it selected
-					curScene->particlesSystem->SetEmitterSelected(effect->GetEntity(), emittersV.front());
-				}
-				else 
-				{
-					// moved several emitters - reset selection
-					curScene->particlesSystem->SetEmitterSelected(nullptr, nullptr);
-				}
-
-                ret = true;
+            DAVA::Vector<DAVA::ParticleEmitter*> emittersGroup;
+            DAVA::Vector<DAVA::ParticleEffectComponent*> effectsGroup;
+            emittersGroup.reserve(emittersV.size());
+            effectsGroup.reserve(emittersV.size());
+            for (int i = 0; i < emittersV.size(); ++i)
+            {
+                emittersGroup.push_back((DAVA::ParticleEmitter*)emittersV[i]);
+                QModelIndex emitterIndex = GetIndex((DAVA::ParticleEmitter*)emittersV[i]);
+                DAVA::ParticleEffectComponent* oldEffect = GetEffectComponent(SceneTreeItemEntity::GetEntity(GetItem(emitterIndex.parent())));
+                effectsGroup.push_back(oldEffect);
             }
+
+            curScene->structureSystem->MoveEmitter(emittersGroup, effectsGroup, effect, row);
+
+            if (emittersV.size() == 1)
+            {
+                // moved only one emitter - keep it selected
+                curScene->particlesSystem->SetEmitterSelected(effect->GetEntity(), emittersV.front());
+            }
+            else
+            {
+                // moved several emitters - reset selection
+                curScene->particlesSystem->SetEmitterSelected(nullptr, nullptr);
+            }
+
+            ret = true;
         }
-        break;
+    }
+    break;
 
-	case DropingLayer:
-		{
-			
-			DAVA::ParticleEmitter* emitter = NULL;
-			
-			if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter)||(parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
-			{
-				emitter = ((SceneTreeItemParticleEmitter* )parentItem)->emitter;
-			}
+    case DropingLayer:
+    {
+        DAVA::ParticleEmitter* emitter = NULL;
 
-			QVector<DAVA::ParticleLayer *> layersV = MimeDataHelper2<DAVA::ParticleLayer>::DecodeMimeData(data);
-			if(NULL != emitter && layersV.size() > 0)
-			{
-				DAVA::ParticleLayer* beforeLayer = NULL;
-
-				if(row >= 0 && row < (int) emitter->layers.size())
-				{
-					beforeLayer = emitter->layers[row];
-				}
-
-				DAVA::Vector<DAVA::ParticleLayer*> layersGroup;
-                DAVA::Vector<DAVA::ParticleEmitter*> emittersGroup;
-                layersGroup.reserve(layersV.size());
-                emittersGroup.reserve(layersV.size());
-				for(int i = 0; i < layersV.size(); ++i)
-				{
-					layersGroup.push_back((DAVA::ParticleLayer *) layersV[i]);
-                    QModelIndex emitterIndex = GetIndex((DAVA::ParticleLayer *) layersV[i]);
-                    DAVA::ParticleEmitter *oldEmitter = SceneTreeItemParticleEmitter::GetEmitter(GetItem(emitterIndex.parent()));                    
-                    emittersGroup.push_back(oldEmitter);
-				}
-
-				curScene->structureSystem->MoveLayer(layersGroup, emittersGroup, emitter, beforeLayer);
-				ret = true;
-			}
-		}
-		break;
-	case DropingForce:
-		{
-			DAVA::ParticleLayer *newLayer = SceneTreeItemParticleLayer::GetLayer(parentItem);
-			
-			QVector<DAVA::ParticleForce*> forcesV = MimeDataHelper2<DAVA::ParticleForce>::DecodeMimeData(data);
-			if(NULL != newLayer && forcesV.size())
-			{
-				DAVA::Vector<DAVA::ParticleForce*> forcesGroup;
-                forcesGroup.reserve(forcesV.size());
-                
-				DAVA::Vector<DAVA::ParticleLayer*> layersGroup;
-                layersGroup.reserve(forcesV.size());
-
-				for(int i = 0; i < forcesV.size(); ++i)
-				{
-					QModelIndex forceIndex = GetIndex((DAVA::ParticleForce *) forcesV[i]);
-					DAVA::ParticleLayer *oldLayer = SceneTreeItemParticleLayer::GetLayer(GetItem(forceIndex.parent()));
-
-					forcesGroup.push_back((DAVA::ParticleForce *) forcesV[i]);
-					layersGroup.push_back(oldLayer);
-				}
-
-				curScene->structureSystem->MoveForce(forcesGroup, layersGroup, newLayer);
-				ret = true;
-			}
-		}
-		break;
-            
-    case DropingMaterial:
+        if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter) || (parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
         {
-            DVASSERT_MSG(false, "This can't be done. Materials should be assigned only on RenderBatch");
+            emitter = ((SceneTreeItemParticleEmitter*)parentItem)->emitter;
         }
-		break;
 
-	default:
-		break;
-	}
+        QVector<DAVA::ParticleLayer*> layersV = MimeDataHelper2<DAVA::ParticleLayer>::DecodeMimeData(data);
+        if (NULL != emitter && layersV.size() > 0)
+        {
+            DAVA::ParticleLayer* beforeLayer = NULL;
 
-	dropAccepted = ret;
-	return ret;
+            if (row >= 0 && row < (int)emitter->layers.size())
+            {
+                beforeLayer = emitter->layers[row];
+            }
+
+            DAVA::Vector<DAVA::ParticleLayer*> layersGroup;
+            DAVA::Vector<DAVA::ParticleEmitter*> emittersGroup;
+            layersGroup.reserve(layersV.size());
+            emittersGroup.reserve(layersV.size());
+            for (int i = 0; i < layersV.size(); ++i)
+            {
+                layersGroup.push_back((DAVA::ParticleLayer*)layersV[i]);
+                QModelIndex emitterIndex = GetIndex((DAVA::ParticleLayer*)layersV[i]);
+                DAVA::ParticleEmitter* oldEmitter = SceneTreeItemParticleEmitter::GetEmitter(GetItem(emitterIndex.parent()));
+                emittersGroup.push_back(oldEmitter);
+            }
+
+            curScene->structureSystem->MoveLayer(layersGroup, emittersGroup, emitter, beforeLayer);
+            ret = true;
+        }
+    }
+    break;
+    case DropingForce:
+    {
+        DAVA::ParticleLayer* newLayer = SceneTreeItemParticleLayer::GetLayer(parentItem);
+
+        QVector<DAVA::ParticleForce*> forcesV = MimeDataHelper2<DAVA::ParticleForce>::DecodeMimeData(data);
+        if (NULL != newLayer && forcesV.size())
+        {
+            DAVA::Vector<DAVA::ParticleForce*> forcesGroup;
+            forcesGroup.reserve(forcesV.size());
+
+            DAVA::Vector<DAVA::ParticleLayer*> layersGroup;
+            layersGroup.reserve(forcesV.size());
+
+            for (int i = 0; i < forcesV.size(); ++i)
+            {
+                QModelIndex forceIndex = GetIndex((DAVA::ParticleForce*)forcesV[i]);
+                DAVA::ParticleLayer* oldLayer = SceneTreeItemParticleLayer::GetLayer(GetItem(forceIndex.parent()));
+
+                forcesGroup.push_back((DAVA::ParticleForce*)forcesV[i]);
+                layersGroup.push_back(oldLayer);
+            }
+
+            curScene->structureSystem->MoveForce(forcesGroup, layersGroup, newLayer);
+            ret = true;
+        }
+    }
+    break;
+
+    case DropingMaterial:
+    {
+        DVASSERT_MSG(false, "This can't be done. Materials should be assigned only on RenderBatch");
+    }
+    break;
+
+    default:
+        break;
+    }
+
+    dropAccepted = ret;
+    return ret;
 }
 
-bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const
+bool SceneTreeModel::DropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
 {
-	bool ret = false;
+    bool ret = false;
 
-	SceneTreeItem* parentItem = GetItem(parent);
+    SceneTreeItem* parentItem = GetItem(parent);
 
-	int dropType = GetDropType(data);
-	switch (dropType)
-	{
-	case DropingEntity:
-		{
-			ret = true;
-            
-			// don't accept entity to be dropped anywhere except other entity
-			if(NULL != parentItem && parentItem->ItemType() != SceneTreeItem::EIT_Entity)
-			{
-				ret = false;
-			}
-			// don't accept drops inside disabled (by custom flags) entity 
-			else if(GetCustomFlags(parent) & CF_Disabled)
-			{
-				ret = false;
-			}
-			else
-			{
-				// go thought entities and check them
-				QVector<DAVA::Entity *> entities = MimeDataHelper2<DAVA::Entity>::DecodeMimeData(data);
-				if(entities.size() > 0)
-				{
-					DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
+    int dropType = GetDropType(data);
+    switch (dropType)
+    {
+    case DropingEntity:
+    {
+        ret = true;
 
-					for (int i = 0; i < entities.size(); ++i)
-					{
-						DAVA::Entity *entity = (DAVA::Entity *) entities[i];
-						QModelIndex entityIndex = GetIndex(entity);
+        // don't accept entity to be dropped anywhere except other entity
+        if (NULL != parentItem && parentItem->ItemType() != SceneTreeItem::EIT_Entity)
+        {
+            ret = false;
+        }
+        // don't accept drops inside disabled (by custom flags) entity
+        else if (GetCustomFlags(parent) & CF_Disabled)
+        {
+            ret = false;
+        }
+        else
+        {
+            // go thought entities and check them
+            QVector<DAVA::Entity*> entities = MimeDataHelper2<DAVA::Entity>::DecodeMimeData(data);
+            if (entities.size() > 0)
+            {
+                DAVA::Entity* targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
 
-						// 1. we don't accept drops if it has locked items
-						if(NULL != entity && entity->GetLocked()) 
-						{
-							ret = false;
-							break;
-						}
+                for (int i = 0; i < entities.size(); ++i)
+                {
+                    DAVA::Entity* entity = (DAVA::Entity*)entities[i];
+                    QModelIndex entityIndex = GetIndex(entity);
 
-						// 2. or it has entity with CF_Disabled flag
-						if(GetCustomFlags(entityIndex) & CF_Disabled)
-						{
-							ret = false;
-							break;
-						}
+                    // 1. we don't accept drops if it has locked items
+                    if (NULL != entity && entity->GetLocked())
+                    {
+                        ret = false;
+                        break;
+                    }
 
-						// 3. or this is self-drop
-						if( targetEntity == entity || // dropping into
-							entityIndex == index(row, column, parent) || // dropping above
-							entityIndex == index(row - 1, column, parent)) // dropping below
-						{
-							ret = false;
-							break;
-						}
+                    // 2. or it has entity with CF_Disabled flag
+                    if (GetCustomFlags(entityIndex) & CF_Disabled)
+                    {
+                        ret = false;
+                        break;
+                    }
 
-						// 4. or we are dropping last element to the bottom of the list
-						if( NULL == targetEntity && row == -1 && // dropping to be bottom of the list
-							!entityIndex.parent().isValid() && // no parent
-							entityIndex.row() == (rowCount(entityIndex.parent()) - 1)) // dropped item is already bottom
-						{
-							ret = false;
-							break;
-						}
-                        
-                        // 5. or we are dropping waypoint outside of its path
-                        if(GetWaypointComponent(entity))
-                        {
-                            if(entity->GetParent() != targetEntity)
-                            {
-                                ret = false;
-                                break;
-                            }
-                        }
+                    // 3. or this is self-drop
+                    if (targetEntity == entity || // dropping into
+                        entityIndex == index(row, column, parent) || // dropping above
+                        entityIndex == index(row - 1, column, parent)) // dropping below
+                    {
+                        ret = false;
+                        break;
+                    }
 
-                        // 6. or we are dropping path inside of another path or waypoint
-                        if (GetPathComponent(entity) && (GetPathComponent(targetEntity) || GetWaypointComponent(targetEntity)))
+                    // 4. or we are dropping last element to the bottom of the list
+                    if (NULL == targetEntity && row == -1 && // dropping to be bottom of the list
+                        !entityIndex.parent().isValid() && // no parent
+                        entityIndex.row() == (rowCount(entityIndex.parent()) - 1)) // dropped item is already bottom
+                    {
+                        ret = false;
+                        break;
+                    }
+
+                    // 5. or we are dropping waypoint outside of its path
+                    if (GetWaypointComponent(entity))
+                    {
+                        if (entity->GetParent() != targetEntity)
                         {
                             ret = false;
                             break;
                         }
-					}
-				}
-			}
-		}
-		break;
-    case DropingEmitter:
-        {
-            // accept layer to be dropped only to entity with particle emitter
-            if(NULL != parentItem) 
-            {
-                if (GetEffectComponent(SceneTreeItemEntity::GetEntity(parentItem)))
-                {
-                    ret = true;
+                    }
+
+                    // 6. or we are dropping path inside of another path or waypoint
+                    if (GetPathComponent(entity) && (GetPathComponent(targetEntity) || GetWaypointComponent(targetEntity)))
+                    {
+                        ret = false;
+                        break;
+                    }
                 }
             }
-
         }
-        break;
-	case DropingLayer:
-		{
-			// accept layer to be dropped only to entity with particle emitter
-			if(NULL != parentItem) 
-			{
-				if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter)||(parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
-				{
-					ret = true;
-				}
-			}
-
-		}
-		break;
-	case DropingForce:
-		{
-			// accept force to be dropped only to particle layer
-			if(NULL != parentItem && parentItem->ItemType() == SceneTreeItem::EIT_Layer) 
-			{
-				// accept only add (no insertion)
-				if(-1 == row && -1 == column)
-				{
-					ret = true;
-				}
-			}
-		}
-		break;
-            
-	case DropingMaterial:
-		{
-			DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
-			if(targetEntity)
-			{
+    }
+    break;
+    case DropingEmitter:
+    {
+        // accept layer to be dropped only to entity with particle emitter
+        if (NULL != parentItem)
+        {
+            if (GetEffectComponent(SceneTreeItemEntity::GetEntity(parentItem)))
+            {
                 ret = true;
-    		}
-		}
+            }
+        }
+    }
+    break;
+    case DropingLayer:
+    {
+        // accept layer to be dropped only to entity with particle emitter
+        if (NULL != parentItem)
+        {
+            if ((parentItem->ItemType() == SceneTreeItem::EIT_Emitter) || (parentItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
+            {
+                ret = true;
+            }
+        }
+    }
+    break;
+    case DropingForce:
+    {
+        // accept force to be dropped only to particle layer
+        if (NULL != parentItem && parentItem->ItemType() == SceneTreeItem::EIT_Layer)
+        {
+            // accept only add (no insertion)
+            if (-1 == row && -1 == column)
+            {
+                ret = true;
+            }
+        }
+    }
+    break;
+
+    case DropingMaterial:
+    {
+        DAVA::Entity* targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
+        if (targetEntity)
+        {
+            ret = true;
+        }
+    }
+    break;
+
+    default:
         break;
+    }
 
-
-	default:
-		break;
-	}
-
-	return ret;
+    return ret;
 }
 
 bool SceneTreeModel::DropAccepted() const
 {
-	return dropAccepted;
+    return dropAccepted;
 }
 
-void SceneTreeModel::ItemChanged(QStandardItem * item)
+void SceneTreeModel::ItemChanged(QStandardItem* item)
 {
-	SceneTreeItem *treeItem = dynamic_cast<SceneTreeItem *>(item);
-	if(NULL != treeItem)
-	{
-		if(treeItem->ItemType() == SceneTreeItem::EIT_Layer)
-		{
-			bool isLayerEnabled = (item->checkState() == Qt::Checked);
-			SceneTreeItemParticleLayer *itemLayer = (SceneTreeItemParticleLayer *) treeItem;
+    SceneTreeItem* treeItem = dynamic_cast<SceneTreeItem*>(item);
+    if (NULL != treeItem)
+    {
+        if (treeItem->ItemType() == SceneTreeItem::EIT_Layer)
+        {
+            bool isLayerEnabled = (item->checkState() == Qt::Checked);
+            SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)treeItem;
 
-			CommandUpdateParticleLayerEnabled* command = new CommandUpdateParticleLayerEnabled(itemLayer->layer, isLayerEnabled);
-			curScene->Exec(command);
-			curScene->MarkAsChanged();
-		}
-	}
+            CommandUpdateParticleLayerEnabled* command = new CommandUpdateParticleLayerEnabled(itemLayer->layer, isLayerEnabled);
+            curScene->Exec(command);
+            curScene->MarkAsChanged();
+        }
+    }
 }
 
-void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
+void SceneTreeModel::ResyncStructure(QStandardItem* item, DAVA::Entity* entity)
 {
-	SceneTreeItemEntity::DoSync(item, entity);
-	RebuildIndexesCache();
+    SceneTreeItemEntity::DoSync(item, entity);
+    RebuildIndexesCache();
 }
 
 void SceneTreeModel::SetFilter(const QString& text)
 {
-	filterText = text;
+    filterText = text;
     ReloadFilter();
 }
 
 void SceneTreeModel::ReloadFilter()
 {
-	ResetFilter();
+    ResetFilter();
 
     if (!filterText.isEmpty())
     {
@@ -674,12 +668,12 @@ bool SceneTreeModel::IsFilterSet() const
 
 void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString& text)
 {
-    SceneTreeItem *item = GetItem(_index);
+    SceneTreeItem* item = GetItem(_index);
     const QString& name = item->ItemName();
     uint32 id = 0xFFFFFFFF;
 
-    DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
-    if(nullptr != entity)
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
+    if (nullptr != entity)
     {
         id = entity->GetID();
     }
@@ -690,13 +684,13 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
 
         item->SetAcceptByFilter(match);
         item->SetHighlight(match);
-        
+
         if (match)
         {
             QModelIndex p = _index.parent();
             while (p.isValid())
             {
-                SceneTreeItem *parentItem = GetItem(p);
+                SceneTreeItem* parentItem = GetItem(p);
                 if (parentItem->IsAcceptedByFilter())
                 {
                     break;
@@ -708,7 +702,7 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
     }
 
     const int n = rowCount(_index);
-    for ( int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
     {
         const QModelIndex child = _index.child(i, 0);
         SetFilterInternal(child, text);
@@ -721,7 +715,7 @@ void SceneTreeModel::ResetFilter(const QModelIndex& parent)
     for (int i = 0; i < n; i++)
     {
         const QModelIndex _index = index(i, 0, parent);
-        SceneTreeItem *item = GetItem(_index);
+        SceneTreeItem* item = GetItem(_index);
         item->SetAcceptByFilter(false);
         item->SetHighlight(false);
         ResetFilter(_index);
@@ -730,150 +724,149 @@ void SceneTreeModel::ResetFilter(const QModelIndex& parent)
 
 void SceneTreeModel::RebuildIndexesCache()
 {
-	indexesCacheEntities.clear();
-	indexesCacheEmitters.clear();
+    indexesCacheEntities.clear();
+    indexesCacheEmitters.clear();
     indexesCacheLayers.clear();
-	indexesCacheForces.clear();
+    indexesCacheForces.clear();
 
-	for(int i = 0; i < rowCount(); ++i)
-	{
-		AddIndexesCache(GetItem(index(i, 0)));
-	}
+    for (int i = 0; i < rowCount(); ++i)
+    {
+        AddIndexesCache(GetItem(index(i, 0)));
+    }
 }
 
-void SceneTreeModel::AddIndexesCache(SceneTreeItem *item)
+void SceneTreeModel::AddIndexesCache(SceneTreeItem* item)
 {
-	// go thought all items and remember entities indexes
-	switch(item->ItemType())
-	{
-	case SceneTreeItem::EIT_Entity:
-		{
-			DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
-			if(NULL != entity)
-			{
-				indexesCacheEntities.insert(entity, item->index());
-			}
-		}
-		break;
+    // go thought all items and remember entities indexes
+    switch (item->ItemType())
+    {
+    case SceneTreeItem::EIT_Entity:
+    {
+        DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
+        if (NULL != entity)
+        {
+            indexesCacheEntities.insert(entity, item->index());
+        }
+    }
+    break;
     case SceneTreeItem::EIT_Emitter:
     case SceneTreeItem::EIT_InnerEmitter:
+    {
+        DAVA::ParticleEmitter* emitter = SceneTreeItemParticleEmitter::GetEmitter(item);
+        if (emitter)
+            indexesCacheEmitters.insert(emitter, item->index());
+    }
+    break;
+    case SceneTreeItem::EIT_Layer:
+    {
+        DAVA::ParticleLayer* layer = SceneTreeItemParticleLayer::GetLayer(item);
+        if (NULL != layer)
         {
-            DAVA::ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitter(item);
-            if (emitter)
-                indexesCacheEmitters.insert(emitter, item->index());
+            indexesCacheLayers.insert(layer, item->index());
         }
-        break;
-	case SceneTreeItem::EIT_Layer:
-		{
-			DAVA::ParticleLayer *layer = SceneTreeItemParticleLayer::GetLayer(item);
-			if(NULL != layer)
-			{
-				indexesCacheLayers.insert(layer, item->index());
-			}
-		}
-		break;
-	case SceneTreeItem::EIT_Force:
-		{
-			DAVA::ParticleForce *force = SceneTreeItemParticleForce::GetForce(item);
-			if(NULL != force)
-			{
-				indexesCacheForces.insert(force, item->index());
-			}
-		}
-		break;
-	}
+    }
+    break;
+    case SceneTreeItem::EIT_Force:
+    {
+        DAVA::ParticleForce* force = SceneTreeItemParticleForce::GetForce(item);
+        if (NULL != force)
+        {
+            indexesCacheForces.insert(force, item->index());
+        }
+    }
+    break;
+    }
 
-	for(int i = 0; i < item->rowCount(); ++i)
-	{
-		AddIndexesCache((SceneTreeItem *) item->child(i));
-	}
+    for (int i = 0; i < item->rowCount(); ++i)
+    {
+        AddIndexesCache((SceneTreeItem*)item->child(i));
+    }
 }
 
-bool SceneTreeModel::AreSameType(const QModelIndexList & indexes) const
+bool SceneTreeModel::AreSameType(const QModelIndexList& indexes) const
 {
-	bool ret = true;
+    bool ret = true;
 
-	SceneTreeItem *firstItem = GetItem(indexes.at(0));
+    SceneTreeItem* firstItem = GetItem(indexes.at(0));
 
-	// check if all items are same type
-	if(NULL != firstItem)
-	{
-		foreach(QModelIndex index, indexes)
-		{
-			SceneTreeItem *item = GetItem(index);
-			if(NULL != item && firstItem->ItemType() != item->ItemType())
-			{
-				ret = false;
-				break;
-			}
-		}
-	}
+    // check if all items are same type
+    if (NULL != firstItem)
+    {
+        foreach (QModelIndex index, indexes)
+        {
+            SceneTreeItem* item = GetItem(index);
+            if (NULL != item && firstItem->ItemType() != item->ItemType())
+            {
+                ret = false;
+                break;
+            }
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-int SceneTreeModel::GetDropType(const QMimeData *data) const
+int SceneTreeModel::GetDropType(const QMimeData* data) const
 {
-	int ret = DropingUnknown;
+    int ret = DropingUnknown;
 
-	if(NULL != data)
-	{
-        if(MimeDataHelper2<DAVA::Entity>::IsValid(data))
+    if (NULL != data)
+    {
+        if (MimeDataHelper2<DAVA::Entity>::IsValid(data))
         {
-			ret = DropingEntity;
+            ret = DropingEntity;
         }
-        else if(MimeDataHelper2<DAVA::ParticleEmitter>::IsValid(data))
+        else if (MimeDataHelper2<DAVA::ParticleEmitter>::IsValid(data))
         {
             ret = DropingEmitter;
         }
-        else if(MimeDataHelper2<DAVA::ParticleLayer>::IsValid(data))
+        else if (MimeDataHelper2<DAVA::ParticleLayer>::IsValid(data))
         {
-			ret = DropingLayer;
+            ret = DropingLayer;
         }
-        else if(MimeDataHelper2<DAVA::ParticleForce>::IsValid(data))
+        else if (MimeDataHelper2<DAVA::ParticleForce>::IsValid(data))
         {
-			ret = DropingForce;
+            ret = DropingForce;
         }
-        else if(MimeDataHelper2<DAVA::NMaterial>::IsValid(data))
+        else if (MimeDataHelper2<DAVA::NMaterial>::IsValid(data))
         {
-			ret = DropingMaterial;
+            ret = DropingMaterial;
         }
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
-
-Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
+Qt::ItemFlags SceneTreeModel::flags(const QModelIndex& index) const
 {
-	const Qt::ItemFlags f = QStandardItemModel::flags(index);
-    DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
-    if(NULL != entity)
+    const Qt::ItemFlags f = QStandardItemModel::flags(index);
+    DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    if (NULL != entity)
     {
-		if (!curScene->selectionSystem->IsEntitySelectable(entity))
+        if (!curScene->selectionSystem->IsEntitySelectable(entity))
         {
             return (f & ~Qt::ItemIsSelectable);
         }
     }
 
-	return f;
+    return f;
 }
 
-QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
+QVariant SceneTreeModel::data(const QModelIndex& _index, int role) const
 {
-	switch (role)
+    switch (role)
     {
     case Qt::BackgroundRole:
+    {
+        SceneTreeItem* item = GetItem(_index);
+        ParticleEmitter* emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+        if (nullptr != emitter && emitter->shortEffect)
         {
-            SceneTreeItem *item = GetItem(_index);
-            ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
-            if (nullptr != emitter && emitter->shortEffect)
-            {
-				static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));
-                return brush;
-            }
+            static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));
+            return brush;
         }
-        break;
+    }
+    break;
     default:
         break;
     }
@@ -881,48 +874,45 @@ QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
     return QStandardItemModel::data(_index, role);
 }
 
-
-SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QObject *parent /* = NULL */)
-	: QSortFilterProxyModel(parent)
-	, treeModel(_treeModel)
+SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel* _treeModel, QObject* parent /* = NULL */)
+    : QSortFilterProxyModel(parent)
+    , treeModel(_treeModel)
 {
-	setSourceModel(treeModel);
+    setSourceModel(treeModel);
 }
 
-bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
     if (!treeModel->IsFilterSet())
         return true;
 
     const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);
-    SceneTreeItem *item = treeModel->GetItem(_index);
+    SceneTreeItem* item = treeModel->GetItem(_index);
     DVASSERT(item);
 
-	return item->IsAcceptedByFilter();
+    return item->IsAcceptedByFilter();
 }
 
 QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
 {
-	if (!treeModel->IsFilterSet())
+    if (!treeModel->IsFilterSet())
         return QSortFilterProxyModel::data(_index, role);
 
-    switch ( role )
+    switch (role)
     {
     case Qt::BackgroundRole:
+    {
+        SceneTreeItem* item = treeModel->GetItem(mapToSource(_index));
+        if (item->IsHighlighed())
         {
-            SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
-            if (item->IsHighlighed())
-            {
-				static const QVariant brush(QBrush(QColor(0, 255, 0, 20)));
-				return brush;
-            }
+            static const QVariant brush(QBrush(QColor(0, 255, 0, 20)));
+            return brush;
         }
-        break;
+    }
+    break;
     default:
         break;
     }
 
     return QSortFilterProxyModel::data(_index, role);
 }
-
-

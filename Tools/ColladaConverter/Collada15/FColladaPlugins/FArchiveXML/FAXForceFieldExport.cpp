@@ -17,19 +17,17 @@
 #include "FCDocument/FCDForceWind.h"
 #include "FCDocument/FCDForceField.h"
 
-
 xmlNode* FArchiveXML::WriteForceField(FCDObject* object, xmlNode* parentNode)
 {
-	FCDForceField* forceField = (FCDForceField*)object;
+    FCDForceField* forceField = (FCDForceField*)object;
 
-	xmlNode* forceFieldNode = FArchiveXML::WriteToEntityXMLFCDEntity(forceField, parentNode, DAE_FORCE_FIELD_ELEMENT);
+    xmlNode* forceFieldNode = FArchiveXML::WriteToEntityXMLFCDEntity(forceField, parentNode, DAE_FORCE_FIELD_ELEMENT);
 
+    if (forceField->GetInformation() != NULL)
+    {
+        FArchiveXML::WriteTechniquesFCDExtra(forceField->GetInformation(), forceFieldNode);
+    }
 
-	if (forceField->GetInformation() != NULL)
-	{
-		FArchiveXML::WriteTechniquesFCDExtra(forceField->GetInformation(), forceFieldNode);
-	}
-
-	FArchiveXML::WriteEntityExtra(forceField, forceFieldNode);
-	return forceFieldNode;
+    FArchiveXML::WriteEntityExtra(forceField, forceFieldNode);
+    return forceFieldNode;
 }

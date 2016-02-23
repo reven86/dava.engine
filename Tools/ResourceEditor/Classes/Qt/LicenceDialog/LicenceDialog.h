@@ -34,18 +34,19 @@
 #include <QDialog>
 #include <QUrl>
 
-namespace Ui {
-	class LicenceDialog;
+namespace Ui
+{
+class LicenceDialog;
 }
 
 class LicenceDialog
-    : public QDialog
+: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit LicenceDialog(QWidget *parent = 0);
-	~LicenceDialog();
+    explicit LicenceDialog(QWidget* parent = 0);
+    ~LicenceDialog();
 
     bool process();
     void setHtmlText(const QString& text);
@@ -56,7 +57,7 @@ private slots:
     void onAcceptCheckbox();
 
 private:
-	QScopedPointer<Ui::LicenceDialog> ui;
+    QScopedPointer<Ui::LicenceDialog> ui;
     bool accepted;
 };
 

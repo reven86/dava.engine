@@ -36,23 +36,23 @@
 class CommandBatch : public Command2
 {
 public:
-	CommandBatch();
-	~CommandBatch();
+    CommandBatch();
+    ~CommandBatch();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
-	void AddAndExec(Command2 *command);
-	int Size() const;
-	Command2 *GetCommand(int index) const;
+    void AddAndExec(Command2* command);
+    int Size() const;
+    Command2* GetCommand(int index) const;
 
-	void Clear(int commandId);
-    
+    void Clear(int commandId);
+
     bool ContainsCommand(int commandId) const;
 
 protected:
-	std::vector<Command2 *> commandList;
+    std::vector<Command2*> commandList;
 };
 
 #endif // __COMMAND_BATCH_H__

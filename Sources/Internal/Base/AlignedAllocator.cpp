@@ -37,6 +37,10 @@ void* AllocateAlignedMemory(uint32 size, uint32 align)
 
     return _aligned_malloc(size, align);
 
+#elif defined(__DAVAENGINE_ANDROID__) // posix_memalign not supported in anrdoid api < 17
+
+    return malloc(size);
+
 #else // assuming POSIX for now
 
     void* result = nullptr;

@@ -23,21 +23,22 @@ extern "C" {
 #endif
 
 typedef struct SemaphoreInfo
-  SemaphoreInfo;
+SemaphoreInfo;
 
 extern MagickExport MagickBooleanType
-  SemaphoreComponentGenesis(void);
+SemaphoreComponentGenesis(void);
 
 extern MagickExport SemaphoreInfo
-  *AllocateSemaphoreInfo(void);
+*
+AllocateSemaphoreInfo(void);
 
 extern MagickExport void
-  AcquireSemaphoreInfo(SemaphoreInfo **),
-  DestroySemaphoreInfo(SemaphoreInfo **),
-  LockSemaphoreInfo(SemaphoreInfo *),
-  RelinquishSemaphoreInfo(SemaphoreInfo *),
-  SemaphoreComponentTerminus(void),
-  UnlockSemaphoreInfo(SemaphoreInfo *);
+AcquireSemaphoreInfo(SemaphoreInfo **),
+DestroySemaphoreInfo(SemaphoreInfo **),
+LockSemaphoreInfo(SemaphoreInfo *),
+RelinquishSemaphoreInfo(SemaphoreInfo *),
+SemaphoreComponentTerminus(void),
+UnlockSemaphoreInfo(SemaphoreInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

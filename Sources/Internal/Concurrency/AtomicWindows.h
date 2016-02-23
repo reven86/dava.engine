@@ -46,25 +46,35 @@ namespace DAVA
 //-----------------------------------------------------------------------------
 namespace Detail
 {
-
 template <size_t N>
 struct TypeSelector;
 
 template <>
-struct TypeSelector<sizeof(CHAR)> { using Type = CHAR; };
+struct TypeSelector<sizeof(CHAR)>
+{
+    using Type = CHAR;
+};
 template <>
-struct TypeSelector<sizeof(SHORT)> { using Type = SHORT; };
+struct TypeSelector<sizeof(SHORT)>
+{
+    using Type = SHORT;
+};
 template <>
-struct TypeSelector<sizeof(LONG)> { using Type = LONG; };
+struct TypeSelector<sizeof(LONG)>
+{
+    using Type = LONG;
+};
 template <>
-struct TypeSelector<sizeof(LONGLONG)> { using Type = LONGLONG; };
+struct TypeSelector<sizeof(LONGLONG)>
+{
+    using Type = LONGLONG;
+};
 
 //atomic increment overloads
 inline CHAR AtomicIncrement(volatile CHAR* value)
 {
     CHAR initial = ::_InterlockedExchangeAdd8(value, 1);
     return initial + 1;
-
 }
 inline SHORT AtomicIncrement(volatile SHORT* value)
 {
@@ -79,7 +89,7 @@ inline LONGLONG AtomicIncrement(volatile LONGLONG* value)
     return ::InterlockedIncrement64(value);
 }
 
-//atomic decrement overloads 
+//atomic decrement overloads
 inline CHAR AtomicDecrement(volatile CHAR* value)
 {
     CHAR initial = ::_InterlockedExchangeAdd8(value, -1);
@@ -98,7 +108,7 @@ inline LONGLONG AtomicDecrement(volatile LONGLONG* value)
     return ::InterlockedDecrement64(value);
 }
 
-//atomic swap overloads 
+//atomic swap overloads
 inline CHAR AtomicSwap(volatile CHAR* target, CHAR desired)
 {
     return ::InterlockedExchange8(target, desired);
@@ -201,7 +211,7 @@ bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
 }
 
 template <typename T>
-template <typename Y> 
+template <typename Y>
 T Atomic<T>::Cast(Y val)
 {
     return static_cast<T>(val);

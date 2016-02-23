@@ -27,169 +27,168 @@
 =====================================================================================*/
 
 
-#include <QCoreApplication>
 #include "QtPropertyModel.h"
-#include "QtPropertyData.h"
+#include <QCoreApplication>
 
-QtPropertyModel::QtPropertyModel(QWidget *viewport, QObject* parent /* = 0 */)
-	: QAbstractItemModel(parent)
-	, trackEdit(false)
+QtPropertyModel::QtPropertyModel(QWidget* viewport, QObject* parent /* = 0 */)
+    : QAbstractItemModel(parent)
+    , trackEdit(false)
     , needRefresh(false)
-{ 
-	root = new QtPropertyData();
-	root->SetModel(this);
-	root->SetOWViewport(viewport);
+{
+    root = new QtPropertyData(DAVA::FastName("root"));
+    root->SetModel(this);
+    root->SetOWViewport(viewport);
 }
 
 QtPropertyModel::~QtPropertyModel()
-{ 
-	delete root;
+{
+    delete root;
 }
 
-QModelIndex QtPropertyModel::index(int row, int column, const QModelIndex & parent /* = QModelIndex() */) const
+QModelIndex QtPropertyModel::index(int row, int column, const QModelIndex& parent /* = QModelIndex() */) const
 {
-	QModelIndex ret;
+    QModelIndex ret;
 
-	QtPropertyData *data = itemFromIndexInternal(parent);
-	if((NULL != data) &&
-		(row >= 0) &&
-		(column >= 0) &&
-		(row < data->ChildCount()) &&
-		(column < 2))
-	{
-		ret = createIndex(row, column, data);
-	}
+    QtPropertyData* data = itemFromIndexInternal(parent);
+    if ((NULL != data) &&
+        (row >= 0) &&
+        (column >= 0) &&
+        (row < data->ChildCount()) &&
+        (column < 2))
+    {
+        ret = createIndex(row, column, data);
+    }
 
-	return ret;
+    return ret;
 }
 
-QModelIndex QtPropertyModel::parent(const QModelIndex & index) const
+QModelIndex QtPropertyModel::parent(const QModelIndex& index) const
 {
-	QModelIndex ret;
+    QModelIndex ret;
 
-	if(index.isValid())
-	{
-		QtPropertyData *parent = static_cast<QtPropertyData *>(index.internalPointer());
-		ret = indexFromItem(parent);
-	}
+    if (index.isValid())
+    {
+        QtPropertyData* parent = static_cast<QtPropertyData*>(index.internalPointer());
+        ret = indexFromItem(parent);
+    }
 
-	return ret;
+    return ret;
 }
 
-int QtPropertyModel::rowCount(const QModelIndex & parent /* = QModelIndex() */) const
+int QtPropertyModel::rowCount(const QModelIndex& parent /* = QModelIndex() */) const
 {
-	int count = 0;
+    int count = 0;
 
-	QtPropertyData *data = itemFromIndexInternal(parent);
-	if(NULL != data)
-	{
-		count = data->ChildCount();
-	}
+    QtPropertyData* data = itemFromIndexInternal(parent);
+    if (NULL != data)
+    {
+        count = data->ChildCount();
+    }
 
-	return count;
+    return count;
 }
 
-int QtPropertyModel::columnCount(const QModelIndex & parent /* = QModelIndex() */) const
+int QtPropertyModel::columnCount(const QModelIndex& parent /* = QModelIndex() */) const
 {
-	return 2;
+    return 2;
 }
 
-QVariant QtPropertyModel::data(const QModelIndex & index, int role /* = Qt::DisplayRole */) const
+QVariant QtPropertyModel::data(const QModelIndex& index, int role /* = Qt::DisplayRole */) const
 {
-	QVariant ret;
+    QVariant ret;
 
-	QtPropertyData *data = itemFromIndex(index);
-	if(NULL != data)
-	{
-		if(index.column() == 0)
-		{
-			switch(role)
-			{
-			case Qt::DisplayRole:
+    QtPropertyData* data = itemFromIndex(index);
+    if (NULL != data)
+    {
+        if (index.column() == 0)
+        {
+            switch (role)
+            {
+            case Qt::DisplayRole:
             case Qt::ToolTipRole:
-				ret = data->GetName();
-				break;
-			case Qt::FontRole:
-			case Qt::BackgroundRole:
-			case Qt::ForegroundRole:
-				ret = data->data(role);
-				break;
-			default:
-				break;
-			}
-		}
-		else if(index.column() == 1)
-		{
-			ret = data->data(role);
-		}
-	}
+                ret = QString(data->GetName().c_str());
+                break;
+            case Qt::FontRole:
+            case Qt::BackgroundRole:
+            case Qt::ForegroundRole:
+                ret = data->data(role);
+                break;
+            default:
+                break;
+            }
+        }
+        else if (index.column() == 1)
+        {
+            ret = data->data(role);
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 QVariant QtPropertyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	QVariant ret;
+    QVariant ret;
 
-	if(orientation == Qt::Horizontal && role == Qt::DisplayRole)
-	{
-		switch(section)
-		{
-		case 0:
-			ret = "Property";
-			break;
-		case 1:
-			ret = "Value";
-			break;
-		case 3:
-			ret = "#";
-			break;
-		default:
-			break;
-		}
-	}
-
-	return ret;
-}
-
-bool QtPropertyModel::setData(const QModelIndex & index, const QVariant & value, int role /* = Qt::EditRole */)
-{
-	bool ret = false;
-
-	QtPropertyData *data = itemFromIndex(index);
-	if(NULL != data && index.column() == 1)
-	{
-		ret = data->setData(value, role);
-	}
-
-	return ret;
-}
-
-Qt::ItemFlags QtPropertyModel::flags(const QModelIndex & index) const
-{
-	Qt::ItemFlags ret = 0;
-
-	if(index.column() == 1)
-	{
-		QtPropertyData *data = itemFromIndex(index);
-		if(NULL != data)
-		{
-			ret = Qt::ItemIsSelectable | data->GetFlags();
-		}
-	}
-	else
-	{
-		ret = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-	}
-
-	return ret;
-}
-
-bool QtPropertyModel::event(QEvent * e)
-{
-    if(e->type() == DataRefreshRequared)
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
     {
-		emit dataChanged(QModelIndex(), QModelIndex());
+        switch (section)
+        {
+        case 0:
+            ret = "Property";
+            break;
+        case 1:
+            ret = "Value";
+            break;
+        case 3:
+            ret = "#";
+            break;
+        default:
+            break;
+        }
+    }
+
+    return ret;
+}
+
+bool QtPropertyModel::setData(const QModelIndex& index, const QVariant& value, int role /* = Qt::EditRole */)
+{
+    bool ret = false;
+
+    QtPropertyData* data = itemFromIndex(index);
+    if (NULL != data && index.column() == 1)
+    {
+        ret = data->setData(value, role);
+    }
+
+    return ret;
+}
+
+Qt::ItemFlags QtPropertyModel::flags(const QModelIndex& index) const
+{
+    Qt::ItemFlags ret = 0;
+
+    if (index.column() == 1)
+    {
+        QtPropertyData* data = itemFromIndex(index);
+        if (NULL != data)
+        {
+            ret = Qt::ItemIsSelectable | data->GetFlags();
+        }
+    }
+    else
+    {
+        ret = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    }
+
+    return ret;
+}
+
+bool QtPropertyModel::event(QEvent* e)
+{
+    if (e->type() == DataRefreshRequired)
+    {
+        emit dataChanged(QModelIndex(), QModelIndex());
         needRefresh = false;
     }
 
@@ -198,125 +197,126 @@ bool QtPropertyModel::event(QEvent * e)
 
 QtPropertyData* QtPropertyModel::rootItem() const
 {
-	return root;
+    return root;
 }
 
-QtPropertyData* QtPropertyModel::itemFromIndex(const QModelIndex & index) const
+QtPropertyData* QtPropertyModel::itemFromIndex(const QModelIndex& index) const
 {
-	QtPropertyData *ret = NULL;
+    QtPropertyData* ret = NULL;
 
-	if(index.isValid() && index.model() == this)
-	{
-		QtPropertyData *parent = static_cast<QtPropertyData *>(index.internalPointer());
-		if(NULL != parent)
-		{
-			ret = parent->ChildGet(index.row());
-		}
-	}
+    if (index.isValid() && index.model() == this)
+    {
+        QtPropertyData* parent = static_cast<QtPropertyData*>(index.internalPointer());
+        int row = index.row();
+        if (parent != nullptr && parent->ChildCount() > row)
+        {
+            ret = parent->ChildGet(row);
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-QtPropertyData* QtPropertyModel::itemFromIndexInternal(const QModelIndex & index) const
+QtPropertyData* QtPropertyModel::itemFromIndexInternal(const QModelIndex& index) const
 {
-	QtPropertyData *ret = NULL;
+    QtPropertyData* ret = NULL;
 
-	if(!index.isValid())
-	{
-		ret = root;
-	}
-	else
-	{
-		ret = itemFromIndex(index);
-	}
+    if (!index.isValid())
+    {
+        ret = root;
+    }
+    else
+    {
+        ret = itemFromIndex(index);
+    }
 
-	return ret;
+    return ret;
 }
 
-QModelIndex QtPropertyModel::indexFromItem(QtPropertyData *data) const
+QModelIndex QtPropertyModel::indexFromItem(QtPropertyData* data) const
 {
-	QModelIndex ret;
+    QModelIndex ret;
 
-	if(NULL != data)
-	{
-		QtPropertyData *parent = data->Parent();
-		if(NULL != parent)
-		{
-			int row = parent->ChildIndex(data);
-			if(row >= 0)
-			{
-				ret = createIndex(row, 0, parent);
-			}
-		}
-	}
+    if (NULL != data)
+    {
+        QtPropertyData* parent = data->Parent();
+        if (NULL != parent)
+        {
+            int row = parent->ChildIndex(data);
+            if (row >= 0)
+            {
+                ret = createIndex(row, 0, parent);
+            }
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-void QtPropertyModel::AppendProperties(const QVector<QtPropertyData *>& properties, const QModelIndex& parent /*= QModelIndex()*/)
+void QtPropertyModel::AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>>&& properties, const QModelIndex& parent /*= QModelIndex()*/)
 {
     if (properties.empty())
         return;
 
-    QtPropertyData *parentData = itemFromIndexInternal(parent);
+    QtPropertyData* parentData = itemFromIndexInternal(parent);
     if (parentData != nullptr)
     {
-        parentData->ChildrenAdd(properties);
+        parentData->ChildrenAdd(std::move(properties));
     }
 }
 
-QModelIndex QtPropertyModel::AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent /* = QModelIndex() */)
+QModelIndex QtPropertyModel::AppendProperty(std::unique_ptr<QtPropertyData>&& data, const QModelIndex& parent /* = QModelIndex() */)
 {
-	if(NULL != data)
-	{
-		QtPropertyData *parentData = itemFromIndexInternal(parent);
-		if(NULL != parentData)
-		{
-			parentData->ChildAdd(name, data);
-		}
-	}
+    QtPropertyData* item = data.get();
+    if (NULL != data)
+    {
+        QtPropertyData* parentData = itemFromIndexInternal(parent);
+        if (NULL != parentData)
+        {
+            parentData->ChildAdd(std::move(data));
+        }
+    }
 
-	return indexFromItem(data);
+    return indexFromItem(item);
 }
 
-void QtPropertyModel::MergeProperty(QtPropertyData* data, QModelIndex const& parent)
+void QtPropertyModel::MergeProperty(std::unique_ptr<QtPropertyData>&& data, QModelIndex const& parent)
 {
-	if(NULL != data)
-	{
-		QtPropertyData *parentData = itemFromIndexInternal(parent);
-		if(NULL != parentData)
-		{
-            parentData->MergeChild(data);
-		}
-	}
+    if (NULL != data)
+    {
+        QtPropertyData* parentData = itemFromIndexInternal(parent);
+        if (NULL != parentData)
+        {
+            parentData->MergeChild(std::move(data));
+        }
+    }
 }
 
-QModelIndex QtPropertyModel::InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent /* = QModelIndex() */)
+QModelIndex QtPropertyModel::InsertProperty(std::unique_ptr<QtPropertyData>&& data, int row, const QModelIndex& parent /* = QModelIndex() */)
 {
-	if(NULL != data)
-	{
-		QtPropertyData *parentData = itemFromIndexInternal(parent);
-		if(NULL != parentData)
-		{
-			parentData->ChildInsert(name, data, row);
-		}
-	}
-
-	return indexFromItem(data);
+    QtPropertyData* item = data.get();
+    if (NULL != data)
+    {
+        QtPropertyData* parentData = itemFromIndexInternal(parent);
+        if (NULL != parentData)
+        {
+            parentData->ChildInsert(std::move(data), row);
+        }
+    }
+    return indexFromItem(item);
 }
 
-
-void QtPropertyModel::RemoveProperty(const QModelIndex &index)
+void QtPropertyModel::RemoveProperty(const QModelIndex& index)
 {
-	QtPropertyData *data = itemFromIndex(index);
-	if(NULL != data)
-	{
-		QtPropertyData *parentData = data->Parent();
-		if(NULL != parentData)
-		{
-			parentData->ChildRemove(data);
-		}
-	}
+    QtPropertyData* data = itemFromIndex(index);
+    if (NULL != data)
+    {
+        QtPropertyData* parentData = data->Parent();
+        if (NULL != parentData)
+        {
+            parentData->ChildRemove(data);
+        }
+    }
 }
 
 void QtPropertyModel::RemovePropertyAll()
@@ -326,82 +326,107 @@ void QtPropertyModel::RemovePropertyAll()
     endResetModel();
 }
 
-void QtPropertyModel::UpdateStructure(const QModelIndex &parent /* = QModelIndex */)
+void QtPropertyModel::UpdateStructure(const QModelIndex& parent /* = QModelIndex */)
 {
-	UpdateStructureInternal(parent);
+    UpdateStructureInternal(parent);
 }
 
-void QtPropertyModel::UpdateStructureInternal(const QModelIndex &i)
+void QtPropertyModel::FinishTreeCreation()
 {
-	QtPropertyData *data = itemFromIndexInternal(i);
-	if(NULL != data)
-	{
-		data->UpdateValue();
-
-		for(int row = 0; row < rowCount(i); ++row)
-		{
-			UpdateStructureInternal(index(row, 0, i));
-		}
-	}
+    root->FinishTreeCreation();
 }
 
-void QtPropertyModel::DataChanged(QtPropertyData *data, int reason)
+void QtPropertyModel::UpdateStructureInternal(const QModelIndex& i)
 {
-	QModelIndex index = indexFromItem(data);
-	if(index.isValid())
-	{
-		if(reason != QtPropertyData::VALUE_EDITED)
-		{
+    QtPropertyData* data = itemFromIndexInternal(i);
+    if (NULL != data)
+    {
+        data->UpdateValue();
+
+        for (int row = 0; row < rowCount(i); ++row)
+        {
+            UpdateStructureInternal(index(row, 0, i));
+        }
+    }
+}
+
+void QtPropertyModel::DataChanged(QtPropertyData* data, int reason)
+{
+    QModelIndex index = indexFromItem(data);
+    if (index.isValid())
+    {
+        if (reason != QtPropertyData::VALUE_EDITED)
+        {
             // Data was changed, so we should emit signal about this.
             // To be simple we will emit signal that all data was changed and it will cause
             // TreeView to refresh currently visible items. But we will not allow that refresh happen more than once per main loop.
-            if(!needRefresh)
+            if (!needRefresh)
             {
                 needRefresh = true;
-                QCoreApplication::postEvent(this, new QEvent((QEvent::Type) DataRefreshRequared));
+                QCoreApplication::postEvent(this, new QEvent((QEvent::Type)DataRefreshRequired));
             }
-		}
-        else if(trackEdit)
-        {
-			emit PropertyEdited(index);
         }
-	}
+        else if (trackEdit)
+        {
+            emit PropertyEdited(index);
+        }
+    }
 }
 
-void QtPropertyModel::DataAboutToBeAdded(QtPropertyData *parent, int first, int last)
+void QtPropertyModel::DataAboutToBeAdded(QtPropertyData* parent, int first, int last)
 {
-	//if(NULL != parent)
-	{
-		QModelIndex index = indexFromItem(parent);
-		beginInsertRows(index, first, last);
-	}
+    QModelIndex index = indexFromItem(parent);
+    beginInsertRows(index, first, last);
 }
 
 void QtPropertyModel::DataAdded()
 {
-	endInsertRows();
+    endInsertRows();
 }
 
-void QtPropertyModel::DataAboutToBeRemoved(QtPropertyData *parent, int first, int last)
+void QtPropertyModel::DataAboutToBeRemoved(QtPropertyData* parent, int first, int last)
 {
-	//if(NULL != parent)
-	{
-		QModelIndex index = indexFromItem(parent);
-		beginRemoveRows(index, first, last);
-	}
+    QModelIndex index = indexFromItem(parent);
+    beginRemoveRows(index, first, last);
 }
 
 void QtPropertyModel::DataRemoved()
 {
-	endRemoveRows();
+    endRemoveRows();
 }
 
 void QtPropertyModel::SetEditTracking(bool enabled)
 {
-	trackEdit = enabled;
+    trackEdit = enabled;
 }
 
 bool QtPropertyModel::GetEditTracking()
 {
-	return trackEdit;
+    return trackEdit;
+}
+
+QtPropertyModel::InsertionGuard::InsertionGuard(QtPropertyModel* model_, QtPropertyData* parent, int first, int last)
+    : model(model_)
+{
+    if (model != nullptr)
+        model->DataAboutToBeAdded(parent, first, last);
+}
+
+QtPropertyModel::InsertionGuard::~InsertionGuard()
+{
+    if (model != nullptr)
+        model->DataAdded();
+}
+
+QtPropertyModel::DeletionGuard::DeletionGuard(QtPropertyModel* model_, QtPropertyData* parent, int first, int last)
+    : model(model_)
+{
+    if (model != nullptr)
+        model->DataAboutToBeRemoved(parent, first, last);
+}
+
+QtPropertyModel::DeletionGuard::~DeletionGuard()
+{
+    if (model != nullptr)
+        model->DataRemoved();
 }

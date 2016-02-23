@@ -29,10 +29,15 @@ import com.dava.framework.InputManagerCompat.InputDeviceListener;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
 {
+    public static boolean isPaused = true;
+    public static boolean isFocused = true;
+    public static boolean isSurfaceReady = false;
+
+    protected JNISurfaceView surfaceView = null;
+
 	private static int errorState = 0;
 
 	private JNIAccelerometer accelerometer = null;
-	protected JNISurfaceView surfaceView = null;
 	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
@@ -56,7 +61,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
     private static String commandLineParams = null;
 	
-    private volatile boolean isPaused = false;
     private volatile boolean mainThreadNeedExit = false;
     private volatile boolean mainThreadNeedResume = true;
     private volatile boolean mainThreadNeedSuspend = false;
@@ -192,7 +196,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			            startTime = System.currentTimeMillis();
 			        }
 					
-					surfaceView.ProcessQueueEvents();
+					surfaceView.ProcessQueuedEvents();
 
                     if(JNIActivity.this.mainThreadNeedResume)
                     {
@@ -206,11 +210,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                             JNIActivity.this.mainThreadNeedResume = false;
                             mainThreadSync.notify();
                         }
-
-                        continue;
                     }
-
-                    if(JNIActivity.this.mainThreadNeedSuspend)
+                    else if(JNIActivity.this.mainThreadNeedSuspend)
                     {
                         Log.d(JNIConst.LOG_TAG, "[C++ main thread] suspend native in");
 
@@ -224,12 +225,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                             JNIActivity.this.mainThreadNeedSuspend = false;
                             mainThreadSync.notify();
                         }
-
-                        continue;
                     }
-
-                    if(!JNIActivity.this.isPaused && hasWindowFocus()) {
-    					surfaceView.ProcessFrame();
+                    else
+                    {
+                        surfaceView.ProcessFrame();
                     }
 				}
 
@@ -306,62 +305,71 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     protected void onRestart()
     {
         Log.d(JNIConst.LOG_TAG, "[Activity::onRestart] in");
-        ShowSplashScreenView();
         super.onRestart();
         Log.d(JNIConst.LOG_TAG, "[Activity::onRestart] out");
     }
 
-    protected void suspendCppThreadSync()
+    protected void handleSuspend()
     {
-        Log.d(JNIConst.LOG_TAG, "[Activity::suspendCppThreadSync] in");
+        Log.d(JNIConst.LOG_TAG, "[Activity::handleSuspend] in");
 
-        // set paused flag. this will forbid
-        // main c++ thread to process frames
-        isPaused = true;
+        if(!isPaused && isSurfaceReady)
+        {
+            // set paused flag. this will forbid
+            // main c++ thread to process frames
+            isPaused = true;
 
-        synchronized(mainThreadSync) {
+            synchronized(mainThreadSync) {
 
-            // set flag to suspend main thread
-            mainThreadNeedSuspend = true;
+                // set flag to suspend main thread
+                mainThreadNeedSuspend = true;
 
-            // now wait until mainThreadNeedSuspend becomes =false
-            // this will mean that c++ thread was suspended
-            while(mainThreadNeedSuspend) {
-                try {
-                    mainThreadSync.wait();
-                } catch(InterruptedException e) {
-                    e.printStackTrace();
+                // now wait until mainThreadNeedSuspend becomes =false
+                // this will mean that c++ thread was suspended
+                while(mainThreadNeedSuspend) {
+                    try {
+                        mainThreadSync.wait();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+
+            Log.d(JNIConst.LOG_TAG, "[Activity::handleSuspend] suspended");
         }
 
-        Log.d(JNIConst.LOG_TAG, "[Activity::suspendCppThreadSync] out");
+        Log.d(JNIConst.LOG_TAG, "[Activity::handleSuspend] out");
     }
 
-    protected void resumeCPPThreadSync()
+    protected void handleResume()
     {
-        Log.d(JNIConst.LOG_TAG, "[Activity::resumeCPPThreadSync] in");
+        Log.d(JNIConst.LOG_TAG, "[Activity::handleResume] in");
 
-        synchronized(mainThreadSync) {
-            // set flag to resume main thread
-            mainThreadNeedResume = true;
+        if(isPaused && isSurfaceReady && isFocused)
+        {
+            // remove paused flag. this will allow
+            // main c++ thread to process frames
+            isPaused = false;
 
-            // now wait until mainThreadNeedResume becomes =false
-            // this will mean that c++ thread was resumed
-            while(mainThreadNeedResume) {
-                try {
-                    mainThreadSync.wait();
-                } catch(InterruptedException e) {
-                    e.printStackTrace();
+            synchronized(mainThreadSync) {
+                // set flag to resume main thread
+                mainThreadNeedResume = true;
+
+                // now wait until mainThreadNeedResume becomes =false
+                // this will mean that c++ thread was resumed
+                while(mainThreadNeedResume) {
+                    try {
+                        mainThreadSync.wait();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+
+            Log.d(JNIConst.LOG_TAG, "[Activity::handleResume] resumed");
         }
 
-        // remove paused flag. this will allow
-        // main c++ thread to process frames
-        isPaused = false;
-
-        Log.d(JNIConst.LOG_TAG, "[Activity::resumeCPPThreadSync] out");
+        Log.d(JNIConst.LOG_TAG, "[Activity::handleResume] out");
     }
 
     @Override
@@ -382,7 +390,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             }
         }
         
-        suspendCppThreadSync();
+        handleSuspend();
+
+        DestroyKeyboardLayout();
+
         super.onPause();
 
         Log.d(JNIConst.LOG_TAG, "[Activity::onPause] out");
@@ -410,24 +421,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         UpdateGamepadAxises();
         JNIUtils.keepScreenOnOnResume();
         
-
-        if(isPaused)
-        {
-            if(hasWindowFocus())
-            {
-                Log.d(JNIConst.LOG_TAG, "[Activity::onResume] resuming main thread...");
-
-                resumeCPPThreadSync();
-                HideSplashScreenView();
-            }
-            else
-            {
-                Log.d(JNIConst.LOG_TAG, "[Activity::onResume] main thread will be resumed when the focus will be received");
-            }
-        }
-
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+
+        handleResume();
 
         /*
          Start of workaround
@@ -455,7 +452,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     protected void onStop()
     {
         Log.d(JNIConst.LOG_TAG, "[Activity::onStop] in");
-        
+
+        ShowSplashScreenView();
+                
         //call native method
         RunOnMainLoopThread(new Runnable() {
             public void run()
@@ -465,7 +464,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         });
         
         fmodDevice.stop();
-
         super.onStop();
         
     	// The activity is no longer visible (it is now "stopped")
@@ -497,8 +495,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         super.onDestroy();
 
-        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] out and finish application...");
-        finishActivity();
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] out");
+
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] System exit");
+        System.exit(0);
     }
     
     @Override
@@ -512,23 +512,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // now we definitely shown on screen
         // http://developer.android.com/reference/android/app/Activity.html#onWindowFocusChanged(boolean)
         super.onWindowFocusChanged(hasFocus);
-        
-        Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] hasFocus = " + hasFocus);
-    	if(hasFocus) {
-    		// we have to wait for window to get focus and only then
-    		// resume game
-    		// because on some slow devices:
-    		// Samsung Galaxy Note II LTE GT-N7105
-    		// Samsung Galaxy S3 Sprint SPH-L710
-    		// Xiaomi MiPad
-    		// before window not visible on screen main(ui thread)
-    		// can wait GLSurfaceView(onWindowSizeChange) on GLThread 
-    		// witch can be blocked with creation
-    		// TextField on GLThread and wait for ui thread - so we get deadlock
-            resumeCPPThreadSync();
-            HideSplashScreenView();
 
+        isFocused = hasFocus;
+        handleResume();
+            
+        if(hasFocus) {
+            HideSplashScreenView();
     		HideNavigationBar(getWindow().getDecorView());
+            InitKeyboardLayout();
     	}
     	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
     }
@@ -570,6 +561,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 }
             });
         }
+    }
+
+    void DestroyKeyboardLayout() {
+        final WindowManager windowManager = getWindowManager();
+        JNITextField.DestroyKeyboardLayout(windowManager);
     }
     
     protected final List<Integer> supportedAxises = Arrays.asList(
@@ -698,7 +694,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return null;
 	}
 	
-	protected void ShowSplashScreenView() {
+	public void ShowSplashScreenView() {
         if(null != splashView) {
 	        Log.d(JNIConst.LOG_TAG, "splashView set visible");
 	        splashView.setVisibility(View.VISIBLE);
@@ -708,7 +704,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         JNIWebView.HideAllWebViews();
 	}
 	
-	protected void HideSplashScreenView() {
+	public void HideSplashScreenView() {
         if(null != splashView) {
     	    Log.d(JNIConst.LOG_TAG, "splashView hide");
 	   	    splashView.setVisibility(View.GONE);
@@ -730,27 +726,18 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		}
 		return isScreenLocked;
 	}
-	// Workaround! this function called from c++ when game wish to 
-    // Quit it block GLThread because we already destroy singletons and can't 
-    // return to GLThread back
-    public static void finishActivity()
+
+	public static void finishActivity()
     {
     	Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
     	
-        final JNIActivity activity = JNIActivity.GetActivity();
-        activity.mainThreadNeedExit = true; // prevent next iteration in C++ main thread we currently in
-        
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
                 activity.finish();
-
-                Log.d(JNIConst.LOG_TAG, "Calling System.exit(0)...");
-                System.exit(0);
             }
         });
-        // try NOT to block this GLThread because sometime Main thread
-        // can block and waiting for GLThread
+        
         Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] out");
     }
 }

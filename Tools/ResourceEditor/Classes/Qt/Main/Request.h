@@ -30,7 +30,6 @@
 #ifndef __REQUEST_H__
 #define __REQUEST_H__
 
-
 class Request
 {
 public:
@@ -38,11 +37,10 @@ public:
 
     void Accept();
     void Cancel();
-    
+
     bool IsAccepted() const;
-    
+
 private:
-    
     bool isAccepted;
 };
 

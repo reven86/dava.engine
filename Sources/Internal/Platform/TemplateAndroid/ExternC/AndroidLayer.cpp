@@ -54,44 +54,46 @@
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include <dirent.h>
 
+#include "Render/Renderer.h"
+
 extern "C"
 {
-	jint JNI_OnLoad(JavaVM *vm, void *reserved);
+jint JNI_OnLoad(JavaVM* vm, void* reserved);
 
-	//JNIApplication
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
- 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv * env, jobject classthis, jobject assetManager);
- 	
-	//JNIActivity
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv* env, jobject classthis, jfloat x, jfloat y, jfloat z);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
-    JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis);
-    JNIEXPORT int JNICALL Java_com_dava_framework_JNIActivity_nativeGetDesiredFPS(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
+//JNIApplication
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv* env, jobject classthis, jobject assetManager);
 
-    //JNISurfaceView
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jint width, jint height);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
+//JNIActivity
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv* env, jobject classthis, jfloat x, jfloat y, jfloat z);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
+JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv* env, jobject classthis);
+JNIEXPORT int JNICALL Java_com_dava_framework_JNIActivity_nativeGetDesiredFPS(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
+//JNISurfaceView
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
+
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
 };
 
-namespace 
+namespace
 {
 DAVA::CorePlatformAndroid* core = nullptr;
 
@@ -139,16 +141,16 @@ JavaVM* GetJVM()
 } // end namespace JNI
 } // end namespace DAVA
 
-jint JNI_OnLoad(JavaVM *vm, void *reserved)
+jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-	JNIEnv* env;
-	if (vm->GetEnv((void **)&env,JNI_VERSION_1_6))
-	{
-		LOGE("Failed get java environment");
-		return -1;
-	}
+    JNIEnv* env;
+    if (vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    {
+        LOGE("Failed get java environment");
+        return -1;
+    }
 
-	androidDelegate = new AndroidDelegate(vm);
+    androidDelegate = new AndroidDelegate(vm);
 
     DAVA::AndroidCrashReport::Init(env);
     LOGI("finished JNI_OnLoad");
@@ -156,13 +158,13 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     return JNI_VERSION_1_6;
 }
 
-void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
+void InitApplication(JNIEnv* env, const DAVA::String& commandLineParams)
 {
-	if(!core)
-	{
-		core = new DAVA::CorePlatformAndroid(commandLineParams);
-		if(core)
-		{
+    if (!core)
+    {
+        core = new DAVA::CorePlatformAndroid(commandLineParams);
+        if (core)
+        {
             core->CreateAndroidWindow(documentsFolderPathEx.c_str(),
                                       documentsFolderPathIn.c_str(),
                                       assetsFolderPath.c_str(),
@@ -181,14 +183,14 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
 
 void DeinitApplication()
 {
-	if(core)
-	{
-		core->Quit();
-		core->ReleaseSingletons();
-		core = nullptr;
-	}
+    if (core)
+    {
+        core->Quit();
+        core->ReleaseSingletons();
+        core = nullptr;
+    }
 
-	SafeDelete(androidDelegate);
+    SafeDelete(androidDelegate);
 }
 
 // CALLED FROM JNIApplication
@@ -229,18 +231,18 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     DAVA::Logger::Info("finish OnCreateApplication");
 }
 
-void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv* env, jobject classthis)
 {
 }
 
-void Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv* env, jobject classthis)
 {
-	if(core)
-	{
-		DAVA::Logger::Info("__ LOW MEMORY ___  %p", env);
-	}
+    if (core)
+    {
+        DAVA::Logger::Info("__ LOW MEMORY ___  %p", env);
+    }
 }
-void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv* env, jobject classthis)
 {
 }
 // END OF JNIApplication
@@ -248,69 +250,68 @@ void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject cl
 // CALLED FROM JNIActivity
 void Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv* env, jobject classthis)
 {
-//	LOGI("___ ON CREATE ___ %p, %d;  isFirstRun = %d", env, classthis, isFirstRun);
-	if(core)
-	{
-		core->OnCreateActivity();
-	}
+    //	LOGI("___ ON CREATE ___ %p, %d;  isFirstRun = %d", env, classthis, isFirstRun);
+    if (core)
+    {
+        core->OnCreateActivity();
+    }
 }
 
-void Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv* env, jobject classthis)
 {
-	if(core)
-	{
-		core->StartVisible();
-	}
+    if (core)
+    {
+        core->StartVisible();
+    }
 }
 
-void Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv* env, jobject classthis)
 {
-	if(core)
-	{
-		core->StopVisible();
-	}
+    if (core)
+    {
+        core->StopVisible();
+    }
 }
 
-void Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv* env, jobject classthis)
 {
-	DeinitApplication();
+    DeinitApplication();
 }
 
-
-void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv* env, jobject classthis)
 {
-	if(core)
-	{
-		core->OnDestroyActivity();
-	}
+    if (core)
+    {
+        core->OnDestroyActivity();
+    }
 
-	DAVA::SafeDelete(gArrayListClass);
-	DAVA::SafeDelete(gInputEventClass);
+    DAVA::SafeDelete(gArrayListClass);
+    DAVA::SafeDelete(gInputEventClass);
 }
 
-void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z)
+void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv* env, jobject classthis, jfloat x, jfloat y, jfloat z)
 {
-	DAVA::AccelerometerAndroidImpl *accelerometer = (DAVA::AccelerometerAndroidImpl *)DAVA::Accelerometer::Instance();
-	if(accelerometer)
-	{
-		accelerometer->SetAccelerationData(x, y, z);
-	}
+    DAVA::AccelerometerAndroidImpl* accelerometer = (DAVA::AccelerometerAndroidImpl*)DAVA::Accelerometer::Instance();
+    if (accelerometer)
+    {
+        accelerometer->SetAccelerationData(x, y, z);
+    }
 }
 
-void Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable)
+void Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable)
 {
-	if(core)
-	{
-		core->OnGamepadAvailable(isAvailable);
-	}
+    if (core)
+    {
+        core->OnGamepadAvailable(isAvailable);
+    }
 }
 
-void Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable)
+void Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable)
 {
-	if(core)
-	{
-		core->OnGamepadTriggersAvailable(isAvailable);
-	}
+    if (core)
+    {
+        core->OnGamepadTriggersAvailable(isAvailable);
+    }
 }
 
 bool Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv* env, jobject classthis)
@@ -389,28 +390,28 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject javaActiveInputs, jobject javaAllInputs)
 {
-	if(core)
-	{
-		DAVA::Vector< DAVA::UIEvent > activeInputs;
-		DAVA::Vector< DAVA::UIEvent > allInputs;
+    if (core)
+    {
+        DAVA::Vector<DAVA::UIEvent> activeInputs;
+        DAVA::Vector<DAVA::UIEvent> allInputs;
 
-		int allInputsCount = gArrayListSizeMethod(javaAllInputs);
-		int activeInputsCount = gArrayListSizeMethod(javaActiveInputs);
+        int allInputsCount = gArrayListSizeMethod(javaAllInputs);
+        int activeInputsCount = gArrayListSizeMethod(javaActiveInputs);
 
-		int inputsCount = DAVA::Max(allInputsCount, activeInputsCount);
+        int inputsCount = DAVA::Max(allInputsCount, activeInputsCount);
 
-		for(int groupStartIndex = 0; groupStartIndex < inputsCount; groupStartIndex += groupSize)
-		{
-			int groupEndIndex = groupStartIndex + groupSize;
+        for (int groupStartIndex = 0; groupStartIndex < inputsCount; groupStartIndex += groupSize)
+        {
+            int groupEndIndex = groupStartIndex + groupSize;
 
-			allInputs.clear();
-			activeInputs.clear();
+            allInputs.clear();
+            activeInputs.clear();
 
-			for (int touchIndex = groupStartIndex; touchIndex < groupEndIndex; ++touchIndex)
-			{
-				if (touchIndex < allInputsCount)
-				{
-					jobject jInput = gArrayListGetMethod(javaAllInputs, touchIndex);
+            for (int touchIndex = groupStartIndex; touchIndex < groupEndIndex; ++touchIndex)
+            {
+                if (touchIndex < allInputsCount)
+                {
+                    jobject jInput = gArrayListGetMethod(javaAllInputs, touchIndex);
 
                     DAVA::UIEvent event = android_details::CreateUIEventFromJavaEvent(env, jInput, action, source);
                     allInputs.push_back(event);
@@ -434,26 +435,26 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)
 {
-	if(core)
-	{
-		core->KeyDown(keyCode);
-	}
+    if (core)
+    {
+        core->KeyDown(keyCode);
+    }
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode)
 {
-	if(core)
-	{
-		core->KeyUp(keyCode);
-	}
+    if (core)
+    {
+        core->KeyUp(keyCode);
+    }
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode)
 {
-	if(core)
-	{
-		core->OnGamepadElement(elementKey, value, isKeycode);
-	}
+    if (core)
+    {
+        core->OnGamepadElement(elementKey, value, isKeycode);
+    }
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface)
@@ -471,10 +472,18 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jo
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jint width, jint height)
+void Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height)
 {
-	if(core)
-	{
+    if (nativeWindow)
+    {
+        ANativeWindow_release(nativeWindow);
+    }
+
+    nativeWindow = ANativeWindow_fromSurface(env, surface);
+
+    if (core)
+    {
+        core->SetNativeWindow(nativeWindow);
         core->RenderReset(width, height);
     }
 }
@@ -489,15 +498,20 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
         if (core)
         {
             core->SetNativeWindow(nullptr);
-            core->RenderReset(0, 0);
+
+            rhi::ResetParam params;
+            params.width = 0;
+            params.height = 0;
+            params.window = nullptr;
+            DAVA::Renderer::Reset(params);
         }
     }
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis)
 {
-	if(core)
-	{
+    if (core)
+    {
         core->ProcessFrame();
     }
 }
@@ -512,8 +526,8 @@ void Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject cla
 
 void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
 {
-	if(core)
-	{
+    if (core)
+    {
         core->StopForeground(isLock);
     }
 }

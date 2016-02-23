@@ -36,42 +36,40 @@
 #include "DefinitionFile.h"
 #include "ImagePacker.h"
 
-
 struct SizeSortItem
 {
-	int					imageSize;
-	DefinitionFile *	defFile;
-	int					frameIndex;
+    int imageSize;
+    DefinitionFile* defFile;
+    int frameIndex;
 };
 
-class TexturePacker 
+class TexturePacker
 {
 public:
-	TexturePacker();
-	
-	// pack textures to single texture
-	void PackToTextures(const char * excludeFolder, const char* outputPath, std::list<DefinitionFile*> & defsList);
-	// page each PSD file to separate texture
-	void PackToTexturesSeparate(const char * excludeFolder, const char* outputPath, std::list<DefinitionFile*> & defsList);
-	// pack one sprite and use several textures if more than one needed
-	void PackToMultipleTextures(const char * excludeFolder, const char* outputPath, std::list<DefinitionFile*> & remainingList);
+    TexturePacker();
 
-	bool TryToPack(const Rect2i & textureRect, std::list<DefinitionFile*> & defsList);
-	bool WriteDefinition(const char * excludeFolder, const char * outputPath, const char * textureName, DefinitionFile * defFile);
-	bool WriteMultipleDefinition(const char * excludeFolder, const char * outputPath, const char * _textureName, DefinitionFile * defFile);
+    // pack textures to single texture
+    void PackToTextures(const char* excludeFolder, const char* outputPath, std::list<DefinitionFile*>& defsList);
+    // page each PSD file to separate texture
+    void PackToTexturesSeparate(const char* excludeFolder, const char* outputPath, std::list<DefinitionFile*>& defsList);
+    // pack one sprite and use several textures if more than one needed
+    void PackToMultipleTextures(const char* excludeFolder, const char* outputPath, std::list<DefinitionFile*>& remainingList);
 
-	int TryToPackFromSortVector(ImagePacker * packer, std::vector<SizeSortItem> & tempSortVector);
-	float TryToPackFromSortVectorWeight(ImagePacker * packer,std::vector<SizeSortItem> & tempSortVector);
+    bool TryToPack(const Rect2i& textureRect, std::list<DefinitionFile*>& defsList);
+    bool WriteDefinition(const char* excludeFolder, const char* outputPath, const char* textureName, DefinitionFile* defFile);
+    bool WriteMultipleDefinition(const char* excludeFolder, const char* outputPath, const char* _textureName, DefinitionFile* defFile);
 
-	Rect2i ReduceRectToOriginalSize(const Rect2i & _input);
-	
+    int TryToPackFromSortVector(ImagePacker* packer, std::vector<SizeSortItem>& tempSortVector);
+    float TryToPackFromSortVectorWeight(ImagePacker* packer, std::vector<SizeSortItem>& tempSortVector);
+
+    Rect2i ReduceRectToOriginalSize(const Rect2i& _input);
+
 private:
-	ImagePacker *			lastPackedPacker;
-	std::vector<ImagePacker*> usedPackers;
+    ImagePacker* lastPackedPacker;
+    std::vector<ImagePacker*> usedPackers;
 
-	std::vector<SizeSortItem> sortVector;
-	int32 maxTextureSize;
+    std::vector<SizeSortItem> sortVector;
+    int32 maxTextureSize;
 };
 
 #endif __TEXTURE_PACKER_H__
-

@@ -36,22 +36,22 @@
 class Command2;
 class EditorMaterialSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
+    friend class SceneEditor2;
 
 public:
     enum MaterialLightViewMode
     {
-        LIGHTVIEW_NOTHING     = 0x0,
+        LIGHTVIEW_NOTHING = 0x0,
 
-        LIGHTVIEW_ALBEDO      = 0x1,
-        LIGHTVIEW_AMBIENT     = 0x2,
-        LIGHTVIEW_DIFFUSE     = 0x4,
-        LIGHTVIEW_SPECULAR    = 0x8,
+        LIGHTVIEW_ALBEDO = 0x1,
+        LIGHTVIEW_AMBIENT = 0x2,
+        LIGHTVIEW_DIFFUSE = 0x4,
+        LIGHTVIEW_SPECULAR = 0x8,
 
-        LIGHTVIEW_ALL         = (LIGHTVIEW_ALBEDO | LIGHTVIEW_AMBIENT | LIGHTVIEW_DIFFUSE | LIGHTVIEW_SPECULAR)
+        LIGHTVIEW_ALL = (LIGHTVIEW_ALBEDO | LIGHTVIEW_AMBIENT | LIGHTVIEW_DIFFUSE | LIGHTVIEW_SPECULAR)
     };
 
-	EditorMaterialSystem(DAVA::Scene * scene);
+    EditorMaterialSystem(DAVA::Scene* scene);
     ~EditorMaterialSystem();
 
     const DAVA::Set<DAVA::NMaterial*>& GetTopParents() const;
@@ -100,7 +100,7 @@ private:
     void ApplyViewMode();
     void ApplyViewMode(DAVA::NMaterial* material);
 
-    bool IsEditable(DAVA::NMaterial *material) const;
+    bool IsEditable(DAVA::NMaterial* material) const;
 
 private:
     MaterialToObjectsMap materialToObjectsMap;

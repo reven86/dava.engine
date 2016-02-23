@@ -32,27 +32,27 @@
 #include "Deprecated/EditorConfig.h"
 #include "Main/QtUtils.h"
 
-QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key)
-	: QtPropertyDataDavaVariant(DAVA::VariantType())
-	, archive(_archive)
-	, key(_key)
-	, lastCommand(NULL)
+QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive_, const DAVA::String& key_)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , archive(archive_)
+    , key(key_.c_str())
+    , lastCommand(NULL)
 {
     CheckAndFillPresetValues();
 
-	if(NULL != archive)
-	{
-		DAVA::VariantType *val = archive->GetVariant(key);
-		if(NULL != val)
-		{
-			SetVariantValue(*val);
-		}
-	}
+    if (NULL != archive)
+    {
+        DAVA::VariantType* val = archive->GetVariant(key);
+        if (NULL != val)
+        {
+            SetVariantValue(*val);
+        }
+    }
 }
 
 QtPropertyKeyedArchiveMember::~QtPropertyKeyedArchiveMember()
 {
-	DAVA::SafeDelete(lastCommand);
+    DAVA::SafeDelete(lastCommand);
 }
 
 void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
@@ -74,7 +74,7 @@ void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
             }
             else
             {
-                const DAVA::Vector<Color> & allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key);
+                const DAVA::Vector<Color>& allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key);
                 for (size_t i = 0; i < allowedColors.size(); ++i)
                 {
                     AddAllowedValue(DAVA::VariantType((int)i), ColorToQColor(allowedColors[i]));
@@ -84,69 +84,69 @@ void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
     }
 }
 
-void QtPropertyKeyedArchiveMember::SetValueInternal(const QVariant &value)
+void QtPropertyKeyedArchiveMember::SetValueInternal(const QVariant& value)
 {
-	QtPropertyDataDavaVariant::SetValueInternal(value);
-	DAVA::VariantType newValue = QtPropertyDataDavaVariant::GetVariantValue();
+    QtPropertyDataDavaVariant::SetValueInternal(value);
+    DAVA::VariantType newValue = QtPropertyDataDavaVariant::GetVariantValue();
 
-	// also save value to meta-object
-	if(NULL != archive && archive->IsKeyExists(key))
-	{
-		DAVA::SafeDelete(lastCommand);
-		lastCommand = new KeyeadArchiveSetValueCommand(archive, key, newValue);
+    // also save value to meta-object
+    if (NULL != archive && archive->IsKeyExists(key))
+    {
+        DAVA::SafeDelete(lastCommand);
+        lastCommand = new KeyeadArchiveSetValueCommand(archive, key, newValue);
 
-		archive->SetVariant(key, newValue);
-	}
+        archive->SetVariant(key, newValue);
+    }
 }
 
 bool QtPropertyKeyedArchiveMember::UpdateValueInternal()
 {
-	bool ret = false;
+    bool ret = false;
 
-	// get current value from introspection member
-	// we should do this because member may change at any time
-	if(NULL != archive)
-	{
-		DAVA::VariantType *val = archive->GetVariant(key);
-		if(NULL != val)
-		{
-			DAVA::VariantType v = *val;
+    // get current value from introspection member
+    // we should do this because member may change at any time
+    if (NULL != archive)
+    {
+        DAVA::VariantType* val = archive->GetVariant(key);
+        if (NULL != val)
+        {
+            DAVA::VariantType v = *val;
 
-			// if current variant value not equal to the real member value
-			// we should update current variant value
-			if(v != GetVariantValue())
-			{
-				QtPropertyDataDavaVariant::SetVariantValue(v);
-				ret = true;
-			}
-		}
-	}
+            // if current variant value not equal to the real member value
+            // we should update current variant value
+            if (v != GetVariantValue())
+            {
+                QtPropertyDataDavaVariant::SetVariantValue(v);
+                ret = true;
+            }
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-bool QtPropertyKeyedArchiveMember::EditorDoneInternal(QWidget *editor)
+bool QtPropertyKeyedArchiveMember::EditorDoneInternal(QWidget* editor)
 {
-	bool ret = QtPropertyDataDavaVariant::EditorDoneInternal(editor);
+    bool ret = QtPropertyDataDavaVariant::EditorDoneInternal(editor);
 
-	// if there was some changes in current value, done by editor
-	// we should save them into meta-object
-	if(ret && NULL != archive && archive->IsKeyExists(key))
-	{
-		archive->SetVariant(key, QtPropertyDataDavaVariant::GetVariantValue());
-	}
+    // if there was some changes in current value, done by editor
+    // we should save them into meta-object
+    if (ret && NULL != archive && archive->IsKeyExists(key))
+    {
+        archive->SetVariant(key, QtPropertyDataDavaVariant::GetVariantValue());
+    }
 
-	return ret;
+    return ret;
 }
 
 void* QtPropertyKeyedArchiveMember::CreateLastCommand() const
 {
-	Command2 *command = NULL;
+    Command2* command = NULL;
 
-	if(NULL != lastCommand)
-	{
-		command = new KeyeadArchiveSetValueCommand(*lastCommand);
-	}
+    if (NULL != lastCommand)
+    {
+        command = new KeyeadArchiveSetValueCommand(*lastCommand);
+    }
 
-	return command;
+    return command;
 }

@@ -32,7 +32,6 @@
 
 #include "Scene3D/Entity.h"
 
-
 class EntityGroup
 {
 public:
@@ -63,11 +62,11 @@ public:
     DAVA::Vector3 GetCommonTranslationVector() const;
 
     bool IsEmpty() const;
-    bool ContainsEntity(DAVA::Entity *entity) const;
+    bool ContainsEntity(DAVA::Entity* entity) const;
 
     size_t Size() const;
 
-    DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
+    DAVA::Entity* IntersectedEntity(const EntityGroup* group) const;
     DAVA::Entity* IntersectedEntity(const EntityVector& group) const;
 
     EntityGroup& operator=(const EntityGroup&);

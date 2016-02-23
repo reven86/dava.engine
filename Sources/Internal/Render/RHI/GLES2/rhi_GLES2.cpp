@@ -63,12 +63,14 @@ void (*_GLES2_ReleaseContext)() = nullptr;
 int _GLES2_DefaultFrameBuffer_Width = 0;
 int _GLES2_DefaultFrameBuffer_Height = 0;
 GLuint _GLES2_LastSetIB = 0;
+DAVA::uint8* _GLES2_LastSetIndices = nullptr;
 GLuint _GLES2_LastSetVB = 0;
 GLuint _GLES2_LastSetTex0 = 0;
 GLenum _GLES2_LastSetTex0Target = GL_TEXTURE_2D;
 int _GLES2_LastActiveTexture = -1;
 bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
+bool _GLES2_UseUserProvidedIndices = false;
 rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
 DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 
@@ -227,6 +229,8 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
     }
 
+    _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
+
     const char* version = (const char*)glGetString(GL_VERSION);
     if (!IsEmptyString(version))
     {
@@ -263,6 +267,17 @@ gles_check_GL_extensions()
 #if defined(GL_RGBA32F)
             RGBA32F_Supported = majorVersion >= 3;
 #endif
+        }
+    }
+
+    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    if (!IsEmptyString(renderer))
+    {
+        if (strstr(renderer, "Mali"))
+        {
+            // drawing from memory is worst case scenario,
+            // unless running on some buggy piece of shit
+            _GLES2_UseUserProvidedIndices = true;
         }
     }
 }

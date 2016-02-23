@@ -38,34 +38,37 @@
 
 namespace DAVA
 {
-
 class AndroidSystemDelegate
 {
 public:
-	AndroidSystemDelegate(JavaVM *vm);
-	virtual ~AndroidSystemDelegate() = default;
+    AndroidSystemDelegate(JavaVM* vm);
+    virtual ~AndroidSystemDelegate() = default;
 
-	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
+    virtual bool DownloadHttpFile(const String& url, const String& documentsPathname) = 0;
 
-	JNIEnv* GetEnvironment() const {return environment;};
-	JavaVM* GetVM() const {return vm;};
+    JNIEnv* GetEnvironment() const
+    {
+        return environment;
+    };
+    JavaVM* GetVM() const
+    {
+        return vm;
+    };
+
 protected:
-	JNIEnv* environment;
-	JavaVM* vm;
+    JNIEnv* environment;
+    JavaVM* vm;
 };
 
-
-
 class Thread;
-class CorePlatformAndroid: public Core
+class CorePlatformAndroid : public Core
 {
 public:
+    CorePlatformAndroid(const DAVA::String& cmdLine);
 
-	CorePlatformAndroid(const DAVA::String& cmdLine);
+    virtual void CreateAndroidWindow(const char8* docPathEx, const char8* docPathIn, const char8* assets, const char8* logTag, AndroidSystemDelegate* sysDelegate);
 
-	virtual void CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate);
-
-	void Quit() override;
+    void Quit() override;
 
     void RenderReset(int32 w, int32 h);
     void ProcessFrame();
@@ -91,33 +94,36 @@ public:
 
     bool IsMultitouchEnabled();
 
-	bool DownloadHttpFile(const String & url, const String & documentsPathname);
+    bool DownloadHttpFile(const String& url, const String& documentsPathname);
 
-	AAssetManager * GetAssetManager();
-	void SetAssetManager(AAssetManager * mngr);
+    AAssetManager* GetAssetManager();
+    void SetAssetManager(AAssetManager* mngr);
 
-	const String& GetExternalStoragePathname() const {return externalStorage;};
-	const String& GetInternalStoragePathname() const {return internalStorage;};
-	
-	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
+    const String& GetExternalStoragePathname() const
+    {
+        return externalStorage;
+    };
+    const String& GetInternalStoragePathname() const
+    {
+        return internalStorage;
+    };
 
-    int32 GetViewWidth() const { return width; };
-    int32 GetViewHeight() const { return height; };
+    AndroidSystemDelegate* GetAndroidSystemDelegate() const;
+
+    int32 GetViewWidth() const;
+    int32 GetViewHeight() const;
 
     void SetNativeWindow(void* nativeWindow);
 
 private:
+    void QuitAction();
+    void ProcessWithoutDrawing();
 
-	void QuitAction();
-	void ProcessWithoutDrawing();
-
-	void UpdateScreenMode();
-
-    void ProcessResizeView();
+    void ApplyPendingViewSize();
 
 private:
-    int32 width = 0;
-    int32 height = 0;
+    int32 pendingWidth = 0;
+    int32 pendingHeight = 0;
     int32 backbufferWidth = 0;
     int32 backbufferHeight = 0;
 

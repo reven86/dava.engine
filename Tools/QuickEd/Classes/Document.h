@@ -32,7 +32,6 @@
 
 #include <QUndoStack>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
 
 struct WidgetContext
@@ -44,10 +43,11 @@ inline WidgetContext::~WidgetContext()
 {
 }
 
-namespace DAVA {
-    class FilePath;
-    class UIControl;
-    class UIEvent;
+namespace DAVA
+{
+class FilePath;
+class UIControl;
+class UIEvent;
 }
 
 class PackageNode;
@@ -63,46 +63,30 @@ class Document final : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(PackageNode* package, QObject* parent = nullptr);
+    explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
-    void Activate();
-    void Deactivate();
-
-    EditorSystemsManager* GetSystemManager();
-    const DAVA::FilePath &GetPackageFilePath() const;
+    const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
-    QUndoStack* GetUndoStack();
-    PackageNode* GetPackage();
-    QtModelPackageCommandExecutor* GetCommandExecutor();
-    WidgetContext* GetContext(QObject* requester) const;
+    QUndoStack* GetUndoStack() const;
+    PackageNode* GetPackage() const;
+    QtModelPackageCommandExecutor* GetCommandExecutor() const;
+    WidgetContext* GetContext(void* requester) const;
 
-    void SetContext(QObject* requester, WidgetContext* widgetContext);
-
+    void SetContext(void* requester, WidgetContext* widgetContext);
     void RefreshLayout();
 
 signals:
-    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void CanvasSizeChanged();
-    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
-    void SetScale(float scale);
-    void SetEmulationMode(bool emulationMode);
-    void SetPixelization(bool hasPixelization);
     void RefreshAllControlProperties();
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
-    void OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
-    DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
+    DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
-    PackageNode* package = nullptr;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    QUndoStack* undoStack = nullptr;
-
-    EditorSystemsManager systemManager;
+    DAVA::RefPtr<PackageNode> package;
+    std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
+    std::unique_ptr<QUndoStack> undoStack;
 };
 
 #endif // __QUICKED_DOCUMENT_H__
