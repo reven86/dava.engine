@@ -27,76 +27,34 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
-#define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
+#ifndef __QT_TOOLS_MESSAGE_HANDLER_H__
+#define __QT_TOOLS_MESSAGE_HANDLER_H__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandAction.h"
-#include "DAVAEngine.h"
+#include "Debug/DVAssert.h"
 
-#include "Render/UniqueStateSet.h"
-
-using namespace DAVA;
-
-class LandscapeProxy;
-class SceneEditor2;
-
-class ActionEnableTilemaskEditor : public CommandAction
+void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-public:
-    ActionEnableTilemaskEditor(SceneEditor2* forSceneEditor);
+    QByteArray localMsg = msg.toLocal8Bit();
+    switch (type)
+    {
+    case QtDebugMsg:
+        DAVA::Logger::Debug("Qt debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtWarningMsg:
+        DAVA::Logger::Warning("Qt Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtCriticalMsg:
+        DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        DVASSERT(false);
+        break;
+    case QtFatalMsg:
+        DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        DVASSERT(false);
+        break;
+    default:
+        DAVA::Logger::Info("Qt Unknown: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    }
+}
 
-protected:
-    SceneEditor2* sceneEditor;
-
-    virtual void Redo();
-};
-
-class ActionDisableTilemaskEditor : public CommandAction
-{
-public:
-    ActionDisableTilemaskEditor(SceneEditor2* forSceneEditor);
-
-protected:
-    SceneEditor2* sceneEditor;
-
-    virtual void Redo();
-};
-
-class ModifyTilemaskCommand : public Command2
-{
-public:
-    ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const Rect& updatedRect);
-    ~ModifyTilemaskCommand() override;
-
-    void Undo() override;
-    void Redo() override;
-    Entity* GetEntity() const override;
-
-protected:
-    Image* undoImageMask = nullptr;
-    Image* redoImageMask = nullptr;
-    LandscapeProxy* landscapeProxy = nullptr;
-    Rect updatedRect;
-
-    void ApplyImageToTexture(Image* image, Texture* dstTex);
-};
-
-class SetTileColorCommand : public Command2
-{
-public:
-    SetTileColorCommand(LandscapeProxy* landscapeProxy, const FastName& level, const Color& color);
-    ~SetTileColorCommand() override;
-
-    void Undo() override;
-    void Redo() override;
-    Entity* GetEntity() const override;
-
-protected:
-    const FastName& level;
-    Color redoColor;
-    Color undoColor;
-    LandscapeProxy* landscapeProxy = nullptr;
-};
-
-#endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__) */
+#endif // __QT_TOOLS_MESSAGE_HANDLER_H__

@@ -33,23 +33,25 @@
 #include <QAbstractItemModel>
 #include <QMimeData>
 #include "EditorSystems/SelectionContainer.h"
-
 #include "Model/PackageHierarchy/PackageListener.h"
 
+class AbstractProperty;
 class PackageNode;
 class ControlNode;
 class PackageBaseNode;
+class StyleSheetsNode;
 class PackageControlsNode;
 class ControlsContainerNode;
+class ImportedPackagesNode;
 class QtModelPackageCommandExecutor;
 
-class PackageModel : public QAbstractItemModel, private PackageListener
+class PackageModel : public QAbstractItemModel, PackageListener
 {
     Q_OBJECT
 
 public:
-    PackageModel(PackageNode* root, QtModelPackageCommandExecutor* commandExecutor, QObject* parent = 0);
-    ~PackageModel() override;
+    PackageModel(QObject* parent = nullptr);
+    void Reset(PackageNode* package, QtModelPackageCommandExecutor* executor);
 
     QModelIndex indexByNode(PackageBaseNode* node) const;
 
@@ -95,7 +97,7 @@ private: // PackageListener
 
     int GetRowIndex(int row, const QModelIndex& parent) const;
 
-    PackageNode* root = nullptr;
+    PackageNode* package = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
 };
 
