@@ -27,16 +27,18 @@
 =====================================================================================*/
 
 #include "Core/Core.h"
+#include "Core/PerformanceSettings.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 
 #include "GameCore.h"
 #include "Version.h"
 
 void FrameworkDidLaunched()
 {
-	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
+    DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
 
     appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
@@ -46,8 +48,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", 1024);
     appOptions->SetInt32("height", 768);
 
-    appOptions->SetInt32("max_index_buffer_count", 8192);
-    appOptions->SetInt32("max_vertex_buffer_count", 8192);
+    appOptions->SetInt32("max_index_buffer_count", 16384);
+    appOptions->SetInt32("max_vertex_buffer_count", 16384);
     appOptions->SetInt32("max_const_buffer_count", 32767);
     appOptions->SetInt32("max_texture_count", 2048);
 
@@ -57,12 +59,13 @@ void FrameworkDidLaunched()
     DAVA::Core::SetApplicationCore(core);
     DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
+    DAVA::PerformanceSettings::Instance()->SetPsPerformanceMinFPS(5.0f);
+    DAVA::PerformanceSettings::Instance()->SetPsPerformanceMaxFPS(10.0f);
 
-//    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
-    
-	SafeRelease(appOptions);
+    SafeRelease(appOptions);
 }
 
-
 void FrameworkWillTerminate()
-{ }
+{
+    VisibilityCheckSystem::ReleaseCubemapRenderTargets();
+}

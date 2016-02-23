@@ -204,10 +204,20 @@ static const char* _ShaderHeader_Metal =
 "using namespace metal;\n\n"
 
 "#define min10float  half\n"
+"#define min10float1 half\n"
+"#define min10float2 half2\n"
+"#define min10float3 half3\n"
+"#define min10float4 half4\n"
+
+"#define half1 half\n"
+"#define half2 half2\n"
+"#define half3 half3\n"
+"#define half4 half4\n"
 
 "#define float1 float\n"
-"#define half1 half\n"
-"#define min10float1 half\n"
+"#define float2 vector_float2\n"
+"#define float3 vector_float3\n"
+"#define float4 vector_float4\n"
 
 "float4 mul( float4 v, float4x4 m );\n"
 "float4 mul( float4 v, float4x4 m ) { return m*v; }\n"
@@ -476,7 +486,7 @@ static const char* _ShaderHeader_GLES2 =
 
 static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_BEGIN          \n"
-"#define VPROG_IN_POSITION       attribute vec3 attr_position;\n"
+"#define VPROG_IN_POSITION       attribute vec4 attr_position;\n"
 "#define VPROG_IN_NORMAL         attribute vec3 attr_normal;\n"
 "#define VPROG_IN_TEXCOORD       attribute vec2 attr_texcoord0;\n"
 "#define VPROG_IN_TEXCOORD0(sz)  attribute vec##sz attr_texcoord0;\n"
@@ -977,6 +987,9 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
             src_len += sprintf(src + src_len, "#define %s %i \n", vattr[i].name, vattr[i].value);
     }
 
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_VERTEX \n");
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_INSTANCE \n");
+
     switch (targetApi)
     {
     case RHI_DX9:
@@ -1075,7 +1088,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
             sscanf(decl, "DECL_VPROG_BUFFER(%i,", &i);
 
-            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1 + i);
+            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, MAX_VERTEX_STREAM_COUNT + i);
             src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i);
             vp_buf_declared[i] = true;
 

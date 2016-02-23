@@ -33,24 +33,15 @@
 #include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
 
-class DAEConvertAction: public CommandAction
+class DAEConvertAction : public CommandAction
 {
 public:
-	DAEConvertAction(const DAVA::FilePath &path);
+    DAEConvertAction(const DAVA::FilePath& path);
 
-	virtual void Redo();
+    void Redo() override;
 
 protected:
-    
-    void ConvertFromSceToSc2() const;
-    void FixLODFarDistance(DAVA::Scene *scene) const;
-    
-    DAVA::Scene * CreateSceneFromSce() const;
-    
-    DAVA::int32 FindMaxLodLevel(DAVA::Entity *entity) const;
-    
-protected:
-	DAVA::FilePath daePath;
+    DAVA::FilePath daePath;
 };
 
 #endif // __RESOURCEEDITORQT__DAECONVERTACTION__

@@ -33,83 +33,77 @@
 #include "UI/UIYamlLoader.h"
 #include "FileSystem/YamlNode.h"
 
-namespace DAVA 
+namespace DAVA
 {
-    UIListCell::UIListCell(const Rect &rect, const String &cellIdentifier, const FilePath &aggregatorPath)
-        :	UIButton(rect)
-        ,	currentIndex(-1)
-        ,	identifier(cellIdentifier)
-        ,	cellStore(NULL)
+UIListCell::UIListCell(const Rect& rect, const String& cellIdentifier, const FilePath& aggregatorPath)
+    : UIButton(rect)
+    , currentIndex(-1)
+    , identifier(cellIdentifier)
+    , cellStore(NULL)
+{
+    if (!aggregatorPath.IsEmpty())
     {
-		if (!aggregatorPath.IsEmpty())
-		{
-			UIAggregatorControl *aggregator = new UIAggregatorControl();
-			UIYamlLoader::Load(aggregator, aggregatorPath);
-			
-			this->AddControl(aggregator);
-			SafeRelease(aggregator);
-		}
-    }
-        
-    UIListCell::~UIListCell()
-    {
-            
-    }
+        UIAggregatorControl* aggregator = new UIAggregatorControl();
+        UIYamlLoader::Load(aggregator, aggregatorPath);
 
-    void UIListCell::WillDisappear()
-    {
-            currentIndex = -1;
+        this->AddControl(aggregator);
+        SafeRelease(aggregator);
     }
-    
-    const String & UIListCell::GetIdentifier() const
-    {
-        return identifier;
-    }
+}
 
-    void UIListCell::SetIdentifier(const String &newIdentifier)
-    {
-        identifier = newIdentifier;
-    }
+UIListCell::~UIListCell()
+{
+}
 
-    int32 UIListCell::GetIndex() const
-    {
-        return currentIndex;	
-    }
+const String& UIListCell::GetIdentifier() const
+{
+    return identifier;
+}
 
-	UIListCell *UIListCell::Clone()
-	{
-		UIListCell *c = new UIListCell(GetRect(),identifier);
-		c->CopyDataFrom(this);
-		return c;
-	}
-    
-    void UIListCell::CopyDataFrom(UIControl *srcControl)
-	{
-        UIButton::CopyDataFrom(srcControl);
-        UIListCell *srcListCell = (UIListCell *)srcControl;
-        identifier = srcListCell->identifier;
-    }
-    
-    void UIListCell::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
-	{
-        UIButton::LoadFromYamlNode(node, loader);
-        const YamlNode * identifierNode = node->Get("identifier");
-        if (identifierNode)
-        {
-            SetIdentifier(identifierNode->AsString());
-        }
-    }
-    
-    YamlNode * UIListCell::SaveToYamlNode(UIYamlLoader * loader)
-    {
-        YamlNode *node = UIButton::SaveToYamlNode(loader);
+void UIListCell::SetIdentifier(const String& newIdentifier)
+{
+    identifier = newIdentifier;
+}
 
-        ScopedPtr<UIListCell> baseControl(new UIListCell());
-        //Identifier
-        if (baseControl->GetIdentifier() != GetIdentifier())
-        {
-            node->Set("identifier", GetIdentifier());
-        }
-        return node;
+int32 UIListCell::GetIndex() const
+{
+    return currentIndex;
+}
+
+UIListCell* UIListCell::Clone()
+{
+    UIListCell* c = new UIListCell(GetRect(), identifier);
+    c->CopyDataFrom(this);
+    return c;
+}
+
+void UIListCell::CopyDataFrom(UIControl* srcControl)
+{
+    UIButton::CopyDataFrom(srcControl);
+    UIListCell* srcListCell = (UIListCell*)srcControl;
+    identifier = srcListCell->identifier;
+}
+
+void UIListCell::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
+{
+    UIButton::LoadFromYamlNode(node, loader);
+    const YamlNode* identifierNode = node->Get("identifier");
+    if (identifierNode)
+    {
+        SetIdentifier(identifierNode->AsString());
     }
+}
+
+YamlNode* UIListCell::SaveToYamlNode(UIYamlLoader* loader)
+{
+    YamlNode* node = UIButton::SaveToYamlNode(loader);
+
+    ScopedPtr<UIListCell> baseControl(new UIListCell());
+    //Identifier
+    if (baseControl->GetIdentifier() != GetIdentifier())
+    {
+        node->Set("identifier", GetIdentifier());
+    }
+    return node;
+}
 };

@@ -40,7 +40,7 @@
     #elif defined(__DAVAENGINE_IPHONE__)
         #include "../Metal/rhi_Metal.h"
         #include "../GLES2/rhi_GLES2.h"
-	#elif defined(__DAVAENGINE_ANDROID__)
+    #elif defined(__DAVAENGINE_ANDROID__)
         #include "../GLES2/rhi_GLES2.h"
     #else
     #endif
@@ -158,6 +158,12 @@ void InvalidateCache()
 {
     if (_Impl.impl_InvalidateCache)
         (*_Impl.impl_InvalidateCache)();
+}
+
+void TakeScreenshot(ScreenShotCallback callback)
+{
+    if (_Impl.impl_TakeScreenshot)
+        (*_Impl.impl_TakeScreenshot)(callback);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -297,6 +303,43 @@ int Value(Handle buf, uint32 objectIndex)
 }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+namespace PerfQuerySet
+{
+Handle Create(uint32 maxTimestampCount)
+{
+    return (*_Impl.impl_PerfQuerySet_Create)(maxTimestampCount);
+}
+void Reset(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Reset)(set);
+}
+void SetCurrent(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_SetCurrent)(set);
+}
+void Delete(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Delete)(set);
+}
+
+void GetStatus(Handle set, bool* isReady, bool* isValid)
+{
+    (*_Impl.impl_PerfQuerySet_GetStatus)(set, isReady, isValid);
+}
+bool GetFreq(Handle set, uint64* freq)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFreq)(set, freq);
+}
+bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp)
+{
+    return (*_Impl.impl_PerfQuerySet_GetTimestamp)(set, timestampIndex, timestamp);
+}
+bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFrameTimestamps)(set, t0, t1);
+}
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace Texture
@@ -604,6 +647,10 @@ void SetQueryIndex(Handle cmdBuf, uint32 index)
 {
     (*_Impl.impl_CommandBuffer_SetQueryIndex)(cmdBuf, index);
 }
+void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex)
+{
+    (*_Impl.impl_CommandBuffer_IssueTimestampQuery)(cmdBuf, pqset, timestampIndex);
+}
 
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf)
 {
@@ -633,6 +680,16 @@ void DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 void DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
 {
     (*_Impl.impl_CommandBuffer_DrawIndexedPrimitive)(cmdBuf, type, primCount, vertexCount, firstVertex, startIndex);
+}
+
+void DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedPrimitive)(cmdBuf, type, instCount, count);
+}
+
+void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedIndexedPrimitive)(cmdBuf, type, instCount, primCount, vertexCount, firstVertex, startIndex, baseInstance);
 }
 
 void SetMarker(Handle cmdBuf, const char* text)

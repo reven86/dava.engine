@@ -34,74 +34,74 @@
 #include "../Qt/Main/QtUtils.h"
 
 ActionEnableNotPassable::ActionEnableNotPassable(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_NOT_PASSABLE_TERRAIN_ENABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_NOT_PASSABLE_TERRAIN_ENABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionEnableNotPassable::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool enabled = sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
-	if (enabled)
-	{
-		return;
-	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR);
-	
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL &
-												~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR);
-	if (!success )
-	{
-		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->landscapeEditorDrawSystem->EnableNotPassableTerrain();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-	}
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
+
+    bool enabled = sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
+    if (enabled)
+    {
+        return;
+    }
+
+    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL & ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR);
+
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL &
+                                                ~SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR);
+    if (!success)
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->landscapeEditorDrawSystem->EnableNotPassableTerrain();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+    }
+
+    if (success &&
+        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(false);
     }
 
-	SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
+    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
 }
 
 ActionDisableNotPassable::ActionDisableNotPassable(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_NOT_PASSABLE_TERRAIN_DISABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_NOT_PASSABLE_TERRAIN_DISABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionDisableNotPassable::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool disabled = !sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
-	if (disabled)
-	{
-		return;
-	}
-	
-	sceneEditor->landscapeEditorDrawSystem->DisableNotPassableTerrain();
-    
-    if(!disabled &&
-       !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
+
+    bool disabled = !sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
+    if (disabled)
+    {
+        return;
+    }
+
+    sceneEditor->landscapeEditorDrawSystem->DisableNotPassableTerrain();
+
+    if (!disabled &&
+        !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
     {
         sceneEditor->foliageSystem->SetFoliageVisible(true);
     }
 
-	SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
+    SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
 }

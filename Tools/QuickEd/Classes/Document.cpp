@@ -40,7 +40,7 @@ using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(std::shared_ptr<PackageNode> package_, QObject* parent)
+Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
@@ -69,20 +69,20 @@ QString Document::GetPackageAbsolutePath() const
 
 QUndoStack* Document::GetUndoStack() const
 {
-    return undoStack;
+    return undoStack.get();
 }
 
-std::weak_ptr<PackageNode> Document::GetPackage() const
+PackageNode* Document::GetPackage() const
 {
-    return package;
+    return package.Get();
 }
 
-std::weak_ptr<QtModelPackageCommandExecutor> Document::GetCommandExecutor() const
+QtModelPackageCommandExecutor* Document::GetCommandExecutor() const
 {
-    return commandExecutor;
+    return commandExecutor.get();
 }
 
-WidgetContext* Document::GetContext(QObject* requester) const
+WidgetContext* Document::GetContext(void* requester) const
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -92,7 +92,7 @@ WidgetContext* Document::GetContext(QObject* requester) const
     return nullptr;
 }
 
-void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
+void Document::SetContext(void* requester, WidgetContext* widgetContext)
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -101,7 +101,7 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
         delete iter->second;
         contexts.erase(iter);
     }
-    contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
+    contexts.emplace(requester, widgetContext);
 }
 
 void Document::RefreshLayout()
@@ -112,9 +112,4 @@ void Document::RefreshLayout()
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
-}
-
-void Document::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
-{
-    commandExecutor->ChangeProperty(properties, hash);
 }

@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_FOLIAGE_SYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_FOLIAGE_SYSTEM_H__
+#define __DAVAENGINE_SCENE3D_FOLIAGE_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/MathConstants.h"
@@ -39,7 +39,6 @@
 
 namespace DAVA
 {
-
 class Entity;
 class Scene;
 class Landscape;
@@ -47,35 +46,33 @@ class VegetationRenderObject;
 
 class FoliageSystem : public SceneSystem
 {
-
 public:
-    
     FoliageSystem(Scene* scene);
     virtual ~FoliageSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
+
     virtual void Process(float32 timeElapsed);
-    
+
     void SyncFoliageWithLandscape();
-    
+
     void SetPerturbation(const Vector3& point, const Vector3& force, float32 distance);
-    
-    void CollectFoliageMaterials(Set<NMaterial *> & materials);
+
+    void CollectFoliageMaterials(Set<NMaterial*>& materials);
 
     void SetFoliageVisible(bool show);
     bool IsFoliageVisible() const;
-    
+
     void DebugDrawVegetation();
-    
+
 private:
+    void ProcessVegetationRenderObject(VegetationRenderObject*, float32 timeElapsed);
 
-    Entity* landscapeEntity;
-    Entity* foliageEntity;
-    
+private:
+    Entity* landscapeEntity = nullptr;
+    DAVA::Vector<Entity*> foliageEntities;
 };
-
 };
 
 #endif

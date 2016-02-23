@@ -31,60 +31,61 @@
 
 namespace DAVA
 {
-
-FastName optionsNames[RenderOptions::OPTIONS_COUNT] = 
+FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 {
-    FastName("Test Option"),
+  FastName("Test Option"),
 
-    FastName("Draw Landscape"),
-    FastName("Draw Water Refl/Refr"),
-    FastName("Draw Opaque Layer"),
-    FastName("Draw Transparent Layer"),
-    FastName("Draw Sprites"),
-    FastName("Draw Shadow Volumes"),
-    FastName("Draw Vegetation"),
+  FastName("Draw Landscape"),
+  FastName("Draw Water Refl/Refr"),
+  FastName("Draw Opaque Layer"),
+  FastName("Draw Transparent Layer"),
+  FastName("Draw Sprites"),
+  FastName("Draw Shadow Volumes"),
+  FastName("Draw Vegetation"),
 
-    FastName("Enable Fog"),
+  FastName("Enable Fog"),
 
-    FastName("Update LODs"),
-    FastName("Update Landscape LODs"), 
-    FastName("Update Animations"), 
-    FastName("Process Clipping"),
-    FastName("Update UI System"),
+  FastName("Update LODs"),
+  FastName("Update Landscape LODs"),
+  FastName("Update Animations"),
+  FastName("Process Clipping"),
+  FastName("Update UI System"),
 
-    FastName("SpeedTree Animations"),
-    FastName("Waves System Process"),
+  FastName("SpeedTree Animations"),
+  FastName("Waves System Process"),
 
-    FastName("All Render Enabled"),
-    FastName("Texture Loading"),
+  FastName("All Render Enabled"),
+  FastName("Texture Loading"),
 
-    FastName("Occlusion Stats"),
+  FastName("Occlusion Stats"),
 
-    FastName("Static Occlusion"),
-    FastName("Debug Draw Occlusion"),
+  FastName("Static Occlusion"),
+  FastName("Debug Draw Occlusion"),
+  FastName("Enable Visibility System"),
 
-    FastName("Update Particle Emitters"),
-    FastName("Draw Particles"),
-    FastName("Particle Prepare Buffers"),
-    FastName("Albedo mipmaps"),
-    FastName("Lightmap mipmaps"),
+  FastName("Update Particle Emitters"),
+  FastName("Draw Particles"),
+  FastName("Particle Prepare Buffers"),
+  FastName("Albedo mipmaps"),
+  FastName("Lightmap mipmaps"),
 #if defined(LOCALIZATION_DEBUG)
-    FastName("Localization Warings"),
-    FastName("Localization Errors"),
-    FastName("Line Break Errors"),
+  FastName("Localization Warings"),
+  FastName("Localization Errors"),
+  FastName("Line Break Errors"),
 #endif
-    FastName("Draw Nondef Glyph"),
-    FastName("Highlight Hard Controls")
+  FastName("Draw Nondef Glyph"),
+  FastName("Highlight Hard Controls")
 };
 
 RenderOptions::RenderOptions()
 {
-	for(int32 i = 0; i < OPTIONS_COUNT; ++i)
-	{
-		options[i] = true;
-	}		
+    for (int32 i = 0; i < OPTIONS_COUNT; ++i)
+    {
+        options[i] = true;
+    }
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
+    options[DEBUG_ENABLE_VISIBILITY_SYSTEM] = false;
     options[LAYER_OCCLUSION_STATS] = false;
     options[REPLACE_ALBEDO_MIPMAPS] = false;
     options[REPLACE_LIGHTMAP_MIPMAPS] = false;
@@ -99,18 +100,17 @@ RenderOptions::RenderOptions()
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)
 {
-	return options[option];
+    return options[option];
 }
 
 void RenderOptions::SetOption(RenderOption option, bool value)
 {
-	options[option] = value;
-	NotifyObservers();
+    options[option] = value;
+    NotifyObservers();
 }
 
 FastName RenderOptions::GetOptionName(RenderOption option)
 {
     return optionsNames[option];
 }
-
 };

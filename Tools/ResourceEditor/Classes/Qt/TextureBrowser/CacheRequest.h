@@ -39,32 +39,31 @@
 
 #include "FileSystem/FilePath.h"
 
-
 class CacheRequest
-	: public QObject
+: public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private:
-	typedef QPair< QString, QVariant > SlotWithArg;
-	typedef QList< SlotWithArg > SlotList;	// Possible set?
-	typedef QMap< QObject *, SlotList > ObserverMap;
+    typedef QPair<QString, QVariant> SlotWithArg;
+    typedef QList<SlotWithArg> SlotList; // Possible set?
+    typedef QMap<QObject*, SlotList> ObserverMap;
 
 public:
-	CacheRequest( const DAVA::FilePath _key );
-	~CacheRequest();
+    CacheRequest(const DAVA::FilePath _key);
+    ~CacheRequest();
 
-	void registerObserver( QObject *object, const QString& slot, const QVariant& userData = QVariant() );
+    void registerObserver(QObject* object, const QString& slot, const QVariant& userData = QVariant());
 
 public slots:
-    void invoke( QList< QImage > images );
+    void invoke(const QList<QImage>& images);
 
 private:
-	const DAVA::FilePath key;
-	ObserverMap observers;
+    const DAVA::FilePath key;
+    ObserverMap observers;
 
 private slots:
-	void onObserverDestroyed();
+    void onObserverDestroyed();
 };
 
 

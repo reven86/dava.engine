@@ -33,25 +33,22 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIScreenTransition.h"
 
-
 namespace DAVA
 {
-
 class UIHoleTransition : public UIScreenTransition
 {
 public:
-	UIHoleTransition();
-	virtual ~UIHoleTransition();
-	
+    UIHoleTransition();
+    virtual ~UIHoleTransition();
 
-	virtual void SetPolygon(const Polygon2 & pts);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
+    virtual void SetPolygon(const Polygon2& pts);
+    virtual void Update(float32 timeElapsed);
+    virtual void Draw(const UIGeometricData& geometricData);
+
 private:
-	Polygon2 clipPoly;
+    Polygon2 clipPoly;
     Polygon2 realPoly;
 };
-
 };
 
 

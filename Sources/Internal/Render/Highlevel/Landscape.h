@@ -171,7 +171,7 @@ public:
         \param[out] vertices landscape vertices
         \param[out] indices landscape indices
 	 */
-    bool GetGeometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const;
+    bool GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const;
 
     /**
         \brief Function to receive pathname of heightmap object
@@ -191,8 +191,8 @@ public:
     void Save(KeyedArchive* archive, SerializationContext* serializationContext);
     void Load(KeyedArchive* archive, SerializationContext* serializationContext);
 
-    // TODO: Need comment here
     bool PlacePoint(const Vector3& point, Vector3& result, Vector3* normal = 0) const;
+    bool GetHeightAtPoint(const Vector3& point, float&) const;
     Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
     Heightmap* GetHeightmap();
@@ -211,6 +211,7 @@ public:
     // RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
     void SetUpdatable(bool isUpdatable);
+    bool IsUpdatable() const;
 
     void SetForceFirstLod(bool force);
 
@@ -266,6 +267,8 @@ protected:
     void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
 
 private:
+    void AllocateRenderBatch();
+
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
     Vector<LandQuadTreeNode<LandscapeQuad>*> lod0quads;

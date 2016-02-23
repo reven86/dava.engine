@@ -43,10 +43,11 @@ inline WidgetContext::~WidgetContext()
 {
 }
 
-namespace DAVA {
-    class FilePath;
-    class UIControl;
-    class UIEvent;
+namespace DAVA
+{
+class FilePath;
+class UIControl;
+class UIEvent;
 }
 
 class PackageNode;
@@ -62,34 +63,30 @@ class Document final : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(std::shared_ptr<PackageNode> package, QObject* parent = nullptr);
+    explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
-    const DAVA::FilePath &GetPackageFilePath() const;
+    const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack() const;
-    std::weak_ptr<PackageNode> GetPackage() const;
-    std::weak_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
-    WidgetContext* GetContext(QObject* requester) const;
+    PackageNode* GetPackage() const;
+    QtModelPackageCommandExecutor* GetCommandExecutor() const;
+    WidgetContext* GetContext(void* requester) const;
 
-    void SetContext(QObject* requester, WidgetContext* widgetContext);
+    void SetContext(void* requester, WidgetContext* widgetContext);
     void RefreshLayout();
 
 signals:
-    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void CanvasSizeChanged();
-    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void RefreshAllControlProperties();
 
 private:
-    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
-    DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
+    DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
-    std::shared_ptr<PackageNode> package;
-    std::shared_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    QUndoStack* undoStack = nullptr;
+    DAVA::RefPtr<PackageNode> package;
+    std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
+    std::unique_ptr<QUndoStack> undoStack;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

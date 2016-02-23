@@ -91,12 +91,28 @@ struct MagnetLineInfo
     const DAVA::Vector2::eAxis axis;
 };
 
+struct ChangePropertyAction
+{
+    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
+        : node(node_)
+        , property(property_)
+        , value(value_)
+    {
+    }
+    ControlNode* node = nullptr;
+    AbstractProperty* property = nullptr;
+    DAVA::VariantType value;
+};
+
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
 class EditorSystemsManager : PackageListener
 {
+    using StopPredicate = std::function<bool(const ControlNode*)>;
+    static StopPredicate defaultStopPredicate;
+
 public:
     using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
@@ -111,24 +127,23 @@ public:
     void SetEmulationMode(bool emulationMode);
 
     template <class OutIt, class Predicate>
-    void CollectControlNodes(OutIt destination, Predicate predicate) const;
-    
-    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2 &point);
+    void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
+
+    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point);
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<DAVA::Vector2> rootControlPositionChanged;
-    DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
+    DAVA::Signal<const DAVA::Vector<ChangePropertyAction>& /*propertyActions*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
     DAVA::Signal<> SelectAllControls;
-    DAVA::Signal<DAVA::Vector2 /*new position*/> RootControlPositionChanged;
+    DAVA::Signal<const DAVA::Vector2& /*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
-    DAVA::Signal<std::weak_ptr<PackageNode> /*node*/> PackageNodeChanged;
+    DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
     DAVA::Signal<DAVA::Vector<ControlNode*>> NodesHovered;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
@@ -138,9 +153,9 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <class OutIt, class Predicate>
-    void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
+    void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
+    void OnPackageNodeChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);
@@ -151,41 +166,40 @@ private:
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    std::weak_ptr<PackageNode> package;
+    PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
-    DAVA::TrackedObject signalsTracker;
 };
 
 template <class OutIt, class Predicate>
-void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate predicate) const
+void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate) const
 {
     for (PackageBaseNode* rootControl : editingRootControls)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
         DVASSERT(nullptr != controlNode);
-        CollectControlNodesImpl(destination, predicate, controlNode);
+        CollectControlNodesImpl(destination, predicate, stopPredicate, controlNode);
     }
 }
 
 template <class OutIt, class Predicate>
-void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const
+void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const
 {
-    auto control = node->GetControl();
-    if (predicate(control))
+    if (predicate(node))
     {
         *destination++ = node;
     }
 
-    int count = node->GetCount();
-    for (int i = 0; i < count; ++i)
+    if (!stopPredicate(node))
     {
-        CollectControlNodesImpl(destination, predicate, node->Get(i));
+        int count = node->GetCount();
+        for (int i = 0; i < count; ++i)
+        {
+            CollectControlNodesImpl(destination, predicate, stopPredicate, node->Get(i));
+        }
     }
 }
-
-extern DAVA::Vector2 RotateVector(const DAVA::Vector2& in, DAVA::float32 angle);
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

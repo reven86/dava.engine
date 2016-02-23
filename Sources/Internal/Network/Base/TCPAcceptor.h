@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /*
  Class TCPAcceptor provides a TCP acceptor type.
  TCPAcceptor allows to listen at specified port and accept incoming connection putting TCPSocket into connected state.
@@ -66,7 +65,7 @@ class TCPSocket;
 class TCPAcceptor : public TCPAcceptorTemplate<TCPAcceptor>
 {
 private:
-    friend TCPAcceptorTemplate<TCPAcceptor>;   // Make base class friend to allow it to call my Handle... methods
+    friend TCPAcceptorTemplate<TCPAcceptor>; // Make base class friend to allow it to call my Handle... methods
 
 public:
     using CloseHandlerType = Function<void(TCPAcceptor* acceptor)>;
@@ -89,7 +88,7 @@ private:
     ConnectHandlerType connectHandler;
 };
 
-}   // namespace Net
-}	// namespace DAVA
+} // namespace Net
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_TCPACCEPTOR_H__
+#endif // __DAVAENGINE_TCPACCEPTOR_H__

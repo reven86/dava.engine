@@ -38,20 +38,23 @@ namespace DAVA
 {
 namespace UnitTests
 {
-
 TestCore::TestClassInfo::TestClassInfo(const char* name_, TestClassFactoryBase* factory_)
     : name(name_)
     , factory(factory_)
-{}
+{
+}
 
 TestCore::TestClassInfo::TestClassInfo(TestClassInfo&& other)
     : name(std::move(other.name))
     , runTest(other.runTest)
     , factory(std::move(other.factory))
     , testedClasses(std::move(other.testedClasses))
-{}
+{
+}
 
-TestCore::TestClassInfo::~TestClassInfo() {}
+TestCore::TestClassInfo::~TestClassInfo()
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 TestCore* TestCore::Instance()
@@ -185,7 +188,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 testClassFinishedCallback(curTestClassName);
 
                 if (curTestClass->TestCount() > 0)
-                {   // Get and save class names which are covered by test only if test class has tests
+                { // Get and save class names which are covered by test only if test class has tests
                     testClasses[curTestClassIndex].testedClasses = curTestClass->ClassesCoveredByTests();
                 }
 
@@ -199,7 +202,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
     else
     {
         runLoopInProgress = false;
-        return false;   // No more tests, finish
+        return false; // No more tests, finish
     }
 }
 
@@ -227,5 +230,5 @@ void TestCore::RegisterTestClass(const char* name, TestClassFactoryBase* factory
     testClasses.emplace_back(name, factory);
 }
 
-}   // namespace UnitTests
-}   // namespace DAVA
+} // namespace UnitTests
+} // namespace DAVA

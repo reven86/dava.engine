@@ -81,38 +81,46 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
+    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
     QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
+    auto previewWidget = mainWindow->previewWidget;
+
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
+
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
 
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-
-    auto previewWidget = mainWindow->previewWidget;
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
-    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
     connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
-
     auto packageWidget = mainWindow->packageWidget;
     connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
     connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
-    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::SetSelectedNodes, Qt::QueuedConnection);
+    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
+
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    connect(spritesPacker.get(), &SpritesPacker::Finished, []()
+            {
+                Sprite::ReloadSprites();
+            });
 }
 
 EditorCore::~EditorCore() = default;
@@ -183,12 +191,9 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
             {
                 DAVA::FilePath davaPath = document->GetPackageFilePath();
                 CloseDocument(index);
-                std::shared_ptr<PackageNode> package = project->OpenPackage(davaPath);
-                DVASSERT(nullptr != package);
-                if (nullptr != package)
-                {
-                    index = CreateDocument(index, package);
-                }
+                RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+                DVASSERT(package.Get() != nullptr);
+                CreateDocument(index, package);
             }
         }
     }
@@ -224,7 +229,7 @@ void EditorCore::OnGLWidgedInitialized()
     }
 }
 
-void EditorCore::OnOpenPackageFile(const QString &path)
+void EditorCore::OnOpenPackageFile(const QString& path)
 {
     if (!path.isEmpty())
     {
@@ -233,17 +238,15 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         int index = GetIndexByPackagePath(davaPath);
         if (index == -1)
         {
-            std::shared_ptr<PackageNode> package = project->OpenPackage(davaPath);
-            if (nullptr != package)
-            {
-                index = CreateDocument(documents.size(), package);
-            }
+            RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+            DVASSERT(package.Get() != nullptr);
+            index = CreateDocument(documents.size(), package);
         }
         mainWindow->SetCurrentTab(index);
     }
 }
 
-void EditorCore::OnProjectPathChanged(const QString &projectPath)
+void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
@@ -262,7 +265,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
-        const QFileInfo &fileInfo = it.fileInfo();
+        const QFileInfo& fileInfo = it.fileInfo();
         it.next();
         if (fileInfo.isDir())
         {
@@ -293,17 +296,18 @@ bool EditorCore::CloseOneDocument(int index)
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
     Document* document = documents.at(index);
-    QUndoStack *undoStack = document->GetUndoStack();
+    QUndoStack* undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {
         QMessageBox::StandardButton ret = QMessageBox::question(
-            qApp->activeWindow(),
-            tr("Save changes"),
-            tr("The file %1 has been modified.\n"
-               "Do you want to save your changes?").arg(document->GetPackageFilePath().GetBasename().c_str()),
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-            QMessageBox::Save
-            );
+        qApp->activeWindow(),
+        tr("Save changes"),
+        tr("The file %1 has been modified.\n"
+           "Do you want to save your changes?")
+        .arg(document->GetPackageFilePath().GetBasename().c_str()),
+        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+        QMessageBox::Save
+        );
         if (ret == QMessageBox::Save)
         {
             SaveDocument(index);
@@ -340,7 +344,7 @@ void EditorCore::Exit()
     }
 }
 
-void EditorCore::RecentMenu(QAction *recentProjectAction)
+void EditorCore::RecentMenu(QAction* recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
 
@@ -359,7 +363,7 @@ void EditorCore::OnCurrentTabChanged(int index)
 void EditorCore::UpdateLanguage()
 {
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
-    for(auto &document : documents)
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -368,24 +372,34 @@ void EditorCore::UpdateLanguage()
 
 void EditorCore::OnRtlChanged(bool isRtl)
 {
-    UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
-    for(auto &document : documents)
+    UIControlSystem::Instance()->SetRtl(isRtl);
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
     }
 }
 
-void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
+void EditorCore::OnBiDiSupportChanged(bool support)
+{
+    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
+    for (auto& document : documents)
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void EditorCore::OnGlobalStyleClassesChanged(const QString& classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
 
     UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
-    for (String &token : tokens)
+    for (String& token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 
-    for(auto &document : documents)
+    for (auto& document : documents)
     {
         document->RefreshAllControlProperties();
         document->RefreshLayout();
@@ -450,7 +464,7 @@ Document* EditorCore::GetDocument(const QString& path) const
     return nullptr;
 }
 
-void EditorCore::OpenProject(const QString &path)
+void EditorCore::OpenProject(const QString& path)
 {
     if (!CloseProject())
     {
@@ -472,7 +486,7 @@ void EditorCore::OpenProject(const QString &path)
 bool EditorCore::CloseProject()
 {
     bool hasUnsaved = false;
-    for (auto &doc : documents)
+    for (auto& doc : documents)
     {
         if (!doc->GetUndoStack()->isClean())
         {
@@ -483,12 +497,12 @@ bool EditorCore::CloseProject()
     if (hasUnsaved)
     {
         int ret = QMessageBox::question(
-            qApp->activeWindow(),
-            tr("Save changes"),
-            tr("Some files has been modified.\n"
-                "Do you want to save your changes?"),
-            QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
-            );
+        qApp->activeWindow(),
+        tr("Save changes"),
+        tr("Some files has been modified.\n"
+           "Do you want to save your changes?"),
+        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
+        );
         if (ret == QMessageBox::Cancel)
         {
             return false;
@@ -499,7 +513,7 @@ bool EditorCore::CloseProject()
         }
     }
 
-    while(!documents.isEmpty())
+    while (!documents.isEmpty())
     {
         CloseDocument(0);
     }
@@ -510,20 +524,34 @@ void EditorCore::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
+    Document* activeDocument = documentGroup->GetActiveDocument();
+    //we will set active document after check current document
+    disconnect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     int newIndex = mainWindow->CloseTab(index);
+    connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
 
+    DVASSERT(activeDocument != nullptr);
+    Document* detached = documents.takeAt(index);
+    Document* nextDocument = nullptr;
+    if (detached != activeDocument)
+    {
+        nextDocument = activeDocument;
+    }
+    else if (newIndex != -1)
+    {
+        nextDocument = documents.at(newIndex);
+    }
     //sync document list with tab list
-    Document *detached = documents.takeAt(index);
     fileSystemWatcher->removePath(detached->GetPackageAbsolutePath());
 
-    documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
+    documentGroup->SetActiveDocument(nextDocument);
     documentGroup->RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
 }
 
-int EditorCore::CreateDocument(int index, std::shared_ptr<PackageNode> package)
+int EditorCore::CreateDocument(int index, const RefPtr<PackageNode>& package)
 {
-    Document *document = new Document(package, this);
+    Document* document = new Document(package, this);
     documents.insert(index, document);
     documentGroup->InsertDocument(index, document);
     int insertedIndex = mainWindow->AddTab(document, index);
@@ -536,7 +564,7 @@ int EditorCore::CreateDocument(int index, std::shared_ptr<PackageNode> package)
     return index;
 }
 
-void EditorCore::SaveDocument(Document *document)
+void EditorCore::SaveDocument(Document* document)
 {
     DVASSERT(document);
     if (document->GetUndoStack()->isClean())
@@ -564,4 +592,3 @@ int EditorCore::GetIndexByPackagePath(const FilePath& davaPath) const
     }
     return -1;
 }
-

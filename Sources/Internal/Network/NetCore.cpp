@@ -39,7 +39,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 
 NetCore::NetCore()
@@ -86,7 +85,7 @@ NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendP
 #endif
 }
 
-NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
+NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
@@ -122,13 +121,14 @@ void NetCore::DestroyControllerBlocked(TrackId id)
     loop.Post(Bind(&NetCore::DoDestroy, this, id, &oneStopped));
 
     // Block until given controller is stopped and destroyed
-    do {
+    do
+    {
         Poll();
     } while (!oneStopped);
 #endif
 }
 
-void NetCore::DestroyAllControllers(Function<void ()> callback)
+void NetCore::DestroyAllControllers(Function<void()> callback)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing && controllersStoppedCallback == nullptr);
@@ -145,9 +145,10 @@ void NetCore::DestroyAllControllersBlocked()
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
 
     // Block until all controllers are stopped and destroyed
-    do {
+    do
+    {
         Poll();
-    } while(false == allStopped);
+    } while (false == allStopped);
     allStopped = false;
 #endif
 }
@@ -198,7 +199,7 @@ void NetCore::DoStart(IController* ctrl)
 
 void NetCore::DoRestart()
 {
-    for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
+    for (Set<IController *>::iterator i = trackedObjects.begin(), e = trackedObjects.end(); i != e; ++i)
     {
         IController* ctrl = *i;
         ctrl->Restart();
@@ -220,7 +221,7 @@ void NetCore::DoDestroy(TrackId id, volatile bool* stoppedFlag)
 
 void NetCore::DoDestroyAll()
 {
-    for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
+    for (Set<IController *>::iterator i = trackedObjects.begin(), e = trackedObjects.end(); i != e; ++i)
     {
         IController* ctrl = *i;
         dyingObjects.insert(ctrl);
@@ -252,13 +253,14 @@ IController* NetCore::GetTrackedObject(TrackId id) const
 {
     Set<IController*>::const_iterator i = trackedObjects.find(TrackIdToObject(id));
     return i != trackedObjects.end() ? *i
-                                     : NULL;
+                                       :
+                                       NULL;
 }
 
 void NetCore::TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag)
 {
     DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
-    if (dyingObjects.erase(obj) > 0)    // erase returns number of erased elements
+    if (dyingObjects.erase(obj) > 0) // erase returns number of erased elements
     {
         SafeDelete(obj);
         if (stoppedFlag != nullptr)
@@ -273,5 +275,5 @@ void NetCore::TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag)
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

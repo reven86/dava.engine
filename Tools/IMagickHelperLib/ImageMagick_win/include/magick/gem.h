@@ -26,28 +26,28 @@ extern "C" {
 #include <magick/random_.h>
 
 extern MagickExport double
-  ExpandAffine(const AffineMatrix *),
-  GenerateDifferentialNoise(RandomInfo *,const Quantum,const NoiseType,
-    const MagickRealType);
+ExpandAffine(const AffineMatrix *),
+GenerateDifferentialNoise(RandomInfo *, const Quantum, const NoiseType,
+                          const MagickRealType);
 
 extern MagickExport size_t
-  GetOptimalKernelWidth(const double,const double),
-  GetOptimalKernelWidth1D(const double,const double),
-  GetOptimalKernelWidth2D(const double,const double);
+GetOptimalKernelWidth(const double, const double),
+GetOptimalKernelWidth1D(const double, const double),
+GetOptimalKernelWidth2D(const double, const double);
 
 extern MagickExport void
-  ConvertHSBToRGB(const double,const double,const double,Quantum *,Quantum *,
-    Quantum *),
-  ConvertHSLToRGB(const double,const double,const double,Quantum *,Quantum *,
-    Quantum *),
-  ConvertHWBToRGB(const double,const double,const double,Quantum *,Quantum *,
-    Quantum *),
-  ConvertRGBToHSB(const Quantum,const Quantum,const Quantum,double *,double *,
-    double *),
-  ConvertRGBToHSL(const Quantum,const Quantum,const Quantum,double *,double *,
-    double *),
-  ConvertRGBToHWB(const Quantum,const Quantum,const Quantum,double *,double *,
-    double *);
+ConvertHSBToRGB(const double, const double, const double, Quantum *, Quantum *,
+                Quantum *),
+ConvertHSLToRGB(const double, const double, const double, Quantum *, Quantum *,
+                Quantum *),
+ConvertHWBToRGB(const double, const double, const double, Quantum *, Quantum *,
+                Quantum *),
+ConvertRGBToHSB(const Quantum, const Quantum, const Quantum, double *, double *,
+                double *),
+ConvertRGBToHSL(const Quantum, const Quantum, const Quantum, double *, double *,
+                double *),
+ConvertRGBToHWB(const Quantum, const Quantum, const Quantum, double *, double *,
+                double *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

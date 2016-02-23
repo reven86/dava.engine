@@ -38,37 +38,36 @@ using namespace DAVA;
 class SceneExporter
 {
 public:
+    SceneExporter();
+    virtual ~SceneExporter();
 
-	SceneExporter();
-	virtual ~SceneExporter();
-    
     void SetGPUForExporting(const eGPUFamily newGPU);
-    
-	void SetCompressionQuality(TextureConverter::eConvertQuality quality);
 
-    void SetInFolder(const FilePath &folderPathname);
-    void SetOutFolder(const FilePath &folderPathname);
-    
-	void EnableOptimizations( bool enable );
+    void SetCompressionQuality(TextureConverter::eConvertQuality quality);
 
-    void ExportSceneFile(const String &fileName, Set<String> &errorLog);
-    void ExportTextureFile(const String &fileName, Set<String> &errorLog);
-    
-    void ExportSceneFolder(const String &folderName, Set<String> &errorLog);
-    void ExportTextureFolder(const String &folderName, Set<String> &errorLog);
-    
-    void ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
+    void SetInFolder(const FilePath& folderPathname);
+    void SetOutFolder(const FilePath& folderPathname);
+
+    void EnableOptimizations(bool enable);
+
+    void ExportSceneFile(const String& fileName, Set<String>& errorLog);
+    void ExportTextureFile(const String& fileName, Set<String>& errorLog);
+
+    void ExportSceneFolder(const String& folderName, Set<String>& errorLog);
+    void ExportTextureFolder(const String& folderName, Set<String>& errorLog);
+
+    void ExportScene(Scene* scene, const FilePath& fileName, Set<String>& errorLog);
 
 private:
-    void RemoveEditorNodes(Entity *rootNode);
-    void RemoveEditorCustomProperties(Entity *rootNode);
-    
-    bool ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog);
-    bool ExportTextureDescriptor(const FilePath &pathname, Set<String> &errorLog);
-    bool ExportTexture(const TextureDescriptor * descriptor, Set<String> &errorLog);
-    void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
+    void RemoveEditorNodes(Entity* rootNode);
+    void RemoveEditorCustomProperties(Entity* rootNode);
 
-    bool ExportLandscape(Scene *scene, Set<String> &errorLog);
+    bool ExportDescriptors(DAVA::Scene* scene, Set<String>& errorLog);
+    bool ExportTextureDescriptor(const FilePath& pathname, Set<String>& errorLog);
+    bool ExportTexture(const TextureDescriptor* descriptor, Set<String>& errorLog);
+    void CompressTextureIfNeed(const TextureDescriptor* descriptor, Set<String>& errorLog);
+
+    bool ExportLandscape(Scene* scene, Set<String>& errorLog);
 
     SceneUtils sceneUtils;
     eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;

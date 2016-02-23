@@ -37,10 +37,20 @@ using namespace DAVA;
 class TlsClass
 {
 public:
-    TlsClass(int32 i, const String& s) : intValue(i), strValue(s) {}
+    TlsClass(int32 i, const String& s)
+        : intValue(i)
+        , strValue(s)
+    {
+    }
 
-    int Int() const { return intValue; }
-    const DAVA::String& String() const { return strValue; }
+    int Int() const
+    {
+        return intValue;
+    }
+    const DAVA::String& String() const
+    {
+        return strValue;
+    }
 
 private:
     int32 intValue;
@@ -52,11 +62,11 @@ ThreadLocalPtr<float> tlsFloat;
 ThreadLocalPtr<int64> tlsInt64;
 ThreadLocalPtr<TlsClass> tlsClass;
 
-DAVA_TESTCLASS(ThreadLocalTest)
+DAVA_TESTCLASS (ThreadLocalTest)
 {
-    DAVA_TEST(ThreadLocalTestFunc)
+    DAVA_TEST (ThreadLocalTestFunc)
     {
-        // Set thread local variables in main thread, 
+        // Set thread local variables in main thread,
         tlsInt.Reset(new int(1));
         tlsFloat.Reset(new float(4.0f));
         tlsInt64.Reset(new int64(1010));
@@ -97,4 +107,5 @@ DAVA_TESTCLASS(ThreadLocalTest)
         tlsInt64.Reset();
         tlsClass.Reset();
     }
-};
+}
+;

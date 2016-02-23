@@ -53,7 +53,7 @@ public:
 protected:
     typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::Entity*> MapWaypoint2Entity;
 
-    DAVA::Entity* CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName & name);
+    DAVA::Entity* CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName& name);
 
     DAVA::Entity* pathEntity;
     DAVA::Vector<EntityAddCommand*> entityAddCommands;

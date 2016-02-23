@@ -76,12 +76,7 @@ def main_convert_3d(): # it's function for external usage
     executable = "@RES_EDITOR_BINARY@"
     
     print "ex: " + executable;
-
-    # clean folder
-    log_time()
-    os.spawnv(os.P_WAIT, executable, [executable, '-cleanfolder', '-folder', dataTanksDir, '-forceclose'])
-    log_time()
-    
+  
     # export tanks
     params = [executable, '-sceneexporter', '-export', '-indir', dataSourceDir, '-outdir', dataDir, '-processdir', tanksDir, '-qualitycfgpath', qualityConfigPath, '-forceclose']
     params.extend(gpuParams)

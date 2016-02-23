@@ -102,6 +102,7 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     if (nullptr != resolver)
     {
         resolver->GotAddrInfo(status, response);
+        resolver->handle = nullptr;
     }
 
     SafeDelete(handle);

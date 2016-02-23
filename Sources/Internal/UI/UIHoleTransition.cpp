@@ -34,53 +34,53 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-	
 UIHoleTransition::UIHoleTransition()
 {
-	duration = 0.8f;
+    duration = 0.8f;
 }
 
 UIHoleTransition::~UIHoleTransition()
 {
 }
-//	
+//
 //void UIHoleTransition::SetType(eType _type)
 //{
 //	type = _type;
 //}
-	
-void UIHoleTransition::SetPolygon(const Polygon2 & pts)
-{	
-	clipPoly = pts;
+
+void UIHoleTransition::SetPolygon(const Polygon2& pts)
+{
+    clipPoly = pts;
     realPoly = pts;
 }
 
 void UIHoleTransition::Update(float32 timeElapsed)
 {
-	UIScreenTransition::Update(timeElapsed);
-	normalizedTime = currentTime / duration;
-	
-	float scaleCoef = 1.0f;
-	if (normalizedTime <= 0.5f)scaleCoef = interpolationFunc(1.0f - normalizedTime * 2.0f);
-	else scaleCoef = interpolationFunc((normalizedTime - 0.5f) * 2.0f);
-		
-	for (int k = 0; k < clipPoly.pointCount; ++k)
-	{
-		realPoly.points[k] = clipPoly.points[k];
-		realPoly.points[k] -= Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
+    UIScreenTransition::Update(timeElapsed);
+    normalizedTime = currentTime / duration;
+
+    float scaleCoef = 1.0f;
+    if (normalizedTime <= 0.5f)
+        scaleCoef = interpolationFunc(1.0f - normalizedTime * 2.0f);
+    else
+        scaleCoef = interpolationFunc((normalizedTime - 0.5f) * 2.0f);
+
+    for (int k = 0; k < clipPoly.pointCount; ++k)
+    {
+        realPoly.points[k] = clipPoly.points[k];
+        realPoly.points[k] -= Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
                                       VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.0f);
-		realPoly.points[k] *= scaleCoef;
-		realPoly.points[k] += Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
+        realPoly.points[k] *= scaleCoef;
+        realPoly.points[k] += Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
                                       VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.0f);
-	}
+    }
 }
 
-void UIHoleTransition::Draw(const UIGeometricData &geometricData)
+void UIHoleTransition::Draw(const UIGeometricData& geometricData)
 {
-	/*
+    /*
 	 renderTargetPrevScreen->SetScale(0.5f, 1.0f);
 	 renderTargetPrevScreen->SetPosition(0, 0);
 	 renderTargetPrevScreen->Draw();
@@ -94,7 +94,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	 FROM_TOP,
 	 FROM_BOTTOM,
 	 */
-	
+
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
@@ -103,7 +103,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     RenderSystem2D::Instance()->FillRect(rect, Color::Black);
 
     drawState.SetPosition(geometricData.position);
-    
+
     if (normalizedTime < 0.5f)
     {
         renderTargetPrevScreen->SetClipPolygon(&realPoly);
@@ -114,8 +114,8 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
         renderTargetNextScreen->SetClipPolygon(&realPoly);
         RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
     }
-    
-	/*Texture * tx = renderTargetPrevScreen->GetTexture();
+
+    /*Texture * tx = renderTargetPrevScreen->GetTexture();
 	if (normalizedTime > 0.5f)
 		tx = renderTargetNextScreen->GetTexture();
 	
@@ -132,7 +132,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	
 	glDrawArrays(GL_TRIANGLE_FAN, 0, clipPoly.pointCount);
 	*/
-	/*
+    /*
 	float32 startXPos[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	float32 startYPos[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	float32 endXPos[4] = {RenderManager::Instance()->ScreenWidth(), -RenderManager::ScreenWidth(), 0.0f, 0.0f};
@@ -149,6 +149,4 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
 	renderTargetNextScreen->Draw(); */
 }
-	
 };
-

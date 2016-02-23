@@ -326,13 +326,13 @@ VPROG_BEGIN
 
 #if MATERIAL_SKYBOX
     
-    float4 vecPos = mul( VP_IN_POSITION, worldViewProjMatrix );
+    float4 vecPos = mul( VP_IN_POSITION.xyz, worldViewProjMatrix );
     VP_OUT_POSITION = float4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
 
 #elif SKYOBJECT
     
     float4x4 mwpWOtranslate = float4x4(worldViewProjMatrix[0], worldViewProjMatrix[1], worldViewProjMatrix[2], float4(0.0, 0.0, 0.0, 1.0));
-    float4   vecPos         = mul( float4(VP_IN_POSITION,1.0), mwpWOtranslate );
+    float4   vecPos         = mul( float4(VP_IN_POSITION.xyz,1.0), mwpWOtranslate );
     VP_OUT_POSITION = float4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
 
 #elif SPEED_TREE_LEAF
@@ -402,7 +402,7 @@ VPROG_BEGIN
                 VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
 //VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
             #else
-                VP_OUT_POSITION = mul( float4(VP_IN_POSITION,1.0), worldViewProjMatrix );
+                VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewProjMatrix );
             #endif
         #endif
 
@@ -418,7 +418,7 @@ VPROG_BEGIN
         float3 eyeCoordsPosition = mul( skinnedPosition, worldViewMatrix ).xyz; // view direction in view space
     #else
         // view direction in view space
-        float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
+        float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewMatrix ).xyz;
     #endif
 #endif
 
@@ -551,7 +551,7 @@ VPROG_BEGIN
 #endif
 	
 #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-	float3 world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+	float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
 	#define FOG_world_position world_position
 #endif
 	

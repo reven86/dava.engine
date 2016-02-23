@@ -40,47 +40,43 @@ class SceneEditor2;
 
 using namespace DAVA;
 
-class ActionEnableCustomColors: public CommandAction
+class ActionEnableCustomColors : public CommandAction
 {
 public:
-	ActionEnableCustomColors(SceneEditor2* forSceneEditor);
-	
+    ActionEnableCustomColors(SceneEditor2* forSceneEditor);
+
 protected:
-	SceneEditor2* sceneEditor;
-	
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
 };
 
-class ActionDisableCustomColors: public CommandAction
+class ActionDisableCustomColors : public CommandAction
 {
 public:
-	ActionDisableCustomColors(SceneEditor2* forSceneEditor,  bool textureSavingNeeded);
-	
+    ActionDisableCustomColors(SceneEditor2* forSceneEditor, bool textureSavingNeeded);
+
 protected:
-	SceneEditor2*	sceneEditor;
-	bool			textureSavingNeeded;
-	virtual void Redo();
+    SceneEditor2* sceneEditor;
+    bool textureSavingNeeded;
+    virtual void Redo();
 };
 
-class ModifyCustomColorsCommand: public Command2
+class ModifyCustomColorsCommand : public Command2
 {
 public:
-    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage,
-                              CustomColorsProxy* customColorsProxy,
-                              const Rect& updatedRect);
-    ~ModifyCustomColorsCommand();
+    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* customColorsProxy, const Rect& updatedRect);
+    ~ModifyCustomColorsCommand() override;
 
-    virtual void Undo();
-	virtual void Redo();
-	virtual Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    Entity* GetEntity() const override;
 
 protected:
-	CustomColorsProxy* customColorsProxy;
-	Image* undoImage;
-	Image* redoImage;
-	Rect updatedRect;
-
-    Texture* texture;
+    CustomColorsProxy* customColorsProxy;
+    Image* undoImage;
+    Image* redoImage;
+    Rect updatedRect;
 
     void ApplyImage(Image* image);
 };

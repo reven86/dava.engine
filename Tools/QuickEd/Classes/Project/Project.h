@@ -45,24 +45,24 @@ class Project : public QObject
     Q_PROPERTY(QString projectName READ GetProjectName NOTIFY ProjectNameChanged)
 
 public:
-    explicit Project(QObject *parent = nullptr);
+    explicit Project(QObject* parent = nullptr);
     virtual ~Project();
-    bool Open(const QString &path);
+    bool Open(const QString& path);
     bool CheckAndUnlockProject(const QString& projectPath);
 
-    std::shared_ptr<PackageNode> OpenPackage(const DAVA::FilePath& path);
-    bool SavePackage(std::weak_ptr<PackageNode> package);
-    EditorFontSystem *GetEditorFontSystem() const;
-    EditorLocalizationSystem *GetEditorLocalizationSystem() const;
+    DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
+    bool SavePackage(PackageNode* package);
+    EditorFontSystem* GetEditorFontSystem() const;
+    EditorLocalizationSystem* GetEditorLocalizationSystem() const;
 signals:
     void ProjectOpened();
 
 private:
-    bool OpenInternal(const QString &path);
-    
-    LegacyControlData *legacyData;
-    EditorFontSystem *editorFontSystem;
-    EditorLocalizationSystem *editorLocalizationSystem;
+    bool OpenInternal(const QString& path);
+
+    LegacyControlData* legacyData;
+    EditorFontSystem* editorFontSystem;
+    EditorLocalizationSystem* editorLocalizationSystem;
 
     //properties
 public:

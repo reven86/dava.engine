@@ -25,11 +25,11 @@
 ImplementObjectType(FCDImage);
 
 FCDImage::FCDImage(FCDocument* document)
-:	FCDEntity(document, "Image")
-,	InitializeParameterNoArg(filename)
-,	InitializeParameter(width, 0)
-,	InitializeParameter(height, 0)
-,	InitializeParameter(depth, 0)
+    : FCDEntity(document, "Image")
+    , InitializeParameterNoArg(filename)
+    , InitializeParameter(width, 0)
+    , InitializeParameter(height, 0)
+    , InitializeParameter(depth, 0)
 {
 }
 
@@ -43,28 +43,30 @@ void FCDImage::SetFilename(const fstring& _filename)
     if (_filename.empty())
         filename->clear();
     else
-	{
-		filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
-	}
-	SetDirtyFlag();
+    {
+        filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
+    }
+    SetDirtyFlag();
 }
 
 // Copies the image entity into a clone.
 FCDEntity* FCDImage::Clone(FCDEntity* _clone, bool cloneChildren) const
 {
-	FCDImage* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDImage(const_cast<FCDocument*>(GetDocument()));
-	else if (_clone->HasType(FCDImage::GetClassType())) clone = (FCDImage*) _clone;
+    FCDImage* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDImage(const_cast<FCDocument*>(GetDocument()));
+    else if (_clone->HasType(FCDImage::GetClassType()))
+        clone = (FCDImage*)_clone;
 
-	FCDEntity::Clone(_clone, cloneChildren);
+    FCDEntity::Clone(_clone, cloneChildren);
 
-	if (clone != NULL)
-	{
-		clone->width = width;
-		clone->height = height;
-		clone->depth = depth;
-		clone->filename = filename;
-		clone->SetVideoFlag(GetVideoFlag());
-	}
-	return _clone;
+    if (clone != NULL)
+    {
+        clone->width = width;
+        clone->height = height;
+        clone->depth = depth;
+        clone->filename = filename;
+        clone->SetVideoFlag(GetVideoFlag());
+    }
+    return _clone;
 }

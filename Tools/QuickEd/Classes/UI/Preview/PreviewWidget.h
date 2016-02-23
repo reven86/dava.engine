@@ -31,12 +31,15 @@
 #define __QUICKED_PREVIEW_WIDGET_H__
 
 #include <QWidget>
+#include <QPointer>
 #include "ui_PreviewWidget.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
 #include <UI/UIControl.h>
 
-namespace Ui {
-    class PreviewWidget;
+namespace Ui
+{
+class PreviewWidget;
 }
 class EditorSystemsManager;
 
@@ -57,7 +60,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
     Q_OBJECT
 public:
-    explicit PreviewWidget(QWidget *parent = nullptr);
+    explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
@@ -77,9 +80,11 @@ signals:
 
 public slots:
     void OnDocumentChanged(Document* document);
+    void SaveSystemsContextAndClear();
+    void LoadSystemsContext(Document* document);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnRootControlPositionChanged(DAVA::Vector2 pos);
-    void OnNestedControlPositionChanged(const QPoint &pos);
+    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
+    void OnNestedControlPositionChanged(const QPoint& pos);
     void OnEmulationModeChanged(bool emulationMode);
 
 private slots:
@@ -91,7 +96,7 @@ private slots:
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
-    
+
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
     void OnGLInitialized();
@@ -112,16 +117,16 @@ private:
     bool ProcessDragMoveEvent(QDropEvent* event);
     void OnDragLeaveEvent(QDragLeaveEvent* event);
     void OnDropEvent(QDropEvent* event);
-    
+
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
-    
+
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
-    
+    void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
+
     QPoint lastMousePos;
-    QPointer<Document> document = nullptr;
+    QPointer<Document> document;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<qreal> percentages;
@@ -135,7 +140,7 @@ private:
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
 
-    std::unique_ptr<EditorSystemsManager> systemManager;
+    std::unique_ptr<EditorSystemsManager> systemsManager;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

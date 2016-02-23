@@ -28,6 +28,8 @@
 
 
 #include "EditorSystems/HUDControls.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -54,11 +56,15 @@ void ControlContainer::SetSystemVisible(bool visible)
     systemVisible = visible;
 }
 
-HUDContainer::HUDContainer(UIControl* container)
+HUDContainer::HUDContainer(ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
-    , control(container)
+    , node(node_)
 {
-    SetName("HudContainer of " + container->GetName());
+    DVASSERT(nullptr != node);
+    SetName(FastName(String("HudContainer of ") + node->GetName().c_str()));
+    control = node->GetControl();
+    visibleProperty = node->GetRootProperty()->GetVisibleProperty();
+    DVASSERT(nullptr != control && nullptr != visibleProperty);
 }
 
 void HUDContainer::AddChild(ControlContainer* container)
@@ -73,9 +79,24 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    bool contolIsInValidState = gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    bool valid_ = control->GetVisibleForUIEditor() && contolIsInValidState;
-    SetValid(valid_);
+    bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
+    if (valid)
+    {
+        PackageBaseNode* parent = node->GetParent();
+        while (valid && nullptr != parent)
+        {
+            ControlNode* parentControlNode = dynamic_cast<ControlNode*>(parent);
+            if (parentControlNode == nullptr)
+            {
+                break;
+            }
+            valid &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
+            parent = parent->GetParent();
+        }
+    }
+    SetVisible(valid);
+
     if (valid)
     {
         for (auto child : childs)
@@ -91,24 +112,12 @@ void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
     UIControl::SystemDraw(geometricData);
 }
 
-void HUDContainer::SetValid(bool arg)
-{
-    valid = arg;
-    SetVisible(valid && visibleInSystems);
-}
-
-void HUDContainer::SetVisibleInSystems(bool arg)
-{
-    visibleInSystems = arg;
-    SetVisible(valid && visibleInSystems);
-}
-
 void FrameControl::Init()
 {
     for (uint32 i = 0; i < BORDERS_COUNT; ++i)
     {
         ScopedPtr<UIControl> control(new UIControl());
-        control->SetName("border of " + GetName());
+        control->SetName(FastName(String("border of ") + GetName().c_str()));
         UIControlBackground* background = control->GetBackground();
         background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
         background->SetDrawType(UIControlBackground::DRAW_TILED);
@@ -138,7 +147,7 @@ void FrameControl::InitFromGD(const UIGeometricData& geometricData)
 FrameControl::FrameControl()
     : ControlContainer(HUDAreaInfo::FRAME_AREA)
 {
-    SetName("Frame Control");
+    SetName(FastName("Frame Control"));
 }
 
 Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
@@ -162,7 +171,7 @@ Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) c
 FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     : ControlContainer(area_)
 {
-    SetName("Frame Rect Control");
+    SetName(FastName("Frame Rect Control"));
     background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -211,7 +220,7 @@ Vector2 FrameRectControl::GetPos(const UIGeometricData& geometricData) const
 PivotPointControl::PivotPointControl()
     : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
 {
-    SetName("pivot point control");
+    SetName(FastName("pivot point control"));
     background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -235,7 +244,7 @@ void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
 RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
-    SetName("rotate control");
+    SetName(FastName("rotate control"));
     background->SetSprite("~res:/Gfx/HUDControls/Rotate", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -259,7 +268,7 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 
 SelectionRect::SelectionRect()
 {
-    SetName("Selection Rect");
+    SetName(FastName("Selection Rect"));
 }
 
 void SelectionRect::Draw(const UIGeometricData& geometricData)

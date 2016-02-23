@@ -108,7 +108,7 @@ private:
     bool isMobileMode = false;
     bool watchersCreated = false;
 
-    ConcurrentObject<Map<NativeHIDType, Set<String> > > hids;
+    ConcurrentObject<Map<NativeHIDType, Set<String>>> hids;
 
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 

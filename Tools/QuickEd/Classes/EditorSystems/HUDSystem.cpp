@@ -40,6 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "EditorSystems/HUDControls.h"
 #include "EditorSystems/KeyboardProxy.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -88,29 +90,31 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)
-    , container(new HUDContainer(control))
+    , container(new HUDContainer(node_))
 {
-    container->SetName("Container for HUD controls of node " + node_->GetName());
-    DAVA::Vector<HUDAreaInfo::eArea> areas(HUDAreaInfo::AREAS_COUNT);
-    int begin = HUDAreaInfo::AREAS_BEGIN;
+    container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
+    DAVA::Vector<HUDAreaInfo::eArea> areas;
     if (node->GetParent() != nullptr && node->GetParent()->GetControl() != nullptr)
     {
-        std::generate(areas.begin(), areas.end(), [begin]() mutable {
-            return static_cast<HUDAreaInfo::eArea>(begin++);
-        });
+        areas.reserve(HUDAreaInfo::AREAS_COUNT);
+        for (int area = HUDAreaInfo::AREAS_BEGIN; area != HUDAreaInfo::AREAS_COUNT; ++area)
+        {
+            areas.push_back(static_cast<HUDAreaInfo::eArea>(area));
+        }
     }
     else
     {
         //custom areas
-        areas.push_back(HUDAreaInfo::TOP_LEFT_AREA);
-        areas.push_back(HUDAreaInfo::TOP_CENTER_AREA);
-        areas.push_back(HUDAreaInfo::TOP_RIGHT_AREA);
-        areas.push_back(HUDAreaInfo::CENTER_LEFT_AREA);
-        areas.push_back(HUDAreaInfo::CENTER_RIGHT_AREA);
-        areas.push_back(HUDAreaInfo::BOTTOM_LEFT_AREA);
-        areas.push_back(HUDAreaInfo::BOTTOM_CENTER_AREA);
-        areas.push_back(HUDAreaInfo::BOTTOM_RIGHT_AREA);
-        areas.push_back(HUDAreaInfo::FRAME_AREA);
+        areas = {
+            HUDAreaInfo::TOP_LEFT_AREA,
+            HUDAreaInfo::TOP_CENTER_AREA,
+            HUDAreaInfo::TOP_RIGHT_AREA,
+            HUDAreaInfo::CENTER_LEFT_AREA,
+            HUDAreaInfo::CENTER_RIGHT_AREA,
+            HUDAreaInfo::BOTTOM_LEFT_AREA,
+            HUDAreaInfo::BOTTOM_CENTER_AREA,
+            HUDAreaInfo::BOTTOM_RIGHT_AREA
+        };
     }
     for (HUDAreaInfo::eArea area : areas)
     {
@@ -130,13 +134,10 @@ HUDSystem::HUD::~HUD()
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
-    , selectionRectControl(CreateContainerWithBorders<SelectionRect>())
     , sortedControlList(CompareByLCA)
 {
     InvalidatePressedPoint();
-    systemManager->GetRootControl()->AddControl(hudControl.Get());
-    hudControl->AddControl(selectionRectControl.Get());
-    hudControl->SetName("hudControl");
+    hudControl->SetName(FastName("hudControl"));
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
@@ -147,6 +148,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 HUDSystem::~HUDSystem()
 {
     systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+    SetCanDrawRect(false);
 }
 
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -193,19 +195,20 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     {
         ProcessCursor(currentInput->point, searchOrder);
         pressedPoint = currentInput->point;
-        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->tid != UIEvent::BUTTON_1)
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
         {
             return true;
         }
         //check that we can draw rect
-        Vector<ControlNode*> nodes;
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;
-        auto predicate = [point](const UIControl* control) -> bool {
-            return control->GetVisibleForUIEditor() && control->IsPointInside(point);
+        auto predicate = [point](const ControlNode* node) -> bool {
+            const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
+            DVASSERT(node->GetControl() != nullptr);
+            return visibleProp->GetVisibleInEditor() && node->GetControl()->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-        bool noHudableControls = nodes.empty();
+        bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         return canDrawRect;
@@ -234,7 +237,6 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::ENDED:
     {
         ProcessCursor(currentInput->point, searchOrder);
-        selectionRectControl->SetSize(Vector2());
         SetCanDrawRect(false);
         dragRequested = false;
         bool retVal = (pressedPoint - currentInput->point).Length() > 0;
@@ -247,32 +249,26 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
+void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
 {
-    hudVisible = rootControls.size() == 1;
-    UpdateAreasVisibility();
+    rootControls = rootControls_;
+    UpdatePlacedOnScreenStatus();
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
-    if (emulationMode)
-    {
-        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
-    }
-    else
-    {
-        systemManager->GetRootControl()->AddControl(hudControl.Get());
-    }
+    inEmulationMode = emulationMode;
+    UpdatePlacedOnScreenStatus();
 }
 
 void HUDSystem::OnNodesHovered(Vector<ControlNode*> nodes)
 {
-    for(const auto &node : nodes)
+    for (const auto& node : nodes)
     {
-        if(hoveredNodes.find(node) == hoveredNodes.end() && node != nullptr)
+        if (hoveredNodes.find(node) == hoveredNodes.end() && node != nullptr)
         {
-            UIControl *control = new UIControl();
-            UIControl *targetControl = node->GetControl();
+            UIControl* control = new UIControl();
+            UIControl* targetControl = node->GetControl();
             auto gd = targetControl->GetGeometricData();
             const Rect& ur = gd.GetUnrotatedRect();
             control->SetPivot(targetControl->GetPivot());
@@ -285,9 +281,9 @@ void HUDSystem::OnNodesHovered(Vector<ControlNode*> nodes)
     }
     for (auto it = hoveredNodes.begin(); it != hoveredNodes.end();)
     {
-        if(std::find(nodes.begin(), nodes.end(), it->first) == nodes.end())
+        if (std::find(nodes.begin(), nodes.end(), it->first) == nodes.end())
         {
-            UIControl *control = it->second.Get();
+            UIControl* control = it->second.Get();
             hoveredNodes.erase(it++);
             hudControl->RemoveControl(control);
         }
@@ -296,7 +292,6 @@ void HUDSystem::OnNodesHovered(Vector<ControlNode*> nodes)
             ++it;
         }
     }
-
 }
 
 void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
@@ -314,6 +309,9 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
     magnetTargetControls.clear();
 
+    size_t size = magnetLines.size();
+    magnetControls.reserve(size);
+    magnetTargetControls.reserve(size);
     for (const MagnetLineInfo& line : magnetLines)
     {
         const auto& gd = line.gd;
@@ -321,10 +319,10 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         auto linePos = line.rect.GetPosition();
         auto lineSize = line.rect.GetSize();
 
-        linePos = RotateVector(linePos, gd->angle);
+        linePos = DAVA::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
         lineSize *= gd->scale;
-        Vector2 gdPos = gd->position - RotateVector(gd->pivotPoint * gd->scale, gd->angle);
+        Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
         UIControl* lineControl = new UIControl(Rect(linePos + gdPos, lineSize));
         lineControl->SetDebugDraw(true);
@@ -339,7 +337,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos = line.targetRect.GetPosition();
         lineSize = line.targetRect.GetSize();
 
-        linePos = RotateVector(linePos, gd->angle);
+        linePos = DAVA::Rotate(linePos, gd->angle);
         linePos *= gd->scale;
         lineSize *= gd->scale;
 
@@ -385,7 +383,7 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
                 if (hudControlsIter != hud->hudControls.end())
                 {
                     const auto& controlContainer = hudControlsIter->second;
-                    if (controlContainer->GetVisibleForUIEditor() && controlContainer->IsPointInside(pos))
+                    if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
                     {
                         return HUDAreaInfo(hud->node, area);
                     }
@@ -407,23 +405,27 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
 
 void HUDSystem::SetCanDrawRect(bool canDrawRect_)
 {
+    canDrawRect_ &= !inEmulationMode;
     if (canDrawRect != canDrawRect_)
     {
         canDrawRect = canDrawRect_;
-        if (!canDrawRect)
+        if (canDrawRect)
         {
-            selectionRectControl->SetSize(Vector2());
+            DVASSERT(nullptr == selectionRectControl);
+            selectionRectControl = CreateContainerWithBorders<SelectionRect>();
+            hudControl->AddControl(selectionRectControl);
+        }
+        else
+        {
+            DVASSERT(nullptr != selectionRectControl);
+            hudControl->RemoveControl(selectionRectControl);
+            SafeRelease(selectionRectControl);
         }
     }
 }
 
 void HUDSystem::UpdateAreasVisibility()
 {
-    for (auto& pair : hudMap)
-    {
-        pair.second->container->SetVisibleInSystems(hudVisible);
-    }
-
     bool showAreas = sortedControlList.size() == 1;
 
     for (const auto& iter : sortedControlList)
@@ -448,4 +450,22 @@ void HUDSystem::UpdateAreasVisibility()
 void HUDSystem::InvalidatePressedPoint()
 {
     pressedPoint.Set(std::numeric_limits<float32>::max(), std::numeric_limits<float32>::max());
+}
+
+void HUDSystem::UpdatePlacedOnScreenStatus()
+{
+    bool isPlaced = rootControls.size() == 1 && !inEmulationMode;
+    if (isPlacedOnScreen == isPlaced)
+    {
+        return;
+    }
+    isPlacedOnScreen = isPlaced;
+    if (isPlacedOnScreen)
+    {
+        systemManager->GetRootControl()->AddControl(hudControl.Get());
+    }
+    else
+    {
+        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+    }
 }

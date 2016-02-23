@@ -40,7 +40,7 @@ class DocumentGroup : public QObject
 {
     Q_OBJECT
 public:
-    explicit DocumentGroup(QObject *parent = nullptr);
+    explicit DocumentGroup(QObject* parent = nullptr);
     ~DocumentGroup();
 
     void InsertDocument(int index, Document*);
@@ -51,15 +51,14 @@ public:
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void SetActiveDocument(Document* document);
 
 private:
-    Document *active;
+    Document* active;
     QList<Document*> documentList;
-    QUndoGroup *undoGroup;
+    QUndoGroup* undoGroup;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

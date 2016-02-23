@@ -133,7 +133,7 @@ public class JNITextField {
 
         @Override
         public void run() {
-            if(!JNISurfaceView.isPaused())
+            if(!JNIActivity.GetActivity().GetIsPausing())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
 
@@ -950,12 +950,13 @@ public class JNITextField {
             @Override
             public void safeRun() {
                 final EditText editText = GetTextField(id);
+                textFields.remove(id);
+                
                 editText.clearFocus(); // Clear focus before destroying to try
                                        // to close keyboard
                 ViewGroup parent = (ViewGroup) editText.getParent();
                 if (parent != null)
                     parent.removeView(editText);
-                textFields.remove(id);
             }
         });
     }

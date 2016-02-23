@@ -33,6 +33,8 @@
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
 
+class VisibleValueProperty;
+
 class ControlContainer : public DAVA::UIControl
 {
 public:
@@ -50,19 +52,17 @@ protected:
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(DAVA::UIControl* container);
+    explicit HUDContainer(ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
-    void SetVisibleInSystems(bool arg);
-    void SetValid(bool arg);
 
 private:
     ~HUDContainer() = default;
+    ControlNode* node = nullptr;
+    VisibleValueProperty* visibleProperty = nullptr;
     DAVA::UIControl* control = nullptr;
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
-    bool valid = false;
-    bool visibleInSystems = true;
 };
 
 template <typename T>

@@ -39,7 +39,7 @@ public:
     {
         // Allow only small caps letters
         bool accept = true;
-        for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
+        for (size_t i = 0, n = replacementString.length(); i < n && accept; ++i)
         {
             accept = 'a' <= replacementString[i] && replacementString[i] <= 'z';
         }
@@ -64,7 +64,7 @@ public:
     {
         // Allow only numbers
         bool accept = true;
-        for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
+        for (size_t i = 0, n = replacementString.length(); i < n && accept; ++i)
         {
             accept = '0' <= replacementString[i] && replacementString[i] <= '9';
         }
@@ -83,14 +83,14 @@ public:
     virtual ~TextDelegateMulti() = default;
 };
 
-MultilineTest::MultilineTest ()
+MultilineTest::MultilineTest()
     : BaseScreen("MultilineTest")
 {
 }
 
 void MultilineTest::LoadResources()
 {
-    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(14);
 
@@ -127,9 +127,9 @@ void MultilineTest::LoadResources()
     AddControl(textField2);
     AddControl(textFieldMulti);
 
-    const uint32 Y_OFFSET = 500;
-    const uint32 CONTROL_LENGHT = 400;
-    const uint32 CONTROL_HEIGTH = 70;
+    const float32 Y_OFFSET = 500;
+    const float32 CONTROL_LENGHT = 400;
+    const float32 CONTROL_HEIGTH = 70;
 
     BaseScreen::LoadResources();
 

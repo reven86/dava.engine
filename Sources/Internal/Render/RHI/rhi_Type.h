@@ -52,11 +52,14 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = (uint32)(-2);
 
+typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
+
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
+    RESOURCE_PERFQUERY_SET = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -197,6 +200,16 @@ VertexDataTypeName(VertexDataType t)
     }
 }
 
+//------------------------------------------------------------------------------
+
+enum VertexDataFrequency
+{
+    VDF_PER_VERTEX = 1,
+    VDF_PER_INSTANCE = 2
+};
+
+//------------------------------------------------------------------------------
+
 class
 VertexLayout
 {
@@ -204,8 +217,12 @@ public:
     VertexLayout();
     ~VertexLayout();
 
-    unsigned Stride() const;
+    unsigned Stride(unsigned stream_i = 0) const;
+    unsigned StreamCount() const;
+    VertexDataFrequency StreamFrequency(unsigned stream_i) const;
     unsigned ElementCount() const;
+
+    unsigned ElementStreamIndex(unsigned elem_i) const;
     VertexSemantics ElementSemantics(unsigned elem_i) const;
     unsigned ElementSemanticsIndex(unsigned elem_i) const;
     VertexDataType ElementDataType(unsigned elem_i) const;
@@ -217,6 +234,7 @@ public:
     VertexLayout& operator=(const VertexLayout& src);
 
     void Clear();
+    void AddStream(VertexDataFrequency freq = VDF_PER_VERTEX);
     void AddElement(VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
     void InsertElement(unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
 
@@ -235,7 +253,8 @@ public:
 private:
     enum
     {
-        MaxElemCount = 8
+        MaxElemCount = 8,
+        MaxStreamCount = 2
     };
 
     struct
@@ -246,6 +265,18 @@ private:
         uint32 data_type : 8;
         uint32 data_count : 8;
     };
+
+    struct
+    Stream
+    {
+        uint32 first_elem : 8;
+        uint32 elem_count : 8;
+        uint32 freq : 8;
+        uint32 __pad : 8;
+    };
+
+    Stream _stream[MaxStreamCount];
+    uint32 _stream_count;
 
     Element _elem[MaxElemCount];
     uint32 _elem_count;
@@ -345,7 +376,15 @@ enum TextureFormat
     TEXTURE_FORMAT_EAC_R11G11_SIGNED,
 
     TEXTURE_FORMAT_D16,
-    TEXTURE_FORMAT_D24S8
+    TEXTURE_FORMAT_D24S8,
+
+    TEXTURE_FORMAT_R16F,
+    TEXTURE_FORMAT_RG16F,
+    TEXTURE_FORMAT_RGBA16F,
+
+    TEXTURE_FORMAT_R32F,
+    TEXTURE_FORMAT_RG32F,
+    TEXTURE_FORMAT_RGBA32F,
 };
 
 enum TextureFace
@@ -783,6 +822,8 @@ RenderPassConfig
     DepthStencilBuffer depthStencilBuffer;
 
     Handle queryBuffer;
+    uint32 PerfQueryIndex0;
+    uint32 PerfQueryIndex1;
     Viewport viewport;
 
     int priority;
@@ -792,6 +833,8 @@ RenderPassConfig
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
+        , PerfQueryIndex0(DAVA::InvalidIndex)
+        , PerfQueryIndex1(DAVA::InvalidIndex)
     {
     }
 };

@@ -64,7 +64,7 @@ void Announcer::Start()
     loop->Post(MakeFunction(this, &Announcer::DoStart));
 }
 
-void Announcer::Stop(Function<void (IController*)> callback)
+void Announcer::Stop(Function<void(IController*)> callback)
 {
     DVASSERT(false == isTerminating);
     DVASSERT(callback != nullptr);
@@ -144,7 +144,8 @@ void Announcer::DoBye()
 
 void Announcer::TimerHandleTimer(DeadlineTimer* timer)
 {
-    if (true == isTerminating) return;
+    if (true == isTerminating)
+        return;
 
     size_t length = dataCallback(sizeof(buffer), buffer);
     if (length > 0)
@@ -162,8 +163,9 @@ void Announcer::TimerHandleTimer(DeadlineTimer* timer)
 
 void Announcer::SocketHandleSend(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)
 {
-    if (true == isTerminating) return;
-    
+    if (true == isTerminating)
+        return;
+
     if (0 == error)
     {
         timer.Wait(announcePeriod, MakeFunction(this, &Announcer::TimerHandleTimer));
@@ -201,5 +203,5 @@ void Announcer::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

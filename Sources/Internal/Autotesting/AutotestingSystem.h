@@ -42,17 +42,14 @@
 
 #include "Platform/DateTime.h"
 
-
 namespace DAVA
 {
-
 class Image;
 class AutotestingSystemLuaDelegate;
 class AutotestingSystemLua;
 class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
 {
 public:
-
     AutotestingSystem();
     ~AutotestingSystem();
 
@@ -61,93 +58,111 @@ public:
 
     void Update(float32 timeElapsed);
     void Draw();
-    
+
     void OnInit();
-    inline bool IsInit() { return isInit; };
+    inline bool IsInit()
+    {
+        return isInit;
+    };
 
-	void InitLua(AutotestingSystemLuaDelegate* _delegate);
+    void InitLua(AutotestingSystemLuaDelegate* _delegate);
 
-	void OnScreenShot(Image *image) override;
-    
+    void OnScreenShot(Image* image) override;
+
     void RunTests();
-    
-	// Parameters from DB
-	void FetchParametersFromDB();
-	void FetchParametersFromIdYaml();
-	void SetUpConnectionToDB();
-	RefPtr<KeyedArchive> GetIdYamlOptions();
+
+    // Parameters from DB
+    void FetchParametersFromDB();
+    void FetchParametersFromIdYaml();
+    void SetUpConnectionToDB();
+    RefPtr<KeyedArchive> GetIdYamlOptions();
 
     void InitializeDevice();
 
     // Test organization
-    void OnTestStart(const String &testName);
-	void OnStepStart( const String & stepName );
-	void OnStepFinished();
-	void OnTestStarted();
-    void OnError(const String & errorMessage = "");
-	void ForceQuit(const String & logMessage = "");
+    void OnTestStart(const String& testName);
+    void OnStepStart(const String& stepName);
+    void OnStepFinished();
+    void OnTestStarted();
+    void OnError(const String& errorMessage = "");
+    void ForceQuit(const String& logMessage = "");
     void OnTestsFinished();
-    
+
     // helpers
-    void OnInput(const UIEvent &input);
-    
-    inline Vector2 GetMousePosition() { return mouseMove.point; };
-    bool FindTouch(int32 id, UIEvent &touch);
+    void OnInput(const UIEvent& input);
+
+    inline Vector2 GetMousePosition()
+    {
+        return mouseMove.point;
+    };
+    bool FindTouch(int32 id, UIEvent& touch);
     bool IsTouchDown(int32 id);
 
-	const String & GetScreenShotName();
-	void MakeScreenShot();
+    const String& GetScreenShotName();
+    void MakeScreenShot();
 
     // DB Master-Helper relations
 
-	String GetTestId() { return Format("Test%03d", testIndex); };
-	String GetStepId() { return Format("Step%03d", stepIndex); };
-	String GetLogId() { return  Format("Message%03d", logIndex); };
-    
-	String GetCurrentTimeString();
-	String GetCurrentTimeMsString();
+    String GetTestId()
+    {
+        return Format("Test%03d", testIndex);
+    };
+    String GetStepId()
+    {
+        return Format("Step%03d", stepIndex);
+    };
+    String GetLogId()
+    {
+        return Format("Message%03d", logIndex);
+    };
 
-	inline AutotestingSystemLua* GetLuaSystem() { return luaSystem; };
-    
-    static String ResolvePathToAutomation(const String &automationPath);
+    String GetCurrentTimeString();
+    String GetCurrentTimeMsString();
+
+    inline AutotestingSystemLua* GetLuaSystem()
+    {
+        return luaSystem;
+    };
+
+    static String ResolvePathToAutomation(const String& automationPath);
+
 protected:
-
-	void OnScreenShotInternal(Image *image);
-	AutotestingSystemLua * luaSystem;
-//DB
+    void OnScreenShotInternal(Image* image);
+    AutotestingSystemLua* luaSystem;
+    //DB
     void ExitApp();
-	
+
 public:
-	uint64 startTimeMS;
+    uint64 startTimeMS;
 
     bool isInit;
     bool isRunning;
     bool needExitApp;
     float32 timeBeforeExit;
-    
+
     String projectName;
     String groupName;
-	String deviceName;
+    String deviceName;
     String testsDate;
-	String runId;
+    String runId;
     int32 testIndex;
     int32 stepIndex;
     int32 logIndex;
 
-	String testDescription;
+    String testDescription;
     String testFileName;
     String testFilePath;
 
-	String buildDate;
-	String buildId;
-	String branch;
-	String framework;
-	String branchRev;
-	String frameworkRev;
+    String buildDate;
+    String buildId;
+    String branch;
+    String framework;
+    String branchRev;
+    String frameworkRev;
 
-	bool isDB;
+    bool isDB;
     bool needClearGroupInDB;
-    
+
     bool isMaster;
     int32 requestedHelpers;
     String masterId; // for communication
@@ -163,9 +178,8 @@ public:
     Map<int32, UIEvent> touches;
     UIEvent mouseMove;
 
-	String screenShotName;
+    String screenShotName;
 };
-
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

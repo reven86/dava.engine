@@ -75,6 +75,7 @@ public:
     static const DAVA::FastName Scene_CameraHeightOnLandscape;
     static const DAVA::FastName Scene_CameraHeightOnLandscapeStep;
     static const DAVA::FastName Scene_SelectionSequent;
+    static const DAVA::FastName Scene_SelectionOnClick;
     static const DAVA::FastName Scene_SelectionDrawMode;
     static const DAVA::FastName Scene_CollisionDrawMode;
     static const DAVA::FastName Scene_ModificationByGizmoOnly;
@@ -100,6 +101,7 @@ public:
     // and are used only by application
     static const DAVA::FastName InternalGroup;
     static const DAVA::FastName Internal_TextureViewGPU;
+    static const DAVA::FastName Internal_SpriteViewGPU;
     static const DAVA::FastName Internal_LastProjectPath;
     static const DAVA::FastName Internal_EditorVersion;
     static const DAVA::FastName Internal_CubemapLastFaceDir;

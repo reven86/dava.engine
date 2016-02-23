@@ -37,25 +37,25 @@ class ControlNode;
 class ClassProperty : public ValueProperty
 {
 public:
-    ClassProperty(ControlNode *control);
-    
+    ClassProperty(ControlNode* control);
+
 protected:
     virtual ~ClassProperty();
-    
+
 public:
-    void Accept(PropertyVisitor *visitor) override;
-    
+    void Accept(PropertyVisitor* visitor) override;
+
     bool IsReadOnly() const override;
-    
+
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
 
     DAVA::VariantType GetValue() const override;
-    const DAVA::String &GetClassName() const;
-    ControlNode *GetControlNode() const;
-    
+    const DAVA::String& GetClassName() const;
+    ControlNode* GetControlNode() const;
+
 private:
-    ControlNode *control; // weak
+    ControlNode* control; // weak
 };
 
 #endif // __QUICKED_CLASS_PROPERTY_H__

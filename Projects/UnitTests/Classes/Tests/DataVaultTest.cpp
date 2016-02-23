@@ -33,18 +33,18 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(DataVaultTest)
+DAVA_TESTCLASS (DataVaultTest)
 {
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
-        IDataStorage *storage = DataStorage::Create();
+        IDataStorage* storage = DataStorage::Create();
 
         storage->Clear();
         storage->Push();
         storage->SetStringValue("TestStringKey", "Test");
         storage->Push();
         String ret = storage->GetStringValue("TestStringKey");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
         TEST_VERIFY("" == ret);
 #else
         TEST_VERIFY("Test" == ret);
@@ -68,4 +68,5 @@ DAVA_TESTCLASS(DataVaultTest)
 #endif
         SafeRelease(storage);
     }
-};
+}
+;

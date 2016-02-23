@@ -35,7 +35,6 @@
 
 LibraryWidget::LibraryWidget(QWidget* parent)
     : QDockWidget(parent)
-    , document(nullptr)
     , libraryModel(new LibraryModel(this))
 {
     setupUi(this);
@@ -43,12 +42,8 @@ LibraryWidget::LibraryWidget(QWidget* parent)
     treeView->expandToDepth(0);
 }
 
-void LibraryWidget::OnDocumentChanged(Document* arg)
+void LibraryWidget::OnDocumentChanged(Document* document)
 {
-    document = arg;
-    if (!document.isNull())
-    {
-        libraryModel->SetPackageNode(document->GetPackage());
-        treeView->expandToDepth(0);
-    }
+    libraryModel->SetPackageNode(nullptr != document ? document->GetPackage() : nullptr);
+    treeView->expandToDepth(0);
 }

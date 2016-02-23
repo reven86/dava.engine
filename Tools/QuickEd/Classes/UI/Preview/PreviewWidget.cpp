@@ -37,6 +37,7 @@
 #include <QShortCut>
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
@@ -60,6 +61,10 @@ QString ScaleStringFromReal(qreal scale)
 struct PreviewContext : WidgetContext
 {
     QPoint canvasPosition;
+};
+
+struct SystemsContext : WidgetContext
+{
     SelectedNodes selection;
 };
 }
@@ -91,7 +96,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
     connect(davaGLWidget, &DavaGLWidget::Initialized, this, &PreviewWidget::OnGLInitialized);
-    connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
+    connect(davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
@@ -102,7 +107,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
     connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::OnScaleChanged);
 
-    connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
+    connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
@@ -219,43 +224,70 @@ void PreviewWidget::CreateActions()
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
-    DVASSERT(nullptr != systemManager);
+    DVASSERT(nullptr != systemsManager);
     SaveContext();
     document = arg;
-    if (!selectionContainer.selectedNodes.empty())
+    if (document.isNull())
     {
-        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
-        systemManager->SelectionChanged.Emit(SelectedNodes(), deselected);
-        DVASSERT(selectionContainer.selectedNodes.empty());
-    }
-    if (!document.isNull())
-    {
-        std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
-        systemManager->PackageNodeChanged.Emit(packagePtr);
-        LoadContext();
-        if (!selectionContainer.selectedNodes.empty())
-        {
-            systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
-        }
+        systemsManager->PackageNodeChanged.Emit(nullptr);
     }
     else
     {
-        systemManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
+        systemsManager->PackageNodeChanged.Emit(document->GetPackage());
+        LoadContext();
+    }
+}
+
+void PreviewWidget::SaveSystemsContextAndClear()
+{
+    if (!document.isNull())
+    {
+        SystemsContext* systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+        systemsContext->selection = selectionContainer.selectedNodes;
+    }
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        DVASSERT(!document.isNull());
+        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
+        systemsManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        DVASSERT(selectionContainer.selectedNodes.empty());
+    }
+}
+
+void PreviewWidget::LoadSystemsContext(Document* arg)
+{
+    DVASSERT(arg == document.data());
+    if (document.isNull())
+    {
+        return;
+    }
+    SystemsContext* context = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+    if (nullptr == context)
+    {
+        document->SetContext(systemsManager.get(), new SystemsContext());
+    }
+    else
+    {
+        selectionContainer.selectedNodes = context->selection;
+        if (!selectionContainer.selectedNodes.empty())
+        {
+            systemsManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+        }
     }
 }
 
 void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    systemManager->SelectionChanged.Emit(selected, deselected);
+    systemsManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnRootControlPositionChanged(DAVA::Vector2 pos)
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
     rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
     ApplyPosChanges();
 }
 
-void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 {
     canvasPos = pos;
     ApplyPosChanges();
@@ -263,7 +295,7 @@ void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
 
 void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 {
-    systemManager->SetEmulationMode(emulationMode);
+    systemsManager->SetEmulationMode(emulationMode);
 }
 
 void PreviewWidget::ApplyPosChanges()
@@ -275,13 +307,14 @@ void PreviewWidget::ApplyPosChanges()
 void PreviewWidget::UpdateScrollArea()
 {
     QSize areaSize = scrollAreaController->GetViewSize();
-    QSize contentSize = scrollAreaController->GetCanvasSize();
 
     verticalScrollBar->setPageStep(areaSize.height());
     horizontalScrollBar->setPageStep(areaSize.width());
 
-    verticalScrollBar->setRange(0, contentSize.height() - areaSize.height());
-    horizontalScrollBar->setRange(0, contentSize.width() - areaSize.width());
+    QPoint minPos = scrollAreaController->GetMinimumPos();
+    QPoint maxPos = scrollAreaController->GetMaximumPos();
+    horizontalScrollBar->setRange(minPos.x(), maxPos.x());
+    verticalScrollBar->setRange(minPos.y(), maxPos.y());
 }
 
 void PreviewWidget::OnPositionChanged(const QPoint& position)
@@ -292,18 +325,18 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 
 void PreviewWidget::OnGLInitialized()
 {
-    DVASSERT(nullptr == systemManager);
-    systemManager.reset(new EditorSystemsManager());
-    systemManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
-    scrollAreaController->SetNestedControl(systemManager->GetRootControl());
-    scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
-    systemManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
-    systemManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
-    systemManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
-    systemManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
-    connect(focusNextChildAction, &QAction::triggered, [this]() { systemManager->FocusNextChild.Emit(); });
-    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemManager->FocusPreviousChild.Emit(); });
-    connect(selectAllAction, &QAction::triggered, [this]() { systemManager->SelectAllControls.Emit(); });
+    DVASSERT(nullptr == systemsManager);
+    systemsManager.reset(new EditorSystemsManager());
+    systemsManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
+    scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
+    scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
+    systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+    systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
+    systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
+    systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    connect(focusNextChildAction, &QAction::triggered, [this]() { systemsManager->FocusNextChild.Emit(); });
+    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemsManager->FocusPreviousChild.Emit(); });
+    connect(selectAllAction, &QAction::triggered, [this]() { systemsManager->SelectAllControls.Emit(); });
 }
 
 void PreviewWidget::OnScaleChanged(qreal scale)
@@ -311,9 +344,9 @@ void PreviewWidget::OnScaleChanged(qreal scale)
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
     rulerController->SetScale(scale);
     DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
-    if (systemManager)
+    if (systemsManager)
     {
-        systemManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
+        systemsManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
     }
 }
 
@@ -399,7 +432,6 @@ void PreviewWidget::LoadContext()
     else
     {
         scrollAreaController->SetPosition(context->canvasPosition);
-        selectionContainer.selectedNodes = context->selection;
     }
 }
 
@@ -411,7 +443,6 @@ void PreviewWidget::SaveContext()
     }
     PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
     context->canvasPosition = scrollAreaController->GetPosition();
-    context->selection = selectionContainer.selectedNodes;
 }
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
@@ -432,13 +463,10 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 #endif //Q_OS_WIN
         //scroll view up and down
         static const qreal wheelDelta = 0.002f;
-        int horizontalScrollBarValue = horizontalScrollBar->value();
-        horizontalScrollBarValue -= delta.x() * horizontalScrollBar->pageStep() * wheelDelta;
-        horizontalScrollBar->setValue(horizontalScrollBarValue);
-
-        int verticalScrollBarValue = verticalScrollBar->value();
-        verticalScrollBarValue -= delta.y() * verticalScrollBar->pageStep() * wheelDelta;
-        verticalScrollBar->setValue(verticalScrollBarValue);
+        QPoint position = scrollAreaController->GetPosition();
+        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
+                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
+        scrollAreaController->SetPosition(position - additionalPos);
     }
 #ifdef Q_OS_WIN
     else
@@ -535,10 +563,10 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
 
 void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
 {
-    systemManager->NodesHovered.Emit({nullptr});
+    systemManager->NodesHovered.Emit({ nullptr });
 }
 
-void PreviewWidget::OnDropEvent(QDropEvent *event)
+void PreviewWidget::OnDropEvent(QDropEvent* event)
 {
     systemManager->NodesHovered.Emit({ nullptr });
     DVASSERT(nullptr != event);
@@ -601,12 +629,11 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
     emit SelectionChanged(selected, deselected);
 }
 
-void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
+void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
 {
     DVASSERT(!document.isNull());
-    auto commandExecutor = document->GetCommandExecutor().lock();
-    DVASSERT(nullptr != commandExecutor);
-    commandExecutor->ChangeProperty(properties, hash);
+    auto commandExecutor = document->GetCommandExecutor();
+    commandExecutor->ChangeProperty(propertyActions, hash);
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const

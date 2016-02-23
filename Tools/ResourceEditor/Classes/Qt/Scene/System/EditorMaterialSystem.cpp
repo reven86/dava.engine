@@ -314,9 +314,11 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
         if (redo)
         {
             RemoveMaterial(swCommand->oldBatch->GetMaterial());
+            AddMaterialFromRenderBatchWithEntity(swCommand->newBatch, swCommand->GetEntity());
         }
         else
         {
+            RemoveMaterial(swCommand->newBatch->GetMaterial());
             AddMaterialFromRenderBatchWithEntity(swCommand->oldBatch, swCommand->GetEntity());
         }
     }

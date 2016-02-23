@@ -32,8 +32,8 @@
 #include "Base/BaseTypes.h"
 #include "Concurrency/Atomic.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 using SigConnectionID = size_t;
 
 class TrackedObject;
@@ -45,7 +45,7 @@ public:
 
     static SigConnectionID GetUniqueConnectionID()
     {
-        static Atomic<SigConnectionID> counter = { static_cast<SigConnectionID>(0) };
+        static Atomic<SigConnectionID> counter = { 0 };
         return ++counter;
     }
 };
@@ -53,27 +53,18 @@ public:
 class TrackedObject
 {
 public:
-    ~TrackedObject()
-    {
-        while (!trackedSignals.empty())
-        {
-            auto it = trackedSignals.begin();
-            (*it)->Disconnect(this);
-        }
-    }
-
-    void Track(SignalBase *signal)
+    void Track(SignalBase* signal)
     {
         trackedSignals.insert(signal);
     }
 
-    void Untrack(SignalBase *signal)
+    void Untrack(SignalBase* signal)
     {
         trackedSignals.erase(signal);
     }
-    
-    template<typename T>
-    static TrackedObject* Cast(T *t)
+
+    template <typename T>
+    static TrackedObject* Cast(T* t)
     {
         return Detail<std::is_base_of<TrackedObject, T>::value>::Cast(t);
     }
@@ -83,19 +74,34 @@ protected:
 
     template <bool is_derived_from_tracked_obj>
     struct Detail;
-};
-    
-template<>
-struct TrackedObject::Detail<false>
-{
-    static TrackedObject* Cast(void* t) { return nullptr; }
+
+    virtual ~TrackedObject()
+    {
+        while (trackedSignals.size() > 0)
+        {
+            auto it = trackedSignals.begin();
+            (*it)->Disconnect(this);
+        }
+    }
 };
 
-template<>
+template <>
+struct TrackedObject::Detail<false>
+{
+    static TrackedObject* Cast(void* t)
+    {
+        return nullptr;
+    }
+};
+
+template <>
 struct TrackedObject::Detail<true>
 {
-    template<typename T>
-    static TrackedObject* Cast(T* t) { return static_cast<TrackedObject *>(t); }
+    template <typename T>
+    static TrackedObject* Cast(T* t)
+    {
+        return static_cast<TrackedObject*>(t);
+    }
 };
 
 } // namespace DAVA

@@ -38,17 +38,15 @@
 
 @interface BackgroundView : UIView
 
-- (UIWebView *) CreateWebView;
-- (void) ReleaseWebView: (UIWebView *)webView;
+- (UIWebView*)CreateWebView;
+- (void)ReleaseWebView:(UIWebView*)webView;
 
-- (UITextFieldHolder *) CreateTextField;
-- (void) ReleaseTextField: (UITextFieldHolder *)textField;
-- (UIView *) PrepareView: (UIView *)view;
+- (UITextFieldHolder*)CreateTextField;
+- (void)ReleaseTextField:(UITextFieldHolder*)textField;
+- (UIView*)PrepareView:(UIView*)view;
 
 @end
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)
 
 #endif //__DAVAENGINE_BACKGROUND_VIEW_H__
-
- 

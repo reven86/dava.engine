@@ -45,8 +45,6 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
-#define DAVA_WINUAP_MOUSE_HACK
-
 namespace DAVA
 {
 
@@ -91,6 +89,9 @@ internal:   // Only internal methods of ref class can return pointers to non-ref
     bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
     InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
+    void SetWindowMinimumSize(float32 width, float32 height);
+    Vector2 GetWindowMinimumSize() const;
+
 public:
     void SetQuitFlag();
 
@@ -103,6 +104,7 @@ public:
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
+    void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args) override;
 
 private:
     void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
@@ -129,6 +131,7 @@ private:
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
 
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
+    void OnBackRequested(Platform::Object ^ sender, Windows::UI::Core::BackRequestedEventArgs ^ args);
 
     // Keyboard handlers
     void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
@@ -136,14 +139,7 @@ private:
 
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
 
-    struct MouseButtonState
-    {
-        UIEvent::eButtonID button = UIEvent::BUTTON_NONE;
-        bool isPressed = false;
-    };
-
-    MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
-
+    void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
     void SetupEventHandlers();
@@ -151,7 +147,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
-    void TrackWindowMinimumSize();
+    void LoadWindowMinimumSizeSettings();
 
     void ResetRender();
 
@@ -165,6 +161,8 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
+    void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
+    void SendBackKeyEvents();
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -188,6 +186,7 @@ private:
     bool isPhoneApiDetected = false;
 
     bool isWindowVisible = true;
+    bool isWindowFocused = false;
     bool isWindowClosed = false;
     bool isFullscreen = false;
     bool isRenderCreated = false;
@@ -200,9 +199,22 @@ private:
 
     InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
-    bool isRightButtonPressed = false;
-    bool isLeftButtonPressed = false;
-    bool isMiddleButtonPressed = false;
+
+    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
+
+    struct MouseButtonChange
+    {
+        UIEvent::Phase beginOrEnd;
+        UIEvent::MouseButton button;
+    };
+
+    void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties, Vector<MouseButtonChange>& out);
+
+    Vector<MouseButtonChange> mouseButtonChanges;
+
+    bool GetMouseButtonState(UIEvent::MouseButton button);
+
+    void SetMouseButtonState(UIEvent::MouseButton button, bool value);
 
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
@@ -217,17 +229,26 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    static const wchar_t* xamlWebView;
+    static const wchar_t* xamlTextBox;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
     Windows::Foundation::EventRegistrationToken token;
-
-#if defined(DAVA_WINUAP_MOUSE_HACK)
-    BOOL (WINAPI* SetCursorPos)(int X, int Y);
-
-    bool skipMouseMoveEvent = false;
-#endif
 };
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool WinUAPXamlApp::GetMouseButtonState(UIEvent::MouseButton button)
+{
+    unsigned index = static_cast<unsigned>(button) - 1;
+    return mouseButtonsState[index];
+}
+
+inline void WinUAPXamlApp::SetMouseButtonState(UIEvent::MouseButton button, bool value)
+{
+    unsigned index = static_cast<unsigned>(button) - 1;
+    mouseButtonsState[index] = value;
+}
+
 inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
 {
     return uiThreadDispatcher;

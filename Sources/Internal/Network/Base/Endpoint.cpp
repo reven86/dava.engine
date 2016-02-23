@@ -39,8 +39,8 @@ namespace DAVA
 {
 namespace Net
 {
-
-Endpoint::Endpoint(const char8* address, uint16 port) : data()
+Endpoint::Endpoint(const char8* address, uint16 port)
+    : data()
 {
     InitSockaddrIn(IPAddress::FromString(address).ToUInt(), port);
 }
@@ -61,7 +61,7 @@ bool Endpoint::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
     Array<char8, 20> addr;
-    if(Address().ToString(addr.data(), addr.size()))
+    if (Address().ToString(addr.data(), addr.size()))
     {
         // TODO: Snprintf on Win32 do not conform standard
         Snprintf(buffer, size, "%s:%hu", addr.data(), Port());
@@ -73,7 +73,7 @@ bool Endpoint::ToString(char8* buffer, size_t size) const
 String Endpoint::ToString() const
 {
     Array<char8, 50> buf;
-    if(ToString(buf.data(), buf.size()))
+    if (ToString(buf.data(), buf.size()))
         return String(buf.data());
     return String();
 }
@@ -81,22 +81,22 @@ String Endpoint::ToString() const
 void Endpoint::InitSockaddrIn(uint32 addr, uint16 port)
 {
     data.sin_family = AF_INET;
-    data.sin_port   = htons(port);
+    data.sin_port = htons(port);
 #ifdef __DAVAENGINE_WINDOWS__
     data.sin_addr.S_un.S_addr = htonl(addr);
-#else   // __DAVAENGINE_WINDOWS__
-    data.sin_addr.s_addr      = htonl(addr);
-#endif  // __DAVAENGINE_WINDOWS__
+#else // __DAVAENGINE_WINDOWS__
+    data.sin_addr.s_addr = htonl(addr);
+#endif // __DAVAENGINE_WINDOWS__
 }
 
 uint32 Endpoint::GetSockaddrAddr() const
 {
 #ifdef __DAVAENGINE_WINDOWS__
     return ntohl(data.sin_addr.S_un.S_addr);
-#else   // __DAVAENGINE_WINDOWS__
+#else // __DAVAENGINE_WINDOWS__
     return ntohl(data.sin_addr.s_addr);
-#endif  // __DAVAENGINE_WINDOWS__
+#endif // __DAVAENGINE_WINDOWS__
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

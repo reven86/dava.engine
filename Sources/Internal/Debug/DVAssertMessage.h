@@ -33,7 +33,8 @@
 #include "DAVAConfig.h"
 #include "Base/BaseTypes.h"
 
-namespace DAVA {
+namespace DAVA
+{
 namespace DVAssertMessage
 {
 // Modality type,
@@ -47,12 +48,11 @@ enum eModalType
 };
 
 bool ShowMessage(eModalType modalType, const char8* text, ...);
-bool IsMessageDisplayed();
+bool IsHidden();
 
-    // return true if user click Break
+// return true if user click Break
 bool InnerShow(eModalType modalType, const char* content);
 };
-
 };
 
 #endif // __DAVAENGINE_DVASSERT_MESSAGE_H__

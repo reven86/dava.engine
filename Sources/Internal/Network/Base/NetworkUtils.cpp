@@ -35,7 +35,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 const char8* ErrorToString(int32 error)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
@@ -45,5 +44,5 @@ const char8* ErrorToString(int32 error)
 #endif
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

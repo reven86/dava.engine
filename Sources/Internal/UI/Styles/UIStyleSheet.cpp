@@ -31,16 +31,14 @@
 
 namespace DAVA
 {
-
 UIStyleSheet::~UIStyleSheet()
 {
-
 }
 
-UIStyleSheet::UIStyleSheet() :
+UIStyleSheet::UIStyleSheet()
+    :
     score(0)
 {
-
 }
 
 int32 UIStyleSheet::GetScore() const
@@ -85,5 +83,4 @@ void UIStyleSheet::RecalculateScore()
                 score += 1;
     }
 }
-
 }

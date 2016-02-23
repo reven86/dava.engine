@@ -110,6 +110,15 @@ enum PixelFormat : uint8
     FORMAT_BGR888, // windows BMP format
     FORMAT_BGRA8888, // android web view format only for ImageConvert
 
+    FORMAT_R16F,
+    FORMAT_RG16F,
+    FORMAT_RGB16F,
+    FORMAT_RGBA16F,
+    FORMAT_R32F,
+    FORMAT_RG32F,
+    FORMAT_RGB32F,
+    FORMAT_RGBA32F,
+
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
@@ -130,12 +139,10 @@ enum eGPUFamily : uint8
     GPU_INVALID = 127
 };
 
-
-
 enum eIndexFormat
 {
-	EIF_16 = 0x0,
-	EIF_32 = 0x1,
+    EIF_16 = 0x0,
+    EIF_32 = 0x1,
 };
 
 static const int32 INDEX_FORMAT_SIZE[2] = { 2, 4 };
@@ -165,91 +172,105 @@ enum eDefaultPassPriority
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them
 enum eVertexFormat
 {
-    EVF_VERTEX          = 1,
-    EVF_NORMAL          = 1 << 1,
-    EVF_COLOR           = 1 << 2,
-    EVF_TEXCOORD0       = 1 << 3,
-    EVF_TEXCOORD1       = 1 << 4,
-    EVF_TEXCOORD2       = 1 << 5,
-    EVF_TEXCOORD3       = 1 << 6,
-    EVF_TANGENT         = 1 << 7,
-    EVF_BINORMAL        = 1 << 8,
-  // nine bit skipped cause legacy; for now it unused
-    EVF_TIME            = 1 << 10,
-    EVF_PIVOT           = 1 << 11,
-    EVF_FLEXIBILITY     = 1 << 12,
-    EVF_ANGLE_SIN_COS   = 1 << 13,
-    EVF_JOINTINDEX      = 1 << 14,
-    EVF_JOINTWEIGHT     = 1 << 15,
-    EVF_CUBETEXCOORD0   = 1 << 16,
-    EVF_CUBETEXCOORD1   = 1 << 17,
-    EVF_CUBETEXCOORD2   = 1 << 18,
-    EVF_CUBETEXCOORD3   = 1 << 19,	
-    EVF_LOWER_BIT       = EVF_VERTEX,
-    EVF_HIGHER_BIT      = EVF_JOINTWEIGHT, 
+    EVF_VERTEX = 1,
+    EVF_NORMAL = 1 << 1,
+    EVF_COLOR = 1 << 2,
+    EVF_TEXCOORD0 = 1 << 3,
+    EVF_TEXCOORD1 = 1 << 4,
+    EVF_TEXCOORD2 = 1 << 5,
+    EVF_TEXCOORD3 = 1 << 6,
+    EVF_TANGENT = 1 << 7,
+    EVF_BINORMAL = 1 << 8,
+    // nine bit skipped cause legacy; for now it unused
+    EVF_TIME = 1 << 10,
+    EVF_PIVOT = 1 << 11,
+    EVF_FLEXIBILITY = 1 << 12,
+    EVF_ANGLE_SIN_COS = 1 << 13,
+    EVF_JOINTINDEX = 1 << 14,
+    EVF_JOINTWEIGHT = 1 << 15,
+    EVF_CUBETEXCOORD0 = 1 << 16,
+    EVF_CUBETEXCOORD1 = 1 << 17,
+    EVF_CUBETEXCOORD2 = 1 << 18,
+    EVF_CUBETEXCOORD3 = 1 << 19,
+    EVF_LOWER_BIT = EVF_VERTEX,
+    EVF_HIGHER_BIT = EVF_JOINTWEIGHT,
     EVF_NEXT_AFTER_HIGHER_BIT
     = (EVF_HIGHER_BIT << 1),
-    EVF_FORCE_DWORD     = 0x7fffffff,
+    EVF_FORCE_DWORD = 0x7fffffff,
 };
 enum
 {
     VERTEX_FORMAT_STREAM_MAX_COUNT = 16
 };
 
-
 inline int32 GetTexCoordCount(int32 vertexFormat)
 {
-	int32 ret = 0;
-	for(int32 i = EVF_TEXCOORD0; i < EVF_TEXCOORD3+1; i = (i << 1))
-	{
-		if(vertexFormat & i)
-		{
-			ret++;
-		}
-	}
+    int32 ret = 0;
+    for (int32 i = EVF_TEXCOORD0; i < EVF_TEXCOORD3 + 1; i = (i << 1))
+    {
+        if (vertexFormat & i)
+        {
+            ret++;
+        }
+    }
 
-	return ret;
+    return ret;
 }
-	
+
 inline int32 GetCubeTexCoordCount(int32 vertexFormat)
 {
-	int32 ret = 0;
-	for(int32 i = EVF_CUBETEXCOORD0; i < EVF_CUBETEXCOORD3+1; i = (i << 1))
-	{
-		if(vertexFormat & i)
-		{
-			ret++;
-		}
-	}
-		
-	return ret;
+    int32 ret = 0;
+    for (int32 i = EVF_CUBETEXCOORD0; i < EVF_CUBETEXCOORD3 + 1; i = (i << 1))
+    {
+        if (vertexFormat & i)
+        {
+            ret++;
+        }
+    }
+
+    return ret;
 }
 
-    
-    
 inline int32 GetVertexSize(int32 flags)
 {
     int32 size = 0;
-    if (flags & EVF_VERTEX) size += 3 * sizeof(float32);
-    if (flags & EVF_NORMAL) size += 3 * sizeof(float32);
-    if (flags & EVF_COLOR) size += 4;
-    if (flags & EVF_TEXCOORD0) size += 2 * sizeof(float32);
-    if (flags & EVF_TEXCOORD1) size += 2 * sizeof(float32);
-    if (flags & EVF_TEXCOORD2) size += 2 * sizeof(float32);
-    if (flags & EVF_TEXCOORD3) size += 2 * sizeof(float32);
-    if (flags & EVF_TANGENT) size += 3 * sizeof(float32);
-    if (flags & EVF_BINORMAL) size += 3 * sizeof(float32);
-	
-	if (flags & EVF_CUBETEXCOORD0) size += 3 * sizeof(float32);
-    if (flags & EVF_CUBETEXCOORD1) size += 3 * sizeof(float32);
-    if (flags & EVF_CUBETEXCOORD2) size += 3 * sizeof(float32);
-    if (flags & EVF_CUBETEXCOORD3) size += 3 * sizeof(float32);
+    if (flags & EVF_VERTEX)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_NORMAL)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_COLOR)
+        size += 4;
+    if (flags & EVF_TEXCOORD0)
+        size += 2 * sizeof(float32);
+    if (flags & EVF_TEXCOORD1)
+        size += 2 * sizeof(float32);
+    if (flags & EVF_TEXCOORD2)
+        size += 2 * sizeof(float32);
+    if (flags & EVF_TEXCOORD3)
+        size += 2 * sizeof(float32);
+    if (flags & EVF_TANGENT)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_BINORMAL)
+        size += 3 * sizeof(float32);
 
-	if (flags & EVF_TIME) size+=sizeof(float32);
-	
-    if (flags & EVF_PIVOT) size += 3 * sizeof(float32);
-    if (flags & EVF_FLEXIBILITY) size += sizeof(float32);
-    if (flags & EVF_ANGLE_SIN_COS) size += 2 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD0)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD1)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD2)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD3)
+        size += 3 * sizeof(float32);
+
+    if (flags & EVF_TIME)
+        size += sizeof(float32);
+
+    if (flags & EVF_PIVOT)
+        size += 3 * sizeof(float32);
+    if (flags & EVF_FLEXIBILITY)
+        size += sizeof(float32);
+    if (flags & EVF_ANGLE_SIN_COS)
+        size += 2 * sizeof(float32);
 
     //    if (flags & EVF_JOINTINDEX) size += 4;
     //    if (flags & EVF_JOINTWEIGHT) size += 4;
@@ -281,6 +302,20 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
 rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
+
+enum eBasePerfQuery
+{
+    PERFQUERY__2D_PASS_T0 = 0,
+    PERFQUERY__2D_PASS_T1,
+
+    PERFQUERY__CLEAR_PASS_T0,
+    PERFQUERY__CLEAR_PASS_T1,
+
+    PERFQUERY__MAIN_PASS_T0,
+    PERFQUERY__MAIN_PASS_T1,
+
+    PERFQUERY__USER
+};
 };
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

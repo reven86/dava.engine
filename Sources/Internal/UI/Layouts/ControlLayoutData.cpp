@@ -43,18 +43,28 @@ ControlLayoutData::ControlLayoutData(UIControl* control_)
 
 void ControlLayoutData::ApplyLayoutToControl()
 {
-    if (HasFlag(FLAG_POSITION_CHANGED))
-    {
-        control->SetPosition(position + control->GetPivotPoint());
-    }
-
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
         control->SetSize(size);
         control->OnSizeChanged();
     }
 
+    if (HasFlag(FLAG_POSITION_CHANGED))
+    {
+        control->SetPosition(position + control->GetPivotPoint());
+    }
+
     control->ResetLayoutDirty();
+}
+
+void ControlLayoutData::ApplyOnlyPositionLayoutToControl()
+{
+    if (HasFlag(FLAG_POSITION_CHANGED))
+    {
+        control->SetPosition(position + control->GetPivotPoint());
+    }
+
+    control->ResetLayoutPositionDirty();
 }
 
 UIControl* ControlLayoutData::GetControl() const

@@ -37,16 +37,20 @@
 
 #include <QApplication>
 
-namespace
+namespace DAVA
 {
-void ApplyModifier(DAVA::KeyboardDevice& keyboard, Qt::KeyboardModifiers const& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::uint32 davaModifier)
+class DavaQtApplyModifier
 {
-    if (true == (currentModifiers.testFlag(qtModifier)))
-        keyboard.OnKeyPressed(davaModifier);
-    else
-        keyboard.OnKeyUnpressed(davaModifier);
-}
-}
+public:
+    void operator()(DAVA::KeyboardDevice& keyboard, Qt::KeyboardModifiers const& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::Key davaModifier)
+    {
+        if (true == (currentModifiers.testFlag(qtModifier)))
+            keyboard.OnKeyPressed(davaModifier);
+        else
+            keyboard.OnKeyUnpressed(davaModifier);
+    }
+};
+} // end namespace DAVA
 
 DavaRenderer::DavaRenderer()
 {
@@ -65,11 +69,16 @@ DavaRenderer::~DavaRenderer()
 
 void DavaRenderer::paint()
 {
+    using namespace DAVA;
     Qt::KeyboardModifiers modifiers = qApp->keyboardModifiers();
-    DAVA::KeyboardDevice& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    ApplyModifier(keyboard, modifiers, Qt::AltModifier, DAVA::DVKEY_ALT);
-    ApplyModifier(keyboard, modifiers, Qt::ShiftModifier, DAVA::DVKEY_SHIFT);
-    ApplyModifier(keyboard, modifiers, Qt::ControlModifier, DAVA::DVKEY_CTRL);
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    DavaQtApplyModifier mod;
+    mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
+    mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
+    mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
 
-    DAVA::QtLayer::Instance()->ProcessFrame();
+    if (DAVA::DVAssertMessage::IsHidden())
+    {
+        DAVA::QtLayer::Instance()->ProcessFrame();
+    }
 }

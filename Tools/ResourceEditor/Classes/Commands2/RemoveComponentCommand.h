@@ -35,7 +35,7 @@
 class RemoveComponentCommand : public Command2
 {
 public:
-	RemoveComponentCommand(DAVA::Entity * entity, DAVA::Component * component);
+    RemoveComponentCommand(DAVA::Entity* entity, DAVA::Component* component);
     ~RemoveComponentCommand() override;
 
     void Undo() override;

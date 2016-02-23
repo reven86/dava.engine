@@ -36,20 +36,21 @@ class FontPropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    explicit FontPropertyDelegate(PropertiesTreeItemDelegate *delegate);
+    explicit FontPropertyDelegate(PropertiesTreeItemDelegate* delegate);
     ~FontPropertyDelegate();
 
     virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
-    virtual void setEditorData(QWidget * editor, const QModelIndex & index) const override;
-    virtual bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+    virtual void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    virtual bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
     virtual void enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions) override;
 
 private slots:
     void addPresetClicked();
     void configurePresetClicked();
     void valueChanged();
+
 private:
-    mutable QAction *configurePresetAction;
+    mutable QAction* configurePresetAction;
 };
 
 #endif // __FONT_PROPERTY_DELEGATE_H__s

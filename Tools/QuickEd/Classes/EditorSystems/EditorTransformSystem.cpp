@@ -155,7 +155,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     switch (currentInput->phase)
     {
     case UIEvent::Phase::KEY_DOWN:
-        return ProcessKey(currentInput->tid);
+        return ProcessKey(currentInput->key);
 
     case UIEvent::Phase::BEGAN:
     {
@@ -167,8 +167,8 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::Phase::DRAG:
     {
-        UIEvent::eButtonID button = static_cast<UIEvent::eButtonID>(currentInput->tid);
-        if (button == UIEvent::BUTTON_1 && currentInput->point != prevPos)
+        UIEvent::MouseButton button = currentInput->mouseButton;
+        if (button == UIEvent::MouseButton::LEFT && currentInput->point != prevPos)
         {
             if (ProcessDrag(currentInput->point))
             {
@@ -201,7 +201,7 @@ void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, co
     UpdateNeighboursToMove();
 }
 
-bool EditorTransformSystem::ProcessKey(const int32 key)
+bool EditorTransformSystem::ProcessKey(const Key key)
 {
     if (!selectedControlNodes.empty())
     {
@@ -213,16 +213,16 @@ bool EditorTransformSystem::ProcessKey(const int32 key)
         Vector2 deltaPos;
         switch (key)
         {
-        case DVKEY_LEFT:
+        case Key::LEFT:
             deltaPos.dx -= step;
             break;
-        case DVKEY_UP:
+        case Key::UP:
             deltaPos.dy -= step;
             break;
-        case DVKEY_RIGHT:
+        case Key::RIGHT:
             deltaPos.dx += step;
             break;
-        case DVKEY_DOWN:
+        case Key::DOWN:
             deltaPos.dy += step;
             break;
         default:
@@ -279,13 +279,13 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
 
 void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
     if (canAdjust)
     {
         Vector2 scaledDelta = delta / parentGeometricData.scale;
-        Vector2 deltaPosition(RotateVector(scaledDelta, -parentGeometricData.angle));
+        Vector2 deltaPosition(DAVA::Rotate(scaledDelta, -parentGeometricData.angle));
         Vector2 adjustedPosition(deltaPosition);
         adjustedPosition += extraDelta;
         extraDelta.SetZero();
@@ -294,7 +294,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + adjustedPosition);
         propertiesToChange.emplace_back(activeControlNode, property, VariantType(finalPosition));
-        delta = RotateVector(adjustedPosition, parentGeometricData.angle);
+        delta = DAVA::Rotate(adjustedPosition, parentGeometricData.angle);
         delta *= parentGeometricData.scale;
     }
     for (auto& nodeToMove : nodesToMove)
@@ -306,7 +306,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         }
         const UIGeometricData* gd = nodeToMove->parentGD;
         Vector2 scaledDelta = delta / gd->scale;
-        Vector2 deltaPosition(RotateVector(scaledDelta, -gd->angle));
+        Vector2 deltaPosition(DAVA::Rotate(scaledDelta, -gd->angle));
         AbstractProperty* property = nodeToMove->positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
@@ -325,12 +325,15 @@ Vector<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* par
 {
     DVASSERT(nullptr != parentGD);
     Vector<MagnetLine> magnets;
-
     Rect parentBox(Vector2(), parentGD->size);
     if (parentBox.GetSize()[axis] <= 0.0f)
     {
         return magnets;
     }
+    const size_t magnetsCountForParent = 7;
+    const size_t magnetsCountForOneNeighbour = 9;
+    magnets.reserve(magnetsCountForParent + magnetsCountForOneNeighbour * neighbours.size()); //TODO: replace digits with calculated values
+
     magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
     magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
     magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
@@ -377,7 +380,6 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const Vector<MagnetLin
     {
         if (fabs(line.interval) < TRANSFORM_EPSILON)
         {
-
             const Vector2::eAxis oppositeAxis = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
 
             float32 controlTop = line.controlBox.GetPosition()[oppositeAxis];
@@ -447,7 +449,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     Vector2 pivot(control->GetPivot());
 
     Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
-    deltaMappedToControl = RotateVector(deltaMappedToControl, -controlGeometricData.angle);
+    deltaMappedToControl = DAVA::Rotate(deltaMappedToControl, -controlGeometricData.angle);
 
     Vector2 deltaSize(deltaMappedToControl);
     Vector2 deltaPosition(deltaMappedToControl);
@@ -529,9 +531,9 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     }
 
     deltaPosition *= control->GetScale();
-    deltaPosition = RotateVector(deltaPosition, control->GetAngle());
+    deltaPosition = DAVA::Rotate(deltaPosition, control->GetAngle());
 
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
 
     if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
     {
@@ -607,7 +609,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
     //calculate control box in parent
     controlGD.size += deltaSize;
     Rect box = controlGD.GetAABBox();
-    Vector2 sizeAffect = RotateVector(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
+    Vector2 sizeAffect = DAVA::Rotate(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
     box.SetPosition(box.GetPosition() - sizeAffect);
 
     Vector2 transformPosition = box.GetPosition() + box.GetSize() * transformPoint;
@@ -618,7 +620,10 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
         if (directions[axis] != NO_DIRECTION)
         {
             Vector<MagnetLine> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
-
+            if (magnetLines.empty())
+            {
+                continue;
+            }
             std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool {
                 bool needRemove = true;
                 if (directions[line.axis] == POSITIVE_DIRECTION)
@@ -633,41 +638,42 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
             };
             magnetLines.erase(std::remove_if(magnetLines.begin(), magnetLines.end(), removePredicate));
 
-            if (!magnetLines.empty())
+            if (magnetLines.empty())
             {
-                std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
-                    float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
-                    float32 shareRight = right.controlSharePos - transformPoint[right.axis];
-                    float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
-                    float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
-                    return fabs(distanceLeft) < fabs(distanceRight);
-                };
-
-                MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
-                float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
-                float32 rangeForPosition = magnetRange[axis] * share;
-                float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
-                float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
-
-                Vector2 oldDeltaSize(deltaSize);
-
-                if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
-                {
-                    float32 interval = nearestLine.interval * directions[axis] * -1;
-                    DVASSERT(share > 0.0f);
-                    interval /= share;
-                    float32 scaledDistance = interval / controlGD.scale[axis];
-                    deltaSize[axis] += scaledDistance;
-                    extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
-                }
-
-                for (MagnetLine& line : magnetLines)
-                {
-                    float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
-                    line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare * directions[line.axis];
-                }
-                ExtractMatchedLines(magnets, magnetLines, control, axis);
+                continue;
             }
+            std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
+                float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
+                float32 shareRight = right.controlSharePos - transformPoint[right.axis];
+                float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
+                float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
+                return fabs(distanceLeft) < fabs(distanceRight);
+            };
+
+            MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+            float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
+            float32 rangeForPosition = magnetRange[axis] * share;
+            float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
+            float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
+
+            Vector2 oldDeltaSize(deltaSize);
+
+            if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
+            {
+                float32 interval = nearestLine.interval * directions[axis] * -1;
+                DVASSERT(share > 0.0f);
+                interval /= share;
+                float32 scaledDistance = interval / controlGD.scale[axis];
+                deltaSize[axis] += scaledDistance;
+                extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
+            }
+
+            for (MagnetLine& line : magnetLines)
+            {
+                float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
+                line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare * directions[line.axis];
+            }
+            ExtractMatchedLines(magnets, magnetLines, control, axis);
         }
     }
     return deltaSize;
@@ -675,12 +681,12 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
 
 void EditorTransformSystem::MovePivot(Vector2 delta)
 {
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
-    Vector2 rotatedDeltaPosition(RotateVector(scaledDelta, -parentGeometricData.angle));
+    Vector2 rotatedDeltaPosition(DAVA::Rotate(scaledDelta, -parentGeometricData.angle));
     Vector2 originalPos(positionProperty->GetValue().AsVector2());
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
@@ -692,23 +698,17 @@ namespace
 {
 void CreateMagnetLinesForPivot(Vector<MagnetLineInfo>& magnetLines, Vector2 target, const UIGeometricData& controlGeometricData)
 {
-    const Rect ur(controlGeometricData.GetUnrotatedRect());
-    Vector2 offset = ur.GetSize() * target;
-    Vector2 positionOffset = controlGeometricData.pivotPoint * controlGeometricData.scale;
-    positionOffset = RotateVector(positionOffset, controlGeometricData.angle);
-    Vector2 position = controlGeometricData.position - positionOffset;
+    const Vector2 targetSize(controlGeometricData.size);
+    Vector2 offset = targetSize * target;
     Vector2 horizontalLinePos(0.0f, offset.y);
-    horizontalLinePos = RotateVector(horizontalLinePos, controlGeometricData.angle);
-    horizontalLinePos += position;
 
     Vector2 verticalLinePos(offset.x, 0.0f);
-    verticalLinePos = RotateVector(verticalLinePos, controlGeometricData.angle);
-    verticalLinePos += position;
 
-    Rect horizontalRect(horizontalLinePos, Vector2(ur.GetSize().x, 0.0f));
-    Rect verticalRect(verticalLinePos, Vector2(0.0f, ur.GetSize().y));
-    magnetLines.emplace_back(ur, horizontalRect, &controlGeometricData, Vector2::AXIS_X);
-    magnetLines.emplace_back(ur, verticalRect, &controlGeometricData, Vector2::AXIS_Y);
+    Rect horizontalRect(horizontalLinePos, Vector2(targetSize.x, 0.0f));
+    Rect verticalRect(verticalLinePos, Vector2(0.0f, targetSize.y));
+    Rect targetBox(Vector2(0.0f, 0.0f), targetSize);
+    magnetLines.emplace_back(targetBox, horizontalRect, &controlGeometricData, Vector2::AXIS_X);
+    magnetLines.emplace_back(targetBox, verticalRect, &controlGeometricData, Vector2::AXIS_Y);
 }
 }; //unnamed namespace
 
@@ -719,7 +719,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
     DVASSERT(controlSize.x > 0.0f && controlSize.y > 0.0f);
-    const Vector2 rotatedDeltaPivot(RotateVector(delta, -controlGeometricData.angle));
+    const Vector2 rotatedDeltaPivot(DAVA::Rotate(delta, -controlGeometricData.angle));
     Vector2 deltaPivot(rotatedDeltaPivot / controlSize);
 
     const Vector2 range(magnetRange / controlSize); //range in pivot coordinates
@@ -758,7 +758,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
         {
             CreateMagnetLinesForPivot(magnetLines, target, controlGeometricData);
             extraDelta = finalPivot - target;
-            delta = RotateVector((target - origPivot) * controlSize, controlGeometricData.angle);
+            delta = DAVA::Rotate((target - origPivot) * controlSize, controlGeometricData.angle);
 
             finalPivot = target;
         }
@@ -770,7 +770,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
         {
             deltaPivot += extraDelta;
             extraDelta.SetZero();
-            delta = RotateVector(deltaPivot * controlSize, controlGeometricData.angle);
+            delta = DAVA::Rotate(deltaPivot * controlSize, controlGeometricData.angle);
         }
     }
     systemManager->MagnetLinesChanged.Emit(magnetLines);
@@ -798,7 +798,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
     systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
     return true;
@@ -913,7 +913,7 @@ void EditorTransformSystem::ClampAngle()
         angle += angle > 0.0f ? TRANSFORM_EPSILON : -TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<ChangePropertyAction> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
     systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }

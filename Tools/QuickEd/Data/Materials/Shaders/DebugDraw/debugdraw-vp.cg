@@ -16,6 +16,6 @@ property float4x4 worldViewProjMatrix : dynamic,a : ;
 
 
 VPROG_BEGIN
-    float4 position = float4(VP_IN_POSITION, 1.0);    
+    float4 position = float4(VP_IN_POSITION.xyz, 1.0);
     VP_OUT_POSITION = mul(position, worldViewProjMatrix);   
 VPROG_END

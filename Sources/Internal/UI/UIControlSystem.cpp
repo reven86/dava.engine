@@ -41,6 +41,7 @@
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
 #include "Debug/Profiler.h"
+#include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
@@ -72,7 +73,7 @@ UIControlSystem::UIControlSystem()
     focusedControl = NULL;
 
     popupContainer = new UIControl(Rect(0, 0, 1, 1));
-    popupContainer->SetName("UIControlSystem_popupContainer");
+    popupContainer->SetName(FastName("UIControlSystem_popupContainer"));
     popupContainer->SetInputEnabled(false);
 
     exclusiveInputLocker = NULL;
@@ -374,7 +375,7 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetContr
 {
     for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
     {
-        if ((*it).tid == eventID)
+        if ((*it).touchId == eventID)
         {
             CancelInput(&(*it));
 
@@ -431,7 +432,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
         {
             auto it = std::find_if(begin(touchEvents), end(touchEvents), [newEvent](const UIEvent& ev) {
-                return ev.tid == newEvent->tid;
+                return ev.touchId == newEvent->touchId;
             });
             if (it == end(touchEvents))
             {
@@ -561,7 +562,7 @@ void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, int32 lockEvent
     {
         for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
         {
-            if (it->tid != lockEventId && it->touchLocker != locker)
+            if (it->touchId != lockEventId && it->touchLocker != locker)
             { //cancel all inputs excepts current input and inputs what allready handles by this locker.
                 CancelInput(&(*it));
             }
@@ -700,6 +701,16 @@ bool UIControlSystem::IsRtl() const
 void UIControlSystem::SetRtl(bool rtl)
 {
     layoutSystem->SetRtl(rtl);
+}
+
+bool UIControlSystem::IsBiDiSupportEnabled() const
+{
+    return TextBlock::IsBiDiSupportEnabled();
+}
+
+void UIControlSystem::SetBiDiSupportEnabled(bool support)
+{
+    TextBlock::SetBiDiSupportEnabled(support);
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const

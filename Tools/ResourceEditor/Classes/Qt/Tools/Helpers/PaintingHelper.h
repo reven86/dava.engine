@@ -36,7 +36,6 @@
 
 #include "../GuiTypes.h"
 
-
 class PaintingHelper
 {
 public:

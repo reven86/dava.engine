@@ -29,13 +29,14 @@ extern "C" {
 #include <magick/morphology.h>
 
 extern MagickExport Image
-  *MorphologyApply(const Image *,const ChannelType,const MorphologyMethod,
-    const ssize_t,const KernelInfo *,const CompositeOperator,const double,
-    ExceptionInfo *);
+*
+MorphologyApply(const Image*, const ChannelType, const MorphologyMethod,
+                const ssize_t, const KernelInfo*, const CompositeOperator, const double,
+                ExceptionInfo*);
 
 extern MagickExport void
-  ScaleKernelInfo(KernelInfo *,const double,const GeometryFlags),
-  UnityAddKernelInfo(KernelInfo *,const double),
-  ZeroKernelNans(KernelInfo *);
+ScaleKernelInfo(KernelInfo *, const double, const GeometryFlags),
+UnityAddKernelInfo(KernelInfo *, const double),
+ZeroKernelNans(KernelInfo *);
 
 #endif

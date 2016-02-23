@@ -8,6 +8,7 @@ build/     # ignore all files in the build/ directory
 _build/    # ignore all files in the _build/ directory
 cmake_build/
 cmake_repo/
+cmake_prebuilt/
 xcuserdata/
 /xcuserdata
 /xcuserdata/

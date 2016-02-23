@@ -32,43 +32,41 @@
 
 // framework
 #include "Render/RenderHelper.h"
+#include "Render/Highlevel/RenderSystem.h"
 
 #define LOWEST_GRID_STEP 0.1f
 #define LOWEST_GRID_SIZE 1.0f
 
-SceneGridSystem::SceneGridSystem(DAVA::Scene * scene)
-	: DAVA::SceneSystem(scene)
+SceneGridSystem::SceneGridSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
 {
 }
 
 SceneGridSystem::~SceneGridSystem()
 {
-
 }
 
 void SceneGridSystem::Process(float timeElapsed)
 {
-
 }
-
 
 void SceneGridSystem::Draw()
 {
     const DAVA::float32 gridStep = SettingsManager::GetValue(Settings::Scene_GridStep).AsFloat();
     const DAVA::float32 gridMax = SettingsManager::GetValue(Settings::Scene_GridSize).AsFloat();
 
-    if(gridStep >= LOWEST_GRID_STEP && gridMax >= LOWEST_GRID_SIZE)
+    if (gridStep >= LOWEST_GRID_STEP && gridMax >= LOWEST_GRID_SIZE)
     {
-	    for(DAVA::float32 x = -gridMax; x <= gridMax; x += gridStep)
-	    {
+        for (DAVA::float32 x = -gridMax; x <= gridMax; x += gridStep)
+        {
             const DAVA::Vector3 v1(x, -gridMax, 0);
             const DAVA::Vector3 v2(x, gridMax, 0);
 
             const DAVA::Vector3 v3(-gridMax, x, 0);
             const DAVA::Vector3 v4(gridMax, x, 0);
 
-            if (x!= 0.0f)
-		    {
+            if (x != 0.0f)
+            {
                 static const DAVA::Color gridColor(0.4f, 0.4f, 0.4f, 1.0f);
 
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v1, v2, gridColor);
@@ -83,7 +81,6 @@ void SceneGridSystem::Draw()
     }
 }
 
-void SceneGridSystem::ProcessCommand(const Command2 *command, bool redo)
+void SceneGridSystem::ProcessCommand(const Command2* command, bool redo)
 {
-
 }

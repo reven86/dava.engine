@@ -41,13 +41,12 @@ namespace DAVA
 class UIGeometricData;
 class UIControl;
 }
+
 class EditorTransformSystem final : public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
     ~EditorTransformSystem();
-
-    bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
     enum eDirections
@@ -62,10 +61,12 @@ private:
 
     struct MoveInfo;
 
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
-    bool ProcessKey(const DAVA::int32 key);
+    bool ProcessKey(const DAVA::Key key);
     bool ProcessDrag(DAVA::Vector2 point);
 
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);

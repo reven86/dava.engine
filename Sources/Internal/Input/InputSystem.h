@@ -36,29 +36,24 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "InputCallback.h"
-//#include "UI/UIControl.h"
-//#include "UI/UIScreenTransition.h"
-//#include "UI/UILoadingTransition.h"
-//#include "UI/UIPopup.h"
 
 /**
 	\defgroup inputsystem	Input System
 */
 namespace DAVA
 {
-
 class KeyboardDevice;
 class GamepadDevice;
 
 class InputSystem : public Singleton<InputSystem>
 {
 public:
-	enum eInputDevice
-	{
-		INPUT_DEVICE_TOUCH		= 1,
-		INPUT_DEVICE_KEYBOARD	= 1 << 1,
-		INPUT_DEVICE_JOYSTICK	= 1 << 2
-	};
+    enum eInputDevice
+    {
+        INPUT_DEVICE_TOUCH = 1,
+        INPUT_DEVICE_KEYBOARD = 1 << 1,
+        INPUT_DEVICE_JOYSTICK = 1 << 2
+    };
 
     enum class eMouseCaptureMode
     {
@@ -70,63 +65,60 @@ public:
     friend void Core::CreateSingletons();
 
 protected:
-	~InputSystem();
-	/**
+    ~InputSystem();
+    /**
 	 \brief Don't call this constructor!
 	 */
-	InputSystem();
-			
-public:
-    
-	void ProcessInputEvent(UIEvent * event);
+    InputSystem();
 
-	void AddInputCallback(const InputCallback& inputCallback);
-	bool RemoveInputCallback(const InputCallback& inputCallback);
-	void RemoveAllInputCallbacks();
-    
+public:
+    void ProcessInputEvent(UIEvent* event);
+
+    void AddInputCallback(const InputCallback& inputCallback);
+    bool RemoveInputCallback(const InputCallback& inputCallback);
+    void RemoveAllInputCallbacks();
+
     void OnBeforeUpdate();
     void OnAfterUpdate();
-    
-    inline KeyboardDevice & GetKeyboard();
-    inline GamepadDevice  & GetGamepadDevice();
+
+    inline KeyboardDevice& GetKeyboard();
+    inline GamepadDevice& GetGamepadDevice();
 
     eMouseCaptureMode GetMouseCaptureMode();
     bool SetMouseCaptureMode(eMouseCaptureMode mode);
 
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;
-    
+
 protected:
-    
-    KeyboardDevice *keyboard;
-    GamepadDevice *gamepad;
+    KeyboardDevice* keyboard;
+    GamepadDevice* gamepad;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
-    
+
     bool isMultitouchEnabled;
 };
 
-inline KeyboardDevice & InputSystem::GetKeyboard()
+inline KeyboardDevice& InputSystem::GetKeyboard()
 {
     return *keyboard;
 }
 
-inline GamepadDevice & InputSystem::GetGamepadDevice()
+inline GamepadDevice& InputSystem::GetGamepadDevice()
 {
     return *gamepad;
 }
 
 inline void InputSystem::EnableMultitouch(bool enabled)
 {
-	isMultitouchEnabled = enabled;
+    isMultitouchEnabled = enabled;
 }
 
 inline bool InputSystem::GetMultitouchEnabled() const
 {
-	return isMultitouchEnabled;
+    return isMultitouchEnabled;
 }
-
 };
 
 #endif

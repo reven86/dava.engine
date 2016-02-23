@@ -42,12 +42,7 @@
 
 using namespace DAVA;
 
-Vector2 RotateVector(const Vector2& in, float32 angle)
-{
-    DAVA::Matrix3 rotateMatrix;
-    rotateMatrix.BuildRotation(angle);
-    return in * rotateMatrix;
-}
+EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
 class EditorSystemsManager::RootControl : public UIControl
 {
@@ -57,7 +52,7 @@ public:
 
 private:
     bool SystemInput(UIEvent* currentInput) override;
-    
+
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
     Vector2 prevPosition;
@@ -89,9 +84,9 @@ EditorSystemsManager::EditorSystemsManager()
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
-    rootControl->SetName("rootControl");
+    rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
-    scalableControl->SetName("scalableContent");
+    scalableControl->SetName(FastName("scalableContent"));
 
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
@@ -133,7 +128,7 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2 &point)
+ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point)
 {
     Vector<ControlNode*> nodesUnderPoint;
     auto predicate = [point](const UIControl* control) -> bool {
@@ -152,23 +147,17 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::OnPackageNodeChanged(std::weak_ptr<PackageNode> package_)
+void EditorSystemsManager::OnPackageNodeChanged(PackageNode* package_)
 {
+    if (nullptr != package)
     {
-        auto lastNode = package.lock();
-        if (nullptr != lastNode)
-        {
-            lastNode->RemoveListener(this);
-        }
+        package->RemoveListener(this);
     }
     package = package_;
     SetPreviewMode(true);
+    if (nullptr != package)
     {
-        auto newNode = package.lock();
-        if (nullptr != newNode)
-        {
-            newNode->AddListener(this);
-        }
+        package->AddListener(this);
     }
 }
 
@@ -192,11 +181,10 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 {
     if (previewMode)
     {
-        auto packagePtr = package.lock();
-        DVASSERT(nullptr != packagePtr);
-        if (nullptr != packagePtr)
+        DVASSERT(nullptr != package);
+        if (nullptr != package)
         {
-            PackageControlsNode* packageControlsNode = packagePtr->GetPackageControlsNode();
+            PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
             if (destination == packageControlsNode)
             {
                 editingRootControls.insert(node);
@@ -218,10 +206,9 @@ void EditorSystemsManager::RefreshRootControls()
 
     if (previewMode)
     {
-        auto packagePtr = package.lock();
-        if (nullptr != packagePtr)
+        if (nullptr != package)
         {
-            PackageControlsNode* controlsNode = packagePtr->GetPackageControlsNode();
+            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
             {
                 newRootControls.insert(controlsNode->Get(index));

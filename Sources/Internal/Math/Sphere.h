@@ -33,20 +33,19 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
-namespace DAVA 
+namespace DAVA
 {
 /**	
 	\ingroup math
 	\brief Sphere
- */	
+ */
 class Sphere
 {
 public:
-	float32 radius;
-	float32 squareRadius;
-	Vector3 center;
+    float32 radius;
+    float32 squareRadius;
+    Vector3 center;
 };
-	
 };
 
 #endif // __DAVAENGINE_SPHERE_H__

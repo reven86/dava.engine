@@ -51,15 +51,15 @@ public:
 
     Size2i GetFrameSize(int frame) const;
     int GetFrameWidth(int frame) const;
-	int GetFrameHeight(int frame) const;
+    int GetFrameHeight(int frame) const;
 
-	FilePath    filename;
-	int			frameCount;
-	int			spriteWidth;
-	int			spriteHeight;
-	Rect2i		* frameRects;
+    FilePath filename;
+    int frameCount;
+    int spriteWidth;
+    int spriteHeight;
+    Rect2i* frameRects;
 
-	Vector<String> pathsInfo;
+    Vector<String> pathsInfo;
     Vector<String> frameNames;
 };
 

@@ -31,9 +31,9 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(ResultTest)
+DAVA_TESTCLASS (ResultTest)
 {
-    DAVA_TEST(GetResultFunction)
+    DAVA_TEST (GetResultFunction)
     {
         TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS));
         TEST_VERIFY(!GetResultFunction(Result::RESULT_FAILURE));
@@ -48,25 +48,26 @@ DAVA_TESTCLASS(ResultTest)
         results.emplace_back(Result::RESULT_FAILURE, "result ");
         results.emplace_back(Result::RESULT_ERROR, "test.");
         ResultList resultList;
-        for (const auto &result : results)
+        for (const auto& result : results)
         {
             resultList.AddResultList(GetResultFunction(result));
         }
         TEST_VERIFY(resultList.GetResults().size() == results.size());
         auto resultIt = resultList.GetResults().begin();
-        for (const auto &result : results)
+        for (const auto& result : results)
         {
             TEST_VERIFY(result == *resultIt++);
         }
     }
-        
-    ResultList GetResultFunction(const Result &result)
+
+    ResultList GetResultFunction(const Result& result)
     {
         return ResultList(result);
     }
 
-    ResultList GetResultFunction(const Result &&result)
+    ResultList GetResultFunction(const Result&& result)
     {
         return ResultList(result);
     }
-};
+}
+;

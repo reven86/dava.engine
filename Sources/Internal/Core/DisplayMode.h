@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_DISPLAYMODE_H__
 #define __DAVAENGINE_DISPLAYMODE_H__
 
-
 namespace DAVA
 {
 /**
@@ -53,19 +52,19 @@ public:
         , height(height_)
         , bpp(bpp_)
         , refreshRate(refreshRate_)
-    {}
+    {
+    }
 
     bool IsValid()
     {
         return (width > 0 && height > 0 && refreshRate != -1);
     }
 
-    int32 width = 0;        //! width of the display mode
-    int32 height = 0;       //! height of the display mode
-    int32 bpp = 0;          //! bits per pixel 
+    int32 width = 0; //! width of the display mode
+    int32 height = 0; //! height of the display mode
+    int32 bpp = 0; //! bits per pixel
     int32 refreshRate = -1; //! refresh rate of the display mode, 0 if default
 };
-
 };
 
 #endif // __DAVAENGINE_DISPLAYMODE_H__

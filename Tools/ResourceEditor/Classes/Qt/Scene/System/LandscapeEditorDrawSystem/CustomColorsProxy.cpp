@@ -43,14 +43,25 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
     , changes(0)
     , brushMaterial(new NMaterial())
 {
-    customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
+    Texture::FBODescriptor fboDesc;
+    fboDesc.width = size;
+    fboDesc.height = size;
+    fboDesc.textureType = rhi::TextureType::TEXTURE_TYPE_2D;
+    fboDesc.format = PixelFormat::FORMAT_RGBA8888;
+    fboDesc.needDepth = false;
+    fboDesc.needPixelReadback = true;
+    customColorsRenderTarget = Texture::CreateFBO(fboDesc);
+
+    // clear texture, to initialize frame buffer object
+    // using PRIORITY_SERVICE_2D + 1 to ensure it will be cleared before drawing existing image into render target
+    RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_SERVICE_2D + 1, DAVA::Color::Clear, rhi::Viewport(0, 0, size, size));
 
     brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
     brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
     brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
-void CustomColorsProxy::ResetLoadedState( bool isLoaded )
+void CustomColorsProxy::ResetLoadedState(bool isLoaded)
 {
     textureLoaded = isLoaded;
 }
@@ -72,59 +83,59 @@ Texture* CustomColorsProxy::GetTexture()
 
 void CustomColorsProxy::ResetTargetChanged()
 {
-	spriteChanged = false;
+    spriteChanged = false;
 }
 
 bool CustomColorsProxy::IsTargetChanged()
 {
-	return spriteChanged;
+    return spriteChanged;
 }
 
 Rect CustomColorsProxy::GetChangedRect()
 {
-	if (IsTargetChanged())
-	{
-		return changedRect;
-	}
-	
-	return Rect();
+    if (IsTargetChanged())
+    {
+        return changedRect;
+    }
+
+    return Rect();
 }
 
-void CustomColorsProxy::UpdateRect(const DAVA::Rect &rect)
+void CustomColorsProxy::UpdateRect(const DAVA::Rect& rect)
 {
-	DAVA::Rect bounds(0.f, 0.f, (float32)size, (float32)size);
-	changedRect = rect;
-	bounds.ClampToRect(changedRect);
+    DAVA::Rect bounds(0.f, 0.f, (float32)size, (float32)size);
+    changedRect = rect;
+    bounds.ClampToRect(changedRect);
 
-	spriteChanged = true;
+    spriteChanged = true;
 }
 
 int32 CustomColorsProxy::GetChangesCount() const
 {
-	return changes;
+    return changes;
 }
 
 void CustomColorsProxy::ResetChanges()
 {
-	changes = 0;
+    changes = 0;
 }
 
 void CustomColorsProxy::IncrementChanges()
 {
-	++changes;
+    ++changes;
 }
 
 void CustomColorsProxy::DecrementChanges()
 {
-	--changes;
+    --changes;
 }
 
 void CustomColorsProxy::UpdateSpriteFromConfig()
 {
     if (NULL == customColorsRenderTarget)
-	{
-		return;
-	}
+    {
+        return;
+    }
 
     rhi::Viewport viewport;
     viewport.x = viewport.y = 0;

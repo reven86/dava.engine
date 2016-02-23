@@ -31,7 +31,7 @@
 #include <QUndoGroup>
 #include "Debug/DVAssert.h"
 
-DocumentGroup::DocumentGroup(QObject *parent) 
+DocumentGroup::DocumentGroup(QObject* parent)
     : QObject(parent)
     , active(nullptr)
     , undoGroup(new QUndoGroup(this))
@@ -80,7 +80,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
-    
+
     active = document;
 
     if (nullptr == active)
@@ -89,19 +89,17 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     else
     {
-        connect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::RootControlPositionChanged);
         undoGroup->setActiveStack(active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
 }
 
-
-Document *DocumentGroup::GetActiveDocument() const
+Document* DocumentGroup::GetActiveDocument() const
 {
     return active;
 }
 
-const QUndoGroup *DocumentGroup::GetUndoGroup() const
+const QUndoGroup* DocumentGroup::GetUndoGroup() const
 {
     return undoGroup;
 }

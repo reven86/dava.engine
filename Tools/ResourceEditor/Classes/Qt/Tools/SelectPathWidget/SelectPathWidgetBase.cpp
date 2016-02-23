@@ -41,79 +41,79 @@
 #include <QMessageBox>
 
 SelectPathWidgetBase::SelectPathWidgetBase(QWidget* _parent, bool _checkForProjectPath, DAVA::String _openDialogDefualtPath, DAVA::String _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion)
-:	QLineEdit(_parent),
+    : QLineEdit(_parent)
+    ,
     checkForProjectPath(_checkForProjectPath)
 {
-	Init(_openDialogDefualtPath, _relativPath, _openFileDialogTitle, _fileFormatDescriotion);
+    Init(_openDialogDefualtPath, _relativPath, _openFileDialogTitle, _fileFormatDescriotion);
 }
 
 SelectPathWidgetBase::~SelectPathWidgetBase()
 {
-	delete openButton;
-	delete clearButton;
+    delete openButton;
+    delete clearButton;
 }
 
-void SelectPathWidgetBase::Init(DAVA::String& _openDialogDefualtPath, DAVA::String& _relativPath,DAVA::String _openFileDialogTitle, DAVA::String _fileFormatFilter)
+void SelectPathWidgetBase::Init(DAVA::String& _openDialogDefualtPath, DAVA::String& _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatFilter)
 {
-	setAcceptDrops(true);
-	
-	relativePath = DAVA::FilePath(_relativPath);
-	openDialogDefaultPath = _openDialogDefualtPath;
-	openFileDialogTitle = _openFileDialogTitle;
-	fileFormatFilter = _fileFormatFilter;
-	
-	clearButton = CreateToolButton(":/QtIcons/ccancel.png");
-	openButton = CreateToolButton(":/QtIcons/openscene.png");
-		
-	connect(clearButton, SIGNAL(clicked()), this, SLOT(EraseClicked()));
-	connect(openButton, SIGNAL(clicked()), this, SLOT(OpenClicked()));
-	connect(this, SIGNAL(editingFinished()), this, SLOT(acceptEditing()));
+    setAcceptDrops(true);
+
+    relativePath = DAVA::FilePath(_relativPath);
+    openDialogDefaultPath = _openDialogDefualtPath;
+    openFileDialogTitle = _openFileDialogTitle;
+    fileFormatFilter = _fileFormatFilter;
+
+    clearButton = CreateToolButton(":/QtIcons/ccancel.png");
+    openButton = CreateToolButton(":/QtIcons/openscene.png");
+
+    connect(clearButton, SIGNAL(clicked()), this, SLOT(EraseClicked()));
+    connect(openButton, SIGNAL(clicked()), this, SLOT(OpenClicked()));
+    connect(this, SIGNAL(editingFinished()), this, SLOT(acceptEditing()));
 }
 
-void SelectPathWidgetBase::resizeEvent(QResizeEvent *)
+void SelectPathWidgetBase::resizeEvent(QResizeEvent*)
 {
-	QSize sz = clearButton->sizeHint();
-	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	clearButton->move(rect().right() - frameWidth - sz.width(),(rect().bottom() + 1 - sz.height())/2);
-	
-	QSize szOpenBtn = openButton->sizeHint();
+    QSize sz = clearButton->sizeHint();
+    int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+    clearButton->move(rect().right() - frameWidth - sz.width(), (rect().bottom() + 1 - sz.height()) / 2);
+
+    QSize szOpenBtn = openButton->sizeHint();
     int offsetFromRight = clearButton->isVisible() ? sz.width() : 0;
-	openButton->move(rect().right() - offsetFromRight - frameWidth - szOpenBtn.width(),(rect().bottom() + 1 - szOpenBtn.height())/2);
+    openButton->move(rect().right() - offsetFromRight - frameWidth - szOpenBtn.width(), (rect().bottom() + 1 - szOpenBtn.height()) / 2);
 }
 
 QToolButton* SelectPathWidgetBase::CreateToolButton(const DAVA::String& iconPath)
 {
-	QToolButton* retButton;
-	
-	retButton = new QToolButton(this);
-	QIcon icon(iconPath.c_str());
-	retButton->setIcon(icon);
-	retButton->setCursor(Qt::ArrowCursor);
-	retButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
-	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	QSize msz = minimumSizeHint();
-	setStyleSheet(QString("QLineEdit { padding-right: %1px; } ").arg(retButton->sizeHint().width() * 2 + frameWidth));
-	setMinimumSize(qMax(msz.width(), retButton->sizeHint().height() + frameWidth * 2 + 2),
-				   qMax(msz.height(), retButton->sizeHint().height() + frameWidth * 2 + 2));
-	
-	return retButton;
+    QToolButton* retButton;
+
+    retButton = new QToolButton(this);
+    QIcon icon(iconPath.c_str());
+    retButton->setIcon(icon);
+    retButton->setCursor(Qt::ArrowCursor);
+    retButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
+    int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+    QSize msz = minimumSizeHint();
+    setStyleSheet(QString("QLineEdit { padding-right: %1px; } ").arg(retButton->sizeHint().width() * 2 + frameWidth));
+    setMinimumSize(qMax(msz.width(), retButton->sizeHint().height() + frameWidth * 2 + 2),
+                   qMax(msz.height(), retButton->sizeHint().height() + frameWidth * 2 + 2));
+
+    return retButton;
 }
 
 void SelectPathWidgetBase::EraseWidget()
 {
-	setText(QString(""));
-	mimeData.clear();
+    setText(QString(""));
+    mimeData.clear();
 }
-
 
 void SelectPathWidgetBase::EraseClicked()
 {
-	EraseWidget();
+    EraseWidget();
 }
 
 void SelectPathWidgetBase::acceptEditing()
 {
-	this->setText(getText());
+    this->setText(getText());
 }
 
 void SelectPathWidgetBase::setVisible(bool value)
@@ -124,8 +124,8 @@ void SelectPathWidgetBase::setVisible(bool value)
 
 void SelectPathWidgetBase::OpenClicked()
 {
-	DAVA::FilePath presentPath(text().toStdString());
-	DAVA::FilePath dialogString(openDialogDefaultPath);
+    DAVA::FilePath presentPath(text().toStdString());
+    DAVA::FilePath dialogString(openDialogDefaultPath);
     if (DAVA::FileSystem::Instance()->Exists(presentPath.GetDirectory())) //check if file text box clean
     {
         dialogString = presentPath.GetDirectory();
@@ -134,25 +134,25 @@ void SelectPathWidgetBase::OpenClicked()
     DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
     this->blockSignals(false);
 
-    if(retString.empty())
+    if (retString.empty())
     {
         return;
     }
 
     DAVA::String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
 
-    if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
+    if (checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
     {
-        QMessageBox::warning(NULL, "Wrong file selected", QString(DAVA::Format("Path %s doesn't belong to project.", retString.c_str()).c_str() ), QMessageBox::Ok);
+        QMessageBox::warning(NULL, "Wrong file selected", QString(DAVA::Format("Path %s doesn't belong to project.", retString.c_str()).c_str()), QMessageBox::Ok);
         return;
     }
-    
-	HandlePathSelected(retString);
+
+    HandlePathSelected(retString);
 }
 
 void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 {
-	DAVA::FilePath fullPath(name);
+    DAVA::FilePath fullPath(name);
 
     DVASSERT(DAVA::FileSystem::Instance()->Exists(fullPath));
 
@@ -170,20 +170,19 @@ void SelectPathWidgetBase::setText(const QString& filePath)
     emit PathSelected(filePath.toStdString());
 }
 
-void SelectPathWidgetBase::setText(const DAVA::String &filePath)
+void SelectPathWidgetBase::setText(const DAVA::String& filePath)
 {
     SelectPathWidgetBase::setText(QString(filePath.c_str()));
 }
 
 DAVA::String SelectPathWidgetBase::getText()
 {
-	return text().toStdString();
+    return text().toStdString();
 }
-
 
 DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path)
 {
-	DAVA::FilePath fullPath(path);
+    DAVA::FilePath fullPath(path);
     if (DAVA::FileSystem::Instance()->Exists(fullPath))
     {
         return fullPath.GetRelativePathname(relativePath);
@@ -191,33 +190,33 @@ DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path
     else
     {
         return path;
-	}
+    }
 }
 
 void SelectPathWidgetBase::dropEvent(QDropEvent* event)
 {
-	const QMimeData* sendedMimeData = event->mimeData();
-		
-	DAVA::List<DAVA::String> nameList;
-	
-	DAVA::MimeDataHelper::GetItemNamesFromMimeData(sendedMimeData, nameList);
-	if(nameList.size() == 0)
-	{
-		return;
-	}
-	
-	mimeData.clear();
-	
-	foreach(const QString & format, event->mimeData()->formats())
-	{
-		if(DAVA::MimeDataHelper::IsMimeDataTypeSupported(format.toStdString()))
-		{
-			mimeData.setData(format, event->mimeData()->data(format));
-		}
-	}
-	
-	DAVA::String itemName = *nameList.begin();
-	DAVA::FilePath filePath(itemName);
+    const QMimeData* sendedMimeData = event->mimeData();
+
+    DAVA::List<DAVA::String> nameList;
+
+    DAVA::MimeDataHelper::GetItemNamesFromMimeData(sendedMimeData, nameList);
+    if (nameList.size() == 0)
+    {
+        return;
+    }
+
+    mimeData.clear();
+
+    foreach (const QString& format, event->mimeData()->formats())
+    {
+        if (DAVA::MimeDataHelper::IsMimeDataTypeSupported(format.toStdString()))
+        {
+            mimeData.setData(format, event->mimeData()->data(format));
+        }
+    }
+
+    DAVA::String itemName = *nameList.begin();
+    DAVA::FilePath filePath(itemName);
     if (DAVA::FileSystem::Instance()->Exists(filePath)) // check is it item form scene tree or file system
     {
         setText(filePath.GetAbsolutePathname());
@@ -225,8 +224,8 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
     else
     {
         setText(itemName);
-	}
-	
+    }
+
     event->setDropAction(Qt::LinkAction);
     event->accept();
 }
@@ -234,10 +233,10 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
 void SelectPathWidgetBase::dragEnterEvent(QDragEnterEvent* event)
 {
     event->setDropAction(Qt::LinkAction);
-	if(DAVA::MimeDataHelper::IsMimeDataTypeSupported(event->mimeData()))
-	{
+    if (DAVA::MimeDataHelper::IsMimeDataTypeSupported(event->mimeData()))
+    {
         event->accept();
-	}
+    }
 }
 
 void SelectPathWidgetBase::dragMoveEvent(QDragMoveEvent* event)

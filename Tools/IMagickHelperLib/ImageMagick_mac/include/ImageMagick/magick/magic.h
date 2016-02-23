@@ -24,48 +24,51 @@ extern "C" {
 
 typedef struct _MagicInfo
 {
-  char
+    char
     *path,
     *name,
     *target;
 
-  unsigned char
-    *magic;
+    unsigned char
+    * magic;
 
-  size_t
+    size_t
     length;
 
-  MagickOffsetType
+    MagickOffsetType
     offset;
 
-  MagickBooleanType
+    MagickBooleanType
     exempt,
     stealth;
 
-  struct _MagicInfo
+    struct _MagicInfo
     *previous,
-    *next;  /* deprecated, use GetMagicInfoList() */
+    *next; /* deprecated, use GetMagicInfoList() */
 
-  size_t
+    size_t
     signature;
 } MagicInfo;
 
 extern MagickExport char
-  **GetMagicList(const char *,size_t *,ExceptionInfo *);
+**
+GetMagicList(const char*, size_t*, ExceptionInfo*);
 
 extern MagickExport const char
-  *GetMagicName(const MagicInfo *);
+*
+GetMagicName(const MagicInfo*);
 
 extern MagickExport MagickBooleanType
-  ListMagicInfo(FILE *,ExceptionInfo *),
-  MagicComponentGenesis(void);
+ListMagicInfo(FILE *, ExceptionInfo *),
+MagicComponentGenesis(void);
 
 extern MagickExport const MagicInfo
-  *GetMagicInfo(const unsigned char *,const size_t,ExceptionInfo *),
-  **GetMagicInfoList(const char *,size_t *,ExceptionInfo *);
+*
+GetMagicInfo(const unsigned char *, const size_t, ExceptionInfo *),
+**GetMagicInfoList(const char *, size_t *, ExceptionInfo *);
 
 extern MagickExport void
-  MagicComponentTerminus(void);
+MagicComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
