@@ -240,16 +240,19 @@ bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& c
     return false;
 }
 
-void UIControl::SetName(const String& _name)
+void UIControl::SetName(const String& name_)
 {
-    FastName newFastName(_name);
-    if (fastName != newFastName)
+    SetName(FastName(name_));
+}
+
+void UIControl::SetName(const FastName& name_)
+{
+    if (name != name_)
     {
         SetStyleSheetDirty();
     }
 
-    name = _name;
-    fastName = newFastName;
+    name = name_;
 }
 
 void UIControl::SetTag(int32 _tag)
@@ -260,26 +263,22 @@ void UIControl::SetTag(int32 _tag)
 // return first control with given name
 UIControl* UIControl::FindByName(const String& name, bool recursive) const
 {
-    List<UIControl*>::const_iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
-    {
-        UIControl* c = (*it);
-        if (c->name == name)
-            return c;
-
-        if (recursive)
-        {
-            UIControl* inChilds = c->FindByName(name);
-            if (inChilds)
-                return inChilds;
-        }
-    }
-    return 0;
+    return UIControlHelpers::FindChildControlByName(name, this, recursive);
 }
 
-UIControl* UIControl::FindByPath(const String& path) const
+UIControl* UIControl::FindByName(const FastName& name, bool recursive) const
 {
-    return UIControlHelpers::GetControlByPath(path, this);
+    return UIControlHelpers::FindChildControlByName(name, this, recursive);
+}
+
+const UIControl* UIControl::FindByPath(const String& path) const
+{
+    return UIControlHelpers::FindControlByPath(path, this);
+}
+
+UIControl* UIControl::FindByPath(const String& path)
+{
+    return UIControlHelpers::FindControlByPath(path, this);
 }
 
 void UIControl::SetState(int32 state)
@@ -1020,7 +1019,6 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
 
     tag = srcControl->GetTag();
     name = srcControl->name;
-    fastName = srcControl->fastName;
 
     controlState = srcControl->controlState;
     visible = srcControl->visible;
@@ -2423,7 +2421,7 @@ void UIControl::DumpInputs(int32 depthLevel)
         outStr += "| ";
     }
     outStr += "\\-";
-    outStr += name;
+    outStr += name.c_str();
     if (inputProcessorsCount > 0)
     {
         outStr += " ";
@@ -2809,6 +2807,11 @@ void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     packageContext = newPackageContext;
     for (UIControl* child : childs)
         child->PropagateParentWithContext(packageContext ? this : parentWithContext);
+}
+
+UIControl* UIControl::GetParentWithContext() const
+{
+    return parentWithContext;
 }
 
 void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
