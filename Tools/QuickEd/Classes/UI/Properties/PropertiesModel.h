@@ -32,6 +32,7 @@
 
 #include <QAbstractItemModel>
 #include <QSet>
+#include <QTimer>
 
 #include "FileSystem/VariantType.h"
 #include "Model/ControlProperties/PropertyListener.h"
