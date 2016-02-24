@@ -315,7 +315,7 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         }
         else
         {
-            Logger::Info("%s - failed to retrieve from cache(%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested));
+            Logger::Info("%s - failed to retrieve from cache(%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
         }
     }
 
@@ -341,7 +341,7 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         }
         else
         {
-            Logger::Info("%s - failed to add to cache (%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added));
+            Logger::Info("%s - failed to add to cache (%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
         }
     }
 }

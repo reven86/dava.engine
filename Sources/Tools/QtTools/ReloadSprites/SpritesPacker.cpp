@@ -30,6 +30,8 @@
 #include "SpritesPacker.h"
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
+
+#include <QDir>
 #include <QDirIterator>
 
 #include "AssetCache/AssetCacheClient.h"

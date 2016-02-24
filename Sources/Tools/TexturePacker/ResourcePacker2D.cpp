@@ -639,7 +639,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     }
     else
     {
-        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested));
+        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
     }
 
     return false;
@@ -681,7 +681,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         }
         else
         {
-            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added));
+            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
         }
     }
     else

@@ -34,13 +34,14 @@
 #include "TextureCompression/TextureConverter.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include <QObject>
+#include <QDir>
 #include <atomic>
 
 namespace DAVA {
     class ResourcePacker2D;
     class AssetCacheClient;
 }
-class QDir;
+//class QDir;
 
 class SpritesPacker : public QObject
 {
