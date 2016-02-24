@@ -121,6 +121,8 @@ public:
     static void SetTag(const char8* logTag);
 #endif
 
+    static FilePath GetLogPathForFilename(const String& filename);
+    void SetMaxFileSize(uint32 size);
     void EnableConsoleMode();
 
     const char8* GetLogLevelString(eLogLevel ll) const;
@@ -128,6 +130,8 @@ public:
     eLogLevel GetLogLevelFromString(const char8* ll) const;
 
 private:
+    bool CutOldLogFileIfExist(const FilePath& logFile);
+
     void PlatformLog(eLogLevel ll, const char8* text) const;
     void FileLog(eLogLevel ll, const char8* text) const;
     void CustomLog(eLogLevel ll, const char8* text) const;
@@ -138,6 +142,7 @@ private:
     FilePath logFilename;
     Vector<LoggerOutput*> customOutputs;
     bool consoleModeEnabled;
+    uint32 cutLogSize = 512 * 1024; //0.5 MB;
 };
 
 class LoggerOutput
