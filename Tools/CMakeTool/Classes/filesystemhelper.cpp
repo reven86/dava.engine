@@ -36,66 +36,40 @@ FileSystemHelper::FileSystemHelper(QObject* parent)
 {
 }
 
-QVariant FileSystemHelper::resolveUrl(QVariant url)
+QString FileSystemHelper::resolveUrl(const QString& url)
 {
-    if (!url.canConvert<QString>())
-    {
-        return "";
-    }
-    QString str = url.toString();
     QRegularExpression regExp;
 #ifdef Q_OS_MAC
     regExp.setPattern("^(file:/{2})"); //on unix systems path started with '/'
 #elif defined Q_OS_WIN
     regExp.setPattern("^(file:/{3})");
 #endif //Q_OS_MAC Q_OS_WIN;
-    str.replace(regExp, "");
-    return str;
+    QString resolvedUrl(url);
+    resolvedUrl.replace(regExp, "");
+    return resolvedUrl;
 }
 
-QVariant FileSystemHelper::isDirExists(QVariant dirPath)
+bool FileSystemHelper::isDirExists(const QString& dirPath)
 {
-    if (!dirPath.canConvert<QString>())
-    {
-        return false;
-    }
-    QString path = dirPath.toString();
-    if (path.isEmpty())
-    {
-        return false;
-    }
-    QDir dir(dirPath.toString());
+    QDir dir(dirPath);
     return dir.exists();
 }
 
-QVariant FileSystemHelper::isFileExists(QVariant filePath)
+bool FileSystemHelper::isFileExists(const QString& filePath)
 {
-    if (!filePath.canConvert<QString>())
-    {
-        return false;
-    }
-    QString path = filePath.toString();
-    if (path.isEmpty())
-    {
-        return false;
-    }
-    return QFile::exists(path);
+    QFileInfo fileInfo(filePath);
+    return fileInfo.isFile() && fileInfo.exists();
 }
 
-QVariant FileSystemHelper::FindCMakeBin(QVariant pathToDavaFramework)
+QString FileSystemHelper::FindCMakeBin(const QString& path)
 {
-    if (!pathToDavaFramework.canConvert<QString>())
-    {
-        return "";
-    }
     QString davaFolder = "dava.framework";
-    QString davaPath = pathToDavaFramework.toString();
-    int index = davaPath.indexOf(davaFolder);
+    int index = path.indexOf(davaFolder);
     if (index == -1)
     {
         return "";
     }
-    davaPath = davaPath.left(davaPath.indexOf(index + davaFolder.length()));
+    QString davaPath = path.left(path.indexOf(index + davaFolder.length()));
     QString cmakePath = davaPath + "/Tools/Bin" +
 #ifdef Q_OS_MAC
     "/CMake.app/Contents/bin/cmake";
@@ -109,13 +83,8 @@ QVariant FileSystemHelper::FindCMakeBin(QVariant pathToDavaFramework)
     return cmakePath;
 }
 
-QVariant FileSystemHelper::ClearBuildFolder(QVariant buildFolder)
+bool FileSystemHelper::ClearFolderContent(const QString& folderPath)
 {
-    if (!buildFolder.canConvert<QString>())
-    {
-        return false;
-    }
-    QString folderPath = buildFolder.toString();
     QDir dir(folderPath);
     if (folderPath.isEmpty() || !dir.exists())
     {

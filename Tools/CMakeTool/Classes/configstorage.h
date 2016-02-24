@@ -40,7 +40,7 @@ class ConfigStorage : public QObject
 public:
     explicit ConfigStorage(QObject* parent = 0);
     Q_INVOKABLE QString GetJSONTextFromConfigFile() const;
-    Q_INVOKABLE void SaveToConfigFile(QString config);
+    Q_INVOKABLE void SaveToConfigFile(const QString& config);
 
 private:
     QString configFilePath;

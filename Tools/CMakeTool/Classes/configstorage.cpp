@@ -65,7 +65,7 @@ QString ConfigStorage::GetJSONTextFromConfigFile() const
     return QString();
 }
 
-void ConfigStorage::SaveToConfigFile(QString config)
+void ConfigStorage::SaveToConfigFile(const QString& config)
 {
     QFile configFile(configFilePath);
     if (configFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
