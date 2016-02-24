@@ -1249,24 +1249,22 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         td.GenerateTransformData();
     }
 
-    spriteVertexCount = (int32)td.transformedVertices.size();
-    spriteIndexCount = (int32)td.indeces.size();
-
-    if (spriteIndexCount > 0 && spriteIndexCount > 0) // Ignore incorrect tiled data
+    const uint32 uCount = (uint32)td.units.size();
+    for (uint32 uIndex = 0; uIndex < uCount; ++uIndex)
     {
+        TiledDrawData::Unit& unit = td.units[uIndex];
         BatchDescriptor batch;
         batch.singleColor = color;
         batch.material = state->GetMaterial();
         batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
         batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-        batch.vertexCount = spriteVertexCount;
-        batch.indexCount = spriteIndexCount;
+        batch.vertexCount = (int32)unit.transformedVertices.size();
+        batch.indexCount = (int32)unit.indeces.size();
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
-        batch.vertexPointer = (float32*)td.transformedVertices.data();
-        batch.texCoordPointer = (float32*)td.texCoords.data();
-        batch.indexPointer = td.indeces.data();
-
+        batch.vertexPointer = (float32*)unit.transformedVertices.data();
+        batch.texCoordPointer = (float32*)unit.texCoords.data();
+        batch.indexPointer = unit.indeces.data();
         PushBatch(batch);
     }
 
@@ -1648,22 +1646,35 @@ void TiledDrawData::GenerateTileData()
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
                      VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
-    int32 vertexCount = (int32)(4 * cellsHeight.size() * cellsWidth.size());
-    if (vertexCount >= std::numeric_limits<uint16>::max())
+    int32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
+    int32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
+    int32 vertexTotalCount = (int32)(4 * cellsHeight.size() * cellsWidth.size());
+    int32 indexTotalCount = (int32)(6 * cellsHeight.size() * cellsWidth.size());
+    int32 unitsCount = vertexTotalCount / vertexLimitPerUnit + (vertexTotalCount % vertexLimitPerUnit > 0 ? 1 : 0);
+
     {
-        vertices.clear();
-        transformedVertices.clear();
-        texCoords.clear();
-        Logger::Error("[TiledDrawData::GenerateTileData] tile background too big!");
-        return;
+        // Resize units
+        units.resize(unitsCount);
+        // Resize buffers for first part of units
+        for (int32 i = 0; i < unitsCount - 1; ++i)
+        {
+            Unit& u = units[i];
+            u.vertices.resize(vertexLimitPerUnit);
+            u.texCoords.resize(vertexLimitPerUnit);
+            u.transformedVertices.resize(vertexLimitPerUnit);
+            u.indeces.resize(indexLimitPerUnit);
+        }
+        // Resize buffers for last unit
+        Unit& u = units[unitsCount - 1];
+        int32 lastUnitVertexCount = vertexTotalCount - vertexLimitPerUnit * (unitsCount - 1);
+        int32 lastUnitIndexCount = indexTotalCount - indexLimitPerUnit * (unitsCount - 1);
+        u.vertices.resize(lastUnitVertexCount);
+        u.texCoords.resize(lastUnitVertexCount);
+        u.transformedVertices.resize(lastUnitVertexCount);
+        u.indeces.resize(lastUnitIndexCount);
     }
-    vertices.resize(vertexCount);
-    transformedVertices.resize(vertexCount);
-    texCoords.resize(vertexCount);
 
-    int32 indecesCount = (int32)(6 * cellsHeight.size() * cellsWidth.size());
-    indeces.resize(indecesCount);
-
+    int32 unitNumber = 0;
     int32 offsetIndex = 0;
     const float32* textCoords = sprite->GetTextureCoordsForFrame(frame);
     Vector2 trasformOffset;
@@ -1677,11 +1688,21 @@ void TiledDrawData::GenerateTileData()
 
         for (uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex)
         {
+            int32 vertIndex = offsetIndex * 4;
+            if (vertIndex >= vertexLimitPerUnit)
+            {
+                offsetIndex = 0;
+                vertIndex = 0;
+                ++unitNumber;
+            }
+            Vector<Vector2>& vertices = units[unitNumber].vertices;
+            Vector<Vector2>& texCoords = units[unitNumber].texCoords;
+            Vector<uint16>& indeces = units[unitNumber].indeces;
+
             cellSize.x = cellsWidth[column].x;
             texCellSize.x = cellsWidth[column].y;
             texTrasformOffset.x = cellsWidth[column].z;
 
-            int32 vertIndex = offsetIndex * 4;
             vertices[vertIndex + 0] = trasformOffset;
             vertices[vertIndex + 1] = trasformOffset + Vector2(cellSize.x, 0.0f);
             vertices[vertIndex + 2] = trasformOffset + Vector2(0.0f, cellSize.y);
@@ -1759,10 +1780,15 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
 
 void TiledDrawData::GenerateTransformData()
 {
-    const uint32 size = (uint32)vertices.size();
-    for (uint32 index = 0; index < size; ++index)
+    const uint32 uCount = (uint32)units.size();
+    for (uint32 uIndex = 0; uIndex < uCount; ++uIndex)
     {
-        transformedVertices[index] = vertices[index] * transformMatr;
+        Unit& unit = units[uIndex];
+        const uint32 vCount = (uint32)unit.vertices.size();
+        for (uint32 vIndex = 0; vIndex < vCount; ++vIndex)
+        {
+            unit.transformedVertices[vIndex] = unit.vertices[vIndex] * transformMatr;
+        }
     }
 }
 
