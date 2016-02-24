@@ -146,7 +146,7 @@ void SpritesPackerModule::ConnectCacheClient()
 
         cacheClient = new DAVA::AssetCacheClient(true);
         DAVA::AssetCache::AssetCacheError connected = cacheClient->ConnectSynchronously(params);
-        if (connected == DAVA::AssetCache::AssetCacheError::NO_ERRORS)
+        if (connected != DAVA::AssetCache::AssetCacheError::NO_ERRORS)
         {
             SafeDelete(cacheClient);
         }
