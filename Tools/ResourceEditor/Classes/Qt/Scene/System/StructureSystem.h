@@ -61,8 +61,6 @@ public:
     StructureSystem(DAVA::Scene* scene);
     ~StructureSystem();
 
-    bool Init(const DAVA::FilePath& path);
-
     void Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore);
     void Remove(const EntityGroup& entityGroup);
     void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);

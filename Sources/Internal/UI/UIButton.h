@@ -389,7 +389,7 @@ public:
 
     INTROSPECTION_EXTEND(UIButton, UIControl,
                          nullptr
-                         );
+                         )
 };
 };
 

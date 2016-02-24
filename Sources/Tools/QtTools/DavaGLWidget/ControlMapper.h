@@ -30,13 +30,14 @@
 #ifndef QTTOOLS_CONTROLMAPPER_H
 #define QTTOOLS_CONTROLMAPPER_H
 
+#include "UI/UIEvent.h"
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QPointer>
 #include <QWindow>
-
-
-#include "UI/UIEvent.h"
+POP_QT_WARNING_SUPRESSOR
 
 class QWindow;
 class QKeyEvent;
