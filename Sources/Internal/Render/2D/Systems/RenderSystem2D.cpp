@@ -1637,8 +1637,8 @@ void TiledDrawData::GenerateTileData()
 
     uint32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
     uint32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
-    uint32 vertexTotalCount = static_cast<int32>(4 * cellsHeight.size() * cellsWidth.size());
-    uint32 indexTotalCount = static_cast<int32>(6 * cellsHeight.size() * cellsWidth.size());
+    uint32 vertexTotalCount = static_cast<uint32>(4 * cellsHeight.size() * cellsWidth.size());
+    uint32 indexTotalCount = static_cast<uint32>(6 * cellsHeight.size() * cellsWidth.size());
     uint32 unitsCount = vertexTotalCount / vertexLimitPerUnit + (vertexTotalCount % vertexLimitPerUnit > 0 ? 1 : 0);
 
     {
