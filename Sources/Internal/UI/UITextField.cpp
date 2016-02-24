@@ -354,7 +354,10 @@ void UITextField::WillDisappear()
 void UITextField::OnFocused()
 {
     SetRenderToTexture(false);
-    textFieldImpl->OpenKeyboard();
+    if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_FOCUSED)
+    {
+        OpenKeyboard();
+    }
 }
 
 void UITextField::SetFocused()
@@ -366,7 +369,7 @@ void UITextField::OnFocusLost()
 {
     SetRenderToTexture(true);
 
-    textFieldImpl->CloseKeyboard();
+    CloseKeyboard();
 
     if (delegate != nullptr)
     {
@@ -374,12 +377,17 @@ void UITextField::OnFocusLost()
     }
 }
 
+void UITextField::OnTouchOutsideFocus()
+{
+    if (closeKeyboardPolicy == CLOSE_KEYBOARD_WHEN_DEACTIVATED)
+    {
+        CloseKeyboard();
+    }
+}
+
 void UITextField::ReleaseFocus()
 {
-    if (this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        UIControlSystem::Instance()->SetFocusedControl(nullptr);
-    }
+    // TODO: remove method
 }
 
 void UITextField::SetFont(Font* font)
@@ -546,7 +554,31 @@ int32 UITextField::GetTextAlign() const
 
 void UITextField::Input(UIEvent* currentInput)
 {
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
+#if defined(DAVA_TEXTFIELD_USE_NATIVE)
+    if (this != UIControlSystem::Instance()->GetFocusedControl())
+        return;
+
+    if (currentInput->phase == UIEvent::Phase::KEY_DOWN || currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
+    {
+        if (currentInput->key == Key::ENTER)
+        {
+            if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
+            {
+                OpenKeyboard();
+            }
+            //delegate->TextFieldShouldReturn(this);
+        }
+    }
+    if (currentInput->phase == UIEvent::Phase::BEGAN)
+    {
+        if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
+        {
+            OpenKeyboard();
+        }
+    }
+    
+    
+#else // !defined(DAVA_TEXTFIELD_USE_NATIVE)
     if (nullptr == delegate)
     {
         return;

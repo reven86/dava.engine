@@ -185,6 +185,7 @@ public:
 
     void OnFocused() override;
     void OnFocusLost() override;
+    void OnTouchOutsideFocus() override;
 
     void SetDelegate(UITextFieldDelegate* delegate);
     UITextFieldDelegate* GetDelegate();

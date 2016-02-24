@@ -475,6 +475,18 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             }
             else
             {
+                if (phase == UIEvent::Phase::BEGAN)
+                {
+                    UIControl* focusedControl = focusSystem->GetFocusedControl();
+                    if (focusedControl)
+                    {
+                        if (!focusedControl->IsPointInside(eventToHandle->point))
+                        {
+                            focusedControl->OnTouchOutsideFocus();
+                        }
+                    }
+                }
+
                 if (!popupContainer->SystemInput(eventToHandle))
                 {
                     currentScreen->SystemInput(eventToHandle);

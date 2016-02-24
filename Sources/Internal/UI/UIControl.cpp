@@ -1423,7 +1423,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
-    if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
+        if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
         {
             return false;
         }
@@ -1440,7 +1440,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
         case UIEvent::Phase::CHAR:
         case UIEvent::Phase::CHAR_REPEAT:
-    case UIEvent::Phase::KEY_UP:
+        case UIEvent::Phase::KEY_UP:
         case UIEvent::Phase::KEY_DOWN:
         case UIEvent::Phase::KEY_DOWN_REPEAT:
         {
@@ -1519,40 +1519,39 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                     if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                     {
                         if (IsPointInside(currentInput->point, true))
-                    {
-                        if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                         {
-                            currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-                            ++touchesInside;
-                            if (touchesInside > 0)
+                            if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                             {
-                                controlState |= STATE_PRESSED_INSIDE;
-                                controlState &= ~STATE_PRESSED_OUTSIDE;
-                                if (currentInput->device == UIEvent::Device::MOUSE)
+                                currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
+                                ++touchesInside;
+                                if (touchesInside > 0)
                                 {
-                                controlState |= STATE_HOVER;
+                                    controlState |= STATE_PRESSED_INSIDE;
+                                    controlState &= ~STATE_PRESSED_OUTSIDE;
+                                    if (currentInput->device == UIEvent::Device::MOUSE)
+                                    {
+                                        controlState |= STATE_HOVER;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
+                            {
+                                currentInput->controlState = UIEvent::CONTROL_STATE_OUTSIDE;
+                                --touchesInside;
+                                if (touchesInside == 0)
+                                {
+                                    controlState |= STATE_PRESSED_OUTSIDE;
+                                    controlState &= ~STATE_PRESSED_INSIDE;
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
-                        {
-                            currentInput->controlState =
-                            UIEvent::CONTROL_STATE_OUTSIDE;
-                            --touchesInside;
-                            if (touchesInside == 0)
-                            {
-                                controlState |= STATE_PRESSED_OUTSIDE;
-                                controlState &= ~STATE_PRESSED_INSIDE;
-                            }
-                        }
-                    }
+                    Input(currentInput);
                 }
-                Input(currentInput);
-            }
-            return true;
+                return true;
             }
         }
         break;
@@ -1573,17 +1572,16 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                         if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                         {
                             --touchesInside;
-                        if (currentInput->device == UIEvent::Device::MOUSE)
-                        {
-                            if (totalTouches == 0)
+                            if (currentInput->device == UIEvent::Device::MOUSE)
                             {
-                                controlState |= STATE_HOVER;
+                                if (totalTouches == 0)
+                                {
+                                    controlState |= STATE_HOVER;
+                                }
                             }
                         }
-                        }
 
-                        currentInput->controlState =
-                        UIEvent::CONTROL_STATE_RELEASED;
+                        currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
 
                         if (totalTouches == 0)
                         {
@@ -1607,12 +1605,12 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                         {
                             controlState |= STATE_PRESSED_OUTSIDE;
                             controlState &= ~STATE_PRESSED_INSIDE;
-                        if (currentInput->device == UIEvent::Device::MOUSE)
-                        {
-                            controlState &= ~STATE_HOVER;
+                            if (currentInput->device == UIEvent::Device::MOUSE)
+                            {
+                                controlState &= ~STATE_HOVER;
+                            }
+                        }
                     }
-                }
-            }
             }
             currentInput->touchLocker = NULL;
             return true;
@@ -2335,6 +2333,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     }
 
     void UIControl::OnFocused()
+    {
+    }
+
+    void UIControl::OnTouchOutsideFocus()
     {
     }
 
