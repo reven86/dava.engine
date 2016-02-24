@@ -194,7 +194,7 @@ public:
     virtual Iterator Next(Iterator i) const = 0;
     virtual void Finish(Iterator i) const = 0;
     virtual void ItemValueGet(Iterator i, void* itemDst) const = 0;
-    virtual void ItemValueSet(Iterator i, void* itemSrc) = 0;
+    virtual void ItemValueSet(Iterator i, void* itemSrc) const = 0;
     virtual void* ItemPointer(Iterator i) const = 0;
     virtual void* ItemData(Iterator i) const = 0;
     virtual MetaInfo* ItemKeyType() const = 0;

@@ -130,7 +130,7 @@ public:
         }
     }
 
-    void ItemValueSet(Iterator i, void* itemSrc)
+    void ItemValueSet(Iterator i, void* itemSrc) const
     {
         CollectionPos* pos = (CollectionPos*)i;
         if (nullptr != pos)
@@ -287,7 +287,7 @@ public:
         }
     }
 
-    void ItemValueSet(Iterator i, void* itemSrc)
+    void ItemValueSet(Iterator i, void* itemSrc) const
     {
         CollectionPos* pos = (CollectionPos*)i;
         if (nullptr != pos)
