@@ -55,7 +55,7 @@ public:
 
     virtual ValueType* FindProperty(const DAVA::InspMember* member) const;
 
-    virtual ePropertyType GetType() const
+    ePropertyType GetType() const override
     {
         return TYPE_HEADER;
     }

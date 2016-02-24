@@ -48,6 +48,7 @@ class AbstractUIPackageBuilder;
 class AbstractUIPackageLoader
 {
 public:
+    virtual ~AbstractUIPackageLoader();
     virtual bool LoadPackage(const FilePath& packagePath, AbstractUIPackageBuilder* builder) = 0;
     virtual bool LoadControlByName(const String& name, AbstractUIPackageBuilder* builder) = 0;
 };

@@ -1,9 +1,11 @@
 #ifndef QTTOOLS_WIDGETSTATEHELPER_H
 #define QTTOOLS_WIDGETSTATEHELPER_H
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QPointer>
-
+POP_QT_WARNING_SUPRESSOR
 
 class QWidget;
 class QScreen;
@@ -12,7 +14,9 @@ class QScreen;
 class WidgetStateHelper
     : public QObject
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     enum WidgetEvent

@@ -173,7 +173,7 @@ bool ParseData(NSData* data, DAVA::XMLParserDelegate* delegate)
 
 bool XMLParser::ParseBytes(const unsigned char* bytes, int length, XMLParserDelegate* delegate)
 {
-    NSData* data = [NSData dataWithBytes:(void*)bytes length:length];
+    NSData* data = [NSData dataWithBytes:reinterpret_cast<const void*>(bytes) length:length];
     if (!ParseData(data, delegate))
     {
         Logger::Warning("PARSING PROBLEMS!!!");

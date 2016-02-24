@@ -194,7 +194,7 @@ void UIButton::SetStateColor(int32 state, Color color)
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetColor(color);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetColor(color);
         }
         state >>= 1;
     }
@@ -206,7 +206,7 @@ void UIButton::SetStateColorInheritType(int32 state, UIControlBackground::eColor
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetColorInheritType(value);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetColorInheritType(value);
         }
         state >>= 1;
     }
@@ -218,7 +218,7 @@ void UIButton::SetStatePerPixelAccuracyType(int32 state, UIControlBackground::eP
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i)->SetPerPixelAccuracyType(value);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetPerPixelAccuracyType(value);
         }
         state >>= 1;
     }
@@ -230,7 +230,7 @@ void UIButton::CreateBackgroundForState(int32 state)
     {
         if (state & 0x01)
         {
-            GetOrCreateBackground((eButtonDrawState)i);
+            GetOrCreateBackground(static_cast<eButtonDrawState>(i));
         }
 
         state >>= 1;

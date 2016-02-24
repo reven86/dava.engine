@@ -346,8 +346,8 @@ void UIControlSystem::Draw()
     {
         rhi::Viewport viewport;
         viewport.x = viewport.y = 0U;
-        viewport.width = (uint32)Renderer::GetFramebufferWidth();
-        viewport.height = (uint32)Renderer::GetFramebufferHeight();
+        viewport.width = static_cast<uint32>(Renderer::GetFramebufferWidth());
+        viewport.height = static_cast<uint32>(Renderer::GetFramebufferHeight());
         RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
     }
 
@@ -371,7 +371,7 @@ void UIControlSystem::Draw()
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
-void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetControl)
+void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)
 {
     for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
     {
@@ -560,7 +560,7 @@ const Vector<UIEvent>& UIControlSystem::GetAllInputs()
     return touchEvents;
 }
 
-void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, int32 lockEventId)
+void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId)
 {
     SafeRelease(exclusiveInputLocker);
     if (locker != NULL)
@@ -684,18 +684,22 @@ void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener* listener)
 
 void UIControlSystem::NotifyListenersWillSwitch(UIScreen* screen)
 {
+    // TODO do we need Copy?
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
-    for (uint32 i = 0; i < listenersCount; ++i)
-        screenSwitchListenersCopy[i]->OnScreenWillSwitch(screen);
+    for (auto& listener : screenSwitchListenersCopy)
+    {
+        listener->OnScreenWillSwitch(screen);
+    }
 }
 
 void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
 {
+    // TODO do we need Copy?
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
-    for (uint32 i = 0; i < listenersCount; ++i)
-        screenSwitchListenersCopy[i]->OnScreenDidSwitch(screen);
+    for (auto& listener : screenSwitchListenersCopy)
+    {
+        listener->OnScreenDidSwitch(screen);
+    }
 }
 
 bool UIControlSystem::IsRtl() const
