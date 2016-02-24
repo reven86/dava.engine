@@ -33,7 +33,6 @@
 
 namespace DAVA
 {
-
 ParticleRenderObject::ParticleRenderObject(ParticleEffectData* effect)
     : effectData(effect)
     , sortingOffset(15)
