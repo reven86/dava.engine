@@ -132,7 +132,8 @@ private:
     DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
     bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
 
-    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
 
 private:
     SceneCollisionSystem* collisionSystem = nullptr;

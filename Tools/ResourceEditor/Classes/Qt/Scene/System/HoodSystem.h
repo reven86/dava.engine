@@ -89,7 +89,8 @@ private:
     void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
     void ResetModifValues();
 
-    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
 
 private:
     btCollisionWorld* collWorld = nullptr;

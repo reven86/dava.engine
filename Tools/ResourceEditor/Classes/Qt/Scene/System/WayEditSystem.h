@@ -92,11 +92,12 @@ protected:
     bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
 
     void ResetSelection();
-    void ProcessSelection();
+    void ProcessSelection(const EntityGroup& selection);
     void UpdateSelectionMask();
     void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
 
-    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
 
 protected:
     EntityGroup currentSelection;

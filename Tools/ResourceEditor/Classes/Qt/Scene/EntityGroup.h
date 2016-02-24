@@ -44,6 +44,8 @@ public:
 
 public:
     EntityGroup() = default;
+    EntityGroup(const EntityGroup&) = default;
+
     EntityGroup(const EntityVector& ss);
     EntityGroup(EntityGroup&&);
     EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
@@ -80,8 +82,8 @@ public:
     void Exclude(const EntityGroup&);
     void RebuildBoundingBox();
 
-private:
-    EntityGroup(const EntityGroup&) = delete;
+    template <typename Predicate>
+    inline void RemoveIf(Predicate predicate);
 
 private:
     EntityMap entities;
@@ -116,6 +118,24 @@ inline bool EntityGroup::IsEmpty() const
 inline size_t EntityGroup::Size() const
 {
     return entities.size();
+}
+
+template <typename Predicate>
+inline void EntityGroup::RemoveIf(Predicate predicate)
+{
+    auto i = entities.begin();
+    while (i != entities.end())
+    {
+        if (predicate(i->first))
+        {
+            i = entities.erase(i);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+    RebuildBoundingBox();
 }
 
 #endif // __ENTITY_GROUP_H__

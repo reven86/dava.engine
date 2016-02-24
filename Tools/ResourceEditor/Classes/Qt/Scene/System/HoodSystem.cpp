@@ -401,7 +401,12 @@ void HoodSystem::LockAxis(bool lock)
     lockedAxis = lock;
 }
 
-bool HoodSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection)
+bool HoodSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection)
 {
     return !IsVisible() || (ST_MODIF_OFF == GetModifMode()) || (ST_AXIS_NONE == GetPassingAxis());
+}
+
+bool HoodSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection)
+{
+    return true;
 }

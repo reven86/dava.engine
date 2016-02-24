@@ -53,7 +53,8 @@ public:
 class SceneSelectionSystemDelegate
 {
 public:
-    virtual bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection) = 0;
+    virtual bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) = 0;
+    virtual bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) = 0;
 };
 
 #endif //__SYSTEM_DELEGATES_H__

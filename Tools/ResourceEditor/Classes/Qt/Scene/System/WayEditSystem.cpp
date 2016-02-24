@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include <QApplication>
 #include "WayEditSystem.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
@@ -223,9 +222,8 @@ void WayEditSystem::ResetSelection()
     underCursorPathEntity = NULL;
 }
 
-void WayEditSystem::ProcessSelection()
+void WayEditSystem::ProcessSelection(const EntityGroup& selection)
 {
-    const EntityGroup& selection = selectionSystem->GetSelection();
     if (currentSelection != selection)
     {
         currentSelection = selection;
@@ -274,7 +272,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                 cloneJustDone = true;
             }
 
-            ProcessSelection();
+            ProcessSelection(selectionSystem->GetSelection());
 
             const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
             bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
@@ -451,8 +449,8 @@ void WayEditSystem::Draw()
     const uint32 count = waypointEntities.size();
     for (uint32 i = 0; i < count; ++i)
     {
-        Entity* e = waypointEntities[i];
-        Entity* path = e->GetParent();
+        DAVA::Entity* e = waypointEntities[i];
+        DAVA::Entity* path = e->GetParent();
         DVASSERT(path);
 
         if (!e->GetVisible() || !path->GetVisible())
@@ -527,14 +525,49 @@ void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEnt
     }
 }
 
-bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection)
+bool WayEditSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection)
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
-
     if (isEnabled && shiftPressed)
     {
         return !selectedWaypoints.IsEmpty();
+    }
+
+    return true;
+}
+
+bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection)
+{
+    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+    if (isEnabled && shiftPressed)
+    {
+        // no waypoints selected or no new objects are selected
+        // will attempt to create new waypoint in input handler
+        if (newSelection.IsEmpty())
+            return true;
+
+        // do not allow multiselection here
+        if (newSelection.Size() > 1)
+        {
+            return false;
+        }
+
+        // only allow to select waypoints in this mode
+        auto entity = newSelection.GetFirstEntity();
+        if (GetWaypointComponent(entity) == nullptr)
+        {
+            prevSelectedWaypoints = selectedWaypoints;
+            selectedWaypoints.Clear();
+            return false;
+        }
+
+        // only allow to select waypoints withing same path
+        if (entity->GetParent() != sceneEditor->pathSystem->GetCurrrentPath())
+        {
+            return false;
+        }
     }
 
     return true;
