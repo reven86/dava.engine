@@ -256,7 +256,7 @@ bool QtMainWindow::SaveScene(SceneEditor2* scene)
         //if(scene->IsChanged())
         {
             SaveAllSceneEmitters(scene);
-            SceneFileV2::eError ret = scene->Save(scenePath);
+            SceneFileV2::eError ret = scene->SaveScene(scenePath);
             if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
             {
                 QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
@@ -300,7 +300,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2* scene)
     scene->SetScenePath(scenePath);
 
     SaveAllSceneEmitters(scene);
-    SceneFileV2::eError ret = scene->Save(scenePath);
+    SceneFileV2::eError ret = scene->SaveScene(scenePath);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {
         QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);

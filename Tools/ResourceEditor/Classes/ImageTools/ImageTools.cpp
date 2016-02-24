@@ -255,8 +255,6 @@ QImage ImageTools::FromDavaImage(Image* image)
 
     if (nullptr != image)
     {
-        QRgb* line = nullptr;
-
         switch (image->format)
         {
         case FORMAT_DXT1:

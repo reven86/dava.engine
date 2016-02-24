@@ -77,7 +77,7 @@ void StaticOcclusionTool::ProcessInternal()
     if (commandAction == ACTION_BUILD)
     {
         ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-        if (scene->Load(scenePathname))
+        if (scene->LoadScene(scenePathname))
         {
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
@@ -91,7 +91,7 @@ void StaticOcclusionTool::ProcessInternal()
                 Renderer::EndFrame();
             }
 
-            scene->Save();
+            scene->SaveScene();
         }
         RenderObjectsFlusher::Flush();
     }

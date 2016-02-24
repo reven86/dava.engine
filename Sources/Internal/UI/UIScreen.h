@@ -86,8 +86,12 @@ public:
     virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenSize);
 
 protected:
-    virtual void LoadResources(){};
-    virtual void UnloadResources(){};
+    virtual void LoadResources()
+    {
+    }
+    virtual void UnloadResources()
+    {
+    }
 
     /**
 	 \brief Fills borders thats appears in non proportional screen scaling.
