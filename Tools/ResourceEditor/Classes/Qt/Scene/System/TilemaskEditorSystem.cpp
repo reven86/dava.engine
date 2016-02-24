@@ -211,6 +211,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.priority = PRIORITY_SERVICE_2D;
             desc.colorAttachment = toolTexture->handle;
             desc.depthAttachment = toolTexture->handleDepthStencil;
             desc.width = toolTexture->GetWidth();
@@ -461,6 +462,7 @@ void TilemaskEditorSystem::CreateMaskTexture()
         landscapeTilemaskTexture = SafeRetain(tilemask);
 
         RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.priority = PRIORITY_SERVICE_2D;
         desc.colorAttachment = srcTexture->handle;
         desc.depthAttachment = srcTexture->handleDepthStencil;
         desc.width = srcTexture->GetWidth();
