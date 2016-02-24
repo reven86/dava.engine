@@ -51,6 +51,7 @@ namespace Themes
     QColor GetChangedPropertyColor();
     QColor GetPrototypeColor();
     QColor GetStyleSheetNodeColor();
+    QColor GetRulerWidgetBackgroungColor();
 };
 
 #endif // __QT_TOOLS_THEMES_H__

@@ -28,6 +28,7 @@
 
 
 #include "Themes.h"
+#include "Debug/DVassert.h"
 #include <QtGlobal>
 #include <QStyle>
 #include <QApplication>
@@ -48,7 +49,9 @@ QString defaultStyleSheet;
 eTheme currentTheme;
 bool themesInitialized = false;
 QStringList themesNames = {"classic", "dark"};
-    
+QColor textColor(192, 192, 192);
+QColor windowColor(53, 53, 53);
+
 void SetupClassicTheme();
 void SetupDarkTheme();
     
@@ -111,6 +114,9 @@ void SetCurrentTheme(eTheme theme)
         case Dark:
             SetupDarkTheme();
             break;
+        default:
+            DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
+            break;
     }
 }
     
@@ -131,15 +137,14 @@ void SetupDarkTheme()
     qApp->setStyle(QStyleFactory::create("Fusion"));
     
     QPalette darkPalette;
-    QColor textColor(192, 192, 192);
-    darkPalette.setColor(QPalette::Window, QColor(53,53,53));
+    darkPalette.setColor(QPalette::Window, windowColor);
     darkPalette.setColor(QPalette::WindowText, textColor);
-    darkPalette.setColor(QPalette::Base, QColor(53, 53, 53));
-    darkPalette.setColor(QPalette::AlternateBase, QColor(53,53,53));
+    darkPalette.setColor(QPalette::Base, windowColor);
+    darkPalette.setColor(QPalette::AlternateBase, windowColor);
     darkPalette.setColor(QPalette::ToolTipBase, textColor);
     darkPalette.setColor(QPalette::ToolTipText, textColor);
     darkPalette.setColor(QPalette::Text, textColor);
-    darkPalette.setColor(QPalette::Button, QColor(53,53,53));
+    darkPalette.setColor(QPalette::Button, windowColor);
     darkPalette.setColor(QPalette::ButtonText, textColor);
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
@@ -181,5 +186,10 @@ QColor GetPrototypeColor()
 QColor GetStyleSheetNodeColor()
 {
     return currentTheme == Themes::Classic ? QColor(Qt::darkGreen) : QColor("light green");
+}
+
+QColor GetRulerWidgetBackgroungColor()
+{
+    return currentTheme == Themes::Classic ? QColor(Qt::white) : windowColor;
 }
 };
