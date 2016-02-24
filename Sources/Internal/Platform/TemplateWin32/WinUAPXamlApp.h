@@ -135,6 +135,7 @@ private:
     void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
     void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
+    void DAVATouchEvent(UIEvent* newTouch);
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
 
     void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
@@ -184,7 +185,6 @@ private:
     bool isPhoneApiDetected = false;
 
     bool isWindowVisible = true;
-    bool isWindowFocused = false;
     bool isWindowClosed = false;
     bool isFullscreen = false;
     bool isRenderCreated = false;
