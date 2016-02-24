@@ -52,7 +52,7 @@ bool TestChooserScreen::IsFinished() const
 void TestChooserScreen::OnButtonPressed(BaseObject* obj, void* data, void* callerData)
 {
     UIButton* button = static_cast<UIButton*>(obj);
-    const String& testName = button->GetName();
+    const String& testName = button->GetName().c_str();
 
     for (auto* test : testChain)
     {
