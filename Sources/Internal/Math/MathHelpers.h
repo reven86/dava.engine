@@ -82,9 +82,9 @@ inline float32 InvSqrtFast(float32 number) //only for IEEE 754 floating point fo
 
     x2 = number * 0.5f;
     y = number;
-    i = *(int32*)&y;
+    i = *(reinterpret_cast<int32*>(&y));
     i = 0x5f3759df - (i >> 1);
-    y = *(float32*)&i;
+    y = *(reinterpret_cast<float32*>(&i));
     y = y * (threehalfs - (x2 * y * y));
 
     return y;
@@ -189,15 +189,15 @@ inline bool GetIntersectionVectorWithPlane(const Vector3& start, const Vector3& 
 	*/
 inline float32 SquareRootFloat(float32 number)
 {
-    long i;
+    int32 i;
     float32 x, y;
     const float32 f = 1.5f;
 
     x = number * 0.5f;
     y = number;
-    i = *(long*)&y;
+    i = *(reinterpret_cast<int32*>(&y));
     i = 0x5f3759df - (i >> 1);
-    y = *(float*)&i;
+    y = *(reinterpret_cast<float32*>(&i));
     y = y * (f - (x * y * y));
     y = y * (f - (x * y * y));
     return number * y;

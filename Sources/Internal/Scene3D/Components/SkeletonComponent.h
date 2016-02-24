@@ -61,7 +61,7 @@ public:
         inline Vector3 TransformVector(const Vector3& inVec) const;
     };
 
-    struct JointConfig
+    struct JointConfig : public InspBase
     {
         JointConfig();
 

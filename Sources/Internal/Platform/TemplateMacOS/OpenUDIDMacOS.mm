@@ -48,7 +48,7 @@
 - (id)getPasteboardWithName:(NSString*)name shouldCreate:(BOOL)create setPersistent:(BOOL)persistent
 {
     NSPasteboard* slotPB = [NSPasteboard pasteboardWithName:name];
-    return (id)slotPB;
+    return reinterpret_cast<id>(slotPB);
 }
 @end
 

@@ -37,7 +37,7 @@ namespace DAVA
 class MessageBase : public BaseObject
 {
 protected:
-    virtual ~MessageBase(){};
+    virtual ~MessageBase();
 
 public:
     virtual void operator()(BaseObject*, void*, void*) const = 0;
@@ -89,7 +89,7 @@ public:
     {
         if (SUPERSUBCLASS(BaseObject, T))
         {
-            return (BaseObject*)targetObject;
+            return reinterpret_cast<BaseObject*>(targetObject);
         }
         else
         {
@@ -101,11 +101,6 @@ public:
 class MessageBaseStaticFunctionImpl : public MessageBase
 {
     void (*targetFunction)(BaseObject*, void*, void*);
-
-protected:
-    ~MessageBaseStaticFunctionImpl()
-    {
-    }
 
 public:
     MessageBaseStaticFunctionImpl(void (*_function)(BaseObject*, void*, void*))

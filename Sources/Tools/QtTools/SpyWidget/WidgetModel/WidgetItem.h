@@ -30,18 +30,18 @@
 #ifndef QTTOOLS_WIDGETITEM_H
 #define QTTOOLS_WIDGETITEM_H
 
-
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QPointer>
 #include <QSharedPointer>
 #include <QWeakPointer>
 #include <QList>
 #include <QWidgetList>
-
+POP_QT_WARNING_SUPRESSOR
 
 class QWidget;
 class WidgetModel;
-
 
 class WidgetItem
     : public QObject
@@ -49,7 +49,9 @@ class WidgetItem
     friend class QSharedPointer < WidgetItem > ;
     friend class WidgetModel;
 
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 private:
     using ItemList = QList < QSharedPointer< WidgetItem > > ;

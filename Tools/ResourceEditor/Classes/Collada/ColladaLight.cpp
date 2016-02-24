@@ -110,7 +110,6 @@ void ColladaLight::ApplyLight(ColladaLightState& state)
 
     if (type == POINT)
     {
-        GLfloat lightAmbient[] = { 0.0f, 0.0f, 0.0f, 1.0f }; // delete
         GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         GLfloat lightDiffuse[4] = { color.x, color.y, color.z, 1.0f };
 
