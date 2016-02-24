@@ -15,8 +15,8 @@ include_directories   (.)
 include_directories   ( "Classes" )
 
 if ( WIN32 )
-    set( LIB_RELEASE  "msvcrt.lib" )
-    set( LIB_DEBUG    "msvcrtd.lib" )
+    set( LIBRARIES_RELEASE  "msvcrt.lib" )
+    set( LIBRARIES_DEBUG    "msvcrtd.lib" )
 endif()
 
 file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
@@ -31,8 +31,6 @@ set( ADDED_SRC            ${RCC_APP_SRCS}  CMakeTool.rc )
 
 set( QML_SCAN_DIR				${CMAKE_CURRENT_LIST_DIR} )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( LIBRARIES_RELEASE          ${LIB_RELEASE} )
-set( LIBRARIES_DEBUG            ${LIB_DEBUG} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
