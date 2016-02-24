@@ -247,6 +247,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         mainWindow = nil;
         animationTimer = nil;
         core = 0;
+        assertionID = kIOPMNullAssertionID;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -255,15 +257,48 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
+
+        [self allowDisplaySleep:false];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [self allowDisplaySleep:true];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
+}
+
+- (void)allowDisplaySleep:(bool)sleep
+{
+    bool displaySleepAllowed = assertionID == kIOPMNullAssertionID;
+    if (sleep == displaySleepAllowed)
+    {
+        return;
+    }
+    
+    IOReturn result;
+
+    if (sleep)
+    {
+        result = IOPMAssertionRelease(assertionID);
+        assertionID = kIOPMNullAssertionID;
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("DAVA display sleeping preventing"),
+                                             &assertionID);
+    }
+    
+    if (result != kIOReturnSuccess)
+    {
+        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        return;
+    }
 }
 
 - (void)createWindows
@@ -614,6 +649,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnSuspend
 {
+    [self allowDisplaySleep:true];
+    
     if (core)
     {
         core->OnSuspend();
@@ -626,6 +663,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
+    [self allowDisplaySleep:false];
+    
     if (core)
     {
         core->OnResume();
