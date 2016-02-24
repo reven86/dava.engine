@@ -40,6 +40,7 @@ ApplicationWindow {
 
     ProcessWrapper {
         id: processWrapper;
+        Component.onDestruction: OnDestruction();
     }
 
     ConfigStorage {

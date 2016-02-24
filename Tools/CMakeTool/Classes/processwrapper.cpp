@@ -43,33 +43,6 @@ ProcessWrapper::ProcessWrapper(QObject* parent)
 
 ProcessWrapper::~ProcessWrapper()
 {
-    int startTasksSize = taskQueue.size();
-    QTimer performTimer;
-    performTimer.setInterval(100);
-    performTimer.setSingleShot(false);
-    QProgressDialog progressDialog(tr("Finishing tasks: %1").arg(startTasksSize), tr("Cancel"), 0, startTasksSize);
-    connect(this, &ProcessWrapper::processOutput, &progressDialog, &QProgressDialog::setLabelText);
-    connect(&performTimer, &QTimer::timeout, [&progressDialog, this, startTasksSize]() {
-        if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
-        {
-            progressDialog.accept();
-        }
-        else
-        {
-            if (progressDialog.wasCanceled())
-            {
-                taskQueue.clear();
-                process.kill();
-            }
-            progressDialog.setValue(startTasksSize - taskQueue.size());
-        }
-    });
-    if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
-    {
-        return;
-    }
-    performTimer.start();
-    progressDialog.exec();
 }
 
 void ProcessWrapper::LaunchCmake(QString command)
@@ -79,6 +52,37 @@ void ProcessWrapper::LaunchCmake(QString command)
     {
         StartNextCommand();
     }
+}
+
+void ProcessWrapper::OnDestruction()
+{
+    int startTasksSize = taskQueue.size();
+    QTimer performTimer;
+    performTimer.setInterval(100);
+    performTimer.setSingleShot(false);
+    QProgressDialog progressDialog(tr("Finishing tasks: %1").arg(startTasksSize + 1), tr("Cancel"), 0, startTasksSize);
+    connect(this, &ProcessWrapper::processOutput, &progressDialog, &QProgressDialog::setLabelText);
+    connect(&performTimer, &QTimer::timeout, [&progressDialog, this, startTasksSize]() {
+        if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
+        {
+            progressDialog.accept();
+        }
+        else
+        {
+            progressDialog.setValue(startTasksSize - taskQueue.size());
+            if (progressDialog.wasCanceled())
+            {
+                taskQueue.clear();
+                process.kill();
+            }
+        }
+    });
+    if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
+    {
+        return;
+    }
+    performTimer.start();
+    progressDialog.exec();
 }
 
 void ProcessWrapper::OnReadyReadStandardOutput()

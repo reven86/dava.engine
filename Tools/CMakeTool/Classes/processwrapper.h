@@ -42,6 +42,9 @@ public:
     explicit ProcessWrapper(QObject* parent = 0);
     ~ProcessWrapper();
 
+    Q_INVOKABLE void LaunchCmake(QString command);
+    Q_INVOKABLE void OnDestruction();
+
 signals:
     void processStateChanged(QVariant text);
     void processErrorChanged(QVariant text);
@@ -50,9 +53,6 @@ signals:
     void testSignal();
 
     void processOutput(QString text);
-
-public slots:
-    void LaunchCmake(QString command);
 
 private slots:
     void OnReadyReadStandardOutput();
