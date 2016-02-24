@@ -29,6 +29,7 @@
 #include "Document.h"
 #include "DocumentGroup.h"
 #include <QUndoGroup>
+#include <QMutableListIterator>
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
@@ -118,6 +119,33 @@ void DocumentGroup::ConnectToTabBar(QTabBar* tabBar)
             this, static_cast<void (DocumentGroup::*)(int)>(&DocumentGroup::SetActiveDocument));
     connect(tabBar, &QTabBar::tabCloseRequested,
             this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::RemoveDocument));
+}
+
+void DocumentGroup::DisconnectTabBar(QTabBar* tabBar)
+{
+    bool found = false;
+    QMutableListIterator<QPointer<QTabBar>> iter(attachedTabBars);
+    while (iter.hasNext() && !found)
+    {
+        if (iter.next().data() == tabBar)
+        {
+            found = true;
+            iter.remove();
+        }
+    }
+    if (!found)
+    {
+        return;
+    }
+    while (tabBar->count() != 0)
+    {
+        tabBar->removeTab(0);
+    }
+    disconnect(this, &DocumentGroup::ActiveIndexChanged, tabBar, &QTabBar::setCurrentIndex);
+    disconnect(tabBar, &QTabBar::currentChanged,
+               this, static_cast<void (DocumentGroup::*)(int)>(&DocumentGroup::SetActiveDocument));
+    disconnect(tabBar, &QTabBar::tabCloseRequested,
+               this, static_cast<bool (DocumentGroup::*)(int)>(&DocumentGroup::RemoveDocument));
 }
 
 void DocumentGroup::AddDocument(const QString& path)

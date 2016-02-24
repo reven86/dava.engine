@@ -65,6 +65,7 @@ public:
     QAction* CreateCloseDocumentAction(QObject* parent) const;
 
     void ConnectToTabBar(QTabBar* tabBar);
+    void DisconnectTabBar(QTabBar* tabBar);
 
 signals:
     void ActiveIndexChanged(int index);

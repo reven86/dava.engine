@@ -70,7 +70,6 @@ void Project::Close()
     SetProjectName("");
     SetProjectPath("");
     SetIsOpen(false);
-    return;
 }
 
 bool Project::OpenInternal(const QString& path)
