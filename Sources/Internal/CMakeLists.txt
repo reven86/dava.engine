@@ -89,6 +89,7 @@ elseif( MACOS )
                     CoreMedia
                     WebKit
                     SystemConfiguration
+                    IOKit
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )

@@ -74,7 +74,7 @@ protected:
 public:
     INTROSPECTION_EXTEND(DataNode, BaseObject,
                          MEMBER(id, "Id", I_SAVE)
-                         );
+                         )
 };
 };
 

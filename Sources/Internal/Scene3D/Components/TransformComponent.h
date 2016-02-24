@@ -47,7 +47,7 @@ protected:
 public:
     TransformComponent();
 
-    IMPLEMENT_COMPONENT_TYPE(TRANSFORM_COMPONENT);
+    IMPLEMENT_COMPONENT_TYPE(TRANSFORM_COMPONENT)
 
     inline Matrix4* GetWorldTransformPtr();
     inline const Matrix4& GetWorldTransform();
@@ -59,9 +59,9 @@ public:
     void SetLocalTransform(const Matrix4* transform);
     void SetParent(Entity* node);
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
 private:
     Matrix4 localMatrix;
@@ -78,7 +78,7 @@ public:
                          MEMBER(localMatrix, "Local Transform", I_SAVE | I_VIEW)
                          MEMBER(worldMatrix, "World Transform", I_SAVE | I_VIEW)
                          MEMBER(parentMatrix, "Parent Matrix", I_SAVE)
-                         );
+                         )
 };
 
 const Matrix4& TransformComponent::GetWorldTransform()

@@ -281,6 +281,9 @@ void TilemaskEditorSystem::Input(UIEvent* event)
         case UIEvent::Phase::ENDED:
             FinishEditing();
             break;
+
+        default:
+            break;
         }
     }
 }

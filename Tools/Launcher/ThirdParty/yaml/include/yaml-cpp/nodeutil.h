@@ -45,8 +45,8 @@ struct is_index_type_with_check<std::size_t, false>
 
 #define MAKE_INDEX_TYPE(Type) \
 	template <> struct is_index_type_with_check<Type, is_same_type<Type, std::size_t>::value> { enum \
-        {                                                                                            \
-            value = true                                                                             \
+        { \
+            value = true \
         }; }
 
 MAKE_INDEX_TYPE(int);

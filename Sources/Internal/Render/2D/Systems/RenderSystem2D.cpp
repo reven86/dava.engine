@@ -46,8 +46,7 @@ const bool virtualToPhysicalTransformEnabledDefaultValue = true;
 
 const uint32 MAX_VERTICES = 1024;
 const uint32 MAX_INDECES = MAX_VERTICES * 2;
-const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
-const uint32 VBO_STRIDE = GetVertexSize(VBO_FORMAT);
+const uint32 VBO_STRIDE = 3 * sizeof(float32) + 2 * sizeof(float32) + 4;
 const float32 SEGMENT_LENGTH = 15.0f;
 }
 
@@ -63,19 +62,11 @@ NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
 
 RenderSystem2D::RenderSystem2D()
-    : currentVertexBuffer(nullptr)
-    , currentIndexBuffer(nullptr)
-    , indexIndex(0)
-    , vertexIndex(0)
-    , spriteClipping(true)
-    , spriteIndexCount(0)
-    , spriteVertexCount(0)
-    , prevFrameErrorsFlags(NO_ERRORS)
-    , currFrameErrorsFlags(NO_ERRORS)
-    , highlightControlsVerticesLimit(0)
-    , viewMatrixSemantic(8) //0 is bad idea as it is same as UPDATE_SEMANTIC_ALWAYS. why 8 - see comment in Setup2DMatrixes
-    , projMatrixSemantic(8)
 {
+    viewMatrixSemantic = 8; //0 is bad idea as it is same as UPDATE_SEMANTIC_ALWAYS. why 8 - see comment in Setup2DMatrixes
+    projMatrixSemantic = 8;
+
+    spriteClipping = true;
 }
 
 void RenderSystem2D::Init()
@@ -356,7 +347,6 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        //RHI_COMPLETE - Mikhail please review this
         const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
                     static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width),
@@ -416,14 +406,15 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 {
     Rect clipRect = currentClip;
+
     const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
-    if (clipRect.dx == -1)
+    if (int32(clipRect.dx) == -1)
     {
-        clipRect.dx = (float32)(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width);
+        clipRect.dx = static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width);
     }
-    if (clipRect.dy == -1)
+    if (int32(clipRect.dy) == -1)
     {
-        clipRect.dy = (float32)(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
+        clipRect.dy = static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
@@ -975,7 +966,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
 
         Texture* t = sprite->GetTexture(frame);
 
-        Vector2 virtualTexSize = Vector2((float32)t->width, (float32)t->height);
+        Vector2 virtualTexSize = Vector2(float32(t->width), float32(t->height));
         if (GetActiveTargetDescriptor().transformVirtualToPhysical)
         {
             if (sprite->type == Sprite::SPRITE_FROM_FILE)
@@ -1067,8 +1058,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
     }
     else
     {
-        batch.vertexPointer = (float32*)spriteClippedVertices.data();
-        batch.texCoordPointer = (float32*)spriteClippedTexCoords.data();
+        batch.vertexPointer = spriteClippedVertices.data()->data;
+        batch.texCoordPointer = spriteClippedTexCoords.data()->data;
         batch.indexPointer = spriteClippedIndecex.data();
     }
     PushBatch(batch);
@@ -1160,7 +1151,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         sd.GenerateTransformData();
     }
 
-    spriteVertexCount = (int32)sd.transformedVertices.size();
+    spriteVertexCount = int32(sd.transformedVertices.size());
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
     BatchDescriptor batch;
@@ -1172,8 +1163,8 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     batch.indexCount = spriteIndexCount;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = (float32*)sd.transformedVertices.data();
-    batch.texCoordPointer = (float32*)sd.texCoords.data();
+    batch.vertexPointer = sd.transformedVertices.data()->data;
+    batch.texCoordPointer = sd.texCoords.data()->data;
     batch.indexPointer = sd.indeces;
 
     PushBatch(batch);
@@ -1253,8 +1244,8 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
         td.GenerateTransformData();
     }
 
-    spriteVertexCount = (int32)td.transformedVertices.size();
-    spriteIndexCount = (int32)td.indeces.size();
+    spriteVertexCount = static_cast<int32>(td.transformedVertices.size());
+    spriteIndexCount = static_cast<int32>(td.indeces.size());
 
     BatchDescriptor batch;
     batch.singleColor = color;
@@ -1265,8 +1256,8 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
     batch.indexCount = spriteIndexCount;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = (float32*)td.transformedVertices.data();
-    batch.texCoordPointer = (float32*)td.texCoords.data();
+    batch.vertexPointer = td.transformedVertices.data()->data;
+    batch.texCoordPointer = td.texCoords.data()->data;
     batch.indexPointer = td.indeces.data();
 
     PushBatch(batch);
@@ -1375,8 +1366,8 @@ void RenderSystem2D::DrawGrid(const Rect& rect, const Vector2& gridSize, const C
 {
     // TODO! review with Ivan/Victor whether it is not performance problem!
     Vector<float32> gridVertices;
-    int32 verLinesCount = (int32)ceilf(rect.dx / gridSize.x);
-    int32 horLinesCount = (int32)ceilf(rect.dy / gridSize.y);
+    int32 verLinesCount = static_cast<int32>(ceilf(rect.dx / gridSize.x));
+    int32 horLinesCount = static_cast<int32>(ceilf(rect.dy / gridSize.y));
     gridVertices.resize((horLinesCount + verLinesCount) * 4);
 
     float32 curPos = 0;
@@ -1492,12 +1483,12 @@ void RenderSystem2D::DrawCircle(const Vector2& center, float32 radius, const Col
 {
     Polygon2 pts;
     float32 angle = Min(PI / 6.0f, SEGMENT_LENGTH / radius); // maximum angle 30 degrees
-    int ptsCount = (int)(2 * PI / angle) + 1;
+    int32 ptsCount = int32(2 * PI / angle) + 1;
 
     pts.points.reserve(ptsCount);
-    for (int k = 0; k < ptsCount; ++k)
+    for (int32 k = 0; k < ptsCount; ++k)
     {
-        float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+        float32 angle = (float32(k) / (ptsCount - 1)) * 2 * PI;
         float32 sinA = sinf(angle);
         float32 cosA = cosf(angle);
         Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
@@ -1616,7 +1607,6 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
     {
         destRect.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
         destRect.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
-
         if (descr.transformVirtualToPhysical)
         {
             destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
@@ -1640,13 +1630,13 @@ void TiledDrawData::GenerateTileData()
 
     Vector<Vector3> cellsWidth;
     GenerateAxisData(size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
-                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetWidth(), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
+                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(float32(texture->GetWidth()), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
 
     Vector<Vector3> cellsHeight;
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
-                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
+                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
-    int32 vertexCount = (int32)(4 * cellsHeight.size() * cellsWidth.size());
+    int32 vertexCount = int32(4 * cellsHeight.size() * cellsWidth.size());
     if (vertexCount >= std::numeric_limits<uint16>::max())
     {
         vertices.clear();
@@ -1659,7 +1649,7 @@ void TiledDrawData::GenerateTileData()
     transformedVertices.resize(vertexCount);
     texCoords.resize(vertexCount);
 
-    int32 indecesCount = (int32)(6 * cellsHeight.size() * cellsWidth.size());
+    int32 indecesCount = int32(6 * cellsHeight.size() * cellsWidth.size());
     indeces.resize(indecesCount);
 
     int32 offsetIndex = 0;
@@ -1720,7 +1710,7 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
 
     if (centerSize > 0.0f)
     {
-        gridSize = (int32)ceilf((size - sideSize * 2.0f) / centerSize);
+        gridSize = int32(ceilf((size - sideSize * 2.0f) / centerSize));
         const float32 tileAreaSize = size - sideSize * 2.0f;
         partSize = tileAreaSize - floorf(tileAreaSize / centerSize) * centerSize;
     }
@@ -1757,7 +1747,7 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
 
 void TiledDrawData::GenerateTransformData()
 {
-    const uint32 size = (uint32)vertices.size();
+    const uint32 size = uint32(vertices.size());
     for (uint32 index = 0; index < size; ++index)
     {
         transformedVertices[index] = vertices[index] * transformMatr;
@@ -1806,7 +1796,7 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
 
 void StretchDrawData::GenerateTransformData()
 {
-    const uint32 size = (uint32)vertices.size();
+    const uint32 size = uint32(vertices.size());
     for (uint32 index = 0; index < size; ++index)
     {
         transformedVertices[index] = vertices[index] * transformMatr;
@@ -1855,7 +1845,7 @@ void StretchDrawData::GenerateStretchData()
     }
 
     const Texture* texture = sprite->GetTexture(frame);
-    const Vector2 textureSize((float32)texture->GetWidth(), (float32)texture->GetHeight());
+    const Vector2 textureSize(float32(texture->GetWidth()), float32(texture->GetHeight()));
 
     const Vector2 uvPos(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x,
                         sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);

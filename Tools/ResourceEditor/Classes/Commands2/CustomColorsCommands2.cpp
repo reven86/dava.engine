@@ -119,11 +119,8 @@ void ActionDisableCustomColors::Redo()
     SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
 
-ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage,
-                                                     CustomColorsProxy* _customColorsProxy,
-                                                     const Rect& _updatedRect)
+ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image* currentImage, CustomColorsProxy* _customColorsProxy, const Rect& _updatedRect)
     : Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
-    , texture(nullptr)
 {
     const Vector2 topLeft(floorf(_updatedRect.x), floorf(_updatedRect.y));
     const Vector2 bottomRight(ceilf(_updatedRect.x + _updatedRect.dx), ceilf(_updatedRect.y + _updatedRect.dy));
@@ -141,7 +138,6 @@ ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
     SafeRelease(undoImage);
     SafeRelease(redoImage);
     SafeRelease(customColorsProxy);
-    SafeRelease(texture);
 }
 
 void ModifyCustomColorsCommand::Undo()
@@ -158,21 +154,20 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
 {
-    SafeRelease(texture);
-
-    Texture* customColorsTarget = customColorsProxy->GetTexture();
-    texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-                                      image->GetWidth(), image->GetHeight(), false);
+    ScopedPtr<Texture> fboTexture(Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.colorAttachment = customColorsTarget->handle;
-    desc.depthAttachment = customColorsTarget->handleDepthStencil;
-    desc.width = customColorsTarget->GetWidth();
-    desc.height = customColorsTarget->GetHeight();
+
+    Texture* proxy = customColorsProxy->GetTexture();
+    desc.colorAttachment = proxy->handle;
+    desc.depthAttachment = proxy->handleDepthStencil;
+    desc.width = proxy->GetWidth();
+    desc.height = proxy->GetHeight();
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = false;
+
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    RenderSystem2D::Instance()->DrawTexture(texture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(fboTexture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 
     customColorsProxy->UpdateRect(updatedRect);

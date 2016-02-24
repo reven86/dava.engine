@@ -37,9 +37,9 @@ const float32 MAX_DIFFERENCE = 2.f; // in percents
 
 #ifndef __DAVAENGINE_WIN_UAP__
 
-DAVA_TESTCLASS(FormatsTest)
+DAVA_TESTCLASS (FormatsTest)
 {
-    DAVA_TEST(TestJpeg)
+    DAVA_TEST (TestJpeg)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_A8);
@@ -53,7 +53,7 @@ DAVA_TESTCLASS(FormatsTest)
         }
     }
 
-    DAVA_TEST(TestPng)
+    DAVA_TEST (TestPng)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_A8);
@@ -68,7 +68,7 @@ DAVA_TESTCLASS(FormatsTest)
         }
     }
 
-    DAVA_TEST(TestPvr)
+    DAVA_TEST (TestPvr)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_RGBA8888);
@@ -124,7 +124,7 @@ DAVA_TESTCLASS(FormatsTest)
     }
     
 #if !defined(__DAVAENGINE_IPHONE__)
-    DAVA_TEST(TestDds)
+    DAVA_TEST (TestDds)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_DXT1);
@@ -184,7 +184,7 @@ DAVA_TESTCLASS(FormatsTest)
     }
 #endif
 
-    DAVA_TEST(TestWebP)
+    DAVA_TEST (TestWebP)
     {
         Vector<PixelFormat> suportedFormats;
         suportedFormats.push_back(FORMAT_RGB888);

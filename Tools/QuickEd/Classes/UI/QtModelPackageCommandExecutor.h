@@ -32,6 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "Base/Result.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
 #include <QString>
 
@@ -49,20 +50,16 @@ class AbstractProperty;
 class ControlsContainerNode;
 class ComponentPropertiesSection;
 
-class QtModelPackageCommandExecutor : public DAVA::BaseObject
+class QtModelPackageCommandExecutor
 {
 public:
     QtModelPackageCommandExecutor(Document* _document);
-
-private:
     virtual ~QtModelPackageCommandExecutor();
 
-public:
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode* package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackage, PackageNode* package);
 
-public:
-    void ChangeProperty(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash = 0);
+    void ChangeProperty(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash = 0);
     void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value, size_t hash = 0);
     void ResetProperty(ControlNode* node, AbstractProperty* property);
 
@@ -97,14 +94,14 @@ private:
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
 
-private:
-    QUndoStack* GetUndoStack();
+    QUndoStack* GetUndoStack() const;
     void PushCommand(QUndoCommand* cmd);
     void BeginMacro(const QString& name);
     void EndMacro();
 
 private:
-    Document* document;
+    Document* document = nullptr;
+    PackageNode* packageNode = nullptr;
 };
 
 #endif // __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__

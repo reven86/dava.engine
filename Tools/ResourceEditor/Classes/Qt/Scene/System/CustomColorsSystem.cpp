@@ -190,6 +190,9 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
         case UIEvent::Phase::ENDED:
             FinishEditing();
             break;
+
+        default:
+            break;
         }
     }
 }

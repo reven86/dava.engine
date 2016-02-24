@@ -102,7 +102,9 @@ protected:
     struct SoundGroup
     {
         SoundGroup()
-            : volume(1.f){};
+            : volume(1.f)
+        {
+        }
 
         FastName name;
         float32 volume;

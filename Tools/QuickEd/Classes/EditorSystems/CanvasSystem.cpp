@@ -48,6 +48,7 @@ public:
 
 private:
     void OnBackgroundTypeChanged(eBackgroundType type);
+    void OnBackgroundColorChanged(const Color& color);
     void Draw(const UIGeometricData& geometricData) override;
     eBackgroundType coloredBackground = BackgroundTexture;
 };
@@ -58,7 +59,7 @@ GridControl::GridControl()
     OnBackgroundTypeChanged(settings->GetGridType());
 
     settings->GridTypeChanged.Connect(this, &GridControl::OnBackgroundTypeChanged);
-    settings->GridColorChanged.Connect(DAVA::MakeFunction(this->background, &UIControlBackground::SetColor));
+    settings->GridColorChanged.Connect(this, &GridControl::OnBackgroundColorChanged);
 }
 
 void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
@@ -76,6 +77,11 @@ void GridControl::OnBackgroundTypeChanged(eBackgroundType type)
         background->SetColor(Color());
         break;
     }
+}
+
+void GridControl::OnBackgroundColorChanged(const Color& color)
+{
+    background->SetColor(color);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -111,7 +117,7 @@ public:
     void AdjustToNestedControl();
 
     DAVA::Signal<> ContentSizeChanged;
-    DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
+    DAVA::Signal<const DAVA::Vector2&> RootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
@@ -129,11 +135,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     , nestedControl(nestedControl_)
 {
     DVASSERT(nullptr != nestedControl);
-    String name = nestedControl->GetName();
+    String name = nestedControl->GetName().c_str();
     name = name.empty() ? "unnamed" : name;
-    gridControl->SetName("Grid control of " + name);
-    counterpoiseControl->SetName("counterpoise of " + name);
-    positionHolderControl->SetName("Position holder of " + name);
+    gridControl->SetName(FastName("Grid control of " + name));
+    counterpoiseControl->SetName(FastName("counterpoise of " + name));
+    positionHolderControl->SetName(FastName("Position holder of " + name));
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
@@ -169,7 +175,7 @@ namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
-    if (!control->GetSystemVisible())
+    if (!control->GetVisible())
     {
         return;
     }
@@ -292,37 +298,29 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
-    systemManager->GetPackage()->AddListener(this);
-
-    controlsCanvas->SetName("controls canvas");
+    controlsCanvas->SetName(FastName("controls canvas"));
+    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
+    systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
 }
 
 CanvasSystem::~CanvasSystem()
 {
-    PackageNode* package = systemManager->GetPackage();
+    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
+}
+
+void CanvasSystem::OnPackageNodeChanged(PackageNode* package_)
+{
     if (nullptr != package)
     {
-        systemManager->GetPackage()->RemoveListener(this);
+        package->RemoveListener(this);
     }
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
-}
-
-void CanvasSystem::OnActivated()
-{
-    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
-    for (auto& iter : gridControls)
+    package = package_;
+    if (nullptr != package)
     {
-        iter->AdjustToNestedControl();
+        package->AddListener(this);
     }
-}
-
-void CanvasSystem::OnDeactivated()
-{
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
-    systemManager->GetScalableControl()->SetSize(Vector2());
-    systemManager->CanvasSizeChanged.Emit();
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -365,7 +363,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<DAVA::Vector2>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }

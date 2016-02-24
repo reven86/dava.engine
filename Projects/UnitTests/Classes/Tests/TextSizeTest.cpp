@@ -39,7 +39,7 @@ struct TestStruct
 
 static const float32 TEST_ACCURACY = 2.f;
 
-DAVA_TESTCLASS(TextSizeTest)
+DAVA_TESTCLASS (TextSizeTest)
 {
     Font* font = nullptr;
 
@@ -55,7 +55,7 @@ DAVA_TESTCLASS(TextSizeTest)
         SafeRelease(font);
     }
 
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         Array<TestStruct, 5> testData = { {
         { "English", L"THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED" },

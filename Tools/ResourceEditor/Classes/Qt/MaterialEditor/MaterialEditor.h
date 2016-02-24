@@ -90,6 +90,7 @@ protected:
 
     void FillBase();
     void FillDynamic(QtPropertyData* root, const FastName& dynamicName);
+    void FillInvalidTextures();
     void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial*>& materials);
     void FinishCreation();
@@ -112,6 +113,7 @@ private slots:
     void onCurrentExpandModeChange(bool mode);
     void onContextMenuPrepare(QMenu* menu);
     void autoExpand();
+    void removeInvalidTexture();
 
 private:
     enum
@@ -155,6 +157,8 @@ private:
     bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
 
 private:
+    Ui::MaterialEditor* ui = nullptr;
+
     QtPosSaver posSaver;
     QList<DAVA::NMaterial*> curMaterials;
     QtPropertyData* baseRoot = nullptr;
@@ -166,7 +170,6 @@ private:
 
     ExpandMap expandMap;
     PropertyEditorStateHelper* treeStateHelper = nullptr;
-    Ui::MaterialEditor* ui = nullptr;
 
     DAVA::FilePath lastSavePath;
     DAVA::uint32 lastCheckState = 0;

@@ -219,7 +219,7 @@ static int const kOpenUDIDRedundancySlots = 100;
                               result[4], result[5], result[6], result[7],
                               result[8], result[9], result[10], result[11],
                               result[12], result[13], result[14], result[15],
-                              (unsigned long)(arc4random() % NSUIntegerMax)];
+                              static_cast<unsigned long>(arc4random() % NSUIntegerMax)];
         CFRelease(cfstring);
     }
 
@@ -263,7 +263,7 @@ static int const kOpenUDIDRedundancySlots = 100;
     {
         // generate a new uuid and store it in user defaults
         CFUUIDRef uuid = CFUUIDCreate(NULL);
-        appUID = (NSString*)CFUUIDCreateString(NULL, uuid);
+        appUID = static_cast<NSString*>(CFUUIDCreateString(NULL, uuid));
         CFRelease(uuid);
         [appUID autorelease];
     }

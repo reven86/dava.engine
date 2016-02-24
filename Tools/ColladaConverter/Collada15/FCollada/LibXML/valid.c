@@ -32,7 +32,7 @@ static xmlElementPtr xmlGetDtdElementDesc2(xmlDtdPtr dtd, const xmlChar* name,
 /* #define DEBUG_REGEXP_ALGO */
 
 #define TODO 								\
-    xmlGenericError(xmlGenericErrorContext,           \
+    xmlGenericError(xmlGenericErrorContext, \
                     "Unimplemented block at %s:%d\n", \
                     __FILE__, __LINE__);
 

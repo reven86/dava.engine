@@ -151,7 +151,7 @@ private:
 
 inline const Matrix4& DynamicBindings::GetDynamicParamMatrix(DynamicBindings::eUniformSemantic shaderSemantic)
 {
-    return *(Matrix4*)GetDynamicParam(shaderSemantic);
+    return *static_cast<const Matrix4*>(GetDynamicParam(shaderSemantic));
 }
 }
 #endif

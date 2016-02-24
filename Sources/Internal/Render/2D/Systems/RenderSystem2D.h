@@ -297,7 +297,7 @@ private:
     inline bool IsRenderTargetPass()
     {
         return (currentPacketListHandle != packetList2DHandle);
-    };
+    }
 
     const Matrix4& VirtualToPhysicalMatrix() const;
 
@@ -313,8 +313,8 @@ private:
 
     Matrix4 projMatrix;
     Matrix4 viewMatrix;
-    uint32 projMatrixSemantic;
-    uint32 viewMatrixSemantic;
+    uint32 projMatrixSemantic = 0;
+    uint32 viewMatrixSemantic = 0;
     std::stack<Rect> clipStack;
     Rect currentClip;
 
@@ -323,12 +323,12 @@ private:
     Vector<Vector2> spriteClippedTexCoords;
     Vector<Vector2> spriteClippedVertices;
 
-    int32 spriteVertexCount;
-    int32 spriteIndexCount;
+    int32 spriteVertexCount = 0;
+    int32 spriteIndexCount = 0;
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    bool spriteClipping;
+    bool spriteClipping = true;
 
     struct BatchVertex
     {
@@ -337,27 +337,27 @@ private:
         uint32 color;
     };
 
-    BatchVertex* currentVertexBuffer;
-    uint16* currentIndexBuffer;
+    BatchVertex* currentVertexBuffer = nullptr;
+    uint16* currentIndexBuffer = nullptr;
     rhi::Packet currentPacket;
-    uint32 currentIndexBase;
-    uint32 vertexIndex;
-    uint32 indexIndex;
-    NMaterial* lastMaterial;
+    uint32 currentIndexBase = 0;
+    uint32 vertexIndex = 0;
+    uint32 indexIndex = 0;
+    NMaterial* lastMaterial = nullptr;
     Rect lastClip;
     Matrix4 lastCustomWorldMatrix;
-    bool lastUsedCustomWorldMatrix;
-    uint32 lastCustomMatrixSematic;
+    bool lastUsedCustomWorldMatrix = false;
+    uint32 lastCustomMatrixSematic = 0;
 
     // Batching errors handling
-    uint32 prevFrameErrorsFlags;
-    uint32 currFrameErrorsFlags;
     enum ErrorFlag
     {
         NO_ERRORS = 0,
         BUFFER_OVERFLOW_ERROR = 1,
     };
-    uint32 highlightControlsVerticesLimit;
+    uint32 prevFrameErrorsFlags = NO_ERRORS;
+    uint32 currFrameErrorsFlags = NO_ERRORS;
+    uint32 highlightControlsVerticesLimit = 0;
 
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;

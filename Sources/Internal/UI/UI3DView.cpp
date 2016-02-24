@@ -45,10 +45,8 @@ UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)
     , drawToFrameBuffer(false)
-    , frameBuffer(nullptr)
     , fbScaleFactor(1.f)
     , fbRenderSize()
-    , fbTexSize()
     , registeredInUIControlSystem(false)
 {
 }
