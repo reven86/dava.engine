@@ -37,7 +37,7 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(DispatcherWinUAPTest)
+DAVA_TESTCLASS (DispatcherWinUAPTest)
 {
     DispatcherWinUAPTest()
         : dispatcher1(std::make_unique<DispatcherWinUAP>())
@@ -46,7 +46,7 @@ DAVA_TESTCLASS(DispatcherWinUAPTest)
         int h = 0;
     }
 
-    DAVA_TEST(DispatcherTest)
+    DAVA_TEST (DispatcherTest)
     {
         ScopedPtr<Thread> thread1(Thread::Create([this]() { Thread1(); }));
         ScopedPtr<Thread> thread2(Thread::Create([this]() { Thread2(); }));

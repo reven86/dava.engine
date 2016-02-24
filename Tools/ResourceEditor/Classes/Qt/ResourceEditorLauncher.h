@@ -44,6 +44,7 @@ public slots:
     void Launch()
     {
         DVASSERT(ProjectManager::Instance() != nullptr);
+        ProjectManager::Instance()->OpenLastProject();
         ProjectManager::Instance()->UpdateParticleSprites();
         ProjectManager::Instance()->OnSceneViewInitialized();
 
