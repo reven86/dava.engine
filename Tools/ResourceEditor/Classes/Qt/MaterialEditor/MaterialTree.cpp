@@ -26,13 +26,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "MaterialTree.h"
 #include "MaterialFilterModel.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneSignals.h"
 #include "MaterialEditor/MaterialAssignSystem.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Entity/Component.h"
 
 #include <QDragMoveEvent>
 #include <QDragEnterEvent>
@@ -241,6 +243,15 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
         case CMDID_LOD_COPY_LAST_LOD:
             Update();
             break;
+        case CMDID_COMPONENT_REMOVE:
+        {
+            const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
+            DVASSERT(removeCommand->GetComponent() != nullptr);
+            if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
+            {
+                Update();
+            }
+        }
         default:
             break;
         }
