@@ -177,7 +177,7 @@ void EditorLODSystem::CollectLODDataFromScene()
     currentLodsLayersCount = 0;
     std::fill(lodDistances.begin(), lodDistances.end(), 0.0f);
     std::fill(lodTrianglesCount.begin(), lodTrianglesCount.end(), 0);
-    std::array<DAVA::int32, DAVA::LodComponent::MAX_LOD_LAYERS> lodsComponentsCount = { 0 };
+    std::array<DAVA::int32, DAVA::LodComponent::MAX_LOD_LAYERS> lodsComponentsCount = { { 0 } };
 
     auto lods = GetCurrentLODs();
     for (auto& lod : lods)
@@ -334,8 +334,6 @@ bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 texture
     {
         return false;
     }
-
-    SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
     auto lods = GetCurrentLODs();
     for (auto& lod : lods)

@@ -55,9 +55,12 @@ class UIScreenshoter;
 class ScreenSwitchListener
 {
 public:
+    virtual ~ScreenSwitchListener() = default;
+
     virtual void OnScreenWillSwitch(UIScreen* newScreen)
     {
     }
+
     virtual void OnScreenDidSwitch(UIScreen* newScreen)
     {
     }
@@ -213,7 +216,7 @@ public:
 	 \param[in] control to set the input locker.
 	 \param[in] event id to cause a lock. All other events will be cancelled(excepts the locker == NULL situation).
 	 */
-    void SetExclusiveInputLocker(UIControl* locker, int32 lockEventId);
+    void SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId);
 
     /**
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
@@ -240,10 +243,10 @@ public:
 	 \brief Sets input with the requested ID to the required control.
 		Input removes from the current owner. OnInputCancel() calls for the old control.  
 		New control starts to handle all input activities.
-	 \param[in] Input ID. Can be found in the UIEvent:tid.
+	 \param[in] Input ID. Can be found in the UIEvent:touchId.
 	 \param[in] Control that should handle the input.
 	 */
-    void SwitchInputToControl(int32 eventID, UIControl* targetControl);
+    void SwitchInputToControl(uint32 eventID, UIControl* targetControl);
 
     /**
 	 \brief Used internally by Replay class

@@ -382,8 +382,6 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
     planeImage = targetTexture->CreateImageFromMemory();
     SafeRelease(targetTexture);
 
-    auto sourceEntity = lodComponent->GetEntity();
-
     DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(
     SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
     ReloadTexturesToGPU(currentGPU);

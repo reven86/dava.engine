@@ -30,11 +30,12 @@
 #ifndef QTTOOLS_SPYWIDGET_H
 #define QTTOOLS_SPYWIDGET_H
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QWidget>
 
 #include "ui_SpyWidget.h"
-
-
+POP_QT_WARNING_SUPRESSOR
 
 class SpyWidget
     : public QWidget
