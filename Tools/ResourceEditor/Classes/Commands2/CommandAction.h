@@ -38,9 +38,12 @@ public:
     CommandAction(int _id, const DAVA::String& _text = "");
     virtual ~CommandAction();
 
-    virtual void Redo() = 0;
-    virtual void Undo();
-    virtual DAVA::Entity* GetEntity() const;
+    bool CanUndo() const override
+    {
+        return false;
+    }
+    void Undo() override;
+    DAVA::Entity* GetEntity() const override;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
