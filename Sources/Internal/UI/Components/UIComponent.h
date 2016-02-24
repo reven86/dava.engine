@@ -71,11 +71,6 @@ public:
 
 private:
     UIControl* control;
-
-public:
-    INTROSPECTION_EXTEND(UIComponent, BaseObject,
-                         nullptr
-                         );
 };
 
 template <uint32 TYPE>

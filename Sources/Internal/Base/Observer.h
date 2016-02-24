@@ -37,7 +37,9 @@ class Observer
 {
 public:
     virtual void HandleEvent(Observable* observable) = 0;
-    virtual ~Observer(){};
+    virtual ~Observer()
+    {
+    }
 };
 };
 

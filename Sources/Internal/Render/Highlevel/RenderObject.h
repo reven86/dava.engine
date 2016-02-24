@@ -240,7 +240,7 @@ protected:
 
     //    Sphere bsphere;
 
-    struct IndexedRenderBatch
+    struct IndexedRenderBatch : public InspBase
     {
         IndexedRenderBatch()
             : renderBatch(0)

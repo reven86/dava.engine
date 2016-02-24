@@ -69,8 +69,8 @@ QtPropertyData::QtPropertyData(const DAVA::FastName& name_)
 }
 
 QtPropertyData::QtPropertyData(const DAVA::FastName& name_, const QVariant& value)
-    : name(name_)
-    , curValue(value)
+    : curValue(value)
+    , name(name_)
 {
     childrenData.reserve(16);
     mergedData.reserve(128);

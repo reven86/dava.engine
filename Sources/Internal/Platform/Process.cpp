@@ -351,7 +351,6 @@ bool Process::Run(bool showWindow)
         int execResult = execv(execPath.c_str(), &execArgs[0]);
         DVASSERT(execResult >= 0);
         _exit(0); //if we got here - there's a problem
-        break;
     }
 
     case -1: //error

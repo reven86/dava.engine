@@ -44,16 +44,16 @@ protected:
 public:
     GameCore();
 
-    virtual void OnAppStarted() override;
-    virtual void OnAppFinished() override;
+    void OnAppStarted() override;
+    void OnAppFinished() override;
 
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
-    virtual void OnBackground();
+    void OnSuspend() override;
+    void OnResume() override;
+    void OnBackground() override;
 
-    virtual void BeginFrame() override;
-    virtual void Update(DAVA::float32 update) override;
-    virtual void Draw() override;
+    void BeginFrame() override;
+    void Update(DAVA::float32 update) override;
+    void Draw() override;
 
 protected:
     void UnpackHelp();

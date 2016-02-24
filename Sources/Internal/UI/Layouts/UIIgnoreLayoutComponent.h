@@ -58,7 +58,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UIIgnoreLayoutComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DAVAConfig.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseObjectChecker.h"
@@ -40,6 +39,14 @@
 namespace DAVA
 {
 std::set<BaseObject*> baseObjects;
+
+BaseObjectChecker::BaseObjectChecker
+{
+}
+
+BaseObjectChecker::~BaseObjectChecker
+{
+}
 
 void BaseObjectChecker::RegisterBaseObject(BaseObject* obj)
 {
