@@ -79,7 +79,7 @@ void RulerWidget::paintEvent(QPaintEvent* /*event*/)
     }
 
     // Draw the marker.
-    QColor penColor(palette().text());
+    QColor penColor(palette().color(QPalette::Text));
     QPen pen(penColor, 1);
     pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
@@ -189,10 +189,10 @@ void RulerWidget::UpdateDoubleBufferImage()
         rulerBackgroundColor = Qt::white;
         break;
     case Themes::Dark:
-        rulerBackgroundColor = palette().window();
+        rulerBackgroundColor = palette().color(QPalette::Window);
         break;
     }
-    const QColor rulerTicksColor = palette().text();
+    const QColor rulerTicksColor = palette().color(QPalette::Text);
     static const int rulerFontSize = 10;
 
     static const int borderWidth = 2;
