@@ -31,18 +31,20 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QApplication>
+#include <QDir>
 
 ConfigStorage::ConfigStorage(QObject* parent)
     : QObject(parent)
 {
+    configFilePath = qApp->applicationDirPath() +
 #ifdef Q_OS_WIN
-    configFilePath = "../CMakeTool/Data/config_windows.txt";
+    "../CMakeTool/Data/config_windows.txt";
 #elif defined Q_OS_MAC
-    configFilePath = qApp->applicationDirPath() + "/../Resources/Data/config_mac.txt";
+    "/../Resources/Data/config_mac.txt";
 #else
-    qCritical() << "application started on undefined platform";
-    return 1;
+#ERROR "usupported platform"
 #endif //platform
+    configFilePath = QDir::toNativeSeparators(configFilePath);
 }
 
 QString ConfigStorage::GetJSONTextFromConfigFile() const

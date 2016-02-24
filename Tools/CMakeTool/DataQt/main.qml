@@ -76,9 +76,9 @@ ApplicationWindow {
     }
 
     function extractCMakePathFromPath(path) {
-        var CMakePath = fileSystemHelper.FindCMakeBin(textField_DAVAFolder.text);
-        if(CMakePath.length !== 0) {
-            textField_CMakeFolder.text = CMakePath;
+        var cmakePath = fileSystemHelper.FindCMakeBin(textField_DAVAFolder.text);
+        if(cmakePath.length !== 0) {
+            textField_CMakeFolder.text = cmakePath;
         }
     }
 
@@ -135,7 +135,7 @@ ApplicationWindow {
 
         if(outputText.indexOf("$CMAKE_PATH") !== -1) {
             var cmakePath = textField_CMakeFolder.text;
-            if(cmakePath.length === 0 || !fileSystemHelper.isFileExists(cmakePath)) {
+            if(cmakePath.length === 0 || !fileSystemHelper.IsFileExists(cmakePath)) {
                 outputComplete = false;
                 textField_output.text = qsTr("cmake path required")
                 return;
@@ -146,7 +146,7 @@ ApplicationWindow {
 
         if(outputText.indexOf("$BUILD_FOLDER_PATH") !== -1) {
             var buildFolder = comboBox_buildFolder.editText;
-            if(buildFolder.length === 0 || !fileSystemHelper.isDirExists(buildFolder)) {
+            if(buildFolder.length === 0 || !fileSystemHelper.IsDirExists(buildFolder)) {
                 outputComplete = false;
                 textField_output.text = qsTr("build folder path required")
                 return;
@@ -160,7 +160,7 @@ ApplicationWindow {
         }
         if(outputText.indexOf("$DAVA_FRAMEWORK_PATH") !== -1) {
             var davaFolder = textField_DAVAFolder.text;
-            if(davaFolder.length === 0 || !fileSystemHelper.isDirExists(davaFolder)) {
+            if(davaFolder.length === 0 || !fileSystemHelper.IsDirExists(davaFolder)) {
                 outputComplete = false;
                 textField_output.text = qsTr("DAVA folder path required")
                 return;
@@ -240,7 +240,7 @@ ApplicationWindow {
         selectFolder: true
         onAccepted: {
             var url = fileDialog_buidFolder.fileUrls[0].toString()
-            url = fileSystemHelper.resolveUrl(url);
+            url = fileSystemHelper.ResolveUrl(url);
             comboBox_buildFolder.editText = url;
         }
     }
@@ -251,7 +251,7 @@ ApplicationWindow {
         selectFolder: true
         onAccepted: {
             var url = fileDialog_DAVAFolder.fileUrls[0].toString()
-            url = fileSystemHelper.resolveUrl(url);
+            url = fileSystemHelper.ResolveUrl(url);
             textField_DAVAFolder.text = url;
         }
     }
@@ -260,7 +260,7 @@ ApplicationWindow {
         title: qsTr("select CMake executable");
         onAccepted: {
             var url = fileDialog_CMakeFolder.fileUrls[0].toString()
-            url = fileSystemHelper.resolveUrl(url);
+            url = fileSystemHelper.ResolveUrl(url);
             textField_CMakeFolder.text = url;
         }
     }
@@ -297,7 +297,7 @@ ApplicationWindow {
                                 return;
                             }
 
-                            if(fileSystemHelper.isDirExists(editText)) {
+                            if(fileSystemHelper.IsDirExists(editText)) {
                                 var history = mainObject["buildFolderHistory"];
                                 var curIndex = currentIndex
                                 var newItem = editText;
@@ -366,7 +366,7 @@ ApplicationWindow {
                         id: image_comboBox_buildFolderStatus
                         width: height
                         height: rowLayout_buldFolder.height
-                        source: "qrc:///Icons/" + (fileSystemHelper.isDirExists(comboBox_buildFolder.editText) ? "ok" : "error") + ".png"
+                        source: "qrc:///Icons/" + (fileSystemHelper.IsDirExists(comboBox_buildFolder.editText) ? "ok" : "error") + ".png"
                     }
                 }
 
@@ -402,7 +402,7 @@ ApplicationWindow {
                         id: image_DAVAFolderStatus
                         width: height
                         height: rowLayout_davaFolder.height
-                        source: "qrc:///Icons/" + (fileSystemHelper.isDirExists(textField_DAVAFolder.text) ? "ok" : "error") + ".png"
+                        source: "qrc:///Icons/" + (fileSystemHelper.IsDirExists(textField_DAVAFolder.text) ? "ok" : "error") + ".png"
                     }
                 }
 
@@ -437,7 +437,7 @@ ApplicationWindow {
                         id: image_CMakeFolderStatus
                         width: height
                         height: rowLayout_CMakeFolder.height
-                        source: "qrc:///Icons/" + (fileSystemHelper.isFileExists(textField_CMakeFolder.text) ? "ok" : "error") + ".png"
+                        source: "qrc:///Icons/" + (fileSystemHelper.IsFileExists(textField_CMakeFolder.text) ? "ok" : "error") + ".png"
                     }
                 }
                 Item

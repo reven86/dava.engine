@@ -39,9 +39,9 @@ class FileSystemHelper : public QObject
 
 public:
     explicit FileSystemHelper(QObject* parent = 0);
-    Q_INVOKABLE QString resolveUrl(const QString& url);
-    Q_INVOKABLE bool isDirExists(const QString& dirPath);
-    Q_INVOKABLE bool isFileExists(const QString& filePath);
+    Q_INVOKABLE QString ResolveUrl(const QString& url);
+    Q_INVOKABLE bool IsDirExists(const QString& dirPath);
+    Q_INVOKABLE bool IsFileExists(const QString& filePath);
     Q_INVOKABLE QString FindCMakeBin(const QString& pathToDavaFramework);
     Q_INVOKABLE bool ClearFolderContent(const QString& buildFolder);
 };

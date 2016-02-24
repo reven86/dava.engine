@@ -36,7 +36,7 @@ FileSystemHelper::FileSystemHelper(QObject* parent)
 {
 }
 
-QString FileSystemHelper::resolveUrl(const QString& url)
+QString FileSystemHelper::ResolveUrl(const QString& url)
 {
     QRegularExpression regExp;
 #ifdef Q_OS_MAC
@@ -49,13 +49,13 @@ QString FileSystemHelper::resolveUrl(const QString& url)
     return resolvedUrl;
 }
 
-bool FileSystemHelper::isDirExists(const QString& dirPath)
+bool FileSystemHelper::IsDirExists(const QString& dirPath)
 {
     QDir dir(dirPath);
     return dir.exists();
 }
 
-bool FileSystemHelper::isFileExists(const QString& filePath)
+bool FileSystemHelper::IsFileExists(const QString& filePath)
 {
     QFileInfo fileInfo(filePath);
     return fileInfo.isFile() && fileInfo.exists();
@@ -80,7 +80,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path)
     {
         return "";
     }
-    return cmakePath;
+    return QDir::toNativeSeparators(cmakePath);
 }
 
 bool FileSystemHelper::ClearFolderContent(const QString& folderPath)
