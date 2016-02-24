@@ -537,7 +537,6 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
     UIEvent keyPress;
     keyPress.keyChar = keyChar;
     keyPress.phase = UIEvent::Phase::CHAR;
-    keyPress.tapCount = 1;
     keyPress.keyChar = keyChar;
 
     Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.key, keyPress.phase,
@@ -715,7 +714,7 @@ bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String& key)
     return false;
 }
 
-void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId, int32 tapCount)
+void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId, uint32 tapCount)
 {
     UIEvent touchDown;
     touchDown.phase = UIEvent::Phase::BEGAN;
@@ -730,7 +729,6 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
 {
     UIEvent touchMove;
     touchMove.touchId = touchId;
-    touchMove.tapCount = 1;
     touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
     touchMove.point = point;
 

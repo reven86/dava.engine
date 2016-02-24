@@ -153,7 +153,7 @@ public:
     Phase phase = Phase::ERROR; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
-    int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
+    uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };
