@@ -31,7 +31,7 @@
 #include "Render/TextureDescriptor.h"
 
 #include "TextureProperties.h"
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
 namespace PropertyItemName
 {

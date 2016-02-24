@@ -134,7 +134,7 @@ void QtWaitDialog::WaitCanceled()
 
 void QtWaitDialog::processEvents()
 {
-    if (!isRunnedFromExec)
+    if (!isRunnedFromExec && isVisible())
     {
         QApplication::processEvents();
     }

@@ -34,6 +34,7 @@
 
 namespace DAVA
 {
+#pragma pack(push, 1)
 class GamepadDevice : public BaseObject
 {
 public:
@@ -111,6 +112,7 @@ private:
     uint8 axisTranslator[MAX_TRANSLATOR_KEYS];
 #endif
 };
+#pragma pack(pop)
 
 inline bool GamepadDevice::IsAvailable() const
 {

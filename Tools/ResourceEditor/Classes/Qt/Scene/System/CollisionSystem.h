@@ -97,9 +97,9 @@ private:
 
     void ProcessCommand(const Command2* command, bool redo);
 
-    virtual void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
-    virtual void AddEntity(DAVA::Entity* entity);
-    virtual void RemoveEntity(DAVA::Entity* entity);
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
     CollisionBaseObject* BuildFromEntity(DAVA::Entity* entity);
     void DestroyFromEntity(DAVA::Entity* entity);
 

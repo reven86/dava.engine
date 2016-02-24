@@ -51,7 +51,6 @@ static const QString presetFilter = "Preset (*.preset)";
 
 namespace Internal
 {
-
 bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const KeyedArchive* preset, List<String>& warnings)
 {
     DVASSERT(descriptor);
@@ -84,8 +83,8 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
             {
                 if (imageIsSquare != compressIsSquare || (compressToWidth >= imageInfo.width) || (compressToHeight >= imageInfo.height))
                 {
-                    String warn = DAVA::Format("Preset compression size %u x %u for gpu %s doesn't fit for image size %u x %u", 
-                        compressToWidth, compressToHeight, gpuName.c_str(), imageInfo.width, imageInfo.height);
+                    String warn = DAVA::Format("Preset compression size %u x %u for gpu %s doesn't fit for image size %u x %u",
+                                               compressToWidth, compressToHeight, gpuName.c_str(), imageInfo.width, imageInfo.height);
                     Logger::Warning("%s", warn.c_str());
                     warnings.emplace_back(warn);
                     dimensionsAreCorrect = false;
@@ -149,7 +148,7 @@ bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* prese
     List<String> warnings;
     if (Internal::ArePresetDimensionsCorrect(descriptor, preset, warnings) == false && applyWithCorrectDimensionsOnly)
         return false;
-    
+
     bool applied = descriptor->DeserializeFromPreset(preset);
     DVASSERT(applied);
 

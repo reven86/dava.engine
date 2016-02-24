@@ -26,23 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/GlobalEnum.h"
 
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include "TextureCompression/TextureConverter.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
 #include <QSettings>
 #include <QTimer>
-#include "Base/GlobalEnum.h"
+POP_QT_WARNING_SUPRESSOR
 
 using namespace DAVA;
 namespace
 {
     const QString GPU = "gpu";
     const QString QUALITY = "quality";
-    const QString CLEAR_ON_START = "clear on start";
+    const QString FORCE_REPACK = "force repack";
     const QString SHOW_CONSOLE = "show console";
     const QString CONSOLE_STATE = "console state";
 }
@@ -69,7 +72,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
     connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->pushButton_start, &QWidget::setDisabled);
     connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_targetGPU, &QWidget::setDisabled);
     connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_quality, &QWidget::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->checkBox_clean, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->checkBox_repack, &QWidget::setDisabled);
     connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChangedQueued, Qt::QueuedConnection);
     connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChangedDirect, Qt::DirectConnection);
     connect(ui->pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
@@ -126,7 +129,7 @@ void DialogReloadSprites::OnStartClicked()
     workerThread.start();
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
-    QMetaObject::invokeMethod(spritesPacker, "ReloadSprites", Qt::QueuedConnection, Q_ARG(bool, ui->checkBox_clean->isChecked()), Q_ARG(DAVA::eGPUFamily, gpuType), Q_ARG(DAVA::TextureConverter::eConvertQuality, quality));
+    QMetaObject::invokeMethod(spritesPacker, "ReloadSprites", Qt::QueuedConnection, Q_ARG(bool, true), Q_ARG(bool, ui->checkBox_repack->isChecked()), Q_ARG(DAVA::eGPUFamily, gpuType), Q_ARG(DAVA::TextureConverter::eConvertQuality, quality));
 }
 
 void DialogReloadSprites::OnStopClicked()
@@ -202,11 +205,13 @@ void DialogReloadSprites::LoadSettings()
             }
         }
     }
-    const auto &clear = settings.value(CLEAR_ON_START);
-    if (clear.isValid())
+
+    const auto& repack = settings.value(FORCE_REPACK);
+    if (repack.isValid())
     {
-        ui->checkBox_clean->setChecked(clear.toBool());
+        ui->checkBox_repack->setChecked(repack.toBool());
     }
+
     const auto& consoleState = settings.value(CONSOLE_STATE);
     if (consoleState.canConvert<QByteArray>())
     {
@@ -227,7 +232,7 @@ void DialogReloadSprites::SaveSettings() const
     settings.beginGroup("DialogReloadSprites");
     settings.setValue(GPU, ui->comboBox_targetGPU->currentData());
     settings.setValue(QUALITY, ui->comboBox_quality->currentData());
-    settings.setValue(CLEAR_ON_START, ui->checkBox_clean->isChecked());
+    settings.setValue(FORCE_REPACK, ui->checkBox_repack->isChecked());
     settings.setValue(CONSOLE_STATE, ui->logWidget->Serialize());
     settings.setValue(SHOW_CONSOLE, ui->checkBox_showConsole->isChecked());
     settings.endGroup();

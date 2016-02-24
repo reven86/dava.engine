@@ -98,8 +98,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor* descriptor, c
     return size;
 }
 
-
-void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
+void ImageTools::ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
 {
     if (!descriptor || descriptor->compression[forGPU].format == FORMAT_INVALID)
     {
@@ -258,8 +257,6 @@ QImage ImageTools::FromDavaImage(Image* image)
 
     if (nullptr != image)
     {
-        QRgb* line = nullptr;
-
         switch (image->format)
         {
         case FORMAT_DXT1:

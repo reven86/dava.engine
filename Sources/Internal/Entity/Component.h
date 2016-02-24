@@ -42,7 +42,7 @@ namespace DAVA
 class Entity;
 class Component : public Serializable, public InspBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT)
 
 public:
     enum eType
@@ -91,13 +91,10 @@ public:
 public:
     static Component* CreateByType(uint32 componentType);
 
-    Component();
-    virtual ~Component();
-
     virtual uint32 GetType() const = 0;
     virtual Component* Clone(Entity* toEntity) = 0;
-    virtual void Serialize(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext);
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     inline Entity* GetEntity() const;
     virtual void SetEntity(Entity* entity);
@@ -109,7 +106,9 @@ public:
     /**
 	 \brief This function optimize component before export.
 	*/
-    virtual void OptimizeBeforeExport(){};
+    virtual void OptimizeBeforeExport()
+    {
+    }
 
     /**
          \brief Function to get data nodes of requested type to specific container you provide.
@@ -118,12 +117,12 @@ public:
     void GetDataNodes(Container<T>& container);
 
 protected:
-    Entity* entity; // entity is a Entity, that this component belongs to
+    Entity* entity = 0;
 
 public:
     INTROSPECTION(Component,
                   MEMBER(entity, "entity", I_SAVE)
-                  );
+                  )
 };
 
 inline Entity* Component::GetEntity() const
@@ -135,7 +134,7 @@ inline Entity* Component::GetEntity() const
     virtual uint32 GetType() const { return TYPE; }; \
     static const uint32 C_TYPE = TYPE; 
 
-#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
+#define MAKE_COMPONENT_MASK(x) (1ULL << static_cast<uint64>(x))
 
 template <template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T>& container)

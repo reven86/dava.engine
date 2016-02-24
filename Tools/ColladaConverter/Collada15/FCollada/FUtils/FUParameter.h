@@ -138,7 +138,7 @@ typedef fm::vector<fstring, false> FUParameterFStringList; /**< A Unicode string
     @param niceName The Unicode string to identify this parameter to users. */
 #define DeclareParameter(type, qual, parameterName, niceName) \
 	class Parameter_##parameterName : public FUParameterT<type> { \
-	public: Parameter_##parameterName()                         \
+	public: Parameter_##parameterName() \
             : FUParameterT<type>() {} \
 	Parameter_##parameterName(const type& defaultValue) \
             : FUParameterT<type>(defaultValue) {} \

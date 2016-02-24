@@ -66,6 +66,8 @@ struct Matrix2
     inline void SetIdentity();
     void BuildRotation(float32 angle);
 
+    inline Matrix2& operator=(const Matrix2& arg);
+
     inline Matrix2& operator*=(const Matrix2& arg);
     inline Matrix2 operator*(const Matrix2& arg) const;
 
@@ -98,7 +100,10 @@ inline Matrix2::Matrix2(float32 m00, float32 m01, float32 m10, float32 m11)
 
 inline Matrix2::Matrix2(const Matrix2& m)
 {
-    *this = m;
+    _00 = m._00;
+    _01 = m._01;
+    _10 = m._10;
+    _11 = m._11;
 }
 
 inline float32 Matrix2::Det() const
@@ -123,6 +128,16 @@ inline void Matrix2::BuildRotation(float32 angle)
     data[1] = sinA;
     data[2] = -sinA;
     data[3] = cosA;
+}
+
+inline Matrix2& Matrix2::operator=(const Matrix2& arg)
+{
+    _00 = arg._00;
+    _01 = arg._01;
+    _10 = arg._10;
+    _11 = arg._11;
+
+    return *this;
 }
 
 inline Matrix2 Matrix2::operator*(const Matrix2& m) const

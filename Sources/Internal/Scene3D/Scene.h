@@ -240,8 +240,8 @@ public:
     RenderSystem* GetRenderSystem() const;
     AnimationSystem* GetAnimationSystem() const;
 
-    SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
-    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
+    virtual SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
+    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
 

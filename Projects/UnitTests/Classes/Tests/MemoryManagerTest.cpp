@@ -35,14 +35,14 @@ using namespace DAVA;
 
 #include "MemoryManager/MemoryProfiler.h"
 
-DAVA_TESTCLASS(MemoryManagerTest)
+DAVA_TESTCLASS (MemoryManagerTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
     volatile uint32 capturedTag = 0;
     volatile uint32 capturedCheckpoint = 0;
 
-    DAVA_TEST(TestZeroAlloc)
+    DAVA_TEST (TestZeroAlloc)
     {
         void* ptr1 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_DEFAULT);
         void* ptr2 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_DEFAULT);
@@ -55,7 +55,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         MemoryManager::Instance()->Deallocate(ptr2);
     }
 
-    DAVA_TEST(TestAlignedAlloc)
+    DAVA_TEST (TestAlignedAlloc)
     {
         // Alignment should be power of 2
         size_t align[] = {
@@ -71,7 +71,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         }
     }
 
-    DAVA_TEST(TestGPUTracking)
+    DAVA_TEST (TestGPUTracking)
     {
         const size_t statSize = MemoryManager::Instance()->CalcCurStatSize();
         void* buffer = ::operator new(statSize);
@@ -98,7 +98,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         ::operator delete(buffer);
     }
 
-    DAVA_TEST(TestAllocScope)
+    DAVA_TEST (TestAllocScope)
     {
         const size_t statSize = MemoryManager::Instance()->CalcCurStatSize();
         void* buffer = ::operator new(statSize);
@@ -144,7 +144,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         ::operator delete(buffer);
     }
 
-    DAVA_TEST(TestCallback)
+    DAVA_TEST (TestCallback)
     {
         const uint32 TAG = 1;
 

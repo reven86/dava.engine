@@ -171,7 +171,7 @@ bool TextureDescriptorTool::InitializeInternal()
 
 void TextureDescriptorTool::ProcessInternal()
 {
-    switch(commandAction)
+    switch (commandAction)
     {
     case ACTION_RESAVE_DESCRIPTORS:
     {

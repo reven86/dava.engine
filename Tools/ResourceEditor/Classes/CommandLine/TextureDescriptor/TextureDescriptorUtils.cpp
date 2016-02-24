@@ -37,7 +37,7 @@ using namespace DAVA;
 
 namespace Internal
 {
-bool IsCorrectDirectory(FileList *fileList, const int32 fileIndex)
+bool IsCorrectDirectory(FileList* fileList, const int32 fileIndex)
 {
     if (fileList->IsDirectory(fileIndex))
     {
@@ -57,7 +57,7 @@ void RecursiveWalk(FileActionFunctor fileAction, const FilePath& folderPath, Arg
     ScopedPtr<FileList> fileList(new FileList(folderPath));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        const FilePath &pathname = fileList->GetPathname(fi);
+        const FilePath& pathname = fileList->GetPathname(fi);
         if (IsCorrectDirectory(fileList, fi))
         {
             RecursiveWalk(fileAction, pathname, args...);
