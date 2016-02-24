@@ -406,6 +406,11 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetContr
 
 void UIControlSystem::OnInput(UIEvent* newEvent)
 {
+    if (!Core::Instance()->IsFocus())
+    {
+        return;
+    }
+
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);

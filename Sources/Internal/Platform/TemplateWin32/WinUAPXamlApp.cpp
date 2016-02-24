@@ -633,7 +633,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-        DAVATouchEvent(&ev);
+        UIControlSystem::Instance()->OnInput(&ev);
     });
 }
 
@@ -687,7 +687,7 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
         uiEvent.phase = phase;
         uiEvent.key = keyboard.GetDavaKeyForSystemKey(key);
         uiEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-        DAVATouchEvent(&uiEvent);
+        UIControlSystem::Instance()->OnInput(&uiEvent);
 
         switch (uiEvent.phase)
         {
@@ -722,7 +722,7 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
         {
             ev.phase = UIEvent::Phase::CHAR;
         }
-        DAVATouchEvent(&ev);
+        UIControlSystem::Instance()->OnInput(&ev);
     });
 }
 
@@ -794,14 +794,6 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ arg
     }
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent* newTouch)
-{
-    if (Core::Instance()->IsFocus())
-    {
-        UIControlSystem::Instance()->OnInput(newTouch);
-    }
-}
-
 void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device device)
 {
     UIEvent newTouch;
@@ -814,7 +806,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.device = device;
     newTouch.tapCount = 1;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-    DAVATouchEvent(&newTouch);
+    UIControlSystem::Instance()->OnInput(&newTouch);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()
@@ -1091,11 +1083,11 @@ void WinUAPXamlApp::SendBackKeyEvents()
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
-        DAVATouchEvent(&ev);
+        UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyPressed(Key::BACK);
 
         ev.phase = UIEvent::Phase::KEY_UP;
-        DAVATouchEvent(&ev);
+        UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(Key::BACK);
     });
 }

@@ -276,7 +276,7 @@ private:
     KeyedArchive* options;
 
     bool isActive;
-    bool isFocus;
+    bool isFocused;
 
     uint32 globalFrameIndex;
 
@@ -294,7 +294,7 @@ inline bool Core::IsActive()
 
 inline bool Core::IsFocus()
 {
-    return isFocus;
+    return isFocused;
 }
 };
 
