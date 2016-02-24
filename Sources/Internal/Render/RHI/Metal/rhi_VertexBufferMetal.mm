@@ -92,6 +92,7 @@ metal_VertexBuffer_Delete(Handle vb)
 
     if (self)
     {
+        self->uid = nil;
         VertexBufferMetalPool::Free(vb);
     }
 }

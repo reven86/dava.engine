@@ -93,6 +93,7 @@ metal_IndexBuffer_Delete(Handle ib)
 
     if (self)
     {
+        self->uid = nil;
         IndexBufferMetalPool::Free(ib);
     }
 }

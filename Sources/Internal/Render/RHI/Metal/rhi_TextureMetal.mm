@@ -52,6 +52,7 @@ public:
         , uid(nil)
         , is_mapped(false)
         , is_renderable(false)
+        , is_cubemap(false)
     {
     }
 
@@ -201,11 +202,12 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     DVASSERT(texDesc.levelCount);
 
     Handle handle = InvalidHandle;
-    MTLPixelFormat pf = (texDesc.isRenderTarget) ? MetalRenderableTextureFormat(texDesc.format) : MetalTextureFormat(texDesc.format);
+    MTLPixelFormat pf = (texDesc.isRenderTarget) ? /*MetalRenderableTextureFormat(texDesc.format)*/MTLPixelFormatBGRA8Unorm : MetalTextureFormat(texDesc.format);
     MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
 
     desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE) ? MTLTextureTypeCube : MTLTextureType2D;
     desc.mipmapLevelCount = texDesc.levelCount;
+    desc.sampleCount = 1;
 
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
     TextureMetal_t* tex = nullptr;
@@ -275,6 +277,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 
             desc2.textureType = MTLTextureType2D;
             desc2.mipmapLevelCount = 1;
+            desc2.sampleCount = 1;
 
             id<MTLTexture> uid2 = [_Metal_Device newTextureWithDescriptor:desc2];
 
@@ -300,9 +303,11 @@ metal_Texture_Delete(Handle tex)
         if (self->mappedData)
         {
             ::free(self->mappedData);
-            self->mappedData = 0;
+            self->mappedData = nullptr;
         }
 
+        self->uid = nil;
+        self->uid2 = nil;
         TextureMetalPool::Free(tex);
     }
 }
@@ -512,7 +517,9 @@ void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> 
 void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
+DVASSERT(!self->is_cubemap);
 
+DVASSERT(self->uid);
     desc.colorAttachments[0].texture = self->uid;
 }
 
