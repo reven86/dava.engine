@@ -51,7 +51,7 @@ static const QString presetFilter = "Preset (*.preset)";
 
 namespace Internal
 {
-bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const KeyedArchive* preset, List<String>& warnings)
+bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const KeyedArchive* preset)
 {
     DVASSERT(descriptor);
     DVASSERT(preset);
@@ -60,14 +60,16 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
     const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
     if (imageInfo.isEmpty())
     {
-        String warn = DAVA::Format("Can't get image info for %s", sourceImagePath.GetAbsolutePathname().c_str());
-        Logger::Warning("%s", warn.c_str());
-        warnings.emplace_back(warn);
+        Logger::Error("Can't get image info for %s", sourceImagePath.GetAbsolutePathname().c_str());
         return false;
     }
 
+    DVASSERT(imageInfo.width > 0);
+    DVASSERT(imageInfo.height > 0);
+
     bool dimensionsAreCorrect = true;
-    bool imageIsSquare = (imageInfo.width == imageInfo.height);
+
+    float imageRatio = imageInfo.width / imageInfo.height;
 
     for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
@@ -77,18 +79,31 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
         {
             auto compressToWidth = static_cast<uint32>(compressionArchive->GetInt32("width"));
             auto compressToHeight = static_cast<uint32>(compressionArchive->GetInt32("height"));
-            bool compressIsSquare = (compressToHeight == compressToWidth);
 
-            if (compressToHeight != 0 && compressToWidth != 0)
+            if (compressToWidth == 0 && compressToHeight == 0)
+                continue;
+
+            DVASSERT(compressToWidth > 0);
+            DVASSERT(compressToHeight > 0);
+
+            float compressRatio = compressToWidth / compressToHeight;
+
+            if (imageRatio != compressRatio)
             {
-                if (imageIsSquare != compressIsSquare || (compressToWidth >= imageInfo.width) || (compressToHeight >= imageInfo.height))
-                {
-                    String warn = DAVA::Format("Preset compression size %u x %u for gpu %s doesn't fit for image size %u x %u",
-                                               compressToWidth, compressToHeight, gpuName.c_str(), imageInfo.width, imageInfo.height);
-                    Logger::Warning("%s", warn.c_str());
-                    warnings.emplace_back(warn);
-                    dimensionsAreCorrect = false;
-                }
+                Logger::Error("Preset compression size %u x %u for gpu %s and image size %u x %u have different ratio",
+                              compressToWidth, compressToHeight, gpuName.c_str(), imageInfo.width, imageInfo.height);
+                dimensionsAreCorrect = false;
+            }
+            else if ((compressToWidth > imageInfo.width) || (compressToHeight > imageInfo.height))
+            {
+                Logger::Error("Preset compression size %u x %u for gpu %s is larger than image size %u x %u",
+                              compressToWidth, compressToHeight, gpuName.c_str(), imageInfo.width, imageInfo.height);
+                dimensionsAreCorrect = false;
+            }
+            else if (compressToWidth == imageInfo.width && compressToHeight == imageInfo.height)
+            {
+                Logger::Warning("Preset compression size %u x %u for gpu %s is the same as image size",
+                                compressToWidth, compressToHeight, gpuName.c_str());
             }
         }
     }
@@ -137,7 +152,7 @@ KeyedArchive* LoadArchive(const FilePath& path)
     return archive;
 }
 
-bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* preset, bool applyWithCorrectDimensionsOnly)
+bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* preset)
 {
     DVASSERT(descriptor != nullptr);
     DVASSERT(preset != nullptr);
@@ -145,8 +160,7 @@ bool ApplyTexturePreset(TextureDescriptor* descriptor, const KeyedArchive* prese
     if (descriptor->IsPresetValid(preset) == false)
         return false;
 
-    List<String> warnings;
-    if (Internal::ArePresetDimensionsCorrect(descriptor, preset, warnings) == false && applyWithCorrectDimensionsOnly)
+    if (Internal::ArePresetDimensionsCorrect(descriptor, preset) == false)
         return false;
 
     bool applied = descriptor->DeserializeFromPreset(preset);
@@ -159,14 +173,19 @@ bool DialogSavePresetForTexture(const TextureDescriptor* descriptor)
 {
     DVASSERT(descriptor != nullptr);
 
+    ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
+    if (descriptor->SerializeToPreset(presetArchive) == false)
+    {
+        Logger::Error("Can't create preset. Check that all GPU convert parameters are valid");
+        return false;
+    }
+
     const QString outputFile = Internal::GetSavePathname("Save Texture Preset", texturePresetFolder);
     if (outputFile.isEmpty())
     {
         return false;
     }
 
-    ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
-    descriptor->SerializeToPreset(presetArchive);
     return SaveArchive(presetArchive, outputFile.toStdString());
 }
 
@@ -181,36 +200,14 @@ bool DialogLoadPresetForTexture(TextureDescriptor* descriptor)
     }
 
     ScopedPtr<KeyedArchive> presetArchive(LoadArchive(inputFile.toStdString()));
-    if (!presetArchive || !descriptor->IsPresetValid(presetArchive))
+    if (!presetArchive)
     {
+        Logger::Error("Can't load preset archive");
         return false;
     }
 
-    bool toApply = true;
-    List<String> warnings;
-    if (Internal::ArePresetDimensionsCorrect(descriptor, presetArchive, warnings) == false)
+    if (ApplyTexturePreset(descriptor, presetArchive))
     {
-        QMessageBox msgBox;
-        QString msg;
-        for (String& warn : warnings)
-        {
-            msg.append(warn.c_str());
-            msg.append("\n");
-        }
-        msg.append("\n");
-        msg.append("Do you want to apply this preset?");
-        msgBox.setText(msg);
-        msgBox.setStandardButtons(QMessageBox::Apply | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.setIcon(QMessageBox::Warning);
-        int ret = msgBox.exec();
-        toApply = (ret == QMessageBox::Apply);
-    }
-
-    if (toApply)
-    {
-        bool applied = descriptor->DeserializeFromPreset(presetArchive);
-        DVASSERT(applied);
         descriptor->Save();
         return true;
     }

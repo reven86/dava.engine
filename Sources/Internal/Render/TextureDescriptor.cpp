@@ -1106,7 +1106,7 @@ uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
     return CRC32::ForBuffer((const char8*)crcBuffer.data(), CRC_BUFFER_SIZE);
 }
 
-bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive)
+bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive) const
 {
     DVASSERT(IsCompressedFile() == false);
     DVASSERT(presetArchive);
@@ -1164,14 +1164,9 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
             int32 compressToWidth = compressionArchive->GetInt32("width");
             int32 compressToHeight = compressionArchive->GetInt32("height");
 
-            if (format != FORMAT_INVALID && format != compressionGPU.format)
+            if (format != compressionGPU.format || compressToWidth != compressionGPU.compressToWidth || compressToHeight != compressionGPU.compressToHeight)
             {
                 compressionGPU.format = format;
-                compressionGPU.convertedFileCrc = 0;
-            }
-
-            if (compressToWidth != compressionGPU.compressToWidth || compressToHeight != compressionGPU.compressToHeight)
-            {
                 compressionGPU.compressToHeight = compressToHeight;
                 compressionGPU.compressToWidth = compressToWidth;
                 compressionGPU.convertedFileCrc = 0;
@@ -1182,7 +1177,7 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
     return true;
 }
 
-void TextureDescriptor::SerializeToPreset(KeyedArchive* presetArchive) const
+bool TextureDescriptor::SerializeToPreset(KeyedArchive* presetArchive) const
 {
     DVASSERT(IsCompressedFile() == false);
 
@@ -1200,13 +1195,24 @@ void TextureDescriptor::SerializeToPreset(KeyedArchive* presetArchive) const
 
     for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
+        auto& format = compression[gpu].format;
+        auto& width = compression[gpu].compressToWidth;
+        auto& height = compression[gpu].compressToHeight;
+
+        if (format == FORMAT_INVALID && width > 0 && height > 0)
+        {
+            return false;
+        }
+
         ScopedPtr<KeyedArchive> compressionArchive(new KeyedArchive());
-        compressionArchive->SetInt32("format", compression[gpu].format);
-        compressionArchive->SetInt32("width", compression[gpu].compressToWidth);
-        compressionArchive->SetInt32("height", compression[gpu].compressToHeight);
+        compressionArchive->SetInt32("format", format);
+        compressionArchive->SetInt32("width", width);
+        compressionArchive->SetInt32("height", height);
 
         String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
         presetArchive->SetArchive(gpuName, compressionArchive);
     }
+
+    return true;
 }
 };
