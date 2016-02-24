@@ -48,7 +48,7 @@ namespace DAVA
  */
 class Accelerometer : public Singleton<Accelerometer>
 {
-    IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
+    IMPLEMENT_EVENT_DISPATCHER(eventDispatcher)
 
 public:
     enum

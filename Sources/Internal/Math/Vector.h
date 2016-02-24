@@ -69,6 +69,8 @@ public:
     inline Vector2();
     inline Vector2(float32 _x, float32 _y);
     inline Vector2(const float32* _data);
+    inline Vector2(const Vector2& _v);
+
     inline Vector2& operator=(const Vector2& _v);
 
     //! Set functions
@@ -174,6 +176,7 @@ public:
     inline Vector3(const Vector2& v, float _z);
     explicit inline Vector3(const Vector2& v);
     explicit inline Vector3(const Vector4& v);
+    inline Vector3(const Vector3& v);
     inline Vector3& operator=(const Vector3& _v);
     inline Vector3& operator=(const Vector2& _v);
 
@@ -290,6 +293,7 @@ public:
     inline Vector4(const float32* _data);
     inline Vector4(const Vector3& xyz, float32 _w);
     explicit inline Vector4(const Vector3& v);
+    inline Vector4(const Vector4& v);
     inline Vector4& operator=(const Vector4& _v);
     inline Vector4& operator=(const Vector3& _v);
 
@@ -367,6 +371,12 @@ inline Vector2::Vector2(const float32* _data)
 {
     data[0] = _data[0];
     data[1] = _data[1];
+}
+
+inline Vector2::Vector2(const Vector2& _v)
+{
+    x = _v.x;
+    y = _v.y;
 }
 
 inline Vector2& Vector2::operator=(const Vector2& _v)
@@ -451,11 +461,11 @@ inline Vector2 Vector2::operator-() const
 //! Comparison operators
 inline bool Vector2::operator==(const Vector2& _v) const
 {
-    return ((x == _v.x) && (y == _v.y));
+    return (Memcmp(data, _v.data, sizeof(Vector2)) == 0);
 }
 inline bool Vector2::operator!=(const Vector2& _v) const
 {
-    return ((x != _v.x) || (y != _v.y));
+    return (Memcmp(data, _v.data, sizeof(Vector2)) != 0);
 }
 
 //! On functions
@@ -610,6 +620,13 @@ inline Vector3::Vector3(const Vector2& v)
     x = v.x;
     y = v.y;
     z = 0.0f;
+}
+
+inline Vector3::Vector3(const Vector3& v)
+{
+    x = v.x;
+    y = v.y;
+    z = v.z;
 }
 
 inline Vector3::Vector3(const Vector2& v, float _z)
@@ -776,11 +793,11 @@ inline Vector3 Vector3::operator-() const
 //! Comparison operators
 inline bool Vector3::operator==(const Vector3& _v) const
 {
-    return ((x == _v.x) && (y == _v.y) && (z == _v.z));
+    return (Memcmp(data, _v.data, sizeof(Vector3)) == 0);
 }
 inline bool Vector3::operator!=(const Vector3& _v) const
 {
-    return ((x != _v.x) || (y != _v.y) || (z != _v.z));
+    return (Memcmp(data, _v.data, sizeof(Vector3)) != 0);
 }
 
 //! operators
@@ -928,6 +945,14 @@ inline Vector4::Vector4(const Vector3& v)
     w = 1.0f;
 }
 
+inline Vector4::Vector4(const Vector4& v)
+{
+    x = v.x;
+    y = v.y;
+    z = v.z;
+    w = v.w;
+}
+
 inline Vector4& Vector4::operator=(const Vector4& _v)
 {
     x = _v.x;
@@ -1067,11 +1092,11 @@ inline Vector4 Vector4::operator-() const
 //! Comparison operators
 inline bool Vector4::operator==(const Vector4& _v) const
 {
-    return ((x == _v.x) && (y == _v.y) && (z == _v.z) && (w == _v.w));
+    return (Memcmp(data, _v.data, sizeof(Vector4)) == 0);
 }
 inline bool Vector4::operator!=(const Vector4& _v) const
 {
-    return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
+    return (Memcmp(data, _v.data, sizeof(Vector4)) != 0);
 }
 
 inline const Vector3& Vector4::GetVector3() const

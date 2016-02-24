@@ -45,8 +45,6 @@ QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
     : QDialog(parent, Qt::Dialog)
 {
-    int mainRow = 0;
-    int height = 10;
     const int spacing = 5;
     const int minColumnW = 150;
 
