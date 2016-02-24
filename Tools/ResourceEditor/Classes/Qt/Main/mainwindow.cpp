@@ -2802,8 +2802,7 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
 
 void QtMainWindow::OnCustomQuality()
 {
-    auto d = QualitySwitcher::GetDialog();
-    d->raise();
+    QualitySwitcher::ShowDialog();
 }
 
 void QtMainWindow::UpdateConflictingActionsState(bool enable)
