@@ -46,17 +46,14 @@ struct MetaInfo;
 // абстрактный базовый класс для интроспекции
 class InspBase
 {
-protected:
-    virtual ~InspBase()
-    {
-    }
-
 public:
-    InspBase()
-    {
-    }
+    InspBase();
+
     // Возвращает интроспекцию класса
     virtual const InspInfo* GetTypeInfo() const = 0;
+
+protected:
+    virtual ~InspBase();
 };
 
 struct InspDesc
@@ -110,7 +107,7 @@ class InspMember
 
 public:
     InspMember(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags = 0);
-    virtual ~InspMember(){};
+    virtual ~InspMember() = default;
 
     // Имя члена интроспекции, соответствует имени члена класса
     const FastName& Name() const;
@@ -182,10 +179,7 @@ class InspColl : public InspMember
 public:
     using Iterator = void*;
 
-    InspColl(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags = 0)
-        : InspMember(_name, _desc, _offset, _type, _flags)
-    {
-    }
+    InspColl(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags = 0);
 
     virtual MetaInfo* CollectionType() const = 0;
     virtual MetaInfo* ItemType() const = 0;
@@ -240,7 +234,7 @@ protected:
     // Компилятор сможет вывести типы для класса Helper только в том случае если &U::GetTypeInfo соответствует
     // указателю на функцию GetTypeInfo, являющуюся членом класса TestBase
     template <typename U>
-    static no Check(U*, Helper<const InspInfo* (TestBase::*)(), &U::GetTypeInfo>* = 0);
+    static no Check(U*, Helper<const InspInfo* (TestBase::*)(), &U::GetTypeInfo>* = nullptr);
 
     // В случае когда вывод типов невозможен для первой функции, будет вызвана эта. Это произойдет только тогда,
     // когда Т содержит свою функцию GetTypeInfo, а следовательно содержит интроспекцию
@@ -249,7 +243,7 @@ protected:
 public:
     // Статическая переменна, значение которой будет равно true в случае,
     // когда тип Т содержит интроспекцию
-    static const bool result = (sizeof(yes) == sizeof(Check((Test*)(0))));
+    static const bool result = (sizeof(yes) == sizeof(Check(static_cast<Test*>(nullptr))));
 };
 
 // Параметризированные имплементации HasIntrospection для базовых типов
@@ -398,7 +392,7 @@ typename EnableIf<!HasInsp<T>::result, const InspInfo*>::type GetIntrospection(c
 template <typename T>
 const InspInfo* GetIntrospectionByObject(void* object)
 {
-    const T* t = (const T*)object;
+    const T* t = static_cast<const T*>(object);
     return GetIntrospection(t);
 }
 

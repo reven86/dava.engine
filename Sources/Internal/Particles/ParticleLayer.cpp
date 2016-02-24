@@ -60,7 +60,7 @@ enum eBlendMode
 
     BLEND_MODE_COUNT,
 };
-const String BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
+const char* BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
 {
   "BLEND_NONE",
   "BLEND_ZERO",
@@ -80,7 +80,7 @@ eBlendMode GetBlendModeByName(const String& blendStr)
 {
     for (uint32 i = 0; i < BLEND_MODE_COUNT; i++)
         if (blendStr == BLEND_MODE_NAMES[i])
-            return (eBlendMode)i;
+            return static_cast<eBlendMode>(i);
 
     return BLEND_MODE_COUNT;
 }

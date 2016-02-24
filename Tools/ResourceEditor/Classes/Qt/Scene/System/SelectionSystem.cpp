@@ -56,9 +56,9 @@ SceneSelectionSystem::~SceneSelectionSystem()
     }
 }
 
-void SceneSelectionSystem::ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event)
+void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if ((EventSystem::SWITCH_CHANGED == event) && curSelections.ContainsEntity(entity))
+    if ((EventSystem::SWITCH_CHANGED == event) && curSelections.ContainsEntity(component->GetEntity()))
     {
         invalidSelectionBoxes = true;
     }

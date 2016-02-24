@@ -114,10 +114,8 @@ void MemoryBlocksFilterModel::SetFilter(F fn)
 template <typename F>
 void MemoryBlocksFilterModel::SortBy(F fn)
 {
-    static int x = 0;
     lessThanPredicate = fn;
     sort(0);
-    //x = x == 0;
 }
 
 template <typename F>

@@ -42,7 +42,9 @@ public:
     void RemoveObserver(Observer* observer);
     void NotifyObservers();
 
-    virtual ~Observable(){};
+    virtual ~Observable()
+    {
+    }
 
 private:
     Set<Observer*> observers;

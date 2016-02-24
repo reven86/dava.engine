@@ -121,7 +121,7 @@ public:
     void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
 
 private:
-    void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
 
     void UpdateHoodPos() const;
