@@ -578,6 +578,16 @@ void NMaterial::SetCurrConfig(uint32 id)
     currConfig = id;
     InvalidateRenderVariants();
 }
+
+void NMaterial::ReleaseConfigTextures(uint32 configId)
+{
+    DVASSERT(id < materialConfigs.size());
+    for (auto& tex : materialConfigs[configId].localTextures)
+        SafeRelease(tex.second->texture);
+
+    if (configId == currConfig)
+        InvalidateTextureBindings();
+}
 uint32 NMaterial::GetConfigCount()
 {
     return materialConfigs.size();

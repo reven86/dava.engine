@@ -171,6 +171,7 @@ public:
     //Configs managment
     uint32 GetCurrConfig() const;
     void SetCurrConfig(uint32 id);
+    void ReleaseConfigTextures(uint32 configId);
     uint32 GetConfigCount();
     const FastName& GetCurrConfigName();
     void SetCurrConfigName(const FastName& name);
