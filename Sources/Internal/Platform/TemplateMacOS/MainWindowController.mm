@@ -278,7 +278,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     {
         return;
     }
-    
+
     IOReturn result;
 
     if (sleep)
@@ -293,7 +293,7 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                              CFSTR("DAVA display sleeping preventing"),
                                              &assertionID);
     }
-    
+
     if (result != kIOReturnSuccess)
     {
         DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
@@ -650,7 +650,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (void)OnSuspend
 {
     [self allowDisplaySleep:true];
-    
+
     if (core)
     {
         core->OnSuspend();
@@ -664,7 +664,7 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 - (void)OnResume
 {
     [self allowDisplaySleep:false];
-    
+
     if (core)
     {
         core->OnResume();
