@@ -58,7 +58,7 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace SceneTreeDetails
@@ -597,13 +597,9 @@ void SceneTree::ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent* effec
 void SceneTree::LookAtSelection()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (NULL != sceneEditor)
+    if (sceneEditor != nullptr)
     {
-        const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
-        if (!selection.IsEmpty())
-        {
-            sceneEditor->cameraSystem->LookAt(selection.GetCommonBbox());
-        }
+        sceneEditor->cameraSystem->MoveToSelection();
     }
 }
 
@@ -943,12 +939,9 @@ void SceneTree::SyncSelectionFromTree()
                 DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
                 if (entity != nullptr) // it could be emitter, etc
                 {
-                    DAVA::AABBox3 entityBbox;
-                    curScene->collisionSystem->GetBoundingBox(entity).GetTransformedBox(entity->GetWorldTransform(), entityBbox);
-                    group.Add(entity, entityBbox);
+                    group.Add(entity, curScene->selectionSystem->GetUntransformedBoundingBox(entity));
                 }
             }
-
             curScene->selectionSystem->SetSelection(group);
 
             // force selection system emit signals about new selection

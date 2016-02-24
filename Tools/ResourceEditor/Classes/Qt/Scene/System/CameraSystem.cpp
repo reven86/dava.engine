@@ -651,7 +651,7 @@ void SceneCameraSystem::MoveToSelection()
     const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
-        sceneEditor->cameraSystem->LookAt(selection.GetCommonBbox());
+        LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
     }
 }
 

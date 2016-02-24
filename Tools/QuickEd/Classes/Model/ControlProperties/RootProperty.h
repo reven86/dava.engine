@@ -42,6 +42,7 @@ class NameProperty;
 class PrototypeNameProperty;
 class ClassProperty;
 class CustomClassProperty;
+class VisibleValueProperty;
 class ControlNode;
 
 namespace DAVA
@@ -76,6 +77,10 @@ public:
     NameProperty* GetNameProperty() const
     {
         return nameProperty;
+    }
+    VisibleValueProperty* GetVisibleProperty() const
+    {
+        return visibleProperty;
     }
 
     DAVA::int32 GetControlPropertiesSectionsCount() const;
@@ -126,12 +131,13 @@ private:
     void RefreshComponentIndices();
 
 private:
-    ControlNode* node; // weak ref
+    ControlNode* node = nullptr; // weak ref
 
-    ClassProperty* classProperty;
-    CustomClassProperty* customClassProperty;
-    PrototypeNameProperty* prototypeProperty;
-    NameProperty* nameProperty;
+    ClassProperty* classProperty = nullptr;
+    CustomClassProperty* customClassProperty = nullptr;
+    PrototypeNameProperty* prototypeProperty = nullptr;
+    NameProperty* nameProperty = nullptr;
+    VisibleValueProperty* visibleProperty = nullptr; //weak ptr
 
     DAVA::Vector<ValueProperty*> baseProperties;
     DAVA::Vector<ControlPropertiesSection*> controlProperties;

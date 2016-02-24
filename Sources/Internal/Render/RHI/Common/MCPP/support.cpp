@@ -255,8 +255,8 @@ OUTDEST od)
 #endif /* MCPP_LIB */
 
 #define DEST2FP(od) \
-    (od == MCPP_OUT) ? fp_out :                                           \
-                       ((od == MCPP_ERR) ? fp_err :                       \
+    (od == MCPP_OUT) ? fp_out : \
+                       ((od == MCPP_ERR) ? fp_err : \
                                            ((od == MCPP_DBG) ? fp_debug : \
                                                                (NULL)))
 

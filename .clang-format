@@ -57,7 +57,7 @@ SpacesInContainerLiterals: true
 SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 0
 CommentPragmas: ''
-ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
+ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, DAVA_TESTCLASS, DAVA_TEST ]
 SpaceBeforeParens: ControlStatements
 DisableFormat:   false
 ...
