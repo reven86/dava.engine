@@ -1635,17 +1635,17 @@ void TiledDrawData::GenerateTileData()
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
                      VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
-    int32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
-    int32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
-    int32 vertexTotalCount = (int32)(4 * cellsHeight.size() * cellsWidth.size());
-    int32 indexTotalCount = (int32)(6 * cellsHeight.size() * cellsWidth.size());
-    int32 unitsCount = vertexTotalCount / vertexLimitPerUnit + (vertexTotalCount % vertexLimitPerUnit > 0 ? 1 : 0);
+    uint32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
+    uint32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
+    uint32 vertexTotalCount = static_cast<int32>(4 * cellsHeight.size() * cellsWidth.size());
+    uint32 indexTotalCount = static_cast<int32>(6 * cellsHeight.size() * cellsWidth.size());
+    uint32 unitsCount = vertexTotalCount / vertexLimitPerUnit + (vertexTotalCount % vertexLimitPerUnit > 0 ? 1 : 0);
 
     {
         // Resize units
         units.resize(unitsCount);
         // Resize buffers for first part of units
-        for (int32 i = 0; i < unitsCount - 1; ++i)
+        for (uint32 i = 0; i < unitsCount - 1; ++i)
         {
             Unit& u = units[i];
             u.vertices.resize(vertexLimitPerUnit);
@@ -1655,16 +1655,16 @@ void TiledDrawData::GenerateTileData()
         }
         // Resize buffers for last unit
         Unit& u = units[unitsCount - 1];
-        int32 lastUnitVertexCount = vertexTotalCount - vertexLimitPerUnit * (unitsCount - 1);
-        int32 lastUnitIndexCount = indexTotalCount - indexLimitPerUnit * (unitsCount - 1);
+        uint32 lastUnitVertexCount = vertexTotalCount - vertexLimitPerUnit * (unitsCount - 1);
+        uint32 lastUnitIndexCount = indexTotalCount - indexLimitPerUnit * (unitsCount - 1);
         u.vertices.resize(lastUnitVertexCount);
         u.texCoords.resize(lastUnitVertexCount);
         u.transformedVertices.resize(lastUnitVertexCount);
         u.indeces.resize(lastUnitIndexCount);
     }
 
-    int32 unitNumber = 0;
-    int32 offsetIndex = 0;
+    uint32 unitNumber = 0;
+    uint32 offsetIndex = 0;
     const float32* textCoords = sprite->GetTextureCoordsForFrame(frame);
     Vector2 trasformOffset;
     const Vector2 tempTexCoordsPt(textCoords[0], textCoords[1]);
@@ -1677,7 +1677,7 @@ void TiledDrawData::GenerateTileData()
 
         for (uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex)
         {
-            int32 vertIndex = offsetIndex * 4;
+            uint32 vertIndex = offsetIndex * 4;
             if (vertIndex >= vertexLimitPerUnit)
             {
                 offsetIndex = 0;
@@ -1703,7 +1703,7 @@ void TiledDrawData::GenerateTileData()
             texCoords[vertIndex + 2] = texel + Vector2(0.0f, texCellSize.y);
             texCoords[vertIndex + 3] = texel + texCellSize;
 
-            int32 indecesIndex = offsetIndex * 6;
+            uint32 indecesIndex = offsetIndex * 6;
             indeces[indecesIndex + 0] = vertIndex;
             indeces[indecesIndex + 1] = vertIndex + 1;
             indeces[indecesIndex + 2] = vertIndex + 2;
@@ -1739,6 +1739,8 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
 
     if (sideSize > 0.0f)
         gridSize += 2;
+
+    DVASSERT_MSG(gridSize >= 0, "Incorrect grid size value!")
 
     axisData.resize(gridSize);
 
