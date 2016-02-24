@@ -31,29 +31,29 @@
 
 #include "EditorSystems/SelectionContainer.h"
 #include "EditorSystems/BaseEditorSystem.h"
-#include "Model/PackageHierarchy/PackageListener.h"
 #include "Math/Rect.h"
 #include "UI/UIEvent.h"
 #include <Functional/SignalBase.h>
+#include "Model/PackageHierarchy/PackageListener.h"
 
 class EditorSystemsManager;
+class ControlNode;
+class ControlsContainerNode;
+
 namespace DAVA
 {
 class Vector2;
 }
 
-class SelectionSystem final : public BaseEditorSystem, private PackageListener
+class SelectionSystem final : public BaseEditorSystem, PackageListener
 {
 public:
     SelectionSystem(EditorSystemsManager* doc);
     ~SelectionSystem() override;
 
-    void OnActivated() override;
-    void OnDeactivated() override;
-
-    bool OnInput(DAVA::UIEvent* currentInput) override;
-
 private:
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+    void OnPackageNodeChanged(PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
     void SelectAllControls();
@@ -66,7 +66,7 @@ private:
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;
-    DAVA::SigConnectionID connectionID;
+    PackageNode* packageNode = nullptr;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

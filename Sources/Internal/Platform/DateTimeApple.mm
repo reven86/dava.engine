@@ -113,6 +113,6 @@ int32 DateTime::GetLocalTimeZoneOffset()
     Timestamp t = time(NULL);
     struct tm resultStruct = { 0 };
     DateTime::LocalTimeThreadSafe(&resultStruct, &t);
-    return (int32)resultStruct.tm_gmtoff;
+    return static_cast<int32>(resultStruct.tm_gmtoff);
 }
 }

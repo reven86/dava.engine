@@ -45,6 +45,7 @@
 #include "FileSystem/Logger.h"
 
 #include "Utils/Utils.h"
+#include "Input/InputSystem.h"
 
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
@@ -386,19 +387,32 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
-    core->RunOnMainThread([this, state]() {
-        switch (state)
+    if (state == CoreWindowActivationState::CodeActivated ||
+        state == CoreWindowActivationState::PointerActivated)
+    {
+        isWindowFocused = true;
+    }
+    else if (state == CoreWindowActivationState::Deactivated)
+    {
+        isWindowFocused = false;
+    }
+
+    core->RunOnMainThread([ this, isFocused = isWindowFocused ] {
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+
+        if (isPhoneApiDetected)
         {
-        case CoreWindowActivationState::CodeActivated:
-        case CoreWindowActivationState::PointerActivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
-            break;
-        case CoreWindowActivationState::Deactivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-            break;
-        default:
-            break;
+            Core::Instance()->SetIsActive(isFocused);
+            return;
+        }
+
+        if (isFocused)
+        {
+            Core::Instance()->FocusReceived();
+        }
+        else
+        {
+            Core::Instance()->FocusLost();
         }
     });
 }
@@ -612,9 +626,10 @@ void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/
 {
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type && mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
+    if (PointerDeviceType::Mouse == type &&
+        mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING)
     {
-        SetCursorVisible(false);
+        SetCursorVisible(!isWindowFocused);
     }
 }
 
@@ -652,8 +667,17 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
 
     core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
+        auto delta = wheelDelta / static_cast<float32>(WHEEL_DELTA);
+        KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
+        if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
+        {
+            ev.wheelDelta = { delta, 0 };
+        }
+        else
+        {
+            ev.wheelDelta = { 0, delta };
+        }
 
-        ev.wheelDelta.y = wheelDelta / static_cast<float32>(WHEEL_DELTA);
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;

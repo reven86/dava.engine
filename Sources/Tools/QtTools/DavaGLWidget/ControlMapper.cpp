@@ -34,10 +34,12 @@
 
 #include "ControlMapper.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QDragMoveEvent>
 #include <QDebug>
+POP_QT_WARNING_SUPRESSOR
 
 namespace DAVA
 {
