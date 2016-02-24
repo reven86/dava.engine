@@ -321,7 +321,7 @@ private:
 
     void NotifyListenersWillSwitch(UIScreen* screen);
     void NotifyListenersDidSwitch(UIScreen* screen);
-    void CalculatedTapCount(UIEvent* newEvent);
+    int32 CalculatedTapCount(UIEvent* newEvent);
 
     UILayoutSystem* layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;

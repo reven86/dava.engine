@@ -422,7 +422,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
-    CalculatedTapCount(newEvent);
+    newEvent->tapCount = CalculatedTapCount(newEvent);
 
     if (Replay::IsPlayback())
     {
@@ -706,13 +706,14 @@ void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
         screenSwitchListenersCopy[i]->OnScreenDidSwitch(screen);
 }
 
-void UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
+int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
+    int32 tapCount = 0;
     // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
     if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
         DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
-        newEvent->tapCount = 1;
+        tapCount = 1;
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
@@ -723,14 +724,14 @@ void UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
                 pointShift += (lastClickData.physPoint.y - newEvent->physPoint.y) * (lastClickData.physPoint.y - newEvent->physPoint.y);
                 if (static_cast<int32>(pointShift) < doubleClickRadiusSquared)
                 {
-                    newEvent->tapCount = lastClickData.tapCount + 1;
+                    tapCount = lastClickData.tapCount + 1;
                 }
             }
         }
         lastClickData.touchId = newEvent->touchId;
         lastClickData.timestamp = newEvent->timestamp;
         lastClickData.physPoint = newEvent->physPoint;
-        lastClickData.tapCount = newEvent->tapCount;
+        lastClickData.tapCount = tapCount;
         lastClickData.lastClickEnded = false;
     }
     else if (newEvent->phase == UIEvent::Phase::ENDED)
@@ -740,6 +741,7 @@ void UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
             lastClickData.lastClickEnded = true;
         }
     }
+    return tapCount;
 }
 
 bool UIControlSystem::IsRtl() const
