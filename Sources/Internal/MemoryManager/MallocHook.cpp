@@ -160,6 +160,13 @@ void MallocHook::Install()
     void* (*realCalloc)(size_t, size_t) = &calloc;
     char* (*realStrdup)(const char*) = &_strdup;
 
+#if defined(_WIN64)
+    RealMalloc = HookedMalloc;
+    RealRealloc = HookedRealloc;
+    realCalloc = HookedCalloc;
+    realStrdup = HookedStrdup;
+    RealFree = HookedFree;
+#else
     auto detours = [](PVOID* what, PVOID hook) -> void {
         LONG result = 0;
         result = DetourTransactionBegin();
@@ -178,6 +185,7 @@ void MallocHook::Install()
     detours(reinterpret_cast<PVOID*>(&realCalloc), reinterpret_cast<PVOID>(&HookedCalloc));
     detours(reinterpret_cast<PVOID*>(&realStrdup), reinterpret_cast<PVOID>(&HookedStrdup));
     detours(reinterpret_cast<PVOID*>(&RealFree), reinterpret_cast<PVOID>(&HookedFree));
+#endif
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     RealMalloc = &malloc;
