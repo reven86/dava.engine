@@ -100,9 +100,9 @@ protected:
 private:
     QSplitter* splitter;
     QFrame* frames[DAVA::LodComponent::MAX_LOD_LAYERS];
-    bool locked;
+    bool locked = false;
 
-    int layersCount;
+    int layersCount = 0;
 
     int stretchSize[DAVA::LodComponent::MAX_LOD_LAYERS];
 };

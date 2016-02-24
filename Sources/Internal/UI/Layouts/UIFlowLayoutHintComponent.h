@@ -38,7 +38,7 @@ class UIControl;
 class UIFlowLayoutHintComponent : public UIComponent
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_HINT_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_HINT_COMPONENT)
 
     UIFlowLayoutHintComponent();
     UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
@@ -74,7 +74,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
                          PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

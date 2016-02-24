@@ -209,7 +209,15 @@ ControlNode* ControlNode::FindByName(const DAVA::String& name) const
 
 String ControlNode::GetName() const
 {
-    return control->GetName().c_str();
+    const FastName& name = control->GetName();
+    if (name.IsValid())
+    {
+        return control->GetName().c_str();
+    }
+    else
+    {
+        return "";
+    }
 }
 
 UIControl* ControlNode::GetControl() const
