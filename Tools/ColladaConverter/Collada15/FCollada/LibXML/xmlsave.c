@@ -76,7 +76,7 @@ xmlIsXHTML(const xmlChar* systemID, const xmlChar* publicID)
 #ifdef LIBXML_OUTPUT_ENABLED
 
 #define TODO 								\
-    xmlGenericError(xmlGenericErrorContext,           \
+    xmlGenericError(xmlGenericErrorContext, \
                     "Unimplemented block at %s:%d\n", \
                     __FILE__, __LINE__);
 

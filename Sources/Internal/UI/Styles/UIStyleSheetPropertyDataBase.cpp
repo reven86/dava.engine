@@ -176,6 +176,10 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     }
 }
 
+UIStyleSheetPropertyDataBase::~UIStyleSheetPropertyDataBase()
+{
+}
+
 uint32 UIStyleSheetPropertyDataBase::GetStyleSheetPropertyIndex(const FastName& name) const
 {
     const auto& iter = propertyNameToIndexMap.find(name);

@@ -44,7 +44,7 @@ class ActionComponent : public Component
 public:
     const static DAVA::FastName ACTION_COMPONENT_SELF_ENTITY_NAME;
 
-    struct Action
+    struct Action : public InspBase
     {
         enum eType
         {
@@ -142,7 +142,7 @@ private:
 
     Entity* GetTargetEntity(const FastName& name, Entity* parent);
 
-    struct ActionContainer
+    struct ActionContainer : public InspBase
     {
         Action action;
         float32 timer;

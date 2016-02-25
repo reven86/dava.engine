@@ -84,7 +84,9 @@ public:
     /**
 		\brief Called when all animations for object are finished. Reimplement this function for specific needs
 	*/
-    virtual void OnAllAnimationsFinished(){};
+    virtual void OnAllAnimationsFinished()
+    {
+    }
 
 private:
     //AnimationsStorage * animationsStorage;
@@ -109,9 +111,6 @@ private:
 	void Update(float32 timeElapsed);
 	
 	friend class Animation;*/
-public:
-    INTROSPECTION_EXTEND(AnimatedObject, BaseObject,
-                         NULL);
 };
 };
 
