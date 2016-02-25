@@ -38,9 +38,7 @@
 #include "Commands2/CommandID.h"
 #include "Commands2/CommandNotify.h"
 
-class Command2 : public CommandNotifyProvider
-                 ,
-                 public DAVA::ICommand
+class Command2 : public CommandNotifyProvider, public DAVA::ICommand
 {
 public:
     Command2(int _id, const DAVA::String& _text = "");
@@ -50,10 +48,7 @@ public:
 
     void Execute() override;
 
-    virtual bool CanUndo() const
-    {
-        return true;
-    }
+    inline virtual bool CanUndo() const;
     virtual DAVA::Entity* GetEntity() const = 0;
     virtual bool MergeWith(const Command2* command);
 
@@ -67,5 +62,10 @@ protected:
     void UndoInternalCommand(Command2* command);
     void RedoInternalCommand(Command2* command);
 };
+
+bool Command2::CanUndo() const
+{
+    return true;
+}
 
 #endif // __COMMAND2_H__

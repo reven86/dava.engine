@@ -56,16 +56,6 @@ bool ObjectHandle::IsValid() const
     return object != nullptr && objectType != nullptr;
 }
 
-void* ObjectHandle::GetObjectPointer() const
-{
-    return object;
-}
-
-const DAVA::MetaInfo* ObjectHandle::GetObjectType() const
-{
-    return objectType;
-}
-
 const DAVA::InspInfo* ObjectHandle::GetIntrospection() const
 {
     return objectType->GetIntrospection(object);

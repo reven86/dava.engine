@@ -42,14 +42,24 @@ public:
     ObjectHandle(DAVA::InspBase* object);
 
     bool IsValid() const;
-    void* GetObjectPointer() const;
-    const MetaInfo * GetObjectType() const;
+    inline void* GetObjectPointer() const;
+    inline const MetaInfo* GetObjectType() const;
     const InspInfo * GetIntrospection() const;
 
 private:
     void * object = nullptr;
     const DAVA::MetaInfo * objectType = nullptr;
 };
+
+void* ObjectHandle::GetObjectPointer() const
+{
+    return object;
+}
+
+const DAVA::MetaInfo* ObjectHandle::GetObjectType() const
+{
+    return objectType;
+}
 }
 
 #endif // __DAVAFRAMEWORK_OBJECTHANDLE_H__
