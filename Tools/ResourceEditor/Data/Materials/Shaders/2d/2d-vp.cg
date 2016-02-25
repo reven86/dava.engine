@@ -28,6 +28,6 @@ VPROG_BEGIN
 #if TEXTURED
     VP_OUT(uv) = in_texcoord;
 #endif //TEXTURED
-    VP_OUT(color) =  in_color;
+    VP_OUT(color) =  half4(in_color);
 
 VPROG_END

@@ -140,7 +140,7 @@ FPROG_BEGIN
     
     
 //compute fresnel    
-    float3 cameraToPointInTangentSpaceNorm = normalize(FP_IN(cameraToPointInTangentSpace));    
+    float3 cameraToPointInTangentSpaceNorm = float3(normalize(FP_IN(cameraToPointInTangentSpace)));
     float lambertFactor = max (dot (-cameraToPointInTangentSpaceNorm, normal), 0.0);
     float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
     

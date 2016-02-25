@@ -83,7 +83,7 @@ VPROG_BEGIN
     float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
     float4 vegetationMask = VP_TEXTURE2D(vegetationmap, hUVcolor);
     
-    VP_OUT(vegetationColor) = vegetationMask.rgb;
+    VP_OUT(vegetationColor) = half3(vegetationMask.rgb);
     
     //wave transform
     int waveIndex = int(inTexCoord1.y);
@@ -95,26 +95,26 @@ VPROG_BEGIN
     VP_OUT_POSITION = mul( float4(pos, 1.0), worldViewProjMatrix );
 
 #if VERTEX_FOG
-	
+    
     float3 eyeCoordsPosition = mul( float4( pos, 1.0 ), worldViewMatrix ).xyz;
-	#define FOG_view_position eyeCoordsPosition
-	
+    #define FOG_view_position eyeCoordsPosition
+    
 #if FOG_ATMOSPHERE
-	float3 tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+    float3 tolight_dir = float4(lightPosition0).xyz - eyeCoordsPosition * float4(lightPosition0).w;
     #define FOG_to_light_dir tolight_dir
 #endif
-	
+    
 #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-	float3 world_position = mul( float4( pos, 1.0 ), worldMatrix ).xyz;
-	#define FOG_world_position world_position
+    float3 world_position = mul( float4( pos, 1.0 ), worldMatrix ).xyz;
+    #define FOG_world_position world_position
 #endif
 
     #define FOG_eye_position cameraPosition
 
-	#include "vp-fog-math.cgh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
-	
-	VP_OUT(varFog) = FOG_result;
-	
+    #include "vp-fog-math.cgh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
+    
+    VP_OUT(varFog) = FOG_result;
+    
 #endif
 
 
