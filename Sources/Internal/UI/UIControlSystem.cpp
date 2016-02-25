@@ -410,7 +410,6 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     {
         return;
     }
-
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
