@@ -68,7 +68,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    bool valid_ = control->GetVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool valid_ = control->GetVisibilityFlag() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     SetValid(valid_);
     if (valid)
     {
@@ -88,13 +88,13 @@ void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
 void HUDContainer::SetValid(bool arg)
 {
     valid = arg;
-    SetVisible(valid && visibleInSystems);
+    SetVisibilityFlag(valid && visibleInSystems);
 }
 
 void HUDContainer::SetVisibleInSystems(bool arg)
 {
     visibleInSystems = arg;
-    SetVisible(valid && visibleInSystems);
+    SetVisibilityFlag(valid && visibleInSystems);
 }
 
 void FrameControl::Init()

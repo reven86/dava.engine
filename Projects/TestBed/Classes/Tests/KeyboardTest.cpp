@@ -117,7 +117,7 @@ public:
 private:
     void UpdateGamepadElement(String name, bool isVisible)
     {
-        gamepadButtons[name]->SetVisible(isVisible);
+        gamepadButtons[name]->SetVisibilityFlag(isVisible);
     }
     void UpdateGamepadStickX(String name, float axisValue)
     {
@@ -507,7 +507,7 @@ void KeyboardTest::LoadResources()
         img->SetSprite(path, 0);
         gamepadButtons[buttonOrAxisName] = img;
         AddControl(img);
-        img->SetVisible(false);
+        img->SetVisibilityFlag(false);
     }
 }
 

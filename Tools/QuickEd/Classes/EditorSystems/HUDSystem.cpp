@@ -197,7 +197,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;
         auto predicate = [point](const UIControl* control) -> bool {
-            return control->GetVisible() && control->IsPointInside(point);
+            return control->GetVisibilityFlag() && control->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
@@ -312,14 +312,14 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
-            if (hud->container->GetVisible())
+            if (hud->container->GetVisibilityFlag())
             {
                 HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
                 auto hudControlsIter = hud->hudControls.find(area);
                 if (hudControlsIter != hud->hudControls.end())
                 {
                     const auto& controlContainer = hudControlsIter->second;
-                    if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+                    if (controlContainer->GetVisibilityFlag() && controlContainer->IsPointInside(pos))
                     {
                         return HUDAreaInfo(hud->node, area);
                     }
@@ -373,7 +373,7 @@ void HUDSystem::UpdateAreasVisibility()
             if (hudControlsIter != hud->hudControls.end())
             {
                 const auto& controlContainer = hudControlsIter->second;
-                controlContainer->SetVisible(showAreas);
+                controlContainer->SetVisibilityFlag(showAreas);
             }
         }
     }
