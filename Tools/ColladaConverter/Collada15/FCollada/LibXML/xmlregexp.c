@@ -59,7 +59,7 @@
  * macro to flag unimplemented blocks
  */
 #define TODO 								\
-    xmlGenericError(xmlGenericErrorContext,           \
+    xmlGenericError(xmlGenericErrorContext, \
                     "Unimplemented block at %s:%d\n", \
                     __FILE__, __LINE__);
 

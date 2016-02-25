@@ -33,15 +33,6 @@
 
 namespace DAVA
 {
-//camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
-static Vector3 basisVectors[7 * 2] = { Vector3(), Vector3(),
-                                       Vector3(), Vector3(),
-                                       Vector3(), Vector3(),
-                                       Vector3(), Vector3(),
-                                       Vector3(0, 1, 0), Vector3(0, 0, 1),
-                                       Vector3(1, 0, 0), Vector3(0, 0, 1),
-                                       Vector3(0, 1, 0), Vector3(1, 0, 0) };
-
 ParticleRenderObject::ParticleRenderObject(ParticleEffectData* effect)
     : effectData(effect)
     , sortingOffset(15)
@@ -91,6 +82,15 @@ void ParticleRenderObject::SetSortingOffset(uint32 offset)
 
 void ParticleRenderObject::PrepareRenderData(Camera* camera)
 {
+    //camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
+    static Vector3 basisVectors[7 * 2] = { Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(0, 1, 0), Vector3(0, 0, 1),
+                                           Vector3(1, 0, 0), Vector3(0, 0, 1),
+                                           Vector3(0, 1, 0), Vector3(1, 0, 0) };
+
     activeRenderBatchArray.clear();
     currRenderBatchId = 0;
 
@@ -143,14 +143,14 @@ void ParticleRenderObject::PrepareRenderData(Camera* camera)
 			currRenderGroup->enableFrameBlend = currGroup.layer->enableFrameBlend;
 			currRenderGroup->renderBatch->SetMaterial(currMaterial);*/
 
-            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection);
+            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection, basisVectors);
             itGroupStart = itGroupCurr;
             particlesInGroup = 0;
         }
         particlesInGroup += CalculateParticleCount(*itGroupCurr);
     }
     if (itGroupStart != effectData->groups.end())
-        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection);
+        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection, basisVectors);
 }
 int32 ParticleRenderObject::CalculateParticleCount(const ParticleGroup& group)
 {
@@ -206,7 +206,7 @@ void ParticleRenderObject::AppendRenderBatch(NMaterial* material, uint32 particl
     currRenderBatchId++;
 }
 
-void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection)
+void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection, Vector3* basisVectors)
 {
     if (!particlesCount)
         return; //hmmm?
@@ -268,10 +268,10 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                 }
 
                 ParticleVertex* verts[4];
-                verts[0] = (ParticleVertex*)currpos;
-                verts[1] = (ParticleVertex*)(currpos + vertexStride);
-                verts[2] = (ParticleVertex*)(currpos + 2 * vertexStride);
-                verts[3] = (ParticleVertex*)(currpos + 3 * vertexStride);
+                verts[0] = reinterpret_cast<ParticleVertex*>(currpos);
+                verts[1] = reinterpret_cast<ParticleVertex*>(currpos + vertexStride);
+                verts[2] = reinterpret_cast<ParticleVertex*>(currpos + 2 * vertexStride);
+                verts[3] = reinterpret_cast<ParticleVertex*>(currpos + 3 * vertexStride);
 
                 Vector3 ex = basisVectors[basises[i] * 2];
                 Vector3 ey = basisVectors[basises[i] * 2 + 1];
@@ -344,7 +344,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
 void ParticleRenderObject::BindDynamicParameters(Camera* camera)
 {
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
 }
 
 } //namespace

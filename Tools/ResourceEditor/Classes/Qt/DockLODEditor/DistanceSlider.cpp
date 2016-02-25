@@ -46,8 +46,6 @@ static const int MIN_WIDGET_WIDTH = 1;
 
 DistanceSlider::DistanceSlider(QWidget* parent /*= 0*/)
     : QFrame(parent)
-    , layersCount(0)
-    , locked(false)
 {
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setObjectName(QString::fromUtf8("layout"));

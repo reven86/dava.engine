@@ -196,14 +196,14 @@ public:
 
     /** 
 		\brief Get current file size if writing
-		\brief and get real file size if file for reading
+		       and get real file size if file for reading
 	*/
     virtual uint32 GetSize() const;
 
     /** 
 		\brief Set current file position
-		\param position position to set
-		\param seekType \ref IO::eFileSeek flag to set type of positioning
+		\param position - position to set
+		\param seekType - \ref IO::eFileSeek flag to set type of positioning
 		\return true if successful otherwise false.
 	*/
     virtual bool Seek(int32 position, uint32 seekType);

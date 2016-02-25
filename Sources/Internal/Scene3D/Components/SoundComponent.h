@@ -39,7 +39,7 @@
 namespace DAVA
 {
 class SoundComponent;
-struct SoundComponentElement
+struct SoundComponentElement : public InspBase
 {
     SoundComponentElement(SoundEvent* _soundEvent, uint32 _flags, const Vector3& _localDirection)
         :

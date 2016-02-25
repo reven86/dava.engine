@@ -51,7 +51,7 @@ extern void CloseKeyboard();
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "UI/UITextFieldWinUAP.h"
-#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldMacOS.h"
 #else
 #include "UI/UIStaticText.h"
@@ -626,6 +626,11 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
         if (replacementLocation <= static_cast<int32>(txt.length()))
         {
             txt.replace(replacementLocation, replacementLength, replacementString);
+            int32 outOfBounds = static_cast<int32>(txt.size()) - GetMaxLength();
+            if (outOfBounds > 0)
+            {
+                txt.erase(GetMaxLength(), outOfBounds);
+            }
         }
         else
         {

@@ -974,7 +974,11 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     if (archive->IsKeyExists(NMaterialSerializationKey::QualityGroup))
     {
-        qualityGroup = FastName(archive->GetString(NMaterialSerializationKey::QualityGroup).c_str());
+        String qualityString = archive->GetString(NMaterialSerializationKey::QualityGroup);
+        if (qualityString.empty() == false)
+        {
+            qualityGroup = FastName(qualityString);
+        }
     }
 
     if (archive->IsKeyExists(NMaterialSerializationKey::FXName))
