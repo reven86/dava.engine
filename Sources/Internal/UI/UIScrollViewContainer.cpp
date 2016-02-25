@@ -336,7 +336,7 @@ void UIScrollViewContainer::InputCancelled(UIEvent* currentInput)
     }
 }
 
-void UIScrollViewContainer::OnDisappear()
+void UIScrollViewContainer::OnInactive()
 {
     mainTouch = -1;
     lockTouch = false;

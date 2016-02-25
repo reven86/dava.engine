@@ -392,7 +392,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(controlName, background)
     local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(controlName, background))
+    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)

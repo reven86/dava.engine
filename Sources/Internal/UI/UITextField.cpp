@@ -193,7 +193,7 @@ public:
     }
     void SetVisible(bool v)
     {
-        staticText_->SetVisible(v);
+        staticText_->SetVisibilityFlag(v);
     }
     void SetFont(Font* f)
     {
@@ -332,9 +332,8 @@ void UITextField::Update(float32 timeElapsed)
     textFieldImpl->UpdateRect(GetGeometricData().GetUnrotatedRect());
 }
 
-void UITextField::OnAppear()
+void UITextField::OnActive()
 {
-    UIControl::OnAppear();
     if (delegate != nullptr && delegate->IsTextFieldShouldSetFocusedOnAppear(this))
     {
         UIControlSystem::Instance()->SetFocusedControl(this, false);
@@ -342,13 +341,12 @@ void UITextField::OnAppear()
 
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->ShowField();
-    textFieldImpl->SetVisible(IsOnScreen());
+    textFieldImpl->SetVisible(IsVisible());
 #endif
 }
 
-void UITextField::OnDisappear()
+void UITextField::OnInactive()
 {
-    UIControl::OnDisappear();
 #ifdef __DAVAENGINE_IPHONE__
     textFieldImpl->HideField();
 #endif
@@ -1024,15 +1022,15 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
-void UITextField::OnBecomeVisible()
+void UITextField::OnVisible()
 {
-    UIControl::OnBecomeVisible();
+    UIControl::OnVisible();
     textFieldImpl->SetVisible(visible);
 }
 
-void UITextField::OnBecomeInvisible()
+void UITextField::OnInvisible()
 {
-    UIControl::OnBecomeInvisible();
+    UIControl::OnInvisible();
     textFieldImpl->SetVisible(false);
 }
 

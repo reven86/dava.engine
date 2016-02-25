@@ -64,12 +64,12 @@ UIControlSystem::UIControlSystem()
     popupContainer->SetName("UIControlSystem_popupContainer");
     popupContainer->SetInputEnabled(false);
 
-    popupContainer->InvokeAppear(UIControl::eViewState::VISIBLE);
+    popupContainer->InvokeActive(UIControl::eViewState::VISIBLE);
 }
 
 UIControlSystem::~UIControlSystem()
 {
-    popupContainer->InvokeDisappear();
+    popupContainer->InvokeInactive();
 
     popupContainer = nullptr;
 
@@ -207,7 +207,7 @@ void UIControlSystem::ProcessScreenLogic()
         // if we have current screen we call events, unload resources for it group
         if (currentScreen)
         {
-            currentScreen->InvokeDisappear();
+            currentScreen->InvokeInactive();
 
             RefPtr<UIScreen> prevScreen = currentScreen;
             currentScreen = nullptr;
@@ -230,7 +230,7 @@ void UIControlSystem::ProcessScreenLogic()
         currentScreen = nextScreenProcessed;
         if (currentScreen)
         {
-            currentScreen->InvokeAppear(UIControl::eViewState::VISIBLE);
+            currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
         }
 
         NotifyListenersDidSwitch(currentScreen.Get());
@@ -243,7 +243,7 @@ void UIControlSystem::ProcessScreenLogic()
             LockInput();
 
             currentScreenTransition = nextScreenTransitionProcessed;
-            currentScreenTransition->InvokeAppear(UIControl::eViewState::VISIBLE);
+            currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
         }
 
         UnlockInput();
@@ -256,7 +256,7 @@ void UIControlSystem::ProcessScreenLogic()
     {
         if (currentScreenTransition->IsComplete())
         {
-            currentScreenTransition->InvokeDisappear();
+            currentScreenTransition->InvokeInactive();
 
             RefPtr<UIScreenTransition> prevScreenTransitionProcessed = currentScreenTransition;
             currentScreenTransition = nullptr;

@@ -80,9 +80,8 @@ UIParticles::~UIParticles()
     }
 }
 
-void UIParticles::OnAppear()
+void UIParticles::OnActive()
 {
-    UIControl::OnAppear();
     updateTime = 0.0f;
 }
 
@@ -433,7 +432,7 @@ void UIParticles::SetStartDelay(float32 value)
 
 void UIParticles::HandleDelayedAction(float32 timeElapsed)
 {
-    if (IsOnScreen())
+    if (IsVisible())
     {
         delayedActionTime += timeElapsed;
         if (delayedActionTime >= startDelay)

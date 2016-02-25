@@ -96,9 +96,9 @@ public:
 #endif
 
 protected:
-    void OnBecomeVisible() override;
-    void OnBecomeInvisible() override;
-    void OnAppear() override;
+    void OnVisible() override;
+    void OnInvisible() override;
+    void OnActive() override;
 
 public:
     void SetRenderToTexture(bool value);

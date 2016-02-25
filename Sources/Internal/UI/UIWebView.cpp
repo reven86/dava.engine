@@ -60,7 +60,7 @@ UIWebView::UIWebView(const Rect& rect)
     webViewControl->Initialize(newRect);
     UpdateControlRect();
 
-    UpdateNativeControlVisible(false); // will be displayed in OnAppear.
+    UpdateNativeControlVisible(false); // will be displayed in OnActive.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
@@ -127,21 +127,21 @@ void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
     webViewControl->OpenFromBuffer(string, basePath);
 }
 
-void UIWebView::OnBecomeVisible()
+void UIWebView::OnVisible()
 {
-    UIControl::OnBecomeVisible();
+    UIControl::OnVisible();
     UpdateNativeControlVisible(true);
 }
 
-void UIWebView::OnBecomeInvisible()
+void UIWebView::OnInvisible()
 {
-    UIControl::OnBecomeInvisible();
+    UIControl::OnInvisible();
     UpdateNativeControlVisible(false);
 }
 
-void UIWebView::OnAppear()
+void UIWebView::OnActive()
 {
-    UIControl::OnAppear();
+    UIControl::OnActive();
     UpdateControlRect();
 }
 

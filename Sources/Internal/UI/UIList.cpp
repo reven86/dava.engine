@@ -732,9 +732,9 @@ void UIList::SetBorderMoveModifer(float newValue)
     scroll->SetBorderMoveModifer(newValue);
 }
 
-void UIList::OnAppear()
+void UIList::OnActive()
 {
-    UIControl::OnAppear();
+    UIControl::OnActive();
     Refresh();
 }
 

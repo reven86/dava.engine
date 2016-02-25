@@ -59,9 +59,9 @@ void UILoadingScreen::ThreadMessage(BaseObject* obj, void* userData, void* calle
     }
 }
 
-void UILoadingScreen::OnAppear()
+void UILoadingScreen::OnActive()
 {
-    UIScreen::OnAppear();
+    UIScreen::OnActive();
 
     if (!thread)
     {
@@ -96,9 +96,9 @@ void UILoadingScreen::Update(float32 timeElapsed)
     }
 }
 
-void UILoadingScreen::OnDisappear()
+void UILoadingScreen::OnInactive()
 {
-    UIScreen::OnDisappear();
+    UIScreen::OnInactive();
 
     if (Replay::Instance())
     {

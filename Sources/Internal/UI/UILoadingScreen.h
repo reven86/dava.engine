@@ -44,8 +44,8 @@ public:
     virtual void SetScreenToLoad(int32 screenId);
 
     void Update(float32 timeElapsed) override;
-    void OnAppear() override;
-    void OnDisappear() override;
+    void OnActive() override;
+    void OnInactive() override;
 
 protected:
     void ThreadMessage(BaseObject* obj, void* userData, void* callerData);

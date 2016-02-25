@@ -185,16 +185,16 @@ private:
         Methods call sequence:
         When the control adds to the hierarchy:
 
-            -if hierarchy is allready on the screen SystemAppear() will be called after adding control to hierarhy. SystemAppear()
-                calls OnAppear() for the control and then calls SystemAppear() for all control children.
+            -if hierarchy is allready on the screen SystemActive() will be called after adding control to hierarhy. SystemActive()
+                calls OnActive() for the control and then calls SystemActive() for all control children.
 
             -if hierarchy is not on the screen methods would be called only when the hierarcy parent
                 be placed to the screen.
 
         When the control removes from hierarchy:
 
-            -SystemDisappear() will be called. SystemDisappear()
-                calls OnDisappear() for the control and then calls SystemDisappear() for all control children.
+            -SystemInactive() will be called. SystemInactive()
+                calls OnInactive() for the control and then calls SystemInactive() for all control children.
 
         Every frame:
 
@@ -522,7 +522,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \returns control visibility.
      */
-    inline bool GetVisible() const;
+    inline bool GetVisibilityFlag() const;
 
     /**
      \brief Sets contol recursive visibility.
@@ -530,7 +530,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \param[in] isVisible new control visibility.
      */
-    virtual void SetVisible(bool isVisible);
+    virtual void SetVisibilityFlag(bool isVisible);
 
     /**
      \brief Returns control input processing ability.
@@ -1086,31 +1086,31 @@ public:
 protected:
     enum class eViewState : int32
     {
-        NOT_IN_HIERARHY,
-        IN_HIERARHY,
+        INACTIVE,
+        ACTIVE,
         VISIBLE,
     };
 
-    virtual void SystemBecomeVisible();
-    virtual void SystemBecomeInvisible();
+    virtual void SystemVisible();
+    virtual void SystemInvisible();
 
-    virtual void OnBecomeVisible();
-    virtual void OnBecomeInvisible();
+    virtual void OnVisible();
+    virtual void OnInvisible();
 
-    virtual void SystemAppear();
-    virtual void SystemDisappear();
+    virtual void SystemActive();
+    virtual void SystemInactive();
 
-    virtual void OnAppear();
-    virtual void OnDisappear();
+    virtual void OnActive();
+    virtual void OnInactive();
 
     virtual void SystemScreenSizeChanged(const Rect& newFullScreenRect);
     virtual void OnScreenSizeChanged(const Rect& newFullScreenRect);
 
-    void InvokeAppear(eViewState parentViewState);
-    void InvokeDisappear();
+    void InvokeActive(eViewState parentViewState);
+    void InvokeInactive();
 
-    void InvokeBecomeVisible(eViewState parentViewState);
-    void InvokeBecomeInvisible();
+    void InvokeVisible(eViewState parentViewState);
+    void InvokeInvisible();
 
     void ChangeViewState(eViewState newViewState);
 
@@ -1131,13 +1131,13 @@ public:
      \brief Returns control in hierarchy status.
      \returns True if control in view hierarchy for now.
      */
-    bool InViewHierarchy() const;
+    bool IsActive() const;
 
     /**
      \brief Returns control on screen status.
      \returns True if control visible now.
      */
-    bool IsOnScreen() const;
+    bool IsVisible() const;
     /**
      \brief Returns point status realtive to control .
      \param[in] point Point to check.
@@ -1241,10 +1241,10 @@ protected:
     void DrawPivotPoint(const Rect& drawRect);
 
 private:
-    int32 tag;
+    int32 tag = 0;
+    eViewState viewState = eViewState::INACTIVE;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
-    eViewState viewState = eViewState::NOT_IN_HIERARHY;
 
     /* Components */
 public:
@@ -1364,7 +1364,7 @@ public:
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("visible", "Visible", GetVisibilityFlag, SetVisibilityFlag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
@@ -1432,7 +1432,7 @@ Rect UIControl::GetRect() const
     return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
-bool UIControl::GetVisible() const
+bool UIControl::GetVisibilityFlag() const
 {
     return visible;
 }

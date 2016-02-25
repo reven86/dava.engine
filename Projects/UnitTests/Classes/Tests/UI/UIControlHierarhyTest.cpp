@@ -124,34 +124,34 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
     // UIControl::AddControl
     // simple
-    // in OnAppear
-    // in OnDisappear
-    // in OnBecomeVisible
-    // in OnBecomeInvisible
+    // in OnActive
+    // in OnInactive
+    // in OnVisible
+    // in OnInvisible
 
     // UIControl::RemoveControl
     // RemoveControl:
     // simple
-    // in OnAppear
-    // in OnDisappear
-    // in OnBecomeVisible
-    // in OnBecomeInvisible
+    // in OnActive
+    // in OnInactive
+    // in OnVisible
+    // in OnInvisible
 
     // UIControl::AddControl
     DAVA_TEST (AddControlToInvisibleHierarhy_OnlyOnAppearCalls)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         callSequence.clear();
         root->AddControl(x);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
@@ -170,25 +170,25 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     // UIControl::AddControl
     DAVA_TEST (AddControlToVisibleHierarhy_OnAppearAndOnBecomeVisibleCalls)
     {
-        root->SetVisible(true);
+        root->SetVisibilityFlag(true);
         callSequence.clear();
         root->AddControl(x);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
 
-          { FastName("OnBecomeVisible"), FastName("x") },
-          { FastName("OnBecomeVisible"), FastName("x1") },
-          { FastName("OnBecomeVisible"), FastName("x11") },
-          { FastName("OnBecomeVisible"), FastName("x2") },
-          { FastName("OnBecomeVisible"), FastName("x21") },
-          { FastName("OnBecomeVisible"), FastName("x3") },
+          { FastName("OnVisible"), FastName("x") },
+          { FastName("OnVisible"), FastName("x1") },
+          { FastName("OnVisible"), FastName("x11") },
+          { FastName("OnVisible"), FastName("x2") },
+          { FastName("OnVisible"), FastName("x21") },
+          { FastName("OnVisible"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
@@ -197,9 +197,9 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     // UIControl::AddControl
     DAVA_TEST (AddControlInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         callSequence.clear();
-        x1->onAppearCallback = [this]()
+        x1->onActiveCallback = [this]()
         {
             x->AddControl(z);
         };
@@ -208,30 +208,30 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onAppearCallback = nullptr;
+        x1->onActiveCallback = nullptr;
     }
 
     // UIControl::AddControl
     DAVA_TEST (AddControlInOnDisappearCallbackToInvisibleHierarhy_OnDisappearCallsOnlyForXControlOriginalChildren)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         root->AddControl(x);
         callSequence.clear();
-        x1->onDisappearCallback = [this]()
+        x1->onInactiveCallback = [this]()
         {
             x->AddControl(z);
         };
@@ -240,32 +240,32 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onDisappearCallback = nullptr;
+        x1->onInactiveCallback = nullptr;
     }
 
     // UIControl::AddControl
     DAVA_TEST (AddControlInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
     {
         callSequence.clear();
-        x1->onBecomeVisibleCallback = [this]()
+        x1->onVisibleCallback = [this]()
         {
             x->AddControl(z);
         };
@@ -274,32 +274,32 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
 
-          { FastName("OnBecomeVisible"), FastName("x") },
-          { FastName("OnBecomeVisible"), FastName("x1") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
-          { FastName("OnBecomeVisible"), FastName("z") },
-          { FastName("OnBecomeVisible"), FastName("z1") },
-          { FastName("OnBecomeVisible"), FastName("z2") },
-          { FastName("OnBecomeVisible"), FastName("z3") },
-          { FastName("OnBecomeVisible"), FastName("x11") },
-          { FastName("OnBecomeVisible"), FastName("x2") },
-          { FastName("OnBecomeVisible"), FastName("x21") },
-          { FastName("OnBecomeVisible"), FastName("x3") },
+          { FastName("OnVisible"), FastName("x") },
+          { FastName("OnVisible"), FastName("x1") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
+          { FastName("OnVisible"), FastName("z") },
+          { FastName("OnVisible"), FastName("z1") },
+          { FastName("OnVisible"), FastName("z2") },
+          { FastName("OnVisible"), FastName("z3") },
+          { FastName("OnVisible"), FastName("x11") },
+          { FastName("OnVisible"), FastName("x2") },
+          { FastName("OnVisible"), FastName("x21") },
+          { FastName("OnVisible"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeVisibleCallback = nullptr;
+        x1->onVisibleCallback = nullptr;
     }
 
     // UIControl::AddControl
@@ -307,7 +307,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     {
         root->AddControl(x);
         callSequence.clear();
-        x1->onBecomeInvisibleCallback = [this]()
+        x1->onInvisibleCallback = [this]()
         {
             x->AddControl(z);
         };
@@ -316,47 +316,47 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeInvisible"), FastName("x3") },
-          { FastName("OnBecomeInvisible"), FastName("x21") },
-          { FastName("OnBecomeInvisible"), FastName("x2") },
-          { FastName("OnBecomeInvisible"), FastName("x11") },
-          { FastName("OnBecomeInvisible"), FastName("x1") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
-          { FastName("OnBecomeVisible"), FastName("z") },
-          { FastName("OnBecomeVisible"), FastName("z1") },
-          { FastName("OnBecomeVisible"), FastName("z2") },
-          { FastName("OnBecomeVisible"), FastName("z3") },
+          { FastName("OnInvisible"), FastName("x3") },
+          { FastName("OnInvisible"), FastName("x21") },
+          { FastName("OnInvisible"), FastName("x2") },
+          { FastName("OnInvisible"), FastName("x11") },
+          { FastName("OnInvisible"), FastName("x1") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
+          { FastName("OnVisible"), FastName("z") },
+          { FastName("OnVisible"), FastName("z1") },
+          { FastName("OnVisible"), FastName("z2") },
+          { FastName("OnVisible"), FastName("z3") },
 
-          { FastName("OnBecomeInvisible"), FastName("z3") },
-          { FastName("OnBecomeInvisible"), FastName("z2") },
-          { FastName("OnBecomeInvisible"), FastName("z1") },
-          { FastName("OnBecomeInvisible"), FastName("z") },
+          { FastName("OnInvisible"), FastName("z3") },
+          { FastName("OnInvisible"), FastName("z2") },
+          { FastName("OnInvisible"), FastName("z1") },
+          { FastName("OnInvisible"), FastName("z") },
 
-          { FastName("OnBecomeInvisible"), FastName("x") },
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInvisible"), FastName("x") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeInvisibleCallback = nullptr;
+        x1->onInvisibleCallback = nullptr;
     }
 
     // UIControl::RemoveControl
     DAVA_TEST (RemoveControlFromInvisibleHierarhy_OnlyOnDisappearCalls)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         root->AddControl(x);
         callSequence.clear();
 
@@ -364,12 +364,12 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
@@ -378,7 +378,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     // UIControl::RemoveControl
     DAVA_TEST (RemoveControlFromVisibleHierarhy_OnBecomeInvisibleAndOnDisappearCalls)
     {
-        root->SetVisible(true);
+        root->SetVisibilityFlag(true);
         root->AddControl(x);
         callSequence.clear();
 
@@ -386,19 +386,19 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeInvisible"), FastName("x3") },
-          { FastName("OnBecomeInvisible"), FastName("x21") },
-          { FastName("OnBecomeInvisible"), FastName("x2") },
-          { FastName("OnBecomeInvisible"), FastName("x11") },
-          { FastName("OnBecomeInvisible"), FastName("x1") },
-          { FastName("OnBecomeInvisible"), FastName("x") },
+          { FastName("OnInvisible"), FastName("x3") },
+          { FastName("OnInvisible"), FastName("x21") },
+          { FastName("OnInvisible"), FastName("x2") },
+          { FastName("OnInvisible"), FastName("x11") },
+          { FastName("OnInvisible"), FastName("x1") },
+          { FastName("OnInvisible"), FastName("x") },
 
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
@@ -407,11 +407,11 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     // UIControl::RemoveControl
     DAVA_TEST (RemoveControlInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         x->AddControl(z);
         callSequence.clear();
 
-        x1->onAppearCallback = [this]()
+        x1->onActiveCallback = [this]()
         {
             x->RemoveControl(z);
         };
@@ -420,28 +420,28 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onAppearCallback = nullptr;
+        x1->onActiveCallback = nullptr;
     }
 
     // UIControl::RemoveControl
     DAVA_TEST (RemoveControlInOnDisappearCallbackToInvisibleHierarhy_OnAppearCalls)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         x->AddControl(z);
         root->AddControl(x);
         callSequence.clear();
 
-        x1->onDisappearCallback = [this]()
+        x1->onInactiveCallback = [this]()
         {
             x->RemoveControl(z);
         };
@@ -450,21 +450,21 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onDisappearCallback = nullptr;
+        x1->onInactiveCallback = nullptr;
     }
 
     // UIControl::RemoveControl
@@ -472,7 +472,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
     {
         x->AddControl(z);
         callSequence.clear();
-        x1->onBecomeVisibleCallback = [this]()
+        x1->onVisibleCallback = [this]()
         {
             x->RemoveControl(z);
         };
@@ -481,32 +481,32 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
 
-          { FastName("OnBecomeVisible"), FastName("x") },
-          { FastName("OnBecomeVisible"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnBecomeVisible"), FastName("x11") },
-          { FastName("OnBecomeVisible"), FastName("x2") },
-          { FastName("OnBecomeVisible"), FastName("x21") },
-          { FastName("OnBecomeVisible"), FastName("x3") },
+          { FastName("OnVisible"), FastName("x") },
+          { FastName("OnVisible"), FastName("x1") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnVisible"), FastName("x11") },
+          { FastName("OnVisible"), FastName("x2") },
+          { FastName("OnVisible"), FastName("x21") },
+          { FastName("OnVisible"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeVisibleCallback = nullptr;
+        x1->onVisibleCallback = nullptr;
     }
 
     // UIControl::RemoveControl
@@ -515,7 +515,7 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
         x->AddControl(z);
         root->AddControl(x);
         callSequence.clear();
-        x1->onBecomeInvisibleCallback = [this]()
+        x1->onInvisibleCallback = [this]()
         {
             x->RemoveControl(z);
         };
@@ -524,434 +524,434 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeInvisible"), FastName("z3") },
-          { FastName("OnBecomeInvisible"), FastName("z2") },
-          { FastName("OnBecomeInvisible"), FastName("z1") },
-          { FastName("OnBecomeInvisible"), FastName("z") },
-          { FastName("OnBecomeInvisible"), FastName("x3") },
-          { FastName("OnBecomeInvisible"), FastName("x21") },
-          { FastName("OnBecomeInvisible"), FastName("x2") },
-          { FastName("OnBecomeInvisible"), FastName("x11") },
-          { FastName("OnBecomeInvisible"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnBecomeInvisible"), FastName("x") },
+          { FastName("OnInvisible"), FastName("z3") },
+          { FastName("OnInvisible"), FastName("z2") },
+          { FastName("OnInvisible"), FastName("z1") },
+          { FastName("OnInvisible"), FastName("z") },
+          { FastName("OnInvisible"), FastName("x3") },
+          { FastName("OnInvisible"), FastName("x21") },
+          { FastName("OnInvisible"), FastName("x2") },
+          { FastName("OnInvisible"), FastName("x11") },
+          { FastName("OnInvisible"), FastName("x1") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInvisible"), FastName("x") },
 
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeInvisibleCallback = nullptr;
+        x1->onInvisibleCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleForInvisibleRoot_OnlyOnBecomeVisibleCalls)
     {
-        x->SetVisible(false);
+        x->SetVisibilityFlag(false);
         root->AddControl(x);
         callSequence.clear();
 
-        x->SetVisible(true);
+        x->SetVisibilityFlag(true);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeVisible"), FastName("x") },
-          { FastName("OnBecomeVisible"), FastName("x1") },
-          { FastName("OnBecomeVisible"), FastName("x11") },
-          { FastName("OnBecomeVisible"), FastName("x2") },
-          { FastName("OnBecomeVisible"), FastName("x21") },
-          { FastName("OnBecomeVisible"), FastName("x3") },
+          { FastName("OnVisible"), FastName("x") },
+          { FastName("OnVisible"), FastName("x1") },
+          { FastName("OnVisible"), FastName("x11") },
+          { FastName("OnVisible"), FastName("x2") },
+          { FastName("OnVisible"), FastName("x21") },
+          { FastName("OnVisible"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleForVisibleControl_NothingCalls)
     {
-        x->SetVisible(true);
+        x->SetVisibilityFlag(true);
 
         root->AddControl(x);
         callSequence.clear();
 
-        x->SetVisible(true);
+        x->SetVisibilityFlag(true);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence;
 
         TEST_VERIFY(expectedCallSequence == callSequence);
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleForVisibleControl_OnlyOnBecomeInvisibleCalls)
     {
-        x->SetVisible(true);
+        x->SetVisibilityFlag(true);
 
         root->AddControl(x);
         callSequence.clear();
 
-        x->SetVisible(false);
+        x->SetVisibilityFlag(false);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeInvisible"), FastName("x3") },
-          { FastName("OnBecomeInvisible"), FastName("x21") },
-          { FastName("OnBecomeInvisible"), FastName("x2") },
-          { FastName("OnBecomeInvisible"), FastName("x11") },
-          { FastName("OnBecomeInvisible"), FastName("x1") },
-          { FastName("OnBecomeInvisible"), FastName("x") },
+          { FastName("OnInvisible"), FastName("x3") },
+          { FastName("OnInvisible"), FastName("x21") },
+          { FastName("OnInvisible"), FastName("x2") },
+          { FastName("OnInvisible"), FastName("x11") },
+          { FastName("OnInvisible"), FastName("x1") },
+          { FastName("OnInvisible"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleForInvisibleControl_NothingCalls)
     {
-        x->SetVisible(false);
+        x->SetVisibilityFlag(false);
 
         root->AddControl(x);
         callSequence.clear();
 
-        x->SetVisible(false);
+        x->SetVisibilityFlag(false);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence;
 
         TEST_VERIFY(expectedCallSequence == callSequence);
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleForNoneActiveHierarhy_NothingCalls)
     {
-        x->SetVisible(false);
+        x->SetVisibilityFlag(false);
         callSequence.clear();
 
-        x->SetVisible(true);
+        x->SetVisibilityFlag(true);
 
         TEST_VERIFY(callSequence.empty());
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleForNotActiveHierarhy_NothingCalls)
     {
-        x->SetVisible(false);
+        x->SetVisibilityFlag(false);
 
         TEST_VERIFY(callSequence.empty());
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         x->AddControl(z);
-        z->SetVisible(false);
+        z->SetVisibilityFlag(false);
         callSequence.clear();
-        x1->onAppearCallback = [this]()
+        x1->onActiveCallback = [this]()
         {
-            z->SetVisible(true);
+            z->SetVisibilityFlag(true);
         };
 
         root->AddControl(x);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onAppearCallback = nullptr;
+        x1->onActiveCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleInOnDisappearCallbackToInvisibleHierarhy_OnDisappearCallsOnlyForXControlOriginalChildren)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         root->AddControl(x);
         x->AddControl(z);
-        z->SetVisible(false);
+        z->SetVisibilityFlag(false);
         callSequence.clear();
-        x1->onDisappearCallback = [this]()
+        x1->onInactiveCallback = [this]()
         {
-            z->SetVisible(true);
+            z->SetVisibilityFlag(true);
         };
 
         x->RemoveFromParent();
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onDisappearCallback = nullptr;
+        x1->onInactiveCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
     {
         x->AddControl(z);
-        z->SetVisible(false);
+        z->SetVisibilityFlag(false);
         callSequence.clear();
 
-        x1->onBecomeVisibleCallback = [this]()
+        x1->onVisibleCallback = [this]()
         {
-            z->SetVisible(true);
+            z->SetVisibilityFlag(true);
         };
 
         root->AddControl(x);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
 
-          { FastName("OnBecomeVisible"), FastName("x") },
-          { FastName("OnBecomeVisible"), FastName("x1") },
-          { FastName("OnBecomeVisible"), FastName("z") },
-          { FastName("OnBecomeVisible"), FastName("z1") },
-          { FastName("OnBecomeVisible"), FastName("z2") },
-          { FastName("OnBecomeVisible"), FastName("z3") },
-          { FastName("OnBecomeVisible"), FastName("x11") },
-          { FastName("OnBecomeVisible"), FastName("x2") },
-          { FastName("OnBecomeVisible"), FastName("x21") },
-          { FastName("OnBecomeVisible"), FastName("x3") },
+          { FastName("OnVisible"), FastName("x") },
+          { FastName("OnVisible"), FastName("x1") },
+          { FastName("OnVisible"), FastName("z") },
+          { FastName("OnVisible"), FastName("z1") },
+          { FastName("OnVisible"), FastName("z2") },
+          { FastName("OnVisible"), FastName("z3") },
+          { FastName("OnVisible"), FastName("x11") },
+          { FastName("OnVisible"), FastName("x2") },
+          { FastName("OnVisible"), FastName("x21") },
+          { FastName("OnVisible"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeVisibleCallback = nullptr;
+        x1->onVisibleCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetVisibleInOnBecomeInvisibleCallbackToVisibleHierarhy_OnDisappearAndBecomeInvisibleCalls)
     {
         root->AddControl(x);
         x->AddControl(z);
-        z->SetVisible(false);
+        z->SetVisibilityFlag(false);
         callSequence.clear();
-        x1->onBecomeInvisibleCallback = [this]()
+        x1->onInvisibleCallback = [this]()
         {
-            z->SetVisible(true);
+            z->SetVisibilityFlag(true);
         };
 
         x->RemoveFromParent();
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeInvisible"), FastName("x3") },
-          { FastName("OnBecomeInvisible"), FastName("x21") },
-          { FastName("OnBecomeInvisible"), FastName("x2") },
-          { FastName("OnBecomeInvisible"), FastName("x11") },
-          { FastName("OnBecomeInvisible"), FastName("x1") },
-          { FastName("OnBecomeVisible"), FastName("z") },
-          { FastName("OnBecomeVisible"), FastName("z1") },
-          { FastName("OnBecomeVisible"), FastName("z2") },
-          { FastName("OnBecomeVisible"), FastName("z3") },
-          { FastName("OnBecomeInvisible"), FastName("x") },
-          { FastName("OnBecomeInvisible"), FastName("z3") },
-          { FastName("OnBecomeInvisible"), FastName("z2") },
-          { FastName("OnBecomeInvisible"), FastName("z1") },
-          { FastName("OnBecomeInvisible"), FastName("z") },
+          { FastName("OnInvisible"), FastName("x3") },
+          { FastName("OnInvisible"), FastName("x21") },
+          { FastName("OnInvisible"), FastName("x2") },
+          { FastName("OnInvisible"), FastName("x11") },
+          { FastName("OnInvisible"), FastName("x1") },
+          { FastName("OnVisible"), FastName("z") },
+          { FastName("OnVisible"), FastName("z1") },
+          { FastName("OnVisible"), FastName("z2") },
+          { FastName("OnVisible"), FastName("z3") },
+          { FastName("OnInvisible"), FastName("x") },
+          { FastName("OnInvisible"), FastName("z3") },
+          { FastName("OnInvisible"), FastName("z2") },
+          { FastName("OnInvisible"), FastName("z1") },
+          { FastName("OnInvisible"), FastName("z") },
 
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeInvisibleCallback = nullptr;
+        x1->onInvisibleCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleInOnAppearCallbackToInvisibleHierarhy_OnAppearCalls) //
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         x->AddControl(z);
-        z->SetVisible(false);
+        z->SetVisibilityFlag(false);
         callSequence.clear();
-        x1->onAppearCallback = [this]()
+        x1->onActiveCallback = [this]()
         {
-            z->SetVisible(false);
+            z->SetVisibilityFlag(false);
         };
 
         root->AddControl(x);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onAppearCallback = nullptr;
+        x1->onActiveCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleInOnDisappearCallbackToInvisibleHierarhy_OnDisappearCallsOnlyForXControlOriginalChildren)
     {
-        root->SetVisible(false);
+        root->SetVisibilityFlag(false);
         root->AddControl(x);
         x->AddControl(z);
-        z->SetVisible(false);
+        z->SetVisibilityFlag(false);
         callSequence.clear();
-        x1->onDisappearCallback = [this]()
+        x1->onInactiveCallback = [this]()
         {
-            z->SetVisible(false);
+            z->SetVisibilityFlag(false);
         };
 
         x->RemoveFromParent();
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onDisappearCallback = nullptr;
+        x1->onInactiveCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleInOnBecomeVisibleCallbackToVisibleHierarhy_OnAppearAndBecomeVisibleCalls)
     {
         x->AddControl(z);
         callSequence.clear();
 
-        x1->onBecomeVisibleCallback = [this]()
+        x1->onVisibleCallback = [this]()
         {
-            z->SetVisible(false);
+            z->SetVisibilityFlag(false);
         };
 
         root->AddControl(x);
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnAppear"), FastName("x") },
-          { FastName("OnAppear"), FastName("x1") },
-          { FastName("OnAppear"), FastName("x11") },
-          { FastName("OnAppear"), FastName("x2") },
-          { FastName("OnAppear"), FastName("x21") },
-          { FastName("OnAppear"), FastName("x3") },
-          { FastName("OnAppear"), FastName("z") },
-          { FastName("OnAppear"), FastName("z1") },
-          { FastName("OnAppear"), FastName("z2") },
-          { FastName("OnAppear"), FastName("z3") },
+          { FastName("OnActive"), FastName("x") },
+          { FastName("OnActive"), FastName("x1") },
+          { FastName("OnActive"), FastName("x11") },
+          { FastName("OnActive"), FastName("x2") },
+          { FastName("OnActive"), FastName("x21") },
+          { FastName("OnActive"), FastName("x3") },
+          { FastName("OnActive"), FastName("z") },
+          { FastName("OnActive"), FastName("z1") },
+          { FastName("OnActive"), FastName("z2") },
+          { FastName("OnActive"), FastName("z3") },
 
-          { FastName("OnBecomeVisible"), FastName("x") },
-          { FastName("OnBecomeVisible"), FastName("x1") },
-          { FastName("OnBecomeVisible"), FastName("x11") },
-          { FastName("OnBecomeVisible"), FastName("x2") },
-          { FastName("OnBecomeVisible"), FastName("x21") },
-          { FastName("OnBecomeVisible"), FastName("x3") },
+          { FastName("OnVisible"), FastName("x") },
+          { FastName("OnVisible"), FastName("x1") },
+          { FastName("OnVisible"), FastName("x11") },
+          { FastName("OnVisible"), FastName("x2") },
+          { FastName("OnVisible"), FastName("x21") },
+          { FastName("OnVisible"), FastName("x3") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeVisibleCallback = nullptr;
+        x1->onVisibleCallback = nullptr;
     }
 
-    // UIControl::SetVisible
+    // UIControl::SetVisibilityFlag
     DAVA_TEST (SetInvisibleInOnBecomeInvisibleCallbackToVisibleHierarhy_OnDisappearAndBecomeInvisibleCalls)
     {
         root->AddControl(x);
         x->AddControl(z);
         callSequence.clear();
-        x1->onBecomeInvisibleCallback = [this]()
+        x1->onInvisibleCallback = [this]()
         {
-            z->SetVisible(false);
+            z->SetVisibilityFlag(false);
         };
 
         x->RemoveFromParent();
 
         Vector<std::pair<FastName, FastName>> expectedCallSequence =
         {
-          { FastName("OnBecomeInvisible"), FastName("z3") },
-          { FastName("OnBecomeInvisible"), FastName("z2") },
-          { FastName("OnBecomeInvisible"), FastName("z1") },
-          { FastName("OnBecomeInvisible"), FastName("z") },
-          { FastName("OnBecomeInvisible"), FastName("x3") },
-          { FastName("OnBecomeInvisible"), FastName("x21") },
-          { FastName("OnBecomeInvisible"), FastName("x2") },
-          { FastName("OnBecomeInvisible"), FastName("x11") },
-          { FastName("OnBecomeInvisible"), FastName("x1") },
-          { FastName("OnBecomeInvisible"), FastName("x") },
+          { FastName("OnInvisible"), FastName("z3") },
+          { FastName("OnInvisible"), FastName("z2") },
+          { FastName("OnInvisible"), FastName("z1") },
+          { FastName("OnInvisible"), FastName("z") },
+          { FastName("OnInvisible"), FastName("x3") },
+          { FastName("OnInvisible"), FastName("x21") },
+          { FastName("OnInvisible"), FastName("x2") },
+          { FastName("OnInvisible"), FastName("x11") },
+          { FastName("OnInvisible"), FastName("x1") },
+          { FastName("OnInvisible"), FastName("x") },
 
-          { FastName("OnDisappear"), FastName("z3") },
-          { FastName("OnDisappear"), FastName("z2") },
-          { FastName("OnDisappear"), FastName("z1") },
-          { FastName("OnDisappear"), FastName("z") },
-          { FastName("OnDisappear"), FastName("x3") },
-          { FastName("OnDisappear"), FastName("x21") },
-          { FastName("OnDisappear"), FastName("x2") },
-          { FastName("OnDisappear"), FastName("x11") },
-          { FastName("OnDisappear"), FastName("x1") },
-          { FastName("OnDisappear"), FastName("x") },
+          { FastName("OnInactive"), FastName("z3") },
+          { FastName("OnInactive"), FastName("z2") },
+          { FastName("OnInactive"), FastName("z1") },
+          { FastName("OnInactive"), FastName("z") },
+          { FastName("OnInactive"), FastName("x3") },
+          { FastName("OnInactive"), FastName("x21") },
+          { FastName("OnInactive"), FastName("x2") },
+          { FastName("OnInactive"), FastName("x11") },
+          { FastName("OnInactive"), FastName("x1") },
+          { FastName("OnInactive"), FastName("x") },
         };
 
         TEST_VERIFY(expectedCallSequence == callSequence);
 
-        x1->onBecomeInvisibleCallback = nullptr;
+        x1->onInvisibleCallback = nullptr;
     }
 
     class UITestControl : public UIControl
@@ -961,44 +961,44 @@ DAVA_TESTCLASS (UIControlHierarhyTest)
         {
         }
 
-        DAVA::Function<void()> onBecomeVisibleCallback;
-        DAVA::Function<void()> onBecomeInvisibleCallback;
-        DAVA::Function<void()> onAppearCallback;
-        DAVA::Function<void()> onDisappearCallback;
+        DAVA::Function<void()> onVisibleCallback;
+        DAVA::Function<void()> onInvisibleCallback;
+        DAVA::Function<void()> onActiveCallback;
+        DAVA::Function<void()> onInactiveCallback;
 
     protected:
         ~UITestControl() override
         {
         }
 
-        void OnBecomeVisible() override
+        void OnVisible() override
         {
-            UIControl::OnBecomeVisible();
-            callSequence.emplace_back(FastName("OnBecomeVisible"), GetName());
-            if (onBecomeVisibleCallback)
-                onBecomeVisibleCallback();
+            UIControl::OnVisible();
+            callSequence.emplace_back(FastName("OnVisible"), GetName());
+            if (onVisibleCallback)
+                onVisibleCallback();
         }
-        void OnBecomeInvisible() override
+        void OnInvisible() override
         {
-            UIControl::OnBecomeInvisible();
-            callSequence.emplace_back(FastName("OnBecomeInvisible"), GetName());
-            if (onBecomeInvisibleCallback)
-                onBecomeInvisibleCallback();
+            UIControl::OnInvisible();
+            callSequence.emplace_back(FastName("OnInvisible"), GetName());
+            if (onInvisibleCallback)
+                onInvisibleCallback();
         }
 
-        void OnAppear() override
+        void OnActive() override
         {
-            UIControl::OnAppear();
-            callSequence.emplace_back(FastName("OnAppear"), GetName());
-            if (onAppearCallback)
-                onAppearCallback();
+            UIControl::OnActive();
+            callSequence.emplace_back(FastName("OnActive"), GetName());
+            if (onActiveCallback)
+                onActiveCallback();
         }
-        void OnDisappear() override
+        void OnInactive() override
         {
-            UIControl::OnDisappear();
-            callSequence.emplace_back(FastName("OnDisappear"), GetName());
-            if (onDisappearCallback)
-                onDisappearCallback();
+            UIControl::OnInactive();
+            callSequence.emplace_back(FastName("OnInactive"), GetName());
+            if (onInactiveCallback)
+                onInactiveCallback();
         }
     };
 };
