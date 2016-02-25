@@ -75,7 +75,6 @@ rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
 DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 
 DAVA::uint8 volatile pre_call_registers[64];
-DAVA::uint8 volatile post_call_registers[64];
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC _GLES2_WindowDC = 0;
