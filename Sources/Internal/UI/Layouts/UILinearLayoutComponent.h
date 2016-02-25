@@ -38,8 +38,10 @@ class UILinearLayoutComponent : public UIComponent
 public:
     enum eOrientation
     {
-        HORIZONTAL = 0,
-        VERTICAL = 1
+        LEFT_TO_RIGHT = 0,
+        RIGHT_TO_LEFT = 1,
+        TOP_DOWN = 2,
+        BOTTOM_UP = 3,
     };
 
 public:
@@ -64,6 +66,7 @@ public:
     void SetOrientation(eOrientation orientation);
 
     Vector2::eAxis GetAxis() const;
+    bool IsInverse() const;
 
     float32 GetPadding() const;
     void SetPadding(float32 padding);
@@ -84,7 +87,7 @@ public:
 
 private:
     int32 GetOrientationAsInt() const;
-    void SetOrientationFromInt(int32 type);
+    void SetOrientationFromInt(int32 orientation);
 
     void SetLayoutDirty();
 
@@ -107,15 +110,14 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynamicSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
-                         )
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynamicSpacing, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT | I_LOAD));
 };
 }
 

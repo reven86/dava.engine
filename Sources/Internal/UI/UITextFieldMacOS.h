@@ -33,7 +33,9 @@
 #include "UI/UITextField.h"
 #include <memory>
 
+#ifndef DISABLE_NATIVE_TEXTFIELD
 #define DAVA_TEXTFIELD_USE_NATIVE
+#endif //DISABLE_NATIVE_TEXTFIELD
 
 namespace DAVA
 {
