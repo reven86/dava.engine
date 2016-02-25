@@ -77,10 +77,6 @@ protected slots:
     void OnPropertyEdited(const QModelIndex&);
     void OnAddRemoveButton();
 
-    void OnLeftConfig();
-    void OnAddConfig();
-    void OnRightConfig();
-
     void OnMaterialAddGlobal(bool checked);
     void OnMaterialRemoveGlobal(bool checked);
     void OnMaterialSave(bool checked);
@@ -118,6 +114,12 @@ private slots:
     void onContextMenuPrepare(QMenu* menu);
     void autoExpand();
     void removeInvalidTexture();
+
+    /// Tabbar handlers
+    void onTabNameChanged(int index);
+    void onCreateConfig();
+    void onCurrentConfigChanged(int index);
+    void onTabRemove(int index);
 
 private:
     enum
@@ -159,6 +161,8 @@ private:
 
     void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
     bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
+
+    void UpdateTabs();
 
 private:
     QtPosSaver posSaver;

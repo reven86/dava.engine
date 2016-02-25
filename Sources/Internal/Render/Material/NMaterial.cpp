@@ -84,20 +84,13 @@ RenderVariantInstance::~RenderVariantInstance()
     rhi::ReleaseSamplerState(samplerState);
 }
 
-NMaterial::NMaterial()
-    : localConstBuffers(16, nullptr)
-    , renderVariants(4, nullptr)
-{
-    materialConfigs.resize(1); //at least one config to emulate regular work
-}
-
-NMaterial::MaterialConfig::MaterialConfig()
+MaterialConfig::MaterialConfig()
     : localProperties(16, nullptr)
     , localTextures(8, nullptr)
     , localFlags(16, 0)
 {
 }
-NMaterial::MaterialConfig::MaterialConfig(const MaterialConfig& config)
+MaterialConfig::MaterialConfig(const MaterialConfig& config)
     : localProperties(16, nullptr)
     , localTextures(8, nullptr)
     , localFlags(16, 0)
@@ -105,7 +98,7 @@ NMaterial::MaterialConfig::MaterialConfig(const MaterialConfig& config)
     operator=(config);
 }
 
-NMaterial::MaterialConfig& NMaterial::MaterialConfig::operator=(const MaterialConfig& config)
+MaterialConfig& MaterialConfig::operator=(const MaterialConfig& config)
 {
     Clear();
     presetName = config.presetName;
@@ -118,7 +111,7 @@ NMaterial::MaterialConfig& NMaterial::MaterialConfig::operator=(const MaterialCo
         texInfo->texture = SafeRetain(tex.second->texture);
         localTextures[tex.first] = texInfo;
     }
-    localProperties.clear();
+
     for (auto& prop : config.localProperties)
     {
         NMaterialProperty* newProp = new NMaterialProperty();
@@ -132,20 +125,30 @@ NMaterial::MaterialConfig& NMaterial::MaterialConfig::operator=(const MaterialCo
     return *this;
 }
 
-void NMaterial::MaterialConfig::Clear()
+void MaterialConfig::Clear()
 {
     for (auto& prop : localProperties)
         SafeDelete(prop.second);
+
+    localProperties.clear();
     for (auto& texInfo : localTextures)
     {
         SafeRelease(texInfo.second->texture);
         SafeDelete(texInfo.second);
     }
+    localTextures.clear();
 }
 
-NMaterial::MaterialConfig::~MaterialConfig()
+MaterialConfig::~MaterialConfig()
 {
     Clear();
+}
+
+NMaterial::NMaterial()
+    : localConstBuffers(16, nullptr)
+    , renderVariants(4, nullptr)
+{
+    materialConfigs.resize(1); //at least one config to emulate regular work
 }
 
 NMaterial::~NMaterial()
@@ -568,39 +571,58 @@ void NMaterial::RemoveChildMaterial(NMaterial* material)
 }
 
 //Configs managment
+uint32 NMaterial::GetConfigCount() const
+{
+    return materialConfigs.size();
+}
+
+const DAVA::FastName& NMaterial::GetCurrConfigName() const
+{
+    DVASSERT(currConfig < materialConfigs.size());
+    return materialConfigs[currConfig].presetName;
+}
+
+void NMaterial::SetCurrConfigName(const DAVA::FastName& newName)
+{
+    DVASSERT(currConfig < materialConfigs.size());
+    materialConfigs[currConfig].presetName = newName;
+}
+
 uint32 NMaterial::GetCurrConfig() const
 {
     return currConfig;
 }
-void NMaterial::SetCurrConfig(uint32 id)
+
+void NMaterial::SetCurrConfig(uint32 index)
 {
-    DVASSERT(id < materialConfigs.size());
-    currConfig = id;
+    DVASSERT(index < materialConfigs.size());
+    currConfig = index;
     InvalidateRenderVariants();
+}
+
+void NMaterial::SetConfigName(uint32 index, const FastName& name)
+{
+    DVASSERT(index < materialConfigs.size());
+    materialConfigs[index].presetName = name;
 }
 
 void NMaterial::ReleaseConfigTextures(uint32 configId)
 {
-    DVASSERT(id < materialConfigs.size());
+    DVASSERT(configId < materialConfigs.size());
     for (auto& tex : materialConfigs[configId].localTextures)
         SafeRelease(tex.second->texture);
 
     if (configId == currConfig)
         InvalidateTextureBindings();
 }
-uint32 NMaterial::GetConfigCount()
+
+const DAVA::FastName& NMaterial::GetConfigName(uint32 index) const
 {
-    return materialConfigs.size();
+    DVASSERT(index < materialConfigs.size());
+    return materialConfigs[index].presetName;
 }
-const FastName& NMaterial::GetCurrConfigName()
-{
-    return materialConfigs[currConfig].presetName;
-}
-void NMaterial::SetCurrConfigName(const FastName& name)
-{
-    materialConfigs[currConfig].presetName = name;
-}
-uint32 NMaterial::FindConfigByName(const FastName& name)
+
+uint32 NMaterial::FindConfigByName(const FastName& name) const
 {
     for (size_t i = 0, sz = materialConfigs.size(); i < sz; ++i)
     {
@@ -609,14 +631,37 @@ uint32 NMaterial::FindConfigByName(const FastName& name)
     }
     return materialConfigs.size();
 }
-void NMaterial::AddConfig()
+
+const DAVA::MaterialConfig& NMaterial::GetConfig(uint32 index) const
 {
-    materialConfigs.push_back(MaterialConfig());
+    DVASSERT(index < materialConfigs.size());
+    return materialConfigs[index];
 }
-void NMaterial::RemoveConfig(uint32 id)
+
+void NMaterial::InsertConfig(uint32_t index, const MaterialConfig& config)
 {
-    DVASSERT(id < materialConfigs.size());
-    materialConfigs.erase(materialConfigs.begin() + id);
+    if (index < materialConfigs.size())
+    {
+        materialConfigs.insert(materialConfigs.begin(), config);
+    }
+    else
+    {
+        materialConfigs.push_back(config);
+    }
+}
+
+void NMaterial::RemoveConfig(uint32 index)
+{
+    DVASSERT(index < materialConfigs.size());
+    DVASSERT(materialConfigs.size() > 1);
+    materialConfigs.erase(materialConfigs.begin() + index);
+    if (index == currConfig)
+    {
+        InvalidateTextureBindings();
+        InvalidateRenderVariants();
+    }
+
+    currConfig = std::min(currConfig, static_cast<DAVA::uint32>(materialConfigs.size()) - 1);
 }
 
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)

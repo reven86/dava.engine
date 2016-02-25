@@ -70,6 +70,22 @@ struct MaterialTextureInfo
     FilePath path;
 };
 
+struct MaterialConfig
+{
+    FastName presetName;
+    FastName fxName;
+    HashMap<FastName, NMaterialProperty*> localProperties;
+    HashMap<FastName, MaterialTextureInfo*> localTextures;
+    HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
+
+    MaterialConfig& operator=(const MaterialConfig& config);
+    MaterialConfig(const MaterialConfig& config);
+
+    void Clear();
+    MaterialConfig();
+    ~MaterialConfig();
+};
+
 class RenderVariantInstance
 {
     friend class NMaterial;
@@ -169,15 +185,20 @@ public:
     inline uint32 GetSortingKey() const;
 
     //Configs managment
+    uint32 GetConfigCount() const;
+    const DAVA::FastName& GetCurrConfigName() const;
+    void SetCurrConfigName(const DAVA::FastName& newName);
     uint32 GetCurrConfig() const;
-    void SetCurrConfig(uint32 id);
+    void SetCurrConfig(uint32 index);
+    const FastName& GetConfigName(uint32 index) const;
+    void SetConfigName(uint32 index, const FastName& name);
+
     void ReleaseConfigTextures(uint32 configId);
-    uint32 GetConfigCount();
-    const FastName& GetCurrConfigName();
-    void SetCurrConfigName(const FastName& name);
-    uint32 FindConfigByName(const FastName& name); //return size if config not found!
-    void AddConfig();
-    void RemoveConfig(uint32 id);
+
+    uint32 FindConfigByName(const FastName& name) const; //return size if config not found!
+    const MaterialConfig& GetConfig(uint32 index) const;
+    void InsertConfig(uint32_t index, const MaterialConfig& config);
+    void RemoveConfig(uint32 index);
 
     void BindParams(rhi::Packet& target);
 
@@ -217,22 +238,6 @@ private:
     // config time
     FastName materialName;
     FastName qualityGroup;
-
-    struct MaterialConfig
-    {
-        FastName presetName;
-        FastName fxName;
-        HashMap<FastName, NMaterialProperty*> localProperties;
-        HashMap<FastName, MaterialTextureInfo*> localTextures;
-        HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
-
-        MaterialConfig& operator=(const MaterialConfig& config);
-        MaterialConfig(const MaterialConfig& config);
-
-        void Clear();
-        MaterialConfig();
-        ~MaterialConfig();
-    };
 
     Vector<MaterialConfig> materialConfigs;
 
