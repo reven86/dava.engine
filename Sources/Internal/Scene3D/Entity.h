@@ -59,7 +59,7 @@ class TransformComponent;
  */
 class Entity : public BaseObject
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
 
 protected:
     virtual ~Entity();
@@ -204,7 +204,7 @@ public:
 
     // properties
     void SetVisible(const bool& isVisible);
-    inline const bool GetVisible();
+    bool GetVisible();
     inline Entity* GetParent();
     DAVA_DEPRECATED(void SetUpdatable(bool isUpdatable));
     DAVA_DEPRECATED(inline bool GetUpdatable(void));
@@ -275,11 +275,11 @@ public:
     inline uint32 GetIndexInParent()
     {
         return (flags >> ENTITY_INDEX_POSITION) & ENTITY_INDEX_MASK;
-    };
+    }
     inline void SetIndexInParent(uint32 index)
     {
         flags |= (index & ENTITY_INDEX_MASK) << ENTITY_INDEX_POSITION;
-    };
+    }
     void SetSceneID(uint32 sceneId);
     uint32 GetSceneID() const;
 
@@ -437,10 +437,10 @@ public:
                          MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-                         );
+                         )
 };
 
-inline const bool Entity::GetVisible()
+inline bool Entity::GetVisible()
 {
     return (flags & NODE_VISIBLE) != 0;
 }
@@ -553,7 +553,7 @@ inline Entity* Entity::GetChild(int32 index) const
 
 inline int32 Entity::GetChildrenCount() const
 {
-    return (int32)children.size();
+    return static_cast<int32>(children.size());
 }
 
 inline uint32 Entity::GetComponentCount() const

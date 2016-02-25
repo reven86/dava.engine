@@ -34,10 +34,12 @@
 
 #include "ControlMapper.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QDragMoveEvent>
 #include <QDebug>
+POP_QT_WARNING_SUPRESSOR
 
 namespace DAVA
 {
@@ -217,8 +219,6 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
-    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
-
     DAVA::UIEvent davaEvent;
     davaEvent.wheelDelta.x = event->pixelDelta().x();
     davaEvent.wheelDelta.y = event->pixelDelta().y();
