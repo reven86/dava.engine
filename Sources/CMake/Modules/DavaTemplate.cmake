@@ -473,14 +473,18 @@ elseif( MACOS )
     endif()
 
 elseif ( WIN32 )
-    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
-    else()
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
-    endif()
-
+	
+	if ( X64_MODE )
+	    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
+	        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:" )
+	    endif()
+	else()
+	    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
+	        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+    	else()
+    	    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+	    endif()
+	endif()
 
     if( DEBUG_INFO )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
