@@ -70,10 +70,14 @@ UIControlSystem::UIControlSystem()
 UIControlSystem::~UIControlSystem()
 {
     popupContainer->InvokeInactive();
-
     popupContainer = nullptr;
 
-    currentScreen = nullptr;
+    if (currentScreen.Valid())
+    {
+        currentScreen->InvokeInactive();
+        currentScreen = nullptr;
+    }
+
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
     SafeDelete(screenshoter);

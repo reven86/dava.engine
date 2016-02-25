@@ -96,6 +96,12 @@ void UIScreenManager::RegisterScreen(int screenId, UIScreen* screen)
     screens[screenId] = Screen(Screen::TYPE_SCREEN, SafeRetain(screen));
 }
 
+void UIScreenManager::ResetScreen()
+{
+    activeScreenId = -1;
+    UIControlSystem::Instance()->Reset();
+}
+
 UIScreen* UIScreenManager::GetScreen(int screenId)
 {
     Screen& screen = screens[screenId];

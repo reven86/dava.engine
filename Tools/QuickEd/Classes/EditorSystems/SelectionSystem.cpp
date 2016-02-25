@@ -108,7 +108,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     auto stopPredicate = [](const ControlNode* node) -> bool {
         const auto control = node->GetControl();
         DVASSERT(nullptr != control);
-        return !control->GetVisible();
+        return !control->GetVisibilityFlag();
     };
     systemManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
     if (!areaNodes.empty())
@@ -193,12 +193,12 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
         auto predicate = [point](const ControlNode* node) -> bool {
             const auto control = node->GetControl();
             DVASSERT(nullptr != control);
-            return control->GetVisible() && control->IsPointInside(point);
+            return control->GetVisibilityFlag() && control->IsPointInside(point);
         };
         auto stopPredicate = [](const ControlNode* node) -> bool {
             const auto control = node->GetControl();
             DVASSERT(nullptr != control);
-            return !control->GetVisible();
+            return !control->GetVisibilityFlag();
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate, stopPredicate);
         if (!nodesUnderPoint.empty())

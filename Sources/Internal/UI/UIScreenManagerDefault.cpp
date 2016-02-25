@@ -85,6 +85,12 @@ void UIScreenManager::SetScreen(int screenId, UIScreenTransition* transition)
     }
 }
 
+void UIScreenManager::ResetScreen()
+{
+    activeScreenId = -1;
+    UIControlSystem::Instance()->Reset();
+}
+
 void UIScreenManager::RegisterScreen(int screenId, UIScreen* screen)
 {
     DVASSERT(screen != 0);
