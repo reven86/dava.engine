@@ -26,37 +26,31 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_FOCUS_HELPERS_H__
-#define __DAVAENGINE_FOCUS_HELPERS_H__
+#ifndef __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
+#define __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Math/Vector.h"
+#include "FocusHelpers.h"
 
 namespace DAVA
 {
 class UIControl;
+class UIList;
+class UIEvent;
 
-class FocusHelpers
+class TabTraversalAlgorithm
 {
 public:
-    enum Direction
-    {
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN
-    };
+    TabTraversalAlgorithm(UIControl* root);
+    ~TabTraversalAlgorithm();
 
-    enum TabDirection
-    {
-        FORWARD,
-        BACKWARD,
-    };
+    UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir);
 
-    static bool CanFocusControl(UIControl* control);
+private:
+    UIControl* FindFirstControl(UIControl* control, FocusHelpers::TabDirection dir);
 };
 }
 
-
-#endif //__DAVAENGINE_FOCUS_HELPERS_H__
+#endif // __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__

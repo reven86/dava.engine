@@ -2068,6 +2068,10 @@
 		15373F2E1C4FA61E0054A940 /* ParticlesQualitySettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */; };
 		15373F2F1C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
 		15373F301C4FA61E0054A940 /* ParticlesQualitySettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */; };
+		320791361C7EF4D800E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320791341C7EF4D800E26609 /* TabTraversalAlgorithm.cpp */; };
+		320791371C7EF4D800E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320791341C7EF4D800E26609 /* TabTraversalAlgorithm.cpp */; };
+		320791381C7EF4D800E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791351C7EF4D800E26609 /* TabTraversalAlgorithm.h */; };
+		320791391C7EF4D800E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791351C7EF4D800E26609 /* TabTraversalAlgorithm.h */; };
 		321CCA6A1C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA601C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
 		321CCA6B1C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */; };
 		321CCA6C1C6E1D020048FAC9 /* FocusHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */; };
@@ -3146,6 +3150,8 @@
 		0367CFF31C4FDC8C004D42A0 /* Reachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Reachability.mm; sourceTree = "<group>"; };
 		15373F2B1C4FA61E0054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F2C1C4FA61E0054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
+		320791341C7EF4D800E26609 /* TabTraversalAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TabTraversalAlgorithm.cpp; sourceTree = "<group>"; };
+		320791351C7EF4D800E26609 /* TabTraversalAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabTraversalAlgorithm.h; sourceTree = "<group>"; };
 		321CCA601C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
 		321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectionBasedNavigationAlgorithm.h; sourceTree = "<group>"; };
 		321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FocusHelpers.cpp; sourceTree = "<group>"; };
@@ -4819,11 +4825,29 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		3207913A1C7F147900E26609 /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+				3207913B1C7F147D00E26609 /* New Group */,
+			);
+			name = "New Group";
+			sourceTree = "<group>";
+		};
+		3207913B1C7F147D00E26609 /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "New Group";
+			sourceTree = "<group>";
+		};
 		321CCA5F1C6E1D020048FAC9 /* Focus */ = {
 			isa = PBXGroup;
 			children = (
 				321CCA601C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */,
 				321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */,
+				320791341C7EF4D800E26609 /* TabTraversalAlgorithm.cpp */,
+				320791351C7EF4D800E26609 /* TabTraversalAlgorithm.h */,
+				3207913A1C7F147900E26609 /* New Group */,
 				321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */,
 				321CCA631C6E1D020048FAC9 /* FocusHelpers.h */,
 				321CCA641C6E1D020048FAC9 /* UIFocusComponent.cpp */,
@@ -5357,6 +5381,7 @@
 				02E7CEFC1BD624A7002F026D /* TestCore.h in Headers */,
 				02E7C6E21BD624A7002F026D /* Concurrency.h in Headers */,
 				02E7C6EE1BD624A7002F026D /* Mutex.h in Headers */,
+				320791391C7EF4D800E26609 /* TabTraversalAlgorithm.h in Headers */,
 				02E7CCAE1BD624A7002F026D /* QualitySettingsComponent.h in Headers */,
 				02E7CECC1BD624A7002F026D /* UISlider.h in Headers */,
 				02E7CB801BD624A7002F026D /* RenderOptions.h in Headers */,
@@ -5836,6 +5861,7 @@
 				02E7C8D11BD624A7002F026D /* LocalNotificationDelayed.h in Headers */,
 				02E7C7291BD624A7002F026D /* DataStorage.h in Headers */,
 				02E7CB5D1BD624A7002F026D /* NMaterialStateDynamicTexturesInsp.h in Headers */,
+				320791381C7EF4D800E26609 /* TabTraversalAlgorithm.h in Headers */,
 				02E7CA871BD624A7002F026D /* AnimatedMesh.h in Headers */,
 				02E7CEF51BD624A7002F026D /* TestClass.h in Headers */,
 				021414171819851100925E51 /* DAVAClassRegistrator.h in Headers */,
@@ -6096,6 +6122,7 @@
 				02E7CC461BD624A7002F026D /* RuntimeTextures.cpp in Sources */,
 				02E7C7201BD624A7002F026D /* MongodbObject.cpp in Sources */,
 				02E7C7661BD624A7002F026D /* KeyedArchiver.cpp in Sources */,
+				320791371C7EF4D800E26609 /* TabTraversalAlgorithm.cpp in Sources */,
 				02E7CAE01BD624A7002F026D /* RenderPass.cpp in Sources */,
 				02E7CCA41BD624A7002F026D /* LodComponent.cpp in Sources */,
 				02E7CA6E1BD624A7002F026D /* VirtualCoordinatesSystem.cpp in Sources */,
@@ -6962,6 +6989,7 @@
 				02E7CC831BD624A7002F026D /* CameraComponent.cpp in Sources */,
 				02E7CBA51BD624A7002F026D /* preproc.cpp in Sources */,
 				02E7CE171BD624A7002F026D /* UIStyleSheet.cpp in Sources */,
+				320791361C7EF4D800E26609 /* TabTraversalAlgorithm.cpp in Sources */,
 				02E7CEB51BD624A7002F026D /* UIScreenshoter.cpp in Sources */,
 				02E7CEED1BD624A7002F026D /* UIYamlLoader.cpp in Sources */,
 				02E7CE731BD624A7002F026D /* UIJoypad.cpp in Sources */,
