@@ -75,8 +75,6 @@ DeleteLODCommand::~DeleteLODCommand()
 
 void DeleteLODCommand::Redo()
 {
-    DVASSERT(!deletedBatches.empty());
-
     for (DeleteRenderBatchCommand* command : deletedBatches)
     {
         RedoInternalCommand(command);
