@@ -1469,10 +1469,10 @@ void ShaderSourceCache::Save(const char* fileName)
         WriteUI4(file, FormatVersion);
 
         WriteUI4(file, static_cast<uint32>(Entry.size()));
-        Logger::Info("saving cached-shaders (%u) :", Entry.size());
+        Logger::Info("saving cached-shaders (%u): ", Entry.size());
         for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
         {
-            Logger::Info("  uid= \"%s\"", e->uid.c_str());
+            //Logger::Info("  uid= \"%s\"", e->uid.c_str());
             WriteS0(file, e->uid.c_str());
             WriteUI4(file, e->srcHash);
             e->src->Save(file);
@@ -1500,7 +1500,8 @@ void ShaderSourceCache::Load(const char* fileName)
         if (version == FormatVersion)
         {
             Entry.resize(ReadUI4(file));
-            Logger::Info("loading cached-shaders (%u) :", Entry.size());
+            Logger::Info("loading cached-shaders (%u): ", Entry.size());
+
             for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
             {
                 std::string str;
@@ -1508,12 +1509,11 @@ void ShaderSourceCache::Load(const char* fileName)
 
                 e->uid = FastName(str.c_str());
                 e->srcHash = ReadUI4(file);
-                Logger::Info("  uid= \"%s\"", e->uid.c_str());
+                //Logger::Info("  uid= \"%s\"", e->uid.c_str());
                 e->src = new ShaderSource();
 
                 e->src->Load(file);
             }
-            Logger::Info("loaded ShaderSource cache (%u shaders)", Entry.size());
         }
         else
         {

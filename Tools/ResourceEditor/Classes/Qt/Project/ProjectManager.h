@@ -34,6 +34,7 @@
 #include <QVector>
 #include "DAVAEngine.h"
 
+class SpritesPackerModule;
 class ProjectManager
 : public QObject
   ,
@@ -72,6 +73,8 @@ public:
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
 
+    void SetSpritesPacker(SpritesPackerModule* spritesPacker);
+
 public slots:
     DAVA::FilePath ProjectOpenDialog() const;
     void OpenProject(const QString& path);
@@ -101,6 +104,8 @@ private:
     QVector<AvailableMaterialQuality> qualities;
     bool useDelayInitialization = true;
     bool isParticleSpritesUpdated = false;
+
+    SpritesPackerModule* spritesPacker = nullptr;
 };
 
 #endif // __PROJECT_MANAGER_H__

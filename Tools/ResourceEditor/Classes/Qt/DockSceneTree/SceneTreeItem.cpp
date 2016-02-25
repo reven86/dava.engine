@@ -58,6 +58,9 @@ QVariant SceneTreeItem::data(int role) const
     case Qt::DisplayRole:
         v = ItemName();
         break;
+    case Qt::ToolTipRole:
+        v = ItemName();
+        break;
     case EIDR_Type:
         v = ItemType();
         break;

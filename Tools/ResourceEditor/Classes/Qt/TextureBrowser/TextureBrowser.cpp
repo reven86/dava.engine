@@ -499,6 +499,7 @@ void TextureBrowser::setupTextureToolbar()
 
     QObject::connect(toolbarZoomSlider, SIGNAL(valueChanged(int)), this, SLOT(textureZoomSlide(int)));
 
+    QObject::connect(ui->actionConvertForAllGPU, SIGNAL(triggered()), this, SLOT(textureConvertForAllGPU()));
     QObject::connect(ui->actionConvert, SIGNAL(triggered(bool)), this, SLOT(textureConver(bool)));
     QObject::connect(ui->actionConvertAll, SIGNAL(triggered(bool)), this, SLOT(textureConverAll(bool)));
     QObject::connect(ui->actionConvertModified, SIGNAL(triggered(bool)), this, SLOT(ConvertModifiedTextures(bool)));
@@ -523,8 +524,8 @@ void TextureBrowser::setupTextureListToolbar()
     spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacerWidget->setVisible(true);
 
-    ui->textureListToolbar->insertWidget(ui->actionConvertAll, spacerWidget);
-    ui->textureListToolbar->insertSeparator(ui->actionConvertAll);
+    ui->textureListToolbar->insertWidget(ui->actionConvertForAllGPU, spacerWidget);
+    ui->textureListToolbar->insertSeparator(ui->actionConvertForAllGPU);
 
     // TODO: mainwindow
     //QtMainWindow::Instance()->ShowActionWithText(ui->textureListToolbar, ui->actionConvertAll, true);
@@ -906,6 +907,19 @@ void TextureBrowser::textureAreaWheel(int delta)
     v += delta / 20;
     v -= v % toolbarZoomSlider->singleStep();
     toolbarZoomSlider->setValue(v);
+}
+
+void TextureBrowser::textureConvertForAllGPU()
+{
+    if (curDescriptor == nullptr)
+        return;
+
+    for (DAVA::int32 i = DAVA::GPU_POWERVR_IOS; i < DAVA::GPU_ORIGIN; ++i)
+    {
+        DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(i);
+        TextureCache::Instance()->clearConverted(curDescriptor, family);
+        TextureConvertor::Instance()->GetConverted(curDescriptor, family, CONVERT_FORCE);
+    }
 }
 
 void TextureBrowser::textureConver(bool checked)

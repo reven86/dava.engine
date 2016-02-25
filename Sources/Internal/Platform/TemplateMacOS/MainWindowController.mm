@@ -44,39 +44,60 @@
     // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
     if ([theEvent type] == NSKeyDown)
     {
-        if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask)
+        int cmdOrCmdWithCaps = ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask);
+        if ((cmdOrCmdWithCaps == NSCommandKeyMask) || (cmdOrCmdWithCaps == (NSCommandKeyMask | NSAlphaShiftKeyMask)))
         {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"x"])
+            if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"x"])
             {
                 if ([self sendAction:@selector(cut:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"c"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"c"])
             {
-                if ([self sendAction:@selector(copy:) to:nil from:self])
+                if ([self sendAction:@selector(copy:) to:[[NSApp keyWindow] firstResponder] from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"v"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"v"])
             {
-                if ([self sendAction:@selector(paste:) to:nil from:self])
-                    return;
+                // HACK if user trying to paste text into textfield
+                // we have to check room for it
+                // and if no more room skip paste operation here
+                // because some time NSFormatter not called
+                NSResponder* view = [[NSApp keyWindow] firstResponder];
+                DAVA::UIControl* focused = DAVA::UIControlSystem::Instance()->GetFocusedControl();
+                if (focused != nullptr)
+                {
+                    DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focused);
+                    if (tf)
+                    {
+                        DAVA::WideString text = tf->GetText();
+                        int size = tf->GetMaxLength();
+                        int textSize = static_cast<int>(text.length());
+                        if (size > 0 && size > (textSize + 1))
+                        {
+                            if ([self sendAction:@selector(paste:) to:view from:self])
+                                return;
+                        }
+                        else
+                        {
+                            // skip paste into no room textfield
+                        }
+                    }
+                }
+                else
+                {
+                    if ([self sendAction:@selector(paste:) to:view from:self])
+                        return;
+                }
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"z"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"z"])
             {
                 if ([self sendAction:@selector(undo:) to:nil from:self])
                     return;
             }
-            else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"a"])
+            else if ([[[theEvent charactersIgnoringModifiers] lowercaseString] isEqualToString:@"a"])
             {
                 if ([self sendAction:@selector(selectAll:) to:nil from:self])
-                    return;
-            }
-        }
-        else if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
-        {
-            if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"Z"])
-            {
-                if ([self sendAction:@selector(redo:) to:nil from:self])
                     return;
             }
         }
@@ -226,6 +247,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         mainWindow = nil;
         animationTimer = nil;
         core = 0;
+        assertionID = kIOPMNullAssertionID;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -234,22 +257,55 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
+
+        [self allowDisplaySleep:false];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [self allowDisplaySleep:true];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
 
+- (void)allowDisplaySleep:(bool)sleep
+{
+    bool displaySleepAllowed = assertionID == kIOPMNullAssertionID;
+    if (sleep == displaySleepAllowed)
+    {
+        return;
+    }
+
+    IOReturn result;
+
+    if (sleep)
+    {
+        result = IOPMAssertionRelease(assertionID);
+        assertionID = kIOPMNullAssertionID;
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("DAVA display sleeping preventing"),
+                                             &assertionID);
+    }
+
+    if (result != kIOReturnSuccess)
+    {
+        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        return;
+    }
+}
+
 - (void)createWindows
 {
-    core = Core::GetApplicationCore();
-
     FrameworkDidLaunched();
+
+    core = Core::GetApplicationCore();
 
     String title;
     int32 width = 800;
@@ -593,6 +649,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnSuspend
 {
+    [self allowDisplaySleep:true];
+
     if (core)
     {
         core->OnSuspend();
@@ -605,6 +663,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
+    [self allowDisplaySleep:false];
+
     if (core)
     {
         core->OnResume();

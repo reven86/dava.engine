@@ -92,7 +92,6 @@ extern void FrameworkWillTerminate();
 
 - (void)applicationWillResignActive:(NSApplication*)application
 {
-    [mainWindowController OnSuspend];
 }
 
 - (void)applicationDidEnterBackground:(NSApplication*)application

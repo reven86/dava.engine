@@ -63,7 +63,9 @@ public:
 
     SoundEvent()
         : volume(1.f)
-        , isDirectional(false){};
+        , isDirectional(false)
+    {
+    }
 
     virtual bool IsActive() const = 0;
     virtual bool Trigger() = 0;
