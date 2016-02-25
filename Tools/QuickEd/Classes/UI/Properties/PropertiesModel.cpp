@@ -32,7 +32,6 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
-#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
 #include "Document.h"
@@ -79,15 +78,15 @@ void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecuto
     {
         controlNode->GetRootProperty()->AddListener(this);
         rootProperty = controlNode->GetRootProperty();
-    }
+}
 
-    styleSheet = dynamic_cast<StyleSheetNode*>(node_);
-    if (nullptr != styleSheet)
-    {
-        styleSheet->GetRootProperty()->AddListener(this);
-        rootProperty = styleSheet->GetRootProperty();
-    }
-    endResetModel();
+styleSheet = dynamic_cast<StyleSheetNode*>(node_);
+if (nullptr != styleSheet)
+{
+    styleSheet->GetRootProperty()->AddListener(this);
+    rootProperty = styleSheet->GetRootProperty();
+}
+endResetModel();
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex& parent) const
@@ -309,8 +308,8 @@ void PropertiesModel::UpdateAllChangedProperties()
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    QPersistentModelIndex nameIndex = indexByProperty(property, 0);
+    QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
     lazyUpdater->Update();
 }
@@ -387,20 +386,20 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const DAVA::Var
     if (nullptr != commandExecutor)
     {
         if (nullptr != controlNode)
-        {
-            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-            size_t usCount = static_cast<size_t>(us.count());
-            commandExecutor->ChangeProperty(controlNode, property, value, usCount);
-        }
-        else if (styleSheet)
-        {
-            commandExecutor->ChangeProperty(styleSheet, property, value);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+    {
+        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        size_t usCount = static_cast<size_t>(us.count());
+        commandExecutor->ChangeProperty(controlNode, property, value, usCount);
     }
+    else if (styleSheet)
+    {
+        commandExecutor->ChangeProperty(styleSheet, property, value);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
 }
 
 void PropertiesModel::ResetProperty(AbstractProperty* property)
@@ -409,14 +408,14 @@ void PropertiesModel::ResetProperty(AbstractProperty* property)
     if (nullptr != commandExecutor)
     {
         if (nullptr != controlNode)
-        {
-            commandExecutor->ResetProperty(controlNode, property);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+    {
+        commandExecutor->ResetProperty(controlNode, property);
     }
+    else
+    {
+        DVASSERT(false);
+    }
+}
 }
 
 QModelIndex PropertiesModel::indexByProperty(AbstractProperty* property, int column)

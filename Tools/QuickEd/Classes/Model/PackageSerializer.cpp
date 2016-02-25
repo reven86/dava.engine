@@ -266,7 +266,7 @@ void PackageSerializer::VisitRootProperty(RootProperty* property)
 
     for (const ComponentPropertiesSection* section : property->GetComponents())
     {
-        if (section->HasChanges() || (section->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+        if (section->HasChanges())
         {
             hasChanges = true;
             break;
@@ -321,7 +321,7 @@ void PackageSerializer::VisitControlSection(ControlPropertiesSection* property)
 
 void PackageSerializer::VisitComponentSection(ComponentPropertiesSection* property)
 {
-    if (property->HasChanges() || (property->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+    if (property->HasChanges())
     {
         String name = property->GetComponentName();
         if (UIComponent::IsMultiple(property->GetComponentType()))
@@ -453,7 +453,7 @@ void PackageSerializer::AcceptChildren(AbstractProperty* property)
     for (uint32 i = 0; i < property->GetCount(); i++)
     {
         property->GetProperty(i)->Accept(this);
-    }
+}
 }
 
 void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty* property)
