@@ -46,11 +46,6 @@ CursorSystem::CursorSystem(EditorSystemsManager* parent)
     systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
-void CursorSystem::OnDeactivated()
-{
-    OnActiveAreaChanged(HUDAreaInfo());
-}
-
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
     DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->previewWidget->GetGLWidget();

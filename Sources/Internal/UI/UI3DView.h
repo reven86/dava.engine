@@ -87,13 +87,13 @@ private:
     bool needUpdateFrameBuffer;
     float32 fbScaleFactor;
     Vector2 fbRenderSize;
-    Vector2 fbTexSize;
-    Texture* frameBuffer;
+    Vector2 fbTexSize = Vector2(0.f, 0.f);
+    Texture* frameBuffer = nullptr;
 
 public:
     INTROSPECTION_EXTEND(UI3DView, UIControl,
                          PROPERTY("drawToFrameBuffer", "Draw sceene draw through the frame buffer", GetDrawToFrameBuffer, SetDrawToFrameBuffer, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("frameBufferScaleFactor", "Set scale factor to draw the frame buffer", GetFrameBufferScaleFactor, SetFrameBufferScaleFactor, I_SAVE | I_VIEW | I_EDIT) nullptr);
+                         PROPERTY("frameBufferScaleFactor", "Set scale factor to draw the frame buffer", GetFrameBufferScaleFactor, SetFrameBufferScaleFactor, I_SAVE | I_VIEW | I_EDIT) nullptr)
 };
 
 inline bool UI3DView::GetDrawToFrameBuffer() const

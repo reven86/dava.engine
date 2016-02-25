@@ -52,10 +52,6 @@ NetConfig::NetConfig(eNetworkRole aRole)
 {
 }
 
-NetConfig::~NetConfig()
-{
-}
-
 bool NetConfig::Validate() const
 {
     return false == transports.empty() && false == services.empty();

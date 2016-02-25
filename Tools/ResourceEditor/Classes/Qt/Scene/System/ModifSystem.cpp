@@ -880,9 +880,7 @@ void EntityModificationSystem::CloneEnd()
 {
     if (modifEntities.size() > 0 && clonedEntities.size() == modifEntities.size())
     {
-        SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
-        SceneSelectionSystem* selectionSystem = sceneEditor->selectionSystem;
-
+        SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
         sceneEditor->BeginBatch("Clone");
 
         // we just moved original objects. Now we should return them back

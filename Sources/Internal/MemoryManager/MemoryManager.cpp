@@ -443,7 +443,7 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
 #elif defined(__DAVAENGINE_APPLE__)
     struct task_basic_info info;
     mach_msg_type_number_t size = sizeof(info);
-    if (KERN_SUCCESS == task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &size))
+    if (KERN_SUCCESS == task_info(mach_task_self(), TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &size))
     {
         return static_cast<uint32>(info.resident_size);
     }

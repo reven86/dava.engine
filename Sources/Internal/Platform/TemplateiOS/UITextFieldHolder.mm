@@ -165,7 +165,26 @@
         int maxLength = cppTextField->GetMaxLength();
         if (maxLength >= 0)
         {
-            NSString* newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
+            NSString* newString = nullptr;
+            // when the last insert was out of bounds, and after it was press revert button on the keyboard
+            if ((range.location + range.length) > maxLength)
+            {
+                range.length = maxLength - range.location;
+                if (range.length == 0)
+                {
+                    return false;
+                }
+                newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string];
+                [textCtrl setValue:newString forKey:@"text"];
+                DAVA::WideString tmpString = L"";
+                cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, (DAVA::int32)range.location, (DAVA::int32)range.length, tmpString);
+                return false;
+            }
+            else
+            {
+                newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
+            }
+
             NSInteger newLength = [newString length]; // Length in UTF32 charactres
             if (newLength > maxLength)
             {

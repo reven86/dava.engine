@@ -57,7 +57,7 @@ public:
     Rect2i& GetRect()
     {
         return rect;
-    };
+    }
 
 private:
     // Implementation details

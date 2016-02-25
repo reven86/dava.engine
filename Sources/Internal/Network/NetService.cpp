@@ -35,6 +35,9 @@ namespace DAVA
 {
 namespace Net
 {
+IChannelListener::~IChannelListener() = default;
+IChannel::~IChannel() = default;
+
 void NetService::OnChannelOpen(IChannel* aChannel)
 {
     DVASSERT(NULL == channel);

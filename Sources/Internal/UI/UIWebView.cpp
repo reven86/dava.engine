@@ -32,7 +32,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#if defined(__DISABLE_NATIVE_WEBVIEW__)
+#if defined(DISABLE_NATIVE_WEBVIEW)
 #include "WebViewControlStub.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
@@ -50,6 +50,10 @@
 
 namespace DAVA
 {
+IWebViewControl::~IWebViewControl()
+{
+}
+
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
     , webViewControl(0)
