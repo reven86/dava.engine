@@ -37,22 +37,22 @@
 
 namespace CommandTestLocal
 {
-    class TestClass: public DAVA::InspBase
-    {
-    public:
-        DAVA::int32 intValue;
-        DAVA::Vector<DAVA::uint32> collection;
+class TestClass : public DAVA::InspBase
+{
+public:
+    DAVA::int32 intValue;
+    DAVA::Vector<DAVA::uint32> collection;
 
-        INTROSPECTION(TestClass, 
-            MEMBER(intValue, "intValue", DAVA::I_EDIT | DAVA::I_VIEW)
-            COLLECTION(collection, "collection", DAVA::I_EDIT | DAVA::I_VIEW)
-            );
-    };
+    INTROSPECTION(TestClass,
+                  MEMBER(intValue, "intValue", DAVA::I_EDIT | DAVA::I_VIEW)
+                  COLLECTION(collection, "collection", DAVA::I_EDIT | DAVA::I_VIEW)
+                  );
+};
 }
 
-DAVA_TESTCLASS(CommandsTest)
+DAVA_TESTCLASS (CommandsTest)
 {
-    DAVA_TEST(ObjectHandleCreationTest)
+    DAVA_TEST (ObjectHandleCreationTest)
     {
         CommandTestLocal::TestClass testObject;
         {
@@ -62,14 +62,14 @@ DAVA_TESTCLASS(CommandsTest)
         }
 
         {
-            DAVA::ObjectHandle handle(static_cast<DAVA::InspBase *>(&testObject));
+            DAVA::ObjectHandle handle(static_cast<DAVA::InspBase*>(&testObject));
             TEST_VERIFY(handle.GetObjectPointer() == &testObject);
             TEST_VERIFY(handle.GetObjectType() == DAVA::MetaInfo::Instance<CommandTestLocal::TestClass>());
             TEST_VERIFY(handle.GetIntrospection() == testObject.GetTypeInfo());
         }
     }
 
-    DAVA_TEST(SetPropertyValueCommandTest)
+    DAVA_TEST (SetPropertyValueCommandTest)
     {
         CommandTestLocal::TestClass testObject;
         testObject.intValue = 10;
@@ -97,25 +97,25 @@ DAVA_TESTCLASS(CommandsTest)
         }
     }
 
-    DAVA_TEST(SetCollectionItemValueCommandTest)
+    DAVA_TEST (SetCollectionItemValueCommandTest)
     {
         CommandTestLocal::TestClass testObject;
         testObject.collection.push_back(10);
         testObject.collection.push_back(11);
         testObject.collection.push_back(12);
-        DAVA::Vector<DAVA::uint32> & collection = testObject.collection;
+        DAVA::Vector<DAVA::uint32>& collection = testObject.collection;
 
         DAVA::ObjectHandle handle(&testObject);
         const DAVA::InspMember* inspMember = handle.GetIntrospection()->Member(DAVA::FastName("collection"));
         DAVA::SetCollectionItemValueCommand command0(handle, inspMember->Collection(),
-                                                    DAVA::VariantType(static_cast<DAVA::int32>(0)),
-                                                    DAVA::VariantType(static_cast<DAVA::int32>(15)));
+                                                     DAVA::VariantType(static_cast<DAVA::int32>(0)),
+                                                     DAVA::VariantType(static_cast<DAVA::int32>(15)));
         DAVA::SetCollectionItemValueCommand command1(handle, inspMember->Collection(),
-                                                        DAVA::VariantType(static_cast<DAVA::uint32>(1)),
-                                                        DAVA::VariantType(static_cast<DAVA::uint32>(20)));
+                                                     DAVA::VariantType(static_cast<DAVA::uint32>(1)),
+                                                     DAVA::VariantType(static_cast<DAVA::uint32>(20)));
         DAVA::SetCollectionItemValueCommand command2(handle, inspMember->Collection(),
-                                                        DAVA::VariantType(static_cast<DAVA::int32>(2)),
-                                                        DAVA::VariantType(static_cast<DAVA::uint32>(42)));
+                                                     DAVA::VariantType(static_cast<DAVA::int32>(2)),
+                                                     DAVA::VariantType(static_cast<DAVA::uint32>(42)));
 
         TEST_VERIFY(collection[0] == 10);
         TEST_VERIFY(collection[1] == 11);

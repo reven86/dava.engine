@@ -40,8 +40,8 @@ class InspColl;
 class SetCollectionItemValueCommand : public ICommand
 {
 public:
-    SetCollectionItemValueCommand(const ObjectHandle& object, const InspColl * collection,
-                                  const VariantType & key, const VariantType & newValue);
+    SetCollectionItemValueCommand(const ObjectHandle& object, const InspColl* collection,
+                                  const VariantType& key, const VariantType& newValue);
 
     void Execute() override;
     void Redo() override;
@@ -53,7 +53,7 @@ private:
 
 private:
     ObjectHandle object;
-    const InspColl * collection;
+    const InspColl* collection;
     VariantType key;
     VariantType oldValue;
     VariantType newValue;

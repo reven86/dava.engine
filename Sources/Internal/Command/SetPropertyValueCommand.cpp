@@ -41,7 +41,7 @@ SetPropertyValueCommand::SetPropertyValueCommand(const ObjectHandle& object_, co
     DVASSERT(object.GetIntrospection() != nullptr);
     DVASSERT(object.GetIntrospection()->Member(property->Name()) != nullptr);
 
-    const DAVA::MetaInfo * propertyType = property->Type();
+    const DAVA::MetaInfo* propertyType = property->Type();
     if (newValue.Meta() != propertyType)
     {
         newValue = VariantType::Convert(newValue, propertyType);

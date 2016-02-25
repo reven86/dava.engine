@@ -33,22 +33,21 @@
 
 namespace DAVA
 {
-
 class SetCollectionItemValueCommand::CollectionIteratorHelper
 {
 public:
-    CollectionIteratorHelper(const ObjectHandle& object, const InspColl * collection_, VariantType key)
+    CollectionIteratorHelper(const ObjectHandle& object, const InspColl* collection_, VariantType key)
         : collection(collection_)
     {
         DVASSERT(collection != nullptr);
 
-        const MetaInfo * itemKeyType = collection->ItemKeyType();
+        const MetaInfo* itemKeyType = collection->ItemKeyType();
         if (itemKeyType == nullptr)
         {
             key = VariantType::Convert(key, VariantType::TYPE_INT32);
             DVASSERT(key.GetType() == VariantType::TYPE_INT32);
             DAVA::int32 index = key.AsInt32();
-            
+
             iterator = collection->Begin(collection->Pointer(object.GetObjectPointer()));
             while (iterator != nullptr && index > 0)
             {
@@ -86,7 +85,7 @@ private:
     InspColl::Iterator iterator;
 };
 
-SetCollectionItemValueCommand::SetCollectionItemValueCommand(const ObjectHandle& object_, const InspColl * collection_,
+SetCollectionItemValueCommand::SetCollectionItemValueCommand(const ObjectHandle& object_, const InspColl* collection_,
                                                              const VariantType& key_, const VariantType& newValue_)
     : object(object_)
     , collection(collection_)
@@ -98,7 +97,7 @@ SetCollectionItemValueCommand::SetCollectionItemValueCommand(const ObjectHandle&
     DVASSERT(object.GetIntrospection()->Member(collection->Name()) != nullptr);
     DVASSERT(CollectionIteratorHelper(object, collection, key).GetIterator() != nullptr);
 
-    const DAVA::MetaInfo * itemType = collection_->ItemType();
+    const DAVA::MetaInfo* itemType = collection_->ItemType();
     if (newValue.Meta() != itemType)
     {
         newValue = VariantType::Convert(newValue, itemType);
@@ -127,5 +126,4 @@ void SetCollectionItemValueCommand::SetValue(const CollectionIteratorHelper& ite
 {
     collection->ItemValueSet(iterHelper.GetIterator(), value.MetaObject());
 }
-
 }

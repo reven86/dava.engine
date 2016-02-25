@@ -1934,8 +1934,7 @@ DAVA::VariantType VariantType::Convert(const VariantType& val, const MetaInfo* m
             return VariantType::Convert(val, typeName.variantType);
         }
     }
-    
+
     return VariantType();
 }
-
 };

@@ -40,7 +40,7 @@ class InspMember;
 class SetPropertyValueCommand : public ICommand
 {
 public:
-    SetPropertyValueCommand(const ObjectHandle & object, const InspMember * property, VariantType newValue);
+    SetPropertyValueCommand(const ObjectHandle& object, const InspMember* property, VariantType newValue);
 
     void Execute() override;
     void Redo() override;
@@ -48,7 +48,7 @@ public:
 
 private:
     ObjectHandle object;
-    const InspMember * property;
+    const InspMember* property;
     VariantType newValue;
     VariantType oldValue;
 };

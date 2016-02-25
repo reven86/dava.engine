@@ -44,11 +44,11 @@ public:
     bool IsValid() const;
     inline void* GetObjectPointer() const;
     inline const MetaInfo* GetObjectType() const;
-    const InspInfo * GetIntrospection() const;
+    const InspInfo* GetIntrospection() const;
 
 private:
-    void * object = nullptr;
-    const DAVA::MetaInfo * objectType = nullptr;
+    void* object = nullptr;
+    const DAVA::MetaInfo* objectType = nullptr;
 };
 
 void* ObjectHandle::GetObjectPointer() const
