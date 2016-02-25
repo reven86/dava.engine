@@ -305,19 +305,52 @@ void Landscape::RebuildLandscape()
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
 {
-    uint32 hmSize = heightmap->Size();
-    DVASSERT(IsPowerOf2(hmSize));
+    const uint32 hmSize = heightmap->Size();
+    DVASSERT(IsPowerOf2(heightmap->Size()));
+
+    Vector<Image*> textureData;
+    textureData.reserve(HighestBitIndex(hmSize));
 
     Image* mip0 = Image::CreateFromData(hmSize, hmSize, FORMAT_A16, reinterpret_cast<uint8*>(heightmap->Data()));
-    Vector<Image*> textureData = mip0->CreateMipMapsImages(false, false);
-    SafeRelease(mip0);
+    textureData.push_back(mip0);
+
+    uint32 mipSize = hmSize >> 1;
+    uint32 step = 2;
+    uint32 mipLevel = 1;
+    uint16* mipData = new uint16[mipSize * mipSize];
+
+    while (mipSize)
+    {
+        uint16* mipDataPtr = mipData;
+        for (uint32 y = 0; y < mipSize; ++y)
+        {
+            for (uint32 x = 0; x < mipSize; ++x)
+            {
+                uint16 xx = x * step;
+                uint16 yy = y * step;
+                uint16 h1 = heightmap->GetHeight(xx, yy);
+                *mipDataPtr++ = h1;
+                //uint16 h2 = heightmap->GetHeightClamp(xx + step, yy + step);
+                //*mipDataPtr++ = (h1 + h2) >> 1;
+            }
+        }
+
+        Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_A16, reinterpret_cast<uint8*>(mipData));
+        mipImg->mipmapLevel = mipLevel;
+        textureData.push_back(mipImg);
+
+        mipSize >>= 1;
+        step <<= 1;
+        mipLevel++;
+    }
 
     Texture* tx = Texture::CreateFromData(textureData);
+    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NEAREST);
+
     for (Image* img : textureData)
         img->Release();
-
-    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NEAREST);
+    SafeDeleteArray(mipData);
 
     return tx;
 }

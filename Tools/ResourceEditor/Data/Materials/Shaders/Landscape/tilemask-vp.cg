@@ -91,8 +91,11 @@ VPROG_BEGIN
 	float baseLod = VP_IN_TEXCOORD7.x + lodOffset;
 	float morphAmount = dot(edgeMask, VP_IN_TEXCOORD6) + (1.0 - dot(float4(1.0), edgeMask)) * VP_IN_TEXCOORD7.y;
 	
+	float relativeQuadSize = pow(2.0, baseLod) / 512.0;
+	
     float heightmapSample0 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset * 2.0, baseLod + 1.0));
-	float heightmapSample1 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod));
+	float heightmapSample1 = FP_A8(VP_TEXTURE2D(heightmap, relativeQuadSize * floor(relativePosition / relativeQuadSize) + 1.0 / 1024.0, 0.0));
+	
 	float heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
 	
 #else
