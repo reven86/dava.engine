@@ -43,7 +43,7 @@
 
     ApplicationCore* core;
     bool fullScreen;
-    
+
 @private
     IOPMAssertionID assertionID;
 }
