@@ -4,6 +4,7 @@
 
 #include "UI/Focus/FocusHelpers.h"
 #include "UI/Focus/DirectionBasedNavigationAlgorithm.h"
+#include "UI/Focus/TabTraversalAlgorithm.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
@@ -89,11 +90,34 @@ void UIFocusSystem::MoveFocusDown()
     MoveFocus(FocusHelpers::Direction::DOWN);
 }
 
+void UIFocusSystem::MoveFocusForward()
+{
+    MoveFocus(FocusHelpers::TabDirection::FORWARD);
+}
+
+void UIFocusSystem::MoveFocusBackward()
+{
+    MoveFocus(FocusHelpers::TabDirection::BACKWARD);
+}
+
 void UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
 {
     if (root.Valid() && focusedControl.Valid())
     {
         DirectionBasedNavigationAlgorithm alg(root.Get());
+        UIControl* next = alg.GetNextControl(focusedControl.Get(), dir);
+        if (next && next != focusedControl)
+        {
+            SetFocusedControl(next);
+        }
+    }
+}
+
+void UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
+{
+    if (root.Valid() && focusedControl.Valid())
+    {
+        TabTraversalAlgorithm alg(root.Get());
         UIControl* next = alg.GetNextControl(focusedControl.Get(), dir);
         if (next && next != focusedControl)
         {

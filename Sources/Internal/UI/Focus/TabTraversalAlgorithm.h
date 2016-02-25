@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
-#define __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
+#ifndef __DAVAENGINE_TAB_TRAVERSAL_ALGORITHM_H__
+#define __DAVAENGINE_TAB_TRAVERSAL_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -49,8 +49,17 @@ public:
     UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir);
 
 private:
+    template <typename It>
+    UIControl* FindNextControl(UIControl* focusedControl, It begin, It end, FocusHelpers::TabDirection dir);
+
     UIControl* FindFirstControl(UIControl* control, FocusHelpers::TabDirection dir);
+    template <typename It>
+    UIControl* FindFirstControlRecursive(It begin, It end, FocusHelpers::TabDirection dir);
+
+    void PrepareChildren(UIControl* control, Vector<UIControl*>& children);
+
+    RefPtr<UIControl> root;
 };
 }
 
-#endif // __DAVAENGINE_DIRECTION_BASED_NAVIGATION_ALGORITHM_H__
+#endif // __DAVAENGINE_TAB_TRAVERSAL_ALGORITHM_H__

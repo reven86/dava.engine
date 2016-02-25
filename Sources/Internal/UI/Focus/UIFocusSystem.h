@@ -59,8 +59,12 @@ public:
     void MoveFocusUp();
     void MoveFocusDown();
 
+    void MoveFocusForward();
+    void MoveFocusBackward();
+
 private:
     void MoveFocus(FocusHelpers::Direction dir);
+    void MoveFocus(FocusHelpers::TabDirection dir);
 
     void ClearFocusState(UIControl* control);
     UIControl* FindFirstControl(UIControl* control) const;

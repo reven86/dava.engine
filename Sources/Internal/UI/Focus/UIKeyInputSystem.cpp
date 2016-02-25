@@ -47,6 +47,7 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
 
     if (!processed && (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT))
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
         switch (event->key)
         {
         case Key::LEFT:
@@ -63,6 +64,17 @@ void UIKeyInputSystem::HandleKeyEvent(UIEvent* event)
 
         case Key::DOWN:
             focusSystem->MoveFocusDown();
+            break;
+
+        case Key::TAB:
+            if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
+            {
+                focusSystem->MoveFocusBackward();
+            }
+            else
+            {
+                focusSystem->MoveFocusForward();
+            }
             break;
 
         default:
