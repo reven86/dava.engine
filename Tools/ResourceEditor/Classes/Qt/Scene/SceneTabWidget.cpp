@@ -82,7 +82,6 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
                            davaWidget->setParent(this);
                            layout->addWidget(davaWidget);
                        });
-    //layout->addWidget(davaWidget);
     layout->setMargin(0);
     layout->setSpacing(1);
     setLayout(layout);
