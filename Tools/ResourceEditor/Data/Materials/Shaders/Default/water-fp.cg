@@ -151,8 +151,8 @@ FPROG_BEGIN
         float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5; //(gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;    
         float3 reflectionColor = FP_TEXTURE2D(dynamicReflection, texturePos+waveOffset*reflectionDistortion).rgb;
         texturePos.y=1.0-texturePos.y;
-        float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb;                
-        float3 resColor = lerp(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, fresnel);    
+        float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb * refractionTintColor;
+        float3 resColor = lerp(refractionColor, reflectionColor*reflectionTintColor, fresnel);
         
         #if SPECULAR
             float3 halfVec = normalize(normalize(FP_IN(varLightVec))-cameraToPointInTangentSpaceNorm);       
