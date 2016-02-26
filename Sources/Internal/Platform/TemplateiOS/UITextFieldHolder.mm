@@ -621,22 +621,15 @@
 
 - (void)keyboardWillHide:(NSNotification*)notification
 {
-    if (cppTextField && cppTextField->GetDelegate())
+    if (cppTextField)
     {
-        cppTextField->GetDelegate()->OnKeyboardHidden();
+        cppTextField->OnKeyboardHidden();
     }
 }
 
 - (void)keyboardDidShow:(NSNotification*)notification
 {
     if (nullptr == cppTextField)
-    {
-        return;
-    }
-
-    auto* delegate = cppTextField->GetDelegate();
-
-    if (nullptr == delegate)
     {
         return;
     }
@@ -657,7 +650,7 @@
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    cppTextField->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

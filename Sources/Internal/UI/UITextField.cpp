@@ -1069,6 +1069,22 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
+void UITextField::OnKeyboardShown(const Rect& keyboardRect)
+{
+    if (delegate)
+    {
+        delegate->OnKeyboardShown(keyboardRect);
+    }
+}
+
+void UITextField::OnKeyboardHidden()
+{
+    if (delegate)
+    {
+        delegate->OnKeyboardHidden();
+    }
+}
+
 void UITextField::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();

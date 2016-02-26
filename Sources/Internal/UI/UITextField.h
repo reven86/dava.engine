@@ -89,6 +89,7 @@ public:
     virtual void OnKeyboardShown(const Rect& keyboardRect)
     {
     }
+
     virtual void OnKeyboardHidden()
     {
     }
@@ -366,6 +367,9 @@ public:
     void SystemDraw(const UIGeometricData& geometricData) override;
 
     WideString GetVisibleText() const;
+
+    virtual void OnKeyboardShown(const Rect& keyboardRect);
+    virtual void OnKeyboardHidden();
 
 protected:
     ~UITextField() override;

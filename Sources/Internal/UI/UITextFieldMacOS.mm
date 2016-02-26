@@ -390,24 +390,21 @@ public:
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [openGLView.window makeFirstResponder:nsTextView];
 
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-
-        if (delegate && !isKeyboardOpened)
+        if (!isKeyboardOpened)
         {
             isKeyboardOpened = true;
             Rect emptyRect;
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
-            delegate->OnKeyboardShown(emptyRect);
+            davaText->OnKeyboardShown(emptyRect);
         }
     }
 
     void CloseKeyboard() override
     {
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-        if (delegate && isKeyboardOpened)
+        if (isKeyboardOpened)
         {
             isKeyboardOpened = false;
-            delegate->OnKeyboardHidden();
+            davaText->OnKeyboardHidden();
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview

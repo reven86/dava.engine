@@ -4825,21 +4825,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		3207913A1C7F147900E26609 /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-				3207913B1C7F147D00E26609 /* New Group */,
-			);
-			name = "New Group";
-			sourceTree = "<group>";
-		};
-		3207913B1C7F147D00E26609 /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "New Group";
-			sourceTree = "<group>";
-		};
 		321CCA5F1C6E1D020048FAC9 /* Focus */ = {
 			isa = PBXGroup;
 			children = (
@@ -4847,7 +4832,6 @@
 				321CCA611C6E1D020048FAC9 /* DirectionBasedNavigationAlgorithm.h */,
 				320791341C7EF4D800E26609 /* TabTraversalAlgorithm.cpp */,
 				320791351C7EF4D800E26609 /* TabTraversalAlgorithm.h */,
-				3207913A1C7F147900E26609 /* New Group */,
 				321CCA621C6E1D020048FAC9 /* FocusHelpers.cpp */,
 				321CCA631C6E1D020048FAC9 /* FocusHelpers.h */,
 				321CCA641C6E1D020048FAC9 /* UIFocusComponent.cpp */,
