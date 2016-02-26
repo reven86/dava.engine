@@ -38,6 +38,9 @@ VPROG_OUT_END
 
 #if USE_INSTANCING
 	DECL_VP_SAMPLER2D(heightmap)
+	#if LOD_MORPHING
+		DECL_VP_SAMPLER2D(heightmapAvg)
+	#endif
 #endif
 
 property float4x4 worldViewProjMatrix          : dynamic,a : ;
@@ -91,13 +94,14 @@ VPROG_BEGIN
 	float baseLod = VP_IN_TEXCOORD7.x + lodOffset;
 	float morphAmount = dot(edgeMask, VP_IN_TEXCOORD6) + (1.0 - dot(float4(1.0, 1.0, 1.0, 1.0), edgeMask)) * VP_IN_TEXCOORD7.y;
 	
-    float heightmapSample0 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset * 2.0, baseLod + 1.0));
+    float heightmapSample0 = FP_A8(VP_TEXTURE2D(heightmapAvg, relativePosition + centerPixelOffset, baseLod));
 	float heightmapSample1 = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod));
+	
 	float heightmapSample = lerp(heightmapSample0, heightmapSample1, morphAmount);
 	
 #else
 	
-	float heightmapSample = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + float2(centerPixelOffset, centerPixelOffset), 0.0));
+	float heightmapSample = FP_A8(VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, 0.0));
 	
 #endif
 

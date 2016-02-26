@@ -330,8 +330,68 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
                 uint16 yy = y * step;
                 uint16 h1 = heightmap->GetHeight(xx, yy);
                 *mipDataPtr++ = h1;
-                //uint16 h2 = heightmap->GetHeightClamp(xx + step, yy + step);
-                //*mipDataPtr++ = (h1 + h2) >> 1;
+            }
+        }
+
+        Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_A16, reinterpret_cast<uint8*>(mipData));
+        mipImg->mipmapLevel = mipLevel;
+        textureData.push_back(mipImg);
+
+        mipSize >>= 1;
+        step <<= 1;
+        mipLevel++;
+    }
+
+    Texture* tx = Texture::CreateFromData(textureData);
+    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NEAREST);
+
+    for (Image* img : textureData)
+        img->Release();
+    SafeDeleteArray(mipData);
+
+    return tx;
+}
+
+Texture* Landscape::CreateHeightAvgTexture(Heightmap* heightmap)
+{
+    const uint32 hmSize = heightmap->Size();
+    DVASSERT(IsPowerOf2(heightmap->Size()));
+
+    Vector<Image*> textureData;
+    textureData.reserve(HighestBitIndex(hmSize));
+
+    uint32 mipSize = hmSize;
+    uint32 step = 1;
+    uint32 mipLevel = 0;
+    uint16* mipData = new uint16[mipSize * mipSize];
+
+    while (mipSize)
+    {
+        uint16* mipDataPtr = mipData;
+        for (uint32 y = 0; y < mipSize; ++y)
+        {
+            uint16 y1 = y * step;
+            uint16 y2 = y1;
+            if (y & 0x1)
+            {
+                y1 -= step;
+                y2 += step;
+            }
+
+            for (uint32 x = 0; x < mipSize; ++x)
+            {
+                uint16 x1 = x * step;
+                uint16 x2 = x1;
+                if (x & 0x1)
+                {
+                    x1 -= step;
+                    x2 += step;
+                }
+
+                uint16 h1 = heightmap->GetHeight(x1, y1);
+                uint16 h2 = heightmap->GetHeightClamp(x2, y2);
+                *mipDataPtr++ = (h1 + h2) >> 1;
             }
         }
 
@@ -362,7 +422,7 @@ Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
     res.y = (bbox.min.y + (float32)y / (float32)(heightmap->Size()) * (bbox.max.y - bbox.min.y));
     res.z = (bbox.min.z + ((float32)height / (float32)Heightmap::MAX_VALUE) * (bbox.max.z - bbox.min.z));
     return res;
-};
+}
 
 bool Landscape::GetHeightAtPoint(const Vector3& point, float& value) const
 {
@@ -544,13 +604,6 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
         return;
     }
 
-    if (level == subdivLevelCount - 1)
-    {
-        TerminateSubdivision(level, x, y, level, 1.f);
-        subdivPatchesDrawCount++;
-        return;
-    }
-
     //Vector3 error = patch->positionOfMaxError + Vector3(0.0f, )
     float32 geometryRadius = Abs(patch->maxError);
     float32 geometryDistance = Distance(cameraPos, patch->positionOfMaxError);
@@ -568,6 +621,13 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 patchSize = Abs(max.x - min.x);
 
     float32 morphAmount = Clamp(1.0f - (supDistance - patchSize) / (.5f * patchSize), 0.f, 1.f);
+
+    if (level == subdivLevelCount - 1)
+    {
+        TerminateSubdivision(level, x, y, level, morphAmount);
+        subdivPatchesDrawCount++;
+        return;
+    }
 
     //if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
     if ((minSubdivLevelSize > levelInfo.size) || (supDistance < patchSize))
@@ -1006,6 +1066,12 @@ void Landscape::AllocateGeometryDataInstancing()
         landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
     else
         landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
+
+    ScopedPtr<Texture> heightAvgTexture(CreateHeightAvgTexture(heightmap));
+    if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG))
+        landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG, heightAvgTexture);
+    else
+        landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG, heightAvgTexture);
 
 #if 0
 

@@ -341,6 +341,7 @@ protected:
     void AllocateGeometryDataInstancing();
 
     Texture* CreateHeightTexture(Heightmap* heightmap);
+    Texture* CreateHeightAvgTexture(Heightmap* heightmap);
 
     void DrawLandscapeInstancing();
     void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, float32 patchMorph, const Vector4& nearSizePow2, const Vector4& nearMorph);

@@ -743,7 +743,7 @@ _TextureMipFilterGLES2(TextureMipFilter filter)
         f = GL_NEAREST_MIPMAP_NEAREST;
         break;
     case TEXMIPFILTER_NEAREST:
-        f = GL_LINEAR_MIPMAP_NEAREST;
+        f = GL_NEAREST_MIPMAP_NEAREST;
         break;
     case TEXMIPFILTER_LINEAR:
         f = GL_LINEAR_MIPMAP_LINEAR;
