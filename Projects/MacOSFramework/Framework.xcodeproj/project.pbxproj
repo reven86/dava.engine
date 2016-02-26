@@ -2957,6 +2957,8 @@
 		176DEB6E174B5561007A983B /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
+		320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */; };
+		320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */; };
 		321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
 		321CCA531C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */; };
 		321CCA541C6E04490048FAC9 /* FocusHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */; };
@@ -4040,6 +4042,8 @@
 		15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TabTraversalAlgorithm.cpp; sourceTree = "<group>"; };
+		320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabTraversalAlgorithm.h; sourceTree = "<group>"; };
 		321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
 		321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectionBasedNavigationAlgorithm.h; sourceTree = "<group>"; };
 		321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FocusHelpers.cpp; sourceTree = "<group>"; };
@@ -5682,6 +5686,8 @@
 		321CCA471C6E04490048FAC9 /* Focus */ = {
 			isa = PBXGroup;
 			children = (
+				3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */,
+				320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */,
 				321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */,
 				321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */,
 				321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */,
@@ -6459,6 +6465,7 @@
 				0347B7E01C64C211004DB76C /* UITextFieldMacOS.h in Headers */,
 				028C18A01BD66A6000B2266F /* SwitchNode.h in Headers */,
 				028C14B01BD66A6000B2266F /* DynamicBindings.h in Headers */,
+				320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */,
 				028C10B41BD66A6000B2266F /* Matrix3.h in Headers */,
 				028C17EF1BD66A6000B2266F /* UpdatableComponent.h in Headers */,
 				028C0F041BD66A6000B2266F /* DataStorage.h in Headers */,
@@ -8342,6 +8349,7 @@
 				028C10DE1BD66A6000B2266F /* RectPacker.cpp in Sources */,
 				028C17351BD66A6000B2266F /* Texture.cpp in Sources */,
 				028C11861BD66A6000B2266F /* Announcer.cpp in Sources */,
+				320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */,
 				028C1A801BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */,
 				028C157C1BD66A6000B2266F /* ImageSystem.cpp in Sources */,
 				028C15B21BD66A6000B2266F /* NMaterialNames.cpp in Sources */,

@@ -305,6 +305,7 @@ public:
     bool IsBiDiSupportEnabled() const;
     void SetBiDiSupportEnabled(bool support);
     UILayoutSystem* GetLayoutSystem() const;
+    UIFocusSystem* GetFocusSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 

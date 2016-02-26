@@ -32,10 +32,17 @@ void UIFocusSystem::SetRoot(UIControl* control)
 {
     root = control;
 
-    UIControl* focusedControl = FindFirstControl(control);
-    ClearFocusState(root.Get());
+    if (root)
+    {
+        UIControl* focusedControl = FindFirstControl(control);
+        ClearFocusState(root.Get());
 
-    SetFocusedControl(focusedControl);
+        SetFocusedControl(focusedControl);
+    }
+    else
+    {
+        SetFocusedControl(nullptr);
+    }
 }
 
 UIControl* UIFocusSystem::GetFocusedControl() const
@@ -70,37 +77,37 @@ void UIFocusSystem::ControlBecomInvisible(UIControl* control)
     }
 }
 
-void UIFocusSystem::MoveFocusLeft()
+bool UIFocusSystem::MoveFocusLeft()
 {
-    MoveFocus(FocusHelpers::Direction::LEFT);
+    return MoveFocus(FocusHelpers::Direction::LEFT);
 }
 
-void UIFocusSystem::MoveFocusRight()
+bool UIFocusSystem::MoveFocusRight()
 {
-    MoveFocus(FocusHelpers::Direction::RIGHT);
+    return MoveFocus(FocusHelpers::Direction::RIGHT);
 }
 
-void UIFocusSystem::MoveFocusUp()
+bool UIFocusSystem::MoveFocusUp()
 {
-    MoveFocus(FocusHelpers::Direction::UP);
+    return MoveFocus(FocusHelpers::Direction::UP);
 }
 
-void UIFocusSystem::MoveFocusDown()
+bool UIFocusSystem::MoveFocusDown()
 {
-    MoveFocus(FocusHelpers::Direction::DOWN);
+    return MoveFocus(FocusHelpers::Direction::DOWN);
 }
 
-void UIFocusSystem::MoveFocusForward()
+bool UIFocusSystem::MoveFocusForward()
 {
-    MoveFocus(FocusHelpers::TabDirection::FORWARD);
+    return MoveFocus(FocusHelpers::TabDirection::FORWARD);
 }
 
-void UIFocusSystem::MoveFocusBackward()
+bool UIFocusSystem::MoveFocusBackward()
 {
-    MoveFocus(FocusHelpers::TabDirection::BACKWARD);
+    return MoveFocus(FocusHelpers::TabDirection::BACKWARD);
 }
 
-void UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
+bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
 {
     if (root.Valid() && focusedControl.Valid())
     {
@@ -109,11 +116,13 @@ void UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
         if (next && next != focusedControl)
         {
             SetFocusedControl(next);
+            return true;
         }
     }
+    return false;
 }
 
-void UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
+bool UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
 {
     if (root.Valid() && focusedControl.Valid())
     {
@@ -122,8 +131,10 @@ void UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
         if (next && next != focusedControl)
         {
             SetFocusedControl(next);
+            return true;
         }
     }
+    return false;
 }
 
 void UIFocusSystem::ClearFocusState(UIControl* control)

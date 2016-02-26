@@ -747,6 +747,11 @@ UILayoutSystem* UIControlSystem::GetLayoutSystem() const
     return layoutSystem;
 }
 
+UIFocusSystem* UIControlSystem::GetFocusSystem() const
+{
+    return focusSystem;
+}
+
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
 {
     return styleSheetSystem;
