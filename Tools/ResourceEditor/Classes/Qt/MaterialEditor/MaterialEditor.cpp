@@ -1603,13 +1603,18 @@ void MaterialEditor::onCreateConfig(int index)
     DVASSERT(scene != nullptr);
     DVASSERT(curMaterials.size() == 1);
     DAVA::NMaterial* material = curMaterials.front();
+    MaterialConfig newConfig;
     if (index >= 0)
     {
-        scene->Exec(new MaterialCreateConfig(material, material->GetConfig(material->GetCurrConfig())));
+        newConfig = material->GetConfig(material->GetCurrConfig());
+        newConfig.presetName = DAVA::FastName(DAVA::String("Copy of ") + newConfig.presetName.c_str());
+        scene->Exec(new MaterialCreateConfig(material, newConfig));
     }
     else
     {
-        scene->Exec(new MaterialCreateConfig(material, MaterialConfig()));
+        newConfig.presetName = DAVA::FastName("Empty config");
+        newConfig.fxName = material->GetEffectiveFXName();
+        scene->Exec(new MaterialCreateConfig(material, newConfig));
     }
 }
 

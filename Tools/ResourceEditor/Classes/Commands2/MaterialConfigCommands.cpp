@@ -87,8 +87,6 @@ MaterialCreateConfig::MaterialCreateConfig(DAVA::NMaterial* material, const DAVA
     : MaterialConfigModify(material, CMDID_MATERIAL_CREATE_CONFIG, "Create material config")
     , config(config_)
 {
-    DVASSERT(config.presetName.IsValid());
-    config.presetName = DAVA::FastName(DAVA::String("Copy of ") + config.presetName.c_str());
     changeCurrentConfigCommand.reset(new MaterialChangeCurrentConfig(material, material->GetConfigCount()));
 }
 
