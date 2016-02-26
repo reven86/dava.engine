@@ -41,7 +41,7 @@ public:
     using Updater = DAVA::Function<void()>;
 
 public:
-    LazyUpdater(Updater updater, QObject* parent = nullptr);
+    LazyUpdater(Updater updater, int updateInterval = 0, QObject* parent = nullptr);
 
     void Update();
 
@@ -52,6 +52,7 @@ private slots:
 private:
     Updater updater;
     int counter = 0;
+    const int updateInterval = 0;
 };
 
 #endif // __TOOL_LAZY_UPDATER_H__

@@ -31,16 +31,17 @@
 
 #include <QTimer>
 
-LazyUpdater::LazyUpdater(Updater _updater, QObject* parent /* = nullptr */)
+LazyUpdater::LazyUpdater(Updater _updater, int updateInterval_, QObject* parent /* = nullptr */)
     : QObject(parent)
     , updater(_updater)
+    , updateInterval(updateInterval_)
 {
 }
 
 void LazyUpdater::Update()
 {
     ++counter;
-    QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
+    QTimer::singleShot(updateInterval, this, &LazyUpdater::OnTimer);
 }
 
 void LazyUpdater::OnTimer()

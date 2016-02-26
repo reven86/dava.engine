@@ -261,23 +261,43 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 {
     static const float32 axtraSizeValue = 50.0f;
-    for (auto& magnetControl : magnetControls)
-    {
-        hudControl->RemoveControl(magnetControl.Get());
-    }
-    magnetControls.clear();
+    DVASSERT(magnetControls.size() == magnetTargetControls.size());
 
-    for (const auto& magnetTargetControl : magnetTargetControls)
+    const int magnetsSize = magnetControls.size();
+    const int sizeDiff = magnetLines.size() - magnetControls.size();
+    if (sizeDiff < 0)
     {
-        hudControl->RemoveControl(magnetTargetControl.Get());
-    }
-    magnetTargetControls.clear();
+        const auto& linesEnd = magnetControls.end();
+        const auto& targetRectsEnd = magnetTargetControls.end();
 
-    size_t size = magnetLines.size();
-    magnetControls.reserve(size);
-    magnetTargetControls.reserve(size);
-    for (const MagnetLineInfo& line : magnetLines)
+        for (int i = magnetsSize + sizeDiff; i < magnetsSize; ++i)
+        {
+            UIControl* lineControl = magnetControls.at(i).Get();
+            UIControl* targetRectControl = magnetTargetControls.at(i).Get();
+            hudControl->RemoveControl(lineControl);
+            hudControl->RemoveControl(targetRectControl);
+        }
+        magnetControls.erase(linesEnd + sizeDiff, linesEnd);
+        magnetTargetControls.erase(targetRectsEnd + sizeDiff, targetRectsEnd);
+    }
+    else if (sizeDiff > 0)
     {
+        magnetControls.reserve(sizeDiff);
+        magnetTargetControls.reserve(sizeDiff);
+        for (int i = 0; i < sizeDiff; ++i)
+        {
+            MagnetLineControl* lineControl = new MagnetLineControl();
+            hudControl->AddControl(lineControl);
+            magnetControls.emplace_back(lineControl);
+
+            MagnetLineControl* rectControl = new MagnetLineControl();
+            hudControl->AddControl(rectControl);
+            magnetTargetControls.emplace_back(rectControl);
+        }
+    }
+    for (int i = 0, size = magnetLines.size(); i < size; ++i)
+    {
+        const MagnetLineInfo& line = magnetLines.at(i);
         const auto& gd = line.gd;
 
         auto linePos = line.rect.GetPosition();
@@ -288,13 +308,12 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         lineSize *= gd->scale;
         Vector2 gdPos = gd->position - DAVA::Rotate(gd->pivotPoint * gd->scale, gd->angle);
 
-        MagnetLineControl* lineControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        UIControl* lineControl = magnetControls.at(i).Get();
+        lineControl->SetRect(Rect(Vector2(linePos + gdPos), lineSize));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         lineControl->SetSize(lineControl->GetSize() + extraSize);
         lineControl->SetPivotPoint(extraSize / 2.0f);
         lineControl->SetAngle(line.gd->angle);
-        hudControl->AddControl(lineControl);
-        magnetControls.emplace_back(lineControl);
 
         linePos = line.targetRect.GetPosition();
         lineSize = line.targetRect.GetSize();
@@ -303,10 +322,9 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos *= gd->scale;
         lineSize *= gd->scale;
 
-        MagnetLineControl* rectControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        UIControl* rectControl = magnetTargetControls.at(i).Get();
+        rectControl->SetRect(Rect(linePos + gdPos, lineSize));
         rectControl->SetAngle(line.gd->angle);
-        hudControl->AddControl(rectControl);
-        magnetTargetControls.emplace_back(rectControl);
     }
 }
 

@@ -134,7 +134,7 @@ class SelectionRect : public FrameControl
 class MagnetLineControl : public DAVA::UIControl
 {
 public:
-    MagnetLineControl(const DAVA::Rect& rect);
+    MagnetLineControl(const DAVA::Rect& rect = DAVA::Rect());
 
 private:
     ~MagnetLineControl() = default;
