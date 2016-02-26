@@ -26,47 +26,46 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAEngine.h"
-#include "UnitTests/UnitTests.h"
+#ifndef DATA_STORAGE_STEAM
+#define DATA_STORAGE_STEAM
 
 #include "DataStorage/DataStorage.h"
 
-using namespace DAVA;
+#include "Utils/Utils.h"
 
-DAVA_TESTCLASS (DataVaultTest)
+#include "steam/steam_api.h"
+
+namespace DAVA
 {
-    DAVA_TEST (TestFunction)
-    {
-        IDataStorage* storage = DataStorage::Create();
-        storage->Push();
-        storage->Clear();
-        storage->Push();
-        storage->SetStringValue("TestStringKey", "Test");
-        storage->Push();
 
 #define USE_STEAM
-#if !defined(__DAVAENGINE_WIN32__) || defined(USE_STEAM)
-        String ret = storage->GetStringValue("TestStringKey");
-        TEST_VERIFY("Test" == ret);
-        storage->RemoveEntry("TestStringKey");
-        storage->Push();
-        ret = storage->GetStringValue("TestStringKey");
-        TEST_VERIFY("Test" != ret);
+#if defined(USE_STEAM)
 
-        int64 iret = storage->GetLongValue("TestIntKey");
-        TEST_VERIFY(0 == iret);
+class DynamicMemoryFile;
+class DataStorageSteam : public IDataStorage
+{
+private:
+    const String storageFileName = "CloudArchive";
+public:
+    DataStorageSteam();
+    String GetStringValue(const String& key) override;
+    int64 GetLongValue(const String& key) override;
+    void SetStringValue(const String& key, const String& value) override;
+    void SetLongValue(const String& key, int64 value) override;
+    void RemoveEntry(const String& key) override;
+    void Clear() override;
+    void Push() override;
 
-        storage->SetLongValue("TestIntKey", 1);
-        storage->Push();
-        iret = storage->GetLongValue("TestIntKey");
-        TEST_VERIFY(1 == iret);
+private:
+    ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
+    void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-        storage->Clear();
-        iret = storage->GetLongValue("TestIntKey");
-        TEST_VERIFY(0 == iret);
+    ISteamRemoteStorage * remoteStorage = nullptr;
+    ScopedPtr<KeyedArchive> values;
+    bool isValuesChanged = false;
+};
+
+#endif //USE_STEAM
+}
 
 #endif
-        SafeRelease(storage);
-    }
-}
-;
