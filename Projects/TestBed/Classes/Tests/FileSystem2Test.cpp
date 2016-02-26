@@ -53,7 +53,16 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     path += dirName;
     Logger::Info("path: %s", path.ToStringUtf8().c_str());
 
-    Path fileName("")
+    Path fileName("bunny.m4v");
+    path += fileName;
+
+    if (FileSystem2::IsFile(path))
+    {
+        Logger::Info("path:%s is file", path.ToStringUtf8().c_str());
+    }
+
+    uint64 fileSize = FileSystem2::GetFileSize(path);
+    Logger::Info("file: %s has size: %ld", path.ToStringUtf8().c_str(), fileSize);
 }
 
 void FileSystem2Test::LoadResources()

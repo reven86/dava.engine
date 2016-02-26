@@ -125,15 +125,7 @@ namespace DAVA
         virtual int64 GetSize() = 0;
     };
 
-    class MemMappedReadOnlyFile
-    {
-    public:
-        virtual ~MemMappedReadOnlyFile();
-        virtual uint8* GetData() = 0;
-        virtual int64 GetSize() = 0;
-    };
-
-    class VirtualFS
+    class FileDevice
     {
     public:
         enum class State
@@ -143,7 +135,7 @@ namespace DAVA
             WRITE_ONLY,
             READ_WRITE
         };
-        virtual ~VirtualFS();
+        virtual ~FileDevice();
         virtual void SetName(const String&) = 0;
         virtual const String& GetName() = 0;
         virtual int32 GetPriority() = 0;
@@ -161,54 +153,66 @@ namespace DAVA
     };
 
     // 1. thread safe for pakfile too
-    // 2. use exception to give client code ability to understend why something not working
+    // 2. use exception to give client code ability to understand why something not working
     // 3. do we need priority for pakfiles and os file system
-    // 4. TODO make shure function names not collide with windows.h and coloa framework ets...
+    // 4. TODO make sure function names not collide with windows.h and cocoa framework ets...
+    class FileSystem2Impl;
 
-    namespace FileSystem2
+    class FileSystem2
     {
+    public:
+        FileSystem2();
+        ~FileSystem2();
+
         String ReadFileContentAsString(const Path& pathname);
-        // open or create stream from mounted pakfile or OS filesysem
+        // open or create stream from mounted pakfile or OS file sysem
         // or wrapper around FILE* or android stream or pakfile stream
         std::unique_ptr<InputStream> OpenFile(const Path&);
-        std::unique_ptr<OutputStream> CreateFile(const Path&);
-        std::unique_ptr<MemMappedReadOnlyFile> OpenMemoryMappedFile(const Path&);
-
+        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate);
+        // works on OS file sysem
         void DeleteFile(const Path&);
+        // works on OS file sysem
         void DeleteDirectory(const Path& path, bool isRecursive);
-        void DeleteDirectoryFiles(const Path& path, bool isRecursive);
-
+        // works on OS file sysem
         void CreateDirectory(const Path& path, bool isRecursive);
-
+        // works on OS file sysem
         Path GetCurrentWorkingDirectory();
 
         // resources path base dir used for "~res:/folder/image.png" -> ~res: == GetAppDataPath() == "C:/Users/l_chayka/game/Data"
         Path GetAppDataPath();
         // write path for save, logs ets. "~doc:/logs/today.txt" -> ~doc: == GetPrefPath() == "C:/Users/l_chayka/Documents"
         Path GetPrefPath();
-
-        Path GetAbsolutePath(const Path& p, const Path& base = GetCurrentWorkingDirectory());
-        Path GetRelativePath(const Path& p, const Path& base = GetCurrentWorkingDirectory());
-
+        // works only for OS file system and using current working directory
+        Path GetAbsolutePath(const Path& p);
+        // works only for OS file system and using current working directory
+        Path GetRelativePath(const Path& p);
+        // works only for OS file system
         bool SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
 
+        // test file path if file on FileDevice or OS file system
         bool IsFile(const Path& pathToCheck);
+        // test if path is directory 
         bool IsDirectory(const Path& pathToCheck);
+        // find path in FileDevice or OS file system
         bool Exist(const Path& Path);
-
+        // copy from FileDevice to OS file system, or from OS to OS
         bool CopyFile(const Path& existingFile, const Path& newFile, bool overwriteExisting);
+        // move file from OS to OS
         bool MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting);
+        // copy directory from FileDevice to OS or from OS to OS
         bool CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting);
-
-        void Mount(std::unique_ptr<VirtualFS>);
-        Vector<VirtualFS*>& GetMountedVirtualFS();
-        // works on virtual FS too
+        // group = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
+        void Mount(const String& group, std::unique_ptr<FileDevice>);
+        Vector<std::unique_ptr<FileDevice>>& GetMountedDevices();
+        // works on FileDevice or OS
         uint64 GetFileSize(const Path& path);
 
         // can be empty, or >1 (if two sdcard present)
         Vector<Path> AndroidGetExternalStoragePath();
         Path AndroidGetInternalStoragePath();
-        VirtualFS::State AndroidGetExternalStorageState();
+        FileDevice::State AndroidGetExternalStorageState();
+    private:
+        std::unique_ptr<FileSystem2Impl> impl;
     } // end namespace FileSystemV2
 } // end namespace DAVA
 
