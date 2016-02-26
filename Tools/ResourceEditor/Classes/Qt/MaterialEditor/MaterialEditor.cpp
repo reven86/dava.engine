@@ -138,12 +138,11 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     ui->setupUi(this);
     setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION);
 
+    ui->tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
     QObject::connect(ui->tabbar, &EditableTabBar::tabNameChanged, this, &MaterialEditor::onTabNameChanged);
     QObject::connect(ui->tabbar, &EditableTabBar::currentChanged, this, &MaterialEditor::onCurrentConfigChanged);
     QObject::connect(ui->tabbar, &EditableTabBar::tabCloseRequested, this, &MaterialEditor::onTabRemove);
-    QAction* createConfigAction = new QAction("Create new config", ui->tabbar);
-    QObject::connect(createConfigAction, &QAction::triggered, this, &MaterialEditor::onCreateConfig);
-    ui->tabbar->addAction(createConfigAction);
+    QObject::connect(ui->tabbar, &EditableTabBar::customContextMenuRequested, this, &MaterialEditor::onTabContextMenuRequested);
 
     ui->materialTree->setDragEnabled(true);
     ui->materialTree->setAcceptDrops(true);
@@ -1563,12 +1562,10 @@ void MaterialEditor::UpdateTabs()
     while (ui->tabbar->count() > 0)
     {
         ui->tabbar->removeTab(0);
-        ui->tabbar->setContextMenuPolicy(Qt::NoContextMenu);
     }
 
     if (curMaterials.size() == 1)
     {
-        ui->tabbar->setContextMenuPolicy(Qt::ActionsContextMenu);
         DAVA::NMaterial* material = curMaterials.front();
         for (DAVA::uint32 i = 0; i < material->GetConfigCount(); ++i)
         {
@@ -1600,13 +1597,20 @@ void MaterialEditor::onTabNameChanged(int index)
     scene->Exec(new InspMemberModifyCommand(configNameProperty, material, newValue));
 }
 
-void MaterialEditor::onCreateConfig()
+void MaterialEditor::onCreateConfig(int index)
 {
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);
     DVASSERT(curMaterials.size() == 1);
     DAVA::NMaterial* material = curMaterials.front();
-    scene->Exec(new MaterialCreateConfig(material, material->GetConfig(material->GetCurrConfig())));
+    if (index >= 0)
+    {
+        scene->Exec(new MaterialCreateConfig(material, material->GetConfig(material->GetCurrConfig())));
+    }
+    else
+    {
+        scene->Exec(new MaterialCreateConfig(material, MaterialConfig()));
+    }
 }
 
 void MaterialEditor::onCurrentConfigChanged(int index)
@@ -1636,4 +1640,24 @@ void MaterialEditor::onTabRemove(int index)
     DAVA::NMaterial* material = curMaterials.front();
 
     curScene->Exec(new MaterialRemoveConfig(material, static_cast<DAVA::uint32>(index)));
+}
+
+void MaterialEditor::onTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->tabbar->tabAt(pos);
+
+    std::unique_ptr<QMenu> contextMenu(new QMenu());
+
+    if (tabIndex != -1)
+    {
+        QString actionText = QString("Create copy from %1").arg(ui->tabbar->tabText(tabIndex));
+        QAction* createCopy = new QAction(actionText, contextMenu.get());
+        QObject::connect(createCopy, &QAction::triggered, [this, tabIndex]() { onCreateConfig(tabIndex); });
+        contextMenu->addAction(createCopy);
+    }
+
+    QAction* createEmpty = new QAction("Create empty config", contextMenu.get());
+    QObject::connect(createEmpty, &QAction::triggered, [this]() { onCreateConfig(-1); });
+    contextMenu->addAction(createEmpty);
+    contextMenu->exec(ui->tabbar->mapToGlobal(pos));
 }

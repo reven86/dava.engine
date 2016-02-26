@@ -117,9 +117,10 @@ private slots:
 
     /// Tabbar handlers
     void onTabNameChanged(int index);
-    void onCreateConfig();
+    void onCreateConfig(int index);
     void onCurrentConfigChanged(int index);
     void onTabRemove(int index);
+    void onTabContextMenuRequested(const QPoint& pos);
 
 private:
     enum
