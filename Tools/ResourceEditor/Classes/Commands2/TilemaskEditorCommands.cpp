@@ -101,7 +101,7 @@ SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy_, const 
     : Command2(CMDID_SET_TILE_COLOR, "Set tile color")
     , level(level_)
     , redoColor(color_)
-    , landscapeProxy(SafeRetain(landscapeProxy))
+    , landscapeProxy(SafeRetain(landscapeProxy_))
 {
     undoColor = landscapeProxy->GetLandscapeTileColor(level);
 }
