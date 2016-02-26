@@ -47,6 +47,7 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QDebug>
+#include <QTimer>
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
@@ -68,7 +69,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     tabBar->setExpanding(false);
 
     // davawidget to display DAVAEngine content
-    davaWidget = new DavaGLWidget(this);
+    davaWidget = new DavaGLWidget();
     tabBar->setMinimumWidth(davaWidget->minimumWidth());
     setMinimumWidth(davaWidget->minimumWidth());
     setMinimumHeight(davaWidget->minimumHeight() + tabBar->sizeHint().height());
@@ -76,7 +77,12 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     // put tab bar and davawidget into vertical layout
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(tabBar);
-    layout->addWidget(davaWidget);
+    QTimer::singleShot(100, [layout, this]
+                       {
+                           davaWidget->setParent(this);
+                           layout->addWidget(davaWidget);
+                       });
+    //layout->addWidget(davaWidget);
     layout->setMargin(0);
     layout->setSpacing(1);
     setLayout(layout);
