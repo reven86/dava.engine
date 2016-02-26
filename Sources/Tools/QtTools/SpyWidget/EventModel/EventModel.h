@@ -30,12 +30,12 @@
 #ifndef QTTOOLS_EVENTMODEL_H
 #define QTTOOLS_EVENTMODEL_H
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QStandardItemModel>
 #include <QEvent>
-
-
-
+POP_QT_WARNING_SUPRESSOR
 
 class EventModel
     : public QStandardItemModel

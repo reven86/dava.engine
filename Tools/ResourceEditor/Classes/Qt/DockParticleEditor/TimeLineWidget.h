@@ -77,17 +77,18 @@ signals:
     void TimeLineUpdated();
 
 protected:
-    virtual void paintEvent(QPaintEvent*);
-    virtual void mouseMoveEvent(QMouseEvent*);
-    virtual void mousePressEvent(QMouseEvent*);
-    virtual void mouseReleaseEvent(QMouseEvent*);
-    virtual void mouseDoubleClickEvent(QMouseEvent*);
-    virtual void leaveEvent(QEvent*);
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void mouseDoubleClickEvent(QMouseEvent*) override;
+    void leaveEvent(QEvent*) override;
 
 private:
+    using ScrollZoomWidget::Init;
     typedef Vector<Vector2> LOGIC_POINTS;
 
-    QRect GetGraphRect() const;
+    QRect GetGraphRect() const override;
     void DrawLine(QPainter* painter, uint32 lineId);
     QPoint GetDrawPoint(const Vector2& point) const;
     Vector2 GetLogicPoint(const QPoint& point) const;
@@ -99,10 +100,10 @@ private:
     QRect GetMinimizeRect() const;
     QRect GetMaximizeRect() const;
     QRect GetLockRect() const;
-    QRect GetIncreaseRect() const;
-    QRect GetScaleRect() const;
-    QRect GetDecreaseRect() const;
-    QRect GetSliderRect() const;
+    QRect GetIncreaseRect() const override;
+    QRect GetScaleRect() const override;
+    QRect GetDecreaseRect() const override;
+    QRect GetSliderRect() const override;
 
     void SetPointValue(uint32 lineId, uint32 pointId, Vector2 value, bool deleteSamePoints);
 
@@ -116,7 +117,7 @@ private:
     void UpdateLimits();
 
     void GetClickedPoint(const QPoint& point, int32& pointId, int32& lineId) const;
-    void UpdateSizePolicy();
+    void UpdateSizePolicy() override;
 
     void ChangePointValueDialog(uint32 pointId, int32 lineId);
 

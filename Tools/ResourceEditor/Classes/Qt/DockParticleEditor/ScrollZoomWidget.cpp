@@ -118,7 +118,7 @@ QString ScrollZoomWidget::float2QString(float32 value) const
     return strValue;
 }
 
-void ScrollZoomWidget::paintEvent(QPaintEvent* /*paintEvent*/, QPainter& painter)
+void ScrollZoomWidget::paintEvent(QPaintEvent* /*paintEvent*/)
 {
     //draw scroll bar
     UpdateScrollBarPosition();
@@ -126,6 +126,7 @@ void ScrollZoomWidget::paintEvent(QPaintEvent* /*paintEvent*/, QPainter& painter
     //draw slider
     UpdateSliderPosition();
 
+    QPainter painter(this);
     painter.setPen(Qt::black);
 
     //draw increase box

@@ -64,7 +64,7 @@ public:
     explicit ParticleTimeLineWidget(QWidget* parent = 0);
     ~ParticleTimeLineWidget();
 
-    void Init(float32 minTime, float32 maxTime);
+    void Init(float32 minTime, float32 maxTime) override;
 
     struct LINE
     {
@@ -111,16 +111,16 @@ protected slots:
 protected:
     void OnParticleEffectSelected(DAVA::ParticleEffectComponent* effect);
 
-    virtual void paintEvent(QPaintEvent*);
-    virtual void mouseMoveEvent(QMouseEvent*);
-    virtual void mousePressEvent(QMouseEvent*);
-    virtual void mouseReleaseEvent(QMouseEvent*);
-    virtual void mouseDoubleClickEvent(QMouseEvent*);
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private:
     bool GetLineRect(uint32 id, QRect& startPoint, QRect& endPoint) const;
     bool GetLoopedLineRect(uint32 id, QRect& startPoint, QRect& endPoint, float32 startTime, float32 endTime) const;
-    QRect GetGraphRect() const;
+    QRect GetGraphRect() const override;
     QPoint GetPoint(const QPoint&) const;
 
     void AddLayerLine(uint32 layerLineID, float32 minTime, float32 maxTime,
@@ -129,7 +129,7 @@ private:
                  bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer);
 
     void OnValueChanged(int lineId);
-    void UpdateSizePolicy();
+    void UpdateSizePolicy() override;
 
     void ShowLayersExtraInfoValues(bool isVisible);
 
@@ -142,10 +142,10 @@ private:
     // case when separate Layer node is selected.
     void HandleEmitterSelected(ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer);
 
-    virtual QRect GetSliderRect() const;
-    virtual QRect GetIncreaseRect() const;
-    virtual QRect GetScaleRect() const;
-    virtual QRect GetDecreaseRect() const;
+    QRect GetSliderRect() const override;
+    QRect GetIncreaseRect() const override;
+    QRect GetScaleRect() const override;
+    QRect GetDecreaseRect() const override;
 
 private:
     // Get the width/height for particle counter label.
@@ -155,18 +155,17 @@ private:
     void CleanupTimelines();
 
     LINE_MAP lines;
+    QPoint selectedPoint;
     QFont nameFont;
 
-    QPoint selectedPoint;
-
-    ParticleEffectComponent* selectedEffect;
-    ParticleEmitter* selectedEmitter;
+    ParticleEffectComponent* selectedEffect = nullptr;
+    ParticleEmitter* selectedEmitter = nullptr;
 
     int32 selectedLine;
     int32 selectedLineOrigin;
-    Entity* emitterNode;
-    Entity* effectNode;
-    ParticleLayer* selectedLayer;
+    Entity* emitterNode = nullptr;
+    Entity* effectNode = nullptr;
+    ParticleLayer* selectedLayer = nullptr;
 
     QTimer updateTimer;
 
@@ -174,7 +173,7 @@ private:
     List<ParticlesExtraInfoColumn*> infoColumns;
 
     // Scene currently selected.
-    SceneEditor2* activeScene;
+    SceneEditor2* activeScene = nullptr;
 
     class SetPointValueDlg : public QDialog
     {
@@ -186,7 +185,7 @@ private:
         float32 GetValue() const;
 
     private:
-        EventFilterDoubleSpinBox* valueSpin;
+        EventFilterDoubleSpinBox* valueSpin = nullptr;
     };
 };
 

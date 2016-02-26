@@ -161,6 +161,32 @@ dx11_Reset(const ResetParam& param)
 //------------------------------------------------------------------------------
 
 static void
+dx11_SuspendRendering()
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    CommandBufferDX11::DiscardAll();
+
+    IDXGIDevice3* dxgiDevice3 = NULL;
+
+    if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3))))
+    {
+        _D3D11_ImmediateContext->ClearState();
+        dxgiDevice3->Trim();
+        dxgiDevice3->Release();
+    }
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_ResumeRendering()
+{
+}
+
+//------------------------------------------------------------------------------
+
+static void
 dx11_TakeScreenshot(ScreenShotCallback callback)
 {
     _D3D11_ScreenshotCallbackSync.Lock();
@@ -366,6 +392,8 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
+    DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
+    DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
 
     SetDispatchTable(DispatchDX11);
 

@@ -43,8 +43,12 @@ namespace DAVA
 class Spline
 {
 public:
-    Spline(){};
-    virtual ~Spline(){};
+    Spline()
+    {
+    }
+    virtual ~Spline()
+    {
+    }
 
     virtual int GetPointCount();
     virtual Vector3 Evaluate(float32 t);
