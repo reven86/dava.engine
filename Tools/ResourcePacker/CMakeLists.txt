@@ -22,7 +22,7 @@ set( LIBRARIES                   )
 set( MAC_DISABLE_BUNDLE     true )
 set( DISABLE_SOUNDS         true)
 
-set( MACOS_DYLIB      ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/osx/libIMagickHelper.dylib )
+set( MACOS_DYLIB      ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 
 setup_main_executable()
 
