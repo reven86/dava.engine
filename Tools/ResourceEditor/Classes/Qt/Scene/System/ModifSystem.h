@@ -92,6 +92,10 @@ public:
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);
 
+    void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+
 protected:
     SceneCollisionSystem* collisionSystem;
     SceneCameraSystem* cameraSystem;
@@ -156,7 +160,7 @@ protected:
     DAVA::float32 crossXZ;
     DAVA::float32 crossYZ;
 
-    void BeginModification(const EntityGroup& entities);
+    EntityGroup BeginModification(const EntityGroup& entities);
     void EndModification();
 
     void CloneBegin();

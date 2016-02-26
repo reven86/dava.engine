@@ -198,6 +198,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     EnableSceneActions(false);
 
     DiableUIForFutureUsing();
+    SynchronizeStateWithUI();
 }
 
 QtMainWindow::~QtMainWindow()
@@ -2813,6 +2814,11 @@ void QtMainWindow::DiableUIForFutureUsing()
     //ui->actionAddNewComponent->setVisible(false);
     //ui->actionRemoveComponent->setVisible(false);
     //<--
+}
+
+void QtMainWindow::SynchronizeStateWithUI()
+{
+    OnManualModifMode();
 }
 
 void QtMainWindow::OnEmptyEntity()
