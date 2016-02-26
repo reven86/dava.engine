@@ -501,7 +501,7 @@ private:
 
 VariantType::eVariantType VariantType::GetType() const
 {
-    return (eVariantType)type;
+    return static_cast<eVariantType>(type);
 }
 };
 

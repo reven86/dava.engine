@@ -81,26 +81,26 @@ protected:
     Vector2 GetHeightmapPositionFromCursor() const;
 
 protected:
-    Texture* squareTexture;
-    uint32 curToolSize;
-    Image* curToolImage;
+    Texture* squareTexture = nullptr;
+    uint32 curToolSize = 30;
+    Image* curToolImage = nullptr;
 
-    eHeightmapDrawType drawingType;
-    float32 strength;
-    float32 averageStrength;
-    bool inverseDrawingEnabled;
+    eHeightmapDrawType drawingType = HEIGHTMAP_DRAW_ABSOLUTE;
+    float32 strength = 15.f;
+    float32 averageStrength = 0.5f;
+    bool inverseDrawingEnabled = false;
     FilePath toolImagePath;
-    int32 toolImageIndex;
+    int32 toolImageIndex = 0;
 
-    float32 curHeight;
+    float32 curHeight = 0.f;
     Vector2 copyPasteFrom;
     Vector2 copyPasteTo;
 
     Rect heightmapUpdatedRect;
 
-    bool editingIsEnabled;
+    bool editingIsEnabled = false;
 
-    Heightmap* originalHeightmap;
+    Heightmap* originalHeightmap = nullptr;
 
     eHeightmapDrawType activeDrawingType;
 

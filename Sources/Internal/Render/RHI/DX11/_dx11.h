@@ -42,6 +42,9 @@
     #include <dxgi.h>
 //    #include <d3d11.h>
     #include <d3d11_1.h>
+#if defined(__DAVAENGINE_WIN_UAP__)
+    #include <DXGI1_3.h>
+#endif
     
     #include "../rhi_Type.h"
 

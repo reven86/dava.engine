@@ -63,7 +63,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Base/Introspection.h"

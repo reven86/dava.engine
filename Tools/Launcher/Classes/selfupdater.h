@@ -30,24 +30,24 @@
 #ifndef SELFUPDATER_H
 #define SELFUPDATER_H
 
-#include "zipunpacker.h"
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
+#include <memory>
 
 namespace Ui
 {
 class SelfUpdater;
 }
 
-class SelfUpdater : public QDialog
+class SelfUpdater final : public QDialog
 {
     Q_OBJECT
 
 public:
     explicit SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent = 0);
-    ~SelfUpdater();
+    ~SelfUpdater() override;
 
 signals:
     void StartUpdating();
@@ -58,15 +58,13 @@ private slots:
     void OnStartUpdating();
 
 private:
-    Ui::SelfUpdater* ui;
+    std::unique_ptr<Ui::SelfUpdater> ui;
     QString archiveUrl;
 
-    QNetworkAccessManager* networkManager;
-    QNetworkReply* currentDownload;
+    QNetworkAccessManager* networkManager = nullptr;
+    QNetworkReply* currentDownload = nullptr;
 
-    ZipUnpacker* unpacker;
-
-    int lastErrorCode;
+    int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
 };
 

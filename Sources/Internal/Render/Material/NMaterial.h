@@ -269,7 +269,7 @@ public:
                          PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
                          DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
                          DYNAMIC(localProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_EDIT | I_VIEW)
-                         DYNAMIC(localTextures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_EDIT | I_VIEW));
+                         DYNAMIC(localTextures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_EDIT | I_VIEW))
 };
 
 void NMaterialProperty::SetPropertyValue(const float32* newValue)
@@ -292,7 +292,7 @@ uint32 NMaterial::GetRenderLayerID() const
     if (activeVariantInstance)
         return activeVariantInstance->renderLayer;
     else
-        return (uint32)-1;
+        return static_cast<uint32>(-1);
 }
 uint32 NMaterial::GetSortingKey() const
 {

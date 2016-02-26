@@ -106,7 +106,7 @@ inline String WStringToString(const WideString& s)
     String temp(len, ' ');
     //std::copy(s.begin(), s.end(), temp.begin());
     for (size_t i = 0; i < len; ++i)
-        temp[i] = (char)s[i];
+        temp[i] = static_cast<char>(s[i]);
     return temp;
 }
 
@@ -125,15 +125,16 @@ inline String RTStringToString(Platform::String ^ s)
 template <class T>
 bool FindAndRemoveExchangingWithLast(Vector<T>& array, const T& object)
 {
-    uint32 size = (uint32)array.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = array.size();
+    for (size_t k = 0; k < size; ++k)
+    {
         if (array[k] == object)
         {
             array[k] = array[size - 1];
             array.pop_back();
             return true;
         }
-
+    }
     return false;
 }
 

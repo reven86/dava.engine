@@ -40,9 +40,7 @@ namespace Net
 struct IController
 {
     // There should be a virtual destructor defined as objects may be deleted through this interface
-    virtual ~IController()
-    {
-    }
+    virtual ~IController();
 
     virtual void Start() = 0;
     virtual void Stop(Function<void(IController*)> callback) = 0;
