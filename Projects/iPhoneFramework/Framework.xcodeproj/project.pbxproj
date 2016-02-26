@@ -2084,6 +2084,7 @@
 		8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C0105D11577993400E0B939 /* libmongodb_ios.a */; };
 		87464EF71C2AAEF00001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87464EF61C2AAEF00001498A /* rhi_PerfQuerySetGLES2.cpp */; };
 		87A0C45B18EACBEE00A7402D /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */; };
+		87C0F1261C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87C0F1251C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm */; };
 		9A011C77BA90F38DCDB7F4E6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		A6B5D95F185600050011D172 /* IntrospectionDynamic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */; };
 		A6B5D960185600050011D172 /* IntrospectionDynamic.h in Headers */ = {isa = PBXBuildFile; fileRef = A6B5D95E185600050011D172 /* IntrospectionDynamic.h */; };
@@ -3150,6 +3151,7 @@
 		7CF246E71C103C5F00A821DC /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
 		87464EF61C2AAEF00001498A /* rhi_PerfQuerySetGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rhi_PerfQuerySetGLES2.cpp; sourceTree = "<group>"; };
 		87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		87C0F1251C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = rhi_PerfQuerySetMetal.mm; sourceTree = "<group>"; };
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IntrospectionDynamic.cpp; path = ../../Sources/Internal/Base/IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		A6B5D95E185600050011D172 /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IntrospectionDynamic.h; path = ../../Sources/Internal/Base/IntrospectionDynamic.h; sourceTree = "<group>"; };
@@ -4189,6 +4191,7 @@
 		02E7C4711BD624A6002F026D /* Metal */ = {
 			isa = PBXGroup;
 			children = (
+				87C0F1251C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm */,
 				02E7C4721BD624A6002F026D /* _metal.h */,
 				02E7C4731BD624A6002F026D /* rhi_CommandBufferMetal.mm */,
 				02E7C4741BD624A6002F026D /* rhi_DepthStencilStateMetal.mm */,
@@ -6643,6 +6646,7 @@
 				02E7C6AF1BD624A6002F026D /* Observable.cpp in Sources */,
 				02E7CAE51BD624A7002F026D /* RenderSystem.cpp in Sources */,
 				02E7CD9D1BD624A7002F026D /* UpdateSystem.cpp in Sources */,
+				87C0F1261C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm in Sources */,
 				02E7CD5D1BD624A7002F026D /* DebugRenderSystem.cpp in Sources */,
 				02E7C73D1BD624A7002F026D /* Component.cpp in Sources */,
 				02E7C7591BD624A7002F026D /* FilePathObjective.mm in Sources */,
