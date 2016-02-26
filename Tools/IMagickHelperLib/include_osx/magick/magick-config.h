@@ -17,6 +17,7 @@
 */
 #ifndef _MAGICKCORE_MAGICK_CONFIG_H
 #define _MAGICKCORE_MAGICK_CONFIG_H
+#define MAGICKCORE_QUANTUM_DEPTH 16
 
 #include "magick/magick-baseconfig.h"
 
