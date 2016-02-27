@@ -196,7 +196,7 @@ public:
     void ReleaseConfigTextures(uint32 configId);
 
     uint32 FindConfigByName(const FastName& name) const; //return size if config not found!
-    const MaterialConfig& GetConfig(uint32 index) const;
+    inline const MaterialConfig& GetConfig(uint32 index) const;
     void InsertConfig(uint32_t index, const MaterialConfig& config);
     void RemoveConfig(uint32 index);
 
