@@ -1127,7 +1127,9 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
 
     Landscape* newLandscape = static_cast<Landscape*>(newObject);
 
-    newLandscape->SetMaterial(landscapeMaterial->Clone());
+    NMaterial* material = landscapeMaterial->Clone();
+    newLandscape->SetMaterial(material);
+    SafeRelease(material);
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
