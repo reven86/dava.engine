@@ -72,7 +72,7 @@ struct MaterialTextureInfo
 
 struct MaterialConfig
 {
-    FastName presetName;
+    FastName name;
     FastName fxName;
     HashMap<FastName, NMaterialProperty*> localProperties;
     HashMap<FastName, MaterialTextureInfo*> localTextures;
@@ -188,8 +188,8 @@ public:
     uint32 GetConfigCount() const;
     const DAVA::FastName& GetCurrConfigName() const;
     void SetCurrConfigName(const DAVA::FastName& newName);
-    uint32 GetCurrConfig() const;
-    void SetCurrConfig(uint32 index);
+    inline uint32 GetCurrConfigIndex() const;
+    void SetCurrConfigIndex(uint32 index);
     const FastName& GetConfigName(uint32 index) const;
     void SetConfigName(uint32 index, const FastName& name);
 
@@ -234,6 +234,10 @@ private:
     void AddChildMaterial(NMaterial* material);
     void RemoveChildMaterial(NMaterial* material);
 
+    inline const MaterialConfig& GetCurrentConfig() const;
+    inline MaterialConfig& GetCurrentConfig();
+    inline MaterialConfig& GetConfig(uint32 index);
+
 private:
     // config time
     FastName materialName;
@@ -264,7 +268,7 @@ public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
                          PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
                          PROPERTY("configName", "Config name", GetCurrConfigName, SetCurrConfigName, I_VIEW | I_EDIT)
-                         PROPERTY("configId", "Current config", GetCurrConfig, SetCurrConfig, I_VIEW | I_EDIT)
+                         PROPERTY("configId", "Current config", GetCurrConfigIndex, SetCurrConfigIndex, I_VIEW | I_EDIT)
                          PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
                          PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
                          DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
@@ -297,6 +301,33 @@ uint32 NMaterial::GetRenderLayerID() const
 uint32 NMaterial::GetSortingKey() const
 {
     return sortingKey;
+}
+
+uint32 NMaterial::GetCurrConfigIndex() const
+{
+    return currConfig;
+}
+
+const MaterialConfig& NMaterial::GetCurrentConfig() const
+{
+    return GetConfig(GetCurrConfigIndex());
+}
+
+MaterialConfig& NMaterial::GetCurrentConfig()
+{
+    return GetConfig(GetCurrConfigIndex());
+}
+
+const MaterialConfig& NMaterial::GetConfig(uint32 index) const
+{
+    DVASSERT(index < materialConfigs.size());
+    return materialConfigs[index];
+}
+
+MaterialConfig& NMaterial::GetConfig(uint32 index)
+{
+    DVASSERT(index < materialConfigs.size());
+    return materialConfigs[index];
 }
 };
 

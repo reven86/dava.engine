@@ -43,21 +43,25 @@ public:
     InspMemberDynamic(const char* _name, const InspDesc& _desc, const MetaInfo* _type, int _flags, InspInfoDynamic* _dynamicInfo);
     ~InspMemberDynamic();
 
-    virtual const InspMemberDynamic* Dynamic() const;
+    virtual const InspMemberDynamic* Dynamic() const override;
     InspInfoDynamic* GetDynamicInfo() const;
 
-    virtual void* Pointer(void* object) const
-    {
-        return nullptr;
-    };
-    virtual void* Data(void* object) const
-    {
-        return nullptr;
-    };
+    inline void* Pointer(void* object) const override;
+    inline void* Data(void* object) const override;
 
 protected:
     InspInfoDynamic* dynamicInfo;
 };
-};
+
+void* InspMemberDynamic::Pointer(void* object) const
+{
+    return nullptr;
+}
+
+void* InspMemberDynamic::Data(void* object) const
+{
+    return nullptr;
+}
+} // namespace DAVA
 
 #endif // __DAVAENGINE_INTROSPECTION_DYNAMIC_H__

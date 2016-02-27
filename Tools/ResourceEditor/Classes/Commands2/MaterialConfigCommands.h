@@ -36,7 +36,7 @@
 class MaterialConfigModify : public Command2
 {
 public:
-    MaterialConfigModify(DAVA::NMaterial* material, int id, const DAVA::String& text = "");
+    MaterialConfigModify(DAVA::NMaterial* material, int id, const DAVA::String& text = DAVA::String());
 
     inline DAVA::NMaterial* GetMaterial() const;
     inline DAVA::Entity* GetEntity() const override;
@@ -54,8 +54,8 @@ public:
     void Redo() override;
 
 private:
-    DAVA::uint32 newCurrentConfig = -1;
-    DAVA::uint32 oldCurrentConfig = -1;
+    DAVA::uint32 newCurrentConfig = static_cast<DAVA::uint32>(-1);
+    DAVA::uint32 oldCurrentConfig = static_cast<DAVA::uint32>(-1);
 };
 
 class MaterialRemoveConfig : public MaterialConfigModify
@@ -82,7 +82,7 @@ public:
 
 private:
     DAVA::MaterialConfig config;
-    DAVA::uint32 configIndex = -1;
+    DAVA::uint32 configIndex = static_cast<DAVA::uint32>(-1);
     std::unique_ptr<MaterialChangeCurrentConfig> changeCurrentConfigCommand;
 };
 

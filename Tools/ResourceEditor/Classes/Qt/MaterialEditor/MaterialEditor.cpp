@@ -1576,7 +1576,7 @@ void MaterialEditor::UpdateTabs()
             ui->tabbar->addTab(QString(material->GetConfigName(i).c_str()));
         }
 
-        ui->tabbar->setCurrentIndex(material->GetCurrConfig());
+        ui->tabbar->setCurrentIndex(material->GetCurrConfigIndex());
         ui->tabbar->setTabsClosable(material->GetConfigCount() > 1);
     }
 
@@ -1606,16 +1606,15 @@ void MaterialEditor::onCreateConfig(int index)
     MaterialConfig newConfig;
     if (index >= 0)
     {
-        newConfig = material->GetConfig(material->GetCurrConfig());
-        newConfig.presetName = DAVA::FastName(DAVA::String("Copy of ") + newConfig.presetName.c_str());
-        scene->Exec(new MaterialCreateConfig(material, newConfig));
+        newConfig = const_cast<const DAVA::NMaterial*>(material)->GetConfig(static_cast<DAVA::uint32>(index));
+        newConfig.name = DAVA::FastName(DAVA::String("Copy of ") + newConfig.name.c_str());
     }
     else
     {
-        newConfig.presetName = DAVA::FastName("Empty config");
+        newConfig.name = DAVA::FastName("Empty config");
         newConfig.fxName = material->GetEffectiveFXName();
-        scene->Exec(new MaterialCreateConfig(material, newConfig));
     }
+    scene->Exec(new MaterialCreateConfig(material, newConfig));
 }
 
 void MaterialEditor::onCurrentConfigChanged(int index)

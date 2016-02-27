@@ -86,7 +86,8 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     {
         // if fxName is not valid (e.g global material)
         // we just add all local properties
-        for (const auto& lp : material->materialConfigs[material->currConfig].localProperties)
+        MaterialConfig& config = material->GetCurrentConfig();
+        for (const auto& lp : config.localProperties)
         {
             PropData data;
             data.size = lp.second->arraySize;

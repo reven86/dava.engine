@@ -101,7 +101,7 @@ MaterialConfig::MaterialConfig(const MaterialConfig& config)
 MaterialConfig& MaterialConfig::operator=(const MaterialConfig& config)
 {
     Clear();
-    presetName = config.presetName;
+    name = config.name;
     fxName = config.fxName;
     localFlags = config.localFlags;
     for (auto& tex : config.localTextures)
@@ -145,10 +145,10 @@ MaterialConfig::~MaterialConfig()
 }
 
 NMaterial::NMaterial()
-    : localConstBuffers(16, nullptr)
+    : materialConfigs(1) //at least one config to emulate regular work
+    , localConstBuffers(16, nullptr)
     , renderVariants(4, nullptr)
 {
-    materialConfigs.resize(1); //at least one config to emulate regular work
 }
 
 NMaterial::~NMaterial()
@@ -156,7 +156,7 @@ NMaterial::~NMaterial()
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     SetParent(nullptr);
-    DVASSERT(children.size() == 0); //as children reference parent in our material scheme, this should not be released while it has children
+    DVASSERT(children.empty()); //as children reference parent in our material scheme, this should not be released while it has children
 
     for (auto& buffer : localConstBuffers)
     {
@@ -253,7 +253,7 @@ MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout pro
 
 NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
 {
-    NMaterialProperty* res = materialConfigs[currConfig].localProperties.at(propName);
+    NMaterialProperty* res = GetCurrentConfig().localProperties.at(propName);
     if ((res == nullptr) && (parent != nullptr))
     {
         res = parent->GetMaterialProperty(propName);
@@ -263,7 +263,7 @@ NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
 
 Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
 {
-    MaterialTextureInfo* localInfo = materialConfigs[currConfig].localTextures.at(slotName);
+    MaterialTextureInfo* localInfo = GetCurrentConfig().localTextures.at(slotName);
     if (localInfo)
     {
         if (localInfo->texture == nullptr)
@@ -309,32 +309,32 @@ bool NMaterial::ContainsTexture(Texture* texture) const
 
 const HashMap<FastName, MaterialTextureInfo*>& NMaterial::GetLocalTextures() const
 {
-    return materialConfigs[currConfig].localTextures;
+    return GetCurrentConfig().localTextures;
 }
 
 void NMaterial::SetFXName(const FastName& fx)
 {
-    materialConfigs[currConfig].fxName = fx;
+    GetCurrentConfig().fxName = fx;
     InvalidateRenderVariants();
 }
 
 const FastName& NMaterial::GetEffectiveFXName() const
 {
-    if ((!materialConfigs[currConfig].fxName.IsValid()) && (parent != nullptr))
+    if ((!GetCurrentConfig().fxName.IsValid()) && (parent != nullptr))
     {
         return parent->GetEffectiveFXName();
     }
-    return materialConfigs[currConfig].fxName;
+    return GetCurrentConfig().fxName;
 }
 
 const FastName& NMaterial::GetLocalFXName() const
 {
-    return materialConfigs[currConfig].fxName;
+    return GetCurrentConfig().fxName;
 }
 
 bool NMaterial::HasLocalFXName() const
 {
-    return materialConfigs[currConfig].fxName.IsValid();
+    return GetCurrentConfig().fxName.IsValid();
 }
 
 const FastName& NMaterial::GetQualityGroup()
@@ -355,23 +355,25 @@ void NMaterial::AddProperty(const FastName& propName, const float32* propData, r
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    DVASSERT(materialConfigs[currConfig].localProperties.at(propName) == nullptr);
+    MaterialConfig& config = GetCurrentConfig();
+    DVASSERT(config.localProperties.at(propName) == nullptr);
     NMaterialProperty* prop = new NMaterialProperty();
     prop->name = propName;
     prop->type = type;
     prop->arraySize = arraySize;
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
-    materialConfigs[currConfig].localProperties[propName] = prop;
+    config.localProperties[propName] = prop;
 
     InvalidateBufferBindings();
 }
 
 void NMaterial::RemoveProperty(const FastName& propName)
 {
-    NMaterialProperty* prop = materialConfigs[currConfig].localProperties.at(propName);
+    MaterialConfig& config = GetCurrentConfig();
+    NMaterialProperty* prop = config.localProperties.at(propName);
     DVASSERT(prop != nullptr);
-    materialConfigs[currConfig].localProperties.erase(propName);
+    config.localProperties.erase(propName);
     SafeDelete(prop);
 
     InvalidateBufferBindings();
@@ -379,40 +381,40 @@ void NMaterial::RemoveProperty(const FastName& propName)
 
 void NMaterial::SetPropertyValue(const FastName& propName, const float32* propData)
 {
-    NMaterialProperty* prop = materialConfigs[currConfig].localProperties.at(propName);
+    NMaterialProperty* prop = GetCurrentConfig().localProperties.at(propName);
     DVASSERT(prop != nullptr);
     prop->SetPropertyValue(propData);
 }
 
 bool NMaterial::HasLocalProperty(const FastName& propName)
 {
-    return materialConfigs[currConfig].localProperties.at(propName) != nullptr;
+    return GetCurrentConfig().localProperties.at(propName) != nullptr;
 }
 
 rhi::ShaderProp::Type NMaterial::GetLocalPropType(const FastName& propName)
 {
-    NMaterialProperty* prop = materialConfigs[currConfig].localProperties.at(propName);
+    NMaterialProperty* prop = GetCurrentConfig().localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->type;
 }
 
 const float32* NMaterial::GetLocalPropValue(const FastName& propName)
 {
-    NMaterialProperty* prop = materialConfigs[currConfig].localProperties.at(propName);
+    NMaterialProperty* prop = GetCurrentConfig().localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->data.get();
 }
 
 uint32 NMaterial::GetLocalPropArraySize(const FastName& propName)
 {
-    NMaterialProperty* prop = materialConfigs[currConfig].localProperties.at(propName);
+    NMaterialProperty* prop = GetCurrentConfig().localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->arraySize;
 }
 
 const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
 {
-    NMaterialProperty* prop = materialConfigs[currConfig].localProperties.at(propName);
+    NMaterialProperty* prop = GetCurrentConfig().localProperties.at(propName);
     if (prop)
         return prop->data.get();
     if (parent)
@@ -424,25 +426,27 @@ void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    DVASSERT(materialConfigs[currConfig].localTextures.at(slotName) == nullptr);
+    MaterialConfig& config = GetCurrentConfig();
+    DVASSERT(config.localTextures.at(slotName) == nullptr);
     MaterialTextureInfo* texInfo = new MaterialTextureInfo();
     texInfo->texture = SafeRetain(texture);
     texInfo->path = texture->GetPathname();
-    materialConfigs[currConfig].localTextures[slotName] = texInfo;
+    config.localTextures[slotName] = texInfo;
     InvalidateTextureBindings();
 }
 void NMaterial::RemoveTexture(const FastName& slotName)
 {
-    MaterialTextureInfo* texInfo = materialConfigs[currConfig].localTextures.at(slotName);
+    MaterialConfig& config = GetCurrentConfig();
+    MaterialTextureInfo* texInfo = config.localTextures.at(slotName);
     DVASSERT(texInfo != nullptr);
-    materialConfigs[currConfig].localTextures.erase(slotName);
+    config.localTextures.erase(slotName);
     SafeRelease(texInfo->texture);
     SafeDelete(texInfo);
     InvalidateTextureBindings();
 }
 void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
 {
-    MaterialTextureInfo* texInfo = materialConfigs[currConfig].localTextures.at(slotName);
+    MaterialTextureInfo* texInfo = GetCurrentConfig().localTextures.at(slotName);
     DVASSERT(texture != nullptr); //use RemoveTexture to remove texture!
     DVASSERT(texInfo != nullptr); //use AddTexture to add texture!
 
@@ -458,12 +462,13 @@ void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
 
 bool NMaterial::HasLocalTexture(const FastName& slotName)
 {
-    return materialConfigs[currConfig].localTextures.find(slotName) != materialConfigs[currConfig].localTextures.end();
+    const MaterialConfig& config = GetCurrentConfig();
+    return config.localTextures.find(slotName) != config.localTextures.end();
 }
 Texture* NMaterial::GetLocalTexture(const FastName& slotName)
 {
     DVASSERT(HasLocalTexture(slotName));
-    MaterialTextureInfo* texInfo = materialConfigs[currConfig].localTextures.at(slotName);
+    MaterialTextureInfo* texInfo = GetCurrentConfig().localTextures.at(slotName);
     if (texInfo->texture == nullptr)
         texInfo->texture = Texture::CreateFromFile(texInfo->path);
     return texInfo->texture;
@@ -473,27 +478,31 @@ void NMaterial::AddFlag(const FastName& flagName, int32 value)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    DVASSERT(materialConfigs[currConfig].localFlags.find(flagName) == materialConfigs[currConfig].localFlags.end());
-    materialConfigs[currConfig].localFlags[flagName] = value;
+    MaterialConfig& config = GetCurrentConfig();
+    DVASSERT(config.localFlags.find(flagName) == config.localFlags.end());
+    config.localFlags[flagName] = value;
     InvalidateRenderVariants();
 }
 void NMaterial::RemoveFlag(const FastName& flagName)
 {
-    DVASSERT(materialConfigs[currConfig].localFlags.find(flagName) != materialConfigs[currConfig].localFlags.end());
-    materialConfigs[currConfig].localFlags.erase(flagName);
+    MaterialConfig& config = GetCurrentConfig();
+    DVASSERT(config.localFlags.find(flagName) != config.localFlags.end());
+    config.localFlags.erase(flagName);
     InvalidateRenderVariants();
 }
 void NMaterial::SetFlag(const FastName& flagName, int32 value)
 {
-    DVASSERT(materialConfigs[currConfig].localFlags.find(flagName) != materialConfigs[currConfig].localFlags.end());
-    materialConfigs[currConfig].localFlags[flagName] = value;
+    MaterialConfig& config = GetCurrentConfig();
+    DVASSERT(config.localFlags.find(flagName) != config.localFlags.end());
+    config.localFlags[flagName] = value;
     InvalidateRenderVariants();
 }
 
 int32 NMaterial::GetEffectiveFlagValue(const FastName& flagName)
 {
-    HashMap<FastName, int32>::iterator it = materialConfigs[currConfig].localFlags.find(flagName);
-    if (it != materialConfigs[currConfig].localFlags.end())
+    MaterialConfig& config = GetCurrentConfig();
+    HashMap<FastName, int32>::iterator it = config.localFlags.find(flagName);
+    if (it != config.localFlags.end())
         return it->second;
     else if (parent)
         return parent->GetEffectiveFlagValue(flagName);
@@ -502,20 +511,23 @@ int32 NMaterial::GetEffectiveFlagValue(const FastName& flagName)
 
 int32 NMaterial::GetLocalFlagValue(const FastName& flagName)
 {
-    DVASSERT(materialConfigs[currConfig].localFlags.find(flagName) != materialConfigs[currConfig].localFlags.end());
-    return materialConfigs[currConfig].localFlags[flagName];
+    MaterialConfig& config = GetCurrentConfig();
+    DVASSERT(config.localFlags.find(flagName) != config.localFlags.end());
+    return config.localFlags[flagName];
 }
 
 bool NMaterial::HasLocalFlag(const FastName& flagName)
 {
-    return materialConfigs[currConfig].localFlags.find(flagName) != materialConfigs[currConfig].localFlags.end();
+    MaterialConfig& config = GetCurrentConfig();
+    return config.localFlags.find(flagName) != config.localFlags.end();
 }
 
 bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 {
+    MaterialConfig& config = GetCurrentConfig();
     for (auto& descr : ShaderDescriptor::GetProps(propertyLayout))
     {
-        if (materialConfigs[currConfig].localProperties.at(descr.uid) != nullptr)
+        if (config.localProperties.at(descr.uid) != nullptr)
             return true;
     }
     return false;
@@ -573,27 +585,20 @@ void NMaterial::RemoveChildMaterial(NMaterial* material)
 //Configs managment
 uint32 NMaterial::GetConfigCount() const
 {
-    return materialConfigs.size();
+    return static_cast<uint32>(materialConfigs.size());
 }
 
 const DAVA::FastName& NMaterial::GetCurrConfigName() const
 {
-    DVASSERT(currConfig < materialConfigs.size());
-    return materialConfigs[currConfig].presetName;
+    return GetCurrentConfig().name;
 }
 
 void NMaterial::SetCurrConfigName(const DAVA::FastName& newName)
 {
-    DVASSERT(currConfig < materialConfigs.size());
-    materialConfigs[currConfig].presetName = newName;
+    GetCurrentConfig().name = newName;
 }
 
-uint32 NMaterial::GetCurrConfig() const
-{
-    return currConfig;
-}
-
-void NMaterial::SetCurrConfig(uint32 index)
+void NMaterial::SetCurrConfigIndex(uint32 index)
 {
     DVASSERT(index < materialConfigs.size());
     currConfig = index;
@@ -602,14 +607,13 @@ void NMaterial::SetCurrConfig(uint32 index)
 
 void NMaterial::SetConfigName(uint32 index, const FastName& name)
 {
-    DVASSERT(index < materialConfigs.size());
-    materialConfigs[index].presetName = name;
+    GetConfig(index).name = name;
 }
 
 void NMaterial::ReleaseConfigTextures(uint32 configId)
 {
-    DVASSERT(configId < materialConfigs.size());
-    for (auto& tex : materialConfigs[configId].localTextures)
+    MaterialConfig& config = GetCurrentConfig();
+    for (auto& tex : config.localTextures)
         SafeRelease(tex.second->texture);
 
     if (configId == currConfig)
@@ -618,24 +622,17 @@ void NMaterial::ReleaseConfigTextures(uint32 configId)
 
 const DAVA::FastName& NMaterial::GetConfigName(uint32 index) const
 {
-    DVASSERT(index < materialConfigs.size());
-    return materialConfigs[index].presetName;
+    return GetConfig(index).name;
 }
 
 uint32 NMaterial::FindConfigByName(const FastName& name) const
 {
     for (size_t i = 0, sz = materialConfigs.size(); i < sz; ++i)
     {
-        if (materialConfigs[i].presetName == name)
+        if (materialConfigs[i].name == name)
             return i;
     }
     return materialConfigs.size();
-}
-
-const DAVA::MaterialConfig& NMaterial::GetConfig(uint32 index) const
-{
-    DVASSERT(index < materialConfigs.size());
-    return materialConfigs[index];
 }
 
 void NMaterial::InsertConfig(uint32_t index, const MaterialConfig& config)
@@ -786,7 +783,7 @@ void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
 {
     if (parent)
         parent->CollectMaterialFlags(target);
-    for (auto& it : materialConfigs[currConfig].localFlags)
+    for (auto& it : GetCurrentConfig().localFlags)
     {
         if (it.second == 0) //ZERO is a special value that means flag is off - at least all shaders are consider it to be this right now
             target.erase(it.first);
@@ -1014,6 +1011,7 @@ NMaterial* NMaterial::Clone()
         clonedMaterial->materialConfigs[i] = materialConfigs[i];
     }
 
+    clonedMaterial->currConfig = currConfig;
     clonedMaterial->SetParent(parent);
 
     // DataNode properties
@@ -1026,14 +1024,15 @@ NMaterial* NMaterial::Clone()
 
 void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (materialConfigs[configId].fxName.IsValid())
-        archive->SetString(NMaterialSerializationKey::FXName, materialConfigs[configId].fxName.c_str());
+    const MaterialConfig& config = GetConfig(configId);
+    if (config.fxName.IsValid())
+        archive->SetString(NMaterialSerializationKey::FXName, config.fxName.c_str());
 
-    if (materialConfigs[configId].presetName.IsValid())
-        archive->SetString(NMaterialSerializationKey::ConfigName, materialConfigs[configId].presetName.c_str());
+    if (config.name.IsValid())
+        archive->SetString(NMaterialSerializationKey::ConfigName, config.name.c_str());
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
-    for (HashMap<FastName, NMaterialProperty *>::iterator it = materialConfigs[configId].localProperties.begin(), itEnd = materialConfigs[configId].localProperties.end(); it != itEnd; ++it)
+    for (HashMap<FastName, NMaterialProperty *>::iterator it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
     {
         NMaterialProperty* property = it->second;
 
@@ -1052,7 +1051,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
     archive->SetArchive("properties", propertiesArchive);
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
-    for (auto it = materialConfigs[configId].localTextures.begin(), itEnd = materialConfigs[configId].localTextures.end(); it != itEnd; ++it)
+    for (auto it = config.localTextures.begin(), itEnd = config.localTextures.end(); it != itEnd; ++it)
     {
         if (!it->second->path.IsEmpty())
         {
@@ -1066,7 +1065,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
     archive->SetArchive("textures", texturesArchive);
 
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
-    for (HashMap<FastName, int32>::iterator it = materialConfigs[configId].localFlags.begin(), itEnd = materialConfigs[configId].localFlags.end(); it != itEnd; ++it)
+    for (HashMap<FastName, int32>::iterator it = config.localFlags.begin(), itEnd = config.localFlags.end(); it != itEnd; ++it)
     {
         if (!NMaterialFlagName::IsRuntimeFlag(it->first))
             flagsArchive->SetInt32(it->first.c_str(), it->second);
@@ -1102,27 +1101,28 @@ void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationC
         {
             ScopedPtr<KeyedArchive> configArchive(new KeyedArchive());
             SaveConfigToArchive(i, configArchive, serializationContext);
-            archive->SetArchive(Format(NMaterialSerializationKey::ConfigArchvie.c_str(), i), configArchive);
+            archive->SetArchive(Format(NMaterialSerializationKey::ConfigArchive.c_str(), i), configArchive);
         }
     }
 }
 
 void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (!archive)
+    if (archive == nullptr)
     {
         Logger::Error("material %s has no archive for config %d", materialName.c_str(), configId);
         return;
     }
 
+    MaterialConfig& config = GetConfig(configId);
     if (archive->IsKeyExists(NMaterialSerializationKey::FXName))
     {
-        materialConfigs[configId].fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName));
+        config.fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName));
     }
 
     if (archive->IsKeyExists(NMaterialSerializationKey::ConfigName))
     {
-        materialConfigs[configId].presetName = FastName(archive->GetString(NMaterialSerializationKey::ConfigName));
+        config.name = FastName(archive->GetString(NMaterialSerializationKey::ConfigName));
     }
 
     if (archive->IsKeyExists("properties"))
@@ -1148,7 +1148,7 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
             newProp->arraySize = propSize;
             newProp->data.reset(new float[ShaderDescriptor::CalculateDataSize(newProp->type, newProp->arraySize)]);
             newProp->SetPropertyValue(data);
-            materialConfigs[configId].localProperties[newProp->name] = newProp;
+            config.localProperties[newProp->name] = newProp;
         }
     }
 
@@ -1160,7 +1160,7 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
             String relativePathname = it->second->AsString();
             MaterialTextureInfo* texInfo = new MaterialTextureInfo();
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            materialConfigs[configId].localTextures[FastName(it->first)] = texInfo;
+            config.localTextures[FastName(it->first)] = texInfo;
         }
     }
 
@@ -1169,7 +1169,7 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-            materialConfigs[configId].localFlags[FastName(it->first)] = it->second->AsInt32();
+            config.localFlags[FastName(it->first)] = it->second->AsInt32();
         }
     }
 }
@@ -1220,7 +1220,7 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
     else
     {
         for (uint32 i = 0; i < configCount; ++i)
-            LoadConfigFromArchive(i, archive->GetArchive(Format(NMaterialSerializationKey::ConfigArchvie.c_str(), i)), serializationContext);
+            LoadConfigFromArchive(i, archive->GetArchive(Format(NMaterialSerializationKey::ConfigArchive.c_str(), i)), serializationContext);
     }
 }
 
@@ -1422,6 +1422,6 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
 const HashMap<FastName, int32>& NMaterial::GetLocalFlags() const
 {
-    return materialConfigs[currConfig].localFlags;
+    return GetCurrentConfig().localFlags;
 }
 };

@@ -38,28 +38,27 @@ MaterialConfigModify::MaterialConfigModify(DAVA::NMaterial* material_, int id, c
 MaterialChangeCurrentConfig::MaterialChangeCurrentConfig(DAVA::NMaterial* material, DAVA::uint32 newCurrentConfigIndex)
     : MaterialConfigModify(material, CMDID_MATERIAL_CHANGE_CURRENT_CONFIG, "Change current material config")
     , newCurrentConfig(newCurrentConfigIndex)
+    , oldCurrentConfig(material->GetCurrConfigIndex())
 {
-    oldCurrentConfig = material->GetCurrConfig();
 }
 
 void MaterialChangeCurrentConfig::Undo()
 {
-    material->SetCurrConfig(oldCurrentConfig);
+    material->SetCurrConfigIndex(oldCurrentConfig);
 }
 
 void MaterialChangeCurrentConfig::Redo()
 {
-    material->SetCurrConfig(newCurrentConfig);
+    material->SetCurrConfigIndex(newCurrentConfig);
 }
 
 MaterialRemoveConfig::MaterialRemoveConfig(DAVA::NMaterial* material, DAVA::uint32 configIndex_)
     : MaterialConfigModify(material, CMDID_MATERIAL_REMOVE_CONFIG, "Remove material config")
     , configIndex(configIndex_)
+    , config(const_cast<const DAVA::NMaterial*>(material)->GetConfig(configIndex))
 {
-    config = material->GetConfig(configIndex);
-
     DAVA::uint32 configCount = material->GetConfigCount();
-    DAVA::uint32 newCurrConfig = material->GetCurrConfig();
+    DAVA::uint32 newCurrConfig = material->GetCurrConfigIndex();
     DVASSERT(configCount > 1);
     DVASSERT(configIndex < configCount);
     if ((configIndex == newCurrConfig && configIndex == configCount - 1) ||
