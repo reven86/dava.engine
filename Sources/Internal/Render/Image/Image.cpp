@@ -206,8 +206,8 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         Memset(halfSizeImg->GetData(), 0, halfSizeImg->dataSize);
 
         ImageConvert::DownscaleTwiceBillinear(format, format,
-                                                image0->data, imageWidth, imageHeight, imageWidth * formatSize,
-                                                halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
+                                              image0->data, imageWidth, imageHeight, imageWidth * formatSize,
+                                              halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
 
         halfSizeImg->cubeFaceID = image0->cubeFaceID;
         halfSizeImg->mipmapLevel = curMipMapLevel;

@@ -2,16 +2,33 @@
 
 #if USE_INSTANCING
 
+	#if LOD_MORPHING
+	
 	VPROG_IN_BEGIN
 		VPROG_IN_STREAM_VERTEX
-			VPROG_IN_TEXCOORD0(4)
-			VPROG_IN_TEXCOORD1(4)
+			VPROG_IN_TEXCOORD0(4) //position + gluDirection
+			VPROG_IN_TEXCOORD1(4) //edge mask
+			VPROG_IN_TEXCOORD2(4) //corner mask
 		VPROG_IN_STREAM_INSTANCE
-			VPROG_IN_TEXCOORD4(4)
-			VPROG_IN_TEXCOORD5(4)
-			VPROG_IN_TEXCOORD6(4)
-			VPROG_IN_TEXCOORD7(2)
+			VPROG_IN_TEXCOORD3(4) //patch position + scale + pixelMappingOffset
+			VPROG_IN_TEXCOORD4(4) //near patch lodOffset
+			VPROG_IN_TEXCOORD5(4) //near patch morph
+			VPROG_IN_TEXCOORD6(4) //corner lodOffset + morph
+			VPROG_IN_TEXCOORD7(2) //patch lod + morph
 	VPROG_IN_END
+	
+	#else
+	
+	VPROG_IN_BEGIN
+		VPROG_IN_STREAM_VERTEX
+			VPROG_IN_TEXCOORD0(4) //position + gluDirection
+			VPROG_IN_TEXCOORD1(4) //edge mask
+		VPROG_IN_STREAM_INSTANCE
+			VPROG_IN_TEXCOORD3(3) //patch position + scale
+			VPROG_IN_TEXCOORD4(4) //near patch lodOffset
+	VPROG_IN_END
+	
+	#endif
 	
 #else
 	
@@ -72,9 +89,26 @@ VPROG_BEGIN
     float2 in_pos = VP_IN_TEXCOORD0.xy;
     float2 gluDir = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
-    float3 patchOffsetScale = VP_IN_TEXCOORD4.xyz;
-	float centerPixelOffset = VP_IN_TEXCOORD4.w;
-    float lodOffset = dot(edgeMask, VP_IN_TEXCOORD5);
+	float4 cornerMask = VP_IN_TEXCOORD2;
+	
+    float3 patchOffsetScale = VP_IN_TEXCOORD3.xyz;
+	
+#if LOD_MORPHING
+
+	float centerPixelOffset = VP_IN_TEXCOORD3.w;
+	
+	float4 nearPatchLodOffset = VP_IN_TEXCOORD4;
+	float4 nearPatchMorph = VP_IN_TEXCOORD5;
+	float4 cornerLodOffset = floor(VP_IN_TEXCOORD6);
+	float4 cornerMorph = VP_IN_TEXCOORD6 - cornerLodOffset;
+	
+	float lodOffset = dot(edgeMask, nearPatchLodOffset) + dot(cornerMask, cornerLodOffset);
+	
+#else 
+	
+	float lodOffset = dot(edgeMask, VP_IN_TEXCOORD4);
+	
+#endif
 	
     float gluAmount = pow(2.0, lodOffset);
 	float2 pos_i = abs(gluDir - in_pos) * float(PATCH_SIZE_QUADS);
@@ -89,16 +123,21 @@ VPROG_BEGIN
 	centerPixelOffset = centerPixelOffset * gluAmount;
 
 	float baseLod = VP_IN_TEXCOORD7.x + lodOffset;
-	float morphAmount = dot(edgeMask, VP_IN_TEXCOORD6) + (1.0 - dot(float4(1.0, 1.0, 1.0, 1.0), edgeMask)) * VP_IN_TEXCOORD7.y;
+	float morphAmount = dot(edgeMask, nearPatchMorph) + dot(cornerMask, cornerMorph);
+	
+	float isEdge   = edgeMask.x + edgeMask.y + edgeMask.z + edgeMask.w;
+	float isCorner = cornerMask.x + cornerMask.y + cornerMask.z + cornerMask.w;
+	float isMiddle = 1.0 - (isEdge + isCorner);
+	morphAmount += isMiddle * VP_IN_TEXCOORD7.y;
 	
 	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod);
 	
-	//float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895));
-	//float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895));
-	//float height = lerp(h1, h0, morphAmount);
+	float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895));
+	float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895));
+	float height = lerp(h1, h0, morphAmount);
 	
-	float2 hmorph = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
-	float height = dot(hmorph, float2(0.0038910506, 0.99610895));
+	//float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
+	//float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	
 #else
 	
