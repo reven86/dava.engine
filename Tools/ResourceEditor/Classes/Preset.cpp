@@ -69,7 +69,7 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
 
     bool dimensionsAreCorrect = true;
 
-    float imageRatio = imageInfo.width / imageInfo.height;
+    float32 imageRatio = imageInfo.width / imageInfo.height;
 
     for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
@@ -86,7 +86,7 @@ bool ArePresetDimensionsCorrect(const TextureDescriptor* descriptor, const Keyed
             DVASSERT(compressToWidth > 0);
             DVASSERT(compressToHeight > 0);
 
-            float compressRatio = compressToWidth / compressToHeight;
+            float32 compressRatio = compressToWidth / compressToHeight;
 
             if (imageRatio != compressRatio)
             {
