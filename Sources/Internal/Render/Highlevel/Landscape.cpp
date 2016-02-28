@@ -311,68 +311,19 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
     Vector<Image*> textureData;
     textureData.reserve(HighestBitIndex(hmSize));
 
-    Image* mip0 = Image::CreateFromData(hmSize, hmSize, FORMAT_A16, reinterpret_cast<uint8*>(heightmap->Data()));
-    textureData.push_back(mip0);
-
-    uint32 mipSize = hmSize >> 1;
-    uint32 step = 2;
-    uint32 mipLevel = 1;
-    uint16* mipData = new uint16[mipSize * mipSize];
-
-    while (mipSize)
-    {
-        uint16* mipDataPtr = mipData;
-        for (uint32 y = 0; y < mipSize; ++y)
-        {
-            for (uint32 x = 0; x < mipSize; ++x)
-            {
-                uint16 xx = x * step;
-                uint16 yy = y * step;
-                uint16 h1 = heightmap->GetHeight(xx, yy);
-                *mipDataPtr++ = h1;
-            }
-        }
-
-        Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_A16, reinterpret_cast<uint8*>(mipData));
-        mipImg->mipmapLevel = mipLevel;
-        textureData.push_back(mipImg);
-
-        mipSize >>= 1;
-        step <<= 1;
-        mipLevel++;
-    }
-
-    Texture* tx = Texture::CreateFromData(textureData);
-    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NEAREST);
-
-    for (Image* img : textureData)
-        img->Release();
-    SafeDeleteArray(mipData);
-
-    return tx;
-}
-
-Texture* Landscape::CreateHeightAvgTexture(Heightmap* heightmap)
-{
-    const uint32 hmSize = heightmap->Size();
-    DVASSERT(IsPowerOf2(heightmap->Size()));
-
-    Vector<Image*> textureData;
-    textureData.reserve(HighestBitIndex(hmSize));
-
     uint32 mipSize = hmSize;
     uint32 step = 1;
     uint32 mipLevel = 0;
-    uint16* mipData = new uint16[mipSize * mipSize];
+    uint32* mipData = new uint32[mipSize * mipSize]; //RGBA8888
 
     while (mipSize)
     {
-        uint16* mipDataPtr = mipData;
+        uint16* mipDataPtr = reinterpret_cast<uint16*>(mipData);
         for (uint32 y = 0; y < mipSize; ++y)
         {
-            uint16 y1 = y * step;
-            uint16 y2 = y1;
+            uint16 yy = y * step;
+            uint16 y1 = yy;
+            uint16 y2 = yy;
             if (y & 0x1)
             {
                 y1 -= step;
@@ -381,13 +332,16 @@ Texture* Landscape::CreateHeightAvgTexture(Heightmap* heightmap)
 
             for (uint32 x = 0; x < mipSize; ++x)
             {
-                uint16 x1 = x * step;
-                uint16 x2 = x1;
+                uint16 xx = x * step;
+                uint16 x1 = xx;
+                uint16 x2 = xx;
                 if (x & 0x1)
                 {
                     x1 -= step;
                     x2 += step;
                 }
+
+                *mipDataPtr++ = heightmap->GetHeight(xx, yy);
 
                 uint16 h1 = heightmap->GetHeight(x1, y1);
                 uint16 h2 = heightmap->GetHeightClamp(x2, y2);
@@ -395,7 +349,7 @@ Texture* Landscape::CreateHeightAvgTexture(Heightmap* heightmap)
             }
         }
 
-        Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_A16, reinterpret_cast<uint8*>(mipData));
+        Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_RGBA8888, reinterpret_cast<uint8*>(mipData));
         mipImg->mipmapLevel = mipLevel;
         textureData.push_back(mipImg);
 
@@ -1066,12 +1020,6 @@ void Landscape::AllocateGeometryDataInstancing()
         landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
     else
         landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightTexture);
-
-    ScopedPtr<Texture> heightAvgTexture(CreateHeightAvgTexture(heightmap));
-    if (landscapeMaterial->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG))
-        landscapeMaterial->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG, heightAvgTexture);
-    else
-        landscapeMaterial->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG, heightAvgTexture);
 
 #if 0
 

@@ -392,23 +392,6 @@ struct PackA8
     }
 };
 
-struct UnpackA16
-{
-    inline void operator()(const uint16* input, uint32& r, uint32& g, uint32& b, uint32& a)
-    {
-        r = g = b = 0;
-        a = (*input);
-    }
-};
-
-struct PackA16
-{
-    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint16* output)
-    {
-        *output = a;
-    }
-};
-
 struct UnpackRGB888
 {
     inline void operator()(const RGB888* input, uint32& r, uint32& g, uint32& b, uint32& a)
@@ -579,39 +562,6 @@ public:
                 uint32 b = (b00 + b01 + b10 + b11) >> 2;
                 uint32 a = (a00 + a01 + a10 + a11) >> 2;
 
-                packFunc(r, g, b, a, writePtrLine);
-
-                readPtrLine += 2;
-                writePtrLine++;
-            }
-            readPtr += inPitch * 2;
-            writePtr += outPitch;
-        }
-    };
-};
-
-template <class TYPE_IN, class TYPE_OUT, typename UNPACK_FUNC, typename PACK_FUNC>
-class ConvertDownscaleTwiceNearest
-{
-public:
-    void operator()(const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-                    void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
-    {
-        UNPACK_FUNC unpackFunc;
-        PACK_FUNC packFunc;
-        const uint8* readPtr = reinterpret_cast<const uint8*>(inData);
-        uint8* writePtr = reinterpret_cast<uint8*>(outData);
-
-        uint32 r, g, b, a;
-
-        for (uint32 y = 0; y < outHeight; ++y)
-        {
-            const TYPE_IN* readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
-            TYPE_OUT* writePtrLine = reinterpret_cast<TYPE_OUT*>(writePtr);
-
-            for (uint32 x = 0; x < outWidth; ++x)
-            {
-                unpackFunc(readPtrLine, r, g, b, a);
                 packFunc(r, g, b, a, writePtrLine);
 
                 readPtrLine += 2;
@@ -846,57 +796,6 @@ public:
         else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
         {
             ConvertDownscaleTwiceBillinear<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else
-        {
-            Logger::Debug("Convert function not implemented for %s or %s", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
-        }
-    }
-
-    static void DownscaleTwiceNearest(PixelFormat inFormat,
-                                      PixelFormat outFormat,
-                                      const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-                                      void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
-    {
-        if ((inFormat == FORMAT_RGBA8888) && (outFormat == FORMAT_RGBA8888))
-        {
-            ConvertDownscaleTwiceNearest<uint32, uint32, UnpackRGBA8888, PackRGBA8888> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_RGBA8888) && (outFormat == FORMAT_RGBA4444))
-        {
-            ConvertDownscaleTwiceNearest<uint32, uint16, UnpackRGBA8888, PackRGBA4444> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_RGBA4444) && (outFormat == FORMAT_RGBA8888))
-        {
-            ConvertDownscaleTwiceNearest<uint16, uint32, UnpackRGBA4444, PackRGBA8888> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_RGBA4444) && (outFormat == FORMAT_RGBA4444))
-        {
-            ConvertDownscaleTwiceNearest<uint16, uint16, UnpackRGBA4444, PackRGBA4444> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_A8) && (outFormat == FORMAT_A8))
-        {
-            ConvertDownscaleTwiceNearest<uint8, uint8, UnpackA8, PackA8> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_RGB888) && (outFormat == FORMAT_RGB888))
-        {
-            ConvertDownscaleTwiceNearest<RGB888, RGB888, UnpackRGB888, PackRGB888> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
-        {
-            ConvertDownscaleTwiceNearest<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-        }
-        else if ((inFormat == FORMAT_A16) && (outFormat == FORMAT_A16))
-        {
-            ConvertDownscaleTwiceNearest<uint16, uint16, UnpackA16, PackA16> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else

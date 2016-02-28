@@ -102,7 +102,6 @@ public:
     static const FastName TEXTURE_DECAL;
     static const FastName TEXTURE_CUBEMAP;
     static const FastName TEXTURE_HEIGHTMAP;
-    static const FastName TEXTURE_HEIGHTMAP_AVG;
     static const FastName TEXTURE_DECALMASK;
     static const FastName TEXTURE_DECALTEXTURE;
 

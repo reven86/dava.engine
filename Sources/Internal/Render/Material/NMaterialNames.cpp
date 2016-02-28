@@ -92,7 +92,6 @@ const FastName NMaterialTextureName::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterialTextureName::TEXTURE_DECAL("decal");
 const FastName NMaterialTextureName::TEXTURE_CUBEMAP("cubemap");
 const FastName NMaterialTextureName::TEXTURE_HEIGHTMAP("heightmap");
-const FastName NMaterialTextureName::TEXTURE_HEIGHTMAP_AVG("heightmapAvg");
 const FastName NMaterialTextureName::TEXTURE_DECALMASK("decalmask");
 const FastName NMaterialTextureName::TEXTURE_DECALTEXTURE("decaltexture");
 
