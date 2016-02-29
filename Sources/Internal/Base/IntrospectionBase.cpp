@@ -32,6 +32,9 @@
 
 namespace DAVA
 {
+InspBase::InspBase() = default;
+InspBase::~InspBase() = default;
+
 InspMember::InspMember(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags /* = 0 */)
     : name(_name)
     , desc(_desc)
@@ -108,4 +111,9 @@ void InspMember::ApplyParentInsp(const InspInfo* _parentInsp) const
 {
     parentInsp = _parentInsp;
 }
-};
+
+InspColl::InspColl(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags)
+    : InspMember(_name, _desc, _offset, _type, _flags)
+{
+}
+}

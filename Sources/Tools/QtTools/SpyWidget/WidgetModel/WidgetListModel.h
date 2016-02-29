@@ -30,8 +30,10 @@
 #ifndef QTTOOLS_WIDGETLISTMODEL_H
 #define QTTOOLS_WIDGETLISTMODEL_H
 
-
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QWidgetList>
+POP_QT_WARNING_SUPRESSOR
 
 #include "AbstractWidgetModel.h"
 
@@ -39,7 +41,9 @@
 class WidgetListModel
     : public AbstractWidgetModel
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     explicit WidgetListModel( QObject *parent = nullptr );

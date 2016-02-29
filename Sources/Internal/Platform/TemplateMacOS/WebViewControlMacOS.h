@@ -31,7 +31,7 @@
 #define __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
 
 #include "Base/Platform.h"
-#if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #include "UI/IWebViewControl.h"
 #include "Functional/SignalBase.h"
@@ -102,6 +102,6 @@ private:
 };
 };
 
-#endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#endif //defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_MACOS_H__) */
