@@ -566,13 +566,22 @@ UIControl* UIControlSystem::GetExclusiveInputLocker()
 
 void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
 {
+    if (fullscreenRect == newFullscreenRect)
+    {
+        return;
+    }
+
     fullscreenRect = newFullscreenRect;
 
     if (currentScreenTransition.Valid())
+    {
         currentScreenTransition->SystemScreenSizeChanged(fullscreenRect);
+    }
 
     if (currentScreen.Valid())
+    {
         currentScreen->SystemScreenSizeChanged(fullscreenRect);
+    }
 
     popupContainer->SystemScreenSizeChanged(fullscreenRect);
 }
