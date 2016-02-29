@@ -172,8 +172,6 @@ namespace DAVA
         // works on OS file sysem
         Path GetCurrentWorkingDirectory();
 
-        // resources path base dir used for "~res:/folder/image.png" -> ~res: == GetAppDataPath() == "C:/Users/l_chayka/game/Data"
-        Path GetAppDataPath();
         // write path for save, logs ets. "~doc:/logs/today.txt" -> ~doc: == GetPrefPath() == "C:/Users/l_chayka/Documents"
         Path GetPrefPath();
         // works only for OS file system and using current working directory
