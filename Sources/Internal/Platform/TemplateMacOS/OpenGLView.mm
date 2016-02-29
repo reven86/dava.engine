@@ -315,8 +315,27 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     }
 }
 
+// For explanation of mouseMoveSkipCounter see CursorMacOS.mm file, Cursor::SetMouseCaptureMode method
+extern int mouseMoveSkipCounter;
+
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
+    NSEventType type = [touch type];
+    switch (type)
+    {
+    case NSMouseMoved:
+    case NSLeftMouseDragged:
+    case NSRightMouseDragged:
+    case NSOtherMouseDragged:
+        if (mouseMoveSkipCounter > 0)
+        {
+            mouseMoveSkipCounter -= 1;
+            return;
+        }
+        break;
+    default:
+        break;
+    }
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
@@ -402,9 +421,17 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
+void OSXShowCursor();
+
 - (void)mouseExited:(NSEvent*)theEvent
 {
-    [NSCursor unhide];
+    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
+    if (captureMode != InputSystem::eMouseCaptureMode::PINING)
+    {
+        // This event is sometimes delivered when mouse pinning is on
+        // So do not show cursor while pinning is on
+        OSXShowCursor();
+    }
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent

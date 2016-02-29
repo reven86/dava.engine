@@ -305,7 +305,7 @@ public:
     UIScreenshoter* GetScreenshoter();
 
     void SetClearColor(const Color& clearColor);
-    void SetUseClearPass(bool use);
+    void SetUseClearPass(bool useClearPass);
 
     void SetDefaultTapCountSettings();
     void SetTapCountSettings(float32 time, int32 radius);
@@ -353,9 +353,6 @@ private:
     UIScreenTransition* nextScreenTransition;
 
     UIGeometricData baseGeometricData;
-
-    bool useClearPass = true;
-    Color clearColor;
 
     float32 doubleClickTime = 0.f;
     int32 doubleClickRadiusSquared = 0;
