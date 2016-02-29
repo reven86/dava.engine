@@ -1127,9 +1127,8 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
 
     Landscape* newLandscape = static_cast<Landscape*>(newObject);
 
-    NMaterial* material = landscapeMaterial->Clone();
-    newLandscape->SetMaterial(material);
-    SafeRelease(material);
+    RefPtr<NMaterial> material(landscapeMaterial->Clone());
+    newLandscape->SetMaterial(material.Get());
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
