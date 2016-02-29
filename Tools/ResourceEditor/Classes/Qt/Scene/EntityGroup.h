@@ -82,6 +82,8 @@ public:
     void Exclude(const EntityGroup&);
     void RebuildBoundingBox();
 
+    void FilterChildrenComponents();
+
     template <typename Predicate>
     inline void RemoveIf(Predicate predicate);
 

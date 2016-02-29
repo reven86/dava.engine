@@ -85,7 +85,15 @@ public:
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);
 
-private:
+    void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+
+    void Draw();
+
+    void ProcessCommand(const Command2* command, bool redo);
+
+protected:
     struct EntityToModify
     {
         DAVA::Entity* entity;
@@ -110,9 +118,7 @@ private:
         BAKE_CENTER_PIVOT
     };
 
-    void Draw();
-    void ProcessCommand(const Command2* command, bool redo);
-    void BeginModification(const EntityGroup& entities);
+    EntityGroup BeginModification(const EntityGroup& entities);
     void EndModification();
 
     void CloneBegin();

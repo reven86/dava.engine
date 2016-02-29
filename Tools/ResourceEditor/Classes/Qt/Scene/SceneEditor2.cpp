@@ -35,8 +35,7 @@
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
-#include "Commands2/RulerToolActions.h"
-#include "Commands2/LandscapeEditorDrawSystemActions.h"
+#include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
@@ -514,31 +513,59 @@ const RenderStats& SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
-void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
+void SceneEditor2::EnableToolsInstantly(int32 toolFlags)
 {
     if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
     {
-        Exec(new ActionDisableCustomColors(this, saveChanges));
+        EnableCustomColorsCommand(this, true).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
-        Exec(new ActionDisableHeightmapEditor(this));
+        EnableHeightmapEditorCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
-        Exec(new ActionDisableTilemaskEditor(this));
+        EnableTilemaskEditorCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_RULER)
     {
-        Exec(new ActionDisableRulerTool(this));
+        EnableRulerToolCommand(this).Redo();
     }
 
     if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
     {
-        Exec(new ActionDisableNotPassable(this));
+        EnableNotPassableCommand(this).Redo();
+    }
+}
+
+void SceneEditor2::DisableToolsInstantly(int32 toolFlags, bool saveChanges /*= true*/)
+{
+    if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+    {
+        EnableCustomColorsCommand(this, saveChanges).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+    {
+        EnableHeightmapEditorCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+    {
+        EnableTilemaskEditorCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_RULER)
+    {
+        EnableRulerToolCommand(this).Undo();
+    }
+
+    if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+    {
+        EnableNotPassableCommand(this).Undo();
     }
 }
 
