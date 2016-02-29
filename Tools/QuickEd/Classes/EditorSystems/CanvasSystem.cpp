@@ -28,7 +28,6 @@
 
 #include "CanvasSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "EditorSettings.h"
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"

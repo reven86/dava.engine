@@ -36,7 +36,6 @@ UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedC
 
 UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
 {
-    debug.clear();
     UIControl* next = FindNextSpecifiedControl(focusedControl, dir);
     if (next)
     {
@@ -59,7 +58,12 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focused
         parent = parent->GetParent();
     }
 
-    return FindNearestControl(focusedControl, root.Get(), dir);
+    if (root.Valid())
+    {
+        return FindNearestControl(focusedControl, root.Get(), dir);
+    }
+
+    return nullptr;
 }
 
 UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
@@ -110,7 +114,6 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
         DVASSERT(false);
         break;
     }
-    debug.push_back({ pos, true });
 
     if (CanNavigateToControl(focusedControl, control, dir))
     {
@@ -124,7 +127,6 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
         if (res)
         {
             Vector2 p = CalcNearestPos(pos, res, dir);
-            debug.push_back({ p, false });
             float32 distSq = (p - pos).SquareLength();
             if (bestControl == nullptr || distSq < bestDistSq)
             {

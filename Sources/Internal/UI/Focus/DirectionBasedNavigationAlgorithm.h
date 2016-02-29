@@ -48,14 +48,6 @@ public:
 
     UIControl* GetNextControl(UIControl* focusedControl, FocusHelpers::Direction dir);
 
-public:
-    struct Debug
-    {
-        Vector2 pos;
-        bool isSrc;
-    };
-    mutable Vector<Debug> debug;
-
 private:
     UIControl* FindFirstControl(UIControl* control) const;
     UIControl* FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const;
