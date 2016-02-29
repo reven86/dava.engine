@@ -630,9 +630,9 @@ uint32 NMaterial::FindConfigByName(const FastName& name) const
     for (size_t i = 0, sz = materialConfigs.size(); i < sz; ++i)
     {
         if (materialConfigs[i].name == name)
-            return i;
+            return static_cast<uint32>(i);
     }
-    return materialConfigs.size();
+    return static_cast<uint32>(materialConfigs.size());
 }
 
 void NMaterial::InsertConfig(uint32_t index, const MaterialConfig& config)
@@ -1088,7 +1088,7 @@ void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationC
     if (qualityGroup.IsValid())
         archive->SetString(NMaterialSerializationKey::QualityGroup, qualityGroup.c_str());
 
-    uint32 configsCount = materialConfigs.size();
+    uint32 configsCount = static_cast<uint32>(materialConfigs.size());
     if (configsCount == 1)
     {
         //preserve old storage format
