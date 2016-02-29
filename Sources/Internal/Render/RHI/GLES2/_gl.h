@@ -222,11 +222,18 @@ extern volatile DAVA::uint8 pre_call_registers[64];
 
 #define GL_CALL(expr) \
 { \
-    asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
-                     : "memory"); \
-    expr; \
-    asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
-                     : "q4", "q5", "q6", "q7"); \
+	if (_GLES2_ValidateNeonCalleeSavedRegisters) \
+	{ \
+		asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                         : "memory"); \
+        expr; \
+        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                         : "q4", "q5", "q6", "q7"); \
+	} \
+	else \
+	{ \
+		expr; \
+	}\
 }
 
 #else
@@ -263,5 +270,6 @@ extern HDC _GLES2_WindowDC;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
 extern bool _GLES2_UseUserProvidedIndices;
+extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);
