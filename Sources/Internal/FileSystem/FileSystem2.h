@@ -72,21 +72,16 @@ namespace DAVA
 
         bool IsEmpty() const;
         bool IsVirtual() const;
-        bool HasRootName() const;
+        bool IsAbsolute() const;
+        bool IsRelative() const;
+
         bool HasRootDirectory() const;
-        bool HasRootPath() const;
-        bool HasRelativePath() const;
         bool HasParentPath() const;
         bool HasFilename() const;
         bool HasStem() const;
         bool HasExtension() const;
-        bool IsAbsolute() const;
-        bool IsRelative() const;
 
-        Path GetRootName() const;
-        Path GetRootDirectory() const;
-        Path GetRootPath() const;
-        Path GetRelativePath() const;
+        Path GetRootDirectory() const; // C:/ or ~res:/ or / (Unix)
         Path GetParentPath() const;
         Path GetFilename() const;
         Path GetStem() const;
@@ -177,6 +172,7 @@ namespace DAVA
         Path GetAbsolutePath(const Path& p);
         // works only for OS file system and using current working directory
         Path GetRelativePath(const Path& p);
+        Path GetRelativePath(const Path& file, const Path& relativeDirectory);
         // works only for OS file system
         bool SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
 
