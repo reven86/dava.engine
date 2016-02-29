@@ -992,8 +992,7 @@ Last column is added as the position
 {								\
    GREAL len;							\
 								\
-   /* do nothing if off-diagonals are zero and diagonals are \
-                                            * equal */							\
+   /* do nothing if off-diagonals are zero and diagonals are equal */ \
    if ((m[0][1] != 0.0) || (m[1][0] != 0.0) || (m[0][0] != m[1][1])) { \
       p[0] = m[1][1] * v[0] - m[1][0] * v[1];			\
       p[1] = -m[0][1] * v[0] + m[0][0] * v[1];			\
@@ -1163,7 +1162,7 @@ Last column is added as the position
    for (__k = 0; __k < j; __k++) __jj[__k] = __k;				\
    for (__k = j; __k < 3; __k++) __jj[__k] = __k + 1;				\
 								\
-   (fac) = m[__ii[0]][__jj[0]] * (m[__ii[1]][__jj[1]] * m[__ii[2]][__jj[2]]  \
+   (fac) = m[__ii[0]][__jj[0]] * (m[__ii[1]][__jj[1]] * m[__ii[2]][__jj[2]] \
                                        - m[__ii[1]][__jj[2]] * m[__ii[2]][__jj[1]]); \
    (fac) -= m[__ii[0]][__jj[1]] * (m[__ii[1]][__jj[0]] * m[__ii[2]][__jj[2]] \
                                         - m[__ii[1]][__jj[2]] * m[__ii[2]][__jj[0]]);\
