@@ -321,7 +321,7 @@ void PackageSerializer::VisitControlSection(ControlPropertiesSection* property)
 
 void PackageSerializer::VisitComponentSection(ComponentPropertiesSection* property)
 {
-    if (property->HasChanges() || (property->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+    if (property->HasChanges())
     {
         String name = property->GetComponentName();
         if (UIComponent::IsMultiple(property->GetComponentType()))

@@ -108,7 +108,7 @@ void RulerToolPanel::InitUI()
 
 void RulerToolPanel::ConnectToSignals()
 {
-    connect(SceneSignals::Instance(), SIGNAL(RulerToolToggled(SceneEditor2*)),
+    connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
 
     connect(SceneSignals::Instance(), SIGNAL(RulerToolLengthChanged(SceneEditor2*, double, double)),

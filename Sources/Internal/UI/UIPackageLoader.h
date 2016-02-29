@@ -49,9 +49,10 @@ class UIPackageLoader : public AbstractUIPackageLoader
 {
 public:
     static const DAVA::int32 MIN_SUPPORTED_VERSION = 0;
-    static const DAVA::int32 CURRENT_VERSION = 1;
+    static const DAVA::int32 CURRENT_VERSION = 2;
 
     static const DAVA::int32 VERSION_WITH_LEGACY_ALIGNS = 0;
+    static const DAVA::int32 LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION = 1;
 
 public:
     UIPackageLoader();

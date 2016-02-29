@@ -51,7 +51,7 @@ extern void CloseKeyboard();
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "UI/UITextFieldWinUAP.h"
-#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldMacOS.h"
 #else
 #include "UI/UIStaticText.h"

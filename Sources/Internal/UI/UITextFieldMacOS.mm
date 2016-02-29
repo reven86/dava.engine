@@ -28,7 +28,7 @@
 
 #include "UI/UITextFieldMacOS.h"
 
-#ifdef __DAVAENGINE_MACOS__
+#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_TEXTFIELD
 
 #import <AppKit/NSBitmapImageRep.h>
 #import <AppKit/NSTextField.h>
@@ -317,15 +317,11 @@ static NSRect ConvertToNativeWindowRect(Rect rectSrc)
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
-    rect += coordSystem->GetPhysicalDrawOffset();
-    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
+    Rect rect = coordSystem->ConvertVirtualToInput(rectSrc);
 
-    // 2. map physical to window
-    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-    return controlRect;
+    NSView* openglView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+    rect.y = openglView.frame.size.height - (rect.y + rect.dy);
+    return NSMakeRect(rect.x, rect.y, rect.dx, rect.dy);
 }
 
 class MultilineField : public IField
@@ -691,6 +687,13 @@ public:
         // on mac os all NSTextField controls share same NSTextView as cell for
         // user input so better set cursor and curcor color every time
         SetTextColor(currentColor);
+
+        // HACK for (DF-9457) fix blue border visible on close app where was UITextField
+        NSCell* cell = [nsTextField cell];
+        if (cell != nullptr)
+        {
+            [cell setFocusRingType:NSFocusRingTypeNone];
+        }
     }
 
     void CloseKeyboard() override
@@ -848,13 +851,9 @@ public:
 
         currentFontSize = virtualFontSize;
 
-        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputX(virtualFontSize);
 
-        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        NSSize origSz = NSMakeSize(size, 0);
-        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
-
-        [nsTextField setFont:[NSFont systemFontOfSize:convSz.width]];
+        [nsTextField setFont:[NSFont systemFontOfSize:size]];
     }
 
     void SetTextAlign(DAVA::int32 align) override
@@ -1475,8 +1474,15 @@ doCommandBySelector:(SEL)commandSelector
             else
             {
                 DAVA::WideString oldText;
+                DAVA::WideString newText;
+
                 text->ctrl->GetText(oldText);
-                delegate->TextFieldOnTextChanged(davaCtrl, replacement, oldText);
+
+                const char* cstrNew = [inputStr cStringUsingEncoding:NSUTF8StringEncoding];
+                size_t cstrNewSize = std::strlen(cstrNew);
+                DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstrNew), cstrNewSize, newText);
+
+                delegate->TextFieldOnTextChanged(davaCtrl, newText, oldText);
             }
         }
     }
@@ -1715,4 +1721,4 @@ doCommandBySelector:(SEL)commandSelector
 
 @end
 
-#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_MACOS__ && !DISABLE_NATIVE_TEXTFIELD
