@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -42,6 +42,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "UI/UIScreenManager.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -347,16 +348,15 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
     if (GetScreenMode() != screenMode) // check if we try to switch mode
     {
         HWND hWindow = static_cast<HWND>(GetNativeView());
-
         switch (screenMode)
         {
         case DAVA::Core::eScreenMode::FULLSCREEN:
         {
             isFullscreen = true;
             currentMode = fullscreenMode;
-            GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
+            GetWindowPlacement(hWindow, &windowPositionBeforeFullscreen);
             SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
-            SetWindowPos(hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER);
+            ShowWindow(hWindow, SW_SHOWMAXIMIZED);
             break;
         }
         case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
@@ -367,10 +367,10 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         case DAVA::Core::eScreenMode::WINDOWED:
         {
             isFullscreen = false;
-            SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
             currentMode = windowedMode;
-            RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
-            SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
+            SetWindowPlacement(hWindow, &windowPositionBeforeFullscreen);
+            ShowWindow(hWindow, SW_SHOWDEFAULT);
             break;
         }
         default:
@@ -601,6 +601,30 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 #define WHEEL_DELTA 120
 #endif
 
+void CoreWin32Platform::OnWindowResized()
+{
+    if (!Renderer::IsInitialized())
+    {
+        return;
+    }
+    //     ResetRender();
+    float32 scale = DeviceInfo::GetScreenInfo().scale;
+    int32 physicalWidth = static_cast<int32>(currentMode.width * scale);
+    int32 physicalHeight = static_cast<int32>(currentMode.height * scale);
+
+    rhi::ResetParam params;
+    params.width = physicalWidth;
+    params.height = physicalHeight;
+    Renderer::Reset(params);
+    //     ReInitCoordinatesSystem();
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+    virtSystem->ScreenSizeChanged();
+    UIScreenManager::Instance()->ScreenSizeChanged();
+    UIControlSystem::Instance()->ScreenSizeChanged();
+}
+
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
@@ -609,6 +633,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     switch (message)
     {
     case WM_ERASEBKGND:
+        core->OnWindowResized();
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
     case WM_SYSKEYUP:
     // no break
@@ -644,11 +669,38 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     {
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
+
         if ((1 << 24) & extendedKeyInfo)
         {
             systemKeyCode |= 0x100;
         }
         uint32 scanCode = (extendedKeyInfo & 0xFF0000) >> 16;
+
+        //         static bool FullScreen = false;
+        //         static WINDOWPLACEMENT wpc;
+        //         Logger::Info("!!!!! wParam = %d scanCode = %d lParam = %d", wParam, scanCode, (int32)lParam);
+        //
+        //         if ((wParam == VK_RETURN) && static_cast<bool>(GetKeyState(VK_MENU) >> 15))
+        //         {
+        //             if (!FullScreen)//Из оконного во весь экран
+        //             {
+        //                 GetWindowPlacement(hWnd, &wpc);//Сохраняем параметры оконного режима
+        //                 SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);//Устанавливаем новые стили
+        //                 SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_TOPMOST);
+        //                 ShowWindow(hWnd, SW_SHOWMAXIMIZED);//Окно во весь экран
+        //                 FullScreen = true;
+        //             }
+        //             else//Из всего эранна в оконное
+        //             {
+        //                 SetWindowLong(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);//Устанавливаем стили окнного режима
+        //                 SetWindowLong(hWnd, GWL_EXSTYLE, 0L);
+        //                 SetWindowPlacement(hWnd, &wpc);//Загружаем парметры предыдущего оконного режима
+        //                 ShowWindow(hWnd, SW_SHOWDEFAULT);//Показываем обычное окно
+        //                 FullScreen = false;
+        //             }
+        //             return DefWindowProc(hWnd, 0, 0, 0);
+        //         }
+
         if (VK_SHIFT == systemKeyCode && scanCode == 0x36) // is right shift key
         {
             systemKeyCode |= 0x100;

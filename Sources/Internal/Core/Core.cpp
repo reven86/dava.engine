@@ -830,6 +830,24 @@ bool Core::IsConsoleMode()
     return isConsoleMode;
 }
 
+void Core::OnSizeChanged(float32 width, float32 height)
+{
+    float32 scale = DeviceInfo::GetScreenInfo().scale;
+    float32 physicalWidth = width * scale, physicalHeight = height * scale;
+    //reset render
+    rhi::ResetParam params;
+    params.width = physicalWidth;
+    params.height = physicalHeight;
+    Renderer::Reset(params);
+    // update system
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(width, height);
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+    virtSystem->ScreenSizeChanged();
+    UIScreenManager::Instance()->ScreenSizeChanged();
+    UIControlSystem::Instance()->ScreenSizeChanged();
+}
+
 void* Core::GetNativeView() const
 {
     return nativeView;

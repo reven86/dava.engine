@@ -134,6 +134,7 @@ public:
 
     const Vector<String>& GetCommandLine();
     bool IsConsoleMode();
+    void OnSizeChanged(float32 width, float32 height);
 
 public:
     void SetOptions(KeyedArchive* archiveOfOptions);
