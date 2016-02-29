@@ -27,36 +27,16 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEMACTIONS__
-#define __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEMACTIONS__
+#ifndef __PAINT_HEIGHT_DELTA_H__
+#define __PAINT_HEIGHT_DELTA_H__
 
-#include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
-class SceneEditor2;
-
-class ActionEnableNotPassable : public CommandAction
+namespace PaintHeightDelta
 {
-public:
-    ActionEnableNotPassable(SceneEditor2* forSceneEditor);
+void Execute(const DAVA::FilePath& targetImagePath, DAVA::float32 refDelta, DAVA::Heightmap* srcHeightmap,
+             DAVA::uint32 targetImageWidth, DAVA::uint32 targetImageHeight, DAVA::float32 targetTerrainHeight,
+             const DAVA::Vector<DAVA::Color>& pixelColors);
+}
 
-protected:
-    SceneEditor2* sceneEditor;
-
-    virtual void Redo();
-};
-
-class ActionDisableNotPassable : public CommandAction
-{
-public:
-    ActionDisableNotPassable(SceneEditor2* forSceneEditor);
-
-protected:
-    SceneEditor2* sceneEditor;
-
-    virtual void Redo();
-};
-
-#endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEMACTIONS__) */
+#endif
