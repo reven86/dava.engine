@@ -147,5 +147,4 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     RenderSystem2D::Instance()->EndRenderTargetPass();
     // End render
 }
-
 };

@@ -1600,8 +1600,7 @@ void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMateria
 
 void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
-	
-	Rect destRect(_dstRect);
+    Rect destRect(_dstRect);
     const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
     if (destRect.dx < 0.f || destRect.dy < 0.f)
     {

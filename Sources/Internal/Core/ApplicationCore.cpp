@@ -88,8 +88,7 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
-
-	TIME_PROFILE("ApplicationCore::Draw");
+    TIME_PROFILE("ApplicationCore::Draw");
     RenderSystem2D::Instance()->BeginFrame();
 
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
