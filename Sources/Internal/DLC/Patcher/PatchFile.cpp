@@ -777,7 +777,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             if (origSize != curInfo.origSize || origCRC != curInfo.origCRC)
                             {
                                 // source crc differ for expected
-                                lastError = ERROR_ORIG_CRC;
+                                lastError = ERROR_ORIG_BUFFER_CRC;
                                 ret = false;
                             }
                         }
@@ -891,7 +891,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                 uint32 origCRC = CRC32::ForFile(origPath);
                 if (origCRC != curInfo.origCRC)
                 {
-                    lastError = ERROR_ORIG_CRC;
+                    lastError = ERROR_ORIG_FILE_CRC;
                     ret = false;
                 }
             }

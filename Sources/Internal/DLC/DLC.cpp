@@ -821,6 +821,7 @@ void DLC::StepPatchFinish()
         PostEvent(EVENT_PATCH_OK);
         break;
 
+    case PatchFileReader::ERROR_ORIG_READ:
     case PatchFileReader::ERROR_CANT_READ:
         PostError(DE_READ_ERROR);
         break;
