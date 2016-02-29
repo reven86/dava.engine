@@ -32,7 +32,7 @@ namespace DAVA
 {
     /// Path class for manipulation file name
     /// 1. all path in unicode
-    /// 2. no changes for filesystem, only Path object
+    /// 2. no changes for file system, only Path object
     /// examples:
     ///     ~res:/folder1/file1.txt
     ///     ~doc:/folder2/file2.txt
@@ -41,8 +41,8 @@ namespace DAVA
     ///     Data/files/config.yaml
     /// Grammar for portable generic path strings (from BOOST docs with modifications)
     /// The grammar is specified in extended BNF, with terminal symbols in quotes:
-    ///     path ::= {[uri] | [root]} [relative-path]  // an empty path is valid
-    ///     uri  ::= ~res:/ | ~doc:/
+    ///     path ::= {[virt] | [root]} [relative-path]  // an empty path is valid
+    ///     virt  ::= ~res:/ | ~doc:/
     ///     root ::= [root-name] [root-directory]
     ///     root-directory ::= separator
     ///     relative-path ::= path-element { separator path-element } [separator]
@@ -64,8 +64,8 @@ namespace DAVA
 
         Path& operator=(const Path&);
         Path& operator=(Path&&);
-        Path operator+=(const Path&);
-        Path operator+(const Path&);
+        Path& operator+=(const Path&);
+        Path operator+(const Path&) const;
 
         bool operator==(const Path& path) const;
         bool operator!=(const Path& path) const;
@@ -88,10 +88,10 @@ namespace DAVA
         Path GetExtension() const;
 
         void Clear();
-        Path& RemoveFilename();
-        Path& ReplaceExtension(const Path& newExtension = Path());
+        Path RemoveFilename() const;
+        Path ReplaceExtension(const Path& newExtension = Path()) const;
 
-        String ToStringUtf8() const;
+        const String& ToStringUtf8() const;
         WideString ToWideString() const;
         size_t Hash() const;
     private:
@@ -153,15 +153,15 @@ namespace DAVA
         ~FileSystem2();
 
         String ReadFileContentAsString(const Path& pathname);
-        // open or create stream from mounted pakfile or OS file sysem
+        // open or create stream from mounted pakfile or OS file system
         // or wrapper around FILE* or android stream or pakfile stream
         std::unique_ptr<InputStream> OpenFile(const Path&);
         std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate);
-        // works on OS file sysem
+        // works on OS file system
         void DeleteFile(const Path&);
         // works on OS file sysem
         void DeleteDirectory(const Path& path, bool isRecursive);
-        // works on OS file sysem
+        // works on OS file system
         void CreateDirectory(const Path& path, bool isRecursive);
         // works on OS file sysem
         Path GetCurrentWorkingDirectory();
