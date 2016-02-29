@@ -361,7 +361,7 @@ bool IsMemoryAddressAccessible(void* blockStart)
 // verify whether memory block is accessible (to prevent segmentation fault) to make check if block is
 // tracked by memory manager
 
-// Such behavior for now is observed only on OS X
+// Such behavior for now is observed only on OS X and iOS
 #if defined(__DAVAENGINE_MACOS__)
     mach_vm_address_t addr = reinterpret_cast<mach_vm_address_t>(blockStart);
     mach_vm_size_t size = 0;
@@ -377,6 +377,26 @@ bool IsMemoryAddressAccessible(void* blockStart)
                                           &obj);
     if (0 == status &&
         addr <= reinterpret_cast<mach_vm_address_t>(blockStart) &&
+        (info.protection & (VM_PROT_READ | VM_PROT_WRITE)) == (VM_PROT_READ | VM_PROT_WRITE))
+    {
+        return true;
+    }
+    return false;
+#elif defined(__DAVAENGINE_IPHONE__)
+    vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
+    vm_size_t size = 0;
+    vm_region_basic_info_data_t info;
+    mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT;
+    mach_port_t obj;
+    kern_return_t status = vm_region(mach_task_self(),
+                                     &addr,
+                                     &size,
+                                     VM_REGION_BASIC_INFO,
+                                     reinterpret_cast<vm_region_info_t>(&info),
+                                     &count,
+                                     &obj);
+    if (0 == status &&
+        addr <= reinterpret_cast<vm_address_t>(blockStart) &&
         (info.protection & (VM_PROT_READ | VM_PROT_WRITE)) == (VM_PROT_READ | VM_PROT_WRITE))
     {
         return true;
