@@ -96,7 +96,7 @@ DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
     return result;
 }
 
-void ControlMapper::keyPressEvent(QKeyEvent *e)
+void ControlMapper::keyPressEvent(QKeyEvent* e)
 {
     using namespace DAVA;   
 #ifdef Q_OS_WIN
