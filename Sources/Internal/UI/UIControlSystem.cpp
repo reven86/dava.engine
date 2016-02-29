@@ -49,7 +49,6 @@ namespace DAVA
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
 UIControlSystem::UIControlSystem()
-    : clearColor(Color::Clear)
 {
     baseGeometricData.position = Vector2(0, 0);
     baseGeometricData.size = Vector2(0, 0);

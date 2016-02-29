@@ -337,8 +337,6 @@ private:
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;
 
-    Color clearColor;
-    bool useClearPass = true;
     bool removeCurrentScreen = false;
 };
 };
