@@ -63,8 +63,8 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     Path userSaveDir = fs.GetPrefPath();
 
     {
-        OSFileDevice saveDir(userSaveDir);
-        saveDir.CreateDirectory(Path("Dava/TestDir/Saves"), true);
+        OSFileDevice saveDirDevice(userSaveDir);
+        saveDirDevice.CreateDirectory(Path("Dava/TestDir/Saves"), true);
     }
     fs.Mount("~doc:/", new OSFileDevice(userSaveDir + Path("Dava/TestDir/Saves")));
 
@@ -94,6 +94,12 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
 
     uint64 fileSize = fs.GetFileSize(path);
     Logger::Info("file: %s has size: %ld", path.ToStringUtf8().c_str(), fileSize);
+
+    std::unique_ptr<InputStream> file = fs.OpenFile(Path("~res:/TestData/MovieTest/bunny.m4v"));
+    if (fileSize == file->GetSize())
+    {
+        Logger::Info("file size match!");
+    }
 }
 
 void FileSystem2Test::LoadResources()
