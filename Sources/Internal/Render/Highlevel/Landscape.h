@@ -316,7 +316,7 @@ protected:
         Vector2 position;
         Vector2 gluDir;
         Vector4 edgeMask;
-        Vector4 cornerMask;
+        //Vector4 cornerMask;
     };
 
     struct InstanceDataNoMorph
@@ -335,7 +335,7 @@ protected:
 
         Vector4 nearPatchLodOffset; // per edge: left, right, bottom, top
         Vector4 nearPatchMorph;
-        Vector4 cornerLodOffsetMorph;
+        //Vector4 cornerLodOffsetMorph;
 
         float32 patchLod;
         float32 patchMorph;
@@ -353,7 +353,7 @@ protected:
     Texture* CreateHeightTexture(Heightmap* heightmap);
 
     void DrawLandscapeInstancing();
-    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, float32 patchMorph, const Vector4& nearLevel, const Vector4& nearMorph, const Vector4& cornerLevel, const Vector4& cornerMorph);
+    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, float32 patchMorph, const Vector4& nearLevel, const Vector4& nearMorph /*, const Vector4& cornerLevel, const Vector4& cornerMorph */);
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
