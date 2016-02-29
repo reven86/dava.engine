@@ -128,7 +128,7 @@ VPROG_BEGIN
                 VP_OUT(uv1) = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
             #endif
         #else
-            VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
+            VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.y-inTexCoord0.x) * normal1Scale + normal1ShiftPerSecond * globalTime;
         #endif
         
         #if (SHADING == SHADING_PERVERTEX)
