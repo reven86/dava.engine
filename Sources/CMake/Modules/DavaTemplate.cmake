@@ -61,6 +61,21 @@ elseif( ANDROID_DATA )
 
 endif()
 
+if ( STEAM_SDK_FOUND )
+    include_directories( ${STEAM_SDK_HEADERS} )
+    list ( APPEND LIBRARIES ${STEAM_SDK_STATIC_LIBRARIES} )
+
+    if ( WIN32 )
+        list ( APPEND ADDITIONAL_DLL_FILES ${STEAM_SDK_DYNAMIC_LIBRARIES} )
+        list( APPEND DAVA_BINARY_WIN32_DIR ${STEAM_SDK_DYNAMIC_LIBRARIES_PATH} )
+    endif ()
+
+    if ( MACOS )
+       list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
+    endif ()
+
+endif ()
+
 if( ANDROID )
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )
@@ -591,7 +606,7 @@ if( DEPLOY )
 
         endif()
 
-        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll ${ADDITIONAL_DLL_FILES})
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 

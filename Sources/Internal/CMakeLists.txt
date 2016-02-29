@@ -6,6 +6,11 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/
 
 include( CMake-common )
 
+if ( STEAM_SDK_FOUND )
+    include_directories( ${STEAM_SDK_HEADERS} )
+    add_definitions ( -DUSE_STEAM )
+endif ()
+
 set ( FRAMEWORK_DEFINITIONS 
 -D_UNICODE 
 -DUNICODE 

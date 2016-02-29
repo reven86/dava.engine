@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DATA_STORAGE_STEAM
-#define DATA_STORAGE_STEAM
+#ifndef DATA_STORAGE_STEAM_H
+#define DATA_STORAGE_STEAM_H
 
 #include "DataStorage/DataStorage.h"
 
@@ -38,7 +38,6 @@
 namespace DAVA
 {
 
-#define USE_STEAM
 #if defined(USE_STEAM)
 
 class DynamicMemoryFile;

@@ -44,7 +44,6 @@ DAVA_TESTCLASS (DataVaultTest)
         storage->SetStringValue("TestStringKey", "Test");
         storage->Push();
 
-#define USE_STEAM
 #if !defined(__DAVAENGINE_WIN32__) || defined(USE_STEAM)
         String ret = storage->GetStringValue("TestStringKey");
         TEST_VERIFY("Test" == ret);
