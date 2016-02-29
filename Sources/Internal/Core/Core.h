@@ -248,7 +248,7 @@ public:
 
     virtual void GoBackground(bool isLock);
     virtual void GoForeground();
-    inline bool IsFocus();
+    inline bool IsFocused();
     virtual void FocusLost();
     virtual void FocusReceived();
 
@@ -292,7 +292,7 @@ inline bool Core::IsActive()
     return isActive;
 }
 
-inline bool Core::IsFocus()
+inline bool Core::IsFocused()
 {
     return isFocused;
 }

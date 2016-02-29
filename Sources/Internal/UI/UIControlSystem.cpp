@@ -406,7 +406,7 @@ void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetCont
 
 void UIControlSystem::OnInput(UIEvent* newEvent)
 {
-    if (!Core::Instance()->IsFocus())
+    if (!Core::Instance()->IsFocused())
     {
         return;
     }
