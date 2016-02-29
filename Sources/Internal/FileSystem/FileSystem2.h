@@ -104,25 +104,25 @@ namespace DAVA
         String pathname;
     };
 
-    // exceptions? or -1 == error, >= 0 - size of last read
+    // exceptions in case of error
     class InputStream
     {
     public:
         virtual ~InputStream();
-        virtual int64 Read(void* data, uint64 size) = 0;
-        virtual int64 Seek(uint64 position) = 0;
-        virtual int64 Tell() = 0;
-        virtual int64 GetSize() = 0;
+        virtual uint64 Read(void* data, uint64 size) = 0;
+        virtual void Seek(uint64 position) = 0;
+        virtual uint64 Tell() = 0;
+        virtual uint64 GetSize() = 0;
     };
 
     class OutputStream
     {
     public:
         virtual ~OutputStream();
-        virtual int64 Write(void* data, int64 size) = 0;
-        virtual int64 Seek(int64 position) = 0;
-        virtual int64 Tell() = 0;
-        virtual int64 GetSize() = 0;
+        virtual void Write(void* data, int64 size) = 0;
+        virtual void Seek(uint64 position) = 0;
+        virtual uint64 Tell() = 0;
+        virtual uint64 GetSize() = 0;
     };
 
     class FileDevice
@@ -136,26 +136,20 @@ namespace DAVA
             READ_WRITE
         };
         virtual ~FileDevice();
-        virtual void SetName(const String&) = 0;
-        virtual const String& GetName() = 0;
         virtual int32 GetPriority() = 0;
-        virtual void SetPriority(int32 p) = 0;
         virtual State GetState() = 0;
         virtual bool Exist(const Path&, uint64* fileSize = nullptr) = 0;
         virtual bool IsFile(const Path&) = 0;
         virtual bool IsDirectory(const Path&) = 0;
-        virtual Vector<Path> GetFileList(const Path& base = Path(), size_t depth = 0) = 0;
+        virtual Vector<Path> EnumerateFiles(const Path& base = Path(), size_t depth = 0) = 0;
         virtual std::unique_ptr<InputStream> OpenFile(const Path&) = 0;
-        virtual std::unique_ptr<OutputStream> CreateFile(const Path&) = 0;
+        virtual std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) = 0;
         virtual void DeleteFile(const Path&) = 0;
-        virtual void CreateDirectory(const Path&) = 0;
+        virtual void CreateDirectory(const Path&, bool isRecursive) = 0;
         virtual void DeleteDirectory(const Path&, bool isRecursive) = 0;
     };
 
-    // 1. thread safe for pakfile too
-    // 2. use exception to give client code ability to understand why something not working
-    // 3. do we need priority for pakfiles and os file system
-    // 4. TODO make sure function names not collide with windows.h and cocoa framework ets...
+    // use exception to give client code ability to understand why something not working
     class FileSystem2Impl;
 
     class FileSystem2
