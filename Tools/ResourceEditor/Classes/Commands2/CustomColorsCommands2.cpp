@@ -71,9 +71,15 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image)
     ScopedPtr<Texture> fboTexture(Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
 
     RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.target = customColorsProxy->GetTexture();
-    desc.shouldClear = false;
-    desc.shouldTransformVirtualToPhysical = false;
+
+    Texture* proxy = customColorsProxy->GetTexture();
+    desc.colorAttachment = proxy->handle;
+    desc.depthAttachment = proxy->handleDepthStencil;
+    desc.width = proxy->GetWidth();
+    desc.height = proxy->GetHeight();
+    desc.clearTarget = false;
+    desc.transformVirtualToPhysical = false;
+
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(fboTexture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();

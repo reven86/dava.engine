@@ -86,7 +86,7 @@ void StaticOcclusionTool::ProcessInternal()
             while (scene->staticOcclusionBuildSystem->IsInBuild())
             {
                 Renderer::BeginFrame();
-                RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
+                RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
                 Renderer::EndFrame();
             }
