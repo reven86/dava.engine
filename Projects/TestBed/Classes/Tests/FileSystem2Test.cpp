@@ -34,17 +34,26 @@ FileSystem2Test::FileSystem2Test()
 
 }
 
+
+
 void FileSystem2Test::StartTest(BaseObject*, void*, void*)
 {
     using namespace DAVA;
+
+    FileSystem2 fs;
+
+    fs.Mount("~res:/", new OSFileDevice(Path("Data")));
+    fs.Mount("~web:/", new HTTPFileDevice("http://nicegirls.com/images"));
+    fs.Mount("~res:/", new PakfileDevice(Path("pakfile.tanks1.pak")));
+
     Path path("~res:/TestData");
 
-    if (FileSystem2::IsFile(path))
+    if (fs.IsFile(path))
     {
         Logger::Info("path:%s is file", path.ToStringUtf8().c_str());
     }
 
-    if (FileSystem2::IsDirectory(path))
+    if (fs.IsDirectory(path))
     {
         Logger::Info("path:%s is directory", path.ToStringUtf8().c_str());
     }
@@ -56,12 +65,12 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     Path fileName("bunny.m4v");
     path += fileName;
 
-    if (FileSystem2::IsFile(path))
+    if (fs.IsFile(path))
     {
         Logger::Info("path:%s is file", path.ToStringUtf8().c_str());
     }
 
-    uint64 fileSize = FileSystem2::GetFileSize(path);
+    uint64 fileSize = fs.GetFileSize(path);
     Logger::Info("file: %s has size: %ld", path.ToStringUtf8().c_str(), fileSize);
 }
 
