@@ -216,7 +216,7 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor_EXT;
 
 #else
 
-#ifdef __DAVAENGINE_ARM_7__
+#if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
 
 extern volatile DAVA::uint8 pre_call_registers[64];
 
