@@ -1576,7 +1576,7 @@ void MaterialEditor::UpdateTabs()
             ui->tabbar->addTab(QString(material->GetConfigName(i).c_str()));
         }
 
-        ui->tabbar->setCurrentIndex(material->GetCurrConfigIndex());
+        ui->tabbar->setCurrentIndex(material->GetCurrentConfigIndex());
         ui->tabbar->setTabsClosable(material->GetConfigCount() > 1);
     }
 
@@ -1606,7 +1606,7 @@ void MaterialEditor::onCreateConfig(int index)
     MaterialConfig newConfig;
     if (index >= 0)
     {
-        newConfig = const_cast<const DAVA::NMaterial*>(material)->GetConfig(static_cast<DAVA::uint32>(index));
+        newConfig = material->GetConfig(static_cast<DAVA::uint32>(index));
         newConfig.name = DAVA::FastName(DAVA::String("Copy of ") + newConfig.name.c_str());
     }
     else

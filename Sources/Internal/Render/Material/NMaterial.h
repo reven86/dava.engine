@@ -72,18 +72,18 @@ struct MaterialTextureInfo
 
 struct MaterialConfig
 {
+    MaterialConfig();
+    ~MaterialConfig();
+    MaterialConfig& operator=(const MaterialConfig& config);
+    MaterialConfig(const MaterialConfig& config);
+
+    void Clear();
+
     FastName name;
     FastName fxName;
     HashMap<FastName, NMaterialProperty*> localProperties;
     HashMap<FastName, MaterialTextureInfo*> localTextures;
     HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
-
-    MaterialConfig& operator=(const MaterialConfig& config);
-    MaterialConfig(const MaterialConfig& config);
-
-    void Clear();
-    MaterialConfig();
-    ~MaterialConfig();
 };
 
 class RenderVariantInstance
@@ -186,19 +186,20 @@ public:
 
     //Configs managment
     uint32 GetConfigCount() const;
-    const DAVA::FastName& GetCurrConfigName() const;
-    void SetCurrConfigName(const DAVA::FastName& newName);
-    inline uint32 GetCurrConfigIndex() const;
-    void SetCurrConfigIndex(uint32 index);
+    const MaterialConfig& GetConfig(uint32 index) const;
+    void InsertConfig(uint32 index, const MaterialConfig& config);
+    void RemoveConfig(uint32 index);
+
+    uint32 GetCurrentConfigIndex() const;
+    void SetCurrentConfigIndex(uint32 index);
+
     const FastName& GetConfigName(uint32 index) const;
     void SetConfigName(uint32 index, const FastName& name);
-
-    void ReleaseConfigTextures(uint32 configId);
-
     uint32 FindConfigByName(const FastName& name) const; //return size if config not found!
-    inline const MaterialConfig& GetConfig(uint32 index) const;
-    void InsertConfig(uint32_t index, const MaterialConfig& config);
-    void RemoveConfig(uint32 index);
+    const DAVA::FastName& GetCurrentConfigName() const;
+    void SetCurrentConfigName(const DAVA::FastName& newName);
+
+    void ReleaseConfigTextures(uint32 index);
 
     void BindParams(rhi::Packet& target);
 
@@ -234,9 +235,9 @@ private:
     void AddChildMaterial(NMaterial* material);
     void RemoveChildMaterial(NMaterial* material);
 
-    inline const MaterialConfig& GetCurrentConfig() const;
-    inline MaterialConfig& GetCurrentConfig();
-    inline MaterialConfig& GetConfig(uint32 index);
+    const MaterialConfig& GetCurrentConfig() const;
+    MaterialConfig& GetMutableCurrentConfig();
+    MaterialConfig& GetMutableConfig(uint32 index);
 
 private:
     // config time
@@ -249,7 +250,7 @@ private:
     NMaterial* parent = nullptr;
     Vector<NMaterial*> children;
 
-    uint32 currConfig = 0;
+    uint32 currentConfig = 0;
 
     FastName activeVariantName;
     RenderVariantInstance* activeVariantInstance = nullptr;
@@ -267,8 +268,8 @@ private:
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
                          PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
-                         PROPERTY("configName", "Config name", GetCurrConfigName, SetCurrConfigName, I_VIEW | I_EDIT)
-                         PROPERTY("configId", "Current config", GetCurrConfigIndex, SetCurrConfigIndex, I_VIEW | I_EDIT)
+                         PROPERTY("configName", "Config name", GetCurrentConfigName, SetCurrentConfigName, I_VIEW | I_EDIT)
+                         PROPERTY("configId", "Current config", GetCurrentConfigIndex, SetCurrentConfigIndex, I_VIEW | I_EDIT)
                          PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
                          PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
                          DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
@@ -303,28 +304,28 @@ uint32 NMaterial::GetSortingKey() const
     return sortingKey;
 }
 
-uint32 NMaterial::GetCurrConfigIndex() const
+inline uint32 NMaterial::GetCurrentConfigIndex() const
 {
-    return currConfig;
+    return currentConfig;
 }
 
-const MaterialConfig& NMaterial::GetCurrentConfig() const
+inline const MaterialConfig& NMaterial::GetCurrentConfig() const
 {
-    return GetConfig(GetCurrConfigIndex());
+    return GetConfig(GetCurrentConfigIndex());
 }
 
-MaterialConfig& NMaterial::GetCurrentConfig()
+inline MaterialConfig& NMaterial::GetMutableCurrentConfig()
 {
-    return GetConfig(GetCurrConfigIndex());
+    return GetMutableConfig(GetCurrentConfigIndex());
 }
 
-const MaterialConfig& NMaterial::GetConfig(uint32 index) const
+inline const MaterialConfig& NMaterial::GetConfig(uint32 index) const
 {
     DVASSERT(index < materialConfigs.size());
     return materialConfigs[index];
 }
 
-MaterialConfig& NMaterial::GetConfig(uint32 index)
+inline MaterialConfig& NMaterial::GetMutableConfig(uint32 index)
 {
     DVASSERT(index < materialConfigs.size());
     return materialConfigs[index];

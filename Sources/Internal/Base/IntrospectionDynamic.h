@@ -46,19 +46,19 @@ public:
     virtual const InspMemberDynamic* Dynamic() const override;
     InspInfoDynamic* GetDynamicInfo() const;
 
-    inline void* Pointer(void* object) const override;
-    inline void* Data(void* object) const override;
+    void* Pointer(void* object) const override;
+    void* Data(void* object) const override;
 
 protected:
     InspInfoDynamic* dynamicInfo;
 };
 
-void* InspMemberDynamic::Pointer(void* object) const
+inline void* InspMemberDynamic::Pointer(void* object) const
 {
     return nullptr;
 }
 
-void* InspMemberDynamic::Data(void* object) const
+inline void* InspMemberDynamic::Data(void* object) const
 {
     return nullptr;
 }
