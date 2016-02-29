@@ -31,7 +31,7 @@
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
 #include "UI/IWebViewControl.h"
 
@@ -84,5 +84,5 @@ private:
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN_UAP__ && !__DISABLE_NATIVE_WEBVIEW__
+#endif // __DAVAENGINE_WIN_UAP__ && !DISABLE_NATIVE_WEBVIEW
 #endif // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
