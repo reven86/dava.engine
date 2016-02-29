@@ -36,10 +36,13 @@
 #if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_APPLE__)
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#if defined(__DAVAENGINE_MACOS__)
+#include <mach/mach_vm.h>
+#endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <unwind.h>
 #include <dlfcn.h>
@@ -351,13 +354,48 @@ void* MemoryManager::Reallocate(void* ptr, size_t newSize)
     }
 }
 
+bool IsMemoryAddressAccessible(void* blockStart)
+{
+// Sometimes memory allocations bypass memory manager, but memory freeing goes through memory manager.
+// System can allocate such a memory block at the very beginning of heap, and memory manager should
+// verify whether memory block is accessible (to prevent segmentation fault) to make check if block is
+// tracked by memory manager
+
+// Such behavior for now is observed only on OS X
+#if defined(__DAVAENGINE_MACOS__)
+    mach_vm_address_t addr = reinterpret_cast<mach_vm_address_t>(blockStart);
+    mach_vm_size_t size = 0;
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT_64;
+    mach_port_t obj;
+    kern_return_t status = mach_vm_region(mach_task_self(),
+                                          &addr,
+                                          &size,
+                                          VM_REGION_BASIC_INFO_64,
+                                          reinterpret_cast<vm_region_info_t>(&info),
+                                          &count,
+                                          &obj);
+    if (0 == status &&
+        addr <= reinterpret_cast<mach_vm_address_t>(blockStart) &&
+        (info.protection & (VM_PROT_READ | VM_PROT_WRITE)) == (VM_PROT_READ | VM_PROT_WRITE))
+    {
+        return true;
+    }
+    return false;
+#else
+    return true;
+#endif
+}
+
 void MemoryManager::Deallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
         void* ptrToFree = nullptr;
         MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
-        if (BLOCK_MARK == block->mark)
+
+        bool isAccessible = IsMemoryAddressAccessible(block);
+        if (isAccessible && BLOCK_MARK == block->mark)
         {
             {
                 LockType lock(allocMutex);
