@@ -71,7 +71,7 @@ namespace DAVA
         bool operator!=(const Path& path) const;
 
         bool IsEmpty() const;
-        bool HasURI() const;
+        bool IsVirtual() const;
         bool HasRootName() const;
         bool HasRootDirectory() const;
         bool HasRootPath() const;
@@ -83,7 +83,6 @@ namespace DAVA
         bool IsAbsolute() const;
         bool IsRelative() const;
 
-        Path GetURI() const;
         Path GetRootName() const;
         Path GetRootDirectory() const;
         Path GetRootPath() const;
@@ -193,8 +192,8 @@ namespace DAVA
         bool MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting);
         // copy directory from FileDevice to OS or from OS to OS
         bool CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting);
-        // group = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
-        void Mount(const String& group, std::unique_ptr<FileDevice>);
+        // virtualName = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
+        void Mount(const String& virtualName, std::unique_ptr<FileDevice>);
         Vector<std::unique_ptr<FileDevice>>& GetMountedDevices();
         // works on FileDevice or OS
         uint64 GetFileSize(const Path& path);
@@ -205,7 +204,7 @@ namespace DAVA
         FileDevice::State AndroidGetExternalStorageState();
     private:
         std::unique_ptr<FileSystem2Impl> impl;
-    } // end namespace FileSystemV2
+    };
 } // end namespace DAVA
 
 

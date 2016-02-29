@@ -62,10 +62,7 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     fs.Mount("~res:/", new PakfileDevice(Path("pakfile.tanks1.pak")));
     Path userSaveDir = fs.GetPrefPath();
 
-    {
-        OSFileDevice saveDirDevice(userSaveDir);
-        saveDirDevice.CreateDirectory(Path("Dava/TestDir/Saves"), true);
-    }
+    fs.CreateDirectory(userSaveDir + Path("Dava/TestDir/Saves"), true);
     fs.Mount("~doc:/", new OSFileDevice(userSaveDir + Path("Dava/TestDir/Saves")));
 
     Path path("~res:/TestData");
