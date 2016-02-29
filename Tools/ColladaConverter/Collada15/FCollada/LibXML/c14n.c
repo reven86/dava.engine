@@ -113,8 +113,8 @@ static xmlChar* xmlC11NNormalizeString(const xmlChar* input,
     xmlC11NNormalizeString((a), XMLC14N_NORMALIZE_TEXT)
 
 #define xmlC14NIsVisible(ctx, node, parent) \
-     (((ctx)->is_visible_callback != NULL) ?                                 \
-     (ctx)->is_visible_callback((ctx)->user_data,                           \
+     (((ctx)->is_visible_callback != NULL) ? \
+     (ctx)->is_visible_callback((ctx)->user_data, \
                                 (xmlNodePtr)(node), (xmlNodePtr)(parent)) : \
      1)
 

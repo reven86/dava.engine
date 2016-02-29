@@ -63,7 +63,7 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity* entity, btCollisionWorld* w
             landTransform.setIdentity();
             landTransform.setOrigin(btVector3(0, 0, landHeight / 2.0f));
 
-            btTerrain = new btHeightfieldTerrainShape(heightmap->Size(), heightmap->Size(), &btHMap.front(), landScaleH, 0, landHeight, 2, PHY_FLOAT, true);
+            btTerrain = DAVA::CreateObjectAligned<btHeightfieldTerrainShape, 16>(heightmap->Size(), heightmap->Size(), &btHMap.front(), landScaleH, 0, landHeight, 2, PHY_FLOAT, true);
             btTerrain->setLocalScaling(btVector3(landScaleW, landScaleW, 1.0f));
             btObject = new btCollisionObject();
             btObject->setWorldTransform(landTransform);
@@ -81,7 +81,7 @@ CollisionLandscape::~CollisionLandscape()
     {
         btWord->removeCollisionObject(btObject);
         DAVA::SafeDelete(btObject);
-        DAVA::SafeDelete(btTerrain);
+        DAVA::DestroyObjectAligned(btTerrain);
     }
 }
 

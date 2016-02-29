@@ -135,8 +135,8 @@ void Thread::Start()
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, (void*)this);
-    state = STATE_RUNNING;
+    pthread_create(&handle, &attr, PthreadMain, this);
+    state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
 
     pthread_attr_destroy(&attr);
 }
@@ -158,11 +158,13 @@ Thread::Id Thread::GetCurrentId()
 
 bool BindToProcessorApple(pthread_t thread, unsigned proc_n)
 {
-    thread_affinity_policy_data_t policy = { int(proc_n) };
+    thread_affinity_policy_data_t policy_data = { int(proc_n) };
+    thread_policy_t policy = reinterpret_cast<thread_policy_t>(&policy_data);
     thread_port_t mach_thread = pthread_mach_thread_np(thread);
+
     auto res = thread_policy_set(mach_thread,
                                  THREAD_AFFINITY_POLICY,
-                                 (thread_policy_t)&policy, 1);
+                                 policy, 1);
     return res == KERN_SUCCESS;
 }
 

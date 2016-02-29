@@ -382,12 +382,15 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
     {
         Vector2 oldRequestedSize = requestedSize;
         int32 oldFitting = fittingType;
+        Vector2 oldSize = rectSize;
 
         requestedSize = Vector2(width, -1.0f);
+        rectSize = Vector2(width < 0.0f ? 99999.0f : width, 99999.0f);
         fittingType = FITTING_DISABLED;
         CalculateCacheParams();
 
         result = cacheTextSize;
+        rectSize = oldSize;
 
         requestedSize = oldRequestedSize;
         fittingType = oldFitting;

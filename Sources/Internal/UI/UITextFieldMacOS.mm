@@ -28,7 +28,7 @@
 
 #include "UI/UITextFieldMacOS.h"
 
-#ifdef __DAVAENGINE_MACOS__
+#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_TEXTFIELD
 
 #import <AppKit/NSBitmapImageRep.h>
 #import <AppKit/NSTextField.h>
@@ -1725,4 +1725,4 @@ doCommandBySelector:(SEL)commandSelector
 
 @end
 
-#endif //__DAVAENGINE_MACOS__
+#endif //__DAVAENGINE_MACOS__ && !DISABLE_NATIVE_TEXTFIELD

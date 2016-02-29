@@ -33,8 +33,8 @@ InspDynamicModifyCommand::InspDynamicModifyCommand(DAVA::InspInfoDynamic* _dynam
     : Command2(CMDID_INSP_DYNAMIC_MODIFY, "Modify dynamic value")
     , dynamicInfo(_dynamicInfo)
     , key(_key)
-    , newValue(_newValue)
     , ddata(_ddata)
+    , newValue(_newValue)
 {
     if (nullptr != dynamicInfo)
     {

@@ -46,10 +46,8 @@ UI3DView::UI3DView(const Rect& rect)
     , scene(nullptr)
     , drawToFrameBuffer(false)
     , needUpdateFrameBuffer(false)
-    , frameBuffer(nullptr)
     , fbScaleFactor(1.f)
     , fbRenderSize()
-    , fbTexSize()
     , registeredInUIControlSystem(false)
 {
 }
@@ -208,7 +206,7 @@ void UI3DView::PrepareFrameBuffer()
         if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
         {
             SafeRelease(frameBuffer);
-            frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
+            frameBuffer = Texture::CreateFBO(static_cast<int32>(fbRenderSize.dx), static_cast<int32>(fbRenderSize.dy), FORMAT_RGBA8888, true);
         }
 
         Vector2 fbSize = Vector2(static_cast<float32>(frameBuffer->GetWidth()), static_cast<float32>(frameBuffer->GetHeight()));

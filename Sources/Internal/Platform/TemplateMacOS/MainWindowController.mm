@@ -247,6 +247,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         mainWindow = nil;
         animationTimer = nil;
         core = 0;
+        assertionID = kIOPMNullAssertionID;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -255,15 +257,48 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
+
+        [self allowDisplaySleep:false];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [self allowDisplaySleep:true];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
+}
+
+- (void)allowDisplaySleep:(bool)sleep
+{
+    bool displaySleepAllowed = assertionID == kIOPMNullAssertionID;
+    if (sleep == displaySleepAllowed)
+    {
+        return;
+    }
+
+    IOReturn result;
+
+    if (sleep)
+    {
+        result = IOPMAssertionRelease(assertionID);
+        assertionID = kIOPMNullAssertionID;
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("DAVA display sleeping preventing"),
+                                             &assertionID);
+    }
+
+    if (result != kIOReturnSuccess)
+    {
+        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        return;
+    }
 }
 
 - (void)createWindows
@@ -326,39 +361,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     if (isFull)
     {
         [self setFullScreen:true];
-    }
-
-    // OS X application has no way to detect when she is no longer in control,
-    // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
-    // And application has no chance to release mouse capture.
-
-    // Install mouse hook which determines whether Mission Control, Launchpad is active
-    // and disables mouse pinning
-    // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
-    CGEventMask mask = -1; // Intercept all events except those below
-    mask &= ~(CGEventMaskBit(NX_KEYDOWN) |
-              CGEventMaskBit(NX_KEYUP) |
-              CGEventMaskBit(NX_FLAGSCHANGED) |
-              CGEventMaskBit(NX_KITDEFINED) |
-              CGEventMaskBit(NX_SYSDEFINED) |
-              CGEventMaskBit(NX_SCROLLWHEELMOVED));
-    CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
-                                             kCGTailAppendEventTap,
-                                             kCGEventTapOptionListenOnly,
-                                             mask,
-                                             &EventTapCallback,
-                                             nullptr);
-
-    if (portRef != nullptr)
-    {
-        CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
-        CFRelease(portRef);
-        CFRelease(loopSourceRef);
-    }
-    else
-    {
-        Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
     }
 
     NSSize windowSize = [openGLView frame].size;
@@ -591,49 +593,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
-void OSXEnablePinning();
-void OSXDisablePinning();
-
-static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
-{
-    static bool restorePinning = false;
-    static int64_t myPid = static_cast<int64_t>(getpid());
-
-    InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-    int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
-    if (targetPid != myPid)
-    {
-        // Disable mouse pinning if event target is not our application and
-        // current capture mode is pinning
-        if (!restorePinning && type != NX_MOUSEEXITED)
-        {
-            if (InputSystem::eMouseCaptureMode::PINING == captureMode)
-            {
-                OSXDisablePinning();
-                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-                restorePinning = true;
-            }
-        }
-    }
-    else
-    {
-        // Restore mouse pinning if events are targeted back to our application and application
-        // has not turned pinning off yet
-        // Ignore event NX_MOUSEEXITED which is generated once other application becomes an event target
-        if (restorePinning && type != NX_MOUSEEXITED)
-        {
-            if (InputSystem::eMouseCaptureMode::PINING == captureMode)
-            {
-                OSXEnablePinning();
-            }
-            restorePinning = false;
-        }
-    }
-    return event;
-}
-
 - (void)OnSuspend
 {
+    [self allowDisplaySleep:true];
+
     if (core)
     {
         core->OnSuspend();
@@ -646,6 +609,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
+    [self allowDisplaySleep:false];
+
     if (core)
     {
         core->OnResume();
