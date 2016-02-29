@@ -230,6 +230,7 @@ protected:
     bool IsAnySceneChanged();
 
     void DiableUIForFutureUsing();
+    void SynchronizeStateWithUI();
 
     bool SelectCustomColorsTexturePath();
 

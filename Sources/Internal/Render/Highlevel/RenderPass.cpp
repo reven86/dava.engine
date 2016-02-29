@@ -288,9 +288,11 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* re
     }
 
     reflectionPass->SetWaterLevel(waterBox.max.z);
+    reflectionPass->GetPassConfig().priority = passConfig.priority + PRIORITY_SERVICE_3D;
     reflectionPass->Draw(renderSystem);
 
     refractionPass->SetWaterLevel(waterBox.min.z);
+    refractionPass->GetPassConfig().priority = passConfig.priority + PRIORITY_SERVICE_3D;
     refractionPass->Draw(renderSystem);
 }
 
