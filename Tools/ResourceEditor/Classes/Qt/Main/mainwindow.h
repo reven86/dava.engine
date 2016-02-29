@@ -94,7 +94,6 @@ public:
 
     void EnableGlobalTimeout(bool enable);
 
-
     // qt actions slots
 public slots:
     void OnProjectOpen();
@@ -231,6 +230,7 @@ protected:
     bool IsAnySceneChanged();
 
     void DiableUIForFutureUsing();
+    void SynchronizeStateWithUI();
 
     bool SelectCustomColorsTexturePath();
 

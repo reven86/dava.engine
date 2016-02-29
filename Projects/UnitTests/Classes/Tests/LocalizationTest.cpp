@@ -45,7 +45,7 @@ static const Vector<String> files = {
     "ru"
 };
 
-DAVA_TESTCLASS(LocalizationTest)
+DAVA_TESTCLASS (LocalizationTest)
 {
     FilePath srcDir;
     FilePath cpyDir;
@@ -64,7 +64,7 @@ DAVA_TESTCLASS(LocalizationTest)
         FileSystem::Instance()->DeleteDirectory(cpyDir);
     }
 
-    DAVA_TEST(LocaleTest)
+    DAVA_TEST (LocaleTest)
     {
         String locale = LocalizationSystem::Instance()->GetDeviceLocale();
 
@@ -89,7 +89,7 @@ DAVA_TESTCLASS(LocalizationTest)
         }
     }
 
-    DAVA_TEST(BiDiTest)
+    DAVA_TEST (BiDiTest)
     {
         BiDiHelper helper;
         TextLayout layout(true);

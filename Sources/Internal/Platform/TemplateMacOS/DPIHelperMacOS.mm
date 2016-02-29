@@ -44,7 +44,7 @@ uint32 DPIHelper::GetScreenDPI()
     CGSize displayPhysicalSize =
     CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
 
-    if (displayPhysicalSize.width == 0)
+    if (displayPhysicalSize.width == 0.0f)
     {
         return 0;
     }

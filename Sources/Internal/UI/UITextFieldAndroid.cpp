@@ -207,6 +207,7 @@ void JniTextField::SetMultiline(bool value)
 
 uint32_t TextFieldPlatformImpl::sId = 0;
 DAVA::UnorderedMap<uint32_t, TextFieldPlatformImpl*> TextFieldPlatformImpl::controls;
+static DAVA::Mutex controlsSync;
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* textField)
 {
@@ -216,13 +217,17 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* textField)
     jniTextField = std::make_shared<JniTextField>(id);
     jniTextField->Create(rect);
 
+    DAVA::LockGuard<Mutex> guard(controlsSync);
     controls[id] = this;
 }
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
-    controls.erase(id);
     jniTextField->Destroy();
+    textField = nullptr;
+
+    DAVA::LockGuard<Mutex> guard(controlsSync);
+    controls.erase(id);
 }
 
 void TextFieldPlatformImpl::OpenKeyboard()
@@ -456,6 +461,7 @@ void TextFieldPlatformImpl::TextFieldShouldReturn(uint32_t id)
 
 TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 {
+    DAVA::LockGuard<Mutex> guard(controlsSync);
     auto iter = controls.find(id);
     if (iter != controls.end())
         return iter->second;

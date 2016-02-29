@@ -30,11 +30,12 @@
 #ifndef QTTOOLS_SPYWIDGETINFO_H
 #define QTTOOLS_SPYWIDGETINFO_H
 
-
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QPointer>
 #include <QModelIndex>
-
+POP_QT_WARNING_SUPRESSOR
 
 class QWidget;
 class QTimer;
@@ -47,7 +48,9 @@ class WidgetHighlightModel;
 class SpyWidgetInfo
     : public QObject
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     explicit SpyWidgetInfo( QObject *parent = nullptr );

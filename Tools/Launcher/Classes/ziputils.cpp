@@ -37,7 +37,7 @@
 #include <QApplication>
 #include <numeric>
 
-const QString &ZipUtils::GetArchiverPath()
+const QString& ZipUtils::GetArchiverPath()
 {
     static QString processAddr = qApp->applicationDirPath() +
 #if defined(Q_OS_WIN)
@@ -80,7 +80,7 @@ QString ZipError::GetErrorString() const
 
 namespace ZIP_UTILS_LOCAL
 {
-ZipError *GetDefaultZipError()
+ZipError* GetDefaultZipError()
 {
     static ZipError localError;
     localError.error = ZipError::NO_ERRORS; //prevouis requester can break state of this varaiable
@@ -88,9 +88,9 @@ ZipError *GetDefaultZipError()
 }
 }
 
-bool ZipUtils::IsArchiveValid(const QString &archivePath, ZipError *err)
+bool ZipUtils::IsArchiveValid(const QString& archivePath, ZipError* err)
 {
-    if(err == nullptr)
+    if (err == nullptr)
     {
         err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
@@ -113,9 +113,9 @@ bool ZipUtils::IsArchiveValid(const QString &archivePath, ZipError *err)
     return true;
 }
 
-bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback callback, ZipError *err)
+bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback callback, ZipError* err)
 {
-    if(err == nullptr)
+    if (err == nullptr)
     {
         err = ZIP_UTILS_LOCAL::GetDefaultZipError();
     }
@@ -124,10 +124,10 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
     QString processAddr = ZipUtils::GetArchiverPath();
     QProcess zipProcess;
     QObject::connect(&zipProcess, &QProcess::readyReadStandardOutput, [&zipProcess, callback, err]() {
-        while(zipProcess.canReadLine())
+        while (zipProcess.canReadLine())
         {
             callback(zipProcess.readLine());
-            if(err->error != ZipError::NO_ERRORS) //callback can produce errors
+            if (err->error != ZipError::NO_ERRORS) //callback can produce errors
             {
                 zipProcess.kill();
                 return;
@@ -135,15 +135,15 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
         }
     });
     QEventLoop loop;
-    QObject::connect(&zipProcess, static_cast<void(QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
+    QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
     zipProcess.start(processAddr, arguments);
-    if(!zipProcess.waitForStarted(5000))
+    if (!zipProcess.waitForStarted(5000))
     {
         err->error = ZipError::PROCESS_FAILED_TO_START;
         return false;
     }
     loop.exec();
-    if(zipProcess.exitStatus() == QProcess::CrashExit)
+    if (zipProcess.exitStatus() == QProcess::CrashExit)
     {
         err->error = ZipError::PROCESS_FAILED_TO_FINISH;
         return false;
@@ -151,8 +151,7 @@ bool ZipUtils::LaunchArchiver(const QStringList &arguments, ReadyReadCallback ca
     return err->error == ZipError::NO_ERRORS;
 }
 
-
-bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &fileList, ZipOperationFunctor &functor)
+bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& fileList, ZipOperationFunctor& functor)
 {
     ZipError err;
     if (!IsArchiveValid(archivePath, &err))
@@ -162,7 +161,7 @@ bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &
     }
     QRegularExpression regExp("\\s+");
     bool foundOutputData = false;
-    ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray &line) {
+    ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray& line) {
         if (line.startsWith("----------")) //this string occurrs two times: before file list and at the and of file list
         {
             foundOutputData = !foundOutputData;
@@ -188,7 +187,7 @@ bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &
             functor.OnError(ZipError::PARSE_ERROR);
             return;
         }
-        const QString &file = infoStringList.at(NAME_INDEX);
+        const QString& file = infoStringList.at(NAME_INDEX);
         Q_ASSERT(!fileList.contains(file));
         fileList[file] = size;
     };
@@ -206,7 +205,7 @@ bool ZipUtils::GetFileList(const QString &archivePath, CompressedFilesAndSizes &
     return true;
 }
 
-bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesAndSizes &files, ZipOperationFunctor &functor)
+bool ZipUtils::TestZipArchive(const QString& archivePath, const CompressedFilesAndSizes& files, ZipOperationFunctor& functor)
 {
     ZipError err;
     if (!IsArchiveValid(archivePath, &err))
@@ -219,13 +218,13 @@ bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesA
     qint64 matchedSize = 0;
     const auto values = files.values();
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray &line) {
+    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray& line) {
         QString str(line);
         QRegularExpression stringRegEx("\\s+");
         QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
         if (infoStringList.size() > 1)
         {
-            const auto &file = infoStringList.at(1);
+            const auto& file = infoStringList.at(1);
             if (files.contains(file))
             {
                 matchedSize += files[file];
@@ -239,7 +238,8 @@ bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesA
         }
     };
     QStringList arguments;
-    arguments << "t" << "-bb1" << archivePath;
+    arguments << "t"
+              << "-bb1" << archivePath;
     functor.OnStart();
     if (!LaunchArchiver(arguments, callback, &err))
     {
@@ -255,8 +255,7 @@ bool ZipUtils::TestZipArchive(const QString &archivePath, const CompressedFilesA
     return true;
 }
 
-
-bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDirPath, const CompressedFilesAndSizes &files, ZipOperationFunctor &functor)
+bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDirPath, const CompressedFilesAndSizes& files, ZipOperationFunctor& functor)
 {
     ZipError err;
     if (!IsArchiveValid(archivePath, &err))
@@ -275,13 +274,13 @@ bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDi
     qint64 matchedSize = 0;
     const auto values = files.values();
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray &line) {
+    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray& line) {
         QString str(line);
         QRegularExpression stringRegEx("\\s+");
         QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
         if (infoStringList.size() > 1)
         {
-            const auto &file = infoStringList.at(1);
+            const auto& file = infoStringList.at(1);
             if (files.contains(file))
             {
                 matchedSize += files[file];
@@ -295,7 +294,9 @@ bool ZipUtils::UnpackZipArchive(const QString &archivePath, const QString &outDi
         }
     };
     QStringList arguments;
-    arguments << "x" << "-y" << "-bb1" << archivePath << "-o" + outDirPath;
+    arguments << "x"
+              << "-y"
+              << "-bb1" << archivePath << "-o" + outDirPath;
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);
