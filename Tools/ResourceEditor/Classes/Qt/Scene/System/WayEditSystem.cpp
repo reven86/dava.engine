@@ -224,12 +224,12 @@ void WayEditSystem::ResetSelection()
 
 void WayEditSystem::ProcessSelection(const EntityGroup& selection)
 {
+    prevSelectedWaypoints = selectedWaypoints;
+    selectedWaypoints.Clear();
+
     if (currentSelection != selection)
     {
         currentSelection = selection;
-        prevSelectedWaypoints = selectedWaypoints;
-
-        selectedWaypoints.Clear();
 
         for (const auto& item : currentSelection.GetContent())
         {
@@ -320,7 +320,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                     }
                     sceneEditor->EndBatch();
 
-                    prevSelectedWaypoints = EntityGroup(newWaypoint, sceneEditor->selectionSystem->GetUntransformedBoundingBox(newWaypoint));
+                    selectedWaypoints = EntityGroup(newWaypoint, sceneEditor->selectionSystem->GetUntransformedBoundingBox(newWaypoint));
                     sceneEditor->selectionSystem->SetLocked(false);
                     newWaypoint->Release();
                 }
@@ -444,7 +444,7 @@ void WayEditSystem::ProcessCommand(const Command2* command, bool redo)
 
 void WayEditSystem::Draw()
 {
-    const EntityGroup& selectionGroup = (currentSelection.IsEmpty()) ? prevSelectedWaypoints : currentSelection;
+    const EntityGroup& selectionGroup = (currentSelection.IsEmpty()) ? selectedWaypoints : currentSelection;
 
     const uint32 count = waypointEntities.size();
     for (uint32 i = 0; i < count; ++i)
@@ -531,7 +531,7 @@ bool WayEditSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& curren
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
     if (isEnabled && shiftPressed)
     {
-        return !selectedWaypoints.IsEmpty();
+        return (selectedWaypoints.Size() > 0);
     }
 
     return true;
@@ -558,8 +558,6 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& curr
         auto entity = newSelection.GetFirstEntity();
         if (GetWaypointComponent(entity) == nullptr)
         {
-            prevSelectedWaypoints = selectedWaypoints;
-            selectedWaypoints.Clear();
             return false;
         }
 
