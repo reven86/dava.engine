@@ -302,7 +302,7 @@ public:
     UIScreenshoter* GetScreenshoter();
 
     void SetClearColor(const Color& clearColor);
-    void SetUseClearPass(bool use);
+    void SetUseClearPass(bool useClearPass);
 
 private:
     void ProcessScreenLogic();

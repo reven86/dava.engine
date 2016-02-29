@@ -197,6 +197,9 @@ function GetParameter(name, default)
 end
 
 function MakeScreenshot()
+    while autotestingSystem:GetIsScreenShotSaving() do
+        coroutine.yield()
+    end
     local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
     return name

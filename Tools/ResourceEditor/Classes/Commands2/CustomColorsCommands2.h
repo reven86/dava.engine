@@ -40,28 +40,6 @@ class SceneEditor2;
 
 using namespace DAVA;
 
-class ActionEnableCustomColors : public CommandAction
-{
-public:
-    ActionEnableCustomColors(SceneEditor2* forSceneEditor);
-
-protected:
-    SceneEditor2* sceneEditor;
-
-    virtual void Redo();
-};
-
-class ActionDisableCustomColors : public CommandAction
-{
-public:
-    ActionDisableCustomColors(SceneEditor2* forSceneEditor, bool textureSavingNeeded);
-
-protected:
-    SceneEditor2* sceneEditor;
-    bool textureSavingNeeded;
-    virtual void Redo();
-};
-
 class ModifyCustomColorsCommand : public Command2
 {
 public:

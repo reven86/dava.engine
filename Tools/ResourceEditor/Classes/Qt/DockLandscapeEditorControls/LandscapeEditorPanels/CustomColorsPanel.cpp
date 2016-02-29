@@ -156,7 +156,7 @@ void CustomColorsPanel::ConnectToSignals()
 
     connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
             this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)),
+    connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
 
     connect(sliderWidgetBrushSize, SIGNAL(ValueChanged(int)), this, SLOT(SetBrushSize(int)));
