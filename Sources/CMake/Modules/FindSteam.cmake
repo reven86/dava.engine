@@ -12,8 +12,8 @@ if (WIN32)
     set (STEAM_SDK_STATIC_LIBRARIES ${STEAM_SDK}/redistributable_bin/steam_api.lib
                                     ${STEAM_SDK}/public/steam/lib/win32/sdkencryptedappticket.lib)
 elseif (MACOS)
-    set (STEAM_SDK_DYNAMIC_LIBRARIES ${STEAM_SDK}/osx32/libsteam_api.dylib
-                                     ${STEAM_SDK}/osx32/libsdkencryptedappticket.dylib)
+    set (STEAM_SDK_DYNAMIC_LIBRARIES ${STEAM_SDK}/redistributable_bin/osx32/libsteam_api.dylib
+                                     ${STEAM_SDK}/public/steam/lib/osx32/libsdkencryptedappticket.dylib)
     set (STEAM_SDK_STATIC_LIBRARIES )
 endif ()
 
