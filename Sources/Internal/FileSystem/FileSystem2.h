@@ -60,6 +60,7 @@ namespace DAVA
         Path(const String& sourcePathUtf8);
         Path(const WideString& src);
         Path(const char* sourcePathUtf8);
+        Path(const wchar_t* sourcePath);
         ~Path();
 
         Path& operator=(const Path&);
@@ -92,10 +93,11 @@ namespace DAVA
         Path ReplaceExtension(const Path& newExtension = Path()) const;
 
         const String& ToStringUtf8() const;
-        WideString ToWideString() const;
+        const WideString& ToWideString() const;
         size_t Hash() const;
     private:
         String pathname;
+        mutable WideString copyPathname;
     };
 
     // exceptions in case of error
@@ -103,7 +105,7 @@ namespace DAVA
     {
     public:
         virtual ~InputStream();
-        virtual uint64 Read(void* data, uint64 size) = 0;
+        virtual void Read(void* data, uint64 size) = 0;
         virtual void Seek(uint64 position) = 0;
         virtual uint64 Tell() = 0;
         virtual uint64 GetSize() = 0;
@@ -113,7 +115,7 @@ namespace DAVA
     {
     public:
         virtual ~OutputStream();
-        virtual void Write(void* data, int64 size) = 0;
+        virtual void Write(const void* data, uint64 size) = 0;
         virtual void Seek(uint64 position) = 0;
         virtual uint64 Tell() = 0;
         virtual uint64 GetSize() = 0;
@@ -135,12 +137,12 @@ namespace DAVA
         virtual bool Exist(const Path&, uint64* fileSize = nullptr) = 0;
         virtual bool IsFile(const Path&) = 0;
         virtual bool IsDirectory(const Path&) = 0;
-        virtual Vector<Path> EnumerateFiles(const Path& base = Path(), size_t depth = 0) = 0;
+        virtual Vector<Path> EnumerateFiles(const Path& base = Path()) = 0;
         virtual std::unique_ptr<InputStream> OpenFile(const Path&) = 0;
         virtual std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) = 0;
         virtual void DeleteFile(const Path&) = 0;
-        virtual void CreateDirectory(const Path&, bool isRecursive) = 0;
-        virtual void DeleteDirectory(const Path&, bool isRecursive) = 0;
+        virtual void CreateDirectory(const Path&, bool errorIfExist = false) = 0;
+        virtual void DeleteDirectory(const Path&, bool withContent = false) = 0;
     };
 
     // use exception to give client code ability to understand why something not working
@@ -152,29 +154,29 @@ namespace DAVA
         FileSystem2();
         ~FileSystem2();
 
-        String ReadFileContentAsString(const Path& pathname);
+        String ReadFileContentAsString(const Path& pathname) const;
         // open or create stream from mounted pakfile or OS file system
-        // or wrapper around FILE* or android stream or pakfile stream
-        std::unique_ptr<InputStream> OpenFile(const Path&);
+        // or wrapper around std::fstream or android stream or pakfile stream
+        std::unique_ptr<InputStream> OpenFile(const Path&) const;
         std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate);
         // works on OS file system
         void DeleteFile(const Path&);
         // works on OS file sysem
-        void DeleteDirectory(const Path& path, bool isRecursive);
+        void DeleteDirectory(const Path& path, bool withContent = false);
         // works on OS file system
-        void CreateDirectory(const Path& path, bool isRecursive);
+        void CreateDirectory(const Path& path, bool errorIfExist = false);
         // works on OS file sysem
-        Path GetCurrentWorkingDirectory();
+        static Path GetCurrentWorkingDirectory();
 
         // write path for save, logs ets. "~doc:/logs/today.txt" -> ~doc: == GetPrefPath() == "C:/Users/l_chayka/Documents"
-        Path GetPrefPath();
+        static Path GetPrefPath();
         // works only for OS file system and using current working directory
-        Path GetAbsolutePath(const Path& p);
+        static Path GetAbsolutePath(const Path& p);
         // works only for OS file system and using current working directory
-        Path GetRelativePath(const Path& p);
-        Path GetRelativePath(const Path& file, const Path& relativeDirectory);
+        static Path GetRelativePath(const Path& p);
+        static Path GetRelativePath(const Path& file, const Path& relativeDirectory);
         // works only for OS file system
-        bool SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
+        static bool SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
 
         // test file path if file on FileDevice or OS file system
         bool IsFile(const Path& pathToCheck);
@@ -189,8 +191,8 @@ namespace DAVA
         // copy directory from FileDevice to OS or from OS to OS
         bool CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting);
         // virtualName = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
-        void Mount(const String& virtualName, std::unique_ptr<FileDevice>);
-        Vector<std::unique_ptr<FileDevice>>& GetMountedDevices();
+        void Mount(const String& virtualName, std::shared_ptr<FileDevice>);
+        Vector<std::shared_ptr<FileDevice>>& GetMountedDevices();
         // works on FileDevice or OS
         uint64 GetFileSize(const Path& path);
 
@@ -202,5 +204,3 @@ namespace DAVA
         std::unique_ptr<FileSystem2Impl> impl;
     };
 } // end namespace DAVA
-
-
