@@ -29,9 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef STEAM_H
 #define STEAM_H
 
+#if defined(__DAVAENGINE_STEAM__)
 namespace DAVA
 {
-
 class Steam final
 {
 public:
@@ -44,7 +44,8 @@ public:
 private:
     static bool isInited;
 };
-
-
 }
+
+#endif
+
 #endif

@@ -13,7 +13,10 @@ set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 
-find_package( Steam         REQUIRED )
+if (STEAM)
+    find_package( Steam         REQUIRED )
+endif ()
+
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 

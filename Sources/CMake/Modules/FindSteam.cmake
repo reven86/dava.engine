@@ -1,3 +1,7 @@
+if ( NOT STEAM )
+    return ()
+endif ()
+
 if (STEAM_SDK_FOUND)
     return ()
 endif ()

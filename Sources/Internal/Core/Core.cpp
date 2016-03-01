@@ -64,8 +64,8 @@
 
 #include "Job/JobManager.h"
 
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-#include "DataStorage/Steam/Steam.h"
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
 #endif
 
 #if defined(__DAVAENGINE_ANDROID__)

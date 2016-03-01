@@ -29,6 +29,8 @@
 #ifndef DATA_STORAGE_STEAM_H
 #define DATA_STORAGE_STEAM_H
 
+#if defined(__DAVAENGINE_STEAM__)
+
 #include "DataStorage/DataStorage.h"
 
 #include "Utils/Utils.h"
@@ -66,5 +68,7 @@ private:
 
 #endif //__DAVAENGINE_STEAM__
 }
+
+#endif
 
 #endif

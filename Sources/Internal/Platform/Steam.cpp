@@ -28,21 +28,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Steam.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+
 #include "FileSystem/Logger.h"
 
 #include "steam/steam_api.h"
 
 namespace DAVA
 {
-
-
 bool Steam::isInited = false;
 
 void Steam::Init()
 {
     if (SteamAPI_RestartAppIfNecessary(k_uAppIdInvalid))
     {
-        // if Steam is not running or the game wasn't started through Steam, SteamAPI_RestartAppIfNecessary starts the 
+        // if Steam is not running or the game wasn't started through Steam, SteamAPI_RestartAppIfNecessary starts the
         // local Steam client and also launches this game again.
 
         // Once you get a public Steam AppID assigned for this game, you need to replace k_uAppIdInvalid with it and
@@ -84,7 +84,6 @@ bool Steam::IsInited()
 {
     return isInited;
 }
-
-
-
 }
+
+#endif

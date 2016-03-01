@@ -28,7 +28,7 @@
 
 #include "DataStorageSteam.h"
 
-#include "DataStorage/Steam/Steam.h"
+#include "Platform/Steam.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
