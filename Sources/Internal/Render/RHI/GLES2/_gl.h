@@ -73,11 +73,14 @@
 
 	#include "android_gl.h"
 
+#ifdef __arm__
     #include <machine/cpu-features.h>
-
     #if __ARM_ARCH__ == 7
-        #define __DAVAENGINE_ARM_7__
+        #ifdef USE_NEON
+            #define __DAVAENGINE_ARM_7__
+        #endif
     #endif
+#endif
 
 #else
 
