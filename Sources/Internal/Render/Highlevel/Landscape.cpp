@@ -574,7 +574,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     float32 supDistance = Max(Abs(cameraPos.x - origin.x), Abs(cameraPos.y - origin.y));
     float32 patchSize = Abs(max.x - min.x);
 
-    float32 morphAmount = Clamp(1.0f - (supDistance - 2.f * patchSize) / (1.5f * patchSize), 0.f, 1.f);
+    float32 morphAmount = Clamp(1.0f - (supDistance - patchSize) / (.5f * patchSize), 0.f, 1.f);
 
     if (level == subdivLevelCount - 1)
     {
@@ -584,7 +584,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     }
 
     //if ((minSubdivLevelSize > levelInfo.size) || (solidAngle > fovSolidAngleError) || (geometryError > fovGeometryAngleError) || (patch->maxError > fovAbsHeightError))
-    if ((minSubdivLevelSize > levelInfo.size) || (supDistance < 2.f * patchSize))
+    if ((minSubdivLevelSize > levelInfo.size) || (supDistance < patchSize))
     {
         subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
         subdivPatchInfo->lastSubdivLevel = level;
@@ -660,8 +660,6 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
             Vector4 nearLevel(levelf, levelf, levelf, levelf);
             Vector4 nearMorph(morph, morph, morph, morph);
-            //Vector4 cornerLevel(levelf, levelf, levelf, levelf);
-            //Vector4 cornerMorph(morph, morph, morph, morph);
 
             SubdivisionPatchInfo* nearPatch[4] = {
                 GetSubdivPatch(level, x - 1, y),
@@ -672,13 +670,12 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
             for (int32 i = 0; i < 4; ++i)
             {
-                //Process near edge patcher
                 SubdivisionPatchInfo* patch = nearPatch[i];
                 if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
                 {
-                    if (patch->lastSubdivLevel < level || patch->subdivisionState == SubdivisionPatchInfo::SUBDIVIDED)
+                    if (patch->lastSubdivLevel < level)
                     {
-                        nearMorph.data[i] = 1.f;
+                        nearMorph.data[i] = patch->lastSubdivMorph;
                     }
                     else if (patch->lastSubdivLevel == level && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
                     {
@@ -687,46 +684,9 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
 
                     nearLevel.data[i] = float32(patch->lastSubdivLevel);
                 }
-
-                //Process near corner patches
-                //    SubdivisionPatchInfo* nearCornerPatch[4] = {
-                //        GetSubdivPatch(level, x - 1, y - 1),
-                //        GetSubdivPatch(level, x + 1, y - 1),
-                //        GetSubdivPatch(level, x + 1, y + 1),
-                //        GetSubdivPatch(level, x - 1, y + 1)
-                //    };
-
-                //    uint32 minLevel = level;
-                //    float32 maxMorph = morph;
-
-                //    SubdivisionPatchInfo* cornerPatches[3] = {
-                //        nearCornerPatch[i],
-                //        nearPatch[i],
-                //        nearPatch[(i + 1) % 4]
-                //    };
-
-                //    for (int32 j = 0; j < 3; ++j)
-                //    {
-                //        SubdivisionPatchInfo* patch = cornerPatches[j];
-                //        if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
-                //        {
-                //            if (patch->lastSubdivLevel < minLevel)
-                //            {
-                //                minLevel = patch->lastSubdivLevel;
-                //                maxMorph = patch->lastSubdivMorph;
-                //            }
-                //            else if (patch->lastSubdivLevel == minLevel)
-                //            {
-                //                maxMorph = Max(maxMorph, patch->lastSubdivMorph);
-                //            }
-                //        }
-                //    }
-
-                //    cornerLevel.data[i] = float32(minLevel);
-                //    cornerMorph.data[i] = maxMorph;
             }
 
-            DrawPatchInstancing(level, x, y, morph, nearLevel, nearMorph /*, cornerLevel, cornerMorph */);
+            DrawPatchInstancing(level, x, y, morph, nearLevel, nearMorph);
         }
         else
         {
@@ -1079,7 +1039,6 @@ void Landscape::AllocateGeometryDataInstancing()
             VertexInstancing& vertex = patchVertices[y * PATCH_SIZE_VERTICES + x];
             vertex.position = Vector2(x * quadSize, y * quadSize);
             vertex.edgeMask = Vector4(0.f, 0.f, 0.f, 0.f);
-            //vertex.cornerMask = Vector4(0.f, 0.f, 0.f, 0.f);
             vertex.gluDir = Vector2(0.f, 0.f);
 
             if (x < (PATCH_SIZE_VERTICES - 1) && y < (PATCH_SIZE_VERTICES - 1))
@@ -1103,7 +1062,7 @@ void Landscape::AllocateGeometryDataInstancing()
 
         //x = i; y = 0; bottom side of patch without corners
         patchVertices[i].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
-        patchVertices[i].gluDir = Vector2(-1.f, 0.f);
+        patchVertices[i].gluDir = Vector2(1.f, 0.f);
 
         //x = PATCH_QUAD_COUNT; y = i; right side of patch without corners
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
@@ -1111,13 +1070,8 @@ void Landscape::AllocateGeometryDataInstancing()
 
         //x = i; y = PATCH_QUAD_COUNT; top side of patch without corners
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
-        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].gluDir = Vector2(1.f, 0.f);
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].gluDir = Vector2(-1.f, 0.f);
     }
-
-    //patchVertices[0].cornerMask = Vector4(1.f, 0.f, 0.f, 0.f);
-    //patchVertices[PATCH_SIZE_QUADS].cornerMask = Vector4(0.f, 1.f, 0.f, 0.f);
-    //patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES].cornerMask = Vector4(0.f, 0.f, 1.f, 0.f);
-    //patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].cornerMask = Vector4(0.f, 0.f, 0.f, 1.f);
 
     /////////////////////////////////////////////////////////////////
 
@@ -1154,12 +1108,10 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddStream(rhi::VDF_PER_VERTEX);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 4); //position + gluDirection
     vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 4); //edge mask
-    //vLayout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 4); //corner mask
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 4); //patch position + scale + pixelMappingOffset
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4); //near patch lodOffset
     vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4); //near patch morph
-    //vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 4); //corner lodOffset + morph
     vLayout.AddElement(rhi::VS_TEXCOORD, 7, rhi::VDT_FLOAT, 2); //patch lod + morph
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
@@ -1228,7 +1180,7 @@ void Landscape::DrawLandscapeInstancing()
     }
 }
 
-void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 patchMorph, const Vector4& nearLevel, const Vector4& nearMorph /*, const Vector4& cornerLevel, const Vector4& cornerMorph */)
+void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 patchMorph, const Vector4& nearLevel, const Vector4& nearMorph)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (yy << level) + xx];
@@ -1246,11 +1198,6 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 
                                                   level - nearLevel.y,
                                                   level - nearLevel.z,
                                                   level - nearLevel.w);
-
-    //instanceDataPtr->cornerLodOffsetMorph = Vector4(level - nearLevel.x + cornerMorph.x,
-    //                                                level - nearLevel.y + cornerMorph.y,
-    //                                                level - nearLevel.z + cornerMorph.z,
-    //                                                level - nearLevel.w + cornerMorph.w);
 
     ++instanceDataPtr;
 }
@@ -1496,7 +1443,7 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
         {
             landscapeMaterial->AddFlag(FLAG_PATCH_SIZE_QUADS, PATCH_SIZE_QUADS);
         }
-        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK_DEBUG);
+
         landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
     }
 
