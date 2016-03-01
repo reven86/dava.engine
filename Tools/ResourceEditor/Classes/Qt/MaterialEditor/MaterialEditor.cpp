@@ -1569,10 +1569,6 @@ void MaterialEditor::UpdateTabs()
         DAVA::NMaterial* material = curMaterials.front();
         for (DAVA::uint32 i = 0; i < material->GetConfigCount(); ++i)
         {
-            if (material->GetConfigName(i).IsValid() == false)
-            {
-                material->SetConfigName(i, DAVA::FastName("default"));
-            }
             ui->tabbar->addTab(QString(material->GetConfigName(i).c_str()));
         }
 

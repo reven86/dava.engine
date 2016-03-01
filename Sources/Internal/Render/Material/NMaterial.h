@@ -265,6 +265,8 @@ private:
     bool needRebuildTextures = true;
     bool needRebuildVariants = true;
 
+    static const FastName DEFAULT_CONFIG_NAME;
+
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
                          PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)

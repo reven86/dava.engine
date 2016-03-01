@@ -45,6 +45,7 @@
 namespace DAVA
 {
 const float32 NMaterial::DEFAULT_LIGHTMAP_SIZE = 16.0f;
+const FastName NMaterial::DEFAULT_CONFIG_NAME = FastName("Default");
 
 struct MaterialPropertyBinding
 {
@@ -1028,7 +1029,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
     if (config.fxName.IsValid())
         archive->SetString(NMaterialSerializationKey::FXName, config.fxName.c_str());
 
-    if (config.name.IsValid())
+    if (config.name.IsValid() && config.name != DEFAULT_CONFIG_NAME)
         archive->SetString(NMaterialSerializationKey::ConfigName, config.name.c_str());
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
@@ -1259,6 +1260,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
+    materialConfigs[0].name = DEFAULT_CONFIG_NAME;
     // don't load fxName from material instance (type = 2)
     if (archive->IsKeyExists("materialTemplate") && oldType != 2)
     {
