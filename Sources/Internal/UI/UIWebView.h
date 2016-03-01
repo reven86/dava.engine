@@ -83,9 +83,6 @@ public:
     // Page scale property change
     void SetScalesPageToFit(bool isScalesToFit);
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
-
     UIWebView* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
 

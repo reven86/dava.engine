@@ -69,10 +69,7 @@ public:
     inline UIControlBackground* GetBgMin() const;
     inline UIControlBackground* GetBgMax() const;
 
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual void LoadFromYamlNodeCompleted();
-
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
 
     UISlider* Clone() override;
     virtual void CopyDataFrom(UIControl* srcControl);
@@ -105,10 +102,6 @@ protected:
 
     void AttachToSubcontrols();
     void InitInactiveParts(Sprite* spr);
-
-    // Load/save the background.
-    void LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNodem, const UIYamlLoader* loader);
-    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader* loader);
 
     void CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to);
 

@@ -30,12 +30,10 @@
 #include "UI/UISlider.h"
 #include "UI/UIButton.h"
 #include "Render/RenderHelper.h"
-#include "FileSystem/YamlNode.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
-#include "UI/UIYamlLoader.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -289,43 +287,6 @@ void UISlider::Draw(const UIGeometricData& geometricData)
     }
 }
 
-void UISlider::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    RemoveControl(thumbButton);
-    SafeRelease(thumbButton);
-
-    UIControl::LoadFromYamlNode(node, loader);
-
-    // Values
-    const YamlNode* valueNode = node->Get("value");
-
-    if (valueNode)
-        SetValue(valueNode->AsFloat());
-
-    const YamlNode* minValueNode = node->Get("minValue");
-
-    if (minValueNode)
-        SetMinValue(minValueNode->AsFloat());
-
-    const YamlNode* maxValueNode = node->Get("maxValue");
-
-    if (maxValueNode)
-        SetMaxValue(maxValueNode->AsFloat());
-
-    const YamlNode* spritesEmbeddedNode = node->Get("spritesEmbedded");
-    if (spritesEmbeddedNode)
-    {
-        this->spritesEmbedded = spritesEmbeddedNode->AsBool();
-    }
-
-    if (this->spritesEmbedded)
-    {
-        // File is saved in new format - load the backgrounds.
-        LoadBackgound("min", minBackground, node, loader);
-        LoadBackgound("max", maxBackground, node, loader);
-    }
-}
-
 void UISlider::SetSize(const DAVA::Vector2& newSize)
 {
     UIControl::SetSize(newSize);
@@ -346,34 +307,6 @@ void UISlider::LoadFromYamlNodeCompleted()
     }
 
     SyncThumbWithSprite();
-}
-
-YamlNode* UISlider::SaveToYamlNode(UIYamlLoader* loader)
-{
-    thumbButton->SetName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // Sprite value
-    float32 value = this->GetValue();
-    node->Set("value", value);
-
-    // Sprite min value
-    value = this->GetMinValue();
-    node->Set("minValue", value);
-
-    // Sprite max value
-    value = this->GetMaxValue();
-    node->Set("maxValue", value);
-
-    // Min/max background sprites.
-    SaveBackground("min", minBackground, node, loader);
-    SaveBackground("max", maxBackground, node, loader);
-
-    // Sprites are now embedded into UISlider.
-    node->Set("spritesEmbedded", true);
-
-    return node;
 }
 
 UISlider* UISlider::Clone()
@@ -426,163 +359,6 @@ void UISlider::AttachToSubcontrols()
     }
 
     InitInactiveParts(thumbButton->GetBackground()->GetSprite());
-}
-
-void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, const UIYamlLoader* loader)
-{
-    const YamlNode* colorNode = rootNode->Get(Format("%scolor", prefix));
-    const YamlNode* spriteNode = rootNode->Get(Format("%ssprite", prefix));
-    const YamlNode* frameNode = rootNode->Get(Format("%sframe", prefix));
-    const YamlNode* alignNode = rootNode->Get(Format("%salign", prefix));
-    const YamlNode* colorInheritNode = rootNode->Get(Format("%scolorInherit", prefix));
-    const YamlNode* pixelAccuracyNode = rootNode->Get(Format("%spixelAccuracy", prefix));
-    const YamlNode* drawTypeNode = rootNode->Get(Format("%sdrawType", prefix));
-    const YamlNode* leftRightStretchCapNode = rootNode->Get(Format("%sleftRightStretchCap", prefix));
-    const YamlNode* topBottomStretchCapNode = rootNode->Get(Format("%stopBottomStretchCap", prefix));
-    const YamlNode* spriteModificationNode = rootNode->Get(Format("%sspriteModification", prefix));
-    const YamlNode* marginsNode = rootNode->Get(Format("%smargins", prefix));
-
-    if (colorNode)
-    {
-        background->SetColor(colorNode->AsColor());
-    }
-
-    if (spriteNode)
-    {
-        Sprite* sprite = Sprite::Create(spriteNode->AsString());
-        background->SetSprite(sprite, 0);
-        SafeRelease(sprite);
-    }
-
-    if (frameNode)
-    {
-        background->SetFrame(frameNode->AsInt32());
-    }
-
-    if (alignNode)
-    {
-        background->SetAlign(loader->GetAlignFromYamlNode(alignNode));
-    }
-
-    if (colorInheritNode)
-    {
-        background->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode));
-    }
-
-    if (pixelAccuracyNode)
-    {
-        background->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(pixelAccuracyNode));
-    }
-
-    if (drawTypeNode)
-    {
-        background->SetDrawType((UIControlBackground::eDrawType)loader->GetDrawTypeFromNode(drawTypeNode));
-
-        if (leftRightStretchCapNode)
-        {
-            background->SetLeftRightStretchCap(leftRightStretchCapNode->AsFloat());
-        }
-
-        if (topBottomStretchCapNode)
-        {
-            background->SetTopBottomStretchCap(topBottomStretchCapNode->AsFloat());
-        }
-    }
-
-    if (spriteModificationNode)
-    {
-        background->SetModification(spriteModificationNode->AsInt32());
-    }
-
-    if (marginsNode)
-    {
-        UIControlBackground::UIMargins margins(marginsNode->AsVector4());
-        background->SetMargins(&margins);
-    }
-}
-
-void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader* loader)
-{
-    if (!background)
-    {
-        return;
-    }
-
-    ScopedPtr<UIControlBackground> baseBackground(new UIControlBackground());
-
-    // Color.
-    Color color = background->GetColor();
-    if (baseBackground->GetColor() != color)
-    {
-        VariantType* nodeValue = new VariantType();
-        nodeValue->SetColor(color);
-        rootNode->Set(Format("%scolor", prefix), nodeValue);
-        SafeDelete(nodeValue);
-    }
-
-    // Sprite.
-    Sprite* sprite = background->GetSprite();
-    if (sprite)
-    {
-        rootNode->Set(Format("%ssprite", prefix), Sprite::GetPathString(sprite));
-    }
-    int32 frame = background->GetFrame();
-    if (baseBackground->GetFrame() != frame)
-    {
-        rootNode->Set(Format("%sframe", prefix), frame);
-    }
-
-    // Align
-    int32 align = background->GetAlign();
-    if (baseBackground->GetAlign() != align)
-    {
-        rootNode->AddNodeToMap(Format("%salign", prefix), loader->GetAlignNodeValue(align));
-    }
-
-    // Color inherit
-    UIControlBackground::eColorInheritType colorInheritType = background->GetColorInheritType();
-    if (baseBackground->GetColorInheritType() != colorInheritType)
-    {
-        rootNode->Set(Format("%scolorInherit", prefix), loader->GetColorInheritTypeNodeValue(colorInheritType));
-    }
-
-    // Per pixel accuracy
-    UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = background->GetPerPixelAccuracyType();
-    if (baseBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
-    {
-        rootNode->Set(Format("%spixelAccuracy", prefix), loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
-    }
-
-    // Draw type.
-    UIControlBackground::eDrawType drawType = background->GetDrawType();
-    rootNode->Set(Format("%sdrawType", prefix), loader->GetDrawTypeNodeValue(drawType));
-
-    // Stretch Cap.
-    float32 leftRightStretchCap = background->GetLeftRightStretchCap();
-    if (!FLOAT_EQUAL(baseBackground->GetLeftRightStretchCap(), leftRightStretchCap))
-    {
-        rootNode->Set(Format("%sleftRightStretchCap", prefix), leftRightStretchCap);
-    }
-
-    float32 topBottomStretchCap = background->GetTopBottomStretchCap();
-    if (!FLOAT_EQUAL(baseBackground->GetTopBottomStretchCap(), topBottomStretchCap))
-    {
-        rootNode->Set(Format("%stopBottomStretchCap", prefix), topBottomStretchCap);
-    }
-
-    // spriteModification
-    int32 modification = background->GetModification();
-    if (baseBackground->GetModification() != modification)
-    {
-        rootNode->Set(Format("%sspriteModification", prefix), modification);
-    }
-
-    // margins.
-    const UIControlBackground::UIMargins* margins = background->GetMargins();
-    if (margins)
-    {
-        rootNode->Set(Format("%smargins", prefix), margins->AsVector4());
-    }
 }
 
 void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to)

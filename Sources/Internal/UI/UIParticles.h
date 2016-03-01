@@ -54,9 +54,6 @@ public:
     UIParticles* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
 
-    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
-    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
-
     /*methods analogical to once in ParticleEffectComponent*/
     void Start();
     void Stop(bool isDeleteAllParticles = true);

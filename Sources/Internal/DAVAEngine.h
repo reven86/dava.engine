@@ -175,7 +175,6 @@
 #include "UI/UIScreenManager.h"
 
 #include "UI/TheoraPlayer.h"
-#include "UI/UIAggregatorControl.h"
 
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
