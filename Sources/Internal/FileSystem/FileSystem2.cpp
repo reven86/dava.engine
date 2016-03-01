@@ -771,8 +771,12 @@ namespace DAVA
         {
             for(auto& device : devices)
             {
-                auto file = device->CreateFile(p, recreate);
-
+                auto state = device->GetState();
+                if (FileDevice::State::WRITE_ONLY == state ||
+                    FileDevice::State::READ_WRITE == state)
+                {
+                    auto file = device->CreateFile(p, recreate);
+                }
             }
         }
     }
