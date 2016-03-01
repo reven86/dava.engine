@@ -201,6 +201,17 @@ void MemoryManager::Update()
     }
 }
 
+void MemoryManager::Finish()
+{
+    if (symbolCollectorThread != nullptr)
+    {
+        finishSymbolThread = true;
+        symbolCollectorCondVar.NotifyAll();
+        symbolCollectorThread->Join();
+        symbolCollectorThread->Release();
+    }
+}
+
 DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
 {
     assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
@@ -1076,7 +1087,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
     // to give some job to symbol collector
     Backtrace* bktraceBuf = new Backtrace[BUF_CAPACITY];
 
-    for (;;)
+    while (!finishSymbolThread)
     {
         {
             UniqueLock<Mutex> lock(symbolCollectorMutex);
@@ -1098,7 +1109,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
             }
         }
 
-        for (size_t i = 0; i < nplaced; ++i)
+        for (size_t i = 0; i < nplaced && !finishSymbolThread; ++i)
         {
             ObtainBacktraceSymbols(&bktraceBuf[i]);
 

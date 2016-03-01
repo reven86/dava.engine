@@ -101,6 +101,7 @@ public:
     void EnableLightWeightMode();
     void SetCallbacks(Function<void()> updateCallback, Function<void(uint32, bool)> tagCallback);
     void Update();
+    void Finish();
 
     DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
     DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
@@ -199,6 +200,7 @@ private:
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
     bool lightWeightMode = false; // Flag enabling lightweight mode: no backtrace and symbols, should increase performance
+    bool finishSymbolThread = false;
 
     Function<void()> updateCallback;
     Function<void(uint32, bool)> tagCallback;
