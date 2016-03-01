@@ -157,6 +157,7 @@ def main():
     parser.add_argument('cmake_path', help='relative path to cmake list')
     parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
     parser.add_argument('--add_definitions', '-defs', default="", help="add definitions" )
+    parser.add_argument('--x64', default=False )
 
     options = parser.parse_args()
 
@@ -165,6 +166,11 @@ def main():
         exit()
 
     destination_platform = ""
+
+    g_is_x64          = options.x64
+    g_cmake_file_path = os.path.realpath(options.cmake_path)
+    g_generation_dir  = options.generation_dir
+    g_add_definitions = options.add_definitions.replace(',',' ')
 
     if options.platform_name not in g_supported_platforms:
         print "Wrong destination OS name " + "'" + options.platform_name + "'"
@@ -183,10 +189,6 @@ def main():
         exit()
 
     toolchain, project_type = get_toolchain(destination_platform, project_type)
-
-    g_cmake_file_path = os.path.realpath(options.cmake_path)
-    g_generation_dir  = options.generation_dir
-    g_add_definitions = options.add_definitions.replace(',',' ')
 
     if len(g_generation_dir) :
         if not os.path.exists(g_generation_dir):
