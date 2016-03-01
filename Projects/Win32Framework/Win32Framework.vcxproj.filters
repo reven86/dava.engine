@@ -537,9 +537,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIListCell.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UILoadingTransition.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIMoveInTransition.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1717,6 +1714,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UILoadingScreen.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1954,9 +1954,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIListCell.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UILoadingTransition.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIMoveInTransition.cpp">
@@ -3069,6 +3066,9 @@
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\VisibilityCheckComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UILoadingScreen.cpp">
+      <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

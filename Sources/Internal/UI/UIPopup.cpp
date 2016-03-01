@@ -46,7 +46,7 @@ void UIPopup::Show()
 
 void UIPopup::Hide()
 {
-    if (InViewHierarchy())
+    if (IsActive())
         UIControlSystem::Instance()->RemovePopup(this);
 }
 };
