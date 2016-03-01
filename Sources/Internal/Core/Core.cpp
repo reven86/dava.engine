@@ -634,7 +634,6 @@ void Core::SystemProcessFrame()
 
     if (!isActive)
     {
-        LCP;
         #if PROFILER_ENABLED
         profiler::Stop();
         #endif
