@@ -26,62 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Scene/SelectableObject.h"
 
-#ifndef __MATERIALS_FILTER_MODEL_H__
-#define __MATERIALS_FILTER_MODEL_H__
-
-#include "Render/Material/NMaterial.h"
-
-#include <QStandardItemModel>
-#include <QSortFilterProxyModel>
-#include <QString>
-
-class QMimeData;
-class QStandardItem;
-class SceneEditor2;
-class MaterialItem;
-class Command2;
-class SelectableObjectGroup;
-class MaterialModel;
-
-class MaterialFilteringModel : public QSortFilterProxyModel
+SelectableObject::SelectableObject(DAVA::BaseObject* baseObject)
 {
-    Q_OBJECT
+    object = DAVA::SafeRetain(baseObject);
+}
 
-public:
-    enum eFilterType
-    {
-        SHOW_ALL,
-        SHOW_ONLY_INSTANCES,
-        SHOW_INSTANCES_AND_MATERIALS,
-        SHOW_NOTHING,
-    };
+SelectableObject::SelectableObject(const SelectableObject& other)
+{
+    object = DAVA::SafeRetain(other.object);
+    boundingBox = other.boundingBox;
+}
 
-public:
-    MaterialFilteringModel(MaterialModel* treeModel, QObject* parent = NULL);
+SelectableObject::SelectableObject(SelectableObject&& other)
+{
+    object = other.object;
+    boundingBox = other.boundingBox;
+    other.object = nullptr;
+}
 
-    void Sync();
+SelectableObject::~SelectableObject()
+{
+    DAVA::SafeRelease(object);
+}
 
-    void SetScene(SceneEditor2* scene);
-    SceneEditor2* GetScene();
-    void SetSelection(const SelectableObjectGroup* group);
-    DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
-    QModelIndex GetIndex(DAVA::NMaterial* material, const QModelIndex& parent = QModelIndex()) const;
+SelectableObject& SelectableObject::operator=(const SelectableObject& other)
+{
+    object = DAVA::SafeRetain(other.object);
+    boundingBox = other.boundingBox;
+    return *this;
+}
 
-    bool dropCanBeAccepted(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
-    void setFilterType(int type);
-    int getFilterType() const;
+SelectableObject& SelectableObject::operator=(SelectableObject&& other)
+{
+    object = other.object;
+    boundingBox = other.boundingBox;
+    other.object = nullptr;
+    return *this;
+}
 
-    // QSortFilterProxyModel
-    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
-    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+bool SelectableObject::operator==(const SelectableObject& other) const
+{
+    return object == other.object;
+}
 
-    // QStandardItemModel
-    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+bool SelectableObject::operator!=(const SelectableObject& other) const
+{
+    return object != other.object;
+}
 
-private:
-    MaterialModel* materialModel;
-    eFilterType filterType;
-};
+bool SelectableObject::operator<(const SelectableObject& other) const
+{
+    return object < other.object;
+}
 
-#endif // __MATERIALS_FILTER_MODEL_H__
+void SelectableObject::SetBoundingBox(const DAVA::AABBox3& box)
+{
+    boundingBox = box;
+}
+
+const DAVA::Matrix4& SelectableObject::GetWorldTransform() const
+{
+    auto entity = Cast<DAVA::Entity>();
+
+    if (entity == nullptr)
+        return DAVA::Matrix4::IDENTITY;
+
+    return entity->GetWorldTransform();
+}

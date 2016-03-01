@@ -31,7 +31,7 @@
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
 #include "Commands2/Command2.h"
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableObjectGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
 
@@ -47,7 +47,8 @@
 
 class StructureSystem : public DAVA::SceneSystem
 {
-    friend class SceneEditor2;
+public:
+    using InternalMapping = DAVA::Map<DAVA::Entity*, DAVA::Entity*>;
 
 public:
     StructureSystem(DAVA::Scene* scene);
@@ -60,10 +61,10 @@ public:
     void RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters);
     void MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer);
     void RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& layers);
-    EntityGroup ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings = false);
+    SelectableObjectGroup ReloadEntities(const SelectableObjectGroup& entityGroup, bool saveLightmapSettings = false);
     // Mapping is link between old entity and new entity
-    void ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, bool saveLightmapSettings = false);
-    EntityGroup ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
+    void ReloadRefs(const DAVA::FilePath& modelPath, InternalMapping& mapping, bool saveLightmapSettings = false);
+    SelectableObjectGroup ReloadEntitiesAs(const SelectableObjectGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
     void Add(const DAVA::FilePath& newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
 
     void EmitChanged();
@@ -73,8 +74,8 @@ public:
     void AddDelegate(StructureSystemDelegate* delegate);
     void RemoveDelegate(StructureSystemDelegate* delegate);
 
-protected:
-    bool structureChanged;
+private:
+    friend class SceneEditor2;
 
     void Process(DAVA::float32 timeElapsed) override;
     void Draw();
@@ -84,7 +85,7 @@ protected:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings);
+    void ReloadInternal(InternalMapping& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings);
     DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool clearCached);
 
     bool CopyLightmapSettings(DAVA::Entity* fromState, DAVA::Entity* toState) const;
@@ -99,6 +100,7 @@ protected:
 
 private:
     DAVA::List<StructureSystemDelegate*> delegates;
+    bool structureChanged = false;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

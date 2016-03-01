@@ -977,7 +977,7 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
         if (scene->cameraSystem)
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
 
-        SceneSelectionChanged(scene, &scene->selectionSystem->GetSelection(), nullptr);
+        SceneSelectionChanged(scene, nullptr, nullptr);
     }
 }
 
@@ -987,7 +987,7 @@ void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
     EnableSceneActions(false);
 }
 
-void QtMainWindow::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)
 {
     UpdateModificationActionsState();
 }
@@ -1091,9 +1091,9 @@ void QtMainWindow::UpdateModificationActionsState()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        const EntityGroup& selection = scene->selectionSystem->GetSelection();
+        const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
         canModify = scene->modifSystem->ModifCanStart(selection);
-        isMultiple = (selection.Size() > 1);
+        isMultiple = (selection.GetSize() > 1);
     }
 
     ui->actionModifyReset->setEnabled(canModify);
@@ -1639,7 +1639,7 @@ void QtMainWindow::OnTextureBrowser()
 {
     SceneEditor2* sceneEditor = GetCurrentScene();
 
-    EntityGroup selectedEntities;
+    SelectableObjectGroup selectedEntities;
     if (nullptr != sceneEditor)
     {
         selectedEntities.Join(sceneEditor->selectionSystem->GetSelection());
@@ -3125,7 +3125,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
             auto vec = conv.GetPointers<Entity*>();
             if (!vec.empty())
             {
-                EntityGroup entityGroup;
+                SelectableObjectGroup entityGroup;
                 DAVA::Vector<Entity*> allEntities;
                 currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
@@ -3139,7 +3139,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
                 if (!entityGroup.IsEmpty())
                 {
                     currentScene->selectionSystem->SetSelection(entityGroup);
-                    currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());
+                    currentScene->cameraSystem->LookAt(entityGroup.GetIntegralBoundingBox());
                 }
             }
         }

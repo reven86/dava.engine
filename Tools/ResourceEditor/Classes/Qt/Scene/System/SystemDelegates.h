@@ -34,7 +34,7 @@ namespace DAVA
 class Entity;
 }
 
-class EntityGroup;
+class SelectableObjectGroup;
 
 class EntityModificationSystemDelegate
 {
@@ -53,8 +53,8 @@ public:
 class SceneSelectionSystemDelegate
 {
 public:
-    virtual bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) = 0;
-    virtual bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) = 0;
+    virtual bool AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection) = 0;
+    virtual bool AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection) = 0;
 };
 
 #endif //__SYSTEM_DELEGATES_H__

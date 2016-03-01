@@ -217,11 +217,14 @@ void PathSystem::DrawInViewOnlyMode()
 {
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
     for (const auto& item : selection.GetContent())
     {
-        DAVA::Entity* path = item.first;
+        DAVA::Entity* path = item.Cast<DAVA::Entity>();
+        if (path == nullptr)
+            continue;
+
         DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(path);
         if (path->GetVisible() == false || !pathComponent)
         {
@@ -260,7 +263,7 @@ void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& fini
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (currentSelection != selection)
     {
         currentSelection.Clear();
@@ -268,8 +271,11 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
         for (const auto& item : currentSelection.GetContent())
         {
-            DAVA::Entity* entity = item.first;
-            if (entity->GetComponent(Component::PATH_COMPONENT))
+            DAVA::Entity* entity = item.Cast<DAVA::Entity>();
+            if (entity == nullptr)
+                continue;
+
+            if (entity->GetComponent(Component::PATH_COMPONENT) != nullptr)
             {
                 currentPath = entity;
                 break;

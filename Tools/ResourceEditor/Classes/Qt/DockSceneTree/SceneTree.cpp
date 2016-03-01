@@ -703,7 +703,7 @@ void SceneTree::ReloadModel()
 
         if (QDialog::Accepted == dlg.exec())
         {
-            const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+            const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
             String wrongPathes;
             for (const auto& item : selection.GetContent())
             {
@@ -723,7 +723,7 @@ void SceneTree::ReloadModel()
             {
                 ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
             }
-            EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+            SelectableObjectGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
             sceneEditor->selectionSystem->SetSelection(newSelection);
         }
     }
@@ -755,7 +755,7 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                SelectableObjectGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
                 sceneEditor->selectionSystem->SetSelection(newSelection);
             }
         }
@@ -931,15 +931,31 @@ void SceneTree::SyncSelectionFromTree()
         if (NULL != curScene)
         {
             // select items in scene
-            EntityGroup group;
+            SelectableObjectGroup group;
 
             QModelIndexList indexList = selectionModel()->selection().indexes();
             for (int i = 0; i < indexList.size(); ++i)
             {
-                DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
-                if (entity != nullptr) // it could be emitter, etc
+                auto item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i]));
+                switch (item->ItemType())
                 {
+                case SceneTreeItem::eItemType::EIT_Entity:
+                {
+                    auto entity = SceneTreeItemEntity::GetEntity(item);
                     group.Add(entity, curScene->selectionSystem->GetUntransformedBoundingBox(entity));
+                    break;
+                }
+
+                case SceneTreeItem::eItemType::EIT_Emitter:
+                case SceneTreeItem::eItemType::EIT_InnerEmitter:
+                {
+                    auto emitter = SceneTreeItemParticleEmitter::GetEmitter(item);
+                    group.Add(emitter, curScene->selectionSystem->GetUntransformedBoundingBox(emitter));
+                    break;
+                }
+
+                default:
+                    DVASSERT_MSG(0, "NOT IMPLEMENTED YET");
                 }
             }
             curScene->selectionSystem->SetSelection(group);

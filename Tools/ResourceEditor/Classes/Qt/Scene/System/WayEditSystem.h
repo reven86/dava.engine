@@ -30,7 +30,7 @@
 #ifndef __SCENE_WAYEDIT_SYSTEM_H__
 #define __SCENE_WAYEDIT_SYSTEM_H__
 
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableObjectGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
 #include "SystemDelegates.h"
@@ -86,23 +86,23 @@ protected:
 
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent* edgeComponent);
 
-    void DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge);
-    void AddEdges(const EntityGroup& group, DAVA::Entity* nextEntity);
-    void RemoveEdges(const EntityGroup& group, DAVA::Entity* nextEntity);
+    void DefineAddOrRemoveEdges(const SelectableObjectGroup& srcPoints, DAVA::Entity* dstPoint, SelectableObjectGroup& toAddEdge, SelectableObjectGroup& toRemoveEdge);
+    void AddEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity);
+    void RemoveEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity);
     bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
 
     void ResetSelection();
-    void ProcessSelection(const EntityGroup& selection);
+    void ProcessSelection(const SelectableObjectGroup& selection);
     void UpdateSelectionMask();
-    void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
+    void FilterPrevSelection(DAVA::Entity* parentEntity, SelectableObjectGroup& selection);
 
-    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
-    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection) override;
 
 protected:
-    EntityGroup currentSelection;
-    EntityGroup selectedWaypoints;
-    EntityGroup prevSelectedWaypoints;
+    SelectableObjectGroup currentSelection;
+    SelectableObjectGroup selectedWaypoints;
+    SelectableObjectGroup prevSelectedWaypoints;
     SceneEditor2* sceneEditor = nullptr;
     SceneSelectionSystem* selectionSystem = nullptr;
     SceneCollisionSystem* collisionSystem = nullptr;

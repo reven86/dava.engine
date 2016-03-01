@@ -31,7 +31,7 @@
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableObjectGroup.h"
 
 #include "Main/QtUtils.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -213,7 +213,7 @@ DAVA::NMaterial* MaterialModel::GetGlobalMaterial() const
     return ret;
 }
 
-void MaterialModel::SetSelection(const EntityGroup* group)
+void MaterialModel::SetSelection(const SelectableObjectGroup* group)
 {
     QStandardItem* root = invisibleRootItem();
     for (int i = 0; i < root->rowCount(); ++i)
@@ -240,7 +240,7 @@ void MaterialModel::SetSelection(const EntityGroup* group)
     }
 }
 
-bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* group)
+bool MaterialModel::SetItemSelection(MaterialItem* item, const SelectableObjectGroup* group)
 {
     if (group == nullptr)
     {
@@ -252,7 +252,7 @@ bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* grou
     DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
 
     entity = curScene->selectionSystem->GetSelectableEntity(entity);
-    bool shouldSelect = group->ContainsEntity(entity);
+    bool shouldSelect = group->ContainsObject(entity);
     item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelect);
 
     return shouldSelect;
@@ -322,7 +322,7 @@ void MaterialModel::Sync()
             }
         }
 
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
         SetSelection(&selection);
     }
 }

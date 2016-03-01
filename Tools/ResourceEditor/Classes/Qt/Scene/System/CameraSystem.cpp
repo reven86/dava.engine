@@ -533,7 +533,7 @@ void SceneCameraSystem::UpdateDistanceToCamera()
 {
     SceneEditor2* sc = (SceneEditor2*)GetScene();
 
-    Vector3 center = sc->selectionSystem->GetSelection().GetCommonBbox().GetCenter();
+    Vector3 center = sc->selectionSystem->GetSelection().GetIntegralBoundingBox().GetCenter();
 
     const Camera* cam = GetScene()->GetCurrentCamera();
     if (cam)
@@ -648,7 +648,7 @@ void SceneCameraSystem::MoveToSelection()
     if (sceneEditor == nullptr)
         return;
 
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
         LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));

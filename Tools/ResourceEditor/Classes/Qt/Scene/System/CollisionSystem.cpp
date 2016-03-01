@@ -119,10 +119,10 @@ int SceneCollisionSystem::GetDrawMode() const
     return drawMode;
 }
 
-const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to)
+const SelectableObjectGroup::CollectionType& SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to)
 {
     // check if cache is available
-    if (rayIntersectCached && lastRayFrom == from && lastRayTo == to)
+    if (rayIntersectCached && (lastRayFrom == from) && (lastRayTo == to))
     {
         return rayIntersectedEntities;
     }
@@ -165,7 +165,7 @@ const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTest(const DAVA
     return rayIntersectedEntities;
 }
 
-const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTestFromCamera()
+const SelectableObjectGroup::CollectionType& SceneCollisionSystem::ObjectsRayTestFromCamera()
 {
     DAVA::Vector3 traceFrom;
     DAVA::Vector3 traceTo;
@@ -281,22 +281,24 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity* entity)
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
     // check in there are entities that should be added or removed
-    if (entitiesToAdd.size() > 0 || entitiesToRemove.size() > 0)
+    if (!(entitiesToAdd.empty() && entitiesToRemove.empty()))
     {
-        DAVA::Set<DAVA::Entity*>::iterator i = entitiesToRemove.begin();
-        DAVA::Set<DAVA::Entity*>::iterator end = entitiesToRemove.end();
-
-        for (; i != end; ++i)
+        for (auto obj : entitiesToRemove)
         {
-            DestroyFromEntity(*i);
+            DestroyFromEntity(obj);
         }
 
-        i = entitiesToAdd.begin();
-        end = entitiesToAdd.end();
-
-        for (; i != end; ++i)
+        for (auto obj : entitiesToAdd)
         {
-            BuildFromEntity(*i);
+            SelectableObject wrapper(obj);
+            if (wrapper.CanBeCastedTo<DAVA::Entity>())
+            {
+                BuildFromEntity(wrapper.Cast<DAVA::Entity>());
+            }
+            else
+            {
+                // TODO : build from other types
+            }
         }
 
         entitiesToAdd.clear();
@@ -361,13 +363,13 @@ void SceneCollisionSystem::Draw()
             for (const auto& item : selectionSystem->GetSelection().GetContent())
             {
                 // get collision object for solid selected entity
-                CollisionBaseObject* cObj = entityToCollision[item.first];
+                CollisionBaseObject* cObj = entityToCollision[item.GetContainedObject()];
 
                 // if no collision object for solid selected entity,
                 // try to get collision object for real selected entity
                 if (NULL == cObj)
                 {
-                    cObj = entityToCollision[item.first];
+                    cObj = entityToCollision[item.GetContainedObject()];
                 }
 
                 if (NULL != cObj && NULL != cObj->btObject)
@@ -555,7 +557,7 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
     return cObj;
 }
 
-void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity* entity)
+void SceneCollisionSystem::DestroyFromEntity(DAVA::BaseObject* entity)
 {
     if (curLandscapeEntity == entity)
     {
@@ -571,7 +573,7 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity* entity)
     }
 }
 
-const EntityGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
+const SelectableObjectGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
 {
     planeClippedObjects.Clear();
     for (const auto& object : entityToCollision)

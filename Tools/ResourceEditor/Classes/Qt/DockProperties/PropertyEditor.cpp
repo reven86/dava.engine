@@ -901,7 +901,7 @@ void PropertyEditor::ActionEditComponent()
 {
     if (curNodes.size() == 1)
     {
-        Entity* node = curNodes.at(0);
+        Entity* node = curNodes.front();
         ActionComponentEditor editor(this);
 
         editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
@@ -910,7 +910,8 @@ void PropertyEditor::ActionEditComponent()
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
         auto bbox = curScene->selectionSystem->GetUntransformedBoundingBox(node);
 
-        EntityGroup newSelection(node, bbox);
+        SelectableObjectGroup newSelection;
+        newSelection.Add(node, bbox);
         curScene->selectionSystem->SetSelection(newSelection);
 
         if (editor.IsModified())

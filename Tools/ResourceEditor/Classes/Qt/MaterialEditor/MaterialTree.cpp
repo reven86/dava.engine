@@ -263,7 +263,7 @@ void MaterialTree::OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     treeModel->Sync();
 }
 
-void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     if (QtMainWindow::Instance()->GetCurrentScene() == scene)
     {

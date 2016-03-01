@@ -35,7 +35,6 @@
 #include "Qt/Scene/System/TextDrawSystem.h"
 #include "Qt/Scene/SceneSignals.h"
 
-#include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
@@ -93,7 +92,7 @@ void EntityModificationSystem::SetLandscapeSnap(bool snap)
     snapToLandscape = snap;
 }
 
-void EntityModificationSystem::PlaceOnLandscape(const EntityGroup& entities)
+void EntityModificationSystem::PlaceOnLandscape(const SelectableObjectGroup& entities)
 {
     if (ModifCanStart(entities))
     {
@@ -114,7 +113,7 @@ void EntityModificationSystem::PlaceOnLandscape(const EntityGroup& entities)
     }
 }
 
-void EntityModificationSystem::ResetTransform(const EntityGroup& entities)
+void EntityModificationSystem::ResetTransform(const SelectableObjectGroup& entities)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
@@ -125,9 +124,10 @@ void EntityModificationSystem::ResetTransform(const EntityGroup& entities)
         sceneEditor->BeginBatch("Multiple transform");
         for (const auto& item : entities.GetContent())
         {
-            if (item.first != nullptr)
+            auto entity = item.Cast<DAVA::Entity>();
+            if (entity != nullptr)
             {
-                sceneEditor->Exec(new TransformCommand(item.first, item.first->GetLocalTransform(), zeroTransform));
+                sceneEditor->Exec(new TransformCommand(entity, entity->GetLocalTransform(), zeroTransform));
             }
         }
         sceneEditor->EndBatch();
@@ -155,142 +155,139 @@ void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 
 void EntityModificationSystem::Input(DAVA::UIEvent* event)
 {
-    if (IsLocked())
+    if (IsLocked() || (collisionSystem == nullptr))
     {
         return;
     }
 
-    if (NULL != collisionSystem)
+    // current selected entities
+    SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
+    const SelectableObjectGroup& selectedEntities = selectionSystem->GetSelection();
+
+    DAVA::Camera* camera = cameraSystem->GetCurCamera();
+
+    // if we are not in modification state, try to find some selected item
+    // that have mouse cursor at the top of it
+    if (!inModifState)
     {
-        // current selected entities
-        SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
-        const EntityGroup& selectedEntities = selectionSystem->GetSelection();
-
-        DAVA::Camera* camera = cameraSystem->GetCurCamera();
-
-        // if we are not in modification state, try to find some selected item
-        // that have mouse cursor at the top of it
-        if (!inModifState)
+        // can we start modification???
+        if (ModifCanStartByMouse(selectedEntities))
         {
-            // can we start modification???
-            if (ModifCanStartByMouse(selectedEntities))
-            {
-                SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
+            SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
 
-                if (DAVA::UIEvent::Phase::BEGAN == event->phase)
-                {
-                    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
-                    {
-                        // go to modification state
-                        inModifState = true;
-
-                        // select current hood axis as active
-                        if (curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
-                        {
-                            SetModifAxis(hoodSystem->GetPassingAxis());
-                        }
-
-                        // set entities to be modified
-                        BeginModification(selectedEntities);
-
-                        // init some values, needed for modifications
-                        modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
-                        modifStartPos2d = event->point;
-
-                        // check if this is move with copy action
-                        int curKeyModifiers = QApplication::keyboardModifiers();
-                        if (curKeyModifiers & Qt::ShiftModifier && curMode == ST_MODIF_MOVE)
-                        {
-                            cloneState = CLONE_NEED;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), NULL);
-            }
-        }
-        // or we are already in modification state
-        else
-        {
-            // phase still continue
-            if (event->phase == DAVA::UIEvent::Phase::DRAG)
-            {
-                DAVA::Vector3 moveOffset;
-                DAVA::float32 rotateAngle;
-                DAVA::float32 scaleForce;
-
-                switch (curMode)
-                {
-                case ST_MODIF_MOVE:
-                {
-                    DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
-                    moveOffset = Move(newPos3d);
-                    modified = true;
-                }
-                break;
-                case ST_MODIF_ROTATE:
-                {
-                    rotateAngle = Rotate(event->point);
-                    modified = true;
-                }
-                break;
-                case ST_MODIF_SCALE:
-                {
-                    scaleForce = Scale(event->point);
-                    modified = true;
-                }
-                break;
-                default:
-                    break;
-                }
-
-                if (modified)
-                {
-                    if (cloneState == CLONE_NEED)
-                    {
-                        CloneBegin();
-                        cloneState = CLONE_DONE;
-                    }
-
-                    // say to selection system, that selected items were modified
-                    selectionSystem->CancelSelection();
-
-                    // lock hood, so it wont process ui events, wont calc. scale depending on it current position
-                    hoodSystem->LockScale(true);
-                    hoodSystem->SetModifOffset(moveOffset);
-                    hoodSystem->SetModifRotate(rotateAngle);
-                    hoodSystem->SetModifScale(scaleForce);
-                }
-            }
-            // phase ended
-            else if (event->phase == DAVA::UIEvent::Phase::ENDED)
+            if (DAVA::UIEvent::Phase::BEGAN == event->phase)
             {
                 if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
                 {
-                    if (modified)
+                    // go to modification state
+                    inModifState = true;
+
+                    // select current hood axis as active
+                    if (curMode == ST_MODIF_MOVE || curMode == ST_MODIF_ROTATE)
                     {
-                        if (cloneState == CLONE_DONE)
-                        {
-                            CloneEnd();
-                        }
-                        else
-                        {
-                            ApplyModification();
-                        }
+                        SetModifAxis(hoodSystem->GetPassingAxis());
                     }
 
-                    hoodSystem->SetModifOffset(DAVA::Vector3(0, 0, 0));
-                    hoodSystem->SetModifRotate(0);
-                    hoodSystem->SetModifScale(0);
-                    hoodSystem->LockScale(false);
+                    // set entities to be modified
+                    BeginModification(selectedEntities);
 
-                    EndModification();
-                    inModifState = false;
-                    modified = false;
-                    cloneState = CLONE_DONT;
+                    // init some values, needed for modifications
+                    modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
+                    modifStartPos2d = event->point;
+
+                    // check if this is move with copy action
+                    int curKeyModifiers = QApplication::keyboardModifiers();
+                    if (curKeyModifiers & Qt::ShiftModifier && curMode == ST_MODIF_MOVE)
+                    {
+                        cloneState = CLONE_NEED;
+                    }
                 }
+            }
+        }
+        else
+        {
+            SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), nullptr);
+        }
+    }
+    // or we are already in modification state
+    else
+    {
+        // phase still continue
+        if (event->phase == DAVA::UIEvent::Phase::DRAG)
+        {
+            DAVA::Vector3 moveOffset;
+            DAVA::float32 rotateAngle;
+            DAVA::float32 scaleForce;
+
+            switch (curMode)
+            {
+            case ST_MODIF_MOVE:
+            {
+                DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
+                moveOffset = Move(newPos3d);
+                modified = true;
+            }
+            break;
+            case ST_MODIF_ROTATE:
+            {
+                rotateAngle = Rotate(event->point);
+                modified = true;
+            }
+            break;
+            case ST_MODIF_SCALE:
+            {
+                scaleForce = Scale(event->point);
+                modified = true;
+            }
+            break;
+            default:
+                break;
+            }
+
+            if (modified)
+            {
+                if (cloneState == CLONE_NEED)
+                {
+                    CloneBegin();
+                    cloneState = CLONE_DONE;
+                }
+
+                // say to selection system, that selected items were modified
+                selectionSystem->CancelSelection();
+
+                // lock hood, so it wont process ui events, wont calc. scale depending on it current position
+                hoodSystem->LockScale(true);
+                hoodSystem->SetModifOffset(moveOffset);
+                hoodSystem->SetModifRotate(rotateAngle);
+                hoodSystem->SetModifScale(scaleForce);
+            }
+        }
+        // phase ended
+        else if (event->phase == DAVA::UIEvent::Phase::ENDED)
+        {
+            if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+            {
+                if (modified)
+                {
+                    if (cloneState == CLONE_DONE)
+                    {
+                        CloneEnd();
+                    }
+                    else
+                    {
+                        ApplyModification();
+                    }
+                }
+
+                hoodSystem->SetModifOffset(DAVA::Vector3(0, 0, 0));
+                hoodSystem->SetModifRotate(0);
+                hoodSystem->SetModifScale(0);
+                hoodSystem->LockScale(false);
+
+                EndModification();
+                inModifState = false;
+                modified = false;
+                cloneState = CLONE_DONT;
             }
         }
     }
@@ -314,18 +311,23 @@ void EntityModificationSystem::ProcessCommand(const Command2* command, bool redo
 {
 }
 
-EntityGroup EntityModificationSystem::BeginModification(const EntityGroup& inputEntities)
+SelectableObjectGroup EntityModificationSystem::BeginModification(const SelectableObjectGroup& inputEntities)
 {
     EndModification();
     if (inputEntities.IsEmpty())
         return inputEntities;
 
-    EntityGroup result = inputEntities;
-    result.FilterChildrenComponents();
-    modifEntities.reserve(result.Size());
+    SelectableObjectGroup result = inputEntities;
+    result.RemoveIf([&result](const SelectableObject& obj)
+                    {
+                        auto entity = obj.Cast<DAVA::Entity>();
+                        return (entity == nullptr) ? false : result.ContainsObject(entity->GetParent());
+                    });
+
+    modifEntities.reserve(result.GetSize());
     for (const auto& item : result.GetContent())
     {
-        DAVA::Entity* en = item.first;
+        DAVA::Entity* en = item.Cast<DAVA::Entity>();
         DVASSERT(en != nullptr)
 
         EntityToModify etm;
@@ -427,7 +429,7 @@ void EntityModificationSystem::EndModification()
     isOrthoModif = false;
 }
 
-bool EntityModificationSystem::ModifCanStart(const EntityGroup& selectedEntities) const
+bool EntityModificationSystem::ModifCanStart(const SelectableObjectGroup& selectedEntities) const
 {
     bool modifCanStart = false;
 
@@ -438,7 +440,8 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup& selectedEntities
         // check if we have some locked items in selection
         for (const auto& item : selectedEntities.GetContent())
         {
-            if (item.first->GetLocked())
+            auto entity = item.Cast<DAVA::Entity>();
+            if ((entity != nullptr) && (entity->GetLocked()))
             {
                 hasLocked = true;
                 break;
@@ -451,7 +454,7 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup& selectedEntities
     return modifCanStart;
 }
 
-bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup& selectedEntities) const
+bool EntityModificationSystem::ModifCanStartByMouse(const SelectableObjectGroup& selectedEntities) const
 {
     bool modifCanStart = false;
 
@@ -470,7 +473,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup& selectedE
         else if (!modificationByGizmoOnly)
         {
             // send this ray to collision system and get collision objects
-            const EntityGroup::EntityVector& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+            const SelectableObjectGroup::CollectionType& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 
             // check if one of got collision objects is intersected with selected items
             // if so - we can start modification
@@ -478,15 +481,17 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup& selectedE
             {
                 for (const auto& collisionItem : collisionEntities)
                 {
+                    auto collisionEntity = collisionItem.Cast<DAVA::Entity>();
                     for (const auto& selectedItem : selectedEntities.GetContent())
                     {
-                        if (selectedItem.first == collisionItem.first)
+                        auto selectedEntity = selectedItem.Cast<DAVA::Entity>();
+                        if (selectedItem == collisionItem)
                         {
                             modifCanStart = true;
                         }
-                        else if (selectedItem.first->GetSolid())
+                        else if (selectedEntity->GetSolid())
                         {
-                            modifCanStart = IsEntityContainRecursive(selectedItem.first, collisionItem.first);
+                            modifCanStart = IsEntityContainRecursive(selectedEntity, collisionEntity);
                         }
 
                         if (modifCanStart)
@@ -902,7 +907,7 @@ void EntityModificationSystem::RemoveEntity(DAVA::Entity* entity)
     }
 }
 
-void EntityModificationSystem::MovePivotZero(const EntityGroup& entities)
+void EntityModificationSystem::MovePivotZero(const SelectableObjectGroup& entities)
 {
     if (ModifCanStart(entities))
     {
@@ -910,7 +915,7 @@ void EntityModificationSystem::MovePivotZero(const EntityGroup& entities)
     }
 }
 
-void EntityModificationSystem::MovePivotCenter(const EntityGroup& entities)
+void EntityModificationSystem::MovePivotCenter(const SelectableObjectGroup& entities)
 {
     if (ModifCanStart(entities))
     {
@@ -918,7 +923,7 @@ void EntityModificationSystem::MovePivotCenter(const EntityGroup& entities)
     }
 }
 
-void EntityModificationSystem::LockTransform(const EntityGroup& entities, bool lock)
+void EntityModificationSystem::LockTransform(const SelectableObjectGroup& entities, bool lock)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
     if (sceneEditor == nullptr)
@@ -929,18 +934,19 @@ void EntityModificationSystem::LockTransform(const EntityGroup& entities, bool l
     sceneEditor->BeginBatch("Lock entities");
     for (const auto& item : entities.GetContent())
     {
-        sceneEditor->Exec(new EntityLockCommand(item.first, lock));
+        auto entity = item.Cast<DAVA::Entity>();
+        sceneEditor->Exec(new EntityLockCommand(entity, lock));
     }
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::BakeGeometry(const EntityGroup& entities, BakeMode mode)
+void EntityModificationSystem::BakeGeometry(const SelectableObjectGroup& entities, BakeMode mode)
 {
     SceneEditor2* sceneEditor = ((SceneEditor2*)GetScene());
 
-    if (NULL != sceneEditor && entities.Size() == 1)
+    if ((sceneEditor != nullptr) && (entities.GetSize() == 1))
     {
-        DAVA::Entity* entity = entities.GetFirstEntity();
+        DAVA::Entity* entity = entities.GetFirst().Cast<DAVA::Entity>();
         DAVA::RenderObject* ro = GetRenderObject(entity);
 
         const char* commandMessage;
@@ -1102,24 +1108,25 @@ void EntityModificationSystem::SearchEntitiesWithRenderObject(DAVA::RenderObject
     }
 }
 
-bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection)
+bool EntityModificationSystem::AllowPerformSelectionHavingCurrent(const SelectableObjectGroup& currentSelection)
 {
     return (GetModifMode() == ST_ModifMode::ST_MODIF_OFF) || !ModifCanStartByMouse(currentSelection);
 }
 
-bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection)
+bool EntityModificationSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectGroup& currentSelection, const SelectableObjectGroup& newSelection)
 {
     return true;
 }
 
-void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableObjectGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
     sceneEditor->BeginBatch("Multiple move");
 
     for (const auto& item : selection.GetContent())
     {
-        DAVA::Matrix4 origMatrix = item.first->GetLocalTransform();
+        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
+        DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
         DAVA::Vector3 newPos = origMatrix.GetTranslationVector();
 
         if (axis & ST_AXIS_X)
@@ -1139,12 +1146,12 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const EntityGroup& 
 
         DAVA::Matrix4 newMatrix = origMatrix;
         newMatrix.SetTranslationVector(newPos);
-        sceneEditor->Exec(new TransformCommand(item.first, origMatrix, newMatrix));
+        sceneEditor->Exec(new TransformCommand(entity, origMatrix, newMatrix));
     }
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableObjectGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     DAVA::float32 x = DAVA::DegToRad(values.x);
     DAVA::float32 y = DAVA::DegToRad(values.y);
@@ -1155,7 +1162,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
 
     for (const auto& item : selection.GetContent())
     {
-        DAVA::Entity* entity = item.first;
+        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
         DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
 
         DAVA::Vector3 pos, scale, rotate;
@@ -1198,7 +1205,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const EntityGroup
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
+void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableObjectGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
     DAVA::float32 scaleValue = 1.0f;
 
@@ -1223,7 +1230,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const EntityGroup&
 
     for (const auto& item : selection.GetContent())
     {
-        DAVA::Entity* entity = item.first;
+        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
         DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
 
         DAVA::Vector3 pos, scale, rotate;

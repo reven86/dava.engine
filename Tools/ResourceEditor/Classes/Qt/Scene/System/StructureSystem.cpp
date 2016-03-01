@@ -45,18 +45,17 @@
 
 namespace StructSystemDetails
 {
-void MapEntityGroup(const EntityGroup& srcGroup, EntityGroup& dstGroup,
-                    const DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, SceneCollisionSystem* collisionSystem)
+void MapEntityGroup(const SelectableObjectGroup& srcGroup, SelectableObjectGroup& dstGroup,
+                    const StructureSystem::InternalMapping& mapping, SceneCollisionSystem* collisionSystem)
 {
-    using namespace DAVA;
     DVASSERT(collisionSystem != nullptr);
 
     for (const auto obj : srcGroup.GetContent())
     {
-        auto i = mapping.find(obj.first);
+        auto i = mapping.find(obj.Cast<DAVA::Entity>());
         if (i != mapping.end())
         {
-            dstGroup.Add(i->first, obj.second);
+            dstGroup.Add(i->first, obj.GetBoundingBox());
         }
     }
 }
@@ -64,7 +63,6 @@ void MapEntityGroup(const EntityGroup& srcGroup, EntityGroup& dstGroup,
 
 StructureSystem::StructureSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
-    , structureChanged(false)
 {
 }
 
@@ -274,16 +272,16 @@ void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forc
     }
 }
 
-EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings)
+SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGroup& entityGroup, bool saveLightmapSettings)
 {
-    EntityGroup result;
-    if (entityGroup.Size() > 0)
+    SelectableObjectGroup result;
+    if (!entityGroup.IsEmpty())
     {
         DAVA::Set<DAVA::FilePath> refsToReload;
 
         for (const auto& item : entityGroup.GetContent())
         {
-            DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(item.first);
+            DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(item.Cast<DAVA::Entity>());
             if (props != nullptr)
             {
                 DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
@@ -295,10 +293,10 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
         }
 
         DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
-        DAVA::Map<Entity*, Entity*> groupMapping;
+        InternalMapping groupMapping;
         for (; it != refsToReload.end(); ++it)
         {
-            DAVA::Map<Entity*, Entity*> mapping;
+            InternalMapping mapping;
             ReloadRefs(*it, mapping, saveLightmapSettings);
             groupMapping.insert(mapping.begin(), mapping.end());
         }
@@ -311,7 +309,7 @@ EntityGroup StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool
     return result;
 }
 
-void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, bool saveLightmapSettings)
+void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, InternalMapping& mapping, bool saveLightmapSettings)
 {
     if (!modelPath.IsEmpty())
     {
@@ -319,16 +317,16 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, DAVA::Map<DAVA
     }
 }
 
-EntityGroup StructureSystem::ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
+SelectableObjectGroup StructureSystem::ReloadEntitiesAs(const SelectableObjectGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
 {
-    EntityGroup result;
+    SelectableObjectGroup result;
     if (!entityGroup.IsEmpty())
     {
-        DAVA::Map<DAVA::Entity*, DAVA::Entity*> entitiesToReload;
+        InternalMapping entitiesToReload;
 
         for (const auto& obj : entityGroup.GetContent())
         {
-            entitiesToReload.emplace(obj.first, nullptr);
+            entitiesToReload.emplace(obj.GetContainedObject(), nullptr);
         }
 
         ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
@@ -341,7 +339,7 @@ EntityGroup StructureSystem::ReloadEntitiesAs(const EntityGroup& entityGroup, co
     return result;
 }
 
-void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
+void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     if (NULL != sceneEditor)
@@ -358,8 +356,8 @@ void StructureSystem::ReloadInternal(DAVA::Map<DAVA::Entity*, DAVA::Entity*>& ma
 
             if (NULL != loadedEntity)
             {
-                DAVA::Map<DAVA::Entity*, DAVA::Entity*>::iterator it = mapping.begin();
-                DAVA::Map<DAVA::Entity*, DAVA::Entity*>::iterator end = mapping.end();
+                InternalMapping::iterator it = mapping.begin();
+                InternalMapping::iterator end = mapping.end();
 
                 sceneEditor->BeginBatch("Reload model");
 

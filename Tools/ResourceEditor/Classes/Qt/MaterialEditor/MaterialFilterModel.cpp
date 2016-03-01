@@ -96,7 +96,7 @@ SceneEditor2* MaterialFilteringModel::GetScene()
     return materialModel->GetScene();
 }
 
-void MaterialFilteringModel::SetSelection(const EntityGroup* group)
+void MaterialFilteringModel::SetSelection(const SelectableObjectGroup* group)
 {
     materialModel->SetSelection(group);
 }

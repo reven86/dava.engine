@@ -32,7 +32,7 @@
 
 #include <QObject>
 
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableObjectGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/StaticSingleton.h"
 #include "Scene3D/Entity.h"
@@ -59,12 +59,12 @@ signals:
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
     // entities
-    void SelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
 
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     // mouse
-    void MouseOver(SceneEditor2* scene, const EntityGroup* entities);
-    void MouseOverSelection(SceneEditor2* scene, const EntityGroup* entities);
+    void MouseOver(SceneEditor2* scene, const SelectableObjectGroup* entities);
+    void MouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* entities);
 
     // particles - selection
     void EffectSelected(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
@@ -135,7 +135,7 @@ public:
         emit StructureChanged(scene, parent);
     }
 
-    void EmitSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+    void EmitSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
     {
         emit SelectionChanged(scene, selected, deselected);
     }
@@ -168,11 +168,11 @@ public:
         emit RulerToolLengthChanged(scene, length, previewLength);
     }
 
-    void EmitMouseOver(SceneEditor2* scene, const EntityGroup* entities)
+    void EmitMouseOver(SceneEditor2* scene, const SelectableObjectGroup* entities)
     {
         emit MouseOver(scene, entities);
     }
-    void EmitMouseOverSelection(SceneEditor2* scene, const EntityGroup* entities)
+    void EmitMouseOverSelection(SceneEditor2* scene, const SelectableObjectGroup* entities)
     {
         emit MouseOverSelection(scene, entities);
     }

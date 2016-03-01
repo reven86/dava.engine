@@ -103,14 +103,16 @@ void RunActionEventWidget::OnInvoke()
     const uint32 switchIndex = ui->switchIndex->value();
     const FastName name(ui->name->currentText().toStdString().c_str());
 
-    const EntityGroup& selection = editor->selectionSystem->GetSelection();
+    const SelectableObjectGroup& selection = editor->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
-        ActionComponent* component = static_cast<ActionComponent*>(item.first->GetComponent(Component::ACTION_COMPONENT));
-        if (component == nullptr)
-        {
+        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
+        if (entity == nullptr)
             continue;
-        }
+
+        ActionComponent* component = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
+        if (component == nullptr)
+            continue;
 
         const uint32 nEvents = component->GetCount();
         for (uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
@@ -167,12 +169,17 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const Ent
 
     QSet<QString> nameSet;
 
-    const EntityGroup& selection = scene->selectionSystem->GetSelection();
+    const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
-        ActionComponent* component = static_cast<ActionComponent*>(item.first->GetComponent(Component::ACTION_COMPONENT));
-        if (!component)
+        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
+        if (entity == nullptr)
             continue;
+
+        ActionComponent* component = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
+        if (component == nullptr)
+            continue;
+
         const uint32 nEvents = component->GetCount();
         for (uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
         {

@@ -30,7 +30,7 @@
 #ifndef __SCENE_COLLISION_SYSTEM_H__
 #define __SCENE_COLLISION_SYSTEM_H__
 
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableObjectGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
 
@@ -76,8 +76,8 @@ public:
 
     DAVA::AABBox3 GetBoundingBox(DAVA::Entity* entity);
 
-    const EntityGroup::EntityVector& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
-    const EntityGroup::EntityVector& ObjectsRayTestFromCamera();
+    const SelectableObjectGroup::CollectionType& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
+    const SelectableObjectGroup::CollectionType& ObjectsRayTestFromCamera();
 
     bool LandRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to, DAVA::Vector3& intersectionPoint);
     bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
@@ -90,7 +90,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
-    const EntityGroup& ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
+    const SelectableObjectGroup& ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
 
 private:
     void Draw();
@@ -101,7 +101,7 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
     CollisionBaseObject* BuildFromEntity(DAVA::Entity* entity);
-    void DestroyFromEntity(DAVA::Entity* entity);
+    void DestroyFromEntity(DAVA::BaseObject* entity);
 
 private:
     DAVA::Vector3 lastRayFrom;
@@ -110,13 +110,13 @@ private:
     DAVA::Vector3 lastLandRayFrom;
     DAVA::Vector3 lastLandRayTo;
     DAVA::Vector3 lastLandCollision;
-    DAVA::Set<DAVA::Entity*> entitiesToAdd;
-    DAVA::Set<DAVA::Entity*> entitiesToRemove;
-    DAVA::Map<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
+    DAVA::Set<DAVA::BaseObject*> entitiesToAdd;
+    DAVA::Set<DAVA::BaseObject*> entitiesToRemove;
+    DAVA::Map<DAVA::BaseObject*, CollisionBaseObject*> entityToCollision;
     DAVA::Map<btCollisionObject*, DAVA::Entity*> collisionToEntity;
     DAVA::Entity* curLandscapeEntity = nullptr;
-    EntityGroup::EntityVector rayIntersectedEntities;
-    EntityGroup planeClippedObjects;
+    SelectableObjectGroup::CollectionType rayIntersectedEntities;
+    SelectableObjectGroup planeClippedObjects;
     btDefaultCollisionConfiguration* objectsCollConf = nullptr;
     btCollisionDispatcher* objectsCollDisp = nullptr;
     btAxisSweep3* objectsBroadphase = nullptr;

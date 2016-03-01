@@ -41,7 +41,7 @@ class QStandardItem;
 class SceneEditor2;
 class MaterialItem;
 class Command2;
-class EntityGroup;
+class SelectableObjectGroup;
 struct TextureInfo;
 
 class MaterialModel
@@ -66,7 +66,7 @@ public:
 
     void SetScene(SceneEditor2* scene);
     SceneEditor2* GetScene();
-    void SetSelection(const EntityGroup* group);
+    void SetSelection(const SelectableObjectGroup* group);
     DAVA::NMaterial* GetMaterial(const QModelIndex& index) const;
     QModelIndex GetIndex(DAVA::NMaterial* material, const QModelIndex& parent = QModelIndex()) const;
 
@@ -91,7 +91,7 @@ protected:
 
 private:
     void ReloadLodSwColors();
-    bool SetItemSelection(MaterialItem* item, const EntityGroup* group);
+    bool SetItemSelection(MaterialItem* item, const SelectableObjectGroup* group);
     void Sync(MaterialItem* item);
 };
 

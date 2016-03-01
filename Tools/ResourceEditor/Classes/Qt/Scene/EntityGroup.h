@@ -32,7 +32,7 @@
 
 #include "Scene3D/Entity.h"
 
-class EntityGroup
+DAVA_DEPRECATED(class EntityGroup)
 {
 public:
     using EntityWithBbox = std::pair<DAVA::Entity*, DAVA::AABBox3>;

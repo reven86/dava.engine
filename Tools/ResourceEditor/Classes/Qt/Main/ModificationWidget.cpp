@@ -121,7 +121,7 @@ void ModificationWidget::ReloadValues()
 
     if (nullptr != curScene)
     {
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
         if (!selection.IsEmpty() && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
         {
             xAxisModify->setEnabled(true);
@@ -132,7 +132,7 @@ void ModificationWidget::ReloadValues()
             yAxisModify->showButtons(true);
             zAxisModify->showButtons(true);
 
-            if (selection.Size() > 1)
+            if (selection.GetSize() > 1)
             {
                 groupMode = true;
 
@@ -165,8 +165,8 @@ void ModificationWidget::ReloadValues()
                 }
                 else
                 {
-                    DAVA::Entity* singleEntity = selection.GetFirstEntity();
-                    if (NULL != singleEntity)
+                    DAVA::Entity* singleEntity = selection.GetFirst().Cast<DAVA::Entity>();
+                    if (singleEntity != nullptr)
                     {
                         DAVA::float32 x = 0;
                         DAVA::float32 y = 0;
@@ -241,8 +241,14 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
         return;
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
-    EntityGroup selection = curScene->selectionSystem->GetSelection();
-    selection.FilterChildrenComponents();
+    SelectableObjectGroup selection = curScene->selectionSystem->GetSelection();
+    selection.RemoveIf([&selection](const SelectableObject& obj)
+                       {
+                           auto entity = obj.Cast<DAVA::Entity>();
+                           if (entity == nullptr)
+                               return false;
+                           return selection.ContainsObject(entity->GetParent);
+                       });
 
     switch (modifMode)
     {
@@ -298,7 +304,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if (curScene == nullptr)
         return;
 
-    const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+    const SelectableObjectGroup& selection = curScene->selectionSystem->GetSelection();
     if (selection.IsEmpty())
         return;
 
