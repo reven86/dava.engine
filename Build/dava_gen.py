@@ -36,6 +36,8 @@ def search_program(program):
         for path in folders:
             path = path.strip('"')
             exe_file = os.path.join(path, program)
+            if platform.system() == 'Windows':
+                exe_file = exe_file + '.exe'
             if is_exe(exe_file):
                 return exe_file
 

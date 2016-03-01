@@ -348,7 +348,6 @@ extern int mouseMoveSkipCounter;
     default:
         break;
     }
-
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
