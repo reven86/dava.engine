@@ -322,13 +322,13 @@ protected:
     {
         Vector2 patchOffset;
         float32 patchScale;
-        float32 centerPixelOffset;
 
         Vector4 nearPatchLodOffset; // per edge: left, right, bottom, top
         Vector4 nearPatchMorph;
 
         float32 patchLod;
         float32 patchMorph;
+        float32 centerPixelOffset;
     };
 
     struct InstanceDataBuffer

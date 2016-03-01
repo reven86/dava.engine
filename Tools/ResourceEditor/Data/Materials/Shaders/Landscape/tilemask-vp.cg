@@ -9,10 +9,10 @@
 			VPROG_IN_TEXCOORD0(4) //position + gluDirection
 			VPROG_IN_TEXCOORD1(4) //edge mask
 		VPROG_IN_STREAM_INSTANCE
-			VPROG_IN_TEXCOORD3(4) //patch position + scale + pixelMappingOffset
+			VPROG_IN_TEXCOORD3(3) //patch position + scale
 			VPROG_IN_TEXCOORD4(4) //near patch lodOffset
 			VPROG_IN_TEXCOORD5(4) //near patch morph
-			VPROG_IN_TEXCOORD7(2) //patch lod + morph
+			VPROG_IN_TEXCOORD6(3) //patch lod + morph + pixelMappingOffset
 	VPROG_IN_END
 	
 	#else
@@ -92,7 +92,9 @@ VPROG_BEGIN
 	
 #if LOD_MORPHING
 
-	float centerPixelOffset = VP_IN_TEXCOORD3.w;
+	float baseLod = VP_IN_TEXCOORD6.x;
+	float patchMorph = VP_IN_TEXCOORD6.y;
+	float basePixelOffset = VP_IN_TEXCOORD6.z;
 	
 	float4 nearPatchLodOffset = VP_IN_TEXCOORD4;
 	float4 nearPatchMorph = VP_IN_TEXCOORD5;
@@ -115,24 +117,20 @@ VPROG_BEGIN
 	
 #if LOD_MORPHING
 
-	centerPixelOffset = centerPixelOffset * gluAmount;
-
-	float baseLod = VP_IN_TEXCOORD7.x + lodOffset;
-	float morphAmount = dot(edgeMask, nearPatchMorph);
+	float ownPatchMorph = 1.0 - edgeMask.x - edgeMask.y - edgeMask.z - edgeMask.w;
+	float morphAmount = dot(edgeMask, nearPatchMorph) + ownPatchMorph * patchMorph;
 	
-	float isEdge   = edgeMask.x + edgeMask.y + edgeMask.z + edgeMask.w;
-	float isMiddle = 1.0 - isEdge;
+	float sampleLod = baseLod + lodOffset;
+	float samplePixelOffset = basePixelOffset * gluAmount;
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
 	
-	morphAmount += isMiddle * VP_IN_TEXCOORD7.y;
+	float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
+	float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + centerPixelOffset, baseLod);
-	
-	float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895));
-	float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895));
-	float height = lerp(h1, h0, morphAmount);
-	
-	//float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
-	//float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
+	//// height calculation equal to:
+	//float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895)); // 'accurate' heightmap value
+	//float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895)); // 'averaged' heightmap value
+	//float height = lerp(h1, h0, morphAmount);
 	
 #else
 	

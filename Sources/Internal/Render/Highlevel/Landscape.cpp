@@ -1109,10 +1109,10 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 4); //position + gluDirection
     vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 4); //edge mask
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
-    vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 4); //patch position + scale + pixelMappingOffset
+    vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3); //patch position + scale
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4); //near patch lodOffset
     vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4); //near patch morph
-    vLayout.AddElement(rhi::VS_TEXCOORD, 7, rhi::VDT_FLOAT, 2); //patch lod + morph
+    vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 3); //patch lod + morph + pixelMappingOffset
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 
@@ -1194,10 +1194,22 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 
     instanceDataPtr->patchLod = float32(baseLod);
     instanceDataPtr->patchMorph = patchMorph;
 
-    instanceDataPtr->nearPatchLodOffset = Vector4(level - nearLevel.x,
-                                                  level - nearLevel.y,
-                                                  level - nearLevel.z,
-                                                  level - nearLevel.w);
+    float32 levelf = float32(level);
+    instanceDataPtr->nearPatchLodOffset = Vector4(levelf - nearLevel.x,
+                                                  levelf - nearLevel.y,
+                                                  levelf - nearLevel.z,
+                                                  levelf - nearLevel.w);
+
+    if (xx == (levelInfo.size - 1))
+    {
+        instanceDataPtr->nearPatchLodOffset.z = -levelf;
+        instanceDataPtr->nearPatchMorph.z = 1.f;
+    }
+    if (yy == (levelInfo.size - 1))
+    {
+        instanceDataPtr->nearPatchLodOffset.w = -levelf;
+        instanceDataPtr->nearPatchMorph.w = 1.f;
+    }
 
     ++instanceDataPtr;
 }
