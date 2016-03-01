@@ -205,10 +205,11 @@ void MemoryManager::Finish()
 {
     if (symbolCollectorThread != nullptr)
     {
-        finishSymbolThread = true;
+        symbolCollectorThread->Cancel();
         symbolCollectorCondVar.NotifyAll();
         symbolCollectorThread->Join();
         symbolCollectorThread->Release();
+        symbolCollectorThread = nullptr;
     }
 }
 
@@ -1087,7 +1088,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
     // to give some job to symbol collector
     Backtrace* bktraceBuf = new Backtrace[BUF_CAPACITY];
 
-    while (!finishSymbolThread)
+    while (!symbolCollectorThread->IsCancelling())
     {
         {
             UniqueLock<Mutex> lock(symbolCollectorMutex);
@@ -1109,7 +1110,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
             }
         }
 
-        for (size_t i = 0; i < nplaced && !finishSymbolThread; ++i)
+        for (size_t i = 0; i < nplaced && !symbolCollectorThread->IsCancelling(); ++i)
         {
             ObtainBacktraceSymbols(&bktraceBuf[i]);
 

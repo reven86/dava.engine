@@ -200,7 +200,6 @@ private:
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
     bool lightWeightMode = false; // Flag enabling lightweight mode: no backtrace and symbols, should increase performance
-    bool finishSymbolThread = false;
 
     Function<void()> updateCallback;
     Function<void(uint32, bool)> tagCallback;
