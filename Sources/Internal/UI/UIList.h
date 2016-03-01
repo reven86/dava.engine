@@ -216,7 +216,7 @@ public:
 
     UIListCell* GetReusableCell(const String& cellIdentifier); //returns cell from the cells cache, if returns 0 you need to create the new one
 
-    virtual void SystemWillAppear(); // Internal method used by ControlSystem
+    void OnActive() override;
 
     virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar);
     virtual float32 TotalAreaSize(UIScrollBar* forScrollBar);

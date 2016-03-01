@@ -27,62 +27,35 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_LOADING_TRANSITION_H__
-#define __DAVAENGINE_UI_LOADING_TRANSITION_H__
+#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
+#define __DAVAENGINE_UI_LOADING_SCREEN_H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIScreenTransition.h"
+#include "UI/UIScreen.h"
 
 namespace DAVA
 {
-class UILoadingTransition : public UIScreenTransition
+class UILoadingScreen : public UIScreen
 {
 public:
-    UILoadingTransition();
-    virtual ~UILoadingTransition();
+    UILoadingScreen() = default;
+    ~UILoadingScreen() override;
 
-    // Setup of default loading screen
-    void SetInTransition(UIScreenTransition* transition);
-    void SetOutTransition(UIScreenTransition* transition);
+    virtual void SetScreenToLoad(int32 screenId);
 
-    void SetBackgroundSprite(Sprite* sprite);
-    void SetAnimationSprite(Sprite* animationSprite);
-    void SetAnimationDuration(float32 durationInSeconds);
-
-    virtual void DidAppear();
-    virtual void StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen);
-    virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData& geometricData);
-    virtual int32 GetGroupId();
-    virtual void WillAppear();
-    virtual void WillDisappear();
-
-    inline UIScreenTransition* GetInTransition();
-
-    bool IsLoadingTransition();
+    void Update(float32 timeElapsed) override;
+    void OnActive() override;
+    void OnInactive() override;
 
 protected:
-    Sprite* backgroundSprite;
-    Sprite* animationSprite;
-    float32 animationTime;
-    float32 animationDuration;
-
-    UIScreenTransition* inTransition;
-    UIScreenTransition* outTransition;
-
     void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
-    Thread* thread;
+    RefPtr<Thread> thread;
 
 private:
-    virtual void SetDuration(float32 timeInSeconds);
+    int32 nextScreenId = -1;
 };
-
-inline UIScreenTransition* UILoadingTransition::GetInTransition()
-{
-    return inTransition;
-}
 };
 
 
 
-#endif // __DAVAENGINE_UI_LOADING_TRANSITION_H__
+#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__
