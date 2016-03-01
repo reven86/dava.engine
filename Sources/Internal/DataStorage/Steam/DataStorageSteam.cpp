@@ -26,10 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-//#include "DataStorage/DataStorage.h"
 #include "DataStorageSteam.h"
 
+#include "DataStorage/Steam/Steam.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
@@ -37,7 +36,7 @@
 namespace DAVA
 {
 
-#if defined(USE_STEAM)
+#if defined(__DAVAENGINE_STEAM__)
 
 IDataStorage* DataStorage::Create()
 {
@@ -47,15 +46,21 @@ IDataStorage* DataStorage::Create()
 DataStorageSteam::DataStorageSteam()
     : values(new KeyedArchive)
 {
-
-
-   
-    remoteStorage = SteamRemoteStorage();
+    if (Steam::IsInited())
+    {
+        remoteStorage = SteamRemoteStorage();
+    }
 }
 
 ScopedPtr<KeyedArchive> DataStorageSteam::ReadArchFromStorage() const
 {
     ScopedPtr<KeyedArchive> dataArchive(nullptr);
+
+    if (!Steam::IsInited())
+    {
+        Logger::Error("Can't read from steam cloud storage - Steam is not inited yet.");
+        return dataArchive;
+    }
 
     ScopedPtr<DynamicMemoryFile> dataFile(nullptr);
 
@@ -87,6 +92,12 @@ ScopedPtr<KeyedArchive> DataStorageSteam::ReadArchFromStorage() const
 
 void DataStorageSteam::WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const
 {
+    if (!Steam::IsInited())
+    {
+        Logger::Error("Can't write to steam cloud storage - Steam is not inited yet.");
+        return;
+    }
+
     ScopedPtr<DynamicMemoryFile> dataFile(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
     arch->Save(dataFile);
 
@@ -138,6 +149,12 @@ void DataStorageSteam::Clear()
 void DataStorageSteam::Push()
 {
     auto remoteArch = ReadArchFromStorage();
+    if (!remoteArch)
+    {
+        Logger::Error("Can't sync steam cloud storage - Steam is not inited yet.");
+        return;
+    }
+
     auto remoteMap = remoteArch->GetArchieveData();
 
     // iterate over remote keys and merge new keys into local archive

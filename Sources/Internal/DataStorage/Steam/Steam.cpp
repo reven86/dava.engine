@@ -38,7 +38,7 @@ namespace DAVA
 
 bool Steam::isInited = false;
 
-bool Steam::Init()
+void Steam::Init()
 {
     if (SteamAPI_RestartAppIfNecessary(k_uAppIdInvalid))
     {
@@ -48,8 +48,7 @@ bool Steam::Init()
         // Once you get a public Steam AppID assigned for this game, you need to replace k_uAppIdInvalid with it and
         // removed steam_appid.txt from the game depot.
         Logger::Error("Error SteamAPI Restart.");
-        return false;
-
+        return;
     }
 
     // Initialize SteamAPI, if this fails we bail out since we depend on Steam for lots of stuff.
@@ -62,21 +61,30 @@ bool Steam::Init()
     if (!SteamAPI_Init())
     {
         Logger::Error("SteamAPI_Init() failed\n Fatal Error: Steam must be running to play this game(SteamAPI_Init() failed).");
-        return false;
+        return;
     }
 
     if (!SteamController()->Init())
     {
         Logger::Error("SteamController()->Init failed.\n Fatal Error: SteamController()->Init failed.");
-        return false;
+        return;
     }
 
-    return true;
+    isInited = true;
+}
+
+void Steam::Deinit()
+{
+    // Shutdown the SteamAPI
+    SteamAPI_Shutdown();
+    isInited = false;
 }
 
 bool Steam::IsInited()
 {
-    return Steam::isInited;
+    return isInited;
 }
+
+
 
 }

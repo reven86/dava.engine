@@ -38,7 +38,7 @@
 namespace DAVA
 {
 
-#if defined(USE_STEAM)
+#if defined(__DAVAENGINE_STEAM__)
 
 class DynamicMemoryFile;
 class DataStorageSteam : public IDataStorage
@@ -64,7 +64,7 @@ private:
     bool isValuesChanged = false;
 };
 
-#endif //USE_STEAM
+#endif //__DAVAENGINE_STEAM__
 }
 
 #endif

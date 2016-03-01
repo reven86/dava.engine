@@ -44,7 +44,6 @@ DAVA_TESTCLASS (DataVaultTest)
         storage->SetStringValue("TestStringKey", "Test");
         storage->Push();
 
-#if !defined(__DAVAENGINE_WIN32__) || defined(USE_STEAM)
         String ret = storage->GetStringValue("TestStringKey");
         TEST_VERIFY("Test" == ret);
         storage->RemoveEntry("TestStringKey");
@@ -64,8 +63,6 @@ DAVA_TESTCLASS (DataVaultTest)
         iret = storage->GetLongValue("TestIntKey");
         TEST_VERIFY(0 == iret);
 
-#endif
         SafeRelease(storage);
     }
-}
-;
+};

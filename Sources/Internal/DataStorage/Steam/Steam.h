@@ -37,8 +37,8 @@ class Steam final
 public:
     Steam() = default;
 
-
-    static bool Init();
+    static void Init();
+    static void Deinit();
     static bool IsInited();
 
 private:

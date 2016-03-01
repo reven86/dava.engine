@@ -8,7 +8,7 @@ include( CMake-common )
 
 if ( STEAM_SDK_FOUND )
     include_directories( ${STEAM_SDK_HEADERS} )
-    add_definitions ( -DUSE_STEAM )
+    add_definitions ( -D__DAVAENGINE_STEAM__ )
 endif ()
 
 set ( FRAMEWORK_DEFINITIONS 

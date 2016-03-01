@@ -35,7 +35,7 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WINDOWS__)
 
-#ifndef USE_STEAM
+#if !defined(__DAVAENGINE_STEAM__)
 IDataStorage* DataStorage::Create()
 {
     return new DataStorageWin();
