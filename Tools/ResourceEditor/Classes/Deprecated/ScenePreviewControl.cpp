@@ -40,6 +40,7 @@ ScenePreviewControl::ScenePreviewControl(const Rect& rect)
     : UI3DView(rect)
 {
     SetInputEnabled(true, true);
+    SetBasePriority(-100);
 }
 
 ScenePreviewControl::~ScenePreviewControl()

@@ -71,9 +71,9 @@ void ExtendedDialog::Close()
     }
 }
 
-void ExtendedDialog::WillAppear()
+void ExtendedDialog::OnActive()
 {
-    UIControl::WillAppear();
+    UIControl::OnActive();
 
     UpdateSize();
 }

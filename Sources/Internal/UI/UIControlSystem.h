@@ -36,7 +36,6 @@
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
 #include "UI/UIScreenTransition.h"
-#include "UI/UILoadingTransition.h"
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
@@ -77,13 +76,6 @@ extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
-    friend void Core::CreateSingletons();
-
-    int frameSkip;
-    int transitionType;
-
-    Vector<UIEvent> touchEvents;
-
 protected:
     ~UIControlSystem();
     /**
@@ -119,7 +111,7 @@ public:
 	 \brief Sets the requested screen as current.
 	 \returns currently seted screen
 	 */
-    UIScreen* GetScreen();
+    UIScreen* GetScreen() const;
 
     /**
 	 \brief Adds new popup to the popup container.
@@ -143,7 +135,9 @@ public:
 		User can manage this container manually (change popup sequence, removes or adds popups)
 	 \returns popup container
 	 */
-    UIControl* GetPopupContainer();
+    UIControl* GetPopupContainer() const;
+
+    UIScreenTransition* GetScreenTransition() const;
 
     /**
 	 \brief Disabled all controls inputs.
@@ -256,7 +250,7 @@ public:
     /**
 	 \brief Called by the core when screen size is changed
 	 */
-    void ScreenSizeChanged();
+    void ScreenSizeChanged(const Rect& newFullscreenRect);
 
     /**
 	 \brief Called by the control to set himself as the hovered control
@@ -300,61 +294,50 @@ public:
 
     bool IsBiDiSupportEnabled() const;
     void SetBiDiSupportEnabled(bool support);
+
+    bool IsHostControl(const UIControl* control) const;
+
     UILayoutSystem* GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
     void SetClearColor(const Color& clearColor);
-    void SetUseClearPass(bool use);
+    void SetUseClearPass(bool useClearPass);
 
 private:
-    /**
-	 \brief Instantly replace one screen to enother.
-		Call this only on your own risk if you are really know what you need. 
-		May cause to abnormal behavior!
-		Internally used by UITransition.
-	 \param[in] Screen you want to set as current.
-	 */
-    void ReplaceScreen(UIScreen* newMainControl);
-
     void ProcessScreenLogic();
 
     void NotifyListenersWillSwitch(UIScreen* screen);
     void NotifyListenersDidSwitch(UIScreen* screen);
 
-    UILayoutSystem* layoutSystem;
-    UIStyleSheetSystem* styleSheetSystem;
-    UIScreenshoter* screenshoter;
+    friend void Core::CreateSingletons();
+
+    UILayoutSystem* layoutSystem = nullptr;
+    UIStyleSheetSystem* styleSheetSystem = nullptr;
+    UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
+    Vector<UIEvent> touchEvents;
 
-    UIScreen* currentScreen;
-    UIScreen* nextScreen;
-    UIScreen* prevScreen;
-
-    int32 screenLockCount;
-
-    bool removeCurrentScreen;
-
-    UIControl* exclusiveInputLocker;
-    UIControl* hovered;
-
-    UIControl* focusedControl;
-
-    UIControl* popupContainer;
+    RefPtr<UIScreen> currentScreen;
+    RefPtr<UIScreen> nextScreen;
+    RefPtr<UIScreenTransition> nextScreenTransition;
+    RefPtr<UIScreenTransition> currentScreenTransition;
+    RefPtr<UIControl> popupContainer;
     Set<UIPopup*> popupsToRemove;
 
-    int32 lockInputCounter;
+    int32 lockInputCounter = 0;
+    int32 screenLockCount = 0;
+    int32 frameSkip = 0;
 
-    UIScreenTransition* nextScreenTransition;
+    UIControl* exclusiveInputLocker = nullptr;
+    UIControl* hovered = nullptr;
+    UIControl* focusedControl = nullptr;
 
     UIGeometricData baseGeometricData;
+    Rect fullscreenRect;
 
-    bool useClearPass = true;
-    Color clearColor;
-
-    friend class UIScreenTransition;
-    friend class UIScreenManager;
+    bool removeCurrentScreen = false;
 };
 };
 

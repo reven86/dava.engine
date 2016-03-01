@@ -211,8 +211,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
-            desc.target = toolTexture;
-            desc.shouldTransformVirtualToPhysical = false;
+            desc.priority = PRIORITY_SERVICE_2D;
+            desc.colorAttachment = toolTexture->handle;
+            desc.depthAttachment = toolTexture->handleDepthStencil;
+            desc.width = toolTexture->GetWidth();
+            desc.height = toolTexture->GetHeight();
+            desc.transformVirtualToPhysical = false;
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -461,9 +465,13 @@ void TilemaskEditorSystem::CreateMaskTexture()
         DAVA::Rect sourceRect(0.0f, 0.0f, 1.0f, 1.0f);
 
         RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.target = srcTexture;
-        desc.shouldClear = true;
-        desc.shouldTransformVirtualToPhysical = false;
+        desc.priority = PRIORITY_SERVICE_2D;
+        desc.colorAttachment = srcTexture->handle;
+        desc.depthAttachment = srcTexture->handleDepthStencil;
+        desc.width = srcTexture->GetWidth();
+        desc.height = srcTexture->GetHeight();
+        desc.transformVirtualToPhysical = false;
+        desc.clearTarget = true;
 
         RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         RenderSystem2D::Instance()->DrawTextureWithoutAdjustingRects(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL,
