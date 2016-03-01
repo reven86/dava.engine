@@ -740,23 +740,21 @@ void RenderHelper::FillPolygonIndecies(uint16* buffer, uint16 baseIndex, uint32 
     }
 }
 
-void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport)
+void RenderHelper::CreateClearPass(rhi::HTexture colorBuffer, rhi::HTexture depthBuffer, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport)
 {
     rhi::RenderPassConfig clearPassConfig;
     clearPassConfig.priority = passPriority;
-    clearPassConfig.colorBuffer[0].texture = targetHandle;
+    clearPassConfig.colorBuffer[0].texture = colorBuffer;
     clearPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
     clearPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
     clearPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
     clearPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
     clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    clearPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
+    clearPassConfig.depthStencilBuffer.texture = depthBuffer;
     clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     clearPassConfig.viewport = viewport;
-    clearPassConfig.PerfQueryIndex0 = PERFQUERY__CLEAR_PASS_T0;
-    clearPassConfig.PerfQueryIndex1 = PERFQUERY__CLEAR_PASS_T1;
 
     rhi::HPacketList emptyPacketList;
     rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);

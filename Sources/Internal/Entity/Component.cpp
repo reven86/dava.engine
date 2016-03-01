@@ -134,15 +134,6 @@ Component* Component::CreateByType(uint32 componentType)
     }
 }
 
-Component::Component()
-    : entity(0)
-{
-}
-
-Component::~Component()
-{
-}
-
 void Component::SetEntity(Entity* _entity)
 {
     entity = _entity;

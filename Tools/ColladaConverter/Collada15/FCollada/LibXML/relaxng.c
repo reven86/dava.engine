@@ -40,7 +40,7 @@ static const xmlChar* xmlRelaxNGNs = (const xmlChar*)
 "http://relaxng.org/ns/structure/1.0";
 
 #define IS_RELAXNG(node, type)						\
-   ((node != NULL) && (node->ns != NULL) &&            \
+   ((node != NULL) && (node->ns != NULL) && \
      (xmlStrEqual(node->name, (const xmlChar*)type)) && \
      (xmlStrEqual(node->ns->href, xmlRelaxNGNs)))
 
@@ -69,7 +69,7 @@ static const xmlChar* xmlRelaxNGNs = (const xmlChar*)
 #define MAX_ERROR 5
 
 #define TODO 								\
-    xmlGenericError(xmlGenericErrorContext,           \
+    xmlGenericError(xmlGenericErrorContext, \
                     "Unimplemented block at %s:%d\n", \
                     __FILE__, __LINE__);
 

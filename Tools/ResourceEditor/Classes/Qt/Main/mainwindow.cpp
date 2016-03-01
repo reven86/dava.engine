@@ -78,12 +78,10 @@
 #include "Classes/Commands2/CustomColorsCommands2.h"
 #include "Classes/Commands2/EntityAddCommand.h"
 #include "Classes/Commands2/HeightmapEditorCommands2.h"
-#include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
-#include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 #include "Classes/Commands2/PaintHeightDeltaAction.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/RulerToolActions.h"
 #include "Classes/Commands2/TilemaskEditorCommands.h"
+#include "Classes/Commands2/LandscapeToolsToggleCommand.h"
 
 #include "Classes/SceneProcessing/SceneProcessor.h"
 
@@ -91,8 +89,6 @@
 #include "Classes/StringConstants.h"
 
 #include "TextureCompression/TextureConverter.h"
-
-//#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
@@ -186,6 +182,7 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     EnableSceneActions(false);
 
     DiableUIForFutureUsing();
+    SynchronizeStateWithUI();
 
     IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
     IUIFramework* uiFramework = ngtContext.queryInterface<IUIFramework>();
@@ -246,7 +243,7 @@ bool QtMainWindow::SaveScene(SceneEditor2* scene)
         //if(scene->IsChanged())
         {
             SaveAllSceneEmitters(scene);
-            SceneFileV2::eError ret = scene->Save(scenePath);
+            SceneFileV2::eError ret = scene->SaveScene(scenePath);
             if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
             {
                 QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
@@ -290,7 +287,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2* scene)
     scene->SetScenePath(scenePath);
 
     SaveAllSceneEmitters(scene);
-    SceneFileV2::eError ret = scene->Save(scenePath);
+    SceneFileV2::eError ret = scene->SaveScene(scenePath);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {
         QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
@@ -851,11 +848,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
 
     //Landscape editors toggled
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(HeightmapEditorToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(TilemaskEditorToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(RulerToolToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(NotPassableTerrainToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
+                     this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(SnapToLandscapeChanged(SceneEditor2*, bool)),
                      this, SLOT(OnSnapToLandscapeChanged(SceneEditor2*, bool)));
@@ -1275,7 +1269,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
     {
         if (toolsFlags)
         {
-            scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
         }
         closeRequest->Accept();
         return;
@@ -1298,7 +1292,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
     {
         if (toolsFlags)
         {
-            scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
         }
         closeRequest->Accept();
         return;
@@ -1314,7 +1308,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
             return;
         }
 
-        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+        scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
     }
 
     if (!SaveScene(scene))
@@ -2189,7 +2183,7 @@ void QtMainWindow::OnBeastAndSave()
     {
         if (QMessageBox::Yes == QMessageBox::question(this, "Starting Beast", "Disable landscape editor and start beasting?", (QMessageBox::Yes | QMessageBox::No), QMessageBox::No))
         {
-            scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+            scene->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
             bool success = !scene->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
             if (!success)
@@ -2325,7 +2319,7 @@ void QtMainWindow::OnCustomColorsEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new ActionEnableCustomColors(sceneEditor));
+            sceneEditor->Exec(new EnableCustomColorsCommand(sceneEditor, true));
         }
         else
         {
@@ -2345,7 +2339,7 @@ void QtMainWindow::OnCustomColorsEditor()
         }
     }
 
-    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR, true);
+    sceneEditor->Exec(new DisableCustomColorsCommand(sceneEditor, true));
     ui->actionCustomColorsEditor->setChecked(false);
 }
 
@@ -2391,7 +2385,7 @@ void QtMainWindow::OnHeightmapEditor()
 
     if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
+        sceneEditor->Exec(new DisableHeightmapEditorCommand(sceneEditor));
     }
     else
     {
@@ -2404,7 +2398,7 @@ void QtMainWindow::OnHeightmapEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new ActionEnableHeightmapEditor(sceneEditor));
+            sceneEditor->Exec(new EnableHeightmapEditorCommand(sceneEditor));
         }
         else
         {
@@ -2423,7 +2417,7 @@ void QtMainWindow::OnRulerTool()
 
     if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(new ActionDisableRulerTool(sceneEditor));
+        sceneEditor->Exec(new DisableRulerToolCommand(sceneEditor));
     }
     else
     {
@@ -2436,7 +2430,7 @@ void QtMainWindow::OnRulerTool()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new ActionEnableRulerTool(sceneEditor));
+            sceneEditor->Exec(new EnableRulerToolCommand(sceneEditor));
         }
         else
         {
@@ -2455,7 +2449,7 @@ void QtMainWindow::OnTilemaskEditor()
 
     if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
+        sceneEditor->Exec(new DisableTilemaskEditorCommand(sceneEditor));
     }
     else
     {
@@ -2468,7 +2462,7 @@ void QtMainWindow::OnTilemaskEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new ActionEnableTilemaskEditor(sceneEditor));
+            sceneEditor->Exec(new EnableTilemaskEditorCommand(sceneEditor));
         }
         else
         {
@@ -2507,7 +2501,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
     if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
     {
-        sceneEditor->Exec(new ActionDisableNotPassable(sceneEditor));
+        sceneEditor->Exec(new DisableNotPassableCommand(sceneEditor));
     }
     else
     {
@@ -2520,7 +2514,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(new ActionEnableNotPassable(sceneEditor));
+            sceneEditor->Exec(new EnableNotPassableCommand(sceneEditor));
         }
         else
         {
@@ -2793,8 +2787,7 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
 
 void QtMainWindow::OnCustomQuality()
 {
-    auto d = QualitySwitcher::GetDialog();
-    d->raise();
+    QualitySwitcher::ShowDialog();
 }
 
 void QtMainWindow::UpdateConflictingActionsState(bool enable)
@@ -2813,6 +2806,11 @@ void QtMainWindow::DiableUIForFutureUsing()
     //ui->actionAddNewComponent->setVisible(false);
     //ui->actionRemoveComponent->setVisible(false);
     //<--
+}
+
+void QtMainWindow::SynchronizeStateWithUI()
+{
+    OnManualModifMode();
 }
 
 void QtMainWindow::OnEmptyEntity()
@@ -2954,7 +2952,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
                     case QMessageBox::Yes:
                     {
                         // turn off editor
-                        tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                        tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
                         // save
                         tabEditor->landscapeEditorDrawSystem->SaveTileMaskTexture();
@@ -2966,7 +2964,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
                     case QMessageBox::No:
                     {
                         // turn off editor
-                        tabEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+                        tabEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
                     }
                     break;
 

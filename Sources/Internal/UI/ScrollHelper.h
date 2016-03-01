@@ -51,9 +51,7 @@ class ScrollHelper : public BaseObject
     };
 
 protected:
-    ~ScrollHelper()
-    {
-    }
+    virtual ~ScrollHelper();
 
 public:
     const static float32 maxDeltaTime;

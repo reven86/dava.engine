@@ -496,9 +496,6 @@ public:
 
 private:
     UnderlyingMap objectMap;
-
-public:
-    INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL);
 };
 
 // Implementation
@@ -525,7 +522,7 @@ T KeyedArchive::GetByteArrayAsType(const String& key, const T& defaultValue) con
 template <class T>
 void KeyedArchive::SetByteArrayAsType(const String& key, const T& value)
 {
-    SetByteArray(key, (uint8*)(&value), sizeof(T));
+    SetByteArray(key, reinterpret_cast<const uint8*>(&value), sizeof(T));
 }
 };
 

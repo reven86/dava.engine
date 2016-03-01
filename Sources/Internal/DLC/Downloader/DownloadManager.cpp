@@ -45,15 +45,6 @@ DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
 
 Mutex DownloadManager::currentTaskMutex;
 
-DownloadManager::DownloadManager()
-    : thisThread(NULL)
-    , isThreadStarted(false)
-    , currentTask(NULL)
-    , downloader(0)
-    , downloadedTotal(0)
-{
-}
-
 DownloadManager::~DownloadManager()
 {
     isThreadStarted = false;
@@ -167,9 +158,11 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode, const uint8 partsCount, int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode, const int16 partsCount, int32 timeout, int32 retriesCount)
 {
-    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
+    int16 usePartsCount = (-1 == partsCount) ? (preferredDownloadThreadsCount) : partsCount;
+    DVASSERT(usePartsCount > 0);
+    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, static_cast<uint8>(usePartsCount));
 
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -471,9 +464,19 @@ DownloadStatistics DownloadManager::GetStatistics()
     return downloader->GetStatistics();
 }
 
-void DownloadManager::SetDownloadSpeedLimit(const uint64 limit)
+void DownloadManager::SetDownloadSpeedLimit(uint64 limit)
 {
     downloader->SetDownloadSpeedLimit(limit);
+}
+
+void DownloadManager::SetPreferredDownloadThreadsCount(uint8 count)
+{
+    preferredDownloadThreadsCount = count;
+}
+
+void DownloadManager::ResetPreferredDownloadThreadsCount()
+{
+    preferredDownloadThreadsCount = defaultDownloadThreadsCount;
 }
 
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription*>& queue)

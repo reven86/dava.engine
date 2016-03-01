@@ -39,13 +39,6 @@
 ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     : ScrollZoomWidget(parent)
     , selectedPoint(-1, -1)
-    , selectedEffect(NULL)
-    , selectedEmitter(NULL)
-    , selectedLine(-1)
-    , emitterNode(NULL)
-    , effectNode(NULL)
-    , selectedLayer(NULL)
-    , activeScene(NULL)
     ,
 #ifdef Q_OS_WIN
     nameFont("Courier", 8, QFont::Normal)
@@ -542,7 +535,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
         UpdateLayersExtraInfoPosition();
     }
 
-    ScrollZoomWidget::paintEvent(e, painter);
+    ScrollZoomWidget::paintEvent(e);
 }
 
 bool ParticleTimeLineWidget::GetLineRect(uint32 id, QRect& startRect, QRect& endRect) const
