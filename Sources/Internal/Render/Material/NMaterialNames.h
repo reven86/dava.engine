@@ -215,6 +215,7 @@ public:
     static const DAVA::String ConfigName;
     static const DAVA::String ConfigArchive;
     static const DAVA::String ConfigCount;
+    static const FastName DefaultConfigName;
 };
 
 class NMaterialQualityName
