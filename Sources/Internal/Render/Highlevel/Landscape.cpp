@@ -1189,12 +1189,14 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 
     instanceDataPtr->patchScale = 1.f / levelInfo.size;
 
     int32 baseLod = subdivLevelCount - level - 1;
+    float32 levelf = float32(level);
+    float32 baseLodf = float32(baseLod);
+
     instanceDataPtr->centerPixelOffset = .5f / (1 << (heightmapSizePow2 - baseLod));
     instanceDataPtr->nearPatchMorph = nearMorph;
-    instanceDataPtr->patchLod = float32(baseLod);
+    instanceDataPtr->patchLod = baseLodf;
     instanceDataPtr->patchMorph = patchMorph;
 
-    float32 levelf = float32(level);
     instanceDataPtr->nearPatchLodOffset = Vector4(levelf - nearLevel.x,
                                                   levelf - nearLevel.y,
                                                   levelf - nearLevel.z,
@@ -1202,12 +1204,12 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 
 
     if (xx == (levelInfo.size - 1))
     {
-        instanceDataPtr->nearPatchLodOffset.z = -levelf;
+        instanceDataPtr->nearPatchLodOffset.z = -baseLodf;
         instanceDataPtr->nearPatchMorph.z = 1.f;
     }
     if (yy == (levelInfo.size - 1))
     {
-        instanceDataPtr->nearPatchLodOffset.w = -levelf;
+        instanceDataPtr->nearPatchLodOffset.w = -baseLodf;
         instanceDataPtr->nearPatchMorph.w = 1.f;
     }
 
