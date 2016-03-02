@@ -225,12 +225,12 @@ inline const BaseTest::TestParams& BaseTest::GetParams() const
 
 inline void BaseTest::ShowUI(bool visible)
 {
-    uiRoot->SetVisible(visible);
+    uiRoot->SetVisibilityFlag(visible);
 }
 
 inline bool BaseTest::IsUIVisible() const
 {
-    return uiRoot->GetVisible();
+    return uiRoot->GetVisibilityFlag();
 }
 
 inline void BaseTest::MergeParams(const TestParams& otherParams)

@@ -61,28 +61,10 @@ UIScreen::~UIScreen()
     }
 }
 
-void UIScreen::SystemWillAppear()
-{
-    bool needNotify = false;
-    const Rect& virtualRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
-    if (GetSize() != virtualRect.GetSize())
-    {
-        SetSize(virtualRect.GetSize());
-        needNotify = true;
-    }
-
-    UIControl::SystemWillAppear();
-
-    if (needNotify)
-    {
-        SystemScreenSizeDidChanged(virtualRect);
-    }
-}
-
-void UIScreen::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
+void UIScreen::SystemScreenSizeChanged(const Rect& newFullScreenRect)
 {
     SetSize(newFullScreenRect.GetSize());
-    UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
+    UIControl::SystemScreenSizeChanged(newFullScreenRect);
 }
 
 void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
