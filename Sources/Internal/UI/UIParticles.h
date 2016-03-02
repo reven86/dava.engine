@@ -49,7 +49,7 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
-    void WillAppear() override;
+    void OnActive() override;
 
     UIParticles* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;

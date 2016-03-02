@@ -241,7 +241,7 @@ void DlcTest::UnloadResources()
     SafeDelete(dlc);
 }
 
-void DlcTest::WillAppear()
+void DlcTest::OnActive()
 {
 }
 

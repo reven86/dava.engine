@@ -111,7 +111,7 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl *childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 		
 		Rect childRect = childControl->GetRect();
@@ -144,7 +144,7 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl *childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 		
 		Rect childRect = childControl->GetRect();	
@@ -167,7 +167,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl *childControl = (*it);
-        if ( !(childControl && childControl->GetVisible()) )
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         const Rect &childRect = childControl->GetRect();

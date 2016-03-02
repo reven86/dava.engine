@@ -664,11 +664,10 @@ void Core::SystemProcessFrame()
         //#endif
 
         // recalc frame inside begin / end frame
-        if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        if (vsc->WasScreenSizeChanged())
         {
-            VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-            UIScreenManager::Instance()->ScreenSizeChanged();
-            UIControlSystem::Instance()->ScreenSizeChanged();
+            vsc->ScreenSizeChanged();
         }
 
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();
