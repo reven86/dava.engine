@@ -45,7 +45,7 @@ public:
 
     virtual void Close();
 
-    virtual void WillAppear();
+    virtual void OnActive();
 
 protected:
     const Rect GetScreenRect() const;

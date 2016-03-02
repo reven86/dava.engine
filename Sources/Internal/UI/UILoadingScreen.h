@@ -27,36 +27,35 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__RULERTOOLACTIONS__
-#define __RESOURCEEDITORQT__RULERTOOLACTIONS__
+#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
+#define __DAVAENGINE_UI_LOADING_SCREEN_H__
 
-#include "Commands2/CommandAction.h"
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIScreen.h"
 
-using namespace DAVA;
-
-class SceneEditor2;
-
-class ActionEnableRulerTool : public CommandAction
+namespace DAVA
+{
+class UILoadingScreen : public UIScreen
 {
 public:
-    ActionEnableRulerTool(SceneEditor2* forSceneEditor);
+    UILoadingScreen() = default;
+    ~UILoadingScreen() override;
+
+    virtual void SetScreenToLoad(int32 screenId);
+
+    void Update(float32 timeElapsed) override;
+    void OnActive() override;
+    void OnInactive() override;
 
 protected:
-    SceneEditor2* sceneEditor;
+    void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
+    RefPtr<Thread> thread;
 
-    virtual void Redo();
+private:
+    int32 nextScreenId = -1;
+};
 };
 
-class ActionDisableRulerTool : public CommandAction
-{
-public:
-    ActionDisableRulerTool(SceneEditor2* forSceneEditor);
 
-protected:
-    SceneEditor2* sceneEditor;
 
-    virtual void Redo();
-};
-
-#endif /* defined(__RESOURCEEDITORQT__RULERTOOLACTIONS__) */
+#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__
