@@ -315,33 +315,14 @@ private:
     void NotifyListenersWillSwitch(UIScreen* screen);
     void NotifyListenersDidSwitch(UIScreen* screen);
 
-<<<<<<< HEAD
-    UILayoutSystem* layoutSystem;
-    UIStyleSheetSystem* styleSheetSystem;
-    UIFocusSystem* focusSystem;
-    UIKeyInputSystem* keyInputSystem;
-    UIScreenshoter* screenshoter;
-
-    Vector<ScreenSwitchListener*> screenSwitchListeners;
-
-    UIScreen* currentScreen;
-    UIScreen* nextScreen;
-    UIScreen* prevScreen;
-
-    int32 screenLockCount;
-
-    bool removeCurrentScreen;
-=======
     friend void Core::CreateSingletons();
->>>>>>> development
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
+    UIFocusSystem* focusSystem;
+    UIKeyInputSystem* keyInputSystem;
     UIScreenshoter* screenshoter = nullptr;
 
-<<<<<<< HEAD
-    UIControl* popupContainer;
-=======
     Vector<ScreenSwitchListener*> screenSwitchListeners;
     Vector<UIEvent> touchEvents;
 
@@ -350,7 +331,6 @@ private:
     RefPtr<UIScreenTransition> nextScreenTransition;
     RefPtr<UIScreenTransition> currentScreenTransition;
     RefPtr<UIControl> popupContainer;
->>>>>>> development
     Set<UIPopup*> popupsToRemove;
 
     int32 lockInputCounter = 0;

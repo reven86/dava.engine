@@ -239,6 +239,7 @@ void UIControlSystem::ProcessScreenLogic()
                 nextScreenProcessed->LoadGroup();
             }
             currentScreen = nextScreenProcessed;
+            focusSystem->SetRoot(currentScreen.Get());
             if (currentScreen)
             {
                 currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);

@@ -647,14 +647,12 @@ public:
     {
         nsTextField.enabled = YES;
 
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-
-        if (delegate && !isKeyboardOpened)
+        if (!isKeyboardOpened)
         {
             isKeyboardOpened = true;
             Rect emptyRect;
             emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
-            delegate->OnKeyboardShown(emptyRect);
+            davaText->OnKeyboardShown(emptyRect);
         }
 
         [[NSApp keyWindow] makeFirstResponder:nsTextField];
@@ -699,11 +697,10 @@ public:
     void CloseKeyboard() override
     {
         // prevent recursion
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-        if (delegate && isKeyboardOpened)
+        if (isKeyboardOpened)
         {
             isKeyboardOpened = false;
-            delegate->OnKeyboardHidden();
+            davaText->OnKeyboardHidden();
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview

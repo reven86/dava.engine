@@ -14,7 +14,7 @@ bool FocusHelpers::CanFocusControl(UIControl* control)
     }
 
     UIFocusComponent* focus = control->GetComponent<UIFocusComponent>();
-    return focus != nullptr && control->IsOnScreen() &&
+    return focus != nullptr && control->IsVisible() &&
     !control->GetDisabled() && focus &&
     focus->IsEnabled() && focus->GetPolicy() == UIFocusComponent::FOCUSABLE;
 }
