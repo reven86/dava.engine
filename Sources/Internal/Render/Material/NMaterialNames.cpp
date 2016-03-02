@@ -151,6 +151,7 @@ const FastName NMaterialFlagName::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXT
 const FastName NMaterialFlagName::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
 const FastName NMaterialFlagName::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
 const FastName NMaterialFlagName::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
+const FastName NMaterialFlagName::FLAG_TILED_DECAL_ROTATION = FastName("TILE_DECAL_ROTATION");
 const FastName NMaterialFlagName::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterialFlagName::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterialFlagName::FLAG_SPECULAR = FastName("SPECULAR");
