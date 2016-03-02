@@ -100,7 +100,7 @@ BaseFamily<Component>::BaseFamily(const Vector<Component*>& components)
         uint32 type = components[i]->GetType();
         componentIndices[type] = i;
         componentCount[type]++;
-        componentsFlags |= (uint64)1 << type;
+        componentsFlags |= 1ULL << type;
     }
 }
 

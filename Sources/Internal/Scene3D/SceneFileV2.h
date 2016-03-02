@@ -170,7 +170,6 @@ public:
     void OptimizeScene(Entity* rootNode);
     bool RemoveEmptySceneNodes(Entity* rootNode);
     bool RemoveEmptyHierarchy(Entity* currentNode);
-    void ConvertShadows(Entity* rootNode);
     void RebuildTangentSpace(Entity* entity);
     void ConvertShadowVolumes(Entity* rootNode, NMaterial* shadowMaterialParent);
     void RemoveDeprecatedMaterialFlags(Entity* rootNode);
@@ -216,10 +215,6 @@ private:
     Entity* LoadLight(Scene* scene, KeyedArchive* archive);
 
     void ApplyFogQuality();
-
-    bool ReplaceNodeAfterLoad(Entity* node);
-
-    void ReplaceOldNodes(Entity* currentNode);
 
     void WriteDescriptor(File* file, const Descriptor& descriptor) const;
     void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);

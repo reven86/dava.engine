@@ -26,16 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/GlobalEnum.h"
 
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include "TextureCompression/TextureConverter.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
 #include <QSettings>
 #include <QTimer>
-#include "Base/GlobalEnum.h"
+POP_QT_WARNING_SUPRESSOR
 
 using namespace DAVA;
 namespace

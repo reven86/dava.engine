@@ -53,6 +53,10 @@ ScrollHelper::ScrollHelper()
     backward = 0.3f;
 }
 
+ScrollHelper::~ScrollHelper()
+{
+}
+
 void ScrollHelper::CopyDataFrom(const ScrollHelper* src)
 {
     position = src->position;

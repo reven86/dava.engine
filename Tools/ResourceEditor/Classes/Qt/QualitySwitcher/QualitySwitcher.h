@@ -38,7 +38,7 @@ class QualitySwitcher : public QDialog
     Q_OBJECT
 
 public:
-    static QDialog* GetDialog();
+    static void ShowDialog();
 
 signals:
     void QualityChanged();

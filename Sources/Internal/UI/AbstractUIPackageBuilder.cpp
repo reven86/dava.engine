@@ -31,6 +31,10 @@
 
 namespace DAVA
 {
+AbstractUIPackageLoader::~AbstractUIPackageLoader()
+{
+}
+
 AbstractUIPackageBuilder::AbstractUIPackageBuilder()
 {
 }

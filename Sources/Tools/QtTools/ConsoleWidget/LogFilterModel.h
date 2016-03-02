@@ -1,16 +1,22 @@
 #ifndef __LOGFILTERMODEL_H__
 #define __LOGFILTERMODEL_H__
 
+#include "Logger/Logger.h"
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+
+PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QSortFilterProxyModel>
 #include <QFlags>
-#include "Logger/Logger.h"
+POP_QT_WARNING_SUPRESSOR
 
 class LogFilterModel
     : public QSortFilterProxyModel
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 public:
     explicit LogFilterModel(QObject* parent = nullptr);
     ~LogFilterModel();

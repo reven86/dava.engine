@@ -75,7 +75,7 @@ public:
 
     bool IsNotPassableTerrainEnabled();
     eErrorType EnableNotPassableTerrain();
-    void DisableNotPassableTerrain();
+    bool DisableNotPassableTerrain();
 
     void EnableCursor();
     void DisableCursor();
