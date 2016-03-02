@@ -15,6 +15,7 @@ include      ( CMake-common )
 
 if (STEAM)
     find_package( Steam         REQUIRED )
+
 endif ()
 
 find_package( DavaFramework REQUIRED )

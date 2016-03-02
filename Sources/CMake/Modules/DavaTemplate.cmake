@@ -62,6 +62,7 @@ elseif( ANDROID_DATA )
 endif()
 
 if ( STEAM AND STEAM_SDK_FOUND )
+    add_definitions ( -D__DAVAENGINE_STEAM__ )
     include_directories( ${STEAM_SDK_HEADERS} )
     list ( APPEND LIBRARIES ${STEAM_SDK_STATIC_LIBRARIES} )
 

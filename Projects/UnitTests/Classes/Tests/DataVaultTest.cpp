@@ -37,12 +37,16 @@ DAVA_TESTCLASS (DataVaultTest)
 {
     DAVA_TEST (TestFunction)
     {
-        IDataStorage* storage = DataStorage::Create();
+        ScopedPtr<IDataStorage> storage(DataStorage::Create());
         storage->Push();
         storage->Clear();
         storage->Push();
         storage->SetStringValue("TestStringKey", "Test");
         storage->Push();
+
+#if !defined(__DAVAENGINE_STEAM__ ) && defined(__DAVAENGINE_WINDOWS__)
+        return;
+#endif
 
         String ret = storage->GetStringValue("TestStringKey");
         TEST_VERIFY("Test" == ret);
@@ -62,7 +66,5 @@ DAVA_TESTCLASS (DataVaultTest)
         storage->Clear();
         iret = storage->GetLongValue("TestIntKey");
         TEST_VERIFY(0 == iret);
-
-        SafeRelease(storage);
     }
 };
