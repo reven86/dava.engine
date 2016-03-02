@@ -149,6 +149,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlBackground.h"
 #include "UI/UIScreen.h"
+#include "UI/UILoadingScreen.h"
 #include "UI/UIList.h"
 #include "UI/UIListCell.h"
 #include "UI/UITextField.h"

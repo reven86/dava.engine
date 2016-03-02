@@ -2708,12 +2708,12 @@
 		028C1A771BD66A6100B2266F /* UIListCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDB1BD66A5F00B2266F /* UIListCell.h */; };
 		028C1A781BD66A6100B2266F /* UIListCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDB1BD66A5F00B2266F /* UIListCell.h */; };
 		028C1A791BD66A6100B2266F /* UIListCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDB1BD66A5F00B2266F /* UIListCell.h */; };
-		028C1A7A1BD66A6100B2266F /* UILoadingTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDC1BD66A5F00B2266F /* UILoadingTransition.cpp */; };
-		028C1A7B1BD66A6100B2266F /* UILoadingTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDC1BD66A5F00B2266F /* UILoadingTransition.cpp */; };
-		028C1A7C1BD66A6100B2266F /* UILoadingTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDC1BD66A5F00B2266F /* UILoadingTransition.cpp */; };
-		028C1A7D1BD66A6100B2266F /* UILoadingTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDD1BD66A5F00B2266F /* UILoadingTransition.h */; };
-		028C1A7E1BD66A6100B2266F /* UILoadingTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDD1BD66A5F00B2266F /* UILoadingTransition.h */; };
-		028C1A7F1BD66A6100B2266F /* UILoadingTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDD1BD66A5F00B2266F /* UILoadingTransition.h */; };
+		028C1A7A1BD66A6100B2266F /* UILoadingScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDC1BD66A5F00B2266F /* UILoadingScreen.cpp */; };
+		028C1A7B1BD66A6100B2266F /* UILoadingScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDC1BD66A5F00B2266F /* UILoadingScreen.cpp */; };
+		028C1A7C1BD66A6100B2266F /* UILoadingScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDC1BD66A5F00B2266F /* UILoadingScreen.cpp */; };
+		028C1A7D1BD66A6100B2266F /* UILoadingScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDD1BD66A5F00B2266F /* UILoadingScreen.h */; };
+		028C1A7E1BD66A6100B2266F /* UILoadingScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDD1BD66A5F00B2266F /* UILoadingScreen.h */; };
+		028C1A7F1BD66A6100B2266F /* UILoadingScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CDD1BD66A5F00B2266F /* UILoadingScreen.h */; };
 		028C1A801BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDE1BD66A5F00B2266F /* UIMoveInTransition.cpp */; };
 		028C1A811BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDE1BD66A5F00B2266F /* UIMoveInTransition.cpp */; };
 		028C1A821BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CDE1BD66A5F00B2266F /* UIMoveInTransition.cpp */; };
@@ -3949,8 +3949,8 @@
 		028C0CD91BD66A5F00B2266F /* UIList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIList.h; sourceTree = "<group>"; };
 		028C0CDA1BD66A5F00B2266F /* UIListCell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIListCell.cpp; sourceTree = "<group>"; };
 		028C0CDB1BD66A5F00B2266F /* UIListCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIListCell.h; sourceTree = "<group>"; };
-		028C0CDC1BD66A5F00B2266F /* UILoadingTransition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILoadingTransition.cpp; sourceTree = "<group>"; };
-		028C0CDD1BD66A5F00B2266F /* UILoadingTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILoadingTransition.h; sourceTree = "<group>"; };
+		028C0CDC1BD66A5F00B2266F /* UILoadingScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILoadingScreen.cpp; sourceTree = "<group>"; };
+		028C0CDD1BD66A5F00B2266F /* UILoadingScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILoadingScreen.h; sourceTree = "<group>"; };
 		028C0CDE1BD66A5F00B2266F /* UIMoveInTransition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIMoveInTransition.cpp; sourceTree = "<group>"; };
 		028C0CDF1BD66A5F00B2266F /* UIMoveInTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIMoveInTransition.h; sourceTree = "<group>"; };
 		028C0CE01BD66A5F00B2266F /* UIMovieView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIMovieView.cpp; sourceTree = "<group>"; };
@@ -5439,8 +5439,8 @@
 				028C0CD91BD66A5F00B2266F /* UIList.h */,
 				028C0CDA1BD66A5F00B2266F /* UIListCell.cpp */,
 				028C0CDB1BD66A5F00B2266F /* UIListCell.h */,
-				028C0CDC1BD66A5F00B2266F /* UILoadingTransition.cpp */,
-				028C0CDD1BD66A5F00B2266F /* UILoadingTransition.h */,
+				028C0CDC1BD66A5F00B2266F /* UILoadingScreen.cpp */,
+				028C0CDD1BD66A5F00B2266F /* UILoadingScreen.h */,
 				028C0CDE1BD66A5F00B2266F /* UIMoveInTransition.cpp */,
 				028C0CDF1BD66A5F00B2266F /* UIMoveInTransition.h */,
 				028C0CE01BD66A5F00B2266F /* UIMovieView.cpp */,
@@ -5740,7 +5740,7 @@
 				028C0F7B1BD66A6000B2266F /* bs_common.h in Headers */,
 				028C14581BD66A6000B2266F /* Sprite.h in Headers */,
 				028C0EB21BD66A6000B2266F /* PosixThreads.h in Headers */,
-				028C1A7F1BD66A6100B2266F /* UILoadingTransition.h in Headers */,
+				028C1A7F1BD66A6100B2266F /* UILoadingScreen.h in Headers */,
 				028C0E0A1BD66A6000B2266F /* FixedSizePoolAllocator.h in Headers */,
 				028C1AD61BD66A6100B2266F /* UIScreenTransition.h in Headers */,
 				176DE930174B5561007A983B /* DAVAConfig.h in Headers */,
@@ -6740,7 +6740,7 @@
 				028C0E8C1BD66A6000B2266F /* Collisions.h in Headers */,
 				028C14DD1BD66A6000B2266F /* Landscape.h in Headers */,
 				03C12A941C4FD827002D4636 /* Reachability.h in Headers */,
-				028C1A7D1BD66A6100B2266F /* UILoadingTransition.h in Headers */,
+				028C1A7D1BD66A6100B2266F /* UILoadingScreen.h in Headers */,
 				028C145C1BD66A6000B2266F /* RenderSystem2D.h in Headers */,
 				028C0DFF1BD66A6000B2266F /* FastName.h in Headers */,
 				028C0E771BD66A6000B2266F /* TypeHolders.h in Headers */,
@@ -6811,7 +6811,7 @@
 				028C0F7A1BD66A6000B2266F /* bs_common.h in Headers */,
 				028C14571BD66A6000B2266F /* Sprite.h in Headers */,
 				028C0EB11BD66A6000B2266F /* PosixThreads.h in Headers */,
-				028C1A7E1BD66A6100B2266F /* UILoadingTransition.h in Headers */,
+				028C1A7E1BD66A6100B2266F /* UILoadingScreen.h in Headers */,
 				028C0E091BD66A6000B2266F /* FixedSizePoolAllocator.h in Headers */,
 				028C1AD51BD66A6100B2266F /* UIScreenTransition.h in Headers */,
 				E898A08C16BD265400732C04 /* DAVAConfig.h in Headers */,
@@ -7531,7 +7531,7 @@
 				028C1A221BD66A6000B2266F /* UIControl.cpp in Sources */,
 				028C14B51BD66A6000B2266F /* DynamicBufferAllocator.cpp in Sources */,
 				028C195F1BD66A6000B2266F /* SoundSystemEmpty.cpp in Sources */,
-				028C1A7C1BD66A6100B2266F /* UILoadingTransition.cpp in Sources */,
+				028C1A7C1BD66A6100B2266F /* UILoadingScreen.cpp in Sources */,
 				028C190B1BD66A6000B2266F /* SpeedTreeUpdateSystem.cpp in Sources */,
 				028C17A01BD66A6000B2266F /* CustomPropertiesComponent.cpp in Sources */,
 				028C18391BD66A6000B2266F /* EntityFamily.cpp in Sources */,
@@ -7996,7 +7996,7 @@
 				028C1A201BD66A6000B2266F /* UIControl.cpp in Sources */,
 				028C14B31BD66A6000B2266F /* DynamicBufferAllocator.cpp in Sources */,
 				028C195D1BD66A6000B2266F /* SoundSystemEmpty.cpp in Sources */,
-				028C1A7A1BD66A6100B2266F /* UILoadingTransition.cpp in Sources */,
+				028C1A7A1BD66A6100B2266F /* UILoadingScreen.cpp in Sources */,
 				028C19091BD66A6000B2266F /* SpeedTreeUpdateSystem.cpp in Sources */,
 				028C179E1BD66A6000B2266F /* CustomPropertiesComponent.cpp in Sources */,
 				028C18371BD66A6000B2266F /* EntityFamily.cpp in Sources */,
@@ -8463,7 +8463,7 @@
 				028C1A211BD66A6000B2266F /* UIControl.cpp in Sources */,
 				028C14B41BD66A6000B2266F /* DynamicBufferAllocator.cpp in Sources */,
 				028C195E1BD66A6000B2266F /* SoundSystemEmpty.cpp in Sources */,
-				028C1A7B1BD66A6100B2266F /* UILoadingTransition.cpp in Sources */,
+				028C1A7B1BD66A6100B2266F /* UILoadingScreen.cpp in Sources */,
 				028C190A1BD66A6000B2266F /* SpeedTreeUpdateSystem.cpp in Sources */,
 				028C179F1BD66A6000B2266F /* CustomPropertiesComponent.cpp in Sources */,
 				028C18381BD66A6000B2266F /* EntityFamily.cpp in Sources */,
