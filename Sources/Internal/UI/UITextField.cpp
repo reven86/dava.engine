@@ -569,7 +569,7 @@ void UITextField::Input(UIEvent* currentInput)
             //delegate->TextFieldShouldReturn(this);
         }
     }
-    if (currentInput->phase == UIEvent::Phase::BEGAN)
+    if (currentInput->phase == UIEvent::Phase::ENDED)
     {
         if (openKeyboardPolicy == OPEN_KEYBOARD_WHEN_ACTIVATED)
         {

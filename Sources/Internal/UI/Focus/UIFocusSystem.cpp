@@ -10,6 +10,7 @@
 #include "UI/UIList.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/UITextField.h"
 
 #include "Input/KeyboardDevice.h"
 
@@ -52,19 +53,22 @@ UIControl* UIFocusSystem::GetFocusedControl() const
 
 void UIFocusSystem::SetFocusedControl(UIControl* control)
 {
-    if (focusedControl)
+    if (control != focusedControl.Get())
     {
-        focusedControl->SystemOnFocusLost();
-        focusedControl = nullptr;
-    }
-
-    if (!focusedControl.Valid())
-    {
-        focusedControl = control;
         if (focusedControl)
         {
-            focusedControl->SystemOnFocused();
-            UIControlHelpers::ScrollToControl(focusedControl.Get());
+            focusedControl->SystemOnFocusLost();
+            focusedControl = nullptr;
+        }
+
+        if (!focusedControl.Valid())
+        {
+            focusedControl = control;
+            if (focusedControl)
+            {
+                focusedControl->SystemOnFocused();
+                UIControlHelpers::ScrollToControl(focusedControl.Get());
+            }
         }
     }
 }

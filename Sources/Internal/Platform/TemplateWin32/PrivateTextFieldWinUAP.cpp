@@ -659,12 +659,8 @@ void PrivateTextFieldWinUAP::OnGotFocus()
                 uiTextField->SetFocused();
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
-            // If keyboard rect is not empty so manually notify delegate about keyboard size and position
-            if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
-            {
-                Rect rect = WindowToVirtual(keyboardRect);
-                textFieldDelegate->OnKeyboardShown(rect);
-            }
+            Rect rect = WindowToVirtual(keyboardRect);
+            uiTextField->OnKeyboardShown(rect);
         }
     });
 }
@@ -681,9 +677,7 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     core->RunOnMainThread([this, self]() {
         if (uiTextField != nullptr)
         {
-            uiTextField->ReleaseFocus();
-            if (textFieldDelegate)
-                textFieldDelegate->OnKeyboardHidden();
+            uiTextField->OnKeyboardHidden();
         }
     });
 }
@@ -879,6 +873,7 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
         xOffset = rect.x + rect.dx + 1000.0f;
         yOffset = rect.y + rect.dy + 1000.0f;
     }
+
     nativeControlHolder->Width = rect.dx;
     nativeControlHolder->Height = rect.dy;
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
@@ -1128,10 +1123,7 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-                if (curFocused != uiTextField)
-                { // Do not set rendered texture if control has focus
-                    uiTextField->SetSprite(sprite.Get(), 0);
-                }
+                uiTextField->SetSprite(sprite.Get(), 0);
             }
             if (moveOffScreenOnCompletion)
             {
