@@ -507,16 +507,16 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
         {
             if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
             {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
             }
         }
-        else
-        {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
-            {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL, false);
-            }
-        }
+        // else
+        // {
+        //     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
+        //     {
+        //         DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL);
+        //     }
+        // }
     }
 }
 
