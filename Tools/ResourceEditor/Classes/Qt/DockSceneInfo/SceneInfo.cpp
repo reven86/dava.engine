@@ -65,7 +65,7 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), SLOT(SceneActivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), SLOT(SceneDeactivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), SLOT(SceneStructureChanged(SceneEditor2*, DAVA::Entity*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -657,7 +657,7 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     ClearSelectionData();
 
@@ -670,31 +670,42 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* se
     RefreshSpeedTreeInfoSelection();
 }
 
-void SceneInfo::CollectSelectedRenderObjects(const EntityGroup* selected)
+void SceneInfo::CollectSelectedRenderObjects(const SelectableObjectGroup* selected)
 {
     for (const auto& item : selected->GetContent())
     {
-        CollectSelectedRenderObjectsRecursivly(item.first);
+        auto entity = item.Cast<DAVA::Entity>();
+        if (entity != nullptr)
+        {
+            CollectSelectedRenderObjectsRecursivly(entity);
+        }
     }
 }
 
 void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
 {
+    DVASSERT(entity != nullptr);
+
     RenderObject* renderObject = GetRenderObject(entity);
     if (renderObject)
+    {
         selectedRenderObjects.insert(renderObject);
+    }
 
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
+    {
         CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
+    }
 }
 
-void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup)
+void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableObjectGroup* forGroup)
 {
     speedTreeLeafInfo.clear();
 
     for (const auto& item : forGroup->GetContent())
     {
-        RenderObject* ro = GetRenderObject(item.first);
+        auto entity = item.Cast<DAVA::Entity>();
+        RenderObject* ro = GetRenderObject(entity);
         if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }

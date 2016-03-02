@@ -36,7 +36,7 @@
 
 class QLabel;
 class SceneEditor2;
-class EntityGroup;
+class SelectableObjectGroup;
 class Command2;
 class StatusBar : public QStatusBar
 {
@@ -48,7 +48,7 @@ public:
 
 public slots:
     void SceneActivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
     void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
 

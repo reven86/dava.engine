@@ -80,7 +80,7 @@ protected:
 public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
-    void sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void sceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
 
 private:
     Ui::TextureBrowser* ui;

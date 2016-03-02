@@ -72,7 +72,7 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
 
     connect(ui->eventType, SIGNAL(currentIndexChanged(int)), SLOT(OnTypeChanged()));
     connect(ui->run, SIGNAL(clicked()), SLOT(OnInvoke()));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
 
     const ActionComponent::Action::eEvent eventType = static_cast<ActionComponent::Action::eEvent>(SettingsManager::Instance()->GetValue(settingsType).AsUInt32());
@@ -151,7 +151,7 @@ void RunActionEventWidget::sceneActivated(SceneEditor2* _scene)
     sceneSelectionChanged(scene, NULL, NULL);
 }
 
-void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const EntityGroup* selected, const EntityGroup* deselected)
+void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);

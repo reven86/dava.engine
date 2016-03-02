@@ -95,7 +95,7 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
     }
 
     // if boxes are invalid we should request them from collision system
-    // and store them in selection entityGroup
+    // and store them in selectionobjects
     if (invalidSelectionBoxes)
     {
         for (auto& item : currentSelection.GetMutableContent())
@@ -131,7 +131,8 @@ void SceneSelectionSystem::ProcessSelectedGroup(const SelectableObjectGroup::Col
         if ((entity != nullptr) && (componentMaskForSelection & entity->GetAvailableComponentFlags()))
         {
             auto selectableEntity = GetSelectableEntity(entity);
-            collisionEntities.emplace_back(selectableEntity, GetUntransformedBoundingBox(selectableEntity));
+            collisionEntities.emplace_back(selectableEntity);
+            collisionEntities.back().SetBoundingBox(GetUntransformedBoundingBox(selectableEntity));
         }
     }
 

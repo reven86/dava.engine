@@ -140,6 +140,9 @@ private:
 
 public:
     static bool FORCE_DEEP_CLONE;
+    INTROSPECTION_EXTEND(ParticleEmitter, BaseObject,
+                         MEMBER(name, "Name", I_VIEW | I_EDIT | I_SAVE)
+                         )
 };
 }
 

@@ -36,7 +36,7 @@
 
 #include "MaterialModel.h"
 
-class EntityGroup;
+class SelectableObjectGroup;
 class MaterialFilteringModel;
 
 class MaterialTree : public QTreeView

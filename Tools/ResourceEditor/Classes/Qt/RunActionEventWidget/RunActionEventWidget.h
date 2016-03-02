@@ -44,7 +44,7 @@ class RunActionEventWidget;
 }
 
 class SceneEditor2;
-class EntityGroup;
+class SelectableObjectGroup;
 
 class RunActionEventWidget
 : public QWidget
@@ -65,7 +65,7 @@ private slots:
     void OnTypeChanged();
     void OnInvoke();
     void sceneActivated(SceneEditor2* scene);
-    void sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void sceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
 };
 
 

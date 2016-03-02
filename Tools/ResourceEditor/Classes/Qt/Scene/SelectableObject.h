@@ -81,9 +81,9 @@ inline T* SelectableObject::Cast() const
     {
         return static_cast<T*>(object);
     }
+
     DAVA::Logger::Error("SelectableObject cast to %s failed, actually contains %s",
                         DAVA::MetaInfo::Instance<T>()->GetTypeName(), object->GetTypeInfo()->Type()->GetTypeName());
-    DVASSERT_MSG(0, "See log for details");
     return nullptr;
 }
 

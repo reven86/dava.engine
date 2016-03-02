@@ -34,7 +34,7 @@
 
 class Command2;
 class SceneEditor2;
-class EntityGroup;
+class SelectableObjectGroup;
 
 class EditorLODSystem : public DAVA::SceneSystem
 {
@@ -74,7 +74,7 @@ public:
     bool DeleteFirstLOD();
     bool DeleteLastLOD();
 
-    void SceneSelectionChanged(const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
 
     inline DAVA::uint32 GetLayerTriangles(DAVA::uint32 layerNum) const;
 

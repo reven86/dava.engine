@@ -70,25 +70,26 @@ StructureSystem::~StructureSystem()
 {
 }
 
-void StructureSystem::Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore)
+void StructureSystem::Move(const SelectableObjectGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    const auto& entityGroupContent = entityGroup.GetContent();
-    if ((sceneEditor == nullptr) || entityGroupContent.empty())
+    const auto& objectsContent = objects.GetContent();
+    if ((sceneEditor == nullptr) || objectsContent.empty())
     {
         return;
     }
-    if (entityGroup.Size() > 1)
+    if (objects.GetSize() > 1)
     {
         sceneEditor->BeginBatch("Move entities");
     }
 
-    for (const auto& item : entityGroupContent)
+    for (const auto& item : objectsContent)
     {
-        sceneEditor->Exec(new EntityParentChangeCommand(item.first, newParent, newBefore));
+        auto entity = item.Cast<DAVA::Entity>();
+        sceneEditor->Exec(new EntityParentChangeCommand(entity, newParent, newBefore));
     }
 
-    if (entityGroup.Size() > 1)
+    if (objects.GetSize() > 1)
     {
         sceneEditor->EndBatch();
     }
@@ -96,20 +97,21 @@ void StructureSystem::Move(const EntityGroup& entityGroup, DAVA::Entity* newPare
     EmitChanged();
 }
 
-void StructureSystem::Remove(const EntityGroup& entityGroup)
+void StructureSystem::Remove(const SelectableObjectGroup& objects)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    const auto& entityGroupContent = entityGroup.GetContent();
-    if ((nullptr == sceneEditor) || entityGroupContent.empty())
+    const auto& objectsContent = objects.GetContent();
+    if ((nullptr == sceneEditor) || objectsContent.empty())
     {
         return;
     }
 
     DAVA::Vector<DAVA::Entity*> entitiesToRemove;
-    entitiesToRemove.reserve(entityGroupContent.size());
-    for (const auto& item : entityGroupContent)
+    entitiesToRemove.reserve(objectsContent.size());
+    for (const auto& item : objectsContent)
     {
-        entitiesToRemove.push_back(item.first);
+        auto entity = item.Cast<DAVA::Entity>();
+        entitiesToRemove.push_back(entity);
     }
     std::sort(entitiesToRemove.begin(), entitiesToRemove.end(), [](DAVA::Entity* l, DAVA::Entity* r) {
         // sort objects by parents (even if parent == nullptr), in order to remove children first
@@ -272,14 +274,14 @@ void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forc
     }
 }
 
-SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGroup& entityGroup, bool saveLightmapSettings)
+SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGroup& objects, bool saveLightmapSettings)
 {
     SelectableObjectGroup result;
-    if (!entityGroup.IsEmpty())
+    if (!objects.IsEmpty())
     {
         DAVA::Set<DAVA::FilePath> refsToReload;
 
-        for (const auto& item : entityGroup.GetContent())
+        for (const auto& item : objects.GetContent())
         {
             DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(item.Cast<DAVA::Entity>());
             if (props != nullptr)
@@ -303,7 +305,7 @@ SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGrou
 
         DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
         SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
-        StructSystemDetails::MapEntityGroup(entityGroup, result, groupMapping, scene->collisionSystem);
+        StructSystemDetails::MapEntityGroup(objects, result, groupMapping, scene->collisionSystem);
     }
 
     return result;
@@ -317,23 +319,23 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, InternalMappin
     }
 }
 
-SelectableObjectGroup StructureSystem::ReloadEntitiesAs(const SelectableObjectGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
+SelectableObjectGroup StructureSystem::ReloadEntitiesAs(const SelectableObjectGroup& objects, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
 {
     SelectableObjectGroup result;
-    if (!entityGroup.IsEmpty())
+    if (!objects.IsEmpty())
     {
         InternalMapping entitiesToReload;
 
-        for (const auto& obj : entityGroup.GetContent())
+        for (const auto& obj : objects.GetContent())
         {
-            entitiesToReload.emplace(obj.GetContainedObject(), nullptr);
+            entitiesToReload.emplace(obj.Cast<DAVA::Entity>(), nullptr);
         }
 
         ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
 
         DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
         SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
-        StructSystemDetails::MapEntityGroup(entityGroup, result, entitiesToReload, scene->collisionSystem);
+        StructSystemDetails::MapEntityGroup(objects, result, entitiesToReload, scene->collisionSystem);
     }
 
     return result;
@@ -532,7 +534,7 @@ void StructureSystem::ProcessAutoSelection(const Command2* command, bool redo) c
                 auto needAddEntity = ((CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo));
                 if (needAddEntity)
                 {
-                    selectionSystem->AddEntityToSelection(cmd->GetEntity());
+                    selectionSystem->AddObjectToSelection(cmd->GetEntity());
                 }
             }
         }
@@ -544,7 +546,7 @@ void StructureSystem::ProcessAutoSelection(const Command2* command, bool redo) c
         auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
         if (needAddEntity)
         {
-            selectionSystem->AddEntityToSelection(command->GetEntity());
+            selectionSystem->AddObjectToSelection(command->GetEntity());
         }
     }
 }

@@ -53,7 +53,7 @@ MaterialTree::MaterialTree(QWidget* parent /* = 0 */)
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), this, SLOT(OnStructureChanged(SceneEditor2*, DAVA::Entity*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
 
     header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
@@ -113,7 +113,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
             if (nullptr != entity)
             {
-                curScene->selectionSystem->AddEntityToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+                curScene->selectionSystem->AddObjectToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
             const Vector<NMaterial*>& children = material->GetChildren();
             for (auto child : children)

@@ -37,7 +37,7 @@
 #include <QShowEvent>
 
 class SceneEditor2;
-class EntityGroup;
+class SelectableObjectGroup;
 
 class SceneInfo : public QtPropertyEditor
 {
@@ -92,7 +92,7 @@ protected slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
 
 protected:
     virtual void showEvent(QShowEvent* event);
@@ -142,8 +142,8 @@ protected:
     void CollectLODDataInFrame();
     void CollectLODDataInScene();
     void CollectLODDataInEntityRecursive(DAVA::Entity* entity);
-    void CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup);
-    void CollectSelectedRenderObjects(const EntityGroup* selected);
+    void CollectSpeedTreeLeafsSquare(const SelectableObjectGroup* forGroup);
+    void CollectSelectedRenderObjects(const SelectableObjectGroup* selected);
     void CollectSelectedRenderObjectsRecursivly(DAVA::Entity* entity);
     static void CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent*>& lods, LODInfo& info);
 

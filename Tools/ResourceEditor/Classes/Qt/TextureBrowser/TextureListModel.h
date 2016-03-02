@@ -35,7 +35,6 @@
 
 #include "DAVAEngine.h"
 #include "Scene/SceneHelper.h"
-#include "Scene/EntityGroup.h"
 
 class TextureListModel : public QAbstractListModel
 {
@@ -54,7 +53,7 @@ public:
     ~TextureListModel();
 
     void setScene(DAVA::Scene* scene);
-    void setHighlight(const EntityGroup* nodes);
+    void setHighlight(const SelectableObjectGroup* nodes);
     void setFilter(QString filter);
     void setFilterBySelectedNode(bool enabled);
     void setSortMode(TextureListModel::TextureListSortMode sortMode);

@@ -551,7 +551,7 @@ void LODEditor::DeleteLastLOD()
     }
 }
 
-void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     DVASSERT(scene);
     DVASSERT(selected);

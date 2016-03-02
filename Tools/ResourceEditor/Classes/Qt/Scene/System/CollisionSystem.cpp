@@ -157,7 +157,8 @@ const SelectableObjectGroup::CollectionType& SceneCollisionSystem::ObjectsRayTes
         for (const auto& hit : hits)
         {
             auto entity = collisionToEntity[hit.first];
-            rayIntersectedEntities.emplace_back(entity, GetBoundingBox(entity));
+            rayIntersectedEntities.emplace_back(entity);
+            rayIntersectedEntities.back().SetBoundingBox(GetBoundingBox(entity));
         }
     }
 

@@ -32,7 +32,6 @@
 #include "Platform/SystemTimer.h"
 
 #include "Main/mainwindow.h"
-#include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Commands2/Command2.h"
@@ -111,7 +110,7 @@ void StatusBar::SceneActivated(SceneEditor2* scene)
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);

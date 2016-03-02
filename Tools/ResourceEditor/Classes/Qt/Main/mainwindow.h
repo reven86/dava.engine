@@ -249,7 +249,7 @@ private slots:
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
     void EditorLightEnabled(bool enabled);

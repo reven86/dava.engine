@@ -29,7 +29,6 @@
 
 #include "DAVAEngine.h"
 #include "EditorLODSystem.h"
-#include "Scene/EntityGroup.h"
 #include "Entity/SceneSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
@@ -118,13 +117,17 @@ void EditorLODSystem::UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float3
     }
 }
 
-void EditorLODSystem::SceneSelectionChanged(const EntityGroup* selected, const EntityGroup* deselected)
+void EditorLODSystem::SceneSelectionChanged(const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     if (!allSceneModeEnabled)
     {
         for (const auto& item : deselected->GetContent())
         {
-            ResetForceState(item.first);
+            auto entity = item.Cast<DAVA::Entity>();
+            if (entity != nullptr)
+            {
+                ResetForceState(entity);
+            }
         }
     }
     selectedLODs.clear();
@@ -137,7 +140,11 @@ void EditorLODSystem::SceneSelectionChanged(const EntityGroup* selected, const E
 
     for (const auto& item : selectedItems)
     {
-        AddSelectedLODsRecursive(item.first);
+        auto entity = item.Cast<DAVA::Entity>();
+        if (entity != nullptr)
+        {
+            AddSelectedLODsRecursive(entity);
+        }
     }
 
     if (allSceneModeEnabled)
@@ -152,6 +159,7 @@ void EditorLODSystem::SceneSelectionChanged(const EntityGroup* selected, const E
 void EditorLODSystem::ResetForceState(DAVA::Entity* entity)
 {
     DVASSERT(entity);
+
     DAVA::LodComponent* tmpComponent = GetLodComponent(entity);
     if (tmpComponent)
     {

@@ -184,7 +184,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2*, const Command2*, bool)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
     connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
     connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
@@ -645,7 +645,7 @@ void QtMainWindow::SetupToolBars()
 void QtMainWindow::SetupStatusBar()
 {
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), ui->statusBar, SLOT(SceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
 
@@ -987,7 +987,7 @@ void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
     EnableSceneActions(false);
 }
 
-void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)
+void QtMainWindow::SceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)
 {
     UpdateModificationActionsState();
 }
@@ -3125,21 +3125,21 @@ void QtMainWindow::OnConsoleItemClicked(const QString& data)
             auto vec = conv.GetPointers<Entity*>();
             if (!vec.empty())
             {
-                SelectableObjectGroup entityGroup;
+                SelectableObjectGroup objects;
                 DAVA::Vector<Entity*> allEntities;
                 currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
+                        objects.Add(entity, currentScene->selectionSystem->GetUntransformedBoundingBox(entity));
                     }
                 }
 
-                if (!entityGroup.IsEmpty())
+                if (!objects.IsEmpty())
                 {
-                    currentScene->selectionSystem->SetSelection(entityGroup);
-                    currentScene->cameraSystem->LookAt(entityGroup.GetIntegralBoundingBox());
+                    currentScene->selectionSystem->SetSelection(objects);
+                    currentScene->cameraSystem->LookAt(objects.GetIntegralBoundingBox());
                 }
             }
         }

@@ -177,7 +177,7 @@ void TextureListModel::setScene(DAVA::Scene* scene)
     endResetModel();
 }
 
-void TextureListModel::setHighlight(const EntityGroup* nodes)
+void TextureListModel::setHighlight(const SelectableObjectGroup* nodes)
 {
     beginResetModel();
 
@@ -189,7 +189,8 @@ void TextureListModel::setHighlight(const EntityGroup* nodes)
 
         for (const auto& item : nodes->GetContent())
         {
-            SceneHelper::EnumerateEntityTextures(activeScene, item.first, nodeTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+            auto entity = item.Cast<DAVA::Entity>();
+            SceneHelper::EnumerateEntityTextures(activeScene, entity, nodeTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
         }
 
         const DAVA::uint32 descriptorsCount = static_cast<const DAVA::uint32>(textureDescriptorsAll.size());

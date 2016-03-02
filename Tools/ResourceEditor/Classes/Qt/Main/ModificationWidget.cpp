@@ -247,7 +247,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
                            auto entity = obj.Cast<DAVA::Entity>();
                            if (entity == nullptr)
                                return false;
-                           return selection.ContainsObject(entity->GetParent);
+                           return selection.ContainsObject(entity->GetParent());
                        });
 
     switch (modifMode)
@@ -325,7 +325,7 @@ void ModificationWidget::OnSceneDeactivated(SceneEditor2* scene)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     if (curScene == scene)
     {

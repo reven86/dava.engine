@@ -91,7 +91,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(DAVAWidgetDataDropped(const QMimeData*)));
     QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
-    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const SelectableObjectGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const SelectableObjectGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
 
@@ -409,7 +409,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
     }
 }
 
-void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup* entities)
+void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableObjectGroup* entities)
 {
     static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
     static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));

@@ -113,7 +113,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
         QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
     }
     posSaver.Attach(this, "DocPropetyEditor");
 
@@ -151,7 +151,7 @@ PropertyEditor::~PropertyEditor()
     ClearCurrentNodes();
 }
 
-void PropertyEditor::SetEntities(const EntityGroup* selected)
+void PropertyEditor::SetEntities(const SelectableObjectGroup* selected)
 {
     ClearCurrentNodes();
     SCOPE_EXIT
@@ -163,14 +163,10 @@ void PropertyEditor::SetEntities(const EntityGroup* selected)
     if (selected == nullptr || selected->IsEmpty())
         return;
 
-    curNodes.reserve(selected->Size());
-    for (const EntityGroup::EntityMap::value_type& mapNode : selected->GetContent())
+    for (const auto& item : selected->GetContent())
     {
-        DAVA::Entity* node = SafeRetain(mapNode.first);
-        curNodes << node;
-        // ensure that custom properties exist
-        // this call will create them if they are not created yet
-        GetOrCreateCustomProperties(node);
+        curNodes.Add(item.GetContainedObject(), item.GetBoundingBox());
+        GetOrCreateCustomProperties(item.Cast<DAVA::Entity>());
     }
 }
 
@@ -204,9 +200,58 @@ bool PropertyEditor::GetFavoritesEditMode() const
 
 void PropertyEditor::ClearCurrentNodes()
 {
-    for (int i = 0; i < curNodes.size(); i++)
-        SafeRelease(curNodes[i]);
-    curNodes.clear();
+    curNodes.Clear();
+}
+
+void PropertyEditor::AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root, std::unique_ptr<QtPropertyData>& curEntityData,
+                                         bool isFirstInList)
+{
+    // add info about components
+    for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
+    {
+        const int nComponents = node->GetComponentCount(ic);
+        for (int cidx = 0; cidx < nComponents; cidx++)
+        {
+            Component* component = node->GetComponent(ic, cidx);
+            if (component)
+            {
+                const DAVA::InspInfo* componentInspInfo = component->GetTypeInfo();
+                std::unique_ptr<QtPropertyData> componentData(CreateInsp(componentInspInfo->Name(), component, componentInspInfo));
+                PropEditorUserData* userData = GetUserData(componentData.get());
+                userData->entity = node;
+
+                bool isRemovable = true;
+                switch (component->GetType())
+                {
+                case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
+                case Component::DEBUG_RENDER_COMPONENT:
+                case Component::TRANSFORM_COMPONENT:
+                case Component::CUSTOM_PROPERTIES_COMPONENT: // Disable removing, because custom properties are created automatically
+                case Component::WAYPOINT_COMPONENT: // disable remove, b/c waypoint entity doesn't make sence without waypoint component
+                case Component::EDGE_COMPONENT: // disable remove, b/c edge has to be removed directly from scene only
+                    isRemovable = false;
+                    break;
+                }
+
+                if (isRemovable)
+                {
+                    QtPropertyToolButton* deleteButton = CreateButton(componentData.get(), SharedIcon(":/QtIcons/remove.png"), "Remove Component");
+                    deleteButton->setObjectName("RemoveButton");
+                    deleteButton->setEnabled(true);
+                    QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
+                }
+
+                if (isFirstInList)
+                {
+                    root->ChildAdd(std::move(componentData));
+                }
+                else
+                {
+                    root->MergeChild(std::move(componentData));
+                }
+            }
+        }
+    }
 }
 
 void PropertyEditor::ResetProperties()
@@ -219,70 +264,33 @@ void PropertyEditor::ResetProperties()
     RemovePropertyAll();
     favoriteGroup = NULL;
 
-    const int nNodes = curNodes.size();
-    if (nNodes > 0)
+    if (!curNodes.IsEmpty())
     {
         // create data tree, but don't add it to the property editor
         std::unique_ptr<QtPropertyData> root(new QtPropertyData(DAVA::FastName("root")));
 
         // add info about current entities
-        for (int i = 0; i < nNodes; i++)
+        bool isFirstItem = true;
+        for (const auto& item : curNodes.GetContent())
         {
-            DAVA::Entity* node = curNodes.at(i);
+            DAVA::BaseObject* node = item.GetContainedObject();
+
             const DAVA::InspInfo* inspInfo = node->GetTypeInfo();
             std::unique_ptr<QtPropertyData> curEntityData(CreateInsp(inspInfo->Name(), node, inspInfo));
 
-            PropEditorUserData* userData = GetUserData(curEntityData.get());
-            userData->entity = node;
-
-            root->MergeChild(std::move(curEntityData));
-
-            // add info about components
-            for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
+            if (item.CanBeCastedTo<DAVA::Entity>())
             {
-                const int nComponents = node->GetComponentCount(ic);
-                for (int cidx = 0; cidx < nComponents; cidx++)
-                {
-                    Component* component = node->GetComponent(ic, cidx);
-                    if (component)
-                    {
-                        const DAVA::InspInfo* componentInspInfo = component->GetTypeInfo();
-                        std::unique_ptr<QtPropertyData> componentData(CreateInsp(componentInspInfo->Name(), component, componentInspInfo));
-                        PropEditorUserData* userData = GetUserData(componentData.get());
-                        userData->entity = node;
+                PropEditorUserData* userData = GetUserData(curEntityData.get());
+                userData->entity = item.Cast<DAVA::Entity>();
+                root->MergeChild(std::move(curEntityData));
 
-                        bool isRemovable = true;
-                        switch (component->GetType())
-                        {
-                        case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
-                        case Component::DEBUG_RENDER_COMPONENT:
-                        case Component::TRANSFORM_COMPONENT:
-                        case Component::CUSTOM_PROPERTIES_COMPONENT: // Disable removing, because custom properties are created automatically
-                        case Component::WAYPOINT_COMPONENT: // disable remove, b/c waypoint entity doesn't make sence without waypoint component
-                        case Component::EDGE_COMPONENT: // disable remove, b/c edge has to be removed directly from scene only
-                            isRemovable = false;
-                            break;
-                        }
-
-                        if (isRemovable)
-                        {
-                            QtPropertyToolButton* deleteButton = CreateButton(componentData.get(), SharedIcon(":/QtIcons/remove.png"), "Remove Component");
-                            deleteButton->setObjectName("RemoveButton");
-                            deleteButton->setEnabled(true);
-                            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
-                        }
-
-                        if (i == 0)
-                        {
-                            root->ChildAdd(std::move(componentData));
-                        }
-                        else
-                        {
-                            root->MergeChild(std::move(componentData));
-                        }
-                    }
-                }
+                AddEntityProperties(userData->entity, root, curEntityData, isFirstItem);
             }
+            else
+            {
+                root->MergeChild(std::move(curEntityData));
+            }
+            isFirstItem = false;
         }
 
         ApplyFavorite(root.get());
@@ -750,7 +758,7 @@ void PropertyEditor::sceneDeactivated(SceneEditor2* scene)
     SetEntities(NULL);
 }
 
-void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     SetEntities(selected);
 }
@@ -772,20 +780,24 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* comman
     case CMDID_EXPAND_PATH:
     case CMDID_COLLAPSE_PATH:
     {
-        bool doReset = (command->GetEntity() == NULL);
-        for (int i = 0; !doReset && i < curNodes.size(); i++)
-        {
-            if (command->GetEntity() == curNodes.at(i))
-            {
-                doReset = true;
-            }
-        }
-        if (doReset)
+        if (command->GetEntity() == nullptr)
         {
             propertiesUpdater->Update();
         }
+        else
+        {
+            for (const auto& item : curNodes.GetContent())
+            {
+                if (command->GetEntity() == item.GetContainedObject())
+                {
+                    propertiesUpdater->Update();
+                    break;
+                }
+            }
+        }
         break;
     }
+
     default:
         OnUpdateTimeout();
         break;
@@ -899,19 +911,19 @@ void PropertyEditor::drawRow(QPainter* painter, const QStyleOptionViewItem& opti
 
 void PropertyEditor::ActionEditComponent()
 {
-    if (curNodes.size() == 1)
+    if (curNodes.GetSize() == 1)
     {
-        Entity* node = curNodes.front();
-        ActionComponentEditor editor(this);
+        Entity* node = curNodes.GetFirst().Cast<DAVA::Entity>();
+        if (node == nullptr)
+            return;
 
+        ActionComponentEditor editor(this);
         editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
         editor.exec();
 
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        auto bbox = curScene->selectionSystem->GetUntransformedBoundingBox(node);
-
         SelectableObjectGroup newSelection;
-        newSelection.Add(node, bbox);
+        newSelection.Add(node, curScene->selectionSystem->GetUntransformedBoundingBox(node));
         curScene->selectionSystem->SetSelection(newSelection);
 
         if (editor.IsModified())
@@ -932,21 +944,20 @@ void PropertyEditor::ConvertToShadow()
 
         if (NULL != data && NULL != curScene)
         {
-            auto findEntityFn = [this](DAVA::RenderBatch* batch) {
+            auto findEntityFn = [this](DAVA::RenderBatch* batch) -> DAVA::Entity* {
                 DVASSERT(batch);
                 DAVA::RenderObject* renderObject = batch->GetRenderObject();
-                DAVA::Entity* entity = nullptr;
-                for (int i = 0; i < curNodes.size(); ++i)
+                for (const auto& item : curNodes.GetContent())
                 {
-                    if (GetRenderObject(curNodes.at(i)) == renderObject)
+                    auto entity = item.Cast<DAVA::Entity>();
+                    if (GetRenderObject(entity) == renderObject)
                     {
-                        entity = curNodes.at(i);
-                        break;
+                        return entity;
                     }
                 }
 
-                DVASSERT(entity);
-                return entity;
+                DVASSERT_MSG(0, "UNABLE TO FIND RENDER BATCH");
+                return nullptr;
             };
 
             DAVA::Vector<Command2*> commands;
@@ -990,11 +1001,11 @@ void PropertyEditor::DeleteRenderBatch()
     // Code for removing several render batches
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
 
-    if (NULL != btn)
+    if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        Entity* node = curNodes.at(0);
+        Entity* node = curNodes.GetFirst().Cast<DAVA::Entity>();
 
         if (data != nullptr && curScene != nullptr && node != nullptr)
         {
@@ -1051,24 +1062,26 @@ void PropertyEditor::ActionEditMaterial()
 
 void PropertyEditor::ActionEditSoundComponent()
 {
-    if (curNodes.size() == 1)
+    if (curNodes.GetSize() != 1)
+        return;
+
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    if (scene == nullptr)
+        return;
+
+    Entity* node = curNodes.GetFirst().Cast<DAVA::Entity>();
+    if (node == nullptr)
+        return;
+
+    scene->BeginBatch("Edit Sound Component");
     {
-        SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-        if (!scene)
-            return;
-
-        Entity* node = curNodes.at(0);
-
-        scene->BeginBatch("Edit Sound Component");
-
         SoundComponentEditor editor(scene, QtMainWindow::Instance());
         editor.SetEditableEntity(node);
         editor.exec();
-
-        scene->EndBatch();
-
-        ResetProperties();
     }
+    scene->EndBatch();
+
+    ResetProperties();
 }
 
 bool PropertyEditor::IsParentFavorite(const QtPropertyData* data) const
@@ -1362,46 +1375,42 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    int size = curNodes.size();
-    if (size > 0)
-    {
-        curScene->BeginBatch(Format("Add Component: %d", type));
+    if (curNodes.IsEmpty())
+        return;
 
-        for (int i = 0; i < size; ++i)
+    curScene->BeginBatch(Format("Add Component: %d", type));
+    for (const auto& item : curNodes.GetContent())
+    {
+        auto entity = item.Cast<DAVA::Entity>();
+        if (entity != nullptr)
         {
             Component* c = Component::CreateByType(type);
-            curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+            curScene->Exec(new AddComponentCommand(entity, c));
         }
-
-        curScene->EndBatch();
     }
+    curScene->EndBatch();
 }
 
 void PropertyEditor::OnAddComponent(DAVA::Component* component)
 {
     DVASSERT(component);
-    if (!component)
+    if ((component == nullptr) || curNodes.IsEmpty())
         return;
 
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    int size = curNodes.size();
-    if (size > 0)
+    curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
+
+    for (const auto& item : curNodes.GetContent())
     {
-        curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
-
-        for (int i = 0; i < size; ++i)
+        Entity* node = item.Cast<DAVA::Entity>();
+        if ((node != nullptr) && (node->GetComponentCount(component->GetType()) == 0))
         {
-            Entity* node = curNodes.at(i);
-
-            if (node->GetComponentCount(component->GetType()) == 0)
-            {
-                Component* c = component->Clone(node);
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
-            }
+            Component* c = component->Clone(node);
+            curScene->Exec(new AddComponentCommand(node, c));
         }
-
-        curScene->EndBatch();
     }
+
+    curScene->EndBatch();
 }
 
 void PropertyEditor::OnAddActionComponent()
@@ -1436,24 +1445,23 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
+    if (curNodes.IsEmpty())
+        return;
+
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if (curNodes.size() > 0)
+    curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
+
+    for (const auto& item : curNodes.GetContent())
     {
-        curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
-
-        for (Entity* node : curNodes)
+        auto node = item.Cast<DAVA::Entity>();
+        if ((node != nullptr) && (node->GetComponentCount(Component::PATH_COMPONENT) == 0) && (node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0))
         {
-            DVASSERT(node);
-            if (node->GetComponentCount(Component::PATH_COMPONENT) == 0
-                && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
-            {
-                PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-                curScene->Exec(new AddComponentCommand(node, pathComponent));
-            }
+            PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
+            curScene->Exec(new AddComponentCommand(node, pathComponent));
         }
-
-        curScene->EndBatch();
     }
+
+    curScene->EndBatch();
 }
 
 void PropertyEditor::OnAddRotationControllerComponent()
@@ -1520,10 +1528,10 @@ void PropertyEditor::OnRemoveComponent()
 
 void PropertyEditor::OnTriggerWaveComponent()
 {
-    for (int i = 0; i < curNodes.size(); ++i)
+    for (const auto& item : curNodes.GetContent())
     {
-        WaveComponent* component = GetWaveComponent(curNodes.at(i));
-        if (component)
+        WaveComponent* component = GetWaveComponent(item.Cast<DAVA::Entity>());
+        if (component != nullptr)
         {
             component->Trigger();
         }

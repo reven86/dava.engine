@@ -82,7 +82,7 @@ private:
     Map<DataNode*, uint64> dataNodeIDs;
 };
 
-SaveEntityAsAction::SaveEntityAsAction(const EntityGroup* _entities, const FilePath& _path)
+SaveEntityAsAction::SaveEntityAsAction(const SelectableObjectGroup* _entities, const FilePath& _path)
     : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
     , entities(_entities)
     , sc2Path(_path)
@@ -95,7 +95,7 @@ SaveEntityAsAction::~SaveEntityAsAction()
 
 void SaveEntityAsAction::Redo()
 {
-    uint32 count = static_cast<uint32>(entities->Size());
+    uint32 count = static_cast<uint32>(entities->GetSize());
     if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
     {
         const auto RemoveReferenceToOwner = [](Entity* entity) {
@@ -107,14 +107,15 @@ void SaveEntityAsAction::Redo()
         };
 
         //reset global material because of global material :)
-        ElegantSceneGuard guard(entities->GetFirstEntity()->GetScene());
+        auto firstEntity = entities->GetFirst().Cast<DAVA::Entity>();
+        ElegantSceneGuard guard(firstEntity->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
 
         if (count == 1) // saving of single object
         {
-            container.reset(entities->GetFirstEntity()->Clone());
+            container.reset(firstEntity->Clone());
             RemoveReferenceToOwner(container);
             container->SetLocalTransform(Matrix4::IDENTITY);
         }
@@ -125,7 +126,7 @@ void SaveEntityAsAction::Redo()
             const Vector3 oldZero = entities->GetCommonTranslationVector();
             for (const auto& item : entities->GetContent())
             {
-                ScopedPtr<Entity> clone(item.first->Clone());
+                ScopedPtr<Entity> clone(item.Cast<DAVA::Entity>()->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();

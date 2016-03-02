@@ -251,7 +251,7 @@ void SceneTree::SceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void SceneTree::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void SceneTree::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     if (scene == treeModel->GetScene())
     {
@@ -608,23 +608,24 @@ void SceneTree::RemoveSelection()
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (NULL != sceneEditor)
     {
-        const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
-        EntityGroup objectToRemove;
+        SelectableObjectGroup objectToRemove;
         for (const auto& item : selection.GetContent())
         {
-            if (item.first->GetLocked())
+            auto entity = item.Cast<DAVA::Entity>();
+            if ((entity != nullptr) && entity->GetLocked())
             {
                 DAVA::StringStream ss;
                 ss << "Can not remove entity "
-                   << item.first->GetName().c_str()
+                   << entity->GetName().c_str()
                    << ": entity is locked!"
-                   << PointerSerializer::FromPointer(item.first);
+                   << PointerSerializer::FromPointer(entity);
                 Logger::Warning("%s", ss.str().c_str());
             }
             else
             {
-                objectToRemove.Add(item.first, item.second);
+                objectToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
             }
         }
 
@@ -661,7 +662,8 @@ void SceneTree::EditModel()
         SceneSelectionSystem* ss = sceneEditor->selectionSystem;
         for (const auto& item : ss->GetSelection().GetContent())
         {
-            DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(item.first);
+            auto entity = item.Cast<DAVA::Entity>();
+            DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
             if (archive)
             {
                 DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
@@ -707,7 +709,7 @@ void SceneTree::ReloadModel()
             String wrongPathes;
             for (const auto& item : selection.GetContent())
             {
-                DAVA::Entity* entity = item.first;
+                DAVA::Entity* entity = item.Cast<DAVA::Entity>();
                 DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
                 if (archive)
                 {
@@ -767,7 +769,7 @@ void SceneTree::SaveEntityAs()
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (NULL != sceneEditor)
     {
-        const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
         if (!selection.IsEmpty())
         {
             DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
@@ -871,7 +873,7 @@ void SceneTree::SyncSelectionToTree()
     const auto& selection = curScene->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
-        QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.first));
+        QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.Cast<DAVA::Entity>()));
         if (sIndex.isValid())
         {
             lastValidIndex = sIndex;
@@ -954,8 +956,22 @@ void SceneTree::SyncSelectionFromTree()
                     break;
                 }
 
+                case SceneTreeItem::eItemType::EIT_Layer:
+                {
+                    auto layer = SceneTreeItemParticleLayer::GetLayer(item);
+                    group.Add(layer, curScene->selectionSystem->GetUntransformedBoundingBox(layer));
+                    break;
+                }
+
+                case SceneTreeItem::eItemType::EIT_Force:
+                {
+                    auto force = SceneTreeItemParticleForce::GetForce(item);
+                    group.Add(force, curScene->selectionSystem->GetUntransformedBoundingBox(force));
+                    break;
+                }
+
                 default:
-                    DVASSERT_MSG(0, "NOT IMPLEMENTED YET");
+                    DVASSERT_MSG(0, "INVALID OR UNKNOWN OBJECT SELECTED IN SCENE TREE");
                 }
             }
             curScene->selectionSystem->SetSelection(group);
@@ -1079,11 +1095,11 @@ void SceneTree::StartEffect()
         SceneSelectionSystem* ss = sceneEditor->selectionSystem;
         for (const auto& item : ss->GetSelection().GetContent())
         {
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(item.first);
+            auto entity = item.Cast<DAVA::Entity>();
+            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
             if (nullptr != effect)
             {
-                // TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(item.first, true);
+                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(entity, true);
                 sceneEditor->Exec(command);
             }
         }
@@ -1098,11 +1114,12 @@ void SceneTree::StopEffect()
         SceneSelectionSystem* ss = sceneEditor->selectionSystem;
         for (const auto& item : ss->GetSelection().GetContent())
         {
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(item.first);
+            auto entity = item.Cast<DAVA::Entity>();
+            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
             if (nullptr != effect)
             {
                 // TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(item.first, false);
+                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(entity, false);
                 sceneEditor->Exec(command);
             }
         }
@@ -1117,11 +1134,12 @@ void SceneTree::RestartEffect()
         SceneSelectionSystem* ss = sceneEditor->selectionSystem;
         for (const auto& item : ss->GetSelection().GetContent())
         {
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(item.first);
+            auto entity = item.Cast<DAVA::Entity>();
+            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
             if (nullptr != effect)
             {
                 // TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-                CommandRestartParticleEffect* command = new CommandRestartParticleEffect(item.first);
+                CommandRestartParticleEffect* command = new CommandRestartParticleEffect(entity);
                 sceneEditor->Exec(command);
             }
         }
@@ -1428,15 +1446,15 @@ void SceneTree::CleanupParticleEditorSelectedItems()
 void SceneTree::SetEntityNameAsFilter()
 {
     SceneEditor2* scene = treeModel->GetScene();
-    if (!scene)
+    if (scene == nullptr)
         return;
 
-    const EntityGroup& selection = scene->selectionSystem->GetSelection();
-    if (selection.Size() != 1)
-        return;
-
-    Entity* entity = selection.GetFirstEntity();
-    QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
+    const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
+    if (selection.GetSize() == 1)
+    {
+        Entity* entity = selection.GetFirst().Cast<DAVA::Entity>();
+        QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
+    }
 }
 
 void SceneTree::AddCameraActions(QMenu& menu)

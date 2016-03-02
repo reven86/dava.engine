@@ -43,7 +43,7 @@ class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
 class EditorLODSystem;
-class EntityGroup;
+class SelectableObjectGroup;
 class Command2;
 class QPushButton;
 class QFrame;
@@ -67,7 +67,7 @@ private slots:
 
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected);
     void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
 

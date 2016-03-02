@@ -84,7 +84,7 @@ TextureBrowser::TextureBrowser(QWidget* parent)
     // global scene manager signals
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableObjectGroup*, const SelectableObjectGroup*)));
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
@@ -1055,7 +1055,7 @@ void TextureBrowser::sceneDeactivated(SceneEditor2* scene)
     }
 }
 
-void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const SelectableObjectGroup* selected, const SelectableObjectGroup* deselected)
 {
     if (!isHidden())
     {

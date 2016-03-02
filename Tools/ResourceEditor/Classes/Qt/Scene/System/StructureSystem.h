@@ -54,17 +54,17 @@ public:
     StructureSystem(DAVA::Scene* scene);
     ~StructureSystem();
 
-    void Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore);
-    void Remove(const EntityGroup& entityGroup);
+    void Move(const SelectableObjectGroup& objects, DAVA::Entity* newParent, DAVA::Entity* newBefore);
+    void Remove(const SelectableObjectGroup& objects);
     void MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter);
     void MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore);
     void RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters);
     void MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer);
     void RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& layers);
-    SelectableObjectGroup ReloadEntities(const SelectableObjectGroup& entityGroup, bool saveLightmapSettings = false);
+    SelectableObjectGroup ReloadEntities(const SelectableObjectGroup& objects, bool saveLightmapSettings = false);
     // Mapping is link between old entity and new entity
     void ReloadRefs(const DAVA::FilePath& modelPath, InternalMapping& mapping, bool saveLightmapSettings = false);
-    SelectableObjectGroup ReloadEntitiesAs(const SelectableObjectGroup& entityGroup, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
+    SelectableObjectGroup ReloadEntitiesAs(const SelectableObjectGroup& objects, const DAVA::FilePath& newModelPath, bool saveLightmapSettings = false);
     void Add(const DAVA::FilePath& newModelPath, const DAVA::Vector3 pos = DAVA::Vector3());
 
     void EmitChanged();
