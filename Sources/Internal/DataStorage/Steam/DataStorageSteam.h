@@ -47,6 +47,7 @@ class DataStorageSteam : public IDataStorage
 {
 private:
     const String storageFileName = "CloudArchive";
+
 public:
     DataStorageSteam();
     String GetStringValue(const String& key) override;
@@ -61,7 +62,7 @@ private:
     ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
     void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-    ISteamRemoteStorage * remoteStorage = nullptr;
+    ISteamRemoteStorage* remoteStorage = nullptr;
     ScopedPtr<KeyedArchive> values;
     bool isValuesChanged = false;
 };

@@ -32,7 +32,6 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
-
 namespace DAVA
 {
 
@@ -75,7 +74,7 @@ ScopedPtr<KeyedArchive> DataStorageSteam::ReadArchFromStorage() const
         return dataArchive;
     }
 
-    uint8 * buffer = new uint8[cubFileSize];
+    uint8* buffer = new uint8[cubFileSize];
 
     int32 cubRead = remoteStorage->FileRead(storageFileName.c_str(), buffer, cubFileSize);
 
@@ -162,14 +161,14 @@ void DataStorageSteam::Push()
     for (auto pair : remoteMap)
     {
         const String remoteKey = pair.first;
-        VariantType * remoteValue = remoteArch->GetVariant(remoteKey);
+        VariantType* remoteValue = remoteArch->GetVariant(remoteKey);
         VariantType::eVariantType remoteValueType = VariantType::TYPE_NONE;
         if (nullptr != remoteValue)
         {
             remoteValueType = remoteValue->GetType();
         }
 
-        VariantType * localValue = values->GetVariant(remoteKey);
+        VariantType* localValue = values->GetVariant(remoteKey);
         VariantType::eVariantType localValueType = VariantType::TYPE_NONE;
         if (nullptr != localValue)
         {
@@ -180,13 +179,12 @@ void DataStorageSteam::Push()
         if (nullptr != remoteValue && !isValuesChanged)
         {
             values->SetVariant(remoteKey, *remoteValue);
-        }     
+        }
     }
 
-    WriteArchiveToStorage(values); 
+    WriteArchiveToStorage(values);
     isValuesChanged = false;
 }
 
 #endif
-
 }

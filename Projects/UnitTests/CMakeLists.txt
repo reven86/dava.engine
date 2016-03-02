@@ -16,7 +16,6 @@ include      ( CMake-common )
 
 if (STEAM)
     find_package( Steam REQUIRED )
-
 endif ()
 
 
