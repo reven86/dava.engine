@@ -8,6 +8,7 @@
 		VPROG_IN_STREAM_VERTEX
 			VPROG_IN_TEXCOORD0(4) //position + gluDirection
 			VPROG_IN_TEXCOORD1(4) //edge mask
+			VPROG_IN_TEXCOORD2(2) //edgeVertexIndex + notEdgeFlag
 		VPROG_IN_STREAM_INSTANCE
 			VPROG_IN_TEXCOORD3(3) //patch position + scale
 			VPROG_IN_TEXCOORD4(4) //near patch lodOffset
@@ -76,10 +77,6 @@ property float4   lightPosition0               : dynamic,a : ;
 
 #include "vp-fog-props.cgh"
 
-#ifndef PATCH_SIZE_QUADS
-	#define PATCH_SIZE_QUADS 16
-#endif
-
 VPROG_BEGIN
 
 #if USE_INSTANCING
@@ -87,10 +84,13 @@ VPROG_BEGIN
     float2 in_pos = VP_IN_TEXCOORD0.xy;
     float2 gluDir = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
+	float edgeVertexIndex = VP_IN_TEXCOORD2.x;
 	
     float3 patchOffsetScale = VP_IN_TEXCOORD3.xyz;
 	
 #if LOD_MORPHING
+
+	float notEdgeFlag = VP_IN_TEXCOORD2.y;
 
 	float baseLod = VP_IN_TEXCOORD6.x;
 	float patchMorph = VP_IN_TEXCOORD6.y;
@@ -108,22 +108,17 @@ VPROG_BEGIN
 #endif
 	
     float gluAmount = pow(2.0, lodOffset);
-	float2 pos_i = abs(gluDir - in_pos) * float(PATCH_SIZE_QUADS);
-	float i = dot(pos_i, abs(gluDir));
-	float f = fmod(i, gluAmount);
-	in_pos += gluDir * f / float(PATCH_SIZE_QUADS);
+	in_pos += gluDir * fmod(edgeVertexIndex, gluAmount);
 	
     float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
 	
 #if LOD_MORPHING
 
-	float ownPatchMorph = 1.0 - edgeMask.x - edgeMask.y - edgeMask.z - edgeMask.w;
-	float morphAmount = dot(edgeMask, nearPatchMorph) + ownPatchMorph * patchMorph;
-	
 	float sampleLod = baseLod + lodOffset;
 	float samplePixelOffset = basePixelOffset * gluAmount;
 	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
 	
+	float morphAmount = dot(edgeMask, nearPatchMorph) + notEdgeFlag * patchMorph;
 	float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
 	float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	

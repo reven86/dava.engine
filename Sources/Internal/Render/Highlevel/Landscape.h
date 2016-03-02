@@ -83,7 +83,6 @@ public:
     const static FastName TEXTURE_TILEMASK;
     const static FastName TEXTURE_SPECULAR;
 
-    const static FastName FLAG_PATCH_SIZE_QUADS;
     const static FastName FLAG_USE_INSTANCING;
     const static FastName FLAG_LOD_MORPHING;
 
@@ -316,6 +315,9 @@ protected:
         Vector2 position;
         Vector2 gluDir;
         Vector4 edgeMask;
+
+        float32 edgeVertexIndex;
+        float32 notEdgeFlag;
     };
 
     struct InstanceData
