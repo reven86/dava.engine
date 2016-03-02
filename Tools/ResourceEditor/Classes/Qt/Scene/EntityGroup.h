@@ -84,6 +84,9 @@ public:
 
     void FilterChildrenComponents();
 
+    template <typename Predicate>
+    inline void RemoveIf(Predicate predicate);
+
 private:
     EntityMap entities;
     DAVA::AABBox3 entitiesBbox;
@@ -117,6 +120,24 @@ inline bool EntityGroup::IsEmpty() const
 inline size_t EntityGroup::Size() const
 {
     return entities.size();
+}
+
+template <typename Predicate>
+inline void EntityGroup::RemoveIf(Predicate predicate)
+{
+    auto i = entities.begin();
+    while (i != entities.end())
+    {
+        if (predicate(i->first))
+        {
+            i = entities.erase(i);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+    RebuildBoundingBox();
 }
 
 #endif // __ENTITY_GROUP_H__

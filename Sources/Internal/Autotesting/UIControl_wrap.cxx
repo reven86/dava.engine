@@ -3334,19 +3334,19 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetVisible(lua_State* L) {
+static int _wrap_UIControl_GetVisibilityFlag(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
   bool result;
   
-  SWIG_check_num_args("DAVA::UIControl::GetVisible",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetVisible",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::UIControl::GetVisibilityFlag",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetVisibilityFlag",1,"DAVA::UIControl const *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetVisible",1,SWIGTYPE_p_DAVA__UIControl);
+    SWIG_fail_ptr("UIControl_GetVisibilityFlag",1,SWIGTYPE_p_DAVA__UIControl);
   }
   
-  result = (bool)((DAVA::UIControl const *)arg1)->GetVisible();
+  result = (bool)((DAVA::UIControl const *)arg1)->GetVisibilityFlag();
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
@@ -3544,43 +3544,19 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetName(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::String *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetName",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetName",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetName",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (DAVA::String *) &((DAVA::UIControl const *)arg1)->GetName();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_std__string,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_IsOnScreen(lua_State* L) {
+static int _wrap_UIControl_IsVisible(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
   bool result;
   
-  SWIG_check_num_args("DAVA::UIControl::IsOnScreen",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::IsOnScreen",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::UIControl::IsVisible",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::IsVisible",1,"DAVA::UIControl const *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_IsOnScreen",1,SWIGTYPE_p_DAVA__UIControl);
+    SWIG_fail_ptr("UIControl_IsVisible",1,SWIGTYPE_p_DAVA__UIControl);
   }
   
-  result = (bool)((DAVA::UIControl const *)arg1)->IsOnScreen();
+  result = (bool)((DAVA::UIControl const *)arg1)->IsVisible();
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
@@ -3732,13 +3708,12 @@ static swig_lua_method swig_UIControl_methods[]= {
     { "GetPosition", _wrap_UIControl_GetPosition},
     { "GetSize", _wrap_UIControl_GetSize},
     { "GetGeometricData", _wrap_UIControl_GetGeometricData},
-    { "GetVisible", _wrap_UIControl_GetVisible},
+    { "GetVisibilityFlag", _wrap_UIControl_GetVisibilityFlag},
     { "GetInputEnabled", _wrap_UIControl_GetInputEnabled},
     { "SetInputEnabled", _wrap_UIControl_SetInputEnabled},
     { "GetDisabled", _wrap_UIControl_GetDisabled},
     { "GetSelected", _wrap_UIControl_GetSelected},
-    { "GetName", _wrap_UIControl_GetName},
-    { "IsOnScreen", _wrap_UIControl_IsOnScreen},
+    { "IsVisible", _wrap_UIControl_IsVisible},
     { "GetTag", _wrap_UIControl_GetTag},
     { "GetParent", _wrap_UIControl_GetParent},
     { "GetState", _wrap_UIControl_GetState},

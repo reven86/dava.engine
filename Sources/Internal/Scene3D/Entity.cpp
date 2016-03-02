@@ -29,8 +29,6 @@
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/SceneNodeAnimation.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/StringFormat.h"
@@ -338,46 +336,6 @@ Entity* Entity::FindByName(const char* searchName)
     return FindByName(FastName(searchName));
 }
 
-// void Entity::ExecuteAnimation(SceneNodeAnimation * _animation)
-// {
-// 	nodeAnimations.push_back(_animation);
-// 	//	printf("-- add animation: %d node: %s anim: %s\n", nodeAnimations.size(), name.c_str(), _animation->GetParent()->name.c_str());
-// 	//	if (_animation->GetParent()->name == "a1")
-// 	//	{
-// 	//		int k = 0;
-// 	//		k++;
-// 	//	}
-// }
-//
-// void Entity::DetachAnimation(SceneNodeAnimation * animation)
-// {
-// 	//	int32 size = nodeAnimations.size();
-// 	for (std::deque<SceneNodeAnimation*>::iterator t = nodeAnimations.begin(); t != nodeAnimations.end(); ++t)
-// 	{
-// 		if (*t == animation)
-// 		{
-// 			nodeAnimations.erase(t);
-// 			break;
-// 		}
-// 	}
-// 	//	int32 sizeAfter = nodeAnimations.size();
-// 	//	if (sizeAfter != size - 1)
-// 	//	{
-// 	//		printf("******** Error with animation detach");
-// 	//	}
-// }
-//
-// void Entity::StopAllAnimations(bool recursive)
-// {
-// 	nodeAnimations.clear();
-// 	if (recursive)
-// 	{
-// 		uint32 size = (uint32)children.size();
-// 		for (uint32 c = 0; c < size; ++c)
-// 			children[c]->StopAllAnimations(recursive);
-// 	}
-// }
-
 void Entity::BakeTransforms()
 {
     uint32 size = (uint32)children.size();
@@ -419,81 +377,6 @@ void Entity::ExtractCurrentNodeKeyForAnimation(SceneNodeAnimationKey& key)
     key.rotation.Construct(localTransform);
     //key.matrix = localTransform;
 }
-
-//void Entity::Update(float32 timeElapsed)
-//{
-//    //Stats::Instance()->BeginTimeMeasure("Scene.Update.Entity.Update", this);
-//
-////    if (!(flags & NODE_UPDATABLE))return;
-//
-//    inUpdate = true;
-//	// TODO - move node update to render because any of objects can change params of other objects
-//	if (nodeAnimations.size() != 0)
-//	{
-//		Quaternion blendedRotation;
-//		Vector3 blendedTranslation;
-//		float32 accumWeight = 0.0f;
-//		std::deque<SceneNodeAnimation*>::const_iterator end = nodeAnimations.end();
-//		for (std::deque<SceneNodeAnimation*>::iterator it = nodeAnimations.begin(); it != end; ++it)
-//		{
-//			SceneNodeAnimation * animation = *it;
-//			SceneNodeAnimationKey & key = animation->Intepolate(animation->GetCurrentTime());
-//			if (accumWeight == 0.0f)
-//			{
-//				blendedTranslation = key.translation;
-//				blendedRotation = key.rotation;
-//				accumWeight = animation->weight;
-//			}else
-//			{
-//				float32 factor = animation->weight / (accumWeight + animation->weight);
-//				accumWeight += accumWeight;
-//				blendedTranslation.Lerp(blendedTranslation, key.translation, factor);
-//				blendedRotation.Slerp(blendedRotation, key.rotation, factor);
-//			}
-//			//key.GetMatrix(localTransform);
-//		}
-//		Matrix4 localTransformTrans;
-//		Matrix4 localTransformRot;
-//		Matrix4 localTransformFinal;
-//		localTransformTrans.CreateTranslation(blendedTranslation);
-//		localTransformRot = blendedRotation.GetMatrix();
-//
-//		localTransform = localTransformRot * localTransformTrans;
-//
-////		if (nodeAnimations.size() != 1)
-////		{
-////			printf("-- blended node: %s\n", name.c_str());
-////			std::deque<SceneNodeAnimation*>::const_iterator end = nodeAnimations.end();
-////			for (std::deque<SceneNodeAnimation*>::iterator it = nodeAnimations.begin(); it != end; ++it)
-////			{
-////				SceneNodeAnimation * animation = *it;
-////				printf(">>> blend: %s wei: %f inDelay: %f\n", animation->GetParent()->name.c_str(), animation->weight, animation->delayTime);
-////			}
-////		}
-//	}
-//
-//	UpdateTransform();
-//	uint32 size = (uint32)children.size();
-//	for (uint32 c = 0; c < size; ++c)
-//	{
-//		children[c]->Update(timeElapsed);
-//	}
-//
-//	//printf("- node: %s tr: %f %f %f\n", name.c_str(), localTransform.data[12], localTransform.data[13], localTransform.data[14]);
-//
-//
-//	inUpdate = false;
-//
-//    if (!removedCache.empty())
-//    {
-//        for (std::deque<Entity*>::iterator t = removedCache.begin(); t != removedCache.end(); ++t)
-//        {
-//            RemoveNode(*t);
-//        }
-//        removedCache.clear();
-//    }
-//    //Stats::Instance()->EndTimeMeasure("Scene.Update.Entity.Update", this);
-//}
 
 void Entity::Draw()
 {
