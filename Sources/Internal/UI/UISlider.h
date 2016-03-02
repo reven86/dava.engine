@@ -103,12 +103,6 @@ protected:
     void AttachToSubcontrols();
     void InitInactiveParts(Sprite* spr);
 
-    void CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to);
-
-private:
-    // Whether the sprites are embedded into control YAML (new storage format)?
-    bool spritesEmbedded;
-
 public:
     virtual int32 GetBackgroundComponentsCount() const;
     virtual UIControlBackground* GetBackgroundComponent(int32 index) const;

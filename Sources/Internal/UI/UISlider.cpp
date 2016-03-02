@@ -49,7 +49,6 @@ UISlider::UISlider(const Rect& rect)
     , minBackground(NULL)
     , maxBackground(NULL)
     , thumbButton(NULL)
-    , spritesEmbedded(false)
 {
     SetInputEnabled(true, false);
     isEventsContinuos = true;
@@ -296,16 +295,6 @@ void UISlider::SetSize(const DAVA::Vector2& newSize)
 void UISlider::LoadFromYamlNodeCompleted()
 {
     AttachToSubcontrols();
-    if (!spritesEmbedded)
-    {
-        // Old Yaml format is used - have to take their data and remove subcontrols.
-        UIControl* minBgControl = FindByName(UISLIDER_MIN_SPRITE_CONTROL_NAME, false);
-        CopyBackgroundAndRemoveControl(minBgControl, minBackground);
-
-        UIControl* maxBgControl = FindByName(UISLIDER_MAX_SPRITE_CONTROL_NAME, false);
-        CopyBackgroundAndRemoveControl(maxBgControl, maxBackground);
-    }
-
     SyncThumbWithSprite();
 }
 
@@ -359,22 +348,6 @@ void UISlider::AttachToSubcontrols()
     }
 
     InitInactiveParts(thumbButton->GetBackground()->GetSprite());
-}
-
-void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to)
-{
-    if (!from)
-    {
-        return;
-    }
-
-    if (to)
-    {
-        SafeRelease(to);
-    }
-
-    to = from->GetBackground()->Clone();
-    RemoveControl(from);
 }
 
 int32 UISlider::GetBackgroundComponentsCount() const
