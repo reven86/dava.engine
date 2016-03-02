@@ -157,6 +157,11 @@ namespace DAVA
         return pathname != path.pathname;
     }
 
+    bool Path::operator<(const Path& path) const
+    {
+        return pathname < path.pathname;
+    }
+
     bool Path::IsEmpty() const
     {
         return pathname.empty();
@@ -376,27 +381,6 @@ namespace DAVA
         uint64 GetSize() override;
     private:
         std::ofstream f;
-    };
-
-    class OSFileDevice : public FileDevice
-    {
-    public:
-        explicit OSFileDevice(const Path& base = Path(), int32 priority = 0);
-
-        int32 GetPriority() override;
-        State GetState() override;
-        bool Exist(const Path&, uint64* fileSize = nullptr) override;
-        bool IsFile(const Path&) override;
-        bool IsDirectory(const Path&) override;
-        Vector<Path> EnumerateFiles(const Path& base = Path()) override;
-        std::unique_ptr<InputStream> OpenFile(const Path&) override;
-        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) override;
-        void DeleteFile(const Path&) override;
-        void CreateDirectory(const Path&, bool errorIfExist = false) override;
-        void DeleteDirectory(const Path&, bool withContent = false) override;
-    private:
-        Path base;
-        int32 priority = 0;
     };
 
     OSInputStream::OSInputStream(const Path& p)
@@ -756,7 +740,7 @@ namespace DAVA
     }
 
 
-    std::unique_ptr<OutputStream> FileSystem2::CreateFile(const Path& p, bool recreate)
+    std::unique_ptr<OutputStream> FileSystem2::CreateFile(const Path& p, bool recreate) const
     {
         std::unique_ptr<OutputStream> result;
         auto devicePtr = impl->FindDeviceByPath(p);
@@ -769,7 +753,7 @@ namespace DAVA
         auto& devices = impl->devicesByRootName[p.GetRootDirectory()];
         if (!devices.empty())
         {
-            for(auto& device : devices)
+            std::for_each(begin(devices), end(devices), [&p, recreate](std::shared_ptr<FileDevice> device)
             {
                 auto state = device->GetState();
                 if (FileDevice::State::WRITE_ONLY == state ||
@@ -777,8 +761,347 @@ namespace DAVA
                 {
                     auto file = device->CreateFile(p, recreate);
                 }
+            });
+        }
+
+        throw std::runtime_error("can't create file: " + p.ToStringUtf8());
+    }
+
+
+    void FileSystem2::DeleteFile(const Path& p) const
+    {
+        std::unique_ptr<OutputStream> result;
+        auto devicePtr = impl->FindDeviceByPath(p);
+
+        if (devicePtr)
+        {
+            devicePtr->DeleteFile(p);
+        } else
+        {
+            throw std::runtime_error("can't delete file: " + p.ToStringUtf8());
+        }
+    }
+
+
+    void FileSystem2::DeleteDirectory(const Path& p, bool withContent /*= false*/) const
+    {
+        std::unique_ptr<OutputStream> result;
+        auto devicePtr = impl->FindDeviceByPath(p);
+
+        if (devicePtr)
+        {
+            devicePtr->DeleteDirectory(p, withContent);
+        } else
+        {
+            throw std::runtime_error("can't delete directory: " + p.ToStringUtf8());
+        }
+    }
+
+
+    void FileSystem2::CreateDirectory(const Path& p, bool errorIfExist /*= false*/) const
+    {
+        auto& devices = impl->devicesByRootName[p.GetRootDirectory()];
+        if (!devices.empty())
+        {
+            for(auto device : devices)
+            {
+                auto state = device->GetState();
+                if (FileDevice::State::WRITE_ONLY == state ||
+                    FileDevice::State::READ_WRITE == state)
+                {
+                    device->CreateDirectory(p, errorIfExist);
+                    break;
+                }
+            };
+        }
+
+        throw std::runtime_error("can't create directory: " + p.ToStringUtf8());
+    }
+
+
+    Path FileSystem2::GetCurrentWorkingDirectory()
+    {
+#ifdef __DAVAENGINE_WINDOWS__
+        WideString result;
+        DWORD sz;
+        if ((sz = ::GetCurrentDirectoryW(0, nullptr)) == 0)
+        {
+            sz = 1;
+        }
+        result.resize(static_cast<std::size_t>(sz));
+        DWORD err = ::GetCurrentDirectoryW(sz, &result[0]);
+        if (0 == err)
+        {
+            throw std::runtime_error("can't get current working directory");
+        }
+        return result;
+#else
+#error "implement it"
+#endif
+    }
+
+    Path FileSystem2::GetPrefPath()
+    {
+#if defined(__DAVAENGINE_WIN32__)
+        WideString result;
+        result.resize(MAX_PATH + 1);
+        if(S_OK != ::SHGetFolderPathW(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, &result[0]))
+        {
+            throw std::runtime_error("can't get user preference path");
+        }
+        return result;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+
+        //take local folder as user documents folder
+        using namespace Windows::Storage;
+        WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
+        return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
+#else
+#error "implement it"
+#endif
+    }
+
+    Path FileSystem2::GetAbsolutePath(const Path& p)
+    {
+        if (p.IsAbsolute())
+        {
+            return p;
+        }
+        return GetCurrentWorkingDirectory() + p;
+    }
+
+    Path FileSystem2::GetRelativePath(const Path& p)
+    {
+        return GetRelativePath(p, GetCurrentWorkingDirectory());
+    }
+
+
+    Path FileSystem2::GetRelativePath(const Path& p, const Path& relativeDirectory)
+    {
+        if (p.IsRelative())
+        {
+            return p;
+        }
+
+        if (p.IsVirtual())
+        {
+            // remove ~res:/ from start and leave
+            auto& strRoot = p.GetRootDirectory().ToStringUtf8();
+            std::size_t startIndex = strRoot.size();
+            auto& str = p.ToStringUtf8();
+            if (str.size() > startIndex)
+            {
+                return p.ToStringUtf8().substr(startIndex);
+            }
+            return Path();
+        }
+
+        // get relative path from current working directory
+        // example 1:
+        // cwd: c:/Users/l_chayka/job/dava.framework
+        // path: c:/Users/l_chayka/job/dava.framework/Source/Internal
+        // result: Source/Internal
+        // example 2:
+        // cwd: c:/Users/l_chayka/job/dava.framework
+        // path: c:/Users/l_chayka
+        // result: ../..
+        const Path& cwd = relativeDirectory;
+        if (cwd.ToStringUtf8() == p.ToStringUtf8())
+        {
+            return Path();
+        }
+        if (cwd < p)
+        {
+            // first example
+            return p.ToStringUtf8().substr(cwd.ToStringUtf8().size() + 1);
+        }
+
+        // second example
+        String relPath = cwd.ToStringUtf8().substr(p.ToStringUtf8().size() + 1);
+        std::size_t countSlashes = std::count(begin(relPath), end(relPath), '/');
+        String result("..");
+        while (countSlashes != 0)
+        {
+            result += "/..";
+            --countSlashes;
+        }
+        return result;
+    }
+
+    void FileSystem2::SetCurrentWorkingDirectory(const Path& newWorkingDirectory)
+    {
+        Path absolute = newWorkingDirectory.IsAbsolute() ? newWorkingDirectory : GetAbsolutePath(newWorkingDirectory);
+
+#ifdef __DAVAENGINE_WINDOWS__
+        BOOL result = SetCurrentDirectoryW(absolute.ToWideString().c_str());
+        if (result != 0)
+        {
+            DWORD err = GetLastError();
+            String msg("can't set current working directory to: ");
+            msg += absolute.ToStringUtf8();
+            msg += " system error code: ";
+            msg += std::to_string(err);
+            throw std::runtime_error(msg);
+        }
+#else
+#error "implement it"
+#endif
+    }
+
+    bool FileSystem2::IsFile(const Path& p) const
+    {
+        std::unique_ptr<OutputStream> result;
+        auto devicePtr = impl->FindDeviceByPath(p);
+
+        if (devicePtr)
+        {
+            return devicePtr->IsFile(p);
+        }
+
+        return false;
+    }
+
+
+    bool FileSystem2::IsDirectory(const Path& p) const
+    {
+        auto devicePtr = impl->FindDeviceByPath(p);
+
+        if (devicePtr)
+        {
+            return devicePtr->IsDirectory(p);
+        }
+
+        return false;
+    }
+
+
+    bool FileSystem2::Exist(const Path& p) const
+    {
+        auto devicePtr = impl->FindDeviceByPath(p);
+        return static_cast<bool>(devicePtr);
+    }
+
+
+    void FileSystem2::CopyFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const
+    {
+        std::ifstream src(existingFile.ToStringUtf8(), std::ios::binary);
+        if (!src)
+        {
+            throw std::runtime_error("can't copy file: error while open source: " + existingFile.ToStringUtf8());
+        }
+        std::ios::open_mode mode = std::ios::binary;
+        if (overwriteExisting)
+        {
+            mode = mode | std::ios::trunc;
+        } else
+        {
+            if (Exist(newFile))
+            {
+                throw std::runtime_error("can't copy file: destination already exist: " + newFile.ToStringUtf8());
             }
         }
+        std::ofstream dst(newFile.ToStringUtf8(), mode);
+        if (!dst)
+        {
+            throw std::runtime_error("can't copy file: error while open destination: " + newFile.ToStringUtf8());
+        }
+
+        dst << src.rdbuf();
+
+        src.close();
+        dst.close();
+    }
+
+    void FileSystem2::MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const
+    {
+        if (overwriteExisting && Exist(newFile))
+        {
+            DeleteFile(newFile);
+        }
+
+        int result = std::rename(existingFile.ToStringUtf8().c_str(), newFile.ToStringUtf8().c_str());
+        if (result != 0)
+        {
+            String err = strerror(errno);
+            String msg("can't move file: ");
+            msg += existingFile.ToStringUtf8();
+            msg += " to file: ";
+            msg += newFile.ToStringUtf8();
+            msg += " system error: ";
+            msg += err;
+            throw std::runtime_error(msg);
+        }
+    }
+
+    void FileSystem2::CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting) const
+    {
+        auto devicePtr = impl->FindDeviceByPath(srcDir);
+
+        if (devicePtr)
+        {
+            if(devicePtr->IsDirectory(srcDir))
+            {
+                auto files = devicePtr->EnumerateFiles(srcDir);
+                for(auto& fileName : files)
+                {
+                    auto src = srcDir + fileName;
+                    auto dst = dstDir + fileName;
+                    CopyFile(src, dst, overwriteExisting);
+                }
+                return;
+            }
+        }
+        throw std::runtime_error("can't copy directory: " + srcDir.ToStringUtf8() + " to " + dstDir.ToStringUtf8());
+    }
+
+    void FileSystem2::Mount(const String& virtualName, std::shared_ptr<FileDevice> device)
+    {
+        auto& devices = impl->devicesByRootName[virtualName];
+        devices.push_back(device);
+
+        auto comparator = [](std::shared_ptr<FileDevice> deviceOne, std::shared_ptr<FileDevice> deviceTwo)->bool
+        {
+            return deviceOne->GetPriority() < deviceTwo->GetPriority();
+        };
+
+        std::stable_sort(begin(devices), end(devices), comparator);
+
+        auto& devicesAll = impl->devicesSorted;
+        devicesAll.push_back(device);
+
+        std::stable_sort(begin(devicesAll), end(devicesAll), comparator);
+    }
+
+    Vector<std::shared_ptr<FileDevice>>& FileSystem2::GetMountedDevices() const
+    {
+        return impl->devicesSorted;
+    }
+
+    uint64 FileSystem2::GetFileSize(const Path& path) const
+    {
+        auto devicePtr = impl->FindDeviceByPath(path);
+
+        if (devicePtr)
+        {
+            auto file = devicePtr->OpenFile(path);
+            return file->GetSize();
+        }
+        throw std::runtime_error("can't get file size for: " + path.ToStringUtf8());
+    }
+
+    Vector<Path> FileSystem2::AndroidGetExternalStoragePath() const
+    {
+        throw std::runtime_error("implement it(AndroidGetExternalStoragePath)");
+    }
+
+    Path FileSystem2::AndroidGetInternalStoragePath() const
+    {
+        throw std::runtime_error("implement it(AndroidGetInternalStoragePath)");
+    }
+
+    FileDevice::State FileSystem2::AndroidGetExternalStorageState() const
+    {
+        throw std::runtime_error("implement it(AndroidGetExternalStorageState)");
     }
 
 } // end namespace DAVA

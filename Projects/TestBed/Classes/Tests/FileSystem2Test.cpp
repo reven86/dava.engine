@@ -34,22 +34,6 @@ FileSystem2Test::FileSystem2Test()
 
 }
 
-class OSFileDevice : public DAVA::FileDevice
-{
-public:
-    int32 GetPriority() override;
-    State GetState() override;
-    bool Exist(const Path&, uint64* fileSize = nullptr) override;
-    bool IsFile(const Path&) override;
-    bool IsDirectory(const Path&) override;
-    Vector<Path> EnumerateFiles(const Path& base = Path(), size_t depth = 0) override;
-    std::unique_ptr<InputStream> OpenFile(const Path&) override;
-    std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) override;
-    void DeleteFile(const Path&) override;
-    void CreateDirectory(const Path&, bool isRecursive) override;
-    void DeleteDirectory(const Path&, bool isRecursive) override;
-};
-
 void FileSystem2Test::StartTest(BaseObject*, void*, void*)
 {
     using namespace DAVA;
@@ -57,13 +41,13 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     FileSystem2 fs;
 
     // you can access only what you had mounted to fs or directly throw FileDevice interface
-    fs.Mount("~res:/", new OSFileDevice(Path("Data")));
-    fs.Mount("~web:/", new HTTPFileDevice("http://nicegirls.com/images"));
-    fs.Mount("~res:/", new PakfileDevice(Path("pakfile.tanks1.pak")));
+    fs.Mount("~res:/", std::make_shared<OSFileDevice>(Path("Data")));
+    // fs.Mount("~web:/", new HTTPFileDevice("http://nicegirls.com/images"));
+    // fs.Mount("~res:/", new PakfileDevice(Path("pakfile.tanks1.pak")));
     Path userSaveDir = fs.GetPrefPath();
 
     fs.CreateDirectory(userSaveDir + Path("Dava/TestDir/Saves"), true);
-    fs.Mount("~doc:/", new OSFileDevice(userSaveDir + Path("Dava/TestDir/Saves")));
+    fs.Mount("~doc:/", std::make_shared<OSFileDevice>(userSaveDir + Path("Dava/TestDir/Saves")));
 
     Path path("~res:/TestData");
 

@@ -70,6 +70,7 @@ namespace DAVA
 
         bool operator==(const Path& path) const;
         bool operator!=(const Path& path) const;
+        bool operator<(const Path& path) const;
 
         bool IsEmpty() const;
         bool IsVirtual() const;
@@ -145,6 +146,28 @@ namespace DAVA
         virtual void DeleteDirectory(const Path&, bool withContent = false) = 0;
     };
 
+    // general OS implementation
+    class OSFileDevice : public FileDevice
+    {
+    public:
+        explicit OSFileDevice(const Path& base = Path(), int32 priority = 0);
+
+        int32 GetPriority() override;
+        State GetState() override;
+        bool Exist(const Path&, uint64* fileSize = nullptr) override;
+        bool IsFile(const Path&) override;
+        bool IsDirectory(const Path&) override;
+        Vector<Path> EnumerateFiles(const Path& base = Path()) override;
+        std::unique_ptr<InputStream> OpenFile(const Path&) override;
+        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) override;
+        void DeleteFile(const Path&) override;
+        void CreateDirectory(const Path&, bool errorIfExist = false) override;
+        void DeleteDirectory(const Path&, bool withContent = false) override;
+    private:
+        Path base;
+        int32 priority = 0;
+    };
+
     // use exception to give client code ability to understand why something not working
     class FileSystem2Impl;
 
@@ -158,14 +181,14 @@ namespace DAVA
         // open or create stream from mounted pakfile or OS file system
         // or wrapper around std::fstream or android stream or pakfile stream
         std::unique_ptr<InputStream> OpenFile(const Path&) const;
-        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate);
+        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) const;
         // works on OS file system
-        void DeleteFile(const Path&);
-        // works on OS file sysem
-        void DeleteDirectory(const Path& path, bool withContent = false);
+        void DeleteFile(const Path&) const;
         // works on OS file system
-        void CreateDirectory(const Path& path, bool errorIfExist = false);
-        // works on OS file sysem
+        void DeleteDirectory(const Path& path, bool withContent = false) const;
+        // works on OS file system
+        void CreateDirectory(const Path& path, bool errorIfExist = false) const;
+        // works on OS file system
         static Path GetCurrentWorkingDirectory();
 
         // write path for save, logs ets. "~doc:/logs/today.txt" -> ~doc: == GetPrefPath() == "C:/Users/l_chayka/Documents"
@@ -176,30 +199,30 @@ namespace DAVA
         static Path GetRelativePath(const Path& p);
         static Path GetRelativePath(const Path& file, const Path& relativeDirectory);
         // works only for OS file system
-        static bool SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
+        static void SetCurrentWorkingDirectory(const Path& newWorkingDirectory);
 
         // test file path if file on FileDevice or OS file system
-        bool IsFile(const Path& pathToCheck);
+        bool IsFile(const Path& pathToCheck) const;
         // test if path is directory 
-        bool IsDirectory(const Path& pathToCheck);
+        bool IsDirectory(const Path& pathToCheck) const;
         // find path in FileDevice or OS file system
-        bool Exist(const Path& Path);
-        // copy from FileDevice to OS file system, or from OS to OS
-        bool CopyFile(const Path& existingFile, const Path& newFile, bool overwriteExisting);
+        bool Exist(const Path& Path) const;
+        // copy from OS to OS
+        void CopyFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
         // move file from OS to OS
-        bool MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting);
-        // copy directory from FileDevice to OS or from OS to OS
-        bool CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting);
+        void MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
+        // copy directory from OS to OS
+        void CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting) const;
         // virtualName = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
         void Mount(const String& virtualName, std::shared_ptr<FileDevice>);
-        Vector<std::shared_ptr<FileDevice>>& GetMountedDevices();
+        Vector<std::shared_ptr<FileDevice>>& GetMountedDevices() const;
         // works on FileDevice or OS
-        uint64 GetFileSize(const Path& path);
+        uint64 GetFileSize(const Path& path) const;
 
         // can be empty, or >1 (if two sdcard present)
-        Vector<Path> AndroidGetExternalStoragePath();
-        Path AndroidGetInternalStoragePath();
-        FileDevice::State AndroidGetExternalStorageState();
+        Vector<Path> AndroidGetExternalStoragePath() const;
+        Path AndroidGetInternalStoragePath() const;
+        FileDevice::State AndroidGetExternalStorageState() const;
     private:
         std::unique_ptr<FileSystem2Impl> impl;
     };
