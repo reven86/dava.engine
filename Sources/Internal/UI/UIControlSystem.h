@@ -319,7 +319,7 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
-    UIFocusSystem* focusSystem;
+    UIFocusSystem* focusSystem = nullptr;
     UIKeyInputSystem* keyInputSystem;
     UIScreenshoter* screenshoter = nullptr;
 
