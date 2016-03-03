@@ -99,7 +99,6 @@ namespace DAVA
 static ApplicationCore* core = nullptr;
 
 Core::Core()
-    : nativeView(nullptr)
 {
     globalFrameIndex = 1;
     isActive = false;
@@ -836,15 +835,15 @@ bool Core::IsConsoleMode()
 
 void* Core::GetNativeView() const
 {
-    return nativeView;
+    return screenMetrics.nativeView;
 }
 
 void Core::SetNativeView(void* newNativeView)
 {
-    if (nativeView != newNativeView)
+    if (screenMetrics.nativeView != newNativeView)
     {
         screenMetrics.modifiedNativeView = true;
-        nativeView = newNativeView;
+        screenMetrics.nativeView = newNativeView;
     }
 }
 
@@ -885,7 +884,7 @@ void Core::UpdateScreenMetrics()
     if (screenMetrics.modifiedNativeView)
     {
         screenMetrics.modifiedNativeView = false;
-        params.window = nativeView;
+        params.window = screenMetrics.nativeView;
     }
     Renderer::Reset(params);
     // notify all systems
@@ -893,8 +892,6 @@ void Core::UpdateScreenMetrics()
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
     virtSystem->ScreenSizeChanged();
-    UIScreenManager::Instance()->ScreenSizeChanged();
-    UIControlSystem::Instance()->ScreenSizeChanged();
 }
 
 void Core::SetIsActive(bool _isActive)

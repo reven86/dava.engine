@@ -286,10 +286,10 @@ private:
 
     Vector<String> commandLine;
     bool isConsoleMode;
-    void* nativeView;
 
     struct
     {
+        void* nativeView = nullptr;
         float32 width = 0.f;
         float32 height = 0.f;
         float32 scale = 0.f;
