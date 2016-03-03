@@ -209,30 +209,24 @@ bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedC
     float32 dx = cPos.x - srcPos.x;
     float32 dy = cPos.y - srcPos.y;
 
-    bool ok = false;
     switch (dir)
     {
     case FocusHelpers::Direction::UP:
-        ok = dy < 0 && Abs(dy) > Abs(dx);
-        break;
+        return dy < 0 && Abs(dy) > Abs(dx);
 
     case FocusHelpers::Direction::DOWN:
-        ok = dy > 0 && Abs(dy) > Abs(dx);
-        break;
+        return dy > 0 && Abs(dy) > Abs(dx);
 
     case FocusHelpers::Direction::LEFT:
-        ok = dx < 0 && Abs(dx) > Abs(dy);
-        break;
+        return dx < 0 && Abs(dx) > Abs(dy);
 
     case FocusHelpers::Direction::RIGHT:
-        ok = dx > 0 && Abs(dx) > Abs(dy);
-        break;
+        return dx > 0 && Abs(dx) > Abs(dy);
 
     default:
         DVASSERT(false);
         break;
     }
-
-    return ok ? control : nullptr;
+    return false;
 }
 }
