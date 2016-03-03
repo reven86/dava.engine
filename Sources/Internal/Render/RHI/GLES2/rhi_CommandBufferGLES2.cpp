@@ -42,6 +42,7 @@ using DAVA::Logger;
     #include "Concurrency/Semaphore.h"
     #include "Concurrency/ConditionVariable.h"
     #include "Concurrency/LockGuard.h"
+    #include "Concurrency/AutoResetEvent.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
@@ -393,6 +394,9 @@ static bool _GLES2_FrameStarted = false;
 static unsigned _GLES2_FrameNumber = 1;
 static DAVA::Spinlock _GLES2_FrameSync;
 //static DAVA::Mutex              _FrameSync;
+
+static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
+static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
 
 static void _ExecGL(GLCommand* command, uint32 cmdCount);
 
@@ -2122,8 +2126,12 @@ gles2_Present(Handle sync)
         }
         _GLES2_FrameSync.Unlock();
 
-        unsigned frame_cnt = 0;
+        if (!_GLES2_RenderThreadSuspended.GetRelaxed())
+        {
+            _GLES2_FramePreparedEvent.Signal();
+        }
 
+        unsigned frame_cnt = 0;
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
@@ -2133,11 +2141,11 @@ gles2_Present(Handle sync)
 
             if (frame_cnt >= _GLES2_RenderThreadFrameCount)
             {
-                DAVA::Thread::Yield();
+                _GLES2_FrameDoneEvent.Wait();
             }
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-
-        } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+        }
+        while (frame_cnt >= _GLES2_RenderThreadFrameCount);
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
     }
@@ -2168,15 +2176,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     Trace("RHI render-thread started\n");
 
     Logger::Info("[RHI] render-thread started");
-    while (true)
+
+    bool do_exit = false;
+    while (!do_exit)
     {
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
             DAVA::LockGuard<DAVA::Mutex> suspendGuard(_GLES2_RenderThreadSuspendSync);
-
-            bool do_wait = true;
-            bool do_exit = false;
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
@@ -2184,9 +2191,11 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             ios_gl_check_layer();
 #endif
 
-            // CRAP: busy-wait
             TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-            do
+
+            // CRAP: busy-wait
+            bool do_wait = true;
+            while (do_wait)
             {
                 _GLES2_RenderThreadExitSync.Lock();
                 do_exit = _GLES2_RenderThreadExitPending;
@@ -2214,15 +2223,21 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
                 _GLES2_FrameSync.Unlock();
 
-            } while (do_wait);
+                if (do_wait)
+                {
+                    _GLES2_FramePreparedEvent.Wait();
+                }
+            }
             TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
-            if (do_exit)
-                break;
+            if (!do_exit)
+            {
+                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+                _GLES2_ExecuteQueuedCommands();
+                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+            }
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-            _GLES2_ExecuteQueuedCommands();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+            _GLES2_FrameDoneEvent.Signal();
         }
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
@@ -2265,6 +2280,8 @@ void UninitializeRenderThreadGLES2()
             ResumeGLES2();
         }
 
+        _GLES2_FramePreparedEvent.Signal();
+
         Logger::Info("UninitializeRenderThreadGLES2 join begin");
         _GLES2_RenderThread->Join();
         Logger::Info("UninitializeRenderThreadGLES2 join end");
@@ -2276,7 +2293,8 @@ void UninitializeRenderThreadGLES2()
 void SuspendGLES2()
 {
     _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_RenderThreadSuspendSync.Lock();
+    _GLES2_FramePreparedEvent.Signal();
+    _GLES2_FrameDoneEvent.Wait();
     glFinish();
     Logger::Info("Render GLES Suspended");
 }
@@ -2285,7 +2303,6 @@ void SuspendGLES2()
 
 void ResumeGLES2()
 {
-    _GLES2_RenderThreadSuspendSync.Unlock();
     _GLES2_RenderThreadSuspended.Set(false);
     Logger::Info("Render GLES Resumed");
 }
@@ -2671,7 +2688,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         // CRAP: busy-wait
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
 
-        do
+        while (!scheduled)
         {
             _GLES2_PendingImmediateCmdSync.Lock();
             if (!_GLES2_PendingImmediateCmd)
@@ -2681,10 +2698,10 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 scheduled = true;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-        } while (!scheduled);
+        }
 
         // CRAP: busy-wait
-        do
+        while (!executed)
         {
             _GLES2_PendingImmediateCmdSync.Lock();
             if (!_GLES2_PendingImmediateCmd)
@@ -2692,7 +2709,12 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 executed = true;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-        } while (!executed);
+
+            if (!executed)
+            {
+                _GLES2_FramePreparedEvent.Signal();
+            }
+        }
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
