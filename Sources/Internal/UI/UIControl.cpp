@@ -108,8 +108,6 @@ UIControl::UIControl(const Rect& rect)
     scale = Vector2(1.0f, 1.0f);
     angle = 0;
 
-    tag = 0;
-
     multiInput = false;
     exclusiveInput = false;
     currentInputID = 0;
@@ -159,8 +157,8 @@ void UIControl::SetExclusiveInput(bool isExclusiveInput, bool hierarchic /* = tr
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetExclusiveInput(isExclusiveInput, hierarchic);
         }
@@ -173,8 +171,8 @@ void UIControl::SetMultiInput(bool isMultiInput, bool hierarchic /* = true*/)
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetMultiInput(isMultiInput, hierarchic);
         }
@@ -225,7 +223,7 @@ void UIControl::PerformEventWithData(int32 eventType, void* callerData)
 
 const List<UIControl*>& UIControl::GetChildren() const
 {
-    return childs;
+    return children;
 }
 
 bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive)
@@ -642,7 +640,7 @@ bool UIControl::IsHeightDependsOnWidth() const
     return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
 }
 
-void UIControl::SetVisible(bool isVisible)
+void UIControl::SetVisibilityFlag(bool isVisible)
 {
     if (visible == isVisible)
     {
@@ -651,24 +649,29 @@ void UIControl::SetVisible(bool isVisible)
 
     visible = isVisible;
 
-    SetLayoutDirty();
-
-    SystemNotifyVisibilityChanged();
-}
-
-void UIControl::SystemNotifyVisibilityChanged()
-{
-    if (parent && parent->IsOnScreen())
+    if (visible)
     {
-        if (GetVisible())
+        eViewState parentViewState = eViewState::INACTIVE;
+        if (GetParent())
         {
-            SystemWillBecomeVisible();
+            parentViewState = GetParent()->viewState;
         }
         else
         {
-            SystemWillBecomeInvisible();
+            if (UIControlSystem::Instance()->IsHostControl(this))
+            {
+                parentViewState = eViewState::VISIBLE;
+            }
         }
+
+        InvokeVisible(parentViewState);
     }
+    else
+    {
+        InvokeInvisible();
+    }
+
+    SetLayoutDirty();
 }
 
 void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
@@ -687,8 +690,8 @@ void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
     }
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetInputEnabled(isEnabled, hierarchic);
         }
@@ -721,8 +724,8 @@ void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetDisabled(isDisabled, hierarchic);
         }
@@ -747,8 +750,8 @@ void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetSelected(isSelected, hierarchic);
         }
@@ -770,21 +773,11 @@ void UIControl::AddControl(UIControl* control)
     control->Retain();
     control->RemoveFromParent();
 
-    bool inHierarchy = InViewHierarchy();
-    if (inHierarchy)
-    {
-        control->SystemWillAppear();
-    }
     control->isUpdated = false;
     control->SetParent(this);
-    childs.push_back(control);
-    if (inHierarchy)
-    {
-        control->SystemDidAppear();
-    }
+    children.push_back(control);
 
-    if (IsOnScreen() && control->GetVisible())
-        control->SystemWillBecomeVisible();
+    control->InvokeActive(viewState);
 
     isIteratorCorrupted = true;
     SetLayoutDirty();
@@ -792,30 +785,20 @@ void UIControl::AddControl(UIControl* control)
 
 void UIControl::RemoveControl(UIControl* control)
 {
-    if (NULL == control)
+    if (nullptr == control)
     {
         return;
     }
 
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == control)
         {
-            if (IsOnScreen() && control->GetVisible())
-                control->SystemWillBecomeInvisible();
+            control->InvokeInactive();
 
-            bool inHierarchy = InViewHierarchy();
-            if (inHierarchy)
-            {
-                control->SystemWillDisappear();
-            }
             control->SetParent(NULL);
-            childs.erase(it);
-            if (inHierarchy)
-            {
-                control->SystemDidDisappear();
-            }
+            children.erase(it);
             control->Release();
             isIteratorCorrupted = true;
             SetLayoutDirty();
@@ -826,7 +809,7 @@ void UIControl::RemoveControl(UIControl* control)
 
 void UIControl::RemoveFromParent()
 {
-    UIControl* parentControl = this->GetParent();
+    UIControl* parentControl = GetParent();
     if (parentControl)
     {
         parentControl->RemoveControl(this);
@@ -835,20 +818,20 @@ void UIControl::RemoveFromParent()
 
 void UIControl::RemoveAllControls()
 {
-    while (!childs.empty())
+    while (!children.empty())
     {
-        RemoveControl(childs.front());
+        RemoveControl(children.front());
     }
 }
 void UIControl::BringChildFront(UIControl* _control)
 {
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _control)
         {
-            childs.erase(it);
-            childs.push_back(_control);
+            children.erase(it);
+            children.push_back(_control);
             isIteratorCorrupted = true;
             SetLayoutDirty();
             return;
@@ -857,13 +840,13 @@ void UIControl::BringChildFront(UIControl* _control)
 }
 void UIControl::BringChildBack(UIControl* _control)
 {
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _control)
         {
-            childs.erase(it);
-            childs.push_front(_control);
+            children.erase(it);
+            children.push_front(_control);
             isIteratorCorrupted = true;
             SetLayoutDirty();
             return;
@@ -873,28 +856,18 @@ void UIControl::BringChildBack(UIControl* _control)
 
 void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
 {
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _belowThisChild)
         {
             control->Retain();
             control->RemoveFromParent();
 
-            bool inHierarchy = InViewHierarchy();
-            if (inHierarchy)
-            {
-                control->SystemWillAppear();
-            }
-            childs.insert(it, control);
+            children.insert(it, control);
             control->SetParent(this);
-            if (inHierarchy)
-            {
-                control->SystemDidAppear();
-            }
 
-            if (IsOnScreen() && control->GetVisible())
-                control->SystemWillBecomeVisible();
+            control->InvokeActive(viewState);
 
             isIteratorCorrupted = true;
             SetLayoutDirty();
@@ -907,28 +880,18 @@ void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
 
 void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
 {
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _aboveThisChild)
         {
             control->Retain();
             control->RemoveFromParent();
 
-            bool inHierarchy = InViewHierarchy();
-            if (inHierarchy)
-            {
-                control->SystemWillAppear();
-            }
-            childs.insert(++it, control);
+            children.insert(++it, control);
             control->SetParent(this);
-            if (inHierarchy)
-            {
-                control->SystemDidAppear();
-            }
 
-            if (IsOnScreen() && control->GetVisible())
-                control->SystemWillBecomeVisible();
+            control->InvokeActive(viewState);
 
             isIteratorCorrupted = true;
             SetLayoutDirty();
@@ -944,23 +907,23 @@ void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
     //TODO: Fix situation when controls not from this hierarchy
 
     // firstly find control in list and erase it
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _control)
         {
-            childs.erase(it);
+            children.erase(it);
             isIteratorCorrupted = true;
             break;
         }
     }
     // after that find place where we should put the control and do that
-    it = childs.begin();
-    for (; it != childs.end(); ++it)
+    it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _belowThisChild)
         {
-            childs.insert(it, _control);
+            children.insert(it, _control);
             isIteratorCorrupted = true;
             SetLayoutDirty();
             return;
@@ -974,23 +937,23 @@ void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
     //TODO: Fix situation when controls not from this hierarhy
 
     // firstly find control in list and erase it
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _control)
         {
-            childs.erase(it);
+            children.erase(it);
             isIteratorCorrupted = true;
             break;
         }
     }
     // after that find place where we should put the control and do that
-    it = childs.begin();
-    for (; it != childs.end(); ++it)
+    it = children.begin();
+    for (; it != children.end(); ++it)
     {
         if ((*it) == _aboveThisChild)
         {
-            childs.insert(++it, _control);
+            children.insert(++it, _control);
             isIteratorCorrupted = true;
             SetLayoutDirty();
             return;
@@ -1074,155 +1037,14 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     }
 }
 
-bool UIControl::InViewHierarchy() const
+bool UIControl::IsActive() const
 {
-    if (UIControlSystem::Instance()->GetScreen() == this ||
-        UIControlSystem::Instance()->GetPopupContainer() == this)
-    {
-        return true;
-    }
-
-    if (parent)
-        return parent->InViewHierarchy();
-
-    return false;
+    return (viewState >= eViewState::ACTIVE);
 }
 
-bool UIControl::IsOnScreen() const
+bool UIControl::IsVisible() const
 {
-    if (UIControlSystem::Instance()->GetScreen() == this ||
-        UIControlSystem::Instance()->GetPopupContainer() == this)
-    {
-        return GetVisible();
-    }
-
-    if (!GetVisible() || !parent)
-        return false;
-
-    return parent->IsOnScreen();
-}
-
-void UIControl::SystemWillAppear()
-{
-    styleSheetInitialized = false;
-
-    WillAppear();
-
-    List<UIControl*>::iterator it = childs.begin();
-    while (it != childs.end())
-    {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        current->Retain();
-        current->SystemWillAppear();
-        current->Release();
-        if (isIteratorCorrupted)
-        {
-            it = childs.begin();
-            continue;
-        }
-        ++it;
-    }
-}
-
-void UIControl::SystemWillDisappear()
-{
-    List<UIControl*>::iterator it = childs.begin();
-    while (it != childs.end())
-    {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        current->Retain();
-        current->SystemWillDisappear();
-        current->Release();
-        if (isIteratorCorrupted)
-        {
-            it = childs.begin();
-            continue;
-        }
-        ++it;
-    }
-
-    WillDisappear();
-}
-
-void UIControl::SystemDidAppear()
-{
-    DidAppear();
-
-    List<UIControl*>::iterator it = childs.begin();
-    while (it != childs.end())
-    {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        current->Retain();
-        current->SystemDidAppear();
-        current->Release();
-        if (isIteratorCorrupted)
-        {
-            it = childs.begin();
-            continue;
-        }
-        ++it;
-    }
-}
-
-void UIControl::SystemDidDisappear()
-{
-    DidDisappear();
-
-    List<UIControl*>::iterator it = childs.begin();
-    while (it != childs.end())
-    {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        current->Retain();
-        current->SystemDidDisappear();
-        current->Release();
-        if (isIteratorCorrupted)
-        {
-            it = childs.begin();
-            continue;
-        }
-        ++it;
-    }
-}
-
-void UIControl::SystemScreenSizeDidChanged(const Rect& newFullScreenRect)
-{
-    ScreenSizeDidChanged(newFullScreenRect);
-
-    List<UIControl*>::iterator it = childs.begin();
-    while (it != childs.end())
-    {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        current->Retain();
-        current->SystemScreenSizeDidChanged(newFullScreenRect);
-        current->Release();
-        if (isIteratorCorrupted)
-        {
-            it = childs.begin();
-            continue;
-        }
-        ++it;
-    }
-}
-
-void UIControl::WillAppear()
-{
-}
-void UIControl::WillDisappear()
-{
-}
-void UIControl::DidAppear()
-{
-}
-void UIControl::DidDisappear()
-{
-}
-void UIControl::ScreenSizeDidChanged(const Rect& newFullScreenRect)
-{
+    return (viewState == eViewState::VISIBLE);
 }
 
 void UIControl::SystemUpdate(float32 timeElapsed)
@@ -1230,8 +1052,8 @@ void UIControl::SystemUpdate(float32 timeElapsed)
     UIControlSystem::Instance()->updateCounter++;
     Update(timeElapsed);
     isUpdated = true;
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         (*it)->isUpdated = false;
     }
@@ -1259,19 +1081,19 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         }
     }
 
-    it = childs.begin();
-    while (it != childs.end())
+    it = children.begin();
+    isIteratorCorrupted = false;
+    while (it != children.end())
     {
-        isIteratorCorrupted = false;
-        UIControl* current = *it;
-        if (!current->isUpdated)
+        RefPtr<UIControl> child;
+        child = *it;
+        if (!child->isUpdated)
         {
-            current->Retain();
-            current->SystemUpdate(timeElapsed);
-            current->Release();
+            child->SystemUpdate(timeElapsed);
             if (isIteratorCorrupted)
             {
-                it = childs.begin();
+                it = children.begin();
+                isIteratorCorrupted = false;
                 continue;
             }
         }
@@ -1281,7 +1103,7 @@ void UIControl::SystemUpdate(float32 timeElapsed)
 
 void UIControl::SystemDraw(const UIGeometricData& geometricData)
 {
-    if (!GetVisible())
+    if (!GetVisibilityFlag())
         return;
 
     UIControlSystem::Instance()->drawCounter++;
@@ -1303,8 +1125,8 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
     Draw(drawData);
 
     isIteratorCorrupted = false;
-    List<UIControl*>::iterator it = childs.begin();
-    List<UIControl*>::iterator itEnd = childs.end();
+    List<UIControl*>::iterator it = children.begin();
+    List<UIControl*>::iterator itEnd = children.end();
     for (; it != itEnd; ++it)
     {
         (*it)->SystemDraw(drawData);
@@ -1428,7 +1250,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 
 bool UIControl::SystemProcessInput(UIEvent* currentInput)
 {
-    if (!inputEnabled || !GetVisible() || controlState & STATE_DISABLED)
+    if (!inputEnabled || !GetVisibilityFlag() || controlState & STATE_DISABLED)
     {
         return false;
     }
@@ -1445,7 +1267,6 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::CHAR:
     case UIEvent::Phase::CHAR_REPEAT:
-    case UIEvent::Phase::KEY_UP:
     case UIEvent::Phase::KEY_DOWN:
     case UIEvent::Phase::KEY_DOWN_REPEAT:
     {
@@ -1529,10 +1350,9 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             {
                                 controlState |= STATE_PRESSED_INSIDE;
                                 controlState &= ~STATE_PRESSED_OUTSIDE;
-                                if (currentInput->device == UIEvent::Device::MOUSE)
-                                {
-                                    controlState |= STATE_HOVER;
-                                }
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                                controlState |= STATE_HOVER;
+#endif
                             }
                         }
                     }
@@ -1574,13 +1394,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                     {
                         --touchesInside;
-                        if (currentInput->device == UIEvent::Device::MOUSE)
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                        if (totalTouches == 0)
                         {
-                            if (totalTouches == 0)
-                            {
-                                controlState |= STATE_HOVER;
-                            }
+                            controlState |= STATE_HOVER;
                         }
+#endif
                     }
 
                     currentInput->controlState =
@@ -1616,13 +1435,13 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     {
                         controlState |= STATE_PRESSED_OUTSIDE;
                         controlState &= ~STATE_PRESSED_INSIDE;
-                        if (currentInput->device == UIEvent::Device::MOUSE)
-                        {
-                            controlState &= ~STATE_HOVER;
-                        }
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                        controlState &= ~STATE_HOVER;
+#endif
                     }
                 }
             }
+
             currentInput->touchLocker = NULL;
             return true;
         }
@@ -1644,7 +1463,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
     UIControlSystem::Instance()->inputCounter++;
     isUpdated = true;
 
-    if (!GetVisible())
+    if (!GetVisibilityFlag())
         return false;
 
     //if(currentInput->touchLocker != this)
@@ -1658,12 +1477,12 @@ bool UIControl::SystemInput(UIEvent* currentInput)
             }
         }
 
-        std::for_each(begin(childs), end(childs), [](UIControl* c) {
+        std::for_each(begin(children), end(children), [](UIControl* c) {
             c->isUpdated = false;
         });
 
-        List<UIControl*>::reverse_iterator it = childs.rbegin();
-        List<UIControl*>::reverse_iterator itEnd = childs.rend();
+        List<UIControl*>::reverse_iterator it = children.rbegin();
+        List<UIControl*>::reverse_iterator itEnd = children.rend();
         while (it != itEnd)
         {
             isIteratorCorrupted = false;
@@ -1682,7 +1501,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
                 current->Release();
                 if (isIteratorCorrupted)
                 {
-                    it = childs.rbegin();
+                    it = children.rbegin();
                     continue;
                 }
             }
@@ -1758,29 +1577,56 @@ void UIControl::InputCancelled(UIEvent* currentInput)
 void UIControl::Update(float32 timeElapsed)
 {
 }
+
 void UIControl::Draw(const UIGeometricData& geometricData)
 {
     background->Draw(geometricData);
 }
+
 void UIControl::DrawAfterChilds(const UIGeometricData& geometricData)
 {
 }
 
-void UIControl::SystemWillBecomeVisible()
+void UIControl::SystemVisible()
 {
-    WillBecomeVisible();
-
-    List<UIControl*>::const_iterator it = childs.begin();
-    List<UIControl*>::const_iterator end = childs.end();
-    for (; it != end; ++it)
+    if (viewState == eViewState::VISIBLE)
     {
-        if ((*it)->GetVisible())
-            (*it)->SystemWillBecomeVisible();
+        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        return;
+    }
+
+    ChangeViewState(eViewState::VISIBLE);
+
+    OnVisible();
+
+    auto it = children.begin();
+    isIteratorCorrupted = false;
+    while (it != children.end())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->InvokeVisible(viewState);
+
+        if (isIteratorCorrupted)
+        {
+            it = children.begin();
+            isIteratorCorrupted = false;
+            continue;
+        }
+
+        ++it;
     }
 }
 
-void UIControl::SystemWillBecomeInvisible()
+void UIControl::SystemInvisible()
 {
+    if (viewState != eViewState::VISIBLE)
+    {
+        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        return;
+    }
+
     if (GetHover())
     {
         UIControlSystem::Instance()->SetHoveredControl(NULL);
@@ -1794,23 +1640,235 @@ void UIControl::SystemWillBecomeInvisible()
         UIControlSystem::Instance()->CancelInputs(this, false);
     }
 
-    List<UIControl*>::const_iterator it = childs.begin();
-    List<UIControl*>::const_iterator end = childs.end();
-    for (; it != end; ++it)
+    auto it = children.rbegin();
+    isIteratorCorrupted = false;
+    while (it != children.rend())
     {
-        if ((*it)->GetVisible())
-            (*it)->SystemWillBecomeInvisible();
+        RefPtr<UIControl> child;
+        child = *it;
+        if (child->IsVisible())
+        {
+            child->InvokeInvisible();
+
+            if (isIteratorCorrupted)
+            {
+                it = children.rbegin();
+                isIteratorCorrupted = false;
+                continue;
+            }
+        }
+        ++it;
     }
 
-    WillBecomeInvisible();
+    ChangeViewState(eViewState::ACTIVE);
+
+    OnInvisible();
 }
 
-void UIControl::WillBecomeVisible()
+void UIControl::OnVisible()
 {
 }
 
-void UIControl::WillBecomeInvisible()
+void UIControl::OnInvisible()
 {
+}
+
+void UIControl::SystemActive()
+{
+    if (viewState >= eViewState::ACTIVE)
+    {
+        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        return;
+    }
+
+    ChangeViewState(eViewState::ACTIVE);
+
+    OnActive();
+
+    auto it = children.begin();
+    isIteratorCorrupted = false;
+    while (it != children.end())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->InvokeActive(viewState);
+
+        if (isIteratorCorrupted)
+        {
+            it = children.begin();
+            isIteratorCorrupted = false;
+            continue;
+        }
+        ++it;
+    }
+}
+
+void UIControl::SystemInactive()
+{
+    if (viewState != eViewState::ACTIVE)
+    {
+        DVASSERT_MSG(false, Format("Unexpected view state %d in control with name '%s'", static_cast<int32>(viewState), name.c_str()).c_str());
+        return;
+    }
+
+    auto it = children.rbegin();
+    isIteratorCorrupted = false;
+    while (it != children.rend())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->InvokeInactive();
+
+        if (isIteratorCorrupted)
+        {
+            it = children.rbegin();
+            isIteratorCorrupted = false;
+            continue;
+        }
+
+        ++it;
+    }
+
+    ChangeViewState(eViewState::INACTIVE);
+
+    OnInactive();
+}
+
+void UIControl::OnActive()
+{
+}
+
+void UIControl::OnInactive()
+{
+}
+
+void UIControl::SystemScreenSizeChanged(const Rect& newFullScreenRect)
+{
+    OnScreenSizeChanged(newFullScreenRect);
+
+    auto it = children.begin();
+    isIteratorCorrupted = false;
+    while (it != children.end())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+
+        child->SystemScreenSizeChanged(newFullScreenRect);
+
+        if (isIteratorCorrupted)
+        {
+            it = children.begin();
+            isIteratorCorrupted = false;
+            continue;
+        }
+
+        ++it;
+    }
+}
+
+void UIControl::OnScreenSizeChanged(const Rect& newFullScreenRect)
+{
+}
+
+void UIControl::InvokeActive(eViewState parentViewState)
+{
+    if (!IsActive() && parentViewState >= eViewState::ACTIVE)
+    {
+        SystemActive();
+        InvokeVisible(parentViewState);
+    }
+}
+
+void UIControl::InvokeInactive()
+{
+    if (IsActive())
+    {
+        InvokeInvisible();
+        SystemInactive();
+    }
+}
+
+void UIControl::InvokeVisible(eViewState parentViewState)
+{
+    if (!IsVisible() && parentViewState == eViewState::VISIBLE && GetVisibilityFlag())
+    {
+        SystemVisible();
+    }
+}
+
+void UIControl::InvokeInvisible()
+{
+    if (IsVisible())
+    {
+        SystemInvisible();
+    }
+}
+
+bool IsControlActive(const UIControl* control)
+{
+    while (control->GetParent() != nullptr)
+    {
+        control = control->GetParent();
+    }
+
+    return UIControlSystem::Instance()->IsHostControl(control);
+}
+
+bool IsControlVisible(const UIControl* control)
+{
+    while (control->GetParent() != nullptr)
+    {
+        if (!control->GetVisibilityFlag())
+            return false;
+
+        control = control->GetParent();
+    }
+
+    return UIControlSystem::Instance()->IsHostControl(control) ? control->GetVisibilityFlag() : false;
+}
+
+void UIControl::ChangeViewState(eViewState newViewState)
+{
+    static const Vector<std::pair<eViewState, eViewState>> validTransitions =
+    {
+      { eViewState::INACTIVE, eViewState::ACTIVE },
+      { eViewState::ACTIVE, eViewState::VISIBLE },
+      { eViewState::VISIBLE, eViewState::ACTIVE },
+      { eViewState::ACTIVE, eViewState::INACTIVE }
+    };
+
+    bool verified = true;
+    String errorStr;
+
+    if (!IsControlActive(this))
+    {
+        errorStr += "Control not in hierarhy.";
+        verified = false;
+    }
+
+    std::pair<eViewState, eViewState> transition = { viewState, newViewState };
+    if (std::find(validTransitions.begin(), validTransitions.end(), transition) == validTransitions.end())
+    {
+        errorStr += "Unexpected change sequence.";
+        verified = false;
+    }
+
+    if (viewState == eViewState::ACTIVE && newViewState == eViewState::VISIBLE && !IsControlVisible(this))
+    {
+        errorStr += "Control not visible on screen.";
+        verified = false;
+    }
+
+    if (!verified)
+    {
+        String errorMsg = Format("[UIControl::ChangeViewState] Control '%s', change from state %d to state %d. %s", GetName().c_str(), viewState, newViewState, errorStr.c_str());
+        Logger::Error(errorMsg.c_str());
+        DVASSERT_MSG(false, errorMsg.c_str());
+    }
+
+    viewState = newViewState;
 }
 
 YamlNode* UIControl::SaveToYamlNode(UIYamlLoader* loader)
@@ -1847,9 +1905,9 @@ YamlNode* UIControl::SaveToYamlNode(UIYamlLoader* loader)
         node->Set("angle", GetAngle());
     }
     // Visible
-    if (baseControl->GetVisible() != GetVisible())
+    if (baseControl->GetVisibilityFlag() != GetVisibilityFlag())
     {
-        node->Set("visible", GetVisible());
+        node->Set("visible", GetVisibilityFlag());
     }
     // Enabled
     if (baseControl->GetDisabled() != GetDisabled())
@@ -2091,7 +2149,7 @@ void UIControl::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
         visibilityFlag &= loader->GetBoolFromYamlNode(recursiveVisibleNode, true);
     }
 
-    SetVisible(visibilityFlag);
+    SetVisibilityFlag(visibilityFlag);
 
     const YamlNode* drawTypeNode = node->Get("drawType");
     if (drawTypeNode)
@@ -2261,7 +2319,7 @@ Animation* UIControl::DisabledAnimation(bool disabled, bool hierarhic /* = true*
 void UIControl::VisibleAnimationCallback(BaseObject* caller, void* param, void* callerData)
 {
     bool visible = (pointer_size(param) > 0);
-    SetVisible(visible);
+    SetVisibilityFlag(visible);
 }
 
 Animation* UIControl::VisibleAnimation(bool visible, int32 track /* = 0*/)
@@ -2305,8 +2363,8 @@ void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic /* = false*
     debugDrawEnabled = _debugDrawEnabled;
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetDebugDraw(debugDrawEnabled, hierarchic);
         }
@@ -2328,8 +2386,8 @@ void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic 
     drawPivotPointMode = mode;
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = childs.begin();
-        for (; it != childs.end(); ++it)
+        List<UIControl*>::iterator it = children.begin();
+        for (; it != children.end(); ++it)
         {
             (*it)->SetDrawPivotPointMode(mode, hierarchic);
         }
@@ -2433,8 +2491,8 @@ void UIControl::DumpInputs(int32 depthLevel)
         outStr += " ***";
     }
     Logger::Info("%s", outStr.c_str());
-    List<UIControl*>::iterator it = childs.begin();
-    for (; it != childs.end(); ++it)
+    List<UIControl*>::iterator it = children.begin();
+    for (; it != children.end(); ++it)
     {
         (*it)->DumpInputs(depthLevel + 1);
     }
@@ -2805,7 +2863,7 @@ void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     }
 
     packageContext = newPackageContext;
-    for (UIControl* child : childs)
+    for (UIControl* child : children)
         child->PropagateParentWithContext(packageContext ? this : parentWithContext);
 }
 
@@ -2821,7 +2879,7 @@ void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
     parentWithContext = newParentWithContext;
     if (packageContext == nullptr)
     {
-        for (UIControl* child : childs)
+        for (UIControl* child : children)
         {
             child->PropagateParentWithContext(newParentWithContext);
         }
