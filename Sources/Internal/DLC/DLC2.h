@@ -74,6 +74,11 @@ namespace DAVA
             std::function<void(const String& package, const String& errorMessage)> callback) const;
         // return empty string if not found
         String FindPackageNameByFilePath(const Path& filepath) const;
+
+        // TODO
+        // 1. add signals on finish loading package
+        // 2. add progress status to show user current multiple packages dounloading status and time
+        // 3. add TAGs to better handle HD/SD ru/en etc resources and API for it
     private:
         std::unique_ptr<Dlc2Impl> impl;
     };
