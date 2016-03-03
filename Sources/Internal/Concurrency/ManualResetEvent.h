@@ -50,7 +50,8 @@ namespace DAVA
 class ManualResetEvent final
 {
 public:
-    ManualResetEvent(bool isSignaled = true)
+    ManualResetEvent(bool isSignaled = true, uint32 spinCount_ = SemaphoreLite::defaultSpinCount)
+        : sem(0, spinCount_)
     {
         status.store(isSignaled ? 1 : 0, std::memory_order_release);
     }
