@@ -42,8 +42,8 @@ public:
     ObjectHandle(DAVA::InspBase* object);
 
     bool IsValid() const;
-    inline void* GetObjectPointer() const;
-    inline const MetaInfo* GetObjectType() const;
+    void* GetObjectPointer() const;
+    const MetaInfo* GetObjectType() const;
     const InspInfo* GetIntrospection() const;
 
 private:
@@ -51,12 +51,12 @@ private:
     const DAVA::MetaInfo* objectType = nullptr;
 };
 
-void* ObjectHandle::GetObjectPointer() const
+inline void* ObjectHandle::GetObjectPointer() const
 {
     return object;
 }
 
-const DAVA::MetaInfo* ObjectHandle::GetObjectType() const
+inline const DAVA::MetaInfo* ObjectHandle::GetObjectType() const
 {
     return objectType;
 }

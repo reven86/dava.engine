@@ -48,7 +48,7 @@ public:
 
     void Execute() override;
 
-    inline virtual bool CanUndo() const;
+    virtual bool CanUndo() const;
     virtual DAVA::Entity* GetEntity() const = 0;
     virtual bool MergeWith(const Command2* command);
 
@@ -63,7 +63,7 @@ protected:
     void RedoInternalCommand(Command2* command);
 };
 
-bool Command2::CanUndo() const
+inline bool Command2::CanUndo() const
 {
     return true;
 }
