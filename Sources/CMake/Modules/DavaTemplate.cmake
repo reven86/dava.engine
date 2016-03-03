@@ -646,7 +646,7 @@ endmacro ()
 macro( DEPLOY_SCRIPT )
 
     if( DEPLOY )
-        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_WIN64;COPY_MACOS;COPY_DIR" ${ARGN})
 
         if( NOT COPY_DIR )
             set( COPY_DIR ${DEPLOY_DIR} )
@@ -659,8 +659,12 @@ macro( DEPLOY_SCRIPT )
             list( APPEND COPY_LIST ${ARG_COPY} )
         endif()
 
-        if( ARG_COPY_WIN32 AND WIN32 )
+        if( ARG_COPY_WIN32 AND WIN32 AND NOT X64_MODE )
             list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+        endif()
+
+        if( ARG_COPY_WIN64 AND WIN32 AND X64_MODE )
+            list( APPEND COPY_LIST ${ARG_COPY_WIN64} )
         endif()
 
         if( ARG_COPY_MACOS AND MACOS )
