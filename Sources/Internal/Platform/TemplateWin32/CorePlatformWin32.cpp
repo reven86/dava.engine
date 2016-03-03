@@ -42,7 +42,6 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
-#include "UI/UIScreenManager.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -610,21 +609,22 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 {
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    Vector2& minsizes = core->GetWindowMinimumSize();
+    const Vector2& minSizes = core->GetWindowMinimumSize();
+    const LONG minWidth = static_cast<LONG>(minSizes.x), minHeight = static_cast<LONG>(minSizes.y);
+    float32 scale = 1.f;
     RECT rect;
-    float32 MIN_WIDTH = minsizes.x, MIN_HEIGHT = minsizes.y, scale = DeviceInfo::GetScreenInfo().scale;
 
     switch (message)
     {
     case WM_SIZING:
         rect = *(reinterpret_cast<RECT*>(lParam));
-        if (rect.right - rect.left < MIN_WIDTH)
+        if (rect.right - rect.left < minWidth)
         {
-            (reinterpret_cast<RECT*>(lParam))->right = rect.left + static_cast<LONG>(MIN_WIDTH);
+            (reinterpret_cast<RECT*>(lParam))->right = rect.left + minWidth;
         }
-        if (rect.bottom - rect.top < MIN_HEIGHT)
+        if (rect.bottom - rect.top < minHeight)
         {
-            (reinterpret_cast<RECT*>(lParam))->bottom = rect.top + static_cast<LONG>(MIN_HEIGHT);
+            (reinterpret_cast<RECT*>(lParam))->bottom = rect.top + minHeight;
         }
         break;
     case WM_ERASEBKGND:
@@ -665,38 +665,11 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     {
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
-
         if ((1 << 24) & extendedKeyInfo)
         {
             systemKeyCode |= 0x100;
         }
         uint32 scanCode = (extendedKeyInfo & 0xFF0000) >> 16;
-
-        //         static bool FullScreen = false;
-        //         static WINDOWPLACEMENT wpc;
-        //         Logger::Info("!!!!! wParam = %d scanCode = %d lParam = %d", wParam, scanCode, (int32)lParam);
-        //
-        //         if ((wParam == VK_RETURN) && static_cast<bool>(GetKeyState(VK_MENU) >> 15))
-        //         {
-        //             if (!FullScreen)//Из оконного во весь экран
-        //             {
-        //                 GetWindowPlacement(hWnd, &wpc);//Сохраняем параметры оконного режима
-        //                 SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);//Устанавливаем новые стили
-        //                 SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_TOPMOST);
-        //                 ShowWindow(hWnd, SW_SHOWMAXIMIZED);//Окно во весь экран
-        //                 FullScreen = true;
-        //             }
-        //             else//Из всего эранна в оконное
-        //             {
-        //                 SetWindowLong(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);//Устанавливаем стили окнного режима
-        //                 SetWindowLong(hWnd, GWL_EXSTYLE, 0L);
-        //                 SetWindowPlacement(hWnd, &wpc);//Загружаем парметры предыдущего оконного режима
-        //                 ShowWindow(hWnd, SW_SHOWDEFAULT);//Показываем обычное окно
-        //                 FullScreen = false;
-        //             }
-        //             return DefWindowProc(hWnd, 0, 0, 0);
-        //         }
-
         if (VK_SHIFT == systemKeyCode && scanCode == 0x36) // is right shift key
         {
             systemKeyCode |= 0x100;
