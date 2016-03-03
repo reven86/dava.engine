@@ -227,3 +227,13 @@ namespace DAVA
         std::unique_ptr<FileSystem2Impl> impl;
     };
 } // end namespace DAVA
+
+namespace std {
+    template <> struct hash<DAVA::Path>
+    {
+        size_t operator()(const DAVA::Path& p) const
+        {
+            return p.Hash();
+        }
+    };
+}
