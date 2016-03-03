@@ -46,7 +46,7 @@ public:
 
     inline DAVA::int32 GetScreenId();
 
-    void SystemScreenSizeDidChanged(const DAVA::Rect& newFullScreenSize) override;
+    void SystemScreenSizeChanged(const DAVA::Rect& newFullScreenSize) override;
 
 protected:
     void LoadResources() override;

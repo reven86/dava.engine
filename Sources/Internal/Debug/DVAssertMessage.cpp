@@ -34,7 +34,7 @@ using namespace DAVA;
 
 namespace
 {
-DAVA::Atomic<uint32> messageDisplayed(0);
+Atomic<uint32> messageDisplayed{ 0 };
 }
 
 #if defined(ENABLE_ASSERT_MESSAGE)

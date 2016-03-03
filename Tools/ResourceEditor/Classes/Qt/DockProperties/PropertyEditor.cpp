@@ -73,7 +73,7 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace PropertyEditorDetails
@@ -909,7 +909,9 @@ void PropertyEditor::ActionEditComponent()
 
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
         auto bbox = curScene->selectionSystem->GetUntransformedBoundingBox(node);
-        curScene->selectionSystem->SetSelection(EntityGroup(node, bbox));
+
+        EntityGroup newSelection(node, bbox);
+        curScene->selectionSystem->SetSelection(newSelection);
 
         if (editor.IsModified())
         {

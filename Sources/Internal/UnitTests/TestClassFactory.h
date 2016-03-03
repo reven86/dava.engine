@@ -40,7 +40,7 @@ class TestClass;
 class TestClassFactoryBase
 {
 public:
-    virtual ~TestClassFactoryBase() = default;
+    virtual ~TestClassFactoryBase();
     virtual TestClass* CreateTestClass() = 0;
 
 protected:

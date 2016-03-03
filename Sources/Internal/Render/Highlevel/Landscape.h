@@ -52,7 +52,6 @@ class Scene;
 class Image;
 class Texture;
 class Shader;
-class SceneFileV2;
 class Heightmap;
 class NMaterial;
 
@@ -188,8 +187,8 @@ public:
 
     void GetDataNodes(Set<DataNode*>& dataNodes) override;
 
-    void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     bool PlacePoint(const Vector3& point, Vector3& result, Vector3* normal = 0) const;
     bool GetHeightAtPoint(const Vector3& point, float&) const;
@@ -201,8 +200,8 @@ public:
     NMaterial* GetMaterial();
     void SetMaterial(NMaterial* material);
 
-    virtual RenderObject* Clone(RenderObject* newObject);
-    virtual void RecalcBoundingBox();
+    RenderObject* Clone(RenderObject* newObject) override;
+    void RecalcBoundingBox() override;
 
     int32 GetDrawIndices() const;
 
@@ -247,7 +246,6 @@ protected:
     void GenFans();
 
     int16 AllocateQuadVertexBuffer(LandscapeQuad* quad);
-    void AllocateGeometryData();
     void ReleaseGeometryData();
 
     void RestoreGeometry();

@@ -28,6 +28,8 @@
 
 
 #include "EditorSystems/HUDControls.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -49,11 +51,20 @@ HUDAreaInfo::eArea ControlContainer::GetArea() const
     return area;
 }
 
-HUDContainer::HUDContainer(UIControl* container)
-    : ControlContainer(HUDAreaInfo::NO_AREA)
-    , control(container)
+void ControlContainer::SetSystemVisible(bool visible)
 {
-    SetName(FastName(String("HudContainer of ") + container->GetName().c_str()));
+    systemVisible = visible;
+}
+
+HUDContainer::HUDContainer(ControlNode* node_)
+    : ControlContainer(HUDAreaInfo::NO_AREA)
+    , node(node_)
+{
+    DVASSERT(nullptr != node);
+    SetName(FastName(String("HudContainer of ") + node->GetName().c_str()));
+    control = node->GetControl();
+    visibleProperty = node->GetRootProperty()->GetVisibleProperty();
+    DVASSERT(nullptr != control && nullptr != visibleProperty);
 }
 
 void HUDContainer::AddChild(ControlContainer* container)
@@ -68,8 +79,24 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    bool valid_ = control->GetVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    SetValid(valid_);
+    bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool valid = contolIsInValidState && visibleProperty->GetVisibleInEditor();
+    if (valid)
+    {
+        PackageBaseNode* parent = node->GetParent();
+        while (valid && nullptr != parent)
+        {
+            ControlNode* parentControlNode = dynamic_cast<ControlNode*>(parent);
+            if (parentControlNode == nullptr)
+            {
+                break;
+            }
+            valid &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
+            parent = parent->GetParent();
+        }
+    }
+    SetVisibilityFlag(valid);
+
     if (valid)
     {
         for (auto child : childs)
@@ -83,18 +110,6 @@ void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
 {
     InitFromGD(control->GetGeometricData());
     UIControl::SystemDraw(geometricData);
-}
-
-void HUDContainer::SetValid(bool arg)
-{
-    valid = arg;
-    SetVisible(valid && visibleInSystems);
-}
-
-void HUDContainer::SetVisibleInSystems(bool arg)
-{
-    visibleInSystems = arg;
-    SetVisible(valid && visibleInSystems);
 }
 
 void FrameControl::Init()
@@ -215,6 +230,8 @@ void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
 {
     Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
     const Rect& controlRect = geometricData.GetUnrotatedRect();
+    bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
+    SetVisibilityFlag(systemVisible && visible);
     rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
 
     UIControl* parent = GetParent();
@@ -237,6 +254,9 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 {
     Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
     Rect controlRect = geometricData.GetUnrotatedRect();
+    bool visible = controlRect.GetSize().x > 0.0f && controlRect.GetSize().y > 0.0f && geometricData.scale.x > 0.0f && geometricData.scale.y > 0.0f;
+    SetVisibilityFlag(systemVisible && visible);
+
     rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
 
     UIControl* parent = GetParent();
@@ -266,10 +286,12 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
     UIControl::Draw(geometricData);
 }
 
-MagnetLine::MagnetLine()
+MagnetLineControl::MagnetLineControl(const DAVA::Rect& rect)
+    : UIControl(rect)
 {
     SetName(FastName("Magnet Line"));
     SetDebugDraw(true);
+    //this code saved to replace debugDraw
     //background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
     //background->SetDrawType(UIControlBackground::DRAW_TILED);
 }
