@@ -146,6 +146,7 @@ static const String HEIGHTMAP_EDITOR_LABEL_BRUSH_IMAGE = "Brush\nimage:";
 static const String HEIGHTMAP_EDITOR_LABEL_DROPPER_HEIGHT = "Height:";
 
 static const String NOT_PASSABLE_TERRAIN_ENABLE_ERROR = "Error enabling Not Passable Terrain. Make sure there is valid landscape at the scene.";
+static const String NOT_PASSABLE_TERRAIN_DISABLE_ERROR = "Error disabling Not Passable Terrain";
 
 static const String SHORTCUT_BRUSH_SIZE_INCREASE_SMALL = "landscape-editor.brush-size.increase.small";
 static const String SHORTCUT_BRUSH_SIZE_DECREASE_SMALL = "landscape-editor.brush-size.decrease.small";

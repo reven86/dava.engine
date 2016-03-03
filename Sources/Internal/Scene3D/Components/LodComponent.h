@@ -56,7 +56,7 @@ public:
         RECURSIVE_UPDATE = 1 << 1
     };
 
-    struct LodDistance
+    struct LodDistance : public InspBase
     {
         float32 distance;
         float32 nearDistanceSq;

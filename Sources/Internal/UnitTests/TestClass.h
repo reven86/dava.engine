@@ -58,24 +58,11 @@ public:
     TestClass() = default;
     virtual ~TestClass() = default;
 
-    virtual void SetUp(const String& testName)
-    {
-    }
-    virtual void TearDown(const String& testName)
-    {
-    }
-    virtual void Update(float32 timeElapsed, const String& testName)
-    {
-    }
-    virtual bool TestComplete(const String& testName) const
-    {
-        return true;
-    }
-
-    virtual Vector<String> ClassesCoveredByTests() const
-    {
-        return Vector<String>();
-    }
+    virtual void SetUp(const String& testName);
+    virtual void TearDown(const String& testName);
+    virtual void Update(float32 timeElapsed, const String& testName);
+    virtual bool TestComplete(const String& testName) const;
+    virtual Vector<String> ClassesCoveredByTests() const;
 
     const String& TestName(size_t index) const;
     size_t TestCount() const;

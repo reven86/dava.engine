@@ -69,7 +69,7 @@ public:
 inline WideString UTF8Utils::EncodeToWideString(const String& utf8String)
 {
     WideString str;
-    EncodeToWideString((const uint8*)utf8String.c_str(), utf8String.length(), str);
+    EncodeToWideString(reinterpret_cast<const uint8*>(utf8String.c_str()), utf8String.length(), str);
     return str;
 }
 };

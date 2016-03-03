@@ -440,11 +440,11 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
     }
 }
 
-void SceneCollisionSystem::ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event)
+void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
     if (EventSystem::SWITCH_CHANGED == event)
     {
-        UpdateCollisionObject(entity);
+        UpdateCollisionObject(component->GetEntity());
     }
 }
 

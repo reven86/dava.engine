@@ -98,7 +98,8 @@ public:
     };
     /**
 		\brief Function to create directory at filePath you've requested
-		\param[in] filepath where you want to create a directory
+		\param[in] filePath where you want to create a directory
+        \param[in] isRecursive create requiried 
 		\returns true if directory created successfully
 	 */
     virtual eCreateDirectoryResult CreateDirectory(const FilePath& filePath, bool isRecursive = false);

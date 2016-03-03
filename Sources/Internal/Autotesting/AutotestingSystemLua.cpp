@@ -35,6 +35,7 @@
 #include "Autotesting/AutotestingDB.h"
 
 #include "Utils/Utils.h"
+#include "Ui/UIControlHelpers.h"
 #include "Platform/DeviceInfo.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -408,22 +409,27 @@ String AutotestingSystemLua::MakeScreenshot()
     return AutotestingSystem::Instance()->GetScreenShotName();
 }
 
+bool AutotestingSystemLua::GetIsScreenShotSaving() const
+{
+    return AutotestingSystem::Instance()->GetIsScreenShotSaving();
+}
+
 UIControl* AutotestingSystemLua::GetScreen()
 {
     return UIControlSystem::Instance()->GetScreen();
 }
 
-UIControl* AutotestingSystemLua::FindControlOnPopUp(const String& path)
+UIControl* AutotestingSystemLua::FindControlOnPopUp(const String& path) const
 {
     return FindControl(path, UIControlSystem::Instance()->GetPopupContainer());
 }
 
-UIControl* AutotestingSystemLua::FindControl(const String& path)
+UIControl* AutotestingSystemLua::FindControl(const String& path) const
 {
     return FindControl(path, UIControlSystem::Instance()->GetScreen());
 }
 
-UIControl* AutotestingSystemLua::FindControl(const String& path, UIControl* srcControl)
+UIControl* AutotestingSystemLua::FindControl(const String& path, UIControl* srcControl) const
 {
     Vector<String> controlPath;
     ParsePath(path, controlPath);
@@ -445,7 +451,7 @@ UIControl* AutotestingSystemLua::FindControl(const String& path, UIControl* srcC
     return control;
 }
 
-UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String& controlName)
+UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String& controlName) const
 {
     if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
     {
@@ -466,7 +472,7 @@ UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String
     return FindControl(srcControl, index);
 }
 
-UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, int32 index)
+UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, int32 index) const
 {
     if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
     {
@@ -484,7 +490,7 @@ UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, int32 index)
     return nullptr;
 }
 
-UIControl* AutotestingSystemLua::FindControl(UIList* srcList, int32 index)
+UIControl* AutotestingSystemLua::FindControl(UIList* srcList, int32 index) const
 {
     if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcList)
     {
@@ -502,7 +508,7 @@ UIControl* AutotestingSystemLua::FindControl(UIList* srcList, int32 index)
     return nullptr;
 }
 
-bool AutotestingSystemLua::IsCenterInside(UIControl* parent, UIControl* child)
+bool AutotestingSystemLua::IsCenterInside(UIControl* parent, UIControl* child) const
 {
     if (!parent || !child)
     {
@@ -763,6 +769,12 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     ProcessInput(touchUp);
 }
 
+void AutotestingSystemLua::ScrollToControl(const String& path) const
+{
+    UIControl* control = FindControl(path);
+    UIControlHelpers::ScrollToControl(control);
+}
+
 void AutotestingSystemLua::ProcessInput(const UIEvent& input)
 {
     UIEvent ev = input;
@@ -771,7 +783,7 @@ void AutotestingSystemLua::ProcessInput(const UIEvent& input)
     AutotestingSystem::Instance()->OnInput(input);
 }
 
-inline void AutotestingSystemLua::ParsePath(const String& path, Vector<String>& parsedPath)
+inline void AutotestingSystemLua::ParsePath(const String& path, Vector<String>& parsedPath) const
 {
     Split(path, "/", parsedPath);
 }

@@ -64,7 +64,7 @@ void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject c
     }
 }
 
-DAVA_TESTCLASS(JNITest)
+DAVA_TESTCLASS (JNITest)
 {
     JNI::JavaClass jtest;
     Function<void(jint, jint, jboolean)> askJavaToCallToC;
@@ -88,7 +88,7 @@ DAVA_TESTCLASS(JNITest)
         getObjectFromJava = jtest.GetStaticMethod<jobject>("GetObject");
     }
 
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         // try to use Java Class from !Main thread.
         Thread* someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
@@ -162,7 +162,7 @@ DAVA_TESTCLASS(JNITest)
         env->DeleteLocalRef(str);
     }
 
-    DAVA_TEST(Native_Calls)
+    DAVA_TEST (Native_Calls)
     {
         // Call Java_com_dava_unittests_UnitTests_nativeCall from pure Java Activity.
 

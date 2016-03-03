@@ -31,7 +31,6 @@
 
 #include "Render/Texture.h"
 #include "Render/3D/StaticMesh.h"
-#include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/RenderOptions.h"
@@ -41,12 +40,9 @@
 #include "FileSystem/FileSystem.h"
 #include "Debug/Stats.h"
 
-#include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
-#include "Scene3D/ShadowVolumeNode.h"
 #include "Render/Highlevel/Light.h"
-#include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderSystem.h"
 
@@ -372,13 +368,6 @@ Scene::~Scene()
 {
     Renderer::GetOptions()->RemoveObserver(this);
 
-    for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
-    {
-        AnimatedMesh* obj = *t;
-        obj->Release();
-    }
-    animatedMeshes.clear();
-
     for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
     {
         Camera* obj = *t;
@@ -583,24 +572,6 @@ Scene* Scene::GetScene()
     return this;
 }
 
-void Scene::AddAnimatedMesh(AnimatedMesh* mesh)
-{
-    if (mesh)
-    {
-        mesh->Retain();
-        animatedMeshes.push_back(mesh);
-    }
-}
-
-void Scene::RemoveAnimatedMesh(AnimatedMesh* mesh)
-{
-}
-
-AnimatedMesh* Scene::GetAnimatedMesh(int32 index)
-{
-    return animatedMeshes[index];
-}
-
 void Scene::AddCamera(Camera* camera)
 {
     if (camera)
@@ -712,25 +683,6 @@ void Scene::Update(float timeElapsed)
         }
     }
 
-    // 	int32 size;
-    //
-    // 	size = (int32)animations.size();
-    // 	for (int32 animationIndex = 0; animationIndex < size; ++animationIndex)
-    // 	{
-    // 		SceneNodeAnimationList * anim = animations[animationIndex];
-    // 		anim->Update(timeElapsed);
-    // 	}
-    //
-    // 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
-    // 	{
-    // 		size = (int32)animatedMeshes.size();
-    // 		for (int32 animatedMeshIndex = 0; animatedMeshIndex < size; ++animatedMeshIndex)
-    // 		{
-    // 			AnimatedMesh * mesh = animatedMeshes[animatedMeshIndex];
-    // 			mesh->Update(timeElapsed);
-    // 		}
-    // 	}
-
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
 
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
@@ -784,17 +736,6 @@ void Scene::SceneDidLoaded()
         systems[k]->SceneDidLoaded();
     }
 }
-
-// void Scene::StopAllAnimations(bool recursive )
-// {
-// 	int32 size = (int32)animations.size();
-// 	for (int32 animationIndex = 0; animationIndex < size; ++animationIndex)
-// 	{
-// 		SceneNodeAnimationList * anim = animations[animationIndex];
-// 		anim->StopAnimation();
-// 	}
-// 	Entity::StopAllAnimations(recursive);
-// }
 
 void Scene::SetCurrentCamera(Camera* _camera)
 {
@@ -967,16 +908,7 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
     RemoveAllChildren();
     SetName(pathname.GetFilename().c_str());
 
-    if (pathname.IsEqualToExtension(".sce"))
-    {
-        ScopedPtr<SceneFile> file(new SceneFile());
-        file->SetDebugLog(true);
-        if (file->LoadScene(pathname, this))
-        {
-            ret = SceneFileV2::ERROR_NO_ERROR;
-        }
-    }
-    else if (pathname.IsEqualToExtension(".sc2"))
+    if (pathname.IsEqualToExtension(".sc2"))
     {
         ScopedPtr<SceneFileV2> file(new SceneFileV2());
         file->EnableDebugLog(false);

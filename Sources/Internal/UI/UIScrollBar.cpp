@@ -36,7 +36,7 @@
 namespace DAVA
 {
 //use these names for children controls to define UIScrollBar in .yaml
-static const String UISCROLLBAR_SLIDER_NAME = "slider";
+static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 
 UIScrollBar::UIScrollBar(const Rect& rect, eScrollOrientation requiredOrientation)
     : UIControl(rect)
@@ -291,11 +291,11 @@ void UIScrollBar::Draw(const UIGeometricData& geometricData)
                 slider->size.y = GetValidSliderSize(slider->size.y);
                 if ((slider->size.y >= size.y) || FLOAT_EQUAL(totalSize, 0.0f))
                 {
-                    slider->SetVisible(false);
+                    slider->SetVisibilityFlag(false);
                 }
                 else
                 {
-                    slider->SetVisible(true);
+                    slider->SetVisibilityFlag(true);
                 }
             }
             //TODO: optimize
@@ -325,11 +325,11 @@ void UIScrollBar::Draw(const UIGeometricData& geometricData)
                 slider->size.x = GetValidSliderSize(slider->size.x);
                 if ((slider->size.x >= size.x) || FLOAT_EQUAL(totalSize, 0.0f))
                 {
-                    slider->SetVisible(false);
+                    slider->SetVisibilityFlag(false);
                 }
                 else
                 {
-                    slider->SetVisible(true);
+                    slider->SetVisibilityFlag(true);
                 }
             }
             slider->relativePosition.x = (size.x - slider->size.x) * (viewPos / diff);

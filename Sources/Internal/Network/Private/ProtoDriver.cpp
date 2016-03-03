@@ -29,6 +29,7 @@
 
 #include <Functional/Function.h>
 #include <Debug/DVAssert.h>
+#include <Concurrency/Atomic.h>
 #include <Concurrency/LockGuard.h>
 
 #include <Network/Base/IOLoop.h>
@@ -40,7 +41,7 @@ namespace DAVA
 {
 namespace Net
 {
-Atomic<uint32> ProtoDriver::nextPacketId;
+ProtoDriver::Channel::~Channel() = default;
 
 ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
@@ -383,6 +384,8 @@ void ProtoDriver::SendCurControl()
 
 void ProtoDriver::PreparePacket(Packet* packet, uint32 channelId, const void* buffer, size_t length)
 {
+    static Atomic<uint32> nextPacketId{ 0 };
+
     DVASSERT(buffer != NULL && length > 0);
 
     packet->channelId = channelId;

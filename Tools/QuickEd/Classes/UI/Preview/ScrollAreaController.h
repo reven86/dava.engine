@@ -51,7 +51,7 @@ public:
     Q_PROPERTY(qreal scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
 
     ScrollAreaController(QObject* parent = nullptr);
-    ~ScrollAreaController() = default;
+    ~ScrollAreaController();
 
     void SetNestedControl(DAVA::UIControl* nestedControl);
     void SetMovableControl(DAVA::UIControl* movableControl);
@@ -63,6 +63,8 @@ public:
     qreal GetScale() const;
     qreal GetMinScale() const;
     qreal GetMaxScale() const;
+    QPoint GetMinimumPos() const;
+    QPoint GetMaximumPos() const;
 
 public slots:
     void SetViewSize(QSize size);
