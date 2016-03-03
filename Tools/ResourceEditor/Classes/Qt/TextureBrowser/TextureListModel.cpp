@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QFileInfo>
 
+#include "Scene/SelectableObjectGroup.h"
 #include "Render/PixelFormatDescriptor.h"
 
 TextureListModel::TextureListModel(QObject* parent /* = 0 */)
@@ -187,9 +188,8 @@ void TextureListModel::setHighlight(const SelectableObjectGroup* nodes)
     {
         DAVA::TexturesMap nodeTextures;
 
-        for (const auto& item : nodes->GetContent())
+        for (auto entity : nodes->ObjectsOfType<DAVA::Entity>())
         {
-            auto entity = item.Cast<DAVA::Entity>();
             SceneHelper::EnumerateEntityTextures(activeScene, entity, nodeTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
         }
 

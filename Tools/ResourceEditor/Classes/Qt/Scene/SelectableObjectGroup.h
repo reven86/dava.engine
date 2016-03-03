@@ -31,7 +31,6 @@
 #define __SELECTABLE_OBJECT_GROUP_H__
 
 #include "Scene/SelectableObject.h"
-#include <atomic>
 
 class SelectableObjectGroup
 {
@@ -91,6 +90,7 @@ public:
 
             Iterator& operator++();
             bool operator!=(const Iterator&) const;
+
             T* operator*();
 
         private:
@@ -113,7 +113,44 @@ public:
     };
 
     template <typename T>
+    class ConstEnumerator
+    {
+    public:
+        class Iterator
+        {
+        public:
+            Iterator(const SelectableObjectGroup::CollectionType&);
+            Iterator(const SelectableObjectGroup::CollectionType&, DAVA::uint32);
+            void SetIndex(DAVA::uint32);
+
+            Iterator& operator++();
+            bool operator!=(const Iterator&) const;
+            T* operator*() const;
+
+        private:
+            DAVA::uint32 index = 0;
+            DAVA::uint32 endIndex = 0;
+            const SelectableObjectGroup::CollectionType& collection;
+        };
+
+    public:
+        ConstEnumerator(const SelectableObjectGroup* group, const SelectableObjectGroup::CollectionType& collection);
+        ~ConstEnumerator();
+
+        const Iterator& begin() const;
+        const Iterator& end() const;
+
+    private:
+        const SelectableObjectGroup* group = nullptr;
+        Iterator iBegin;
+        Iterator iEnd;
+    };
+
+    template <typename T>
     Enumerator<T> ObjectsOfType();
+
+    template <typename T>
+    ConstEnumerator<T> ObjectsOfType() const;
 
 private:
     CollectionType objects;
@@ -157,6 +194,12 @@ template <typename T>
 inline SelectableObjectGroup::Enumerator<T> SelectableObjectGroup::ObjectsOfType()
 {
     return SelectableObjectGroup::Enumerator<T>(this, objects);
+}
+
+template <typename T>
+inline SelectableObjectGroup::ConstEnumerator<T> SelectableObjectGroup::ObjectsOfType() const
+{
+    return SelectableObjectGroup::ConstEnumerator<T>(this, objects);
 }
 
 /*
@@ -230,6 +273,80 @@ inline bool SelectableObjectGroup::Enumerator<T>::Iterator::operator!=(typename 
 
 template <typename T>
 inline T* SelectableObjectGroup::Enumerator<T>::Iterator::operator*()
+{
+    DVASSERT(collection[index].CanBeCastedTo<T>());
+    return collection[index].Cast<T>();
+}
+
+/*
+ * Const Enumerator
+ */
+template <typename T>
+inline SelectableObjectGroup::ConstEnumerator<T>::ConstEnumerator(const SelectableObjectGroup* g, const SelectableObjectGroup::CollectionType& c)
+    : group(g)
+    , iBegin(c)
+    , iEnd(c, c.size())
+{
+}
+
+template <typename T>
+inline SelectableObjectGroup::ConstEnumerator<T>::~ConstEnumerator()
+{
+}
+
+template <typename T>
+inline typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableObjectGroup::ConstEnumerator<T>::begin() const
+{
+    return iBegin;
+}
+
+template <typename T>
+inline typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableObjectGroup::ConstEnumerator<T>::end() const
+{
+    return iEnd;
+}
+
+/*
+ * Const Iterator
+ */
+template <typename T>
+inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableObjectGroup::CollectionType& c)
+    : collection(c)
+    , endIndex(static_cast<DAVA::uint32>(c.size()))
+{
+    while ((index < endIndex) && collection[index].CanBeCastedTo<T>())
+    {
+        ++index;
+    }
+}
+
+template <typename T>
+inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const SelectableObjectGroup::CollectionType& c, DAVA::uint32 end)
+    : collection(c)
+    , index(end)
+    , endIndex(static_cast<DAVA::uint32>(c.size()))
+{
+}
+
+template <typename T>
+inline typename SelectableObjectGroup::ConstEnumerator<T>::Iterator& SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator++()
+{
+    for (++index; index < endIndex; ++index)
+    {
+        if (collection[index].CanBeCastedTo<T>())
+            break;
+    }
+    return *this;
+}
+
+template <typename T>
+inline bool SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator!=(typename const SelectableObjectGroup::ConstEnumerator<T>::Iterator& other) const
+{
+    return index != other.index;
+}
+
+template <typename T>
+inline T* SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator*() const
 {
     DVASSERT(collection[index].CanBeCastedTo<T>());
     return collection[index].Cast<T>();
