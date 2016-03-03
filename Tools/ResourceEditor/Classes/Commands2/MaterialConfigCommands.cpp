@@ -30,9 +30,14 @@
 
 MaterialConfigModify::MaterialConfigModify(DAVA::NMaterial* material_, int id, const DAVA::String& text)
     : Command2(id, text)
-    , material(material_)
+    , material(DAVA::SafeRetain(material_))
 {
     DVASSERT(material);
+}
+
+MaterialConfigModify::~MaterialConfigModify()
+{
+    DAVA::SafeRelease(material);
 }
 
 MaterialChangeCurrentConfig::MaterialChangeCurrentConfig(DAVA::NMaterial* material, DAVA::uint32 newCurrentConfigIndex)
@@ -55,7 +60,7 @@ void MaterialChangeCurrentConfig::Redo()
 MaterialRemoveConfig::MaterialRemoveConfig(DAVA::NMaterial* material, DAVA::uint32 configIndex_)
     : MaterialConfigModify(material, CMDID_MATERIAL_REMOVE_CONFIG, "Remove material config")
     , configIndex(configIndex_)
-    , config(const_cast<const DAVA::NMaterial*>(material)->GetConfig(configIndex_))
+    , config(material->GetConfig(configIndex_))
 {
     DAVA::uint32 configCount = material->GetConfigCount();
     DAVA::uint32 newCurrConfig = material->GetCurrentConfigIndex();

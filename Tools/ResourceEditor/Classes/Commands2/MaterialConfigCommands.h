@@ -37,12 +37,13 @@ class MaterialConfigModify : public Command2
 {
 public:
     MaterialConfigModify(DAVA::NMaterial* material, int id, const DAVA::String& text = DAVA::String());
+    ~MaterialConfigModify();
 
-    inline DAVA::NMaterial* GetMaterial() const;
-    inline DAVA::Entity* GetEntity() const override;
+    DAVA::NMaterial* GetMaterial() const;
+    DAVA::Entity* GetEntity() const override;
 
 protected:
-    DAVA::ScopedPtr<DAVA::NMaterial> material;
+    DAVA::NMaterial* material;
 };
 
 class MaterialChangeCurrentConfig : public MaterialConfigModify
@@ -86,12 +87,12 @@ private:
     std::unique_ptr<MaterialChangeCurrentConfig> changeCurrentConfigCommand;
 };
 
-DAVA::NMaterial* MaterialConfigModify::GetMaterial() const
+inline DAVA::NMaterial* MaterialConfigModify::GetMaterial() const
 {
-    return material.get();
+    return material;
 }
 
-DAVA::Entity* MaterialConfigModify::GetEntity() const
+inline DAVA::Entity* MaterialConfigModify::GetEntity() const
 {
     return nullptr;
 }
