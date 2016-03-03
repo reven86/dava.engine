@@ -150,7 +150,6 @@ extern void FrameworkMain(int argc, char* argv[]);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        UIScreenManager::Instance()->ScreenSizeChanged();
     }
 
     [super reshape];
@@ -348,7 +347,6 @@ extern int mouseMoveSkipCounter;
     default:
         break;
     }
-
     Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];

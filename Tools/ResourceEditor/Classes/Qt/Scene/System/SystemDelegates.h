@@ -26,10 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __SYSTEM_DELEGATES_H__
+#define __SYSTEM_DELEGATES_H__
 
-#ifndef __DAVAENGINE_VERION_H__
-#define __DAVAENGINE_VERION_H__
+namespace DAVA
+{
+class Entity;
+}
 
-#define DAVAENGINE_VERSION "2.9.0"
+class EntityGroup;
 
-#endif //__DAVAENGINE_VERION_H__
+class EntityModificationSystemDelegate
+{
+public:
+    virtual void WillClone(DAVA::Entity* originalEntity) = 0;
+    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
+};
+
+class StructureSystemDelegate
+{
+public:
+    virtual void WillRemove(DAVA::Entity* removedEntity) = 0;
+    virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
+};
+
+class SceneSelectionSystemDelegate
+{
+public:
+    virtual bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) = 0;
+    virtual bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) = 0;
+};
+
+#endif //__SYSTEM_DELEGATES_H__

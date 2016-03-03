@@ -87,7 +87,7 @@ void UIMovieTest::UnloadResources()
     SafeRelease(playerStateText);
 }
 
-void UIMovieTest::DidAppear()
+void UIMovieTest::OnActive()
 {
     movieView->Play();
 }
@@ -128,9 +128,9 @@ void UIMovieTest::ButtonPressed(BaseObject* obj, void* data, void* callerData)
     else if (obj == resumeButton)
         movieView->Resume();
     else if (obj == hideButton)
-        movieView->SetVisible(false);
+        movieView->SetVisibilityFlag(false);
     else if (obj == showButton)
-        movieView->SetVisible(true);
+        movieView->SetVisibilityFlag(true);
 }
 
 void UIMovieTest::ScaleButtonPressed(BaseObject* obj, void* data, void* callerData)
