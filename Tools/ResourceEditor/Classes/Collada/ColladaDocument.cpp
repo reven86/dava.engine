@@ -256,5 +256,4 @@ eColladaErrorCodes ColladaDocument::SaveSC2(const FilePath& scenePath) const
     ColladaToSc2Importer importer;
     return importer.SaveSC2(colladaScene, scenePath);
 }
-
 };
