@@ -79,6 +79,10 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
         vb->size = desc.size;
         vb->uid = uid;
     }
+    else
+    {
+        Logger::Error("failed to create VB");
+    }
 
     return handle;
 }
@@ -92,6 +96,7 @@ metal_VertexBuffer_Delete(Handle vb)
 
     if (self)
     {
+        [self->uid setPurgeableState:MTLPurgeableStateEmpty];
         self->uid = nil;
         VertexBufferMetalPool::Free(vb);
     }

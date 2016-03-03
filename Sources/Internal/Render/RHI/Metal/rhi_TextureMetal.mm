@@ -60,6 +60,7 @@ public:
     uint32 width;
     uint32 height;
     void* mappedData;
+    uint32 mappedDataSize;
     uint32 mappedLevel;
     uint32 mappedSlice;
     id<MTLTexture> uid;
@@ -267,8 +268,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
             }
         }
 
-        if (!tex->is_renderable)
-            tex->mappedData = ::malloc(TextureSize(texDesc.format, texDesc.width, texDesc.height, 0));
+        tex->mappedDataSize = TextureSize(texDesc.format, texDesc.width, texDesc.height, 0);
 
         if (texDesc.format == TEXTURE_FORMAT_D24S8)
         {
@@ -284,8 +284,11 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
             if (uid2)
             {
                 tex->uid2 = uid2;
+                uid2 = nil;
             }
         }
+
+        uid = nil;
     }
 
     return handle;
@@ -306,8 +309,17 @@ metal_Texture_Delete(Handle tex)
             self->mappedData = nullptr;
         }
 
-        self->uid = nil;
-        self->uid2 = nil;
+        if (self->uid)
+        {
+            [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+            self->uid = nil;
+        }
+        if (self->uid2)
+        {
+            [self->uid2 setPurgeableState:MTLPurgeableStateEmpty];
+            self->uid2 = nil;
+        }
+
         TextureMetalPool::Free(tex);
     }
 }
@@ -332,6 +344,9 @@ metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
     rgn.size.width = ext.dx;
     rgn.size.height = ext.dy;
     rgn.size.depth = 1;
+
+    if (!self->mappedData)
+        self->mappedData = ::malloc(self->mappedDataSize);
 
     if (self->is_cubemap)
     {
@@ -421,6 +436,8 @@ metal_Texture_Unmap(Handle tex)
     }
 
     self->is_mapped = false;
+    ::free(self->mappedData);
+    self->mappedData = nullptr;
 }
 
 //------------------------------------------------------------------------------

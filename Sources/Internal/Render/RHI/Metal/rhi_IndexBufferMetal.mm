@@ -80,6 +80,10 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
         ib->uid = uid;
         ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
     }
+    else
+    {
+        Logger::Error("failed to create IB");
+    }
 
     return handle;
 }
@@ -93,7 +97,9 @@ metal_IndexBuffer_Delete(Handle ib)
 
     if (self)
     {
+        [self->uid setPurgeableState:MTLPurgeableStateEmpty];
         self->uid = nil;
+        self->data = nullptr;
         IndexBufferMetalPool::Free(ib);
     }
 }
