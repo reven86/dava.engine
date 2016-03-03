@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
  Copyright (c) 2008, binaryzebra
  All rights reserved.
  
@@ -1125,8 +1125,7 @@ void CommandBufferGLES2_t::Execute()
             break;
 #endif
 //++cmd_cnt;
-
-
+        
 #if RHI_GLES2__USE_CMDBUF_PACKING
         switch (cmd->type)
 #else
@@ -1167,36 +1166,36 @@ void CommandBufferGLES2_t::Execute()
                     def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
                     if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
-                        glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
+                        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
 
                 if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
                 {
-                    glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]);
+                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
                     flags |= GL_COLOR_BUFFER_BIT;
                 }
 
                 if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
                 {
                         #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                    glStencilMask(0xFFFFFFFF);
-                    glClearDepthf(passCfg.depthStencilBuffer.clearDepth);
+                    GL_CALL(glStencilMask(0xFFFFFFFF));
+                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
                         #else
-                    glClearDepth(passCfg.depthStencilBuffer.clearDepth);
-                    glStencilMask(0xFFFFFFFF);
-                    glClearStencil(0);
+                    GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
+                    GL_CALL(glStencilMask(0xFFFFFFFF));
+                    GL_CALL(glClearStencil(0));
                         #endif
 
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
 
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
 
                 if (flags)
                 {
-                    glClear(flags);
+                    GL_CALL(glClear(flags));
                 }
             }
         }
@@ -1225,7 +1224,7 @@ void CommandBufferGLES2_t::Execute()
                 }
 
                 if (discardsCount != 0)
-                    glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards);
+                    GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
             }
 
             #endif
@@ -1344,19 +1343,19 @@ void CommandBufferGLES2_t::Execute()
             switch (mode)
             {
             case CULL_NONE:
-                glDisable(GL_CULL_FACE);
+                GL_CALL(glDisable(GL_CULL_FACE));
                 break;
 
             case CULL_CCW:
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CW);
-                glCullFace(GL_BACK);
+                GL_CALL(glEnable(GL_CULL_FACE));
+                GL_CALL(glFrontFace(GL_CW));
+                GL_CALL(glCullFace(GL_BACK));
                 break;
 
             case CULL_CW:
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CW);
-                glCullFace(GL_FRONT);
+                GL_CALL(glEnable(GL_CULL_FACE));
+                GL_CALL(glFrontFace(GL_CW));
+                GL_CALL(glCullFace(GL_FRONT));
                 break;
             }
         }
@@ -1382,12 +1381,12 @@ void CommandBufferGLES2_t::Execute()
                 if (usingDefaultFrameBuffer)
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                glEnable(GL_SCISSOR_TEST);
-                glScissor(x, y, w, h);
+                GL_CALL(glEnable(GL_SCISSOR_TEST));
+                GL_CALL(glScissor(x, y, w, h));
             }
             else
             {
-                glDisable(GL_SCISSOR_TEST);
+                GL_CALL(glDisable(GL_SCISSOR_TEST));
             }
         }
         break;
@@ -1412,11 +1411,11 @@ void CommandBufferGLES2_t::Execute()
                 if (usingDefaultFrameBuffer)
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                glViewport(x, y, w, h);
+                GL_CALL(glViewport(x, y, w, h));
             }
             else
             {
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
             }
         }
         break;
@@ -1431,7 +1430,7 @@ void CommandBufferGLES2_t::Execute()
             #endif
 
                 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-            glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL);
+            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL));
                 #endif
         }
         break;
@@ -2295,7 +2294,7 @@ void SuspendGLES2()
     _GLES2_RenderThreadSuspended.Set(true);
     _GLES2_FramePreparedEvent.Signal();
     _GLES2_FrameDoneEvent.Wait();
-    glFinish();
+    GL_CALL(glFinish());
     Logger::Info("Render GLES Suspended");
 }
 
@@ -2366,63 +2365,63 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::GEN_BUFFERS:
         {
-            EXEC_GL(glGenBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BIND_BUFFER:
         {
-            EXEC_GL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
+            GL_CALL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_VERTEX_BUFFER:
         {
-            EXEC_GL(glBindBuffer(GL_ARRAY_BUFFER, _GLES2_LastSetVB));
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, _GLES2_LastSetVB));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_INDEX_BUFFER:
         {
-            EXEC_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB));
+            GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_BUFFERS:
         {
-            EXEC_GL(glDeleteBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glDeleteBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BUFFER_DATA:
         {
-            EXEC_GL(glBufferData((GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3])));
+            GL_CALL(glBufferData((GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BUFFER_SUBDATA:
         {
-            EXEC_GL(glBufferSubData((GLenum)(arg[0]), GLintptr(arg[1]), (GLsizei)(arg[2]), (const void*)(arg[3])));
+            GL_CALL(glBufferSubData((GLenum)(arg[0]), GLintptr(arg[1]), (GLsizei)(arg[2]), (const void*)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GEN_TEXTURES:
         {
-            EXEC_GL(glGenTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_TEXTURES:
         {
-            EXEC_GL(glDeleteTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glDeleteTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
@@ -2433,7 +2432,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
             if (t != _GLES2_LastActiveTexture)
             {
-                EXEC_GL(glActiveTexture(GLenum(t)));
+                GL_CALL(glActiveTexture(GLenum(t)));
                 _GLES2_LastActiveTexture = t;
                 cmd->status = err;
             }
@@ -2442,21 +2441,21 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::BIND_TEXTURE:
         {
-            EXEC_GL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
+            GL_CALL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_TEXTURE0:
         {
-            EXEC_GL(glBindTexture(_GLES2_LastSetTex0Target, _GLES2_LastSetTex0));
+            GL_CALL(glBindTexture(_GLES2_LastSetTex0Target, _GLES2_LastSetTex0));
             cmd->status = err;
         }
         break;
 
         case GLCommand::TEX_PARAMETER_I:
         {
-            EXEC_GL(glTexParameteri((GLenum)(arg[0]), (GLenum)(arg[1]), (GLuint)(arg[2])));
+            GL_CALL(glTexParameteri((GLenum)(arg[0]), (GLenum)(arg[1]), (GLuint)(arg[2])));
             cmd->status = err;
         }
         break;
@@ -2465,11 +2464,11 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         {
             if (arg[10])
             {
-                EXEC_GL(glCompressedTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9])));
+                GL_CALL(glCompressedTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9])));
             }
             else
             {
-                EXEC_GL(glTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9])));
+                GL_CALL(glTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9])));
             }
             cmd->status = err;
         }
@@ -2477,14 +2476,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::GENERATE_MIPMAP:
         {
-            EXEC_GL(glGenerateMipmap((GLenum)(arg[0])));
+            GL_CALL(glGenerateMipmap((GLenum)(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::PIXEL_STORE_I:
         {
-            EXEC_GL(glPixelStorei((GLenum)(arg[0]), (GLint)(arg[1])));
+            GL_CALL(glPixelStorei((GLenum)(arg[0]), (GLint)(arg[1])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -2492,7 +2491,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::READ_PIXELS:
         {
-            EXEC_GL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), (GLvoid*)(arg[6])));
+            GL_CALL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), (GLvoid*)(arg[6])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -2500,159 +2499,159 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::CREATE_PROGRAM:
         {
-            cmd->retval = glCreateProgram();
+            GL_CALL(cmd->retval = glCreateProgram());
             cmd->status = 0;
         }
         break;
 
         case GLCommand::CREATE_SHADER:
         {
-            cmd->retval = glCreateShader((GLenum)(arg[0]));
+            GL_CALL(cmd->retval = glCreateShader((GLenum)(arg[0])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::ATTACH_SHADER:
         {
-            EXEC_GL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
+            GL_CALL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::LINK_PROGRAM:
         {
-            EXEC_GL(glLinkProgram(GLuint(arg[0])));
+            GL_CALL(glLinkProgram(GLuint(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::SHADER_SOURCE:
         {
-            EXEC_GL(glShaderSource((GLuint)(arg[0]), (GLsizei)(arg[1]), (const GLchar**)(arg[2]), (const GLint*)(arg[3])));
+            GL_CALL(glShaderSource((GLuint)(arg[0]), (GLsizei)(arg[1]), (const GLchar**)(arg[2]), (const GLint*)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::COMPILE_SHADER:
         {
-            EXEC_GL(glCompileShader((GLuint)(arg[0])));
+            GL_CALL(glCompileShader((GLuint)(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_SHADER_IV:
         {
-            EXEC_GL(glGetShaderiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
+            GL_CALL(glGetShaderiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_SHADER_INFO_LOG:
         {
-            EXEC_GL(glGetShaderInfoLog((GLuint)(arg[0]), GLsizei(arg[1]), (GLsizei*)(arg[2]), (GLchar*)(arg[3])));
+            GL_CALL(glGetShaderInfoLog((GLuint)(arg[0]), GLsizei(arg[1]), (GLsizei*)(arg[2]), (GLchar*)(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_PROGRAM_IV:
         {
-            EXEC_GL(glGetProgramiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
+            GL_CALL(glGetProgramiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_ATTRIB_LOCATION:
         {
-            cmd->retval = glGetAttribLocation(GLuint(arg[0]), (const GLchar*)(arg[1]));
+            GL_CALL(cmd->retval = glGetAttribLocation(GLuint(arg[0]), (const GLchar*)(arg[1])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::GET_ACTIVE_UNIFORM:
         {
-            EXEC_GL(glGetActiveUniform((GLuint)(arg[0]), (GLuint)(arg[1]), (GLsizei)(arg[2]), (GLsizei*)(arg[3]), (GLint*)(arg[4]), (GLenum*)(arg[5]), (GLchar*)(arg[6])));
+            GL_CALL(glGetActiveUniform((GLuint)(arg[0]), (GLuint)(arg[1]), (GLsizei)(arg[2]), (GLsizei*)(arg[3]), (GLint*)(arg[4]), (GLenum*)(arg[5]), (GLchar*)(arg[6])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_UNIFORM_LOCATION:
         {
-            cmd->retval = glGetUniformLocation((GLuint)(arg[0]), (const GLchar*)(arg[1]));
+            GL_CALL(cmd->retval = glGetUniformLocation((GLuint)(arg[0]), (const GLchar*)(arg[1])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::SET_UNIFORM_1I:
         {
-            EXEC_GL(glUniform1i(GLint(arg[0]), GLint(arg[1])));
+            GL_CALL(glUniform1i(GLint(arg[0]), GLint(arg[1])));
         }
         break;
 
         case GLCommand::GEN_FRAMEBUFFERS:
         {
-            EXEC_GL(glGenFramebuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenFramebuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GEN_RENDERBUFFERS:
         {
-            EXEC_GL(glGenRenderbuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenRenderbuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_RENDERBUFFERS:
         {
-            EXEC_GL(glDeleteRenderbuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            GL_CALL(glDeleteRenderbuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
         }
         break;
 
         case GLCommand::BIND_FRAMEBUFFER:
         {
-            EXEC_GL(glBindFramebuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
+            GL_CALL(glBindFramebuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BIND_RENDERBUFFER:
         {
-            EXEC_GL(glBindRenderbuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
+            GL_CALL(glBindRenderbuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_TEXTURE:
         {
-            EXEC_GL(glFramebufferTexture2D(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]), GLint(arg[4])));
+            GL_CALL(glFramebufferTexture2D(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]), GLint(arg[4])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RENDERBUFFER_STORAGE:
         {
-            EXEC_GL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
+            GL_CALL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_RENDERBUFFER:
         {
-            EXEC_GL(glFramebufferRenderbuffer(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3])));
+            GL_CALL(glFramebufferRenderbuffer(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_STATUS:
         {
-            cmd->retval = glCheckFramebufferStatus(GLenum(arg[0]));
+            GL_CALL(cmd->retval = glCheckFramebufferStatus(GLenum(arg[0])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::DELETE_FRAMEBUFFERS:
         {
-            EXEC_GL(glDeleteFramebuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            GL_CALL(glDeleteFramebuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -2662,7 +2661,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         {
                 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
                 #else
-            EXEC_GL(glDrawBuffers(GLuint(arg[0]), (GLenum*)(arg[1])));
+            GL_CALL(glDrawBuffers(GLuint(arg[0]), (GLenum*)(arg[1])));
             cmd->status = err;
                 #endif
         }
