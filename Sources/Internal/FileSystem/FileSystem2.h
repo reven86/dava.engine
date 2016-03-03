@@ -175,6 +175,8 @@ namespace DAVA
     {
     public:
         FileSystem2();
+        FileSystem2(const FileSystem2&) = delete;
+        FileSystem2& operator=(const FileSystem2&) = delete;
         ~FileSystem2();
 
         String ReadFileContentAsString(const Path& pathname) const;
