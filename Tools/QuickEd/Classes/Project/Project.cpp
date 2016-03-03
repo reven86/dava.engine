@@ -113,9 +113,16 @@ bool Project::OpenInternal(const QString& path)
         }
     }
 
+    if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
+    {
+        editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
+    }
+
+    editorFontSystem->LoadLocalizedFonts();
+
     const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
     const YamlNode* localeNode = projectRoot->Get("Locale");
-    if (localizationPathNode && localeNode)
+    if (localizationPathNode != nullptr && localeNode != nullptr)
     {
         FilePath localePath = localizationPathNode->AsString();
         QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
@@ -125,13 +132,6 @@ bool Project::OpenInternal(const QString& path)
         QString currentLocale = QString::fromStdString(localeNode->AsString());
         editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
     }
-
-    if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
-    {
-        editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
-    }
-
-    editorFontSystem->LoadLocalizedFonts();
 
     SafeRelease(parser);
 
