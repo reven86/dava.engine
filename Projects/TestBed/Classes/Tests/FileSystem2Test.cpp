@@ -46,7 +46,7 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     // fs.Mount("~res:/", new PakfileDevice(Path("pakfile.tanks1.pak")));
     Path userSaveDir = fs.GetPrefPath();
 
-    fs.CreateDirectory(userSaveDir + Path("Dava/TestDir/Saves"), true);
+    fs.MakeDirectory(userSaveDir + Path("Dava/TestDir/Saves"), true);
     fs.Mount("~doc:/", std::make_shared<OSFileDevice>(userSaveDir + Path("Dava/TestDir/Saves")));
 
     Path path("~res:/TestData");
@@ -76,7 +76,7 @@ void FileSystem2Test::StartTest(BaseObject*, void*, void*)
     uint64 fileSize = fs.GetFileSize(path);
     Logger::Info("file: %s has size: %ld", path.ToStringUtf8().c_str(), fileSize);
 
-    std::unique_ptr<InputStream> file = fs.OpenFile(Path("~res:/TestData/MovieTest/bunny.m4v"));
+    std::unique_ptr<InputStream> file = fs.Open(Path("~res:/TestData/MovieTest/bunny.m4v"));
     if (fileSize == file->GetSize())
     {
         Logger::Info("file size match!");
@@ -97,4 +97,10 @@ void FileSystem2Test::LoadResources()
     resetButton->SetStateText(0xFF, L"Generate Floating point exception");
     resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FileSystem2Test::StartTest));
     AddControl(resetButton.get());
+}
+
+void FileSystem2Test::UnloadResources()
+{
+    RemoveAllControls();
+    BaseScreen::UnloadResources();
 }

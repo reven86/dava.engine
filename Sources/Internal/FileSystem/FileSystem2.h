@@ -139,10 +139,10 @@ namespace DAVA
         virtual bool IsFile(const Path&) = 0;
         virtual bool IsDirectory(const Path&) = 0;
         virtual Vector<Path> EnumerateFiles(const Path& base = Path()) = 0;
-        virtual std::unique_ptr<InputStream> OpenFile(const Path&) = 0;
-        virtual std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) = 0;
-        virtual void DeleteFile(const Path&) = 0;
-        virtual void CreateDirectory(const Path&, bool errorIfExist = false) = 0;
+        virtual std::unique_ptr<InputStream> Open(const Path&) = 0;
+        virtual std::unique_ptr<OutputStream> Create(const Path&, bool recreate) = 0;
+        virtual void RemoveFile(const Path&) = 0;
+        virtual void MakeDirectory(const Path&, bool errorIfExist = false) = 0;
         virtual void DeleteDirectory(const Path&, bool withContent = false) = 0;
     };
 
@@ -158,10 +158,10 @@ namespace DAVA
         bool IsFile(const Path&) override;
         bool IsDirectory(const Path&) override;
         Vector<Path> EnumerateFiles(const Path& base = Path()) override;
-        std::unique_ptr<InputStream> OpenFile(const Path&) override;
-        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) override;
-        void DeleteFile(const Path&) override;
-        void CreateDirectory(const Path&, bool errorIfExist = false) override;
+        std::unique_ptr<InputStream> Open(const Path&) override;
+        std::unique_ptr<OutputStream> Create(const Path&, bool recreate) override;
+        void RemoveFile(const Path&) override;
+        void MakeDirectory(const Path&, bool errorIfExist = false) override;
         void DeleteDirectory(const Path&, bool withContent = false) override;
     private:
         Path base;
@@ -180,14 +180,14 @@ namespace DAVA
         String ReadFileContentAsString(const Path& pathname) const;
         // open or create stream from mounted pakfile or OS file system
         // or wrapper around std::fstream or android stream or pakfile stream
-        std::unique_ptr<InputStream> OpenFile(const Path&) const;
-        std::unique_ptr<OutputStream> CreateFile(const Path&, bool recreate) const;
+        std::unique_ptr<InputStream> Open(const Path&) const;
+        std::unique_ptr<OutputStream> Create(const Path&, bool recreate) const;
         // works on OS file system
-        void DeleteFile(const Path&) const;
+        void RemoveFile(const Path&) const;
         // works on OS file system
         void DeleteDirectory(const Path& path, bool withContent = false) const;
         // works on OS file system
-        void CreateDirectory(const Path& path, bool errorIfExist = false) const;
+        void MakeDirectory(const Path& path, bool errorIfExist = false) const;
         // works on OS file system
         static Path GetCurrentWorkingDirectory();
 
@@ -208,14 +208,14 @@ namespace DAVA
         // find path in FileDevice or OS file system
         bool Exist(const Path& Path) const;
         // copy from OS to OS
-        void CopyFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
+        void Copy(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
         // move file from OS to OS
-        void MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
+        void RenameFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const;
         // copy directory from OS to OS
         void CopyDirectory(const Path& srcDir, const Path& dstDir, bool overwriteExisting) const;
         // virtualName = {~res:/|~doc:/|~web:/|~pak1:/|~[user_string]:/}
         void Mount(const String& virtualName, std::shared_ptr<FileDevice>);
-        Vector<std::shared_ptr<FileDevice>>& GetMountedDevices() const;
+        const Vector<std::shared_ptr<FileDevice>>& GetMountedDevices() const;
         // works on FileDevice or OS
         uint64 GetFileSize(const Path& path) const;
 

@@ -550,7 +550,7 @@ namespace DAVA
     }
 
 
-    std::unique_ptr<InputStream> OSFileDevice::OpenFile(const Path& p)
+    std::unique_ptr<InputStream> OSFileDevice::Open(const Path& p)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
         std::unique_ptr<InputStream> result(new OSInputStream(absolute));
@@ -558,14 +558,14 @@ namespace DAVA
     }
 
 
-    std::unique_ptr<OutputStream> OSFileDevice::CreateFile(const Path& p, bool recreate)
+    std::unique_ptr<OutputStream> OSFileDevice::Create(const Path& p, bool recreate)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
         std::unique_ptr<OutputStream> result(new OSOutputStream(absolute, recreate));
         return result;
     }
 
-    void OSFileDevice::DeleteFile(const Path& p)
+    void OSFileDevice::RemoveFile(const Path& p)
     {
         Path absolute = p.IsAbsolute() ? p : base + p;
 
@@ -582,7 +582,7 @@ namespace DAVA
     }
 
 
-    void OSFileDevice::CreateDirectory(const Path& p, bool errorIfExist)
+    void OSFileDevice::MakeDirectory(const Path& p, bool errorIfExist)
     {
 #ifdef __DAVAENGINE_WINDOWS__
         Path absolute = p.IsAbsolute() ? p : base + p;
@@ -712,7 +712,7 @@ namespace DAVA
 
         if (devicePtr)
         {
-            auto file = devicePtr->OpenFile(pathname);
+            auto file = devicePtr->Open(pathname);
             auto size = file->GetSize();
             output.resize(static_cast<std::size_t>(size));
             file->Read(&output[0], size);
@@ -725,13 +725,13 @@ namespace DAVA
     }
 
 
-    std::unique_ptr<InputStream> FileSystem2::OpenFile(const Path& p) const
+    std::unique_ptr<InputStream> FileSystem2::Open(const Path& p) const
     {
         auto devicePtr = impl->FindDeviceByPath(p);
 
         if (devicePtr)
         {
-            return devicePtr->OpenFile(p);
+            return devicePtr->Open(p);
         }
 
         String msg("can't read file: ");
@@ -740,14 +740,14 @@ namespace DAVA
     }
 
 
-    std::unique_ptr<OutputStream> FileSystem2::CreateFile(const Path& p, bool recreate) const
+    std::unique_ptr<OutputStream> FileSystem2::Create(const Path& p, bool recreate) const
     {
         std::unique_ptr<OutputStream> result;
         auto devicePtr = impl->FindDeviceByPath(p);
 
         if (devicePtr)
         {
-            return devicePtr->CreateFile(p, recreate);
+            return devicePtr->Create(p, recreate);
         }
 
         auto& devices = impl->devicesByRootName[p.GetRootDirectory()];
@@ -759,7 +759,7 @@ namespace DAVA
                 if (FileDevice::State::WRITE_ONLY == state ||
                     FileDevice::State::READ_WRITE == state)
                 {
-                    auto file = device->CreateFile(p, recreate);
+                    auto file = device->Create(p, recreate);
                 }
             });
         }
@@ -768,14 +768,14 @@ namespace DAVA
     }
 
 
-    void FileSystem2::DeleteFile(const Path& p) const
+    void FileSystem2::RemoveFile(const Path& p) const
     {
         std::unique_ptr<OutputStream> result;
         auto devicePtr = impl->FindDeviceByPath(p);
 
         if (devicePtr)
         {
-            devicePtr->DeleteFile(p);
+            devicePtr->RemoveFile(p);
         } else
         {
             throw std::runtime_error("can't delete file: " + p.ToStringUtf8());
@@ -798,7 +798,7 @@ namespace DAVA
     }
 
 
-    void FileSystem2::CreateDirectory(const Path& p, bool errorIfExist /*= false*/) const
+    void FileSystem2::MakeDirectory(const Path& p, bool errorIfExist /*= false*/) const
     {
         auto& devices = impl->devicesByRootName[p.GetRootDirectory()];
         if (!devices.empty())
@@ -809,7 +809,7 @@ namespace DAVA
                 if (FileDevice::State::WRITE_ONLY == state ||
                     FileDevice::State::READ_WRITE == state)
                 {
-                    device->CreateDirectory(p, errorIfExist);
+                    device->MakeDirectory(p, errorIfExist);
                     break;
                 }
             };
@@ -982,7 +982,7 @@ namespace DAVA
     }
 
 
-    void FileSystem2::CopyFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const
+    void FileSystem2::Copy(const Path& existingFile, const Path& newFile, bool overwriteExisting) const
     {
         std::ifstream src(existingFile.ToStringUtf8(), std::ios::binary);
         if (!src)
@@ -1012,11 +1012,11 @@ namespace DAVA
         dst.close();
     }
 
-    void FileSystem2::MoveFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const
+    void FileSystem2::RenameFile(const Path& existingFile, const Path& newFile, bool overwriteExisting) const
     {
         if (overwriteExisting && Exist(newFile))
         {
-            DeleteFile(newFile);
+            RemoveFile(newFile);
         }
 
         int result = std::rename(existingFile.ToStringUtf8().c_str(), newFile.ToStringUtf8().c_str());
@@ -1046,7 +1046,7 @@ namespace DAVA
                 {
                     auto src = srcDir + fileName;
                     auto dst = dstDir + fileName;
-                    CopyFile(src, dst, overwriteExisting);
+                    Copy(src, dst, overwriteExisting);
                 }
                 return;
             }
@@ -1072,7 +1072,7 @@ namespace DAVA
         std::stable_sort(begin(devicesAll), end(devicesAll), comparator);
     }
 
-    Vector<std::shared_ptr<FileDevice>>& FileSystem2::GetMountedDevices() const
+    const Vector<std::shared_ptr<FileDevice>>& FileSystem2::GetMountedDevices() const
     {
         return impl->devicesSorted;
     }
@@ -1083,7 +1083,7 @@ namespace DAVA
 
         if (devicePtr)
         {
-            auto file = devicePtr->OpenFile(path);
+            auto file = devicePtr->Open(path);
             return file->GetSize();
         }
         throw std::runtime_error("can't get file size for: " + path.ToStringUtf8());
