@@ -45,10 +45,10 @@ class SemaphoreLite final
 public:
     static const uint32 defaultSpinCount = 4000;
 
-    SemaphoreLite(uint32 count = 0, uint32 spinCount_ = defaultSpinCount)
+    SemaphoreLite(uint32 semCount_, uint32 spinCount_ = defaultSpinCount)
         : spinCount(spinCount_)
     {
-        int32 c = static_cast<int32>(count);
+        int32 c = static_cast<int32>(semCount_);
         DVASSERT(c >= 0);
 
         waitCount.store(c);
