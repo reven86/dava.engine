@@ -76,17 +76,20 @@ bool SelectableObjectGroup::ContainsObject(const DAVA::BaseObject* object) const
 
 void SelectableObjectGroup::Clear()
 {
+    DVASSERT(!IsLocked());
     objects.clear();
 }
 
 void SelectableObjectGroup::Add(DAVA::BaseObject* object, const DAVA::AABBox3& box)
 {
+    DVASSERT(!IsLocked());
     objects.emplace_back(object);
     objects.back().SetBoundingBox(box);
 }
 
 void SelectableObjectGroup::Remove(DAVA::BaseObject* object)
 {
+    DVASSERT(!IsLocked());
     objects.erase(std::remove_if(objects.begin(), objects.end(), [object](const SelectableObject& obj)
                                  {
                                      return obj.GetContainedObject() == object;
@@ -105,6 +108,7 @@ void SelectableObjectGroup::RebuildIntegralBoundingBox()
 
 void SelectableObjectGroup::Exclude(const SelectableObjectGroup& other)
 {
+    DVASSERT(!IsLocked());
     RemoveIf([&other](const SelectableObject& object)
              {
                  return other.ContainsObject(object.GetContainedObject());
@@ -113,6 +117,7 @@ void SelectableObjectGroup::Exclude(const SelectableObjectGroup& other)
 
 void SelectableObjectGroup::Join(const SelectableObjectGroup& other)
 {
+    DVASSERT(!IsLocked());
     for (auto& obj : other.GetContent())
     {
         if (!ContainsObject(obj.GetContainedObject()))
@@ -144,4 +149,19 @@ DAVA::Vector3 SelectableObjectGroup::GetCommonTranslationVector() const
         tmp.AddPoint(item.GetWorldTransform().GetTranslationVector());
     }
     return tmp.GetCenter();
+}
+
+void SelectableObjectGroup::Lock()
+{
+    ++lockCounter;
+}
+
+void SelectableObjectGroup::Unlock()
+{
+    --lockCounter;
+}
+
+bool SelectableObjectGroup::IsLocked() const
+{
+    return lockCounter > 0;
 }
