@@ -48,13 +48,13 @@ public:
     ~TransformSystem();
 
     void ImmediateEvent(Component* component, uint32 event) override;
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
 
     void LinkTransform(int32 parentIndex, int32 childIndex);
     void UnlinkTransform(int32 childIndex);
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
 private:
     void SortAndThreadSplit();

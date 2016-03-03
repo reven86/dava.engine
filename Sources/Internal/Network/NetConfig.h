@@ -56,7 +56,6 @@ public:
 public:
     NetConfig();
     NetConfig(eNetworkRole aRole);
-    ~NetConfig();
 
     bool Validate() const;
     NetConfig Mirror(const IPAddress& addr) const;

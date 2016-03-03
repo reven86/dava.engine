@@ -93,6 +93,8 @@ add_definitions       (
 -DDAVA_QT
 -DDAVA_FMOD
 -D_DISABLE_IMAGE_MAGICK
+-DDISABLE_NATIVE_WEBVIEW
+-DDISABLE_NATIVE_TEXTFIELD
 )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )

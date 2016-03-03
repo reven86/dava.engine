@@ -212,14 +212,14 @@ inline uint32 Random::hash(time_t t, clock_t c)
     static uint32 differ = 0; // guarantee time-based seeds will change
 
     uint32 h1 = 0;
-    unsigned char* p = (unsigned char*)&t;
+    unsigned char* p = reinterpret_cast<unsigned char*>(&t);
     for (size_t i = 0; i < sizeof(t); ++i)
     {
         h1 *= UCHAR_MAX + 2U;
         h1 += p[i];
     }
     uint32 h2 = 0;
-    p = (unsigned char*)&c;
+    p = reinterpret_cast<unsigned char*>(&c);
     for (size_t j = 0; j < sizeof(c); ++j)
     {
         h2 *= UCHAR_MAX + 2U;

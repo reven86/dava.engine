@@ -109,7 +109,7 @@ private:
     const MD5Digest& GetDigest()
     {
         return digest;
-    };
+    }
 
     static void RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
 
