@@ -471,9 +471,7 @@ TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(const Rect& rect)
 {
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardShown(rect);
+    textField->OnKeyboardShown(rect);
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
@@ -486,9 +484,7 @@ void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardHidden();
+    textField->OnKeyboardHidden();
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
