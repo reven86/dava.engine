@@ -193,6 +193,9 @@
     <Filter Include="Internal\Render\RHI\DX11">
       <UniqueIdentifier>{b48afc8e-9353-403b-a35d-d68a17d86a0f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UI\Focus">
+      <UniqueIdentifier>{a57eef44-c7c5-4047-bdad-016274548eff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h">
@@ -1672,6 +1675,24 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UILoadingScreen.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\DirectionBasedNavigationAlgorithm.h">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\FocusHelpers.h">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\TabTraversalAlgorithm.h">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIFocusComponent.h">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIFocusSystem.h">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.h">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -2979,6 +3000,24 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UILoadingScreen.cpp">
       <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\DirectionBasedNavigationAlgorithm.cpp">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\FocusHelpers.cpp">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\TabTraversalAlgorithm.cpp">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIFocusComponent.cpp">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIFocusSystem.cpp">
+      <Filter>Internal\UI\Focus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Focus\UIKeyInputSystem.cpp">
+      <Filter>Internal\UI\Focus</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
