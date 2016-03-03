@@ -418,8 +418,8 @@ static bool _DX11_ResetPending = false;
 //static DAVA::Spinlock       _FrameSync;
 static DAVA::Mutex _DX11_FrameSync;
 
-static DAVA::AutoResetEvent _DX11_FramePreparedEvent(false, 800);
-static DAVA::AutoResetEvent _DX11_FrameDoneEvent(false, 800);
+static DAVA::AutoResetEvent _DX11_FramePreparedEvent(false, 400);
+static DAVA::AutoResetEvent _DX11_FrameDoneEvent(false, 400);
 
 static void _ExecuteQueuedCommandsDX11();
 

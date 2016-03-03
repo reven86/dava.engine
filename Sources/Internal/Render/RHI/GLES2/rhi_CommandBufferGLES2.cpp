@@ -395,8 +395,8 @@ static unsigned _GLES2_FrameNumber = 1;
 static DAVA::Spinlock _GLES2_FrameSync;
 //static DAVA::Mutex              _FrameSync;
 
-static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 800);
-static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 800);
+static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
+static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
 
 static void _ExecGL(GLCommand* command, uint32 cmdCount);
 
