@@ -83,6 +83,11 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
 
 void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
 {
+    Logv(logFilename, ll, text, li);
+}
+
+void Logger::Logv(const FilePath& customLogFilename, eLogLevel ll, const char8* text, va_list li) const
+{
     if (!text || text[0] == '\0')
         return;
 
@@ -99,14 +104,14 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
         String formatedMessage = ConvertCFormatListToString(text, li);
         formatedMessage += '\n';
 
-        Output(ll, formatedMessage.c_str());
+        Output(customLogFilename, ll, formatedMessage.c_str());
     }
     else
     {
         stackbuf[charactersWritten] = '\n';
         stackbuf[charactersWritten + 1] = '\0';
 
-        Output(ll, &stackbuf[0]);
+        Output(customLogFilename, ll, &stackbuf[0]);
     }
 }
 
@@ -230,6 +235,56 @@ void Logger::Error(const char8* text, ...)
     va_end(vl);
 }
 
+void Logger::FrameworkDebugToFile(const FilePath& costomLogFileName, const char8* text, ...)
+{
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(costomLogFileName, LEVEL_FRAMEWORK, text, vl);
+    va_end(vl);
+}
+
+void Logger::DebugToFile(const FilePath& costomLogFileName, const char8* text, ...)
+{
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(costomLogFileName, LEVEL_INFO, text, vl);
+    va_end(vl);
+}
+
+void Logger::InfoToFile(const FilePath& costomLogFileName, const char8* text, ...)
+{
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(costomLogFileName, LEVEL_INFO, text, vl);
+    va_end(vl);
+}
+
+void Logger::WarningToFile(const FilePath& costomLogFileName, const char8* text, ...)
+{
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(costomLogFileName, LEVEL_WARNING, text, vl);
+    va_end(vl);
+}
+
+void Logger::ErrorToFile(const FilePath& costomLogFileName, const char8* text, ...)
+{
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(costomLogFileName, LEVEL_ERROR, text, vl);
+    va_end(vl);
+}
+
 void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
 {
     Logger* log = Logger::Instance();
@@ -279,7 +334,7 @@ void Logger::SetMaxFileSize(uint32 size)
     cutLogSize = size;
 }
 
-bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
+bool Logger::CutOldLogFileIfExist(const FilePath& logFile) const
 {
     if (!logFile.Exists())
     {
@@ -317,7 +372,7 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
     uint32 dataReaden = log->Read(buff.data(), sizeToCut);
     if (dataReaden != sizeToCut)
     {
-        return false; // nave enought data but cannot to read
+        return false; // nave enought data but can't read
     }
 
     SafeRelease(log);
@@ -336,21 +391,20 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile)
     const uint32 dataWritten = truncatedLog->Write(buff.data(), sizeToCut);
     if (dataWritten != sizeToCut)
     {
-        return false; // have correct file and data size but cannot write to file.
+        return false; // have correct file and data size but can't write to file.
     }
 
     return true; // correct;
 }
 
-void Logger::FileLog(eLogLevel ll, const char8* text) const
+void Logger::FileLog(const FilePath& costomLogFileName, eLogLevel ll, const char8* text) const
 {
     if (nullptr != FileSystem::Instance())
     {
-        File* file = File::Create(logFilename, File::APPEND | File::WRITE);
-        if (nullptr != file)
+        ScopedPtr<File> file(File::Create(costomLogFileName, File::APPEND | File::WRITE));
+        if (file)
         {
             Array<char8, 128> prefix;
-
 
 #if defined(__DAVAENGINE_WIN_UAP__)
             SYSTEMTIME st;
@@ -362,7 +416,6 @@ void Logger::FileLog(eLogLevel ll, const char8* text) const
             snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
             file->Write(text, static_cast<uint32>(strlen(text)));
-            file->Release();
         }
     }
 }
@@ -387,6 +440,11 @@ void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8* text) const
 
 void Logger::Output(eLogLevel ll, const char8* formatedMsg) const
 {
+    Output(logFilename, ll, formatedMsg);
+}
+
+void Logger::Output(const FilePath& customLogFilename, eLogLevel ll, const char8* formatedMsg) const
+{
     CustomLog(ll, formatedMsg);
     // print platform log or write log to file
     // only if log level is acceptable
@@ -401,9 +459,13 @@ void Logger::Output(eLogLevel ll, const char8* formatedMsg) const
             PlatformLog(ll, formatedMsg);
         }
 
-        if (!logFilename.IsEmpty())
+        if (!customLogFilename.IsEmpty())
         {
-            FileLog(ll, formatedMsg);
+            if (customLogFilename != logFilename)
+            {
+                CutOldLogFileIfExist(customLogFilename);
+            }
+            FileLog(customLogFilename, ll, formatedMsg);
         }
     }
 }
