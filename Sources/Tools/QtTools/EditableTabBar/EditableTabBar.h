@@ -32,11 +32,14 @@
 #include <QTabBar>
 
 class QLineEdit;
+class QValidator;
 class EditableTabBar : public QTabBar
 {
     Q_OBJECT
 public:
     EditableTabBar(QWidget* parent = nullptr);
+
+    void setNameValidator(const QValidator* v);
 
     bool isEditable() const;
     void setEditable(bool isEditable);

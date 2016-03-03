@@ -184,6 +184,8 @@ private:
     DAVA::uint32 lastCheckState = 0;
 
     LazyUpdater* materialPropertiesUpdater;
+    class ConfigNameValidator;
+    ConfigNameValidator* validator;
 };
 
 #endif

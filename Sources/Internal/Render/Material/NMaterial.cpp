@@ -149,6 +149,7 @@ NMaterial::NMaterial()
     , localConstBuffers(16, nullptr)
     , renderVariants(4, nullptr)
 {
+    materialConfigs[0].name = NMaterialSerializationKey::DefaultConfigName;
 }
 
 NMaterial::~NMaterial()
@@ -1022,14 +1023,19 @@ NMaterial* NMaterial::Clone()
     return clonedMaterial;
 }
 
-void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext)
+void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext, bool forceNameSaving)
 {
     const MaterialConfig& config = GetConfig(configId);
     if (config.fxName.IsValid())
         archive->SetString(NMaterialSerializationKey::FXName, config.fxName.c_str());
 
-    if (config.name.IsValid() && config.name != NMaterialSerializationKey::DefaultConfigName)
-        archive->SetString(NMaterialSerializationKey::ConfigName, config.name.c_str());
+    if (config.name.IsValid())
+    {
+        if (forceNameSaving || config.name != NMaterialSerializationKey::DefaultConfigName)
+        {
+            archive->SetString(NMaterialSerializationKey::ConfigName, config.name.c_str());
+        }
+    }
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (HashMap<FastName, NMaterialProperty *>::iterator it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
@@ -1092,7 +1098,7 @@ void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationC
     if (configsCount == 1)
     {
         //preserve old storage format
-        SaveConfigToArchive(0, archive, serializationContext);
+        SaveConfigToArchive(0, archive, serializationContext, false);
     }
     else
     {
@@ -1100,7 +1106,7 @@ void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationC
         for (uint32 i = 0, sz = configsCount; i < sz; ++i)
         {
             ScopedPtr<KeyedArchive> configArchive(new KeyedArchive());
-            SaveConfigToArchive(i, configArchive, serializationContext);
+            SaveConfigToArchive(i, configArchive, serializationContext, true);
             archive->SetArchive(Format(NMaterialSerializationKey::ConfigArchive.c_str(), i), configArchive);
         }
     }
@@ -1185,6 +1191,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
     if (serializationContext->GetVersion() < RHI_SCENE_VERSION)
     {
         LoadOldNMaterial(archive, serializationContext);
+        DVASSERT(materialConfigs.size() == 1);
+        materialConfigs[0].name = NMaterialSerializationKey::DefaultConfigName;
         return;
     }
 

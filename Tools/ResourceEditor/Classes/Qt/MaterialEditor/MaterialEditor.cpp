@@ -126,11 +126,39 @@ private:
 };
 }
 
+class MaterialEditor::ConfigNameValidator : public QValidator
+{
+public:
+    ConfigNameValidator(QObject* parent)
+        : QValidator(parent)
+    {
+    }
+
+    State validate(QString& input, int& pos) const override
+    {
+        DVASSERT(material != nullptr);
+        if (input.isEmpty())
+            return Intermediate;
+
+        uint32 index = material->FindConfigByName(DAVA::FastName(input.toStdString()));
+        return (index < material->GetConfigCount()) ? Intermediate : Acceptable;
+    }
+
+    void SetCurrentMaterial(DAVA::NMaterial* material_)
+    {
+        material = material_;
+    }
+
+private:
+    DAVA::NMaterial* material = nullptr;
+};
+
 MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     : QDialog(parent)
     , ui(new Ui::MaterialEditor)
     , templatesFilterModel(nullptr)
     , lastCheckState(CHECKED_ALL)
+    , validator(new ConfigNameValidator(this))
 {
     Function<void()> fn(this, &MaterialEditor::RefreshMaterialProperties);
     materialPropertiesUpdater = new LazyUpdater(fn, this);
@@ -138,6 +166,8 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     ui->setupUi(this);
     setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION);
 
+    ui->tabbar->setNameValidator(validator);
+    ui->tabbar->setUsesScrollButtons(true);
     ui->tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
     QObject::connect(ui->tabbar, &EditableTabBar::tabNameChanged, this, &MaterialEditor::onTabNameChanged);
     QObject::connect(ui->tabbar, &EditableTabBar::currentChanged, this, &MaterialEditor::onCurrentConfigChanged);
@@ -1567,6 +1597,7 @@ void MaterialEditor::UpdateTabs()
     if (curMaterials.size() == 1)
     {
         DAVA::NMaterial* material = curMaterials.front();
+        validator->SetCurrentMaterial(material);
         for (DAVA::uint32 i = 0; i < material->GetConfigCount(); ++i)
         {
             ui->tabbar->addTab(QString(material->GetConfigName(i).c_str()));
@@ -1574,6 +1605,10 @@ void MaterialEditor::UpdateTabs()
 
         ui->tabbar->setCurrentIndex(material->GetCurrentConfigIndex());
         ui->tabbar->setTabsClosable(material->GetConfigCount() > 1);
+    }
+    else
+    {
+        validator->SetCurrentMaterial(nullptr);
     }
 
     ui->tabbar->setVisible(curMaterials.size() == 1);
@@ -1603,12 +1638,24 @@ void MaterialEditor::onCreateConfig(int index)
     if (index >= 0)
     {
         newConfig = material->GetConfig(static_cast<DAVA::uint32>(index));
-        newConfig.name = DAVA::FastName(DAVA::String("Copy of ") + newConfig.name.c_str());
+        DAVA::String newConfigName = DAVA::String("_copy");
+        if (newConfig.name.IsValid())
+        {
+            newConfigName = DAVA::String(newConfig.name.c_str()) + newConfigName;
+        }
+
+        newConfig.name = DAVA::FastName(newConfigName);
     }
     else
     {
-        newConfig.name = DAVA::FastName("Empty config");
+        newConfig.name = DAVA::FastName("Empty");
         newConfig.fxName = material->GetEffectiveFXName();
+    }
+
+    DAVA::uint32 counter = 2;
+    while (material->FindConfigByName(newConfig.name) < material->GetConfigCount())
+    {
+        newConfig.name = DAVA::FastName(DAVA::String(newConfig.name.c_str()) + std::to_string(counter));
     }
     scene->Exec(new MaterialCreateConfig(material, newConfig));
 }

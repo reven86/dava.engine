@@ -216,7 +216,7 @@ public:
 
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
-    void SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext);
+    void SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext, bool forceNameSaving);
     void LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext);
 
     void RebuildBindings();
