@@ -134,7 +134,6 @@ public:
 
     const Vector<String>& GetCommandLine();
     bool IsConsoleMode();
-    void OnSizeChanged(float32 width, float32 height);
 
 public:
     void SetOptions(KeyedArchive* archiveOfOptions);
@@ -263,6 +262,8 @@ public:
 
     void EnableConsoleMode();
 
+    void ChangedScreenMetrics(float32 width, float32 height, float32 scale);
+
     rhi::InitParam rendererParams;
 
 protected:
@@ -273,6 +274,8 @@ protected:
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
+    void UpdateScreenMetrics();
+
     KeyedArchive* options;
 
     bool isActive;
@@ -284,6 +287,15 @@ private:
     Vector<String> commandLine;
     bool isConsoleMode;
     void* nativeView;
+
+    struct
+    {
+        float32 width = 0.f;
+        float32 height = 0.f;
+        float32 scale = 0.f;
+        bool modifiedNativeView = false;
+        bool modifiedScreenMetrics = false;
+    } screenMetrics;
 };
 
 inline bool Core::IsActive()

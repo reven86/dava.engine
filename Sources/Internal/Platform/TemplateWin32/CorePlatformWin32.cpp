@@ -601,39 +601,30 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 #define WHEEL_DELTA 120
 #endif
 
-void CoreWin32Platform::OnWindowResized()
-{
-    if (!Renderer::IsInitialized())
-    {
-        return;
-    }
-    //     ResetRender();
-    float32 scale = DeviceInfo::GetScreenInfo().scale;
-    int32 physicalWidth = static_cast<int32>(currentMode.width * scale);
-    int32 physicalHeight = static_cast<int32>(currentMode.height * scale);
-
-    rhi::ResetParam params;
-    params.width = physicalWidth;
-    params.height = physicalHeight;
-    Renderer::Reset(params);
-    //     ReInitCoordinatesSystem();
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
-    virtSystem->ScreenSizeChanged();
-    UIScreenManager::Instance()->ScreenSizeChanged();
-    UIControlSystem::Instance()->ScreenSizeChanged();
-}
-
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    Vector2& minsizes = core->GetWindowMinimumSize();
+    RECT rect;
+    float32 MIN_WIDTH = minsizes.x, MIN_HEIGHT = minsizes.y, scale = DeviceInfo::GetScreenInfo().scale;
 
     switch (message)
     {
+    case WM_SIZING:
+        rect = *(reinterpret_cast<RECT*>(lParam));
+        if (rect.right - rect.left < MIN_WIDTH)
+        {
+            (reinterpret_cast<RECT*>(lParam))->right = rect.left + static_cast<LONG>(MIN_WIDTH);
+        }
+        if (rect.bottom - rect.top < MIN_HEIGHT)
+        {
+            (reinterpret_cast<RECT*>(lParam))->bottom = rect.top + static_cast<LONG>(MIN_HEIGHT);
+        }
+        break;
     case WM_ERASEBKGND:
-        core->OnWindowResized();
+        GetClientRect(hWnd, &rect);
+        core->ChangedScreenMetrics(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scale);
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
     case WM_SYSKEYUP:
     // no break

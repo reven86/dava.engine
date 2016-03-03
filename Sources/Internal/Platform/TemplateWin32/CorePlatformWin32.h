@@ -62,7 +62,7 @@ private:
     bool isFullscreen;
     WINDOWPLACEMENT windowPositionBeforeFullscreen;
 
-    static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
     static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
     void OnMouseMove(float32 x, float32 y);
@@ -71,7 +71,6 @@ private:
     void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     void OnGetMinMaxInfo(MINMAXINFO* minmaxInfo);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    void OnWindowResized();
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
     void LoadWindowMinimumSizeSettings();

@@ -641,6 +641,11 @@ void Core::SystemProcessFrame()
         return;
     }
 
+    if (screenMetrics.modifiedScreenMetrics)
+    {
+        UpdateScreenMetrics();
+    }
+
     SystemTimer::Instance()->Start();
 
     /**
@@ -830,24 +835,6 @@ bool Core::IsConsoleMode()
     return isConsoleMode;
 }
 
-void Core::OnSizeChanged(float32 width, float32 height)
-{
-    float32 scale = DeviceInfo::GetScreenInfo().scale;
-    float32 physicalWidth = width * scale, physicalHeight = height * scale;
-    //reset render
-    rhi::ResetParam params;
-    params.width = physicalWidth;
-    params.height = physicalHeight;
-    Renderer::Reset(params);
-    // update system
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(width, height);
-    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
-    virtSystem->ScreenSizeChanged();
-    UIScreenManager::Instance()->ScreenSizeChanged();
-    UIControlSystem::Instance()->ScreenSizeChanged();
-}
-
 void* Core::GetNativeView() const
 {
     return nativeView;
@@ -855,12 +842,60 @@ void* Core::GetNativeView() const
 
 void Core::SetNativeView(void* newNativeView)
 {
-    nativeView = newNativeView;
+    if (nativeView != newNativeView)
+    {
+        screenMetrics.modifiedNativeView = true;
+        nativeView = newNativeView;
+    }
 }
 
 void Core::EnableConsoleMode()
 {
     isConsoleMode = true;
+}
+
+void Core::ChangedScreenMetrics(float32 width, float32 height, float32 scale)
+{
+    bool needChanged = false;
+    needChanged |= memcmp(&width, &screenMetrics.width, sizeof(float32)) != 0;
+    needChanged |= memcmp(&height, &screenMetrics.height, sizeof(float32)) != 0;
+    needChanged |= memcmp(&scale, &screenMetrics.scale, sizeof(float32)) != 0;
+
+    if (needChanged)
+    {
+        // if changedMetricsScreen == true, then on the next call SystemProcessFrame() update all sizes and systems, after set it false
+        screenMetrics.modifiedScreenMetrics = true;
+        screenMetrics.width = width;
+        screenMetrics.height = height;
+        screenMetrics.scale = scale;
+    }
+}
+
+void Core::UpdateScreenMetrics()
+{
+    // if default metricsScreen
+    DVASSERT(screenMetrics.width * screenMetrics.scale * screenMetrics.height);
+    int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scale);
+    int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scale);
+    // render reset
+    DVASSERT(Renderer::IsInitialized());
+    rhi::ResetParam params;
+    params.width = physicalWidth;
+    params.height = physicalHeight;
+    screenMetrics.modifiedScreenMetrics = false;
+    if (screenMetrics.modifiedNativeView)
+    {
+        screenMetrics.modifiedNativeView = false;
+        params.window = nativeView;
+    }
+    Renderer::Reset(params);
+    // notify all systems
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+    virtSystem->ScreenSizeChanged();
+    UIScreenManager::Instance()->ScreenSizeChanged();
+    UIControlSystem::Instance()->ScreenSizeChanged();
 }
 
 void Core::SetIsActive(bool _isActive)
