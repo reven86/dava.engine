@@ -214,48 +214,48 @@ void UIControlSystem::ProcessScreenLogic()
 
             nextScreenTransitionProcessed->StartTransition();
             nextScreenTransitionProcessed->SetSourceScreen(currentScreen.Get());
-                    }
-            // if we have current screen we call events, unload resources for it group
-            if (currentScreen)
+        }
+        // if we have current screen we call events, unload resources for it group
+        if (currentScreen)
+        {
+            currentScreen->InvokeInactive();
+
+            RefPtr<UIScreen> prevScreen = currentScreen;
+            currentScreen = nullptr;
+
+            if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
             {
-                currentScreen->InvokeInactive();
-
-                RefPtr<UIScreen> prevScreen = currentScreen;
-                currentScreen = nullptr;
-
-                if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
-                {
-                    prevScreen->UnloadGroup();
-                }
+                prevScreen->UnloadGroup();
             }
-            // if we have next screen we load new resources, if it equal to zero we just remove screen
-            if (nextScreenProcessed)
+        }
+        // if we have next screen we load new resources, if it equal to zero we just remove screen
+        if (nextScreenProcessed)
+        {
+            if (nextScreenProcessed->GetRect() != fullscreenRect)
             {
-                if (nextScreenProcessed->GetRect() != fullscreenRect)
-                {
-                    nextScreenProcessed->SystemScreenSizeChanged(fullscreenRect);
-                }
-
-                nextScreenProcessed->LoadGroup();
-            }
-            currentScreen = nextScreenProcessed;
-            focusSystem->SetRoot(currentScreen.Get());
-            if (currentScreen)
-            {
-                currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
+                nextScreenProcessed->SystemScreenSizeChanged(fullscreenRect);
             }
 
-            NotifyListenersDidSwitch(currentScreen.Get());
+            nextScreenProcessed->LoadGroup();
+        }
+        currentScreen = nextScreenProcessed;
+        focusSystem->SetRoot(currentScreen.Get());
+        if (currentScreen)
+        {
+            currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
+        }
 
-            if (nextScreenTransitionProcessed)
-            {
-                nextScreenTransitionProcessed->SetDestinationScreen(currentScreen.Get());
+        NotifyListenersDidSwitch(currentScreen.Get());
 
-                LockSwitch();
-                LockInput();
+        if (nextScreenTransitionProcessed)
+        {
+            nextScreenTransitionProcessed->SetDestinationScreen(currentScreen.Get());
 
-                currentScreenTransition = nextScreenTransitionProcessed;
-                currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
+            LockSwitch();
+            LockInput();
+
+            currentScreenTransition = nextScreenTransitionProcessed;
+            currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
         }
 
         UnlockInput();

@@ -509,8 +509,8 @@ void UIList::Input(UIEvent* currentInput)
             }
             else
             {
-        newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
-    }
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
         }
     }
     else

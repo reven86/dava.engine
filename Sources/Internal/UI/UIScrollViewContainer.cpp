@@ -265,15 +265,15 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
             }
             else
             {
-            if (scrollView->GetHorizontalScroll() == currentScroll)
-            {
-                relativePosition.x = currentScroll->GetPosition(posDelta.x, timeElapsed, lockTouch);
+                if (scrollView->GetHorizontalScroll() == currentScroll)
+                {
+                    relativePosition.x = currentScroll->GetPosition(posDelta.x, timeElapsed, lockTouch);
+                }
+                else
+                {
+                    relativePosition.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
+                }
             }
-            else
-            {
-                relativePosition.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
-            }
-        }
         }
         else if (scrollView->IsAutoUpdate())
         {

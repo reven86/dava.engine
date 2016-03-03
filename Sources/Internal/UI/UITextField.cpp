@@ -646,12 +646,12 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
             txt.replace(replacementLocation, replacementLength, replacementString);
             if (GetMaxLength() > 0)
             {
-            int32 outOfBounds = static_cast<int32>(txt.size()) - GetMaxLength();
-            if (outOfBounds > 0)
-            {
-                txt.erase(GetMaxLength(), outOfBounds);
+                int32 outOfBounds = static_cast<int32>(txt.size()) - GetMaxLength();
+                if (outOfBounds > 0)
+                {
+                    txt.erase(GetMaxLength(), outOfBounds);
+                }
             }
-        }
         }
         else
         {
