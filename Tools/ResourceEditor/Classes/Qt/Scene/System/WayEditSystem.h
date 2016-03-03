@@ -30,10 +30,10 @@
 #ifndef __SCENE_WAYEDIT_SYSTEM_H__
 #define __SCENE_WAYEDIT_SYSTEM_H__
 
-#include <QMap>
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
 #include "Commands2/Command2.h"
+#include "SystemDelegates.h"
 
 // framework
 #include "UI/UIEvent.h"
@@ -51,11 +51,10 @@
 
 class SceneEditor2;
 
-class WayEditSystem : public DAVA::SceneSystem
-                      ,
-                      public EntityModificationSystemDelegate
-                      ,
-                      public StructureSystemDelegate
+class WayEditSystem : public DAVA::SceneSystem,
+                      public EntityModificationSystemDelegate,
+                      public StructureSystemDelegate,
+                      public SceneSelectionSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -93,28 +92,26 @@ protected:
     bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
 
     void ResetSelection();
-    void ProcessSelection();
+    void ProcessSelection(const EntityGroup& selection);
     void UpdateSelectionMask();
     void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
 
-protected:
-    bool isEnabled;
+    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
 
+protected:
     EntityGroup currentSelection;
     EntityGroup selectedWaypoints;
     EntityGroup prevSelectedWaypoints;
-
-    SceneEditor2* sceneEditor;
-    SceneSelectionSystem* selectionSystem;
-    SceneCollisionSystem* collisionSystem;
-
+    SceneEditor2* sceneEditor = nullptr;
+    SceneSelectionSystem* selectionSystem = nullptr;
+    SceneCollisionSystem* collisionSystem = nullptr;
     DAVA::Vector<DAVA::Entity*> waypointEntities;
     DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
-
-    DAVA::Entity* underCursorPathEntity;
+    DAVA::Entity* underCursorPathEntity = nullptr;
+    DAVA::Entity* startPointForRemove = nullptr;
     bool inCloneState = false;
-
-    DAVA::Entity* startPointForRemove;
+    bool isEnabled = false;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__

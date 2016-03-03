@@ -400,6 +400,7 @@ void AutotestingSystem::OnScreenShot(Image* image)
 {
     Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
     JobManager::Instance()->CreateWorkerJob(fn);
+    isScreenShotSaving = true;
 }
 
 void AutotestingSystem::OnScreenShotInternal(Image* image)
@@ -411,7 +412,7 @@ void AutotestingSystem::OnScreenShotInternal(Image* image)
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
-
+    isScreenShotSaving = false;
     SafeRelease(image);
 }
 

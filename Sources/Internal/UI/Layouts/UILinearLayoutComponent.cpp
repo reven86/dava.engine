@@ -67,18 +67,47 @@ void UILinearLayoutComponent::SetEnabled(bool enabled)
 
 UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() const
 {
-    return flags.test(FLAG_ORIENTATION_VERTICAL) ? VERTICAL : HORIZONTAL;
+    if (flags.test(FLAG_ORIENTATION_VERTICAL))
+    {
+        return flags.test(FLAG_ORIENTATION_INVERSE) ? BOTTOM_UP : TOP_DOWN;
+    }
+    else
+    {
+        return flags.test(FLAG_ORIENTATION_INVERSE) ? RIGHT_TO_LEFT : LEFT_TO_RIGHT;
+    }
 }
 
-void UILinearLayoutComponent::SetOrientation(eOrientation newOrientation)
+void UILinearLayoutComponent::SetOrientation(eOrientation direction)
 {
-    flags.set(FLAG_ORIENTATION_VERTICAL, newOrientation == VERTICAL);
-    SetLayoutDirty();
+    switch (direction)
+    {
+    case LEFT_TO_RIGHT:
+        flags.set(FLAG_ORIENTATION_VERTICAL, false);
+        flags.set(FLAG_ORIENTATION_INVERSE, false);
+        break;
+    case RIGHT_TO_LEFT:
+        flags.set(FLAG_ORIENTATION_VERTICAL, false);
+        flags.set(FLAG_ORIENTATION_INVERSE, true);
+        break;
+    case TOP_DOWN:
+        flags.set(FLAG_ORIENTATION_VERTICAL, true);
+        flags.set(FLAG_ORIENTATION_INVERSE, false);
+        break;
+    case BOTTOM_UP:
+        flags.set(FLAG_ORIENTATION_VERTICAL, true);
+        flags.set(FLAG_ORIENTATION_INVERSE, true);
+        break;
+    }
 }
 
 Vector2::eAxis UILinearLayoutComponent::GetAxis() const
 {
     return flags.test(FLAG_ORIENTATION_VERTICAL) ? Vector2::AXIS_Y : Vector2::AXIS_X;
+}
+
+bool UILinearLayoutComponent::IsInverse() const
+{
+    return flags.test(FLAG_ORIENTATION_INVERSE);
 }
 
 float32 UILinearLayoutComponent::GetPadding() const
