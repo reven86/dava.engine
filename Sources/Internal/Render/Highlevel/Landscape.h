@@ -317,7 +317,7 @@ protected:
         Vector4 edgeMask;
 
         float32 edgeVertexIndex;
-        float32 zeroEdgeMask;
+        float32 edgeMaskNull;
     };
 
     struct InstanceData

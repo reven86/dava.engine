@@ -319,10 +319,11 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
         uint16* mipDataPtr = reinterpret_cast<uint16*>(mipData);
         for (uint32 y = 0; y < mipSize; ++y)
         {
+            uint32 mipLastIndex = mipSize - 1;
             uint16 yy = y * step;
             uint16 y1 = yy;
             uint16 y2 = yy;
-            if (y & 0x1)
+            if (y & 0x1 && y != mipLastIndex)
             {
                 y1 -= step;
                 y2 += step;
@@ -333,7 +334,7 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
                 uint16 xx = x * step;
                 uint16 x1 = xx;
                 uint16 x2 = xx;
-                if (x & 0x1)
+                if (x & 0x1 && x != mipLastIndex)
                 {
                     x1 -= step;
                     x2 += step;
@@ -1039,7 +1040,7 @@ void Landscape::AllocateGeometryDataInstancing()
             vertex.edgeMask = Vector4(0.f, 0.f, 0.f, 0.f);
             vertex.gluDir = Vector2(0.f, 0.f);
             vertex.edgeVertexIndex = 0.f;
-            vertex.zeroEdgeMask = 1.f;
+            vertex.edgeMaskNull = 1.f;
 
             if (x < (PATCH_SIZE_VERTICES - 1) && y < (PATCH_SIZE_VERTICES - 1))
             {
@@ -1060,25 +1061,25 @@ void Landscape::AllocateGeometryDataInstancing()
         patchVertices[i * PATCH_SIZE_VERTICES].edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
         patchVertices[i * PATCH_SIZE_VERTICES].gluDir = Vector2(0.f, 1.f) / PATCH_SIZE_QUADS;
         patchVertices[i * PATCH_SIZE_VERTICES].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
-        patchVertices[i * PATCH_SIZE_VERTICES].zeroEdgeMask = 0.f;
+        patchVertices[i * PATCH_SIZE_VERTICES].edgeMaskNull = 0.f;
 
         //x = i; y = 0; bottom side of patch without corners
         patchVertices[i].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
         patchVertices[i].gluDir = Vector2(1.f, 0.f) / PATCH_SIZE_QUADS;
         patchVertices[i].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
-        patchVertices[i].zeroEdgeMask = 0.f;
+        patchVertices[i].edgeMaskNull = 0.f;
 
         //x = PATCH_QUAD_COUNT; y = i; right side of patch without corners
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].gluDir = Vector2(0.f, -1.f) / PATCH_SIZE_QUADS;
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeVertexIndex = float32(i);
-        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].zeroEdgeMask = 0.f;
+        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMaskNull = 0.f;
 
         //x = i; y = PATCH_QUAD_COUNT; top side of patch without corners
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].gluDir = Vector2(-1.f, 0.f) / PATCH_SIZE_QUADS;
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeVertexIndex = float32(i);
-        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].zeroEdgeMask = 0.f;
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMaskNull = 0.f;
     }
 
     /////////////////////////////////////////////////////////////////
@@ -1116,7 +1117,7 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddStream(rhi::VDF_PER_VERTEX);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 4); //position + gluDirection
     vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 4); //edge mask
-    vLayout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 2); //vertex index + zeroEdgeMask
+    vLayout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 2); //vertex index + edgeMaskNull
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3); //patch position + scale
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4); //near patch lodOffset
@@ -1211,12 +1212,13 @@ void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 
                                                   levelf - nearLevel.z,
                                                   levelf - nearLevel.w);
 
-    if (xx == (levelInfo.size - 1))
+    uint32 lastPatchIndex = levelInfo.size - 1;
+    if (xx == lastPatchIndex)
     {
         instanceDataPtr->nearPatchLodOffset.z = -baseLodf;
         instanceDataPtr->nearPatchMorph.z = 1.f;
     }
-    if (yy == (levelInfo.size - 1))
+    if (yy == lastPatchIndex)
     {
         instanceDataPtr->nearPatchLodOffset.w = -baseLodf;
         instanceDataPtr->nearPatchMorph.w = 1.f;
