@@ -28,7 +28,6 @@
 
 
 #include "Scene3D/SceneNodeAnimation.h"
-#include "Scene3D/SceneNodeAnimationList.h"
 
 namespace DAVA
 {
@@ -152,15 +151,5 @@ void SceneNodeAnimation::ShiftStartPosition(const Vector3& shift)
     {
         keys[idx].translation += shift;
     }
-}
-
-void SceneNodeAnimation::SetParent(SceneNodeAnimationList* list)
-{
-    parent = list;
-}
-
-SceneNodeAnimationList* SceneNodeAnimation::GetParent()
-{
-    return parent;
 }
 }

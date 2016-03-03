@@ -176,9 +176,8 @@ public:
 
     UITextField(const Rect& rect = Rect());
 
-    void WillAppear() override;
-    void DidAppear() override;
-    void WillDisappear() override;
+    void OnActive() override;
+    void OnInactive() override;
 
     void OnFocused() override;
     void OnFocusLost(UIControl* newFocus) override;
@@ -361,8 +360,8 @@ public:
 
 protected:
     ~UITextField() override;
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void OnVisible() override;
+    void OnInvisible() override;
 
 private:
     void SetRenderToTexture(bool value);

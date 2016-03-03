@@ -2,7 +2,7 @@
 #compiller flags
 
 if( APPLE )
-    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES} AdHoc" CACHE STRING
+    set(CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES} AdHoc CACHE STRING
         "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
         FORCE)
      
@@ -17,6 +17,11 @@ if( APPLE )
                         CMAKE_EXE_LINKER_FLAGS_ADHOC 
                         CMAKE_SHARED_LINKER_FLAGS_ADHOC 
                         CMAKE_MODULE_LINKER_FLAGS_ADHOC  )
+else()
+    set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING
+        "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
+        FORCE )
+
 endif()
 
 if     ( ANDROID )

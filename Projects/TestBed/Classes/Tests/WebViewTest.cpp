@@ -62,7 +62,7 @@ void WebViewTest::LoadResources()
     bgStubPanel->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     bgStubPanel->GetBackground()->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     bgStubPanel->GetBackground()->SetColor(Color(1, 0, 0, 1));
-    bgStubPanel->SetVisible(false);
+    bgStubPanel->SetVisibilityFlag(false);
     AddControl(bgStubPanel);
 
     ScopedPtr<UIButton> visibleBtn(new UIButton(Rect(440, 10, 200, 50)));
@@ -95,8 +95,8 @@ void WebViewTest::Update(float32 delta)
 
 void WebViewTest::OnVisibleClick(BaseObject* sender, void* data, void* callerData)
 {
-    webView->SetVisible(!webView->GetVisible());
-    bgStubPanel->SetVisible(!webView->GetVisible());
+    webView->SetVisibilityFlag(!webView->GetVisibilityFlag());
+    bgStubPanel->SetVisibilityFlag(!webView->GetVisibilityFlag());
 
     updateWait = true;
 }

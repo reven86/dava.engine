@@ -32,6 +32,8 @@
 
 #include "DAVAEngine.h"
 
+#include "Commands2/Command2.h"
+
 using namespace DAVA;
 
 class HeightmapProxy;
