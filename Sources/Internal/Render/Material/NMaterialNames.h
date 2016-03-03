@@ -166,6 +166,7 @@ public:
     static const FastName FLAG_WAVE_ANIMATION;
     static const FastName FLAG_FAST_NORMALIZATION;
     static const FastName FLAG_TILED_DECAL_MASK;
+    static const FastName FLAG_TILED_DECAL_ROTATION;
     static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;

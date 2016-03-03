@@ -46,7 +46,7 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-    void DidAppear() override;
+    void OnActive() override;
     void Update(float32 timeElapsed) override;
 
 private:

@@ -73,16 +73,19 @@ public:
 private:
     struct MaterialMapping
     {
-        enum class Mode : DAVA::uint32
-        {
-            RetainedRenderBatch,
-            RenderBatchIndexInRenderObject
-        };
+        MaterialMapping() = default;
+        MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_);
+
+        ~MaterialMapping();
+
+        MaterialMapping(const MaterialMapping& other);
+        MaterialMapping(MaterialMapping&& other) = delete;
+
+        MaterialMapping& operator=(const MaterialMapping& other);
+        MaterialMapping& operator=(MaterialMapping&& other) = delete;
 
         DAVA::Entity* entity = nullptr;
         DAVA::RenderBatch* renderBatch = nullptr;
-        DAVA::uint32 renderBatchIndexInRenderObject = static_cast<DAVA::uint32>(-1);
-        Mode mode = Mode::RenderBatchIndexInRenderObject;
     };
     using MaterialToObjectsMap = DAVA::Map<DAVA::NMaterial*, MaterialMapping>;
 
@@ -91,8 +94,7 @@ private:
 
     void ProcessCommand(const Command2* command, bool redo);
 
-    void AddMaterialsFromEntity(DAVA::Entity* entity);
-    void AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatch* renderBatch, DAVA::Entity* entity);
+    void AddMaterials(DAVA::Entity* entity);
     void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);
 
     void RemoveMaterial(DAVA::NMaterial* material);
