@@ -555,6 +555,12 @@ function ClearField(field)
     KeyPress(2)
 end
 
+function FastSelectControl(control)
+    Log('Scrol to contorol '.. control .. 'through API')
+    autotestingSystem:ScrollToControl(control)
+    return ClickControl(control)
+end
+
 function SelectItemInList(listName, item)
     Log(string.format("Select '%s' cell in '%s' list.", item, listName))
     assert(WaitControl(listName), "Couldn't find " .. listName)
