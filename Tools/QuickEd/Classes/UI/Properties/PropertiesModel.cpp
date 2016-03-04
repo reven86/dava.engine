@@ -59,7 +59,7 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , lazyUpdater(new LazyUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 50))
+    , lazyUpdater(new LazyUpdater(DAVA::MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 500))
 {
 }
 

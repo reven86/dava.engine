@@ -34,6 +34,7 @@
 
 #include <QObject>
 
+class QTimer;
 class LazyUpdater : public QObject
 {
     Q_OBJECT
@@ -46,13 +47,11 @@ public:
     void Update();
 
 private slots:
-
     void OnTimer();
 
 private:
     Updater updater;
-    int counter = 0;
-    const int updateInterval = 0;
+    QTimer* timer = nullptr;
 };
 
 #endif // __TOOL_LAZY_UPDATER_H__

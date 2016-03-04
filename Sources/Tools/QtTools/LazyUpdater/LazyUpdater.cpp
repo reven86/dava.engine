@@ -31,28 +31,22 @@
 
 #include <QTimer>
 
-LazyUpdater::LazyUpdater(Updater _updater, int updateInterval_, QObject* parent /* = nullptr */)
+LazyUpdater::LazyUpdater(Updater _updater, int updateInterval, QObject* parent /* = nullptr */)
     : QObject(parent)
     , updater(_updater)
-    , updateInterval(updateInterval_)
+    , timer(new QTimer(this))
 {
+    timer->setSingleShot(true);
+    timer->setInterval(updateInterval);
+    connect(timer, &QTimer::timeout, this, &LazyUpdater::OnTimer);
 }
 
 void LazyUpdater::Update()
 {
-    ++counter;
-    QTimer::singleShot(updateInterval, this, &LazyUpdater::OnTimer);
+    timer->start(); //if running timer will be restarted with given interval
 }
 
 void LazyUpdater::OnTimer()
 {
-    if (counter > 1)
-    {
-        --counter;
-        return;
-    }
-
-    counter = 0;
-
     updater();
 }
