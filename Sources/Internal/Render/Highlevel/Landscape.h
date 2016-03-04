@@ -324,14 +324,17 @@ protected:
     {
         Vector2 patchOffset;
         float32 patchScale;
-
         Vector4 nearPatchLodOffset; // per edge: left, right, bottom, top
-        Vector4 nearPatchMorph;
 
+        //Members for morphing case
+        Vector4 nearPatchMorph;
         float32 patchLod;
         float32 patchMorph;
         float32 centerPixelOffset;
     };
+
+    static const int32 INSTANCE_DATA_SIZE_MORPHING = sizeof(InstanceData);
+    static const int32 INSTANCE_DATA_SIZE = INSTANCE_DATA_SIZE_MORPHING - sizeof(Vector4) - 3 * sizeof(float32);
 
     struct InstanceDataBuffer
     {
@@ -345,12 +348,13 @@ protected:
     Texture* CreateHeightTexture(Heightmap* heightmap);
 
     void DrawLandscapeInstancing();
-    void DrawPatchInstancing(uint32 level, uint32 x, uint32 y, float32 patchMorph, const Vector4& nearLevel, const Vector4& nearMorph);
+    void DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph = 0.f, const Vector4& nearMorph = Vector4());
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
-    InstanceData* instanceDataPtr = nullptr;
+    uint8* instanceDataPtr = nullptr;
     int32 instanceDataMaxCount = 64; //64 instances - initial value. It's will automatic enhanced if needed.
+    int32 instanceDataSize = 0;
 
     Vector<InstanceDataBuffer*> freeInstanceDataBuffers;
     Vector<InstanceDataBuffer*> usedInstanceDataBuffers;

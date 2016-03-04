@@ -95,6 +95,8 @@ Landscape::Landscape()
     useInstancing = rhi::DeviceCaps().isInstancingSupported;
     useLodMorphing = useInstancing;
 
+    instanceDataSize = useLodMorphing ? INSTANCE_DATA_SIZE_MORPHING : INSTANCE_DATA_SIZE;
+
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
@@ -307,63 +309,72 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap)
     DVASSERT(IsPowerOf2(heightmap->Size()));
 
     Vector<Image*> textureData;
-    textureData.reserve(HighestBitIndex(hmSize));
-
-    uint32 mipSize = hmSize;
-    uint32 step = 1;
-    uint32 mipLevel = 0;
-    uint32* mipData = new uint32[mipSize * mipSize]; //RGBA8888
-
-    while (mipSize)
+    if (useLodMorphing)
     {
-        uint16* mipDataPtr = reinterpret_cast<uint16*>(mipData);
-        for (uint32 y = 0; y < mipSize; ++y)
-        {
-            uint32 mipLastIndex = mipSize - 1;
-            uint16 yy = y * step;
-            uint16 y1 = yy;
-            uint16 y2 = yy;
-            if (y & 0x1 && y != mipLastIndex)
-            {
-                y1 -= step;
-                y2 += step;
-            }
+        textureData.reserve(HighestBitIndex(hmSize));
 
-            for (uint32 x = 0; x < mipSize; ++x)
+        uint32 mipSize = hmSize;
+        uint32 step = 1;
+        uint32 mipLevel = 0;
+        uint32* mipData = new uint32[mipSize * mipSize]; //RGBA8888
+
+        while (mipSize)
+        {
+            uint16* mipDataPtr = reinterpret_cast<uint16*>(mipData);
+            for (uint32 y = 0; y < mipSize; ++y)
             {
-                uint16 xx = x * step;
-                uint16 x1 = xx;
-                uint16 x2 = xx;
-                if (x & 0x1 && x != mipLastIndex)
+                uint32 mipLastIndex = mipSize - 1;
+                uint16 yy = y * step;
+                uint16 y1 = yy;
+                uint16 y2 = yy;
+                if (y & 0x1 && y != mipLastIndex)
                 {
-                    x1 -= step;
-                    x2 += step;
+                    y1 -= step;
+                    y2 += step;
                 }
 
-                *mipDataPtr++ = heightmap->GetHeight(xx, yy);
+                for (uint32 x = 0; x < mipSize; ++x)
+                {
+                    uint16 xx = x * step;
+                    uint16 x1 = xx;
+                    uint16 x2 = xx;
+                    if (x & 0x1 && x != mipLastIndex)
+                    {
+                        x1 -= step;
+                        x2 += step;
+                    }
 
-                uint16 h1 = heightmap->GetHeight(x1, y1);
-                uint16 h2 = heightmap->GetHeightClamp(x2, y2);
-                *mipDataPtr++ = (h1 + h2) >> 1;
+                    *mipDataPtr++ = heightmap->GetHeight(xx, yy);
+
+                    uint16 h1 = heightmap->GetHeight(x1, y1);
+                    uint16 h2 = heightmap->GetHeightClamp(x2, y2);
+                    *mipDataPtr++ = (h1 + h2) >> 1;
+                }
             }
+
+            Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_RGBA8888, reinterpret_cast<uint8*>(mipData));
+            mipImg->mipmapLevel = mipLevel;
+            textureData.push_back(mipImg);
+
+            mipSize >>= 1;
+            step <<= 1;
+            mipLevel++;
         }
 
-        Image* mipImg = Image::CreateFromData(mipSize, mipSize, FORMAT_RGBA8888, reinterpret_cast<uint8*>(mipData));
-        mipImg->mipmapLevel = mipLevel;
-        textureData.push_back(mipImg);
-
-        mipSize >>= 1;
-        step <<= 1;
-        mipLevel++;
+        SafeDeleteArray(mipData);
+    }
+    else
+    {
+        Image* heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
+        textureData.push_back(heightImage);
     }
 
     Texture* tx = Texture::CreateFromData(textureData);
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NEAREST);
+    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, useLodMorphing ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
 
     for (Image* img : textureData)
         img->Release();
-    SafeDeleteArray(mipData);
 
     return tx;
 }
@@ -655,10 +666,7 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
         if (useInstancing)
         {
             float32 levelf = float32(level);
-            float32 morph = subdivPatchInfo->lastSubdivMorph;
-
             Vector4 nearLevel(levelf, levelf, levelf, levelf);
-            Vector4 nearMorph(morph, morph, morph, morph);
 
             SubdivisionPatchInfo* nearPatch[4] = {
                 GetSubdivPatch(level, x - 1, y),
@@ -667,25 +675,44 @@ void Landscape::AddPatchToRender(uint32 level, uint32 x, uint32 y)
                 GetSubdivPatch(level, x, y + 1)
             };
 
-            for (int32 i = 0; i < 4; ++i)
+            if (useLodMorphing)
             {
-                SubdivisionPatchInfo* patch = nearPatch[i];
-                if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
+                float32 morph = subdivPatchInfo->lastSubdivMorph;
+                Vector4 nearMorph(morph, morph, morph, morph);
+
+                for (int32 i = 0; i < 4; ++i)
                 {
-                    if (patch->lastSubdivLevel < level)
+                    SubdivisionPatchInfo* patch = nearPatch[i];
+                    if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
                     {
-                        nearMorph.data[i] = patch->lastSubdivMorph;
-                    }
-                    else if (patch->lastSubdivLevel == level && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
-                    {
-                        nearMorph.data[i] = Max(patch->lastSubdivMorph, morph);
-                    }
+                        if (patch->lastSubdivLevel < level)
+                        {
+                            nearMorph.data[i] = patch->lastSubdivMorph;
+                        }
+                        else if (patch->lastSubdivLevel == level && patch->subdivisionState == SubdivisionPatchInfo::TERMINATED)
+                        {
+                            nearMorph.data[i] = Max(patch->lastSubdivMorph, morph);
+                        }
 
-                    nearLevel.data[i] = float32(patch->lastSubdivLevel);
+                        nearLevel.data[i] = float32(patch->lastSubdivLevel);
+                    }
                 }
-            }
 
-            DrawPatchInstancing(level, x, y, morph, nearLevel, nearMorph);
+                DrawPatchInstancing(level, x, y, nearLevel, morph, nearMorph);
+            }
+            else
+            {
+                for (int32 i = 0; i < 4; ++i)
+                {
+                    SubdivisionPatchInfo* patch = nearPatch[i];
+                    if (patch && patch->subdivisionState != SubdivisionPatchInfo::CLIPPED)
+                    {
+                        nearLevel.data[i] = float32(patch->lastSubdivLevel);
+                    }
+                }
+
+                DrawPatchInstancing(level, x, y, nearLevel);
+            }
         }
         else
         {
@@ -1121,8 +1148,11 @@ void Landscape::AllocateGeometryDataInstancing()
     vLayout.AddStream(rhi::VDF_PER_INSTANCE);
     vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3); //patch position + scale
     vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4); //near patch lodOffset
-    vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4); //near patch morph
-    vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 3); //patch lod + morph + pixelMappingOffset
+    if (useLodMorphing)
+    {
+        vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 4); //near patch morph
+        vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 3); //patch lod + morph + pixelMappingOffset
+    }
 
     batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 
@@ -1152,7 +1182,7 @@ void Landscape::DrawLandscapeInstancing()
         if (freeInstanceDataBuffers.size())
         {
             instanceDataBuffer = freeInstanceDataBuffers.back();
-            if (instanceDataBuffer->bufferSize < subdivPatchesDrawCount * sizeof(InstanceData))
+            if (instanceDataBuffer->bufferSize < subdivPatchesDrawCount * instanceDataSize)
             {
                 instanceDataMaxCount = Max(instanceDataMaxCount, subdivPatchesDrawCount);
 
@@ -1165,7 +1195,7 @@ void Landscape::DrawLandscapeInstancing()
         if (!instanceDataBuffer)
         {
             rhi::VertexBuffer::Descriptor instanceBufferDesc;
-            instanceBufferDesc.size = instanceDataMaxCount * sizeof(InstanceData);
+            instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
             instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
 
             instanceDataBuffer = new InstanceDataBuffer();
@@ -1179,7 +1209,7 @@ void Landscape::DrawLandscapeInstancing()
         renderBatchArray[0].renderBatch->instanceCount = subdivPatchesDrawCount;
         activeRenderBatchArray.push_back(renderBatchArray[0].renderBatch);
 
-        instanceDataPtr = static_cast<InstanceData*>(rhi::MapVertexBuffer(instanceDataBuffer->buffer, 0, subdivPatchesDrawCount * sizeof(InstanceData)));
+        instanceDataPtr = static_cast<uint8*>(rhi::MapVertexBuffer(instanceDataBuffer->buffer, 0, subdivPatchesDrawCount * instanceDataSize));
 
         AddPatchToRender(0, 0, 0);
 
@@ -1190,41 +1220,32 @@ void Landscape::DrawLandscapeInstancing()
     }
 }
 
-void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, float32 patchMorph, const Vector4& nearLevel, const Vector4& nearMorph)
+void Landscape::DrawPatchInstancing(uint32 level, uint32 xx, uint32 yy, const Vector4& nearLevel, float32 patchMorph /* = 0.f */, const Vector4& nearMorph /* = Vector4() */)
 {
     SubdivisionLevelInfo& levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo* patch = &patchQuadArray[levelInfo.offset + (yy << level) + xx];
 
-    instanceDataPtr->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
-    instanceDataPtr->patchScale = 1.f / levelInfo.size;
-
-    int32 baseLod = subdivLevelCount - level - 1;
     float32 levelf = float32(level);
-    float32 baseLodf = float32(baseLod);
+    InstanceData* instanceData = reinterpret_cast<InstanceData*>(instanceDataPtr);
 
-    instanceDataPtr->centerPixelOffset = .5f / (1 << (heightmapSizePow2 - baseLod));
-    instanceDataPtr->nearPatchMorph = nearMorph;
-    instanceDataPtr->patchLod = baseLodf;
-    instanceDataPtr->patchMorph = patchMorph;
+    instanceData->patchOffset = Vector2(float32(xx) / levelInfo.size, float32(yy) / levelInfo.size);
+    instanceData->patchScale = 1.f / levelInfo.size;
+    instanceData->nearPatchLodOffset = Vector4(levelf - nearLevel.x,
+                                               levelf - nearLevel.y,
+                                               levelf - nearLevel.z,
+                                               levelf - nearLevel.w);
 
-    instanceDataPtr->nearPatchLodOffset = Vector4(levelf - nearLevel.x,
-                                                  levelf - nearLevel.y,
-                                                  levelf - nearLevel.z,
-                                                  levelf - nearLevel.w);
-
-    uint32 lastPatchIndex = levelInfo.size - 1;
-    if (xx == lastPatchIndex)
+    if (useLodMorphing)
     {
-        instanceDataPtr->nearPatchLodOffset.z = -baseLodf;
-        instanceDataPtr->nearPatchMorph.z = 1.f;
-    }
-    if (yy == lastPatchIndex)
-    {
-        instanceDataPtr->nearPatchLodOffset.w = -baseLodf;
-        instanceDataPtr->nearPatchMorph.w = 1.f;
+        int32 baseLod = subdivLevelCount - level - 1;
+
+        instanceData->nearPatchMorph = nearMorph;
+        instanceData->patchLod = float32(baseLod);
+        instanceData->patchMorph = patchMorph;
+        instanceData->centerPixelOffset = .5f / (1 << (heightmapSizePow2 - baseLod));
     }
 
-    ++instanceDataPtr;
+    instanceDataPtr += instanceDataSize;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
