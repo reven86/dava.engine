@@ -39,10 +39,6 @@
 
 ModificationWidget::ModificationWidget(QWidget* parent)
     : QWidget(parent)
-    , curScene(nullptr)
-    , groupMode(false)
-    , pivotMode(PivotAbsolute)
-    , modifMode(ST_MODIF_OFF)
 {
     auto horizontalLayout = new QHBoxLayout(this);
     horizontalLayout->setSpacing(2);
@@ -241,259 +237,37 @@ void ModificationWidget::ReloadValues()
 
 void ModificationWidget::ApplyValues(ST_Axis axis)
 {
+    if (curScene == nullptr)
+        return;
+
+    DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
+    EntityGroup selection = curScene->selectionSystem->GetSelection();
+    selection.FilterChildrenComponents();
+
     switch (modifMode)
     {
     case ST_MODIF_MOVE:
-        ApplyMoveValues(axis);
+    {
+        curScene->modifSystem->ApplyMoveValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
+    }
+
     case ST_MODIF_ROTATE:
-        ApplyRotateValues(axis);
+    {
+        curScene->modifSystem->ApplyRotateValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
+    }
+
     case ST_MODIF_SCALE:
-        ApplyScaleValues(axis);
+    {
+        curScene->modifSystem->ApplyScaleValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
+    }
     default:
         break;
     }
 
     ReloadValues();
-}
-
-void ModificationWidget::ApplyMoveValues(ST_Axis axis)
-{
-    DAVA::float32 x = xAxisModify->value();
-    DAVA::float32 y = yAxisModify->value();
-    DAVA::float32 z = zAxisModify->value();
-
-    if (NULL != curScene)
-    {
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-        const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
-
-        if (selection.Size() > 1)
-        {
-            curScene->BeginBatch("Multiple transform");
-        }
-
-        for (const auto& item : selection.GetContent())
-        {
-            DAVA::Entity* entity = item.first;
-            DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
-            DAVA::Vector3 origPos = origMatrix.GetTranslationVector();
-            DAVA::Vector3 newPos = origPos;
-
-            if (pivotMode == PivotAbsolute)
-            {
-                switch (axis)
-                {
-                case ST_AXIS_X:
-                    newPos.x = x;
-                    break;
-                case ST_AXIS_Y:
-                    newPos.y = y;
-                    break;
-                case ST_AXIS_Z:
-                    if (!isSnappedToLandscape)
-                    {
-                        newPos.z = z;
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-            else
-            {
-                switch (axis)
-                {
-                case ST_AXIS_X:
-                    newPos.x += x;
-                    break;
-                case ST_AXIS_Y:
-                    newPos.y += y;
-                    break;
-                case ST_AXIS_Z:
-                    if (!isSnappedToLandscape)
-                    {
-                        newPos.z += z;
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            DAVA::Matrix4 newMatrix = origMatrix;
-            newMatrix.SetTranslationVector(newPos);
-
-            curScene->Exec(new TransformCommand(entity, origMatrix, newMatrix));
-        }
-
-        if (selection.Size() > 1)
-        {
-            curScene->EndBatch();
-        }
-    }
-}
-
-void ModificationWidget::ApplyRotateValues(ST_Axis axis)
-{
-    DAVA::float32 x = DAVA::DegToRad(xAxisModify->value());
-    DAVA::float32 y = DAVA::DegToRad(yAxisModify->value());
-    DAVA::float32 z = DAVA::DegToRad(zAxisModify->value());
-
-    if (NULL != curScene)
-    {
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-
-        if (selection.Size() > 1)
-        {
-            curScene->BeginBatch("Multiple transform");
-        }
-
-        for (const auto& item : selection.GetContent())
-        {
-            DAVA::Entity* entity = item.first;
-            DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
-
-            DAVA::Vector3 pos, scale, rotate;
-            if (origMatrix.Decomposition(pos, scale, rotate))
-            {
-                DAVA::Matrix4 newMatrix;
-                DAVA::Matrix4 rotationMatrix;
-                DAVA::Matrix4 transformMatrix;
-
-                DAVA::Matrix4 moveToZeroPos;
-                DAVA::Matrix4 moveFromZeroPos;
-
-                moveToZeroPos.CreateTranslation(-origMatrix.GetTranslationVector());
-                moveFromZeroPos.CreateTranslation(origMatrix.GetTranslationVector());
-
-                if (pivotMode == PivotAbsolute)
-                {
-                    switch (axis)
-                    {
-                    case ST_AXIS_X:
-                        rotationMatrix.CreateRotation(DAVA::Vector3(1, 0, 0), x - rotate.x);
-                        break;
-                    case ST_AXIS_Y:
-                        rotationMatrix.CreateRotation(DAVA::Vector3(0, 1, 0), y - rotate.y);
-                        break;
-                    case ST_AXIS_Z:
-                        rotationMatrix.CreateRotation(DAVA::Vector3(0, 0, 1), z - rotate.z);
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                else
-                {
-                    switch (axis)
-                    {
-                    case ST_AXIS_X:
-                        rotationMatrix.CreateRotation(DAVA::Vector3(1, 0, 0), x);
-                        break;
-                    case ST_AXIS_Y:
-                        rotationMatrix.CreateRotation(DAVA::Vector3(0, 1, 0), y);
-                        break;
-                    case ST_AXIS_Z:
-                        rotationMatrix.CreateRotation(DAVA::Vector3(0, 0, 1), z);
-                        break;
-                    default:
-                        break;
-                    }
-                }
-
-                newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
-                newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
-
-                curScene->Exec(new TransformCommand(entity, origMatrix, newMatrix));
-            }
-        }
-
-        if (selection.Size() > 1)
-        {
-            curScene->EndBatch();
-        }
-    }
-}
-
-void ModificationWidget::ApplyScaleValues(ST_Axis axis)
-{
-    DAVA::float32 scaleValue = 1.0f;
-
-    switch (axis)
-    {
-    case ST_AXIS_X:
-        scaleValue = xAxisModify->value();
-        break;
-    case ST_AXIS_Y:
-        scaleValue = yAxisModify->value();
-        break;
-    case ST_AXIS_Z:
-        scaleValue = zAxisModify->value();
-        break;
-    default:
-        break;
-    }
-
-    if (NULL != curScene)
-    {
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-
-        if (selection.Size() > 1)
-        {
-            curScene->BeginBatch("Multiple transform");
-        }
-
-        for (const auto& item : selection.GetContent())
-        {
-            DAVA::Entity* entity = item.first;
-            DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
-
-            DAVA::Vector3 pos, scale, rotate;
-            if (origMatrix.Decomposition(pos, scale, rotate))
-            {
-                DAVA::Matrix4 newMatrix;
-                DAVA::Matrix4 scaleMatrix;
-                DAVA::Matrix4 transformMatrix;
-
-                DAVA::Matrix4 moveToZeroPos;
-                DAVA::Matrix4 moveFromZeroPos;
-
-                moveToZeroPos.CreateTranslation(-origMatrix.GetTranslationVector());
-                moveFromZeroPos.CreateTranslation(origMatrix.GetTranslationVector());
-
-                DAVA::float32 newEntityScale;
-                if (pivotMode == PivotAbsolute)
-                {
-                    if (0 != scale.x)
-                    {
-                        newEntityScale = scaleValue / scale.x;
-                    }
-                    else
-                    {
-                        newEntityScale = 0;
-                    }
-                }
-                else
-                {
-                    newEntityScale = scaleValue;
-                }
-
-                scaleMatrix.CreateScale(DAVA::Vector3(newEntityScale, newEntityScale, newEntityScale));
-                newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
-                newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
-
-                curScene->Exec(new TransformCommand(entity, origMatrix, newMatrix));
-            }
-        }
-
-        if (selection.Size() > 1)
-        {
-            curScene->EndBatch();
-        }
-    }
 }
 
 void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const Command2* command, bool redo)

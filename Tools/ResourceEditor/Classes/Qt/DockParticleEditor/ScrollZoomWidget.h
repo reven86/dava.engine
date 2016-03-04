@@ -78,12 +78,12 @@ signals:
     void ValueChanged();
 
 protected:
-    virtual void paintEvent(QPaintEvent*, QPainter& painter);
-    virtual void mouseMoveEvent(QMouseEvent*);
-    virtual void mousePressEvent(QMouseEvent*);
-    virtual void mouseReleaseEvent(QMouseEvent*);
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
 
-    virtual void wheelEvent(QWheelEvent*);
+    void wheelEvent(QWheelEvent*) override;
 
     virtual void UpdateSizePolicy() = 0;
     virtual QRect GetGraphRect() const = 0;

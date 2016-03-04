@@ -41,7 +41,6 @@ void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<
     DAVA::FilePath filePath(baseName);
 
     std::unique_ptr<DAVA::TextureDescriptor> descriptor(new DAVA::TextureDescriptor());
-    bool descriptorReady = false;
     if (!descriptor->Load(filePath))
         return;
 

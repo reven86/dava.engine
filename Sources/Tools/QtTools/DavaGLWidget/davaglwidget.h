@@ -32,10 +32,13 @@
 
 #include "Render/RenderBase.h" // need to include glew.h in right order
 
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+PUSH_QT_WARNING_SUPRESSOR
 #include <QWidget>
 #include <QMimeData>
 #include <QScopedPointer>
 #include <QQuickWindow>
+POP_QT_WARNING_SUPRESSOR
 
 class QDragMoveEvent;
 class DavaGLWidget;
@@ -48,7 +51,9 @@ class DavaGLView
 {
     friend class DavaGLWidget;
 
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
 
 public:
     DavaGLView();
@@ -79,7 +84,9 @@ private:
 class DavaGLWidget
     : public QWidget
 {
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
     friend class FocusTracker;
 
 public:

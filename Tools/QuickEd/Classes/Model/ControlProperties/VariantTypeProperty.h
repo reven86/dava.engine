@@ -55,9 +55,9 @@ public:
 
     ePropertyType GetType() const override;
 
-    DAVA::VariantType GetValue() const;
-    const EnumMap* GetEnumMap() const;
-    void ApplyValue(const DAVA::VariantType& value);
+    DAVA::VariantType GetValue() const override;
+    const EnumMap* GetEnumMap() const override;
+    void ApplyValue(const DAVA::VariantType& value) override;
 
 private:
     DAVA::VariantType& value;

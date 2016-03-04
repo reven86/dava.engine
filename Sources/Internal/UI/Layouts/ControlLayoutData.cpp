@@ -156,7 +156,7 @@ float32 ControlLayoutData::GetHeight() const
 
 bool ControlLayoutData::HaveToSkipControl(bool skipInvisible) const
 {
-    if (skipInvisible && !control->GetVisible())
+    if (skipInvisible && !control->GetVisibilityFlag())
         return true;
 
     UIIgnoreLayoutComponent* ignoreComponent = control->GetComponent<UIIgnoreLayoutComponent>();

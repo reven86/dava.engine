@@ -36,7 +36,7 @@
 
 namespace DAVA
 {
-static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
+static const FastName UISCROLL_VIEW_CONTAINER_NAME("scrollContainerControl");
 
 UIScrollView::UIScrollView(const Rect& rect)
     : UIControl(rect)
@@ -112,7 +112,7 @@ void UIScrollView::PushContentToBounds(UIControl* parentControl)
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl* childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         Rect childRect = childControl->GetRect();
@@ -145,7 +145,7 @@ Vector2 UIScrollView::GetControlOffset(UIControl* parentControl, Vector2 current
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl* childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         Rect childRect = childControl->GetRect();
@@ -168,7 +168,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl* parentControl, Vector2 currentMaxSiz
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
     {
         UIControl* childControl = (*it);
-        if (!(childControl && childControl->GetVisible()))
+        if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
         const Rect& childRect = childControl->GetRect();

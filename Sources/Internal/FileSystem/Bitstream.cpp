@@ -33,8 +33,8 @@ namespace DAVA
 {
 Bitstream::Bitstream(void* bitstreamPointer, uint32 bitstreamLength)
 {
-    head = (uint32*)bitstreamPointer;
-    tail = (uint32*)bitstreamPointer;
+    head = reinterpret_cast<uint32*>(bitstreamPointer);
+    tail = reinterpret_cast<uint32*>(bitstreamPointer);
 
     uint32 tmBuffer = *head;
     bufferA = tmBuffer;
@@ -67,12 +67,12 @@ void Bitstream::Reset()
 
 uint32 Bitstream::GetPosition()
 {
-    return ((uint32)(tail - head) * 32 + position);
+    return (static_cast<uint32>(tail - head) * 32 + position);
 }
 
 uint32 Bitstream::Length()
 {
-    uint32 tmByteCount = (uint32)((uint8*)tail - (uint8*)head);
+    uint32 tmByteCount = static_cast<uint32>(reinterpret_cast<uint8*>(tail) - reinterpret_cast<uint8*>(head));
 
     if (position)
     {

@@ -287,7 +287,7 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
         painter.fillRect(GetPointRect(GetDrawPoint(newPoint)), pointBrush);
     }
 
-    ScrollZoomWidget::paintEvent(e, painter);
+    ScrollZoomWidget::paintEvent(e);
 }
 
 void TimeLineWidget::DrawLine(QPainter* painter, uint32 lineId)

@@ -35,7 +35,7 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
     : QObject(parent)
     , backgroundControl(new UIControl)
 {
-    backgroundControl->SetName("Background control of scroll area controller");
+    backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
@@ -43,6 +43,11 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
     UIScreenManager::Instance()->SetFirst(0);
 
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
+}
+
+ScrollAreaController::~ScrollAreaController()
+{
+    UIScreenManager::Instance()->ResetScreen();
 }
 
 void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
@@ -127,6 +132,17 @@ qreal ScrollAreaController::GetMaxScale() const
     return maxScale;
 }
 
+QPoint ScrollAreaController::GetMinimumPos() const
+{
+    return QPoint(0, 0);
+}
+
+QPoint ScrollAreaController::GetMaximumPos() const
+{
+    QSize maxSize = canvasSize - viewSize;
+    return QPoint(maxSize.width(), maxSize.height());
+}
+
 void ScrollAreaController::UpdateCanvasContentSize()
 {
     Vector2 contentSize;
@@ -166,6 +182,10 @@ void ScrollAreaController::SetViewSize(QSize viewSize_)
 
 void ScrollAreaController::SetPosition(QPoint position_)
 {
+    QPoint minPos = GetMinimumPos();
+    QPoint maxPos = GetMaximumPos();
+    position_.setX(qBound(minPos.x(), position_.x(), maxPos.x()));
+    position_.setY(qBound(minPos.y(), position_.y(), maxPos.y()));
     if (position_ != position)
     {
         position = position_;
