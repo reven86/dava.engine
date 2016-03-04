@@ -35,20 +35,16 @@ ComboBox {
             }
         }
     }
-
     onEditTextChanged: {
-        return;
         if(fileSystemHelper.IsDirExists(editText)) {
             var newItem = editText;
-            var found = false;
-            for(var i = model.count - 1; i >= 0 && !found; --i) {
+            for(var i = model.count - 1; i >= 0; --i) {
                 var item = model.get(i).text;
                 if(item === newItem
                         || item + "/" === newItem
                         || newItem + "/" === item) {
-                    found = true;
-                    newItem = item;
-                    model.remove(i, 1);
+                    currentIndex = i;
+                    return;
                 }
             }
             model.insert(0, {"text": editText});
