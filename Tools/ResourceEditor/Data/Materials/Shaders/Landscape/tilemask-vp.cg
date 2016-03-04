@@ -68,54 +68,57 @@ VPROG_BEGIN
 
 #if USE_INSTANCING
 
-    float2 in_pos = VP_IN_TEXCOORD0.xy;
-    float2 edgeShiftDirection = VP_IN_TEXCOORD0.zw;
-    float4 edgeMask = VP_IN_TEXCOORD1;
-	float edgeVertexIndex = VP_IN_TEXCOORD2.x;
+    float2 in_pos = VP_IN_TEXCOORD0.xy; //Относительные координаты вершины в пространстве патча. [0.0, 1.0]
+    float2 edgeShiftDirection = VP_IN_TEXCOORD0.zw; //Вектор направления сдвига вершины для сшивания патчей разных лодов. Актуально только для вершин на ребрах патча. Направлен в сторону вершины с 0-ым индексом (см ниже). Длина равна 1.0 / QUADS_IN_PATCH_COUNT.
+    float4 edgeMask = VP_IN_TEXCOORD1; //Маска принадлежности вершины какому-либо ребру патча (л, в, п, н). Содержит максимум одну единицу. Для внутренних и угловых вершин маска нулевая.
+	float edgeVertexIndex = VP_IN_TEXCOORD2.x; //Индекс вершины на ребре. #0 - один угол, #16 - другой. Необходимо для высчитывания смещения вершины для сшивания лодов. У внутренних вершин - всегда нулевой.
 	
-    float3 patchOffsetScale = VP_IN_TEXCOORD3.xyz;
-	float4 nearPatchLodOffset = VP_IN_TEXCOORD4;
+    float3 patchOffsetScale = VP_IN_TEXCOORD3.xyz; //Позиция (x, y) и масштаб (z) патча в относительных числах в пространстве ландшафта.
+	float4 nearPatchLodOffset = VP_IN_TEXCOORD4; //Разница номеров соседних лодов относительно текущего патча. Значение компонентов вектора соотвествует edgeMask. 
 	
-	float lodOffset = dot(edgeMask, nearPatchLodOffset);	
-    float edgeShiftAmount = pow(2.0, lodOffset);
-	in_pos += edgeShiftDirection * fmod(edgeVertexIndex, edgeShiftAmount);
+	float lodOffset = dot(edgeMask, nearPatchLodOffset); //Высчитываем сдвиг лода для текущей вершины. Для углов и внутренних вершин всегда 0. 
+    float edgeShiftAmount = pow(2.0, lodOffset); //'Модуль' смещения вершин на ребрах. Например, "4" означает, что каждая 4-я вершина ребра остаётся на месте, остальные сдвигаются на остаток от деления.
+	in_pos += edgeShiftDirection * fmod(edgeVertexIndex, edgeShiftAmount); //fmod возвращает смещение в 'квадаратах'. Длина вектора 'edgeShiftDirection' даёт смещение в относительных координатах (в пространстве патча).
 	
-    float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
+    float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //Высчитываем координаты вершины в пространстве ландшафта (если угодно - карты высот).
 	
 #if LOD_MORPHING
 	
-	float edgeMaskNull = VP_IN_TEXCOORD2.y;
-	float4 nearPatchMorph = VP_IN_TEXCOORD5;
+	float edgeMaskNull = VP_IN_TEXCOORD2.y; //0.0 - если маска ребер нулевая, 1.0 в притивном случае. Используется для легкой оптимизации расчётов.
+	float4 nearPatchMorph = VP_IN_TEXCOORD5; //Значение morph-коэффициента соседних патчей. Каждое из значение от 0.0 до 1.0.
 	
-	float baseLod = VP_IN_TEXCOORD6.x;
-	float patchMorph = VP_IN_TEXCOORD6.y;
-	float basePixelOffset = VP_IN_TEXCOORD6.z;
+	float baseLod = VP_IN_TEXCOORD6.x; //Номер лода текущего патча.
+	float patchMorph = VP_IN_TEXCOORD6.y; //morph-коефициент текущего патча.
+	float basePixelOffset = VP_IN_TEXCOORD6.z; //Смещение на пол-текселя для текущего mip-уровня текстуры. Высчитывается как 0.5 / ( 2 ^ baseLod ).
 	
 	
-	float2 zeroLod = STEP(1.0, relativePosition);
-	float zeroLodMul = 1.0 - min(1.0, zeroLod.x + zeroLod.y);
+	float2 zeroLod = STEP(1.0, relativePosition); //'Вычленяем' крайние вершины ландшафта с тех двух сторон, где крайние вершины вылазят за текстуру. Эти вершины должны фетчить 0-вой mip.
+	float zeroLodMul = 1.0 - min(1.0, zeroLod.x + zeroLod.y); //'Множитель' для зануления номера mip'a в дальнейшем. Равен 0.0, если хотябы одна из компонент позиции вершины равна 1.0
 
-	float sampleLod = (baseLod + lodOffset) * zeroLodMul;
-	float samplePixelOffset = basePixelOffset * edgeShiftAmount * zeroLodMul;
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
+	float sampleLod = (baseLod + lodOffset) * zeroLodMul; //Высчитывается mip-уровень, из которого нужно фетчить. Может зануляться для крайних вершин ландшафта.
+	float samplePixelOffset = basePixelOffset * edgeShiftAmount * zeroLodMul; //Смещение на пол-текселя. Умножение на 'edgeShiftAmount' даёт 0.5 / ( 2 ^ ( baseLod + lodOffset ) ). Может зануляться для крайних вершин ландшафта.
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod); //Фетч.
 	
-	float morphAmount = dot(edgeMask, nearPatchMorph) + patchMorph * edgeMaskNull;
+	float morphAmount = dot(edgeMask, nearPatchMorph) + patchMorph * edgeMaskNull; //Высчитывается значение morphing'а. Для вершин на рёбрах берется из значений соседних патчей, для угловых и внутренних - равен значению текущего патча.
+	
+	//Высчитываем итоговую высоту вершины. Текстура RGBA8888. В текстуре хранится два значения высоты. Первые 16 бит (RG) содержат точное значение высоты для текущего лода.
+	//Вторые 16 бит (BA) содержат значение высоты следущего лода. Причём значение высоты 'между вершинами' усреднено, что позволяет разместить промежуточные вершины текущего лода ровно по середине ребер треугольников следующего лода. 
+	// float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895)); //Конвертируем 16 бит в одно значение. RG - точная высота
+	// float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895)); //BA - 'усредненная' высота.
+	// float height = lerp(h1, h0, morphAmount); //Интерполируем два значения по morph-коэффициенту. 0.0 - меньшая детализация, 1.0 - бОльшая детализация.
+	
+	//Код ниже делает тоже самое, что описано выше, но только за потенциально-меньшее количество умножений. Итоговое значение высоты в диапазоне [0.0, 1.0].
 	float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
 	float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	
-	//// height calculation is equal to:
-	//float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895)); // 'accurate' heightmap value
-	//float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895)); // 'averaged' heightmap value
-	//float height = lerp(h1, h0, morphAmount);
-	
 #else
 	
-	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition, 0.0);
-	float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
+	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition, 0.0); //В варианте без морфинга просто фетчим высоту из текстуры
+	float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303)); //Текстура RGBA4444, константами конвертируем 16 bit в значение от 0.0 до 1.0
 	
 #endif
 
-    float3 vx_position = float3( relativePosition - 0.5, height ) * boundingBoxSize;
+    float3 vx_position = float3( relativePosition - 0.5, height ) * boundingBoxSize; //Переводим координаты вершины из относительных в мировые ландшафта.
 	
     VP_OUT_POSITION = mul( float4(vx_position.x, vx_position.y, vx_position.z, 1.0), worldViewProjMatrix );
     VP_OUT(texCoord) = float2(relativePosition.x, 1.0 - relativePosition.y);
