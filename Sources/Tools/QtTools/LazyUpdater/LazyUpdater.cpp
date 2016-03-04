@@ -43,10 +43,20 @@ LazyUpdater::LazyUpdater(Updater _updater, int updateInterval, QObject* parent /
 
 void LazyUpdater::Update()
 {
-    timer->start(); //if running timer will be restarted with given interval
+    needUpdate = true;
+
+    if (!timer->isActive())
+    {
+        OnTimer();
+    }
 }
 
 void LazyUpdater::OnTimer()
 {
-    updater();
+    if (needUpdate)
+    {
+        updater();
+        needUpdate = false;
+        timer->start();
+    }
 }

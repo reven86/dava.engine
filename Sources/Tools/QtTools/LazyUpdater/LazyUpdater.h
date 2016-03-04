@@ -52,6 +52,7 @@ private slots:
 private:
     Updater updater;
     QTimer* timer = nullptr;
+    bool needUpdate = false;
 };
 
 #endif // __TOOL_LAZY_UPDATER_H__
