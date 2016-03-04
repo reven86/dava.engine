@@ -232,7 +232,6 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         {
             return Themes::GetPrototypeColor();
         }
-        return QVariant();
     }
     }
 
