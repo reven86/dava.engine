@@ -245,7 +245,7 @@ protected:
     SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
     Vector<PatchQuadInfo> patchQuadArray;
     Vector<SubdivisionPatchInfo> subdivPatchArray;
-    int32 subdivPatchesDrawCount = 0;
+    uint32 subdivPatchesDrawCount = 0;
 
     //////Metrics
     Vector3 cameraPos;
@@ -313,7 +313,7 @@ protected:
     struct VertexInstancing
     {
         Vector2 position;
-        Vector2 gluDir;
+        Vector2 edgeShiftDirection;
         Vector4 edgeMask;
 
         float32 edgeVertexIndex;
@@ -353,8 +353,8 @@ protected:
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
     uint8* instanceDataPtr = nullptr;
-    int32 instanceDataMaxCount = 64; //64 instances - initial value. It's will automatic enhanced if needed.
-    int32 instanceDataSize = 0;
+    uint32 instanceDataMaxCount = 64; //64 instances - initial value. It's will automatic enhanced if needed.
+    uint32 instanceDataSize = 0;
 
     Vector<InstanceDataBuffer*> freeInstanceDataBuffers;
     Vector<InstanceDataBuffer*> usedInstanceDataBuffers;

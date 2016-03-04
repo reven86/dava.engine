@@ -1065,7 +1065,7 @@ void Landscape::AllocateGeometryDataInstancing()
             VertexInstancing& vertex = patchVertices[y * PATCH_SIZE_VERTICES + x];
             vertex.position = Vector2(x * quadSize, y * quadSize);
             vertex.edgeMask = Vector4(0.f, 0.f, 0.f, 0.f);
-            vertex.gluDir = Vector2(0.f, 0.f);
+            vertex.edgeShiftDirection = Vector2(0.f, 0.f);
             vertex.edgeVertexIndex = 0.f;
             vertex.edgeMaskNull = 1.f;
 
@@ -1086,25 +1086,25 @@ void Landscape::AllocateGeometryDataInstancing()
     {
         //x = 0; y = i; left side of patch without corners
         patchVertices[i * PATCH_SIZE_VERTICES].edgeMask = Vector4(1.f, 0.f, 0.f, 0.f);
-        patchVertices[i * PATCH_SIZE_VERTICES].gluDir = Vector2(0.f, 1.f) / PATCH_SIZE_QUADS;
+        patchVertices[i * PATCH_SIZE_VERTICES].edgeShiftDirection = Vector2(0.f, 1.f) / PATCH_SIZE_QUADS;
         patchVertices[i * PATCH_SIZE_VERTICES].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
         patchVertices[i * PATCH_SIZE_VERTICES].edgeMaskNull = 0.f;
 
         //x = i; y = 0; bottom side of patch without corners
         patchVertices[i].edgeMask = Vector4(0.f, 1.f, 0.f, 0.f);
-        patchVertices[i].gluDir = Vector2(1.f, 0.f) / PATCH_SIZE_QUADS;
+        patchVertices[i].edgeShiftDirection = Vector2(1.f, 0.f) / PATCH_SIZE_QUADS;
         patchVertices[i].edgeVertexIndex = float32(PATCH_SIZE_QUADS - i);
         patchVertices[i].edgeMaskNull = 0.f;
 
         //x = PATCH_QUAD_COUNT; y = i; right side of patch without corners
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMask = Vector4(0.f, 0.f, 1.f, 0.f);
-        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].gluDir = Vector2(0.f, -1.f) / PATCH_SIZE_QUADS;
+        patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeShiftDirection = Vector2(0.f, -1.f) / PATCH_SIZE_QUADS;
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeVertexIndex = float32(i);
         patchVertices[i * PATCH_SIZE_VERTICES + PATCH_SIZE_QUADS].edgeMaskNull = 0.f;
 
         //x = i; y = PATCH_QUAD_COUNT; top side of patch without corners
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMask = Vector4(0.f, 0.f, 0.f, 1.f);
-        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].gluDir = Vector2(-1.f, 0.f) / PATCH_SIZE_QUADS;
+        patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeShiftDirection = Vector2(-1.f, 0.f) / PATCH_SIZE_QUADS;
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeVertexIndex = float32(i);
         patchVertices[PATCH_SIZE_QUADS * PATCH_SIZE_VERTICES + i].edgeMaskNull = 0.f;
     }

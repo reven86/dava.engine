@@ -4,7 +4,7 @@
 
 	VPROG_IN_BEGIN
 		VPROG_IN_STREAM_VERTEX
-			VPROG_IN_TEXCOORD0(4) //position + gluDirection
+			VPROG_IN_TEXCOORD0(4) //position + edgeShiftDirection
 			VPROG_IN_TEXCOORD1(4) //edge mask
 			VPROG_IN_TEXCOORD2(2) //edgeVertexIndex + edgeMaskNull
 		VPROG_IN_STREAM_INSTANCE
@@ -69,7 +69,7 @@ VPROG_BEGIN
 #if USE_INSTANCING
 
     float2 in_pos = VP_IN_TEXCOORD0.xy;
-    float2 gluDir = VP_IN_TEXCOORD0.zw;
+    float2 edgeShiftDirection = VP_IN_TEXCOORD0.zw;
     float4 edgeMask = VP_IN_TEXCOORD1;
 	float edgeVertexIndex = VP_IN_TEXCOORD2.x;
 	
@@ -77,8 +77,8 @@ VPROG_BEGIN
 	float4 nearPatchLodOffset = VP_IN_TEXCOORD4;
 	
 	float lodOffset = dot(edgeMask, nearPatchLodOffset);	
-    float gluAmount = pow(2.0, lodOffset);
-	in_pos += gluDir * fmod(edgeVertexIndex, gluAmount);
+    float edgeShiftAmount = pow(2.0, lodOffset);
+	in_pos += edgeShiftDirection * fmod(edgeVertexIndex, edgeShiftAmount);
 	
     float2 relativePosition = patchOffsetScale.xy + in_pos.xy * patchOffsetScale.z; //[0, 1]
 	
@@ -96,14 +96,14 @@ VPROG_BEGIN
 	float zeroLodMul = 1.0 - min(1.0, zeroLod.x + zeroLod.y);
 
 	float sampleLod = (baseLod + lodOffset) * zeroLodMul;
-	float samplePixelOffset = basePixelOffset * gluAmount * zeroLodMul;
+	float samplePixelOffset = basePixelOffset * edgeShiftAmount * zeroLodMul;
 	float4 heightmapSample = VP_TEXTURE2D(heightmap, relativePosition + samplePixelOffset, sampleLod);
 	
 	float morphAmount = dot(edgeMask, nearPatchMorph) + patchMorph * edgeMaskNull;
 	float2 hmSampleMorphed = lerp(heightmapSample.zw, heightmapSample.xy, morphAmount);
 	float height = dot(hmSampleMorphed, float2(0.0038910506, 0.99610895));
 	
-	//// height calculation equal to:
+	//// height calculation is equal to:
 	//float h0 = dot(heightmapSample.xy, float2(0.0038910506, 0.99610895)); // 'accurate' heightmap value
 	//float h1 = dot(heightmapSample.zw, float2(0.0038910506, 0.99610895)); // 'averaged' heightmap value
 	//float height = lerp(h1, h0, morphAmount);
