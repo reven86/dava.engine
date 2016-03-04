@@ -44,12 +44,11 @@ public:
 
     void SetFirst(int screenId);
     void SetScreen(int screenId, UIScreenTransition* transition = 0);
+    void ResetScreen();
 
     UIScreen* GetScreen(int screenId);
     UIScreen* GetScreen();
     int32 GetScreenId();
-
-    void ScreenSizeChanged();
 
 private:
     void ActivateGLController();

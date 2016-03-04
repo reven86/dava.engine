@@ -27,39 +27,16 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SWITCH_NODE_H__
-#define __DAVAENGINE_SWITCH_NODE_H__
+#ifndef __PAINT_HEIGHT_DELTA_H__
+#define __PAINT_HEIGHT_DELTA_H__
 
-#include "Scene3D/Entity.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
+#include "DAVAEngine.h"
 
-namespace DAVA
+namespace PaintHeightDelta
 {
-class SwitchNode : public Entity
-{
-protected:
-    ~SwitchNode()
-    {
-    }
+void Execute(const DAVA::FilePath& targetImagePath, DAVA::float32 refDelta, DAVA::Heightmap* srcHeightmap,
+             DAVA::uint32 targetImageWidth, DAVA::uint32 targetImageHeight, DAVA::float32 targetTerrainHeight,
+             const DAVA::Vector<DAVA::Color>& pixelColors);
+}
 
-public:
-    SwitchNode();
-
-    virtual Entity* Clone(Entity* dstNode = NULL);
-    virtual void Update(float32 timeElapsed);
-    virtual void AddNode(Entity* node);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
-
-    void SetSwitchIndex(int32 switchIndex);
-    int32 GetSwitchIndex();
-
-private:
-    int32 oldSwitchIndex;
-    int32 newSwitchIndex;
-
-    void ReapplySwitch();
-};
-};
-
-#endif //__DAVAENGINE_SWITCH_NODE_H__
+#endif

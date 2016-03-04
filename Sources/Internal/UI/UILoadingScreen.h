@@ -27,62 +27,35 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__
-#define __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__
+#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
+#define __DAVAENGINE_UI_LOADING_SCREEN_H__
 
-#include "Scene3D/Entity.h"
-#include "Scene3D/SceneNodeAnimation.h"
-#include "Base/EventDispatcher.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIScreen.h"
 
 namespace DAVA
 {
-class SceneNodeAnimationList : public Entity
+class UILoadingScreen : public UIScreen
 {
-protected:
-    virtual ~SceneNodeAnimationList();
-
 public:
-    enum
-    {
-        ANIMATION_ENDED = 1,
-    };
+    UILoadingScreen() = default;
+    ~UILoadingScreen() override;
 
-    SceneNodeAnimationList();
+    virtual void SetScreenToLoad(int32 screenId);
 
-    void AddAnimation(SceneNodeAnimation* node);
+    void Update(float32 timeElapsed) override;
+    void OnActive() override;
+    void OnInactive() override;
 
-    // stop animation at the current moment
-    void StopAnimation();
+protected:
+    void ThreadMessage(BaseObject* obj, void* userData, void* callerData);
+    RefPtr<Thread> thread;
 
-    // cycle animation
-    void CycleAnimation();
-    void Execute(float32 fadeInTime = 0.0f, float32 fadeOutTime = 0.0f, float32 timeFactor = 1.0f);
-    void BlendTo(SceneNodeAnimationList* next, float32 blendTime, float32 timeFactor = 1.0f);
-
-    SceneNodeAnimation* GetNode(const FastName& name);
-
-    void Update(float32 timeElapsed);
-
-    float32 GetDuration();
-    float32 GetCurrentTime();
-
-    void SetWeight(float32 weight);
-
-    //private:
-    bool isDestination;
-    bool active;
-    bool cycled;
-    float32 fadeInTime;
-    float32 fadeOutTime;
-    float32 timeFactor;
-    float32 currentTime;
-    float32 duration; // in seconds
-    SceneNodeAnimationList* blendTo;
-    float32 blendTime;
-    Vector<SceneNodeAnimation*> animations; // animations for all nodes
-
-    IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
+private:
+    int32 nextScreenId = -1;
 };
 };
 
-#endif // __DAVAENGINE_SCENE_NODE_ANIMATION_LIST_H__
+
+
+#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__

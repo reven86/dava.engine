@@ -145,9 +145,11 @@ void RenderSystem2D::BeginFrame()
     defaultSpriteDrawState.material = DEFAULT_2D_COLOR_MATERIAL;
 
     rhi::RenderPassConfig renderPass2DConfig;
-    renderPass2DConfig.priority = PRIORITY_MAIN_2D;
+    renderPass2DConfig.priority = PRIORITY_MAIN_2D + mainTargetDescriptor.priority;
+    renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
     renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
@@ -175,48 +177,62 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
+const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetActiveTargetDescriptor()
+{
+    return IsRenderTargetPass() ? renderPassTargetDescriptor : mainTargetDescriptor;
+}
+const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetMainTargetDescriptor()
+{
+    return mainTargetDescriptor;
+}
+void RenderSystem2D::SetMainTargetDescriptor(const RenderSystem2D::RenderTargetPassDescriptor& descriptor)
+{
+    mainTargetDescriptor = descriptor;
+}
+
 void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
     RenderTargetPassDescriptor desc;
-    desc.target = target;
+    desc.colorAttachment = target->handle;
+    desc.depthAttachment = target->handleDepthStencil;
+    desc.width = target->GetWidth();
+    desc.height = target->GetHeight();
     desc.clearColor = clearColor;
     desc.priority = priority;
-    desc.shouldClear = needClear;
-    desc.shouldTransformVirtualToPhysical = true;
+    desc.clearTarget = needClear;
+    desc.transformVirtualToPhysical = true;
     BeginRenderTargetPass(desc);
 }
 
 void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& desc)
 {
     DVASSERT(!IsRenderTargetPass());
-    DVASSERT(desc.target);
-    DVASSERT(desc.target->GetWidth() && desc.target->GetHeight())
 
     Flush();
 
-    SetVirtualToPhysicalTransformEnabled(desc.shouldTransformVirtualToPhysical);
+    renderPassTargetDescriptor = desc;
+
+    UpdateVirtualToPhysicalMatrix(desc.transformVirtualToPhysical);
 
     rhi::RenderPassConfig renderTargetPassConfig;
-    renderTargetPassConfig.colorBuffer[0].texture = desc.target->handle;
+    renderTargetPassConfig.colorBuffer[0].texture = desc.colorAttachment;
     renderTargetPassConfig.colorBuffer[0].clearColor[0] = desc.clearColor.r;
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
     renderTargetPassConfig.priority = desc.priority;
-    renderTargetPassConfig.viewport.width = desc.target->GetWidth();
-    renderTargetPassConfig.viewport.height = desc.target->GetHeight();
+    renderTargetPassConfig.viewport.width = desc.width;
+    renderTargetPassConfig.viewport.height = desc.height;
     renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    renderTargetPassConfig.colorBuffer[0].loadAction = desc.shouldClear ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
 
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
-    renderTargetWidth = desc.target->GetWidth();
-    renderTargetHeight = desc.target->GetHeight();
-
+    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -231,10 +247,8 @@ void RenderSystem2D::EndRenderTargetPass()
 
     currentPacketListHandle = packetList2DHandle;
 
-    renderTargetWidth = 0;
-    renderTargetHeight = 0;
-
-    SetVirtualToPhysicalTransformEnabled(virtualToPhysicalTransformEnabledDefaultValue);
+    UpdateVirtualToPhysicalMatrix(virtualToPhysicalTransformEnabledDefaultValue);
+    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -248,25 +262,19 @@ void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
 
 void RenderSystem2D::Setup2DMatrices()
 {
-    ShaderDescriptorCache::ClearDynamicBindigs();
-    if (IsRenderTargetPass())
+    Size2f targetSize;
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    targetSize.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+    targetSize.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
+
+    if ((descr.colorAttachment != rhi::InvalidHandle) && (!rhi::DeviceCaps().isUpperLeftRTOrigin))
     {
-        if (rhi::DeviceCaps().isUpperLeftRTOrigin)
-        {
-            projMatrix.glOrtho(0.0f, float32(renderTargetWidth),
-                               float32(renderTargetHeight), 0.f,
-                               -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
-        }
-        else
-        {
-            projMatrix.glOrtho(0.0f, float32(renderTargetWidth),
-                               0.0f, float32(renderTargetHeight),
-                               -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
-        }
+        //invert projection
+        projMatrix.glOrtho(0.0f, targetSize.dx, 0.0f, targetSize.dy, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
     else
     {
-        projMatrix.glOrtho(0.0f, float32(Renderer::GetFramebufferWidth()), float32(Renderer::GetFramebufferHeight()), 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
+        projMatrix.glOrtho(0.0f, targetSize.dx, targetSize.dy, 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 
     if (rhi::DeviceCaps().isCenterPixelMapping)
@@ -298,16 +306,15 @@ void RenderSystem2D::ScreenSizeChanged()
     actualVirtualToPhysicalMatrix = glScale * glTranslate;
     actualPhysicalToVirtualScale.x = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(1.0f);
     actualPhysicalToVirtualScale.y = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(1.0f);
-    if (virtualToPhysicalTransformEnabled)
+    if (GetActiveTargetDescriptor().transformVirtualToPhysical)
     {
         currentVirtualToPhysicalMatrix = actualVirtualToPhysicalMatrix;
         currentPhysicalToVirtualScale = actualPhysicalToVirtualScale;
     }
 }
 
-void RenderSystem2D::SetVirtualToPhysicalTransformEnabled(bool value)
+void RenderSystem2D::UpdateVirtualToPhysicalMatrix(bool value)
 {
-    virtualToPhysicalTransformEnabled = value;
     currentVirtualToPhysicalMatrix = value ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
     currentPhysicalToVirtualScale = value ? actualPhysicalToVirtualScale : Vector2(1.0f, 1.0f);
 }
@@ -340,10 +347,10 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        //RHI_COMPLETE - Mikhail please review this
+        const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    IsRenderTargetPass() ? float32(renderTargetWidth) : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                    IsRenderTargetPass() ? float32(renderTargetHeight) : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+                    static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width),
+                    static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
@@ -399,13 +406,15 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 {
     Rect clipRect = currentClip;
+
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
     if (int32(clipRect.dx) == -1)
     {
-        clipRect.dx = static_cast<float32>(IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
+        clipRect.dx = static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width);
     }
     if (int32(clipRect.dy) == -1)
     {
-        clipRect.dy = static_cast<float32>(IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        clipRect.dy = static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
@@ -958,7 +967,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         Texture* t = sprite->GetTexture(frame);
 
         Vector2 virtualTexSize = Vector2(float32(t->width), float32(t->height));
-        if (virtualToPhysicalTransformEnabled)
+        if (GetActiveTargetDescriptor().transformVirtualToPhysical)
         {
             if (sprite->type == Sprite::SPRITE_FROM_FILE)
             {
@@ -1592,20 +1601,15 @@ void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMateria
 void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
-    if ((destRect.dx < 0.0f) || (destRect.dy < 0.0f))
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    if (destRect.dx < 0.f || destRect.dy < 0.f)
     {
-        if (IsRenderTargetPass())
+        destRect.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+        destRect.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
+        if (descr.transformVirtualToPhysical)
         {
-            destRect.dx = float32(renderTargetWidth);
-            destRect.dy = float32(renderTargetHeight);
+            destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
         }
-        else
-        {
-            destRect.dx = float32(Renderer::GetFramebufferWidth());
-            destRect.dy = float32(Renderer::GetFramebufferHeight());
-        }
-
-        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
     }
 
     Rect srcRect;
