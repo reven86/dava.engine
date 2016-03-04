@@ -6,5 +6,12 @@
         <file>Icons/run.png</file>
         <file>Icons/icon.ico</file>
         <file>main.qml</file>
+        <file>UIComponents/ComboBoxBuilds.qml</file>
+        <file>UIComponents/RowLayoutPath.qml</file>
+        <file>UIComponents/MutableContentItem.qml</file>
+        <file>UIComponents/ColumnLayoutOutput.qml</file>
+        <file>Scripts/commandLine.js</file>
+        <file>config_mac.txt</file>
+        <file>config_windows.txt</file>
     </qresource>
 </RCC>

@@ -51,6 +51,10 @@ QString FileSystemHelper::ResolveUrl(const QString& url)
 
 bool FileSystemHelper::IsDirExists(const QString& dirPath)
 {
+    if (dirPath.isEmpty())
+    {
+        return false;
+    }
     QDir dir(dirPath);
     return dir.exists();
 }

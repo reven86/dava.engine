@@ -43,7 +43,7 @@ public:
     ~ProcessWrapper();
 
     Q_INVOKABLE void LaunchCmake(QString command);
-    Q_INVOKABLE void OnDestruction();
+    Q_INVOKABLE void BlockingStopAllTasks();
 
 signals:
     void processStateChanged(QVariant text);

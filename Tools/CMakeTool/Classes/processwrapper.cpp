@@ -54,7 +54,7 @@ void ProcessWrapper::LaunchCmake(QString command)
     }
 }
 
-void ProcessWrapper::OnDestruction()
+void ProcessWrapper::BlockingStopAllTasks()
 {
     int startTasksSize = taskQueue.size();
     QTimer performTimer;

@@ -36,11 +36,11 @@
 ConfigStorage::ConfigStorage(QObject* parent)
     : QObject(parent)
 {
-    configFilePath = qApp->applicationDirPath() +
+    configFilePath =
 #ifdef Q_OS_WIN
-    "../CMakeTool/Data/config_windows.txt";
+    ":/config_windows.txt";
 #elif defined Q_OS_MAC
-    "/../Resources/Data/config_mac.txt";
+    ":/config_mac.txt";
 #else
 #ERROR "usupported platform"
 #endif //platform
@@ -67,19 +67,3 @@ QString ConfigStorage::GetJSONTextFromConfigFile() const
     return QString();
 }
 
-void ConfigStorage::SaveToConfigFile(const QString& config)
-{
-    QFile configFile(configFilePath);
-    if (configFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
-    {
-        configFile.write(config.toUtf8());
-    }
-    else
-    {
-        auto button = QMessageBox::question(nullptr, tr("Can't open file"), tr("Can not open config file %1\n. do you want to repeat?").arg(configFilePath));
-        if (button == QMessageBox::Yes)
-        {
-            SaveToConfigFile(config);
-        }
-    }
-}
