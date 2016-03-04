@@ -1709,10 +1709,6 @@
 		02E7CE381BD624A7002F026D /* UI3DView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C58E1BD624A6002F026D /* UI3DView.cpp */; };
 		02E7CE391BD624A7002F026D /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C58F1BD624A6002F026D /* UI3DView.h */; };
 		02E7CE3A1BD624A7002F026D /* UI3DView.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C58F1BD624A6002F026D /* UI3DView.h */; };
-		02E7CE3B1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */; };
-		02E7CE3C1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */; };
-		02E7CE3D1BD624A7002F026D /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5911BD624A6002F026D /* UIAggregatorControl.h */; };
-		02E7CE3E1BD624A7002F026D /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5911BD624A6002F026D /* UIAggregatorControl.h */; };
 		02E7CE3F1BD624A7002F026D /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5921BD624A6002F026D /* UIButton.cpp */; };
 		02E7CE401BD624A7002F026D /* UIButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5921BD624A6002F026D /* UIButton.cpp */; };
 		02E7CE411BD624A7002F026D /* UIButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5931BD624A6002F026D /* UIButton.h */; };
@@ -2907,8 +2903,6 @@
 		02E7C58D1BD624A6002F026D /* TheoraPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraPlayer.h; sourceTree = "<group>"; };
 		02E7C58E1BD624A6002F026D /* UI3DView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UI3DView.cpp; sourceTree = "<group>"; };
 		02E7C58F1BD624A6002F026D /* UI3DView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UI3DView.h; sourceTree = "<group>"; };
-		02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
-		02E7C5911BD624A6002F026D /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
 		02E7C5921BD624A6002F026D /* UIButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIButton.cpp; sourceTree = "<group>"; };
 		02E7C5931BD624A6002F026D /* UIButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIButton.h; sourceTree = "<group>"; };
 		02E7C5941BD624A6002F026D /* UIControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControl.cpp; sourceTree = "<group>"; };
@@ -4388,8 +4382,6 @@
 				02E7C58D1BD624A6002F026D /* TheoraPlayer.h */,
 				02E7C58E1BD624A6002F026D /* UI3DView.cpp */,
 				02E7C58F1BD624A6002F026D /* UI3DView.h */,
-				02E7C5901BD624A6002F026D /* UIAggregatorControl.cpp */,
-				02E7C5911BD624A6002F026D /* UIAggregatorControl.h */,
 				02E7C5921BD624A6002F026D /* UIButton.cpp */,
 				02E7C5931BD624A6002F026D /* UIButton.h */,
 				02E7C5941BD624A6002F026D /* UIControl.cpp */,
@@ -5176,7 +5168,6 @@
 				02E7CAF01BD624A7002F026D /* ShadowVolumeRenderLayer.h in Headers */,
 				02E7CE0A1BD624A7002F026D /* UILinearLayoutComponent.h in Headers */,
 				02E7CEAE1BD624A7002F026D /* UIScreenManageriPhoneImpl.h in Headers */,
-				02E7CE3E1BD624A7002F026D /* UIAggregatorControl.h in Headers */,
 				02E7C67C1BD624A6002F026D /* FastName.h in Headers */,
 				02E7CCDE1BD624A7002F026D /* PathComponent.h in Headers */,
 				02E7C9D21BD624A7002F026D /* RenderView.h in Headers */,
@@ -5711,7 +5702,6 @@
 				02E7CAEF1BD624A7002F026D /* ShadowVolumeRenderLayer.h in Headers */,
 				02E7CE091BD624A7002F026D /* UILinearLayoutComponent.h in Headers */,
 				02E7CEAD1BD624A7002F026D /* UIScreenManageriPhoneImpl.h in Headers */,
-				02E7CE3D1BD624A7002F026D /* UIAggregatorControl.h in Headers */,
 				02E7C67B1BD624A6002F026D /* FastName.h in Headers */,
 				02E7CCDD1BD624A7002F026D /* PathComponent.h in Headers */,
 				02E7C9D11BD624A7002F026D /* RenderView.h in Headers */,
@@ -6126,7 +6116,6 @@
 				02E7CC5C1BD624A7002F026D /* GameObject.cpp in Sources */,
 				02E7CF7C1BD639E1002F026D /* DownloadManager.cpp in Sources */,
 				02E7CF291BD639A4002F026D /* Backtrace.cpp in Sources */,
-				02E7CE3C1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */,
 				02E7C68C1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F71BD6248E002F026D /* CRC32.cpp in Sources */,
 				02E7C8701BD624A7002F026D /* NetConfig.cpp in Sources */,
@@ -6604,7 +6593,6 @@
 				02E7CC5B1BD624A7002F026D /* GameObject.cpp in Sources */,
 				02E7CF7B1BD639E1002F026D /* DownloadManager.cpp in Sources */,
 				02E7CF281BD639A4002F026D /* Backtrace.cpp in Sources */,
-				02E7CE3B1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */,
 				02E7C68B1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F61BD6248E002F026D /* CRC32.cpp in Sources */,
 				02E7C86F1BD624A7002F026D /* NetConfig.cpp in Sources */,
