@@ -672,13 +672,9 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableObjec
 
 void SceneInfo::CollectSelectedRenderObjects(const SelectableObjectGroup* selected)
 {
-    for (const auto& item : selected->GetContent())
+    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
-        if (entity != nullptr)
-        {
-            CollectSelectedRenderObjectsRecursivly(entity);
-        }
+        CollectSelectedRenderObjectsRecursivly(entity);
     }
 }
 
@@ -702,9 +698,8 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableObjectGroup* forGrou
 {
     speedTreeLeafInfo.clear();
 
-    for (const auto& item : forGroup->GetContent())
+    for (auto entity : forGroup->ObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
         RenderObject* ro = GetRenderObject(entity);
         if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));

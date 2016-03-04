@@ -48,10 +48,8 @@
 
 SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/)
     : QStandardItemModel(parent)
-    , curScene(NULL)
-    , dropAccepted(false)
 {
-    SetScene(NULL);
+    SetScene(nullptr);
     QObject::connect(this, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(ItemChanged(QStandardItem*)));
 }
 
@@ -205,24 +203,10 @@ int SceneTreeModel::GetCustomFlags(const QModelIndex& index) const
     return ret;
 }
 
-QModelIndex SceneTreeModel::GetIndex(DAVA::Entity* entity) const
+QModelIndex SceneTreeModel::GetIndex(DAVA::BaseObject* object) const
 {
-    return indexesCacheEntities.value(entity, QModelIndex());
-}
-
-QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleLayer* layer) const
-{
-    return indexesCacheLayers.value(layer, QModelIndex());
-}
-
-QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleEmitter* emitter) const
-{
-    return indexesCacheEmitters.value(emitter, QModelIndex());
-}
-
-QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleForce* force) const
-{
-    return indexesCacheForces.value(force, QModelIndex());
+    auto i = indexesCache.find(object);
+    return (i == indexesCache.end()) ? QModelIndex() : i->second;
 }
 
 SceneTreeItem* SceneTreeModel::GetItem(const QModelIndex& index) const
@@ -724,10 +708,7 @@ void SceneTreeModel::ResetFilter(const QModelIndex& parent)
 
 void SceneTreeModel::RebuildIndexesCache()
 {
-    indexesCacheEntities.clear();
-    indexesCacheEmitters.clear();
-    indexesCacheLayers.clear();
-    indexesCacheForces.clear();
+    indexesCache.clear();
 
     for (int i = 0; i < rowCount(); ++i)
     {
@@ -738,43 +719,37 @@ void SceneTreeModel::RebuildIndexesCache()
 void SceneTreeModel::AddIndexesCache(SceneTreeItem* item)
 {
     // go thought all items and remember entities indexes
+    BaseObject* objectToAdd = nullptr;
     switch (item->ItemType())
     {
     case SceneTreeItem::EIT_Entity:
     {
-        DAVA::Entity* entity = SceneTreeItemEntity::GetEntity(item);
-        if (NULL != entity)
-        {
-            indexesCacheEntities.insert(entity, item->index());
-        }
+        objectToAdd = SceneTreeItemEntity::GetEntity(item);
+        break;
     }
-    break;
     case SceneTreeItem::EIT_Emitter:
     case SceneTreeItem::EIT_InnerEmitter:
     {
-        DAVA::ParticleEmitter* emitter = SceneTreeItemParticleEmitter::GetEmitter(item);
-        if (emitter)
-            indexesCacheEmitters.insert(emitter, item->index());
+        objectToAdd = SceneTreeItemParticleEmitter::GetEmitter(item);
+        break;
     }
-    break;
     case SceneTreeItem::EIT_Layer:
     {
-        DAVA::ParticleLayer* layer = SceneTreeItemParticleLayer::GetLayer(item);
-        if (NULL != layer)
-        {
-            indexesCacheLayers.insert(layer, item->index());
-        }
+        objectToAdd = SceneTreeItemParticleLayer::GetLayer(item);
+        break;
     }
-    break;
     case SceneTreeItem::EIT_Force:
     {
-        DAVA::ParticleForce* force = SceneTreeItemParticleForce::GetForce(item);
-        if (NULL != force)
-        {
-            indexesCacheForces.insert(force, item->index());
-        }
+        objectToAdd = SceneTreeItemParticleForce::GetForce(item);
+        break;
     }
-    break;
+    default:
+        DVASSERT_MSG(0, "INVALID ITEM TYPE");
+    }
+
+    if (objectToAdd != nullptr)
+    {
+        indexesCache.emplace(objectToAdd, item->index());
     }
 
     for (int i = 0; i < item->rowCount(); ++i)

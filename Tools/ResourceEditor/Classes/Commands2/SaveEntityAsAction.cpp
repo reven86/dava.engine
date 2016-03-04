@@ -106,8 +106,8 @@ void SaveEntityAsAction::Redo()
             }
         };
 
-        //reset global material because of global material :)
-        auto firstEntity = entities->GetFirst().Cast<DAVA::Entity>();
+        auto firstEntity = entities->GetFirst().AsEntity();
+        DVASSERT(firstEntity != nullptr);
         ElegantSceneGuard guard(firstEntity->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
@@ -124,9 +124,9 @@ void SaveEntityAsAction::Redo()
             container.reset(new Entity());
 
             const Vector3 oldZero = entities->GetCommonTranslationVector();
-            for (const auto& item : entities->GetContent())
+            for (auto entity : entities->ObjectsOfType<DAVA::Entity>())
             {
-                ScopedPtr<Entity> clone(item.Cast<DAVA::Entity>()->Clone());
+                ScopedPtr<Entity> clone(entity);
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();

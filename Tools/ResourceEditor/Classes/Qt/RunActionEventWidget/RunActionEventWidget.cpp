@@ -104,12 +104,8 @@ void RunActionEventWidget::OnInvoke()
     const FastName name(ui->name->currentText().toStdString().c_str());
 
     const SelectableObjectGroup& selection = editor->selectionSystem->GetSelection();
-    for (const auto& item : selection.GetContent())
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
-        if (entity == nullptr)
-            continue;
-
         ActionComponent* component = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
         if (component == nullptr)
             continue;
@@ -170,12 +166,8 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* _scene, const Sel
     QSet<QString> nameSet;
 
     const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
-    for (const auto& item : selection.GetContent())
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::Entity* entity = item.Cast<DAVA::Entity>();
-        if (entity == nullptr)
-            continue;
-
         ActionComponent* component = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
         if (component == nullptr)
             continue;

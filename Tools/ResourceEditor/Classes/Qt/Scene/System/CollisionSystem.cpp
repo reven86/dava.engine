@@ -294,11 +294,11 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
             SelectableObject wrapper(obj);
             if (wrapper.CanBeCastedTo<DAVA::Entity>())
             {
-                BuildFromEntity(wrapper.Cast<DAVA::Entity>());
+                BuildFromEntity(wrapper.AsEntity());
             }
             else
             {
-                // TODO : build from other types
+                // REZNIK TODO : build from other types
             }
         }
 

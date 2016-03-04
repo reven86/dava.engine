@@ -121,30 +121,24 @@ void EditorLODSystem::SceneSelectionChanged(const SelectableObjectGroup* selecte
 {
     if (!allSceneModeEnabled)
     {
-        for (const auto& item : deselected->GetContent())
+        for (auto entity : deselected->ObjectsOfType<DAVA::Entity>())
         {
-            auto entity = item.Cast<DAVA::Entity>();
-            if (entity != nullptr)
-            {
-                ResetForceState(entity);
-            }
+            ResetForceState(entity);
         }
     }
-    selectedLODs.clear();
-    const auto& selectedItems = selected->GetContent();
-    if (selectedItems.empty())
-    {
-        forceDistance = LodComponent::INVALID_DISTANCE;
-        forceLayer = LodComponent::INVALID_LOD_LAYER;
-    }
 
-    for (const auto& item : selectedItems)
+    selectedLODs.clear();
+    if (selected->ContainsObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
-        if (entity != nullptr)
+        for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
         {
             AddSelectedLODsRecursive(entity);
         }
+    }
+    else
+    {
+        forceDistance = LodComponent::INVALID_DISTANCE;
+        forceLayer = LodComponent::INVALID_LOD_LAYER;
     }
 
     if (allSceneModeEnabled)

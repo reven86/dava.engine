@@ -231,9 +231,8 @@ void WayEditSystem::ProcessSelection(const SelectableObjectGroup& selection)
     {
         currentSelection = selection;
 
-        for (const auto& item : currentSelection.GetContent())
+        for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
         {
-            Entity* entity = item.Cast<DAVA::Entity>();
             if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
                 selectedWaypoints.Add(entity, selectionSystem->GetUntransformedBoundingBox(entity));
@@ -250,12 +249,12 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
         {
             underCursorPathEntity = nullptr;
             const SelectableObjectGroup::CollectionType& collObjects = collisionSystem->ObjectsRayTestFromCamera();
-            if (!collObjects.empty())
+            if (collObjects.size() == 1)
             {
-                DAVA::Entity* underEntity = collObjects.front().Cast<DAVA::Entity>();
-                if ((underEntity != nullptr) && GetWaypointComponent(underEntity) && GetPathComponent(underEntity->GetParent()))
+                DAVA::Entity* firstEntity = collObjects.front().AsEntity();
+                if ((firstEntity != nullptr) && GetWaypointComponent(firstEntity) && GetPathComponent(firstEntity->GetParent()))
                 {
-                    underCursorPathEntity = underEntity;
+                    underCursorPathEntity = firstEntity;
                 }
             }
         }
@@ -328,7 +327,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             }
             else if ((selectedWaypoints.GetSize() == 1) && (cloneJustDone == false))
             {
-                Entity* nextWaypoint = selectedWaypoints.GetFirst().Cast<DAVA::Entity>();
+                Entity* nextWaypoint = selectedWaypoints.GetFirst().AsEntity();
                 SelectableObjectGroup entitiesToAddEdge;
                 SelectableObjectGroup entitiesToRemoveEdge;
                 DefineAddOrRemoveEdges(prevSelectedWaypoints, nextWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
@@ -348,9 +347,8 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
 
 void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableObjectGroup& ret)
 {
-    for (const auto& item : prevSelectedWaypoints.GetContent())
+    for (auto entity : prevSelectedWaypoints.ObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
         if (parentEntity == entity->GetParent())
         {
             ret.Add(entity, selectionSystem->GetUntransformedBoundingBox(entity));
@@ -360,10 +358,9 @@ void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableOb
 
 void WayEditSystem::DefineAddOrRemoveEdges(const SelectableObjectGroup& srcPoints, DAVA::Entity* dstPoint, SelectableObjectGroup& toAddEdge, SelectableObjectGroup& toRemoveEdge)
 {
-    for (const auto& item : srcPoints.GetContent())
+    for (auto srcPoint : prevSelectedWaypoints.ObjectsOfType<DAVA::Entity>())
     {
-        Entity* srcPoint = item.Cast<DAVA::Entity>();
-        if ((srcPoint == nullptr) || (dstPoint->GetParent() != srcPoint->GetParent()))
+        if (dstPoint->GetParent() != srcPoint->GetParent())
         {
             //we don't allow connect different pathes
             continue;
@@ -384,28 +381,21 @@ void WayEditSystem::AddEdges(const SelectableObjectGroup& group, DAVA::Entity* n
 {
     DVASSERT(nextEntity);
 
-    for (const auto& item : group.GetContent())
+    for (auto entity : group.ObjectsOfType<DAVA::Entity>())
     {
-        if (item.CanBeCastedTo<DAVA::Entity>())
-        {
-            DAVA::EdgeComponent* edge = new DAVA::EdgeComponent();
-            edge->SetNextEntity(nextEntity);
-            sceneEditor->Exec(new AddComponentCommand(item.Cast<DAVA::Entity>(), edge));
-        }
+        DAVA::EdgeComponent* edge = new DAVA::EdgeComponent();
+        edge->SetNextEntity(nextEntity);
+        sceneEditor->Exec(new AddComponentCommand(entity, edge));
     }
 }
 
 void WayEditSystem::RemoveEdges(const SelectableObjectGroup& group, DAVA::Entity* nextEntity)
 {
-    for (const auto& item : group.GetContent())
+    for (auto entity : group.ObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
-        if (entity != nullptr)
-        {
-            EdgeComponent* edgeToNextEntity = FindEdgeComponent(entity, nextEntity);
-            DVASSERT(edgeToNextEntity);
-            RemoveEdge(entity, edgeToNextEntity);
-        }
+        EdgeComponent* edgeToNextEntity = FindEdgeComponent(entity, nextEntity);
+        DVASSERT(edgeToNextEntity);
+        RemoveEdge(entity, edgeToNextEntity);
     }
 }
 
@@ -564,7 +554,7 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableObjectG
         }
 
         // only allow to select waypoints in this mode
-        auto entity = newSelection.GetFirst().Cast<DAVA::Entity>();
+        auto entity = newSelection.GetFirst().AsEntity();
         if ((entity == nullptr) || (GetWaypointComponent(entity) == nullptr))
         {
             return false;

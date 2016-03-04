@@ -327,12 +327,6 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
 
 void SceneTree::TreeItemClicked(const QModelIndex& index)
 {
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (NULL != sceneEditor)
-    {
-        // TODO:
-        // ...
-    }
 }
 
 void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer)
@@ -431,107 +425,107 @@ void SceneTree::ShowContextMenu(const QPoint& pos)
 
 void SceneTree::ShowContextMenuEntity(DAVA::Entity* entity, int entityCustomFlags, const QPoint& pos)
 {
-    if (NULL != entity)
+    if (entity == nullptr)
+        return;
+
+    // Get selection size to show different menues
+    const SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneSelectionSystem* selSystem = scene->selectionSystem;
+    size_t selectionSize = selSystem->GetSelectionCount();
+
+    Camera* camera = GetCamera(entity);
+
+    QMenu contextMenu;
+    if (entityCustomFlags & SceneTreeModel::CF_Disabled)
     {
-        //Get selection size to show different menues
-        const SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-        SceneSelectionSystem* selSystem = scene->selectionSystem;
-        size_t selectionSize = selSystem->GetSelectionCount();
-
-        Camera* camera = GetCamera(entity);
-
-        QMenu contextMenu;
-        if (entityCustomFlags & SceneTreeModel::CF_Disabled)
+        if (selectionSize == 1 && camera)
         {
-            if (selectionSize == 1 && camera)
-            {
-                AddCameraActions(contextMenu);
-                contextMenu.addSeparator();
-            }
+            AddCameraActions(contextMenu);
+            contextMenu.addSeparator();
+        }
 
-            if ((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
-            {
-                contextMenu.addAction(SharedIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
-            }
+        if ((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
+        {
+            contextMenu.addAction(SharedIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+        }
+    }
+    else
+    {
+        // look at
+        contextMenu.addAction(SharedIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
+
+        // look from
+        if (NULL != camera)
+        {
+            AddCameraActions(contextMenu);
+        }
+
+        // add/remove
+        contextMenu.addSeparator();
+        if (entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
+        {
+            contextMenu.addAction(SharedIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+        }
+
+        // lock/unlock
+        contextMenu.addSeparator();
+        QAction* lockAction = contextMenu.addAction(SharedIcon(":/QtIcons/lock_add.png"), "Lock", QtMainWindow::Instance(), SLOT(OnLockTransform()));
+        QAction* unlockAction = contextMenu.addAction(SharedIcon(":/QtIcons/lock_delete.png"), "Unlock", QtMainWindow::Instance(), SLOT(OnUnlockTransform()));
+        if (entity->GetLocked())
+        {
+            lockAction->setDisabled(true);
         }
         else
         {
-            // look at
-            contextMenu.addAction(SharedIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
-
-            // look from
-            if (NULL != camera)
-            {
-                AddCameraActions(contextMenu);
-            }
-
-            // add/remove
-            contextMenu.addSeparator();
-            if (entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
-            {
-                contextMenu.addAction(SharedIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
-            }
-
-            // lock/unlock
-            contextMenu.addSeparator();
-            QAction* lockAction = contextMenu.addAction(SharedIcon(":/QtIcons/lock_add.png"), "Lock", QtMainWindow::Instance(), SLOT(OnLockTransform()));
-            QAction* unlockAction = contextMenu.addAction(SharedIcon(":/QtIcons/lock_delete.png"), "Unlock", QtMainWindow::Instance(), SLOT(OnUnlockTransform()));
-            if (entity->GetLocked())
-            {
-                lockAction->setDisabled(true);
-            }
-            else
-            {
-                unlockAction->setDisabled(true);
-            }
-
-            // show save as/reload/edit for regular entity
-            // save model as
-            contextMenu.addSeparator();
-            contextMenu.addAction(SharedIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
-
-            DAVA::KeyedArchive* customProp = GetCustomPropertiesArchieve(entity);
-            if (NULL != customProp)
-            {
-                DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-                if (!ownerRef.IsEmpty())
-                {
-                    if (selectionSize == 1)
-                    {
-                        contextMenu.addAction("Edit Model", this, SLOT(EditModel()));
-                    }
-
-                    contextMenu.addAction("Reload Model...", this, SLOT(ReloadModel()));
-                }
-            }
-            // Reload for every entity at scene
-            contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));
-
-            // particle effect
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
-            if (NULL != effect)
-            {
-                contextMenu.addSeparator();
-                QMenu* particleEffectMenu = contextMenu.addMenu("Particle Effect");
-
-                particleEffectMenu->addAction(SharedIcon(":/QtIcons/emitter_particle.png"), "Add Emitter", this, SLOT(AddEmitter()));
-                particleEffectMenu->addAction(SharedIcon(":/QtIcons/savescene.png"), "Save Effect Emitters", this, SLOT(SaveEffectEmitters()));
-                particleEffectMenu->addAction(SharedIcon(":/QtIcons/savescene.png"), "Save Effect Emitters As...", this, SLOT(SaveEffectEmittersAs()));
-                particleEffectMenu->addSeparator();
-                particleEffectMenu->addAction(SharedIcon(":/QtIcons/play.png"), "Start", this, SLOT(StartEffect()));
-                particleEffectMenu->addAction(SharedIcon(":/QtIcons/stop.png"), "Stop", this, SLOT(StopEffect()));
-                particleEffectMenu->addAction(SharedIcon(":/QtIcons/restart.png"), "Restart", this, SLOT(RestartEffect()));
-            }
-
-            if (selectionSize == 1)
-            {
-                contextMenu.addSeparator();
-                contextMenu.addAction(SharedIcon(":/QtIconsTextureDialog/filter.png"), "Set name as filter", this, SLOT(SetEntityNameAsFilter()));
-            }
+            unlockAction->setDisabled(true);
         }
 
-        contextMenu.exec(pos);
+        // show save as/reload/edit for regular entity
+        // save model as
+        contextMenu.addSeparator();
+        contextMenu.addAction(SharedIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
+
+        DAVA::KeyedArchive* customProp = GetCustomPropertiesArchieve(entity);
+        if (NULL != customProp)
+        {
+            DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            if (!ownerRef.IsEmpty())
+            {
+                if (selectionSize == 1)
+                {
+                    contextMenu.addAction("Edit Model", this, SLOT(EditModel()));
+                }
+
+                contextMenu.addAction("Reload Model...", this, SLOT(ReloadModel()));
+            }
+        }
+        // Reload for every entity at scene
+        contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));
+
+        // particle effect
+        DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
+        if (NULL != effect)
+        {
+            contextMenu.addSeparator();
+            QMenu* particleEffectMenu = contextMenu.addMenu("Particle Effect");
+
+            particleEffectMenu->addAction(SharedIcon(":/QtIcons/emitter_particle.png"), "Add Emitter", this, SLOT(AddEmitter()));
+            particleEffectMenu->addAction(SharedIcon(":/QtIcons/savescene.png"), "Save Effect Emitters", this, SLOT(SaveEffectEmitters()));
+            particleEffectMenu->addAction(SharedIcon(":/QtIcons/savescene.png"), "Save Effect Emitters As...", this, SLOT(SaveEffectEmittersAs()));
+            particleEffectMenu->addSeparator();
+            particleEffectMenu->addAction(SharedIcon(":/QtIcons/play.png"), "Start", this, SLOT(StartEffect()));
+            particleEffectMenu->addAction(SharedIcon(":/QtIcons/stop.png"), "Stop", this, SLOT(StopEffect()));
+            particleEffectMenu->addAction(SharedIcon(":/QtIcons/restart.png"), "Restart", this, SLOT(RestartEffect()));
+        }
+
+        if (selectionSize == 1)
+        {
+            contextMenu.addSeparator();
+            contextMenu.addAction(SharedIcon(":/QtIconsTextureDialog/filter.png"), "Set name as filter", this, SLOT(SetEntityNameAsFilter()));
+        }
     }
+
+    contextMenu.exec(pos);
 }
 
 void SceneTree::ShowContextMenuLayer(DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, const QPoint& pos)
@@ -613,7 +607,7 @@ void SceneTree::RemoveSelection()
         SelectableObjectGroup objectToRemove;
         for (const auto& item : selection.GetContent())
         {
-            auto entity = item.Cast<DAVA::Entity>();
+            auto entity = item.AsEntity();
             if ((entity != nullptr) && entity->GetLocked())
             {
                 DAVA::StringStream ss;
@@ -657,24 +651,23 @@ void SceneTree::CollapseSwitch()
 void SceneTree::EditModel()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (NULL != sceneEditor)
+    if (sceneEditor == nullptr)
+        return;
+
+    SceneSelectionSystem* ss = sceneEditor->selectionSystem;
+    for (auto entity : ss->GetSelection().ObjectsOfType<DAVA::Entity>())
     {
-        SceneSelectionSystem* ss = sceneEditor->selectionSystem;
-        for (const auto& item : ss->GetSelection().GetContent())
+        DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
+        if (archive != nullptr)
         {
-            auto entity = item.Cast<DAVA::Entity>();
-            DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
-            if (archive)
+            DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            if (FileSystem::Instance()->Exists(entityRefPath))
             {
-                DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-                if (FileSystem::Instance()->Exists(entityRefPath))
-                {
-                    QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
-                }
-                else
-                {
-                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
-                }
+                QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
+            }
+            else
+            {
+                ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
             }
         }
     }
@@ -683,51 +676,50 @@ void SceneTree::EditModel()
 void SceneTree::ReloadModel()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (NULL != sceneEditor)
+    if (sceneEditor == nullptr)
+        return;
+
+    QDialog dlg(this);
+
+    QVBoxLayout* dlgLayout = new QVBoxLayout();
+    dlgLayout->setMargin(10);
+
+    dlg.setWindowTitle("Reload Model options");
+    dlg.setLayout(dlgLayout);
+
+    QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
+    dlgLayout->addWidget(lightmapsChBox);
+    lightmapsChBox->setCheckState(Qt::Checked);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
+    dlgLayout->addWidget(buttons);
+
+    QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+    QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
+
+    if (QDialog::Accepted == dlg.exec())
     {
-        QDialog dlg(this);
-
-        QVBoxLayout* dlgLayout = new QVBoxLayout();
-        dlgLayout->setMargin(10);
-
-        dlg.setWindowTitle("Reload Model options");
-        dlg.setLayout(dlgLayout);
-
-        QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
-        dlgLayout->addWidget(lightmapsChBox);
-        lightmapsChBox->setCheckState(Qt::Checked);
-
-        QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
-        dlgLayout->addWidget(buttons);
-
-        QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
-        QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
-
-        if (QDialog::Accepted == dlg.exec())
+        const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        String wrongPathes;
+        for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
         {
-            const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
-            String wrongPathes;
-            for (const auto& item : selection.GetContent())
+            DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
+            if (archive != nullptr)
             {
-                DAVA::Entity* entity = item.Cast<DAVA::Entity>();
-                DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(entity);
-                if (archive)
+                DAVA::FilePath pathToReload(archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+                if (!FileSystem::Instance()->Exists(pathToReload))
                 {
-                    DAVA::FilePath pathToReload(archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-                    if (!FileSystem::Instance()->Exists(pathToReload))
-                    {
-                        wrongPathes += Format("\r\n%s : %s", entity->GetName().c_str(),
-                                              pathToReload.GetAbsolutePathname().c_str());
-                    }
+                    wrongPathes += Format("\r\n%s : %s", entity->GetName().c_str(),
+                                          pathToReload.GetAbsolutePathname().c_str());
                 }
             }
-            if (!wrongPathes.empty())
-            {
-                ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
-            }
-            SelectableObjectGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
-            sceneEditor->selectionSystem->SetSelection(newSelection);
         }
+        if (!wrongPathes.empty())
+        {
+            ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
+        }
+        SelectableObjectGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+        sceneEditor->selectionSystem->SetSelection(newSelection);
     }
 }
 
@@ -767,22 +759,22 @@ void SceneTree::ReloadModelAs()
 void SceneTree::SaveEntityAs()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (NULL != sceneEditor)
-    {
-        const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
-        if (!selection.IsEmpty())
-        {
-            DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
-            if (!FileSystem::Instance()->Exists(scenePath) || !sceneEditor->IsLoaded())
-            {
-                scenePath = ProjectManager::Instance()->GetDataSourcePath();
-            }
+    if (sceneEditor == nullptr)
+        return;
 
-            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
-            if (!filePath.isEmpty())
-            {
-                sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
-            }
+    const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    if (selection.ContainsObjectsOfType<DAVA::Entity>())
+    {
+        DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
+        if (!FileSystem::Instance()->Exists(scenePath) || !sceneEditor->IsLoaded())
+        {
+            scenePath = ProjectManager::Instance()->GetDataSourcePath();
+        }
+
+        QString filePath = FileDialog::getSaveFileName(nullptr, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
+        if (!filePath.isEmpty())
+        {
+            sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
         }
     }
 }
@@ -873,7 +865,7 @@ void SceneTree::SyncSelectionToTree()
     const auto& selection = curScene->selectionSystem->GetSelection();
     for (const auto& item : selection.GetContent())
     {
-        QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.Cast<DAVA::Entity>()));
+        QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.GetContainedObject()));
         if (sIndex.isValid())
         {
             lastValidIndex = sIndex;
@@ -1069,10 +1061,7 @@ void SceneTree::AddEmitter()
         DAVA::Entity* curEntity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex));
         if (nullptr != curEntity && DAVA::GetEffectComponent(curEntity))
         {
-            CommandAddParticleEmitter* command = new CommandAddParticleEmitter(curEntity);
-            sceneEditor->Exec(command);
-            sceneEditor->MarkAsChanged();
-            treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+            ExecuteModifyingCommand(new CommandAddParticleEmitter(curEntity));
         }
     }
 }
@@ -1089,102 +1078,40 @@ void SceneTree::SaveEffectEmittersAs()
 
 void SceneTree::StartEffect()
 {
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (nullptr != sceneEditor)
-    {
-        SceneSelectionSystem* ss = sceneEditor->selectionSystem;
-        for (const auto& item : ss->GetSelection().GetContent())
-        {
-            auto entity = item.Cast<DAVA::Entity>();
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
-            if (nullptr != effect)
-            {
-                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(entity, true);
-                sceneEditor->Exec(command);
-            }
-        }
-    }
+    ExecuteCommandForSelectedEffects<CommandStartStopParticleEffect>(true);
 }
 
 void SceneTree::StopEffect()
 {
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (nullptr != sceneEditor)
-    {
-        SceneSelectionSystem* ss = sceneEditor->selectionSystem;
-        for (const auto& item : ss->GetSelection().GetContent())
-        {
-            auto entity = item.Cast<DAVA::Entity>();
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
-            if (nullptr != effect)
-            {
-                // TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(entity, false);
-                sceneEditor->Exec(command);
-            }
-        }
-    }
+    ExecuteCommandForSelectedEffects<CommandStartStopParticleEffect>(false);
 }
 
 void SceneTree::RestartEffect()
 {
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (nullptr != sceneEditor)
-    {
-        SceneSelectionSystem* ss = sceneEditor->selectionSystem;
-        for (const auto& item : ss->GetSelection().GetContent())
-        {
-            auto entity = item.Cast<DAVA::Entity>();
-            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
-            if (nullptr != effect)
-            {
-                // TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-                CommandRestartParticleEffect* command = new CommandRestartParticleEffect(entity);
-                sceneEditor->Exec(command);
-            }
-        }
-    }
+    ExecuteCommandForSelectedEffects<CommandRestartParticleEffect>();
 }
 
 void SceneTree::RemoveEmitter()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (nullptr == sceneEditor)
-    {
         return;
-    }
 
-    if ((nullptr == selectedEffect) || (nullptr == selectedEmitter))
-    {
-        DVASSERT(false);
-        return;
-    }
-
-    CommandRemoveParticleEmitter* command = new CommandRemoveParticleEmitter(selectedEffect, selectedEmitter);
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    DVASSERT((nullptr != selectedEffect) && (nullptr == selectedEmitter));
+    ExecuteModifyingCommand(new CommandRemoveParticleEmitter(selectedEffect, selectedEmitter));
 }
 
 void SceneTree::AddLayer()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
-    if (nullptr != sceneEditor)
+    if (nullptr == sceneEditor)
+        return;
+
+    SceneTreeItem* curItem = treeModel->GetItem(filteringProxyModel->mapToSource(currentIndex()));
+    if ((curItem->ItemType() == SceneTreeItem::EIT_Emitter) || (curItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
     {
-        QModelIndex realIndex = filteringProxyModel->mapToSource(currentIndex());
-        SceneTreeItem* curItem = treeModel->GetItem(realIndex);
-        DAVA::ParticleEmitter* curEmitter = NULL;
-        if ((curItem->ItemType() == SceneTreeItem::EIT_Emitter) || (curItem->ItemType() == SceneTreeItem::EIT_InnerEmitter))
-        {
-            curEmitter = ((SceneTreeItemParticleEmitter*)curItem)->emitter;
-        }
-        if (curEmitter)
-        {
-            CommandAddParticleEmitterLayer* command = new CommandAddParticleEmitterLayer(curEmitter);
-            sceneEditor->Exec(command);
-            sceneEditor->MarkAsChanged();
-            treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
-        }
+        auto emitter = ((SceneTreeItemParticleEmitter*)curItem)->emitter;
+        ExecuteModifyingCommand(new CommandAddParticleEmitterLayer(emitter));
     }
 }
 
@@ -1192,22 +1119,13 @@ void SceneTree::LoadEmitterFromYaml()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (nullptr == sceneEditor || nullptr == selectedEmitter)
-    {
         return;
-    }
 
-    QString filePath = FileDialog::getOpenFileName(NULL, QString("Open Particle Emitter Yaml file"),
-                                                   GetParticlesConfigPath(), QString("YAML File (*.yaml)"));
-    if (filePath.isEmpty())
+    QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open Particle Emitter Yaml file"), GetParticlesConfigPath(), QString("YAML File (*.yaml)"));
+    if (filePath.isEmpty() == false)
     {
-        return;
+        ExecuteModifyingCommand(new CommandLoadParticleEmitterFromYaml(selectedEffect, selectedEmitter, filePath.toStdString()));
     }
-
-    CommandLoadParticleEmitterFromYaml* command = new CommandLoadParticleEmitterFromYaml(selectedEffect, selectedEmitter, filePath.toStdString());
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
 void SceneTree::SaveEmitterToYaml()
@@ -1236,20 +1154,19 @@ void SceneTree::LoadInnerEmitterFromYaml()
     }
 
     selectedLayer->innerEmitterPath = filePath.toStdString();
-    CommandLoadInnerParticleEmitterFromYaml* command = new CommandLoadInnerParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    ExecuteModifyingCommand(new CommandLoadInnerParticleEmitterFromYaml(selectedEmitter, filePath.toStdString()));
 }
+
 void SceneTree::SaveInnerEmitterToYaml()
 {
     PerformSaveInnerEmitter(false);
 }
+
 void SceneTree::SaveInnerEmitterToYamlAs()
 {
     PerformSaveInnerEmitter(true);
 }
+
 void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
@@ -1264,7 +1181,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
     if (forceAskFileName)
     {
         QString particlesConfigPath = ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
-        QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
+        QString filePath = FileDialog::getSaveFileName(nullptr, QString("Save Particle Emitter YAML file"),
                                                        particlesConfigPath, QString("YAML File (*.yaml)"));
 
         if (filePath.isEmpty())
@@ -1292,38 +1209,18 @@ void SceneTree::CloneLayer()
         return;
     }
 
-    if (nullptr == selectedEmitter || nullptr == selectedLayer)
-    {
-        DVASSERT(false);
-        return;
-    }
-
-    CommandCloneParticleEmitterLayer* command = new CommandCloneParticleEmitterLayer(selectedEmitter, selectedLayer);
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    DVASSERT((nullptr != selectedEmitter) && (nullptr != selectedLayer));
+    ExecuteModifyingCommand(new CommandCloneParticleEmitterLayer(selectedEmitter, selectedLayer));
 }
 
 void SceneTree::RemoveLayer()
 {
     SceneEditor2* sceneEditor = treeModel->GetScene();
     if (nullptr == sceneEditor)
-    {
         return;
-    }
 
-    if (!selectedLayer)
-    {
-        DVASSERT(false);
-        return;
-    }
-
-    CommandRemoveParticleEmitterLayer* command = new CommandRemoveParticleEmitterLayer(selectedEmitter, selectedLayer);
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    DVASSERT(selectedLayer != nullptr);
+    ExecuteModifyingCommand(new CommandRemoveParticleEmitterLayer(selectedEmitter, selectedLayer));
 }
 
 void SceneTree::AddForce()
@@ -1334,17 +1231,8 @@ void SceneTree::AddForce()
         return;
     }
 
-    if (!selectedLayer)
-    {
-        DVASSERT(false);
-        return;
-    }
-
-    CommandAddParticleEmitterForce* command = new CommandAddParticleEmitterForce(selectedLayer);
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    DVASSERT(selectedLayer != nullptr);
+    ExecuteModifyingCommand(new CommandAddParticleEmitterForce(selectedLayer));
 }
 
 void SceneTree::RemoveForce()
@@ -1355,17 +1243,8 @@ void SceneTree::RemoveForce()
         return;
     }
 
-    if (nullptr == selectedLayer || nullptr == selectedForce)
-    {
-        DVASSERT(false);
-        return;
-    }
-
-    CommandRemoveParticleEmitterForce* command = new CommandRemoveParticleEmitterForce(selectedLayer, selectedForce);
-    sceneEditor->Exec(command);
-    sceneEditor->MarkAsChanged();
-
-    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+    DVASSERT((nullptr != selectedLayer) && (nullptr != selectedForce));
+    ExecuteModifyingCommand(new CommandRemoveParticleEmitterForce(selectedLayer, selectedForce));
 }
 
 void SceneTree::PerformSaveEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, bool forceAskFileName, const QString& defaultName)
@@ -1452,7 +1331,9 @@ void SceneTree::SetEntityNameAsFilter()
     const SelectableObjectGroup& selection = scene->selectionSystem->GetSelection();
     if (selection.GetSize() == 1)
     {
-        Entity* entity = selection.GetFirst().Cast<DAVA::Entity>();
+        Entity* entity = selection.GetFirst().AsEntity();
+        DVASSERT(entity != nullptr);
+
         QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
     }
 }
@@ -1547,4 +1428,12 @@ void SceneTree::PropagateSolidFlagRecursive(QStandardItem* root)
     {
         treeModel->SetSolid(rootIndex, true);
     }
+}
+
+void SceneTree::ExecuteModifyingCommand(Command2* command)
+{
+    SceneEditor2* sceneEditor = treeModel->GetScene();
+    sceneEditor->Exec(command);
+    sceneEditor->MarkAsChanged();
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }

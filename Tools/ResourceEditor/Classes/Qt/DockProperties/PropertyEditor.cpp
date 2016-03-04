@@ -163,10 +163,14 @@ void PropertyEditor::SetEntities(const SelectableObjectGroup* selected)
     if (selected == nullptr || selected->IsEmpty())
         return;
 
+    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
+    {
+        GetOrCreateCustomProperties(entity);
+    }
+
     for (const auto& item : selected->GetContent())
     {
         curNodes.Add(item.GetContainedObject(), item.GetBoundingBox());
-        GetOrCreateCustomProperties(item.Cast<DAVA::Entity>());
     }
 }
 
@@ -281,7 +285,7 @@ void PropertyEditor::ResetProperties()
             if (item.CanBeCastedTo<DAVA::Entity>())
             {
                 PropEditorUserData* userData = GetUserData(curEntityData.get());
-                userData->entity = item.Cast<DAVA::Entity>();
+                userData->entity = item.AsEntity();
                 root->MergeChild(std::move(curEntityData));
 
                 AddEntityProperties(userData->entity, root, curEntityData, isFirstItem);
@@ -913,7 +917,7 @@ void PropertyEditor::ActionEditComponent()
 {
     if (curNodes.GetSize() == 1)
     {
-        Entity* node = curNodes.GetFirst().Cast<DAVA::Entity>();
+        Entity* node = curNodes.GetFirst().AsEntity();
         if (node == nullptr)
             return;
 
@@ -936,48 +940,47 @@ void PropertyEditor::ActionEditComponent()
 void PropertyEditor::ConvertToShadow()
 {
     QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
+    if (btn == nullptr)
+        return;
 
-    if (NULL != btn)
-    {
-        QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
-        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+    if (data == nullptr)
+        return;
 
-        if (NULL != data && NULL != curScene)
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (curScene == nullptr)
+        return;
+
+    auto findEntityFn = [this](DAVA::RenderBatch* batch) -> DAVA::Entity* {
+        DVASSERT(batch);
+        DAVA::RenderObject* renderObject = batch->GetRenderObject();
+        for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
         {
-            auto findEntityFn = [this](DAVA::RenderBatch* batch) -> DAVA::Entity* {
-                DVASSERT(batch);
-                DAVA::RenderObject* renderObject = batch->GetRenderObject();
-                for (const auto& item : curNodes.GetContent())
-                {
-                    auto entity = item.Cast<DAVA::Entity>();
-                    if (GetRenderObject(entity) == renderObject)
-                    {
-                        return entity;
-                    }
-                }
-
-                DVASSERT_MSG(0, "UNABLE TO FIND RENDER BATCH");
-                return nullptr;
-            };
-
-            DAVA::Vector<Command2*> commands;
-            commands.reserve(data->GetMergedItemCount() + 1);
-
-            DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
-            commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
-            data->ForeachMergedItem([&commands, &findEntityFn](QtPropertyData* item) {
-                QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
-                if (dynamicData != nullptr)
-                {
-                    DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
-                    commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
-                }
-                return true;
-            });
-
-            PropertyEditorDetails::ExecuteCommands(std::move(commands), "ConvertToShadow batch", curScene);
+            if (GetRenderObject(entity) == renderObject)
+            {
+                return entity;
+            }
         }
-    }
+        DVASSERT_MSG(0, "UNABLE TO FIND RENDER BATCH");
+        return nullptr;
+    };
+
+    DAVA::Vector<Command2*> commands;
+    commands.reserve(data->GetMergedItemCount() + 1);
+
+    DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
+    commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
+    data->ForeachMergedItem([&commands, &findEntityFn](QtPropertyData* item) {
+        QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
+        if (dynamicData != nullptr)
+        {
+            DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
+            commands.push_back(new ConvertToShadowCommand(findEntityFn(batch), batch));
+        }
+        return true;
+    });
+
+    PropertyEditorDetails::ExecuteCommands(std::move(commands), "ConvertToShadow batch", curScene);
 }
 
 void PropertyEditor::RebuildTangentSpace()
@@ -1005,7 +1008,7 @@ void PropertyEditor::DeleteRenderBatch()
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        Entity* node = curNodes.GetFirst().Cast<DAVA::Entity>();
+        Entity* node = curNodes.GetFirst().AsEntity();
 
         if (data != nullptr && curScene != nullptr && node != nullptr)
         {
@@ -1069,9 +1072,8 @@ void PropertyEditor::ActionEditSoundComponent()
     if (scene == nullptr)
         return;
 
-    Entity* node = curNodes.GetFirst().Cast<DAVA::Entity>();
-    if (node == nullptr)
-        return;
+    Entity* node = curNodes.GetFirst().AsEntity();
+    DVASSERT(node != nullptr)
 
     scene->BeginBatch("Edit Sound Component");
     {
@@ -1379,14 +1381,10 @@ void PropertyEditor::OnAddComponent(Component::eType type)
         return;
 
     curScene->BeginBatch(Format("Add Component: %d", type));
-    for (const auto& item : curNodes.GetContent())
+    for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
-        if (entity != nullptr)
-        {
-            Component* c = Component::CreateByType(type);
-            curScene->Exec(new AddComponentCommand(entity, c));
-        }
+        Component* c = Component::CreateByType(type);
+        curScene->Exec(new AddComponentCommand(entity, c));
     }
     curScene->EndBatch();
 }
@@ -1394,19 +1392,18 @@ void PropertyEditor::OnAddComponent(Component::eType type)
 void PropertyEditor::OnAddComponent(DAVA::Component* component)
 {
     DVASSERT(component);
-    if ((component == nullptr) || curNodes.IsEmpty())
+    if (curNodes.IsEmpty())
         return;
 
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
 
-    for (const auto& item : curNodes.GetContent())
+    for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
-        Entity* node = item.Cast<DAVA::Entity>();
-        if ((node != nullptr) && (node->GetComponentCount(component->GetType()) == 0))
+        if (entity->GetComponentCount(component->GetType()) == 0)
         {
-            Component* c = component->Clone(node);
-            curScene->Exec(new AddComponentCommand(node, c));
+            Component* c = component->Clone(entity);
+            curScene->Exec(new AddComponentCommand(entity, c));
         }
     }
 
@@ -1451,13 +1448,12 @@ void PropertyEditor::OnAddPathComponent()
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
 
-    for (const auto& item : curNodes.GetContent())
+    for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
-        auto node = item.Cast<DAVA::Entity>();
-        if ((node != nullptr) && (node->GetComponentCount(Component::PATH_COMPONENT) == 0) && (node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0))
+        if ((entity->GetComponentCount(Component::PATH_COMPONENT) == 0) && (entity->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0))
         {
             PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-            curScene->Exec(new AddComponentCommand(node, pathComponent));
+            curScene->Exec(new AddComponentCommand(entity, pathComponent));
         }
     }
 
@@ -1528,9 +1524,9 @@ void PropertyEditor::OnRemoveComponent()
 
 void PropertyEditor::OnTriggerWaveComponent()
 {
-    for (const auto& item : curNodes.GetContent())
+    for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
-        WaveComponent* component = GetWaveComponent(item.Cast<DAVA::Entity>());
+        WaveComponent* component = GetWaveComponent(entity);
         if (component != nullptr)
         {
             component->Trigger();

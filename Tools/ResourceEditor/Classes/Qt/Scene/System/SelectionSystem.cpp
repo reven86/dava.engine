@@ -408,14 +408,13 @@ void SceneSelectionSystem::SetSelection(SelectableObjectGroup& newSelection)
         return;
     }
 
-    newSelection.RemoveIf([this](const SelectableObject& obj)
-                          {
-                              if (obj.CanBeCastedTo<DAVA::Entity>())
-                              {
-                                  return IsEntitySelectable(obj.Cast<DAVA::Entity>()) == false;
-                              }
-                              return false;
-                          });
+    newSelection.RemoveIf([this](const SelectableObject& obj) {
+        if (obj.CanBeCastedTo<DAVA::Entity>())
+        {
+            return IsEntitySelectable(obj.Cast<DAVA::Entity>()) == false;
+        }
+        return false;
+    });
 
     /*
 	 * Ask delegates if selection could be changed

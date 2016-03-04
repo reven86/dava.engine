@@ -80,6 +80,12 @@ void SelectableObjectGroup::Clear()
     objects.clear();
 }
 
+void SelectableObjectGroup::Add(DAVA::BaseObject* object)
+{
+    DVASSERT(!IsLocked());
+    objects.emplace_back(object);
+}
+
 void SelectableObjectGroup::Add(DAVA::BaseObject* object, const DAVA::AABBox3& box)
 {
     DVASSERT(!IsLocked());

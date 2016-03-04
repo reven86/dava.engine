@@ -55,6 +55,7 @@ public:
     T* Cast() const;
 
     DAVA::BaseObject* GetContainedObject() const;
+    DAVA::Entity* AsEntity() const;
 
     const DAVA::AABBox3& GetBoundingBox() const;
     void SetBoundingBox(const DAVA::AABBox3& box);
@@ -81,9 +82,10 @@ inline T* SelectableObject::Cast() const
     {
         return static_cast<T*>(object);
     }
-
+    /*
     DAVA::Logger::Error("SelectableObject cast to %s failed, actually contains %s",
                         DAVA::MetaInfo::Instance<T>()->GetTypeName(), object->GetTypeInfo()->Type()->GetTypeName());
+	*/
     return nullptr;
 }
 
@@ -95,6 +97,11 @@ inline DAVA::BaseObject* SelectableObject::GetContainedObject() const
 inline const DAVA::AABBox3& SelectableObject::GetBoundingBox() const
 {
     return boundingBox;
+}
+
+inline DAVA::Entity* SelectableObject::AsEntity() const
+{
+    return Cast<DAVA::Entity>();
 }
 
 #endif // __SELECTABLE_OBJECT_H__

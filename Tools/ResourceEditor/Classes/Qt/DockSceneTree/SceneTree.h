@@ -149,6 +149,11 @@ private:
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
+    template <typename CMD, typename... Args>
+    void ExecuteCommandForSelectedEffects(Args&&...);
+
+    void ExecuteModifyingCommand(Command2* command);
+
     ParticleEffectComponent* selectedEffect;
     ParticleEmitter* selectedEmitter;
     ParticleLayer* selectedLayer;
@@ -162,5 +167,23 @@ private:
 
     LazyUpdater* treeUpdater;
 };
+
+template <typename CMD, typename... Args>
+inline void SceneTree::ExecuteCommandForSelectedEffects(Args&&... arg)
+{
+    SceneEditor2* sceneEditor = treeModel->GetScene();
+    if (sceneEditor == nullptr)
+        return;
+
+    sceneEditor->BeginBatch("Run/Stop Effect(s)");
+    for (auto entity : sceneEditor->selectionSystem->GetSelection().ObjectsOfType<DAVA::Entity>())
+    {
+        if (DAVA::GetEffectComponent(entity) != nullptr)
+        {
+            sceneEditor->Exec(new CMD(entity, arg...));
+        }
+    }
+    sceneEditor->EndBatch();
+}
 
 #endif // __QT_SCENE_TREE_H__

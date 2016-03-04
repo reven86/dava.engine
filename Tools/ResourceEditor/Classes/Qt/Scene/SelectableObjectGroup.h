@@ -53,6 +53,7 @@ public:
     CollectionType::size_type GetSize() const;
     void Clear();
 
+    void Add(DAVA::BaseObject* object);
     void Add(DAVA::BaseObject* object, const DAVA::AABBox3& box);
     void Remove(DAVA::BaseObject* object);
     void Exclude(const SelectableObjectGroup&);
@@ -60,6 +61,9 @@ public:
 
     template <typename F>
     void RemoveIf(F func);
+
+    template <typename T>
+    bool ContainsObjectsOfType() const;
 
     /*
 	 * TODO : hide this function, recalculate box when needed
@@ -202,6 +206,18 @@ inline SelectableObjectGroup::ConstEnumerator<T> SelectableObjectGroup::ObjectsO
     return SelectableObjectGroup::ConstEnumerator<T>(this, objects);
 }
 
+template <typename T>
+bool SelectableObjectGroup::ContainsObjectsOfType() const
+{
+    for (const auto& obj : objects)
+    {
+        if (obj.CanBeCastedTo<T>())
+            return true;
+    }
+
+    return false;
+}
+
 /*
  * Enumerator
  */
@@ -240,7 +256,7 @@ inline SelectableObjectGroup::Enumerator<T>::Iterator::Iterator(SelectableObject
     : collection(c)
     , endIndex(static_cast<DAVA::uint32>(c.size()))
 {
-    while ((index < endIndex) && collection[index].CanBeCastedTo<T>())
+    while ((index < endIndex) && (collection[index].CanBeCastedTo<T>() == false))
     {
         ++index;
     }
@@ -314,7 +330,7 @@ inline SelectableObjectGroup::ConstEnumerator<T>::Iterator::Iterator(const Selec
     : collection(c)
     , endIndex(static_cast<DAVA::uint32>(c.size()))
 {
-    while ((index < endIndex) && collection[index].CanBeCastedTo<T>())
+    while ((index < endIndex) && (collection[index].CanBeCastedTo<T>() == false))
     {
         ++index;
     }
@@ -351,6 +367,5 @@ inline T* SelectableObjectGroup::ConstEnumerator<T>::Iterator::operator*() const
     DVASSERT(collection[index].CanBeCastedTo<T>());
     return collection[index].Cast<T>();
 }
-
 
 #endif // __SELECTABLE_OBJECT_GROUP_H__

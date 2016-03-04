@@ -1,30 +1,30 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+	* Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	* Neither the name of the binaryzebra nor the
+	names of its contributors may be used to endorse or promote products
+	derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 
 
 #include "Scene/System/StructureSystem.h"
@@ -50,12 +50,12 @@ void MapEntityGroup(const SelectableObjectGroup& srcGroup, SelectableObjectGroup
 {
     DVASSERT(collisionSystem != nullptr);
 
-    for (const auto obj : srcGroup.GetContent())
+    for (auto entity : srcGroup.ObjectsOfType<DAVA::Entity>())
     {
-        auto i = mapping.find(obj.Cast<DAVA::Entity>());
+        auto i = mapping.find(entity);
         if (i != mapping.end())
         {
-            dstGroup.Add(i->first, obj.GetBoundingBox());
+            dstGroup.Add(i->first);
         }
     }
 }
@@ -75,46 +75,21 @@ void StructureSystem::Move(const SelectableObjectGroup& objects, DAVA::Entity* n
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     const auto& objectsContent = objects.GetContent();
     if ((sceneEditor == nullptr) || objectsContent.empty())
-    {
         return;
-    }
-    if (objects.GetSize() > 1)
-    {
-        sceneEditor->BeginBatch("Move entities");
-    }
 
-    for (const auto& item : objectsContent)
+    sceneEditor->BeginBatch("Move entities");
+    for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
     {
-        auto entity = item.Cast<DAVA::Entity>();
         sceneEditor->Exec(new EntityParentChangeCommand(entity, newParent, newBefore));
     }
-
-    if (objects.GetSize() > 1)
-    {
-        sceneEditor->EndBatch();
-    }
-
+    sceneEditor->EndBatch();
     EmitChanged();
 }
 
-void StructureSystem::Remove(const SelectableObjectGroup& objects)
+void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
 {
-    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    const auto& objectsContent = objects.GetContent();
-    if ((nullptr == sceneEditor) || objectsContent.empty())
-    {
-        return;
-    }
-
-    DAVA::Vector<DAVA::Entity*> entitiesToRemove;
-    entitiesToRemove.reserve(objectsContent.size());
-    for (const auto& item : objectsContent)
-    {
-        auto entity = item.Cast<DAVA::Entity>();
-        entitiesToRemove.push_back(entity);
-    }
-    std::sort(entitiesToRemove.begin(), entitiesToRemove.end(), [](DAVA::Entity* l, DAVA::Entity* r) {
-        // sort objects by parents (even if parent == nullptr), in order to remove children first
+    // sort objects by parents (even if parent == nullptr), in order to remove children first
+    std::sort(objects.begin(), objects.end(), [](DAVA::Entity* l, DAVA::Entity* r) {
         if (l->GetParent() == r)
         {
             return true;
@@ -129,185 +104,129 @@ void StructureSystem::Remove(const SelectableObjectGroup& objects)
         }
     });
 
+    // clean-up not removable items
+    objects.erase(std::remove_if(objects.begin(), objects.end(), [](DAVA::Entity* e) {
+                      return e->GetNotRemovable();
+                  }),
+                  objects.end());
+
+    // check if we still somebody to delete
+    if (objects.empty())
+        return;
+
+    // actually delete bastards
+    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     sceneEditor->BeginBatch("Remove entities");
-
-    for (auto entity : entitiesToRemove)
+    for (auto entity : objects)
     {
-        if (entity->GetNotRemovable() == false)
+        for (auto delegate : delegates)
         {
-            for (auto delegate : delegates)
-            {
-                delegate->WillRemove(entity);
-            }
-
-            sceneEditor->Exec(new EntityRemoveCommand(entity));
-
-            for (auto delegate : delegates)
-            {
-                delegate->DidRemoved(entity);
-            }
+            delegate->WillRemove(entity);
+        }
+        sceneEditor->Exec(new EntityRemoveCommand(entity));
+        for (auto delegate : delegates)
+        {
+            delegate->DidRemoved(entity);
         }
     }
-
     sceneEditor->EndBatch();
+}
 
+void StructureSystem::Remove(const SelectableObjectGroup& objects)
+{
+    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
+    if ((nullptr == sceneEditor) || objects.IsEmpty())
+        return;
+
+    DAVA::Vector<DAVA::Entity*> entitiesToRemove;
+    entitiesToRemove.reserve(objects.GetSize());
+    for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
+    {
+        entitiesToRemove.push_back(entity);
+    }
+    RemoveEntities(entitiesToRemove);
     EmitChanged();
 }
 
 void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter*>& emitters, const DAVA::Vector<DAVA::ParticleEffectComponent*>& oldEffects, DAVA::ParticleEffectComponent* newEffect, int dropAfter)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (sceneEditor == nullptr)
+        return;
+
+    sceneEditor->BeginBatch("Move particle emitter");
+    for (size_t i = 0; i < emitters.size(); ++i)
     {
-        if (emitters.size() > 1)
-        {
-            sceneEditor->BeginBatch("Move particle emitter");
-        }
-
-        for (size_t i = 0; i < emitters.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleEmitterMoveCommand(oldEffects[i], emitters[i], newEffect, dropAfter++));
-        }
-
-        if (emitters.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
-
-        EmitChanged();
+        sceneEditor->Exec(new ParticleEmitterMoveCommand(oldEffects[i], emitters[i], newEffect, dropAfter++));
     }
+    sceneEditor->EndBatch();
+    EmitChanged();
 }
 
 void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters, DAVA::ParticleEmitter* newEmitter, DAVA::ParticleLayer* newBefore)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (sceneEditor == nullptr)
+        return;
+
+    sceneEditor->BeginBatch("Move particle layers");
+    for (size_t i = 0; i < layers.size(); ++i)
     {
-        if (layers.size() > 1)
-        {
-            sceneEditor->BeginBatch("Move particle layers");
-        }
-
-        for (size_t i = 0; i < layers.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleLayerMoveCommand(oldEmitters[i], layers[i], newEmitter, newBefore));
-        }
-
-        if (layers.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
-
-        EmitChanged();
+        sceneEditor->Exec(new ParticleLayerMoveCommand(oldEmitters[i], layers[i], newEmitter, newBefore));
     }
-}
-
-void StructureSystem::RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers, const DAVA::Vector<DAVA::ParticleEmitter*>& oldEmitters)
-{
-    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
-    {
-        if (layers.size() > 1)
-        {
-            sceneEditor->BeginBatch("Remove particle layers");
-        }
-
-        for (size_t i = 0; i < layers.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleLayerRemoveCommand(oldEmitters[i], layers[i]));
-        }
-
-        if (layers.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
-
-        EmitChanged();
-    }
+    sceneEditor->EndBatch();
+    EmitChanged();
 }
 
 void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& oldLayers, DAVA::ParticleLayer* newLayer)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
+    if (sceneEditor == nullptr)
+        return;
+
+    sceneEditor->BeginBatch("Move particle layers");
+    for (size_t i = 0; i < forces.size(); ++i)
     {
-        if (forces.size() > 1)
-        {
-            sceneEditor->BeginBatch("Move particle layers");
-        }
-
-        for (size_t i = 0; i < forces.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer));
-        }
-
-        if (forces.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
-
-        EmitChanged();
+        sceneEditor->Exec(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer));
     }
-}
-
-void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces, const DAVA::Vector<DAVA::ParticleLayer*>& layers)
-{
-    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL != sceneEditor)
-    {
-        if (forces.size() > 1)
-        {
-            sceneEditor->BeginBatch("Remove particle layers");
-        }
-
-        for (size_t i = 0; i < forces.size(); ++i)
-        {
-            sceneEditor->Exec(new ParticleForceRemoveCommand(forces[i], layers[i]));
-        }
-
-        if (forces.size() > 1)
-        {
-            sceneEditor->EndBatch();
-        }
-
-        EmitChanged();
-    }
+    sceneEditor->EndBatch();
+    EmitChanged();
 }
 
 SelectableObjectGroup StructureSystem::ReloadEntities(const SelectableObjectGroup& objects, bool saveLightmapSettings)
 {
-    SelectableObjectGroup result;
-    if (!objects.IsEmpty())
-    {
-        DAVA::Set<DAVA::FilePath> refsToReload;
+    if (objects.IsEmpty())
+        return SelectableObjectGroup();
 
-        for (const auto& item : objects.GetContent())
+    DAVA::Set<DAVA::FilePath> refsToReload;
+
+    for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
+    {
+        DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(entity);
+        if (props != nullptr)
         {
-            DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(item.Cast<DAVA::Entity>());
-            if (props != nullptr)
+            DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+            if (!pathToReload.IsEmpty())
             {
-                DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-                if (!pathToReload.IsEmpty())
-                {
-                    refsToReload.insert(pathToReload);
-                }
+                refsToReload.insert(pathToReload);
             }
         }
-
-        DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
-        InternalMapping groupMapping;
-        for (; it != refsToReload.end(); ++it)
-        {
-            InternalMapping mapping;
-            ReloadRefs(*it, mapping, saveLightmapSettings);
-            groupMapping.insert(mapping.begin(), mapping.end());
-        }
-
-        DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
-        SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
-        StructSystemDetails::MapEntityGroup(objects, result, groupMapping, scene->collisionSystem);
     }
 
+    DAVA::Set<DAVA::FilePath>::iterator it = refsToReload.begin();
+    InternalMapping groupMapping;
+    for (; it != refsToReload.end(); ++it)
+    {
+        InternalMapping mapping;
+        ReloadRefs(*it, mapping, saveLightmapSettings);
+        groupMapping.insert(mapping.begin(), mapping.end());
+    }
+
+    DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
+    SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
+
+    SelectableObjectGroup result;
+    StructSystemDetails::MapEntityGroup(objects, result, groupMapping, scene->collisionSystem);
     return result;
 }
 
@@ -321,23 +240,23 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath& modelPath, InternalMappin
 
 SelectableObjectGroup StructureSystem::ReloadEntitiesAs(const SelectableObjectGroup& objects, const DAVA::FilePath& newModelPath, bool saveLightmapSettings)
 {
-    SelectableObjectGroup result;
-    if (!objects.IsEmpty())
+    if (objects.IsEmpty())
+        return SelectableObjectGroup();
+
+    InternalMapping entitiesToReload;
+
+    for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
     {
-        InternalMapping entitiesToReload;
-
-        for (const auto& obj : objects.GetContent())
-        {
-            entitiesToReload.emplace(obj.Cast<DAVA::Entity>(), nullptr);
-        }
-
-        ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
-
-        DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
-        SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
-        StructSystemDetails::MapEntityGroup(objects, result, entitiesToReload, scene->collisionSystem);
+        entitiesToReload.emplace(entity, nullptr);
     }
 
+    ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
+
+    DVASSERT(dynamic_cast<SceneEditor2*>(GetScene()) != nullptr);
+    SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
+
+    SelectableObjectGroup result;
+    StructSystemDetails::MapEntityGroup(objects, result, entitiesToReload, scene->collisionSystem);
     return result;
 }
 
@@ -609,9 +528,9 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
-                SafeRelease(tmpEntity);
-                SafeRelease(tmpParent);
-                SafeRelease(tmpSceneFile);
+                DAVA::SafeRelease(tmpEntity);
+                DAVA::SafeRelease(tmpParent);
+                DAVA::SafeRelease(tmpSceneFile);
             }
 
             KeyedArchive* props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();

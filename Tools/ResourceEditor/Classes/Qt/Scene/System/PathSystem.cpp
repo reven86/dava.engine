@@ -219,14 +219,10 @@ void PathSystem::DrawInViewOnlyMode()
 
     const SelectableObjectGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
-    for (const auto& item : selection.GetContent())
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::Entity* path = item.Cast<DAVA::Entity>();
-        if (path == nullptr)
-            continue;
-
-        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(path);
-        if (path->GetVisible() == false || !pathComponent)
+        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(entity);
+        if (entity->GetVisible() == false || !pathComponent)
         {
             continue;
         }
@@ -236,10 +232,11 @@ void PathSystem::DrawInViewOnlyMode()
         {
             Vector3 startPosition = waypoint->position;
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
+            const auto& transform = entity->GetWorldTransform();
             bool isStarting = waypoint->IsStarting();
 
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, transform, DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, transform, DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
 
             //draw edges
             if (!waypoint->edges.empty())
@@ -249,7 +246,7 @@ void PathSystem::DrawInViewOnlyMode()
                 {
                     Vector3 finishPosition = edge->destination->position;
                     finishPosition.z += WAYPOINTS_DRAW_LIFTING;
-                    DrawArrow(startPosition * path->GetWorldTransform(), finishPosition * path->GetWorldTransform(), pathComponent->GetColor());
+                    DrawArrow(startPosition * transform, finishPosition * transform, pathComponent->GetColor());
                 }
             }
         }
@@ -269,12 +266,8 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
         currentSelection.Clear();
         currentSelection.Join(selection);
 
-        for (const auto& item : currentSelection.GetContent())
+        for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
         {
-            DAVA::Entity* entity = item.Cast<DAVA::Entity>();
-            if (entity == nullptr)
-                continue;
-
             if (entity->GetComponent(Component::PATH_COMPONENT) != nullptr)
             {
                 currentPath = entity;
