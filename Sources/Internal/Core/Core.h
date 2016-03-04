@@ -262,7 +262,8 @@ public:
 
     void EnableConsoleMode();
 
-    void ChangedScreenMetrics(float32 width, float32 height, float32 scale);
+    void InitializeScreenMetrics(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void ChangedScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY);
 
     rhi::InitParam rendererParams;
 
@@ -292,9 +293,12 @@ private:
         void* nativeView = nullptr;
         float32 width = 0.f;
         float32 height = 0.f;
-        float32 scale = 0.f;
+        float32 userScale = 0.f;
+        float32 scaleX = 0.f;
+        float32 scaleY = 0.f;
         bool modifiedNativeView = false;
         bool modifiedScreenMetrics = false;
+        bool initialized = false;
     } screenMetrics;
 };
 

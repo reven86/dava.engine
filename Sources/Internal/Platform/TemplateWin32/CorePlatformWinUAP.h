@@ -57,9 +57,9 @@ public:
 
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
-    DisplayMode GetCurrentDisplayMode() override;
+    //     DisplayMode GetCurrentDisplayMode() override;
 
-    void SetScreenScaleMultiplier(float32 multiplier) override;
+    //     void SetScreenScaleMultiplier(float32 multiplier) override;
 
     bool GetCursorVisibility();
     InputSystem::eMouseCaptureMode GetMouseCaptureMode();

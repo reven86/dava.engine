@@ -611,7 +611,11 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     const Vector2& minSizes = core->GetWindowMinimumSize();
     const LONG minWidth = static_cast<LONG>(minSizes.x), minHeight = static_cast<LONG>(minSizes.y);
-    float32 scale = 1.f;
+    float32 scaleX, scaleY = 1.f;
+    //TODO: Add system scale
+    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+    scaleX *= userScale;
+    scaleY *= userScale;
     RECT rect;
 
     switch (message)
@@ -629,7 +633,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         break;
     case WM_ERASEBKGND:
         GetClientRect(hWnd, &rect);
-        core->ChangedScreenMetrics(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scale);
+        core->ChangedScreenMetrics(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
     case WM_SYSKEYUP:
     // no break

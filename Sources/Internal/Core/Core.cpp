@@ -106,6 +106,12 @@ Core::Core()
 
     isConsoleMode = false;
     options = new KeyedArchive();
+    float32 defaultUserScale = 1.f;
+    if (nullptr != options)
+    {
+        defaultUserScale = options->GetFloat("userScreenScaleFactor", 1.0f);
+    }
+    screenMetrics.userScale = defaultUserScale;
 }
 
 Core::~Core()
@@ -515,7 +521,9 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
 
 DisplayMode Core::GetCurrentDisplayMode()
 {
-    return DisplayMode();
+    return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+    //
+    //     return DisplayMode();
 }
 
 void Core::Quit()
@@ -640,7 +648,7 @@ void Core::SystemProcessFrame()
         return;
     }
 
-    if (screenMetrics.modifiedScreenMetrics)
+    if (screenMetrics.initialized && screenMetrics.modifiedScreenMetrics)
     {
         UpdateScreenMetrics();
     }
@@ -845,6 +853,7 @@ void Core::SetNativeView(void* newNativeView)
         screenMetrics.modifiedNativeView = true;
         screenMetrics.nativeView = newNativeView;
     }
+    DVASSERT(nullptr != screenMetrics.nativeView);
 }
 
 void Core::EnableConsoleMode()
@@ -852,31 +861,54 @@ void Core::EnableConsoleMode()
     isConsoleMode = true;
 }
 
-void Core::ChangedScreenMetrics(float32 width, float32 height, float32 scale)
+void Core::InitializeScreenMetrics(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY)
+{
+    screenMetrics.nativeView = nativeView;
+    screenMetrics.width = width;
+    screenMetrics.height = height;
+    screenMetrics.scaleX = scaleX;
+    screenMetrics.scaleY = scaleY;
+    screenMetrics.modifiedNativeView = false;
+    screenMetrics.modifiedScreenMetrics = false;
+    DVASSERT((nullptr != screenMetrics.nativeView) && screenMetrics.width * screenMetrics.height * screenMetrics.scaleX * screenMetrics.scaleY && !screenMetrics.initialized);
+    screenMetrics.initialized = true;
+
+    rendererParams.window = screenMetrics.nativeView;
+    rendererParams.width = screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale;
+    rendererParams.height = screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale;
+
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(screenMetrics.width, screenMetrics.height);
+    virtSystem->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
+    virtSystem->EnableReloadResourceOnResize(true);
+}
+
+void Core::ChangedScreenMetrics(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
     bool needChanged = false;
     needChanged |= memcmp(&width, &screenMetrics.width, sizeof(float32)) != 0;
     needChanged |= memcmp(&height, &screenMetrics.height, sizeof(float32)) != 0;
-    needChanged |= memcmp(&scale, &screenMetrics.scale, sizeof(float32)) != 0;
+    needChanged |= memcmp(&scaleX, &screenMetrics.scaleX, sizeof(float32)) != 0;
+    needChanged |= memcmp(&scaleY, &screenMetrics.scaleY, sizeof(float32)) != 0;
 
     if (needChanged)
     {
-        // if changedMetricsScreen == true, then on the next call SystemProcessFrame() update all sizes and systems, after set it false
-        screenMetrics.modifiedScreenMetrics = true;
         screenMetrics.width = width;
         screenMetrics.height = height;
-        screenMetrics.scale = scale;
+        screenMetrics.scaleX = scaleX;
+        screenMetrics.scaleY = scaleY;
+        // if changedMetricsScreen == true, then on the next call SystemProcessFrame() update all sizes and systems, after set it false
+        screenMetrics.modifiedScreenMetrics = true;
     }
+    DVASSERT(screenMetrics.width * screenMetrics.height * screenMetrics.scaleX * screenMetrics.scaleY);
 }
 
 void Core::UpdateScreenMetrics()
 {
-    // if default metricsScreen
-    DVASSERT(screenMetrics.width * screenMetrics.scale * screenMetrics.height);
-    int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scale);
-    int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scale);
-    // render reset
     DVASSERT(Renderer::IsInitialized());
+    int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
+    int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+    // render reset
     rhi::ResetParam params;
     params.width = physicalWidth;
     params.height = physicalHeight;
@@ -887,7 +919,7 @@ void Core::UpdateScreenMetrics()
         params.window = screenMetrics.nativeView;
     }
     Renderer::Reset(params);
-    // notify all systems
+
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
@@ -916,19 +948,15 @@ void Core::SetIcon(int32 /*iconId*/){};
 
 float32 Core::GetScreenScaleMultiplier() const
 {
-    float32 ret = 1.0f;
-
-    if (options)
-    {
-        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
-    }
-
-    return ret;
+    return screenMetrics.userScale;
 }
 
 void Core::SetScreenScaleMultiplier(float32 multiplier)
 {
+    screenMetrics.userScale = multiplier;
+    screenMetrics.modifiedScreenMetrics = true;
     options->SetFloat("userScreenScaleFactor", multiplier);
+    DVASSERT(screenMetrics.userScale > 0.f);
 }
 
 float32 Core::GetScreenScaleFactor() const
