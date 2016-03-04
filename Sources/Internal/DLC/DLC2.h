@@ -28,28 +28,51 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem2.h"
-
-#include <functional>
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
-    // Я не понимаю как это сделать!!!!
-    // по всем правилам, если у тебя единица с которой ты работаешь это файл, то всегда работаешь с файлами!
-    // а если нужно пакеты, то тогда единица работы - пакет, для которого определены операции, скачать,
-    // подключить, получить список файлов, получить список зависимостей(других пакетов), мы же
-    // пытаемся клиенту дать возможность работать с файлами, а сами каким - то удобным образом докачиваем пакеты и 
-    // кидаем об этом клиенту нотификации, я не предаставляю как это сделать, если только не отдать управление этим механизмом
-    // самому клиенту, пускай он сам решает, что и когда догрузить, сам проверяет, что и где находится
-    // Так же мне не ясно как файловая система должна сотрудничать c ДЛЦ системой
-    // И еще как должны работать ТЭГИ и должны ли они быть в этой системе? Или это отдельная система
-    // ресурсов которая работает поверх и файловой системы и ДЛЦ системы?
-
-    // logically bunch of files
-    // may be build over FileArchive LZ4
-    // do we need it here?
-    class Package;
-
+    // Что-то начало проясняться, но не ясно, как сюда теперь ТЭГи добавить?
+    class PackageImpl;
     class Dlc2Impl;
+    class PackageRequestImpl;
+
+    // on iOS represent Pakfile loaded throu On_Demand_Resources
+    class Package
+    {
+    public:
+        Package();
+        Package(const Package&) = delete;
+        ~Package();
+        enum class Status
+        {
+            NOT_DOWNLOADED,
+            PARTIALLY_DOWNLOADED,
+            DOWNLOADING,
+            DOWNLOADED
+        };
+        // TODO what about dependencies?
+    private:
+        std::unique_ptr<PackageImpl> impl;
+    };
+
+    class PackageRequest
+    {
+    public:
+        PackageRequest();
+        PackageRequest(const PackageRequest&) = delete;
+        ~PackageRequest();
+
+        Signal<void> finishLoading;
+        Signal<const String&> errorLoading;
+        Signal<float> downloadingProgressChange; // 0.0f..1.0f
+        void Pause();
+        void Resume();
+        void Cancel();
+    private:
+        std::unique_ptr<PackageRequestImpl> impl; // can be platform dependent
+    };
+    
     class Dlc2
     {
     public:
@@ -57,28 +80,36 @@ namespace DAVA
         ~Dlc2();
 
         // assume game installed with database of all game files, for current version
-        void Init(const Path& dlc2DbFilePath);
+        void Init(const Path& dlc2DbFilePath, bool mountLocalPackages = false);
         // during game start we have to do local cash update and build all data structures
         // to quickly reload and find any file later with constant speed
-        void CheckLocalCashIntegrity(std::function<void(bool result, const String& errorMessage)>) const;
-        // list all local packages
-        const Vector<String>& GetLocalPackages() const;
+        void MountLocalPackages();
+        // list all local packages, for debug purposes 
+        const Vector<Package>& GetLocalPackages() const;
+
         // give client ability to read files from local cache
         // this is all user need when all packages loaded
-        FileSystem2& GetLocalCacheFileSystem();
+        const FileSystem2& GetFileSystem() const;
 
-        bool FindPackageInLocalCash(const String& packageName) const;
+        Package::Status GetPackageStatus(const String& packageName) const;
         // async download package to local cache, when done fire callback
         // if all good errorMessage is empty
-        void AsyncDownloadPackageToLocalCash(const String& packageName, const String& url, float32 timeout, 
-            std::function<void(const String& package, const String& errorMessage)> callback) const;
+        PackageRequest StartDownloadingPackage(const String& packageName, const String& url, float priority_0_1) const;
         // return empty string if not found
-        String FindPackageNameByFilePath(const Path& filepath) const;
+        String FindPackageName(const Path& filepath) const;
 
         // TODO
         // 1. add signals on finish loading package
-        // 2. add progress status to show user current multiple packages dounloading status and time
+        // 2. add progress status to show user current multiple packages downloading status and time
         // 3. add TAGs to better handle HD/SD ru/en etc resources and API for it
+        // 4. pause, resume, cancel downloads
+        // 5. fire LOW_DISKSPACE_WARNING
+        // 6. АХТУНГ!!! если делать так как сделано в доках Мака
+        // https://developer.apple.com/library/prerelease/ios/documentation/FileManagement/Conceptual/On_Demand_Resources_Guide/
+        // то есть проблема с тем, что тэги на файлах, сделаны по другому принципу, и в разных Паках НЕ может быть
+        // ресурсов с одним и тем же ТЭГом!
+        // Мы решаем эту проблему, так - через систему качаем только наши Паки, с одноименным названием файла и ТЭГа
+        // а дальше используем свои тэги которые прозрачны и например ТЭГ (ru) может быть в куче разных Паках, на отдельных файлах
     private:
         std::unique_ptr<Dlc2Impl> impl;
     };
