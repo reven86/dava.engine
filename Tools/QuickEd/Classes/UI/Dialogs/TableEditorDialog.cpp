@@ -65,7 +65,7 @@ TableEditorDialog::TableEditorDialog(const QString& values_, const QList<QString
             QString str = "";
             if (row.size() > i)
             {
-                str = row[i];
+                str = row[i].trimmed();
             }
 
             QStandardItem* item = new QStandardItem();
