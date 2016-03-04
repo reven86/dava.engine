@@ -92,6 +92,7 @@ void NEON_Matrix4Mul(const float* a, const float* b, float* output)
 
     // output = result registers
     "vstmia %0, { q0-q3 }"
+
     : // no output
     : "r"(output), "r"(a), "r"(b) // input - note *value* of pointer doesn't change
     : "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q11" //clobber

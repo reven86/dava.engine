@@ -65,7 +65,6 @@ void CoreWin32PlatformBase::InitArgs()
 void CoreWin32PlatformBase::Quit()
 {
     PostQuitMessage(0);
-    exit(0);
 }
 
 void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
