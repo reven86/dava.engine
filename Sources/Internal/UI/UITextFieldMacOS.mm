@@ -1332,7 +1332,7 @@ doCommandBySelector:(SEL)commandSelector
         DAVA::UITextFieldDelegate* delegate = text->ctrl->davaText->GetDelegate();
         if (delegate != nullptr)
         {
-            delegate->TextFieldShouldReturn(text->ctrl->davaText);
+            delegate->TextFieldShouldCancel(text->ctrl->davaText);
         }
         result = YES;
     }
