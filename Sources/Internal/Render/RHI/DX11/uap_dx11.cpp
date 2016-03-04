@@ -22,6 +22,7 @@ using namespace Windows::UI::Core;
 
 static SwapChainPanel ^ m_swapChainPanel = nullptr;
 static ComPtr<ID3D11Device1> m_d3dDevice;
+static ComPtr<IDXGIAdapter> m_dxgiAdapter;
 static ComPtr<ID3D11DeviceContext1> m_d3dContext;
 static ComPtr<ID3D11Debug> m_d3Debug;
 static ComPtr<ID3DUserDefinedAnnotation> m_d3UserAnnotation;
@@ -307,19 +308,19 @@ void CreateDeviceResources()
     if (device.Get())
     {
         IDXGIDevice* dxgiDevice = NULL;
-        IDXGIAdapter* dxgiAdapter = defAdapter.Get();
+        m_dxgiAdapter = defAdapter.Get();
 
-        if (!dxgiAdapter)
+        if (!m_dxgiAdapter)
         {
             if (SUCCEEDED(device.Get()->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
-                dxgiDevice->GetAdapter(&dxgiAdapter);
+                dxgiDevice->GetAdapter(&m_dxgiAdapter);
         }
 
-        if (dxgiAdapter)
+        if (m_dxgiAdapter)
         {
             DXGI_ADAPTER_DESC desc = { 0 };
 
-            if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
+            if (SUCCEEDED(m_dxgiAdapter->GetDesc(&desc)))
             {
                 char info[128];
 
@@ -748,6 +749,18 @@ void resize_swapchain(int32 width, int32 height)
         _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
         _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
         _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
+    }
+}
+
+void get_device_description(char* dst)
+{
+    if (m_dxgiAdapter)
+    {
+        DXGI_ADAPTER_DESC desc = { 0 };
+        if (SUCCEEDED(m_dxgiAdapter->GetDesc(&desc)))
+        {
+            ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, dst, 128, NULL, NULL);
+        }
     }
 }
 
