@@ -89,26 +89,26 @@ void ApplicationCore::OnExitFullscreen()
 void ApplicationCore::Draw()
 {
     TIME_PROFILE("ApplicationCore::Draw");
+    RenderSystem2D::Instance()->BeginFrame();
 
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
+
     UIControlSystem::Instance()->Draw();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
     FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
+    RenderSystem2D::Instance()->EndFrame();
 }
 
 void ApplicationCore::BeginFrame()
 {
     Renderer::BeginFrame();
-    RenderSystem2D::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    RenderSystem2D::Instance()->EndFrame();
     Renderer::EndFrame();
-    //RenderManager::Instance()->ProcessStats();
 }
 
 void ApplicationCore::OnSuspend()

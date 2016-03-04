@@ -77,7 +77,7 @@ void StaticOcclusionTool::ProcessInternal()
     if (commandAction == ACTION_BUILD)
     {
         ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-        if (scene->LoadScene(scenePathname))
+        if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
         {
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
@@ -86,7 +86,7 @@ void StaticOcclusionTool::ProcessInternal()
             while (scene->staticOcclusionBuildSystem->IsInBuild())
             {
                 Renderer::BeginFrame();
-                RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
+                RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
                 Renderer::EndFrame();
             }

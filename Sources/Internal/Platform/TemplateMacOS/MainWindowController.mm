@@ -363,32 +363,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         [self setFullScreen:true];
     }
 
-    // OS X application has no way to detect when she is no longer in control,
-    // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
-    // And application has no chance to release mouse capture.
-
-    // Install mouse hook which determines whether Mission Control, Launchpad is active
-    // and temporary turns off mouse pinning
-    // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
-    CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
-                                             kCGTailAppendEventTap,
-                                             kCGEventTapOptionListenOnly,
-                                             NSAnyEventMask,
-                                             &EventTapCallback,
-                                             nullptr);
-
-    if (portRef != nullptr)
-    {
-        CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
-        CFRelease(portRef);
-        CFRelease(loopSourceRef);
-    }
-    else
-    {
-        Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
-    }
-
     NSSize windowSize = [openGLView frame].size;
     float32 backingScale = Core::Instance()->GetScreenScaleFactor();
 
@@ -619,34 +593,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
-static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
-{
-    static bool restorePinning = false;
-    static int64_t myPid = static_cast<int64_t>(getpid());
-
-    int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
-    if (targetPid != myPid)
-    {
-        // Turn off mouse cature if event target is not our application and
-        // current capture mode is pinning
-        InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
-        {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
-            restorePinning = true;
-        }
-    }
-    else
-    {
-        if (restorePinning)
-        {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
-            restorePinning = false;
-        }
-    }
-    return event;
-}
-
 - (void)OnSuspend
 {
     [self allowDisplaySleep:true];
@@ -715,8 +661,11 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
 
         //This magick needed to correctly 'reshape' GLView and resize back-buffer.
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
-        [mainWindowController->mainWindow setContentView:nil];
-        [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+        NSSize sz = [mainWindowController->openGLView frame].size;
+        sz.width += 1;
+        [mainWindowController->mainWindow setContentSize:sz];
+        sz.width -= 1;
+        [mainWindowController->mainWindow setContentSize:sz];
     }
 }
 };

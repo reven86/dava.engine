@@ -41,11 +41,26 @@ DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex
     , requestedSwitchIndex(switchIndex)
 {
     DVASSERT(lodComponent);
-    DAVA::RenderObject* ro = DAVA::GetRenderObject(GetEntity());
+    DAVA::Entity* entity = GetEntity();
+    DAVA::RenderObject* ro = DAVA::GetRenderObject(entity);
+
     DVASSERT(ro);
     DVASSERT(ro->GetType() != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
 
     savedDistances = lodComponent->lodLayersArray;
+
+    //save renderBatches
+    DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
+    for (DAVA::int32 i = count - 1; i >= 0; --i)
+    {
+        DAVA::int32 lodIndex = 0, switchIndex = 0;
+        ro->GetRenderBatch(i, lodIndex, switchIndex);
+        if (lodIndex == deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
+        {
+            DeleteRenderBatchCommand* command = new DeleteRenderBatchCommand(entity, ro, i);
+            deletedBatches.push_back(command);
+        }
+    }
 }
 
 DeleteLODCommand::~DeleteLODCommand()
@@ -60,28 +75,14 @@ DeleteLODCommand::~DeleteLODCommand()
 
 void DeleteLODCommand::Redo()
 {
-    DVASSERT(deletedBatches.size() == 0);
-
-    DAVA::Entity* entity = GetEntity();
-    DAVA::RenderObject* ro = DAVA::GetRenderObject(entity);
-
-    //save renderbatches
-    DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
-    for (DAVA::int32 i = count - 1; i >= 0; --i)
+    for (DeleteRenderBatchCommand* command : deletedBatches)
     {
-        DAVA::int32 lodIndex = 0, switchIndex = 0;
-        ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if (lodIndex == deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
-        {
-            DeleteRenderBatchCommand* command = new DeleteRenderBatchCommand(entity, ro, i);
-            deletedBatches.push_back(command);
-
-            RedoInternalCommand(command);
-        }
+        RedoInternalCommand(command);
     }
 
     //update indexes
-    count = ro->GetRenderBatchCount();
+    DAVA::RenderObject* ro = DAVA::GetRenderObject(GetEntity());
+    DAVA::int32 count = ro->GetRenderBatchCount();
     for (DAVA::int32 i = (DAVA::int32)count - 1; i >= 0; --i)
     {
         DAVA::int32 lodIndex = 0, switchIndex = 0;
@@ -145,9 +146,7 @@ void DeleteLODCommand::Undo()
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
         UndoInternalCommand(deletedBatches[i]);
-        DAVA::SafeDelete(deletedBatches[i]);
     }
-    deletedBatches.clear();
 
     //restore lodlayers and disatnces
     lodComponent->lodLayersArray = savedDistances;
