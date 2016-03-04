@@ -119,9 +119,30 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
     Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
 
-    
-    requestedGPUFamily = forGPU;
+    String alg = CommandLineParser::Instance()->GetCommandParam("-alg");
+    if (alg.empty() || CompareCaseInsensitive(alg, "maxrect") == 0)
+    {
+        packAlgorithms.push_back(PackingAlgorithm::ALG_MAXRECTS_BEST_AREA_FIT);
+        packAlgorithms.push_back(PackingAlgorithm::ALG_MAXRECTS_BEST_LONG_SIDE_FIT);
+        packAlgorithms.push_back(PackingAlgorithm::ALG_MAXRECTS_BEST_SHORT_SIDE_FIT);
+        packAlgorithms.push_back(PackingAlgorithm::ALG_MAXRECTS_BOTTOM_LEFT);
+        packAlgorithms.push_back(PackingAlgorithm::ALG_MAXRRECT_BEST_CONTACT_POINT);
+    }
+    else if (CompareCaseInsensitive(alg, "maxrect_fast") == 0)
+    {
+        packAlgorithms.push_back(PackingAlgorithm::ALG_MAXRECTS_BEST_AREA_FIT);
+    }
+    else if (CompareCaseInsensitive(alg, "basic") == 0)
+    {
+        packAlgorithms.push_back(PackingAlgorithm::ALG_BASIC);
+    }
+    else
+    {
+        AddError(Format("Unknown algorithm: '%s'", alg.c_str()));
+        return;
+    }
 
+    requestedGPUFamily = forGPU;
     outputDirModified = false;
 
     gfxDirName = inputGfxDirectory.GetLastDirectoryName();
@@ -486,6 +507,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     if (!fileList->IsDirectory(fi))
                     {
                         FilePath fullname = fileList->GetPathname(fi);
+                        Logger::FrameworkDebug("extracting %s", fullname.GetFilename().c_str());
+
                         if (fullname.IsEqualToExtension(".psd"))
                         {
                             //TODO: check if we need filename or pathname
@@ -526,14 +549,14 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                     if (isLightmapsPacking)
                     {
-                        packer.UseOnlySquareTextures();
+                        packer.SetUseOnlySquareTextures();
                         packer.SetMaxTextureSize(2048);
                     }
                     else
                     {
                         if (CommandLineParser::Instance()->IsFlagSet("--square"))
                         {
-                            packer.UseOnlySquareTextures();
+                            packer.SetUseOnlySquareTextures();
                         }
                         if (CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
                         {
@@ -543,6 +566,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                     packer.SetTwoSideMargin(useTwoSideMargin);
                     packer.SetTexturesMargin(marginInPixels);
+                    packer.SetAlgorithms(packAlgorithms);
 
                     if (CommandLineParser::Instance()->IsFlagSet("--split"))
                     {

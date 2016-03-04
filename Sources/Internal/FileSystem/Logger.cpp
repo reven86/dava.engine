@@ -113,7 +113,7 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
 static const Array<const char8*, 5> logLevelString
 {
   {
-  "framwork",
+  "framework",
   "debug",
   "info",
   "warning",

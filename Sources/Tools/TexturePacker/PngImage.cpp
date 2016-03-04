@@ -137,11 +137,11 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 	}
 }
 
-void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
+void PngImageExt::DrawImage(const SpriteBoundsRect& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
 {
     uint32* destData32 = (uint32*)GetData();
     uint32* srcData32 = (uint32*)image->GetData();
-    const Rect2i& img = packedCell.imageRect;
+    const Rect2i& img = packedCell.spriteRect;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 

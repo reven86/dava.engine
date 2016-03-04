@@ -34,6 +34,7 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "TextureCompression/TextureConverter.h"
+#include "TexturePacker/Spritesheet.h"
 #include <atomic>
 
 #include "AssetCache/CacheItemKey.h"
@@ -99,6 +100,7 @@ public:
     bool clearOutputDirectory = true;
     eGPUFamily requestedGPUFamily = GPU_INVALID;
     TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
+    Vector<PackingAlgorithm> packAlgorithms;
 
 private:
     FilePath cacheClientTool;
