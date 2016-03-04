@@ -29,9 +29,10 @@
 
 #include "EventModel.h"
 
+PUSH_QT_WARNING_SUPRESSOR
 #include <QMetaObject>
 #include <QMetaEnum>
-
+POP_QT_WARNING_SUPRESSOR
 
 EventModel::EventModel( QObject* parent )
     : QStandardItemModel( parent )

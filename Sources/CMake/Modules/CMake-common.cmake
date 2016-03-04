@@ -35,9 +35,6 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
 
-
-set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
-
 #
 macro ( set_project_files_properties FILES_LIST )
     if( APPLE )

@@ -32,7 +32,6 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
-#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
 #include "Document.h"
@@ -323,8 +322,8 @@ void PropertiesModel::UpdateAllChangedProperties()
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    QPersistentModelIndex nameIndex = indexByProperty(property, 0);
+    QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
     lazyUpdater->Update();
 }

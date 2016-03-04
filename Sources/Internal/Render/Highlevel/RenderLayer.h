@@ -39,7 +39,7 @@ namespace DAVA
 {
 class Camera;
 class OcclusionQuery;
-class RenderLayer
+class RenderLayer : public InspBase
 {
 public:
     enum eRenderLayerID

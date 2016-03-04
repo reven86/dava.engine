@@ -72,17 +72,6 @@ StructureSystem::~StructureSystem()
 {
 }
 
-bool StructureSystem::Init(const DAVA::FilePath& path)
-{
-    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
-    if (NULL == sceneEditor)
-    {
-        return false;
-    }
-
-    return (SceneFileV2::ERROR_NO_ERROR == sceneEditor->LoadScene(path));
-}
-
 void StructureSystem::Move(const EntityGroup& entityGroup, DAVA::Entity* newParent, DAVA::Entity* newBefore)
 {
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
