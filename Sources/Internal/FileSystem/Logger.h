@@ -118,11 +118,11 @@ public:
     static void Error(const char8* text, ...);
 
     // logs which writes to the given file
-    static void FrameworkDebugToFile(const FilePath& costomLogFileName, const char8* text, ...);
-    static void DebugToFile(const FilePath& costomLogFileName, const char8* text, ...);
-    static void WarningToFile(const FilePath& costomLogFileName, const char8* text, ...);
-    static void InfoToFile(const FilePath& costomLogFileName, const char8* text, ...);
-    static void ErrorToFile(const FilePath& costomLogFileName, const char8* text, ...);
+    static void FrameworkDebugToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void DebugToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void WarningToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void InfoToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void ErrorToFile(const FilePath& customLogFileName, const char8* text, ...);
 
     static void AddCustomOutput(DAVA::LoggerOutput* lo);
     static void RemoveCustomOutput(DAVA::LoggerOutput* lo);

@@ -187,102 +187,122 @@ void Logger::Log(eLogLevel ll, const char8* text, ...) const
 
 void Logger::FrameworkDebug(const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
+    {
+        va_list vl;
+        va_start(vl, text);
         log->Logv(LEVEL_FRAMEWORK, text, vl);
-    va_end(vl);
+        va_end(vl);
+    }
 }
 
 void Logger::Debug(const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
+    {
+        va_list vl;
+        va_start(vl, text);
         log->Logv(LEVEL_DEBUG, text, vl);
-    va_end(vl);
+        va_end(vl);
+    }
 }
 
 void Logger::Info(const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
+    {
+        va_list vl;
+        va_start(vl, text);
         log->Logv(LEVEL_INFO, text, vl);
-    va_end(vl);
+        va_end(vl);
+    }
 }
 
 void Logger::Warning(const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
+    {
+        va_list vl;
+        va_start(vl, text);
         log->Logv(LEVEL_WARNING, text, vl);
-    va_end(vl);
+        va_end(vl);
+    }
 }
 
 void Logger::Error(const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
+    {
+        va_list vl;
+        va_start(vl, text);
         log->Logv(LEVEL_ERROR, text, vl);
-    va_end(vl);
+        va_end(vl);
+    }
 }
 
-void Logger::FrameworkDebugToFile(const FilePath& costomLogFileName, const char8* text, ...)
+void Logger::FrameworkDebugToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
-        log->Logv(costomLogFileName, LEVEL_FRAMEWORK, text, vl);
-    va_end(vl);
+    {
+        va_list vl;
+        va_start(vl, text);
+        log->Logv(customLogFileName, LEVEL_FRAMEWORK, text, vl);
+        va_end(vl);
+    }
 }
 
-void Logger::DebugToFile(const FilePath& costomLogFileName, const char8* text, ...)
+void Logger::DebugToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
-        log->Logv(costomLogFileName, LEVEL_INFO, text, vl);
-    va_end(vl);
+    {
+        va_list vl;
+        va_start(vl, text);
+        log->Logv(customLogFileName, LEVEL_INFO, text, vl);
+        va_end(vl);
+    }
 }
 
-void Logger::InfoToFile(const FilePath& costomLogFileName, const char8* text, ...)
+void Logger::InfoToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
-        log->Logv(costomLogFileName, LEVEL_INFO, text, vl);
-    va_end(vl);
+    {
+        va_list vl;
+        va_start(vl, text);
+        log->Logv(customLogFileName, LEVEL_INFO, text, vl);
+        va_end(vl);
+    }
 }
 
-void Logger::WarningToFile(const FilePath& costomLogFileName, const char8* text, ...)
+void Logger::WarningToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
-        log->Logv(costomLogFileName, LEVEL_WARNING, text, vl);
-    va_end(vl);
+    {
+        va_list vl;
+        va_start(vl, text);
+        log->Logv(customLogFileName, LEVEL_WARNING, text, vl);
+        va_end(vl);
+    }
 }
 
-void Logger::ErrorToFile(const FilePath& costomLogFileName, const char8* text, ...)
+void Logger::ErrorToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    va_list vl;
-    va_start(vl, text);
     Logger* log = Logger::Instance();
     if (nullptr != log)
-        log->Logv(costomLogFileName, LEVEL_ERROR, text, vl);
-    va_end(vl);
+    {
+        va_list vl;
+        va_start(vl, text);
+        log->Logv(customLogFileName, LEVEL_ERROR, text, vl);
+        va_end(vl);
+    }
 }
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
@@ -372,7 +392,7 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile) const
     uint32 dataReaden = log->Read(buff.data(), sizeToCut);
     if (dataReaden != sizeToCut)
     {
-        return false; // nave enought data but can't read
+        return false; // have enought data but can't read
     }
 
     SafeRelease(log);
@@ -397,11 +417,11 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile) const
     return true; // correct;
 }
 
-void Logger::FileLog(const FilePath& costomLogFileName, eLogLevel ll, const char8* text) const
+void Logger::FileLog(const FilePath& customLogFileName, eLogLevel ll, const char8* text) const
 {
     if (nullptr != FileSystem::Instance())
     {
-        ScopedPtr<File> file(File::Create(costomLogFileName, File::APPEND | File::WRITE));
+        ScopedPtr<File> file(File::Create(customLogFileName, File::APPEND | File::WRITE));
         if (file)
         {
             Array<char8, 128> prefix;
