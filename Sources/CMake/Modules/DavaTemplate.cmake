@@ -61,7 +61,7 @@ elseif( ANDROID_DATA )
 
 endif()
 
-if ( STEAM AND STEAM_SDK_FOUND )
+if ( STEAM_SDK_FOUND )
     add_definitions ( -D__DAVAENGINE_STEAM__ )
     include_directories( ${STEAM_SDK_HEADERS} )
     list ( APPEND LIBRARIES ${STEAM_SDK_STATIC_LIBRARIES} )
@@ -74,6 +74,9 @@ if ( STEAM AND STEAM_SDK_FOUND )
     if ( MACOS )
        list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
     endif ()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
 
 endif ()
 
@@ -346,6 +349,21 @@ else()
     )
 
 endif()
+
+if ( STEAM_SDK_FOUND AND WIN32 )
+    if(DEPLOY)
+        set( STEAM_APPID_DIR ${DEPLOY_DIR} )
+    else()
+        set( STEAM_APPID_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR} )
+    endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy
+       ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt
+       ${STEAM_APPID_DIR}/steam_appid.txt
+    )
+endif ()
+
 
 if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
