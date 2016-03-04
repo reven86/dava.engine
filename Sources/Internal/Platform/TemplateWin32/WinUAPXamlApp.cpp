@@ -388,7 +388,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
-    core->RunOnMainThread([ this, state ] {
+    core->RunOnMainThread([this, state] {
         switch (state)
         {
         case CoreWindowActivationState::CodeActivated:
