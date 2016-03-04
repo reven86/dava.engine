@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FileSystem/Logger.h"
 
-#include "steam/steam_api.h"
+using namespace STEAM_SDK;
 
 namespace DAVA
 {
@@ -84,6 +84,12 @@ bool Steam::IsInited()
 {
     return isInited;
 }
+
+Steam::Storage * Steam::CreateStorage()
+{
+    return SteamRemoteStorage();
+}
+
 }
 
 #endif

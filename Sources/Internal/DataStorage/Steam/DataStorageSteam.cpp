@@ -47,7 +47,7 @@ DataStorageSteam::DataStorageSteam()
 {
     if (Steam::IsInited())
     {
-        remoteStorage = SteamRemoteStorage();
+        remoteStorage = Steam::CreateStorage();
     }
 }
 

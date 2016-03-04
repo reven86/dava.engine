@@ -35,7 +35,7 @@
 
 #include "Utils/Utils.h"
 
-#include "steam/steam_api.h"
+#include "Platform/Steam.h"
 
 namespace DAVA
 {
@@ -62,7 +62,7 @@ private:
     ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
     void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-    ISteamRemoteStorage* remoteStorage = nullptr;
+    Steam::Storage * remoteStorage = nullptr;
     ScopedPtr<KeyedArchive> values;
     bool isValuesChanged = false;
 };
