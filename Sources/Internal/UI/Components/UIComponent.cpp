@@ -37,6 +37,8 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Actions/UIActionComponent.h"
+#include "UI/Actions/UIActionBindingComponent.h"
 
 namespace DAVA
 {
@@ -83,6 +85,12 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case FOCUS_COMPONENT:
         return new UIFocusComponent();
+
+    case ACTION_COMPONENT:
+        return new UIActionComponent();
+
+    case ACTION_BINDING_COMPONENT:
+        return new UIActionBindingComponent();
 
     default:
         DVASSERT(false);

@@ -59,8 +59,8 @@
 #include "BoolPropertyDelegate.h"
 #include "ResourceFilePropertyDelegate.h"
 #include "Vector4PropertyDelegate.h"
-
 #include "FontPropertyDelegate.h"
+#include "TablePropertyDelegate.h"
 
 using namespace DAVA;
 
@@ -86,6 +86,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
     propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
