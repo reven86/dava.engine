@@ -317,6 +317,7 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
+    resizePerFrame = 0;
     TIME_PROFILE("UIControlSystem::Draw");
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
@@ -572,6 +573,12 @@ void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
     if (fullscreenRect == newFullscreenRect)
     {
         return;
+    }
+
+    resizePerFrame++;
+    if (resizePerFrame >= 5)
+    {
+        Logger::Error("Resizes per frame : %d", resizePerFrame);
     }
 
     fullscreenRect = newFullscreenRect;

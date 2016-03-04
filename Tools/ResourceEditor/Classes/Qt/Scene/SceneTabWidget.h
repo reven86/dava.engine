@@ -98,6 +98,7 @@ public slots:
     // scene signals
     void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableObjectGroup* entities);
     void SceneSaved(SceneEditor2* scene);
+    void SceneUpdated(SceneEditor2* scene);
     void SceneModifyStatusChanged(SceneEditor2* scene, bool modified);
 
 protected:
