@@ -32,36 +32,34 @@
 
 #include "ui_TableEditorDialog.h"
 
+class QStandardItemModel;
+
 namespace DAVA
 {
 class Font;
 }
 
-class TableEditorDialog : public QDialog, public Ui::TableEditorDialog
+class TableEditorDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit TableEditorDialog(const QString& originalPresetName, QWidget* parent = nullptr);
+    explicit TableEditorDialog(const QString& values, const QList<QString>& header, QWidget* parent = nullptr);
     ~TableEditorDialog() = default;
-private slots:
-    void initPreset();
-    void OnDefaultFontChanged(const QString& arg);
-    void OnDefaultFontSizeChanged(int size);
-    void OnLocalizedFontChanged(const QString& arg);
-    void OnLocalizedFontSizeChanged(int size);
 
-    void OnCurrentLocaleChanged(const QString& arg);
-    void OnResetLocale();
-    void OnApplyToAllLocales();
+    const QString& GetValues() const;
+
+private slots:
     void OnOk();
     void OnCancel();
+    void OnAddRow();
+    void OnRemoveRow();
 
 private:
-    void UpdateDefaultFontWidgets();
-    void UpdateLocalizedFontWidgets();
-    void SetFont(const QString& font, const int fontSize, const QString& locale);
-    const QString originalPresetName;
+    Ui::TableEditorDialog ui;
+    QList<QString> header;
+    QString values;
+    QStandardItemModel* model = nullptr;
 };
 
 #endif // __TABLE_EDITOR_DIALOG_H__

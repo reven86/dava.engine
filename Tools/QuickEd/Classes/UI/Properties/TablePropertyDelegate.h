@@ -37,7 +37,7 @@ class TablePropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    explicit TablePropertyDelegate(PropertiesTreeItemDelegate* delegate);
+    explicit TablePropertyDelegate(const QList<QString>& header, PropertiesTreeItemDelegate* delegate);
     ~TablePropertyDelegate();
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
@@ -47,10 +47,12 @@ public:
 
 private slots:
     void editTableClicked();
-    void valueChanged(const QString& text);
+    void OnEditingFinished();
 
 private:
     mutable QAction* editTableAction = nullptr;
+
+    QList<QString> header;
 };
 
 #endif // __TABLE_PROPERTY_DELEGATE_H__

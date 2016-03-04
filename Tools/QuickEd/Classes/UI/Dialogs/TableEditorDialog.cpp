@@ -32,134 +32,121 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "EditorCore.h"
 
+#include <QStandardItemModel>
+
 using namespace DAVA;
 
-TableEditorDialog::TableEditorDialog(const QString& originalPresetNameArg, QWidget* parent)
+TableEditorDialog::TableEditorDialog(const QString& values_, const QList<QString>& header_, QWidget* parent)
     : QDialog(parent)
-    , originalPresetName(originalPresetNameArg)
+    , header(header_)
+    , values(values_)
 {
-    setupUi(this);
-    //    pushButton_resetLocale->setIcon(QIcon(":/Icons/edit_undo.png"));
-    //    pushButton_resetLocale->setToolTip(tr("Reset font for locale"));
-    //
-    //    lineEdit_currentFontPresetName->setText(originalPresetName);
-    //    QStringList fontsList = DAVA::ResourcesManageHelper::GetFontsList();
-    //    comboBox_defaultFont->addItems(fontsList);
-    //    comboBox_localizedFont->addItems(fontsList);
-    //
-    //    comboBox_locale->addItems(GetEditorFontSystem()->GetAvailableFontLocales());
-    //
-    //    comboBox_locale->setCurrentText(QString::fromStdString(LocalizationSystem::Instance()->GetCurrentLocale()));
+    ui.setupUi(this);
 
-    //
-    //    connect(comboBox_defaultFont, &QComboBox::currentTextChanged, this, &TableEditorDialog::OnDefaultFontChanged);
-    //    connect(spinBox_defaultFontSize, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &TableEditorDialog::OnDefaultFontSizeChanged);
-    //    connect(comboBox_localizedFont, &QComboBox::currentTextChanged, this, &TableEditorDialog::OnLocalizedFontChanged);
-    //    connect(spinBox_localizedFontSize, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &TableEditorDialog::OnLocalizedFontSizeChanged);
-    //    connect(comboBox_locale, &QComboBox::currentTextChanged, this, &TableEditorDialog::OnCurrentLocaleChanged);
-    //    connect(pushButton_resetLocale, &QPushButton::clicked, this, &TableEditorDialog::OnResetLocale);
-    //    connect(pushButton_applyDefaultToAllLocales, &QPushButton::clicked, this, &TableEditorDialog::OnApplyToAllLocales);
-    //    connect(pushButton_ok, &QPushButton::clicked, this, &TableEditorDialog::OnOk);
-    //    connect(pushButton_cancel, &QPushButton::clicked, this, &TableEditorDialog::OnCancel);
-}
+    ui.addButton->setIcon(QIcon(":/Icons/add.png"));
+    ui.removeButton->setIcon(QIcon(":/Icons/101.png"));
 
-void TableEditorDialog::initPreset()
-{
-    UpdateDefaultFontWidgets();
-    UpdateLocalizedFontWidgets();
-}
+    connect(ui.addButton, &QPushButton::clicked, this, &TableEditorDialog::OnAddRow);
+    connect(ui.removeButton, &QPushButton::clicked, this, &TableEditorDialog::OnRemoveRow);
+    connect(ui.pushButton_ok, &QPushButton::clicked, this, &TableEditorDialog::OnOk);
+    connect(ui.pushButton_cancel, &QPushButton::clicked, this, &TableEditorDialog::OnCancel);
 
-void TableEditorDialog::OnDefaultFontChanged(const QString& arg)
-{
-    SetFont(arg, spinBox_defaultFontSize->value(), GetEditorFontSystem()->GetDefaultFontLocale());
-}
+    model = new QStandardItemModel(0, header.size(), this);
+    model->setHorizontalHeaderLabels(header);
 
-void TableEditorDialog::OnDefaultFontSizeChanged(int size)
-{
-    SetFont(comboBox_defaultFont->currentText(), size, GetEditorFontSystem()->GetDefaultFontLocale());
-}
-
-void TableEditorDialog::OnLocalizedFontChanged(const QString& arg)
-{
-    SetFont(arg, spinBox_localizedFontSize->value(), comboBox_locale->currentText());
-}
-
-void TableEditorDialog::OnLocalizedFontSizeChanged(int size)
-{
-    SetFont(comboBox_localizedFont->currentText(), size, comboBox_locale->currentText());
-}
-
-void TableEditorDialog::OnCurrentLocaleChanged(const QString& arg)
-{
-    UpdateLocalizedFontWidgets();
-}
-
-void TableEditorDialog::OnResetLocale()
-{
-    SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), comboBox_locale->currentText());
-    UpdateLocalizedFontWidgets();
-}
-
-void TableEditorDialog::OnApplyToAllLocales()
-{
-    for (const auto& locale : GetEditorFontSystem()->GetAvailableFontLocales())
+    QStringList rows = values.split(";");
+    for (QString& rowStr : rows)
     {
-        SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), locale);
-        UpdateLocalizedFontWidgets();
+        QStringList row = rowStr.split(",");
+        QList<QStandardItem*> items;
+
+        for (int i = 0; i < header.size(); i++)
+        {
+            QString str = "";
+            if (row.size() > i)
+            {
+                str = row[i];
+            }
+
+            QStandardItem* item = new QStandardItem();
+            item->setData(str, Qt::DisplayRole);
+            items.push_back(item);
+        }
+        model->appendRow(items);
     }
+
+    ui.tableView->setModel(model);
+    ui.tableView->resizeColumnsToContents();
+}
+
+const QString& TableEditorDialog::GetValues() const
+{
+    return values;
 }
 
 void TableEditorDialog::OnOk()
 {
-    GetEditorFontSystem()->SaveLocalizedFonts();
+    values.clear();
+    bool firstRow = true;
+    for (int row = 0; row < model->rowCount(); row++)
+    {
+        bool empty = true;
+        for (int col = 0; col < header.size(); col++)
+        {
+            QString str = model->data(model->index(row, col), Qt::DisplayRole).toString();
+            if (!str.trimmed().isEmpty())
+            {
+                empty = false;
+                break;
+            }
+        }
+
+        if (!empty)
+        {
+            if (firstRow)
+            {
+                firstRow = false;
+            }
+            else
+            {
+                values.append(";");
+            }
+
+            for (int col = 0; col < header.size(); col++)
+            {
+                if (col > 0)
+                {
+                    values.append(",");
+                }
+                values.append(model->data(model->index(row, col), Qt::DisplayRole).toString());
+            }
+        }
+    }
     accept();
 }
 
 void TableEditorDialog::OnCancel()
 {
-    GetEditorFontSystem()->LoadLocalizedFonts();
     reject();
 }
 
-void TableEditorDialog::UpdateDefaultFontWidgets()
+void TableEditorDialog::OnAddRow()
 {
-    spinBox_defaultFontSize->blockSignals(true);
-    comboBox_defaultFont->blockSignals(true);
-    Font* font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), GetEditorFontSystem()->GetDefaultFontLocale());
-    spinBox_defaultFontSize->setValue(font->GetSize());
-
-    DVASSERT(font->GetFontType() == Font::TYPE_FT);
-    FTFont* ftFont = static_cast<FTFont*>(font);
-    QFileInfo fileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
-    comboBox_defaultFont->setCurrentText(fileInfo.fileName());
-    spinBox_defaultFontSize->blockSignals(false);
-    comboBox_defaultFont->blockSignals(false);
-}
-
-void TableEditorDialog::UpdateLocalizedFontWidgets()
-{
-    spinBox_localizedFontSize->blockSignals(true);
-    comboBox_localizedFont->blockSignals(true);
-    Font* font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), comboBox_locale->currentText().toStdString());
-    spinBox_localizedFontSize->setValue(font->GetSize());
-
-    DVASSERT(font->GetFontType() == Font::TYPE_FT);
-    FTFont* ftFont = static_cast<FTFont*>(font);
-    QFileInfo fileInfo = QFileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
-    comboBox_localizedFont->setCurrentText(fileInfo.fileName());
-    spinBox_localizedFontSize->blockSignals(false);
-    comboBox_localizedFont->blockSignals(false);
-}
-
-void TableEditorDialog::SetFont(const QString& fontType, const int fontSize, const QString& locale)
-{
-    QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontType);
-    Font* font = FTFont::Create(fontPath.toStdString());
-    if (nullptr == font)
+    QList<QStandardItem*> items;
+    for (int i = 0; i < header.size(); i++)
     {
-        QMessageBox::warning(this, tr("Font creation error"), tr("Can not create font from %1").arg(fontPath));
-        return;
+        QStandardItem* item = new QStandardItem();
+        item->setData("");
+        items.push_back(item);
     }
-    font->SetSize(fontSize);
-    GetEditorFontSystem()->SetFont(lineEdit_currentFontPresetName->text().toStdString(), locale.toStdString(), font);
+    model->appendRow(items);
+}
+
+void TableEditorDialog::OnRemoveRow()
+{
+    QModelIndex current = ui.tableView->selectionModel()->currentIndex();
+    if (current.isValid())
+    {
+        model->removeRow(current.row());
+    }
 }

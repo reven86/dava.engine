@@ -39,8 +39,9 @@
 
 using namespace DAVA;
 
-TablePropertyDelegate::TablePropertyDelegate(PropertiesTreeItemDelegate* delegate)
+TablePropertyDelegate::TablePropertyDelegate(const QList<QString>& header_, PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
+    , header(header_)
 {
 }
 
@@ -52,7 +53,7 @@ QWidget* TablePropertyDelegate::createEditor(QWidget* parent, const QStyleOption
 {
     QLineEdit* lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName("lineEdit");
-    connect(lineEdit, &QLineEdit::textChanged, this, &TablePropertyDelegate::valueChanged);
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
     return lineEdit;
 }
 
@@ -60,8 +61,19 @@ void TablePropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex&
 {
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    VariantType variant = index.data(Qt::EditRole).value<VariantType>();
-    editor->setText(QString::fromStdString(variant.AsString()));
+    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
+    QString stringValue;
+    if (variant.GetType() == DAVA::VariantType::TYPE_STRING)
+    {
+        stringValue = StringToQString(variant.AsString());
+    }
+    else
+    {
+        stringValue = WideStringToQString(variant.AsWideString());
+    }
+    editor->blockSignals(true);
+    editor->setText(stringValue);
+    editor->blockSignals(false);
 }
 
 bool TablePropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
@@ -71,12 +83,19 @@ bool TablePropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel*
 
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    VariantType variantType = index.data(Qt::EditRole).value<VariantType>();
-    String str = QStringToString(editor->text());
-    variantType.SetString(str);
+    DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
+
+    if (variantType.GetType() == DAVA::VariantType::TYPE_STRING)
+    {
+        variantType.SetString(QStringToString(editor->text()));
+    }
+    else
+    {
+        variantType.SetWideString(QStringToWideString(editor->text()));
+    }
 
     QVariant variant;
-    variant.setValue<VariantType>(variantType);
+    variant.setValue<DAVA::VariantType>(variantType);
 
     return model->setData(index, variant, Qt::EditRole);
 }
@@ -102,28 +121,25 @@ void TablePropertyDelegate::editTableClicked()
         return;
 
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
-    TableEditorDialog dialog(editor->text(), qApp->activeWindow());
+    TableEditorDialog dialog(editor->text(), header, qApp->activeWindow());
     if (dialog.exec())
     {
+        editor->setText(dialog.GetValues());
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
     }
 }
 
-void TablePropertyDelegate::valueChanged(const QString& newStr)
+void TablePropertyDelegate::OnEditingFinished()
 {
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
-    if (lineEdit == nullptr)
-    {
+    if (!lineEdit)
         return;
-    }
 
     QWidget* editor = lineEdit->parentWidget();
-    if (nullptr == editor)
-    {
+    if (!editor)
         return;
-    }
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }

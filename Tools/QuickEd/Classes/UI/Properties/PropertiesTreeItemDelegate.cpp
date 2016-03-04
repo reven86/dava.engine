@@ -86,7 +86,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
     propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(this);
+    propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
