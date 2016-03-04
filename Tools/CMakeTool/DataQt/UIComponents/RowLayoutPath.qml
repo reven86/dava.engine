@@ -51,13 +51,12 @@ RowLayout {
         iconSource: "qrc:///Icons/openfolder.png"
         onClicked: {
             var folder = loader.item.text;
-            if(folder.length === 0) {
-                return;
+            if(folder.length !== 0) {
+                if(folder[0] === "/") {
+                    folder = folder.substring(1);
+                }
+                fileDialog.folder = "file:///" + folder
             }
-            if(folder[0] === "/") {
-                folder = folder.substring(1);
-            }
-            fileDialog.folder = "file:///" + folder
             fileDialog.open();
         }
     }

@@ -17,7 +17,7 @@ Item {
 
     signal dataUpdated();
 
-    Layout.minimumHeight: label_platforms.height + listView_platforms.contentHeight + columnLayout_platforms.spacing
+    Layout.minimumHeight: label_platforms.height + Math.max(listView_platforms.contentHeight, listView_localOptions.contentHeight) + columnLayout_platforms.spacing
 
     RowLayout {
         id: rowLayout

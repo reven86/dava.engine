@@ -26,40 +26,6 @@
             ]
         },
         {
-            "name": "OS X",
-            "checked": false,
-            "value": "$CMAKE_PATH -G \"Xcode\" $BUILD_FOLDER_PATH/.. %1",
-            "defaults": [
-                ""
-            ],
-            "options": [
-                {
-                    "name": "Unity build",
-                    "type": "checkbox",
-                    "checked": true,
-                    "substring number": 1,
-                    "value": "-DUNITY_BUILD=true"
-                }
-            ]
-        },
-        {
-            "name": "IOS",
-            "checked": false,
-            "value": "$CMAKE_PATH -G \"Xcode\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/ios.toolchain.cmake $BUILD_FOLDER_PATH/.. %1",
-            "defaults": [
-                ""
-            ],
-            "options": [
-                {
-                    "name": "Unity build",
-                    "type": "checkbox",
-                    "checked": true,
-                    "substring number": 1,
-                    "value": "-DUNITY_BUILD=true"
-                }
-            ]
-        },
-        {
             "name": "Android",
             "checked": false,
             "value": "$CMAKE_PATH -G \"%1%2\" -DCMAKE_TOOLCHAIN_FILE=$DAVA_FRAMEWORK_PATH/Sources/CMake/Toolchains/android.toolchain.cmake $BUILD_FOLDER_PATH/.. %3",
@@ -138,12 +104,5 @@
                 }
             ]
         }
-    ],
-    "options": [],
-    "CMakeFolder": "D:/Projects/dava.framework/Tools/Bin/cmake/bin/cmake.exe",
-    "davaFolder": "D:/Projects/dava.framework",
-    "buildFolderHistory": [
-        "D:/Projects/dava.framework/Tools/QuickEd/_build"
-    ],
-    "maxHistoryCount": 5
+    ]
 }
