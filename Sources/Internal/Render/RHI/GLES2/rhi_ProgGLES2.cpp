@@ -189,13 +189,14 @@ void ProgGLES2::GetProgParams(unsigned progUid)
     {
         char name[32];
         sprintf(name, "%s_Buffer%u_Block", (type == PROG_VERTEX) ? "VP" : "FP", i);
-        GLuint loc = glGetUniformBlockIndex(progUid, name);
+        GLuint loc;
+        GL_CALL(loc = glGetUniformBlockIndex(progUid, name));
 
         if (loc != GL_INVALID_INDEX)
         {
             GLint sz;
 
-            glGetActiveUniformBlockiv(progUid, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &sz);
+            GL_CALL(glGetActiveUniformBlockiv(progUid, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &sz));
             GL_CALL(glUniformBlockBinding(progUid, loc, loc));
 
             cbuf[i].location = loc;
@@ -342,7 +343,7 @@ void ProgGLES2::SetupTextureUnits(unsigned baseUnit) const
         if (texunitLoc[i] != -1)
         {
             //{SCOPED_NAMED_TIMING("gl-Uniform1i")}
-            glUniform1i(texunitLoc[i], baseUnit + i);
+            GL_CALL(glUniform1i(texunitLoc[i], baseUnit + i));
         }
     }
 }
