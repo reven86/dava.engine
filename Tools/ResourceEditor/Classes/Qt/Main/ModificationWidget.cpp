@@ -165,54 +165,50 @@ void ModificationWidget::ReloadValues()
                 }
                 else
                 {
-                    DAVA::Entity* singleEntity = selection.GetFirst().Cast<DAVA::Entity>();
-                    if (singleEntity != nullptr)
+                    const auto& firstObject = selection.GetFirst();
+                    DAVA::Matrix4 localMatrix = firstObject.GetLocalTransform();
+                    DAVA::float32 x = 0;
+                    DAVA::float32 y = 0;
+                    DAVA::float32 z = 0;
+                    switch (modifMode)
                     {
-                        DAVA::float32 x = 0;
-                        DAVA::float32 y = 0;
-                        DAVA::float32 z = 0;
-
-                        DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
-                        switch (modifMode)
-                        {
-                        case ST_MODIF_MOVE:
-                        {
-                            DAVA::Vector3 translation = localMatrix.GetTranslationVector();
-                            x = translation.x;
-                            y = translation.y;
-                            z = translation.z;
-                        }
-                        break;
-                        case ST_MODIF_ROTATE:
-                        {
-                            DAVA::Vector3 pos, scale, rotate;
-                            if (localMatrix.Decomposition(pos, scale, rotate))
-                            {
-                                x = DAVA::RadToDeg(rotate.x);
-                                y = DAVA::RadToDeg(rotate.y);
-                                z = DAVA::RadToDeg(rotate.z);
-                            }
-                        }
-                        break;
-                        case ST_MODIF_SCALE:
-                        {
-                            DAVA::Vector3 pos, scale, rotate;
-                            if (localMatrix.Decomposition(pos, scale, rotate))
-                            {
-                                x = scale.x;
-                                y = scale.y;
-                                z = scale.z;
-                            }
-                        }
-                        break;
-                        default:
-                            break;
-                        }
-
-                        xAxisModify->setValue(x);
-                        yAxisModify->setValue(y);
-                        zAxisModify->setValue(z);
+                    case ST_MODIF_MOVE:
+                    {
+                        DAVA::Vector3 translation = localMatrix.GetTranslationVector();
+                        x = translation.x;
+                        y = translation.y;
+                        z = translation.z;
                     }
+                    break;
+                    case ST_MODIF_ROTATE:
+                    {
+                        DAVA::Vector3 pos, scale, rotate;
+                        if (localMatrix.Decomposition(pos, scale, rotate))
+                        {
+                            x = DAVA::RadToDeg(rotate.x);
+                            y = DAVA::RadToDeg(rotate.y);
+                            z = DAVA::RadToDeg(rotate.z);
+                        }
+                    }
+                    break;
+                    case ST_MODIF_SCALE:
+                    {
+                        DAVA::Vector3 pos, scale, rotate;
+                        if (localMatrix.Decomposition(pos, scale, rotate))
+                        {
+                            x = scale.x;
+                            y = scale.y;
+                            z = scale.z;
+                        }
+                    }
+                    break;
+                    default:
+                        break;
+                    }
+
+                    xAxisModify->setValue(x);
+                    yAxisModify->setValue(y);
+                    zAxisModify->setValue(z);
                 }
             }
         }
@@ -242,13 +238,12 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
     SelectableObjectGroup selection = curScene->selectionSystem->GetSelection();
-    selection.RemoveIf([&selection](const SelectableObject& obj)
-                       {
-                           auto entity = obj.Cast<DAVA::Entity>();
-                           if (entity == nullptr)
-                               return false;
-                           return selection.ContainsObject(entity->GetParent());
-                       });
+
+    // remove child objects, to avoid double transformation
+    selection.RemoveIf([&selection](const SelectableObject& obj) {
+        auto entity = obj.AsEntity();
+        return (entity == nullptr) || selection.ContainsObject(entity->GetParent());
+    });
 
     switch (modifMode)
     {

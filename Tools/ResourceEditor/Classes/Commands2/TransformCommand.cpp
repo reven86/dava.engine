@@ -31,35 +31,25 @@
 
 #include "Scene3D/Entity.h"
 
-TransformCommand::TransformCommand(DAVA::Entity* _entity, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform)
+TransformCommand::TransformCommand(SelectableObject _object, const DAVA::Matrix4& _origTransform, const DAVA::Matrix4& _newTransform)
     : Command2(CMDID_TRANSFORM, "Transform")
-    , entity(_entity)
+    , object(_object)
     , undoTransform(_origTransform)
     , redoTransform(_newTransform)
 {
 }
 
-TransformCommand::~TransformCommand()
-{
-}
-
 void TransformCommand::Undo()
 {
-    if (NULL != entity)
-    {
-        entity->SetLocalTransform(undoTransform);
-    }
+    object.SetLocalTransform(undoTransform);
 }
 
 void TransformCommand::Redo()
 {
-    if (NULL != entity)
-    {
-        entity->SetLocalTransform(redoTransform);
-    }
+    object.SetLocalTransform(redoTransform);
 }
 
 DAVA::Entity* TransformCommand::GetEntity() const
 {
-    return entity;
+    return object.AsEntity();
 }

@@ -36,7 +36,7 @@ class SelectableObject
 {
 public:
     SelectableObject() = default;
-    SelectableObject(DAVA::BaseObject* baseObject);
+    explicit SelectableObject(DAVA::BaseObject* baseObject);
     SelectableObject(const SelectableObject& other);
     SelectableObject(SelectableObject&& other);
     ~SelectableObject();
@@ -59,6 +59,9 @@ public:
 
     const DAVA::AABBox3& GetBoundingBox() const;
     void SetBoundingBox(const DAVA::AABBox3& box);
+
+    const DAVA::Matrix4& GetLocalTransform() const;
+    void SetLocalTransform(const DAVA::Matrix4& transform);
 
     const DAVA::Matrix4& GetWorldTransform() const;
 

@@ -96,7 +96,7 @@ public:
 protected:
     struct EntityToModify
     {
-        DAVA::Entity* entity;
+        SelectableObject object;
         DAVA::Matrix4 inversedParentWorldTransform;
         DAVA::Matrix4 originalParentWorldTransform;
         DAVA::Matrix4 originalTransform;

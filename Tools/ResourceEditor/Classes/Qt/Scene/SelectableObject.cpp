@@ -86,12 +86,27 @@ void SelectableObject::SetBoundingBox(const DAVA::AABBox3& box)
     boundingBox = box;
 }
 
+const DAVA::Matrix4& SelectableObject::GetLocalTransform() const
+{
+    auto entity = Cast<DAVA::Entity>();
+    if (entity == nullptr)
+        return DAVA::Matrix4::IDENTITY;
+    return entity->GetLocalTransform();
+}
+
+void SelectableObject::SetLocalTransform(const DAVA::Matrix4& transform)
+{
+    auto entity = Cast<DAVA::Entity>();
+    if (entity != nullptr)
+    {
+        entity->SetLocalTransform(transform);
+    }
+}
+
 const DAVA::Matrix4& SelectableObject::GetWorldTransform() const
 {
     auto entity = Cast<DAVA::Entity>();
-
     if (entity == nullptr)
         return DAVA::Matrix4::IDENTITY;
-
     return entity->GetWorldTransform();
 }
