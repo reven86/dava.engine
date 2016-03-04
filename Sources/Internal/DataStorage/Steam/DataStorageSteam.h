@@ -62,7 +62,7 @@ private:
     ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
     void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-    Steam::Storage * remoteStorage = nullptr;
+    Steam::Storage* remoteStorage = nullptr;
     ScopedPtr<KeyedArchive> values;
     bool isValuesChanged = false;
 };

@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_STEAM__)
 
-// wrapped for UNITY BUILD 
+// wrapped for UNITY BUILD
 namespace STEAM_SDK
 {
 #include "steam/steam_api.h"
@@ -50,7 +50,7 @@ public:
     static void Deinit();
     static bool IsInited();
 
-    static Storage * CreateStorage();
+    static Storage* CreateStorage();
 
 private:
     static bool isInited;

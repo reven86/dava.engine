@@ -85,11 +85,10 @@ bool Steam::IsInited()
     return isInited;
 }
 
-Steam::Storage * Steam::CreateStorage()
+Steam::Storage* Steam::CreateStorage()
 {
     return SteamRemoteStorage();
 }
-
 }
 
 #endif
